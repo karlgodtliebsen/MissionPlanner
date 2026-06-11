@@ -93,3 +93,63 @@ build_metadata.AdditionalFiles.Inflator = SourceGen
 build_metadata.AdditionalFiles.NoWarn = 
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
+
+[C:/Projects/MissionPlanner/src/MissionPlanner/Views/MenuConfigTuning/MenuConfigTuningView.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = MissionPlanner.Views.MenuConfigTuning.MenuConfigTuningView.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\MenuConfigTuning\MenuConfigTuningView.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\MenuConfigTuning\MenuConfigTuningView.xaml
+build_metadata.AdditionalFiles.Inflator = SourceGen
+build_metadata.AdditionalFiles.NoWarn = 
+build_metadata.AdditionalFiles.EnableDiagnostics = 
+build_metadata.AdditionalFiles.LineInfo = 
+
+[C:/Projects/MissionPlanner/src/MissionPlanner/Views/MenuFlightData/MenuFlightDataView.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = MissionPlanner.Views.MenuFlightData.MenuFlightDataView.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\MenuFlightData\MenuFlightDataView.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\MenuFlightData\MenuFlightDataView.xaml
+build_metadata.AdditionalFiles.Inflator = SourceGen
+build_metadata.AdditionalFiles.NoWarn = 
+build_metadata.AdditionalFiles.EnableDiagnostics = 
+build_metadata.AdditionalFiles.LineInfo = 
+
+[C:/Projects/MissionPlanner/src/MissionPlanner/Views/MenuFlightPlanner/MenuFlightPlannerView.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = MissionPlanner.Views.MenuFlightPlanner.MenuFlightPlannerView.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\MenuFlightPlanner\MenuFlightPlannerView.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\MenuFlightPlanner\MenuFlightPlannerView.xaml
+build_metadata.AdditionalFiles.Inflator = SourceGen
+build_metadata.AdditionalFiles.NoWarn = 
+build_metadata.AdditionalFiles.EnableDiagnostics = 
+build_metadata.AdditionalFiles.LineInfo = 
+
+[C:/Projects/MissionPlanner/src/MissionPlanner/Views/MenuHelp/MenuHelpView.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = MissionPlanner.Views.MenuHelp.MenuHelpView.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\MenuHelp\MenuHelpView.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\MenuHelp\MenuHelpView.xaml
+build_metadata.AdditionalFiles.Inflator = SourceGen
+build_metadata.AdditionalFiles.NoWarn = 
+build_metadata.AdditionalFiles.EnableDiagnostics = 
+build_metadata.AdditionalFiles.LineInfo = 
+
+[C:/Projects/MissionPlanner/src/MissionPlanner/Views/MenuInitSetup/MenuInitSetupView.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = MissionPlanner.Views.MenuInitSetup.MenuInitSetupView.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\MenuInitSetup\MenuInitSetupView.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\MenuInitSetup\MenuInitSetupView.xaml
+build_metadata.AdditionalFiles.Inflator = SourceGen
+build_metadata.AdditionalFiles.NoWarn = 
+build_metadata.AdditionalFiles.EnableDiagnostics = 
+build_metadata.AdditionalFiles.LineInfo = 
+
+[C:/Projects/MissionPlanner/src/MissionPlanner/Views/MenuSimulation/MenuSimulationView.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = MissionPlanner.Views.MenuSimulation.MenuSimulationView.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\MenuSimulation\MenuSimulationView.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\MenuSimulation\MenuSimulationView.xaml
+build_metadata.AdditionalFiles.Inflator = SourceGen
+build_metadata.AdditionalFiles.NoWarn = 
+build_metadata.AdditionalFiles.EnableDiagnostics = 
+build_metadata.AdditionalFiles.LineInfo = 

@@ -37,7 +37,12 @@
             Represents the main page of the application.
             </summary>
         </member>
-        <member name="M:MissionPlanner.MainPage.#ctor(MissionPlanner.Views.Connect.ConnectPopup)">
+        <member name="M:MissionPlanner.MainPage.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:MissionPlanner.MainPage"/> class.
+            </summary>
+        </member>
+        <member name="M:MissionPlanner.MainPage.#ctor(MissionPlanner.Views.MainPageViewModel,MissionPlanner.Views.MenuFlightData.MenuFlightDataView,MissionPlanner.Views.MenuFlightPlanner.MenuFlightPlannerView,MissionPlanner.Views.MenuInitSetup.MenuInitSetupView,MissionPlanner.Views.MenuConfigTuning.MenuConfigTuningView,MissionPlanner.Views.MenuSimulation.MenuSimulationView,MissionPlanner.Views.MenuHelp.MenuHelpView,MissionPlanner.Views.Connect.ConnectPopup)">
             <summary>
             Initializes a new instance of the <see cref="T:MissionPlanner.MainPage"/> class with the specified connect popup.
             </summary>
@@ -91,6 +96,26 @@
         </member>
         <member name="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.ConnectCommand">
             <summary>Gets an <see cref="T:CommunityToolkit.Mvvm.Input.IRelayCommand"/> instance wrapping <see cref="M:MissionPlanner.Views.Connect.ConnectPopupViewModel.Connect"/>.</summary>
+        </member>
+        <member name="T:MissionPlanner.Views.MainPageViewModel">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.MainPageViewModel.State">
+            <summary>
+            Data for the connect popup, such as available connection types, ports, and baud rates.
+            </summary>
+        </member>
+        <member name="P:MissionPlanner.Views.MainPageViewModel.SelectedConnectionType">
+            <inheritdoc cref="F:MissionPlanner.Views.MainPageViewModel.selectedConnectionType"/>
+        </member>
+        <member name="P:MissionPlanner.Views.MainPageViewModel.SelectedPort">
+            <inheritdoc cref="F:MissionPlanner.Views.MainPageViewModel.selectedPort"/>
+        </member>
+        <member name="P:MissionPlanner.Views.MainPageViewModel.SelectedBaudRate">
+            <inheritdoc cref="F:MissionPlanner.Views.MainPageViewModel.selectedBaudRate"/>
+        </member>
+        <member name="P:MissionPlanner.Views.MainPageViewModel.IsConnected">
+            <inheritdoc cref="F:MissionPlanner.Views.MainPageViewModel.isConnected"/>
         </member>
         <member name="T:MissionPlanner.Configuration.ApplicationConfigurator">
             <summary>

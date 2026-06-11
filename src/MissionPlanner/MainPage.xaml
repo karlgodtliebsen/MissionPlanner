@@ -2,8 +2,21 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:connect="clr-namespace:MissionPlanner.Views.Connect"
+             xmlns:views="clr-namespace:MissionPlanner.Views"
+             x:DataType="views:MainPageViewModel"
              x:Class="MissionPlanner.MainPage"
              Title="">
+
+    <ContentPage.Resources>
+        <Style x:Key="TabButtonStyle" TargetType="Button">
+            <Setter Property="BackgroundColor" Value="#2d2d30" />
+            <Setter Property="TextColor" Value="White" />
+            <Setter Property="CornerRadius" Value="0" />
+            <Setter Property="BorderColor" Value="Transparent" />
+            <Setter Property="ContentLayout" Value="Top,5" />
+            <Setter Property="TextTransform" Value="Uppercase" />
+        </Style>
+    </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto,*,Auto"
           RowSpacing="0">
@@ -16,47 +29,39 @@
               Padding="4"
               BackgroundColor="#2d2d30">
 
-            <Button Grid.Column="0"
+            <Button x:Name="MenuFlightData" Grid.Column="0"
+                    Style="{StaticResource TabButtonStyle}"
                     ImageSource="Resources/Images/light_flightdata_icon.png"
                     Clicked="MenuFlightData_Clicked"
-                    Text="Flight Data"
-                    ContentLayout="Top,5"
-                    TextTransform="Uppercase"
-                    >
-            </Button>
+                    Text="Flight Data" />
 
             <Button x:Name="MenuFlightPlanner" Grid.Column="1"
+                        Style="{StaticResource TabButtonStyle}"
                         ImageSource="Resources/Images/light_flightplan_icon.png"
                         Clicked="MenuFlightPlanner_Clicked"
-                        Text="Flight Plan"
-                        ContentLayout="Top,5"
-                        TextTransform="Uppercase" />
+                        Text="Flight Plan" />
             <Button x:Name="MenuInitSetup" Grid.Column="2"
+                        Style="{StaticResource TabButtonStyle}"
                         ImageSource="Resources/Images/light_initialsetup_icon.png"
                         Clicked="MenuInitSetup_Clicked"
-                        Text="Initial Setup"
-                        ContentLayout="Top,5"
-                        TextTransform="Uppercase" />
+                        Text="Initial Setup" />
             <Button x:Name="MenuConfigTuning" Grid.Column="3"
+                        Style="{StaticResource TabButtonStyle}"
                         ImageSource="Resources/Images/light_tuningconfig_icon.png"
                         Clicked="MenuConfigTuning_Clicked"
-                        Text="Config/Tuning"
-                        ContentLayout="Top,5"
-                        TextTransform="Uppercase" />
+                        Text="Config/Tuning" />
             <Button x:Name="MenuSimulation" Grid.Column="4"
+                        Style="{StaticResource TabButtonStyle}"
                         ImageSource="Resources/Images/light_simulation_icon.png"
                         Clicked="MenuSimulation_Clicked"
-                        Text="Simulation"
-                        ContentLayout="Top,5"
-                        TextTransform="Uppercase" />
+                        Text="Simulation" />
 
             <Button x:Name="MenuHelp" Grid.Column="6"
+                        Style="{StaticResource TabButtonStyle}"
                         ImageSource="Resources/Images/light_help_icon.png"
                         Clicked="MenuHelp_Clicked"
-                        Text="Help"
-                        ContentLayout="Top,5"
-                        TextTransform="Uppercase" />
-            <!-- Placeholder for the connection (port/baud) controls -->
+                        Text="Help" />
+
             <ContentView x:Name="ConnectionControlHost"
                          Grid.Column="7"
                          VerticalOptions="Center" />
@@ -70,6 +75,7 @@
                     Clicked="MenuConnect_Clicked" />
         </Grid>
 
+
         <!-- Main content area: hosts the active view (Flight Data, Flight Plan, etc.) -->
         <ContentView x:Name="MainContent"
                      Grid.Row="1" />
@@ -81,23 +87,29 @@
               Padding="4"
               BackgroundColor="#2d2d30">
 
-            <Label x:Name="StatusLabel"
+            <!--<Label x:Name="StatusPort"
                    Grid.Column="0"
-                   Text=""
+                   Text="{Binding Path=SelectedPort}"
                    VerticalOptions="Center" />
 
+            <Label x:Name="StatusBaud"
+                   Grid.Column="0"
+                   Text="{Binding Path=SelectedBaudRate}"
+                   VerticalOptions="Center" />
+
+            <Label x:Name="StatusConnectionType"
+                   Grid.Column="0"
+                   Text="{Binding Path=SelectedConnectionType}"
+                   VerticalOptions="Center" />-->
+
             <ProgressBar x:Name="StatusProgress"
-                         Grid.Column="1"
+                         Grid.Column="3"
                          WidthRequest="150"
                          Progress="0"
                          VerticalOptions="Center" />
         </Grid>
 
-        <!-- Connect popup overlay -->
-        <!--<connect:ConnectPopup x:Name="ConnectPopupOverlay"
-                             Grid.Row="0"
-                             Grid.RowSpan="3"
-                             IsVisible="False" />-->
+
         <ContentView  x:Name="ConnectPopupOverlay"
                       Grid.Row="0"
                       Grid.RowSpan="3"

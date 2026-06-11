@@ -4,6 +4,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 using MissionPlanner.Views.Connect;
+using MissionPlanner.Views.MenuConfigTuning;
+using MissionPlanner.Views.MenuFlightData;
+using MissionPlanner.Views.MenuFlightPlanner;
+using MissionPlanner.Views.MenuHelp;
+using MissionPlanner.Views.MenuInitSetup;
+using MissionPlanner.Views.MenuSimulation;
+
+using MainPageViewModel = MissionPlanner.Views.MainPageViewModel;
 
 namespace MissionPlanner.Configuration;
 
@@ -47,15 +55,30 @@ public static class ApplicationConfigurator
     {
         services.AddSingleton<App>();
         services.AddSingleton<AppShell>();
+
         services.AddTransient<MainPage>();
-        //services.AddTransient<MainPageViewModel>();
-
-        services.TryAddSingleton<ConnectPopupViewModel>();
+        services.TryAddSingleton<MainPageViewModel>();
         services.TryAddSingleton<ConnectPopup>();
+        services.TryAddSingleton<ConnectPopupViewModel>();
 
-        ////SubView/Controls
-        //services.TryAddTransient<TruckBatchesFinalizeView>();
-        //services.TryAddTransient<TruckBatchesFinalizeViewModel>();
+        //SubView/Controls
+        services.TryAddSingleton<MenuFlightDataViewModel>();
+        services.TryAddSingleton<MenuFlightDataView>();
+
+        services.TryAddSingleton<MenuFlightPlannerViewModel>();
+        services.TryAddSingleton<MenuFlightPlannerView>();
+
+        services.TryAddSingleton<MenuInitSetupViewModel>();
+        services.TryAddSingleton<MenuInitSetupView>();
+
+        services.TryAddSingleton<MenuConfigTuningViewModel>();
+        services.TryAddSingleton<MenuConfigTuningView>();
+
+        services.TryAddSingleton<MenuSimulationViewModel>();
+        services.TryAddSingleton<MenuSimulationView>();
+
+        services.TryAddSingleton<MenuHelpViewModel>();
+        services.TryAddSingleton<MenuHelpView>();
 
 
         return services;
