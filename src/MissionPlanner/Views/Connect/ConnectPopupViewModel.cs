@@ -11,7 +11,7 @@ namespace MissionPlanner.Views.Connect;
 
 public partial class ConnectPopupViewModel : ObservableObject
 {
-    public ApplicationOptions? Options { get; }
+    public ApplicationOptions Options { get; } = null!;
     private readonly ApplicationStateService? stateService;
 
     [ObservableProperty] private string? selectedConnectionType;

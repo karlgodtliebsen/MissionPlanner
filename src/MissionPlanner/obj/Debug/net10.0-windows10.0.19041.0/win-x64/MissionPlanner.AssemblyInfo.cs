@@ -11,10 +11,14 @@
 using System;
 using System.Reflection;
 
+[assembly: System.Reflection.AssemblyMetadataAttribute("Microsoft.Maui.ApplicationModel.AppInfo.PackageName", "com.ardupilot.missionplanner")]
+[assembly: System.Reflection.AssemblyMetadataAttribute("Microsoft.Maui.ApplicationModel.AppInfo.PublisherName", "User Name")]
+[assembly: System.Reflection.AssemblyMetadataAttribute("Microsoft.Maui.ApplicationModel.AppInfo.Name", "MissionPlanner")]
+[assembly: System.Reflection.AssemblyMetadataAttribute("Microsoft.Maui.ApplicationModel.AppInfo.Version", "2.0.0.2")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("Ardupilot")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("2.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("2.0.0.0+0743c8910792b73ed9f04e4e76984fe7a6705b66")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("2.0+d3bd695291b8b9c04bf7a42ee804c3a576ad28e2")]
 [assembly: System.Reflection.AssemblyProductAttribute("MissionPlanner")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MissionPlanner")]
 [assembly: System.Reflection.AssemblyVersionAttribute("2.0.0.0")]
