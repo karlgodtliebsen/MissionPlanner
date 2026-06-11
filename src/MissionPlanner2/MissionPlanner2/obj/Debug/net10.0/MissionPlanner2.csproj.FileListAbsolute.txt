@@ -1,0 +1,14 @@
+C:\Projects\MissionPlanner\src\MissionPlanner2\MissionPlanner2\bin\Debug\net10.0\MissionPlanner2.deps.json
+C:\Projects\MissionPlanner\src\MissionPlanner2\MissionPlanner2\bin\Debug\net10.0\MissionPlanner2.dll
+C:\Projects\MissionPlanner\src\MissionPlanner2\MissionPlanner2\bin\Debug\net10.0\MissionPlanner2.pdb
+C:\Projects\MissionPlanner\src\MissionPlanner2\MissionPlanner2\obj\Debug\net10.0\MissionPlanner2.csproj.AssemblyReference.cache
+C:\Projects\MissionPlanner\src\MissionPlanner2\MissionPlanner2\obj\Debug\net10.0\MissionPlanner2.GeneratedMSBuildEditorConfig.editorconfig
+C:\Projects\MissionPlanner\src\MissionPlanner2\MissionPlanner2\obj\Debug\net10.0\MissionPlanner2.AssemblyInfoInputs.cache
+C:\Projects\MissionPlanner\src\MissionPlanner2\MissionPlanner2\obj\Debug\net10.0\MissionPlanner2.AssemblyInfo.cs
+C:\Projects\MissionPlanner\src\MissionPlanner2\MissionPlanner2\obj\Debug\net10.0\MissionPlanner2.csproj.CoreCompileInputs.cache
+C:\Projects\MissionPlanner\src\MissionPlanner2\MissionPlanner2\obj\Debug\net10.0\MissionPlanner2.sourcelink.json
+C:\Projects\MissionPlanner\src\MissionPlanner2\MissionPlanner2\obj\Debug\net10.0\XamlC.stamp
+C:\Projects\MissionPlanner\src\MissionPlanner2\MissionPlanner2\obj\Debug\net10.0\MissionPlanner2.dll
+C:\Projects\MissionPlanner\src\MissionPlanner2\MissionPlanner2\obj\Debug\net10.0\refint\MissionPlanner2.dll
+C:\Projects\MissionPlanner\src\MissionPlanner2\MissionPlanner2\obj\Debug\net10.0\MissionPlanner2.pdb
+C:\Projects\MissionPlanner\src\MissionPlanner2\MissionPlanner2\obj\Debug\net10.0\ref\MissionPlanner2.dll

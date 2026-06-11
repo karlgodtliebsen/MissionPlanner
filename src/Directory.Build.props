@@ -1,0 +1,26 @@
+<Project>
+	<PropertyGroup>
+		
+		<!--<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>-->
+		<!--
+		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Authors>Michael Oborne</Authors>
+		<Company>Ardupilot</Company>
+		<ProductVersion>2.0.0.0</ProductVersion>
+		<Version>2.0.0.0</Version>
+		<ApplicationTitle>MissionPlanner</ApplicationTitle>
+
+		<ApplicationId>com.ardupilot.missionplanner</ApplicationId>
+		<EnableNETAnalyzers>true</EnableNETAnalyzers>
+		<EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+		<AnalysisLevel>latest</AnalysisLevel>
+		<AnalysisLevelSecurity>latest-recommended</AnalysisLevelSecurity>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
+		<NoWarn>$(NoWarn);NU1608</NoWarn>
+		-->
+	</PropertyGroup>
+
+</Project>

@@ -1,0 +1,14 @@
+images\connect;images\connect
+images\dark_connect_icon;images\dark_connect_icon
+images\dark_disconnect_icon;images\dark_disconnect_icon
+images\disconnect;images\disconnect
+images\light_connect_icon;images\light_connect_icon
+images\light_disconnect_icon;images\light_disconnect_icon
+images\light_flightdata_icon;images\light_flightdata_icon
+images\light_flightplan_icon;images\light_flightplan_icon
+images\light_help_icon;images\light_help_icon
+images\light_initialsetup_icon;images\light_initialsetup_icon
+images\light_simulation_icon;images\light_simulation_icon
+images\light_terminal_icon;images\light_terminal_icon
+images\light_tuningconfig_icon;images\light_tuningconfig_icon
+raw\aboutassets;raw\AboutAssets

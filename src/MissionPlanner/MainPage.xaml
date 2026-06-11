@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:connect="clr-namespace:MissionPlanner.Views.Connect"
+             x:Class="MissionPlanner.MainPage"
+             Title="">
+
+    <Grid RowDefinitions="Auto,*,Auto"
+          RowSpacing="0">
+
+        <!-- Top menu bar: main navigation buttons (mirrors MainV2 MainMenu ToolStrip) -->
+        <Grid x:Name="TopMenuBar"
+              Grid.Row="0"
+              ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto,Auto,Auto"
+              ColumnSpacing="2"
+              Padding="4"
+              BackgroundColor="#2d2d30">
+
+            <Button Grid.Column="0"
+                    ImageSource="Resources/Images/light_flightdata_icon.png"
+                    Clicked="MenuFlightData_Clicked"
+                    Text="Flight Data"
+                    ContentLayout="Top,5"
+                    TextTransform="Uppercase"
+                    >
+            </Button>
+
+            <Button x:Name="MenuFlightPlanner" Grid.Column="1"
+                        ImageSource="Resources/Images/light_flightplan_icon.png"
+                        Clicked="MenuFlightPlanner_Clicked"
+                        Text="Flight Plan"
+                        ContentLayout="Top,5"
+                        TextTransform="Uppercase" />
+            <Button x:Name="MenuInitSetup" Grid.Column="2"
+                        ImageSource="Resources/Images/light_initialsetup_icon.png"
+                        Clicked="MenuInitSetup_Clicked"
+                        Text="Initial Setup"
+                        ContentLayout="Top,5"
+                        TextTransform="Uppercase" />
+            <Button x:Name="MenuConfigTuning" Grid.Column="3"
+                        ImageSource="Resources/Images/light_tuningconfig_icon.png"
+                        Clicked="MenuConfigTuning_Clicked"
+                        Text="Config/Tuning"
+                        ContentLayout="Top,5"
+                        TextTransform="Uppercase" />
+            <Button x:Name="MenuSimulation" Grid.Column="4"
+                        ImageSource="Resources/Images/light_simulation_icon.png"
+                        Clicked="MenuSimulation_Clicked"
+                        Text="Simulation"
+                        ContentLayout="Top,5"
+                        TextTransform="Uppercase" />
+
+            <Button x:Name="MenuHelp" Grid.Column="6"
+                        ImageSource="Resources/Images/light_help_icon.png"
+                        Clicked="MenuHelp_Clicked"
+                        Text="Help"
+                        ContentLayout="Top,5"
+                        TextTransform="Uppercase" />
+            <!-- Placeholder for the connection (port/baud) controls -->
+            <ContentView x:Name="ConnectionControlHost"
+                         Grid.Column="7"
+                         VerticalOptions="Center" />
+
+            <Button x:Name="MenuConnect"
+                    Grid.Column="8"
+                    ImageSource="Resources/Images/connect.png" 
+                    Text="Connect" 
+                    ContentLayout="Top,5"
+                    TextTransform="Uppercase"
+                    Clicked="MenuConnect_Clicked" />
+        </Grid>
+
+        <!-- Main content area: hosts the active view (Flight Data, Flight Plan, etc.) -->
+        <ContentView x:Name="MainContent"
+                     Grid.Row="1" />
+
+        <!-- Bottom status bar (mirrors Controls.Status) -->
+        <Grid x:Name="StatusBar"
+              Grid.Row="2"
+              ColumnDefinitions="*,Auto"
+              Padding="4"
+              BackgroundColor="#2d2d30">
+
+            <Label x:Name="StatusLabel"
+                   Grid.Column="0"
+                   Text=""
+                   VerticalOptions="Center" />
+
+            <ProgressBar x:Name="StatusProgress"
+                         Grid.Column="1"
+                         WidthRequest="150"
+                         Progress="0"
+                         VerticalOptions="Center" />
+        </Grid>
+
+        <!-- Connect popup overlay -->
+        <connect:ConnectPopup x:Name="ConnectPopupOverlay"
+                             Grid.Row="0"
+                             Grid.RowSpan="3"
+                             IsVisible="False" />
+
+    </Grid>
+
+</ContentPage>

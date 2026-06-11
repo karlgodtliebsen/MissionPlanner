@@ -1,0 +1,15 @@
+<api>
+  <jcw-types>
+    <type name="MainActivity" package="crc64ab13386b2af7f73c" application_java_class="android.app.Application" mono_runtime_initialization="mono.MonoPackageManager.LoadApplication (context);" extends_type="crc6488302ad6e9e4df1a.MauiAppCompatActivity" partial_assembly_qualified_name="MissionPlanner_ng.MainActivity, MissionPlanner">
+      <constructors>
+        <constructor name="MainActivity" method="n_.ctor:()V:" jni_signature="()V" managed_parameters="" retval="void" is_dynamically_registered="True" />
+        <constructor name="MainActivity" method="n_.ctor:(I)V:" jni_signature="(I)V" managed_parameters="System.Int32, System.Private.CoreLib" params="int p0" retval="void" is_dynamically_registered="True" super_call="p0" activate_call="p0" />
+      </constructors>
+    </type>
+    <type name="MainApplication" package="crc6445f2574996f903a9" application_java_class="android.app.Application" mono_runtime_initialization="mono.MonoPackageManager.LoadApplication (context);" extends_type="crc6488302ad6e9e4df1a.MauiApplication" is_application="True" partial_assembly_qualified_name="MissionPlanner.Platforms.Android.MainApplication, MissionPlanner" application_constructor="MainApplication" />
+  </jcw-types>
+  <acw-types partial-assembly-name="MissionPlanner" module-name="MissionPlanner.dll">
+    <type assembly-qualified-name="MissionPlanner_ng.MainActivity, MissionPlanner, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" compat-jni-name="missionplanner_ng.MainActivity" java-key="crc64ab13386b2af7f73c.MainActivity" managed-key="MissionPlanner_ng.MainActivity" partial-assembly-qualified-name="MissionPlanner_ng.MainActivity, MissionPlanner" />
+    <type assembly-qualified-name="MissionPlanner.Platforms.Android.MainApplication, MissionPlanner, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" compat-jni-name="missionplanner.platforms.android.MainApplication" java-key="crc6445f2574996f903a9.MainApplication" managed-key="MissionPlanner.Platforms.Android.MainApplication" partial-assembly-qualified-name="MissionPlanner.Platforms.Android.MainApplication, MissionPlanner" />
+  </acw-types>
+</api>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+              xmlns:vm="clr-namespace:MissionPlanner.Views.Connect" 
+              xmlns:connect="clr-namespace:MissionPlanner.Views.Connect"
+              x:Class="MissionPlanner.Views.Connect.ConnectPopup"
+              x:DataType="connect:ConnectPopupViewModel"
+              BackgroundColor="#80000000">
+
+    <Border Padding="16"
+            StrokeShape="RoundRectangle 8"
+            BackgroundColor="#2d2d30"
+            WidthRequest="260"
+            HorizontalOptions="Center"
+            VerticalOptions="Center">
+
+        <VerticalStackLayout Spacing="12">
+
+            <Label Text="Connect"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   TextColor="White" />
+
+            <Picker Title="Connection type"
+                    ItemsSource="{Binding ConnectionTypes}"
+                    SelectedItem="{Binding SelectedConnectionType}" />
+
+            <Picker Title="Port"
+                    ItemsSource="{Binding Ports}"
+                    SelectedItem="{Binding SelectedPort}" />
+
+            <Picker Title="Baud rate"
+                    ItemsSource="{Binding BaudRates}"
+                    SelectedItem="{Binding SelectedBaudRate}" />
+
+            <ImageButton Source="light_connect_icon.png"
+                         HeightRequest="48"
+                         WidthRequest="48"
+                         HorizontalOptions="Center"
+                         Command="{Binding ConnectCommand}" />
+
+        </VerticalStackLayout>
+    </Border>
+</ContentView>

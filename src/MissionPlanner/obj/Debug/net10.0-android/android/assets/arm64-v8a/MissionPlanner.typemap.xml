@@ -1,0 +1,10 @@
+<api type="debug" assembly-name="MissionPlanner" mvid="77c4c7a320bc4e62bafe9db7a0010e8d">
+  <java-to-managed>
+    <entry java-name="crc64ab13386b2af7f73c/MainActivity" managed-name="MissionPlanner_ng.MainActivity, MissionPlanner" managed-type-token-id="33554450" />
+    <entry java-name="crc6445f2574996f903a9/MainApplication" managed-name="MissionPlanner.Platforms.Android.MainApplication, MissionPlanner" managed-type-token-id="33554458" />
+  </java-to-managed>
+  <managed-to-java>
+    <entry java-name="crc64ab13386b2af7f73c/MainActivity" managed-name="MissionPlanner_ng.MainActivity, MissionPlanner" managed-type-token-id="33554450" />
+    <entry java-name="crc6445f2574996f903a9/MainApplication" managed-name="MissionPlanner.Platforms.Android.MainApplication, MissionPlanner" managed-type-token-id="33554458" />
+  </managed-to-java>
+</api>
