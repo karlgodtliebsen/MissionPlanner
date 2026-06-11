@@ -3,7 +3,7 @@
 
 using MissionPlanner;
 
-namespace MissionPlanner_ng.WinUI;
+namespace MissionPlanner.WinUI;
 
 /// <summary>
 /// Provides application-specific behavior to supplement the default Application class.

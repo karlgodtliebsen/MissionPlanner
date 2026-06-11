@@ -8,32 +8,48 @@ namespace MissionPlanner.Views;
 
 public partial class MainPageViewModel : ObservableObject
 {
-    private readonly IOptions<ApplicationState> applicationState;
-
     [ObservableProperty] private string? selectedConnectionType;
     [ObservableProperty] private string? selectedPort;
     [ObservableProperty] private string? selectedBaudRate;
-    [ObservableProperty] private bool isConnected;
+    [ObservableProperty] private bool isConnected = false;
 
     /// <summary>
     /// Data for the connect popup, such as available connection types, ports, and baud rates.
     /// </summary>
-    public ApplicationState State { get; set; }
-
     public MainPageViewModel()
     {
-        SelectedConnectionType = "Serial";
-        SelectedPort = "AUTO";
-        SelectedBaudRate = "115200";
     }
 
-    public MainPageViewModel(IOptions<ApplicationState> applicationState) : this()
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MainPageViewModel"/> class with the specified application state.
+    /// </summary>
+    /// <param name="stateService"></param>
+    public MainPageViewModel(ApplicationStateService stateService) : this()
     {
-        this.applicationState = applicationState;
-        State = applicationState.Value;
+        // Initialize from shared state
+        SelectedConnectionType = stateService.SelectedConnectionType;
+        SelectedPort = stateService.SelectedPort;
+        SelectedBaudRate = stateService.SelectedBaudRate;
+        IsConnected = stateService.IsConnected;
 
-        SelectedConnectionType = State.SelectedConnectionType;
-        SelectedPort = State.SelectedPort;
-        SelectedBaudRate = State.SelectedBaudRate;
+        // Subscribe to state changes - this will update the statusbar when values change
+        stateService.PropertyChanged += (sender, args) =>
+        {
+            switch (args.PropertyName)
+            {
+                case nameof(ApplicationStateService.SelectedConnectionType):
+                    SelectedConnectionType = stateService.SelectedConnectionType;
+                    break;
+                case nameof(ApplicationStateService.SelectedPort):
+                    SelectedPort = stateService.SelectedPort;
+                    break;
+                case nameof(ApplicationStateService.SelectedBaudRate):
+                    SelectedBaudRate = stateService.SelectedBaudRate;
+                    break;
+                case nameof(ApplicationStateService.IsConnected):
+                    IsConnected = stateService.IsConnected;
+                    break;
+            }
+        };
     }
 }

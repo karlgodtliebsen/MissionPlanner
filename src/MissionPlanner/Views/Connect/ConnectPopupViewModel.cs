@@ -1,3 +1,5 @@
+using System.ComponentModel;
+
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -9,8 +11,8 @@ namespace MissionPlanner.Views.Connect;
 
 public partial class ConnectPopupViewModel : ObservableObject
 {
-    private readonly IOptions<ApplicationState> applicationState;
-    private readonly IOptions<ApplicationOptions> applicationOptions;
+    public ApplicationOptions? Options { get; }
+    private readonly ApplicationStateService? stateService;
 
     [ObservableProperty] private string? selectedConnectionType;
 
@@ -21,34 +23,81 @@ public partial class ConnectPopupViewModel : ObservableObject
     [ObservableProperty] private bool isConnected;
 
     /// <summary>
-    /// Data for the connect popup, such as available connection types, ports, and baud rates.
+    /// Initializes a new instance of the <see cref="ConnectPopupViewModel"/> class.
     /// </summary>
-    public ApplicationOptions Options { get; set; }
-
     public ConnectPopupViewModel()
     {
-        SelectedConnectionType = "Serial";
-        SelectedPort = "AUTO";
-        SelectedBaudRate = "115200";
     }
 
-    public ConnectPopupViewModel(IOptions<ApplicationState> applicationState, IOptions<ApplicationOptions> applicationOptions) : this()
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConnectPopupViewModel"/> class with the specified application state and options.
+    /// </summary>
+    /// <param name="options"></param>
+    /// <param name="stateService"></param>
+    public ConnectPopupViewModel(IOptionsMonitor<ApplicationOptions> options, ApplicationStateService stateService) : this()
     {
-        this.applicationState = applicationState;
-        this.applicationOptions = applicationOptions;
-        Options = applicationOptions.Value;
+        Options = options.CurrentValue;
+        this.stateService = stateService;
 
-        SelectedConnectionType = applicationState.Value.SelectedConnectionType;
-        SelectedPort = applicationState.Value.SelectedPort;
-        SelectedBaudRate = applicationState.Value.SelectedBaudRate;
+        // Initialize from shared state
+        SelectedConnectionType = stateService.SelectedConnectionType;
+        SelectedPort = stateService.SelectedPort;
+        SelectedBaudRate = stateService.SelectedBaudRate;
+        IsConnected = stateService.IsConnected;
+
+        // Subscribe to state changes
+        stateService.PropertyChanged += (sender, args) =>
+        {
+            switch (args.PropertyName)
+            {
+                case nameof(ApplicationStateService.SelectedConnectionType):
+                    SelectedConnectionType = stateService.SelectedConnectionType;
+                    break;
+                case nameof(ApplicationStateService.SelectedPort):
+                    SelectedPort = stateService.SelectedPort;
+                    break;
+                case nameof(ApplicationStateService.SelectedBaudRate):
+                    SelectedBaudRate = stateService.SelectedBaudRate;
+                    break;
+                case nameof(ApplicationStateService.IsConnected):
+                    IsConnected = stateService.IsConnected;
+                    break;
+            }
+        };
     }
 
+    /// <inheritdoc />
+    protected override void OnPropertyChanged(PropertyChangedEventArgs args)
+    {
+        base.OnPropertyChanged(args);
+        switch (args.PropertyName)
+        {
+            case nameof(ApplicationStateService.SelectedConnectionType):
+                stateService?.SelectedConnectionType = SelectedConnectionType!;
+                break;
+            case nameof(ApplicationStateService.SelectedPort):
+                stateService?.SelectedPort = SelectedPort!;
+                break;
+            case nameof(ApplicationStateService.SelectedBaudRate):
+                stateService?.SelectedBaudRate = SelectedBaudRate!;
+                break;
+            case nameof(ApplicationStateService.IsConnected):
+                stateService?.IsConnected = IsConnected;
+                break;
+        }
+    }
 
     [RelayCommand]
     private void Connect()
     {
         // TODO: wire up to the comms/connection layer
         IsConnected = !IsConnected;
-        applicationState.Value.IsConnected = IsConnected;
+        //// Update shared state - this will propagate to all subscribers including MainPageViewModel
+        //stateService?.IsConnected = IsConnected;
+    }
+
+    [RelayCommand]
+    private void Close()
+    {
     }
 }

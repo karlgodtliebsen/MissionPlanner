@@ -77,6 +77,7 @@
 	  <Compile Include="Configuration\ApplicationConfigurator.cs" />
 	  <Compile Include="Configuration\ApplicationOptions.cs" />
 	  <Compile Include="Configuration\ApplicationState.cs" />
+	  <Compile Include="Configuration\ApplicationStateService.cs" />
 	</ItemGroup>
 
 	<ItemGroup>

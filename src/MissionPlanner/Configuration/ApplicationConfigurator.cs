@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 using MissionPlanner.Views.Connect;
 using MissionPlanner.Views.MenuConfigTuning;
@@ -28,11 +27,20 @@ public static class ApplicationConfigurator
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddApplicationConfiguration(IServiceCollection services, IConfiguration configuration)
     {
+        //TODO: add app-settings/config file
         //ApplicationOptions? applicationOptions = configuration.GetSection(ApplicationOptions.SectionName).Get<ApplicationOptions>();
         //ArgumentNullException.ThrowIfNull(applicationOptions, ApplicationOptions.Template);
 
 
         ApplicationOptions applicationOptions = new();
+
+        // Configure ApplicationOptions using the options pattern
+        services.Configure<ApplicationOptions>(options =>
+        {
+            options.BaudRate = applicationOptions.BaudRate;
+            options.ConnectionType = applicationOptions.ConnectionType;
+            options.Port = applicationOptions.Port;
+        });
 
         ApplicationState state = new()
         {
@@ -41,8 +49,19 @@ public static class ApplicationConfigurator
             SelectedPort = applicationOptions.Port
         };
 
-        services.AddSingleton(Options.Create(applicationOptions));
-        services.AddSingleton(Options.Create(state));
+        // Configure ApplicationState using the options pattern (for initial values)
+        services.Configure<ApplicationState>(options =>
+        {
+            options.SelectedBaudRate = state.SelectedBaudRate;
+            options.SelectedConnectionType = state.SelectedConnectionType;
+            options.SelectedPort = state.SelectedPort;
+        });
+
+        // Register shared state service as singleton for runtime state management
+        var stateService = new ApplicationStateService();
+        stateService.Initialize(state);
+        services.AddSingleton(stateService);
+
         services
             .AddViewsConfiguration()
             ;

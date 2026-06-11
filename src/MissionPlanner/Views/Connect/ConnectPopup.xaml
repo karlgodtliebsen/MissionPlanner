@@ -38,7 +38,11 @@
                          WidthRequest="48"
                          HorizontalOptions="Center"
                          Command="{Binding ConnectCommand}" />
-
+            <ImageButton Source="light_connect_icon.png"
+                         HeightRequest="48"
+                         WidthRequest="48"
+                         HorizontalOptions="Center"
+                         Command="{Binding CloseCommand}" />
         </VerticalStackLayout>
     </Border>
 </ContentView>
