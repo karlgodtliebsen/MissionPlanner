@@ -32459,6 +32459,7 @@
       "outputPath": "C:\\Projects\\MissionPlanner\\src\\MissionPlanner\\obj\\",
       "projectStyle": "PackageReference",
       "crossTargeting": true,
+      "centralPackageVersionsManagementEnabled": true,
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
@@ -32522,19 +32523,23 @@
         "dependencies": {
           "CommunityToolkit.Maui": {
             "target": "Package",
-            "version": "[14.2.0, )"
+            "version": "[14.2.0, )",
+            "versionCentrallyManaged": true
           },
           "CommunityToolkit.Mvvm": {
             "target": "Package",
-            "version": "[8.4.2, )"
+            "version": "[8.4.2, )",
+            "versionCentrallyManaged": true
           },
           "Microsoft.Extensions.Logging.Debug": {
             "target": "Package",
-            "version": "[10.0.9, )"
+            "version": "[10.0.9, )",
+            "versionCentrallyManaged": true
           },
           "Microsoft.Maui.Controls": {
             "target": "Package",
-            "version": "[10.0.71, )"
+            "version": "[10.0.71, )",
+            "versionCentrallyManaged": true
           },
           "Microsoft.NET.ILLink.Tasks": {
             "suppressParent": "All",
@@ -32542,6 +32547,36 @@
             "version": "[10.0.9, )",
             "autoReferenced": true
           }
+        },
+        "centralPackageVersions": {
+          "AutoBogus": "2.13.1",
+          "AutoBogus.Conventions": "2.13.1",
+          "AutoBogus.NSubstitute": "2.13.1",
+          "AutoBogus.Templating": "2.13.1",
+          "Bogus": "35.6.5",
+          "CommunityToolkit.Maui": "14.2.0",
+          "CommunityToolkit.Mvvm": "8.4.2",
+          "coverlet.collector": "10.0.1",
+          "DynamicData": "9.4.31",
+          "FluentAssertions": "[7.0.0]",
+          "Meziantou.Extensions.Logging.Xunit.v3": "2.0.1",
+          "Microsoft.Extensions.Configuration": "10.0.9",
+          "Microsoft.Extensions.Configuration.Abstractions": "10.0.9",
+          "Microsoft.Extensions.DependencyInjection": "10.0.9",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9",
+          "Microsoft.Extensions.Logging": "10.0.9",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.9",
+          "Microsoft.Extensions.Logging.Debug": "10.0.9",
+          "Microsoft.Extensions.Options": "10.0.9",
+          "Microsoft.Maui.Controls": "10.0.71",
+          "Microsoft.NET.Test.Sdk": "18.5.1",
+          "NSubstitute": "5.3.0",
+          "Polly": "8.6.6",
+          "Riok.Mapperly": "5.0.0-next.1",
+          "Testcontainers": "4.12.0",
+          "Ulid": "1.4.1",
+          "xunit.runner.visualstudio": "3.1.5",
+          "xunit.v3": "3.2.2"
         },
         "imports": [
           "net461",
@@ -32847,19 +32882,23 @@
         "dependencies": {
           "CommunityToolkit.Maui": {
             "target": "Package",
-            "version": "[14.2.0, )"
+            "version": "[14.2.0, )",
+            "versionCentrallyManaged": true
           },
           "CommunityToolkit.Mvvm": {
             "target": "Package",
-            "version": "[8.4.2, )"
+            "version": "[8.4.2, )",
+            "versionCentrallyManaged": true
           },
           "Microsoft.Extensions.Logging.Debug": {
             "target": "Package",
-            "version": "[10.0.9, )"
+            "version": "[10.0.9, )",
+            "versionCentrallyManaged": true
           },
           "Microsoft.Maui.Controls": {
             "target": "Package",
-            "version": "[10.0.71, )"
+            "version": "[10.0.71, )",
+            "versionCentrallyManaged": true
           },
           "Microsoft.NET.ILLink.Tasks": {
             "suppressParent": "All",
@@ -32867,6 +32906,36 @@
             "version": "[10.0.9, )",
             "autoReferenced": true
           }
+        },
+        "centralPackageVersions": {
+          "AutoBogus": "2.13.1",
+          "AutoBogus.Conventions": "2.13.1",
+          "AutoBogus.NSubstitute": "2.13.1",
+          "AutoBogus.Templating": "2.13.1",
+          "Bogus": "35.6.5",
+          "CommunityToolkit.Maui": "14.2.0",
+          "CommunityToolkit.Mvvm": "8.4.2",
+          "coverlet.collector": "10.0.1",
+          "DynamicData": "9.4.31",
+          "FluentAssertions": "[7.0.0]",
+          "Meziantou.Extensions.Logging.Xunit.v3": "2.0.1",
+          "Microsoft.Extensions.Configuration": "10.0.9",
+          "Microsoft.Extensions.Configuration.Abstractions": "10.0.9",
+          "Microsoft.Extensions.DependencyInjection": "10.0.9",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9",
+          "Microsoft.Extensions.Logging": "10.0.9",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.9",
+          "Microsoft.Extensions.Logging.Debug": "10.0.9",
+          "Microsoft.Extensions.Options": "10.0.9",
+          "Microsoft.Maui.Controls": "10.0.71",
+          "Microsoft.NET.Test.Sdk": "18.5.1",
+          "NSubstitute": "5.3.0",
+          "Polly": "8.6.6",
+          "Riok.Mapperly": "5.0.0-next.1",
+          "Testcontainers": "4.12.0",
+          "Ulid": "1.4.1",
+          "xunit.runner.visualstudio": "3.1.5",
+          "xunit.v3": "3.2.2"
         },
         "imports": [
           "net461",
@@ -33172,19 +33241,23 @@
         "dependencies": {
           "CommunityToolkit.Maui": {
             "target": "Package",
-            "version": "[14.2.0, )"
+            "version": "[14.2.0, )",
+            "versionCentrallyManaged": true
           },
           "CommunityToolkit.Mvvm": {
             "target": "Package",
-            "version": "[8.4.2, )"
+            "version": "[8.4.2, )",
+            "versionCentrallyManaged": true
           },
           "Microsoft.Extensions.Logging.Debug": {
             "target": "Package",
-            "version": "[10.0.9, )"
+            "version": "[10.0.9, )",
+            "versionCentrallyManaged": true
           },
           "Microsoft.Maui.Controls": {
             "target": "Package",
-            "version": "[10.0.71, )"
+            "version": "[10.0.71, )",
+            "versionCentrallyManaged": true
           },
           "Microsoft.NET.ILLink.Tasks": {
             "suppressParent": "All",
@@ -33192,6 +33265,36 @@
             "version": "[10.0.9, )",
             "autoReferenced": true
           }
+        },
+        "centralPackageVersions": {
+          "AutoBogus": "2.13.1",
+          "AutoBogus.Conventions": "2.13.1",
+          "AutoBogus.NSubstitute": "2.13.1",
+          "AutoBogus.Templating": "2.13.1",
+          "Bogus": "35.6.5",
+          "CommunityToolkit.Maui": "14.2.0",
+          "CommunityToolkit.Mvvm": "8.4.2",
+          "coverlet.collector": "10.0.1",
+          "DynamicData": "9.4.31",
+          "FluentAssertions": "[7.0.0]",
+          "Meziantou.Extensions.Logging.Xunit.v3": "2.0.1",
+          "Microsoft.Extensions.Configuration": "10.0.9",
+          "Microsoft.Extensions.Configuration.Abstractions": "10.0.9",
+          "Microsoft.Extensions.DependencyInjection": "10.0.9",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9",
+          "Microsoft.Extensions.Logging": "10.0.9",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.9",
+          "Microsoft.Extensions.Logging.Debug": "10.0.9",
+          "Microsoft.Extensions.Options": "10.0.9",
+          "Microsoft.Maui.Controls": "10.0.71",
+          "Microsoft.NET.Test.Sdk": "18.5.1",
+          "NSubstitute": "5.3.0",
+          "Polly": "8.6.6",
+          "Riok.Mapperly": "5.0.0-next.1",
+          "Testcontainers": "4.12.0",
+          "Ulid": "1.4.1",
+          "xunit.runner.visualstudio": "3.1.5",
+          "xunit.v3": "3.2.2"
         },
         "imports": [
           "xamarinios10",
@@ -33498,20 +33601,54 @@
         "dependencies": {
           "CommunityToolkit.Maui": {
             "target": "Package",
-            "version": "[14.2.0, )"
+            "version": "[14.2.0, )",
+            "versionCentrallyManaged": true
           },
           "CommunityToolkit.Mvvm": {
             "target": "Package",
-            "version": "[8.4.2, )"
+            "version": "[8.4.2, )",
+            "versionCentrallyManaged": true
           },
           "Microsoft.Extensions.Logging.Debug": {
             "target": "Package",
-            "version": "[10.0.9, )"
+            "version": "[10.0.9, )",
+            "versionCentrallyManaged": true
           },
           "Microsoft.Maui.Controls": {
             "target": "Package",
-            "version": "[10.0.71, )"
+            "version": "[10.0.71, )",
+            "versionCentrallyManaged": true
           }
+        },
+        "centralPackageVersions": {
+          "AutoBogus": "2.13.1",
+          "AutoBogus.Conventions": "2.13.1",
+          "AutoBogus.NSubstitute": "2.13.1",
+          "AutoBogus.Templating": "2.13.1",
+          "Bogus": "35.6.5",
+          "CommunityToolkit.Maui": "14.2.0",
+          "CommunityToolkit.Mvvm": "8.4.2",
+          "coverlet.collector": "10.0.1",
+          "DynamicData": "9.4.31",
+          "FluentAssertions": "[7.0.0]",
+          "Meziantou.Extensions.Logging.Xunit.v3": "2.0.1",
+          "Microsoft.Extensions.Configuration": "10.0.9",
+          "Microsoft.Extensions.Configuration.Abstractions": "10.0.9",
+          "Microsoft.Extensions.DependencyInjection": "10.0.9",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9",
+          "Microsoft.Extensions.Logging": "10.0.9",
+          "Microsoft.Extensions.Logging.Abstractions": "10.0.9",
+          "Microsoft.Extensions.Logging.Debug": "10.0.9",
+          "Microsoft.Extensions.Options": "10.0.9",
+          "Microsoft.Maui.Controls": "10.0.71",
+          "Microsoft.NET.Test.Sdk": "18.5.1",
+          "NSubstitute": "5.3.0",
+          "Polly": "8.6.6",
+          "Riok.Mapperly": "5.0.0-next.1",
+          "Testcontainers": "4.12.0",
+          "Ulid": "1.4.1",
+          "xunit.runner.visualstudio": "3.1.5",
+          "xunit.v3": "3.2.2"
         },
         "imports": [
           "net461",
