@@ -65,6 +65,7 @@ public partial class MainPage : ContentPage
 
         ContentView p = this.FindByName<ContentView>("ConnectPopupOverlay");
         p.Content = connectPopup;
+        connectPopup.CloseRequested += (_, _) => ConnectPopupOverlay.IsVisible = false;
         mainContent = this.FindByName<ContentView>("MainContent");
         mainContent.Content = flightDataView;
     }

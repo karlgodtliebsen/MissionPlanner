@@ -68,7 +68,7 @@
 
             <Button x:Name="MenuConnect"
                     Grid.Column="8"
-                    ImageSource="Resources/Images/disconnect.png" 
+                    ImageSource="{Binding IsConnectedImage}"
                     Text="Connect" 
                     ContentLayout="Top,5"
                     TextTransform="Uppercase"
@@ -83,37 +83,34 @@
         <!-- Bottom status bar (mirrors Controls.Status) -->
         <Grid x:Name="StatusBar"
               Grid.Row="2"
-              ColumnDefinitions="Auto,Auto,Auto,Auto"
+              ColumnDefinitions="Auto,Auto,Auto,Auto,Auto"
               Padding="4"
+              ColumnSpacing="10"
               BackgroundColor="#2d2d30">
 
             <Label 
                    Grid.Column="0"
-                   Margin="10,0,0,0"
                    Text="{Binding Path=SelectedPort}"
                    VerticalOptions="Center" />
 
             <Label 
                    Grid.Column="1"
-                   Margin="10,0,0,0"
                    Text="{Binding Path=SelectedBaudRate}"
                    VerticalOptions="Center" />
 
             <Label 
                    Grid.Column="2"
-                   Margin="10,0,0,0"
                    Text="{Binding Path=SelectedConnectionType}"
                    VerticalOptions="Center" />
             <Label 
                 Grid.Column="3"
-                Margin="10,0,0,0"
                 IsVisible="{Binding Path=IsConnected}"
                 Text="Connected"
                 VerticalOptions="Center" />
 
             <ProgressBar x:Name="StatusProgress"
-                         Margin="50,0,0,0"
-                         Grid.Column="4"
+                        
+                         Grid.Column="5"
                          WidthRequest="150"
                          Progress="0"
                          VerticalOptions="Center" />

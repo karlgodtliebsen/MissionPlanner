@@ -22,6 +22,14 @@ public partial class ConnectPopupViewModel : ObservableObject
 
     [ObservableProperty] private bool isConnected;
 
+
+    [ObservableProperty] private string? isConnectedImage = ConnectImage;
+
+
+    private const string? ConnectImage = "Resources/Images/light_disconnect_icon.png";
+    private const string? DisConnectImage = "Resources/Images/light_connect_icon.png";
+
+
     /// <summary>
     /// Initializes a new instance of the <see cref="ConnectPopupViewModel"/> class.
     /// </summary>
@@ -61,6 +69,7 @@ public partial class ConnectPopupViewModel : ObservableObject
                     break;
                 case nameof(ApplicationStateService.IsConnected):
                     IsConnected = stateService.IsConnected;
+                    IsConnectedImage = IsConnected ? DisConnectImage : ConnectImage;
                     break;
             }
         };
@@ -94,10 +103,5 @@ public partial class ConnectPopupViewModel : ObservableObject
         IsConnected = !IsConnected;
         //// Update shared state - this will propagate to all subscribers including MainPageViewModel
         //stateService?.IsConnected = IsConnected;
-    }
-
-    [RelayCommand]
-    private void Close()
-    {
     }
 }

@@ -1,7 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
-using Microsoft.Extensions.Options;
-
 using MissionPlanner.Configuration;
 
 namespace MissionPlanner.Views;
@@ -12,6 +10,14 @@ public partial class MainPageViewModel : ObservableObject
     [ObservableProperty] private string? selectedPort;
     [ObservableProperty] private string? selectedBaudRate;
     [ObservableProperty] private bool isConnected = false;
+
+    //[ObservableProperty] private readonly string? isConnectedImage = "Resources/Images/light_connect_icon.png"; //disconnect
+    [ObservableProperty] private string? isConnectedImage = NotConnectedImage;
+
+
+    private const string? ConnectedImage = "Resources/Images/light_disconnect_icon.png";
+    private const string? NotConnectedImage = "Resources/Images/light_connect_icon.png";
+
 
     /// <summary>
     /// Data for the connect popup, such as available connection types, ports, and baud rates.
@@ -48,6 +54,7 @@ public partial class MainPageViewModel : ObservableObject
                     break;
                 case nameof(ApplicationStateService.IsConnected):
                     IsConnected = stateService.IsConnected;
+                    IsConnectedImage = IsConnected ? ConnectedImage : NotConnectedImage;
                     break;
             }
         };

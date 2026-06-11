@@ -100,6 +100,11 @@
             Represents the connect popup view.
             </summary>
         </member>
+        <member name="E:MissionPlanner.Views.Connect.ConnectPopup.CloseRequested">
+            <summary>
+            Raised when the user requests the popup be closed.
+            </summary>
+        </member>
         <member name="M:MissionPlanner.Views.Connect.ConnectPopup.#ctor(MissionPlanner.Views.Connect.ConnectPopupViewModel)">
             <summary>
             Initializes a new instance of the <see cref="T:MissionPlanner.Views.Connect.ConnectPopup"/> class with the specified view model.
@@ -107,7 +112,6 @@
             <param name="model">The view model for the connect popup.</param>
         </member>
         <member name="T:MissionPlanner.Views.Connect.ConnectPopupViewModel">
-            <inheritdoc/>
             <inheritdoc/>
             <inheritdoc/>
         </member>
@@ -138,17 +142,14 @@
         <member name="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.IsConnected">
             <inheritdoc cref="F:MissionPlanner.Views.Connect.ConnectPopupViewModel.isConnected"/>
         </member>
+        <member name="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.IsConnectedImage">
+            <inheritdoc cref="F:MissionPlanner.Views.Connect.ConnectPopupViewModel.isConnectedImage"/>
+        </member>
         <member name="F:MissionPlanner.Views.Connect.ConnectPopupViewModel.connectCommand">
             <summary>The backing field for <see cref="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.ConnectCommand"/>.</summary>
         </member>
         <member name="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.ConnectCommand">
             <summary>Gets an <see cref="T:CommunityToolkit.Mvvm.Input.IRelayCommand"/> instance wrapping <see cref="M:MissionPlanner.Views.Connect.ConnectPopupViewModel.Connect"/>.</summary>
-        </member>
-        <member name="F:MissionPlanner.Views.Connect.ConnectPopupViewModel.closeCommand">
-            <summary>The backing field for <see cref="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.CloseCommand"/>.</summary>
-        </member>
-        <member name="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.CloseCommand">
-            <summary>Gets an <see cref="T:CommunityToolkit.Mvvm.Input.IRelayCommand"/> instance wrapping <see cref="M:MissionPlanner.Views.Connect.ConnectPopupViewModel.Close"/>.</summary>
         </member>
         <member name="T:MissionPlanner.Views.MainPageViewModel">
             <inheritdoc/>
@@ -175,6 +176,9 @@
         </member>
         <member name="P:MissionPlanner.Views.MainPageViewModel.IsConnected">
             <inheritdoc cref="F:MissionPlanner.Views.MainPageViewModel.isConnected"/>
+        </member>
+        <member name="P:MissionPlanner.Views.MainPageViewModel.IsConnectedImage">
+            <inheritdoc cref="F:MissionPlanner.Views.MainPageViewModel.isConnectedImage"/>
         </member>
         <member name="T:MissionPlanner.Configuration.ApplicationConfigurator">
             <summary>
@@ -440,6 +444,9 @@
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.IsConnected">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "IsConnected" generated properties.</summary>
         </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.IsConnectedImage">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "IsConnectedImage" generated properties.</summary>
+        </member>
         <member name="T:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs">
             <summary>
             A helper type providing cached, reusable <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instances
@@ -457,6 +464,9 @@
         </member>
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.IsConnected">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "IsConnected" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.IsConnectedImage">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "IsConnectedImage" generated properties.</summary>
         </member>
     </members>
 </doc>
