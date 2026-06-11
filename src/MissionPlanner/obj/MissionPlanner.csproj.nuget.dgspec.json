@@ -86,6 +86,36 @@
               "version": "[8.4.2, )",
               "versionCentrallyManaged": true
             },
+            "Microsoft.Extensions.Configuration": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.Abstractions": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.Binder": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.CommandLine": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.FileExtensions": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
             "Microsoft.Extensions.Logging.Debug": {
               "target": "Package",
               "version": "[10.0.9, )",
@@ -117,6 +147,10 @@
             "Meziantou.Extensions.Logging.Xunit.v3": "2.0.1",
             "Microsoft.Extensions.Configuration": "10.0.9",
             "Microsoft.Extensions.Configuration.Abstractions": "10.0.9",
+            "Microsoft.Extensions.Configuration.Binder": "10.0.9",
+            "Microsoft.Extensions.Configuration.CommandLine": "10.0.9",
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": "10.0.9",
+            "Microsoft.Extensions.Configuration.FileExtensions": "10.0.9",
             "Microsoft.Extensions.DependencyInjection": "10.0.9",
             "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9",
             "Microsoft.Extensions.Logging": "10.0.9",
@@ -445,6 +479,36 @@
               "version": "[8.4.2, )",
               "versionCentrallyManaged": true
             },
+            "Microsoft.Extensions.Configuration": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.Abstractions": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.Binder": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.CommandLine": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.FileExtensions": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
             "Microsoft.Extensions.Logging.Debug": {
               "target": "Package",
               "version": "[10.0.9, )",
@@ -476,6 +540,10 @@
             "Meziantou.Extensions.Logging.Xunit.v3": "2.0.1",
             "Microsoft.Extensions.Configuration": "10.0.9",
             "Microsoft.Extensions.Configuration.Abstractions": "10.0.9",
+            "Microsoft.Extensions.Configuration.Binder": "10.0.9",
+            "Microsoft.Extensions.Configuration.CommandLine": "10.0.9",
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": "10.0.9",
+            "Microsoft.Extensions.Configuration.FileExtensions": "10.0.9",
             "Microsoft.Extensions.DependencyInjection": "10.0.9",
             "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9",
             "Microsoft.Extensions.Logging": "10.0.9",
@@ -804,6 +872,36 @@
               "version": "[8.4.2, )",
               "versionCentrallyManaged": true
             },
+            "Microsoft.Extensions.Configuration": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.Abstractions": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.Binder": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.CommandLine": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.FileExtensions": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
             "Microsoft.Extensions.Logging.Debug": {
               "target": "Package",
               "version": "[10.0.9, )",
@@ -835,6 +933,10 @@
             "Meziantou.Extensions.Logging.Xunit.v3": "2.0.1",
             "Microsoft.Extensions.Configuration": "10.0.9",
             "Microsoft.Extensions.Configuration.Abstractions": "10.0.9",
+            "Microsoft.Extensions.Configuration.Binder": "10.0.9",
+            "Microsoft.Extensions.Configuration.CommandLine": "10.0.9",
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": "10.0.9",
+            "Microsoft.Extensions.Configuration.FileExtensions": "10.0.9",
             "Microsoft.Extensions.DependencyInjection": "10.0.9",
             "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9",
             "Microsoft.Extensions.Logging": "10.0.9",
@@ -1164,6 +1266,36 @@
               "version": "[8.4.2, )",
               "versionCentrallyManaged": true
             },
+            "Microsoft.Extensions.Configuration": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.Abstractions": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.Binder": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.CommandLine": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
+            "Microsoft.Extensions.Configuration.FileExtensions": {
+              "target": "Package",
+              "version": "[10.0.9, )",
+              "versionCentrallyManaged": true
+            },
             "Microsoft.Extensions.Logging.Debug": {
               "target": "Package",
               "version": "[10.0.9, )",
@@ -1189,6 +1321,10 @@
             "Meziantou.Extensions.Logging.Xunit.v3": "2.0.1",
             "Microsoft.Extensions.Configuration": "10.0.9",
             "Microsoft.Extensions.Configuration.Abstractions": "10.0.9",
+            "Microsoft.Extensions.Configuration.Binder": "10.0.9",
+            "Microsoft.Extensions.Configuration.CommandLine": "10.0.9",
+            "Microsoft.Extensions.Configuration.EnvironmentVariables": "10.0.9",
+            "Microsoft.Extensions.Configuration.FileExtensions": "10.0.9",
             "Microsoft.Extensions.DependencyInjection": "10.0.9",
             "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.9",
             "Microsoft.Extensions.Logging": "10.0.9",

@@ -1,14 +1,21 @@
 namespace MissionPlanner.Views.Connect;
 
+/// <summary>
+/// Represents the connect popup view.
+/// </summary>
 public partial class ConnectPopup : ContentView
 {
-    public ConnectPopup()
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ConnectPopup"/> class with the specified view model.
+    /// </summary>
+    /// <param name="model">The view model for the connect popup.</param>
+    public ConnectPopup(ConnectPopupViewModel model)
     {
         InitializeComponent();
-        BindingContext = new ConnectPopupViewModel();
+        BindingContext = model;
 
-        var tap = new TapGestureRecognizer();
-        tap.Tapped += (_, _) => IsVisible = false;
-        GestureRecognizers.Add(tap);
+        //TapGestureRecognizer tap = new();
+        //tap.Tapped += (_, _) => IsVisible = false;
+        //GestureRecognizers.Add(tap);
     }
 }

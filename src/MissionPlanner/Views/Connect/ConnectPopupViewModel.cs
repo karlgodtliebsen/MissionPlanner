@@ -1,10 +1,17 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
+using Microsoft.Extensions.Options;
+
+using MissionPlanner.Configuration;
+
 namespace MissionPlanner.Views.Connect;
 
 public partial class ConnectPopupViewModel : ObservableObject
 {
+    private readonly IOptions<ApplicationState> applicationState;
+    private readonly IOptions<ApplicationOptions> applicationOptions;
+
     [ObservableProperty] private string? selectedConnectionType;
 
     [ObservableProperty] private string? selectedPort;
@@ -13,46 +20,35 @@ public partial class ConnectPopupViewModel : ObservableObject
 
     [ObservableProperty] private bool isConnected;
 
-    public List<string> ConnectionTypes { get; } =
-    [
-        "Serial",
-        "TCP",
-        "UDP",
-        "UDP Client"
-    ];
-
-    public List<string> Ports { get; } =
-    [
-        "COM1",
-        "COM2",
-        "COM3",
-        "AUTO"
-    ];
-
-    public List<string> BaudRates { get; } =
-    [
-        "4800",
-        "9600",
-        "19200",
-        "38400",
-        "57600",
-        "115200",
-        "230400",
-        "460800",
-        "921600"
-    ];
+    /// <summary>
+    /// Data for the connect popup, such as available connection types, ports, and baud rates.
+    /// </summary>
+    public ApplicationOptions Options { get; set; }
 
     public ConnectPopupViewModel()
     {
-        SelectedConnectionType = ConnectionTypes[0];
-        SelectedPort = Ports[^1];
+        SelectedConnectionType = "Serial";
+        SelectedPort = "AUTO";
         SelectedBaudRate = "115200";
     }
+
+    public ConnectPopupViewModel(IOptions<ApplicationState> applicationState, IOptions<ApplicationOptions> applicationOptions) : this()
+    {
+        this.applicationState = applicationState;
+        this.applicationOptions = applicationOptions;
+        Options = applicationOptions.Value;
+
+        SelectedConnectionType = applicationState.Value.SelectedConnectionType;
+        SelectedPort = applicationState.Value.SelectedPort;
+        SelectedBaudRate = applicationState.Value.SelectedBaudRate;
+    }
+
 
     [RelayCommand]
     private void Connect()
     {
         // TODO: wire up to the comms/connection layer
         IsConnected = !IsConnected;
+        applicationState.Value.IsConnected = IsConnected;
     }
 }

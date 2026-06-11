@@ -63,7 +63,7 @@
 
             <Button x:Name="MenuConnect"
                     Grid.Column="8"
-                    ImageSource="Resources/Images/connect.png" 
+                    ImageSource="Resources/Images/disconnect.png" 
                     Text="Connect" 
                     ContentLayout="Top,5"
                     TextTransform="Uppercase"
@@ -94,11 +94,15 @@
         </Grid>
 
         <!-- Connect popup overlay -->
-        <connect:ConnectPopup x:Name="ConnectPopupOverlay"
+        <!--<connect:ConnectPopup x:Name="ConnectPopupOverlay"
                              Grid.Row="0"
                              Grid.RowSpan="3"
-                             IsVisible="False" />
-
+                             IsVisible="False" />-->
+        <ContentView  x:Name="ConnectPopupOverlay"
+                      Grid.Row="0"
+                      Grid.RowSpan="3"
+                      IsVisible="False"
+        />
     </Grid>
 
 </ContentPage>

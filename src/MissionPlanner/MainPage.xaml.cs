@@ -1,10 +1,28 @@
+using MissionPlanner.Views.Connect;
+
 namespace MissionPlanner;
 
+/// <summary>
+/// Represents the main page of the application.
+/// </summary>
 public partial class MainPage : ContentPage
 {
+    private readonly ConnectPopup _connectPopup;
+
     public MainPage()
     {
         InitializeComponent();
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MainPage"/> class with the specified connect popup.
+    /// </summary>
+    /// <param name="connectPopup">The connect popup.</param>
+    public MainPage(ConnectPopup connectPopup) : this()
+    {
+        ContentView p = this.FindByName<ContentView>("ConnectPopupOverlay");
+        p.Content = connectPopup;
+        _connectPopup = connectPopup;
     }
 
     private void MenuFlightData_Clicked(object? sender, EventArgs e)

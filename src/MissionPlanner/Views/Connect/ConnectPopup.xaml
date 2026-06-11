@@ -14,7 +14,7 @@
             HorizontalOptions="Center"
             VerticalOptions="Center">
 
-        <VerticalStackLayout Spacing="12">
+        <VerticalStackLayout Spacing="12" >
 
             <Label Text="Connect"
                    FontSize="18"
@@ -22,15 +22,15 @@
                    TextColor="White" />
 
             <Picker Title="Connection type"
-                    ItemsSource="{Binding ConnectionTypes}"
+                    ItemsSource="{Binding Options.ConnectionTypes}"
                     SelectedItem="{Binding SelectedConnectionType}" />
 
             <Picker Title="Port"
-                    ItemsSource="{Binding Ports}"
+                    ItemsSource="{Binding Options.Ports}"
                     SelectedItem="{Binding SelectedPort}" />
 
             <Picker Title="Baud rate"
-                    ItemsSource="{Binding BaudRates}"
+                    ItemsSource="{Binding Options.BaudRates}"
                     SelectedItem="{Binding SelectedBaudRate}" />
 
             <ImageButton Source="light_connect_icon.png"

@@ -2,13 +2,25 @@
 
 using Microsoft.Extensions.Logging;
 
+using MissionPlanner.Configuration;
+
 namespace MissionPlanner;
 
+/// <summary>
+/// 
+/// </summary>
 public static class MauiProgram
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public static MauiApp CreateMauiApp()
     {
         MauiAppBuilder builder = MauiApp.CreateBuilder();
+        IServiceCollection services = builder.Services;
+        ApplicationConfigurator.AddApplicationConfiguration(services, builder.Configuration);
+
         builder
             .UseMauiApp<App>()
             .UseMauiCommunityToolkit()

@@ -321,3 +321,9 @@ C:\Projects\MissionPlanner\src\MissionPlanner\obj\Debug\net10.0-maccatalyst\macc
 C:\Projects\MissionPlanner\src\MissionPlanner\obj\Debug\net10.0-maccatalyst\maccatalyst-x64\MissionPlanner.genruntimeconfig.cache
 C:\Projects\MissionPlanner\src\MissionPlanner\obj\Debug\net10.0-maccatalyst\maccatalyst-x64\ref\MissionPlanner.dll
 C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-maccatalyst\maccatalyst-x64\.xml
+C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-maccatalyst\maccatalyst-x64\Microsoft.Extensions.Configuration.Binder.dll
+C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-maccatalyst\maccatalyst-x64\Microsoft.Extensions.Configuration.CommandLine.dll
+C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-maccatalyst\maccatalyst-x64\Microsoft.Extensions.Configuration.EnvironmentVariables.dll
+C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-maccatalyst\maccatalyst-x64\Microsoft.Extensions.Configuration.FileExtensions.dll
+C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-maccatalyst\maccatalyst-x64\Microsoft.Extensions.FileProviders.Physical.dll
+C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-maccatalyst\maccatalyst-x64\Microsoft.Extensions.FileSystemGlobbing.dll

@@ -65,14 +65,32 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Maui"  />
-		<PackageReference Include="CommunityToolkit.Mvvm"  />
-		<PackageReference Include="Microsoft.Maui.Controls"  />
-		<PackageReference Include="Microsoft.Extensions.Logging.Debug"  />
+	  <AndroidResource Remove="Configuration\**" />
+	  <Compile Remove="Configuration\**" />
+	  <EmbeddedResource Remove="Configuration\**" />
+	  <MauiCss Remove="Configuration\**" />
+	  <MauiXaml Remove="Configuration\**" />
+	  <None Remove="Configuration\**" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Configuration\" />
+	  <Compile Include="Configuration\ApplicationConfigurator.cs" />
+	  <Compile Include="Configuration\ApplicationOptions.cs" />
+	  <Compile Include="Configuration\ApplicationState.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.Maui" />
+		<PackageReference Include="CommunityToolkit.Mvvm" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" />
+		<PackageReference Include="Microsoft.Maui.Controls" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+
 	</ItemGroup>
 
 </Project>

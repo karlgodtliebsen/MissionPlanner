@@ -4,9 +4,75 @@
         <name>MissionPlanner</name>
     </assembly>
     <members>
+        <member name="T:MissionPlanner.App">
+            <summary>
+            Represents the main application.
+            </summary>
+        </member>
+        <member name="M:MissionPlanner.App.#ctor(MissionPlanner.AppShell)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MissionPlanner.App"/> class.
+            </summary>
+            <param name="shell">The application shell.</param>
+        </member>
+        <member name="M:MissionPlanner.App.CreateWindow(Microsoft.Maui.IActivationState)">
+            <summary>
+            Creates the main window for the application.
+            </summary>
+            <param name="activationState">The activation state.</param>
+            <returns>The main window.</returns>
+        </member>
+        <member name="T:MissionPlanner.AppShell">
+            <summary>
+            Represents the main application shell.
+            </summary>
+        </member>
+        <member name="M:MissionPlanner.AppShell.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:MissionPlanner.AppShell"/> class.
+            </summary>
+        </member>
+        <member name="T:MissionPlanner.MainPage">
+            <summary>
+            Represents the main page of the application.
+            </summary>
+        </member>
+        <member name="M:MissionPlanner.MainPage.#ctor(MissionPlanner.Views.Connect.ConnectPopup)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MissionPlanner.MainPage"/> class with the specified connect popup.
+            </summary>
+            <param name="connectPopup">The connect popup.</param>
+        </member>
+        <member name="T:MissionPlanner.MauiProgram">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="M:MissionPlanner.MauiProgram.CreateMauiApp">
+            <summary>
+            
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:MissionPlanner.Views.Connect.ConnectPopup">
+            <summary>
+            Represents the connect popup view.
+            </summary>
+        </member>
+        <member name="M:MissionPlanner.Views.Connect.ConnectPopup.#ctor(MissionPlanner.Views.Connect.ConnectPopupViewModel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:MissionPlanner.Views.Connect.ConnectPopup"/> class with the specified view model.
+            </summary>
+            <param name="model">The view model for the connect popup.</param>
+        </member>
         <member name="T:MissionPlanner.Views.Connect.ConnectPopupViewModel">
             <inheritdoc/>
             <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.Options">
+            <summary>
+            Data for the connect popup, such as available connection types, ports, and baud rates.
+            </summary>
         </member>
         <member name="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.SelectedConnectionType">
             <inheritdoc cref="F:MissionPlanner.Views.Connect.ConnectPopupViewModel.selectedConnectionType"/>
@@ -26,10 +92,143 @@
         <member name="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.ConnectCommand">
             <summary>Gets an <see cref="T:CommunityToolkit.Mvvm.Input.IRelayCommand"/> instance wrapping <see cref="M:MissionPlanner.Views.Connect.ConnectPopupViewModel.Connect"/>.</summary>
         </member>
-        <member name="T:MissionPlanner.Resource">
+        <member name="T:MissionPlanner.Configuration.ApplicationConfigurator">
             <summary>
-            Android Resource Designer class.
-            Exposes the Android Resource designer assembly into the project Namespace.
+            Configures the application services and options.
+            </summary>
+        </member>
+        <member name="M:MissionPlanner.Configuration.ApplicationConfigurator.AddApplicationConfiguration(Microsoft.Extensions.DependencyInjection.IServiceCollection,Microsoft.Extensions.Configuration.IConfiguration)">
+            <summary>
+            Adds the application configuration to the service collection.
+            </summary>
+            <param name="services"></param>
+            <param name="configuration">The configuration.</param>
+            <returns>The updated service collection.</returns>
+        </member>
+        <member name="T:MissionPlanner.Configuration.ApplicationOptions">
+            <summary>
+            Represents the configuration options for the application.
+            </summary>
+        </member>
+        <member name="P:MissionPlanner.Configuration.ApplicationOptions.SectionName">
+            <summary>
+            Gets or sets the name of the configuration section for the application.
+            </summary>
+        </member>
+        <member name="P:MissionPlanner.Configuration.ApplicationOptions.ConnectionTypes">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:MissionPlanner.Configuration.ApplicationOptions.Ports">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:MissionPlanner.Configuration.ApplicationOptions.BaudRates">
+            <summary>
+            
+            </summary>
+        </member>
+        <member name="P:MissionPlanner.Configuration.ApplicationOptions.Port">
+            <summary>
+            Gets or sets the configured port for the application.
+            </summary>
+        </member>
+        <member name="P:MissionPlanner.Configuration.ApplicationOptions.BaudRate">
+            <summary>
+            Gets or sets the configured baud rate for the application.
+            </summary>
+        </member>
+        <member name="P:MissionPlanner.Configuration.ApplicationOptions.ConnectionType">
+            <summary>
+            Gets or sets the configured connection type for the application.
+            </summary>
+        </member>
+        <member name="P:MissionPlanner.Configuration.ApplicationOptions.Template">
+            <summary>
+            Gets the template for the application configuration.
+            </summary>
+        </member>
+        <member name="T:MissionPlanner.Configuration.ApplicationState">
+            <summary>
+            Represents the state of the application.
+            </summary>
+        </member>
+        <member name="P:MissionPlanner.Configuration.ApplicationState.IsConnected">
+            <summary>
+            Gets or sets a value indicating whether the application is connected.
+            </summary>
+        </member>
+        <member name="P:MissionPlanner.Configuration.ApplicationState.SelectedPort">
+            <summary>
+            Gets or sets the selected port for the application.
+            </summary>
+        </member>
+        <member name="P:MissionPlanner.Configuration.ApplicationState.SelectedBaudRate">
+            <summary>
+            Gets or sets the selected baud rate for the application.
+            </summary>
+        </member>
+        <member name="P:MissionPlanner.Configuration.ApplicationState.SelectedConnectionType">
+            <summary>
+            Gets or sets the selected connection type for the application.
+            </summary>
+        </member>
+        <member name="T:MissionPlanner.MissionPlanner_XamlTypeInfo.XamlMetaDataProvider">
+            <summary>
+            Main class for providing metadata for the app or library
+            </summary>
+        </member>
+        <member name="M:MissionPlanner.MissionPlanner_XamlTypeInfo.XamlMetaDataProvider.GetXamlType(System.Type)">
+            <summary>
+            GetXamlType(Type)
+            </summary>
+        </member>
+        <member name="M:MissionPlanner.MissionPlanner_XamlTypeInfo.XamlMetaDataProvider.GetXamlType(System.String)">
+            <summary>
+            GetXamlType(String)
+            </summary>
+        </member>
+        <member name="M:MissionPlanner.MissionPlanner_XamlTypeInfo.XamlMetaDataProvider.GetXmlnsDefinitions">
+            <summary>
+            GetXmlnsDefinitions()
+            </summary>
+        </member>
+        <member name="T:MissionPlanner_ng.WinUI.App">
+            <summary>
+            Provides application-specific behavior to supplement the default Application class.
+            </summary>
+        </member>
+        <member name="M:MissionPlanner_ng.WinUI.App.#ctor">
+            <summary>
+            Initializes the singleton application object.  This is the first line of authored code
+            executed, and as such is the logical equivalent of main() or WinMain().
+            </summary>
+        </member>
+        <member name="M:MissionPlanner_ng.WinUI.App.InitializeComponent">
+            <summary>
+            InitializeComponent()
+            </summary>
+        </member>
+        <member name="M:MissionPlanner_ng.WinUI.App.GetXamlType(System.Type)">
+            <summary>
+            GetXamlType(Type)
+            </summary>
+        </member>
+        <member name="M:MissionPlanner_ng.WinUI.App.GetXamlType(System.String)">
+            <summary>
+            GetXamlType(String)
+            </summary>
+        </member>
+        <member name="M:MissionPlanner_ng.WinUI.App.GetXmlnsDefinitions">
+            <summary>
+            GetXmlnsDefinitions()
+            </summary>
+        </member>
+        <member name="T:MissionPlanner_ng.WinUI.Program">
+            <summary>
+            Program class
             </summary>
         </member>
         <member name="M:Microsoft.Maui.Controls.ColorAnimationExtensions_Button.TextColorTo(Microsoft.Maui.Controls.Button,Microsoft.Maui.Graphics.Color,System.UInt32,System.UInt32,Microsoft.Maui.Easing,System.Threading.CancellationToken)">
