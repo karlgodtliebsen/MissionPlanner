@@ -1,12 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "TPvQxMZkgts=",
+  "dgSpecHash": "9OYlQoF5NKQ=",
   "success": true,
   "projectFilePath": "C:\\Projects\\MissionPlanner\\src\\MissionPlanner\\MissionPlanner.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\karlgodtliebsen\\.nuget\\packages\\communitytoolkit.maui\\14.2.0\\communitytoolkit.maui.14.2.0.nupkg.sha512",
     "C:\\Users\\karlgodtliebsen\\.nuget\\packages\\communitytoolkit.maui.core\\14.2.0\\communitytoolkit.maui.core.14.2.0.nupkg.sha512",
-    "C:\\Users\\karlgodtliebsen\\.nuget\\packages\\communitytoolkit.mvvm\\8.4.0\\communitytoolkit.mvvm.8.4.0.nupkg.sha512",
+    "C:\\Users\\karlgodtliebsen\\.nuget\\packages\\communitytoolkit.mvvm\\8.4.2\\communitytoolkit.mvvm.8.4.2.nupkg.sha512",
     "C:\\Users\\karlgodtliebsen\\.nuget\\packages\\googlegson\\2.13.1.1\\googlegson.2.13.1.1.nupkg.sha512",
     "C:\\Users\\karlgodtliebsen\\.nuget\\packages\\microsoft.extensions.configuration\\10.0.0\\microsoft.extensions.configuration.10.0.0.nupkg.sha512",
     "C:\\Users\\karlgodtliebsen\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\10.0.0\\microsoft.extensions.configuration.abstractions.10.0.0.nupkg.sha512",

@@ -26,60 +26,10 @@
         <member name="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.ConnectCommand">
             <summary>Gets an <see cref="T:CommunityToolkit.Mvvm.Input.IRelayCommand"/> instance wrapping <see cref="M:MissionPlanner.Views.Connect.ConnectPopupViewModel.Connect"/>.</summary>
         </member>
-        <member name="T:MissionPlanner.MissionPlanner_XamlTypeInfo.XamlMetaDataProvider">
+        <member name="T:MissionPlanner.Resource">
             <summary>
-            Main class for providing metadata for the app or library
-            </summary>
-        </member>
-        <member name="M:MissionPlanner.MissionPlanner_XamlTypeInfo.XamlMetaDataProvider.GetXamlType(System.Type)">
-            <summary>
-            GetXamlType(Type)
-            </summary>
-        </member>
-        <member name="M:MissionPlanner.MissionPlanner_XamlTypeInfo.XamlMetaDataProvider.GetXamlType(System.String)">
-            <summary>
-            GetXamlType(String)
-            </summary>
-        </member>
-        <member name="M:MissionPlanner.MissionPlanner_XamlTypeInfo.XamlMetaDataProvider.GetXmlnsDefinitions">
-            <summary>
-            GetXmlnsDefinitions()
-            </summary>
-        </member>
-        <member name="T:MissionPlanner_ng.WinUI.App">
-            <summary>
-            Provides application-specific behavior to supplement the default Application class.
-            </summary>
-        </member>
-        <member name="M:MissionPlanner_ng.WinUI.App.#ctor">
-            <summary>
-            Initializes the singleton application object.  This is the first line of authored code
-            executed, and as such is the logical equivalent of main() or WinMain().
-            </summary>
-        </member>
-        <member name="M:MissionPlanner_ng.WinUI.App.InitializeComponent">
-            <summary>
-            InitializeComponent()
-            </summary>
-        </member>
-        <member name="M:MissionPlanner_ng.WinUI.App.GetXamlType(System.Type)">
-            <summary>
-            GetXamlType(Type)
-            </summary>
-        </member>
-        <member name="M:MissionPlanner_ng.WinUI.App.GetXamlType(System.String)">
-            <summary>
-            GetXamlType(String)
-            </summary>
-        </member>
-        <member name="M:MissionPlanner_ng.WinUI.App.GetXmlnsDefinitions">
-            <summary>
-            GetXmlnsDefinitions()
-            </summary>
-        </member>
-        <member name="T:MissionPlanner_ng.WinUI.Program">
-            <summary>
-            Program class
+            Android Resource Designer class.
+            Exposes the Android Resource designer assembly into the project Namespace.
             </summary>
         </member>
         <member name="M:Microsoft.Maui.Controls.ColorAnimationExtensions_Button.TextColorTo(Microsoft.Maui.Controls.Button,Microsoft.Maui.Graphics.Color,System.UInt32,System.UInt32,Microsoft.Maui.Easing,System.Threading.CancellationToken)">

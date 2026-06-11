@@ -5,7 +5,7 @@
   },
   "projects": {
     "C:\\Projects\\MissionPlanner\\src\\MissionPlanner\\MissionPlanner.csproj": {
-      "version": "1.0.0",
+      "version": "2.0.0",
       "restore": {
         "projectUniqueName": "C:\\Projects\\MissionPlanner\\src\\MissionPlanner\\MissionPlanner.csproj",
         "projectName": "MissionPlanner",
@@ -56,6 +56,9 @@
           }
         },
         "warningProperties": {
+          "noWarn": [
+            "NU1608"
+          ],
           "warnAsError": [
             "NU1605"
           ]
@@ -78,7 +81,7 @@
             },
             "CommunityToolkit.Mvvm": {
               "target": "Package",
-              "version": "[8.4.0, )"
+              "version": "[8.4.2, )"
             },
             "Microsoft.Extensions.Logging.Debug": {
               "target": "Package",
@@ -403,7 +406,7 @@
             },
             "CommunityToolkit.Mvvm": {
               "target": "Package",
-              "version": "[8.4.0, )"
+              "version": "[8.4.2, )"
             },
             "Microsoft.Extensions.Logging.Debug": {
               "target": "Package",
@@ -728,7 +731,7 @@
             },
             "CommunityToolkit.Mvvm": {
               "target": "Package",
-              "version": "[8.4.0, )"
+              "version": "[8.4.2, )"
             },
             "Microsoft.Extensions.Logging.Debug": {
               "target": "Package",
@@ -1054,7 +1057,7 @@
             },
             "CommunityToolkit.Mvvm": {
               "target": "Package",
-              "version": "[8.4.0, )"
+              "version": "[8.4.2, )"
             },
             "Microsoft.Extensions.Logging.Debug": {
               "target": "Package",

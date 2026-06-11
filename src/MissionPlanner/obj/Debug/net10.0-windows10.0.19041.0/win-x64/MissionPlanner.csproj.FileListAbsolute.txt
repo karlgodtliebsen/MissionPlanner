@@ -442,10 +442,6 @@ C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-windows10.0.1904
 C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-windows10.0.19041.0\win-x64\Microsoft.WindowsAppRuntime.Bootstrap.dll
 C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-windows10.0.19041.0\win-x64\Microsoft.Windows.SDK.NET.dll
 C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-windows10.0.19041.0\win-x64\WinRT.Runtime.dll
-C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-windows10.0.19041.0\win-x64\Microsoft.Maui.Controls.HotReload.Forms.dll
-C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-windows10.0.19041.0\win-x64\Microsoft.VisualStudio.DesignTools.MobileTapContracts.dll
-C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-windows10.0.19041.0\win-x64\Microsoft.VisualStudio.DesignTools.TapContract.dll
-C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-windows10.0.19041.0\win-x64\Microsoft.VisualStudio.DesignTools.XamlTapContract.dll
 C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-windows10.0.19041.0\win-x64\Microsoft.Web.WebView2.Core.Projection.dll
 C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-windows10.0.19041.0\win-x64\Microsoft.UI.pri
 C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-windows10.0.19041.0\win-x64\Microsoft.UI.Xaml.Controls.pri
@@ -569,3 +565,4 @@ C:\Projects\MissionPlanner\src\MissionPlanner\obj\Debug\net10.0-windows10.0.1904
 C:\Projects\MissionPlanner\src\MissionPlanner\obj\Debug\net10.0-windows10.0.19041.0\win-x64\qualifiers.txt
 C:\Projects\MissionPlanner\src\MissionPlanner\obj\Debug\net10.0-windows10.0.19041.0\win-x64\qualifiers.txt.intermediate
 C:\Projects\MissionPlanner\src\MissionPlanner\obj\Debug\net10.0-windows10.0.19041.0\win-x64\MultipleQualifiersPerDimensionFound.txt
+C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-windows10.0.19041.0\win-x64\.xml

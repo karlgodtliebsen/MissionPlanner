@@ -263,10 +263,6 @@ C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-ios\iossimulator
 C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-ios\iossimulator-x64\libxamarin-dotnet-nativeaot.a
 C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-ios\iossimulator-x64\libxamarin-dotnet.a
 C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-ios\iossimulator-x64\libxamarin-dotnet.dylib
-C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-ios\iossimulator-x64\Microsoft.Maui.Controls.HotReload.Forms.dll
-C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-ios\iossimulator-x64\Microsoft.VisualStudio.DesignTools.MobileTapContracts.dll
-C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-ios\iossimulator-x64\Microsoft.VisualStudio.DesignTools.TapContract.dll
-C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-ios\iossimulator-x64\Microsoft.VisualStudio.DesignTools.XamlTapContract.dll
 C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-ios\iossimulator-x64\Microsoft.Maui.resources.zip
 C:\Projects\MissionPlanner\src\MissionPlanner\obj\Debug\net10.0-ios\iossimulator-x64\MissionPlanner.csproj.AssemblyReference.cache
 C:\Projects\MissionPlanner\src\MissionPlanner\obj\Debug\net10.0-ios\iossimulator-x64\partialappmanifest\_PartialAppManifests.items
@@ -335,3 +331,4 @@ C:\Projects\MissionPlanner\src\MissionPlanner\obj\Debug\net10.0-ios\iossimulator
 C:\Projects\MissionPlanner\src\MissionPlanner\obj\Debug\net10.0-ios\iossimulator-x64\MissionPlanner.pdb
 C:\Projects\MissionPlanner\src\MissionPlanner\obj\Debug\net10.0-ios\iossimulator-x64\MissionPlanner.genruntimeconfig.cache
 C:\Projects\MissionPlanner\src\MissionPlanner\obj\Debug\net10.0-ios\iossimulator-x64\ref\MissionPlanner.dll
+C:\Projects\MissionPlanner\src\MissionPlanner\bin\Debug\net10.0-ios\iossimulator-x64\.xml
