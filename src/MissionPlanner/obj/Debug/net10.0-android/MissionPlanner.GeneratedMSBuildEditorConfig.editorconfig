@@ -94,21 +94,71 @@ build_metadata.AdditionalFiles.NoWarn =
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
 
-[C:/Projects/MissionPlanner/src/MissionPlanner/Views/MenuConfigTuning/MenuConfigTuningView.xaml]
+[C:/Projects/MissionPlanner/src/MissionPlanner/Views/FlightData/FlightDataView.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
-build_metadata.AdditionalFiles.ManifestResourceName = MissionPlanner.Views.MenuConfigTuning.MenuConfigTuningView.xaml
-build_metadata.AdditionalFiles.TargetPath = Views\MenuConfigTuning\MenuConfigTuningView.xaml
-build_metadata.AdditionalFiles.RelativePath = Views\MenuConfigTuning\MenuConfigTuningView.xaml
+build_metadata.AdditionalFiles.ManifestResourceName = MissionPlanner.Views.FlightData.FlightDataView.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\FlightData\FlightDataView.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\FlightData\FlightDataView.xaml
 build_metadata.AdditionalFiles.Inflator = SourceGen
 build_metadata.AdditionalFiles.NoWarn = 
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
 
-[C:/Projects/MissionPlanner/src/MissionPlanner/Views/MenuFlightData/MenuFlightDataView.xaml]
+[C:/Projects/MissionPlanner/src/MissionPlanner/Views/FlightData/Hud/HudView.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
-build_metadata.AdditionalFiles.ManifestResourceName = MissionPlanner.Views.MenuFlightData.MenuFlightDataView.xaml
-build_metadata.AdditionalFiles.TargetPath = Views\MenuFlightData\MenuFlightDataView.xaml
-build_metadata.AdditionalFiles.RelativePath = Views\MenuFlightData\MenuFlightDataView.xaml
+build_metadata.AdditionalFiles.ManifestResourceName = MissionPlanner.Views.FlightData.Hud.HudView.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\FlightData\Hud\HudView.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\FlightData\Hud\HudView.xaml
+build_metadata.AdditionalFiles.Inflator = SourceGen
+build_metadata.AdditionalFiles.NoWarn = 
+build_metadata.AdditionalFiles.EnableDiagnostics = 
+build_metadata.AdditionalFiles.LineInfo = 
+
+[C:/Projects/MissionPlanner/src/MissionPlanner/Views/FlightData/Map/FlightDataMapView.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = MissionPlanner.Views.FlightData.Map.FlightDataMapView.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\FlightData\Map\FlightDataMapView.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\FlightData\Map\FlightDataMapView.xaml
+build_metadata.AdditionalFiles.Inflator = SourceGen
+build_metadata.AdditionalFiles.NoWarn = 
+build_metadata.AdditionalFiles.EnableDiagnostics = 
+build_metadata.AdditionalFiles.LineInfo = 
+
+[C:/Projects/MissionPlanner/src/MissionPlanner/Views/FlightData/Tabs/ActionsTabView.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = MissionPlanner.Views.FlightData.Tabs.ActionsTabView.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\FlightData\Tabs\ActionsTabView.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\FlightData\Tabs\ActionsTabView.xaml
+build_metadata.AdditionalFiles.Inflator = SourceGen
+build_metadata.AdditionalFiles.NoWarn = 
+build_metadata.AdditionalFiles.EnableDiagnostics = 
+build_metadata.AdditionalFiles.LineInfo = 
+
+[C:/Projects/MissionPlanner/src/MissionPlanner/Views/FlightData/Tabs/QuickTabView.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = MissionPlanner.Views.FlightData.Tabs.QuickTabView.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\FlightData\Tabs\QuickTabView.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\FlightData\Tabs\QuickTabView.xaml
+build_metadata.AdditionalFiles.Inflator = SourceGen
+build_metadata.AdditionalFiles.NoWarn = 
+build_metadata.AdditionalFiles.EnableDiagnostics = 
+build_metadata.AdditionalFiles.LineInfo = 
+
+[C:/Projects/MissionPlanner/src/MissionPlanner/Views/FlightData/Tabs/StatusTabView.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = MissionPlanner.Views.FlightData.Tabs.StatusTabView.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\FlightData\Tabs\StatusTabView.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\FlightData\Tabs\StatusTabView.xaml
+build_metadata.AdditionalFiles.Inflator = SourceGen
+build_metadata.AdditionalFiles.NoWarn = 
+build_metadata.AdditionalFiles.EnableDiagnostics = 
+build_metadata.AdditionalFiles.LineInfo = 
+
+[C:/Projects/MissionPlanner/src/MissionPlanner/Views/MenuConfigTuning/MenuConfigTuningView.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = MissionPlanner.Views.MenuConfigTuning.MenuConfigTuningView.xaml
+build_metadata.AdditionalFiles.TargetPath = Views\MenuConfigTuning\MenuConfigTuningView.xaml
+build_metadata.AdditionalFiles.RelativePath = Views\MenuConfigTuning\MenuConfigTuningView.xaml
 build_metadata.AdditionalFiles.Inflator = SourceGen
 build_metadata.AdditionalFiles.NoWarn = 
 build_metadata.AdditionalFiles.EnableDiagnostics = 

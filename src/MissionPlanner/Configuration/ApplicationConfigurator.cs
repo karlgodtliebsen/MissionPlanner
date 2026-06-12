@@ -3,14 +3,23 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 using MissionPlanner.Views.Connect;
+using MissionPlanner.Views.FlightData.Hud;
+using MissionPlanner.Views.FlightData.Map;
+using MissionPlanner.Views.FlightData.Tabs;
 using MissionPlanner.Views.MenuConfigTuning;
-using MissionPlanner.Views.MenuFlightData;
 using MissionPlanner.Views.MenuFlightPlanner;
 using MissionPlanner.Views.MenuHelp;
 using MissionPlanner.Views.MenuInitSetup;
 using MissionPlanner.Views.MenuSimulation;
 
+using ActionsTabView = MissionPlanner.Views.FlightData.Tabs.ActionsTabView;
+using FlightDataMapView = MissionPlanner.Views.FlightData.Map.FlightDataMapView;
+using FlightDataView = MissionPlanner.Views.FlightData.FlightDataView;
+using FlightDataViewModel = MissionPlanner.Views.FlightData.FlightDataViewModel;
+using HudView = MissionPlanner.Views.FlightData.Hud.HudView;
 using MainPageViewModel = MissionPlanner.Views.MainPageViewModel;
+using QuickTabView = MissionPlanner.Views.FlightData.Tabs.QuickTabView;
+using StatusTabView = MissionPlanner.Views.FlightData.Tabs.StatusTabView;
 
 namespace MissionPlanner.Configuration;
 
@@ -58,7 +67,7 @@ public static class ApplicationConfigurator
         });
 
         // Register shared state service as singleton for runtime state management
-        var stateService = new ApplicationStateService();
+        ApplicationStateService stateService = new();
         stateService.Initialize(state);
         services.AddSingleton(stateService);
 
@@ -81,8 +90,23 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<ConnectPopupViewModel>();
 
         //SubView/Controls
-        services.TryAddSingleton<MenuFlightDataViewModel>();
-        services.TryAddSingleton<MenuFlightDataView>();
+        services.TryAddSingleton<FlightDataViewModel>();
+        services.TryAddSingleton<FlightDataView>();
+
+        services.TryAddSingleton<HudViewModel>();
+        services.TryAddSingleton<HudView>();
+
+        services.TryAddSingleton<FlightDataMapViewModel>();
+        services.TryAddSingleton<FlightDataMapView>();
+
+        services.TryAddSingleton<QuickTabViewModel>();
+        services.TryAddSingleton<QuickTabView>();
+
+        services.TryAddSingleton<ActionsTabViewModel>();
+        services.TryAddSingleton<ActionsTabView>();
+
+        services.TryAddSingleton<StatusTabViewModel>();
+        services.TryAddSingleton<StatusTabView>();
 
         services.TryAddSingleton<MenuFlightPlannerViewModel>();
         services.TryAddSingleton<MenuFlightPlannerView>();

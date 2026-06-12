@@ -1,11 +1,12 @@
 using MissionPlanner.Views;
 using MissionPlanner.Views.Connect;
 using MissionPlanner.Views.MenuConfigTuning;
-using MissionPlanner.Views.MenuFlightData;
 using MissionPlanner.Views.MenuFlightPlanner;
 using MissionPlanner.Views.MenuHelp;
 using MissionPlanner.Views.MenuInitSetup;
 using MissionPlanner.Views.MenuSimulation;
+
+using FlightDataView = MissionPlanner.Views.FlightData.FlightDataView;
 
 namespace MissionPlanner;
 
@@ -15,7 +16,7 @@ namespace MissionPlanner;
 public partial class MainPage : ContentPage
 {
     private readonly MainPageViewModel mainViewModel;
-    private readonly MenuFlightDataView flightDataView;
+    private readonly FlightDataView flightDataView;
     private readonly MenuFlightPlannerView flightPlannerView;
     private readonly MenuInitSetupView menuInitSetupView;
     private readonly MenuConfigTuningView menuConfigTuningView;
@@ -45,7 +46,7 @@ public partial class MainPage : ContentPage
     /// <param name="connectPopup">The connect popup.</param>
     public MainPage(
         MainPageViewModel mainViewModel,
-        MenuFlightDataView flightDataView,
+        FlightDataView flightDataView,
         MenuFlightPlannerView flightPlannerView,
         MenuInitSetupView menuInitSetupView,
         MenuConfigTuningView menuConfigTuningView,

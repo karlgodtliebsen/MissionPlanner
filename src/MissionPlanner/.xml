@@ -42,7 +42,7 @@
             Initializes a new instance of the <see cref="T:MissionPlanner.MainPage"/> class.
             </summary>
         </member>
-        <member name="M:MissionPlanner.MainPage.#ctor(MissionPlanner.Views.MainPageViewModel,MissionPlanner.Views.MenuFlightData.MenuFlightDataView,MissionPlanner.Views.MenuFlightPlanner.MenuFlightPlannerView,MissionPlanner.Views.MenuInitSetup.MenuInitSetupView,MissionPlanner.Views.MenuConfigTuning.MenuConfigTuningView,MissionPlanner.Views.MenuSimulation.MenuSimulationView,MissionPlanner.Views.MenuHelp.MenuHelpView,MissionPlanner.Views.Connect.ConnectPopup)">
+        <member name="M:MissionPlanner.MainPage.#ctor(MissionPlanner.Views.MainPageViewModel,MissionPlanner.Views.FlightData.FlightDataView,MissionPlanner.Views.MenuFlightPlanner.MenuFlightPlannerView,MissionPlanner.Views.MenuInitSetup.MenuInitSetupView,MissionPlanner.Views.MenuConfigTuning.MenuConfigTuningView,MissionPlanner.Views.MenuSimulation.MenuSimulationView,MissionPlanner.Views.MenuHelp.MenuHelpView,MissionPlanner.Views.Connect.ConnectPopup)">
             <summary>
             Initializes a new instance of the <see cref="T:MissionPlanner.MainPage"/> class with the specified connect popup.
             </summary>
@@ -150,6 +150,15 @@
         </member>
         <member name="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.ConnectCommand">
             <summary>Gets an <see cref="T:CommunityToolkit.Mvvm.Input.IRelayCommand"/> instance wrapping <see cref="M:MissionPlanner.Views.Connect.ConnectPopupViewModel.Connect"/>.</summary>
+        </member>
+        <member name="T:MissionPlanner.Views.FlightData.FlightDataViewModel">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.FlightData.FlightDataViewModel.SelectedMapStyle">
+            <inheritdoc/>
+        </member>
+        <member name="M:MissionPlanner.Views.FlightData.FlightDataViewModel.#ctor">
+            <inheritdoc />
         </member>
         <member name="T:MissionPlanner.Views.MainPageViewModel">
             <inheritdoc/>
@@ -447,6 +456,9 @@
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.IsConnectedImage">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "IsConnectedImage" generated properties.</summary>
         </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.SelectedMapStyle">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "SelectedMapStyle" generated properties.</summary>
+        </member>
         <member name="T:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs">
             <summary>
             A helper type providing cached, reusable <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instances
@@ -467,6 +479,9 @@
         </member>
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.IsConnectedImage">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "IsConnectedImage" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.SelectedMapStyle">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "SelectedMapStyle" generated properties.</summary>
         </member>
     </members>
 </doc>

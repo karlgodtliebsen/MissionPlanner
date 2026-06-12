@@ -94,4 +94,13 @@
 
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Compile Update="Views\FlightData\Map\FlightDataMapView.xaml.cs">
+	    <DependentUpon>FlightDataMapView.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Views\FlightData\FlightDataView.xaml.cs">
+	    <DependentUpon>FlightDataView.xaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
 </Project>
