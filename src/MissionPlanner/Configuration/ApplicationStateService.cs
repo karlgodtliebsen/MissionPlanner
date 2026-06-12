@@ -7,10 +7,10 @@ namespace MissionPlanner.Configuration;
 /// </summary>
 public partial class ApplicationStateService : ObservableObject
 {
-    [ObservableProperty] private bool isConnected;
-    [ObservableProperty] private string selectedPort = "AUTO";
-    [ObservableProperty] private string selectedBaudRate = "115200";
-    [ObservableProperty] private string selectedConnectionType = "Serial";
+    [ObservableProperty] public partial bool IsConnected { get; set; }
+    [ObservableProperty] public partial string SelectedPort { get; set; } = "AUTO";
+    [ObservableProperty] public partial string SelectedBaudRate { get; set; } = "115200";
+    [ObservableProperty] public partial string SelectedConnectionType { get; set; } = "Serial";
 
     /// <summary>
     /// Initializes the service with values from ApplicationState.

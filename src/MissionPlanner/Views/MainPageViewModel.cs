@@ -6,17 +6,20 @@ namespace MissionPlanner.Views;
 
 public partial class MainPageViewModel : ObservableObject
 {
-    [ObservableProperty] private string? selectedConnectionType;
-    [ObservableProperty] private string? selectedPort;
-    [ObservableProperty] private string? selectedBaudRate;
-    [ObservableProperty] private bool isConnected = false;
+    [ObservableProperty] public partial string? SelectedConnectionType { get; set; }
+    [ObservableProperty] public partial string? SelectedPort { get; set; }
+    [ObservableProperty] public partial string? SelectedBaudRate { get; set; }
+    [ObservableProperty] public partial bool IsConnected { get; set; }
 
-    //[ObservableProperty] private readonly string? isConnectedImage = "Resources/Images/light_connect_icon.png"; //disconnect
-    [ObservableProperty] private string? isConnectedImage = NotConnectedImage;
+    [ObservableProperty] public partial string? IsConnectedImage { get; set; } = NotConnectedImage;
+    [ObservableProperty] public partial string? IsConnectedText { get; set; } = NotConnectedText;
 
 
     private const string? ConnectedImage = "Resources/Images/light_disconnect_icon.png";
     private const string? NotConnectedImage = "Resources/Images/light_connect_icon.png";
+
+    private const string? ConnectedText = "Connected";
+    private const string? NotConnectedText = "Connect";
 
 
     /// <summary>
@@ -55,6 +58,7 @@ public partial class MainPageViewModel : ObservableObject
                 case nameof(ApplicationStateService.IsConnected):
                     IsConnected = stateService.IsConnected;
                     IsConnectedImage = IsConnected ? ConnectedImage : NotConnectedImage;
+                    IsConnectedText = IsConnected ? ConnectedText : NotConnectedText;
                     break;
             }
         };

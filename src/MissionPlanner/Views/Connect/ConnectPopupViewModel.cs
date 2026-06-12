@@ -14,16 +14,16 @@ public partial class ConnectPopupViewModel : ObservableObject
     public ApplicationOptions Options { get; } = null!;
     private readonly ApplicationStateService? stateService;
 
-    [ObservableProperty] private string? selectedConnectionType;
+    [ObservableProperty] public partial string? SelectedConnectionType { get; set; }
 
-    [ObservableProperty] private string? selectedPort;
+    [ObservableProperty] public partial string? SelectedPort { get; set; }
 
-    [ObservableProperty] private string? selectedBaudRate;
+    [ObservableProperty] public partial string? SelectedBaudRate { get; set; }
 
-    [ObservableProperty] private bool isConnected;
+    [ObservableProperty] public partial bool IsConnected { get; set; }
 
 
-    [ObservableProperty] private string? isConnectedImage = ConnectImage;
+    [ObservableProperty] public partial string? IsConnectedImage { get; set; } = ConnectImage;
 
 
     private const string? ConnectImage = "Resources/Images/light_disconnect_icon.png";

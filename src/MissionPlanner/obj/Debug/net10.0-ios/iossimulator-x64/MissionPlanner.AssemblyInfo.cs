@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Ardupilot")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("2.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("2.0+611712696a07c7370ec3c7f3ff0d7ba74d4c3ade")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("2.0+804c276aaaee004cac33dd70616497a7a04c90c2")]
 [assembly: System.Reflection.AssemblyProductAttribute("MissionPlanner")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MissionPlanner")]
 [assembly: System.Reflection.AssemblyVersionAttribute("2.0.0.0")]

@@ -15,16 +15,16 @@ namespace MissionPlanner;
 /// </summary>
 public partial class MainPage : ContentPage
 {
-    private readonly MainPageViewModel mainViewModel;
-    private readonly FlightDataView flightDataView;
-    private readonly MenuFlightPlannerView flightPlannerView;
-    private readonly MenuInitSetupView menuInitSetupView;
-    private readonly MenuConfigTuningView menuConfigTuningView;
-    private readonly MenuSimulationView menuSimulationView;
-    private readonly MenuHelpView helpView;
-    private readonly ConnectPopup connectPopup;
-    private Button? selectedTab;
-    private readonly ContentView mainContent;
+    private readonly MainPageViewModel mainViewModel = null!;
+    private readonly FlightDataView flightDataView = null!;
+    private readonly MenuFlightPlannerView flightPlannerView = null!;
+    private readonly MenuInitSetupView menuInitSetupView = null!;
+    private readonly MenuConfigTuningView menuConfigTuningView = null!;
+    private readonly MenuSimulationView menuSimulationView = null!;
+    private readonly MenuHelpView helpView = null!;
+    private readonly ConnectPopup connectPopup = null!;
+    private Button? selectedTab = null!;
+    private readonly ContentView mainContent = null!;
 
     private static readonly Color SelectedTabColor = Color.FromArgb("#3e3e42");
     private static readonly Color SelectedTabBorderColor = Colors.DodgerBlue;

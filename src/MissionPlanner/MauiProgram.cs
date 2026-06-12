@@ -4,6 +4,8 @@ using Microsoft.Extensions.Logging;
 
 using MissionPlanner.Configuration;
 
+using SkiaSharp.Views.Maui.Controls.Hosting;
+
 namespace MissionPlanner;
 
 /// <summary>
@@ -24,6 +26,7 @@ public static class MauiProgram
         builder
             .UseMauiApp<App>()
             .UseMauiCommunityToolkit()
+            .UseSkiaSharp()
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

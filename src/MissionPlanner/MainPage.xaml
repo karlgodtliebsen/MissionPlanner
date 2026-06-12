@@ -69,7 +69,7 @@
             <Button x:Name="MenuConnect"
                     Grid.Column="8"
                     ImageSource="{Binding IsConnectedImage}"
-                    Text="Connect" 
+                    Text="{Binding IsConnectedText}" 
                     ContentLayout="Top,5"
                     TextTransform="Uppercase"
                     Clicked="MenuConnect_Clicked" />

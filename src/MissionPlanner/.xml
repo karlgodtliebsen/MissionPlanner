@@ -32,6 +32,26 @@
             Initializes a new instance of the <see cref="T:MissionPlanner.AppShell"/> class.
             </summary>
         </member>
+        <member name="T:MissionPlanner.Controls.GridSplitter">
+            <summary>
+            A vertical grid splitter control for resizing grid columns in .NET MAUI.
+            </summary>
+        </member>
+        <member name="P:MissionPlanner.Controls.GridSplitter.SplitterThickness">
+            <summary>
+            Gets or sets the thickness of the splitter. Default is 4.
+            </summary>
+        </member>
+        <member name="P:MissionPlanner.Controls.GridSplitter.SplitterColor">
+            <summary>
+            Gets or sets the color of the splitter. Default is DarkGray.
+            </summary>
+        </member>
+        <member name="P:MissionPlanner.Controls.GridSplitter.HoverColor">
+            <summary>
+            Gets or sets the hover color of the splitter. Default is Gray.
+            </summary>
+        </member>
         <member name="T:MissionPlanner.MainPage">
             <summary>
             Represents the main page of the application.
@@ -115,6 +135,21 @@
             <inheritdoc/>
             <inheritdoc/>
         </member>
+        <member name="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.SelectedConnectionType">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.SelectedPort">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.SelectedBaudRate">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.IsConnected">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.IsConnectedImage">
+            <inheritdoc/>
+        </member>
         <member name="M:MissionPlanner.Views.Connect.ConnectPopupViewModel.#ctor">
             <summary>
             Initializes a new instance of the <see cref="T:MissionPlanner.Views.Connect.ConnectPopupViewModel"/> class.
@@ -129,21 +164,6 @@
         </member>
         <member name="M:MissionPlanner.Views.Connect.ConnectPopupViewModel.OnPropertyChanged(System.ComponentModel.PropertyChangedEventArgs)">
             <inheritdoc />
-        </member>
-        <member name="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.SelectedConnectionType">
-            <inheritdoc cref="F:MissionPlanner.Views.Connect.ConnectPopupViewModel.selectedConnectionType"/>
-        </member>
-        <member name="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.SelectedPort">
-            <inheritdoc cref="F:MissionPlanner.Views.Connect.ConnectPopupViewModel.selectedPort"/>
-        </member>
-        <member name="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.SelectedBaudRate">
-            <inheritdoc cref="F:MissionPlanner.Views.Connect.ConnectPopupViewModel.selectedBaudRate"/>
-        </member>
-        <member name="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.IsConnected">
-            <inheritdoc cref="F:MissionPlanner.Views.Connect.ConnectPopupViewModel.isConnected"/>
-        </member>
-        <member name="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.IsConnectedImage">
-            <inheritdoc cref="F:MissionPlanner.Views.Connect.ConnectPopupViewModel.isConnectedImage"/>
         </member>
         <member name="F:MissionPlanner.Views.Connect.ConnectPopupViewModel.connectCommand">
             <summary>The backing field for <see cref="P:MissionPlanner.Views.Connect.ConnectPopupViewModel.ConnectCommand"/>.</summary>
@@ -160,7 +180,77 @@
         <member name="M:MissionPlanner.Views.FlightData.FlightDataViewModel.#ctor">
             <inheritdoc />
         </member>
+        <member name="T:MissionPlanner.Views.FlightData.Hud.HudPainter">
+            <summary>
+            Draws the attitude/heading HUD onto an <see cref="T:SkiaSharp.SKCanvas"/>.
+            Kept separate from <see cref="T:MissionPlanner.Views.FlightData.Hud.HudView"/> so the drawing logic can be reused
+            (e.g. for snapshots, other Skia hosts, or unit testing).
+            </summary>
+        </member>
+        <member name="T:MissionPlanner.Views.FlightData.Hud.HudViewModel">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.FlightData.Hud.HudViewModel.Pitch">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.FlightData.Hud.HudViewModel.Roll">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.FlightData.Hud.HudViewModel.Heading">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.FlightData.Hud.HudViewModel.AirSpeed">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.FlightData.Hud.HudViewModel.GroundSpeed">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.FlightData.Hud.HudViewModel.Altitude">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.FlightData.Hud.HudViewModel.VerticalSpeed">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.FlightData.Hud.HudViewModel.BatteryVoltage">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.FlightData.Hud.HudViewModel.BatteryRemaining">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.FlightData.Hud.HudViewModel.GpsSatellites">
+            <inheritdoc/>
+        </member>
+        <member name="T:MissionPlanner.Views.FlightData.Map.FlightDataMapViewModel">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.FlightData.Map.FlightDataMapViewModel.VehicleLatitude">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.FlightData.Map.FlightDataMapViewModel.VehicleLongitude">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.FlightData.Map.FlightDataMapViewModel.VehicleHeading">
+            <inheritdoc/>
+        </member>
         <member name="T:MissionPlanner.Views.MainPageViewModel">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.MainPageViewModel.SelectedConnectionType">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.MainPageViewModel.SelectedPort">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.MainPageViewModel.SelectedBaudRate">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.MainPageViewModel.IsConnected">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.MainPageViewModel.IsConnectedImage">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Views.MainPageViewModel.IsConnectedText">
             <inheritdoc/>
         </member>
         <member name="M:MissionPlanner.Views.MainPageViewModel.#ctor">
@@ -173,21 +263,6 @@
             Initializes a new instance of the <see cref="T:MissionPlanner.Views.MainPageViewModel"/> class with the specified application state.
             </summary>
             <param name="stateService"></param>
-        </member>
-        <member name="P:MissionPlanner.Views.MainPageViewModel.SelectedConnectionType">
-            <inheritdoc cref="F:MissionPlanner.Views.MainPageViewModel.selectedConnectionType"/>
-        </member>
-        <member name="P:MissionPlanner.Views.MainPageViewModel.SelectedPort">
-            <inheritdoc cref="F:MissionPlanner.Views.MainPageViewModel.selectedPort"/>
-        </member>
-        <member name="P:MissionPlanner.Views.MainPageViewModel.SelectedBaudRate">
-            <inheritdoc cref="F:MissionPlanner.Views.MainPageViewModel.selectedBaudRate"/>
-        </member>
-        <member name="P:MissionPlanner.Views.MainPageViewModel.IsConnected">
-            <inheritdoc cref="F:MissionPlanner.Views.MainPageViewModel.isConnected"/>
-        </member>
-        <member name="P:MissionPlanner.Views.MainPageViewModel.IsConnectedImage">
-            <inheritdoc cref="F:MissionPlanner.Views.MainPageViewModel.isConnectedImage"/>
         </member>
         <member name="T:MissionPlanner.Configuration.ApplicationConfigurator">
             <summary>
@@ -278,22 +353,22 @@
             </summary>
             <inheritdoc/>
         </member>
+        <member name="P:MissionPlanner.Configuration.ApplicationStateService.IsConnected">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Configuration.ApplicationStateService.SelectedPort">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Configuration.ApplicationStateService.SelectedBaudRate">
+            <inheritdoc/>
+        </member>
+        <member name="P:MissionPlanner.Configuration.ApplicationStateService.SelectedConnectionType">
+            <inheritdoc/>
+        </member>
         <member name="M:MissionPlanner.Configuration.ApplicationStateService.Initialize(MissionPlanner.Configuration.ApplicationState)">
             <summary>
             Initializes the service with values from ApplicationState.
             </summary>
-        </member>
-        <member name="P:MissionPlanner.Configuration.ApplicationStateService.IsConnected">
-            <inheritdoc cref="F:MissionPlanner.Configuration.ApplicationStateService.isConnected"/>
-        </member>
-        <member name="P:MissionPlanner.Configuration.ApplicationStateService.SelectedPort">
-            <inheritdoc cref="F:MissionPlanner.Configuration.ApplicationStateService.selectedPort"/>
-        </member>
-        <member name="P:MissionPlanner.Configuration.ApplicationStateService.SelectedBaudRate">
-            <inheritdoc cref="F:MissionPlanner.Configuration.ApplicationStateService.selectedBaudRate"/>
-        </member>
-        <member name="P:MissionPlanner.Configuration.ApplicationStateService.SelectedConnectionType">
-            <inheritdoc cref="F:MissionPlanner.Configuration.ApplicationStateService.selectedConnectionType"/>
         </member>
         <member name="T:MissionPlanner.MissionPlanner_XamlTypeInfo.XamlMetaDataProvider">
             <summary>
@@ -459,6 +534,48 @@
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.SelectedMapStyle">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "SelectedMapStyle" generated properties.</summary>
         </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.Pitch">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "Pitch" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.Roll">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "Roll" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.Heading">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "Heading" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.AirSpeed">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "AirSpeed" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.GroundSpeed">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "GroundSpeed" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.Altitude">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "Altitude" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.VerticalSpeed">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "VerticalSpeed" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.BatteryVoltage">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "BatteryVoltage" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.BatteryRemaining">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "BatteryRemaining" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.GpsSatellites">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "GpsSatellites" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.VehicleLatitude">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "VehicleLatitude" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.VehicleLongitude">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "VehicleLongitude" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.VehicleHeading">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "VehicleHeading" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangingArgs.IsConnectedText">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangingEventArgs"/> instance for all "IsConnectedText" generated properties.</summary>
+        </member>
         <member name="T:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs">
             <summary>
             A helper type providing cached, reusable <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instances
@@ -482,6 +599,48 @@
         </member>
         <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.SelectedMapStyle">
             <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "SelectedMapStyle" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.Pitch">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "Pitch" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.Roll">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "Roll" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.Heading">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "Heading" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.AirSpeed">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "AirSpeed" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.GroundSpeed">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "GroundSpeed" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.Altitude">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "Altitude" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.VerticalSpeed">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "VerticalSpeed" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.BatteryVoltage">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "BatteryVoltage" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.BatteryRemaining">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "BatteryRemaining" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.GpsSatellites">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "GpsSatellites" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.VehicleLatitude">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "VehicleLatitude" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.VehicleLongitude">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "VehicleLongitude" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.VehicleHeading">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "VehicleHeading" generated properties.</summary>
+        </member>
+        <member name="F:CommunityToolkit.Mvvm.ComponentModel.__Internals.__KnownINotifyPropertyChangedArgs.IsConnectedText">
+            <summary>The cached <see cref="T:System.ComponentModel.PropertyChangedEventArgs"/> instance for all "IsConnectedText" generated properties.</summary>
         </member>
     </members>
 </doc>
