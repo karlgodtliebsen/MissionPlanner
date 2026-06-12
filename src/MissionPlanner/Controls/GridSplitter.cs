@@ -29,10 +29,28 @@ public class GridSplitter : ContentView
     /// </summary>
     public Color HoverColor { get; set; } = Colors.Gray;
 
+    private readonly BoxView? _boxView;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GridSplitter"/> class.
+    /// </summary>
     public GridSplitter()
     {
-        BackgroundColor = SplitterColor;
         WidthRequest = SplitterThickness;
+
+        // Create a BoxView as content to make the control hit-testable
+        // ContentView with only BackgroundColor won't receive touch/gesture events
+        _boxView = new BoxView
+        {
+            Color = SplitterColor,
+            WidthRequest = SplitterThickness,
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill
+        };
+        Content = _boxView;
+
+        // Ensure the control can receive input
+        InputTransparent = false;
 
         PanGestureRecognizer panGesture = new();
         panGesture.PanUpdated += OnPanUpdated;
@@ -45,7 +63,7 @@ public class GridSplitter : ContentView
 
 #if WINDOWS
         // Set Windows cursor for resize
-        HandlerChanged += OnHandlerChanged;
+        // HandlerChanged += OnHandlerChanged;
 #endif
     }
 
@@ -85,14 +103,15 @@ public class GridSplitter : ContentView
 
     private void OnPointerEntered(object? sender, PointerEventArgs e)
     {
-        BackgroundColor = HoverColor;
+        _boxView?.Color = HoverColor;
     }
 
     private void OnPointerExited(object? sender, PointerEventArgs e)
     {
-        BackgroundColor = SplitterColor;
+        _boxView?.Color = SplitterColor;
     }
 
+    /// <inheritdoc/>
     protected override void OnParentSet()
     {
         base.OnParentSet();
@@ -107,7 +126,7 @@ public class GridSplitter : ContentView
         }
 
         parentGrid = grid;
-        var columnIndex = GetColumn(this);
+        int columnIndex = GetColumn(this);
 
         // Ensure we have valid left and right columns
         if (columnIndex > 0 && columnIndex + 1 < grid.ColumnDefinitions.Count)
@@ -119,8 +138,11 @@ public class GridSplitter : ContentView
 
     private void OnPanUpdated(object? sender, PanUpdatedEventArgs e)
     {
+        System.Diagnostics.Debug.WriteLine($"GridSplitter PanUpdated: Status={e.StatusType}, TotalX={e.TotalX}");
+
         if (leftColumn == null || rightColumn == null || parentGrid == null)
         {
+            System.Diagnostics.Debug.WriteLine("GridSplitter: columns not initialized");
             return;
         }
 
@@ -132,12 +154,16 @@ public class GridSplitter : ContentView
                 // Get actual rendered widths from the parent grid
                 leftColumnStartWidth = GetActualColumnWidth(leftColumn, parentGrid.ColumnDefinitions.IndexOf(leftColumn));
                 rightColumnStartWidth = GetActualColumnWidth(rightColumn, parentGrid.ColumnDefinitions.IndexOf(rightColumn));
+
+                System.Diagnostics.Debug.WriteLine($"GridSplitter Started: Left={leftColumnStartWidth}, Right={rightColumnStartWidth}");
                 break;
 
             case GestureStatus.Running:
-                var delta = e.TotalX;
-                var newLeftWidth = leftColumnStartWidth + delta;
-                var newRightWidth = rightColumnStartWidth - delta;
+                double delta = e.TotalX;
+                double newLeftWidth = leftColumnStartWidth + delta;
+                double newRightWidth = rightColumnStartWidth - delta;
+
+                System.Diagnostics.Debug.WriteLine($"GridSplitter Running: Delta={delta}, NewLeft={newLeftWidth}, NewRight={newRightWidth}");
 
                 // Enforce minimum widths
                 const double minWidth = 100;
@@ -145,14 +171,73 @@ public class GridSplitter : ContentView
                 {
                     leftColumn.Width = new GridLength(newLeftWidth, GridUnitType.Absolute);
                     rightColumn.Width = new GridLength(newRightWidth, GridUnitType.Absolute);
+
+                    // Force the grid to re-layout immediately
+                    ForceGridLayout();
                 }
 
                 break;
 
             case GestureStatus.Completed:
+                System.Diagnostics.Debug.WriteLine("GridSplitter Completed");
+                // Final layout update to ensure everything is settled
+                ForceGridLayout();
+                break;
+
             case GestureStatus.Canceled:
+                System.Diagnostics.Debug.WriteLine("GridSplitter Canceled");
                 break;
         }
+    }
+
+    /// <summary>
+    /// Forces the parent grid to re-layout its children.
+    /// </summary>
+    private void ForceGridLayout()
+    {
+        if (parentGrid == null)
+            return;
+
+        // In .NET MAUI, we need to force a layout update
+        // Using Dispatcher ensures this runs on the UI thread and triggers a visual update
+
+        Dispatcher.Dispatch(() =>
+        {
+            // Invalidate the grid's measure - this forces re-measurement
+            parentGrid.InvalidateMeasure();
+
+            // Also invalidate all direct children to ensure they re-layout with new column widths
+            foreach (var child in parentGrid.Children)
+            {
+                if (child is IView view)
+                {
+                    view.InvalidateMeasure();
+                }
+            }
+
+            // Request a layout pass - this is more aggressive and ensures visual update
+            if (parentGrid.Handler?.PlatformView != null)
+            {
+#if WINDOWS
+                if (parentGrid.Handler.PlatformView is Microsoft.UI.Xaml.FrameworkElement element)
+                {
+                    element.InvalidateMeasure();
+                    element.InvalidateArrange();
+                }
+#elif ANDROID
+                if (parentGrid.Handler.PlatformView is Android.Views.View androidView)
+                {
+                    androidView.RequestLayout();
+                }
+#elif IOS || MACCATALYST
+                if (parentGrid.Handler.PlatformView is UIKit.UIView iosView)
+                {
+                    iosView.SetNeedsLayout();
+                    iosView.LayoutIfNeeded();
+                }
+#endif
+            }
+        });
     }
 
     private double GetActualColumnWidth(ColumnDefinition column, int columnIndex)
@@ -170,7 +255,7 @@ public class GridSplitter : ContentView
             {
                 if (child is BindableObject bindable)
                 {
-                    var childColumn = GetColumn(bindable);
+                    int childColumn = GetColumn(bindable);
                     if (childColumn == columnIndex && child is View viewElement && viewElement.Width > 0)
                     {
                         return viewElement.Width;
@@ -185,8 +270,8 @@ public class GridSplitter : ContentView
             // For star sizing, calculate proportional width
             if (column.Width.IsStar)
             {
-                var totalStars = parentGrid.ColumnDefinitions.Sum(c => c.Width.IsStar ? c.Width.Value : 0);
-                var availableWidth = parentGrid.Width;
+                double totalStars = parentGrid.ColumnDefinitions.Sum(c => c.Width.IsStar ? c.Width.Value : 0);
+                double availableWidth = parentGrid.Width;
 
                 // Subtract absolute widths
                 foreach (var col in parentGrid.ColumnDefinitions)

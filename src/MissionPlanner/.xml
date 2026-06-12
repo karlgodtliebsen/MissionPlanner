@@ -52,6 +52,19 @@
             Gets or sets the hover color of the splitter. Default is Gray.
             </summary>
         </member>
+        <member name="M:MissionPlanner.Controls.GridSplitter.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:MissionPlanner.Controls.GridSplitter"/> class.
+            </summary>
+        </member>
+        <member name="M:MissionPlanner.Controls.GridSplitter.OnParentSet">
+            <inheritdoc/>
+        </member>
+        <member name="M:MissionPlanner.Controls.GridSplitter.ForceGridLayout">
+            <summary>
+            Forces the parent grid to re-layout its children.
+            </summary>
+        </member>
         <member name="T:MissionPlanner.MainPage">
             <summary>
             Represents the main page of the application.

@@ -19,7 +19,7 @@
 
     <!--<Setter Property="BorderWidth" Value="0,0,0,3" />-->
 
-    <Grid ColumnDefinitions="Auto,Auto,*" ColumnSpacing="0">
+    <Grid ColumnDefinitions="Auto,5,*" ColumnSpacing="0">
 
         <!-- Left column: HUD + action tabs -->
         <Grid Grid.Column="0" RowDefinitions="2*,Auto,3*" RowSpacing="4">
