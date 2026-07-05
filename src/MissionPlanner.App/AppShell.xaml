@@ -9,25 +9,17 @@
     xmlns:controls="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
     xmlns:controls1="clr-namespace:Plainer.Maui.Controls;assembly=Plainer.Maui"
     xmlns:appViewModels="clr-namespace:MissionPlanner.App.AppViewModels"
-    xmlns:dashboard="clr-namespace:MissionPlanner.App.Views.Dashboard"
     xmlns:flightData="clr-namespace:MissionPlanner.App.Views.FlightData"
-    xmlns:menuFlightPlanner="clr-namespace:MissionPlanner.App.Views.MenuFlightPlanner"
-    xmlns:menuInitSetup="clr-namespace:MissionPlanner.App.Views.MenuInitSetup"
-    xmlns:menuConfigTuning="clr-namespace:MissionPlanner.App.Views.MenuConfigTuning"
-    xmlns:menuSimulation="clr-namespace:MissionPlanner.App.Views.MenuSimulation"
-    xmlns:menuHelp="clr-namespace:MissionPlanner.App.Views.MenuHelp"
-
+    xmlns:flightPlanner="clr-namespace:MissionPlanner.App.Views.FlightPlanner"
+    xmlns:initSetup="clr-namespace:MissionPlanner.App.Views.InitSetup"
+    xmlns:configTuning="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
+    xmlns:simulation="clr-namespace:MissionPlanner.App.Views.Simulation"
+    xmlns:help="clr-namespace:MissionPlanner.App.Views.Help"
     Title="MissionPlanner"
     x:Name="thisShell"
     FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
     Shell.FlyoutBehavior="{OnIdiom Desktop=Locked, Default=Flyout}"
-
     >
-
-    <!--<ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />-->
 
     <Shell.Resources>
         <Style TargetType="HorizontalStackLayout" ApplyToDerivedTypes="True" CanCascade="True">
@@ -50,11 +42,9 @@
 
     <Shell.FlyoutHeader>
         <VerticalStackLayout StyleClass="PrimaryContainer" Padding="20">
-            <Label Text="Swarm Ground Control Station" FontSize="Large" HorizontalTextAlignment="Center" Margin="10" />
+            <Label Text="MissionPlanner Next Gen" FontSize="Large" HorizontalTextAlignment="Center" Margin="10" />
             <VerticalStackLayout BindingContext="{uranium:Inject Type={Type appViewModels:ThemeChangeViewModel}}" x:DataType="appViewModels:ThemeChangeViewModel">
-
                 <Label Text="App Theme" HorizontalOptions="Center"/>
-
                 <controls:SelectionView HorizontalOptions="Center"
                  ItemsSource="{Binding AppThemeList}" SelectedItem="{Binding SelectedTheme}" 
                  ColumnNumber="2" ColumnSpacing="-2" Color="{StaticResource Tertiary}" >
@@ -87,38 +77,36 @@
         </Grid>
     </Shell.FlyoutContent>
 
-    <FlyoutItem Title="FlightData">
+    <FlyoutItem Title="Flight Data">
         <ShellContent
-            Title="FlightDataView"
+            Title=""
             ContentTemplate="{DataTemplate flightData:FlightDataView}" Route="FlightData" />
     </FlyoutItem>
-
-
     <FlyoutItem Title="Flight Plan">
         <ShellContent
-            Title="Flight Plan"
-            ContentTemplate="{DataTemplate menuFlightPlanner:MenuFlightPlannerView}" Route="FlightPlanner" />
+            Title=""
+            ContentTemplate="{DataTemplate flightPlanner:FlightPlannerView}" Route="FlightPlanner" />
     </FlyoutItem>
     <FlyoutItem Title="Init Setup">
         <ShellContent
-            Title="Init Setup"
-            ContentTemplate="{DataTemplate menuInitSetup:MenuInitSetupView}" Route="InitSetup" />
+            Title=""
+            ContentTemplate="{DataTemplate initSetup:InitSetupView}" Route="InitSetup" />
     </FlyoutItem>
     <FlyoutItem Title="Config Tuning">
         <ShellContent
-            Title="Config Tuning"
-            ContentTemplate="{DataTemplate menuConfigTuning:MenuConfigTuningView}" Route="ConfigTuning" />
+            Title=""
+            ContentTemplate="{DataTemplate configTuning:MenuConfigTuningView}" Route="ConfigTuning" />
     </FlyoutItem>
     <FlyoutItem Title="Simulation">
         <ShellContent
-            Title="Simulation"
-            ContentTemplate="{DataTemplate menuSimulation:MenuSimulationView}" Route="Simulation" />
+            Title=""
+            ContentTemplate="{DataTemplate simulation:SimulationView}" Route="Simulation" />
     </FlyoutItem>
 
     <FlyoutItem Title="Help">
         <ShellContent
-            Title="Help"
-            ContentTemplate="{DataTemplate menuHelp:MenuHelpView}" Route="Help" />
+            Title=""
+            ContentTemplate="{DataTemplate help:HelpView}" Route="Help" />
     </FlyoutItem>
 
 

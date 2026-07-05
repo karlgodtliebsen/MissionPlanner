@@ -1,5 +1,7 @@
 ﻿using CommunityToolkit.Maui;
 
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.Logging;
 
 using Mopups.Hosting;
@@ -22,18 +24,18 @@ public static class MauiProgramExtensions
     /// <returns>The configured MauiAppBuilder instance.</returns>
     public static MauiAppBuilder UseSharedMauiApp(this MauiAppBuilder builder)
     {
-        //List<IConfigurationSource> configurationSources = [new JsonConfigurationSource { Path = "appsettings.json", Optional = false, ReloadOnChange = true }];
+        List<IConfigurationSource> configurationSources = [new JsonConfigurationSource { Path = "appsettings.json", Optional = false, ReloadOnChange = true }];
 
-        //ConfigurationManager configurationBuilder = builder.Configuration;
+        ConfigurationManager configurationBuilder = builder.Configuration;
 
-        //foreach (IConfigurationSource source in configurationSources)
-        //{
-        //    configurationBuilder.Sources.Add(source);
-        //}
+        foreach (IConfigurationSource source in configurationSources)
+        {
+            configurationBuilder.Sources.Add(source);
+        }
 
-        //builder.Logging.ClearProviders();
-        //builder.Logging.AddConfiguration(configurationBuilder.GetSection("Logging"));
-        //builder.Logging.SetMinimumLevel(LogLevel.Information);
+        builder.Logging.ClearProviders();
+        builder.Logging.AddConfiguration(configurationBuilder.GetSection("Logging"));
+        builder.Logging.SetMinimumLevel(LogLevel.Information);
 
         builder.Logging.AddFilter("Microsoft", LogLevel.Warning);
         builder.Logging.AddFilter("System", LogLevel.Warning);

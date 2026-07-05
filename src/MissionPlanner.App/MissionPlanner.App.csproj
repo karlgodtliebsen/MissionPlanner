@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
@@ -42,11 +42,14 @@
 	<ItemGroup>
         <PackageReference Include="CommunityToolkit.Maui" />
         <PackageReference Include="CommunityToolkit.Mvvm" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
         <PackageReference Include="Riok.Mapperly" />
         <PackageReference Include="SkiaSharp.Views.Maui.Controls" />
         <PackageReference Include="Mapsui" />
         <PackageReference Include="Mapsui.Maui" />
+
         <PackageReference Include="Microsoft.Maui.Controls" />
+
         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
         <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" />
         <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
@@ -54,6 +57,11 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
         <PackageReference Include="Microsoft.Extensions.Configuration" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+        <PackageReference Include="Microsoft.Extensions.Logging" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" />
 
         <PackageReference Include="UraniumUI.Blurs" />
         <PackageReference Include="UraniumUI.Dialogs.CommunityToolkit" />
@@ -66,5 +74,24 @@
 
 
     </ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Libraries\MissionPlanner.Library\MissionPlanner.Library.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="Views\FlightPlanner\FlightPlannerView.xaml.cs">
+	    <DependentUpon>FlightPlannerView.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Views\Help\HelpView.xaml.cs">
+	    <DependentUpon>HelpView.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Views\InitSetup\InitSetupView.xaml.cs">
+	    <DependentUpon>InitSetupView.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Views\Simulation\SimulationView.xaml.cs">
+	    <DependentUpon>SimulationView.xaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
 
 </Project>

@@ -1,18 +1,21 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Domain.Library.Configuration;
+
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 using MissionPlanner.App.AppViewModels;
+using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.Connect;
 using MissionPlanner.App.Views.FlightData;
 using MissionPlanner.App.Views.FlightData.Hud;
 using MissionPlanner.App.Views.FlightData.Map;
 using MissionPlanner.App.Views.FlightData.Tabs;
-using MissionPlanner.App.Views.MenuConfigTuning;
-using MissionPlanner.App.Views.MenuFlightPlanner;
-using MissionPlanner.App.Views.MenuHelp;
-using MissionPlanner.App.Views.MenuInitSetup;
-using MissionPlanner.App.Views.MenuSimulation;
+using MissionPlanner.App.Views.FlightPlanner;
+using MissionPlanner.App.Views.Help;
+using MissionPlanner.App.Views.InitSetup;
+using MissionPlanner.App.Views.Simulation;
+using MissionPlanner.Library.Configuration;
 
 namespace MissionPlanner.App.Configuration;
 
@@ -64,32 +67,19 @@ public static class ApplicationConfigurator
         stateService.Initialize(state);
         services.TryAddSingleton(stateService);
 
-        services.AddViewsConfiguration();
         //services.TryAddSingleton<Views.Vehicles.Views.ModelMapper>();
         services.TryAddSingleton<ThemeChangeViewModel>();
 
         services.TryAddSingleton(new CancellationTokenSource());
 
+        services
+            .AddLibraryServices()
+            .AddLogging(configuration, (s, l, c) =>
+            {
+                /*Customize logging*/
+            })
+            .AddViewsConfiguration();
 
-        //services
-        //    .AddLibraryServices()
-        //    .AddDomainServices(configuration)
-        //    .AddMavLinkTransportServices(configuration)
-        //    .AddMavLinkServices(configuration);
-
-        services.AddLogging(loggingBuilder =>
-        {
-            loggingBuilder.ClearProviders();
-            // loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
-            loggingBuilder.SetMinimumLevel(LogLevel.Information);
-
-            loggingBuilder.AddFilter("Microsoft", LogLevel.Warning);
-            loggingBuilder.AddFilter("System", LogLevel.Warning);
-            //loggingBuilder.AddConsole();
-            //loggingBuilder.Services.AddSingleton<ILoggerProvider, BufferedLoggerProvider>();
-
-            loggingBuilder.AddDebug();
-        });
         return services;
     }
 
@@ -124,20 +114,20 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<StatusTabViewModel>();
         services.TryAddSingleton<StatusTabView>();
 
-        services.TryAddSingleton<MenuFlightPlannerViewModel>();
-        services.TryAddSingleton<MenuFlightPlannerView>();
+        services.TryAddSingleton<FlightPlannerViewModel>();
+        services.TryAddSingleton<FlightPlannerView>();
 
-        services.TryAddSingleton<MenuInitSetupViewModel>();
-        services.TryAddSingleton<MenuInitSetupView>();
+        services.TryAddSingleton<InitSetupViewModel>();
+        services.TryAddSingleton<InitSetupView>();
 
         services.TryAddSingleton<MenuConfigTuningViewModel>();
         services.TryAddSingleton<MenuConfigTuningView>();
 
-        services.TryAddSingleton<MenuSimulationViewModel>();
-        services.TryAddSingleton<MenuSimulationView>();
+        services.TryAddSingleton<SimulationViewModel>();
+        services.TryAddSingleton<SimulationView>();
 
-        services.TryAddSingleton<MenuHelpViewModel>();
-        services.TryAddSingleton<MenuHelpView>();
+        services.TryAddSingleton<HelpViewModel>();
+        services.TryAddSingleton<HelpView>();
 
 
         return services;

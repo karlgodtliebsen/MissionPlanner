@@ -8,17 +8,6 @@
                     x:Class="MissionPlanner.App.Views.FlightData.FlightDataView"
                     x:DataType="flightData:FlightDataViewModel">
 
-    <uranium:UraniumContentPage.Resources>
-        <Style x:Key="ActionTabButtonStyle" TargetType="Button">
-            <Setter Property="BackgroundColor" Value="#2d2d30" />
-            <Setter Property="TextColor" Value="White" />
-            <Setter Property="CornerRadius" Value="0" />
-
-            <Setter Property="BorderColor" Value="Transparent" />
-        </Style>
-    </uranium:UraniumContentPage.Resources>
-
-
     <!--<Setter Property="BorderWidth" Value="0,0,0,3" />-->
 
     <Grid ColumnDefinitions="Auto,5,*" ColumnSpacing="0">
