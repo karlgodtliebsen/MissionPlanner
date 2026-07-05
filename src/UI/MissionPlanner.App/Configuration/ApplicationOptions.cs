@@ -8,7 +8,7 @@ public class ApplicationOptions
     /// <summary>
     /// Gets or sets the name of the configuration section for the application.
     /// </summary>
-    public static string SectionName { get; set; } = "Application";
+    public static string SectionName { get; set; } = "ApplicationSettings";
 
     /// <summary>
     /// 
@@ -63,6 +63,7 @@ public class ApplicationOptions
     /// Gets or sets the configured connection type for the application.
     /// </summary>
     public string ConnectionType { get; set; } = "Serial";
+
 
     /// <summary>
     /// Gets the template for the application configuration.

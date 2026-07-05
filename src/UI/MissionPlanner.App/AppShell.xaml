@@ -3,8 +3,6 @@
     x:Class="MissionPlanner.App.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:MissionPlanner"
-
     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
     xmlns:controls="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
     xmlns:controls1="clr-namespace:Plainer.Maui.Controls;assembly=Plainer.Maui"
@@ -15,6 +13,7 @@
     xmlns:configTuning="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
     xmlns:simulation="clr-namespace:MissionPlanner.App.Views.Simulation"
     xmlns:help="clr-namespace:MissionPlanner.App.Views.Help"
+    xmlns:connect="clr-namespace:MissionPlanner.App.Views.Connect"
     Title="MissionPlanner"
     x:Name="thisShell"
     FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
@@ -78,6 +77,12 @@
             </CollectionView>
         </Grid>
     </Shell.FlyoutContent>
+
+    <!--<FlyoutItem Title="Connection">
+        <ShellContent
+            Title=""
+            ContentTemplate="{DataTemplate connect:ConnectionView}" Route="Connection" />
+    </FlyoutItem>-->
 
     <FlyoutItem Title="Flight Data">
         <ShellContent

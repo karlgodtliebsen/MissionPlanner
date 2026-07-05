@@ -1,9 +1,26 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using MissionPlanner.Core.Services;
 
 namespace MissionPlanner.App.Views.FlightData.Hud;
 
-public partial class HudViewModel : ObservableObject
+/// <summary>
+/// View model for the HUD (Heads-Up Display) showing real-time vehicle telemetry.
+/// </summary>
+public partial class HudViewModel : ObservableObject, IDisposable
 {
+    private readonly IVehicleHudDataService hudDataService;
+    private IDisposable? hudDataSubscription;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HudViewModel"/> class.
+    /// </summary>
+    /// <param name="hudDataService">The service providing HUD-specific vehicle data.</param>
+    public HudViewModel(IVehicleHudDataService hudDataService)
+    {
+        this.hudDataService = hudDataService ?? throw new ArgumentNullException(nameof(hudDataService));
+        SubscribeToVehicleData();
+    }
+
     /// <summary>Pitch angle in degrees. Positive = nose up.</summary>
     [ObservableProperty]
     public partial double Pitch { get; set; }
@@ -16,23 +33,23 @@ public partial class HudViewModel : ObservableObject
     [ObservableProperty]
     public partial double Heading { get; set; }
 
-    /// <summary>Indicated airspeed.</summary>
+    /// <summary>Indicated airspeed in m/s.</summary>
     [ObservableProperty]
     public partial double AirSpeed { get; set; }
 
-    /// <summary>Ground speed.</summary>
+    /// <summary>Ground speed in m/s.</summary>
     [ObservableProperty]
     public partial double GroundSpeed { get; set; }
 
-    /// <summary>Altitude above home/sea level.</summary>
+    /// <summary>Altitude above home/sea level in meters.</summary>
     [ObservableProperty]
     public partial double Altitude { get; set; }
 
-    /// <summary>Vertical climb/descent rate.</summary>
+    /// <summary>Vertical climb/descent rate in m/s.</summary>
     [ObservableProperty]
     public partial double VerticalSpeed { get; set; }
 
-    /// <summary>Battery voltage.</summary>
+    /// <summary>Battery voltage in volts.</summary>
     [ObservableProperty]
     public partial double BatteryVoltage { get; set; }
 
@@ -43,4 +60,42 @@ public partial class HudViewModel : ObservableObject
     /// <summary>Number of GPS satellites in view.</summary>
     [ObservableProperty]
     public partial int GpsSatellites { get; set; }
+
+    /// <summary>Whether the vehicle is armed.</summary>
+    [ObservableProperty]
+    private bool isArmed;
+
+    /// <summary>Current flight mode.</summary>
+    [ObservableProperty]
+    private string flightMode = "Unknown";
+
+    /// <inheritdoc/>
+    public void Dispose()
+    {
+        hudDataSubscription?.Dispose();
+    }
+
+    private void SubscribeToVehicleData()
+    {
+        // Subscribe to HUD data updates from the primary vehicle
+        var observable = hudDataService.ObservePrimaryVehicleHudData();
+
+        hudDataSubscription = observable.Subscribe(hudData =>
+        {
+            // Update all properties with the new data
+            // Note: In MAUI, this may need to be dispatched to the UI thread
+            Pitch = hudData.Pitch;
+            Roll = hudData.Roll;
+            Heading = hudData.Heading;
+            AirSpeed = hudData.AirSpeed;
+            GroundSpeed = hudData.GroundSpeed;
+            Altitude = hudData.Altitude;
+            VerticalSpeed = hudData.VerticalSpeed;
+            BatteryVoltage = hudData.BatteryVoltage;
+            BatteryRemaining = hudData.BatteryRemaining;
+            GpsSatellites = hudData.GpsSatellites;
+            IsArmed = hudData.IsArmed;
+            FlightMode = hudData.Mode.ToString();
+        });
+    }
 }

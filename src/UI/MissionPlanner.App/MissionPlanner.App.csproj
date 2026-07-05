@@ -77,9 +77,16 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\Libraries\MissionPlanner.Library\MissionPlanner.Library.csproj" />
+	  <ProjectReference Include="..\..\Core\MissionPlanner.Core\MissionPlanner.Core.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="Views\Connect\ConnectPopupView.xaml.cs">
+	    <DependentUpon>ConnectPopupView.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Views\Connect\ConnectionView.xaml.cs">
+	    <DependentUpon>ConnectionView.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\FlightPlanner\FlightPlannerView.xaml.cs">
 	    <DependentUpon>FlightPlannerView.xaml</DependentUpon>
 	  </Compile>
@@ -92,6 +99,12 @@
 	  <Compile Update="Views\Simulation\SimulationView.xaml.cs">
 	    <DependentUpon>SimulationView.xaml</DependentUpon>
 	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiXaml Update="Views\Connect\ConnectionView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	</ItemGroup>
 
 </Project>

@@ -27,6 +27,7 @@
     <PackageVersion Include="Spectre.Console" Version="0.57.0" />
     <PackageVersion Include="Spectre.Console.Cli" Version="0.55.0" />
     <PackageVersion Include="System.IO.Ports" Version="10.0.9" />
+    <PackageVersion Include="System.Reactive" Version="6.1.0" />
     <!--Other-->
     <PackageVersion Include="DynamicData" Version="9.4.31" />
     <PackageVersion Include="Riok.Mapperly" Version="4.3.1" />
@@ -35,28 +36,28 @@
     <!--MAUI-->
     <PackageVersion Include="Mapsui" Version="5.1.0" />
     <PackageVersion Include="Mapsui.Maui" Version="5.1.0" />
-    <PackageVersion Include="SkiaSharp.Views.Maui.Controls" Version="3.119.4" />
+    <PackageVersion Include="SkiaSharp.Views.Maui.Controls" Version="4.148.0" />
     <PackageVersion Include="CommunityToolkit.Maui" Version="14.2.0" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-    <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.71" />
+    <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.80" />
     <!--MAUI Uranium-->
-    <PackageVersion Include="UraniumUI.Blurs" Version="2.16.0" />
-    <PackageVersion Include="UraniumUI.Dialogs.CommunityToolkit" Version="2.16.0" />
-    <PackageVersion Include="UraniumUI.Dialogs.Mopups" Version="2.16.0" />
-    <PackageVersion Include="UraniumUI.Icons.FontAwesome" Version="2.16.0" />
+    <PackageVersion Include="UraniumUI.Blurs" Version="3.0.0" />
+    <PackageVersion Include="UraniumUI.Dialogs.CommunityToolkit" Version="3.0.0" />
+    <PackageVersion Include="UraniumUI.Dialogs.Mopups" Version="3.0.0" />
+    <PackageVersion Include="UraniumUI.Icons.FontAwesome" Version="3.0.0" />
     <PackageVersion Include="UraniumUI.Icons.MaterialIcons" Version="2.16.0" />
     <PackageVersion Include="UraniumUI.Icons.MaterialSymbols" Version="3.0.0" />
     <PackageVersion Include="UraniumUI.Icons.SegoeFluent" Version="3.0.0" />
-    <PackageVersion Include="UraniumUI.Material" Version="2.16.0" />
-    <PackageVersion Include="UraniumUI.Validations.DataAnnotations" Version="2.16.0" />
+    <PackageVersion Include="UraniumUI.Material" Version="3.0.0" />
+    <PackageVersion Include="UraniumUI.Validations.DataAnnotations" Version="3.0.0" />
     <!-- Testing family -->
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.7.0" />
     <PackageVersion Include="UraniumUI.WebComponents" Version="3.0.0" />
     <PackageVersion Include="xunit.v3" Version="3.2.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
     <PackageVersion Include="coverlet.collector" Version="10.0.1" />
     <PackageVersion Include="Testcontainers" Version="4.12.0" />
-    <PackageVersion Include="Meziantou.Extensions.Logging.Xunit.v3" Version="2.0.1" />
+    <PackageVersion Include="Meziantou.Extensions.Logging.Xunit.v3" Version="3.0.0" />
     <PackageVersion Include="FluentAssertions" Version="[7.0.0]" />
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
     <PackageVersion Include="AutoBogus" Version="2.13.1" />

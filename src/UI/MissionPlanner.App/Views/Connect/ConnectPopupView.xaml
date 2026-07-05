@@ -2,7 +2,7 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
               xmlns:connect="clr-namespace:MissionPlanner.App.Views.Connect"
-              x:Class="MissionPlanner.App.Views.Connect.ConnectPopup"
+              x:Class="MissionPlanner.App.Views.Connect.ConnectPopupView"
               x:DataType="connect:ConnectPopupViewModel"
               BackgroundColor="#80000000">
 
@@ -46,6 +46,12 @@
                 <Picker Title="Baud rate"
                         ItemsSource="{Binding Options.BaudRates}"
                         SelectedItem="{Binding SelectedBaudRate}" />
+
+                <Label Text="{Binding StatusMessage}"
+                       TextColor="LightGray"
+                       FontSize="12"
+                       HorizontalOptions="Center"
+                       Margin="0,4,0,0" />
 
                 <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                     <Button Grid.Column="1"

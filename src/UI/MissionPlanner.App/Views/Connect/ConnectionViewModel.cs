@@ -1,10 +1,9 @@
-using CommunityToolkit.Mvvm.ComponentModel;
-
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using MissionPlanner.App.Configuration;
 
-namespace MissionPlanner.App.Views;
+namespace MissionPlanner.App.Views.Connect;
 
-public partial class MainPageViewModel : ObservableObject
+public partial class ConnectionViewModel : ObservableObject
 {
     [ObservableProperty] public partial string? SelectedConnectionType { get; set; }
     [ObservableProperty] public partial string? SelectedPort { get; set; }
@@ -25,15 +24,15 @@ public partial class MainPageViewModel : ObservableObject
     /// <summary>
     /// Data for the connect popup, such as available connection types, ports, and baud rates.
     /// </summary>
-    public MainPageViewModel()
+    public ConnectionViewModel()
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="MainPageViewModel"/> class with the specified application state.
+    /// Initializes a new instance of the <see cref="ConnectionViewModel"/> class with the specified application state.
     /// </summary>
     /// <param name="stateService"></param>
-    public MainPageViewModel(ApplicationStateService stateService) : this()
+    public ConnectionViewModel(ApplicationStateService stateService) : this()
     {
         // Initialize from shared state
         SelectedConnectionType = stateService.SelectedConnectionType;

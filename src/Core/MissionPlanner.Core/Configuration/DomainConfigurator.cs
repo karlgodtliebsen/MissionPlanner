@@ -1,11 +1,7 @@
-﻿using Domain.Library;
-using Domain.Library.Factory.Domain.Abstractions;
-
+﻿using Domain.Library.Factory.Domain.Abstractions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Options;
-
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Services;
@@ -26,10 +22,6 @@ public static class DomainConfigurator
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddDomainServices(this IServiceCollection services, IConfiguration configuration)
     {
-        DroneBridgeConnectionProfiles? options = configuration.GetSection(DroneBridgeConnectionProfiles.SectionName).Get<DroneBridgeConnectionProfiles>();
-        DomainException.ThrowIfNull(options, DroneBridgeConnectionProfiles.Template);
-        services.AddSingleton(Options.Create(options));
-
         services.TryAddSingleton<IVehicleMessagePump, VehicleMessagePump>();
         services.TryAddSingleton<IVehicleConnectionMonitor, VehicleConnectionMonitor>();
 
@@ -46,6 +38,10 @@ public static class DomainConfigurator
 
         services.TryAddSingleton<IVehicleRegistry, VehicleRegistry>();
 
+        services.TryAddSingleton<ISerialPortDiscoveryService, SerialPortDiscoveryService>();
+        services.TryAddSingleton<IVehicleConnectionService, VehicleConnectionService>();
+        services.TryAddSingleton<IVehicleHudDataService, VehicleHudDataService>();
+
         services.TryAddTransient<IVehicleCommandService, VehicleCommandService>();
         services.TryAddTransient<IVehicleService, VehicleService>();
 
@@ -59,7 +55,7 @@ public static class DomainConfigurator
     /// <returns>The updated service provider.</returns>
     public static IServiceProvider UseDomainServices(this IServiceProvider services)
     {
-        IDomainFactory domainFactory = services.GetRequiredService<IDomainFactory>();
+        var domainFactory = services.GetRequiredService<IDomainFactory>();
         domainFactory.Add<IHeartbeatVehicleHandler, HeartbeatVehicleHandler>();
         domainFactory.Add<IAttitudeVehicleHandler, AttitudeVehicleHandler>();
         domainFactory.Add<IBatteryVehicleHandler, BatteryVehicleHandler>();
