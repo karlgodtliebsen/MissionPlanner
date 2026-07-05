@@ -4,6 +4,7 @@
                     xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
                     xmlns:flightData="clr-namespace:MissionPlanner.App.Views.FlightData"
                     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                    xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                     x:Class="MissionPlanner.App.Views.FlightData.FlightDataView"
                     x:DataType="flightData:FlightDataViewModel">
 
@@ -28,18 +29,34 @@
             <ContentView x:Name="HudHost" Grid.Row="0" />
 
             <HorizontalStackLayout Grid.Row="1">
-                <Button x:Name="QuickTabButton"
-                        Text="Quick"
-                        Style="{StaticResource ActionTabButtonStyle}"
-                        Clicked="QuickTabButton_Clicked" />
-                <Button x:Name="ActionsTabButton"
-                        Text="Actions"
-                        Style="{StaticResource ActionTabButtonStyle}"
-                        Clicked="ActionsTabButton_Clicked" />
-                <Button x:Name="StatusTabButton"
-                        Text="Status"
-                        Style="{StaticResource ActionTabButtonStyle}"
-                        Clicked="StatusTabButton_Clicked" />
+              
+                <material:TabView x:Name="TabView" TabHeaderItemColumnWidth="*">
+                    <material:TabItem Title="Quick">
+                        <material:TabItem.ContentTemplate>
+                            <DataTemplate>
+                                <Label Text="Quick" HorizontalOptions="Center" VerticalOptions="Center" Margin="50" />
+                            </DataTemplate>
+                        </material:TabItem.ContentTemplate>
+                    </material:TabItem>
+
+                    <material:TabItem Title="Actions">
+                        <material:TabItem.ContentTemplate>
+                            <DataTemplate>
+                                <Label Text="Actions" HorizontalOptions="Center" VerticalOptions="Center" Margin="50" />
+                            </DataTemplate>
+                        </material:TabItem.ContentTemplate>
+                    </material:TabItem>
+
+                    <material:TabItem Title="Status">
+                        <material:TabItem.ContentTemplate>
+                            <DataTemplate>
+                                <Label Text="Status" HorizontalOptions="Center" VerticalOptions="Center" Margin="50" />
+                            </DataTemplate>
+                        </material:TabItem.ContentTemplate>
+                    </material:TabItem>
+                </material:TabView>
+
+
             </HorizontalStackLayout>
 
             <ContentView x:Name="ActionTabContent" Grid.Row="2" />
