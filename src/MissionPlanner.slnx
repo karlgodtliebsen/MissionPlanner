@@ -12,6 +12,10 @@
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/MissionPlanner.Simulator/MissionPlanner.Simulator.csproj" />
+    <Project Path="Tests/MissionPlanner.Test/MissionPlanner.Test.csproj" />
+  </Folder>
   <Folder Name="/UI/">
     <Project Path="UI/MissionPlanner.App/MissionPlanner.App.csproj" Id="ff20c388-4a20-4f5d-a4ef-dd949c6ed9d9" />
     <Project Path="UI/MissionPlanner.Droid/MissionPlanner.Droid.csproj" Id="e2e925ba-c006-4814-b4bd-1075bfe650f9" />
