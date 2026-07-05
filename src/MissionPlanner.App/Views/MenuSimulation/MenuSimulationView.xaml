@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<uranium:UraniumContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:vm="clr-namespace:MissionPlanner.App.Views.MenuSimulation"
+                    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                    x:Class="MissionPlanner.App.Views.MenuSimulation.MenuSimulationView"
+                    x:DataType="vm:MenuSimulationViewModel">
+
+    <Label Text="Simulation"
+           FontSize="18"
+           HorizontalOptions="Center"
+           VerticalOptions="Center" />
+
+</uranium:UraniumContentPage>

@@ -1,9 +1,14 @@
 <Solution>
   <Folder Name="/Solution Items/">
+    <File Path="ai.md" />
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
   </Folder>
-  <Project Path="MissionPlanner/MissionPlanner.csproj">
-    <Deploy Solution="Debug|*" />
+  <Project Path="MissionPlanner.Droid/MissionPlanner.Droid.csproj" Id="e2e925ba-c006-4814-b4bd-1075bfe650f9" />
+  <Project Path="MissionPlanner.iOS/MissionPlanner.iOS.csproj" Id="22aa0fe0-8052-414d-b656-5c0a2551e2a3" />
+  <Project Path="MissionPlanner.Mac/MissionPlanner.Mac.csproj" Id="a282031d-f6ae-4b39-b361-b3297dfacb77" />
+  <Project Path="MissionPlanner.WinUI/MissionPlanner.WinUI.csproj" Id="1004b0a3-a412-4c8b-bc07-11f327aafe6a">
+    <Platform Project="x64" />
   </Project>
+  <Project Path="MissionPlanner.App/MissionPlanner.App.csproj" Id="ff20c388-4a20-4f5d-a4ef-dd949c6ed9d9" />
 </Solution>

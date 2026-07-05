@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<uranium:UraniumContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+                    xmlns:flightData="clr-namespace:MissionPlanner.App.Views.FlightData"
+                    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                    x:Class="MissionPlanner.App.Views.FlightData.FlightDataView"
+                    x:DataType="flightData:FlightDataViewModel">
+
+    <uranium:UraniumContentPage.Resources>
+        <Style x:Key="ActionTabButtonStyle" TargetType="Button">
+            <Setter Property="BackgroundColor" Value="#2d2d30" />
+            <Setter Property="TextColor" Value="White" />
+            <Setter Property="CornerRadius" Value="0" />
+
+            <Setter Property="BorderColor" Value="Transparent" />
+        </Style>
+    </uranium:UraniumContentPage.Resources>
+
+
+    <!--<Setter Property="BorderWidth" Value="0,0,0,3" />-->
+
+    <Grid ColumnDefinitions="Auto,5,*" ColumnSpacing="0">
+
+        <!-- Left column: HUD + action tabs -->
+        <Grid Grid.Column="0" RowDefinitions="2*,Auto,3*" RowSpacing="4">
+
+            <ContentView x:Name="HudHost" Grid.Row="0" />
+
+            <HorizontalStackLayout Grid.Row="1">
+                <Button x:Name="QuickTabButton"
+                        Text="Quick"
+                        Style="{StaticResource ActionTabButtonStyle}"
+                        Clicked="QuickTabButton_Clicked" />
+                <Button x:Name="ActionsTabButton"
+                        Text="Actions"
+                        Style="{StaticResource ActionTabButtonStyle}"
+                        Clicked="ActionsTabButton_Clicked" />
+                <Button x:Name="StatusTabButton"
+                        Text="Status"
+                        Style="{StaticResource ActionTabButtonStyle}"
+                        Clicked="StatusTabButton_Clicked" />
+            </HorizontalStackLayout>
+
+            <ContentView x:Name="ActionTabContent" Grid.Row="2" />
+
+        </Grid>
+
+        <!-- Vertical Grid Splitter -->
+        <controls:GridSplitter Grid.Column="1" 
+                                SplitterThickness="4"
+                                SplitterColor="#3e3e42"
+                                HoverColor="#007acc" />
+
+        <!-- Right column: telemetry graph + map -->
+        <Grid Grid.Column="2" RowDefinitions="*,Auto" RowSpacing="4">
+           
+            <ContentView x:Name="MapHost" Grid.Row="0" Margin="50"/>
+     
+            <!-- Bottom status bar (mirrors Controls.Status) -->
+            <Grid x:Name="StatusBar"
+                  Grid.Row="1"
+                  ColumnDefinitions="Auto,Auto,Auto"
+                  
+                  ColumnSpacing="10"
+                  BackgroundColor="#2d2d30">
+              
+                <Picker 
+                        Grid.Column="0"
+                        ItemsSource="{Binding MapStyles}"
+                        SelectedItem="{Binding SelectedMapStyle}" />
+                <Label 
+                    Grid.Column="1"
+                    Text="text"
+                    VerticalOptions="Center" />
+
+                <Label 
+                    Grid.Column="2"
+                    Text="text"
+                    VerticalOptions="Center" />
+
+            </Grid>
+
+
+
+
+
+
+        </Grid>
+
+    </Grid>
+
+</uranium:UraniumContentPage>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="MissionPlanner.App.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:MissionPlanner"
+
+    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+    xmlns:controls="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
+    xmlns:controls1="clr-namespace:Plainer.Maui.Controls;assembly=Plainer.Maui"
+    xmlns:appViewModels="clr-namespace:MissionPlanner.App.AppViewModels"
+    xmlns:dashboard="clr-namespace:MissionPlanner.App.Views.Dashboard"
+    xmlns:flightData="clr-namespace:MissionPlanner.App.Views.FlightData"
+    xmlns:menuFlightPlanner="clr-namespace:MissionPlanner.App.Views.MenuFlightPlanner"
+    xmlns:menuInitSetup="clr-namespace:MissionPlanner.App.Views.MenuInitSetup"
+    xmlns:menuConfigTuning="clr-namespace:MissionPlanner.App.Views.MenuConfigTuning"
+    xmlns:menuSimulation="clr-namespace:MissionPlanner.App.Views.MenuSimulation"
+    xmlns:menuHelp="clr-namespace:MissionPlanner.App.Views.MenuHelp"
+
+    Title="MissionPlanner"
+    x:Name="thisShell"
+    FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
+    Shell.FlyoutBehavior="{OnIdiom Desktop=Locked, Default=Flyout}"
+
+    >
+
+    <!--<ShellContent
+        Title="Home"
+        ContentTemplate="{DataTemplate local:MainPage}"
+        Route="MainPage" />-->
+
+    <Shell.Resources>
+        <Style TargetType="HorizontalStackLayout" ApplyToDerivedTypes="True" CanCascade="True">
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal" />
+                        <VisualState x:Name="Selected">
+                            <VisualState.Setters>
+                                <Setter Property="BackgroundColor"
+                                     Value="{AppThemeBinding Light=#30000000, Dark=#30ffffff}" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+    </Shell.Resources>
+
+
+    <Shell.FlyoutHeader>
+        <VerticalStackLayout StyleClass="PrimaryContainer" Padding="20">
+            <Label Text="Swarm Ground Control Station" FontSize="Large" HorizontalTextAlignment="Center" Margin="10" />
+            <VerticalStackLayout BindingContext="{uranium:Inject Type={Type appViewModels:ThemeChangeViewModel}}" x:DataType="appViewModels:ThemeChangeViewModel">
+
+                <Label Text="App Theme" HorizontalOptions="Center"/>
+
+                <controls:SelectionView HorizontalOptions="Center"
+                 ItemsSource="{Binding AppThemeList}" SelectedItem="{Binding SelectedTheme}" 
+                 ColumnNumber="2" ColumnSpacing="-2" Color="{StaticResource Tertiary}" >
+                </controls:SelectionView>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </Shell.FlyoutHeader>
+
+    <Shell.FlyoutContent>
+        <Grid RowDefinitions="Auto,*">
+            <Grid.BindingContext>
+                <appViewModels:AppShellContentViewModel CurrentShell="{x:Reference thisShell}"/>
+            </Grid.BindingContext>
+            <VerticalStackLayout>
+                <VerticalStackLayout Margin="8,8,8,0" BackgroundColor="{AppThemeBinding Light={StaticResource OnSurfaceDark}, Dark={StaticResource OnSurface}}" StyleClass="Elevation1">
+                    <controls1:EntryView Margin="{OnPlatform Default=0, Android='8,0', iOS='8', MacCatalyst='8'}" Placeholder="Search" Text="{Binding SearchText}" PlaceholderColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" ClearButtonVisibility="WhileEditing"/>
+                </VerticalStackLayout>
+                <BoxView StyleClass="Divider" />
+            </VerticalStackLayout>
+            <CollectionView Grid.Row="1" SelectedItem="{Binding SelectedItem}" SelectionMode="Single" ItemsSource="{Binding Items}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <HorizontalStackLayout Padding="20,12" Spacing="12">
+                            <Image Source="{Binding Icon}" WidthRequest="20" />
+                            <Label Text="{Binding Title}" VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
+    </Shell.FlyoutContent>
+
+    <FlyoutItem Title="FlightData">
+        <ShellContent
+            Title="FlightDataView"
+            ContentTemplate="{DataTemplate flightData:FlightDataView}" Route="FlightData" />
+    </FlyoutItem>
+
+
+    <FlyoutItem Title="Flight Plan">
+        <ShellContent
+            Title="Flight Plan"
+            ContentTemplate="{DataTemplate menuFlightPlanner:MenuFlightPlannerView}" Route="FlightPlanner" />
+    </FlyoutItem>
+    <FlyoutItem Title="Init Setup">
+        <ShellContent
+            Title="Init Setup"
+            ContentTemplate="{DataTemplate menuInitSetup:MenuInitSetupView}" Route="InitSetup" />
+    </FlyoutItem>
+    <FlyoutItem Title="Config Tuning">
+        <ShellContent
+            Title="Config Tuning"
+            ContentTemplate="{DataTemplate menuConfigTuning:MenuConfigTuningView}" Route="ConfigTuning" />
+    </FlyoutItem>
+    <FlyoutItem Title="Simulation">
+        <ShellContent
+            Title="Simulation"
+            ContentTemplate="{DataTemplate menuSimulation:MenuSimulationView}" Route="Simulation" />
+    </FlyoutItem>
+
+    <FlyoutItem Title="Help">
+        <ShellContent
+            Title="Help"
+            ContentTemplate="{DataTemplate menuHelp:MenuHelpView}" Route="Help" />
+    </FlyoutItem>
+
+
+
+
+</Shell>

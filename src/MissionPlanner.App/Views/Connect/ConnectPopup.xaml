@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+              xmlns:connect="clr-namespace:MissionPlanner.App.Views.Connect"
+              x:Class="MissionPlanner.App.Views.Connect.ConnectPopup"
+              x:DataType="connect:ConnectPopupViewModel"
+              BackgroundColor="#80000000">
+
+    <Border Padding="16"
+            StrokeShape="RoundRectangle 8"
+            BackgroundColor="#2d2d30"
+            WidthRequest="260"
+            HorizontalOptions="Center"
+            VerticalOptions="Center">
+
+        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="12">
+
+            <Label Grid.Row="0" Grid.Column="0"
+                   Text="Connect"
+                   FontSize="18"
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   VerticalOptions="Center" />
+
+            <Button Grid.Row="0" Grid.Column="1"
+                    Text="&#x2715;"
+                    FontSize="16"
+                    Padding="0"
+                    WidthRequest="32"
+                    HeightRequest="32"
+                    CornerRadius="16"
+                    BackgroundColor="Transparent"
+                    TextColor="White"
+                    Clicked="CloseButton_Clicked" />
+
+            <VerticalStackLayout Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Spacing="12">
+
+                <Picker Title="Connection type"
+                        ItemsSource="{Binding Options.ConnectionTypes}"
+                        SelectedItem="{Binding SelectedConnectionType}" />
+
+                <Picker Title="Port"
+                        ItemsSource="{Binding Options.Ports}"
+                        SelectedItem="{Binding SelectedPort}" />
+
+                <Picker Title="Baud rate"
+                        ItemsSource="{Binding Options.BaudRates}"
+                        SelectedItem="{Binding SelectedBaudRate}" />
+
+                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                    <Button Grid.Column="1"
+                            ImageSource="{Binding IsConnectedImage}"
+                            HeightRequest="48"
+                            WidthRequest="48"
+                            Command="{Binding ConnectCommand}" />
+
+                    <Button Grid.Column="2"
+                            Text="Close"
+                            VerticalOptions="Center"
+                            Clicked="CloseButton_Clicked" />
+                </Grid>
+
+            </VerticalStackLayout>
+        </Grid>
+    </Border>
+</ContentView>

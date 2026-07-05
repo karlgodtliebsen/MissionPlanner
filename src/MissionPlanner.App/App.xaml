@@ -1,0 +1,30 @@
+﻿<?xml version = "1.0" encoding = "UTF-8" ?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:MissionPlanner"
+             xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+             xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+             x:Class="MissionPlanner.App.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary x:Name="AppColors" Source="Resources/Styles/Colors.xaml" />
+                <ResourceDictionary x:Name="AppStyles" Source="Resources/Styles/Styles.xaml" />
+                <material:StyleResource BasedOn="{x:Reference AppStyles}" />
+                <ResourceDictionary x:Name="OverrideStyles" Source="Resources/Styles/Override.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <Style TargetType="uranium:ExpanderView" CanCascade="True">
+                <Setter Property="BackgroundColor" Value="{AppThemeBinding Default=#29ffffff, Dark=#29000000}" />
+            </Style>
+
+            <Style TargetType="View" Class="ControlPreview" ApplyToDerivedTypes="True">
+                <Setter Property="HorizontalOptions" Value="Start" />
+                <Setter Property="VerticalOptions" Value="Center" />
+                <Setter Property="WidthRequest" Value="300" />
+                <Setter Property="Margin" Value="20" />
+            </Style>
+
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
