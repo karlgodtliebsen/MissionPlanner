@@ -76,7 +76,7 @@
     </ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Libraries\MissionPlanner.Library\MissionPlanner.Library.csproj" />
+	  <ProjectReference Include="..\..\Libraries\MissionPlanner.Library\MissionPlanner.Library.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

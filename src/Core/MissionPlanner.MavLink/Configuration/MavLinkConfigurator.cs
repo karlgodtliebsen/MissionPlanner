@@ -1,0 +1,60 @@
+﻿using Domain.Library.Factory.Domain.Abstractions;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using MissionPlanner.MavLink.Client;
+using MissionPlanner.MavLink.Decoding;
+using MissionPlanner.MavLink.Encoding;
+using MissionPlanner.MavLink.Services;
+
+namespace MissionPlanner.MavLink.Configuration;
+
+/// <summary>
+/// Configures MAVLink services and dependencies.
+/// </summary>
+public static class MavLinkConfigurator
+{
+    /// <summary>
+    /// Adds MAVLink services and dependencies to the specified <see cref="IServiceCollection"/>.
+    /// </summary>
+    /// <param name="services">The service collection to which MAVLink services will be added.</param>
+    /// <param name="configuration"></param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddMavLinkServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.TryAddSingleton<IMavLinkClient, MavLinkClient>();
+        services.TryAddSingleton<IMavLinkConnection, MavLinkConnection>();
+
+        services.TryAddTransient<IMavLinkCrcExtraProvider, CommonMavLinkCrcExtraProvider>();
+        services.TryAddTransient<IMavLinkFrameParser, MavLinkV2FrameParser>();
+        services.TryAddTransient<IMavLinkCommandEncoder, MavLinkCommandEncoder>();
+        services.TryAddTransient<IMavLinkMessageDecoder, MavLinkMessageDecoder>();
+
+        IList<IMavLinkMessageDecoder> decoders =
+        [
+            new StatusTextMessageDecoder(),
+            new HeartbeatMessageDecoder(),
+            new CommandAckMessageDecoder(),
+            new AttitudeMessageDecoder(),
+            new GlobalPositionIntMessageDecoder(),
+            new SysStatusMessageDecoder()
+        ];
+
+        services.TryAddSingleton(new MavLinkMessageDecoders(decoders));
+
+        return services;
+    }
+
+    /// <summary>
+    /// Configures MAVLink services and dependencies using the specified <see cref="IServiceProvider"/>.
+    /// </summary>
+    /// <param name="services">The service provider to which MAVLink services will be added.</param>
+    /// <returns>The updated service provider.</returns>
+    public static IServiceProvider UseMavLinkServices(this IServiceProvider services)
+    {
+        var domainFactory = services.GetRequiredService<IDomainFactory>();
+        //domainFactory.Add<IMavLinkMessageDecoder, MavLinkMessageDecoder>();
+        //domainFactory.Add<IMavLinkClient, MavLinkClient>();
+        return services;
+    }
+}
