@@ -18,8 +18,10 @@
     Title="MissionPlanner"
     x:Name="thisShell"
     FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
-    Shell.FlyoutBehavior="{OnIdiom Desktop=Locked, Default=Flyout}"
+    Shell.FlyoutBehavior="Flyout"
+    FlyoutIsPresented="False"
     >
+
 
     <Shell.Resources>
         <Style TargetType="HorizontalStackLayout" ApplyToDerivedTypes="True" CanCascade="True">
