@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
@@ -25,13 +24,24 @@ public class VehicleConnectionService(
     ILogger<VehicleConnectionService> logger)
     : IVehicleConnectionService, IAsyncDisposable
 {
-    private readonly ConcurrentDictionary<VehicleId, ActiveConnection> activeConnections = new();
+    // Single active connection (only one vehicle connection supported at a time)
+    private ActiveConnection? activeConnection;
+    private readonly SemaphoreSlim connectionLock = new(1, 1);
+
+    private IMavLinkConnection? connection;
+    private IVehicleMessagePump? messagePump;
+
+    // Background tasks that must live as long as this service instance
+    private Task? messagePumpTask;
+    private Task? connectionTask;
+    private readonly CancellationTokenSource serviceCts = new();
 
     /// <inheritdoc/>
-    public bool IsConnected => activeConnections.Any();
+    public bool IsConnected => activeConnection != null;
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<VehicleId> ConnectedVehicles => activeConnections.Keys.ToList();
+    public IReadOnlyCollection<VehicleId> ConnectedVehicles =>
+        activeConnection != null ? [activeConnection.VehicleId] : [];
 
 
     /// <inheritdoc/>
@@ -42,8 +52,16 @@ public class VehicleConnectionService(
             return new VehicleConnectionResult(false, null, "Port name cannot be empty");
         }
 
+        await connectionLock.WaitAsync(cancellationToken);
         try
         {
+            // Disconnect existing connection if any
+            if (activeConnection != null)
+            {
+                logger.LogInformation("Disconnecting existing connection before establishing new one");
+                await DisconnectInternalAsync(cancellationToken);
+            }
+
             logger.LogInformation("Connecting to vehicle using serial port {PortName} at {BaudRate} baud", portName, baudRate);
 
             var registry = serviceFactory.Create<IVehicleRegistry>();
@@ -60,30 +78,32 @@ public class VehicleConnectionService(
             // Create MAVLink client
             var client = domainFactory.Create<IMavLinkClient, ISerialMavLinkTransport, IOptions<TransportEndpoint>, IDateTimeProvider>(transport, transportOptions, dateTimeProvider);
 
-            var messagePump = serviceFactory.Create<IVehicleMessagePump>();
-            var connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
+            messagePump = serviceFactory.Create<IVehicleMessagePump>();
+            connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
 
-            await Task.Run(() => messagePump.StartAsync(cancellationToken), cancellationToken);
-            await Task.Run(() => connection.StartAsync(cancellationToken), cancellationToken);
+            // Store background tasks so they live as long as this service instance
+            // Link to service-level cancellation token to allow proper cleanup
+            var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
 
+            messagePumpTask = Task.Run(() => messagePump.StartAsync(linkedCts.Token), linkedCts.Token);
+            connectionTask = Task.Run(() => connection.StartAsync(linkedCts.Token), linkedCts.Token);
 
             // Wait for heartbeat to identify vehicle
-            var vehicleId = await WaitForVehicleHeartbeatAsync(client, cancellationToken);
+            var vehicleId = await WaitForVehicleHeartbeatAsync(client, linkedCts.Token);
 
             if (vehicleId == null)
             {
-                await transport.DisconnectAsync(cancellationToken);
+                await transport.DisconnectAsync(linkedCts.Token);
                 await PublishConnectionFailed("Serial", portName, "No heartbeat received from vehicle");
                 registry.Reset();
                 return new VehicleConnectionResult(false, null, "Timeout waiting for vehicle heartbeat");
             }
 
             // Store active connection
-            var activeConnection = new ActiveConnection(vehicleId.Value, transport, client, "Serial", portName);
-            activeConnections[vehicleId.Value] = activeConnection;
+            activeConnection = new ActiveConnection(vehicleId.Value, transport, client, "Serial", portName);
 
             // Publish success event
-            await domainEventHub.PublishAsync(new VehicleConnected(vehicleId.Value, "Serial", portName, dateTimeProvider.UtcNow), cancellationToken);
+            await domainEventHub.PublishAsync(new VehicleConnected(vehicleId.Value, "Serial", portName, dateTimeProvider.UtcNow), linkedCts.Token);
 
             logger.LogInformation("Successfully connected to vehicle {VehicleId} via serial port {PortName}", vehicleId, portName);
             return new VehicleConnectionResult(true, vehicleId.Value);
@@ -93,6 +113,10 @@ public class VehicleConnectionService(
             logger.LogError(ex, "Failed to connect to vehicle via serial port {PortName}", portName);
             await PublishConnectionFailed("Serial", portName, ex.Message);
             return new VehicleConnectionResult(false, null, ex.Message);
+        }
+        finally
+        {
+            connectionLock.Release();
         }
     }
 
@@ -104,8 +128,16 @@ public class VehicleConnectionService(
             return new VehicleConnectionResult(false, null, "Host cannot be empty");
         }
 
+        await connectionLock.WaitAsync(cancellationToken);
         try
         {
+            // Disconnect existing connection if any
+            if (activeConnection != null)
+            {
+                logger.LogInformation("Disconnecting existing connection before establishing new one");
+                await DisconnectInternalAsync(cancellationToken);
+            }
+
             logger.LogInformation("Connecting to vehicle via TCP {Host}:{Port}", host, port);
 
             var endpoint = $"{host}:{port}";
@@ -118,12 +150,21 @@ public class VehicleConnectionService(
             // Create MAVLink client
             var client = domainFactory.Create<IMavLinkClient, ITcpMavLinkTransport, IOptions<TransportEndpoint>, IDateTimeProvider>(transport, transportOptions, dateTimeProvider);
 
+            messagePump = serviceFactory.Create<IVehicleMessagePump>();
+            connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
+
+            // Store background tasks so they live as long as this service instance
+            // Link to service-level cancellation token to allow proper cleanup
+            var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
+
+            messagePumpTask = Task.Run(() => messagePump.StartAsync(linkedCts.Token), linkedCts.Token);
+            connectionTask = Task.Run(() => connection.StartAsync(linkedCts.Token), linkedCts.Token);
 
             // Connect
             await transport.ConnectAsync(cancellationToken);
 
             // Wait for heartbeat to identify vehicle
-            var vehicleId = await WaitForVehicleHeartbeatAsync(client, cancellationToken);
+            var vehicleId = await WaitForVehicleHeartbeatAsync(client, linkedCts.Token);
 
             if (vehicleId == null)
             {
@@ -133,8 +174,7 @@ public class VehicleConnectionService(
             }
 
             // Store active connection
-            var connection = new ActiveConnection(vehicleId.Value, transport, client, "TCP", endpoint);
-            activeConnections[vehicleId.Value] = connection;
+            activeConnection = new ActiveConnection(vehicleId.Value, transport, client, "TCP", endpoint);
 
             // Publish success event
             await domainEventHub.PublishAsync(new VehicleConnected(vehicleId.Value, "TCP", endpoint, dateTimeProvider.UtcNow), cancellationToken);
@@ -148,13 +188,25 @@ public class VehicleConnectionService(
             await PublishConnectionFailed("TCP", $"{host}:{port}", ex.Message);
             return new VehicleConnectionResult(false, null, ex.Message);
         }
+        finally
+        {
+            connectionLock.Release();
+        }
     }
 
     /// <inheritdoc/>
     public async Task<VehicleConnectionResult> ConnectUdpAsync(int localPort, string? remoteHost = null, int? remotePort = null, CancellationToken cancellationToken = default)
     {
+        await connectionLock.WaitAsync(cancellationToken);
         try
         {
+            // Disconnect existing connection if any
+            if (activeConnection != null)
+            {
+                logger.LogInformation("Disconnecting existing connection before establishing new one");
+                await DisconnectInternalAsync(cancellationToken);
+            }
+
             logger.LogInformation("Connecting to vehicle via UDP local port {LocalPort}", localPort);
 
             var endpoint = $"UDP:{localPort}";
@@ -166,11 +218,21 @@ public class VehicleConnectionService(
             // Create MAVLink client
             var client = domainFactory.Create<IMavLinkClient, IUdpMavLinkTransport, IOptions<TransportEndpoint>, IDateTimeProvider>(transport, transportOptions, dateTimeProvider);
 
+            messagePump = serviceFactory.Create<IVehicleMessagePump>();
+            connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
+
+            // Store background tasks so they live as long as this service instance
+            // Link to service-level cancellation token to allow proper cleanup
+            var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
+
+            messagePumpTask = Task.Run(() => messagePump.StartAsync(linkedCts.Token), linkedCts.Token);
+            connectionTask = Task.Run(() => connection.StartAsync(linkedCts.Token), linkedCts.Token);
+
             // Connect
             await transport.ConnectAsync(cancellationToken);
 
             // Wait for heartbeat to identify vehicle
-            var vehicleId = await WaitForVehicleHeartbeatAsync(client, cancellationToken);
+            var vehicleId = await WaitForVehicleHeartbeatAsync(client, linkedCts.Token);
 
             if (vehicleId == null)
             {
@@ -180,8 +242,7 @@ public class VehicleConnectionService(
             }
 
             // Store active connection
-            var connection = new ActiveConnection(vehicleId.Value, transport, client, "UDP", endpoint);
-            activeConnections[vehicleId.Value] = connection;
+            activeConnection = new ActiveConnection(vehicleId.Value, transport, client, "UDP", endpoint);
 
             // Publish success event
             await domainEventHub.PublishAsync(new VehicleConnected(vehicleId.Value, "UDP", endpoint, dateTimeProvider.UtcNow), cancellationToken);
@@ -195,48 +256,12 @@ public class VehicleConnectionService(
             await PublishConnectionFailed("UDP", $"UDP:{localPort}", ex.Message);
             return new VehicleConnectionResult(false, null, ex.Message);
         }
-    }
-
-    /// <inheritdoc/>
-    public async Task DisconnectAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
-    {
-        if (!activeConnections.TryRemove(vehicleId, out var connection))
+        finally
         {
-            logger.LogWarning("Attempted to disconnect vehicle {VehicleId} but it was not found in active connections", vehicleId);
-            return;
-        }
-
-        try
-        {
-            logger.LogInformation("Disconnecting vehicle {VehicleId}", vehicleId);
-
-            await connection.Client.StopAsync();
-            await connection.Transport.DisconnectAsync(cancellationToken);
-            await connection.Transport.DisposeAsync();
-
-            await domainEventHub.PublishAsync(new VehicleDisconnected(vehicleId, dateTimeProvider.UtcNow, "User requested disconnect"), cancellationToken);
-
-            logger.LogInformation("Successfully disconnected vehicle {VehicleId}", vehicleId);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error while disconnecting vehicle {VehicleId}", vehicleId);
+            connectionLock.Release();
         }
     }
 
-    /// <inheritdoc/>
-    public async Task DisconnectAllAsync(CancellationToken cancellationToken = default)
-    {
-        logger.LogInformation("Disconnecting all vehicles");
-
-        var disconnectTasks = activeConnections.Keys
-            .Select(vehicleId => DisconnectAsync(vehicleId, cancellationToken))
-            .ToList();
-
-        await Task.WhenAll(disconnectTasks);
-
-        logger.LogInformation("All vehicles disconnected");
-    }
 
     private async Task<VehicleId?> WaitForVehicleHeartbeatAsync(IMavLinkClient client, CancellationToken cancellationToken)
     {
@@ -287,10 +312,136 @@ public class VehicleConnectionService(
         await domainEventHub.PublishAsync(new ConnectionFailed(connectionType, endpoint, error, dateTimeProvider.UtcNow));
     }
 
+    private async Task DisconnectAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
+    {
+        await connectionLock.WaitAsync(cancellationToken);
+        try
+        {
+            if (activeConnection == null)
+            {
+                logger.LogWarning("No active connection to disconnect");
+                return;
+            }
+
+            if (activeConnection.VehicleId != vehicleId)
+            {
+                logger.LogWarning("Attempted to disconnect vehicle {VehicleId} but current connection is {CurrentVehicleId}", vehicleId, activeConnection.VehicleId);
+                return;
+            }
+
+            await DisconnectInternalAsync(cancellationToken);
+        }
+        finally
+        {
+            connectionLock.Release();
+        }
+    }
+
+    /// <summary>
+    /// Internal disconnect method - must be called with connectionLock held or from single-threaded context
+    /// </summary>
+    private async Task DisconnectInternalAsync(CancellationToken cancellationToken = default)
+    {
+        if (activeConnection == null)
+        {
+            return;
+        }
+
+        var vehicleId = activeConnection.VehicleId;
+        var conn = activeConnection;
+
+        try
+        {
+            logger.LogInformation("Disconnecting vehicle {VehicleId}", vehicleId);
+
+            // Stop background tasks gracefully
+            var tasksToWait = new List<Task>();
+            if (messagePumpTask is not null && !messagePumpTask.IsCompleted)
+            {
+                tasksToWait.Add(messagePumpTask);
+            }
+
+            if (connectionTask is not null && !connectionTask.IsCompleted)
+            {
+                tasksToWait.Add(connectionTask);
+            }
+
+            if (tasksToWait.Any())
+            {
+                using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                try
+                {
+                    await Task.WhenAll(tasksToWait).WaitAsync(timeoutCts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    logger.LogWarning("Background tasks did not complete within timeout period during disconnect");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error waiting for background tasks to complete");
+                }
+            }
+
+            // Clean up task references
+            messagePumpTask = null;
+            connectionTask = null;
+
+            // Stop and dispose services
+            if (messagePump is not null)
+            {
+                await messagePump.DisposeAsync();
+                messagePump = null;
+            }
+
+            if (connection is not null)
+            {
+                await connection.DisposeAsync();
+                connection = null;
+            }
+
+            // Stop client and disconnect transport
+            await conn.Client.StopAsync();
+            await conn.Transport.DisconnectAsync(cancellationToken);
+            await conn.Transport.DisposeAsync();
+
+            // Clear active connection
+            activeConnection = null;
+
+            // Publish disconnect event
+            await domainEventHub.PublishAsync(
+                new VehicleDisconnected(vehicleId, dateTimeProvider.UtcNow, "User requested disconnect"),
+                cancellationToken);
+
+            logger.LogInformation("Successfully disconnected vehicle {VehicleId}", vehicleId);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error while disconnecting vehicle {VehicleId}", vehicleId);
+            // Still clear the connection even if there were errors
+            activeConnection = null;
+        }
+    }
+
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        await DisconnectAllAsync();
+        // Cancel the service-level token to signal background tasks to stop
+        if (!serviceCts.IsCancellationRequested)
+        {
+            await serviceCts.CancelAsync();
+        }
+
+        // Disconnect the active connection (if any)
+        if (activeConnection != null)
+        {
+            await DisconnectAsync(activeConnection.VehicleId);
+        }
+
+        // Dispose the semaphore and cancellation token source
+        connectionLock.Dispose();
+        serviceCts.Dispose();
+
         GC.SuppressFinalize(this);
     }
 

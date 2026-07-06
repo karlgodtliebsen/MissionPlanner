@@ -5,7 +5,7 @@ namespace MissionPlanner.Core.Services.Abstractions;
 /// <summary>
 /// Service for managing vehicle connections via MAVLink transport.
 /// </summary>
-public interface IVehicleConnectionService
+public interface IVehicleConnectionService : IAsyncDisposable
 {
     /// <summary>
     /// Gets a value indicating whether any vehicle is currently connected.
@@ -43,27 +43,5 @@ public interface IVehicleConnectionService
     /// <param name="remotePort">Optional remote port for outbound messages</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Connection result with vehicle ID if successful</returns>
-    Task<VehicleConnectionResult> ConnectUdpAsync(int localPort, string? remoteHost = null, int? remotePort = null,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Disconnects a specific vehicle.
-    /// </summary>
-    /// <param name="vehicleId">The vehicle to disconnect</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    Task DisconnectAsync(VehicleId vehicleId, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Disconnects all connected vehicles.
-    /// </summary>
-    /// <param name="cancellationToken">Cancellation token</param>
-    Task DisconnectAllAsync(CancellationToken cancellationToken = default);
+    Task<VehicleConnectionResult> ConnectUdpAsync(int localPort, string? remoteHost = null, int? remotePort = null, CancellationToken cancellationToken = default);
 }
-
-/// <summary>
-/// Result of a vehicle connection attempt.
-/// </summary>
-/// <param name="Success">Indicates if the connection was successful</param>
-/// <param name="VehicleId">The connected vehicle's ID (null if failed)</param>
-/// <param name="ErrorMessage">Error message if connection failed</param>
-public record VehicleConnectionResult(bool Success, VehicleId? VehicleId, string? ErrorMessage = null);

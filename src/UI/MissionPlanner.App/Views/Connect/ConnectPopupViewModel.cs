@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.Core.DomainEvents;
-using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 
@@ -89,9 +88,6 @@ public partial class ConnectPopupViewModel : ObservableObject
         {
             switch (args.PropertyName)
             {
-                //case nameof(ApplicationStateService.SelectedConnectionType):
-                //    SelectedConnectionType = stateService.SelectedConnectionType;
-                //    break;
                 case nameof(ApplicationStateService.SelectedPort):
                     SelectedPort = stateService.SelectedPort;
                     break;
@@ -299,7 +295,7 @@ public partial class ConnectPopupViewModel : ObservableObject
         try
         {
             StatusMessage = "Disconnecting...";
-            await connectionService.DisconnectAllAsync();
+            await connectionService.DisposeAsync();
             IsConnected = false;
             StatusMessage = "Disconnected";
             UpdateConnectionStatus();

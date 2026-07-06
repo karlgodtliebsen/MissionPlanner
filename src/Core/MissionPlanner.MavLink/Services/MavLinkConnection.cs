@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using MissionPlanner.Library;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.Transport;
@@ -8,9 +9,9 @@ namespace MissionPlanner.MavLink.Services;
 /// <summary>
 /// Represents a connection to a MAVLink device, managing the reception and decoding of MAVLink frames and messages.
 /// </summary>
-public sealed class MavLinkConnection : IMavLinkConnection
+public sealed class MavLinkConnection : IMavLinkConnection, IAsyncDisposable
 {
-    private readonly IMavLinkClient client;
+    private IMavLinkClient? client;
     private readonly IMavLinkFrameParser frameParser;
     private readonly IMavLinkMessageDecoder messageDecoder;
     private readonly IEventHub eventHub;
@@ -32,7 +33,6 @@ public sealed class MavLinkConnection : IMavLinkConnection
         this.messageDecoder = messageDecoder ?? throw new ArgumentNullException(nameof(messageDecoder));
         this.eventHub = eventHub ?? throw new ArgumentNullException(nameof(eventHub));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-
         this.client.DataReceived += OnDataReceivedAsync;
     }
 
@@ -42,6 +42,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
     /// <param name="cancellationToken"></param>
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
+        DomainException.ThrowIfNull(client, nameof(client));
         await client.StartAsync(cancellationToken).ConfigureAwait(false);
         logger.LogTrace("MavLinkConnection - MAVLink connection started.");
     }
@@ -55,6 +56,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     public async ValueTask SendRawAsync(ReadOnlyMemory<byte> data, TransportEndPoint endPoint, CancellationToken cancellationToken = default)
     {
+        DomainException.ThrowIfNull(client, nameof(client));
         logger.LogTrace("MavLinkConnection - Sending raw MAVLink data.");
         await client.SendAsync(data, endPoint, cancellationToken).ConfigureAwait(false);
     }
@@ -84,12 +86,17 @@ public sealed class MavLinkConnection : IMavLinkConnection
         }
     }
 
-
     /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
+        if (client is null)
+        {
+            return;
+        }
+
         client.DataReceived -= OnDataReceivedAsync;
         await client.DisposeAsync().ConfigureAwait(false);
+        client = null;
         GC.SuppressFinalize(this);
         logger.LogTrace("MavLinkConnection - MAVLink connection disposed.");
     }
