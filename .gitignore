@@ -274,3 +274,4 @@ testem.log
 .DS_Store
 Thumbs.db
 *.xml
+/src/.vs/MissionPlanner.slnx/v18/.suo
