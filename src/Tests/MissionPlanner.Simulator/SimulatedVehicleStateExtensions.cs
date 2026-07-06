@@ -1,6 +1,6 @@
 ﻿using System.Net;
-
 using MissionPlanner.Core.Services;
+using MissionPlanner.Transport;
 
 namespace MissionPlanner.Simulator;
 
@@ -17,9 +17,9 @@ public static class SimulatedVehicleStateExtensions
     /// <returns></returns>
     public static VehicleSession ApplyTo(this SimulatedVehicleState simulated, IVehicleRegistry registry)
     {
-        VehicleRegistryResult vehicleRegistryResult = registry.RegisterOrUpdateHeartbeat(
+        var vehicleRegistryResult = registry.RegisterOrUpdateHeartbeat(
             simulated.VehicleId,
-            new IPEndPoint(IPAddress.Any, 0),
+            new IPEndPoint(IPAddress.Any, 0).ToTransportEndPoint("udp"),
             simulated.CustomMode,
             simulated.VehicleType,
             simulated.Autopilot,

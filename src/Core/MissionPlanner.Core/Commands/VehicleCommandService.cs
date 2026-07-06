@@ -3,6 +3,7 @@ using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services;
 using MissionPlanner.Library.DateTime.Domain;
+using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Commands;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.Services;
@@ -134,7 +135,7 @@ public sealed class VehicleCommandService(
 
         var packet = encoder.EncodeSetMode(vehicleId.SystemId, vehicleId.ComponentId, customMode);
 
-        await connection.SendRawAsync(packet, vehicleSession.IpEndPoint, cancellationToken);
+        await connection.SendRawAsync(packet, vehicleSession.EndPoint, cancellationToken);
 
         try
         {
@@ -164,7 +165,7 @@ public sealed class VehicleCommandService(
 
         var packet = encoder.EncodeArmDisarm(vehicleId.SystemId, vehicleId.ComponentId, arm);
 
-        await connection.SendRawAsync(packet, vehicleSession.IpEndPoint, cancellationToken).ConfigureAwait(false);
+        await connection.SendRawAsync(packet, vehicleSession.EndPoint, cancellationToken).ConfigureAwait(false);
 
         try
         {

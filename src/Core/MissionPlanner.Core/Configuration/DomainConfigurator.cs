@@ -2,10 +2,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MissionPlanner.Core.Commands;
-using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Services;
 using MissionPlanner.Core.VehicleHandler;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
+using MissionPlanner.MavLink.Client;
+using MissionPlanner.MavLink.Services;
+using MissionPlanner.Transport;
 
 namespace MissionPlanner.Core.Configuration;
 
@@ -22,25 +24,27 @@ public static class DomainConfigurator
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddDomainServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.TryAddSingleton<IVehicleMessagePump, VehicleMessagePump>();
-        services.TryAddSingleton<IVehicleConnectionMonitor, VehicleConnectionMonitor>();
+        services.TryAddTransient<IVehicleMessagePump, VehicleMessagePump>();
+        services.TryAddTransient<IVehicleConnectionMonitor, VehicleConnectionMonitor>();
 
-        services.TryAddSingleton<IHeartbeatVehicleHandler, HeartbeatVehicleHandler>();
-        services.TryAddSingleton<IAttitudeVehicleHandler, AttitudeVehicleHandler>();
-        services.TryAddSingleton<IBatteryVehicleHandler, BatteryVehicleHandler>();
-        services.TryAddSingleton<IPositionVehicleHandler, PositionVehicleHandler>();
-        services.TryAddSingleton<IStatusTextHandler, StatusTextHandler>();
+        services.TryAddTransient<IHeartbeatVehicleHandler, HeartbeatVehicleHandler>();
+        services.TryAddTransient<IAttitudeVehicleHandler, AttitudeVehicleHandler>();
+        services.TryAddTransient<IBatteryVehicleHandler, BatteryVehicleHandler>();
+        services.TryAddTransient<IPositionVehicleHandler, PositionVehicleHandler>();
+        services.TryAddTransient<IStatusTextHandler, StatusTextHandler>();
 
-        services.TryAddSingleton<IDomainEventHub, DomainEventHub>();
-        services.TryAddSingleton<ICommandAckTracker, CommandAckTracker>();
-        services.TryAddSingleton<IVehicleCommandPolicy, VehicleCommandPolicy>();
+        services.TryAddTransient<ICommandAckTracker, CommandAckTracker>();
+        services.TryAddTransient<IVehicleCommandPolicy, VehicleCommandPolicy>();
 
+        services.TryAddTransient<ISerialMavLinkTransport, SerialMavLinkTransport>();
+        services.TryAddTransient<IUdpMavLinkTransport, UdpMavLinkTransport>();
+        services.TryAddTransient<ITcpMavLinkTransport, TcpMavLinkTransport>();
 
         services.TryAddSingleton<IVehicleRegistry, VehicleRegistry>();
 
-        services.TryAddSingleton<ISerialPortDiscoveryService, SerialPortDiscoveryService>();
-        services.TryAddSingleton<IVehicleConnectionService, VehicleConnectionService>();
-        services.TryAddSingleton<IVehicleHudDataService, VehicleHudDataService>();
+        services.TryAddTransient<ISerialPortDiscoveryService, SerialPortDiscoveryService>();
+        services.TryAddTransient<IVehicleConnectionService, VehicleConnectionService>();
+        services.TryAddTransient<IVehicleHudDataService, VehicleHudDataService>();
 
         services.TryAddTransient<IVehicleCommandService, VehicleCommandService>();
         services.TryAddTransient<IVehicleService, VehicleService>();
@@ -61,6 +65,11 @@ public static class DomainConfigurator
         domainFactory.Add<IBatteryVehicleHandler, BatteryVehicleHandler>();
         domainFactory.Add<IPositionVehicleHandler, PositionVehicleHandler>();
         domainFactory.Add<IVehicleMessagePump, VehicleMessagePump>();
+        domainFactory.Add<ISerialMavLinkTransport, SerialMavLinkTransport>();
+        domainFactory.Add<IUdpMavLinkTransport, UdpMavLinkTransport>();
+        domainFactory.Add<ITcpMavLinkTransport, TcpMavLinkTransport>();
+        domainFactory.Add<IMavLinkClient, MavLinkClient>();
+        domainFactory.Add<IMavLinkConnection, MavLinkConnection>();
         return services;
     }
 }

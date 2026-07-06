@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 namespace MissionPlanner.Transport;
 
 /// <inheritdoc />
-public sealed class UdpMavLinkTransport : IMavLinkTransport
+public sealed class UdpMavLinkTransport : IUdpMavLinkTransport
 {
     private readonly ILogger<UdpMavLinkTransport> logger;
     private UdpClient? udpClient;
@@ -27,11 +27,20 @@ public sealed class UdpMavLinkTransport : IMavLinkTransport
         var remotePort = endpoint.RemotePort;
         var localPort = endpoint.LocalPort;
 
-        if (localPort is <= 0 or > 65535) throw new ArgumentOutOfRangeException(nameof(localPort));
+        if (localPort is <= 0 or > 65535)
+        {
+            throw new ArgumentOutOfRangeException(nameof(localPort));
+        }
 
-        if (remotePort is <= 0 or > 65535) throw new ArgumentOutOfRangeException(nameof(remotePort));
+        if (remotePort is <= 0 or > 65535)
+        {
+            throw new ArgumentOutOfRangeException(nameof(remotePort));
+        }
 
-        if (string.IsNullOrWhiteSpace(remoteHost)) throw new ArgumentException("Remote host must be specified.", nameof(remoteHost));
+        if (string.IsNullOrWhiteSpace(remoteHost))
+        {
+            throw new ArgumentException("Remote host must be specified.", nameof(remoteHost));
+        }
     }
 
     /// <inheritdoc />
@@ -57,30 +66,44 @@ public sealed class UdpMavLinkTransport : IMavLinkTransport
     /// <inheritdoc />
     public async ValueTask<TransportReceiveResult> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
     {
-        if (!isConnected) throw new InvalidOperationException("UDP transport is not connected.");
+        if (!isConnected)
+        {
+            throw new InvalidOperationException("UDP transport is not connected.");
+        }
 
-        if (udpClient is null) throw new InvalidOperationException("UDP Client is not initialized.");
+        if (udpClient is null)
+        {
+            throw new InvalidOperationException("UDP Client is not initialized.");
+        }
 
         var result = await udpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
         var bytesToCopy = Math.Min(result.Buffer.Length, buffer.Length);
         result.Buffer.AsMemory(0, bytesToCopy).CopyTo(buffer);
 
-        var remoteEndpoint = new MavLinkEndpoint(endpoint.Protocol, result.RemoteEndPoint.Address.ToString(), result.RemoteEndPoint.Port);
+        var remoteEndpoint = new TransportEndPoint("udp", result.RemoteEndPoint);
         logger.LogTrace("UdpMavLinkTransport - Received {Bytes} bytes from {RemoteEndPoint}", bytesToCopy, remoteEndpoint);
         return new TransportReceiveResult(bytesToCopy, remoteEndpoint);
     }
 
     /// <inheritdoc />
-    public async ValueTask WriteAsync(ReadOnlyMemory<byte> data, IPEndPoint ipEndpoint, CancellationToken cancellationToken)
+    public async ValueTask WriteAsync(ReadOnlyMemory<byte> data, TransportEndPoint endPoint, CancellationToken cancellationToken)
     {
-        if (!isConnected) throw new InvalidOperationException("UDP transport is not connected.");
+        if (!isConnected)
+        {
+            throw new InvalidOperationException("UDP transport is not connected.");
+        }
 
-        if (udpClient is null) throw new InvalidOperationException("UDP Client is not initialized.");
+        if (udpClient is null)
+        {
+            throw new InvalidOperationException("UDP Client is not initialized.");
+        }
 
+        var ipEndpoint = endPoint.ToIPEndPoint();
         logger.LogTrace("UdpMavLinkTransport - UDP sending {Length} bytes to {RemoteAddress}:{RemotePort}", data.Length, ipEndpoint.Address, ipEndpoint.Port);
 
         await udpClient.SendAsync(data, ipEndpoint, cancellationToken).ConfigureAwait(false);
     }
+
 
     /// <inheritdoc />
     public Task DisconnectAsync(CancellationToken cancellationToken = default)

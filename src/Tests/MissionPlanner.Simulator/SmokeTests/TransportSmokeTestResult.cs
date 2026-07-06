@@ -5,5 +5,5 @@ namespace MissionPlanner.Simulator.SmokeTests;
 public sealed record TransportSmokeTestResult(
     int BytesReceived,
     byte[] Data,
-    MavLinkEndpoint? RemoteEndpoint,
+    TransportEndPoint? RemoteEndpoint,
     DateTimeOffset ReceivedAt);

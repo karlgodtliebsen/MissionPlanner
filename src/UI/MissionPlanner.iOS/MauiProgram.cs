@@ -1,4 +1,5 @@
 ﻿using MissionPlanner.App;
+using MissionPlanner.App.Configuration;
 
 namespace MissionPlanner.iOS;
 
@@ -11,6 +12,8 @@ public static class MauiProgram
         builder
             .UseSharedMauiApp();
 
-        return builder.Build();
+        var host = builder.Build();
+        host.Services.UseApplication();
+        return host;
     }
 }

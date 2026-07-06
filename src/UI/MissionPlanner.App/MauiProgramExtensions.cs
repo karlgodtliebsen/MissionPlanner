@@ -1,13 +1,10 @@
 ﻿using CommunityToolkit.Maui;
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.Logging;
-
+using MissionPlanner.App.Configuration;
 using Mopups.Hosting;
-
 using SkiaSharp.Views.Maui.Controls.Hosting;
-
 using UraniumUI;
 
 namespace MissionPlanner.App;
@@ -26,9 +23,9 @@ public static class MauiProgramExtensions
     {
         List<IConfigurationSource> configurationSources = [new JsonConfigurationSource { Path = "appsettings.json", Optional = false, ReloadOnChange = true }];
 
-        ConfigurationManager configurationBuilder = builder.Configuration;
+        var configurationBuilder = builder.Configuration;
 
-        foreach (IConfigurationSource source in configurationSources)
+        foreach (var source in configurationSources)
         {
             configurationBuilder.Sources.Add(source);
         }
@@ -63,10 +60,10 @@ public static class MauiProgramExtensions
             });
 
 
-        Configuration.ApplicationConfigurator.AddApplicationConfiguration(builder.Services, builder.Configuration);
-
-        builder.Services.AddCommunityToolkitDialogs();
-        builder.Services.AddMopupsDialogs();
+        builder.Services
+            .AddApplicationConfiguration(builder.Configuration)
+            .AddCommunityToolkitDialogs()
+            .AddMopupsDialogs();
 
         return builder;
     }

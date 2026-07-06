@@ -1,9 +1,13 @@
 ﻿using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
 using MissionPlanner.Library.DateTime.Domain;
+using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Client;
+using MissionPlanner.MavLink.Services;
 using MissionPlanner.Transport;
 
 namespace MissionPlanner.Core.Services;
@@ -12,10 +16,14 @@ namespace MissionPlanner.Core.Services;
 /// Service for managing vehicle connections via MAVLink transport.
 /// Orchestrates transport creation, connection establishment, and vehicle registration.
 /// </summary>
-public class VehicleConnectionService(IDomainEventHub eventHub, IDateTimeProvider dateTimeProvider, ILoggerFactory loggerFactory, ILogger<VehicleConnectionService> logger)
+public class VehicleConnectionService(
+    IDomainEventHub domainEventHub,
+    IDateTimeProvider dateTimeProvider,
+    IDomainFactory domainFactory,
+    IServiceFactory serviceFactory,
+    ILogger<VehicleConnectionService> logger)
     : IVehicleConnectionService, IAsyncDisposable
 {
-    // private readonly IVehicleRegistry registry = registry;
     private readonly ConcurrentDictionary<VehicleId, ActiveConnection> activeConnections = new();
 
     /// <inheritdoc/>
@@ -23,6 +31,7 @@ public class VehicleConnectionService(IDomainEventHub eventHub, IDateTimeProvide
 
     /// <inheritdoc/>
     public IReadOnlyCollection<VehicleId> ConnectedVehicles => activeConnections.Keys.ToList();
+
 
     /// <inheritdoc/>
     public async Task<VehicleConnectionResult> ConnectSerialAsync(string portName, int baudRate = 57600, CancellationToken cancellationToken = default)
@@ -34,18 +43,28 @@ public class VehicleConnectionService(IDomainEventHub eventHub, IDateTimeProvide
 
         try
         {
-            logger.LogInformation("Connecting to vehicle via serial port {PortName} at {BaudRate} baud", portName, baudRate);
+            logger.LogInformation("Connecting to vehicle using serial port {PortName} at {BaudRate} baud", portName, baudRate);
+
+            var registry = serviceFactory.Create<IVehicleRegistry>();
+
+            // Publish Reset event
+            registry.Reset();
+
+            // Create serial transport options
+            var transportOptions = serviceFactory.Create<IOptions<TransportEndpoint>>();
+            transportOptions.Value.Protocol = "serial";
 
             // Create serial transport
-            var transportOptions = Microsoft.Extensions.Options.Options.Create(new TransportEndpoint("serial", 0, portName, 0, receiveBufferSize: 512));
-
-            var transport = new SerialMavLinkTransport(loggerFactory.CreateLogger<SerialMavLinkTransport>(), portName, baudRate);
-
+            var transport = domainFactory.Create<ISerialMavLinkTransport, string, int>(portName, baudRate);
             // Create MAVLink client
-            var client = new MavLinkClient(transport, transportOptions, dateTimeProvider, loggerFactory.CreateLogger<MavLinkClient>());
+            var client = domainFactory.Create<IMavLinkClient, ISerialMavLinkTransport, IOptions<TransportEndpoint>, IDateTimeProvider>(transport, transportOptions, dateTimeProvider);
 
-            // Connect
-            await transport.ConnectAsync(cancellationToken);
+            var messagePump = serviceFactory.Create<IVehicleMessagePump>();
+            var connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
+
+            await Task.Run(() => messagePump.StartAsync(cancellationToken), cancellationToken);
+            await Task.Run(() => connection.StartAsync(cancellationToken), cancellationToken);
+
 
             // Wait for heartbeat to identify vehicle
             var vehicleId = await WaitForVehicleHeartbeatAsync(client, cancellationToken);
@@ -54,15 +73,16 @@ public class VehicleConnectionService(IDomainEventHub eventHub, IDateTimeProvide
             {
                 await transport.DisconnectAsync(cancellationToken);
                 await PublishConnectionFailed("Serial", portName, "No heartbeat received from vehicle");
+                registry.Reset();
                 return new VehicleConnectionResult(false, null, "Timeout waiting for vehicle heartbeat");
             }
 
             // Store active connection
-            var connection = new ActiveConnection(vehicleId.Value, transport, client, "Serial", portName);
-            activeConnections[vehicleId.Value] = connection;
+            var activeConnection = new ActiveConnection(vehicleId.Value, transport, client, "Serial", portName);
+            activeConnections[vehicleId.Value] = activeConnection;
 
             // Publish success event
-            await eventHub.PublishAsync(new VehicleConnected(vehicleId.Value, "Serial", portName, dateTimeProvider.UtcNow), cancellationToken);
+            await domainEventHub.PublishAsync(new VehicleConnected(vehicleId.Value, "Serial", portName, dateTimeProvider.UtcNow), cancellationToken);
 
             logger.LogInformation("Successfully connected to vehicle {VehicleId} via serial port {PortName}", vehicleId, portName);
             return new VehicleConnectionResult(true, vehicleId.Value);
@@ -90,16 +110,13 @@ public class VehicleConnectionService(IDomainEventHub eventHub, IDateTimeProvide
             var endpoint = $"{host}:{port}";
 
             // Create transport options
-            var transportOptions = Microsoft.Extensions.Options.Options.Create(
-                new TransportEndpoint("tcp", port, host, 0, receiveBufferSize: 512));
+            var transportOptions = Options.Create(new TransportEndpoint("tcp", port, host, 0, receiveBufferSize: 512));
 
             // Create TCP transport
-            var transport = new TcpMavLinkTransport(
-                transportOptions,
-                loggerFactory.CreateLogger<TcpMavLinkTransport>());
-
+            var transport = domainFactory.Create<ITcpMavLinkTransport, IOptions<TransportEndpoint>>(transportOptions);
             // Create MAVLink client
-            var client = new MavLinkClient(transport, transportOptions, dateTimeProvider, loggerFactory.CreateLogger<MavLinkClient>());
+            var client = domainFactory.Create<IMavLinkClient, ITcpMavLinkTransport, IOptions<TransportEndpoint>, IDateTimeProvider>(transport, transportOptions, dateTimeProvider);
+
 
             // Connect
             await transport.ConnectAsync(cancellationToken);
@@ -119,7 +136,7 @@ public class VehicleConnectionService(IDomainEventHub eventHub, IDateTimeProvide
             activeConnections[vehicleId.Value] = connection;
 
             // Publish success event
-            await eventHub.PublishAsync(new VehicleConnected(vehicleId.Value, "TCP", endpoint, dateTimeProvider.UtcNow), cancellationToken);
+            await domainEventHub.PublishAsync(new VehicleConnected(vehicleId.Value, "TCP", endpoint, dateTimeProvider.UtcNow), cancellationToken);
 
             logger.LogInformation("Successfully connected to vehicle {VehicleId} via TCP {Endpoint}", vehicleId, endpoint);
             return new VehicleConnectionResult(true, vehicleId.Value);
@@ -142,13 +159,11 @@ public class VehicleConnectionService(IDomainEventHub eventHub, IDateTimeProvide
             var endpoint = $"UDP:{localPort}";
 
             // Create transport options
-            var transportOptions = Microsoft.Extensions.Options.Options.Create(new TransportEndpoint("udp", remotePort ?? 14550, remoteHost ?? "127.0.0.1", localPort, receiveBufferSize: 512));
-
+            var transportOptions = Options.Create(new TransportEndpoint("udp", remotePort ?? 14550, remoteHost ?? "127.0.0.1", localPort, receiveBufferSize: 512));
             // Create UDP transport
-            var transport = new UdpMavLinkTransport(transportOptions, loggerFactory.CreateLogger<UdpMavLinkTransport>());
-
+            var transport = domainFactory.Create<IUdpMavLinkTransport, IOptions<TransportEndpoint>>(transportOptions);
             // Create MAVLink client
-            var client = new MavLinkClient(transport, transportOptions, dateTimeProvider, loggerFactory.CreateLogger<MavLinkClient>());
+            var client = domainFactory.Create<IMavLinkClient, IUdpMavLinkTransport, IOptions<TransportEndpoint>, IDateTimeProvider>(transport, transportOptions, dateTimeProvider);
 
             // Connect
             await transport.ConnectAsync(cancellationToken);
@@ -168,7 +183,7 @@ public class VehicleConnectionService(IDomainEventHub eventHub, IDateTimeProvide
             activeConnections[vehicleId.Value] = connection;
 
             // Publish success event
-            await eventHub.PublishAsync(new VehicleConnected(vehicleId.Value, "UDP", endpoint, dateTimeProvider.UtcNow), cancellationToken);
+            await domainEventHub.PublishAsync(new VehicleConnected(vehicleId.Value, "UDP", endpoint, dateTimeProvider.UtcNow), cancellationToken);
 
             logger.LogInformation("Successfully connected to vehicle {VehicleId} via UDP {Endpoint}", vehicleId, endpoint);
             return new VehicleConnectionResult(true, vehicleId.Value);
@@ -198,7 +213,7 @@ public class VehicleConnectionService(IDomainEventHub eventHub, IDateTimeProvide
             await connection.Transport.DisconnectAsync(cancellationToken);
             await connection.Transport.DisposeAsync();
 
-            await eventHub.PublishAsync(new VehicleDisconnected(vehicleId, dateTimeProvider.UtcNow, "User requested disconnect"), cancellationToken);
+            await domainEventHub.PublishAsync(new VehicleDisconnected(vehicleId, dateTimeProvider.UtcNow, "User requested disconnect"), cancellationToken);
 
             logger.LogInformation("Successfully disconnected vehicle {VehicleId}", vehicleId);
         }
@@ -232,7 +247,7 @@ public class VehicleConnectionService(IDomainEventHub eventHub, IDateTimeProvide
         var tcs = new TaskCompletionSource<VehicleId?>();
 
         // Subscribe to vehicle registered event (fires when heartbeat handler identifies a vehicle)
-        var subscription = eventHub.SubscribeDomainEvent<VehicleRegistered>(evt =>
+        var subscription = domainEventHub.SubscribeDomainEvent<VehicleRegistered>(evt =>
         {
             vehicleId = evt.VehicleId;
             tcs.TrySetResult(vehicleId);
@@ -268,7 +283,7 @@ public class VehicleConnectionService(IDomainEventHub eventHub, IDateTimeProvide
 
     private async Task PublishConnectionFailed(string connectionType, string endpoint, string error)
     {
-        await eventHub.PublishAsync(new ConnectionFailed(connectionType, endpoint, error, dateTimeProvider.UtcNow));
+        await domainEventHub.PublishAsync(new ConnectionFailed(connectionType, endpoint, error, dateTimeProvider.UtcNow));
     }
 
     /// <inheritdoc />

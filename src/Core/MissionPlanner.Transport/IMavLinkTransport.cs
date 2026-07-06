@@ -1,4 +1,4 @@
-﻿using System.Net;
+﻿using MissionPlanner.Library;
 
 namespace MissionPlanner.Transport;
 
@@ -36,8 +36,8 @@ public interface IMavLinkTransport : IAsyncDisposable
     /// Writes data to the transport.
     /// </summary>
     /// <param name="data">The data to write.</param>
-    /// <param name="ipEndpoint"></param>
+    /// <param name="endPoint">The endpoint to write to.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
-    ValueTask WriteAsync(ReadOnlyMemory<byte> data, IPEndPoint ipEndpoint, CancellationToken cancellationToken);
+    ValueTask WriteAsync(ReadOnlyMemory<byte> data, TransportEndPoint endPoint, CancellationToken cancellationToken);
 }

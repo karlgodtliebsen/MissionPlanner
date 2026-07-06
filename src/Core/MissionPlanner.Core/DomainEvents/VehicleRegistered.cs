@@ -18,3 +18,14 @@ public class VehicleRegistered : DomainEvent<VehicleId>
     {
     }
 }
+
+/// <summary>
+/// Event that is triggered when a vehicle registry is reset.
+/// </summary>
+public class VehicleRegistryReset : DomainEvent
+{
+    /// <inheritdoc />
+    public VehicleRegistryReset() : base("VehicleRegistryReset")
+    {
+    }
+}

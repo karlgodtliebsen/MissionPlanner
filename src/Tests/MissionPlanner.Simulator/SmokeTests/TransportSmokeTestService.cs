@@ -1,5 +1,5 @@
 ﻿using System.Net;
-
+using MissionPlanner.Library;
 using MissionPlanner.Transport;
 
 namespace MissionPlanner.Simulator.SmokeTests;
@@ -18,7 +18,7 @@ public sealed class TransportSmokeTestService(IMavLinkTransport transport) : ITr
             await transport.ConnectAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        await transport.WriteAsync(payload, ipEndPoint, cancellationToken).ConfigureAwait(false);
+        await transport.WriteAsync(payload, ipEndPoint.ToEndPoint(), cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -31,7 +31,7 @@ public sealed class TransportSmokeTestService(IMavLinkTransport transport) : ITr
 
         using CancellationTokenSource timeoutCts = new(timeout);
 
-        using CancellationTokenSource linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
 
         var buffer = new byte[1024];
 

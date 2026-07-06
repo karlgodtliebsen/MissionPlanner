@@ -12,9 +12,15 @@ public sealed class GlobalPositionIntMessageDecoder : IMavLinkMessageDecoder
     {
         message = null;
 
-        if (frame.MessageId != MessageIds.GlobalPositionInt) return false;
+        if (frame.MessageId != MessageIds.GlobalPositionInt)
+        {
+            return false;
+        }
 
-        if (frame.Payload.Length < 28) return false;
+        if (frame.Payload.Length < 28)
+        {
+            return false;
+        }
 
         var span = frame.Payload.Span;
 
@@ -25,7 +31,7 @@ public sealed class GlobalPositionIntMessageDecoder : IMavLinkMessageDecoder
         message = new GlobalPositionIntMessage(
             frame.SystemId,
             frame.ComponentId,
-            frame.IPEndPoint,
+            frame.EndPoint,
             latRaw / 10_000_000.0,
             lonRaw / 10_000_000.0,
             altRaw / 1000.0,

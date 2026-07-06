@@ -14,9 +14,15 @@ public sealed class CommandAckMessageDecoder : IMavLinkMessageDecoder
     {
         message = null;
 
-        if (frame.MessageId != MessageIds.CommandAck) return false;
+        if (frame.MessageId != MessageIds.CommandAck)
+        {
+            return false;
+        }
 
-        if (frame.Payload.Length < 3) return false;
+        if (frame.Payload.Length < 3)
+        {
+            return false;
+        }
 
         var span = frame.Payload.Span;
 
@@ -27,7 +33,7 @@ public sealed class CommandAckMessageDecoder : IMavLinkMessageDecoder
         message = new CommandAckMessage(
             frame.SystemId,
             frame.ComponentId,
-            frame.IPEndPoint,
+            frame.EndPoint,
             command,
             result,
             frame.ReceivedAt);

@@ -1,4 +1,5 @@
 ﻿using MissionPlanner.App;
+using MissionPlanner.App.Configuration;
 
 namespace MissionPlanner.WinUI;
 
@@ -13,11 +14,12 @@ public static class MauiProgram
     /// <returns></returns>
     public static MauiApp CreateMauiApp()
     {
-        MauiAppBuilder builder = MauiApp.CreateBuilder();
+        var builder = MauiApp.CreateBuilder();
 
         builder
             .UseSharedMauiApp();
-
-        return builder.Build();
+        var host = builder.Build();
+        host.Services.UseApplication();
+        return host;
     }
 }

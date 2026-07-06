@@ -1,5 +1,4 @@
-﻿using System.Net;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Transport;
@@ -131,10 +130,10 @@ public sealed class MavLinkClient : IMavLinkClient
     /// Sends data to the MAVLink transport.
     /// </summary>
     /// <param name="data">The data to send.</param>
-    /// <param name="ipEndpoint">The IP endpoint to send the data to.</param>
+    /// <param name="endPoint"></param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <exception cref="InvalidOperationException">Thrown if the transport is not connected.</exception>
-    public async ValueTask SendAsync(ReadOnlyMemory<byte> data, IPEndPoint ipEndpoint, CancellationToken cancellationToken = default)
+    public async ValueTask SendAsync(ReadOnlyMemory<byte> data, TransportEndPoint endPoint, CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
 
@@ -143,7 +142,7 @@ public sealed class MavLinkClient : IMavLinkClient
             throw new InvalidOperationException("Transport is not connected.");
         }
 
-        await transport.WriteAsync(data, ipEndpoint, cancellationToken).ConfigureAwait(false);
+        await transport.WriteAsync(data, endPoint, cancellationToken).ConfigureAwait(false);
         logger.LogTrace("MavLinkClient - Sent {Bytes} bytes to MAVLink transport.", data.Length);
     }
 

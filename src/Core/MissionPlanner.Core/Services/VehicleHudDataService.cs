@@ -3,6 +3,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
+using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.Core.Services;
 
@@ -124,7 +125,7 @@ public sealed class VehicleHudDataService : IVehicleHudDataService, IDisposable
     private static VehicleHudData TransformToHudData(VehicleState state)
     {
         // Convert yaw (-180 to 180) to heading (0 to 360)
-        double heading = state.Yaw.HasValue
+        var heading = state.Yaw.HasValue
             ? (state.Yaw.Value + 360) % 360
             : 0;
 
@@ -140,24 +141,24 @@ public sealed class VehicleHudDataService : IVehicleHudDataService, IDisposable
         double airSpeed = 0;
 
         // GPS satellites count (would need GPS status message)
-        int gpsSatellites = 0;
+        var gpsSatellites = 0;
 
         return new VehicleHudData(
-            VehicleId: state.VehicleId,
-            Pitch: state.Pitch ?? 0,
-            Roll: state.Roll ?? 0,
-            Heading: heading,
-            Yaw: state.Yaw ?? 0,
-            AirSpeed: airSpeed,
-            GroundSpeed: groundSpeed,
-            Altitude: state.Altitude ?? 0,
-            VerticalSpeed: verticalSpeed,
-            BatteryVoltage: state.BatteryVoltage ?? 0,
-            BatteryRemaining: state.BatteryRemaining ?? 0,
-            GpsSatellites: gpsSatellites,
-            IsArmed: state.IsArmed,
-            Mode: state.Mode,
-            Latitude: state.Latitude,
-            Longitude: state.Longitude);
+            state.VehicleId,
+            state.Pitch ?? 0,
+            state.Roll ?? 0,
+            heading,
+            state.Yaw ?? 0,
+            airSpeed,
+            groundSpeed,
+            state.Altitude ?? 0,
+            verticalSpeed,
+            state.BatteryVoltage ?? 0,
+            state.BatteryRemaining ?? 0,
+            gpsSatellites,
+            state.IsArmed,
+            state.Mode,
+            state.Latitude,
+            state.Longitude);
     }
 }

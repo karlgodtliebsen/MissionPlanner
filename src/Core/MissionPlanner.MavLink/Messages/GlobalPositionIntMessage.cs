@@ -1,4 +1,4 @@
-﻿using System.Net;
+﻿using MissionPlanner.Transport;
 
 namespace MissionPlanner.MavLink.Messages;
 
@@ -10,12 +10,12 @@ namespace MissionPlanner.MavLink.Messages;
 /// <param name="Latitude">The latitude in degrees.</param>
 /// <param name="Longitude">The longitude in degrees.</param>
 /// <param name="Altitude">The altitude in meters.</param>
-/// <param name="IPEndPoint">The IP endpoint from which the message was received.</param>
+/// <param name="EndPoint">The endpoint from which the message was received.</param>
 /// <param name="ReceivedAt">The timestamp when the message was received.</param>
 public sealed record GlobalPositionIntMessage(
     byte SystemId,
     byte ComponentId,
-    IPEndPoint IPEndPoint,
+    TransportEndPoint EndPoint,
     double Latitude,
     double Longitude,
     double Altitude,
@@ -24,5 +24,5 @@ public sealed record GlobalPositionIntMessage(
         SystemId,
         ComponentId,
         MessageIds.GlobalPositionInt,
-        IPEndPoint,
+        EndPoint,
         ReceivedAt);

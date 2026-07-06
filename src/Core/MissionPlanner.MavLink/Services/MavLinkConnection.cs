@@ -1,5 +1,4 @@
-﻿using System.Net;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.Transport;
@@ -52,13 +51,14 @@ public sealed class MavLinkConnection : IMavLinkConnection
     /// Sends raw MAVLink data through the connection.
     /// </summary>
     /// <param name="data">The raw MAVLink data to send.</param>
-    /// <param name="ipEndpoint"></param>
+    /// <param name="endPoint"></param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-    public async ValueTask SendRawAsync(ReadOnlyMemory<byte> data, IPEndPoint ipEndpoint, CancellationToken cancellationToken = default)
+    public async ValueTask SendRawAsync(ReadOnlyMemory<byte> data, TransportEndPoint endPoint, CancellationToken cancellationToken = default)
     {
         logger.LogTrace("MavLinkConnection - Sending raw MAVLink data.");
-        await client.SendAsync(data, ipEndpoint, cancellationToken).ConfigureAwait(false);
+        await client.SendAsync(data, endPoint, cancellationToken).ConfigureAwait(false);
     }
+
 
     private async Task OnDataReceivedAsync(MavLinkDataReceived received, CancellationToken cancellationToken)
     {
@@ -74,9 +74,6 @@ public sealed class MavLinkConnection : IMavLinkConnection
             if (messageDecoder.TryDecode(frame, out var message) && message is not null)
             {
                 logger.LogTrace("MavLinkConnection - Writing Decoded Message { MessageType}", message.GetType().Name);
-
-                //IPEndPoint ipEndpoint,
-
                 await eventHub.PublishAsync(MavLinkEventTopics.ReceivedMessage, message, cancellationToken);
                 return;
             }

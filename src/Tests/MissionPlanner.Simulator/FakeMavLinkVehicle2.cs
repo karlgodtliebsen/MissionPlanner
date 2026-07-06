@@ -1,12 +1,12 @@
 ﻿using System.Buffers.Binary;
 using System.Net;
 using System.Net.Sockets;
-
 using MissionPlanner.Core.Models;
 using MissionPlanner.MavLink;
 using MissionPlanner.MavLink.Commands;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
+using MissionPlanner.Transport;
 
 namespace MissionPlanner.Simulator;
 
@@ -95,11 +95,11 @@ public sealed class FakeMavLinkVehicle2 : IAsyncDisposable
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            UdpReceiveResult result = await udpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+            var result = await udpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
 
-            IReadOnlyList<MavLinkFrame> frames = frameParser.Parse(result.Buffer, new IPEndPoint(result.RemoteEndPoint.Address, result.RemoteEndPoint.Port), DateTimeOffset.UtcNow);
+            var frames = frameParser.Parse(result.Buffer, new TransportEndPoint("udp", result.RemoteEndPoint), DateTimeOffset.UtcNow);
 
-            foreach (MavLinkFrame frame in frames)
+            foreach (var frame in frames)
             {
                 if (frame.MessageId == MessageIds.CommandLong)
                 {
@@ -119,11 +119,7 @@ public sealed class FakeMavLinkVehicle2 : IAsyncDisposable
             ? (byte)(state.BaseMode | mavModeFlagSafetyArmed)
             : (byte)(state.BaseMode & ~mavModeFlagSafetyArmed);
 
-        state = state with
-        {
-            BaseMode = newBaseMode,
-            IsArmed = arm
-        };
+        state = state with { BaseMode = newBaseMode, IsArmed = arm };
         if (!acknowledgeCommands)
         {
             return;
@@ -138,11 +134,7 @@ public sealed class FakeMavLinkVehicle2 : IAsyncDisposable
     {
         var customMode = (uint)ReadFloat(frame.Payload.Span[4..8]);
 
-        state = state with
-        {
-            CustomMode = customMode,
-            Mode = ArduCopterModeMapper.ToVehicleMode(customMode)
-        };
+        state = state with { CustomMode = customMode, Mode = ArduCopterModeMapper.ToVehicleMode(customMode) };
         if (!acknowledgeCommands)
         {
             return;

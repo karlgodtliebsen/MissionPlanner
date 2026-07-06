@@ -1,5 +1,4 @@
 ﻿using System.IO.Ports;
-using System.Net;
 using Microsoft.Extensions.Logging;
 
 namespace MissionPlanner.Transport;
@@ -7,11 +6,11 @@ namespace MissionPlanner.Transport;
 /// <summary>
 /// Represents a MAVLink transport that communicates over a serial port.
 /// </summary>
-public sealed class SerialMavLinkTransport : IMavLinkTransport
+public sealed class SerialMavLinkTransport : ISerialMavLinkTransport
 {
     private readonly ILogger<SerialMavLinkTransport> logger;
     private readonly SerialPort serialPort;
-    private readonly MavLinkEndpoint endpoint;
+    private readonly TransportEndPoint endpoint;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SerialMavLinkTransport"/> class.
@@ -24,14 +23,12 @@ public sealed class SerialMavLinkTransport : IMavLinkTransport
     {
         if (string.IsNullOrWhiteSpace(portName))
         {
-            throw new ArgumentException("LocalPort name must be specified.", nameof(portName));
+            throw new ArgumentException("PortName must be specified.", nameof(portName));
         }
 
         this.logger = logger;
-
         serialPort = new SerialPort(portName, baudRate, Parity.None, 8, StopBits.One) { ReadTimeout = Timeout.Infinite, WriteTimeout = Timeout.Infinite };
-
-        endpoint = new MavLinkEndpoint("serial", portName);
+        endpoint = new TransportEndPoint("serial", portName);
     }
 
     /// <inheritdoc />
@@ -67,7 +64,7 @@ public sealed class SerialMavLinkTransport : IMavLinkTransport
     }
 
     /// <inheritdoc />
-    public async ValueTask WriteAsync(ReadOnlyMemory<byte> data, IPEndPoint ipEndpoint, CancellationToken cancellationToken)
+    public async ValueTask WriteAsync(ReadOnlyMemory<byte> data, TransportEndPoint endPoint, CancellationToken cancellationToken)
     {
         if (!IsConnected)
         {
@@ -79,6 +76,7 @@ public sealed class SerialMavLinkTransport : IMavLinkTransport
             .ConfigureAwait(false);
         logger.LogTrace("Wrote {BytesWritten} bytes to serial port {PortName}.", data.Length, serialPort.PortName);
     }
+
 
     /// <inheritdoc />
     public Task DisconnectAsync(CancellationToken cancellationToken = default)

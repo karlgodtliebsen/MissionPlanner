@@ -56,6 +56,7 @@ public static class ApplicationConfigurator
 
         services
             .AddLibraryServices()
+            .AddEventHubServices()
             .AddDomainServices(configuration)
             .AddMavLinkTransportServices(configuration)
             .AddMavLinkServices(configuration)
@@ -124,7 +125,6 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<HelpViewModel>();
         services.TryAddSingleton<HelpView>();
 
-
         return services;
     }
 
@@ -138,32 +138,10 @@ public static class ApplicationConfigurator
     {
         var logger = serviceProvider.GetRequiredService<ILogger<ApplicationOptions>>();
         logger.LogInformation("UseApplication - Setting up Application Operations");
-
-        //var endPoint = serviceProvider.GetRequiredService<IOptions<TransportEndpoint>>();
-
-        //endPoint.Value.RemoteHost = "127.0.0.1";
-        //endPoint.Value.RemotePort = 14551;
-
-        //endPoint.Value.LocalHost = "0.0.0.0";
-        //endPoint.Value.LocalPort = 14550;
-        //logger.LogInformation($"Console configuration initialized. UDP local:  {endPoint.Value.LocalHost}:{endPoint.Value.LocalPort}");
-        //logger.LogInformation($"Console configuration initialized. UDP remote: {endPoint.Value.RemoteHost}:{endPoint.Value.RemotePort}");
-
-        //serviceProvider.GetRequiredService<MessagesPageViewModel>().SetupSubscriptions();
-        //serviceProvider.GetRequiredService<DashboardPageViewModel>().SetupSubscriptions();
-
-        //serviceProvider.GetRequiredService<DashboardPage>();
-        //serviceProvider.GetRequiredService<SettingsPage>();
-        //serviceProvider.GetRequiredService<MessagesPage>();
-
-
-        //serviceProvider.GetRequiredService<Views.Vehicles.VehiclesPage>();
-        //serviceProvider.GetRequiredService<VehiclesView>();
-
-        //serviceProvider
-        //    .UseMavLinkServices()
-        //    .UseDomainServices()
-        //    ;
+        serviceProvider
+            .UseMavLinkServices()
+            .UseDomainServices()
+            ;
 
         return serviceProvider;
     }

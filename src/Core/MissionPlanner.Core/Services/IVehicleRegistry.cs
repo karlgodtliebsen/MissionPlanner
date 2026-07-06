@@ -1,5 +1,5 @@
-﻿using System.Net;
-using MissionPlanner.Core.Models;
+﻿using MissionPlanner.Core.Models;
+using MissionPlanner.Transport;
 
 namespace MissionPlanner.Core.Services;
 
@@ -20,6 +20,12 @@ public interface IVehicleRegistry
     /// </summary>
     IReadOnlyCollection<VehicleSession> Vehicles { get; }
 
+
+    /// <summary>
+    /// Resets the vehicle registry, clearing all registered vehicle sessions.
+    /// </summary>
+    void Reset();
+
     /// <summary>
     /// Updates the connection states of all registered vehicle sessions based on the elapsed time since their last heartbeat.
     /// </summary>
@@ -33,7 +39,7 @@ public interface IVehicleRegistry
     /// Registers a new vehicle or updates an existing vehicle's state based on a received heartbeat message. 
     /// </summary>
     /// <param name="vehicleId">The unique identifier of the vehicle.</param>
-    /// <param name="ipEndPoint">The IP endpoint of the vehicle.</param>
+    /// <param name="endPoint">The endpoint of the vehicle.</param>
     /// <param name="customMode">The custom mode of the vehicle.</param>
     /// <param name="vehicleType">The type of the vehicle.</param>
     /// <param name="autopilot">The autopilot type of the vehicle.</param>
@@ -44,7 +50,7 @@ public interface IVehicleRegistry
     /// <returns>The updated or newly registered vehicle session.</returns>
     VehicleRegistryResult RegisterOrUpdateHeartbeat(
         VehicleId vehicleId,
-        IPEndPoint ipEndPoint,
+        TransportEndPoint endPoint,
         uint customMode,
         byte vehicleType,
         byte autopilot,

@@ -1,5 +1,4 @@
-﻿using System.Net;
-using MissionPlanner.Transport;
+﻿using MissionPlanner.Transport;
 
 namespace MissionPlanner.MavLink.Services;
 
@@ -27,57 +26,50 @@ public sealed class MavLinkV2FrameParser : IMavLinkFrameParser
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<MavLinkFrame> Parse(ReadOnlySpan<byte> data, MavLinkEndpoint? remoteEndpoint, DateTimeOffset receivedAt)
+    public IReadOnlyList<MavLinkFrame> Parse(ReadOnlySpan<byte> data, TransportEndPoint endPoint, DateTimeOffset receivedAt)
     {
-        foreach (var b in data) buffer.Add(b);
+        foreach (var b in data)
+        {
+            buffer.Add(b);
+        }
 
         var frames = new List<MavLinkFrame>();
 
-        var localAddress = string.IsNullOrWhiteSpace(remoteEndpoint.Address)
-            ? IPAddress.Any
-            : IPAddress.Parse(remoteEndpoint.Address);
-        var ipEndPoint = new IPEndPoint(localAddress, remoteEndpoint.Port ?? 0);
-
-        while (TryReadFrame(ipEndPoint, receivedAt, out var frame))
+        while (TryReadFrame(endPoint, receivedAt, out var frame))
+        {
             if (frame is not null)
+            {
                 frames.Add(frame);
+            }
+        }
 
         return frames;
     }
 
-    /// <inheritdoc />
-    public IReadOnlyList<MavLinkFrame> Parse(ReadOnlySpan<byte> data, IPEndPoint ipEndPoint, DateTimeOffset receivedAt)
-    {
-        foreach (var b in data) buffer.Add(b);
-
-        var frames = new List<MavLinkFrame>();
-
-        while (TryReadFrame(ipEndPoint, receivedAt, out var frame))
-            if (frame is not null)
-                frames.Add(frame);
-
-        return frames;
-    }
-
-    private bool TryReadFrame(IPEndPoint ipEndPoint, DateTimeOffset receivedAt, out MavLinkFrame? frame)
+    private bool TryReadFrame(TransportEndPoint endPoint, DateTimeOffset receivedAt, out MavLinkFrame? frame)
     {
         frame = null;
 
-        while (buffer.Count > 0 && buffer[0] != MavLinkV2Magic) buffer.RemoveAt(0);
+        while (buffer.Count > 0 && buffer[0] != MavLinkV2Magic)
+        {
+            buffer.RemoveAt(0);
+        }
 
-        if (buffer.Count < HeaderLength) return false;
+        if (buffer.Count < HeaderLength)
+        {
+            return false;
+        }
 
         var payloadLength = buffer[1];
         var incompatFlags = buffer[2];
         var isSigned = (incompatFlags & 0x01) != 0;
 
-        var frameLength =
-            HeaderLength
-            + payloadLength
-            + ChecksumLength
-            + (isSigned ? SignatureLength : 0);
+        var frameLength = HeaderLength + payloadLength + ChecksumLength + (isSigned ? SignatureLength : 0);
 
-        if (buffer.Count < frameLength) return false;
+        if (buffer.Count < frameLength)
+        {
+            return false;
+        }
 
         var rawBytes = buffer.Take(frameLength).ToArray();
 
@@ -90,10 +82,12 @@ public sealed class MavLinkV2FrameParser : IMavLinkFrameParser
         var messageId = rawBytes[7] | ((uint)rawBytes[8] << 8) | ((uint)rawBytes[9] << 16);
 
         if (!crcExtraProvider.TryGetCrcExtra(messageId, out var crcExtra))
+        {
             // Unknown message id for current dialect/provider.
             // Frame boundary was valid, but we cannot validate CRC.
             // Skip frame and keep parsing subsequent buffered data.
             return true;
+        }
 
         var receivedCrcOffset = HeaderLength + payloadLength;
 
@@ -102,20 +96,14 @@ public sealed class MavLinkV2FrameParser : IMavLinkFrameParser
         var calculatedCrc = MavLinkCrc.Calculate(rawBytes.AsSpan(1, HeaderLength - 1 + payloadLength), crcExtra);
 
         if (receivedCrc != calculatedCrc)
+        {
             // Invalid frame. Skip it and keep parsing subsequent data.
             return true;
+        }
 
         var payload = rawBytes.AsMemory(HeaderLength, payloadLength).ToArray();
 
-        frame = new MavLinkFrame(
-            systemId,
-            componentId,
-            ipEndPoint,
-            messageId,
-            sequence,
-            payload,
-            rawBytes,
-            receivedAt);
+        frame = new MavLinkFrame(systemId, componentId, endPoint, messageId, sequence, payload, rawBytes, receivedAt);
 
         return true;
     }

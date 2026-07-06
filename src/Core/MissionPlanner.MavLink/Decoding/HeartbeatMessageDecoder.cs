@@ -19,10 +19,16 @@ public sealed class HeartbeatMessageDecoder : IMavLinkMessageDecoder
     {
         message = null;
 
-        if (frame.MessageId != MessageIds.Heartbeat) return false;
+        if (frame.MessageId != MessageIds.Heartbeat)
+        {
+            return false;
+        }
 
         //        if (frame.Payload.Length != 9) return false;
-        if (frame.Payload.Length < 9) return false;
+        if (frame.Payload.Length < 9)
+        {
+            return false;
+        }
 
         var span = frame.Payload.Span;
 
@@ -31,7 +37,7 @@ public sealed class HeartbeatMessageDecoder : IMavLinkMessageDecoder
         message = new HeartbeatMessage(
             frame.SystemId,
             frame.ComponentId,
-            frame.IPEndPoint,
+            frame.EndPoint,
             customMode,
             span[4],
             span[5],

@@ -12,16 +12,22 @@ public sealed class AttitudeMessageDecoder : IMavLinkMessageDecoder
     {
         message = null;
 
-        if (frame.MessageId != MessageIds.Attitude) return false;
+        if (frame.MessageId != MessageIds.Attitude)
+        {
+            return false;
+        }
 
-        if (frame.Payload.Length < 28) return false;
+        if (frame.Payload.Length < 28)
+        {
+            return false;
+        }
 
         var span = frame.Payload.Span;
 
         message = new AttitudeMessage(
             frame.SystemId,
             frame.ComponentId,
-            frame.IPEndPoint,
+            frame.EndPoint,
             ReadSingle(span[4..8]),
             ReadSingle(span[8..12]),
             ReadSingle(span[12..16]),

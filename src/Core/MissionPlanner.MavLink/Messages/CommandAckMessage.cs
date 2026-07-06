@@ -1,4 +1,4 @@
-﻿using System.Net;
+﻿using MissionPlanner.Transport;
 
 namespace MissionPlanner.MavLink.Messages;
 
@@ -7,14 +7,14 @@ namespace MissionPlanner.MavLink.Messages;
 /// </summary>
 /// <param name="SystemId"></param>
 /// <param name="ComponentId"></param>
-/// <param name="IPEndPoint">The IP endpoint from which the message was received.</param>
+/// <param name="EndPoint">The  endpoint from which the message was received.</param>
 /// <param name="Command"></param>
 /// <param name="Result"></param>
 /// <param name="ReceivedAt"></param>
 public sealed record CommandAckMessage(
     byte SystemId,
     byte ComponentId,
-    IPEndPoint IPEndPoint,
+    TransportEndPoint EndPoint,
     ushort Command,
     byte Result,
     DateTimeOffset ReceivedAt)
@@ -22,5 +22,5 @@ public sealed record CommandAckMessage(
         SystemId,
         ComponentId,
         MessageIds.CommandAck,
-        IPEndPoint,
+        EndPoint,
         ReceivedAt);

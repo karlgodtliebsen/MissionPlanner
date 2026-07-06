@@ -1,4 +1,4 @@
-﻿using System.Net;
+﻿using MissionPlanner.Transport;
 
 namespace MissionPlanner.MavLink.Messages;
 
@@ -10,12 +10,12 @@ namespace MissionPlanner.MavLink.Messages;
 /// <param name="Roll">The roll angle in radians.</param>
 /// <param name="Pitch">The pitch angle in radians.</param>
 /// <param name="Yaw">The yaw angle in radians.</param>
-/// <param name="IPEndPoint">The IP endpoint from which the message was received.</param>
+/// <param name="EndPoint">The endpoint from which the message was received.</param>
 /// <param name="ReceivedAt">The timestamp when the message was received.</param>
 public sealed record AttitudeMessage(
     byte SystemId,
     byte ComponentId,
-    IPEndPoint IPEndPoint,
+    TransportEndPoint EndPoint,
     double Roll,
     double Pitch,
     double Yaw,
@@ -24,5 +24,5 @@ public sealed record AttitudeMessage(
         SystemId,
         ComponentId,
         MessageIds.Attitude,
-        IPEndPoint,
+        EndPoint,
         ReceivedAt);

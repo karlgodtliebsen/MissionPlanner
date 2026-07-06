@@ -12,21 +12,23 @@ public sealed class SysStatusMessageDecoder : IMavLinkMessageDecoder
     {
         message = null;
 
-        if (frame.MessageId != MessageIds.SysStatus) return false;
+        if (frame.MessageId != MessageIds.SysStatus)
+        {
+            return false;
+        }
 
-        if (frame.Payload.Length < 31) return false;
+        if (frame.Payload.Length < 31)
+        {
+            return false;
+        }
 
         var span = frame.Payload.Span;
 
-        var voltageBatteryMv =
-            BinaryPrimitives.ReadUInt16LittleEndian(span[14..16]);
+        var voltageBatteryMv = BinaryPrimitives.ReadUInt16LittleEndian(span[14..16]);
 
         var batteryRemainingRaw = unchecked((sbyte)span[30]);
 
-        float? voltage =
-            voltageBatteryMv == ushort.MaxValue
-                ? null
-                : voltageBatteryMv / 1000.0f;
+        float? voltage = voltageBatteryMv == ushort.MaxValue ? null : voltageBatteryMv / 1000.0f;
 
         int? batteryRemaining =
             batteryRemainingRaw < 0
@@ -36,7 +38,7 @@ public sealed class SysStatusMessageDecoder : IMavLinkMessageDecoder
         message = new SysStatusMessage(
             frame.SystemId,
             frame.ComponentId,
-            frame.IPEndPoint,
+            frame.EndPoint,
             batteryRemaining,
             voltage,
             frame.ReceivedAt);

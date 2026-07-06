@@ -1,7 +1,8 @@
-﻿using System.Net;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
+using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.Transport;
 
 namespace MissionPlanner.Core.Services;
 
@@ -31,6 +32,18 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, ILogger<VehicleReg
     public IReadOnlyCollection<VehicleSession> Vehicles => vehicles.Values.ToArray();
 
     /// <inheritdoc />
+    public void Reset()
+    {
+        foreach (var vehicle in vehicles.Values)
+        {
+            eventHub.PublishDomainEvent(new VehicleStateUpdated(vehicle.State with { ConnectionState = VehicleConnectionState.Offline }));
+        }
+
+        vehicles.Clear();
+        eventHub.PublishDomainEvent(new VehicleRegistryReset());
+    }
+
+    /// <inheritdoc />
     public VehicleUpdateConnectionStateResult UpdateConnectionStates(DateTimeOffset now, TimeSpan staleAfter, TimeSpan degradedAfter, TimeSpan offlineAfter)
     {
         var result = new List<VehicleSession>();
@@ -39,7 +52,10 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, ILogger<VehicleReg
             result.Add(vehicle);
             var stateChanged = vehicle.UpdateConnectionState(now, staleAfter, degradedAfter, offlineAfter);
             eventHub.PublishDomainEvent(new VehicleStateUpdated(vehicle.State));
-            if (stateChanged is not null) eventHub.PublishDomainEvent(stateChanged);
+            if (stateChanged is not null)
+            {
+                eventHub.PublishDomainEvent(stateChanged);
+            }
         }
 
         logger.LogTrace("Updated connection states for {VehicleCount} vehicles.", vehicles.Count);
@@ -50,7 +66,7 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, ILogger<VehicleReg
     /// Registers a new vehicle or updates an existing vehicle's state based on a received heartbeat message. 
     /// </summary>
     /// <param name="vehicleId"></param>
-    /// <param name="ipEndPoint">The IP endpoint of the vehicle.</param>
+    /// <param name="endPoint">The endpoint of the vehicle.</param>
     /// <param name="customMode"></param>
     /// <param name="vehicleType"></param>
     /// <param name="autopilot"></param>
@@ -59,16 +75,8 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, ILogger<VehicleReg
     /// <param name="mavLinkVersion"></param>
     /// <param name="receivedAt">The timestamp when the heartbeat was received.</param>
     /// <returns>The updated or newly registered vehicle session.</returns>
-    public VehicleRegistryResult RegisterOrUpdateHeartbeat(
-        VehicleId vehicleId,
-        IPEndPoint ipEndPoint,
-        uint customMode,
-        byte vehicleType,
-        byte autopilot,
-        byte baseMode,
-        byte systemStatus,
-        byte mavLinkVersion,
-        DateTimeOffset receivedAt)
+    public VehicleRegistryResult RegisterOrUpdateHeartbeat(VehicleId vehicleId, TransportEndPoint endPoint, uint customMode, byte vehicleType, byte autopilot,
+        byte baseMode, byte systemStatus, byte mavLinkVersion, DateTimeOffset receivedAt)
     {
         if (!vehicles.TryGetValue(vehicleId, out var session))
         {
@@ -93,24 +101,13 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, ILogger<VehicleReg
                 null,
                 null);
 
-            //IPEndPoint ipEndpoint,
-
-            session = new VehicleSession(state, ipEndPoint);
+            session = new VehicleSession(state, endPoint);
             vehicles.Add(vehicleId, session);
             logger.LogTrace("Registered new vehicle: {VehicleId}", vehicleId);
+            eventHub.PublishDomainEvent(new VehicleRegistered(vehicleId));
         }
 
-        session.ApplyHeartbeat(
-            customMode,
-            vehicleType,
-            autopilot,
-            baseMode,
-            systemStatus,
-            mavLinkVersion,
-            receivedAt);
-
-
-        eventHub.PublishDomainEvent(new VehicleRegistered(vehicleId));
+        session.ApplyHeartbeat(customMode, vehicleType, autopilot, baseMode, systemStatus, mavLinkVersion, receivedAt);
         return new VehicleRegistryResult(session);
     }
 }

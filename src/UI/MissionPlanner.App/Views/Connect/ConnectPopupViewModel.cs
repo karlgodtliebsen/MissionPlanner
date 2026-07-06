@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Services;
+using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.App.Views.Connect;
 
@@ -212,22 +213,12 @@ public partial class ConnectPopupViewModel : ObservableObject
         {
             var selection = SelectedPort.ToLowerInvariant();
 
-            if (selection.StartsWith("COM", StringComparison.OrdinalIgnoreCase))
-            {
-                //selection = "serial";
-                await ConnectSerialAsync();
-            }
-            else if (selection.StartsWith("AUTO", StringComparison.OrdinalIgnoreCase))
-            {
-                selection = "udp"; // Default to UDP if unknown
-            }
-
             // Auto-detect connection type based on port name
-            //if (selection.StartsWith("COM", StringComparison.OrdinalIgnoreCase) ||
-            //    selection.StartsWith("/dev/tty", StringComparison.OrdinalIgnoreCase))
-            //{
-            //    selection = "serial";
-            //}
+            if (selection.StartsWith("COM", StringComparison.OrdinalIgnoreCase) ||
+                selection.StartsWith("/dev/tty", StringComparison.OrdinalIgnoreCase))
+            {
+                selection = "serial";
+            }
             else if (selection.Contains(":"))
             {
                 selection = "tcp";
@@ -237,16 +228,15 @@ public partial class ConnectPopupViewModel : ObservableObject
                 selection = "udp"; // Default to UDP if unknown
             }
 
-            logger.LogInformation("Connecting to vehicle using port: {Port}", selection);
+            logger.LogInformation("Connecting to vehicle using transport: {transport}", selection);
 
             var result = selection switch
             {
-                //"serial" => await ConnectSerialAsync(),
+                "serial" => await ConnectSerialAsync(),
                 "tcp" => await ConnectTcpAsync(),
                 "udp" => await ConnectUdpAsync(),
                 var _ => new VehicleConnectionResult(false, null, "Unsupported connection type")
             };
-
 
             if (result.Success)
             {
@@ -269,9 +259,8 @@ public partial class ConnectPopupViewModel : ObservableObject
         finally
         {
             IsConnecting = false;
+            UpdateConnectionStatus();
         }
-
-        UpdateConnectionStatus();
     }
 
     private async Task<VehicleConnectionResult> ConnectSerialAsync()

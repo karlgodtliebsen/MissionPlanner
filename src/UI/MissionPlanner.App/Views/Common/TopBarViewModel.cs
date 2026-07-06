@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.App.Views.Connect;
 using MissionPlanner.Core.DomainEvents;
+using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using UraniumUI.Dialogs;
 

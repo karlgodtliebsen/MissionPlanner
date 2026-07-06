@@ -1,5 +1,4 @@
-﻿using System.Net;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -8,12 +7,12 @@ namespace MissionPlanner.Transport;
 /// <summary>
 /// MAVLink transport over TCP.
 /// </summary>
-public sealed class TcpMavLinkTransport : IMavLinkTransport
+public sealed class TcpMavLinkTransport : ITcpMavLinkTransport
 {
     private readonly ILogger<TcpMavLinkTransport> logger;
     private readonly string remoteHost;
     private readonly int remotePort;
-    private readonly MavLinkEndpoint remoteEndpoint;
+    private readonly TransportEndPoint remoteEndpoint;
 
     private TcpClient? tcpClient;
     private NetworkStream? stream;
@@ -31,11 +30,17 @@ public sealed class TcpMavLinkTransport : IMavLinkTransport
 
         remoteHost = options.Value.RemoteHost;
         remotePort = options.Value.RemotePort;
-        if (string.IsNullOrWhiteSpace(remoteHost)) throw new ArgumentException("Remote host must be specified.", nameof(remoteHost));
+        if (string.IsNullOrWhiteSpace(remoteHost))
+        {
+            throw new ArgumentException("Remote host must be specified.", nameof(remoteHost));
+        }
 
-        if (remotePort is <= 0 or > 65535) throw new ArgumentOutOfRangeException(nameof(remotePort));
+        if (remotePort is <= 0 or > 65535)
+        {
+            throw new ArgumentOutOfRangeException(nameof(remotePort));
+        }
 
-        remoteEndpoint = new MavLinkEndpoint("tcp", remoteHost, remotePort);
+        remoteEndpoint = new TransportEndPoint("tcp", remoteHost, remotePort);
     }
 
     /// <summary>
@@ -51,12 +56,12 @@ public sealed class TcpMavLinkTransport : IMavLinkTransport
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (IsConnected) return;
-
-        tcpClient = new TcpClient
+        if (IsConnected)
         {
-            NoDelay = true
-        };
+            return;
+        }
+
+        tcpClient = new TcpClient { NoDelay = true };
 
         await tcpClient.ConnectAsync(remoteHost, remotePort, cancellationToken).ConfigureAwait(false);
 
@@ -67,7 +72,10 @@ public sealed class TcpMavLinkTransport : IMavLinkTransport
     /// <inheritdoc/>
     public async ValueTask<TransportReceiveResult> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken)
     {
-        if (!IsConnected || stream is null) throw new InvalidOperationException("TCP transport is not connected.");
+        if (!IsConnected || stream is null)
+        {
+            throw new InvalidOperationException("TCP transport is not connected.");
+        }
 
         var bytesRead = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
         logger.LogTrace("TCP transport received {BytesRead} bytes from {RemoteEndPoint}", bytesRead, remoteEndpoint);
@@ -78,12 +86,15 @@ public sealed class TcpMavLinkTransport : IMavLinkTransport
     /// Write MAVLink data to the remote ipEndpoint over TCP.
     /// </summary>
     /// <param name="data"></param>
-    /// <param name="ipEndpoint"> </param>
+    /// <param name="endPoint"> </param>
     /// <param name="cancellationToken"></param>
     /// <exception cref="InvalidOperationException"></exception>
-    public async ValueTask WriteAsync(ReadOnlyMemory<byte> data, IPEndPoint ipEndpoint, CancellationToken cancellationToken)
+    public async ValueTask WriteAsync(ReadOnlyMemory<byte> data, TransportEndPoint endPoint, CancellationToken cancellationToken)
     {
-        if (!IsConnected || stream is null) throw new InvalidOperationException("TCP transport is not connected.");
+        if (!IsConnected || stream is null)
+        {
+            throw new InvalidOperationException("TCP transport is not connected.");
+        }
 
         await stream.WriteAsync(data, cancellationToken).ConfigureAwait(false);
 

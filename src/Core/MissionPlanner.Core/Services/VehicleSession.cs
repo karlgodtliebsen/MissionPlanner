@@ -1,14 +1,14 @@
-﻿using System.Net;
-using MissionPlanner.Core.DomainEvents;
+﻿using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
 using MissionPlanner.MavLink.Messages;
+using MissionPlanner.Transport;
 
 namespace MissionPlanner.Core.Services;
 
 /// <summary>
 /// Represents a session for a vehicle, managing its state and handling updates.
 /// </summary>
-public class VehicleSession(VehicleState initialState, IPEndPoint ipEndPoint)
+public class VehicleSession(VehicleState initialState, TransportEndPoint endPoint)
 {
     private VehicleState state = initialState;
     private const byte MavModeFlagSafetyArmed = 0b1000_0000;
@@ -24,9 +24,9 @@ public class VehicleSession(VehicleState initialState, IPEndPoint ipEndPoint)
     public VehicleState State => state;
 
     /// <summary>
-    /// Gets the IP endpoint of the vehicle.
+    /// Gets the endpoint of the vehicle.
     /// </summary>
-    public IPEndPoint IpEndPoint => ipEndPoint;
+    public TransportEndPoint EndPoint => endPoint;
 
 
     /// <summary>
@@ -57,12 +57,12 @@ public class VehicleSession(VehicleState initialState, IPEndPoint ipEndPoint)
                         ? VehicleConnectionState.Stale
                         : VehicleConnectionState.Online;
 
-        state = state with
-        {
-            ConnectionState = currentState
-        };
+        state = state with { ConnectionState = currentState };
 
-        if (previousState == currentState) return null;
+        if (previousState == currentState)
+        {
+            return null;
+        }
 
         var stateChanged = new VehicleConnectionStateChanged(new VehicleConnectionStateChange(state.VehicleId, previousState, currentState, now));
         return stateChanged;
@@ -79,14 +79,7 @@ public class VehicleSession(VehicleState initialState, IPEndPoint ipEndPoint)
     /// <param name="systemStatus">The system status of the vehicle.</param>
     /// <param name="mavLinkVersion">The MAVLink version of the vehicle.</param>
     /// <param name="receivedAt">The timestamp when the heartbeat was received.</param>
-    public void ApplyHeartbeat(
-        uint customMode,
-        byte vehicleType,
-        byte autopilot,
-        byte baseMode,
-        byte systemStatus,
-        byte mavLinkVersion,
-        DateTimeOffset receivedAt)
+    public void ApplyHeartbeat(uint customMode, byte vehicleType, byte autopilot, byte baseMode, byte systemStatus, byte mavLinkVersion, DateTimeOffset receivedAt)
     {
         state = state with
         {
@@ -111,12 +104,7 @@ public class VehicleSession(VehicleState initialState, IPEndPoint ipEndPoint)
     /// <param name="altitude">The altitude of the vehicle.</param>
     public void ApplyPosition(double latitude, double longitude, double altitude)
     {
-        state = state with
-        {
-            Latitude = latitude,
-            Longitude = longitude,
-            Altitude = altitude
-        };
+        state = state with { Latitude = latitude, Longitude = longitude, Altitude = altitude };
     }
 
     /// <summary>
@@ -127,12 +115,7 @@ public class VehicleSession(VehicleState initialState, IPEndPoint ipEndPoint)
     /// <param name="yaw">The yaw angle of the vehicle.</param>
     public void ApplyAttitude(double roll, double pitch, double yaw)
     {
-        state = state with
-        {
-            Roll = roll,
-            Pitch = pitch,
-            Yaw = yaw
-        };
+        state = state with { Roll = roll, Pitch = pitch, Yaw = yaw };
     }
 
     /// <summary>
@@ -142,11 +125,7 @@ public class VehicleSession(VehicleState initialState, IPEndPoint ipEndPoint)
     /// <param name="batteryVoltage">The battery voltage.</param>
     public void ApplyBattery(int? batteryRemaining, float? batteryVoltage)
     {
-        state = state with
-        {
-            BatteryRemaining = batteryRemaining,
-            BatteryVoltage = batteryVoltage
-        };
+        state = state with { BatteryRemaining = batteryRemaining, BatteryVoltage = batteryVoltage };
     }
 
     /// <summary>
@@ -155,10 +134,7 @@ public class VehicleSession(VehicleState initialState, IPEndPoint ipEndPoint)
     /// <param name="isArmed">Indicates whether the vehicle is armed.</param>
     public void ApplyArm(bool isArmed)
     {
-        state = state with
-        {
-            IsArmed = isArmed
-        };
+        state = state with { IsArmed = isArmed };
     }
 
     /// <summary>
@@ -167,10 +143,7 @@ public class VehicleSession(VehicleState initialState, IPEndPoint ipEndPoint)
     /// <param name="mode">The mode to apply.</param>
     public void ApplyMode(VehicleMode mode)
     {
-        state = state with
-        {
-            Mode = mode
-        };
+        state = state with { Mode = mode };
     }
 
     /// <summary>

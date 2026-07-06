@@ -83,6 +83,7 @@ public sealed class VehicleMessagePump(
     public ValueTask DisposeAsync()
     {
         subscription?.Dispose();
+        subscription = null;
         return ValueTask.CompletedTask;
     }
 }
