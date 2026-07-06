@@ -1,0 +1,41 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
+             x:DataType="common:TopBarViewModel"
+             x:Class="MissionPlanner.App.Views.Common.TopBarView">
+
+    <Grid ColumnDefinitions="Auto,*,Auto,Auto" 
+          Padding="8,0" 
+          BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
+          HeightRequest="50">
+
+        <!-- App Title/Logo -->
+
+
+            <Image Grid.Column="1" 
+                   Source="Resources/Images/ardupilot.png" 
+                   WidthRequest="120" 
+                   HeightRequest="30"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Center"/>
+
+        <!-- Connect Button -->
+        <Button Grid.Column="2"
+                ImageSource="{Binding IsConnectedImage}"
+                FontSize="20"
+                Padding="8,4"
+                VerticalOptions="Center"
+                BackgroundColor="Transparent"
+                Command="{Binding ConnectCommand}" />
+
+        <!-- Settings/Options -->
+        <Button Grid.Column="3"
+                    Text="⚙"
+                    FontSize="20"
+                    Padding="8,4"
+                    VerticalOptions="Center"
+                    BackgroundColor="Transparent"></Button>
+    </Grid>
+</ContentView>

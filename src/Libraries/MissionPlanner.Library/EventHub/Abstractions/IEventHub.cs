@@ -1,6 +1,6 @@
-﻿using Domain.Library.EventHub.Events;
+﻿using MissionPlanner.Library.EventHub.Events;
 
-namespace Domain.Library.EventHub.Abstractions;
+namespace MissionPlanner.Library.EventHub.Abstractions;
 
 /// <summary>
 /// Defines the contract for an event hub that allows subscribing to and publishing events. 

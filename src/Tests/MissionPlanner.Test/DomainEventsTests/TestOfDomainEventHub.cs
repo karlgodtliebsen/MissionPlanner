@@ -1,17 +1,13 @@
 ﻿using System.Net;
-
-using Domain.Library.Configuration;
-using Domain.Library.EventHub;
-using Domain.Library.EventHub.Events;
-
 using FluentAssertions;
-
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
-
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services;
+using MissionPlanner.Library.Configuration;
+using MissionPlanner.Library.EventHub;
+using MissionPlanner.Library.EventHub.Events;
 using MissionPlanner.Test.LibraryTests;
 
 namespace MissionPlanner.Test.DomainEventsTests;
@@ -29,7 +25,7 @@ public class TestOfDomainEventHub
     /// </summary>
     public TestOfDomainEventHub()
     {
-        ILogger<EventHub> logger = NSubstitute.Substitute.For<ILogger<EventHub>>();
+        var logger = NSubstitute.Substitute.For<ILogger<EventHub>>();
         IServiceCollection services = new ServiceCollection();
         services.AddEventHubServices();
         services.TryAddSingleton<IDomainEventHub, DomainEventHub>();
@@ -45,12 +41,12 @@ public class TestOfDomainEventHub
     {
         var messageReceived = new TaskCompletionSource<bool>();
 
-        IDomainEventHub eventHub = serviceProvider.GetRequiredService<IDomainEventHub>();
+        var eventHub = serviceProvider.GetRequiredService<IDomainEventHub>();
         var eventData = new EventData { Message = "hello universe" };
         var metaData = new MetaData { Actor = "Karl", Source = "From Application" };
         var domainEvent = new DomainEvent<EventData, MetaData>("testing", eventData, metaData);
 
-        IDisposable disposable = eventHub.SubscribeDomainEventAsync<DomainEvent<EventData, MetaData>>((m, ct) =>
+        var disposable = eventHub.SubscribeDomainEventAsync<DomainEvent<EventData, MetaData>>((m, ct) =>
         {
             messageReceived.SetResult(true);
             return Task.CompletedTask;
@@ -73,12 +69,12 @@ public class TestOfDomainEventHub
     {
         var messageReceived = new TaskCompletionSource<bool>();
 
-        IDomainEventHub eventHub = serviceProvider.GetRequiredService<IDomainEventHub>();
+        var eventHub = serviceProvider.GetRequiredService<IDomainEventHub>();
         var eventData = new EventData { Message = "hello universe" };
         var metaData = new MetaData { Actor = "Karl", Source = "From Application" };
         var domainEvent = new DomainEvent<EventData, MetaData>("testing", eventData, metaData);
 
-        IDisposable disposable = eventHub.SubscribeDomainEvent<DomainEvent<EventData, MetaData>>((m) =>
+        var disposable = eventHub.SubscribeDomainEvent<DomainEvent<EventData, MetaData>>((m) =>
         {
             messageReceived.SetResult(true);
             return;

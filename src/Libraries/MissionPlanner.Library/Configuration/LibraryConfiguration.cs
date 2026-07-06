@@ -1,12 +1,11 @@
-﻿using Domain.Library.DateTime.Domain;
-using Domain.Library.EventHub.Abstractions;
-using Domain.Library.Factory.Domain;
-using Domain.Library.Factory.Domain.Abstractions;
-
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using MissionPlanner.Library.DateTime.Domain;
+using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.Library.Factory.Domain;
+using MissionPlanner.Library.Factory.Domain.Abstractions;
 
-namespace Domain.Library.Configuration;
+namespace MissionPlanner.Library.Configuration;
 
 /// <summary>
 ///   Configures the domain factories for dependency injection.

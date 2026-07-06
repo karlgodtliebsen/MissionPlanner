@@ -1,10 +1,9 @@
-﻿using Domain.Library;
-using Domain.Library.Configuration;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.AppViewModels;
+using MissionPlanner.App.Views.Common;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.Connect;
 using MissionPlanner.App.Views.Dashboard;
@@ -17,6 +16,7 @@ using MissionPlanner.App.Views.Help;
 using MissionPlanner.App.Views.InitSetup;
 using MissionPlanner.App.Views.Simulation;
 using MissionPlanner.Core.Configuration;
+using MissionPlanner.Library;
 using MissionPlanner.Library.Configuration;
 using MissionPlanner.MavLink.Configuration;
 using MissionPlanner.Transport.Configuration;
@@ -40,27 +40,9 @@ public static class ApplicationConfigurator
         var applicationOptions = configuration.GetSection(ApplicationOptions.SectionName).Get<ApplicationOptions>();
         DomainException.ThrowIfNull(applicationOptions, ApplicationOptions.Template);
 
-        // ApplicationOptions applicationOptions = new();
-
         services.AddSingleton(Options.Create(applicationOptions));
 
-
-        // Configure ApplicationOptions using the options pattern
-        //services.Configure<ApplicationOptions>(options =>
-        //{
-        //    options.BaudRate = applicationOptions.BaudRate;
-        //    options.ConnectionType = applicationOptions.ConnectionType;
-        //    options.Port = applicationOptions.Port;
-        //});
-        //// Configure ApplicationState using the options pattern (for initial values)
-        //services.Configure<ApplicationState>(options =>
-        //{
-        //    options.SelectedBaudRate = state.SelectedBaudRate;
-        //    options.SelectedConnectionType = state.SelectedConnectionType;
-        //    options.SelectedPort = state.SelectedPort;
-        //});
-
-        ApplicationState state = new() { SelectedBaudRate = applicationOptions.BaudRate, SelectedConnectionType = applicationOptions.ConnectionType, SelectedPort = applicationOptions.Port };
+        ApplicationState state = new() { SelectedBaudRate = applicationOptions.BaudRate, /* SelectedConnectionType = applicationOptions.ConnectionType,*/ SelectedPort = applicationOptions.Port };
         // Register shared state service as singleton for runtime state management
         ApplicationStateService stateService = new();
         stateService.Initialize(state);
@@ -91,15 +73,22 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<App>();
         services.TryAddSingleton<AppShell>();
 
+        // Common/Shared UI Components
+        services.TryAddSingleton<StatusBarViewModel>();
+        services.TryAddSingleton<StatusBarView>();
+
         services.TryAddSingleton<DashboardPageViewModel>();
         services.TryAddSingleton<DashboardPage>();
 
+        services.TryAddSingleton<TopBarViewModel>();
+        services.TryAddSingleton<TopBarView>();
+
         //SubView/Controls
-        services.TryAddSingleton<ConnectPopupView>();
+        services.TryAddTransient<ConnectPopupView>();
         services.TryAddSingleton<ConnectPopupViewModel>();
 
-        services.TryAddSingleton<ConnectionView>();
-        services.TryAddSingleton<ConnectionViewModel>();
+        //services.TryAddSingleton<ConnectionView>();
+        //services.TryAddSingleton<ConnectionViewModel>();
 
         //SubView/Controls
         services.TryAddSingleton<FlightDataViewModel>();

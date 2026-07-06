@@ -20,8 +20,8 @@ public class ApplicationState
     /// </summary>
     public string SelectedBaudRate { get; set; } = "115200";
 
-    /// <summary>
-    /// Gets or sets the selected connection type for the application.
-    /// </summary>
-    public string SelectedConnectionType { get; set; } = "Serial";
+    ///// <summary>
+    ///// Gets or sets the selected connection type for the application.
+    ///// </summary>
+    //public string SelectedConnectionType { get; set; } = "Serial";
 }

@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace Domain.Library.Math;
+namespace MissionPlanner.Library.Math;
 
 /// <summary>
 /// Provides methods for performing various mathematical calculations.

@@ -1,4 +1,6 @@
-﻿namespace MissionPlanner.App;
+﻿using MissionPlanner.App.Views.Common;
+
+namespace MissionPlanner.App;
 
 /// <inheritdoc />
 public partial class App : Application
@@ -12,6 +14,7 @@ public partial class App : Application
     /// <inheritdoc />
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        return new Window(new AppShell());
+        var topbarView = activationState?.Context.Services.GetRequiredService<TopBarView>()!;
+        return new Window(new AppShell(topbarView));
     }
 }

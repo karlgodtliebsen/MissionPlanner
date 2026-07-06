@@ -1,8 +1,8 @@
-﻿using Domain.Library.DateTime.Domain;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services;
+using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink.Commands;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.Services;
@@ -38,7 +38,10 @@ public sealed class VehicleCommandService(
     private VehicleCommandResponse? ValidateCanSetMode(VehicleId vehicleId, VehicleMode mode)
     {
         var vehicle = registry.GetRequired(vehicleId);
-        if (vehicle is null) return new VehicleCommandResponse(vehicleId, VehicleCommandResult.VehicleNotFound, dateTimeProvider.UtcNow);
+        if (vehicle is null)
+        {
+            return new VehicleCommandResponse(vehicleId, VehicleCommandResult.VehicleNotFound, dateTimeProvider.UtcNow);
+        }
 
         var validation = commandPolicy.ValidateSetMode(vehicle.State, mode);
         return validation;
@@ -47,7 +50,10 @@ public sealed class VehicleCommandService(
     private VehicleCommandResponse? ValidateCanCommand(VehicleId vehicleId)
     {
         var vehicle = registry.GetRequired(vehicleId);
-        if (vehicle is null) return new VehicleCommandResponse(vehicleId, VehicleCommandResult.VehicleNotFound, dateTimeProvider.UtcNow);
+        if (vehicle is null)
+        {
+            return new VehicleCommandResponse(vehicleId, VehicleCommandResult.VehicleNotFound, dateTimeProvider.UtcNow);
+        }
 
         var validation = commandPolicy.ValidateArm(vehicle.State);
         return validation;
@@ -57,7 +63,10 @@ public sealed class VehicleCommandService(
     public Task<VehicleCommandResponse> LandAsync(VehicleState state, CancellationToken cancellationToken)
     {
         var validation = ValidateLand(state);
-        if (validation is not null) return Task.FromResult(validation);
+        if (validation is not null)
+        {
+            return Task.FromResult(validation);
+        }
 
         var vehicleId = state.VehicleId;
         return SetModeAsync(vehicleId, VehicleMode.Land, cancellationToken);
@@ -67,11 +76,17 @@ public sealed class VehicleCommandService(
     public async Task<VehicleCommandResponse> ArmAsync(VehicleId vehicleId, CancellationToken cancellationToken)
     {
         var validation = ValidateCanCommand(vehicleId);
-        if (validation is not null) return validation;
+        if (validation is not null)
+        {
+            return validation;
+        }
 
         var result = await SendArmDisarmAsync(vehicleId, true, cancellationToken);
 
-        if (result.Result == VehicleCommandResult.Accepted) await eventHub.PublishDomainEventAsync(new VehicleArmed(vehicleId), cancellationToken);
+        if (result.Result == VehicleCommandResult.Accepted)
+        {
+            await eventHub.PublishDomainEventAsync(new VehicleArmed(vehicleId), cancellationToken);
+        }
 
         return result;
     }
@@ -80,10 +95,16 @@ public sealed class VehicleCommandService(
     public async Task<VehicleCommandResponse> DisarmAsync(VehicleId vehicleId, CancellationToken cancellationToken)
     {
         var validation = ValidateCanCommand(vehicleId);
-        if (validation is not null) return validation;
+        if (validation is not null)
+        {
+            return validation;
+        }
 
         var result = await SendArmDisarmAsync(vehicleId, false, cancellationToken);
-        if (result.Result == VehicleCommandResult.Accepted) await eventHub.PublishDomainEventAsync(new VehicleDisarmed(vehicleId), cancellationToken);
+        if (result.Result == VehicleCommandResult.Accepted)
+        {
+            await eventHub.PublishDomainEventAsync(new VehicleDisarmed(vehicleId), cancellationToken);
+        }
 
         return result;
     }
@@ -93,11 +114,17 @@ public sealed class VehicleCommandService(
     {
         var validation = ValidateCanCommand(vehicleId);
 
-        if (validation is not null) return validation;
+        if (validation is not null)
+        {
+            return validation;
+        }
 
         validation = ValidateCanSetMode(vehicleId, mode);
 
-        if (validation is not null) return validation;
+        if (validation is not null)
+        {
+            return validation;
+        }
 
         var vehicleSession = registry.GetRequired(vehicleId)!;
 
@@ -126,7 +153,10 @@ public sealed class VehicleCommandService(
     {
         var validation = ValidateCanCommand(vehicleId);
 
-        if (validation is not null) return validation;
+        if (validation is not null)
+        {
+            return validation;
+        }
 
         var vehicleSession = registry.GetRequired(vehicleId)!;
 

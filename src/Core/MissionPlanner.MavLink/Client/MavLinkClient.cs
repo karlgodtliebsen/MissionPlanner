@@ -1,7 +1,7 @@
 ﻿using System.Net;
-using Domain.Library.DateTime.Domain;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Transport;
 
 namespace MissionPlanner.MavLink.Client;
@@ -51,7 +51,10 @@ public sealed class MavLinkClient : IMavLinkClient
         this.logger = logger;
         receiveBufferSize = options.Value.ReceiveBufferSize;
 
-        if (receiveBufferSize <= 0) throw new ArgumentOutOfRangeException(nameof(receiveBufferSize), "Receive buffer size must be positive.");
+        if (receiveBufferSize <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(receiveBufferSize), "Receive buffer size must be positive.");
+        }
     }
 
     /// <summary>
@@ -62,7 +65,10 @@ public sealed class MavLinkClient : IMavLinkClient
     {
         ThrowIfDisposed();
 
-        if (IsRunning) return;
+        if (IsRunning)
+        {
+            return;
+        }
 
         cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
@@ -82,7 +88,10 @@ public sealed class MavLinkClient : IMavLinkClient
             {
                 var result = await transport.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
 
-                if (result.BytesRead <= 0) continue;
+                if (result.BytesRead <= 0)
+                {
+                    continue;
+                }
 
                 logger.LogTrace("MavLinkClient - Received {BytesRead} bytes from MAVLink transport.", result.BytesRead);
                 var copy = new byte[result.BytesRead];
@@ -92,7 +101,10 @@ public sealed class MavLinkClient : IMavLinkClient
 
                 var handler = DataReceived;
 
-                if (handler is not null) await handler(received, cancellationToken).ConfigureAwait(false);
+                if (handler is not null)
+                {
+                    await handler(received, cancellationToken).ConfigureAwait(false);
+                }
             }
         }
         catch (OperationCanceledException)
@@ -126,7 +138,10 @@ public sealed class MavLinkClient : IMavLinkClient
     {
         ThrowIfDisposed();
 
-        if (!transport.IsConnected) throw new InvalidOperationException("Transport is not connected.");
+        if (!transport.IsConnected)
+        {
+            throw new InvalidOperationException("Transport is not connected.");
+        }
 
         await transport.WriteAsync(data, ipEndpoint, cancellationToken).ConfigureAwait(false);
         logger.LogTrace("MavLinkClient - Sent {Bytes} bytes to MAVLink transport.", data.Length);
@@ -137,11 +152,17 @@ public sealed class MavLinkClient : IMavLinkClient
     /// </summary>
     public async Task StopAsync()
     {
-        if (cancellationTokenSource is null) return;
+        if (cancellationTokenSource is null)
+        {
+            return;
+        }
 
         await cancellationTokenSource.CancelAsync().ConfigureAwait(false);
 
-        if (receiveTask is not null) await receiveTask.ConfigureAwait(false);
+        if (receiveTask is not null)
+        {
+            await receiveTask.ConfigureAwait(false);
+        }
 
         cancellationTokenSource.Dispose();
         cancellationTokenSource = null;
@@ -155,7 +176,10 @@ public sealed class MavLinkClient : IMavLinkClient
     /// <returns></returns>
     public async ValueTask DisposeAsync()
     {
-        if (disposed) return;
+        if (disposed)
+        {
+            return;
+        }
 
         await StopAsync().ConfigureAwait(false);
         await transport.DisposeAsync().ConfigureAwait(false);

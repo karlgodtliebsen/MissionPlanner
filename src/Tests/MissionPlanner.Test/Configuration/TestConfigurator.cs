@@ -1,12 +1,10 @@
-﻿using Domain.Library.Configuration;
-
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
 using MissionPlanner.Core.Configuration;
+using MissionPlanner.Library.Configuration;
 using MissionPlanner.MavLink.Configuration;
 using MissionPlanner.Simulator.SmokeTests;
 using MissionPlanner.Transport;
@@ -29,7 +27,7 @@ public static class TestConfigurator
         ConfigurationBuilder builder = new();
         //var configurationBuilder = builder.Configuration;
 
-        foreach (IConfigurationSource source in configurationSources)
+        foreach (var source in configurationSources)
         {
             builder.Sources.Add(source);
         }
@@ -110,11 +108,11 @@ public static class TestConfigurator
     /// <returns>The updated service provider.</returns>
     public static IServiceProvider UseTestConfiguration(this IServiceProvider services)
     {
-        IOptions<TransportEndpoint> endPoint = services.GetRequiredService<IOptions<TransportEndpoint>>();
+        var endPoint = services.GetRequiredService<IOptions<TransportEndpoint>>();
         //endPoint.Value.LocalPort =  Rnd.Next(1024, 655
         //endPoint.Value.RemotePort = endPoint.Value.LocalPort + 1; 
 
-        ILogger<ServiceProvider> logger = services.GetRequiredService<ILogger<ServiceProvider>>();
+        var logger = services.GetRequiredService<ILogger<ServiceProvider>>();
 
         logger.LogInformation($"Test configuration initialized. UDP local:  {endPoint.Value.LocalHost}:{endPoint.Value.LocalPort}");
         logger.LogInformation($"Test configuration initialized. UDP remote: {endPoint.Value.RemoteHost}:{endPoint.Value.RemotePort}");

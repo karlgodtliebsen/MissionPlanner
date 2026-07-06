@@ -6,67 +6,38 @@
               x:DataType="connect:ConnectPopupViewModel"
               BackgroundColor="#80000000">
 
-    <Border Padding="16"
-            StrokeShape="RoundRectangle 8"
-            BackgroundColor="#2d2d30"
-            WidthRequest="260"
-            HorizontalOptions="Center"
-            VerticalOptions="Center">
 
-        <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="12">
+    <VerticalStackLayout Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Spacing="12" Margin="25">
 
-            <Label Grid.Row="0" Grid.Column="0"
-                   Text="Connect"
-                   FontSize="18"
-                   FontAttributes="Bold"
-                   TextColor="White"
-                   VerticalOptions="Center" />
-
-            <Button Grid.Row="0" Grid.Column="1"
-                    Text="&#x2715;"
-                    FontSize="16"
-                    Padding="0"
-                    WidthRequest="32"
-                    HeightRequest="32"
-                    CornerRadius="16"
-                    BackgroundColor="Transparent"
-                    TextColor="White"
-                    Clicked="CloseButton_Clicked" />
-
-            <VerticalStackLayout Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Spacing="12">
-
-                <Picker Title="Connection type"
+        <!--<Picker Title="Connection type"
                         ItemsSource="{Binding Options.ConnectionTypes}"
-                        SelectedItem="{Binding SelectedConnectionType}" />
+                        SelectedItem="{Binding SelectedConnectionType}" />-->
 
-                <Picker Title="Port"
-                        ItemsSource="{Binding Options.Ports}"
+        <Picker Title="Port"
+                        ItemsSource="{Binding Ports}"
                         SelectedItem="{Binding SelectedPort}" />
 
-                <Picker Title="Baud rate"
-                        ItemsSource="{Binding Options.BaudRates}"
+        <Picker Title="Baud rate"
+                        ItemsSource="{Binding BaudRates}"
                         SelectedItem="{Binding SelectedBaudRate}" />
 
-                <Label Text="{Binding StatusMessage}"
+        <Label Text="{Binding StatusMessage}"
                        TextColor="LightGray"
                        FontSize="12"
                        HorizontalOptions="Center"
                        Margin="0,4,0,0" />
 
-                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-                    <Button Grid.Column="1"
+        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+            <Button Grid.Column="1"
                             ImageSource="{Binding IsConnectedImage}"
-                            HeightRequest="48"
-                            WidthRequest="48"
+                            FontSize="20"
+                            Padding="8,4"
+                            VerticalOptions="Center"
+                            BackgroundColor="Transparent"
                             Command="{Binding ConnectCommand}" />
 
-                    <Button Grid.Column="2"
-                            Text="Close"
-                            VerticalOptions="Center"
-                            Clicked="CloseButton_Clicked" />
-                </Grid>
-
-            </VerticalStackLayout>
         </Grid>
-    </Border>
+
+    </VerticalStackLayout>
+
 </ContentView>

@@ -10,7 +10,7 @@ public partial class ApplicationStateService : ObservableObject
     [ObservableProperty] public partial bool IsConnected { get; set; }
     [ObservableProperty] public partial string SelectedPort { get; set; } = "AUTO";
     [ObservableProperty] public partial string SelectedBaudRate { get; set; } = "115200";
-    [ObservableProperty] public partial string SelectedConnectionType { get; set; } = "Serial";
+    //[ObservableProperty] public partial string SelectedConnectionType { get; set; } = "Serial";
 
     /// <summary>
     /// Initializes the service with values from ApplicationState.
@@ -20,6 +20,6 @@ public partial class ApplicationStateService : ObservableObject
         IsConnected = state.IsConnected;
         SelectedPort = state.SelectedPort;
         SelectedBaudRate = state.SelectedBaudRate;
-        SelectedConnectionType = state.SelectedConnectionType;
+        //SelectedConnectionType = state.SelectedConnectionType;
     }
 }

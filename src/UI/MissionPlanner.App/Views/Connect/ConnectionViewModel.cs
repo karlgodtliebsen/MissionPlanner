@@ -35,7 +35,7 @@ public partial class ConnectionViewModel : ObservableObject
     public ConnectionViewModel(ApplicationStateService stateService) : this()
     {
         // Initialize from shared state
-        SelectedConnectionType = stateService.SelectedConnectionType;
+        //SelectedConnectionType = stateService.SelectedConnectionType;
         SelectedPort = stateService.SelectedPort;
         SelectedBaudRate = stateService.SelectedBaudRate;
         IsConnected = stateService.IsConnected;
@@ -45,9 +45,9 @@ public partial class ConnectionViewModel : ObservableObject
         {
             switch (args.PropertyName)
             {
-                case nameof(ApplicationStateService.SelectedConnectionType):
-                    SelectedConnectionType = stateService.SelectedConnectionType;
-                    break;
+                //case nameof(ApplicationStateService.SelectedConnectionType):
+                //    SelectedConnectionType = stateService.SelectedConnectionType;
+                //    break;
                 case nameof(ApplicationStateService.SelectedPort):
                     SelectedPort = stateService.SelectedPort;
                     break;

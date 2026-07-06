@@ -13,13 +13,21 @@
     xmlns:configTuning="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
     xmlns:simulation="clr-namespace:MissionPlanner.App.Views.Simulation"
     xmlns:help="clr-namespace:MissionPlanner.App.Views.Help"
-    xmlns:connect="clr-namespace:MissionPlanner.App.Views.Connect"
+    xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
     Title="MissionPlanner"
     x:Name="thisShell"
     FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
     Shell.FlyoutBehavior="Flyout"
     FlyoutIsPresented="False"
     >
+
+    <!-- Persistent Top Bar (visible on all pages) -->
+    <Shell.TitleView>
+
+        <StackLayout x:Name="TopbarView" ></StackLayout>
+
+        <!--<common:TopBarView></common:TopBarView>-->
+    </Shell.TitleView>
 
 
     <Shell.Resources>

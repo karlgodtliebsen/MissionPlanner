@@ -1,10 +1,10 @@
 ﻿using System.Text;
-using Domain.Library.Configuration;
-using Domain.Library.EventHub;
-using Domain.Library.EventHub.Abstractions;
-using Domain.Library.EventHub.Events;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.Library.Configuration;
+using MissionPlanner.Library.EventHub;
+using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.Library.EventHub.Events;
 
 namespace MissionPlanner.Test.LibraryTests;
 

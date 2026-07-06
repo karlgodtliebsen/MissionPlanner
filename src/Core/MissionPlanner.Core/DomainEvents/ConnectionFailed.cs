@@ -1,4 +1,4 @@
-﻿using Domain.Library.EventHub.Events;
+﻿using MissionPlanner.Library.EventHub.Events;
 
 namespace MissionPlanner.Core.DomainEvents;
 

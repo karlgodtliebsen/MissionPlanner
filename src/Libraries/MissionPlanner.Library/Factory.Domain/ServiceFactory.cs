@@ -1,8 +1,7 @@
-﻿using Domain.Library.Factory.Domain.Abstractions;
+﻿using Microsoft.Extensions.DependencyInjection;
+using MissionPlanner.Library.Factory.Domain.Abstractions;
 
-using Microsoft.Extensions.DependencyInjection;
-
-namespace Domain.Library.Factory.Domain;
+namespace MissionPlanner.Library.Factory.Domain;
 
 /// <summary>
 /// 

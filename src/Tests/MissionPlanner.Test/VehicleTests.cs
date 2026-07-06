@@ -1,17 +1,13 @@
 ﻿using System.Buffers.Binary;
 using System.Net;
-
-using Domain.Library.EventHub.Abstractions;
-using Domain.Library.Factory.Domain.Abstractions;
-
 using FluentAssertions;
-
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
 using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services;
 using MissionPlanner.Core.VehicleHandler;
+using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Commands;
@@ -43,15 +39,15 @@ public class VehicleTests
     public VehicleTests(ITestOutputHelper output)
     {
         this.output = output;
-        IServiceCollection services = TestConfigurator
+        var services = TestConfigurator
             .AddTestConfiguration()
             .AddDefaultTestLogging(output);
 
         serviceProvider = services.BuildServiceProvider();
         serviceProvider.UseTestConfiguration();
 
-        ILogger<DomainVehicleServiceSimulatorTests> logger = serviceProvider.GetRequiredService<ILogger<DomainVehicleServiceSimulatorTests>>();
-        TransportEndpoint endPoint = serviceProvider.GetRequiredService<IOptions<TransportEndpoint>>().Value;
+        var logger = serviceProvider.GetRequiredService<ILogger<DomainVehicleServiceSimulatorTests>>();
+        var endPoint = serviceProvider.GetRequiredService<IOptions<TransportEndpoint>>().Value;
 
         logger.LogInformation($"Test configuration initialized. UDP local:  {endPoint.LocalHost}:{endPoint.LocalPort}");
         logger.LogInformation($"Test configuration initialized. UDP remote: {endPoint.RemoteHost}:{endPoint.RemotePort}");
@@ -61,7 +57,7 @@ public class VehicleTests
         var targetPort = endPoint.LocalPort;
         var targetIp = endPoint.RemoteHost;
 
-        IPAddress targetAddress = string.IsNullOrWhiteSpace(endPoint.RemoteHost)
+        var targetAddress = string.IsNullOrWhiteSpace(endPoint.RemoteHost)
             ? IPAddress.Any
             : IPAddress.Parse(targetIp);
         port = endPoint.RemotePort;
@@ -76,9 +72,9 @@ public class VehicleTests
     [Fact]
     public void Should_Register_Vehicle_When_Heartbeat_Is_Received()
     {
-        IDomainFactory domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
-        IVehicleRegistry registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
-        IHeartbeatVehicleHandler handler = domainFactory.Create<IHeartbeatVehicleHandler, IVehicleRegistry>(registry);
+        var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
+        var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
+        var handler = domainFactory.Create<IHeartbeatVehicleHandler, IVehicleRegistry>(registry);
         var heartbeat = new HeartbeatMessage(
             1,
             1,
@@ -91,7 +87,7 @@ public class VehicleTests
             3,
             DateTimeOffset.UtcNow);
 
-        VehicleSession vehicle = handler.Handle(heartbeat);
+        var vehicle = handler.Handle(heartbeat);
 
         Assert.Equal(new VehicleId(1, 1), vehicle.Id);
         Assert.Single(registry.Vehicles);
@@ -106,12 +102,12 @@ public class VehicleTests
     [Fact]
     public async Task Should_Register_Vehicle_From_Received_Heartbeat_MessageAsync()
     {
-        IEventHub eventHub = serviceProvider.GetRequiredService<IEventHub>();
-        IVehicleRegistry registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
-        IHeartbeatVehicleHandler handler = serviceProvider.GetRequiredService<IHeartbeatVehicleHandler>();
-        await using IMavLinkClient client = serviceProvider.GetRequiredService<IMavLinkClient>();
-        await using IMavLinkConnection connection = serviceProvider.GetRequiredService<IMavLinkConnection>();
-        IVehicleMessagePump messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
+        var eventHub = serviceProvider.GetRequiredService<IEventHub>();
+        var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
+        var handler = serviceProvider.GetRequiredService<IHeartbeatVehicleHandler>();
+        await using var client = serviceProvider.GetRequiredService<IMavLinkClient>();
+        await using var connection = serviceProvider.GetRequiredService<IMavLinkConnection>();
+        var messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
 
         output.WriteLine($"Client IsRunning: {client.IsRunning}");
         output.WriteLine($"Transport IsConnected: {client.IsConnected}");
@@ -127,7 +123,7 @@ public class VehicleTests
 
         TaskCompletionSource ts = new(TaskCreationOptions.RunContinuationsAsynchronously);
         HeartbeatMessage? messageResult = null;
-        using IDisposable subscription = eventHub.SubscribeAsync<HeartbeatMessage>(MavLinkEventTopics.ReceivedMessage, (heartbeatMessage, ct) =>
+        using var subscription = eventHub.SubscribeAsync<HeartbeatMessage>(MavLinkEventTopics.ReceivedMessage, (heartbeatMessage, ct) =>
         {
             messageResult = heartbeatMessage;
             ts.TrySetResult();
@@ -142,10 +138,10 @@ public class VehicleTests
 
         await ts.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
         messageResult.Should().NotBeNull();
-        HeartbeatMessage message = messageResult!;
+        var message = messageResult!;
 
 
-        VehicleSession vehicle = handler.Handle(message);
+        var vehicle = handler.Handle(message);
 
         Assert.Equal(new VehicleId(1, 1), vehicle.Id);
         Assert.Single(registry.Vehicles);
@@ -159,9 +155,9 @@ public class VehicleTests
     [Fact]
     public void Should_Update_Existing_Vehicle_When_Heartbeat_Is_Repeated()
     {
-        IDomainFactory domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
-        IVehicleRegistry registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
-        IHeartbeatVehicleHandler handler = domainFactory.Create<IHeartbeatVehicleHandler, IVehicleRegistry>(registry);
+        var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
+        var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
+        var handler = domainFactory.Create<IHeartbeatVehicleHandler, IVehicleRegistry>(registry);
 
         var first = new HeartbeatMessage(
             1, 1, simulatorIPEndPoint, 0, 2, 3, 0, 4, 3,
@@ -171,8 +167,8 @@ public class VehicleTests
             1, 1, simulatorIPEndPoint, 42, 2, 3, 81, 4, 3,
             DateTimeOffset.UtcNow.AddSeconds(1));
 
-        VehicleSession vehicle1 = handler.Handle(first);
-        VehicleSession vehicle2 = handler.Handle(second);
+        var vehicle1 = handler.Handle(first);
+        var vehicle2 = handler.Handle(second);
 
         Assert.Same(vehicle1, vehicle2);
         Assert.Single(registry.Vehicles);
@@ -186,12 +182,12 @@ public class VehicleTests
     [Fact]
     public async Task Should_Register_Vehicle_When_Message_Pump_Receives_Heartbeat()
     {
-        IVehicleRegistry registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
+        var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
 
-        await using IMavLinkClient client = serviceProvider.GetRequiredService<IMavLinkClient>();
-        await using IMavLinkConnection connection = serviceProvider.GetRequiredService<IMavLinkConnection>();
+        await using var client = serviceProvider.GetRequiredService<IMavLinkClient>();
+        await using var connection = serviceProvider.GetRequiredService<IMavLinkConnection>();
 
-        IVehicleMessagePump messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
+        var messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
 
         await using var simulator = new FakeMavLinkVehicle2(
             serviceProvider.GetRequiredService<IMavLinkFrameParser>(),
@@ -216,8 +212,8 @@ public class VehicleTests
     [Fact]
     public void Should_Update_Vehicle_Position_From_GlobalPositionInt_Message()
     {
-        IVehicleRegistry registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
-        IDomainFactory domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
+        var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
+        var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
 
         var vehicleId = new VehicleId(1, 1);
 
@@ -231,7 +227,7 @@ public class VehicleTests
             3,
             DateTimeOffset.UtcNow);
 
-        IPositionVehicleHandler handler = domainFactory.Create<IPositionVehicleHandler, IVehicleRegistry>(registry);
+        var handler = domainFactory.Create<IPositionVehicleHandler, IVehicleRegistry>(registry);
 
         handler.Handle(
             new GlobalPositionIntMessage(
@@ -242,7 +238,7 @@ public class VehicleTests
                 12.5,
                 DateTimeOffset.UtcNow));
 
-        VehicleSession? vehicle = registry.GetRequired(vehicleId);
+        var vehicle = registry.GetRequired(vehicleId);
 
         Assert.Equal(56.1629, vehicle.State.Latitude);
         Assert.Equal(10.2039, vehicle.State.Longitude);
@@ -255,8 +251,8 @@ public class VehicleTests
     [Fact]
     public void Should_Update_Battery_From_SysStatusMessage_Message()
     {
-        IVehicleRegistry registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
-        IDomainFactory domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
+        var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
+        var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
 
         var vehicleId = new VehicleId(1, 1);
 
@@ -270,7 +266,7 @@ public class VehicleTests
             3,
             DateTimeOffset.UtcNow);
 
-        IBatteryVehicleHandler handler = domainFactory.Create<IBatteryVehicleHandler, IVehicleRegistry>(registry);
+        var handler = domainFactory.Create<IBatteryVehicleHandler, IVehicleRegistry>(registry);
 
         handler.Handle(
             new SysStatusMessage(
@@ -280,7 +276,7 @@ public class VehicleTests
                 (float)10.0,
                 DateTimeOffset.UtcNow));
 
-        VehicleSession? vehicle = registry.GetRequired(vehicleId);
+        var vehicle = registry.GetRequired(vehicleId);
 
         Assert.Equal(56, vehicle.State.BatteryRemaining);
         Assert.Equal((float)10.0, vehicle.State.BatteryVoltage);
@@ -292,8 +288,8 @@ public class VehicleTests
     [Fact]
     public void Should_Update_Attitude_From_AttitudeMessage()
     {
-        IVehicleRegistry registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
-        IDomainFactory domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
+        var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
+        var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
 
         var vehicleId = new VehicleId(1, 1);
 
@@ -307,7 +303,7 @@ public class VehicleTests
             3,
             DateTimeOffset.UtcNow);
 
-        IAttitudeVehicleHandler handler = domainFactory.Create<IAttitudeVehicleHandler, IVehicleRegistry>(registry);
+        var handler = domainFactory.Create<IAttitudeVehicleHandler, IVehicleRegistry>(registry);
 
         handler.Handle(
             new AttitudeMessage(
@@ -318,7 +314,7 @@ public class VehicleTests
                 12.5,
                 DateTimeOffset.UtcNow));
 
-        VehicleSession? vehicle = registry.GetRequired(vehicleId);
+        var vehicle = registry.GetRequired(vehicleId);
 
         Assert.Equal(56.1629, vehicle.State.Roll);
         Assert.Equal(10.2039, vehicle.State.Pitch);
@@ -332,13 +328,13 @@ public class VehicleTests
     [Fact]
     public void Should_Mark_Vehicle_As_Stale_When_Heartbeat_Is_Old()
     {
-        IEventHub eventHub = serviceProvider.GetRequiredService<IEventHub>();
+        var eventHub = serviceProvider.GetRequiredService<IEventHub>();
 
-        IVehicleRegistry registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
+        var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
 
-        DateTimeOffset receivedAt = DateTimeOffset.UtcNow;
+        var receivedAt = DateTimeOffset.UtcNow;
 
-        VehicleRegistryResult vehicleRegistryResult = registry.RegisterOrUpdateHeartbeat(
+        var vehicleRegistryResult = registry.RegisterOrUpdateHeartbeat(
             new VehicleId(1, 1), simulatorIPEndPoint,
             0,
             2,
@@ -360,11 +356,11 @@ public class VehicleTests
     [Fact]
     public void Should_Mark_Vehicle_As_Degraded_When_Heartbeat_Is_Old()
     {
-        IVehicleRegistry registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
+        var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
 
-        DateTimeOffset receivedAt = DateTimeOffset.UtcNow;
+        var receivedAt = DateTimeOffset.UtcNow;
 
-        VehicleRegistryResult vehicleRegistryResult = registry.RegisterOrUpdateHeartbeat(
+        var vehicleRegistryResult = registry.RegisterOrUpdateHeartbeat(
             new VehicleId(1, 1), simulatorIPEndPoint,
             0,
             2,
@@ -385,11 +381,11 @@ public class VehicleTests
     [Fact]
     public void Should_Mark_Vehicle_As_Offline_When_Heartbeat_Is_Very_Old()
     {
-        IVehicleRegistry registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
+        var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
 
-        DateTimeOffset receivedAt = DateTimeOffset.UtcNow;
+        var receivedAt = DateTimeOffset.UtcNow;
 
-        VehicleRegistryResult vehicleRegistryResult = registry.RegisterOrUpdateHeartbeat(
+        var vehicleRegistryResult = registry.RegisterOrUpdateHeartbeat(
             new VehicleId(1, 1), simulatorIPEndPoint,
             0,
             2,
@@ -411,13 +407,13 @@ public class VehicleTests
     [Fact]
     public void Should_Mark_Vehicle_Online_When_New_Heartbeat_Arrives_After_Degraded()
     {
-        IVehicleRegistry registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
+        var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
 
 
-        DateTimeOffset receivedAt = DateTimeOffset.UtcNow;
+        var receivedAt = DateTimeOffset.UtcNow;
         var vehicleId = new VehicleId(1, 1);
 
-        VehicleRegistryResult vehicleRegistryResult = registry.RegisterOrUpdateHeartbeat(
+        var vehicleRegistryResult = registry.RegisterOrUpdateHeartbeat(
             vehicleId, simulatorIPEndPoint,
             0,
             2,
@@ -452,13 +448,13 @@ public class VehicleTests
     [Fact]
     public void Should_Mark_Vehicle_Online_When_New_Heartbeat_Arrives_After_Offline()
     {
-        IVehicleRegistry registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
+        var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
 
 
-        DateTimeOffset receivedAt = DateTimeOffset.UtcNow;
+        var receivedAt = DateTimeOffset.UtcNow;
         var vehicleId = new VehicleId(1, 1);
 
-        VehicleRegistryResult vehicleRegistryResult = registry.RegisterOrUpdateHeartbeat(
+        var vehicleRegistryResult = registry.RegisterOrUpdateHeartbeat(
             vehicleId, simulatorIPEndPoint,
             0,
             2,
@@ -494,7 +490,7 @@ public class VehicleTests
     [Fact]
     public void Should_Encode_Arm_CommandLong_Frame()
     {
-        IMavLinkCommandEncoder encoder = serviceProvider.GetRequiredService<IMavLinkCommandEncoder>();
+        var encoder = serviceProvider.GetRequiredService<IMavLinkCommandEncoder>();
 
         var packet = encoder.EncodeArmDisarm(
             1,
@@ -511,7 +507,7 @@ public class VehicleTests
 
         Assert.Equal(MessageIds.CommandLong, messageId);
 
-        Span<byte> payload = packet.AsSpan(10, 33);
+        var payload = packet.AsSpan(10, 33);
 
         var param1 = BitConverter.ToSingle(payload[0..4]);
         var command = BinaryPrimitives.ReadUInt16LittleEndian(payload[28..30]);
@@ -528,7 +524,7 @@ public class VehicleTests
     [Fact]
     public void Should_Decode_CommandAck_Message()
     {
-        DateTimeOffset receivedAt = DateTimeOffset.UtcNow;
+        var receivedAt = DateTimeOffset.UtcNow;
         var payload = new byte[]
         {
             0x90, 0x01, // 400 COMPONENT_ARM_DISARM
@@ -547,11 +543,11 @@ public class VehicleTests
 
         var decoder = new CommandAckMessageDecoder();
 
-        var decoded = decoder.TryDecode(frame, out MavLinkMessage? message);
+        var decoded = decoder.TryDecode(frame, out var message);
 
         Assert.True(decoded);
 
-        CommandAckMessage ack = Assert.IsType<CommandAckMessage>(message);
+        var ack = Assert.IsType<CommandAckMessage>(message);
 
         Assert.Equal(1, ack.SystemId);
         Assert.Equal(1, ack.ComponentId);
@@ -565,12 +561,12 @@ public class VehicleTests
     [Fact]
     public async Task Should_Receive_CommandAck_When_Arm_Command_Is_Sent()
     {
-        IOptions<TransportEndpoint> options = serviceProvider.GetRequiredService<IOptions<TransportEndpoint>>();
-        IEventHub eventHub = serviceProvider.GetRequiredService<IEventHub>();
+        var options = serviceProvider.GetRequiredService<IOptions<TransportEndpoint>>();
+        var eventHub = serviceProvider.GetRequiredService<IEventHub>();
 
-        await using IMavLinkClient client = serviceProvider.GetRequiredService<IMavLinkClient>();
-        await using IMavLinkConnection connection = serviceProvider.GetRequiredService<IMavLinkConnection>();
-        IVehicleMessagePump messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
+        await using var client = serviceProvider.GetRequiredService<IMavLinkClient>();
+        await using var connection = serviceProvider.GetRequiredService<IMavLinkConnection>();
+        var messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
 
         await using var simulator =
             new FakeMavLinkVehicle2(
@@ -584,7 +580,7 @@ public class VehicleTests
 
         TaskCompletionSource ts = new(TaskCreationOptions.RunContinuationsAsynchronously);
         CommandAckMessage? messageResult = null;
-        using IDisposable subscription = eventHub.SubscribeAsync<CommandAckMessage>(MavLinkEventTopics.ReceivedMessage, (commandAckMessage, ct) =>
+        using var subscription = eventHub.SubscribeAsync<CommandAckMessage>(MavLinkEventTopics.ReceivedMessage, (commandAckMessage, ct) =>
         {
             messageResult = commandAckMessage;
             ts.TrySetResult();
@@ -595,14 +591,14 @@ public class VehicleTests
         _ = Task.Run(() => messagePump.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
         _ = Task.Run(() => simulator.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
 
-        IMavLinkCommandEncoder encoder = serviceProvider.GetRequiredService<IMavLinkCommandEncoder>();
+        var encoder = serviceProvider.GetRequiredService<IMavLinkCommandEncoder>();
         var armCommand = encoder.EncodeArmDisarm(1, 1, true);
         await connection.SendRawAsync(armCommand, targetIPEndPoint, TestContext.Current.CancellationToken);
 
 
         await ts.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
         messageResult.Should().NotBeNull();
-        CommandAckMessage message = messageResult!;
+        var message = messageResult!;
 
         Assert.Equal(1, message.SystemId);
         Assert.Equal(1, message.ComponentId);
@@ -616,8 +612,8 @@ public class VehicleTests
     [Fact]
     public void Should_Update_Armed_State_From_Heartbeat_BaseMode()
     {
-        IVehicleRegistry registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
-        IHeartbeatVehicleHandler handler = serviceProvider.GetRequiredService<IHeartbeatVehicleHandler>();
+        var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
+        var handler = serviceProvider.GetRequiredService<IHeartbeatVehicleHandler>();
         var heartbeat = new HeartbeatMessage(
             1, 1, simulatorIPEndPoint,
             0,
@@ -628,7 +624,7 @@ public class VehicleTests
             3,
             DateTimeOffset.UtcNow);
 
-        VehicleSession vehicle = handler.Handle(heartbeat);
+        var vehicle = handler.Handle(heartbeat);
 
         Assert.True(vehicle.State.IsArmed);
     }
@@ -639,9 +635,9 @@ public class VehicleTests
     [Fact]
     public void Should_Update_Mode_From_Heartbeat_CustomMode()
     {
-        IDomainFactory domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
-        IVehicleRegistry registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
-        IHeartbeatVehicleHandler handler = domainFactory.Create<IHeartbeatVehicleHandler, IVehicleRegistry>(registry);
+        var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
+        var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
+        var handler = domainFactory.Create<IHeartbeatVehicleHandler, IVehicleRegistry>(registry);
 
         var heartbeat = new HeartbeatMessage(
             1, 1, simulatorIPEndPoint,
@@ -653,7 +649,7 @@ public class VehicleTests
             3,
             DateTimeOffset.UtcNow);
 
-        VehicleSession vehicle = handler.Handle(heartbeat);
+        var vehicle = handler.Handle(heartbeat);
 
         Assert.Equal(VehicleMode.Guided, vehicle.State.Mode);
     }
@@ -664,7 +660,7 @@ public class VehicleTests
     [Fact]
     public void Should_Update_Position()
     {
-        VehicleSession vehicle = CreateVehicleSession();
+        var vehicle = CreateVehicleSession();
 
         vehicle.ApplyPosition(
             56.1629,
@@ -683,7 +679,7 @@ public class VehicleTests
     [Fact]
     public void Should_Update_Attitude()
     {
-        VehicleSession vehicle = CreateVehicleSession();
+        var vehicle = CreateVehicleSession();
 
         vehicle.ApplyAttitude(0.1, -0.2, 1.5);
 
@@ -699,7 +695,7 @@ public class VehicleTests
     [Fact]
     public void Should_Update_Battery()
     {
-        VehicleSession vehicle = CreateVehicleSession();
+        var vehicle = CreateVehicleSession();
 
         vehicle.ApplyBattery(87, 11.4f);
 
@@ -736,7 +732,7 @@ public class VehicleTests
 
     private static async Task EventuallyAsync(Action assertion, TimeSpan timeout, CancellationToken cancellationToken)
     {
-        DateTimeOffset deadline = DateTimeOffset.UtcNow + timeout;
+        var deadline = DateTimeOffset.UtcNow + timeout;
         Exception? lastException = null;
 
         while (DateTimeOffset.UtcNow < deadline)

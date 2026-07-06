@@ -1,4 +1,4 @@
-﻿namespace Domain.Library.EventHub.Events;
+﻿namespace MissionPlanner.Library.EventHub.Events;
 
 /// <summary>
 /// Represents a domain event.

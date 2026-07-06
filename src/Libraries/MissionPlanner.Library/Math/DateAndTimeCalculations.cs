@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Domain.Library.Math;
+namespace MissionPlanner.Library.Math;
 
 /// <summary>
 /// Provides methods for performing date and time calculations.

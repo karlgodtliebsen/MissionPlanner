@@ -1,9 +1,8 @@
-﻿using Domain.Library.EventHub.Abstractions;
-
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using MissionPlanner.Library.EventHub.Abstractions;
 
-namespace Domain.Library.Configuration;
+namespace MissionPlanner.Library.Configuration;
 
 /// <summary>
 /// EventHubConfigurator

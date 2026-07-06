@@ -10,26 +10,17 @@ public class ApplicationOptions
     /// </summary>
     public static string SectionName { get; set; } = "ApplicationSettings";
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public List<string> ConnectionTypes { get; } =
-    [
-        "Serial",
-        "TCP",
-        "UDP",
-        "UDP Client"
-    ];
 
     /// <summary>
     /// 
     /// </summary>
     public List<string> Ports { get; } =
     [
-        "COM1",
-        "COM2",
-        "COM3",
-        "AUTO"
+        "AUTO",
+        "TCP",
+        "UDP",
+        "UDPCI",
+        "WS"
     ];
 
     /// <summary>
@@ -60,19 +51,12 @@ public class ApplicationOptions
 
 
     /// <summary>
-    /// Gets or sets the configured connection type for the application.
-    /// </summary>
-    public string ConnectionType { get; set; } = "Serial";
-
-
-    /// <summary>
     /// Gets the template for the application configuration.
     /// </summary>
     public static string Template => @"""
 ""Application"": {
     ""Port"": ""AUTO"",
     ""BaudRate"": ""115200"",
-    ""ConnectionType"": ""Serial"",
   },
 """;
 }

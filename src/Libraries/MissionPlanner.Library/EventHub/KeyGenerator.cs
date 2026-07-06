@@ -1,4 +1,4 @@
-namespace Domain.Library.EventHub;
+namespace MissionPlanner.Library.EventHub;
 
 /// <summary>
 /// A simple key generator that creates a unique key based on the event name and the type of data.

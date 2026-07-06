@@ -1,16 +1,12 @@
 ﻿using System.Net.Sockets;
-
-using Domain.Library;
-using Domain.Library.EventHub.Abstractions;
-
 using FluentAssertions;
-
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services;
+using MissionPlanner.Library;
+using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
@@ -35,14 +31,14 @@ public class SmokeTestsSitl : IAsyncLifetime
     {
         this.output = output;
 
-        IServiceCollection services = TestConfigurator
+        var services = TestConfigurator
             .AddTestConfiguration()
             .AddDefaultTestLogging(output);
 
         serviceProvider = services.BuildServiceProvider();
         serviceProvider.UseTestConfiguration();
 
-        IOptions<TransportEndpoint> endPoint = serviceProvider.GetRequiredService<IOptions<TransportEndpoint>>();
+        var endPoint = serviceProvider.GetRequiredService<IOptions<TransportEndpoint>>();
         endPoint.Value.RemoteHost = "127.0.0.1";
         endPoint.Value.RemotePort = 14551;
 
@@ -51,7 +47,7 @@ public class SmokeTestsSitl : IAsyncLifetime
 
         //for tcp: 127.0.0.1 on port 5760
 
-        ILogger<SmokeTestsDroneBridge> logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsDroneBridge>>();
+        var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsDroneBridge>>();
 
         logger.LogInformation($"Test configuration initialized. UDP local:  {endPoint.Value.LocalHost}:{endPoint.Value.LocalPort}");
         logger.LogInformation($"Test configuration initialized. UDP remote: {endPoint.Value.RemoteHost}:{endPoint.Value.RemotePort}");
@@ -62,7 +58,7 @@ public class SmokeTestsSitl : IAsyncLifetime
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        IVehicleService vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
+        var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
         await ResetSitlVehicleAsync(vehicleService, CancellationToken.None);
         await connection.DisposeAsync();
         await messagePump.DisposeAsync();
@@ -76,10 +72,10 @@ public class SmokeTestsSitl : IAsyncLifetime
     {
         connection = serviceProvider.GetRequiredService<IMavLinkConnection>();
         messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
-        IVehicleService vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
+        var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
 
-        IMavLinkConnection conn = connection;
-        IVehicleMessagePump mp = messagePump;
+        var conn = connection;
+        var mp = messagePump;
         _ = Task.Run(() => conn.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
         _ = Task.Run(() => mp.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
 
@@ -89,18 +85,18 @@ public class SmokeTestsSitl : IAsyncLifetime
 
     private async Task ResetSitlVehicleAsync(IVehicleService vehicleService, CancellationToken cancellationToken)
     {
-        ILogger<SmokeTestsSitl> logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
+        var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
 
         await EventuallyAsync(
             () =>
             {
-                IReadOnlyCollection<VehicleState> vehicles = vehicleService.GetVehicles();
+                var vehicles = vehicleService.GetVehicles();
 
                 logger.LogTrace("Vehicle count: {VehicleCount}", vehicles.Count);
 
                 Assert.NotEmpty(vehicles);
 
-                VehicleState vehicle = vehicles.First();
+                var vehicle = vehicles.First();
 
                 logger.LogTrace("Vehicle: {VehicleId}, State: {ConnectionState}, Mode: {Mode}", vehicle.VehicleId, vehicle.ConnectionState, vehicle.Mode);
 
@@ -109,19 +105,19 @@ public class SmokeTestsSitl : IAsyncLifetime
             TimeSpan.FromSeconds(10),
             cancellationToken);
 
-        VehicleState? current = vehicleService.GetVehicleState(vehicleId);
+        var current = vehicleService.GetVehicleState(vehicleId);
         if (current is not null)
         {
             if (current.IsArmed)
             {
-                VehicleCommandResponse disarmResponse = await vehicleService.DisarmAsync(vehicleId, cancellationToken);
+                var disarmResponse = await vehicleService.DisarmAsync(vehicleId, cancellationToken);
 
                 Assert.Equal(VehicleCommandResult.Accepted, disarmResponse.Result);
 
                 await EventuallyAsync(
                     () =>
                     {
-                        VehicleState? vehicle = vehicleService.GetVehicleState(vehicleId);
+                        var vehicle = vehicleService.GetVehicleState(vehicleId);
                         if (vehicle is not null)
                         {
                             Assert.False(vehicle.IsArmed);
@@ -132,14 +128,14 @@ public class SmokeTestsSitl : IAsyncLifetime
             }
         }
 
-        VehicleCommandResponse modeResponse = await vehicleService.SetModeAsync(vehicleId, VehicleMode.Stabilize, cancellationToken);
+        var modeResponse = await vehicleService.SetModeAsync(vehicleId, VehicleMode.Stabilize, cancellationToken);
 
         Assert.Equal(VehicleCommandResult.Accepted, modeResponse.Result);
 
         await EventuallyAsync(
             () =>
             {
-                VehicleState? vehicle = vehicleService.GetVehicleState(vehicleId);
+                var vehicle = vehicleService.GetVehicleState(vehicleId);
                 if (vehicle is not null)
                 {
                     Assert.Equal(VehicleMode.Stabilize, vehicle.Mode);
@@ -169,11 +165,11 @@ public class SmokeTestsSitl : IAsyncLifetime
     [Fact]
     public async Task Should_Receive_Heartbeat_From_SITL()
     {
-        IEventHub eventHub = serviceProvider.GetRequiredService<IEventHub>();
+        var eventHub = serviceProvider.GetRequiredService<IEventHub>();
 
         TaskCompletionSource ts = new(TaskCreationOptions.RunContinuationsAsynchronously);
         MavLinkFrame? messageResult = null;
-        using IDisposable subscription = eventHub.SubscribeAsync<MavLinkFrame>(MavLinkEventTopics.ReceivedFrame, (frame, cts) =>
+        using var subscription = eventHub.SubscribeAsync<MavLinkFrame>(MavLinkEventTopics.ReceivedFrame, (frame, cts) =>
         {
             if (frame.MessageId == MessageIds.Heartbeat)
             {
@@ -186,7 +182,7 @@ public class SmokeTestsSitl : IAsyncLifetime
 
         await ts.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
         messageResult.Should().NotBeNull();
-        MavLinkFrame frame = messageResult!;
+        var frame = messageResult!;
 
 
         Assert.Equal(MessageIds.Heartbeat, frame.MessageId);
@@ -200,19 +196,19 @@ public class SmokeTestsSitl : IAsyncLifetime
     [Fact]
     public async Task Should_Register_Vehicle_From_SITL_Heartbeat()
     {
-        ILogger<SmokeTestsSitl> logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
-        IVehicleService vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
+        var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
+        var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
 
         await EventuallyAsync(
             () =>
             {
-                IReadOnlyCollection<VehicleState> vehicles = vehicleService.GetVehicles();
+                var vehicles = vehicleService.GetVehicles();
 
                 logger.LogTrace("Vehicle count: {VehicleCount}", vehicles.Count);
 
                 Assert.NotEmpty(vehicles);
 
-                VehicleState vehicle = vehicles.First();
+                var vehicle = vehicles.First();
 
                 logger.LogTrace("Vehicle: {VehicleId}, State: {ConnectionState}, Mode: {Mode}", vehicle.VehicleId, vehicle.ConnectionState, vehicle.Mode);
 
@@ -228,19 +224,19 @@ public class SmokeTestsSitl : IAsyncLifetime
     [Fact]
     public async Task Should_Register_Vehicle_From_SITL_Heartbeat_And_Verify_Telemetry()
     {
-        ILogger<SmokeTestsSitl> logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
-        IVehicleService vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
+        var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
+        var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
 
         await EventuallyAsync(
             () =>
             {
-                IReadOnlyCollection<VehicleState> vehicles = vehicleService.GetVehicles();
+                var vehicles = vehicleService.GetVehicles();
 
                 logger.LogTrace("Vehicle count: {VehicleCount}", vehicles.Count);
 
                 Assert.NotEmpty(vehicles);
 
-                VehicleState vehicle = vehicles.First();
+                var vehicle = vehicles.First();
 
                 logger.LogTrace("Vehicle: {VehicleId}, State: {ConnectionState}, Mode: {Mode}", vehicle.VehicleId, vehicle.ConnectionState, vehicle.Mode);
 
@@ -265,16 +261,16 @@ public class SmokeTestsSitl : IAsyncLifetime
     [Fact]
     public async Task Should_Register_Vehicle_From_SITL_Heartbeat_And_Send_Arm()
     {
-        ILogger<SmokeTestsSitl> logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
+        var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
 
-        VehicleState testVehicle = await WaitForRegisteredVehicle();
+        var testVehicle = await WaitForRegisteredVehicle();
 
-        IVehicleService vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
-        VehicleCommandResponse response = await vehicleService.ArmAsync(testVehicle.VehicleId, TestContext.Current.CancellationToken);
+        var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
+        var response = await vehicleService.ArmAsync(testVehicle.VehicleId, TestContext.Current.CancellationToken);
         logger.LogTrace("Arm response: Vehicle={VehicleId}, Result={Result}", response.VehicleId, response.Result);
         Assert.Equal(VehicleCommandResult.Accepted, response.Result);
-        IReadOnlyCollection<VehicleState> vehicles = vehicleService.GetVehicles();
-        VehicleState vehicle = vehicles.First();
+        var vehicles = vehicleService.GetVehicles();
+        var vehicle = vehicles.First();
         vehicle.IsArmed.Should().BeTrue();
     }
 
@@ -285,15 +281,15 @@ public class SmokeTestsSitl : IAsyncLifetime
     [Fact]
     public async Task Should_Register_Vehicle_From_SITL_Heartbeat_And_Send_DisArm()
     {
-        ILogger<SmokeTestsSitl> logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
-        VehicleState testVehicle = await WaitForRegisteredVehicle();
+        var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
+        var testVehicle = await WaitForRegisteredVehicle();
 
-        IVehicleService vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
-        VehicleCommandResponse response = await vehicleService.ArmAsync(testVehicle.VehicleId, TestContext.Current.CancellationToken);
+        var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
+        var response = await vehicleService.ArmAsync(testVehicle.VehicleId, TestContext.Current.CancellationToken);
         logger.LogTrace("Arm response: Vehicle={VehicleId}, Result={Result}", response.VehicleId, response.Result);
         Assert.Equal(VehicleCommandResult.Accepted, response.Result);
-        IReadOnlyCollection<VehicleState> vehicles = vehicleService.GetVehicles();
-        VehicleState vehicle = vehicles.First();
+        var vehicles = vehicleService.GetVehicles();
+        var vehicle = vehicles.First();
         vehicle.IsArmed.Should().BeTrue();
 
 
@@ -312,15 +308,15 @@ public class SmokeTestsSitl : IAsyncLifetime
     [Fact]
     public async Task Should_Set_Guided_Mode_Through_SITL()
     {
-        ILogger<SmokeTestsSitl> logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
-        IVehicleService vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
+        var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
+        var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
 
-        VehicleState testVehicle = await WaitForRegisteredVehicle();
-        VehicleCommandResponse response = await vehicleService.ArmAsync(testVehicle.VehicleId, TestContext.Current.CancellationToken);
+        var testVehicle = await WaitForRegisteredVehicle();
+        var response = await vehicleService.ArmAsync(testVehicle.VehicleId, TestContext.Current.CancellationToken);
         logger.LogTrace("Arm response: Vehicle={VehicleId}, Result={Result}", response.VehicleId, response.Result);
         Assert.Equal(VehicleCommandResult.Accepted, response.Result);
-        IReadOnlyCollection<VehicleState> vehicles = vehicleService.GetVehicles();
-        VehicleState vehicle = vehicles.First();
+        var vehicles = vehicleService.GetVehicles();
+        var vehicle = vehicles.First();
         vehicle.IsArmed.Should().BeTrue();
 
 
@@ -340,8 +336,8 @@ public class SmokeTestsSitl : IAsyncLifetime
     [Fact]
     public async Task Should_Set_Guided_Mode_Through_SITL_Extended()
     {
-        ILogger<SmokeTestsSitl> logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
-        IVehicleService vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
+        var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
+        var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
 
         VehicleState? vehicle = null!;
 
@@ -354,7 +350,7 @@ public class SmokeTestsSitl : IAsyncLifetime
             TimeSpan.FromSeconds(10),
             TestContext.Current.CancellationToken);
 
-        VehicleCommandResponse armResponse = await vehicleService.ArmAsync(vehicle.VehicleId, TestContext.Current.CancellationToken);
+        var armResponse = await vehicleService.ArmAsync(vehicle.VehicleId, TestContext.Current.CancellationToken);
 
         logger.LogTrace("Arm response: Vehicle={VehicleId}, Result={Result}", armResponse.VehicleId, armResponse.Result);
 
@@ -370,7 +366,7 @@ public class SmokeTestsSitl : IAsyncLifetime
             TimeSpan.FromSeconds(10),
             TestContext.Current.CancellationToken);
 
-        VehicleCommandResponse modeResponse = await vehicleService.SetModeAsync(vehicle.VehicleId, VehicleMode.Guided, TestContext.Current.CancellationToken);
+        var modeResponse = await vehicleService.SetModeAsync(vehicle.VehicleId, VehicleMode.Guided, TestContext.Current.CancellationToken);
 
         logger.LogTrace("Set mode response: Vehicle={VehicleId}, Result={Result}", modeResponse.VehicleId, modeResponse.Result);
 
@@ -481,16 +477,16 @@ public class SmokeTestsSitl : IAsyncLifetime
     [Fact]
     public async Task Should_Set_Stabilize_Mode_Through_SITL()
     {
-        ILogger<SmokeTestsSitl> logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
-        IVehicleService vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
+        var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
+        var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
 
-        VehicleState testVehicle = await WaitForRegisteredVehicle();
+        var testVehicle = await WaitForRegisteredVehicle();
 
-        VehicleCommandResponse response = await vehicleService.ArmAsync(testVehicle.VehicleId, TestContext.Current.CancellationToken);
+        var response = await vehicleService.ArmAsync(testVehicle.VehicleId, TestContext.Current.CancellationToken);
         logger.LogTrace("Arm response: Vehicle={VehicleId}, Result={Result}", response.VehicleId, response.Result);
         Assert.Equal(VehicleCommandResult.Accepted, response.Result);
-        IReadOnlyCollection<VehicleState> vehicles = vehicleService.GetVehicles();
-        VehicleState vehicle = vehicles.First();
+        var vehicles = vehicleService.GetVehicles();
+        var vehicle = vehicles.First();
         vehicle.IsArmed.Should().BeTrue();
 
         response = await vehicleService.SetModeAsync(vehicle.VehicleId, VehicleMode.Guided, TestContext.Current.CancellationToken);
@@ -507,16 +503,16 @@ public class SmokeTestsSitl : IAsyncLifetime
     [Fact]
     public async Task Should_Set_Rtl_Mode_Through_SITL()
     {
-        ILogger<SmokeTestsSitl> logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
-        IVehicleService vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
+        var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
+        var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
 
-        VehicleState testVehicle = await WaitForRegisteredVehicle();
+        var testVehicle = await WaitForRegisteredVehicle();
 
-        VehicleCommandResponse response = await vehicleService.ArmAsync(testVehicle.VehicleId, TestContext.Current.CancellationToken);
+        var response = await vehicleService.ArmAsync(testVehicle.VehicleId, TestContext.Current.CancellationToken);
         logger.LogTrace("Arm response: Vehicle={VehicleId}, Result={Result}", response.VehicleId, response.Result);
         Assert.Equal(VehicleCommandResult.Accepted, response.Result);
-        IReadOnlyCollection<VehicleState> vehicles = vehicleService.GetVehicles();
-        VehicleState vehicle = vehicles.First();
+        var vehicles = vehicleService.GetVehicles();
+        var vehicle = vehicles.First();
         vehicle.IsArmed.Should().BeTrue();
 
         response = await vehicleService.SetModeAsync(vehicle.VehicleId, VehicleMode.Guided, TestContext.Current.CancellationToken);
@@ -534,13 +530,13 @@ public class SmokeTestsSitl : IAsyncLifetime
     [Fact]
     public async Task Should_Update_Attitude_From_SITL()
     {
-        ILogger<SmokeTestsSitl> logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
-        IVehicleService vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
+        var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
+        var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
 
         await EventuallyAsync(
             () =>
             {
-                VehicleState vehicle = vehicleService.GetVehicles().First();
+                var vehicle = vehicleService.GetVehicles().First();
 
                 Assert.NotNull(vehicle.Roll);
                 Assert.NotNull(vehicle.Pitch);
@@ -556,13 +552,13 @@ public class SmokeTestsSitl : IAsyncLifetime
     [Fact]
     public async Task Should_Update_Position_From_SITL()
     {
-        ILogger<SmokeTestsSitl> logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
-        IVehicleService vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
+        var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
+        var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
 
         await EventuallyAsync(
             () =>
             {
-                VehicleState vehicle = vehicleService.GetVehicles().First();
+                var vehicle = vehicleService.GetVehicles().First();
 
                 Assert.NotNull(vehicle.Latitude);
                 Assert.NotNull(vehicle.Longitude);
@@ -578,13 +574,13 @@ public class SmokeTestsSitl : IAsyncLifetime
     [Fact]
     public async Task Should_Update_Battery_From_SITL()
     {
-        ILogger<SmokeTestsSitl> logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
-        IVehicleService vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
+        var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
+        var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
 
         await EventuallyAsync(
             () =>
             {
-                VehicleState vehicle = vehicleService.GetVehicles().First();
+                var vehicle = vehicleService.GetVehicles().First();
 
                 Assert.NotNull(vehicle.BatteryVoltage);
                 Assert.NotNull(vehicle.BatteryRemaining);
@@ -599,14 +595,14 @@ public class SmokeTestsSitl : IAsyncLifetime
     [Fact]
     public async Task Should_Receive_StatusText_From_SITL()
     {
-        IEventHub eventHub = serviceProvider.GetRequiredService<IEventHub>();
-        ILogger<SmokeTestsSitl> logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
-        IVehicleService vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
-        VehicleState testVehicle = await WaitForRegisteredVehicle();
+        var eventHub = serviceProvider.GetRequiredService<IEventHub>();
+        var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
+        var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
+        var testVehicle = await WaitForRegisteredVehicle();
 
         var completion = new TaskCompletionSource<StatusTextMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        using IDisposable subscription = eventHub.SubscribeAsync<StatusTextMessage>(MavLinkEventTopics.ReceivedMessage,
+        using var subscription = eventHub.SubscribeAsync<StatusTextMessage>(MavLinkEventTopics.ReceivedMessage,
             (message, cancellationToken) =>
             {
                 completion.TrySetResult(message);
@@ -614,30 +610,30 @@ public class SmokeTestsSitl : IAsyncLifetime
             });
 
 
-        VehicleCommandResponse response = await vehicleService.ArmAsync(testVehicle.VehicleId, TestContext.Current.CancellationToken);
+        var response = await vehicleService.ArmAsync(testVehicle.VehicleId, TestContext.Current.CancellationToken);
         logger.LogTrace("Arm response: Vehicle={VehicleId}, Result={Result}", response.VehicleId, response.Result);
         Assert.Equal(VehicleCommandResult.Accepted, response.Result);
 
-        StatusTextMessage statusText = await completion.Task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken);
+        var statusText = await completion.Task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken);
 
         Assert.False(string.IsNullOrWhiteSpace(statusText.Text));
 
-        IReadOnlyCollection<VehicleStatusText> notifications = vehicleService.GetVehicleNotifications(testVehicle.VehicleId);
+        var notifications = vehicleService.GetVehicleNotifications(testVehicle.VehicleId);
         notifications.Count.Should().BeGreaterThanOrEqualTo(1);
     }
 
 
     private async Task<VehicleState> WaitForRegisteredVehicle()
     {
-        ILogger<SmokeTestsSitl> logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
+        var logger = serviceProvider.GetRequiredService<ILogger<SmokeTestsSitl>>();
 
-        IVehicleService vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
+        var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
         TaskCompletionSource ts = new(TaskCreationOptions.RunContinuationsAsynchronously);
         VehicleState? testVehicle = null;
         await EventuallyAsync(
             () =>
             {
-                IReadOnlyCollection<VehicleState> vehicles = vehicleService.GetVehicles();
+                var vehicles = vehicleService.GetVehicles();
                 Assert.NotEmpty(vehicles);
                 testVehicle = vehicles.First();
                 logger.LogTrace("Vehicle: {VehicleId}, State: {ConnectionState}, Mode: {Mode}", testVehicle.VehicleId, testVehicle.ConnectionState, testVehicle.Mode);
@@ -657,7 +653,7 @@ public class SmokeTestsSitl : IAsyncLifetime
 
     private static async Task EventuallyAsync(Action assertion, TimeSpan timeout, CancellationToken cancellationToken)
     {
-        DateTimeOffset deadline = DateTimeOffset.UtcNow + timeout;
+        var deadline = DateTimeOffset.UtcNow + timeout;
         Exception? lastException = null;
 
         while (DateTimeOffset.UtcNow < deadline)

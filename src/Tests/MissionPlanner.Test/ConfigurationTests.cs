@@ -1,9 +1,7 @@
-﻿using Domain.Library.Factory.Domain.Abstractions;
-
-using Microsoft.Extensions.Logging;
-
+﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Services;
+using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.Services;
@@ -28,7 +26,7 @@ public class ConfigurationTests
     {
         this.output = output;
 
-        IServiceCollection services = TestConfigurator
+        var services = TestConfigurator
             .AddTestConfiguration()
             .AddDefaultTestLogging(output);
 
@@ -40,24 +38,24 @@ public class ConfigurationTests
     [Fact]
     public async Task TestConfigurationSetupAsync()
     {
-        ILogger<ConfigurationTests> logger = serviceProvider.GetRequiredService<ILogger<ConfigurationTests>>();
-        IMavLinkFrameParser parser = serviceProvider.GetRequiredService<IMavLinkFrameParser>();
-        IMavLinkTransport transport = serviceProvider.GetRequiredService<IMavLinkTransport>();
-        IMavLinkClient mavLinkClient = serviceProvider.GetRequiredService<IMavLinkClient>();
+        var logger = serviceProvider.GetRequiredService<ILogger<ConfigurationTests>>();
+        var parser = serviceProvider.GetRequiredService<IMavLinkFrameParser>();
+        var transport = serviceProvider.GetRequiredService<IMavLinkTransport>();
+        var mavLinkClient = serviceProvider.GetRequiredService<IMavLinkClient>();
 
-        IMavLinkFrameParser frameParser = serviceProvider.GetRequiredService<IMavLinkFrameParser>();
-        IMavLinkCommandEncoder commandEncoder = serviceProvider.GetRequiredService<IMavLinkCommandEncoder>();
-        IMavLinkCrcExtraProvider crcExtraProvider = serviceProvider.GetRequiredService<IMavLinkCrcExtraProvider>();
-        IMavLinkMessageDecoder messageDecoder = serviceProvider.GetRequiredService<IMavLinkMessageDecoder>();
+        var frameParser = serviceProvider.GetRequiredService<IMavLinkFrameParser>();
+        var commandEncoder = serviceProvider.GetRequiredService<IMavLinkCommandEncoder>();
+        var crcExtraProvider = serviceProvider.GetRequiredService<IMavLinkCrcExtraProvider>();
+        var messageDecoder = serviceProvider.GetRequiredService<IMavLinkMessageDecoder>();
 
-        IMavLinkConnection connection = serviceProvider.GetRequiredService<IMavLinkConnection>();
-        IVehicleMessagePump messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
-        ICommandAckTracker commandAckTracker = serviceProvider.GetRequiredService<ICommandAckTracker>();
-        IVehicleCommandService commandService = serviceProvider.GetRequiredService<IVehicleCommandService>();
-        IVehicleRegistry registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
-        IVehicleService vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
+        var connection = serviceProvider.GetRequiredService<IMavLinkConnection>();
+        var messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
+        var commandAckTracker = serviceProvider.GetRequiredService<ICommandAckTracker>();
+        var commandService = serviceProvider.GetRequiredService<IVehicleCommandService>();
+        var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
+        var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
 
-        IDomainFactory domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
+        var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
 
         // await using var simulator = new FakeMavLinkVehicle2(frameParser, crcExtraProvider, "127.0.0.1", 14550, 14551, TimeSpan.FromMilliseconds(100));
 

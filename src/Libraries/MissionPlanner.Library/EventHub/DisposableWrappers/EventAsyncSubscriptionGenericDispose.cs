@@ -1,4 +1,4 @@
-namespace Domain.Library.EventHub.DisposableWrappers;
+namespace MissionPlanner.Library.EventHub.DisposableWrappers;
 
 internal class EventAsyncSubscriptionGenericDispose<T>(EventHub instance, string @event, Func<T, CancellationToken, Task> action) : IDisposable
 {

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
+             x:Class="MissionPlanner.App.Views.Common.StatusBarView"
+             x:DataType="common:StatusBarViewModel"
+             HeightRequest="32">
+
+    <Grid ColumnDefinitions="*,Auto,Auto" 
+          Padding="12,6"
+          BackgroundColor="#2d2d30">
+
+        <!-- Status Message (Left) -->
+        <Label Grid.Column="0"
+               Text="{Binding StatusMessage}"
+               VerticalOptions="Center"
+               FontSize="12"
+               TextColor="LightGray"/>
+
+        <!-- Connection Info (Center-Right) -->
+        <HorizontalStackLayout Grid.Column="1" 
+                               Spacing="8"
+                               VerticalOptions="Center"
+                               Margin="0,0,16,0">
+            <Label Text="●" 
+                   TextColor="{Binding ConnectionDotColor}"
+                   FontSize="14"/>
+            <Label Text="{Binding ConnectionStatus}"
+                   FontSize="12"
+                   TextColor="LightGray"/>
+        </HorizontalStackLayout>
+
+        <!-- Clock (Right) -->
+        <Label Grid.Column="2"
+               Text="{Binding CurrentTime}"
+               VerticalOptions="Center"
+               FontSize="12"
+               TextColor="LightGray"/>
+    </Grid>
+</ContentView>

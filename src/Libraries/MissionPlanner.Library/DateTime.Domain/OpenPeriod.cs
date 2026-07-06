@@ -1,4 +1,4 @@
-﻿namespace Domain.Library.DateTime.Domain;
+﻿namespace MissionPlanner.Library.DateTime.Domain;
 
 /// <summary>
 /// Represents a period of time with a start date and an optional end date.
@@ -49,11 +49,7 @@ public sealed class OpenPeriod
 
     public static implicit operator OpenPeriod((System.DateTime from, System.DateTime? to) periodTuple)
     {
-        return new OpenPeriod
-        {
-            From = periodTuple.from,
-            To = periodTuple.to
-        };
+        return new OpenPeriod { From = periodTuple.from, To = periodTuple.to };
     }
 
     public bool Contains(DateTimeOffset date)

@@ -1,10 +1,8 @@
 ﻿using System.Collections.Concurrent;
-
-using Domain.Library.Factory.Domain.Abstractions;
-
 using Microsoft.Extensions.DependencyInjection;
+using MissionPlanner.Library.Factory.Domain.Abstractions;
 
-namespace Domain.Library.Factory.Domain;
+namespace MissionPlanner.Library.Factory.Domain;
 
 /// <summary>
 /// A factory for creating domain objects.

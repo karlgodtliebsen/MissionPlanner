@@ -1,11 +1,11 @@
-﻿using Domain.Library.Factory.Domain.Abstractions;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Services;
 using MissionPlanner.Core.VehicleHandler;
+using MissionPlanner.Library.Factory.Domain.Abstractions;
 
 namespace MissionPlanner.Core.Configuration;
 

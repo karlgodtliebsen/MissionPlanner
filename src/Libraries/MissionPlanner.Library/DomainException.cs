@@ -1,19 +1,25 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-namespace Domain.Library;
+namespace MissionPlanner.Library;
 
+/// <summary>
+/// Represents errors that occur within the domain layer of the application.
+/// </summary>
 [Serializable]
 public class DomainException : Exception
 {
+    /// <inheritdoc />
     public DomainException(string message) : base(message)
     {
     }
 
+    /// <inheritdoc />
     public DomainException()
     {
     }
 
+    /// <inheritdoc />
     public DomainException(string message, string subText) : base(message + "\n" + subText)
     {
     }

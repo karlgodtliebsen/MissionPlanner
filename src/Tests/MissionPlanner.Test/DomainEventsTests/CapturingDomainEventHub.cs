@@ -1,9 +1,7 @@
-﻿using Domain.Library.EventHub;
-using Domain.Library.EventHub.Events;
-
-using Microsoft.Extensions.Logging;
-
+﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.DomainEvents;
+using MissionPlanner.Library.EventHub;
+using MissionPlanner.Library.EventHub.Events;
 
 namespace MissionPlanner.Test.DomainEventsTests;
 

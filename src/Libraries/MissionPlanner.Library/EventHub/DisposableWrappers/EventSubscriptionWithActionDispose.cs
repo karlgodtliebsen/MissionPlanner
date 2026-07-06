@@ -1,4 +1,4 @@
-namespace Domain.Library.EventHub.DisposableWrappers;
+namespace MissionPlanner.Library.EventHub.DisposableWrappers;
 
 internal class EventSubscriptionWithActionDispose(EventHub instance, string @event, Action action) : IDisposable
 {

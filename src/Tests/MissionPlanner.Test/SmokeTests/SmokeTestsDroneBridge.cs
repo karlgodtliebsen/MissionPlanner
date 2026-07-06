@@ -1,9 +1,9 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using Domain.Library.EventHub.Abstractions;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
@@ -65,7 +65,10 @@ public class SmokeTestsDroneBridge
 
         // endPoints = [endPoint1, endPoint2];
         endPoints = [endPoint2];
-        foreach (var ep in endPoints) logger.LogInformation($"Test configuration initialized. UDP remote: {ep.RemoteHost}:{ep.RemotePort}");
+        foreach (var ep in endPoints)
+        {
+            logger.LogInformation($"Test configuration initialized. UDP remote: {ep.RemoteHost}:{ep.RemotePort}");
+        }
     }
 
 

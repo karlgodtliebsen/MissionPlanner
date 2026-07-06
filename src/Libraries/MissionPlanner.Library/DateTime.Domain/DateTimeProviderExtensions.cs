@@ -1,4 +1,4 @@
-﻿namespace Domain.Library.DateTime.Domain;
+﻿namespace MissionPlanner.Library.DateTime.Domain;
 
 public static class DateTimeProviderExtensions
 {

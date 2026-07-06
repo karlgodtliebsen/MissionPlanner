@@ -1,4 +1,4 @@
-﻿namespace Domain.Library.DateTime.Domain;
+﻿namespace MissionPlanner.Library.DateTime.Domain;
 
 /// <summary>
 /// Represents a period of time with optional start and end dates.

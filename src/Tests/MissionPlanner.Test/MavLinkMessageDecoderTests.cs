@@ -1,8 +1,6 @@
-﻿using Domain.Library.EventHub.Abstractions;
-
-using FluentAssertions;
-
+﻿using FluentAssertions;
 using MissionPlanner.Core.Services;
+using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Decoding;
 using MissionPlanner.MavLink.Messages;
@@ -23,7 +21,7 @@ public sealed class MavLinkMessageDecoderTests
     public MavLinkMessageDecoderTests(ITestOutputHelper output)
     {
         this.output = output;
-        IServiceCollection services = TestConfigurator
+        var services = TestConfigurator
             .AddTestConfiguration()
             .AddDefaultTestLogging(output);
 
@@ -37,10 +35,10 @@ public sealed class MavLinkMessageDecoderTests
     [Fact]
     public async Task Should_Decode_Heartbeat_Message_From_Fake_Vehicle()
     {
-        await using IMavLinkClient client = serviceProvider.GetRequiredService<IMavLinkClient>();
-        await using IMavLinkConnection connection = serviceProvider.GetRequiredService<IMavLinkConnection>();
-        IEventHub eventHub = serviceProvider.GetRequiredService<IEventHub>();
-        IVehicleMessagePump messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
+        await using var client = serviceProvider.GetRequiredService<IMavLinkClient>();
+        await using var connection = serviceProvider.GetRequiredService<IMavLinkConnection>();
+        var eventHub = serviceProvider.GetRequiredService<IEventHub>();
+        var messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
 
         await using FakeMavLinkVehicle2 simulator = new(
             serviceProvider.GetRequiredService<IMavLinkFrameParser>(),
@@ -50,7 +48,7 @@ public sealed class MavLinkMessageDecoderTests
         TaskCompletionSource ts = new(TaskCreationOptions.RunContinuationsAsynchronously);
         HeartbeatMessage? messageResult = null;
 
-        using IDisposable subscription = eventHub.SubscribeAsync<HeartbeatMessage>(MavLinkEventTopics.ReceivedMessage, (heartbeatMessage, ct) =>
+        using var subscription = eventHub.SubscribeAsync<HeartbeatMessage>(MavLinkEventTopics.ReceivedMessage, (heartbeatMessage, ct) =>
         {
             messageResult = heartbeatMessage;
             ts.TrySetResult();
@@ -64,7 +62,7 @@ public sealed class MavLinkMessageDecoderTests
 
         await ts.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
         messageResult.Should().NotBeNull();
-        HeartbeatMessage message = messageResult!;
+        var message = messageResult!;
 
         Assert.Equal(1, message.SystemId);
         Assert.Equal(1, message.ComponentId);

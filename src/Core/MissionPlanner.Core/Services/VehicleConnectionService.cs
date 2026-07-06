@@ -1,8 +1,8 @@
 ﻿using System.Collections.Concurrent;
-using Domain.Library.DateTime.Domain;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
+using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.Transport;
 
@@ -12,11 +12,7 @@ namespace MissionPlanner.Core.Services;
 /// Service for managing vehicle connections via MAVLink transport.
 /// Orchestrates transport creation, connection establishment, and vehicle registration.
 /// </summary>
-public class VehicleConnectionService(
-    IDomainEventHub eventHub,
-    IDateTimeProvider dateTimeProvider,
-    ILoggerFactory loggerFactory,
-    ILogger<VehicleConnectionService> logger)
+public class VehicleConnectionService(IDomainEventHub eventHub, IDateTimeProvider dateTimeProvider, ILoggerFactory loggerFactory, ILogger<VehicleConnectionService> logger)
     : IVehicleConnectionService, IAsyncDisposable
 {
     // private readonly IVehicleRegistry registry = registry;
@@ -103,11 +99,7 @@ public class VehicleConnectionService(
                 loggerFactory.CreateLogger<TcpMavLinkTransport>());
 
             // Create MAVLink client
-            var client = new MavLinkClient(
-                transport,
-                transportOptions,
-                new DateTimeProvider(),
-                loggerFactory.CreateLogger<MavLinkClient>());
+            var client = new MavLinkClient(transport, transportOptions, dateTimeProvider, loggerFactory.CreateLogger<MavLinkClient>());
 
             // Connect
             await transport.ConnectAsync(cancellationToken);
@@ -150,13 +142,7 @@ public class VehicleConnectionService(
             var endpoint = $"UDP:{localPort}";
 
             // Create transport options
-            var transportOptions = Microsoft.Extensions.Options.Options.Create(
-                new TransportEndpoint(
-                    "udp",
-                    remotePort ?? 14550,
-                    remoteHost ?? "127.0.0.1",
-                    localPort,
-                    receiveBufferSize: 512));
+            var transportOptions = Microsoft.Extensions.Options.Options.Create(new TransportEndpoint("udp", remotePort ?? 14550, remoteHost ?? "127.0.0.1", localPort, receiveBufferSize: 512));
 
             // Create UDP transport
             var transport = new UdpMavLinkTransport(transportOptions, loggerFactory.CreateLogger<UdpMavLinkTransport>());

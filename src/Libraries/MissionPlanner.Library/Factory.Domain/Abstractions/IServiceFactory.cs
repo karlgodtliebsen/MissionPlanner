@@ -1,4 +1,4 @@
-﻿namespace Domain.Library.Factory.Domain.Abstractions;
+﻿namespace MissionPlanner.Library.Factory.Domain.Abstractions;
 
 /// <summary>
 /// A factory interface for creating instances of services.

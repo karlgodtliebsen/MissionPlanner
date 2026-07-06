@@ -1,4 +1,4 @@
-﻿namespace Domain.Library.EventHub;
+﻿namespace MissionPlanner.Library.EventHub;
 
 /// <summary>
 /// 

@@ -1,5 +1,5 @@
-﻿using Domain.Library.EventHub.Events;
-using MissionPlanner.Core.Models;
+﻿using MissionPlanner.Core.Models;
+using MissionPlanner.Library.EventHub.Events;
 
 namespace MissionPlanner.Core.DomainEvents;
 

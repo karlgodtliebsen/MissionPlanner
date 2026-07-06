@@ -1,4 +1,4 @@
-﻿namespace Domain.Library.DateTime.Domain;
+﻿namespace MissionPlanner.Library.DateTime.Domain;
 
 /// <summary>
 /// Provides extension methods for creating <see cref="Period"/> instances from various date and time representations.

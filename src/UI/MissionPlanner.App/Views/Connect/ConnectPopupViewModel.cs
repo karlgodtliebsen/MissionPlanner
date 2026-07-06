@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -15,16 +16,22 @@ public partial class ConnectPopupViewModel : ObservableObject
     private readonly ISerialPortDiscoveryService portDiscovery;
     private readonly IVehicleConnectionService connectionService;
     private readonly IDomainEventHub eventHub;
-    private readonly IDisposable? eventSubscription;
+    private readonly IDisposable eventSubscription;
+    private readonly ApplicationStateService stateService;
 
     /// <summary>
     /// Gets the application options.
     /// </summary>
-    public ApplicationOptions Options { get; } = null!;
+    //public ApplicationOptions Options { get; } = null!;
 
-    private readonly ApplicationStateService? stateService;
+    //[ObservableProperty] public partial string? SelectedConnectionType { get; set; }
 
-    [ObservableProperty] public partial string? SelectedConnectionType { get; set; }
+    //[ObservableProperty]
+    public ObservableCollection<string> Ports { get; set; }
+
+    public ObservableCollection<string> BaudRates { get; set; }
+
+    //[ObservableProperty] public partial string[] BaudRates { get; set; }
 
     [ObservableProperty] public partial string? SelectedPort { get; set; }
 
@@ -38,7 +45,7 @@ public partial class ConnectPopupViewModel : ObservableObject
 
     [ObservableProperty] public partial string? StatusMessage { get; set; }
 
-
+    private List<string> configuredPorts { get; set; }
     private const string? ConnectImage = "Resources/Images/light_disconnect_icon.png";
     private const string? DisConnectImage = "Resources/Images/light_connect_icon.png";
 
@@ -63,12 +70,14 @@ public partial class ConnectPopupViewModel : ObservableObject
         this.portDiscovery = portDiscovery;
         this.connectionService = connectionService;
         this.eventHub = eventHub;
-
-        Options = options.CurrentValue;
         this.stateService = stateService;
+        configuredPorts = options.CurrentValue.Ports.ToList();
+
+        Ports = new ObservableCollection<string>(options.CurrentValue.Ports);
+        BaudRates = new ObservableCollection<string>(options.CurrentValue.BaudRates);
 
         // Initialize from shared state
-        SelectedConnectionType = stateService.SelectedConnectionType ?? "Serial";
+        //SelectedConnectionType = stateService.SelectedConnectionType ?? "Serial";
         SelectedPort = stateService.SelectedPort;
         SelectedBaudRate = stateService.SelectedBaudRate ?? "57600";
         IsConnected = stateService.IsConnected;
@@ -78,9 +87,9 @@ public partial class ConnectPopupViewModel : ObservableObject
         {
             switch (args.PropertyName)
             {
-                case nameof(ApplicationStateService.SelectedConnectionType):
-                    SelectedConnectionType = stateService.SelectedConnectionType;
-                    break;
+                //case nameof(ApplicationStateService.SelectedConnectionType):
+                //    SelectedConnectionType = stateService.SelectedConnectionType;
+                //    break;
                 case nameof(ApplicationStateService.SelectedPort):
                     SelectedPort = stateService.SelectedPort;
                     break;
@@ -89,7 +98,7 @@ public partial class ConnectPopupViewModel : ObservableObject
                     break;
                 case nameof(ApplicationStateService.IsConnected):
                     IsConnected = stateService.IsConnected;
-                    IsConnectedImage = IsConnected ? DisConnectImage : ConnectImage;
+                    UpdateConnectionStatus();
                     break;
             }
         };
@@ -99,6 +108,13 @@ public partial class ConnectPopupViewModel : ObservableObject
 
         // Initialize port list
         RefreshPortList();
+        UpdateConnectionStatus();
+    }
+
+
+    private void UpdateConnectionStatus()
+    {
+        IsConnectedImage = stateService.IsConnected ? ConnectImage : DisConnectImage;
     }
 
     /// <summary>
@@ -109,24 +125,25 @@ public partial class ConnectPopupViewModel : ObservableObject
         try
         {
             var availablePorts = portDiscovery.GetAvailablePorts();
-            Options.Ports.Clear();
+            Ports.Clear();
 
             if (availablePorts.Length > 0)
             {
-                foreach (var port in availablePorts)
+                var ports = availablePorts.Concat(configuredPorts).Distinct().Order().ToArray();
+                foreach (var port in ports)
                 {
-                    Options.Ports.Add(port);
+                    Ports.Add(port);
                 }
 
                 // Auto-select first port if nothing is selected
-                if (string.IsNullOrEmpty(SelectedPort) && Options.Ports.Count > 0)
+                if (Ports.Count > 0)
                 {
-                    SelectedPort = Options.Ports[0];
+                    SelectedPort = Ports.FirstOrDefault(p => p == availablePorts[0]);
                 }
             }
             else
             {
-                Options.Ports.Add("No ports found");
+                Ports = ["No ports found"];
                 StatusMessage = "No serial ports detected";
             }
 
@@ -145,9 +162,9 @@ public partial class ConnectPopupViewModel : ObservableObject
         base.OnPropertyChanged(args);
         switch (args.PropertyName)
         {
-            case nameof(SelectedConnectionType):
-                stateService?.SelectedConnectionType = SelectedConnectionType!;
-                break;
+            //case nameof(SelectedConnectionType):
+            //    stateService?.SelectedConnectionType = SelectedConnectionType!;
+            //    break;
             case nameof(SelectedPort):
                 stateService?.SelectedPort = SelectedPort!;
                 break;
@@ -156,6 +173,7 @@ public partial class ConnectPopupViewModel : ObservableObject
                 break;
             case nameof(IsConnected):
                 stateService?.IsConnected = IsConnected;
+                UpdateConnectionStatus();
                 break;
         }
     }
@@ -175,25 +193,60 @@ public partial class ConnectPopupViewModel : ObservableObject
             return;
         }
 
-        // Validate inputs
-        if (string.IsNullOrEmpty(SelectedConnectionType))
-        {
-            StatusMessage = "Please select a connection type";
-            return;
-        }
+        //// Validate inputs
+        //if (string.IsNullOrEmpty(SelectedConnectionType))
+        //{
+        //    StatusMessage = "Please select a connection type";
+        //    return;
+        //}
 
         IsConnecting = true;
         StatusMessage = "Connecting...";
+        if (SelectedPort is null)
+        {
+            return;
+        }
 
         try
+
         {
-            var result = SelectedConnectionType?.ToLowerInvariant() switch
+            var selection = SelectedPort.ToLowerInvariant();
+
+            if (selection.StartsWith("COM", StringComparison.OrdinalIgnoreCase))
             {
-                "serial" => await ConnectSerialAsync(),
+                //selection = "serial";
+                await ConnectSerialAsync();
+            }
+            else if (selection.StartsWith("AUTO", StringComparison.OrdinalIgnoreCase))
+            {
+                selection = "udp"; // Default to UDP if unknown
+            }
+
+            // Auto-detect connection type based on port name
+            //if (selection.StartsWith("COM", StringComparison.OrdinalIgnoreCase) ||
+            //    selection.StartsWith("/dev/tty", StringComparison.OrdinalIgnoreCase))
+            //{
+            //    selection = "serial";
+            //}
+            else if (selection.Contains(":"))
+            {
+                selection = "tcp";
+            }
+            else
+            {
+                selection = "udp"; // Default to UDP if unknown
+            }
+
+            logger.LogInformation("Connecting to vehicle using port: {Port}", selection);
+
+            var result = selection switch
+            {
+                //"serial" => await ConnectSerialAsync(),
                 "tcp" => await ConnectTcpAsync(),
                 "udp" => await ConnectUdpAsync(),
                 var _ => new VehicleConnectionResult(false, null, "Unsupported connection type")
             };
+
 
             if (result.Success)
             {
@@ -217,6 +270,8 @@ public partial class ConnectPopupViewModel : ObservableObject
         {
             IsConnecting = false;
         }
+
+        UpdateConnectionStatus();
     }
 
     private async Task<VehicleConnectionResult> ConnectSerialAsync()
@@ -256,8 +311,8 @@ public partial class ConnectPopupViewModel : ObservableObject
             StatusMessage = "Disconnecting...";
             await connectionService.DisconnectAllAsync();
             IsConnected = false;
-            IsConnectedImage = ConnectImage;
             StatusMessage = "Disconnected";
+            UpdateConnectionStatus();
             logger.LogInformation("Disconnected from all vehicles");
         }
         catch (Exception ex)
@@ -273,7 +328,7 @@ public partial class ConnectPopupViewModel : ObservableObject
         MainThread.BeginInvokeOnMainThread(() =>
         {
             IsConnected = true;
-            IsConnectedImage = DisConnectImage;
+            UpdateConnectionStatus();
             StatusMessage = $"Vehicle {evt.VehicleId} connected via {evt.ConnectionType}";
         });
     }

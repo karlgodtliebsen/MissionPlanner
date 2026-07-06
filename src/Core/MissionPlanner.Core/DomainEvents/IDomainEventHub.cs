@@ -1,5 +1,5 @@
-﻿using Domain.Library.EventHub.Abstractions;
-using Domain.Library.EventHub.Events;
+﻿using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.Library.EventHub.Events;
 
 namespace MissionPlanner.Core.DomainEvents;
 

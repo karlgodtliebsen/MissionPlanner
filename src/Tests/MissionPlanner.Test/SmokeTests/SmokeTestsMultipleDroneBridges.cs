@@ -1,10 +1,10 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using Domain.Library;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services;
+using MissionPlanner.Library;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.Simulator.SmokeTests;
 using MissionPlanner.Test.Configuration;
@@ -58,7 +58,10 @@ public class SmokeTestsMultipleDroneBridges
 
         logger.LogInformation("Test configuration initialized. UDP local:  {LocalHost}:{LocalPort}", endPoint1.LocalHost, endPoint1.LocalPort);
 
-        foreach (var endPoint in endPoints) logger.LogInformation("Test configuration initialized. UDP remote:  {RemoteHost}:{RemotePort}", endPoint.RemoteHost, endPoint.RemotePort);
+        foreach (var endPoint in endPoints)
+        {
+            logger.LogInformation("Test configuration initialized. UDP remote:  {RemoteHost}:{RemotePort}", endPoint.RemoteHost, endPoint.RemotePort);
+        }
     }
 
 
@@ -123,7 +126,10 @@ public class SmokeTestsMultipleDroneBridges
             () =>
             {
                 var vehicles = vehicleService.GetVehicles();
-                if (!vehicles.Any()) throw new DomainException("No Vehicles Found");
+                if (!vehicles.Any())
+                {
+                    throw new DomainException("No Vehicles Found");
+                }
             },
             TimeSpan.FromSeconds(15),
             TestContext.Current.CancellationToken);
@@ -136,7 +142,10 @@ public class SmokeTestsMultipleDroneBridges
             () =>
             {
                 var vehicles = vehicleService.GetVehicles();
-                if (!vehicles.Any()) throw new DomainException("No Vehicles Found");
+                if (!vehicles.Any())
+                {
+                    throw new DomainException("No Vehicles Found");
+                }
             },
             TimeSpan.FromSeconds(15),
             TestContext.Current.CancellationToken);

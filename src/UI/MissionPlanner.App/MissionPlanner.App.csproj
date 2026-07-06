@@ -81,6 +81,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="Views\Common\StatusBarView.xaml.cs">
+	    <DependentUpon>StatusBarView.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Views\Common\TopBarView.xaml.cs">
+	    <DependentUpon>TopBarView.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\Connect\ConnectPopupView.xaml.cs">
 	    <DependentUpon>ConnectPopupView.xaml</DependentUpon>
 	  </Compile>
@@ -102,6 +108,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="Views\Common\StatusBarView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\Common\TopBarView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\Connect\ConnectionView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

@@ -1,6 +1,6 @@
-﻿using Domain.Library.Factory.Domain.Abstractions;
+﻿using MissionPlanner.Library.Factory.Domain.Abstractions;
 
-namespace Domain.Library.Factory.Domain;
+namespace MissionPlanner.Library.Factory.Domain;
 
 /// <summary>
 /// A factory that creates instances of types using the Activator class.
