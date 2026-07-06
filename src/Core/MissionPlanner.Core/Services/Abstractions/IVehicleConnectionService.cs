@@ -1,6 +1,6 @@
 ﻿using MissionPlanner.Core.Models;
 
-namespace MissionPlanner.Core.Services;
+namespace MissionPlanner.Core.Services.Abstractions;
 
 /// <summary>
 /// Service for managing vehicle connections via MAVLink transport.

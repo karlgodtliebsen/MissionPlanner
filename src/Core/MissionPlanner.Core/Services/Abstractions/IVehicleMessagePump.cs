@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Core.Services;
+﻿namespace MissionPlanner.Core.Services.Abstractions;
 
 /// <summary>
 /// Represents a message pump that reads messages from a vehicle connection and handles them.

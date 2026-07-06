@@ -3,6 +3,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
+using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.Core.Services;

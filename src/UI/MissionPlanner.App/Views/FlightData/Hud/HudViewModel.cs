@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using MissionPlanner.Core.Services;
+using MissionPlanner.Core.Services.Abstractions;
 
 namespace MissionPlanner.App.Views.FlightData.Hud;
 
@@ -62,12 +63,10 @@ public partial class HudViewModel : ObservableObject, IDisposable
     public partial int GpsSatellites { get; set; }
 
     /// <summary>Whether the vehicle is armed.</summary>
-    [ObservableProperty]
-    private bool isArmed;
+    [ObservableProperty] private bool isArmed;
 
     /// <summary>Current flight mode.</summary>
-    [ObservableProperty]
-    private string flightMode = "Unknown";
+    [ObservableProperty] private string flightMode = "Unknown";
 
     /// <inheritdoc/>
     public void Dispose()

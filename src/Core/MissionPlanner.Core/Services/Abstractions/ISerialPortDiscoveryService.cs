@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Core.Services;
+﻿namespace MissionPlanner.Core.Services.Abstractions;
 
 /// <summary>
 /// Service for discovering available serial ports for vehicle connections.

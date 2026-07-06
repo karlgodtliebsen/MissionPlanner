@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Commands;
+using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.VehicleHandler;
+using MissionPlanner.Core.VehicleHandler.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;

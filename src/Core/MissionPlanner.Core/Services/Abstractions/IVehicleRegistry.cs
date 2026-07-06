@@ -1,7 +1,7 @@
 ﻿using MissionPlanner.Core.Models;
 using MissionPlanner.Transport;
 
-namespace MissionPlanner.Core.Services;
+namespace MissionPlanner.Core.Services.Abstractions;
 
 /// <summary>
 /// Defines the contract for a vehicle registry, which manages the collection of vehicle sessions and handles heartbeat updates.

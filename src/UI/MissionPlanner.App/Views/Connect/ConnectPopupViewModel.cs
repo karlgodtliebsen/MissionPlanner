@@ -7,6 +7,7 @@ using Microsoft.Extensions.Options;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Services;
+using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.App.Views.Connect;
