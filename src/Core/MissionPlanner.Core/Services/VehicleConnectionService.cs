@@ -9,6 +9,7 @@ using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.Transport;
+using MissionPlanner.Transport.Abstractions;
 
 namespace MissionPlanner.Core.Services;
 
@@ -99,6 +100,9 @@ public class VehicleConnectionService(
                 return new VehicleConnectionResult(false, null, "Timeout waiting for vehicle heartbeat");
             }
 
+            // Request telemetry streams from vehicle
+            await RequestTelemetryStreamsAsync(client, vehicleId.Value, linkedCts.Token);
+
             // Store active connection
             activeConnection = new ActiveConnection(vehicleId.Value, transport, client, "Serial", portName);
 
@@ -161,23 +165,26 @@ public class VehicleConnectionService(
             connectionTask = Task.Run(() => connection.StartAsync(linkedCts.Token), linkedCts.Token);
 
             // Connect
-            await transport.ConnectAsync(cancellationToken);
+            await transport.ConnectAsync(linkedCts.Token);
 
             // Wait for heartbeat to identify vehicle
             var vehicleId = await WaitForVehicleHeartbeatAsync(client, linkedCts.Token);
 
             if (vehicleId == null)
             {
-                await transport.DisconnectAsync(cancellationToken);
+                await transport.DisconnectAsync(linkedCts.Token);
                 await PublishConnectionFailed("TCP", endpoint, "No heartbeat received from vehicle");
                 return new VehicleConnectionResult(false, null, "Timeout waiting for vehicle heartbeat");
             }
+
+            // Request telemetry streams from vehicle
+            await RequestTelemetryStreamsAsync(client, vehicleId.Value, linkedCts.Token);
 
             // Store active connection
             activeConnection = new ActiveConnection(vehicleId.Value, transport, client, "TCP", endpoint);
 
             // Publish success event
-            await domainEventHub.PublishAsync(new VehicleConnected(vehicleId.Value, "TCP", endpoint, dateTimeProvider.UtcNow), cancellationToken);
+            await domainEventHub.PublishAsync(new VehicleConnected(vehicleId.Value, "TCP", endpoint, dateTimeProvider.UtcNow), linkedCts.Token);
 
             logger.LogInformation("Successfully connected to vehicle {VehicleId} via TCP {Endpoint}", vehicleId, endpoint);
             return new VehicleConnectionResult(true, vehicleId.Value);
@@ -229,23 +236,26 @@ public class VehicleConnectionService(
             connectionTask = Task.Run(() => connection.StartAsync(linkedCts.Token), linkedCts.Token);
 
             // Connect
-            await transport.ConnectAsync(cancellationToken);
+            await transport.ConnectAsync(linkedCts.Token);
 
             // Wait for heartbeat to identify vehicle
             var vehicleId = await WaitForVehicleHeartbeatAsync(client, linkedCts.Token);
 
             if (vehicleId == null)
             {
-                await transport.DisconnectAsync(cancellationToken);
+                await transport.DisconnectAsync(linkedCts.Token);
                 await PublishConnectionFailed("UDP", endpoint, "No heartbeat received from vehicle");
                 return new VehicleConnectionResult(false, null, "Timeout waiting for vehicle heartbeat");
             }
+
+            // Request telemetry streams from vehicle
+            await RequestTelemetryStreamsAsync(client, vehicleId.Value, linkedCts.Token);
 
             // Store active connection
             activeConnection = new ActiveConnection(vehicleId.Value, transport, client, "UDP", endpoint);
 
             // Publish success event
-            await domainEventHub.PublishAsync(new VehicleConnected(vehicleId.Value, "UDP", endpoint, dateTimeProvider.UtcNow), cancellationToken);
+            await domainEventHub.PublishAsync(new VehicleConnected(vehicleId.Value, "UDP", endpoint, dateTimeProvider.UtcNow), linkedCts.Token);
 
             logger.LogInformation("Successfully connected to vehicle {VehicleId} via UDP {Endpoint}", vehicleId, endpoint);
             return new VehicleConnectionResult(true, vehicleId.Value);
@@ -304,6 +314,57 @@ public class VehicleConnectionService(
         {
             subscription.Dispose();
             timeoutCts.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// Requests essential telemetry streams from the vehicle after connection.
+    /// </summary>
+    private async Task RequestTelemetryStreamsAsync(IMavLinkClient client, VehicleId vehicleId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            // Create command service with the active MAVLink client
+            var commandService = domainFactory.Create<IMavLinkCommandService, IMavLinkClient>(client);
+
+            // Request ATTITUDE stream (roll, pitch, yaw) at 10 Hz
+            await commandService.RequestDataStreamAsync(
+                vehicleId,
+                MavDataStream.Extra1,
+                10,
+                true,
+                cancellationToken);
+
+            // Request POSITION stream (GPS, altitude) at 5 Hz
+            await commandService.RequestDataStreamAsync(
+                vehicleId,
+                MavDataStream.Position,
+                5,
+                true,
+                cancellationToken);
+
+            // Request EXTENDED_STATUS stream (battery, system status) at 2 Hz
+            await commandService.RequestDataStreamAsync(
+                vehicleId,
+                MavDataStream.ExtendedStatus,
+                2,
+                true,
+                cancellationToken);
+
+            // Request RAW_SENSORS stream (GPS raw, IMU) at 5 Hz
+            await commandService.RequestDataStreamAsync(
+                vehicleId,
+                MavDataStream.RawSensors,
+                5,
+                true,
+                cancellationToken);
+
+            logger.LogInformation("✅ Telemetry streams requested for vehicle {VehicleId}", vehicleId);
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to request telemetry streams for {VehicleId} - continuing anyway", vehicleId);
+            // Don't fail the connection if telemetry requests fail
         }
     }
 
@@ -448,10 +509,5 @@ public class VehicleConnectionService(
     /// <summary>
     /// Represents an active vehicle connection.
     /// </summary>
-    private record ActiveConnection(
-        VehicleId VehicleId,
-        IMavLinkTransport Transport,
-        IMavLinkClient Client,
-        string ConnectionType,
-        string Endpoint);
+    private record ActiveConnection(VehicleId VehicleId, IMavLinkTransport Transport, IMavLinkClient Client, string ConnectionType, string Endpoint);
 }

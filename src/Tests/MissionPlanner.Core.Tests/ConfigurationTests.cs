@@ -4,7 +4,6 @@ using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.Tests.Configuration;
-using MissionPlanner.Core.VehicleHandler;
 using MissionPlanner.Core.VehicleHandler.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -12,6 +11,7 @@ using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.Transport;
+using MissionPlanner.Transport.Abstractions;
 
 namespace MissionPlanner.Core.Tests;
 

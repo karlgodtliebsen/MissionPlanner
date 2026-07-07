@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Transport;
+using MissionPlanner.Transport.Abstractions;
 
 namespace MissionPlanner.MavLink.Client;
 

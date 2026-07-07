@@ -12,6 +12,7 @@ public interface IHeartbeatVehicleHandler
     /// Handles a heartbeat message and updates the vehicle registry accordingly.
     /// </summary>
     /// <param name="message">The heartbeat message to handle.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>The updated vehicle session.</returns>
-    VehicleSession Handle(HeartbeatMessage message);
+    Task<VehicleSession> Handle(HeartbeatMessage message, CancellationToken cancellationToken);
 }

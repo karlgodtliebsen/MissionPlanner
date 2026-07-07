@@ -10,6 +10,7 @@ using MissionPlanner.MavLink.Services;
 using MissionPlanner.Simulator.SmokeTests;
 using MissionPlanner.Smoke.Simulator.Tests.Configuration;
 using MissionPlanner.Transport;
+using MissionPlanner.Transport.Abstractions;
 
 namespace MissionPlanner.Smoke.Simulator.Tests.SmokeTests;
 

@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Transport;
+﻿namespace MissionPlanner.Transport.Abstractions;
 
 /// <summary>
 /// Represents a MAVLink transport that communicates over a serial port.

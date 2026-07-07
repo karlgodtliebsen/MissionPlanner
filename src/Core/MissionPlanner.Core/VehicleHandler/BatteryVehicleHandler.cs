@@ -1,22 +1,28 @@
 ﻿using Microsoft.Extensions.Logging;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.VehicleHandler.Abstractions;
+using MissionPlanner.Library;
+using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Messages;
 
 namespace MissionPlanner.Core.VehicleHandler;
 
 /// <inheritdoc />
-public sealed class BatteryVehicleHandler(IVehicleRegistry vehicleRegistry, ILogger<BatteryVehicleHandler> logger) : IBatteryVehicleHandler
+public sealed class BatteryVehicleHandler(IVehicleRegistry vehicleRegistry, IDomainEventHub domainEventHub, ILogger<BatteryVehicleHandler> logger) : IBatteryVehicleHandler
 {
     /// <inheritdoc />
-    public void Handle(SysStatusMessage message)
+    public async Task<VehicleSession> Handle(SysStatusMessage message, CancellationToken cancellationToken)
     {
         var vehicleId = new VehicleId(message.SystemId, message.ComponentId);
 
-        logger.LogTrace("Handling battery status message from vehicle {VehicleId}", vehicleId);
+        logger.LogDebug("Handling battery status message from vehicle {VehicleId} {@Message}", vehicleId, message);
         var vehicle = vehicleRegistry.GetRequired(vehicleId);
-
-        vehicle?.ApplyBattery(message.BatteryRemaining, message.BatteryVoltage);
+        DomainException.ThrowIfNull(vehicle, nameof(vehicle));
+        vehicle.ApplyBattery(message.BatteryRemaining, message.BatteryVoltage);
+        await domainEventHub.PublishDomainEventAsync(new VehicleStateUpdated(vehicle.State), cancellationToken);
+        return vehicle;
     }
 }

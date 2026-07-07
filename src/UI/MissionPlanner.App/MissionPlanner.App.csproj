@@ -44,6 +44,12 @@
         <PackageReference Include="CommunityToolkit.Mvvm" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
         <PackageReference Include="Riok.Mapperly" />
+        <PackageReference Include="Serilog" />
+        <PackageReference Include="Serilog.Enrichers.Environment" />
+        <PackageReference Include="Serilog.Enrichers.Thread" />
+        <PackageReference Include="Serilog.Settings.AppSettings" />
+        <PackageReference Include="Serilog.Sinks.Debug" />
+        <PackageReference Include="Serilog.Sinks.File" />
         <PackageReference Include="SkiaSharp.Views.Maui.Controls" />
         <PackageReference Include="Mapsui" />
         <PackageReference Include="Mapsui.Maui" />

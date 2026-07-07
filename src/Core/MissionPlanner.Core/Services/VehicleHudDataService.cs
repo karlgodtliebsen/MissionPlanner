@@ -1,6 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services.Abstractions;
@@ -20,21 +21,24 @@ public sealed class VehicleHudDataService : IVehicleHudDataService, IDisposable
     private readonly Subject<VehicleHudData> hudDataSubject;
     private readonly IDisposable eventSubscription;
     private VehicleId? primaryVehicleId;
+    private readonly ILogger<VehicleHudDataService> logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VehicleHudDataService"/> class.
     /// </summary>
     /// <param name="vehicleRegistry">The vehicle registry to query current vehicle state.</param>
     /// <param name="eventHub">The domain event hub to subscribe to vehicle updates.</param>
-    public VehicleHudDataService(IVehicleRegistry vehicleRegistry, IDomainEventHub eventHub)
+    /// <param name="logger">The logger instance.</param>
+    public VehicleHudDataService(IVehicleRegistry vehicleRegistry, IDomainEventHub eventHub, ILogger<VehicleHudDataService> logger)
     {
         this.vehicleRegistry = vehicleRegistry ?? throw new ArgumentNullException(nameof(vehicleRegistry));
         this.eventHub = eventHub ?? throw new ArgumentNullException(nameof(eventHub));
+        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         hudDataCache = new ConcurrentDictionary<VehicleId, VehicleHudData>();
         hudDataSubject = new Subject<VehicleHudData>();
 
         // Subscribe to vehicle state updates
-        eventSubscription = this.eventHub.Subscribe<VehicleStateUpdated>(OnVehicleStateUpdated);
+        eventSubscription = this.eventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
     }
 
     /// <inheritdoc/>
@@ -91,19 +95,21 @@ public sealed class VehicleHudDataService : IVehicleHudDataService, IDisposable
         hudDataSubject?.Dispose();
     }
 
-    private void OnVehicleStateUpdated(VehicleStateUpdated evt)
+    private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
     {
         var vehicleSession = vehicleRegistry.GetRequired(evt.VehicleId);
         if (vehicleSession == null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
+        logger.LogDebug("VehicleHudDataService-Vehicle state updated for {VehicleId}: {State}", evt.VehicleId, vehicleSession.State);
         var hudData = TransformToHudData(vehicleSession.State);
         hudDataCache.AddOrUpdate(evt.VehicleId, hudData, (_, _) => hudData);
 
         // Publish the update to observers
         hudDataSubject.OnNext(hudData);
+        return Task.CompletedTask;
     }
 
     private VehicleId? GetOrSetPrimaryVehicleId()
@@ -125,10 +131,15 @@ public sealed class VehicleHudDataService : IVehicleHudDataService, IDisposable
 
     private static VehicleHudData TransformToHudData(VehicleState state)
     {
-        // Convert yaw (-180 to 180) to heading (0 to 360)
-        var heading = state.Yaw.HasValue
-            ? (state.Yaw.Value + 360) % 360
-            : 0;
+        // Convert radians to degrees for display
+        const double RadiansToDegrees = 180.0 / Math.PI;
+
+        double pitch = state.Pitch.HasValue ? state.Pitch.Value * RadiansToDegrees : 0;
+        double roll = state.Roll.HasValue ? state.Roll.Value * RadiansToDegrees : 0;
+        double yaw = state.Yaw.HasValue ? state.Yaw.Value * RadiansToDegrees : 0;
+
+        // Convert yaw (-180 to 180 degrees) to heading (0 to 360 degrees)
+        var heading = yaw < 0 ? yaw + 360 : yaw;
 
         // Calculate vertical speed (would need velocity data from GPS or VFR_HUD message)
         // For now, we'll set it to 0 as VehicleState doesn't have this yet
@@ -146,10 +157,10 @@ public sealed class VehicleHudDataService : IVehicleHudDataService, IDisposable
 
         return new VehicleHudData(
             state.VehicleId,
-            state.Pitch ?? 0,
-            state.Roll ?? 0,
+            pitch,
+            roll,
             heading,
-            state.Yaw ?? 0,
+            yaw,
             airSpeed,
             groundSpeed,
             state.Altitude ?? 0,

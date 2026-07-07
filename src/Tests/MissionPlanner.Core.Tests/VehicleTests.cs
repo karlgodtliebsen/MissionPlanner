@@ -7,7 +7,6 @@ using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.Tests.Configuration;
-using MissionPlanner.Core.VehicleHandler;
 using MissionPlanner.Core.VehicleHandler.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -72,7 +71,7 @@ public class VehicleTests
     /// Tests that a vehicle is registered when a heartbeat message is received.
     /// </summary>
     [Fact]
-    public void Should_Register_Vehicle_When_Heartbeat_Is_Received()
+    public async Task Should_Register_Vehicle_When_Heartbeat_Is_ReceivedAsync()
     {
         var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
@@ -89,7 +88,7 @@ public class VehicleTests
             3,
             DateTimeOffset.UtcNow);
 
-        var vehicle = handler.Handle(heartbeat);
+        var vehicle = await handler.Handle(heartbeat, TestContext.Current.CancellationToken);
 
         Assert.Equal(new VehicleId(1, 1), vehicle.Id);
         Assert.Single(registry.Vehicles);
@@ -143,7 +142,7 @@ public class VehicleTests
         var message = messageResult!;
 
 
-        var vehicle = handler.Handle(message);
+        var vehicle = await handler.Handle(message, TestContext.Current.CancellationToken);
 
         Assert.Equal(new VehicleId(1, 1), vehicle.Id);
         Assert.Single(registry.Vehicles);
@@ -155,7 +154,7 @@ public class VehicleTests
     /// Tests that an existing vehicle is updated when a repeated heartbeat message is received.
     /// </summary>
     [Fact]
-    public void Should_Update_Existing_Vehicle_When_Heartbeat_Is_Repeated()
+    public async Task Should_Update_Existing_Vehicle_When_Heartbeat_Is_RepeatedAsync()
     {
         var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
@@ -169,8 +168,8 @@ public class VehicleTests
             1, 1, simulatorIPEndPoint.ToTransportEndPoint("udp"), 42, 2, 3, 81, 4, 3,
             DateTimeOffset.UtcNow.AddSeconds(1));
 
-        var vehicle1 = handler.Handle(first);
-        var vehicle2 = handler.Handle(second);
+        var vehicle1 = await handler.Handle(first, TestContext.Current.CancellationToken);
+        var vehicle2 = await handler.Handle(second, TestContext.Current.CancellationToken);
 
         Assert.Same(vehicle1, vehicle2);
         Assert.Single(registry.Vehicles);
@@ -212,7 +211,7 @@ public class VehicleTests
     /// Tests that a vehicle's position is updated when a GlobalPositionInt message is received.
     /// </summary>
     [Fact]
-    public void Should_Update_Vehicle_Position_From_GlobalPositionInt_Message()
+    public async Task Should_Update_Vehicle_Position_From_GlobalPositionInt_MessageAsync()
     {
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
         var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
@@ -231,14 +230,14 @@ public class VehicleTests
 
         var handler = domainFactory.Create<IPositionVehicleHandler, IVehicleRegistry>(registry);
 
-        handler.Handle(
+        await handler.Handle(
             new GlobalPositionIntMessage(
                 1,
                 1, simulatorIPEndPoint.ToTransportEndPoint("udp"),
                 56.1629,
                 10.2039,
                 12.5,
-                DateTimeOffset.UtcNow));
+                DateTimeOffset.UtcNow), TestContext.Current.CancellationToken);
 
         var vehicle = registry.GetRequired(vehicleId);
 
@@ -251,7 +250,7 @@ public class VehicleTests
     /// Tests that a vehicle's battery is updated when a SysStatusMessage is received.
     /// </summary>
     [Fact]
-    public void Should_Update_Battery_From_SysStatusMessage_Message()
+    public async Task Should_Update_Battery_From_SysStatusMessage_MessageAsync()
     {
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
         var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
@@ -270,13 +269,13 @@ public class VehicleTests
 
         var handler = domainFactory.Create<IBatteryVehicleHandler, IVehicleRegistry>(registry);
 
-        handler.Handle(
+        await handler.Handle(
             new SysStatusMessage(
                 1,
                 1, simulatorIPEndPoint.ToTransportEndPoint("udp"),
                 56,
                 (float)10.0,
-                DateTimeOffset.UtcNow));
+                DateTimeOffset.UtcNow), TestContext.Current.CancellationToken);
 
         var vehicle = registry.GetRequired(vehicleId);
 
@@ -288,7 +287,7 @@ public class VehicleTests
     /// Tests that a vehicle's attitude is updated when an AttitudeMessage is received.
     /// </summary>
     [Fact]
-    public void Should_Update_Attitude_From_AttitudeMessage()
+    public async Task Should_Update_Attitude_From_AttitudeMessageAsync()
     {
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
         var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
@@ -307,14 +306,14 @@ public class VehicleTests
 
         var handler = domainFactory.Create<IAttitudeVehicleHandler, IVehicleRegistry>(registry);
 
-        handler.Handle(
+        await handler.Handle(
             new AttitudeMessage(
                 1,
                 1, simulatorIPEndPoint.ToTransportEndPoint("udp"),
                 56.1629,
                 10.2039,
                 12.5,
-                DateTimeOffset.UtcNow));
+                DateTimeOffset.UtcNow), TestContext.Current.CancellationToken);
 
         var vehicle = registry.GetRequired(vehicleId);
 
@@ -612,7 +611,7 @@ public class VehicleTests
     /// Tests that the armed state is correctly updated from the heartbeat base mode.
     /// </summary>
     [Fact]
-    public void Should_Update_Armed_State_From_Heartbeat_BaseMode()
+    public async Task Should_Update_Armed_State_From_Heartbeat_BaseModeAsync()
     {
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
         var handler = serviceProvider.GetRequiredService<IHeartbeatVehicleHandler>();
@@ -626,7 +625,7 @@ public class VehicleTests
             3,
             DateTimeOffset.UtcNow);
 
-        var vehicle = handler.Handle(heartbeat);
+        var vehicle = await handler.Handle(heartbeat, TestContext.Current.CancellationToken);
 
         Assert.True(vehicle.State.IsArmed);
     }
@@ -635,7 +634,7 @@ public class VehicleTests
     /// Tests that the vehicle mode is correctly updated from the heartbeat custom mode. 
     /// </summary>
     [Fact]
-    public void Should_Update_Mode_From_Heartbeat_CustomMode()
+    public async Task Should_Update_Mode_From_Heartbeat_CustomModeAsync()
     {
         var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
@@ -651,7 +650,7 @@ public class VehicleTests
             3,
             DateTimeOffset.UtcNow);
 
-        var vehicle = handler.Handle(heartbeat);
+        var vehicle = await handler.Handle(heartbeat, TestContext.Current.CancellationToken);
 
         Assert.Equal(VehicleMode.Guided, vehicle.State.Mode);
     }

@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using MissionPlanner.Library;
 using MissionPlanner.Transport;
+using MissionPlanner.Transport.Abstractions;
 
 namespace MissionPlanner.Simulator.SmokeTests;
 

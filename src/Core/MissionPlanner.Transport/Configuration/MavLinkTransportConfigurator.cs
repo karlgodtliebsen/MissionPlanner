@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Transport.Abstractions;
 
 namespace MissionPlanner.Transport.Configuration;
 

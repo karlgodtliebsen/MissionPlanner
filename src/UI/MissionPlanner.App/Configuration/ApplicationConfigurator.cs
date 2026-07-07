@@ -61,9 +61,8 @@ public static class ApplicationConfigurator
             .AddMavLinkTransportServices(configuration)
             .AddMavLinkServices(configuration)
             .AddLogging(configuration, (s, l, c) =>
-            {
                 /*Customize logging*/
-            })
+                services.AddSerilog(c))
             .AddViewsConfiguration();
 
         return services;

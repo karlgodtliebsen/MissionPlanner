@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services;
@@ -21,11 +22,12 @@ public class VehicleHudDataServiceTests
     public void Should_Return_Null_When_Vehicle_Not_Found()
     {
         // Arrange
+        var mockLogger = Substitute.For<ILogger<VehicleHudDataService>>();
         var mockRegistry = Substitute.For<IVehicleRegistry>();
         var mockEventHub = Substitute.For<IDomainEventHub>();
         mockEventHub.Subscribe(Arg.Any<Action<VehicleStateUpdated>>()).Returns(Substitute.For<IDisposable>());
 
-        var service = new VehicleHudDataService(mockRegistry, mockEventHub);
+        var service = new VehicleHudDataService(mockRegistry, mockEventHub, mockLogger);
         var vehicleId = new VehicleId(99, 99);
         mockRegistry.GetRequired(vehicleId).Returns((VehicleSession?)null);
 
@@ -43,11 +45,12 @@ public class VehicleHudDataServiceTests
     public void Should_Return_Null_For_Primary_Vehicle_When_No_Vehicles_Exist()
     {
         // Arrange
+        var mockLogger = Substitute.For<ILogger<VehicleHudDataService>>();
         var mockRegistry = Substitute.For<IVehicleRegistry>();
         var mockEventHub = Substitute.For<IDomainEventHub>();
         mockEventHub.Subscribe(Arg.Any<Action<VehicleStateUpdated>>()).Returns(Substitute.For<IDisposable>());
 
-        var service = new VehicleHudDataService(mockRegistry, mockEventHub);
+        var service = new VehicleHudDataService(mockRegistry, mockEventHub, mockLogger);
         mockRegistry.Vehicles.Returns(Array.Empty<VehicleSession>());
 
         // Act
@@ -64,12 +67,13 @@ public class VehicleHudDataServiceTests
     public void Should_Create_Service_And_Subscribe_To_Events()
     {
         // Arrange
+        var mockLogger = Substitute.For<ILogger<VehicleHudDataService>>();
         var mockRegistry = Substitute.For<IVehicleRegistry>();
         var mockEventHub = Substitute.For<IDomainEventHub>();
         mockEventHub.Subscribe(Arg.Any<Action<VehicleStateUpdated>>()).Returns(Substitute.For<IDisposable>());
 
         // Act
-        var service = new VehicleHudDataService(mockRegistry, mockEventHub);
+        var service = new VehicleHudDataService(mockRegistry, mockEventHub, mockLogger);
 
         // Assert
         service.Should().NotBeNull();
@@ -83,12 +87,13 @@ public class VehicleHudDataServiceTests
     public void Should_Dispose_Resources_On_Dispose()
     {
         // Arrange
+        var mockLogger = Substitute.For<ILogger<VehicleHudDataService>>();
         var mockRegistry = Substitute.For<IVehicleRegistry>();
         var mockEventHub = Substitute.For<IDomainEventHub>();
         var mockSubscription = Substitute.For<IDisposable>();
         mockEventHub.Subscribe(Arg.Any<Action<VehicleStateUpdated>>()).Returns(mockSubscription);
 
-        var service = new VehicleHudDataService(mockRegistry, mockEventHub);
+        var service = new VehicleHudDataService(mockRegistry, mockEventHub, mockLogger);
 
         // Act
         service.Dispose();

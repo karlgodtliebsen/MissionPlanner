@@ -1,6 +1,7 @@
 ﻿using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Transport.Abstractions;
 
 namespace MissionPlanner.Transport;
 

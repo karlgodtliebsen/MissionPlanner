@@ -11,6 +11,7 @@ using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.Transport;
+using MissionPlanner.Transport.Abstractions;
 
 namespace MissionPlanner.Core.Tests.IntegrationTests;
 

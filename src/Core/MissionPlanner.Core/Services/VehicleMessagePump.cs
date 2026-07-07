@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Services.Abstractions;
-using MissionPlanner.Core.VehicleHandler;
 using MissionPlanner.Core.VehicleHandler.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Messages;
@@ -46,31 +45,31 @@ public sealed class VehicleMessagePump(
 
     private async Task HandleMessage(MavLinkMessage message, CancellationToken cancellationToken)
     {
-        logger.LogTrace("VehicleMessagePump - Received {MessageType}", message.GetType().Name);
+        logger.LogTrace("VehicleMessagePump - Received {MessageType} {@Message}", message.GetType().Name, message);
         switch (message)
         {
             case HeartbeatMessage heartbeat:
-                heartbeatHandler.Handle(heartbeat);
+                await heartbeatHandler.Handle(heartbeat, cancellationToken);
                 await eventHub.PublishAsync<HeartbeatMessage>(MavLinkEventTopics.ReceivedMessage, heartbeat, cancellationToken);
                 break;
 
             case GlobalPositionIntMessage position:
-                positionHandler.Handle(position);
+                await positionHandler.Handle(position, cancellationToken);
                 await eventHub.PublishAsync<GlobalPositionIntMessage>(MavLinkEventTopics.ReceivedMessage, position, cancellationToken);
                 break;
 
             case AttitudeMessage attitude:
-                attitudeHandler.Handle(attitude);
+                await attitudeHandler.Handle(attitude, cancellationToken);
                 await eventHub.PublishAsync<AttitudeMessage>(MavLinkEventTopics.ReceivedMessage, attitude, cancellationToken);
                 break;
 
             case SysStatusMessage sysStatus:
-                batteryHandler.Handle(sysStatus);
+                await batteryHandler.Handle(sysStatus, cancellationToken);
                 await eventHub.PublishAsync<SysStatusMessage>(MavLinkEventTopics.ReceivedMessage, sysStatus, cancellationToken);
                 break;
 
             case StatusTextMessage statusText:
-                statusTextHandler.Handle(statusText);
+                await statusTextHandler.Handle(statusText, cancellationToken);
                 await eventHub.PublishAsync<StatusTextMessage>(MavLinkEventTopics.ReceivedMessage, statusText, cancellationToken);
                 break;
 

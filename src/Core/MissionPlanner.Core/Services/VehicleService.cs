@@ -35,7 +35,7 @@ public sealed class VehicleService(IVehicleRegistry registry, IVehicleCommandSer
     /// <inheritdoc />
     public IReadOnlyCollection<VehicleStatusText> GetVehicleNotifications(VehicleId vehicleId)
     {
-        return new ReadOnlyCollection<VehicleStatusText>(registry.GetRequired(vehicleId).Notifications);
+        return new ReadOnlyCollection<VehicleStatusText>(registry.GetRequired(vehicleId)!.Notifications);
     }
 
 

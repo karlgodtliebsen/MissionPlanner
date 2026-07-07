@@ -1,6 +1,4 @@
-﻿using MissionPlanner.Library;
-
-namespace MissionPlanner.Transport;
+﻿namespace MissionPlanner.Transport.Abstractions;
 
 /// <summary>
 /// Represents a MAVLink transport that can be used by a <see cref="MavLinkClient"/> to send and receive data.

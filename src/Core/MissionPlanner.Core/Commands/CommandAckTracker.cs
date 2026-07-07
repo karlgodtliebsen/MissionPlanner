@@ -16,14 +16,12 @@ public sealed class CommandAckTracker : ICommandAckTracker
 
         var completion = new TaskCompletionSource<CommandAckMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        if (!pending.TryAdd(key, completion)) throw new InvalidOperationException($"A command '{command}' is already pending for vehicle '{vehicleId}'.");
+        if (!pending.TryAdd(key, completion))
+        {
+            throw new InvalidOperationException($"A command '{command}' is already pending for vehicle '{vehicleId}'.");
+        }
 
-        _ = CompleteOnTimeoutAsync(
-            key,
-            completion,
-            timeout,
-            cancellationToken);
-
+        _ = CompleteOnTimeoutAsync(key, completion, timeout, cancellationToken);
         return completion.Task;
     }
 
@@ -35,7 +33,10 @@ public sealed class CommandAckTracker : ICommandAckTracker
             new VehicleId(message.SystemId, message.ComponentId),
             message.Command);
 
-        if (pending.TryRemove(key, out var completion)) completion.TrySetResult(message);
+        if (pending.TryRemove(key, out var completion))
+        {
+            completion.TrySetResult(message);
+        }
     }
 
     private async Task CompleteOnTimeoutAsync(CommandAckKey key, TaskCompletionSource<CommandAckMessage> completion, TimeSpan timeout, CancellationToken cancellationToken)
@@ -44,11 +45,17 @@ public sealed class CommandAckTracker : ICommandAckTracker
         {
             await Task.Delay(timeout, cancellationToken).ConfigureAwait(false);
 
-            if (pending.TryRemove(key, out var removed)) removed.TrySetException(new TimeoutException($"Timed out waiting for ACK for command '{key.Command}' from vehicle '{key.VehicleId}'."));
+            if (pending.TryRemove(key, out var removed))
+            {
+                removed.TrySetException(new TimeoutException($"Timed out waiting for ACK for command '{key.Command}' from vehicle '{key.VehicleId}'."));
+            }
         }
         catch (OperationCanceledException ex)
         {
-            if (pending.TryRemove(key, out var removed)) removed.TrySetCanceled(ex.CancellationToken);
+            if (pending.TryRemove(key, out var removed))
+            {
+                removed.TrySetCanceled(ex.CancellationToken);
+            }
         }
     }
 

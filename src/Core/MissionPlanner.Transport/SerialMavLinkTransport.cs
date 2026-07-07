@@ -1,5 +1,6 @@
 ﻿using System.IO.Ports;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.Transport.Abstractions;
 
 namespace MissionPlanner.Transport;
 
@@ -56,9 +57,7 @@ public sealed class SerialMavLinkTransport : ISerialMavLinkTransport
             throw new InvalidOperationException("Serial port is closed.");
         }
 
-        var bytesRead = await serialPort.BaseStream
-            .ReadAsync(buffer, cancellationToken)
-            .ConfigureAwait(false);
+        var bytesRead = await serialPort.BaseStream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
         logger.LogTrace("Read {BytesRead} bytes from serial port {PortName}.", bytesRead, serialPort.PortName);
         return new TransportReceiveResult(bytesRead, endpoint);
     }
@@ -71,9 +70,8 @@ public sealed class SerialMavLinkTransport : ISerialMavLinkTransport
             throw new InvalidOperationException("Serial port is closed.");
         }
 
-        await serialPort.BaseStream
-            .WriteAsync(data, cancellationToken)
-            .ConfigureAwait(false);
+        await serialPort.BaseStream.WriteAsync(data, cancellationToken).ConfigureAwait(false);
+
         logger.LogTrace("Wrote {BytesWritten} bytes to serial port {PortName}.", data.Length, serialPort.PortName);
     }
 

@@ -10,6 +10,7 @@ using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.Transport;
+using MissionPlanner.Transport.Abstractions;
 
 namespace MissionPlanner.Core.Configuration;
 
@@ -51,6 +52,9 @@ public static class DomainConfigurator
         services.TryAddTransient<IVehicleCommandService, VehicleCommandService>();
         services.TryAddTransient<IVehicleService, VehicleService>();
 
+        // MAVLink command sending services
+        services.TryAddTransient<IMavLinkCommandService, MavLinkCommandService>();
+
         return services;
     }
 
@@ -72,6 +76,7 @@ public static class DomainConfigurator
         domainFactory.Add<ITcpMavLinkTransport, TcpMavLinkTransport>();
         domainFactory.Add<IMavLinkClient, MavLinkClient>();
         domainFactory.Add<IMavLinkConnection, MavLinkConnection>();
+        domainFactory.Add<IMavLinkCommandService, MavLinkCommandService>();
         return services;
     }
 }
