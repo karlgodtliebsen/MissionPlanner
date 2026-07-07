@@ -4,6 +4,17 @@
     <Project Path="Core/MissionPlanner.MavLink/MissionPlanner.MavLink.csproj" />
     <Project Path="Core/MissionPlanner.Transport/MissionPlanner.Transport.csproj" />
   </Folder>
+  <Folder Name="/Docs/">
+    <File Path="../docs/ANALYSIS_HUD_VEHICLE_INTEGRATION.md" />
+    <File Path="../docs/CONNECTION_CLEANUP_SOLUTION.md" />
+    <File Path="../docs/HUD_Implementation_Step1.md" />
+    <File Path="../docs/SERILOG_QUICKSTART.md" />
+    <File Path="../docs/SHELL_PERSISTENT_CHROME.md" />
+    <File Path="../docs/SINGLE_CONNECTION_SIMPLIFICATION.md" />
+    <File Path="../docs/TELEMETRY_STREAM_SOLUTION.md" />
+    <File Path="../docs/VEHICLE_CONNECTION_SERVICE_VALIDATION.md" />
+    <File Path="../docs/VEHICLE_CONNECTION_TASK_LIFECYCLE.md" />
+  </Folder>
   <Folder Name="/Libraries/">
     <Project Path="Libraries/MissionPlanner.Library/MissionPlanner.Library.csproj" />
   </Folder>
