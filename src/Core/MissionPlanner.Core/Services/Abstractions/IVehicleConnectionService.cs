@@ -44,4 +44,10 @@ public interface IVehicleConnectionService : IAsyncDisposable
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Connection result with vehicle ID if successful</returns>
     Task<VehicleConnectionResult> ConnectUdpAsync(int localPort, string? remoteHost = null, int? remotePort = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Disconnects the transport.
+    /// </summary>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    Task DisconnectAsync(CancellationToken cancellationToken = default);
 }

@@ -11,7 +11,7 @@ using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.App.Views.Connect;
 
-public partial class ConnectPopupViewModel : ObservableObject
+public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
 {
     private readonly ILogger<ConnectPopupViewModel> logger;
     private readonly ISerialPortDiscoveryService portDiscovery;
@@ -20,14 +20,6 @@ public partial class ConnectPopupViewModel : ObservableObject
     private readonly IDisposable eventSubscription;
     private readonly ApplicationStateService stateService;
 
-    /// <summary>
-    /// Gets the application options.
-    /// </summary>
-    //public ApplicationOptions Options { get; } = null!;
-
-    //[ObservableProperty] public partial string? SelectedConnectionType { get; set; }
-
-    //[ObservableProperty]
     public ObservableCollection<string> Ports { get; set; }
 
     public ObservableCollection<string> BaudRates { get; set; }
@@ -294,12 +286,15 @@ public partial class ConnectPopupViewModel : ObservableObject
     {
         try
         {
-            StatusMessage = "Disconnecting...";
-            await connectionService.DisposeAsync();
-            IsConnected = false;
-            StatusMessage = "Disconnected";
-            UpdateConnectionStatus();
-            logger.LogInformation("Disconnected from all vehicles");
+            MainThread.BeginInvokeOnMainThread(async () =>
+            {
+                StatusMessage = "Disconnecting...";
+                await connectionService.DisconnectAsync();
+                IsConnected = false;
+                StatusMessage = "Disconnected";
+                UpdateConnectionStatus();
+                logger.LogInformation("Disconnected from all vehicles");
+            });
         }
         catch (Exception ex)
         {
@@ -317,5 +312,11 @@ public partial class ConnectPopupViewModel : ObservableObject
             UpdateConnectionStatus();
             StatusMessage = $"Vehicle {evt.VehicleId} connected via {evt.ConnectionType}";
         });
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        await connectionService.DisposeAsync().ConfigureAwait(false);
     }
 }

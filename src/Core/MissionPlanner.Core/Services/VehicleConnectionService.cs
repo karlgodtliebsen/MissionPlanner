@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Library;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -373,8 +374,16 @@ public class VehicleConnectionService(
         await domainEventHub.PublishAsync(new ConnectionFailed(connectionType, endpoint, error, dateTimeProvider.UtcNow));
     }
 
-    private async Task DisconnectAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public async Task DisconnectAsync(CancellationToken cancellationToken = default)
     {
+        if (activeConnection == null)
+        {
+            return;
+        }
+
+        VehicleId? vehicleId = activeConnection.VehicleId;
+        DomainException.ThrowIfNull(vehicleId);
         await connectionLock.WaitAsync(cancellationToken);
         try
         {
@@ -409,6 +418,7 @@ public class VehicleConnectionService(
         }
 
         var vehicleId = activeConnection.VehicleId;
+        DomainException.ThrowIfNull(vehicleId);
         var conn = activeConnection;
 
         try
@@ -470,9 +480,7 @@ public class VehicleConnectionService(
             activeConnection = null;
 
             // Publish disconnect event
-            await domainEventHub.PublishAsync(
-                new VehicleDisconnected(vehicleId, dateTimeProvider.UtcNow, "User requested disconnect"),
-                cancellationToken);
+            await domainEventHub.PublishAsync(new VehicleDisconnected(vehicleId, dateTimeProvider.UtcNow, "User requested disconnect"), cancellationToken);
 
             logger.LogInformation("Successfully disconnected vehicle {VehicleId}", vehicleId);
         }
@@ -496,7 +504,7 @@ public class VehicleConnectionService(
         // Disconnect the active connection (if any)
         if (activeConnection != null)
         {
-            await DisconnectAsync(activeConnection.VehicleId);
+            await DisconnectAsync();
         }
 
         // Dispose the semaphore and cancellation token source

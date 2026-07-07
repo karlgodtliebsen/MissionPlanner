@@ -164,6 +164,7 @@ public sealed class MavLinkClient : IMavLinkClient
             await receiveTask.ConfigureAwait(false);
         }
 
+        await transport.DisposeAsync().ConfigureAwait(false);
         cancellationTokenSource.Dispose();
         cancellationTokenSource = null;
         receiveTask = null;
@@ -183,10 +184,9 @@ public sealed class MavLinkClient : IMavLinkClient
 
         await StopAsync().ConfigureAwait(false);
         await transport.DisposeAsync().ConfigureAwait(false);
-
         disposed = true;
-        GC.SuppressFinalize(this);
         logger.LogTrace("MavLinkClient - MAVLink client disposed.");
+        GC.SuppressFinalize(this);
     }
 
     private void ThrowIfDisposed()

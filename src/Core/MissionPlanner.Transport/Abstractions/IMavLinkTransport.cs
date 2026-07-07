@@ -1,7 +1,7 @@
 ﻿namespace MissionPlanner.Transport.Abstractions;
 
 /// <summary>
-/// Represents a MAVLink transport that can be used by a <see cref="MavLinkClient"/> to send and receive data.
+/// Represents a MAVLink transport that can be used by a <see cref="IMavLinkTransport"/> to send and receive data.
 /// </summary>
 public interface IMavLinkTransport : IAsyncDisposable
 {
