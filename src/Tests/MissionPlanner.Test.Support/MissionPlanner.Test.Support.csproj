@@ -8,6 +8,16 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <None Remove="appsettings.test.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="appsettings.test.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="coverlet.collector" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
         <PackageReference Include="Serilog" />
@@ -36,15 +46,10 @@
       <ProjectReference Include="..\..\Libraries\MissionPlanner.Library\MissionPlanner.Library.csproj" />
       <ProjectReference Include="..\..\UI\MissionPlanner.App\MissionPlanner.App.csproj" />
       <ProjectReference Include="..\MissionPlanner.Simulator\MissionPlanner.Simulator.csproj" />
-      <ProjectReference Include="..\MissionPlanner.Test.Support\MissionPlanner.Test.Support.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <Using Include="Xunit" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Configuration\" />
     </ItemGroup>
 
 </Project>

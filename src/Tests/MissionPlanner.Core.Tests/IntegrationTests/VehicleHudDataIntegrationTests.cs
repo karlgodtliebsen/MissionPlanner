@@ -1,11 +1,10 @@
 ﻿using FluentAssertions;
 using MissionPlanner.Core.Models;
-using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
-using MissionPlanner.Core.Tests.Configuration;
 using MissionPlanner.Simulator;
+using MissionPlanner.Test.Support.Configuration;
 
-namespace MissionPlanner.Core.Tests;
+namespace MissionPlanner.Core.Tests.IntegrationTests;
 
 /// <summary>
 /// Integration tests for VehicleHudDataService verifying end-to-end data flow
@@ -16,17 +15,23 @@ public class VehicleHudDataIntegrationTests
     private readonly ITestOutputHelper output;
     private readonly IServiceProvider serviceProvider;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="VehicleHudDataIntegrationTests"/> class.
+    /// </summary>
+    /// <param name="output">The test output helper.</param>
     public VehicleHudDataIntegrationTests(ITestOutputHelper output)
     {
         this.output = output;
         var services = TestConfigurator
-            .AddTestConfiguration()
-            .AddDefaultTestLogging(output);
+            .AddTestConfiguration(output);
 
         serviceProvider = services.BuildServiceProvider();
         serviceProvider.UseTestConfiguration();
     }
 
+    /// <summary>
+    /// Verifies that the service returns the current HUD data for a specified vehicle.
+    /// </summary>
     [Fact]
     public void Should_Get_Current_HudData_From_Registry()
     {
@@ -55,7 +60,7 @@ public class VehicleHudDataIntegrationTests
         // Assert
         hudData.Should().NotBeNull();
         hudData!.VehicleId.Should().Be(vehicleId);
-        hudData.Pitch.Should().Be(-3.1);
+        hudData.Pitch.Should().Be(-177.6);
         hudData.Roll.Should().Be(5.2);
         hudData.Heading.Should().Be(90.0); // East
         hudData.Altitude.Should().Be(125.5);

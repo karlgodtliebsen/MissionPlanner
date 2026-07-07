@@ -28,6 +28,7 @@ public static class MavLinkConfigurator
         services.TryAddTransient<IMavLinkCrcExtraProvider, CommonMavLinkCrcExtraProvider>();
         services.TryAddTransient<IMavLinkFrameParser, MavLinkV2FrameParser>();
         services.TryAddTransient<IMavLinkCommandEncoder, MavLinkCommandEncoder>();
+        services.TryAddTransient<IMavLinkParameterEncoder, MavLinkParameterEncoder>();
         services.TryAddTransient<IMavLinkMessageDecoder, MavLinkMessageDecoder>();
 
         IList<IMavLinkMessageDecoder> decoders =
@@ -37,7 +38,8 @@ public static class MavLinkConfigurator
             new CommandAckMessageDecoder(),
             new AttitudeMessageDecoder(),
             new GlobalPositionIntMessageDecoder(),
-            new SysStatusMessageDecoder()
+            new SysStatusMessageDecoder(),
+            new ParamValueMessageDecoder()
         ];
 
         services.TryAddSingleton(new MavLinkMessageDecoders(decoders));

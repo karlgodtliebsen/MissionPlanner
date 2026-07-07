@@ -33,6 +33,12 @@ public static partial class LoggingLibraryConfigurator
         return services;
     }
 
+    /// <summary>
+    /// Adds Serilog logging to the service collection using the specified configuration.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configuration">The application configuration.</param>
+    /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddSerilog(this IServiceCollection services, IConfiguration configuration)
     {
         Log.Logger = new LoggerConfiguration()

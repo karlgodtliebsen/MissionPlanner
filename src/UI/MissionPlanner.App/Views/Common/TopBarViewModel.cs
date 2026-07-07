@@ -52,7 +52,7 @@ public partial class TopBarViewModel : ObservableObject
         };
 
         // Subscribe to vehicle connection events
-        eventSubscription = eventHub.SubscribeDomainEvent<VehicleConnected>(OnVehicleConnected);
+        eventSubscription = eventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected);
 
         // Initial state
         UpdateConnectionStatus();
@@ -65,9 +65,10 @@ public partial class TopBarViewModel : ObservableObject
         IsConnectedImage = stateService.IsConnected ? ConnectImage : DisConnectImage;
     }
 
-    private void OnVehicleConnected(VehicleConnected evt)
+    private Task OnVehicleConnected(VehicleConnected evt, CancellationToken ct)
     {
         MainThread.BeginInvokeOnMainThread(() => ConnectionStatus = $"Connected: {evt.VehicleId}");
+        return Task.CompletedTask;
     }
 
 

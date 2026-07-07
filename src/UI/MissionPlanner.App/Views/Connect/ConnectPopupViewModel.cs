@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.Core.DomainEvents;
+using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 
@@ -93,7 +94,7 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
         };
 
         // Subscribe to connection events
-        eventSubscription = eventHub.SubscribeDomainEvent<VehicleConnected>(OnVehicleConnected);
+        eventSubscription = eventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected);
 
         // Initialize port list
         RefreshPortList();
@@ -223,7 +224,7 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
                 "serial" => await ConnectSerialAsync(),
                 "tcp" => await ConnectTcpAsync(),
                 "udp" => await ConnectUdpAsync(),
-                var _ => new VehicleConnectionResult(false, null, "Unsupported connection type")
+                var _ => new VehicleConnectionResult(false, null, null, "Unsupported connection type")
             };
 
             if (result.Success)
@@ -254,9 +255,9 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
     private async Task<VehicleConnectionResult> ConnectSerialAsync()
     {
         return string.IsNullOrEmpty(SelectedPort)
-            ? new VehicleConnectionResult(false, null, "No port selected")
+            ? new VehicleConnectionResult(false, null, null, "No port selected")
             : !int.TryParse(SelectedBaudRate, out var baudRate)
-                ? new VehicleConnectionResult(false, null, "Invalid baud rate")
+                ? new VehicleConnectionResult(false, null, null, "Invalid baud rate")
                 : await connectionService.ConnectSerialAsync(SelectedPort, baudRate);
     }
 
@@ -266,7 +267,7 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
         // This is a simplified implementation - you might want a separate host/port UI
         var parts = SelectedPort?.Split(':');
         return parts?.Length != 2 || !int.TryParse(parts[1], out var port)
-            ? new VehicleConnectionResult(false, null, "TCP format should be host:port")
+            ? new VehicleConnectionResult(false, null, null, "TCP format should be host:port")
             : await connectionService.ConnectTcpAsync(parts[0], port);
     }
 
@@ -281,7 +282,7 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
         return await connectionService.ConnectUdpAsync(localPort);
     }
 
-    private void OnVehicleConnected(VehicleConnected evt)
+    private Task OnVehicleConnected(VehicleConnected evt, CancellationToken ct)
     {
         // Update UI on main thread
         MainThread.BeginInvokeOnMainThread(() =>
@@ -290,6 +291,7 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
             UpdateConnectionStatus();
             StatusMessage = $"Vehicle {evt.VehicleId} connected via {evt.ConnectionType}";
         });
+        return Task.CompletedTask;
     }
 
     private async Task DisconnectAsync()

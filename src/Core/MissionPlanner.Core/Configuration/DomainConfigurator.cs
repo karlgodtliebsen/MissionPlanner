@@ -35,6 +35,7 @@ public static class DomainConfigurator
         services.TryAddTransient<IBatteryVehicleHandler, BatteryVehicleHandler>();
         services.TryAddTransient<IPositionVehicleHandler, PositionVehicleHandler>();
         services.TryAddTransient<IStatusTextHandler, StatusTextHandler>();
+        services.TryAddTransient<IParamValueVehicleHandler, ParamValueVehicleHandler>();
 
         services.TryAddTransient<ICommandAckTracker, CommandAckTracker>();
         services.TryAddTransient<IVehicleCommandPolicy, VehicleCommandPolicy>();
@@ -42,8 +43,10 @@ public static class DomainConfigurator
         services.TryAddTransient<ISerialMavLinkTransport, SerialMavLinkTransport>();
         services.TryAddTransient<IUdpMavLinkTransport, UdpMavLinkTransport>();
         services.TryAddTransient<ITcpMavLinkTransport, TcpMavLinkTransport>();
+        services.TryAddSingleton<IVehicleConnectionSession, VehicleConnectionSession>();
 
         services.TryAddSingleton<IVehicleRegistry, VehicleRegistry>();
+        services.TryAddSingleton<IVehicleParameterRegistry, VehicleParameterRegistry>();
 
         services.TryAddTransient<ISerialPortDiscoveryService, SerialPortDiscoveryService>();
 
@@ -56,6 +59,9 @@ public static class DomainConfigurator
 
         // MAVLink command sending services
         services.TryAddTransient<IMavLinkCommandService, MavLinkCommandService>();
+
+        // MAVLink parameter services
+        services.TryAddTransient<IVehicleParameterService, VehicleParameterService>();
 
         return services;
     }
@@ -72,6 +78,7 @@ public static class DomainConfigurator
         domainFactory.Add<IAttitudeVehicleHandler, AttitudeVehicleHandler>();
         domainFactory.Add<IBatteryVehicleHandler, BatteryVehicleHandler>();
         domainFactory.Add<IPositionVehicleHandler, PositionVehicleHandler>();
+        domainFactory.Add<IParamValueVehicleHandler, ParamValueVehicleHandler>();
         domainFactory.Add<IVehicleMessagePump, VehicleMessagePump>();
         domainFactory.Add<ISerialMavLinkTransport, SerialMavLinkTransport>();
         domainFactory.Add<IUdpMavLinkTransport, UdpMavLinkTransport>();
@@ -79,6 +86,7 @@ public static class DomainConfigurator
         domainFactory.Add<IMavLinkClient, MavLinkClient>();
         domainFactory.Add<IMavLinkConnection, MavLinkConnection>();
         domainFactory.Add<IMavLinkCommandService, MavLinkCommandService>();
+        domainFactory.Add<IVehicleParameterService, VehicleParameterService>();
         return services;
     }
 }

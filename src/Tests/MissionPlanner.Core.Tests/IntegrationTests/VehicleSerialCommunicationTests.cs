@@ -1,15 +1,15 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.DomainEvents;
-using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
-using MissionPlanner.Core.Tests.Configuration;
+using MissionPlanner.Library;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
+using MissionPlanner.Test.Support.Configuration;
 using MissionPlanner.Transport;
 using MissionPlanner.Transport.Abstractions;
 
@@ -32,8 +32,7 @@ public class VehicleSerialCommunicationTests
     {
         this.output = output;
         var services = TestConfigurator
-            .AddTestConfiguration()
-            .AddDefaultTestLogging(output);
+            .AddTestConfiguration(output);
 
         serviceProvider = services.BuildServiceProvider();
         serviceProvider.UseTestConfiguration();
@@ -43,7 +42,7 @@ public class VehicleSerialCommunicationTests
     /// Tests that a vehicle is registered when a heartbeat message is received.
     /// </summary>
     [Fact]
-    public async Task Should_Establish_Serial_Communication_With_VehicleAsync()
+    public async Task Should_Establish_Serial_Communication_With_Vehicle()
     {
         var serialPortDiscoveryService = serviceProvider.GetRequiredService<ISerialPortDiscoveryService>();
         var availablePorts = serialPortDiscoveryService.GetAvailablePorts();
@@ -107,28 +106,69 @@ public class VehicleSerialCommunicationTests
     }
 
 
-    //eventHub.SubscribeDomainEvent<VehicleArmed>((m) => OnVehicleArmed((VehicleArmed)m));
-    //eventHub.SubscribeDomainEvent<VehicleDisarmed>((m) => OnVehicleDisarmed((VehicleDisarmed)m));
-    //eventHub.SubscribeDomainEvent<VehicleConnectionStateChanged>((m) => OnVehicleConnectionStateChanged((VehicleConnectionStateChanged)m));
-    //eventHub.SubscribeDomainEvent<VehicleModeChanged>((m) => OnVehicleModeChanged((VehicleModeChanged)m));
-    //eventHub.SubscribeDomainEvent<VehicleRegistered>((m) => OnVehicleRegistered((VehicleRegistered)m));
-    //eventHub.SubscribeDomainEvent<VehicleStateUpdated>((m) => OnVehicleStateUpdated((VehicleStateUpdated)m));
-    //eventHub.SubscribeDomainEvent<VehicleStatusMessageReceived>((m) => OnVehicleStatusMessageReceived((VehicleStatusMessageReceived)m))
-    //await EventuallyAsync(
-    //    () =>
-    //    {
-    //        //var state = vehicleService.GetVehicleState(vehicleId);
+    /// <summary>
+    /// Tests that a vehicle is registered when a heartbeat message is received.
+    /// </summary>
+    [Fact]
+    public async Task Should_Establish_Serial_Communication_With_Vehicle_Using_VehicleConnectionService()
+    {
+        var serialPortDiscoveryService = serviceProvider.GetRequiredService<ISerialPortDiscoveryService>();
+        var availablePorts = serialPortDiscoveryService.GetAvailablePorts();
+        Assert.True(availablePorts.Any(), "Connect a ArduPilot Vehicle");
+        TaskCompletionSource ts = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-    //        //Assert.Equal(vehicleId, state.VehicleId);
-    //        //Assert.False(state.IsArmed);
-    //        ts.TrySetResult();
-    //    },
-    //    TimeSpan.FromSeconds(5),
-    //    TestContext.Current.CancellationToken);
+        var logger = serviceProvider.GetRequiredService<ILogger<VehicleTests>>();
+        var serviceFactory = serviceProvider.GetRequiredService<IServiceFactory>();
+        var domainEventHub = serviceProvider.GetRequiredService<IDomainEventHub>();
 
+        var transportOptions = serviceFactory.Create<IOptions<TransportEndpoint>>();
+        transportOptions.Value.Protocol = "serial";
+        var portName = availablePorts.First();
+        var baudRate = 115200;
+        var vehicleRegistered = false;
+        await using var connectionService = serviceProvider.GetRequiredService<IVehicleConnectionService>();
 
-    //     await connection.StartAsync(TestContext.Current.CancellationToken);
-    //var connectionService = serviceProvider.GetRequiredService<IVehicleConnectionService>();
+        using var eventSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleConnected>((VehicleConnected evt, CancellationToken ct) =>
+        {
+            logger.LogInformation("Test-Received VehicleConnected Message With Vehicle: {VehicleId}", evt.VehicleId);
+            vehicleRegistered = true;
+            ts.TrySetResult();
+            return Task.CompletedTask;
+        });
+        var connection = await connectionService.ConnectSerialAsync(portName, baudRate, TestContext.Current.CancellationToken);
+        DomainException.ThrowIfNull(connection);
+        //If timeout happens, then the vehicle is not registered due to missing HeartbeatMessage, but it may be connected and receiving AttitudeMessage.
+        await ts.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+
+        Assert.True(vehicleRegistered);
+        DomainException.ThrowIfNull(connection.VehicleId);
+        DomainException.ThrowIfNull(connection.ConnectionSession);
+
+        var vehicleId = connection.VehicleId.Value;
+        var parameterRegistry = serviceProvider.GetRequiredService<IVehicleParameterRegistry>();
+
+        ts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await EventuallyAsync(() =>
+        {
+            var parameterCount = parameterRegistry.GetParameterCount(vehicleId);
+            Assert.True(parameterCount.HasValue && parameterCount.Value > 0, "Vehicle parameters should be loaded");
+
+            logger.LogInformation("Test-Received Parameters From Vehicle: {parameterCount}", parameterCount);
+            ts.TrySetResult();
+        }, TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken);
+
+        var result = await connection.ConnectionSession.ParameterService.RequestParameterListAsync(vehicleId, TestContext.Current.CancellationToken);
+
+        await ts.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+
+        Assert.True(result);
+
+        //foreach (var vehicleParameter in parameterRegistry.GetAllParameters(vehicleId))
+        //{
+        //    var parameter = vehicleParameter.Value;
+        //    logger.LogInformation("{ParameterName} = {ParameterValue}", vehicleParameter.Key, vehicleParameter.Value.ToString());
+        //}
+    }
 
     private static async Task EventuallyAsync(Action assertion, TimeSpan timeout, CancellationToken cancellationToken)
     {

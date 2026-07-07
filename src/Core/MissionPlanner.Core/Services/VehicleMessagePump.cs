@@ -16,6 +16,7 @@ namespace MissionPlanner.Core.Services;
 /// <param name="attitudeHandler">The handler for attitude messages.</param>
 /// <param name="batteryHandler">The handler for battery status messages.</param>
 /// <param name="statusTextHandler"></param>
+/// <param name="paramValueHandler">The handler for parameter value messages.</param>
 /// <param name="commandAckTracker"></param>
 /// <param name="eventHub"></param>
 /// <param name="logger"></param>
@@ -25,6 +26,7 @@ public sealed class VehicleMessagePump(
     IAttitudeVehicleHandler attitudeHandler,
     IBatteryVehicleHandler batteryHandler,
     IStatusTextHandler statusTextHandler,
+    IParamValueVehicleHandler paramValueHandler,
     ICommandAckTracker commandAckTracker,
     IEventHub eventHub,
     ILogger<VehicleMessagePump> logger)
@@ -71,6 +73,11 @@ public sealed class VehicleMessagePump(
             case StatusTextMessage statusText:
                 await statusTextHandler.Handle(statusText, cancellationToken);
                 await eventHub.PublishAsync<StatusTextMessage>(MavLinkEventTopics.ReceivedMessage, statusText, cancellationToken);
+                break;
+
+            case ParamValueMessage paramValue:
+                await paramValueHandler.Handle(paramValue, cancellationToken);
+                await eventHub.PublishAsync<ParamValueMessage>(MavLinkEventTopics.ReceivedMessage, paramValue, cancellationToken);
                 break;
 
             case CommandAckMessage commandAck:

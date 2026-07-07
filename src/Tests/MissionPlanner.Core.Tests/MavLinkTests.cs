@@ -1,12 +1,12 @@
 ﻿using System.Net;
 using FluentAssertions;
-using MissionPlanner.Core.Tests.Configuration;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.Simulator;
+using MissionPlanner.Test.Support.Configuration;
 using MissionPlanner.Transport;
 
 namespace MissionPlanner.Core.Tests;
@@ -33,8 +33,7 @@ public class MavLinkTests
     {
         this.output = output;
         var services = TestConfigurator
-            .AddTestConfiguration()
-            .AddDefaultTestLogging(output);
+            .AddTestConfiguration(output);
 
         serviceProvider = services.BuildServiceProvider();
         serviceProvider.UseTestConfiguration();

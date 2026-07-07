@@ -1,7 +1,7 @@
 ﻿using Meziantou.Extensions.Logging.Xunit.v3;
 using Microsoft.Extensions.Logging;
 
-namespace MissionPlanner.Core.Tests.Configuration;
+namespace MissionPlanner.Test.Support.Configuration;
 
 /// <summary>
 /// 

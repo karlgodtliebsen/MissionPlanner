@@ -5,7 +5,7 @@ namespace MissionPlanner.Library.EventHub.Abstractions;
 /// <summary>
 /// Defines the contract for an event hub that allows subscribing to and publishing events. 
 /// </summary>
-public interface IDomainEventHub : IEventHub
+public interface IDomainEventHub
 {
     /// <summary>
     /// Subscribes For the DomainEvent specified Func signature

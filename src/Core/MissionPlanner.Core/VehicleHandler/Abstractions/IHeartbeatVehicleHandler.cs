@@ -1,5 +1,4 @@
-﻿using MissionPlanner.Core.Services;
-using MissionPlanner.MavLink.Messages;
+﻿using MissionPlanner.MavLink.Messages;
 
 namespace MissionPlanner.Core.VehicleHandler.Abstractions;
 
@@ -14,5 +13,5 @@ public interface IHeartbeatVehicleHandler
     /// <param name="message">The heartbeat message to handle.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>The updated vehicle session.</returns>
-    Task<VehicleSession> Handle(HeartbeatMessage message, CancellationToken cancellationToken);
+    Task Handle(HeartbeatMessage message, CancellationToken cancellationToken);
 }

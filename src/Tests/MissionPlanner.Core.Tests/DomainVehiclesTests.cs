@@ -1,8 +1,7 @@
 ﻿using MissionPlanner.Core.Models;
-using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
-using MissionPlanner.Core.Tests.Configuration;
 using MissionPlanner.Simulator;
+using MissionPlanner.Test.Support.Configuration;
 
 namespace MissionPlanner.Core.Tests;
 
@@ -22,8 +21,7 @@ public class DomainVehiclesTests
     {
         this.output = output;
         var services = TestConfigurator
-            .AddTestConfiguration()
-            .AddDefaultTestLogging(output);
+            .AddTestConfiguration(output);
 
         serviceProvider = services.BuildServiceProvider();
         serviceProvider.UseTestConfiguration();

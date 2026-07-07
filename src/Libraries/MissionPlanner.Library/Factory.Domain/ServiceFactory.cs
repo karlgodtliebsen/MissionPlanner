@@ -4,7 +4,7 @@ using MissionPlanner.Library.Factory.Domain.Abstractions;
 namespace MissionPlanner.Library.Factory.Domain;
 
 /// <summary>
-/// 
+/// A factory for creating service instances using dependency injection.
 /// </summary>
 /// <param name="serviceProvider"></param>
 public class ServiceFactory(IServiceProvider serviceProvider) : IServiceFactory

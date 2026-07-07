@@ -55,7 +55,7 @@ public partial class StatusBarViewModel : ObservableObject
 
         // Subscribe to vehicle connection events
 
-        eventSubscription = eventHub.SubscribeDomainEvent<VehicleConnected>(OnVehicleConnected);
+        eventSubscription = eventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected);
 
 
         // Start clock timer
@@ -90,7 +90,7 @@ public partial class StatusBarViewModel : ObservableObject
         }
     }
 
-    private void OnVehicleConnected(VehicleConnected evt)
+    private Task OnVehicleConnected(VehicleConnected evt, CancellationToken ct)
     {
         MainThread.BeginInvokeOnMainThread(() =>
         {
@@ -98,5 +98,6 @@ public partial class StatusBarViewModel : ObservableObject
             ConnectionDotColor = Colors.LimeGreen;
             StatusMessage = $"Vehicle {evt.VehicleId} connected via {evt.ConnectionType}";
         });
+        return Task.CompletedTask;
     }
 }

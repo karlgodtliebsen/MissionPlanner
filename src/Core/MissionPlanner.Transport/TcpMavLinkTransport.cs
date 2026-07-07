@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Transport.Abstractions;
+using Polly;
+using Polly.Retry;
 
 namespace MissionPlanner.Transport;
 
@@ -14,6 +16,7 @@ public sealed class TcpMavLinkTransport : ITcpMavLinkTransport
     private readonly string remoteHost;
     private readonly int remotePort;
     private readonly TransportEndPoint remoteEndpoint;
+    private readonly ResiliencePipeline retryPipeline;
 
     private TcpClient? tcpClient;
     private NetworkStream? stream;
@@ -42,6 +45,29 @@ public sealed class TcpMavLinkTransport : ITcpMavLinkTransport
         }
 
         remoteEndpoint = new TransportEndPoint("tcp", remoteHost, remotePort);
+
+        // Configure Polly retry pipeline for resilient TCP connection
+        retryPipeline = new ResiliencePipelineBuilder()
+            .AddRetry(new RetryStrategyOptions
+            {
+                MaxRetryAttempts = 3,
+                Delay = TimeSpan.FromMilliseconds(500),
+                BackoffType = DelayBackoffType.Exponential,
+                UseJitter = true,
+                OnRetry = args =>
+                {
+                    logger.LogWarning(
+                        args.Outcome.Exception,
+                        "Retry attempt {AttemptNumber} of {MaxRetryAttempts} for TCP connection to {Host}:{Port}. Waiting {RetryDelay}ms before next attempt.",
+                        args.AttemptNumber,
+                        3,
+                        remoteHost,
+                        remotePort,
+                        args.RetryDelay.TotalMilliseconds);
+                    return ValueTask.CompletedTask;
+                }
+            })
+            .Build();
     }
 
     /// <summary>
@@ -59,15 +85,19 @@ public sealed class TcpMavLinkTransport : ITcpMavLinkTransport
 
         if (IsConnected)
         {
+            logger.LogTrace("TCP transport is already connected to {RemoteEndPoint}", remoteEndpoint);
             return;
         }
 
-        tcpClient = new TcpClient { NoDelay = true };
+        // Use Polly retry mechanism to handle transient network errors when connecting
+        await retryPipeline.ExecuteAsync(async ct =>
+        {
+            tcpClient = new TcpClient { NoDelay = true };
+            await tcpClient.ConnectAsync(remoteHost, remotePort, ct).ConfigureAwait(false);
+            stream = tcpClient.GetStream();
 
-        await tcpClient.ConnectAsync(remoteHost, remotePort, cancellationToken).ConfigureAwait(false);
-
-        stream = tcpClient.GetStream();
-        logger.LogTrace("TCP transport connected to {RemoteEndPoint}", remoteEndpoint);
+            logger.LogInformation("TCP transport connected successfully to {RemoteEndPoint}", remoteEndpoint);
+        }, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>

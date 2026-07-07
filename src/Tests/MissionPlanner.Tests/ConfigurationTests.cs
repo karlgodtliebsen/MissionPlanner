@@ -2,7 +2,7 @@
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
-using MissionPlanner.Tests.Configuration;
+using MissionPlanner.Test.Support.Configuration;
 
 namespace MissionPlanner.Tests;
 
@@ -23,8 +23,7 @@ public class ConfigurationTests
         this.output = output;
 
         var services = TestConfigurator
-            .AddTestConfiguration()
-            .AddDefaultTestLogging(output);
+            .AddTestConfiguration(output);
 
         serviceProvider = services.BuildServiceProvider();
     }

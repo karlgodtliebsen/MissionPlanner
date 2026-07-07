@@ -7,6 +7,7 @@
   <Folder Name="/Docs/">
     <File Path="../docs/ANALYSIS_HUD_VEHICLE_INTEGRATION.md" />
     <File Path="../docs/CONNECTION_CLEANUP_SOLUTION.md" />
+    <File Path="../docs/CONNECTION_RESILIENCE.md" />
     <File Path="../docs/HUD_Implementation_Step1.md" />
     <File Path="../docs/SERILOG_QUICKSTART.md" />
     <File Path="../docs/SHELL_PERSISTENT_CHROME.md" />
@@ -28,6 +29,7 @@
     <Project Path="Tests/MissionPlanner.Core.Tests/MissionPlanner.Core.Tests.csproj" />
     <Project Path="Tests/MissionPlanner.Simulator/MissionPlanner.Simulator.csproj" />
     <Project Path="Tests/MissionPlanner.Smoke.Simulator.Tests/MissionPlanner.Smoke.Simulator.Tests.csproj" />
+    <Project Path="Tests/MissionPlanner.Test.Support/MissionPlanner.Test.Support.csproj" />
     <Project Path="Tests/MissionPlanner.Tests/MissionPlanner.Tests.csproj" />
   </Folder>
   <Folder Name="/UI/">

@@ -21,12 +21,32 @@ public static class MessageIds
     public const uint Attitude = 30;
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public const uint GlobalPositionInt = 33;
 
     /// <summary>
-    /// 
+    /// Request to read the onboard parameter with the param_id string id.
+    /// </summary>
+    public const uint ParamRequestRead = 20;
+
+    /// <summary>
+    /// Request all parameters of this component.
+    /// </summary>
+    public const uint ParamRequestList = 21;
+
+    /// <summary>
+    /// Emit the value of a onboard parameter.
+    /// </summary>
+    public const uint ParamValue = 22;
+
+    /// <summary>
+    /// Set a parameter value.
+    /// </summary>
+    public const uint ParamSet = 23;
+
+    /// <summary>
+    ///
     /// </summary>
     public const uint CommandLong = 76;
 

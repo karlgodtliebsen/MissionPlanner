@@ -1,5 +1,4 @@
-﻿using MissionPlanner.Core.Services;
-using MissionPlanner.MavLink.Messages;
+﻿using MissionPlanner.MavLink.Messages;
 
 namespace MissionPlanner.Core.VehicleHandler.Abstractions;
 
@@ -13,6 +12,5 @@ public interface IStatusTextHandler
     /// </summary>
     /// <param name="message">The status text message to handle.</param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
-    /// <returns>The updated vehicle session.</returns>
-    Task<VehicleSession> Handle(StatusTextMessage message, CancellationToken cancellationToken);
+    Task Handle(StatusTextMessage message, CancellationToken cancellationToken);
 }

@@ -28,6 +28,22 @@ public sealed class CommonMavLinkCrcExtraProvider : IMavLinkCrcExtraProvider
                 crcExtra = 104;
                 return true;
 
+            case MessageIds.ParamRequestRead:
+                crcExtra = 214;
+                return true;
+
+            case MessageIds.ParamRequestList:
+                crcExtra = 159;
+                return true;
+
+            case MessageIds.ParamValue:
+                crcExtra = 220;
+                return true;
+
+            case MessageIds.ParamSet:
+                crcExtra = 168;
+                return true;
+
             case MessageIds.CommandLong:
                 crcExtra = 152;
                 return true;

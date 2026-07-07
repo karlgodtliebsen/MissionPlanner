@@ -1,6 +1,8 @@
 ﻿using System.IO.Ports;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Transport.Abstractions;
+using Polly;
+using Polly.Retry;
 
 namespace MissionPlanner.Transport;
 
@@ -12,6 +14,7 @@ public sealed class SerialMavLinkTransport : ISerialMavLinkTransport
     private readonly ILogger<SerialMavLinkTransport> logger;
     private readonly SerialPort serialPort;
     private readonly TransportEndPoint endpoint;
+    private readonly ResiliencePipeline retryPipeline;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SerialMavLinkTransport"/> class.
@@ -30,23 +33,60 @@ public sealed class SerialMavLinkTransport : ISerialMavLinkTransport
         this.logger = logger;
         serialPort = new SerialPort(portName, baudRate, Parity.None, 8, StopBits.One) { ReadTimeout = Timeout.Infinite, WriteTimeout = Timeout.Infinite };
         endpoint = new TransportEndPoint("serial", portName);
+
+        // Configure Polly retry pipeline for resilient serial port operations
+        retryPipeline = new ResiliencePipelineBuilder()
+            .AddRetry(new RetryStrategyOptions
+            {
+                MaxRetryAttempts = 3,
+                Delay = TimeSpan.FromMilliseconds(500),
+                BackoffType = DelayBackoffType.Exponential,
+                UseJitter = true,
+                OnRetry = args =>
+                {
+                    logger.LogWarning(
+                        args.Outcome.Exception,
+                        "Retry attempt {AttemptNumber} of {MaxRetryAttempts} for serial port {PortName}. Waiting {RetryDelay}ms before next attempt.",
+                        args.AttemptNumber,
+                        3,
+                        portName,
+                        args.RetryDelay.TotalMilliseconds);
+                    return ValueTask.CompletedTask;
+                }
+            })
+            .Build();
     }
 
     /// <inheritdoc />
     public bool IsConnected => serialPort.IsOpen;
 
     /// <inheritdoc />
-    public Task ConnectAsync(CancellationToken cancellationToken)
+    public async Task ConnectAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         if (!serialPort.IsOpen)
         {
-            serialPort.Open();
-        }
+            // Use Polly retry mechanism to handle transient errors when opening the serial port
+            await retryPipeline.ExecuteAsync(async ct =>
+            {
+                // SerialPort.Open() is synchronous, wrap in Task.Run to avoid blocking
+                await Task.Run(() =>
+                {
+                    ct.ThrowIfCancellationRequested();
+                    if (!serialPort.IsOpen)
+                    {
+                        serialPort.Open();
+                    }
+                }, ct).ConfigureAwait(false);
 
-        logger.LogTrace("Serial port {PortName} opened at {BaudRate} baud.", serialPort.PortName, serialPort.BaudRate);
-        return Task.CompletedTask;
+                logger.LogInformation("Serial port {PortName} opened successfully at {BaudRate} baud.", serialPort.PortName, serialPort.BaudRate);
+            }, cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            logger.LogTrace("Serial port {PortName} is already open.", serialPort.PortName);
+        }
     }
 
     /// <inheritdoc />
@@ -91,7 +131,7 @@ public sealed class SerialMavLinkTransport : ISerialMavLinkTransport
         }
         catch (Exception ex)
         {
-            logger.LogDebug(ex, "Failed to close serial port {PortName}.", serialPort.PortName);
+            logger.LogError(ex, "Non Fatal Error. Failed to close serial port {PortName}.", serialPort.PortName);
         }
 
         return Task.CompletedTask;

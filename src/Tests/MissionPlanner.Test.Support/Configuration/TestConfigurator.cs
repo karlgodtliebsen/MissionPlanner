@@ -9,24 +9,23 @@ using MissionPlanner.MavLink.Configuration;
 using MissionPlanner.Simulator.SmokeTests;
 using MissionPlanner.Transport;
 using MissionPlanner.Transport.Configuration;
+using Serilog;
 
-namespace MissionPlanner.Core.Tests.Configuration;
+namespace MissionPlanner.Test.Support.Configuration;
 
 /// <summary>
-/// 
+/// Provides methods for configuring test services and dependencies.
 /// </summary>
 public static class TestConfigurator
 {
     /// <summary>
     /// Adds test configuration services to the service collection.
     /// </summary>
-    public static IServiceCollection AddTestConfiguration()
+    public static IServiceCollection AddTestConfiguration(ITestOutputHelper? output)
     {
         List<IConfigurationSource> configurationSources = [new JsonConfigurationSource { Path = "appsettings.test.json", Optional = false, ReloadOnChange = false }];
 
         ConfigurationBuilder builder = new();
-        //var configurationBuilder = builder.Configuration;
-
         foreach (var source in configurationSources)
         {
             builder.Sources.Add(source);
@@ -34,7 +33,7 @@ public static class TestConfigurator
 
         IServiceCollection services = new ServiceCollection();
         IConfiguration configuration = builder.Build();
-        services.AddTestConfiguration(configuration);
+        services.AddTestConfiguration(configuration, output);
         return services;
     }
 
@@ -44,54 +43,36 @@ public static class TestConfigurator
     /// </summary>
     /// <param name="services">The service collection to which MAVLink services will be added.</param>
     /// <param name="configuration">The configuration to be used for MAVLink services.</param>
+    /// <param name="output"></param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddTestConfiguration(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddTestConfiguration(this IServiceCollection services, IConfiguration configuration, ITestOutputHelper? output)
     {
         services
             .AddLibraryServices()
             .AddEventHubServices()
             .AddDomainServices(configuration)
             .AddMavLinkTransportServices(configuration)
-            .AddMavLinkServices(configuration);
+            .AddMavLinkServices(configuration)
+            ;
 
         services.TryAddTransient<ITransportSmokeTestService, TransportSmokeTestService>();
-
+        services.AddDefaultTestLogging(configuration, output);
         return services;
     }
 
     public static IServiceCollection AddDefaultTestLogging(this IServiceCollection services, IConfiguration configuration, ITestOutputHelper? output)
     {
-        services.AddLogging(loggingBuilder =>
+        services.AddLogging((ILoggingBuilder loggingBuilder) =>
         {
             loggingBuilder.ClearProviders();
             loggingBuilder.SetMinimumLevel(LogLevel.Trace);
-
             loggingBuilder.AddFilter("Microsoft", LogLevel.Warning);
             loggingBuilder.AddFilter("System", LogLevel.Warning);
-
-            loggingBuilder.AddConsole();
-            loggingBuilder.AddDebug();
             loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
-            if (output is not null)
-            {
-                services.AddSingleton<ILoggerProvider>(new XUnitConsoleMsLoggerProvider(output));
-            }
-        });
-        return services;
-    }
-
-    public static IServiceCollection AddDefaultTestLogging(this IServiceCollection services, ITestOutputHelper? output)
-    {
-        services.AddLogging(loggingBuilder =>
-        {
-            loggingBuilder.ClearProviders();
-            loggingBuilder.SetMinimumLevel(LogLevel.Trace);
-
-            loggingBuilder.AddFilter("Microsoft", LogLevel.Warning);
-            loggingBuilder.AddFilter("System", LogLevel.Warning);
-
             loggingBuilder.AddConsole();
             loggingBuilder.AddDebug();
+            loggingBuilder.AddSerilog();
+            services.AddSerilog(configuration);
             if (output is not null)
             {
                 services.AddSingleton<ILoggerProvider>(new XUnitConsoleMsLoggerProvider(output));
@@ -99,8 +80,6 @@ public static class TestConfigurator
         });
         return services;
     }
-
-    private static readonly Random Rnd = new(1024);
 
     /// <summary>
     /// Configures test services and dependencies using the specified <see cref="IServiceProvider"/>.

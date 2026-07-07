@@ -1,13 +1,12 @@
 ﻿using FluentAssertions;
-using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
-using MissionPlanner.Core.Tests.Configuration;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Decoding;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.Simulator;
+using MissionPlanner.Test.Support.Configuration;
 
 namespace MissionPlanner.Core.Tests;
 
@@ -23,8 +22,7 @@ public sealed class MavLinkMessageDecoderTests
     {
         this.output = output;
         var services = TestConfigurator
-            .AddTestConfiguration()
-            .AddDefaultTestLogging(output);
+            .AddTestConfiguration(output);
 
         serviceProvider = services.BuildServiceProvider();
         serviceProvider.UseTestConfiguration();

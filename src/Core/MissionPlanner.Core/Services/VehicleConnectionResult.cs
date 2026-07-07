@@ -1,11 +1,13 @@
 ﻿using MissionPlanner.Core.Models;
+using MissionPlanner.Core.Services.Abstractions;
 
-namespace MissionPlanner.Core.Services.Abstractions;
+namespace MissionPlanner.Core.Services;
 
 /// <summary>
 /// Result of a vehicle connection attempt.
 /// </summary>
 /// <param name="Success">Indicates if the connection was successful</param>
 /// <param name="VehicleId">The connected vehicle's ID (null if failed)</param>
+/// <param name="ConnectionSession">The vehicle connection session (null if failed)</param>
 /// <param name="ErrorMessage">Error message if connection failed</param>
-public record VehicleConnectionResult(bool Success, VehicleId? VehicleId, string? ErrorMessage = null);
+public record VehicleConnectionResult(bool Success, VehicleId? VehicleId, IVehicleConnectionSession? ConnectionSession, string? ErrorMessage = null);

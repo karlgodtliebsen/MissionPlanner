@@ -3,6 +3,8 @@ using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Transport.Abstractions;
+using Polly;
+using Polly.Retry;
 
 namespace MissionPlanner.Transport;
 
@@ -10,8 +12,9 @@ namespace MissionPlanner.Transport;
 public sealed class UdpMavLinkTransport : IUdpMavLinkTransport
 {
     private readonly ILogger<UdpMavLinkTransport> logger;
-    private UdpClient? udpClient;
     private readonly TransportEndpoint endpoint;
+    private readonly ResiliencePipeline retryPipeline;
+    private UdpClient? udpClient;
     private volatile bool isConnected;
 
     /// <summary>
@@ -42,26 +45,59 @@ public sealed class UdpMavLinkTransport : IUdpMavLinkTransport
         {
             throw new ArgumentException("Remote host must be specified.", nameof(remoteHost));
         }
+
+        // Configure Polly retry pipeline for resilient UDP socket creation
+        retryPipeline = new ResiliencePipelineBuilder()
+            .AddRetry(new RetryStrategyOptions
+            {
+                MaxRetryAttempts = 3,
+                Delay = TimeSpan.FromMilliseconds(500),
+                BackoffType = DelayBackoffType.Exponential,
+                UseJitter = true,
+                OnRetry = args =>
+                {
+                    logger.LogWarning(
+                        args.Outcome.Exception,
+                        "Retry attempt {AttemptNumber} of {MaxRetryAttempts} for UDP connection on port {LocalPort}. Waiting {RetryDelay}ms before next attempt.",
+                        args.AttemptNumber,
+                        3,
+                        localPort,
+                        args.RetryDelay.TotalMilliseconds);
+                    return ValueTask.CompletedTask;
+                }
+            })
+            .Build();
     }
 
     /// <inheritdoc />
     public bool IsConnected => isConnected;
 
     /// <inheritdoc />
-    public Task ConnectAsync(CancellationToken cancellationToken)
+    public async Task ConnectAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         var localPort = endpoint.LocalPort;
         var localHost = endpoint.LocalHost;
 
-        var localAddress = string.IsNullOrWhiteSpace(localHost)
-            ? IPAddress.Any
-            : IPAddress.Parse(localHost);
-        udpClient = new UdpClient(new IPEndPoint(localAddress, localPort));
-        isConnected = true;
-        logger.LogTrace("UdpMavLinkTransport - UDP transport connected to host: {localHost} on port: {localPort}", localHost, localPort);
-        return Task.CompletedTask;
+        // Use Polly retry mechanism to handle transient network errors when binding UDP socket
+        await retryPipeline.ExecuteAsync(async ct =>
+        {
+            await Task.Run(() =>
+            {
+                ct.ThrowIfCancellationRequested();
+
+                var localAddress = string.IsNullOrWhiteSpace(localHost)
+                    ? IPAddress.Any
+                    : IPAddress.Parse(localHost);
+
+                udpClient = new UdpClient(new IPEndPoint(localAddress, localPort));
+                isConnected = true;
+
+                logger.LogInformation("UDP transport connected successfully to host: {LocalHost} on port: {LocalPort}", 
+                    localHost ?? "Any", localPort);
+            }, ct).ConfigureAwait(false);
+        }, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />

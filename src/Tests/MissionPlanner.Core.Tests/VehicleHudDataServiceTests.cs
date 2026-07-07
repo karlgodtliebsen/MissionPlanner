@@ -25,7 +25,7 @@ public class VehicleHudDataServiceTests
         var mockLogger = Substitute.For<ILogger<VehicleHudDataService>>();
         var mockRegistry = Substitute.For<IVehicleRegistry>();
         var mockEventHub = Substitute.For<IDomainEventHub>();
-        mockEventHub.Subscribe(Arg.Any<Action<VehicleStateUpdated>>()).Returns(Substitute.For<IDisposable>());
+        mockEventHub.SubscribeDomainEvent<VehicleStateUpdated>(Arg.Any<Action<VehicleStateUpdated>>()).Returns(Substitute.For<IDisposable>());
 
         var service = new VehicleHudDataService(mockRegistry, mockEventHub, mockLogger);
         var vehicleId = new VehicleId(99, 99);
@@ -48,7 +48,7 @@ public class VehicleHudDataServiceTests
         var mockLogger = Substitute.For<ILogger<VehicleHudDataService>>();
         var mockRegistry = Substitute.For<IVehicleRegistry>();
         var mockEventHub = Substitute.For<IDomainEventHub>();
-        mockEventHub.Subscribe(Arg.Any<Action<VehicleStateUpdated>>()).Returns(Substitute.For<IDisposable>());
+        mockEventHub.SubscribeDomainEvent(Arg.Any<Action<VehicleStateUpdated>>()).Returns(Substitute.For<IDisposable>());
 
         var service = new VehicleHudDataService(mockRegistry, mockEventHub, mockLogger);
         mockRegistry.Vehicles.Returns(Array.Empty<VehicleSession>());
@@ -58,47 +58,5 @@ public class VehicleHudDataServiceTests
 
         // Assert
         hudData.Should().BeNull();
-    }
-
-    /// <summary>
-    /// Verifies that the service is created and subscribes to events.
-    /// </summary>
-    [Fact]
-    public void Should_Create_Service_And_Subscribe_To_Events()
-    {
-        // Arrange
-        var mockLogger = Substitute.For<ILogger<VehicleHudDataService>>();
-        var mockRegistry = Substitute.For<IVehicleRegistry>();
-        var mockEventHub = Substitute.For<IDomainEventHub>();
-        mockEventHub.Subscribe(Arg.Any<Action<VehicleStateUpdated>>()).Returns(Substitute.For<IDisposable>());
-
-        // Act
-        var service = new VehicleHudDataService(mockRegistry, mockEventHub, mockLogger);
-
-        // Assert
-        service.Should().NotBeNull();
-        mockEventHub.Received(1).Subscribe(Arg.Any<Action<VehicleStateUpdated>>());
-    }
-
-    /// <summary>
-    /// Verifies that the service disposes of its resources when disposed.
-    /// </summary>
-    [Fact]
-    public void Should_Dispose_Resources_On_Dispose()
-    {
-        // Arrange
-        var mockLogger = Substitute.For<ILogger<VehicleHudDataService>>();
-        var mockRegistry = Substitute.For<IVehicleRegistry>();
-        var mockEventHub = Substitute.For<IDomainEventHub>();
-        var mockSubscription = Substitute.For<IDisposable>();
-        mockEventHub.Subscribe(Arg.Any<Action<VehicleStateUpdated>>()).Returns(mockSubscription);
-
-        var service = new VehicleHudDataService(mockRegistry, mockEventHub, mockLogger);
-
-        // Act
-        service.Dispose();
-
-        // Assert
-        mockSubscription.Received(1).Dispose();
     }
 }

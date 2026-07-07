@@ -12,7 +12,7 @@ using MissionPlanner.Test.Support.Configuration;
 using MissionPlanner.Transport;
 using MissionPlanner.Transport.Abstractions;
 
-namespace MissionPlanner.Core.Tests;
+namespace MissionPlanner.Test.Support;
 
 /// <summary>
 /// Tests for the domain layer implementations.

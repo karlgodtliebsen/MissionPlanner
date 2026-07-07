@@ -6,7 +6,6 @@ using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
-using MissionPlanner.Core.Tests.Configuration;
 using MissionPlanner.Core.VehicleHandler.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -18,6 +17,7 @@ using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.Simulator;
+using MissionPlanner.Test.Support.Configuration;
 using MissionPlanner.Transport;
 
 namespace MissionPlanner.Core.Tests;
@@ -41,8 +41,7 @@ public class VehicleTests
     {
         this.output = output;
         var services = TestConfigurator
-            .AddTestConfiguration()
-            .AddDefaultTestLogging(output);
+            .AddTestConfiguration(output);
 
         serviceProvider = services.BuildServiceProvider();
         serviceProvider.UseTestConfiguration();
@@ -88,7 +87,8 @@ public class VehicleTests
             3,
             DateTimeOffset.UtcNow);
 
-        var vehicle = await handler.Handle(heartbeat, TestContext.Current.CancellationToken);
+        await handler.Handle(heartbeat, TestContext.Current.CancellationToken);
+        var vehicle = registry.GetRequired(new VehicleId(1, 1));
 
         Assert.Equal(new VehicleId(1, 1), vehicle.Id);
         Assert.Single(registry.Vehicles);
@@ -142,7 +142,8 @@ public class VehicleTests
         var message = messageResult!;
 
 
-        var vehicle = await handler.Handle(message, TestContext.Current.CancellationToken);
+        await handler.Handle(message, TestContext.Current.CancellationToken);
+        var vehicle = registry.GetRequired(new VehicleId(1, 1))!;
 
         Assert.Equal(new VehicleId(1, 1), vehicle.Id);
         Assert.Single(registry.Vehicles);
@@ -168,8 +169,11 @@ public class VehicleTests
             1, 1, simulatorIPEndPoint.ToTransportEndPoint("udp"), 42, 2, 3, 81, 4, 3,
             DateTimeOffset.UtcNow.AddSeconds(1));
 
-        var vehicle1 = await handler.Handle(first, TestContext.Current.CancellationToken);
-        var vehicle2 = await handler.Handle(second, TestContext.Current.CancellationToken);
+        await handler.Handle(first, TestContext.Current.CancellationToken);
+        await handler.Handle(second, TestContext.Current.CancellationToken);
+        var vehicles = registry.Vehicles;
+        var vehicle1 = registry.GetRequired(vehicles.First().Id)!;
+        var vehicle2 = registry.GetRequired(vehicles.Last().Id)!;
 
         Assert.Same(vehicle1, vehicle2);
         Assert.Single(registry.Vehicles);
@@ -625,7 +629,8 @@ public class VehicleTests
             3,
             DateTimeOffset.UtcNow);
 
-        var vehicle = await handler.Handle(heartbeat, TestContext.Current.CancellationToken);
+        await handler.Handle(heartbeat, TestContext.Current.CancellationToken);
+        var vehicle = registry.GetRequired(new VehicleId(1, 1))!;
 
         Assert.True(vehicle.State.IsArmed);
     }
@@ -650,7 +655,8 @@ public class VehicleTests
             3,
             DateTimeOffset.UtcNow);
 
-        var vehicle = await handler.Handle(heartbeat, TestContext.Current.CancellationToken);
+        await handler.Handle(heartbeat, TestContext.Current.CancellationToken);
+        var vehicle = registry.GetRequired(new VehicleId(1, 1))!;
 
         Assert.Equal(VehicleMode.Guided, vehicle.State.Mode);
     }
