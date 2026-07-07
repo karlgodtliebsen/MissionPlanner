@@ -24,8 +24,6 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
 
     public ObservableCollection<string> BaudRates { get; set; }
 
-    //[ObservableProperty] public partial string[] BaudRates { get; set; }
-
     [ObservableProperty] public partial string? SelectedPort { get; set; }
 
     [ObservableProperty] public partial string? SelectedBaudRate { get; set; }
@@ -69,11 +67,12 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
         Ports = new ObservableCollection<string>(options.CurrentValue.Ports);
         BaudRates = new ObservableCollection<string>(options.CurrentValue.BaudRates);
 
-        // Initialize from shared state
-        //SelectedConnectionType = stateService.SelectedConnectionType ?? "Serial";
         SelectedPort = stateService.SelectedPort;
         SelectedBaudRate = stateService.SelectedBaudRate ?? "57600";
         IsConnected = stateService.IsConnected;
+
+
+        connectionService.DisconnectAsync(CancellationToken.None);
 
         // Subscribe to state changes
         stateService.PropertyChanged += (sender, args) =>
@@ -282,6 +281,17 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
         return await connectionService.ConnectUdpAsync(localPort);
     }
 
+    private void OnVehicleConnected(VehicleConnected evt)
+    {
+        // Update UI on main thread
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            IsConnected = true;
+            UpdateConnectionStatus();
+            StatusMessage = $"Vehicle {evt.VehicleId} connected via {evt.ConnectionType}";
+        });
+    }
+
     private async Task DisconnectAsync()
     {
         try
@@ -303,16 +313,6 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
         }
     }
 
-    private void OnVehicleConnected(VehicleConnected evt)
-    {
-        // Update UI on main thread
-        MainThread.BeginInvokeOnMainThread(() =>
-        {
-            IsConnected = true;
-            UpdateConnectionStatus();
-            StatusMessage = $"Vehicle {evt.VehicleId} connected via {evt.ConnectionType}";
-        });
-    }
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

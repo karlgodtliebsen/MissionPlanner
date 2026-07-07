@@ -46,8 +46,15 @@ public static class DomainConfigurator
         services.TryAddSingleton<IVehicleRegistry, VehicleRegistry>();
 
         services.TryAddTransient<ISerialPortDiscoveryService, SerialPortDiscoveryService>();
-        services.TryAddTransient<IVehicleConnectionService, VehicleConnectionService>();
+
+        services.TryAddSingleton<IVehicleConnectionService, VehicleConnectionService>();
+        //services.TryAddSingleton<IVehicleHudDataService, VehicleHudDataService>();
+
+        //services.TryAddTransient<IVehicleConnectionService, VehicleConnectionService>();
         services.TryAddTransient<IVehicleHudDataService, VehicleHudDataService>();
+
+        //services.TryAddScoped<IVehicleConnectionService, VehicleConnectionService>();
+        //services.TryAddScoped<IVehicleHudDataService, VehicleHudDataService>();
 
         services.TryAddTransient<IVehicleCommandService, VehicleCommandService>();
         services.TryAddTransient<IVehicleService, VehicleService>();

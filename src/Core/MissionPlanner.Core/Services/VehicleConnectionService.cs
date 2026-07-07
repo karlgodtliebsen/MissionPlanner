@@ -18,13 +18,8 @@ namespace MissionPlanner.Core.Services;
 /// Service for managing vehicle connections via MAVLink transport.
 /// Orchestrates transport creation, connection establishment, and vehicle registration.
 /// </summary>
-public class VehicleConnectionService(
-    IDomainEventHub domainEventHub,
-    IDateTimeProvider dateTimeProvider,
-    IDomainFactory domainFactory,
-    IServiceFactory serviceFactory,
-    ILogger<VehicleConnectionService> logger)
-    : IVehicleConnectionService, IAsyncDisposable
+public class VehicleConnectionService(IDomainEventHub domainEventHub, IDateTimeProvider dateTimeProvider, IDomainFactory domainFactory, IServiceFactory serviceFactory, ILogger<VehicleConnectionService> logger)
+    : IVehicleConnectionService
 {
     // Single active connection (only one vehicle connection supported at a time)
     private ActiveConnection? activeConnection;
@@ -507,6 +502,7 @@ public class VehicleConnectionService(
             await DisconnectAsync();
         }
 
+        activeConnection = null;
         // Dispose the semaphore and cancellation token source
         connectionLock.Dispose();
         serviceCts.Dispose();

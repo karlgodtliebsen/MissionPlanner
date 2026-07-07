@@ -84,8 +84,14 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<TopBarView>();
 
         //SubView/Controls
+        //services.TryAddSingleton<ConnectPopupView>();
+        //services.TryAddSingleton<ConnectPopupViewModel>();
+
         services.TryAddTransient<ConnectPopupView>();
         services.TryAddTransient<ConnectPopupViewModel>();
+
+        //services.TryAddScoped<ConnectPopupView>();
+        //services.TryAddScoped<ConnectPopupViewModel>();
 
         services.TryAddSingleton<FlightDataViewModel>();
         services.TryAddSingleton<ConnectionView>();
