@@ -14,4 +14,9 @@ public static class MavLinkEventTopics
     /// Occurs when a MAVLink frame is received.
     /// </summary>
     public const string ReceivedFrame = "mavlink.received-frame";
+
+    /// <summary>
+    /// Occurs after a new MAVLink message is received and processed.
+    /// </summary>
+    public const string NewMessage = "mavlink.new-message";
 }

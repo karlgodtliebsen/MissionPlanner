@@ -20,8 +20,11 @@ public sealed class PositionVehicleHandler(IVehicleRegistry vehicleRegistry, IDo
     public async Task Handle(GlobalPositionIntMessage message, CancellationToken cancellationToken)
     {
         var vehicleId = new VehicleId(message.SystemId, message.ComponentId);
+        if (logger.IsEnabled(LogLevel.Trace))
+        {
+            logger.LogTrace("Handling position message from vehicle {VehicleId} {@Message}", vehicleId, message);
+        }
 
-        logger.LogDebug("Handling position message from vehicle {VehicleId} {@Message}", vehicleId, message);
         var vehicle = vehicleRegistry.GetRequired(vehicleId);
         if (vehicle is null)
         {

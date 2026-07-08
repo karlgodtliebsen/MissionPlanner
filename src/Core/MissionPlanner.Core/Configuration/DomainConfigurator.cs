@@ -63,7 +63,10 @@ public static class DomainConfigurator
         // MAVLink parameter services
         services.TryAddTransient<IVehicleParameterService, VehicleParameterService>();
         services.TryAddSingleton<IVehicleParameterMetadataService, VehicleParameterMetadataService>();
-        services.TryAddTransient<IVehicleParameterStreamService, VehicleParameterStreamService>();
+        //services.TryAddTransient<IVehicleParameterStreamService, VehicleParameterStreamService>();
+        //services.TryAddTransient<IVehicleParameterStreamService, VehicleParameterStreamServiceV2>();
+        // V3: Subscribes directly to MAVLink messages (not domain events) to avoid message loss
+        services.TryAddTransient<IVehicleParameterStreamService, VehicleParameterStreamServiceV3>();
 
         return services;
     }
@@ -89,7 +92,7 @@ public static class DomainConfigurator
         domainFactory.Add<IMavLinkConnection, MavLinkConnection>();
         domainFactory.Add<IMavLinkCommandService, MavLinkCommandService>();
         domainFactory.Add<IVehicleParameterService, VehicleParameterService>();
-        domainFactory.Add<IVehicleParameterStreamService, VehicleParameterStreamService>();
+        domainFactory.Add<IVehicleParameterStreamService, VehicleParameterStreamServiceV3>();
         return services;
     }
 }

@@ -37,7 +37,7 @@ public partial class QuickTabViewModel : ObservableObject, IDisposable
         var eventSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(VehicleStatusUpdated);
         eventSubscriptions.Add(eventSubscription);
         //  await domainEventHub.PublishDomainEventAsync(new VehicleStateUpdated(vehicle.State), cancellationToken);
-        //var eventSubscription = eventHub.SubscribeAsync<AttitudeMessage>(MavLinkEventTopics.ReceivedMessage, AttitudeMessageRegistered);
+        //var eventSubscription = eventHub.SubscribeAsync<AttitudeMessage>(MavLinkEventTopics.NewMessage, AttitudeMessageRegistered);
         //eventSubscriptions.Add(eventSubscription);
     }
 

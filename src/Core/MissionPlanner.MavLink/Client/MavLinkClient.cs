@@ -137,6 +137,10 @@ public sealed class MavLinkClient : IMavLinkClient
     public async ValueTask SendAsync(ReadOnlyMemory<byte> data, TransportEndPoint endPoint, CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
 
         if (!transport.IsConnected)
         {

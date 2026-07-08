@@ -40,49 +40,52 @@ public sealed class VehicleMessagePump(
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        logger.LogTrace("VehicleMessagePump - Starting Event Subscription.");
+        /*Action<MavLinkMessage> message,*/
+        //logger.LogTrace("VehicleMessagePump - Starting Event Subscription.");
         subscription = eventHub.SubscribeAsync<MavLinkMessage>(MavLinkEventTopics.ReceivedMessage, HandleMessage);
         return Task.CompletedTask;
     }
 
     private async Task HandleMessage(MavLinkMessage message, CancellationToken cancellationToken)
     {
-        logger.LogTrace("VehicleMessagePump - Received {MessageType} {@Message}", message.GetType().Name, message);
+        //logger.LogTrace("VehicleMessagePump - Received {MessageType} {@Message}", message.GetType().Name, message);
         switch (message)
         {
             case HeartbeatMessage heartbeat:
                 await heartbeatHandler.Handle(heartbeat, cancellationToken);
-                await eventHub.PublishAsync<HeartbeatMessage>(MavLinkEventTopics.ReceivedMessage, heartbeat, cancellationToken);
+                await eventHub.PublishAsync<HeartbeatMessage>(MavLinkEventTopics.NewMessage, heartbeat, cancellationToken);
                 break;
-
             case GlobalPositionIntMessage position:
                 await positionHandler.Handle(position, cancellationToken);
-                await eventHub.PublishAsync<GlobalPositionIntMessage>(MavLinkEventTopics.ReceivedMessage, position, cancellationToken);
+                await eventHub.PublishAsync<GlobalPositionIntMessage>(MavLinkEventTopics.NewMessage, position, cancellationToken);
                 break;
 
             case AttitudeMessage attitude:
                 await attitudeHandler.Handle(attitude, cancellationToken);
-                await eventHub.PublishAsync<AttitudeMessage>(MavLinkEventTopics.ReceivedMessage, attitude, cancellationToken);
+                await eventHub.PublishAsync<AttitudeMessage>(MavLinkEventTopics.NewMessage, attitude, cancellationToken);
                 break;
 
             case SysStatusMessage sysStatus:
                 await batteryHandler.Handle(sysStatus, cancellationToken);
-                await eventHub.PublishAsync<SysStatusMessage>(MavLinkEventTopics.ReceivedMessage, sysStatus, cancellationToken);
+                await eventHub.PublishAsync<SysStatusMessage>(MavLinkEventTopics.NewMessage, sysStatus, cancellationToken);
                 break;
 
             case StatusTextMessage statusText:
                 await statusTextHandler.Handle(statusText, cancellationToken);
-                await eventHub.PublishAsync<StatusTextMessage>(MavLinkEventTopics.ReceivedMessage, statusText, cancellationToken);
+                await eventHub.PublishAsync<StatusTextMessage>(MavLinkEventTopics.NewMessage, statusText, cancellationToken);
                 break;
 
             case ParamValueMessage paramValue:
                 await paramValueHandler.Handle(paramValue, cancellationToken);
-                await eventHub.PublishAsync<ParamValueMessage>(MavLinkEventTopics.ReceivedMessage, paramValue, cancellationToken);
+                await eventHub.PublishAsync<ParamValueMessage>(MavLinkEventTopics.NewMessage, paramValue, cancellationToken);
                 break;
 
             case CommandAckMessage commandAck:
                 commandAckTracker.Handle(commandAck);
-                await eventHub.PublishAsync<CommandAckMessage>(MavLinkEventTopics.ReceivedMessage, commandAck, cancellationToken);
+                await eventHub.PublishAsync<CommandAckMessage>(MavLinkEventTopics.NewMessage, commandAck, cancellationToken);
+                break;
+            default:
+                logger.LogError("VehicleMessagePump - Received unknown message type: {MessageType} {@Message}", message.GetType().Name, message);
                 break;
         }
     }

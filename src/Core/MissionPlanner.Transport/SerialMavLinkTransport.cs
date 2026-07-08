@@ -144,7 +144,7 @@ public sealed class SerialMavLinkTransport : ISerialMavLinkTransport
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Non Fatal Error. Failed to close serial port {PortName}.", serialPort.PortName);
+            logger.LogTrace(ex, "Non Fatal Error. Failed to close serial port {PortName}.", serialPort.PortName);
         }
     }
 

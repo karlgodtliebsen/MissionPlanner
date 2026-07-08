@@ -124,7 +124,7 @@ public class VehicleTests
 
         TaskCompletionSource ts = new(TaskCreationOptions.RunContinuationsAsynchronously);
         HeartbeatMessage? messageResult = null;
-        using var subscription = eventHub.SubscribeAsync<HeartbeatMessage>(MavLinkEventTopics.ReceivedMessage, (heartbeatMessage, ct) =>
+        using var subscription = eventHub.SubscribeAsync<HeartbeatMessage>(MavLinkEventTopics.NewMessage, (heartbeatMessage, ct) =>
         {
             messageResult = heartbeatMessage;
             ts.TrySetResult();
@@ -585,7 +585,7 @@ public class VehicleTests
 
         TaskCompletionSource ts = new(TaskCreationOptions.RunContinuationsAsynchronously);
         CommandAckMessage? messageResult = null;
-        using var subscription = eventHub.SubscribeAsync<CommandAckMessage>(MavLinkEventTopics.ReceivedMessage, (commandAckMessage, ct) =>
+        using var subscription = eventHub.SubscribeAsync<CommandAckMessage>(MavLinkEventTopics.NewMessage, (commandAckMessage, ct) =>
         {
             messageResult = commandAckMessage;
             ts.TrySetResult();

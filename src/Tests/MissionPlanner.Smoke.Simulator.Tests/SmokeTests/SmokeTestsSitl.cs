@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Models;
-using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Library;
 using MissionPlanner.Library.EventHub.Abstractions;
@@ -603,7 +602,7 @@ public class SmokeTestsSitl : IAsyncLifetime
 
         var completion = new TaskCompletionSource<StatusTextMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        using var subscription = eventHub.SubscribeAsync<StatusTextMessage>(MavLinkEventTopics.ReceivedMessage,
+        using var subscription = eventHub.SubscribeAsync<StatusTextMessage>(MavLinkEventTopics.NewMessage,
             (message, cancellationToken) =>
             {
                 completion.TrySetResult(message);

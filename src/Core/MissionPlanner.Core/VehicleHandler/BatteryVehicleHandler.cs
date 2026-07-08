@@ -16,7 +16,11 @@ public sealed class BatteryVehicleHandler(IVehicleRegistry vehicleRegistry, IDom
     {
         var vehicleId = new VehicleId(message.SystemId, message.ComponentId);
 
-        logger.LogDebug("Handling battery status message from vehicle {VehicleId} {@Message}", vehicleId, message);
+        if (logger.IsEnabled(LogLevel.Trace))
+        {
+            logger.LogTrace("Handling battery status message from vehicle {VehicleId} {@Message}", vehicleId, message);
+        }
+
         var vehicle = vehicleRegistry.GetRequired(vehicleId);
         if (vehicle is null)
         {

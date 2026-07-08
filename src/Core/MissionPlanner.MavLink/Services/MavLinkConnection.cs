@@ -71,7 +71,7 @@ public sealed class MavLinkConnection : IMavLinkConnection, IAsyncDisposable
         {
             logger.LogTrace("MavLinkConnection - Processing frame {frame}", frame.MessageId);
 
-            await eventHub.PublishAsync(MavLinkEventTopics.ReceivedFrame, frame, cancellationToken);
+            // await eventHub.PublishAsync(MavLinkEventTopics.ReceivedFrame, frame, cancellationToken);
 
             if (messageDecoder.TryDecode(frame, out var message) && message is not null)
             {

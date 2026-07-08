@@ -47,7 +47,7 @@ public sealed class MavLinkMessageDecoderTests
         TaskCompletionSource ts = new(TaskCreationOptions.RunContinuationsAsynchronously);
         HeartbeatMessage? messageResult = null;
 
-        using var subscription = eventHub.SubscribeAsync<HeartbeatMessage>(MavLinkEventTopics.ReceivedMessage, (heartbeatMessage, ct) =>
+        using var subscription = eventHub.SubscribeAsync<HeartbeatMessage>(MavLinkEventTopics.NewMessage, (heartbeatMessage, ct) =>
         {
             messageResult = heartbeatMessage;
             ts.TrySetResult();

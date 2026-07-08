@@ -9,12 +9,17 @@
     <File Path="../docs/CONNECTION_CLEANUP_SOLUTION.md" />
     <File Path="../docs/CONNECTION_RESILIENCE.md" />
     <File Path="../docs/HUD_Implementation_Step1.md" />
+    <File Path="../docs/PARAMETER_DIAGNOSTICS.md" />
     <File Path="../docs/PARAMETER_METADATA_SYSTEM.md" />
+    <File Path="../docs/PARAMETER_STREAMING_FIX.md" />
+    <File Path="../docs/PARAMETER_STREAMING_GUIDE.md" />
+    <File Path="../docs/PARAMETER_STREAMING_STRATEGY.md" />
     <File Path="../docs/PARAMETER_USAGE.md" />
     <File Path="../docs/SERILOG_QUICKSTART.md" />
     <File Path="../docs/SHELL_PERSISTENT_CHROME.md" />
     <File Path="../docs/SINGLE_CONNECTION_SIMPLIFICATION.md" />
     <File Path="../docs/TELEMETRY_STREAM_SOLUTION.md" />
+    <File Path="../docs/VEHICLE_CONNECTION_BEST_PRACTICES.md" />
     <File Path="../docs/VEHICLE_CONNECTION_SERVICE_VALIDATION.md" />
     <File Path="../docs/VEHICLE_CONNECTION_TASK_LIFECYCLE.md" />
   </Folder>

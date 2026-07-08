@@ -21,14 +21,16 @@ public sealed class ParamValueVehicleHandler(
     /// <inheritdoc />
     public async Task Handle(ParamValueMessage message, CancellationToken cancellationToken)
     {
-        logger.LogDebug(
-            "ParamValueVehicleHandler - Handling PARAM_VALUE from vehicle {VehicleId}: {ParamId} = {Value} (type: {Type}, index: {Index}/{Count})",
-            new VehicleId(message.SystemId, message.ComponentId),
-            message.ParamId,
-            message.ParamValue,
-            message.ParamType,
-            message.ParamIndex,
-            message.ParamCount);
+        if (logger.IsEnabled(LogLevel.Trace))
+        {
+            logger.LogTrace("ParamValueVehicleHandler - Handling PARAM_VALUE from vehicle {VehicleId}: {ParamId} = {Value} (type: {Type}, index: {Index}/{Count})",
+                new VehicleId(message.SystemId, message.ComponentId),
+                message.ParamId,
+                message.ParamValue,
+                message.ParamType,
+                message.ParamIndex,
+                message.ParamCount);
+        }
 
         var vehicleId = new VehicleId(message.SystemId, message.ComponentId);
 

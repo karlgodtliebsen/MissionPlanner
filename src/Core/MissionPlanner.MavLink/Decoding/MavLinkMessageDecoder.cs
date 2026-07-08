@@ -27,13 +27,15 @@ public sealed class MavLinkMessageDecoder : IMavLinkMessageDecoder
     /// <inheritdoc />
     public bool TryDecode(MavLinkFrame frame, out MavLinkMessage? message)
     {
-        logger.LogTrace("MavLinkMessageDecoder - Decoding MAVLink frame: {SystemId}, {ComponentId}, {MessageId}", frame.SystemId, frame.ComponentId, frame.MessageId);
+        //logger.LogTrace("MavLinkMessageDecoder - Decoding MAVLink frame: {SystemId}, {ComponentId}, {MessageId}", frame.SystemId, frame.ComponentId, frame.MessageId);
         foreach (var decoder in decoders)
+        {
             if (decoder.TryDecode(frame, out message))
             {
-                logger.LogInformation("MavLinkMessageDecoder - Decoded MAVLink frame MessageId={MessageId} as {MessageType}", frame.MessageId, message?.GetType().Name);
+                logger.LogTrace("MavLinkMessageDecoder - Decoded MAVLink frame MessageId={MessageId} as {MessageType}", frame.MessageId, message?.GetType().Name);
                 return true;
             }
+        }
 
         logger.LogWarning(
             "MavLinkMessageDecoder - No decoder accepted MAVLink frame MessageId={MessageId}, SystemId={SystemId}, ComponentId={ComponentId}, PayloadLength={PayloadLength}",

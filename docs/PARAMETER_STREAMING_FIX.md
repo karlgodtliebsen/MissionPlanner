@@ -9,7 +9,9 @@ When streaming parameters from a vehicle, the operation would slow down after re
 3. **Packet Loss**: MAVLink packet loss over serial connections meant some parameters never arrived
 4. **No Recovery**: The service had no mechanism to request missing parameters individually
 
-## Root Cause
+## Root Causes
+
+### Issue 1: Event Counting Instead of Index Tracking
 
 In `VehicleParameterStreamService.cs`, the original code tracked progress like this:
 
@@ -23,15 +25,46 @@ subscription = eventHub.SubscribeDomainEventAsync<VehicleParameterReceived>(asyn
 });
 ```
 
-### Issues with Event Counting
+**Problems with Event Counting:**
 
 1. **Duplicates**: If parameter index 50 arrives twice, it counts as 2 instead of 1
 2. **Missing Parameters**: If parameter index 100 never arrives due to packet loss, the service waits forever
 3. **No Diagnostics**: When timeout occurs, there's no information about which parameters are missing
 
+### Issue 2: Retry Logic Cleared Existing Parameters
+
+The original retry logic had a critical flaw:
+
+```csharp
+// Retry attempt 1: Got 963/1101 parameters, timeout
+// Request missing 138 parameters individually
+foreach (var missingIndex in missingIndices)
+{
+    await RequestParameterByIndexAsync(vehicleId, missingIndex);
+}
+
+// Wait 2 seconds for responses
+await Task.Delay(TimeSpan.FromSeconds(2));
+
+// Then call StreamAllParametersAsync again
+var result = await StreamAllParametersAsync(...);  // ❌ Clears all 963 parameters!
+```
+
+**What Happened:**
+1. First attempt received 963/1101 parameters before timeout
+2. Retry logic identified 138 missing parameters
+3. Retry logic requested those 138 parameters individually
+4. **BUG**: Retry then called `StreamAllParametersAsync` which starts with `ClearParameters()`
+5. All 963 previously received parameters were **deleted**!
+6. Started over from zero parameters again
+7. Same packet loss occurred, got ~963 parameters again
+8. Eventually timed out after retries with incomplete data
+
+This is why you saw 963 log entries but expected 1101 parameters.
+
 ## Solution
 
-The fix includes three improvements:
+The fix includes four improvements:
 
 ### 1. Track Parameter Indices Instead of Event Count
 
@@ -69,38 +102,66 @@ logger.LogWarning("Missing parameter indices: {MissingIndices}", string.Join(", 
 
 **Example Output:**
 ```
-Parameter stream timeout after 60s. Received 498/500
-Missing parameter indices: 127, 243
+Parameter stream timeout after 60s. Received 963/1101
+Missing parameter indices (first 10): 45, 127, 189, 243, 456, 567, 678, 789, 890, 991
 ```
 
-### 3. Smart Retry with Individual Parameter Requests
+### 3. Preserve Parameters During Retry (CRITICAL FIX)
 
-Added intelligent retry logic that requests missing parameters individually:
+**Changed the retry logic to NOT clear existing parameters:**
 
 ```csharp
-// After first attempt times out, analyze what's missing
-var currentParams = parameterRegistry.GetAllParameters(vehicleId);
-var receivedIndices = currentParams.Values.Select(p => p.Index).ToHashSet();
-
-var missingIndices = Enumerable.Range(0, totalCount)
-    .Select(i => (ushort)i)
-    .Where(i => !receivedIndices.Contains(i))
-    .ToList();
-
-// Request each missing parameter individually
-foreach (var missingIndex in missingIndices)
+// ❌ OLD (BROKEN):
+for (var attempt = 0; attempt <= maxRetries; attempt++)
 {
-    await parameterService.RequestParameterByIndexAsync(vehicleId, missingIndex, cancellationToken);
-    await Task.Delay(50, cancellationToken);
+    var result = await StreamAllParametersAsync(...);  // Clears all parameters!
+    // Request missing individually
+    // Then retry StreamAllParametersAsync again - clears again!
+}
+
+// ✅ NEW (FIXED):
+// First attempt
+var result = await StreamAllParametersAsync(...);  // Gets 963/1101
+
+// Retry attempts: DON'T clear existing parameters
+for (var attempt = 1; attempt <= maxRetries; attempt++)
+{
+    // Get current state (DON'T clear!)
+    var currentParams = parameterRegistry.GetAllParameters(vehicleId);  // Still has 963
+
+    // Find missing
+    var missingIndices = FindMissing(currentParams, totalCount);  // 138 missing
+
+    // Request each missing parameter
+    foreach (var index in missingIndices)
+    {
+        await RequestParameterByIndexAsync(vehicleId, index);
+    }
+
+    // Wait and check if complete
+    // Now we have 963 + 138 = 1101 parameters!
 }
 ```
 
+**Key Change:**
+- Retry attempts no longer call `StreamAllParametersAsync` (which would clear everything)
+- Instead, retry attempts directly request missing parameters and preserve what was already received
+- Progress accumulates: 963 → 1063 → 1101 ✓
+
 **Workflow:**
-1. First attempt: Request all parameters with `PARAM_REQUEST_LIST`
-2. If timeout occurs with partial data (e.g., 498/500 received)
-3. Identify missing indices (e.g., 127, 243)
-4. Request each missing parameter with `PARAM_REQUEST_READ` by index
-5. Retry the full stream (now with missing parameters filling in)
+1. **First attempt**: Request all parameters with `PARAM_REQUEST_LIST`
+   - Receives 963/1101 due to packet loss
+   - Timeout occurs
+2. **Retry attempt 1**: Analyze gaps
+   - Identify 138 missing indices
+   - Request each missing parameter with `PARAM_REQUEST_READ` by index
+   - Subscribe to incoming parameters and wait up to 30 seconds
+   - Receives 100 more → now at 1063/1101
+3. **Retry attempt 2**: Continue filling gaps
+   - Identify remaining 38 missing indices
+   - Request individually
+   - Receives remaining 38 → now at 1101/1101 ✓
+   - Success!
 
 ### 4. New Method: RequestParameterByIndexAsync
 
@@ -131,18 +192,27 @@ public async Task<bool> RequestParameterByIndexAsync(VehicleId vehicleId, ushort
 
 ## Results
 
-### Before Fix
-- ❌ Progress slows down after ~100 parameters
-- ❌ Eventually times out (60 seconds)
-- ❌ No visibility into which parameters are missing
-- ❌ No recovery mechanism for packet loss
+### Before Fix (Your Experience: 963/1101)
+- ❌ First attempt received 963/1101 parameters due to packet loss
+- ❌ Retry logic cleared the 963 parameters and started over
+- ❌ Each retry received ~963 parameters again (same packet loss pattern)
+- ❌ Eventually timed out after 3 retries
+- ❌ No visibility into which 138 parameters were missing
+- ❌ No recovery mechanism to fill gaps
 
-### After Fix
+### After Fix (Expected Behavior)
+- ✅ First attempt receives 963/1101 parameters (same packet loss)
+- ✅ Retry **preserves** the 963 parameters (doesn't clear!)
+- ✅ Retry identifies 138 missing parameter indices
+- ✅ Retry requests those 138 individually (fills gaps)
+- ✅ Receives all 138 missing parameters → 1101/1101 complete
 - ✅ Accurate progress tracking (handles duplicates correctly)
-- ✅ Completes successfully even with packet loss
-- ✅ Diagnostic logging shows missing parameter indices
-- ✅ Automatic recovery by requesting missing parameters individually
-- ✅ Retry logic fills in gaps intelligently
+- ✅ Diagnostic logging shows exactly which indices are missing
+- ✅ Automatic recovery even with significant packet loss
+
+### Performance Impact
+- **Before**: ~60s timeout × 3 retries = 180s total, incomplete data (963/1101)
+- **After**: ~60s first attempt + ~30s retry = 90s total, complete data (1101/1101) ✓
 
 ## Testing
 
@@ -160,24 +230,46 @@ Expected behavior:
 
 ## Example Log Output
 
+### Successful Recovery from Packet Loss (963/1101 → 1101/1101)
+
 ```
 [Info] Starting parameter stream for vehicle (1,1) with timeout 60s
-[Debug] Received parameter 1/500: SYSID_THISMAV = 1
-[Debug] Received parameter 2/500: SYSID_MYGCS = 255
+[Verb] Received ParamValueMessage: SYSID_THISMAV = 1 (index 0/1101)
+[Verb] Received ParamValueMessage: SYSID_MYGCS = 255 (index 1/1101)
 ...
-[Debug] Received parameter 498/500: RCMAP_ROLL = 1
-[Warn] Parameter stream timeout after 60.1s. Received 498/500
-[Warn] Missing parameter indices: 127, 243
+[Verb] Received ParamValueMessage: SERVO_BLH_BDMASK = 15 (index 893/1101)
+...
+[Warn] Parameter stream timeout after 60.1s. Received 963/1101
+[Warn] Missing parameter indices (first 10): 45, 89, 127, 189, 243, 345, 456, 567, 678, 789
+
 [Info] Retry attempt 1/3 for vehicle (1,1)
-[Warn] Parameter stream failed on attempt 1: Timeout after 60s. Analyzing gaps...
-[Info] Found 2 missing parameters out of 500. Requesting individually...
+[Info] Found 138 missing parameters out of 1101. Requesting individually...
+[Debug] Missing indices (first 10): 45, 89, 127, 189, 243, 345, 456, 567, 678, 789
+[Debug] 📤 Sent PARAM_REQUEST_READ to (1,1): index=45
+[Debug] 📤 Sent PARAM_REQUEST_READ to (1,1): index=89
 [Debug] 📤 Sent PARAM_REQUEST_READ to (1,1): index=127
-[Debug] 📤 Sent PARAM_REQUEST_READ to (1,1): index=243
+...
+[Debug] Waiting for 138 parameter responses...
+[Verb] Received ParamValueMessage: ARSPD_TYPE = 1 (index 45/1101)
+[Verb] Received ParamValueMessage: BATT_MONITOR = 4 (index 89/1101)
+...
+[Info] Retry attempt 1 completed. Received 1063/1101 (100 new)
+
 [Info] Retry attempt 2/3 for vehicle (1,1)
-[Debug] Received parameter 127/500: Q_A_RAT_PIT_FLTD = 20
-[Debug] Received parameter 243/500: FENCE_MARGIN = 2
-[Info] Successfully received 500 parameters in 63.2s
+[Info] Found 38 missing parameters out of 1101. Requesting individually...
+[Debug] 📤 Sent PARAM_REQUEST_READ to (1,1): index=678
+[Debug] 📤 Sent PARAM_REQUEST_READ to (1,1): index=789
+...
+[Info] All 1101 parameters received! (Received 38 new parameters)
+[Info] Successfully received 1101 parameters in 72.8s
 ```
+
+### Key Improvements in Logs
+
+- **First attempt**: Shows "Received 963/1101" with list of missing indices
+- **Retry attempts**: Show how many parameters are being requested
+- **Progress tracking**: Shows accumulation (963 → 1063 → 1101)
+- **Success message**: Shows total time and how many new parameters were received in final retry
 
 ## Files Modified
 

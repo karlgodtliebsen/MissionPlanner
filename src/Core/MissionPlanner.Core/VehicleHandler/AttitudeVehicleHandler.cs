@@ -19,7 +19,11 @@ public sealed class AttitudeVehicleHandler(
     {
         var vehicleId = new VehicleId(message.SystemId, message.ComponentId);
 
-        logger.LogDebug("Handling attitude message from vehicle {VehicleId} {@Message}", vehicleId, message);
+        if (logger.IsEnabled(LogLevel.Trace))
+        {
+            logger.LogTrace("Handling attitude message from vehicle {VehicleId} {@Message}", vehicleId, message);
+        }
+
         var vehicle = vehicleRegistry.GetRequired(vehicleId);
         if (vehicle is null)
         {

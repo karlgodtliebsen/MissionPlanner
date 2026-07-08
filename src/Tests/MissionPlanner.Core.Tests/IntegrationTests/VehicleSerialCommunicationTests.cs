@@ -1,12 +1,14 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.DomainEvents;
+using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Library;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Client;
+using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.MavLink.Services;
@@ -22,8 +24,11 @@ namespace MissionPlanner.Core.Tests.IntegrationTests;
 public class VehicleSerialCommunicationTests
 {
     private readonly ITestOutputHelper output;
-
     private readonly IServiceProvider serviceProvider;
+
+    private readonly ILogger logger;
+    private readonly IMavLinkFrameParser frameParser;
+    private readonly IMavLinkMessageDecoder messageDecoder;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VehicleTests"/> class.
@@ -37,6 +42,9 @@ public class VehicleSerialCommunicationTests
 
         serviceProvider = services.BuildServiceProvider();
         serviceProvider.UseTestConfiguration();
+        logger = serviceProvider.GetRequiredService<ILogger<VehicleSerialCommunicationTests>>();
+        frameParser = serviceProvider.GetRequiredService<IMavLinkFrameParser>();
+        messageDecoder = serviceProvider.GetRequiredService<IMavLinkMessageDecoder>();
     }
 
     /// <summary>
@@ -45,12 +53,12 @@ public class VehicleSerialCommunicationTests
     [Fact]
     public async Task Should_Establish_Serial_Communication_With_Vehicle()
     {
+        logger.LogInformation("New Test: Should_Establish_Serial_Communication_With_Vehicle");
         var serialPortDiscoveryService = serviceProvider.GetRequiredService<ISerialPortDiscoveryService>();
         var availablePorts = serialPortDiscoveryService.GetAvailablePorts();
         Assert.True(availablePorts.Any(), "Connect a ArduPilot Vehicle");
         TaskCompletionSource ts = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        var logger = serviceProvider.GetRequiredService<ILogger<VehicleTests>>();
         var dateTimeProvider = serviceProvider.GetRequiredService<IDateTimeProvider>();
         var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
         var serviceFactory = serviceProvider.GetRequiredService<IServiceFactory>();
@@ -59,7 +67,7 @@ public class VehicleSerialCommunicationTests
 
         var counter = 0;
         var vehicleRegistered = false;
-        using var subscription = eventHub.SubscribeAsync<HeartbeatMessage>(MavLinkEventTopics.ReceivedMessage, (HeartbeatMessage evt, CancellationToken ct) =>
+        using var subscription = eventHub.SubscribeAsync<HeartbeatMessage>(MavLinkEventTopics.NewMessage, (HeartbeatMessage evt, CancellationToken ct) =>
         {
             logger.LogInformation("Test-Received Heartbeat Message {counter} from Vehicle: {VehicleId}", counter, evt.SystemId);
             Assert.True(vehicleRegistered);
@@ -113,13 +121,13 @@ public class VehicleSerialCommunicationTests
     [Fact]
     public async Task Should_Retrieve_Parameters()
     {
+        logger.LogInformation("New Test: Should_Retrieve_Parameters");
         var ct = new CancellationTokenSource(TimeSpan.FromSeconds(60)).Token;
         var ts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var serialPortDiscoveryService = serviceProvider.GetRequiredService<ISerialPortDiscoveryService>();
         var availablePorts = serialPortDiscoveryService.GetAvailablePorts();
         Assert.True(availablePorts.Any(), "Connect a ArduPilot Vehicle");
 
-        var logger = serviceProvider.GetRequiredService<ILogger<VehicleTests>>();
         var serviceFactory = serviceProvider.GetRequiredService<IServiceFactory>();
         var domainEventHub = serviceProvider.GetRequiredService<IDomainEventHub>();
 
@@ -183,13 +191,14 @@ public class VehicleSerialCommunicationTests
     [Fact]
     public async Task Should_Retrieve_Parameters_Using_Streaming()
     {
+        logger.LogInformation("New Test: Should_Retrieve_Parameters_Using_Streaming");
+
         var ct = new CancellationTokenSource(TimeSpan.FromSeconds(60)).Token;
         var ts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var serialPortDiscoveryService = serviceProvider.GetRequiredService<ISerialPortDiscoveryService>();
         var availablePorts = serialPortDiscoveryService.GetAvailablePorts();
         Assert.True(availablePorts.Any(), "Connect a ArduPilot Vehicle");
 
-        var logger = serviceProvider.GetRequiredService<ILogger<VehicleTests>>();
         var serviceFactory = serviceProvider.GetRequiredService<IServiceFactory>();
         var domainEventHub = serviceProvider.GetRequiredService<IDomainEventHub>();
 
@@ -262,6 +271,359 @@ public class VehicleSerialCommunicationTests
             logger.LogInformation("{ParameterName} = {ParameterValue}", vehicleParameter.Key, vehicleParameter.Value.ToString());
         }
     }
+
+
+    [Fact]
+    public async Task Diagnose_Parameter_Indices()
+    {
+        logger.LogInformation("New Test: Diagnose_Parameter_Indices");
+        var ct = new CancellationTokenSource(TimeSpan.FromSeconds(60)).Token;
+        var ts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var serialPortDiscoveryService = serviceProvider.GetRequiredService<ISerialPortDiscoveryService>();
+        var availablePorts = serialPortDiscoveryService.GetAvailablePorts();
+        Assert.True(availablePorts.Any(), "Connect a ArduPilot Vehicle");
+
+        var serviceFactory = serviceProvider.GetRequiredService<IServiceFactory>();
+        var domainEventHub = serviceProvider.GetRequiredService<IDomainEventHub>();
+
+        var transportOptions = serviceFactory.Create<IOptions<TransportEndpoint>>();
+        transportOptions.Value.Protocol = "serial";
+        var portName = availablePorts.First();
+        var baudRate = 115200;
+        var vehicleRegistered = false;
+        await using var vehicleConnectionService = serviceProvider.GetRequiredService<IVehicleConnectionService>();
+
+        using var eventSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleConnected>((VehicleConnected evt, CancellationToken ct) =>
+        {
+            logger.LogInformation("Test-Received VehicleConnected Message With Vehicle: {VehicleId}", evt.VehicleId);
+            vehicleRegistered = true;
+            ts.TrySetResult();
+            return Task.CompletedTask;
+        });
+        var connection = await vehicleConnectionService.ConnectSerialAsync(portName, baudRate, ct);
+        DomainException.ThrowIfNull(connection);
+
+        // 3. CRITICAL: Wait for vehicle to be ready
+        await Task.Delay(1500, ct); // 1.5 seconds
+
+        //If timeout happens, then the vehicle is not registered due to missing HeartbeatMessage, but it may be connected and receiving AttitudeMessage.
+        await ts.Task.WaitAsync(TimeSpan.FromSeconds(30), ct);
+
+        Assert.True(vehicleRegistered);
+        DomainException.ThrowIfNull(connection.VehicleId);
+        DomainException.ThrowIfNull(connection.ConnectionSession);
+
+        var vehicleId = connection.VehicleId.Value;
+        var parameterRegistry = serviceProvider.GetRequiredService<IVehicleParameterRegistry>();
+
+        CancellationTokenSource ctsProgress = new();
+
+        var session = serviceProvider.GetRequiredService<IVehicleConnectionSession>();
+        var vehicleParameterStreamService = session.ParameterStreamService;
+        IList<VehicleParameter> parameters = [];
+        var totalCount = 0;
+
+        IProgress<ParameterStreamProgress>? progress = new Progress<ParameterStreamProgress>(p =>
+        {
+            totalCount = p.TotalCount;
+            var progressCounter = (double)p.ReceivedCount / p.TotalCount;
+            var progressMessage = $"Loading parameters... {p.ReceivedCount}/{p.TotalCount}";
+            logger.LogDebug("{msg} {count}", progressMessage, progressCounter);
+        });
+        var result = await vehicleParameterStreamService.StreamAllParametersWithRetryAsync(vehicleId, progress, 3, cancellationToken: ctsProgress.Token);
+
+        if (result.Success)
+        {
+            foreach (var parameter in result.Parameters.Values)
+            {
+                parameters.Add(parameter);
+            }
+        }
+        else
+        {
+            throw new DomainException("Failed to retrieve parameters before Timeout");
+        }
+
+
+        // Let parameters stream in
+        await Task.Delay(TimeSpan.FromSeconds(10), ct);
+
+        var allParams = parameterRegistry.GetAllParameters(vehicleId);
+        totalCount = parameterRegistry.GetParameterCount(vehicleId) ?? 0;
+
+        logger.LogDebug($"Total count reported: {totalCount}");
+        logger.LogDebug($"Parameters received: {allParams.Count}");
+
+        // Analyze indices
+        var indices = allParams.Values.Select(p => p.Index).OrderBy(i => i).ToList();
+
+        logger.LogDebug($"\nIndices received: {indices.Count}");
+        logger.LogDebug($"Min index: {indices.Min()}");
+        logger.LogDebug($"Max index: {indices.Max()}");
+
+        // Check for index 65535 (invalid index)
+        var invalidIndices = allParams.Values.Where(p => p.Index == 65535).ToList();
+        logger.LogDebug($"\nParameters with index 65535 (invalid): {invalidIndices.Count}");
+        foreach (var p in invalidIndices.Take(10))
+        {
+            logger.LogDebug($"  {p.Name} = {p.Value}");
+        }
+
+        // Check for duplicates
+        var duplicates = indices.GroupBy(i => i).Where(g => g.Count() > 1).ToList();
+        logger.LogDebug($"\nDuplicate indices: {duplicates.Count}");
+        foreach (var dup in duplicates.Take(10))
+        {
+            logger.LogDebug($"  Index {dup.Key}: {dup.Count()} times");
+        }
+
+        // Check for gaps
+        var validIndices = indices.Where(i => i != 65535).ToHashSet();
+        var missing = Enumerable.Range(0, totalCount)
+            .Select(i => (ushort)i)
+            .Where(i => !validIndices.Contains(i))
+            .ToList();
+
+        logger.LogDebug($"\nMissing indices (excluding 65535): {missing.Count}");
+        logger.LogDebug($"First 20 missing: {string.Join(", ", missing.Take(20))}");
+
+        // Show first 20 parameters with their indices
+        logger.LogDebug($"\nFirst 20 parameters:");
+        foreach (var param in allParams.Values.OrderBy(p => p.Index).Take(20))
+        {
+            logger.LogDebug($"  [{param.Index:D4}] {param.Name} = {param.Value}");
+        }
+
+        // Show last 20 parameters
+        logger.LogDebug($"\nLast 20 parameters:");
+        foreach (var param in allParams.Values.OrderBy(p => p.Index).TakeLast(20))
+        {
+            logger.LogDebug($"  [{param.Index:D4}] {param.Name} = {param.Value}");
+        }
+    }
+
+    [Fact]
+    public async Task Diagnose_Parameter_Reading()
+    {
+        logger.LogInformation("New Test: Diagnose_Parameter_Reading");
+        var ts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var serialPortDiscoveryService = serviceProvider.GetRequiredService<ISerialPortDiscoveryService>();
+        var availablePorts = serialPortDiscoveryService.GetAvailablePorts();
+        Assert.True(availablePorts.Any(), "Connect a ArduPilot Vehicle");
+
+        var encoder = serviceProvider.GetRequiredService<IMavLinkParameterEncoder>();
+
+        var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
+        var serviceFactory = serviceProvider.GetRequiredService<IServiceFactory>();
+        var dateTimeProvider = serviceProvider.GetRequiredService<IDateTimeProvider>();
+        var transportOptions = serviceFactory.Create<IOptions<TransportEndpoint>>();
+        transportOptions.Value.Protocol = "serial";
+        var portName = availablePorts.First();
+        var baudRate = 115200;
+
+        var linkedCts = new CancellationTokenSource();
+        var transport = domainFactory.Create<ISerialMavLinkTransport, string, int>(portName, baudRate);
+        var client = domainFactory.Create<IMavLinkClient, ISerialMavLinkTransport, IOptions<TransportEndpoint>, IDateTimeProvider>(transport, transportOptions, dateTimeProvider);
+        await transport.ConnectAsync(TestContext.Current.CancellationToken);
+
+        var vehicleId = await WaitForVehicleHeartbeatAsync(client, transport, linkedCts.Token);
+
+        //Wait for vehicle to be ready
+        await Task.Delay(1500, linkedCts.Token); // 1.5 seconds
+
+        DomainException.ThrowIfNull(vehicleId);
+
+        _ = Task.Run(async () => await ReceiveLoopAsync(async (MavLinkDataReceived received, CancellationToken c) =>
+        {
+            logger.LogDebug("Test - Received MAVLink data: {Data}", received);
+            await OnDataReceivedAsync(received, c);
+        }, transport, dateTimeProvider, linkedCts.Token), linkedCts.Token);
+
+
+        var packet = encoder.EncodeParamRequestList(vehicleId.Value.SystemId, vehicleId.Value.ComponentId);
+
+        var endpoint = new TransportEndPoint("mavlink", "unknown", 0);
+
+        await client.SendAsync(packet, endpoint, linkedCts.Token);
+
+        logger.LogInformation("📤 Test-Sent PARAM_REQUEST_LIST to {VehicleId}", vehicleId);
+
+        await Task.Delay(TimeSpan.FromSeconds(30), linkedCts.Token);
+    }
+
+    private async Task OnDataReceivedAsync(MavLinkDataReceived received, CancellationToken cancellationToken)
+    {
+        var parsedFrames = frameParser.Parse(received.Data.Span, received.RemoteEndpoint, received.ReceivedAt);
+        foreach (var frame in parsedFrames)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            if (messageDecoder.TryDecode(frame, out var message) && message is not null)
+            {
+                // MessageId=22 as ParamValueMessage
+                if (frame.MessageId == 22 && message is ParamValueMessage paramValueMessage)
+                {
+                    logger.LogInformation("Test-MavLinkConnection - Received PARAM_VALUE: {ParamId} = {ParamValue} (Index {ParamIndex}/{ParamCount})", paramValueMessage.ParamId, paramValueMessage.ParamValue, paramValueMessage.ParamIndex, paramValueMessage.ParamCount);
+                }
+            }
+            else
+            {
+                logger.LogError("Test-MavLinkConnection - Failed to decode message from frame {frame}", frame.MessageId);
+            }
+        }
+    }
+
+    private async Task ReceiveLoopAsync(Func<MavLinkDataReceived, CancellationToken, Task>? dataReceived, IMavLinkTransport transport, IDateTimeProvider dateTimeProvider, CancellationToken cancellationToken)
+    {
+        var receiveBufferSize = 512;
+        var buffer = new byte[receiveBufferSize];
+
+        try
+        {
+            while (!cancellationToken.IsCancellationRequested && transport.IsConnected)
+            {
+                var result = await transport.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+
+                if (result.BytesRead <= 0)
+                {
+                    continue;
+                }
+
+                //logger.LogTrace("MavLinkClient - Received {BytesRead} bytes from MAVLink transport.", result.BytesRead);
+                var copy = new byte[result.BytesRead];
+                buffer.AsMemory(0, result.BytesRead).CopyTo(copy);
+
+                var received = new MavLinkDataReceived(copy, result.RemoteEndpoint, dateTimeProvider.UtcNow);
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    return;
+                }
+
+                var handler = dataReceived;
+
+                if (handler is not null)
+                {
+                    await handler(received, cancellationToken).ConfigureAwait(false);
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Normal shutdown path.
+        }
+        catch (ObjectDisposedException)
+        {
+            // Normal when transport is closed while blocked in ReadAsync().
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "MavLinkClient - Unexpected exception in ReceiveLoop.");
+            throw;
+        }
+        finally
+        {
+            await transport.DisconnectAsync(CancellationToken.None).ConfigureAwait(false);
+            logger.LogTrace("MavLinkClient - MAVLink client stopped.");
+        }
+    }
+
+    private async Task<HeartbeatMessage?> ReceiveHeartbeatLoopAsync(IMavLinkTransport transport, CancellationToken cancellationToken)
+    {
+        var receiveBufferSize = 512;
+        var buffer = new byte[receiveBufferSize];
+        var dateTimeProvider = serviceProvider.GetRequiredService<IDateTimeProvider>();
+
+        try
+        {
+            while (!cancellationToken.IsCancellationRequested && transport.IsConnected)
+            {
+                var result = await transport.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+
+                if (result.BytesRead <= 0)
+                {
+                    continue;
+                }
+
+                //logger.LogTrace("Test - MavLinkClient - Waiting for Heartbeat -  Received {BytesRead} bytes from MAVLink transport.", result.BytesRead);
+                var copy = new byte[result.BytesRead];
+                buffer.AsMemory(0, result.BytesRead).CopyTo(copy);
+
+                var received = new MavLinkDataReceived(copy, result.RemoteEndpoint, dateTimeProvider.UtcNow);
+                var parsedFrames = frameParser.Parse(received.Data.Span, received.RemoteEndpoint, received.ReceivedAt);
+                foreach (var frame in parsedFrames)
+                {
+                    //logger.LogTrace("Test - MavLinkClient - Waiting for Heartbeat - MavLinkConnection - Processing frame {frame}", frame.MessageId);
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return null;
+                    }
+
+                    if (messageDecoder.TryDecode(frame, out var message) && message is not null)
+                    {
+                        logger.LogTrace("Test - MavLinkClient - Waiting for Heartbeat - MavLinkConnection - Writing Decoded Message { MessageType}  {frame}", message.GetType().Name, frame.MessageId);
+
+                        if (message is HeartbeatMessage heartbeat)
+                        {
+                            return heartbeat;
+                        }
+                    }
+                    else
+                    {
+                        logger.LogError(" Test-  MavLinkClient - Waiting for Heartbeat - MavLinkConnection - Failed to decode message from frame {frame}", frame.MessageId);
+                    }
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Normal shutdown path.
+        }
+        catch (ObjectDisposedException)
+        {
+            // Normal when transport is closed while blocked in ReadAsync().
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "MavLinkClient - Unexpected exception in ReceiveLoop.");
+            throw;
+        }
+        finally
+        {
+            //await transport.DisconnectAsync(CancellationToken.None).ConfigureAwait(false);
+            logger.LogTrace("MavLinkClient - MAVLink client stopped.");
+        }
+
+        return null;
+    }
+
+    private async Task<VehicleId?> WaitForVehicleHeartbeatAsync(IMavLinkClient client, IMavLinkTransport transport, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var heartbeat = await ReceiveHeartbeatLoopAsync(transport, cancellationToken);
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return new VehicleId(0, 0);
+            }
+
+            if (heartbeat is not null)
+            {
+                return new VehicleId(heartbeat.SystemId, heartbeat.ComponentId);
+            }
+
+            logger.LogWarning(" Test - Timeout waiting for vehicle heartbeat");
+            return new VehicleId(0, 0);
+        }
+        catch (OperationCanceledException)
+        {
+            logger.LogWarning("Test - Cancelled while waiting for vehicle heartbeat");
+            return null;
+        }
+    }
+
 
     private static async Task EventuallyAsync(Action assertion, TimeSpan timeout, CancellationToken cancellationToken)
     {

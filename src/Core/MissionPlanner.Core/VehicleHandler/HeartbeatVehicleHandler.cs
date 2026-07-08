@@ -16,7 +16,11 @@ public sealed class HeartbeatVehicleHandler(IVehicleRegistry vehicleRegistry, ID
     /// <inheritdoc />
     public async Task Handle(HeartbeatMessage message, CancellationToken cancellationToken)
     {
-        logger.LogDebug("HeartbeatVehicleHandler - Handling heartbeat message from vehicle {VehicleId} {@Message}", new VehicleId(message.SystemId, message.ComponentId), message);
+        if (logger.IsEnabled(LogLevel.Trace))
+        {
+            logger.LogTrace("HeartbeatVehicleHandler - Handling heartbeat message from vehicle {VehicleId} {@Message}", new VehicleId(message.SystemId, message.ComponentId), message);
+        }
+
         var vehicleId = new VehicleId(message.SystemId, message.ComponentId);
 
         var registryResult = vehicleRegistry.RegisterOrUpdateHeartbeat(

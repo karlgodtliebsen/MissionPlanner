@@ -252,6 +252,10 @@ public class EventHub(ILogger<EventHub> logger) : IEventHub
                 }
             }
         }
+        else
+        {
+            logger.LogWarning("genericDataSubscribers Found No Subscribers for event {EventName} with data type {DataType}", @event, data.GetType().Name);
+        }
 
         BroadCastEvent(key);
     }
@@ -278,6 +282,10 @@ public class EventHub(ILogger<EventHub> logger) : IEventHub
                 }
             }
         }
+        else
+        {
+            logger.LogWarning("genericDataSubscribers Found No Subscribers for event {EventName} with data type {DataType}", @event, data.GetType().Name);
+        }
 
         BroadCastEvent(key);
     }
@@ -298,6 +306,10 @@ public class EventHub(ILogger<EventHub> logger) : IEventHub
                 action.Invoke();
             }
         }
+        else
+        {
+            logger.LogWarning("subscribers Found No Subscribers for event {EventName}", @event);
+        }
 
         BroadCastEvent(@event);
     }
@@ -317,6 +329,10 @@ public class EventHub(ILogger<EventHub> logger) : IEventHub
             {
                 await action.Invoke(cancellationToken);
             }
+        }
+        else
+        {
+            logger.LogWarning("asyncSubscribers Found No Subscribers for event {EventName}", @event);
         }
 
         BroadCastEvent(@event);
@@ -374,6 +390,10 @@ public class EventHub(ILogger<EventHub> logger) : IEventHub
                     logger.LogError(ex, "Action invocation failed");
                 }
             }
+        }
+        else
+        {
+            logger.LogWarning("asyncGenericDataSubscribers Found No Subscribers for event named {EventName} with data type {DataType}", eventName, data.GetType().Name);
         }
 
         BroadCastEvent(@event);

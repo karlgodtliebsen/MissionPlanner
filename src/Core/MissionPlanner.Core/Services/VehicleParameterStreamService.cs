@@ -153,78 +153,199 @@ public sealed class VehicleParameterStreamService(
     public async Task<ParameterStreamResult> StreamAllParametersWithRetryAsync(VehicleId vehicleId, IProgress<ParameterStreamProgress>? progress = null, int maxRetries = 3, TimeSpan? timeout = null,
         CancellationToken cancellationToken = default)
     {
-        var actualTimeout = timeout ?? DefaultTimeout;
-        var retryDelay = TimeSpan.FromSeconds(2);
+        // Use shorter timeout like original MissionPlanner (4-5 seconds per attempt)
+        var perAttemptTimeout = TimeSpan.FromSeconds(5);
+        var overallStopwatch = Stopwatch.StartNew();
 
-        HashSet<ushort>? receivedIndices = null;
-        ushort totalCount = 0;
+        // First attempt: Request all parameters
+        var result = await StreamAllParametersAsync(vehicleId, progress, null, perAttemptTimeout, cancellationToken);
 
-        for (var attempt = 0; attempt <= maxRetries; attempt++)
+        if (result.Success)
+        {
+            return result;
+        }
+
+        // Retry attempts: Use original MissionPlanner's proven strategy
+        for (var attempt = 1; attempt <= maxRetries; attempt++)
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                return ParameterStreamResult.CreateFailure($"Cancelled after {maxRetries + 1} attempts", TimeSpan.Zero);
+                return ParameterStreamResult.CreateFailure("Operation cancelled", overallStopwatch.Elapsed);
             }
 
-            if (attempt > 0)
+            logger.LogInformation("Retry attempt {Attempt}/{MaxRetries} for vehicle {VehicleId}", attempt, maxRetries, vehicleId);
+
+            // Get the current state from the registry (DON'T clear it!)
+            var currentParams = parameterRegistry.GetAllParameters(vehicleId);
+            var totalCount = parameterRegistry.GetParameterCount(vehicleId) ?? 0;
+
+            if (totalCount == 0 || currentParams.Count == 0)
             {
-                logger.LogInformation("Retry attempt {Attempt}/{MaxRetries} for vehicle {VehicleId}", attempt, maxRetries, vehicleId);
-                await Task.Delay(retryDelay, cancellationToken);
-            }
+                // No parameters received at all, retry full request
+                logger.LogWarning("No parameters received yet. Retrying full request...");
+                await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
+                result = await StreamAllParametersAsync(vehicleId, progress, null, perAttemptTimeout, cancellationToken);
 
-            // For first attempt, request all parameters
-            // For subsequent attempts, request only missing parameters
-            var result = await StreamAllParametersAsync(vehicleId, progress, null, actualTimeout, cancellationToken);
-
-            if (result.Success)
-            {
-                return result;
-            }
-
-            // If we have partial data, try to request missing parameters individually
-            if (attempt < maxRetries)
-            {
-                logger.LogWarning("Parameter stream failed on attempt {Attempt}: {Error}. Analyzing gaps...", attempt + 1, result.ErrorMessage);
-
-                // Get the current state from the registry
-                var currentParams = parameterRegistry.GetAllParameters(vehicleId);
-                totalCount = parameterRegistry.GetParameterCount(vehicleId) ?? 0;
-
-                if (totalCount > 0 && currentParams.Count > 0 && currentParams.Count < totalCount)
+                if (result.Success)
                 {
-                    // Build set of received indices
-                    receivedIndices = currentParams.Values.Select(p => p.Index).ToHashSet();
+                    return result;
+                }
 
-                    // Find missing indices
-                    var missingIndices = Enumerable.Range(0, totalCount)
-                        .Select(i => (ushort)i)
-                        .Where(i => !receivedIndices.Contains(i))
-                        .ToList();
+                continue;
+            }
 
-                    logger.LogInformation("Found {Missing} missing parameters out of {Total}. Requesting individually...",
-                        missingIndices.Count, totalCount);
+            // Build set of received indices
+            var receivedIndices = currentParams.Values.Select(p => p.Index).ToHashSet();
 
-                    // Request each missing parameter individually
-                    foreach (var missingIndex in missingIndices)
+            // Find missing indices
+            var missingIndices = Enumerable.Range(0, totalCount)
+                .Select(i => (ushort)i)
+                .Where(i => !receivedIndices.Contains(i))
+                .ToList();
+
+            if (missingIndices.Count == 0)
+            {
+                // All parameters received!
+                logger.LogInformation("All {Total} parameters received after retry", totalCount);
+                return ParameterStreamResult.CreateSuccess(currentParams, totalCount, overallStopwatch.Elapsed);
+            }
+
+            var percentReceived = currentParams.Count * 100 / totalCount;
+            logger.LogInformation("Received {Received}/{Total} ({Percent}%). Missing: {Missing}",
+                currentParams.Count, totalCount, percentReceived, missingIndices.Count);
+
+            // Original MissionPlanner strategy:
+            // If less than 75% received and retry < 2: Re-send full PARAM_REQUEST_LIST
+            // Otherwise: Request missing parameters individually (10-20 at a time)
+            if (percentReceived < 75 && attempt <= 2)
+            {
+                logger.LogInformation("Less than 75% received. Re-requesting full parameter list...");
+                await Task.Delay(TimeSpan.FromMilliseconds(500), cancellationToken);
+
+                // Don't clear existing parameters - just send another PARAM_REQUEST_LIST
+                // The vehicle will resend all params, and duplicates will be handled by the registry
+                var requestSent = await parameterService.RequestParameterListAsync(vehicleId, cancellationToken);
+                if (!requestSent)
+                {
+                    logger.LogWarning("Failed to send PARAM_REQUEST_LIST");
+                    continue;
+                }
+
+                // Wait for parameters with short timeout (5 seconds)
+                var retryStopwatch = Stopwatch.StartNew();
+                var retryTimeout = TimeSpan.FromSeconds(5);
+
+                while (retryStopwatch.Elapsed < retryTimeout && !cancellationToken.IsCancellationRequested)
+                {
+                    await Task.Delay(100, cancellationToken);
+
+                    currentParams = parameterRegistry.GetAllParameters(vehicleId);
+                    if (currentParams.Count >= totalCount)
                     {
-                        if (cancellationToken.IsCancellationRequested)
-                            break;
+                        logger.LogInformation("All {Total} parameters received after full list retry!", totalCount);
+                        return ParameterStreamResult.CreateSuccess(currentParams, totalCount, overallStopwatch.Elapsed);
+                    }
+                }
 
-                        await parameterService.RequestParameterByIndexAsync(vehicleId, missingIndex, cancellationToken);
-                        await Task.Delay(50, cancellationToken); // Small delay between requests
+                logger.LogInformation("After full list retry: {Received}/{Total}",
+                    currentParams.Count, totalCount);
+                continue;
+            }
+
+            // Request missing parameters individually, 10-20 at a time
+            logger.LogInformation("Requesting missing parameters individually (10-20 at a time)...");
+
+            var firstMissing = string.Join(", ", missingIndices.Take(10));
+            logger.LogDebug("Missing indices (first 10): {Indices}", firstMissing);
+
+            var batchSize = 20;
+            var receivedBefore = receivedIndices.Count;
+
+            // Request missing parameters in small batches (like original MissionPlanner's "10 by 10" strategy)
+            var batchCount = 0;
+            for (var batchStart = 0; batchStart < missingIndices.Count; batchStart += batchSize)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                var batchIndices = missingIndices.Skip(batchStart).Take(batchSize).ToList();
+                batchCount++;
+
+                logger.LogDebug("Requesting batch {Batch}: {Count} parameters (indices {Start} to {End})",
+                    batchCount, batchIndices.Count, batchIndices.First(), batchIndices.Last());
+
+                // Send all requests in this batch quickly
+                foreach (var missingIndex in batchIndices)
+                {
+                    await parameterService.RequestParameterByIndexAsync(vehicleId, missingIndex, cancellationToken);
+                }
+
+                // Wait briefly for this batch to arrive
+                var batchStopwatch = Stopwatch.StartNew();
+                var batchTimeout = TimeSpan.FromSeconds(2);
+                var batchStartCount = parameterRegistry.GetAllParameters(vehicleId).Count;
+
+                while (batchStopwatch.Elapsed < batchTimeout && !cancellationToken.IsCancellationRequested)
+                {
+                    await Task.Delay(50, cancellationToken);
+
+                    currentParams = parameterRegistry.GetAllParameters(vehicleId);
+
+                    // Report progress
+                    if (progress != null && totalCount > 0)
+                    {
+                        var percentComplete = (int)(currentParams.Count / (double)totalCount * 100);
+                        progress.Report(new ParameterStreamProgress(
+                            currentParams.Count,
+                            totalCount,
+                            percentComplete,
+                            currentParams.Count >= totalCount));
                     }
 
-                    // Give some time for responses to arrive
-                    await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
+                    // Check if all parameters received
+                    if (currentParams.Count >= totalCount)
+                    {
+                        var totalReceived = currentParams.Count - receivedBefore;
+                        logger.LogInformation("All {Total} parameters received! (Received {New} new)", totalCount, totalReceived);
+                        return ParameterStreamResult.CreateSuccess(currentParams, totalCount, overallStopwatch.Elapsed);
+                    }
+
+                    // Check if this batch is done (received some new params)
+                    var batchReceived = currentParams.Count - batchStartCount;
+                    if (batchReceived >= batchIndices.Count)
+                    {
+                        logger.LogDebug("Batch {Batch} complete: received {Count} parameters", batchCount, batchReceived);
+                        break;
+                    }
                 }
+
+                var currentReceived = parameterRegistry.GetAllParameters(vehicleId).Count;
+                var batchNewParams = currentReceived - batchStartCount;
+                logger.LogDebug("Batch {Batch} timeout: received {New} of {Requested} parameters. Total: {Total}/{Expected}",
+                    batchCount, batchNewParams, batchIndices.Count, currentReceived, totalCount);
             }
-            else
+
+            // Log progress after this retry attempt
+            var finalReceivedCount = parameterRegistry.GetAllParameters(vehicleId).Count;
+            var newInThisAttempt = finalReceivedCount - receivedBefore;
+            logger.LogInformation("Retry attempt {Attempt} completed. Received {Received}/{Total} ({New} new)",
+                attempt, finalReceivedCount, totalCount, newInThisAttempt);
+
+            // If this was the last attempt, check if we got everything
+            if (attempt >= maxRetries)
             {
-                logger.LogError("Parameter stream failed after {MaxRetries} attempts: {Error}", maxRetries + 1, result.ErrorMessage);
-                return result;
+                currentParams = parameterRegistry.GetAllParameters(vehicleId);
+                return currentParams.Count >= totalCount
+                    ? ParameterStreamResult.CreateSuccess(currentParams, totalCount, overallStopwatch.Elapsed)
+                    : ParameterStreamResult.CreateFailure($"Incomplete after {maxRetries} retries. Received {currentParams.Count}/{totalCount} parameters.", overallStopwatch.Elapsed);
             }
         }
 
-        return ParameterStreamResult.CreateFailure($"Failed after {maxRetries + 1} attempts", TimeSpan.Zero);
+        var finalParams = parameterRegistry.GetAllParameters(vehicleId);
+        var finalCount = parameterRegistry.GetParameterCount(vehicleId) ?? 0;
+
+        return ParameterStreamResult.CreateFailure($"Failed after {maxRetries} retries. Received {finalParams.Count}/{finalCount} parameters.", overallStopwatch.Elapsed);
     }
 }
