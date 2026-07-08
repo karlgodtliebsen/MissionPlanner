@@ -4,12 +4,9 @@
                     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                     xmlns:vm="clr-namespace:MissionPlanner.App.Views.Help"
                     xmlns:exit="clr-namespace:MissionPlanner.App.Views.Exit"
-                    x:Class="MissionPlanner.App.Views.Help.HelpView"
+                    x:Class="MissionPlanner.App.Views.Exit.ExitView"
                     x:DataType="exit:ExitViewModel">
 
-    <Label Text="Help"
-           FontSize="18"
-           HorizontalOptions="Center"
-           VerticalOptions="Center" />
+
 
 </uranium:UraniumContentPage>

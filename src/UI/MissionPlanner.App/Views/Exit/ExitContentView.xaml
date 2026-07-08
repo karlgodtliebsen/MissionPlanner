@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                     xmlns:exit="clr-namespace:MissionPlanner.App.Views.Exit"
+                     x:Class="MissionPlanner.App.Views.Exit.ExitContentView"
+                     x:DataType="exit:ExitViewModel" Margin="0,75,0,75">
+
+    <Label Text="Do You Want to Exit MissionPlanner?"
+           FontSize="20"
+           HorizontalOptions="Center"
+           VerticalOptions="Center" />
+
+</ContentView>

@@ -9,7 +9,9 @@
 
 
 
-    <HorizontalStackLayout Grid.Row="1">
+    <HorizontalStackLayout 
+                           HorizontalOptions="Fill"
+                           VerticalOptions="Fill">
 
         <material:TabView x:Name="TabView" TabHeaderItemColumnWidth="*">
 

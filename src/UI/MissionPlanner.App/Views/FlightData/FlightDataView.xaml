@@ -6,13 +6,11 @@
                     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                     x:Class="MissionPlanner.App.Views.FlightData.FlightDataView"
-                    x:DataType="flightData:FlightDataViewModel">
+                    x:DataType="flightData:FlightDataViewModel"
+                    
+                    >
 
-    <!--<Setter Property="BorderWidth" Value="0,0,0,3" />
-    RowDefinitions="Auto,*"
-    -->
-
-    <Grid  ColumnDefinitions="Auto,5,*" ColumnSpacing="0">
+    <Grid  ColumnDefinitions="Auto,5,*" ColumnSpacing="0" Padding="5,0,0,0" Margin="0,0,0,0">
 
         <!-- Left column: HUD + action tabs -->
         <Grid Grid.Column="0" RowDefinitions="2*,Auto,3*" RowSpacing="4">

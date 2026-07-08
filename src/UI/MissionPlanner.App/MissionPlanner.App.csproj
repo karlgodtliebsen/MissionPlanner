@@ -102,6 +102,12 @@
 	  <Compile Update="Views\Connect\ConnectionView.xaml.cs">
 	    <DependentUpon>ConnectionView.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Views\Exit\ExitContentView.xaml.cs">
+	    <DependentUpon>ExitContentView.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Views\Exit\ExitView.xaml.cs">
+	    <DependentUpon>ExitView.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\FlightPlanner\FlightPlannerView.xaml.cs">
 	    <DependentUpon>FlightPlannerView.xaml</DependentUpon>
 	  </Compile>
@@ -127,6 +133,12 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\Connect\ConnectionView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\Exit\ExitContentView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\Exit\ExitView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>

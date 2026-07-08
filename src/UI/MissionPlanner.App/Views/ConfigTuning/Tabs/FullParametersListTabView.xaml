@@ -15,7 +15,6 @@
 
         <HorizontalStackLayout Grid.Row="0" HeightRequest="50" HorizontalOptions="Fill" VerticalOptions="Center" Padding="8,0" Spacing="12" >
 
-
             <!--<Label Text="{Binding ProgressMessage}" />-->
             <!--
             <Label Text="{Binding CountMessage}" />
@@ -23,41 +22,101 @@
             -->
 
             <Button 
-                Text="Refresh"
-                    FontSize="20"
+                Text="Load from file"
+                    FontSize="14"
                     Padding="8,4"
                     VerticalOptions="Center"
                     BackgroundColor="Transparent"
-                    Command="{Binding LoadParametersCommand}" />
+                    Command="{Binding LoadFromFileCommand}" />
+
+            <Button 
+                Text="Save to file"
+                FontSize="14"
+                Padding="8,4"
+                VerticalOptions="Center"
+                BackgroundColor="Transparent"
+                Command="{Binding SaveToFileCommand}" />
+
+            <Button 
+                Text="Write Params"
+                FontSize="14"
+                Padding="8,4"
+                VerticalOptions="Center"
+                BackgroundColor="Transparent"
+                Command="{Binding WriteParametersCommand}" />
+
+
+
+
+            <Button 
+                Text="Refresh Params"
+                FontSize="14"
+                Padding="8,4"
+                VerticalOptions="Center"
+                BackgroundColor="Transparent"
+                Command="{Binding RefreshParametersCommand}" />
+
+            <Button 
+                Text="Compare Params"
+                FontSize="14"
+                Padding="8,4"
+                VerticalOptions="Center"
+                BackgroundColor="Transparent"
+                Command="{Binding CompareParametersCommand}" />
 
             <Button 
                 Text="Cancel"
-                FontSize="20"
+                FontSize="14"
                 Padding="8,4"
                 VerticalOptions="Center"
                 BackgroundColor="Transparent"
                 Command="{Binding CancelLoadCommand}" />
 
+            <Button 
+                Text="Load Pre saved"
+                FontSize="14"
+                Padding="8,4"
+                VerticalOptions="Center"
+                BackgroundColor="Transparent"
+                Command="{Binding LoadPreSavedCommand}" />
+
+
+            <Button 
+                Text="Reset to Default"
+                FontSize="14"
+                Padding="8,4"
+                VerticalOptions="Center"
+                BackgroundColor="Transparent"
+                Command="{Binding ResetToDefaultCommand}" />
+
 
         </HorizontalStackLayout>
 
-
-        <!--<HorizontalStackLayout Grid.Row="1" HorizontalOptions="Fill">
-            <Label Text="{Binding ParametersCount}"
-           Grid.Row="1"
-           FontSize="16"
-           HorizontalOptions="Center"
-           VerticalOptions="Center" />
-        </HorizontalStackLayout>-->
-
-        <VerticalStackLayout Padding="20" Spacing="12"  Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Center" IsVisible="{Binding IsLoading}"
+        <VerticalStackLayout Padding="20" Spacing="12"  Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Center"
+        >
+            <VerticalStackLayout Padding="20" Spacing="12"  Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Center" IsVisible="{Binding ShowLoading}"
                             >
-            <Label FontSize="16"
+                <Label FontSize="16"
                    HorizontalOptions="Center"
                    VerticalOptions="Center" Text="{Binding ProgressMessage}" />
-            <ProgressBar Progress="{Binding Progress}" />
-        </VerticalStackLayout>
+                <ProgressBar Progress="{Binding Progress}" />
+            </VerticalStackLayout>
 
+            <Label FontSize="16"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" 
+                   IsVisible="{Binding ShowLoadingCompleted}"
+                   Text="Finished loading params" />
+            <Label FontSize="16"
+                   IsVisible="{Binding ShowLoadingCompletedWithError}"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" Text="An Error Occurred loading params" />
+            <Label FontSize="16"
+                   IsVisible="{Binding ShowLoadingCancelled}"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" Text="Loading cancelled" />
+
+        </VerticalStackLayout>
 
     </Grid>
 </ContentView>

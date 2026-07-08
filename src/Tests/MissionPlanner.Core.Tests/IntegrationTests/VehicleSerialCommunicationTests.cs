@@ -8,6 +8,7 @@ using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Messages;
+using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.Test.Support.Configuration;
 using MissionPlanner.Transport;
@@ -107,10 +108,10 @@ public class VehicleSerialCommunicationTests
 
 
     /// <summary>
-    /// Tests that a vehicle is registered when a heartbeat message is received.
+    /// Tests that all Vehicle parameters is received
     /// </summary>
     [Fact]
-    public async Task Should_Establish_Serial_Communication_With_Vehicle_Using_VehicleConnectionService_And_Retreive_Parameters()
+    public async Task Should_Retrieve_Parameters()
     {
         var ct = new CancellationTokenSource(TimeSpan.FromSeconds(60)).Token;
         var ts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -169,6 +170,93 @@ public class VehicleSerialCommunicationTests
         Assert.True(result);
 
         foreach (var vehicleParameter in parameterRegistry.GetAllParameters(vehicleId))
+        {
+            var parameter = vehicleParameter.Value;
+            logger.LogInformation("{ParameterName} = {ParameterValue}", vehicleParameter.Key, vehicleParameter.Value.ToString());
+        }
+    }
+
+
+    /// <summary>
+    /// Tests that all Vehicle parameters is received
+    /// </summary>
+    [Fact]
+    public async Task Should_Retrieve_Parameters_Using_Streaming()
+    {
+        var ct = new CancellationTokenSource(TimeSpan.FromSeconds(60)).Token;
+        var ts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var serialPortDiscoveryService = serviceProvider.GetRequiredService<ISerialPortDiscoveryService>();
+        var availablePorts = serialPortDiscoveryService.GetAvailablePorts();
+        Assert.True(availablePorts.Any(), "Connect a ArduPilot Vehicle");
+
+        var logger = serviceProvider.GetRequiredService<ILogger<VehicleTests>>();
+        var serviceFactory = serviceProvider.GetRequiredService<IServiceFactory>();
+        var domainEventHub = serviceProvider.GetRequiredService<IDomainEventHub>();
+
+        var transportOptions = serviceFactory.Create<IOptions<TransportEndpoint>>();
+        transportOptions.Value.Protocol = "serial";
+        var portName = availablePorts.First();
+        var baudRate = 115200;
+        var vehicleRegistered = false;
+        await using var vehicleConnectionService = serviceProvider.GetRequiredService<IVehicleConnectionService>();
+
+        using var eventSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleConnected>((VehicleConnected evt, CancellationToken ct) =>
+        {
+            logger.LogInformation("Test-Received VehicleConnected Message With Vehicle: {VehicleId}", evt.VehicleId);
+            vehicleRegistered = true;
+            ts.TrySetResult();
+            return Task.CompletedTask;
+        });
+        var connection = await vehicleConnectionService.ConnectSerialAsync(portName, baudRate, ct);
+        DomainException.ThrowIfNull(connection);
+
+        // 3. CRITICAL: Wait for vehicle to be ready
+        await Task.Delay(1500, ct); // 1.5 seconds
+
+        //If timeout happens, then the vehicle is not registered due to missing HeartbeatMessage, but it may be connected and receiving AttitudeMessage.
+        await ts.Task.WaitAsync(TimeSpan.FromSeconds(30), ct);
+
+        Assert.True(vehicleRegistered);
+        DomainException.ThrowIfNull(connection.VehicleId);
+        DomainException.ThrowIfNull(connection.ConnectionSession);
+
+        var vehicleId = connection.VehicleId.Value;
+
+        CancellationTokenSource ctsProgress = new();
+
+        var session = serviceProvider.GetRequiredService<IVehicleConnectionSession>();
+        var vehicleParameterStreamService = session.ParameterStreamService;
+        IList<VehicleParameter> parameters = [];
+        var totalCount = 0;
+
+        IProgress<ParameterStreamProgress>? progress = new Progress<ParameterStreamProgress>(p =>
+        {
+            totalCount = p.TotalCount;
+            var progressCounter = (double)p.ReceivedCount / p.TotalCount;
+            var progressMessage = $"Loading parameters... {p.ReceivedCount}/{p.TotalCount}";
+            logger.LogDebug("{msg} {count}", progressMessage, progressCounter);
+        });
+        var result = await vehicleParameterStreamService.StreamAllParametersWithRetryAsync(vehicleId, progress, 3, cancellationToken: ctsProgress.Token);
+
+        if (result.Success)
+        {
+            foreach (var parameter in result.Parameters.Values)
+            {
+                parameters.Add(parameter);
+            }
+        }
+        else
+        {
+            throw new DomainException("Failed to retrieve parameters before Timeout");
+        }
+
+        Assert.Equal(totalCount, parameters.Count);
+        var parameterRegistry = serviceProvider.GetRequiredService<IVehicleParameterRegistry>();
+        var allParameters = parameterRegistry.GetAllParameters(vehicleId);
+
+        Assert.Equal(totalCount, allParameters.Count);
+
+        foreach (var vehicleParameter in allParameters)
         {
             var parameter = vehicleParameter.Value;
             logger.LogInformation("{ParameterName} = {ParameterValue}", vehicleParameter.Key, vehicleParameter.Value.ToString());

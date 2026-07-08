@@ -4,7 +4,7 @@ namespace MissionPlanner.App.Views.Help;
 
 public partial class HelpView : UraniumContentPage
 {
-    public HelpView(HelpViewModel viewModel)
+    public HelpView(Exit.ExitViewModel viewModel)
     {
         InitializeComponent();
         BindingContext = viewModel;

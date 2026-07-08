@@ -8,12 +8,12 @@ using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.App.Views.Connect;
 using MissionPlanner.App.Views.Dashboard;
+using MissionPlanner.App.Views.Exit;
 using MissionPlanner.App.Views.FlightData;
 using MissionPlanner.App.Views.FlightData.Hud;
 using MissionPlanner.App.Views.FlightData.Map;
 using MissionPlanner.App.Views.FlightData.Tabs;
 using MissionPlanner.App.Views.FlightPlanner;
-using MissionPlanner.App.Views.Help;
 using MissionPlanner.App.Views.InitSetup;
 using MissionPlanner.App.Views.Simulation;
 using MissionPlanner.Core.Configuration;
@@ -84,6 +84,10 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<TopBarViewModel>();
         services.TryAddSingleton<TopBarView>();
 
+        services.TryAddSingleton<ExitViewModel>();
+        services.TryAddSingleton<ExitView>();
+        services.TryAddSingleton<ExitContentView>();
+
         //SubView/Controls
 
         services.TryAddTransient<ConnectPopupView>();
@@ -119,8 +123,8 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<SimulationViewModel>();
         services.TryAddSingleton<SimulationView>();
 
-        services.TryAddSingleton<HelpViewModel>();
-        services.TryAddSingleton<HelpView>();
+        services.TryAddSingleton<ExitViewModel>();
+        services.TryAddSingleton<ExitView>();
 
         //TryAddTransient
         services.TryAddSingleton<FullParametersListTabViewModel>();

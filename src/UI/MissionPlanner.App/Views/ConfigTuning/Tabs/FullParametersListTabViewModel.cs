@@ -15,7 +15,6 @@ namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 /// </summary>
 public partial class FullParametersListTabViewModel : /*BindableObject*/ObservableObject, IDisposable
 {
-    // private readonly IVehicleConnectionService vehicleConnectionService;
     private readonly IVehicleConnectionSession session;
     private readonly IVehicleRegistry vehicleRegistry;
     private readonly IDispatcher dispatcher;
@@ -35,8 +34,11 @@ public partial class FullParametersListTabViewModel : /*BindableObject*/Observab
 
     [ObservableProperty] public partial string ProgressMessage { get; set; }
     [ObservableProperty] public partial double Progress { get; set; }
-    [ObservableProperty] public partial bool IsLoading { get; set; }
-
+    [ObservableProperty] public partial bool ShowLoading { get; set; }
+    [ObservableProperty] public partial bool ShowLoadingCompleted { get; set; }
+    [ObservableProperty] public partial bool ShowLoadingCompletedWithError { get; set; }
+    [ObservableProperty] public partial bool ShowLoadingCancelled { get; set; }
+    [ObservableProperty] public partial bool ShowVehicleDisconnected { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FullParametersListTabViewModel"/> class.
@@ -86,7 +88,11 @@ public partial class FullParametersListTabViewModel : /*BindableObject*/Observab
         {
             Parameters.Clear();
             Progress = 0;
-            IsLoading = false;
+            ShowLoading = false;
+            ShowLoadingCompletedWithError = false;
+            ShowLoadingCompleted = false;
+            ShowLoadingCancelled = false;
+            ShowVehicleDisconnected = false;
         });
         return Task.CompletedTask;
     }
@@ -97,7 +103,7 @@ public partial class FullParametersListTabViewModel : /*BindableObject*/Observab
     }
 
     [RelayCommand]
-    private async Task LoadParameters()
+    private async Task RefreshParameters()
     {
         var vehicles = vehicleRegistry.Vehicles;
         var vehicle = vehicles.FirstOrDefault();
@@ -112,22 +118,62 @@ public partial class FullParametersListTabViewModel : /*BindableObject*/Observab
     {
         await ctsProgress.CancelAsync();
         ctsProgress = new CancellationTokenSource();
+        ResetUIState();
+        ShowLoadingCancelled = true;
+    }
+
+    [RelayCommand]
+    private void LoadFromFile()
+    {
+    }
+
+
+    [RelayCommand]
+    private void SaveToFile()
+    {
+    }
+
+    [RelayCommand]
+    private void WriteParameters()
+    {
+    }
+
+    [RelayCommand]
+    private void CompareParameters()
+    {
+    }
+
+    [RelayCommand]
+    private void LoadPreSaved()
+    {
+    }
+
+    [RelayCommand]
+    private void ResetToDefault()
+    {
+    }
+
+    private void ResetUIState()
+    {
         Progress = 0;
-        IsLoading = false;
+        ShowLoading = false;
+        ShowLoadingCompleted = false;
+        ShowLoadingCompletedWithError = false;
+        ShowLoadingCancelled = false;
+        ShowVehicleDisconnected = false;
     }
 
     // MainThread.BeginInvokeOnMainThread(async () =>
     private async Task LoadAsync(VehicleId vehicleId, CancellationToken cancellationToken)
     {
-        IsLoading = true;
+        ResetUIState();
+        ShowLoading = true;
         Parameters.Clear();
         parameters.Clear();
         ProgressMessage = "Loading parameters...";
-        Progress = 0;
         IProgress<ParameterStreamProgress>? progress = new Progress<ParameterStreamProgress>(p =>
         {
             Progress = (double)p.ReceivedCount / p.TotalCount;
-
             ProgressMessage = $"Loading parameters... {p.ReceivedCount}/{p.TotalCount}";
         });
 
@@ -143,37 +189,17 @@ public partial class FullParametersListTabViewModel : /*BindableObject*/Observab
             {
                 Parameters.Add(parameter);
             }
-        }
 
-        Progress = 0;
-        IsLoading = false;
+            ResetUIState();
+            ShowLoadingCompleted = true;
+        }
+        else
+        {
+            ResetUIState();
+            ShowLoadingCompletedWithError = true;
+        }
     }
 
-    //using (await DialogService.DisplayProgressCancellableAsync("Loading", "Work in progress, please wait...", tokenSource: tokenSource))
-    //{
-    //    try
-    //    {
-    //        // Long operation...
-    //        await Task.Delay((int) sliderForProgress.Value, tokenSource.Token);
-    //    }
-    //    catch (TaskCanceledException)
-    //    {
-    //    }
-    //}
-
-    ////if (parameters.Count != Parameters.Count)
-    //{
-    //    dispatcher.Dispatch(() =>
-    //    {
-    //        Parameters.Clear();
-    //        foreach (var parameter in parameters.Values)
-    //        {
-    //            Parameters.Add(parameter);
-    //        }
-
-    //        //ParametersCount = Parameters.Count;
-    //    });
-    //}
     /// <inheritdoc />
     public void Dispose()
     {

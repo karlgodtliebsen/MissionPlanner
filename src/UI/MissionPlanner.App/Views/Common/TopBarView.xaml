@@ -7,6 +7,7 @@
              x:Class="MissionPlanner.App.Views.Common.TopBarView">
 
     <Grid ColumnDefinitions="Auto,*,Auto,Auto" 
+          HorizontalOptions="Fill"
           Padding="8,0" 
           BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
           HeightRequest="50">

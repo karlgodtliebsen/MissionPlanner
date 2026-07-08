@@ -13,7 +13,7 @@
     xmlns:configTuning="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
     xmlns:simulation="clr-namespace:MissionPlanner.App.Views.Simulation"
     xmlns:help="clr-namespace:MissionPlanner.App.Views.Help"
-    xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
+    xmlns:exit="clr-namespace:MissionPlanner.App.Views.Exit"
     Title="MissionPlanner"
     x:Name="thisShell"
     FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
@@ -23,12 +23,8 @@
 
     <!-- Persistent Top Bar (visible on all pages) -->
     <Shell.TitleView>
-
         <StackLayout x:Name="TopbarView" ></StackLayout>
-
-        <!--<common:TopBarView></common:TopBarView>-->
     </Shell.TitleView>
-
 
     <Shell.Resources>
         <Style TargetType="HorizontalStackLayout" ApplyToDerivedTypes="True" CanCascade="True">
@@ -85,13 +81,6 @@
             </CollectionView>
         </Grid>
     </Shell.FlyoutContent>
-
-    <!--<FlyoutItem Title="Connection">
-        <ShellContent
-            Title=""
-            ContentTemplate="{DataTemplate connect:ConnectionView}" Route="Connection" />
-    </FlyoutItem>-->
-
     <FlyoutItem Title="Flight Data">
         <ShellContent
             Title=""
@@ -124,7 +113,11 @@
             ContentTemplate="{DataTemplate help:HelpView}" Route="Help" />
     </FlyoutItem>
 
-
+    <FlyoutItem Title="Exit">
+        <ShellContent
+            Title=""
+            ContentTemplate="{DataTemplate exit:ExitView}" Route="Exit" />
+    </FlyoutItem>
 
 
 </Shell>

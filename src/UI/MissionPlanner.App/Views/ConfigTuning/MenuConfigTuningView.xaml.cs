@@ -20,4 +20,11 @@ public partial class MenuConfigTuningView : UraniumContentPage
 
         FplTabItem.Content = fplView;
     }
+
+    /// <inheritdoc/>
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        TabView.SelectedTab = FplTabItem;
+    }
 }
