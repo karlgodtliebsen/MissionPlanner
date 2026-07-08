@@ -20,7 +20,7 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="$(MicrosoftExtensionsVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="$(MicrosoftExtensionsVersion)" />
-    <!--<PackageReference Include="Microsoft.Extensions.Http" Version="10.0.3" />-->
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="$(MicrosoftExtensionsVersion)" />
     <!-- Misc family -->
     <PackageVersion Include="Asv.Mavlink" Version="4.2.0" />
     <PackageVersion Include="Polly" Version="8.7.0" />

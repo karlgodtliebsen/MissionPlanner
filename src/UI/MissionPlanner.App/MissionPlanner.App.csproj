@@ -93,6 +93,9 @@
 	  <Compile Update="Views\Common\TopBarView.xaml.cs">
 	    <DependentUpon>TopBarView.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Views\ConfigTuning\Tabs\FullParametersListTabView.xaml.cs">
+	    <DependentUpon>FullParametersListTabView.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\Connect\ConnectPopupView.xaml.cs">
 	    <DependentUpon>ConnectPopupView.xaml</DependentUpon>
 	  </Compile>
@@ -118,6 +121,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\Common\TopBarView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\ConfigTuning\Tabs\FullParametersListTabView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\Connect\ConnectionView.xaml">

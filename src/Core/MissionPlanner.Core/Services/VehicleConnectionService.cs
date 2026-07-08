@@ -55,9 +55,6 @@ public class VehicleConnectionService(
             logger.LogInformation("Connecting to vehicle using serial port {PortName} at {BaudRate} baud", portName, baudRate);
             var linkedCts = connectionSession.CreateSerialConnection(portName, baudRate, cancellationToken: cancellationToken);
 
-            //var connection = connectionSession.Connection;
-            //var messagePump = connectionSession.MessagePump;
-            //var parameterService = connectionSession.ParameterService;
             var client = connectionSession.Client;
             var transport = connectionSession.Transport;
             // Wait for heartbeat to identify vehicle

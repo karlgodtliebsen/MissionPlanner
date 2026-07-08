@@ -3,12 +3,81 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                     xmlns:vm="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
+                    xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                     x:Class="MissionPlanner.App.Views.ConfigTuning.MenuConfigTuningView"
                     x:DataType="vm:MenuConfigTuningViewModel">
 
-    <Label Text="Config / Tuning"
-           FontSize="18"
-           HorizontalOptions="Center"
-           VerticalOptions="Center" />
+
+
+    <HorizontalStackLayout Grid.Row="1">
+
+        <material:TabView x:Name="TabView" TabHeaderItemColumnWidth="*">
+
+            <material:TabItem Title="GeoFence">
+                <material:TabItem.ContentTemplate>
+                    <DataTemplate>
+                        <Label Text="GeoFence" HorizontalOptions="Center" VerticalOptions="Center" Margin="50" />
+                    </DataTemplate>
+                </material:TabItem.ContentTemplate>
+            </material:TabItem>
+
+            <material:TabItem Title="Basic Tuning">
+                <material:TabItem.ContentTemplate>
+                    <DataTemplate>
+                        <Label Text="Basic Tuning" HorizontalOptions="Center" VerticalOptions="Center" Margin="50" />
+                    </DataTemplate>
+                </material:TabItem.ContentTemplate>
+            </material:TabItem>
+            <material:TabItem Title="Extended Tuning">
+                <material:TabItem.ContentTemplate>
+                    <DataTemplate>
+                        <Label Text="Extended Tuning" HorizontalOptions="Center" VerticalOptions="Center" Margin="50" />
+                    </DataTemplate>
+                </material:TabItem.ContentTemplate>
+            </material:TabItem>
+            <material:TabItem Title="Onboard OSD">
+                <material:TabItem.ContentTemplate>
+                    <DataTemplate>
+                        <Label Text="Onboard OSD" HorizontalOptions="Center" VerticalOptions="Center" Margin="50" />
+                    </DataTemplate>
+                </material:TabItem.ContentTemplate>
+            </material:TabItem>
+            <material:TabItem Title="MAVFtp">
+                <material:TabItem.ContentTemplate>
+                    <DataTemplate>
+                        <Label Text="MAVFtp" HorizontalOptions="Center" VerticalOptions="Center" Margin="50" />
+                    </DataTemplate>
+                </material:TabItem.ContentTemplate>
+            </material:TabItem>
+
+            <material:TabItem Title="Full Parameter List"  x:Name="FplTabItem">
+                <material:TabItem.ContentTemplate>
+                    <DataTemplate>
+                        <ContentView x:Name="FPLHost"  />
+                    </DataTemplate>
+                </material:TabItem.ContentTemplate>
+            </material:TabItem>
+
+            <material:TabItem Title="Planner">
+                <material:TabItem.ContentTemplate>
+                    <DataTemplate>
+                        <Label Text="Planner" HorizontalOptions="Center" VerticalOptions="Center" Margin="50" />
+                    </DataTemplate>
+                </material:TabItem.ContentTemplate>
+            </material:TabItem>
+            <material:TabItem Title="CubeLan 8 port  Switch">
+                <material:TabItem.ContentTemplate>
+                    <DataTemplate>
+                        <Label Text="CubeLan 8 port Switch" HorizontalOptions="Center" VerticalOptions="Center" Margin="50" />
+                    </DataTemplate>
+                </material:TabItem.ContentTemplate>
+            </material:TabItem>
+
+
+</material:TabView>
+
+
+    </HorizontalStackLayout>
+
 
 </uranium:UraniumContentPage>

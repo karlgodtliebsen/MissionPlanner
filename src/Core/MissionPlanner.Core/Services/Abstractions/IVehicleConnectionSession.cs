@@ -27,6 +27,11 @@ public interface IVehicleConnectionSession
     IVehicleParameterService ParameterService { get; }
 
     /// <summary>
+    /// Gets the established parameter registry. Throws an exception if no parameter registry is established.
+    /// </summary>
+    IVehicleParameterRegistry ParameterRegistry { get; }
+
+    /// <summary>
     /// Gets the established MAVLink transport. Throws an exception if no transport is established.
     /// </summary>
     IMavLinkTransport Transport { get; }

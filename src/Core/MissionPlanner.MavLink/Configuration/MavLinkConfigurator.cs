@@ -5,6 +5,7 @@ using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Decoding;
 using MissionPlanner.MavLink.Encoding;
+using MissionPlanner.MavLink.Parameters.Metadata;
 using MissionPlanner.MavLink.Services;
 
 namespace MissionPlanner.MavLink.Configuration;
@@ -43,6 +44,19 @@ public static class MavLinkConfigurator
         ];
 
         services.TryAddSingleton(new MavLinkMessageDecoders(decoders));
+
+        // Parameter metadata services
+        services.TryAddSingleton<IParameterMetadataParser, ParameterMetadataXmlParser>();
+        services.TryAddSingleton<IParameterMetadataDownloader, ParameterMetadataDownloader>();
+        services.TryAddSingleton<IParameterMetadataRepository, ParameterMetadataRepository>();
+
+        // HttpClient for parameter metadata downloads
+        services.AddHttpClient("ParameterMetadata")
+            .ConfigureHttpClient(client =>
+            {
+                client.Timeout = TimeSpan.FromSeconds(30);
+                client.DefaultRequestHeaders.Add("User-Agent", "MissionPlanner-NextGen/1.0");
+            });
 
         return services;
     }

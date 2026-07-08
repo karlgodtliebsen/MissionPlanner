@@ -113,10 +113,10 @@ public class VehicleSerialCommunicationTests
     public async Task Should_Establish_Serial_Communication_With_Vehicle_Using_VehicleConnectionService_And_Retreive_Parameters()
     {
         var ct = new CancellationTokenSource(TimeSpan.FromSeconds(60)).Token;
+        var ts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var serialPortDiscoveryService = serviceProvider.GetRequiredService<ISerialPortDiscoveryService>();
         var availablePorts = serialPortDiscoveryService.GetAvailablePorts();
         Assert.True(availablePorts.Any(), "Connect a ArduPilot Vehicle");
-        TaskCompletionSource ts = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var logger = serviceProvider.GetRequiredService<ILogger<VehicleTests>>();
         var serviceFactory = serviceProvider.GetRequiredService<IServiceFactory>();

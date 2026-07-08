@@ -16,12 +16,20 @@ namespace MissionPlanner.Core.Services;
 /// <summary>
 /// Represents a session for a vehicle connection, managing its state and handling updates.
 /// </summary>
+/// <param name="parameterRegistry"></param>
 /// <param name="domainFactory"></param>
 /// <param name="serviceFactory"></param>
 /// <param name="domainEventHub"></param>
 /// <param name="dateTimeProvider"></param>
 /// <param name="logger"></param>
-public sealed class VehicleConnectionSession(IDomainFactory domainFactory, IServiceFactory serviceFactory, IDomainEventHub domainEventHub, IDateTimeProvider dateTimeProvider, ILogger<VehicleConnectionSession> logger) : IVehicleConnectionSession
+public sealed class VehicleConnectionSession(
+    IVehicleParameterRegistry parameterRegistry,
+    IDomainFactory domainFactory,
+    IServiceFactory serviceFactory,
+    IDomainEventHub domainEventHub,
+    IDateTimeProvider dateTimeProvider,
+    ILogger<VehicleConnectionSession> logger)
+    : IVehicleConnectionSession
 {
     private IMavLinkConnection? connection;
     private IVehicleMessagePump? messagePump;
@@ -49,6 +57,9 @@ public sealed class VehicleConnectionSession(IDomainFactory domainFactory, IServ
     /// Gets the established parameter service. Throws an exception if no parameter service is established.
     /// </summary>
     public IVehicleParameterService ParameterService => parameterService ?? throw new InvalidOperationException("No parameter service established");
+
+    /// <inheritdoc />
+    public IVehicleParameterRegistry ParameterRegistry => parameterRegistry ?? throw new InvalidOperationException("No parameter registry established");
 
     /// <summary>
     /// Gets the established MAVLink client. Throws an exception if no client is established.
@@ -93,6 +104,7 @@ public sealed class VehicleConnectionSession(IDomainFactory domainFactory, IServ
 
         //connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
         parameterService = domainFactory.Create<IVehicleParameterService, IMavLinkClient>(client);
+        // parameterRegistry = serviceFactory.Create<IVehicleParameterRegistry>();
 
         var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
 

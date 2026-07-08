@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using MissionPlanner.App.AppViewModels;
 using MissionPlanner.App.Views.Common;
 using MissionPlanner.App.Views.ConfigTuning;
+using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.App.Views.Connect;
 using MissionPlanner.App.Views.Dashboard;
 using MissionPlanner.App.Views.FlightData;
@@ -100,8 +101,8 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<QuickTabViewModel>();
         services.TryAddSingleton<QuickTabView>();
 
-        services.TryAddSingleton<ActionsTabViewModel>();
-        services.TryAddSingleton<ActionsTabView>();
+        services.TryAddSingleton<FullParametersListTabViewModel>();
+        services.TryAddSingleton<FullParametersListTabView>();
 
         services.TryAddSingleton<StatusTabViewModel>();
         services.TryAddSingleton<StatusTabView>();
@@ -120,6 +121,10 @@ public static class ApplicationConfigurator
 
         services.TryAddSingleton<HelpViewModel>();
         services.TryAddSingleton<HelpView>();
+
+        //TryAddTransient
+        services.TryAddSingleton<FullParametersListTabViewModel>();
+        services.TryAddSingleton<FullParametersListTabView>();
 
         return services;
     }

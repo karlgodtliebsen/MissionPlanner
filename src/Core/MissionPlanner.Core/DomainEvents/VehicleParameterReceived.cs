@@ -1,4 +1,4 @@
-using MissionPlanner.Core.Models;
+﻿using MissionPlanner.Core.Models;
 using MissionPlanner.Library.EventHub.Events;
 using MissionPlanner.MavLink.Parameters;
 
@@ -31,6 +31,4 @@ public sealed class VehicleParameterReceived : DomainEvent<VehicleParameterRecei
 /// </summary>
 /// <param name="VehicleId">The ID of the vehicle.</param>
 /// <param name="Parameter">The parameter that was received.</param>
-public sealed record VehicleParameterReceivedData(
-    VehicleId VehicleId,
-    VehicleParameter Parameter);
+public sealed record VehicleParameterReceivedData(VehicleId VehicleId, VehicleParameter Parameter);

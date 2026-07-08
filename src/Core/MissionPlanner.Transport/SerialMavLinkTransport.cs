@@ -127,7 +127,7 @@ public sealed class SerialMavLinkTransport : ISerialMavLinkTransport
                 // Discard buffers before closing to ensure clean shutdown
                 serialPort.DiscardInBuffer();
                 serialPort.DiscardOutBuffer();
-
+                //do not break for exceptions here, we want to close the port even if discarding buffers fails
                 serialPort.Close();
 
                 // Give the OS time to fully release the port (Windows-specific issue)
