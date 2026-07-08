@@ -7,23 +7,57 @@
               x:DataType="tabs1:FullParametersListTabViewModel">
 
     <Grid RowDefinitions="Auto,*" 
+          HorizontalOptions="Fill"
+          VerticalOptions="Fill"
           Padding="8,0" 
           BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
           >
-        
-        <!-- Load Button -->
-        <Button Grid.Row="0"
-                ImageSource="Resources/Images/light_connect_icon.png"
-            FontSize="20"
-            Padding="8,4"
-            VerticalOptions="Center"
-            BackgroundColor="Transparent"
-            Command="{Binding LoadParametersCommand}" />
 
-        <Label Text="{Binding ParametersCount}"
+        <HorizontalStackLayout Grid.Row="0" HeightRequest="50" HorizontalOptions="Fill" VerticalOptions="Center" Padding="8,0" Spacing="12" >
+
+
+            <!--<Label Text="{Binding ProgressMessage}" />-->
+            <!--
+            <Label Text="{Binding CountMessage}" />
+            <Label Text="{Binding TotalCountMessage}" />
+            -->
+
+            <Button 
+                Text="Refresh"
+                    FontSize="20"
+                    Padding="8,4"
+                    VerticalOptions="Center"
+                    BackgroundColor="Transparent"
+                    Command="{Binding LoadParametersCommand}" />
+
+            <Button 
+                Text="Cancel"
+                FontSize="20"
+                Padding="8,4"
+                VerticalOptions="Center"
+                BackgroundColor="Transparent"
+                Command="{Binding CancelLoadCommand}" />
+
+
+        </HorizontalStackLayout>
+
+
+        <!--<HorizontalStackLayout Grid.Row="1" HorizontalOptions="Fill">
+            <Label Text="{Binding ParametersCount}"
            Grid.Row="1"
            FontSize="16"
            HorizontalOptions="Center"
            VerticalOptions="Center" />
+        </HorizontalStackLayout>-->
+
+        <VerticalStackLayout Padding="20" Spacing="12"  Grid.Row="1" VerticalOptions="Center" HorizontalOptions="Center" IsVisible="{Binding IsLoading}"
+                            >
+            <Label FontSize="16"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" Text="{Binding ProgressMessage}" />
+            <ProgressBar Progress="{Binding Progress}" />
+        </VerticalStackLayout>
+
+
     </Grid>
 </ContentView>

@@ -20,6 +20,7 @@ public partial class FullParametersListTabViewModel : /*BindableObject*/Observab
     private readonly IVehicleRegistry vehicleRegistry;
     private readonly IDispatcher dispatcher;
     private readonly CancellationTokenSource cts;
+    private CancellationTokenSource ctsProgress = new();
 
     private readonly ILogger<FullParametersListTabViewModel> logger;
 
@@ -32,22 +33,22 @@ public partial class FullParametersListTabViewModel : /*BindableObject*/Observab
     /// </summary>
     public ObservableCollection<VehicleParameter> Parameters { get; set; } = [];
 
-    [ObservableProperty] public partial int ParametersCount { get; set; }
+    [ObservableProperty] public partial string ProgressMessage { get; set; }
+    [ObservableProperty] public partial double Progress { get; set; }
+    [ObservableProperty] public partial bool IsLoading { get; set; }
 
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FullParametersListTabViewModel"/> class.
     /// </summary>
-    /// <param name="session"></param>
-    /// <param name="vehicleRegistry"></param>
-    /// <param name="domainEventHub"></param>
-    /// <param name="dispatcher"></param>
-    /// <param name="cts"></param>
-    /// <param name="logger"></param>
+    /// <param name="session">The vehicle connection session.</param>
+    /// <param name="vehicleRegistry">The vehicle registry.</param>
+    /// <param name="domainEventHub">The domain event hub.</param>
+    /// <param name="dispatcher">The dispatcher.</param>
+    /// <param name="cts">The cancellation token source.</param>
+    /// <param name="logger">The logger.</param>
     public FullParametersListTabViewModel(
         IVehicleConnectionSession session,
-        //IVehicleParameterService vehicleParameterService,
-        //IVehicleParameterRegistry vehicleParameterRegistry,
         IVehicleRegistry vehicleRegistry,
         IDomainEventHub domainEventHub,
         IDispatcher dispatcher,
@@ -65,9 +66,6 @@ public partial class FullParametersListTabViewModel : /*BindableObject*/Observab
         eventSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(VehicleDisconnected);
         eventSubscriptions.Add(eventSubscription);
 
-        eventSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleParameterReceived>(VehicleParameterReceived);
-        eventSubscriptions.Add(eventSubscription);
-
         var vehicles = vehicleRegistry.Vehicles;
         var vehicle = vehicles.FirstOrDefault();
         if (vehicle is not null)
@@ -76,61 +74,106 @@ public partial class FullParametersListTabViewModel : /*BindableObject*/Observab
         }
     }
 
-    private async Task VehicleParameterReceived(VehicleParameterReceived message, CancellationToken cancellationToken)
-    {
-        await Task.Run(async () => await LoadAsync(message.VehicleId, cancellationToken), cancellationToken);
-    }
+    //private async Task VehicleParameterReceived(VehicleParameterReceived message, CancellationToken cancellationToken)
+    //{
+    //    await Task.Run(async () => await LoadAsync(message.VehicleId, cancellationToken), cancellationToken);
+    //}
 
 
-    private Task VehicleDisconnected(VehicleDisconnected vehicle, CancellationToken arg2)
+    private Task VehicleDisconnected(VehicleDisconnected vehicle, CancellationToken cancellationToken)
     {
         dispatcher.Dispatch(() =>
         {
             Parameters.Clear();
-            ParametersCount = Parameters.Count;
+            Progress = 0;
+            IsLoading = false;
         });
         return Task.CompletedTask;
     }
 
-    private async Task VehicleRegistered(VehicleConnected vehicle, CancellationToken ct)
+    private async Task VehicleRegistered(VehicleConnected vehicle, CancellationToken cancellationToken)
     {
-        await Task.Run(async () => await LoadAsync(vehicle.VehicleId, ct), cts.Token);
+        await Task.Run(async () => await LoadAsync(vehicle.VehicleId, cancellationToken), cancellationToken);
     }
 
     [RelayCommand]
-    private async Task LoadParametersAsync()
+    private async Task LoadParameters()
     {
         var vehicles = vehicleRegistry.Vehicles;
         var vehicle = vehicles.FirstOrDefault();
         if (vehicle is not null)
         {
-            //await LoadAsync(vehicle.Id, CancellationToken.None);
             await Task.Run(async () => await LoadAsync(vehicle.Id, cts.Token), cts.Token);
         }
     }
 
-    // MainThread.BeginInvokeOnMainThread(async () =>
-    private async Task LoadAsync(VehicleId vehicleId, CancellationToken ct)
+    [RelayCommand]
+    private async Task CancelLoad()
     {
-        await session.ParameterService.RequestParameterListAsync(vehicleId, ct);
-        parameters = new Dictionary<string, VehicleParameter>(session.ParameterRegistry.GetAllParameters(vehicleId));
-        //if (parameters.Count != Parameters.Count)
-        {
-            dispatcher.Dispatch(() =>
-            {
-                Parameters.Clear();
-                foreach (var parameter in parameters.Values)
-                {
-                    Parameters.Add(parameter);
-                }
-
-                ParametersCount = Parameters.Count;
-            });
-            //await Task.Delay(50, ct);
-            //await LoadAsync(vehicleId, ct);
-        }
+        await ctsProgress.CancelAsync();
+        ctsProgress = new CancellationTokenSource();
+        Progress = 0;
+        IsLoading = false;
     }
 
+    // MainThread.BeginInvokeOnMainThread(async () =>
+    private async Task LoadAsync(VehicleId vehicleId, CancellationToken cancellationToken)
+    {
+        IsLoading = true;
+        Parameters.Clear();
+        parameters.Clear();
+        ProgressMessage = "Loading parameters...";
+        Progress = 0;
+        IProgress<ParameterStreamProgress>? progress = new Progress<ParameterStreamProgress>(p =>
+        {
+            Progress = (double)p.ReceivedCount / p.TotalCount;
+
+            ProgressMessage = $"Loading parameters... {p.ReceivedCount}/{p.TotalCount}";
+        });
+
+        // Stream all parameters with progress tracking
+        var vehicleParameterStreamService = session.ParameterStreamService;
+        var result = await vehicleParameterStreamService.StreamAllParametersWithRetryAsync(vehicleId, progress, 3, cancellationToken: ctsProgress.Token);
+
+        if (result.Success)
+        {
+            parameters = new Dictionary<string, VehicleParameter>(result.Parameters);
+            Parameters.Clear();
+            foreach (var parameter in parameters.Values)
+            {
+                Parameters.Add(parameter);
+            }
+        }
+
+        Progress = 0;
+        IsLoading = false;
+    }
+
+    //using (await DialogService.DisplayProgressCancellableAsync("Loading", "Work in progress, please wait...", tokenSource: tokenSource))
+    //{
+    //    try
+    //    {
+    //        // Long operation...
+    //        await Task.Delay((int) sliderForProgress.Value, tokenSource.Token);
+    //    }
+    //    catch (TaskCanceledException)
+    //    {
+    //    }
+    //}
+
+    ////if (parameters.Count != Parameters.Count)
+    //{
+    //    dispatcher.Dispatch(() =>
+    //    {
+    //        Parameters.Clear();
+    //        foreach (var parameter in parameters.Values)
+    //        {
+    //            Parameters.Add(parameter);
+    //        }
+
+    //        //ParametersCount = Parameters.Count;
+    //    });
+    //}
     /// <inheritdoc />
     public void Dispose()
     {

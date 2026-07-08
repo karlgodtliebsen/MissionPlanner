@@ -48,7 +48,8 @@ public class MyService
         _parameterService = parameterService;
     }
 
-    public async Task RequestAllParametersAsync(VehicleId vehicleId)
+    public async Task 
+    (VehicleId vehicleId)
     {
         // Request all parameters
         var success = await _parameterService.RequestParameterListAsync(

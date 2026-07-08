@@ -63,6 +63,7 @@ public static class DomainConfigurator
         // MAVLink parameter services
         services.TryAddTransient<IVehicleParameterService, VehicleParameterService>();
         services.TryAddSingleton<IVehicleParameterMetadataService, VehicleParameterMetadataService>();
+        services.TryAddTransient<IVehicleParameterStreamService, VehicleParameterStreamService>();
 
         return services;
     }
@@ -88,13 +89,7 @@ public static class DomainConfigurator
         domainFactory.Add<IMavLinkConnection, MavLinkConnection>();
         domainFactory.Add<IMavLinkCommandService, MavLinkCommandService>();
         domainFactory.Add<IVehicleParameterService, VehicleParameterService>();
-        // domainFactory.Add<IVehicleParameterRegistry, VehicleParameterRegistry>();
+        domainFactory.Add<IVehicleParameterStreamService, VehicleParameterStreamService>();
         return services;
     }
 }
-
-//"name": "DroneBridge 1",
-//"host": "192.168.1.217",
-//"port": 5760, //14550
-//"protocol": "udp",  
-//"expectedSystemId": "optional"

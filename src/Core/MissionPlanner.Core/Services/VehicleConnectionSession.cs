@@ -34,6 +34,7 @@ public sealed class VehicleConnectionSession(
     private IMavLinkConnection? connection;
     private IVehicleMessagePump? messagePump;
     private IVehicleParameterService? parameterService;
+    private IVehicleParameterStreamService? parameterStreamService;
 
     private CancellationTokenSource serviceCts = new();
 
@@ -60,6 +61,10 @@ public sealed class VehicleConnectionSession(
 
     /// <inheritdoc />
     public IVehicleParameterRegistry ParameterRegistry => parameterRegistry ?? throw new InvalidOperationException("No parameter registry established");
+
+    /// <inheritdoc />
+    public IVehicleParameterStreamService ParameterStreamService => parameterStreamService ?? throw new InvalidOperationException("No parameter StreamService established");
+
 
     /// <summary>
     /// Gets the established MAVLink client. Throws an exception if no client is established.
@@ -101,11 +106,9 @@ public sealed class VehicleConnectionSession(
 
         messagePump = serviceFactory.Create<IVehicleMessagePump>();
         connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
-
-        //connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
         parameterService = domainFactory.Create<IVehicleParameterService, IMavLinkClient>(client);
-        // parameterRegistry = serviceFactory.Create<IVehicleParameterRegistry>();
 
+        parameterStreamService = domainFactory.Create<IVehicleParameterStreamService, IVehicleParameterService>(parameterService);
         var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
 
         messagePumpTask = Task.Run(() => messagePump.StartAsync(linkedCts.Token), linkedCts.Token);
