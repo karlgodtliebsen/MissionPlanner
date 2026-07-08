@@ -13,7 +13,7 @@ namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 /// <summary>
 /// ViewModel for the full list of parameters for a vehicle.
 /// </summary>
-public partial class FullParametersListTabViewModel : /*BindableObject*/ObservableObject, IDisposable
+public partial class FullParametersListTabViewModel : ObservableObject, IDisposable
 {
     private readonly IVehicleConnectionSession session;
     private readonly IVehicleRegistry vehicleRegistry;

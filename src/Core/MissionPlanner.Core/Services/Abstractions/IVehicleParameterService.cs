@@ -29,6 +29,16 @@ public interface IVehicleParameterService
     Task<bool> RequestParameterAsync(VehicleId vehicleId, string parameterName, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Requests a specific parameter by index from the vehicle.
+    /// The vehicle will respond with a PARAM_VALUE message for the requested parameter.
+    /// </summary>
+    /// <param name="vehicleId">The ID of the vehicle.</param>
+    /// <param name="parameterIndex">The parameter index.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>True if the request was sent successfully; otherwise, false.</returns>
+    Task<bool> RequestParameterByIndexAsync(VehicleId vehicleId, ushort parameterIndex, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Sets a parameter value on the specified vehicle.
     /// The vehicle will respond with a PARAM_VALUE message confirming the new value.
     /// </summary>

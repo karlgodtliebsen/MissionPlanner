@@ -5,6 +5,7 @@
                     xmlns:flightData="clr-namespace:MissionPlanner.App.Views.FlightData"
                     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                    xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
                     x:Class="MissionPlanner.App.Views.FlightData.FlightDataView"
                     x:DataType="flightData:FlightDataViewModel"
                     
@@ -21,11 +22,7 @@
               
                 <material:TabView x:Name="TabView" TabHeaderItemColumnWidth="*">
                     <material:TabItem Title="Quick">
-                        <material:TabItem.ContentTemplate>
-                            <DataTemplate>
-                                <Label Text="Quick" HorizontalOptions="Center" VerticalOptions="Center" Margin="50" />
-                            </DataTemplate>
-                        </material:TabItem.ContentTemplate>
+                        <ContentView x:Name="QuickTabView"  />
                     </material:TabItem>
 
                     <material:TabItem Title="Actions">

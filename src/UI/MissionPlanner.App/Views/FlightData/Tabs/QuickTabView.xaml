@@ -2,13 +2,102 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
               xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
+              xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
               x:Class="MissionPlanner.App.Views.FlightData.Tabs.QuickTabView"
               x:DataType="tabs:QuickTabViewModel">
 
-    <!-- Placeholder for the Quick gauges grid (altitude, groundspeed, wp distance, yaw, vspeed, distance to home). -->
-    <Label Text="Quick"
-           FontSize="16"
-           HorizontalOptions="Center"
-           VerticalOptions="Center" />
+        <!--ColumnGridLength="120"
+        RowGridLength="120"-->
+
+    <Grid
+        Margin="10"
+        ColumnDefinitions="*,*"
+        RowDefinitions="*,*,*"
+        ColumnSpacing="32" 
+        RowSpacing="5"
+        >
+       
+        <VerticalStackLayout  Grid.Column="0" Grid.Row="0" HorizontalOptions="Center"
+                             VerticalOptions="Center" 
+        >
+            <Label FontSize="12"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" 
+                   Text="Altitude (m)" />
+            <Label FontSize="32"
+                   
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" Text="{Binding Altitude, StringFormat='{0:F2}'}" />
+        </VerticalStackLayout>
+        <VerticalStackLayout  Grid.Column="1" Grid.Row="0" HorizontalOptions="Center"
+                             VerticalOptions="Center" 
+        >
+            <Label FontSize="12"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" 
+                   Text="GroundSpeed (m/s)" />
+            <Label FontSize="32"
+                   
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" Text="{Binding GroundSpeed, StringFormat='{0:F2}'}" />
+        </VerticalStackLayout>
+
+        <VerticalStackLayout  Grid.Column="0" Grid.Row="1" HorizontalOptions="Center"
+                             VerticalOptions="Center" 
+        >
+            <Label FontSize="12"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" 
+                   Text="Dist to WP (m)" />
+            <Label FontSize="32"
+                   
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" Text="{Binding DistWP, StringFormat='{0:F2}'}" />
+        </VerticalStackLayout>
+
+        <VerticalStackLayout  Grid.Column="1" Grid.Row="1" HorizontalOptions="Center"
+                             VerticalOptions="Center" 
+        >
+            <Label FontSize="12"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" 
+                   Text="Yaw (°)" />
+            <Label FontSize="32"
+                   
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" Text="{Binding Yaw, StringFormat='{0:F2}'}" />
+        </VerticalStackLayout>
+
+        <VerticalStackLayout  Grid.Column="0" Grid.Row="2" HorizontalOptions="Center"
+                             VerticalOptions="Center" 
+        >
+            <Label FontSize="12"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" 
+                   Text="Vertical Speed (m/s)" />
+            <Label FontSize="32"
+                   
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" Text="{Binding VerticalSpeed, StringFormat='{0:F2}'}" />
+        </VerticalStackLayout>
+
+        <VerticalStackLayout  Grid.Column="1" Grid.Row="2" HorizontalOptions="Center"
+                             VerticalOptions="Center" 
+        >
+            <Label FontSize="12"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" 
+                   Text="Dist to MAV (m)" />
+            <Label FontSize="32"
+                   HorizontalOptions="Center"
+                   VerticalOptions="Center" Text="{Binding DistToMav, StringFormat='{0:F2}'}" />
+        </VerticalStackLayout>
+
+
+
+
+
+    </Grid>
+
 
 </ContentView>

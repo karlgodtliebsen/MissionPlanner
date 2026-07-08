@@ -84,6 +84,35 @@ public sealed class VehicleParameterService(IMavLinkClient client, IMavLinkParam
     }
 
     /// <inheritdoc/>
+    public async Task<bool> RequestParameterByIndexAsync(VehicleId vehicleId, ushort parameterIndex, CancellationToken cancellationToken = default)
+    {
+        if (!client.IsConnected)
+        {
+            logger.LogWarning("Cannot request parameter: MAVLink client is not connected");
+            return false;
+        }
+
+        try
+        {
+            // Use empty string for paramId and provide the index
+            var packet = encoder.EncodeParamRequestRead(vehicleId.SystemId, vehicleId.ComponentId, string.Empty, (short)parameterIndex);
+
+            var endpoint = new TransportEndPoint("mavlink", "unknown", 0);
+
+            await client.SendAsync(packet, endpoint, cancellationToken);
+
+            logger.LogDebug("📤 Sent PARAM_REQUEST_READ to {VehicleId}: index={ParameterIndex}", vehicleId, parameterIndex);
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to send PARAM_REQUEST_READ to {VehicleId}: index={ParameterIndex}", vehicleId, parameterIndex);
+            return false;
+        }
+    }
+
+    /// <inheritdoc/>
     public async Task<bool> SetParameterAsync(VehicleId vehicleId, string parameterName, float value, MavParamType paramType, CancellationToken cancellationToken = default)
     {
         if (!client.IsConnected)
