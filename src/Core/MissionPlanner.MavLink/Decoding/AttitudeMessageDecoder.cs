@@ -17,7 +17,9 @@ public sealed class AttitudeMessageDecoder : IMavLinkMessageDecoder
             return false;
         }
 
-        if (frame.Payload.Length < 28)
+        // MAVLink v2 uses payload truncation (removes trailing zeros)
+        // Minimum required: time_boot_ms(4) + roll(4) + pitch(4) + yaw(4) = 16 bytes
+        if (frame.Payload.Length < 16)
         {
             return false;
         }

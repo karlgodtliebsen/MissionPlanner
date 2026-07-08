@@ -13,6 +13,7 @@ public sealed class MavLinkV2FrameParser : IMavLinkFrameParser
     private const int SignatureLength = 13;
 
     private readonly List<byte> buffer = [];
+    private readonly object bufferLock = new();
     private readonly IMavLinkCrcExtraProvider crcExtraProvider;
 
     /// <summary>
@@ -28,26 +29,30 @@ public sealed class MavLinkV2FrameParser : IMavLinkFrameParser
     /// <inheritdoc />
     public IReadOnlyList<MavLinkFrame> Parse(ReadOnlySpan<byte> data, TransportEndPoint endPoint, DateTimeOffset receivedAt)
     {
-        foreach (var b in data)
+        lock (bufferLock)
         {
-            buffer.Add(b);
-        }
-
-        var frames = new List<MavLinkFrame>();
-
-        while (TryReadFrame(endPoint, receivedAt, out var frame))
-        {
-            if (frame is not null)
+            foreach (var b in data)
             {
-                frames.Add(frame);
+                buffer.Add(b);
             }
-        }
 
-        return frames;
+            var frames = new List<MavLinkFrame>();
+
+            while (TryReadFrame(endPoint, receivedAt, out var frame))
+            {
+                if (frame is not null)
+                {
+                    frames.Add(frame);
+                }
+            }
+
+            return frames;
+        }
     }
 
     private bool TryReadFrame(TransportEndPoint endPoint, DateTimeOffset receivedAt, out MavLinkFrame? frame)
     {
+        // Note: This method is called from within Parse() which already holds bufferLock
         frame = null;
 
         while (buffer.Count > 0 && buffer[0] != MavLinkV2Magic)
@@ -71,9 +76,36 @@ public sealed class MavLinkV2FrameParser : IMavLinkFrameParser
             return false;
         }
 
-        var rawBytes = buffer.Take(frameLength).ToArray();
+        // Defensive: Ensure we don't try to remove more bytes than available
+        var bytesToRemove = Math.Min(frameLength, buffer.Count);
 
-        buffer.RemoveRange(0, frameLength);
+        // If we can't get a complete frame, skip the magic byte and try again
+        if (bytesToRemove < frameLength)
+        {
+            buffer.RemoveAt(0);
+            return true;
+        }
+
+        // Extra defensive check: verify buffer still has enough bytes
+        if (bytesToRemove > buffer.Count || bytesToRemove <= 0)
+        {
+            // Buffer state changed unexpectedly, skip magic byte
+            if (buffer.Count > 0)
+            {
+                buffer.RemoveAt(0);
+            }
+            return true;
+        }
+
+        var rawBytes = buffer.GetRange(0, bytesToRemove).ToArray();
+
+        // Final check before RemoveRange
+        if (bytesToRemove > buffer.Count)
+        {
+            return true;
+        }
+
+        buffer.RemoveRange(0, bytesToRemove);
 
         var sequence = rawBytes[4];
         var systemId = rawBytes[5];

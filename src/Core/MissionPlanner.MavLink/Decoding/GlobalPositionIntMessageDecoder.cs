@@ -17,7 +17,9 @@ public sealed class GlobalPositionIntMessageDecoder : IMavLinkMessageDecoder
             return false;
         }
 
-        if (frame.Payload.Length < 28)
+        // MAVLink v2 uses payload truncation (removes trailing zeros)
+        // Minimum required: time_boot_ms(4) + lat(4) + lon(4) + alt(4) = 16 bytes
+        if (frame.Payload.Length < 16)
         {
             return false;
         }

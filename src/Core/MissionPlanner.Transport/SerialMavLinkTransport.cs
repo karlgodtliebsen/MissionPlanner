@@ -117,37 +117,68 @@ public sealed class SerialMavLinkTransport : ISerialMavLinkTransport
 
 
     /// <inheritdoc />
-    public Task DisconnectAsync(CancellationToken cancellationToken = default)
+    public async Task DisconnectAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         try
         {
             if (serialPort.IsOpen)
             {
+                // Discard buffers before closing to ensure clean shutdown
+                serialPort.DiscardInBuffer();
+                serialPort.DiscardOutBuffer();
+
                 serialPort.Close();
+
+                // Give the OS time to fully release the port (Windows-specific issue)
+                // This prevents "Access denied" errors when reopening quickly
+                await Task.Delay(100, cancellationToken).ConfigureAwait(false);
             }
 
             logger.LogTrace("Serial port {PortName} closed.", serialPort.PortName);
+        }
+        catch (OperationCanceledException)
+        {
+            // Don't log cancellation as an error
+            throw;
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Non Fatal Error. Failed to close serial port {PortName}.", serialPort.PortName);
         }
-
-        return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
-        if (serialPort.IsOpen)
+        try
         {
-            serialPort.Close();
-        }
+            if (serialPort.IsOpen)
+            {
+                // Discard buffers before closing
+                try
+                {
+                    serialPort.DiscardInBuffer();
+                    serialPort.DiscardOutBuffer();
+                }
+                catch
+                {
+                    // Ignore errors discarding buffers during disposal
+                }
 
-        serialPort.Dispose();
-        GC.SuppressFinalize(this);
-        logger.LogTrace("Serial port {PortName} disposed.", serialPort.PortName);
-        return ValueTask.CompletedTask;
+                serialPort.Close();
+
+                // Give OS time to release the port
+                await Task.Delay(100).ConfigureAwait(false);
+            }
+
+            serialPort.Dispose();
+            GC.SuppressFinalize(this);
+            logger.LogTrace("Serial port {PortName} disposed.", serialPort.PortName);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error disposing serial port {PortName}.", serialPort.PortName);
+        }
     }
 }
