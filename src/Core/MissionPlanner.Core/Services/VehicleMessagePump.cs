@@ -40,15 +40,22 @@ public sealed class VehicleMessagePump(
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        /*Action<MavLinkMessage> message,*/
-        //logger.LogTrace("VehicleMessagePump - Starting Event Subscription.");
+        if (logger.IsEnabled(LogLevel.Trace))
+        {
+            logger.LogTrace("VehicleMessagePump - Starting Event Subscription.");
+        }
+
         subscription = eventHub.SubscribeAsync<MavLinkMessage>(MavLinkEventTopics.ReceivedMessage, HandleMessage);
         return Task.CompletedTask;
     }
 
     private async Task HandleMessage(MavLinkMessage message, CancellationToken cancellationToken)
     {
-        //logger.LogTrace("VehicleMessagePump - Received {MessageType} {@Message}", message.GetType().Name, message);
+        if (logger.IsEnabled(LogLevel.Trace))
+        {
+            logger.LogTrace("VehicleMessagePump - Received {MessageType} {@Message}", message.GetType().Name, message);
+        }
+
         switch (message)
         {
             case HeartbeatMessage heartbeat:
@@ -84,6 +91,49 @@ public sealed class VehicleMessagePump(
                 commandAckTracker.Handle(commandAck);
                 await eventHub.PublishAsync<CommandAckMessage>(MavLinkEventTopics.NewMessage, commandAck, cancellationToken);
                 break;
+
+
+            case Ahrs2Message ahrs2:
+                await ahrs2Handler.Handle(ahrs2, cancellationToken);
+                await eventHub.PublishAsync<Ahrs2Message>(MavLinkEventTopics.NewMessage, ahrs2, cancellationToken);
+                break;
+            case GpsRawIntMessage gpsRawInt:
+                //await gpsRawIntHandler.Handle(gpsRawInt, cancellationToken);
+                await eventHub.PublishAsync<GpsRawIntMessage>(MavLinkEventTopics.NewMessage, gpsRawInt, cancellationToken);
+                break;
+
+            case MemoryVectMessage memoryVect:
+                //await memoryVectHandler.Handle(memoryVect, cancellationToken);
+                await eventHub.PublishAsync<MemoryVectMessage>(MavLinkEventTopics.NewMessage, memoryVect, cancellationToken);
+                break;
+
+            case MissionCurrentMessage commandAck:
+                // missionCurrentHandler.Handle(commandAck);
+                await eventHub.PublishAsync<MissionCurrentMessage>(MavLinkEventTopics.NewMessage, commandAck, cancellationToken);
+                break;
+            case NavControllerOutputMessage navControllerOutput:
+                //   navControllerOutputHandler.Handle(navControllerOutput);
+                await eventHub.PublishAsync<NavControllerOutputMessage>(MavLinkEventTopics.NewMessage, navControllerOutput, cancellationToken);
+                break;
+
+            case PowerStatusMessage powerStatus:
+                //  powerStatusHandler.Handle(powerStatus);
+                await eventHub.PublishAsync<PowerStatusMessage>(MavLinkEventTopics.NewMessage, powerStatus, cancellationToken);
+                break;
+
+            case RawImuMessage rawImu:
+                //    rawImuHandler.Handle(rawImu);
+                await eventHub.PublishAsync<RawImuMessage>(MavLinkEventTopics.NewMessage, rawImu, cancellationToken);
+                break;
+            case ScaledPressureMessage scaledPressure:
+                //   scaledPressureHandler.Handle(scaledPressure);
+                await eventHub.PublishAsync<ScaledPressureMessage>(MavLinkEventTopics.NewMessage, scaledPressure, cancellationToken);
+                break;
+            case TimeSyncMessage timeSync:
+                //   timeSyncHandler.Handle(timeSync);
+                await eventHub.PublishAsync<TimeSyncMessage>(MavLinkEventTopics.NewMessage, timeSync, cancellationToken);
+                break;
+
             default:
                 logger.LogError("VehicleMessagePump - Received unknown message type: {MessageType} {@Message}", message.GetType().Name, message);
                 break;

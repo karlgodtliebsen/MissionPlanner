@@ -1,45 +1,47 @@
-﻿using MissionPlanner.Library;
+﻿using System.Threading.Channels;
 using MissionPlanner.Transport;
 
 namespace MissionPlanner.MavLink.Client;
 
 /// <summary>
-/// Represents a MAVLink client that can send and receive data from a MAVLink transport.
+/// Interface for a MAVLink client.
 /// </summary>
 public interface IMavLinkClient : IAsyncDisposable
 {
     /// <summary>
-    /// Occurs when data is received from the MAVLink transport.
-    /// </summary>
-    event Func<MavLinkDataReceived, CancellationToken, Task>? DataReceived;
-
-    /// <summary>
-    /// Gets a value indicating whether the MAVLink client is currently running and receiving data.
+    /// Gets a value indicating whether the MAVLink client is running.
     /// </summary>
     bool IsRunning { get; }
 
     /// <summary>
-    /// Gets a value indicating whether the MAVLink client is connected to the transport.
-    /// </summary>
+    /// Gets a value indicating whether the MAVLink client is connected.
+    /// </summary>  
     bool IsConnected { get; }
 
     /// <summary>
-    /// Starts the MAVLink client and begins receiving data.
+    /// Stream of received byte blocks. Each item is owned by the consumer and must be disposed.
     /// </summary>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    ChannelReader<PooledMavLinkDataReceived> ReceivedBytes { get; }
+
+    /// <summary>
+    /// Starts the MAVLink client, initiating the reception loop and enabling data transmission.
+    /// </summary>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     Task StartAsync(CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Sends data to the MAVLink transport.
+    /// Stops the MAVLink client, terminating the reception loop and disabling data transmission. 
     /// </summary>
-    /// <param name="data">The data to send.</param>
-    /// <param name="endPoint">The endpoint to send the data to.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <exception cref="InvalidOperationException">Thrown if the transport is not connected.</exception>
-    ValueTask SendAsync(ReadOnlyMemory<byte> data, TransportEndPoint endPoint, CancellationToken cancellationToken = default);
+    /// <returns></returns>
+    Task StopAsync();
 
     /// <summary>
-    /// Stops the MAVLink client and cancels any ongoing operations.
+    /// Sends data asynchronously to the specified transport endpoint.
     /// </summary>
-    Task StopAsync();
+    /// <param name="data"></param>
+    /// <param name="endPoint"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    ValueTask SendAsync(ReadOnlyMemory<byte> data, TransportEndPoint endPoint, CancellationToken cancellationToken = default);
 }

@@ -231,10 +231,9 @@ public class VehicleConnectionService(
 
         try
         {
-            // Start the client (begins receiving data)
-            await client.StartAsync(timeoutCts.Token);
-
-            // Wait for vehicle registration or timeout
+            // The connection session has already started MavLinkConnection, which starts the client.
+            // Do not call client.StartAsync() here; doing so can race with connection.StartAsync() and create
+            // multiple serial receive loops against the same COM port.
             var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(timeout, timeoutCts.Token));
 
             if (completedTask == tcs.Task)

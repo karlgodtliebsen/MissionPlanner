@@ -18,7 +18,7 @@ public sealed class HeartbeatVehicleHandler(IVehicleRegistry vehicleRegistry, ID
     {
         if (logger.IsEnabled(LogLevel.Trace))
         {
-            logger.LogTrace("HeartbeatVehicleHandler - Handling heartbeat message from vehicle {VehicleId} {@Message}", new VehicleId(message.SystemId, message.ComponentId), message);
+            logger.LogTrace("HeartbeatVehicleHandler - Handling heartbeat message from vehicle {VehicleId} {MessageId}", new VehicleId(message.SystemId, message.ComponentId), message.MessageId);
         }
 
         var vehicleId = new VehicleId(message.SystemId, message.ComponentId);

@@ -225,6 +225,8 @@ public class VehicleSerialCommunicationTests
         //If timeout happens, then the vehicle is not registered due to missing HeartbeatMessage, but it may be connected and receiving AttitudeMessage.
         await ts.Task.WaitAsync(TimeSpan.FromSeconds(30), ct);
 
+        ct = new CancellationTokenSource(TimeSpan.FromSeconds(120)).Token;
+
         Assert.True(vehicleRegistered);
         DomainException.ThrowIfNull(connection.VehicleId);
         DomainException.ThrowIfNull(connection.ConnectionSession);
@@ -232,6 +234,8 @@ public class VehicleSerialCommunicationTests
         var vehicleId = connection.VehicleId.Value;
 
         CancellationTokenSource ctsProgress = new();
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        cts.CancelAfter(TimeSpan.FromSeconds(120));
 
         var session = serviceProvider.GetRequiredService<IVehicleConnectionSession>();
         var vehicleParameterStreamService = session.ParameterStreamService;

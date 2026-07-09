@@ -55,6 +55,26 @@ public static class MessageIds
     /// </summary>
     public const uint CommandAck = 77;
 
+
+    public const uint GpsRawInt = 24;
+    public const uint RawImu = 27;
+    public const uint ScaledPressure = 29;
+    public const uint LocalPositionNed = 32; //
+    public const uint ServoOutputRaw = 36;
+    public const uint MissionCurrent = 42;
+    public const uint NavControllerOutput = 62;
+    public const uint RcChannels = 65; //
+    public const uint VfrHud = 74; //
+
+
+    public const uint TimeSync = 111;
+
+    public const uint PowerStatus = 125;
+    public const uint BatteryStatus = 147; //
+    public const uint MemInfo = 152;
+    public const uint Ahrs2 = 178;
+    public const uint EkfStatusReport = 193;
+
     /// <summary>
     /// 
     /// </summary>

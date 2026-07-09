@@ -56,6 +56,66 @@ public sealed class CommonMavLinkCrcExtraProvider : IMavLinkCrcExtraProvider
                 crcExtra = 83;
                 return true;
 
+            case MessageIds.GpsRawInt:
+                crcExtra = 24;
+                return true;
+
+            case MessageIds.RawImu:
+                crcExtra = 144;
+                return true;
+
+            case MessageIds.ScaledPressure:
+                crcExtra = 115;
+                return true;
+
+            case MessageIds.LocalPositionNed:
+                crcExtra = 185;
+                return true;
+
+            case MessageIds.ServoOutputRaw:
+                crcExtra = 222;
+                return true;
+
+            case MessageIds.MissionCurrent:
+                crcExtra = 28;
+                return true;
+
+            case MessageIds.NavControllerOutput:
+                crcExtra = 183;
+                return true;
+
+            case MessageIds.RcChannels:
+                crcExtra = 118;
+                return true;
+
+            case MessageIds.VfrHud:
+                crcExtra = 20;
+                return true;
+
+            case MessageIds.Timesync:
+                crcExtra = 34;
+                return true;
+
+            case MessageIds.PowerStatus:
+                crcExtra = 203;
+                return true;
+
+            case MessageIds.BatteryStatus:
+                crcExtra = 154;
+                return true;
+
+            case MessageIds.MemInfo:
+                crcExtra = 208;
+                return true;
+
+            case MessageIds.Ahrs2:
+                crcExtra = 47;
+                return true;
+
+            case MessageIds.EkfStatusReport:
+                crcExtra = 71;
+                return true;
+
 
             default:
                 crcExtra = 0;

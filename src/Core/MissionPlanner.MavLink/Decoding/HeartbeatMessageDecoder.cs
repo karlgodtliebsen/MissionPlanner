@@ -9,6 +9,12 @@ namespace MissionPlanner.MavLink.Decoding;
 /// </summary>
 public sealed class HeartbeatMessageDecoder : IMavLinkMessageDecoder
 {
+    /// <inheritdoc />
+    public uint MessageId { get; } = MessageIds.Heartbeat;
+
+    /// <inheritdoc />
+    public byte CrcExtra { get; } = 50;
+
     /// <summary>
     /// Tries to decode a MAVLink Heartbeat message from the given frame.
     /// </summary>

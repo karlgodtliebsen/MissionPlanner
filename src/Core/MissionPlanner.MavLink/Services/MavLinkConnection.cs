@@ -1,103 +1,259 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Threading.Channels;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MissionPlanner.Library;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Client;
+using MissionPlanner.MavLink.Messages;
 using MissionPlanner.Transport;
 
 namespace MissionPlanner.MavLink.Services;
 
 /// <summary>
-/// Represents a connection to a MAVLink device, managing the reception and decoding of MAVLink frames and messages.
+/// Owns the MAVLink processing pipeline: received byte blocks -> frames -> decoded messages -> event hub.
+/// The serial receive loop is intentionally not blocked by frame decoding or event subscribers.
 /// </summary>
 public sealed class MavLinkConnection : IMavLinkConnection, IAsyncDisposable
 {
-    private IMavLinkClient? client;
+    private readonly IMavLinkClient client;
     private readonly IMavLinkFrameParser frameParser;
     private readonly IMavLinkMessageDecoder messageDecoder;
     private readonly IEventHub eventHub;
     private readonly ILogger<MavLinkConnection> logger;
+    private readonly MavLinkConnectionPipelineOptions options;
+    private readonly SemaphoreSlim lifecycleLock = new(1, 1);
+    private Channel<DecodedMavLinkMessage>? decodedMessages;
+
+    private CancellationTokenSource? cancellationTokenSource;
+    private Task? parseTask;
+    private Task? publishTask;
+    private bool disposed;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="MavLinkConnection"/> class with the specified dependencies. 
+    /// Initializes a new instance of the <see cref="MavLinkConnection"/> class.
     /// </summary>
-    /// <param name="client"></param>
-    /// <param name="frameParser"></param>
-    /// <param name="messageDecoder"></param>
-    /// <param name="eventHub"></param>
-    /// <param name="logger">The logger instance to use for logging.</param>
+    /// <param name="client">The MAVLink client.</param>
+    /// <param name="frameParser">The frame parser.</param>
+    /// <param name="messageDecoder">The message decoder.</param>
+    /// <param name="eventHub">The event hub.</param>
+    /// <param name="options">The MAVLink connection pipeline options.</param>
+    /// <param name="logger">The logger.</param>
     /// <exception cref="ArgumentNullException"></exception>
-    public MavLinkConnection(IMavLinkClient client, IMavLinkFrameParser frameParser, IMavLinkMessageDecoder messageDecoder, IEventHub eventHub, ILogger<MavLinkConnection> logger)
+    public MavLinkConnection(
+        IMavLinkClient client,
+        IMavLinkFrameParser frameParser,
+        IMavLinkMessageDecoder messageDecoder,
+        IEventHub eventHub,
+        IOptions<MavLinkConnectionPipelineOptions> options,
+        ILogger<MavLinkConnection> logger)
     {
         this.client = client ?? throw new ArgumentNullException(nameof(client));
         this.frameParser = frameParser ?? throw new ArgumentNullException(nameof(frameParser));
         this.messageDecoder = messageDecoder ?? throw new ArgumentNullException(nameof(messageDecoder));
         this.eventHub = eventHub ?? throw new ArgumentNullException(nameof(eventHub));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.client.DataReceived += OnDataReceivedAsync;
+        this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+        this.options.Validate();
+
+        
     }
 
-    /// <summary>
-    /// Starts the MAVLink connection, allowing it to receive and process incoming data.
-    /// </summary>
-    /// <param name="cancellationToken"></param>
+
+    /// <inheritdoc />
     public async Task StartAsync(CancellationToken cancellationToken = default)
     {
-        DomainException.ThrowIfNull(client, nameof(client));
-        await client.StartAsync(cancellationToken).ConfigureAwait(false);
-        logger.LogTrace("MavLinkConnection - MAVLink connection started.");
-    }
+        ThrowIfDisposed();
 
-
-    /// <summary>
-    /// Sends raw MAVLink data through the connection.
-    /// </summary>
-    /// <param name="data">The raw MAVLink data to send.</param>
-    /// <param name="endPoint"></param>
-    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-    public async ValueTask SendRawAsync(ReadOnlyMemory<byte> data, TransportEndPoint endPoint, CancellationToken cancellationToken = default)
-    {
-        DomainException.ThrowIfNull(client, nameof(client));
-        logger.LogTrace("MavLinkConnection - Sending raw MAVLink data.");
-        await client.SendAsync(data, endPoint, cancellationToken).ConfigureAwait(false);
-    }
-
-
-    private async Task OnDataReceivedAsync(MavLinkDataReceived received, CancellationToken cancellationToken)
-    {
-        logger.LogTrace("MavLinkConnection - Data received at {ReceivedAt}", received.ReceivedAt);
-        var parsedFrames = frameParser.Parse(received.Data.Span, received.RemoteEndpoint, received.ReceivedAt);
-
-        foreach (var frame in parsedFrames)
+        await lifecycleLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
         {
-            logger.LogTrace("MavLinkConnection - Processing frame {frame}", frame.MessageId);
-
-            // await eventHub.PublishAsync(MavLinkEventTopics.ReceivedFrame, frame, cancellationToken);
-
-            if (messageDecoder.TryDecode(frame, out var message) && message is not null)
+            if (cancellationTokenSource is not null)
             {
-                logger.LogTrace("MavLinkConnection - Writing Decoded Message { MessageType}", message.GetType().Name);
-                await eventHub.PublishAsync(MavLinkEventTopics.ReceivedMessage, message, cancellationToken);
-                //return;
+                return;
             }
-            else
+
+            cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            decodedMessages = Channel.CreateBounded<DecodedMavLinkMessage>(new BoundedChannelOptions(options.DecodedMessageChannelCapacity)
             {
-                logger.LogError("MavLinkConnection - Failed to decode message from frame {frame}", frame.MessageId);
+                SingleWriter = true,
+                SingleReader = true,
+                FullMode = BoundedChannelFullMode.Wait,
+                AllowSynchronousContinuations = false
+            });
+
+            await client.StartAsync(cancellationTokenSource.Token).ConfigureAwait(false);
+
+            parseTask = Task.Run(() => ParseLoopAsync(cancellationTokenSource.Token), CancellationToken.None);
+            publishTask = Task.Run(() => PublishLoopAsync(cancellationTokenSource.Token), CancellationToken.None);
+
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                logger.LogDebug("MAVLink connection pipeline started.");
             }
+        }
+        finally
+        {
+            lifecycleLock.Release();
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
+    public async ValueTask SendRawAsync(ReadOnlyMemory<byte> data, TransportEndPoint endPoint, CancellationToken cancellationToken = default)
+    {
+        ThrowIfDisposed();
+        await client.SendAsync(data, endPoint, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task ParseLoopAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await foreach (var received in client.ReceivedBytes.ReadAllAsync(cancellationToken).ConfigureAwait(false))
+            {
+                using (received)
+                {
+                    IReadOnlyList<MavLinkFrame> frames;
+                    DomainException.ThrowIfNull(received.RemoteEndpoint);
+                    try
+                    {
+                        frames = frameParser.Parse(received.Span, received.RemoteEndpoint, received.ReceivedAt);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogWarning(ex, "Failed to parse MAVLink byte block with {ByteCount} bytes.", received.Length);
+                        continue;
+                    }
+
+                    foreach (var frame in frames)
+                    {
+                        if (!messageDecoder.TryDecode(frame, out var message) || message is null)
+                        {
+                            if (logger.IsEnabled(LogLevel.Warning))
+                            {
+                                logger.LogWarning("Failed to decode MAVLink frame. MessageId={MessageId}, SystemId={SystemId}, ComponentId={ComponentId}",
+                                    frame.MessageId,
+                                    frame.SystemId,
+                                    frame.ComponentId);
+                            }
+
+                            continue;
+                        }
+
+                        await decodedMessages!.Writer.WriteAsync(new DecodedMavLinkMessage(message, received.ReceivedAt), cancellationToken).ConfigureAwait(false);
+
+                        if (logger.IsEnabled(LogLevel.Trace))
+                        {
+                            logger.LogTrace("Decoded MAVLink message {MessageType}.", message.GetType().Name);
+                        }
+                    }
+                }
+            }
+
+            decodedMessages?.Writer.TryComplete();
+        }
+        catch (OperationCanceledException ex)
+        {
+            decodedMessages?.Writer.TryComplete(ex);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Unexpected exception in MAVLink parse loop.");
+            decodedMessages?.Writer.TryComplete(ex);
+        }
+    }
+
+    private async Task PublishLoopAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await foreach (var decoded in decodedMessages!.Reader.ReadAllAsync(cancellationToken).ConfigureAwait(false))
+            {
+                if (decoded.Message is MavLinkMessage message)
+                {
+                    await eventHub.PublishAsync<MavLinkMessage>(MavLinkEventTopics.ReceivedMessage, message, cancellationToken).ConfigureAwait(false);
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Normal shutdown path.
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Unexpected exception in MAVLink publish loop.");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Stops the MAVLink connection and associated tasks.
+    /// </summary>
+    public async Task StopAsync()
+    {
+        await lifecycleLock.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            if (cancellationTokenSource is null)
+            {
+                return;
+            }
+
+            await cancellationTokenSource.CancelAsync().ConfigureAwait(false);
+            await client.StopAsync().ConfigureAwait(false);
+
+            if (parseTask is not null)
+            {
+                try
+                {
+                    await parseTask.ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Normal shutdown path.
+                }
+            }
+
+            if (publishTask is not null)
+            {
+                try
+                {
+                    await publishTask.ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Normal shutdown path.
+                }
+            }
+
+            decodedMessages?.Writer.TryComplete();
+            decodedMessages = null;
+            cancellationTokenSource.Dispose();
+            cancellationTokenSource = null;
+            parseTask = null;
+            publishTask = null;
+        }
+        finally
+        {
+            lifecycleLock.Release();
+        }
+    }
+
+    /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        if (client is null)
+        if (disposed)
         {
             return;
         }
 
-        client.DataReceived -= OnDataReceivedAsync;
+        await StopAsync().ConfigureAwait(false);
         await client.DisposeAsync().ConfigureAwait(false);
-        client = null;
+        disposed = true;
         GC.SuppressFinalize(this);
-        logger.LogTrace("MavLinkConnection - MAVLink connection disposed.");
+    }
+
+    private void ThrowIfDisposed()
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
     }
 }

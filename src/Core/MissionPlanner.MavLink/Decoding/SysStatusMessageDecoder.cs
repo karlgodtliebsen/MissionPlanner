@@ -7,6 +7,12 @@ namespace MissionPlanner.MavLink.Decoding;
 /// <inheritdoc />
 public sealed class SysStatusMessageDecoder : IMavLinkMessageDecoder
 {
+    /// <inheritdoc />
+    public uint MessageId { get; } = MessageIds.SysStatus;
+
+    /// <inheritdoc />
+    public byte CrcExtra { get; } = 124;
+
     /// <inheritdoc />  
     public bool TryDecode(MavLinkFrame frame, out MavLinkMessage? message)
     {

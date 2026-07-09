@@ -8,6 +8,12 @@ namespace MissionPlanner.MavLink.Decoding;
 public sealed class GlobalPositionIntMessageDecoder : IMavLinkMessageDecoder
 {
     /// <inheritdoc />
+    public uint MessageId { get; } = MessageIds.GlobalPositionInt;
+
+    /// <inheritdoc />
+    public byte CrcExtra { get; } = 104;
+
+    /// <inheritdoc />
     public bool TryDecode(MavLinkFrame frame, out MavLinkMessage? message)
     {
         message = null;

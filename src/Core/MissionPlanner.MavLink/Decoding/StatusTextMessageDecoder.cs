@@ -5,10 +5,16 @@ using MissionPlanner.MavLink.Services;
 namespace MissionPlanner.MavLink.Decoding;
 
 /// <summary>
-/// Decodes MAVLink statustext messages.
+/// Decodes MAVLink status text messages.
 /// </summary>
 public sealed class StatusTextMessageDecoder : IMavLinkMessageDecoder
 {
+    /// <inheritdoc />
+    public uint MessageId { get; } = MessageIds.StatusText;
+
+    /// <inheritdoc />
+    public byte CrcExtra { get; } = 0;
+
     /// <inheritdoc/>
     public bool TryDecode(MavLinkFrame frame, out MavLinkMessage? message)
     {

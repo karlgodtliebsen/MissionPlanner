@@ -1,5 +1,4 @@
-using System.Buffers.Binary;
-using System.Text;
+﻿using System.Buffers.Binary;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.MavLink.Services;
@@ -11,6 +10,12 @@ namespace MissionPlanner.MavLink.Decoding;
 /// </summary>
 public sealed class ParamValueMessageDecoder : IMavLinkMessageDecoder
 {
+    /// <inheritdoc />
+    public uint MessageId { get; } = MessageIds.ParamValue;
+
+    /// <inheritdoc />
+    public byte CrcExtra { get; } = 22;
+
     /// <summary>
     /// Tries to decode a MAVLink PARAM_VALUE message from the given frame.
     /// </summary>

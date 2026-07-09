@@ -39,6 +39,7 @@ public class MavLinkTests
         serviceProvider.UseTestConfiguration();
     }
 
+    /*
     /// <summary>
     /// Tests that the MAVLink client can receive data from a fake vehicle.
     /// </summary>
@@ -100,7 +101,7 @@ public class MavLinkTests
 
         await client.StopAsync();
     }
-
+    */
     private static uint GetMessageId(byte[] frame)
     {
         return

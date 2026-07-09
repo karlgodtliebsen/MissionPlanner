@@ -9,6 +9,12 @@ namespace MissionPlanner.MavLink.Decoding;
 /// </summary>
 public sealed class CommandAckMessageDecoder : IMavLinkMessageDecoder
 {
+    /// <inheritdoc />
+    public uint MessageId { get; } = MessageIds.CommandAck;
+
+    /// <inheritdoc />
+    public byte CrcExtra { get; } = 143;
+
     /// <inheritdoc/>
     public bool TryDecode(MavLinkFrame frame, out MavLinkMessage? message)
     {

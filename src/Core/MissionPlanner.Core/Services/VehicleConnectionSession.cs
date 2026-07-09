@@ -91,9 +91,6 @@ public sealed class VehicleConnectionSession(
         }
 
         serviceCts = new CancellationTokenSource();
-        var transportOptions = serviceFactory.Create<IOptions<TransportEndpoint>>();
-        transportOptions.Value.Protocol = "serial";
-        configure?.Invoke(transportOptions.Value);
         var registry = serviceFactory.Create<IVehicleRegistry>();
 
         // Publish Reset event
@@ -102,7 +99,7 @@ public sealed class VehicleConnectionSession(
         // Create serial transport
         transport = domainFactory.Create<ISerialMavLinkTransport, string, int>(portName, baudRate);
         // Create MAVLink client
-        client = domainFactory.Create<IMavLinkClient, ISerialMavLinkTransport, IOptions<TransportEndpoint>, IDateTimeProvider>((ISerialMavLinkTransport)transport, transportOptions, dateTimeProvider);
+        client = domainFactory.Create<IMavLinkClient, ISerialMavLinkTransport>((ISerialMavLinkTransport)transport);
 
         messagePump = serviceFactory.Create<IVehicleMessagePump>();
         connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
@@ -211,7 +208,9 @@ public sealed class VehicleConnectionSession(
             registry.Reset();
 
 
-            // Stop background tasks gracefully
+            // Stop background tasks gracefully. Cancel first; otherwise the wait below just waits for the timeout.
+            await serviceCts.CancelAsync().ConfigureAwait(false);
+
             var tasksToWait = new List<Task>();
             if (messagePumpTask is not null && !messagePumpTask.IsCompleted)
             {
