@@ -77,7 +77,7 @@ public sealed class MavLinkConnection : IMavLinkConnection, IAsyncDisposable
             {
                 logger.LogTrace("MavLinkConnection - Writing Decoded Message { MessageType}", message.GetType().Name);
                 await eventHub.PublishAsync(MavLinkEventTopics.ReceivedMessage, message, cancellationToken);
-                return;
+                //return;
             }
             else
             {

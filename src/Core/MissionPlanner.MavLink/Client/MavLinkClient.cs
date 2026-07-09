@@ -81,6 +81,11 @@ public sealed class MavLinkClient : IMavLinkClient
     private async Task ReceiveLoopAsync(CancellationToken cancellationToken)
     {
         var buffer = new byte[receiveBufferSize];
+        var handler = DataReceived;
+        if (handler is null)
+        {
+            throw new InvalidOperationException("No handlers subscribed to DataReceived event.");
+        }
 
         try
         {
@@ -98,13 +103,7 @@ public sealed class MavLinkClient : IMavLinkClient
                 buffer.AsMemory(0, result.BytesRead).CopyTo(copy);
 
                 var received = new MavLinkDataReceived(copy, result.RemoteEndpoint, dateTimeProvider.UtcNow);
-
-                var handler = DataReceived;
-
-                if (handler is not null)
-                {
-                    await handler(received, cancellationToken).ConfigureAwait(false);
-                }
+                await handler(received, cancellationToken).ConfigureAwait(false);
             }
         }
         catch (OperationCanceledException)

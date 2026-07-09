@@ -254,7 +254,10 @@ public class EventHub(ILogger<EventHub> logger) : IEventHub
         }
         else
         {
-            logger.LogWarning("genericDataSubscribers Found No Subscribers for event {EventName} with data type {DataType}", @event, data.GetType().Name);
+            if (logger.IsEnabled(LogLevel.Trace))
+            {
+                logger.LogWarning("genericDataSubscribers Found No Subscribers for event {EventName} with data type {DataType}", @event, data.GetType().Name);
+            }
         }
 
         BroadCastEvent(key);
@@ -284,7 +287,10 @@ public class EventHub(ILogger<EventHub> logger) : IEventHub
         }
         else
         {
-            logger.LogWarning("genericDataSubscribers Found No Subscribers for event {EventName} with data type {DataType}", @event, data.GetType().Name);
+            if (logger.IsEnabled(LogLevel.Trace))
+            {
+                logger.LogWarning("genericDataSubscribers Found No Subscribers for event {EventName} with data type {DataType}", @event, data.GetType().Name);
+            }
         }
 
         BroadCastEvent(key);
@@ -308,7 +314,10 @@ public class EventHub(ILogger<EventHub> logger) : IEventHub
         }
         else
         {
-            logger.LogWarning("subscribers Found No Subscribers for event {EventName}", @event);
+            if (logger.IsEnabled(LogLevel.Trace))
+            {
+                logger.LogWarning("subscribers Found No Subscribers for event {EventName}", @event);
+            }
         }
 
         BroadCastEvent(@event);
@@ -332,7 +341,10 @@ public class EventHub(ILogger<EventHub> logger) : IEventHub
         }
         else
         {
-            logger.LogWarning("asyncSubscribers Found No Subscribers for event {EventName}", @event);
+            if (logger.IsEnabled(LogLevel.Trace))
+            {
+                logger.LogWarning("asyncSubscribers Found No Subscribers for event {EventName}", @event);
+            }
         }
 
         BroadCastEvent(@event);
