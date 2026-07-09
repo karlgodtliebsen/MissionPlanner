@@ -53,7 +53,7 @@ public class ConfigurationTests
         serviceProvider.GetRequiredService<IMavLinkFrameParser>();
         serviceProvider.GetRequiredService<IMavLinkCommandEncoder>();
         serviceProvider.GetRequiredService<IMavLinkCrcExtraProvider>();
-        serviceProvider.GetRequiredService<IMavLinkMessageDecoder>();
+        //  serviceProvider.GetRequiredService<IMavLinkMessageDecoder>();
 
         serviceProvider.GetRequiredService<IMavLinkConnection>();
         serviceProvider.GetRequiredService<IVehicleMessagePump>();
@@ -61,12 +61,10 @@ public class ConfigurationTests
         serviceProvider.GetRequiredService<IVehicleCommandService>();
         serviceProvider.GetRequiredService<IVehicleRegistry>();
         serviceProvider.GetRequiredService<IVehicleService>();
+
         serviceProvider.GetRequiredService<IVehicleConnectionMonitor>();
-
         serviceProvider.GetRequiredService<IHeartbeatVehicleHandler>();
-
         serviceProvider.GetRequiredService<IAttitudeVehicleHandler>();
-
         serviceProvider.GetRequiredService<IBatteryVehicleHandler>();
         serviceProvider.GetRequiredService<IPositionVehicleHandler>();
         serviceProvider.GetRequiredService<IStatusTextHandler>();
@@ -92,8 +90,9 @@ public class ConfigurationTests
         // Create serial transport
         var transport = domainFactory.Create<ISerialMavLinkTransport, string, int>(portName, baudRate);
         Assert.NotNull(transport);
+
         // Create MAVLink client
-        var client = domainFactory.Create<IMavLinkClient, ISerialMavLinkTransport, IOptions<TransportEndpoint>, IDateTimeProvider>(transport, transportOptions, dateTimeProvider);
+        var client = domainFactory.Create<IMavLinkClient, ISerialMavLinkTransport>(transport);
         Assert.NotNull(client);
 
         var connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);

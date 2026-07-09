@@ -13,14 +13,14 @@ public sealed class StatusTextMessageDecoder : IMavLinkMessageDecoder
     public uint MessageId { get; } = MessageIds.StatusText;
 
     /// <inheritdoc />
-    public byte CrcExtra { get; } = 0;
+    public byte CrcExtra { get; } = 83;
 
     /// <inheritdoc/>
     public bool TryDecode(MavLinkFrame frame, out MavLinkMessage? message)
     {
         message = null;
 
-        if (frame.MessageId != MessageIds.StatusText)
+        if (frame.MessageId != MessageId)
         {
             return false;
         }

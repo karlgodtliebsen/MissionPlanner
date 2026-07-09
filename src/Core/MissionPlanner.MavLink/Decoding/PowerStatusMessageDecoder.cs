@@ -1,38 +1,44 @@
+﻿using MissionPlanner.MavLink.Decoding.Utils;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
 
 namespace MissionPlanner.MavLink.Decoding;
 
 /// <summary>
-/// Decodes MAVLink MISSION_CURRENT messages.
+/// Decodes MAVLink POWER_STATUS messages.
 /// </summary>
-public sealed class MissionCurrentMessageDecoder : IMavLinkMessageDecoder
+public sealed class PowerStatusMessageDecoder : IMavLinkMessageDecoder
 {
+    /// <inheritdoc />
+    public uint MessageId { get; } = MessageIds.PowerStatus;
+
+    /// <inheritdoc />
+    public byte CrcExtra { get; } = 203;
+
     /// <inheritdoc />
     public bool TryDecode(MavLinkFrame frame, out MavLinkMessage? message)
     {
         message = null;
 
-        if (frame.MessageId != MessageIds.MissionCurrent)
+        if (frame.MessageId != MessageId)
         {
             return false;
         }
 
-        if (frame.Payload.Length < 2)
+        if (frame.Payload.Length < 6)
         {
             return false;
         }
 
         var span = frame.Payload.Span;
 
-        message = new MissionCurrentMessage(
+        message = new PowerStatusMessage(
             frame.SystemId,
             frame.ComponentId,
             frame.EndPoint,
             MavLinkDecoderHelpers.ReadUInt16OrDefault(span, 0),
-            frame.Payload.Length >= 4 ? MavLinkDecoderHelpers.ReadUInt16OrDefault(span, 2) : null,
-            frame.Payload.Length >= 5 ? MavLinkDecoderHelpers.ReadByteOrDefault(span, 4) : null,
-            frame.Payload.Length >= 6 ? MavLinkDecoderHelpers.ReadByteOrDefault(span, 5) : null,
+            MavLinkDecoderHelpers.ReadUInt16OrDefault(span, 2),
+            MavLinkDecoderHelpers.ReadUInt16OrDefault(span, 4),
             frame.ReceivedAt);
 
         return true;

@@ -17,7 +17,7 @@ public sealed class MavLinkConnection : IMavLinkConnection, IAsyncDisposable
 {
     private readonly IMavLinkClient client;
     private readonly IMavLinkFrameParser frameParser;
-    private readonly IMavLinkMessageDecoder messageDecoder;
+    private readonly IMavLinkMessageDecodeHandler messageDecoder;
     private readonly IEventHub eventHub;
     private readonly ILogger<MavLinkConnection> logger;
     private readonly MavLinkConnectionPipelineOptions options;
@@ -42,7 +42,7 @@ public sealed class MavLinkConnection : IMavLinkConnection, IAsyncDisposable
     public MavLinkConnection(
         IMavLinkClient client,
         IMavLinkFrameParser frameParser,
-        IMavLinkMessageDecoder messageDecoder,
+        IMavLinkMessageDecodeHandler messageDecoder,
         IEventHub eventHub,
         IOptions<MavLinkConnectionPipelineOptions> options,
         ILogger<MavLinkConnection> logger)
@@ -54,8 +54,6 @@ public sealed class MavLinkConnection : IMavLinkConnection, IAsyncDisposable
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         this.options.Validate();
-
-        
     }
 
 
@@ -73,13 +71,7 @@ public sealed class MavLinkConnection : IMavLinkConnection, IAsyncDisposable
             }
 
             cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            decodedMessages = Channel.CreateBounded<DecodedMavLinkMessage>(new BoundedChannelOptions(options.DecodedMessageChannelCapacity)
-            {
-                SingleWriter = true,
-                SingleReader = true,
-                FullMode = BoundedChannelFullMode.Wait,
-                AllowSynchronousContinuations = false
-            });
+            decodedMessages = Channel.CreateBounded<DecodedMavLinkMessage>(new BoundedChannelOptions(options.DecodedMessageChannelCapacity) { SingleWriter = true, SingleReader = true, FullMode = BoundedChannelFullMode.Wait, AllowSynchronousContinuations = false });
 
             await client.StartAsync(cancellationTokenSource.Token).ConfigureAwait(false);
 

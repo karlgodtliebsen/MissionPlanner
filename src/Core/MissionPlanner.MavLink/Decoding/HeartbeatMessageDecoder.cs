@@ -25,7 +25,7 @@ public sealed class HeartbeatMessageDecoder : IMavLinkMessageDecoder
     {
         message = null;
 
-        if (frame.MessageId != MessageIds.Heartbeat)
+        if (frame.MessageId != MessageId)
         {
             return false;
         }

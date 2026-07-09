@@ -28,7 +28,7 @@ public class VehicleSerialCommunicationTests
 
     private readonly ILogger logger;
     private readonly IMavLinkFrameParser frameParser;
-    private readonly IMavLinkMessageDecoder messageDecoder;
+    private readonly IMavLinkMessageDecodeHandler messageDecoder;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VehicleTests"/> class.
@@ -44,7 +44,7 @@ public class VehicleSerialCommunicationTests
         serviceProvider.UseTestConfiguration();
         logger = serviceProvider.GetRequiredService<ILogger<VehicleSerialCommunicationTests>>();
         frameParser = serviceProvider.GetRequiredService<IMavLinkFrameParser>();
-        messageDecoder = serviceProvider.GetRequiredService<IMavLinkMessageDecoder>();
+        messageDecoder = serviceProvider.GetRequiredService<IMavLinkMessageDecodeHandler>();
     }
 
     /// <summary>
@@ -99,7 +99,7 @@ public class VehicleSerialCommunicationTests
         var transport = domainFactory.Create<ISerialMavLinkTransport, string, int>(portName, baudRate);
         Assert.NotNull(transport);
         // Create MAVLink client
-        var client = domainFactory.Create<IMavLinkClient, ISerialMavLinkTransport, IOptions<TransportEndpoint>, IDateTimeProvider>(transport, transportOptions, dateTimeProvider);
+        var client = domainFactory.Create<IMavLinkClient, ISerialMavLinkTransport>(transport);
         Assert.NotNull(client);
 
         var messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
@@ -276,136 +276,6 @@ public class VehicleSerialCommunicationTests
         }
     }
 
-
-    [Fact]
-    public async Task Diagnose_Parameter_Indices()
-    {
-        logger.LogInformation("New Test: Diagnose_Parameter_Indices");
-        var ct = new CancellationTokenSource(TimeSpan.FromSeconds(60)).Token;
-        var ts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var serialPortDiscoveryService = serviceProvider.GetRequiredService<ISerialPortDiscoveryService>();
-        var availablePorts = serialPortDiscoveryService.GetAvailablePorts();
-        Assert.True(availablePorts.Any(), "Connect a ArduPilot Vehicle");
-
-        var serviceFactory = serviceProvider.GetRequiredService<IServiceFactory>();
-        var domainEventHub = serviceProvider.GetRequiredService<IDomainEventHub>();
-
-        var transportOptions = serviceFactory.Create<IOptions<TransportEndpoint>>();
-        transportOptions.Value.Protocol = "serial";
-        var portName = availablePorts.First();
-        var baudRate = 115200;
-        var vehicleRegistered = false;
-        await using var vehicleConnectionService = serviceProvider.GetRequiredService<IVehicleConnectionService>();
-
-        using var eventSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleConnected>((VehicleConnected evt, CancellationToken ct) =>
-        {
-            logger.LogInformation("Test-Received VehicleConnected Message With Vehicle: {VehicleId}", evt.VehicleId);
-            vehicleRegistered = true;
-            ts.TrySetResult();
-            return Task.CompletedTask;
-        });
-        var connection = await vehicleConnectionService.ConnectSerialAsync(portName, baudRate, ct);
-        DomainException.ThrowIfNull(connection);
-
-        // 3. CRITICAL: Wait for vehicle to be ready
-        await Task.Delay(1500, ct); // 1.5 seconds
-
-        //If timeout happens, then the vehicle is not registered due to missing HeartbeatMessage, but it may be connected and receiving AttitudeMessage.
-        await ts.Task.WaitAsync(TimeSpan.FromSeconds(30), ct);
-
-        Assert.True(vehicleRegistered);
-        DomainException.ThrowIfNull(connection.VehicleId);
-        DomainException.ThrowIfNull(connection.ConnectionSession);
-
-        var vehicleId = connection.VehicleId.Value;
-        var parameterRegistry = serviceProvider.GetRequiredService<IVehicleParameterRegistry>();
-
-        CancellationTokenSource ctsProgress = new();
-
-        var session = serviceProvider.GetRequiredService<IVehicleConnectionSession>();
-        var vehicleParameterStreamService = session.ParameterStreamService;
-        IList<VehicleParameter> parameters = [];
-        var totalCount = 0;
-
-        IProgress<ParameterStreamProgress>? progress = new Progress<ParameterStreamProgress>(p =>
-        {
-            totalCount = p.TotalCount;
-            var progressCounter = (double)p.ReceivedCount / p.TotalCount;
-            var progressMessage = $"Loading parameters... {p.ReceivedCount}/{p.TotalCount}";
-            logger.LogDebug("{msg} {count}", progressMessage, progressCounter);
-        });
-        var result = await vehicleParameterStreamService.StreamAllParametersWithRetryAsync(vehicleId, progress, 3, cancellationToken: ctsProgress.Token);
-
-        if (result.Success)
-        {
-            foreach (var parameter in result.Parameters.Values)
-            {
-                parameters.Add(parameter);
-            }
-        }
-        else
-        {
-            throw new DomainException("Failed to retrieve parameters before Timeout");
-        }
-
-
-        // Let parameters stream in
-        await Task.Delay(TimeSpan.FromSeconds(10), ct);
-
-        var allParams = parameterRegistry.GetAllParameters(vehicleId);
-        totalCount = parameterRegistry.GetParameterCount(vehicleId) ?? 0;
-
-        logger.LogDebug($"Total count reported: {totalCount}");
-        logger.LogDebug($"Parameters received: {allParams.Count}");
-
-        // Analyze indices
-        var indices = allParams.Values.Select(p => p.Index).OrderBy(i => i).ToList();
-
-        logger.LogDebug($"\nIndices received: {indices.Count}");
-        logger.LogDebug($"Min index: {indices.Min()}");
-        logger.LogDebug($"Max index: {indices.Max()}");
-
-        // Check for index 65535 (invalid index)
-        var invalidIndices = allParams.Values.Where(p => p.Index == 65535).ToList();
-        logger.LogDebug($"\nParameters with index 65535 (invalid): {invalidIndices.Count}");
-        foreach (var p in invalidIndices.Take(10))
-        {
-            logger.LogDebug($"  {p.Name} = {p.Value}");
-        }
-
-        // Check for duplicates
-        var duplicates = indices.GroupBy(i => i).Where(g => g.Count() > 1).ToList();
-        logger.LogDebug($"\nDuplicate indices: {duplicates.Count}");
-        foreach (var dup in duplicates.Take(10))
-        {
-            logger.LogDebug($"  Index {dup.Key}: {dup.Count()} times");
-        }
-
-        // Check for gaps
-        var validIndices = indices.Where(i => i != 65535).ToHashSet();
-        var missing = Enumerable.Range(0, totalCount)
-            .Select(i => (ushort)i)
-            .Where(i => !validIndices.Contains(i))
-            .ToList();
-
-        logger.LogDebug($"\nMissing indices (excluding 65535): {missing.Count}");
-        logger.LogDebug($"First 20 missing: {string.Join(", ", missing.Take(20))}");
-
-        // Show first 20 parameters with their indices
-        logger.LogDebug($"\nFirst 20 parameters:");
-        foreach (var param in allParams.Values.OrderBy(p => p.Index).Take(20))
-        {
-            logger.LogDebug($"  [{param.Index:D4}] {param.Name} = {param.Value}");
-        }
-
-        // Show last 20 parameters
-        logger.LogDebug($"\nLast 20 parameters:");
-        foreach (var param in allParams.Values.OrderBy(p => p.Index).TakeLast(20))
-        {
-            logger.LogDebug($"  [{param.Index:D4}] {param.Name} = {param.Value}");
-        }
-    }
-
     [Fact]
     public async Task Diagnose_Parameter_Reading()
     {
@@ -427,7 +297,7 @@ public class VehicleSerialCommunicationTests
 
         var linkedCts = new CancellationTokenSource();
         var transport = domainFactory.Create<ISerialMavLinkTransport, string, int>(portName, baudRate);
-        var client = domainFactory.Create<IMavLinkClient, ISerialMavLinkTransport, IOptions<TransportEndpoint>, IDateTimeProvider>(transport, transportOptions, dateTimeProvider);
+        var client = domainFactory.Create<IMavLinkClient, ISerialMavLinkTransport>(transport);
         await transport.ConnectAsync(TestContext.Current.CancellationToken);
 
         var vehicleId = await WaitForVehicleHeartbeatAsync(client, transport, linkedCts.Token);

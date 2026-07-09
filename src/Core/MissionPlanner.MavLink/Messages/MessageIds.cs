@@ -79,4 +79,7 @@ public static class MessageIds
     /// 
     /// </summary>
     public const uint StatusText = 253;
+
+
+    public const uint DefaultFallback = 65555;
 }

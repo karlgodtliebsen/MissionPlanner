@@ -20,7 +20,7 @@ public sealed class CommandAckMessageDecoder : IMavLinkMessageDecoder
     {
         message = null;
 
-        if (frame.MessageId != MessageIds.CommandAck)
+        if (frame.MessageId != MessageId)
         {
             return false;
         }

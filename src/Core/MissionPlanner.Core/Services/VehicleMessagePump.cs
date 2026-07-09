@@ -58,33 +58,18 @@ public sealed class VehicleMessagePump(
 
         switch (message)
         {
-            case HeartbeatMessage heartbeat:
-                await heartbeatHandler.Handle(heartbeat, cancellationToken);
-                await eventHub.PublishAsync<HeartbeatMessage>(MavLinkEventTopics.NewMessage, heartbeat, cancellationToken);
+            case Ahrs2Message ahrs2:
+                //await ahrs2Handler.Handle(ahrs2, cancellationToken);
+                await eventHub.PublishAsync<Ahrs2Message>(MavLinkEventTopics.NewMessage, ahrs2, cancellationToken);
                 break;
-            case GlobalPositionIntMessage position:
-                await positionHandler.Handle(position, cancellationToken);
-                await eventHub.PublishAsync<GlobalPositionIntMessage>(MavLinkEventTopics.NewMessage, position, cancellationToken);
-                break;
-
             case AttitudeMessage attitude:
                 await attitudeHandler.Handle(attitude, cancellationToken);
                 await eventHub.PublishAsync<AttitudeMessage>(MavLinkEventTopics.NewMessage, attitude, cancellationToken);
                 break;
 
-            case SysStatusMessage sysStatus:
-                await batteryHandler.Handle(sysStatus, cancellationToken);
-                await eventHub.PublishAsync<SysStatusMessage>(MavLinkEventTopics.NewMessage, sysStatus, cancellationToken);
-                break;
-
-            case StatusTextMessage statusText:
-                await statusTextHandler.Handle(statusText, cancellationToken);
-                await eventHub.PublishAsync<StatusTextMessage>(MavLinkEventTopics.NewMessage, statusText, cancellationToken);
-                break;
-
-            case ParamValueMessage paramValue:
-                await paramValueHandler.Handle(paramValue, cancellationToken);
-                await eventHub.PublishAsync<ParamValueMessage>(MavLinkEventTopics.NewMessage, paramValue, cancellationToken);
+            case BatteryStatusMessage batteryStatus:
+                //await batteryHandler.Handle(batteryStatus, cancellationToken);
+                await eventHub.PublishAsync<BatteryStatusMessage>(MavLinkEventTopics.NewMessage, batteryStatus, cancellationToken);
                 break;
 
             case CommandAckMessage commandAck:
@@ -92,14 +77,31 @@ public sealed class VehicleMessagePump(
                 await eventHub.PublishAsync<CommandAckMessage>(MavLinkEventTopics.NewMessage, commandAck, cancellationToken);
                 break;
 
-
-            case Ahrs2Message ahrs2:
-                await ahrs2Handler.Handle(ahrs2, cancellationToken);
-                await eventHub.PublishAsync<Ahrs2Message>(MavLinkEventTopics.NewMessage, ahrs2, cancellationToken);
+            case EkfStatusReportMessage ekfStatusReport:
+                //await ekfStatusReportHandler.Handle(ekfStatusReport, cancellationToken);
+                await eventHub.PublishAsync<EkfStatusReportMessage>(MavLinkEventTopics.NewMessage, ekfStatusReport, cancellationToken);
                 break;
+            case GlobalPositionIntMessage position:
+                await positionHandler.Handle(position, cancellationToken);
+                await eventHub.PublishAsync<GlobalPositionIntMessage>(MavLinkEventTopics.NewMessage, position, cancellationToken);
+                break;
+
             case GpsRawIntMessage gpsRawInt:
                 //await gpsRawIntHandler.Handle(gpsRawInt, cancellationToken);
                 await eventHub.PublishAsync<GpsRawIntMessage>(MavLinkEventTopics.NewMessage, gpsRawInt, cancellationToken);
+                break;
+
+            case HeartbeatMessage heartbeat:
+                await heartbeatHandler.Handle(heartbeat, cancellationToken);
+                await eventHub.PublishAsync<HeartbeatMessage>(MavLinkEventTopics.NewMessage, heartbeat, cancellationToken);
+                break;
+            case LocalPositionNedMessage localPositionNed:
+                //await localPositionNedHandler.Handle(localPositionNed, cancellationToken);
+                await eventHub.PublishAsync<LocalPositionNedMessage>(MavLinkEventTopics.NewMessage, localPositionNed, cancellationToken);
+                break;
+            case MemInfoMessage memoryVect:
+                //await memoryHandler.Handle(memoryVect, cancellationToken);
+                await eventHub.PublishAsync<MemInfoMessage>(MavLinkEventTopics.NewMessage, memoryVect, cancellationToken);
                 break;
 
             case MemoryVectMessage memoryVect:
@@ -115,6 +117,10 @@ public sealed class VehicleMessagePump(
                 //   navControllerOutputHandler.Handle(navControllerOutput);
                 await eventHub.PublishAsync<NavControllerOutputMessage>(MavLinkEventTopics.NewMessage, navControllerOutput, cancellationToken);
                 break;
+            case ParamValueMessage paramValue:
+                await paramValueHandler.Handle(paramValue, cancellationToken);
+                await eventHub.PublishAsync<ParamValueMessage>(MavLinkEventTopics.NewMessage, paramValue, cancellationToken);
+                break;
 
             case PowerStatusMessage powerStatus:
                 //  powerStatusHandler.Handle(powerStatus);
@@ -125,13 +131,42 @@ public sealed class VehicleMessagePump(
                 //    rawImuHandler.Handle(rawImu);
                 await eventHub.PublishAsync<RawImuMessage>(MavLinkEventTopics.NewMessage, rawImu, cancellationToken);
                 break;
+
+            case RawMavLinkMessage rawMavLink:
+                //    rawMavLinkHandler.Handle(rawMavLink);
+                await eventHub.PublishAsync<RawMavLinkMessage>(MavLinkEventTopics.NewMessage, rawMavLink, cancellationToken);
+                break;
+            case RcChannelsMessage rcChannels:
+                //    rcChannelsHandler.Handle(rcChannels);
+                await eventHub.PublishAsync<RcChannelsMessage>(MavLinkEventTopics.NewMessage, rcChannels, cancellationToken);
+                break;
             case ScaledPressureMessage scaledPressure:
                 //   scaledPressureHandler.Handle(scaledPressure);
                 await eventHub.PublishAsync<ScaledPressureMessage>(MavLinkEventTopics.NewMessage, scaledPressure, cancellationToken);
                 break;
+            case ServoOutputRawMessage servoOutputRaw:
+                //await batteryHandler.Handle(servoOutputRaw, cancellationToken);
+                await eventHub.PublishAsync<ServoOutputRawMessage>(MavLinkEventTopics.NewMessage, servoOutputRaw, cancellationToken);
+                break;
+            case StatusTextMessage statusText:
+                await statusTextHandler.Handle(statusText, cancellationToken);
+                await eventHub.PublishAsync<StatusTextMessage>(MavLinkEventTopics.NewMessage, statusText, cancellationToken);
+                break;
+
+            case SysStatusMessage sysStatus:
+                await batteryHandler.Handle(sysStatus, cancellationToken);
+                await eventHub.PublishAsync<SysStatusMessage>(MavLinkEventTopics.NewMessage, sysStatus, cancellationToken);
+                break;
+
+
             case TimeSyncMessage timeSync:
                 //   timeSyncHandler.Handle(timeSync);
                 await eventHub.PublishAsync<TimeSyncMessage>(MavLinkEventTopics.NewMessage, timeSync, cancellationToken);
+                break;
+
+            case VfrHudMessage vfrHud:
+                //   vfrHudHandler.Handle(vfrHud);
+                await eventHub.PublishAsync<VfrHudMessage>(MavLinkEventTopics.NewMessage, vfrHud, cancellationToken);
                 break;
 
             default:

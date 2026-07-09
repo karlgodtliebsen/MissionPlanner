@@ -18,7 +18,7 @@ public sealed class SysStatusMessageDecoder : IMavLinkMessageDecoder
     {
         message = null;
 
-        if (frame.MessageId != MessageIds.SysStatus)
+        if (frame.MessageId != MessageId)
         {
             return false;
         }

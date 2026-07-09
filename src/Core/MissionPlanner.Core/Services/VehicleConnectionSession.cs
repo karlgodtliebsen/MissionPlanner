@@ -137,7 +137,7 @@ public sealed class VehicleConnectionSession(
         // Create TCP transport
         transport = domainFactory.Create<ITcpMavLinkTransport, IOptions<TransportEndpoint>>(transportOptions);
         // Create MAVLink client
-        client = domainFactory.Create<IMavLinkClient, ITcpMavLinkTransport, IOptions<TransportEndpoint>, IDateTimeProvider>((ITcpMavLinkTransport)transport, transportOptions, dateTimeProvider);
+        client = domainFactory.Create<IMavLinkClient, ITcpMavLinkTransport>((ITcpMavLinkTransport)transport);
 
         messagePump = serviceFactory.Create<IVehicleMessagePump>();
         connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
@@ -176,7 +176,7 @@ public sealed class VehicleConnectionSession(
         // Create UDP transport
         transport = domainFactory.Create<IUdpMavLinkTransport, IOptions<TransportEndpoint>>(transportOptions);
         // Create MAVLink client
-        client = domainFactory.Create<IMavLinkClient, IUdpMavLinkTransport, IOptions<TransportEndpoint>, IDateTimeProvider>((IUdpMavLinkTransport)transport, transportOptions, dateTimeProvider);
+        client = domainFactory.Create<IMavLinkClient, IUdpMavLinkTransport>((IUdpMavLinkTransport)transport);
 
         messagePump = serviceFactory.Create<IVehicleMessagePump>();
         connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);

@@ -1,40 +1,48 @@
+﻿using MissionPlanner.MavLink.Decoding.Utils;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
 
 namespace MissionPlanner.MavLink.Decoding;
 
 /// <summary>
-/// Decodes ArduPilot MAVLink AHRS2 messages.
+/// Decodes ArduPilot MAVLink EKF_STATUS_REPORT messages.
 /// </summary>
-public sealed class Ahrs2MessageDecoder : IMavLinkMessageDecoder
+public sealed class EkfStatusReportMessageDecoder : IMavLinkMessageDecoder
 {
+    /// <inheritdoc />
+    public uint MessageId { get; } = MessageIds.EkfStatusReport;
+
+    /// <inheritdoc />
+    public byte CrcExtra { get; } = 71;
+
     /// <inheritdoc />
     public bool TryDecode(MavLinkFrame frame, out MavLinkMessage? message)
     {
         message = null;
 
-        if (frame.MessageId != MessageIds.Ahrs2)
+        if (frame.MessageId != MessageId)
         {
             return false;
         }
 
-        if (frame.Payload.Length < 24)
+        if (frame.Payload.Length < 22)
         {
             return false;
         }
 
         var span = frame.Payload.Span;
 
-        message = new Ahrs2Message(
+        message = new EkfStatusReportMessage(
             frame.SystemId,
             frame.ComponentId,
             frame.EndPoint,
+            MavLinkDecoderHelpers.ReadUInt16OrDefault(span, 20),
             MavLinkDecoderHelpers.ReadSingleOrDefault(span, 0),
             MavLinkDecoderHelpers.ReadSingleOrDefault(span, 4),
             MavLinkDecoderHelpers.ReadSingleOrDefault(span, 8),
             MavLinkDecoderHelpers.ReadSingleOrDefault(span, 12),
-            MavLinkDecoderHelpers.ReadInt32OrDefault(span, 16) / 10_000_000.0,
-            MavLinkDecoderHelpers.ReadInt32OrDefault(span, 20) / 10_000_000.0,
+            MavLinkDecoderHelpers.ReadSingleOrDefault(span, 16),
+            frame.Payload.Length >= 26 ? MavLinkDecoderHelpers.ReadSingleOrDefault(span, 22) : null,
             frame.ReceivedAt);
 
         return true;

@@ -1,39 +1,47 @@
+﻿using MissionPlanner.MavLink.Decoding.Utils;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
 
 namespace MissionPlanner.MavLink.Decoding;
 
 /// <summary>
-/// Decodes MAVLink SCALED_PRESSURE messages.
+/// Decodes MAVLink VFR_HUD messages.
 /// </summary>
-public sealed class ScaledPressureMessageDecoder : IMavLinkMessageDecoder
+public sealed class VfrHudMessageDecoder : IMavLinkMessageDecoder
 {
+    /// <inheritdoc />
+    public uint MessageId { get; } = MessageIds.VfrHud;
+
+    /// <inheritdoc />
+    public byte CrcExtra { get; } = 20;
+
     /// <inheritdoc />
     public bool TryDecode(MavLinkFrame frame, out MavLinkMessage? message)
     {
         message = null;
 
-        if (frame.MessageId != MessageIds.ScaledPressure)
+        if (frame.MessageId != MessageId)
         {
             return false;
         }
 
-        if (frame.Payload.Length < 14)
+        if (frame.Payload.Length < 20)
         {
             return false;
         }
 
         var span = frame.Payload.Span;
 
-        message = new ScaledPressureMessage(
+        message = new VfrHudMessage(
             frame.SystemId,
             frame.ComponentId,
             frame.EndPoint,
-            MavLinkDecoderHelpers.ReadUInt32OrDefault(span, 0),
+            MavLinkDecoderHelpers.ReadSingleOrDefault(span, 0),
             MavLinkDecoderHelpers.ReadSingleOrDefault(span, 4),
+            MavLinkDecoderHelpers.ReadInt16OrDefault(span, 16),
+            MavLinkDecoderHelpers.ReadUInt16OrDefault(span, 18),
             MavLinkDecoderHelpers.ReadSingleOrDefault(span, 8),
-            MavLinkDecoderHelpers.ReadInt16OrDefault(span, 12),
-            frame.Payload.Length >= 16 ? MavLinkDecoderHelpers.ReadInt16OrDefault(span, 14) : null,
+            MavLinkDecoderHelpers.ReadSingleOrDefault(span, 12),
             frame.ReceivedAt);
 
         return true;

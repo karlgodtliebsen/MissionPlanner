@@ -1,3 +1,4 @@
+﻿using MissionPlanner.MavLink.Decoding.Utils;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
 
@@ -9,11 +10,17 @@ namespace MissionPlanner.MavLink.Decoding;
 public sealed class MemInfoMessageDecoder : IMavLinkMessageDecoder
 {
     /// <inheritdoc />
+    public uint MessageId { get; } = MessageIds.MemInfo;
+
+    /// <inheritdoc />
+    public byte CrcExtra { get; }
+
+    /// <inheritdoc />
     public bool TryDecode(MavLinkFrame frame, out MavLinkMessage? message)
     {
         message = null;
 
-        if (frame.MessageId != MessageIds.MemInfo)
+        if (frame.MessageId != MessageId)
         {
             return false;
         }

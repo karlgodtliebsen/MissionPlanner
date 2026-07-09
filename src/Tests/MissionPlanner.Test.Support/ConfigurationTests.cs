@@ -6,6 +6,7 @@ using MissionPlanner.Core.VehicleHandler.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Client;
+using MissionPlanner.MavLink.Decoding;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.Test.Support.Configuration;
@@ -53,7 +54,8 @@ public class ConfigurationTests
         serviceProvider.GetRequiredService<IMavLinkFrameParser>();
         serviceProvider.GetRequiredService<IMavLinkCommandEncoder>();
         serviceProvider.GetRequiredService<IMavLinkCrcExtraProvider>();
-        serviceProvider.GetRequiredService<IMavLinkMessageDecoder>();
+        serviceProvider.GetRequiredService<IMavLinkMessageDecodeHandler>();
+        serviceProvider.GetRequiredService<MavLinkMessageDecoders>();
 
         serviceProvider.GetRequiredService<IMavLinkConnection>();
         serviceProvider.GetRequiredService<IVehicleMessagePump>();
@@ -93,7 +95,7 @@ public class ConfigurationTests
         var transport = domainFactory.Create<ISerialMavLinkTransport, string, int>(portName, baudRate);
         Assert.NotNull(transport);
         // Create MAVLink client
-        var client = domainFactory.Create<IMavLinkClient, ISerialMavLinkTransport, IOptions<TransportEndpoint>, IDateTimeProvider>(transport, transportOptions, dateTimeProvider);
+        var client = domainFactory.Create<IMavLinkClient, ISerialMavLinkTransport>(transport);
         Assert.NotNull(client);
 
         var connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);

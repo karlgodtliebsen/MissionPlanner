@@ -3,7 +3,7 @@
 namespace MissionPlanner.MavLink.Services;
 
 /// <summary>
-/// Provides CRC extra bytes for common MAVLink messages.
+/// Provides CRC extra bytes for common MAVLink and ArduPilotMega messages.
 /// </summary>
 public sealed class CommonMavLinkCrcExtraProvider : IMavLinkCrcExtraProvider
 {
@@ -20,12 +20,8 @@ public sealed class CommonMavLinkCrcExtraProvider : IMavLinkCrcExtraProvider
                 crcExtra = 124;
                 return true;
 
-            case MessageIds.Attitude:
-                crcExtra = 39;
-                return true;
-
-            case MessageIds.GlobalPositionInt:
-                crcExtra = 104;
+            case MessageIds.ParamValue:
+                crcExtra = 220;
                 return true;
 
             case MessageIds.ParamRequestRead:
@@ -35,25 +31,8 @@ public sealed class CommonMavLinkCrcExtraProvider : IMavLinkCrcExtraProvider
             case MessageIds.ParamRequestList:
                 crcExtra = 159;
                 return true;
-
-            case MessageIds.ParamValue:
-                crcExtra = 220;
-                return true;
-
             case MessageIds.ParamSet:
                 crcExtra = 168;
-                return true;
-
-            case MessageIds.CommandLong:
-                crcExtra = 152;
-                return true;
-
-            case MessageIds.CommandAck:
-                crcExtra = 143;
-                return true;
-
-            case MessageIds.StatusText:
-                crcExtra = 83;
                 return true;
 
             case MessageIds.GpsRawInt:
@@ -68,8 +47,16 @@ public sealed class CommonMavLinkCrcExtraProvider : IMavLinkCrcExtraProvider
                 crcExtra = 115;
                 return true;
 
+            case MessageIds.Attitude:
+                crcExtra = 39;
+                return true;
+
             case MessageIds.LocalPositionNed:
                 crcExtra = 185;
+                return true;
+
+            case MessageIds.GlobalPositionInt:
+                crcExtra = 104;
                 return true;
 
             case MessageIds.ServoOutputRaw:
@@ -92,7 +79,15 @@ public sealed class CommonMavLinkCrcExtraProvider : IMavLinkCrcExtraProvider
                 crcExtra = 20;
                 return true;
 
-            case MessageIds.Timesync:
+            case MessageIds.CommandLong:
+                crcExtra = 152;
+                return true;
+
+            case MessageIds.CommandAck:
+                crcExtra = 143;
+                return true;
+
+            case MessageIds.TimeSync:
                 crcExtra = 34;
                 return true;
 
@@ -116,6 +111,9 @@ public sealed class CommonMavLinkCrcExtraProvider : IMavLinkCrcExtraProvider
                 crcExtra = 71;
                 return true;
 
+            case MessageIds.StatusText:
+                crcExtra = 83;
+                return true;
 
             default:
                 crcExtra = 0;

@@ -19,7 +19,7 @@ public sealed class AttitudeMessageDecoder : IMavLinkMessageDecoder
     {
         message = null;
 
-        if (frame.MessageId != MessageIds.Attitude)
+        if (frame.MessageId != MessageId)
         {
             return false;
         }

@@ -117,7 +117,7 @@ public class MavLinkTests
     [Fact]
     public void Should_Have_Valid_Crc_For_Known_Heartbeat()
     {
-        CommonMavLinkCrcExtraProvider provider = new();
+        IMavLinkCrcExtraProvider provider = new CommonMavLinkCrcExtraProvider();
         var frame = MavLinkKnownFrames.CreateHeartbeatV2(provider);
 
         var payloadLength = frame[1];
@@ -172,7 +172,7 @@ public class MavLinkTests
         MavLinkFrame? messageResult = null;
         using var subscription = eventHub.SubscribeAsync<MavLinkFrame>(MavLinkEventTopics.ReceivedFrame, (frame, cts) =>
         {
-            if (frame.MessageId == MessageIds.Heartbeat == (messageResult is null))
+            if (frame.MessageId == MessageIds.Heartbeat == messageResult is null)
             {
                 messageResult = frame;
                 ts.SetResult();

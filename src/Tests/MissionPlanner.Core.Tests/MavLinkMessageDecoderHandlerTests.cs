@@ -2,7 +2,7 @@
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Client;
-using MissionPlanner.MavLink.Decoding;
+using MissionPlanner.MavLink.Decoding.Utils;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.Simulator;
@@ -11,14 +11,14 @@ using MissionPlanner.Test.Support.Configuration;
 namespace MissionPlanner.Core.Tests;
 
 /// <summary>
-/// Tests for the <see cref="MavLinkMessageDecoder"/> class.
+/// Tests for the <see cref="MavLinkMessageDecoderHandler"/> class.
 /// </summary>
-public sealed class MavLinkMessageDecoderTests
+public sealed class MavLinkMessageDecoderHandlerTests
 {
     private readonly ITestOutputHelper output;
     private readonly IServiceProvider serviceProvider;
 
-    public MavLinkMessageDecoderTests(ITestOutputHelper output)
+    public MavLinkMessageDecoderHandlerTests(ITestOutputHelper output)
     {
         this.output = output;
         var services = TestConfigurator
@@ -29,7 +29,7 @@ public sealed class MavLinkMessageDecoderTests
     }
 
     /// <summary>
-    /// Tests that the <see cref="MavLinkMessageDecoder"/> can decode a heartbeat message from a fake vehicle.
+    /// Tests that the <see cref="MavLinkMessageDecoderHandler"/> can decode a heartbeat message from a fake vehicle.
     /// </summary>
     [Fact]
     public async Task Should_Decode_Heartbeat_Message_From_Fake_Vehicle()

@@ -10,7 +10,7 @@ namespace MissionPlanner.MavLink.Decoding;
 public sealed class RawMavLinkMessageDecoder : IMavLinkMessageDecoder
 {
     /// <inheritdoc />
-    public uint MessageId { get; } = MessageIds.RawImu;
+    public uint MessageId { get; } = MessageIds.DefaultFallback;
 
     /// <inheritdoc />
     public byte CrcExtra { get; } = 0;

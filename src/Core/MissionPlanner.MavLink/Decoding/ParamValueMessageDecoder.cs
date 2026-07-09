@@ -26,7 +26,7 @@ public sealed class ParamValueMessageDecoder : IMavLinkMessageDecoder
     {
         message = null;
 
-        if (frame.MessageId != MessageIds.ParamValue)
+        if (frame.MessageId != MessageId)
         {
             return false;
         }

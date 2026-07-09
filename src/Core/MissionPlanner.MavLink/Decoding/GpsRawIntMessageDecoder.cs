@@ -1,3 +1,4 @@
+﻿using MissionPlanner.MavLink.Decoding.Utils;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
 
@@ -9,11 +10,17 @@ namespace MissionPlanner.MavLink.Decoding;
 public sealed class GpsRawIntMessageDecoder : IMavLinkMessageDecoder
 {
     /// <inheritdoc />
+    public uint MessageId { get; } = MessageIds.GpsRawInt;
+
+    /// <inheritdoc />
+    public byte CrcExtra { get; } = 24;
+
+    /// <inheritdoc />
     public bool TryDecode(MavLinkFrame frame, out MavLinkMessage? message)
     {
         message = null;
 
-        if (frame.MessageId != MessageIds.GpsRawInt)
+        if (frame.MessageId != MessageId)
         {
             return false;
         }

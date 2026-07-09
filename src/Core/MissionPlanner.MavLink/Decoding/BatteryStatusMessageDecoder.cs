@@ -1,3 +1,4 @@
+﻿using MissionPlanner.MavLink.Decoding.Utils;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
 
@@ -9,11 +10,17 @@ namespace MissionPlanner.MavLink.Decoding;
 public sealed class BatteryStatusMessageDecoder : IMavLinkMessageDecoder
 {
     /// <inheritdoc />
+    public uint MessageId { get; } = MessageIds.BatteryStatus;
+
+    /// <inheritdoc />
+    public byte CrcExtra { get; } = 154;
+
+    /// <inheritdoc />
     public bool TryDecode(MavLinkFrame frame, out MavLinkMessage? message)
     {
         message = null;
 
-        if (frame.MessageId != MessageIds.BatteryStatus)
+        if (frame.MessageId != MessageId)
         {
             return false;
         }

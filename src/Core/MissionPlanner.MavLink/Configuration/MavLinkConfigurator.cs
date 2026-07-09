@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Decoding;
+using MissionPlanner.MavLink.Decoding.Utils;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.Parameters.Metadata;
 using MissionPlanner.MavLink.Services;
@@ -31,37 +32,34 @@ public static class MavLinkConfigurator
         services.TryAddTransient<IMavLinkFrameParser, MavLinkV2FrameParser>();
         services.TryAddTransient<IMavLinkCommandEncoder, MavLinkCommandEncoder>();
         services.TryAddTransient<IMavLinkParameterEncoder, MavLinkParameterEncoder>();
-        services.TryAddTransient<IMavLinkMessageDecoder, MavLinkMessageDecoder>();
+        services.TryAddTransient<IMavLinkMessageDecodeHandler, MavLinkMessageDecoderHandler>();
 
         services.AddSingleton(Options.Create(new MavLinkClientPipelineOptions()));
         services.AddSingleton(Options.Create(new MavLinkConnectionPipelineOptions()));
-
-        //IList<IMavLinkMessageDecoder> decoders =
-        //[
-        //    new StatusTextMessageDecoder(),
-        //    new HeartbeatMessageDecoder(),
-        //    new CommandAckMessageDecoder(),
-        //    new AttitudeMessageDecoder(),
-        //    new GlobalPositionIntMessageDecoder(),
-        //    new SysStatusMessageDecoder(),
-        //    new ParamValueMessageDecoder(),
-        //    new RawMavLinkMessageDecoder()
-        //];
-
         IList<IMavLinkMessageDecoder> decoders =
         [
-            new StatusTextMessageDecoder(),
-            new HeartbeatMessageDecoder(),
-            new CommandAckMessageDecoder(),
+            new Ahrs2MessageDecoder(),
             new AttitudeMessageDecoder(),
+            new BatteryStatusMessageDecoder(),
+            new CommandAckMessageDecoder(),
+            new EkfStatusReportMessageDecoder(),
             new GlobalPositionIntMessageDecoder(),
-            new SysStatusMessageDecoder(),
-            new ParamValueMessageDecoder(),
-
             new GpsRawIntMessageDecoder(),
+            new HeartbeatMessageDecoder(),
+            new LocalPositionNedMessageDecoder(),
+            new MemInfoMessageDecoder(),
+            new MissionCurrentMessageDecoder(),
+            new NavControllerOutputMessageDecoder(),
+            new ParamValueMessageDecoder(),
+            new PowerStatusMessageDecoder(),
             new RawImuMessageDecoder(),
+            new RcChannelsMessageDecoder(),
             new ScaledPressureMessageDecoder(),
-
+            new ServoOutputRawMessageDecoder(),
+            new StatusTextMessageDecoder(),
+            new SysStatusMessageDecoder(),
+            new TimeSyncMessageDecoder(),
+            new VfrHudMessageDecoder(),
             new RawMavLinkMessageDecoder()
         ];
 
@@ -130,7 +128,7 @@ public static class MavLinkConfigurator
     public static IServiceProvider UseMavLinkServices(this IServiceProvider services)
     {
         var domainFactory = services.GetRequiredService<IDomainFactory>();
-        //domainFactory.Add<IMavLinkMessageDecoder, MavLinkMessageDecoder>();
+        //domainFactory.Add<IMavLinkMessageDecoder, MavLinkMessageDecoderHandler>();
         //domainFactory.Add<IMavLinkClient, MavLinkClient>();
         return services;
     }

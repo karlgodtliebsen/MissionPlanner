@@ -18,7 +18,7 @@ public sealed class GlobalPositionIntMessageDecoder : IMavLinkMessageDecoder
     {
         message = null;
 
-        if (frame.MessageId != MessageIds.GlobalPositionInt)
+        if (frame.MessageId != MessageId)
         {
             return false;
         }

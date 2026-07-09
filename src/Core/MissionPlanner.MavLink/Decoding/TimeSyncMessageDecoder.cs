@@ -1,37 +1,43 @@
+﻿using MissionPlanner.MavLink.Decoding.Utils;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
 
 namespace MissionPlanner.MavLink.Decoding;
 
 /// <summary>
-/// Decodes MAVLink POWER_STATUS messages.
+/// Decodes MAVLink TIMESYNC messages.
 /// </summary>
-public sealed class PowerStatusMessageDecoder : IMavLinkMessageDecoder
+public sealed class TimeSyncMessageDecoder : IMavLinkMessageDecoder
 {
+    /// <inheritdoc />
+    public uint MessageId { get; } = MessageIds.TimeSync;
+
+    /// <inheritdoc />
+    public byte CrcExtra { get; } = 34;
+
     /// <inheritdoc />
     public bool TryDecode(MavLinkFrame frame, out MavLinkMessage? message)
     {
         message = null;
 
-        if (frame.MessageId != MessageIds.PowerStatus)
+        if (frame.MessageId != MessageId)
         {
             return false;
         }
 
-        if (frame.Payload.Length < 6)
+        if (frame.Payload.Length < 16)
         {
             return false;
         }
 
         var span = frame.Payload.Span;
 
-        message = new PowerStatusMessage(
+        message = new TimeSyncMessage(
             frame.SystemId,
             frame.ComponentId,
             frame.EndPoint,
-            MavLinkDecoderHelpers.ReadUInt16OrDefault(span, 0),
-            MavLinkDecoderHelpers.ReadUInt16OrDefault(span, 2),
-            MavLinkDecoderHelpers.ReadUInt16OrDefault(span, 4),
+            MavLinkDecoderHelpers.ReadInt64OrDefault(span, 0),
+            MavLinkDecoderHelpers.ReadInt64OrDefault(span, 8),
             frame.ReceivedAt);
 
         return true;
