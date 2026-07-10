@@ -8,6 +8,7 @@ using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Parameters;
+using UraniumUI.Dialogs;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
@@ -19,6 +20,8 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     private readonly IVehicleConnectionSession session;
     private readonly IVehicleRegistry vehicleRegistry;
     private readonly IDispatcher dispatcher;
+    private readonly IDialogService dialogs;
+    private readonly ParametersFileHandler parametersFileHandler;
     private readonly CancellationTokenSource cts;
     private CancellationTokenSource ctsProgress = new();
 
@@ -40,18 +43,12 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     [ObservableProperty] public partial bool ShowLoadingPanel { get; set; }
 
     [ObservableProperty] public partial bool ShowLoadingProgress { get; set; }
-
-    //[ObservableProperty] public partial bool ShowLoadingCompleted { get; set; }
-    //[ObservableProperty] public partial bool ShowRendering { get; set; }
-    //[ObservableProperty] public partial bool ShowData { get; set; }
-
     [ObservableProperty] public partial bool ShowLoadingCompletedWithError { get; set; }
     [ObservableProperty] public partial bool ShowLoadingCancelled { get; set; }
-
     [ObservableProperty] public partial bool ShowVehicleDisconnected { get; set; }
     [ObservableProperty] public partial int ModifiedParameterCount { get; set; }
     [ObservableProperty] public partial int TotalParameterCount { get; set; }
-    [ObservableProperty] public partial string SearchText { get; set; }
+    [ObservableProperty] public partial string SearchText { get; set; } = string.Empty;
     [ObservableProperty] public partial bool IsBusy { get; set; }
 
     /// <summary>
@@ -63,17 +60,23 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     /// <param name="dispatcher">The dispatcher.</param>
     /// <param name="cts">The cancellation token source.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="dialogs">The dialog service.</param>
+    /// <param name="parametersFileHandler">The parameters file handler.</param>
     public FullParametersListTabViewModel(
         IVehicleConnectionSession session,
         IVehicleRegistry vehicleRegistry,
         IDomainEventHub domainEventHub,
         IDispatcher dispatcher,
+        IDialogService dialogs,
+        ParametersFileHandler parametersFileHandler,
         CancellationTokenSource cts,
         ILogger<FullParametersListTabViewModel> logger)
     {
         this.session = session;
         this.vehicleRegistry = vehicleRegistry;
         this.dispatcher = dispatcher;
+        this.dialogs = dialogs;
+        this.parametersFileHandler = parametersFileHandler;
         this.cts = cts;
         this.logger = logger;
         var eventSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(VehicleRegistered);
@@ -133,6 +136,26 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     }
 
     [RelayCommand]
+    private async Task CreateTestParameters()
+    {
+        PrepareLoad();
+        await Task.Delay(100);
+
+        Parameters.Clear();
+        for (var i = 0; i < 20; i++)
+        {
+            var vehicleParameter = new VehicleParameter($"VEHICLE_NAME {i}", i, MavParamType.Real32, (ushort)i, 100);
+            var model = new ParameterItemViewModel(vehicleParameter) { Description = $"Vehicle Name Parameter {i}", Units = "N/A", Options = "1,2,3,4,5" };
+            Parameters.Add(model);
+            Progress += 0.05;
+            await Task.Delay(100);
+        }
+
+        ResetUIState();
+    }
+
+
+    [RelayCommand]
     private async Task CancelLoad()
     {
         await ctsProgress.CancelAsync();
@@ -141,17 +164,74 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     }
 
     [RelayCommand]
-    private void LoadFromFile()
+    private async Task LoadFromFileAsync()
     {
-        //ParametersFileHandler
+        try
+        {
+            var loadedParameters = await parametersFileHandler.LoadParametersFromFileAsync(
+                Parameters.Select(v => v.OriginalParameter).ToList(), cts.Token);
+
+            Parameters.Clear();
+
+            foreach (var parameter in loadedParameters)
+            {
+                // Parameters.Add(parameter);
+            }
+        }
+        catch (Exception ex)
+        {
+            await dialogs.DisplayTextPromptAsync("Load failed", ex.Message, "OK");
+        }
+    }
+
+    [RelayCommand]
+    private async Task LoadFromJsonFileAsync()
+    {
+        try
+        {
+            var loadedParameters = await parametersFileHandler.LoadParametersFromJsonFileAsync(cts.Token);
+            Parameters.Clear();
+
+            foreach (var parameter in loadedParameters)
+            {
+                Parameters.Add(parameter);
+            }
+        }
+        catch (Exception ex)
+        {
+            await dialogs.DisplayTextPromptAsync("Load failed", ex.Message, "OK");
+        }
+    }
+
+    [RelayCommand]
+    private async Task SaveToFileAsync()
+    {
+        try
+        {
+            var result = await parametersFileHandler.SaveParametersToFile(Parameters.Select(v => v.OriginalParameter).ToList(), cts.Token);
+            await dialogs.DisplayTextPromptAsync("Saved", $"File saved to:\n{result}", "OK");
+        }
+        catch (Exception ex)
+        {
+            await dialogs.DisplayTextPromptAsync("Save failed", ex.Message, "OK");
+        }
     }
 
 
     [RelayCommand]
-    private void SaveToFile()
+    private async Task SaveToJsonFileAsync()
     {
-        //ParametersFileHandler
+        try
+        {
+            var result = await parametersFileHandler.SaveParametersToJsonFile(Parameters, cts.Token);
+            await dialogs.DisplayTextPromptAsync("Saved", $"File saved to:\n{result}", "OK");
+        }
+        catch (Exception ex)
+        {
+            await dialogs.DisplayTextPromptAsync("Save failed", ex.Message, "OK");
+        }
     }
+
 
     [RelayCommand]
     private void WriteParameters()
@@ -318,7 +398,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             }
 
             // Update modified count
-            ModifiedParameterCount = allParameterItems.Count(p => p.IsModified);
+            // ModifiedParameterCount = allParameterItems.Count(p => p.IsModified);
         });
     }
 

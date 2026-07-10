@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui;
+using CommunityToolkit.Maui.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.Logging;
@@ -71,7 +72,7 @@ public static class MauiProgramExtensions
                 //fonts.AddMaterialSymbolsFonts();
                 //fonts.AddFluentIconFonts();
             });
-
+        builder.Services.AddSingleton<IFileSaver>(FileSaver.Default);
 
         builder.Services
             .AddApplicationConfiguration(builder.Configuration)

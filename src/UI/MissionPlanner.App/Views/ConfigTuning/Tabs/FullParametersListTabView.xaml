@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-              xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
-              xmlns:tabs1="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
-              xmlns:vm="clr-namespace:MissionPlanner.App.ViewModels"
-              xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
-              xmlns:m="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
-              x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.FullParametersListTabView"
-              x:DataType="tabs1:FullParametersListTabViewModel">
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
+             xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+             xmlns:m="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+             x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.FullParametersListTabView"
+             x:DataType="tabs:FullParametersListTabViewModel">
 
-    <Grid RowDefinitions="Auto,Auto,Auto,*"
+    <ContentPage.Content>
+
+        <Grid RowDefinitions="Auto,Auto,Auto,*"
           HorizontalOptions="Fill"
           VerticalOptions="Fill"
           Padding="8,0"
           BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
           >
 
-        <HorizontalStackLayout Grid.Row="0" HeightRequest="50" HorizontalOptions="Fill" VerticalOptions="Center" Padding="8,0" Spacing="12" >
-            <Button 
+            <HorizontalStackLayout Grid.Row="0" HeightRequest="50" HorizontalOptions="Fill" VerticalOptions="Center" Padding="8,0" Spacing="12" >
+                <Button 
                 Text="Load from file"
                     FontSize="14"
                     Padding="8,4"
@@ -25,22 +25,37 @@
                     BackgroundColor="Transparent"
                     Command="{Binding LoadFromFileCommand}" />
 
-            <Button 
+                <Button 
                 Text="Save to file"
                 FontSize="14"
                 Padding="8,4"
                 VerticalOptions="Center"
                 BackgroundColor="Transparent"
                 Command="{Binding SaveToFileCommand}" />
+                <Button 
+                    Text="Load from json file"
+                    FontSize="14"
+                    Padding="8,4"
+                    VerticalOptions="Center"
+                    BackgroundColor="Transparent"
+                    Command="{Binding LoadFromJsonFileCommand}" />
 
-            <Button 
+                <Button 
+                    Text="Save to json file"
+                    FontSize="14"
+                    Padding="8,4"
+                    VerticalOptions="Center"
+                    BackgroundColor="Transparent"
+                    Command="{Binding SaveToJsonFileCommand}" />
+
+                <Button 
                 Text="Write Params"
                 FontSize="14"
                 Padding="8,4"
                 VerticalOptions="Center"
                 BackgroundColor="Transparent"
                 Command="{Binding WriteParametersCommand}" />
-            <Button 
+                <Button 
                 Text="Refresh Params"
                 FontSize="14"
                 Padding="8,4"
@@ -48,15 +63,22 @@
                 BackgroundColor="Transparent"
                 Command="{Binding RefreshParametersCommand}" />
 
-            <Button 
-                Text="Compare Params"
-                FontSize="14"
-                Padding="8,4"
-                VerticalOptions="Center"
-                BackgroundColor="Transparent"
-                Command="{Binding CompareParametersCommand}" />
+                <Button 
+                    Text="Create Test Params"
+                    FontSize="14"
+                    Padding="8,4"
+                    VerticalOptions="Center"
+                    BackgroundColor="Transparent"
+                    Command="{Binding CreateTestParametersCommand}" />
+                <Button 
+                    Text="Compare Params"
+                    FontSize="14"
+                    Padding="8,4"
+                    VerticalOptions="Center"
+                    BackgroundColor="Transparent"
+                    Command="{Binding CompareParametersCommand}" />
 
-            <Button 
+                <Button 
                 Text="Cancel"
                 FontSize="14"
                 Padding="8,4"
@@ -64,7 +86,7 @@
                 BackgroundColor="Transparent"
                 Command="{Binding CancelLoadCommand}" />
 
-            <Button 
+                <Button 
                 Text="Load Pre saved"
                 FontSize="14"
                 Padding="8,4"
@@ -73,7 +95,7 @@
                 Command="{Binding LoadPreSavedCommand}" />
 
 
-            <Button 
+                <Button 
                 Text="Reset to Default"
                 FontSize="14"
                 Padding="8,4"
@@ -82,47 +104,79 @@
                 Command="{Binding ResetToDefaultCommand}" />
 
 
-        </HorizontalStackLayout>
+            </HorizontalStackLayout>
 
-        <!-- Search and Status Bar -->
-        <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" Padding="8,8" ColumnSpacing="12" IsVisible="{Binding ShowLoadingCompleted}">
-            <Label Grid.Column="0" Text="Search:" VerticalOptions="Center" FontSize="14" />
-            <Entry Grid.Column="1"
+            <!-- Search and Status Bar -->
+            <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" Padding="8,8" ColumnSpacing="12" IsVisible="{Binding ShowLoadingCompleted}">
+                <Label Grid.Column="0" Text="Search:" VerticalOptions="Center" FontSize="14" />
+                <Entry Grid.Column="1"
                    Text="{Binding SearchText}"
                    Placeholder="Search by name or description..."
                    VerticalOptions="Center"
                    FontSize="14" />
-            <HorizontalStackLayout Grid.Column="2" Spacing="16" VerticalOptions="Center">
-                <Label VerticalOptions="Center" FontSize="14">
-                    <Label.FormattedText>
-                        <FormattedString>
-                            <Span Text="Modified: " />
-                            <Span Text="{Binding ModifiedParameterCount}" FontAttributes="Bold" />
-                        </FormattedString>
-                    </Label.FormattedText>
-                </Label>
-                <Label VerticalOptions="Center" FontSize="14">
-                    <Label.FormattedText>
-                        <FormattedString>
-                            <Span Text="Total: " />
-                            <Span Text="{Binding TotalParameterCount}" FontAttributes="Bold" />
-                        </FormattedString>
-                    </Label.FormattedText>
-                </Label>
-            </HorizontalStackLayout>
-        </Grid>
+                <HorizontalStackLayout Grid.Column="2" Spacing="16" VerticalOptions="Center">
+                    <Label VerticalOptions="Center" FontSize="14">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="Modified: " />
+                                <Span Text="{Binding ModifiedParameterCount}" FontAttributes="Bold" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Label VerticalOptions="Center" FontSize="14">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="Total: " />
+                                <Span Text="{Binding TotalParameterCount}" FontAttributes="Bold" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                </HorizontalStackLayout>
+            </Grid>
 
 
 
-        <!-- Parameter Grid -->
-        <Grid Grid.Row="3" RowDefinitions="*" VerticalOptions="Fill" HorizontalOptions="Fill">
-            <material:DataGrid 
+            <VerticalStackLayout Grid.Row="2" Padding="20" Spacing="12" VerticalOptions="Center" HorizontalOptions="Center"
+                             IsVisible="{Binding ShowLoadingPanel}"
+                             
+        >
+                <VerticalStackLayout  Spacing="12" VerticalOptions="Center" HorizontalOptions="Center" 
+                                  IsVisible="{Binding ShowLoadingProgress}">
+                    <material:Chip 
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center" IsDestroyVisible="False"
+                                   Text="{Binding ProgressMessage}"
+                    />
+
+                    <ProgressBar Progress="{Binding Progress}" />
+                </VerticalStackLayout>
+
+                <material:Chip IsVisible="{Binding ShowLoadingCompletedWithError}"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"
+                               
+                               Text="An Error Occurred loading params"
+                               />
+
+
+                <material:Chip IsVisible="{Binding ShowLoadingCancelled}"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center" 
+                               Text="Loading cancelled"
+                               />
+
+            </VerticalStackLayout>
+
+            <!-- Parameter Grid -->
+            <Grid Grid.Row="3" RowDefinitions="*" VerticalOptions="Fill" HorizontalOptions="Fill">
+                <material:DataGrid 
                            ItemsSource="{Binding Parameters}"
-                           UseAutoColumns="True"
+                           UseAutoColumns="False"
                            VerticalOptions="Fill"
                            HorizontalOptions="Fill"
                            Margin="8" >
-                <material:DataGrid.EmptyView>
+
+                    <material:DataGrid.EmptyView>
                     <VerticalStackLayout Margin="80,20">
                         <Image
                         WidthRequest="40"
@@ -134,51 +188,50 @@
                     </VerticalStackLayout>
                 </material:DataGrid.EmptyView>
 
-                <ActivityIndicator IsRunning="{Binding IsBusy}" Margin="40" />
-                <!--<material:DataGrid.CellItemTemplate>
+                    <!--<ActivityIndicator IsRunning="{Binding IsBusy}" Margin="40" />-->
+                    <!--<material:DataGrid.CellItemTemplate>
                     <DataTemplate>
                         <Editor Margin="10" Text="{material:DataGridValueBinding Mode=TwoWay}" />
                     </DataTemplate>
                 </material:DataGrid.CellItemTemplate>-->
 
-                <!--<material:DataGrid.Columns>
-                    <material:DataGridColumn ValueBinding="{Binding Name}" Title="Name"  />
-                    <material:DataGridColumn ValueBinding="{Binding Value}" Title="Value"  />
-                    <material:DataGridColumn ValueBinding="{Binding OriginalValue}" Title="Default"  />
-                    <material:DataGridColumn ValueBinding="{Binding Units}" Title="Units"  />
-                    <material:DataGridColumn ValueBinding="{Binding Options}" Title="Options"  />
-                    <material:DataGridColumn ValueBinding="{Binding Description}" Title="Description"  />
-                    <material:DataGridSelectionColumn />
-                </material:DataGrid.Columns>-->
+                    <material:DataGrid.Columns>
+                        <material:DataGridColumn ValueBinding="{Binding Name}" Title="Name"  />
+                        <!--<material:DataGridColumn ValueBinding="{Binding Value}" Title="Value"  />-->
+
+                        <!--<material:DataGridColumn Title="Value">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate>
+                                <Border  BackgroundColor="Transparent" Padding="5" >
+                                    <Label Text="{Binding Value}" TextColor="Blue" />
+                                </Border>
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+
+                    <material:DataGridColumn Title="Value">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate>
+                                <Editor Margin="10" Text="{material:DataGridValueBinding Mode=TwoWay}" />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>-->
+
+
+                        <material:DataGridColumn ValueBinding="{Binding OriginalValue}" Title="Default"  />
+                        <material:DataGridColumn ValueBinding="{Binding Units}" Title="Units"  />
+                        <material:DataGridColumn ValueBinding="{Binding Options}" Title="Options"  />
+                        <material:DataGridColumn ValueBinding="{Binding Description}" Title="Description"  />
+                        <material:DataGridSelectionColumn />
+                    </material:DataGrid.Columns>
 
                     <!--<material:DataGridColumn ValueBinding="{Binding Favorite}" Title="Favorite"  />-->
 
-            </material:DataGrid>
+                </material:DataGrid>
+            </Grid>
+
         </Grid>
 
+    </ContentPage.Content>
 
-        <VerticalStackLayout Grid.Row="2" Padding="20" Spacing="12" VerticalOptions="Center" HorizontalOptions="Center"
-                             IsVisible="{Binding ShowLoadingPanel}"
-                             
-        >
-            <VerticalStackLayout  Spacing="12" VerticalOptions="Center" HorizontalOptions="Center" 
-                                  IsVisible="{Binding ShowLoadingProgress}">
-                <Label FontSize="16"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center"
-                       Text="{Binding ProgressMessage}" />
-                <ProgressBar Progress="{Binding Progress}" />
-            </VerticalStackLayout>
-            <Label FontSize="16"
-                   IsVisible="{Binding ShowLoadingCompletedWithError}"
-                   HorizontalOptions="Center"
-                   VerticalOptions="Center"
-                   Text="An Error Occurred loading params" />
-            <Label FontSize="16"
-                   IsVisible="{Binding ShowLoadingCancelled}"
-                   HorizontalOptions="Center"
-                   VerticalOptions="Center"
-                   Text="Loading cancelled" />
-        </VerticalStackLayout>
-    </Grid>
-</ContentView>
+</ContentPage>

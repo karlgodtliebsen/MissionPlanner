@@ -11,33 +11,45 @@ namespace MissionPlanner.App.ViewModels;
 /// </summary>
 public partial class ParameterItemViewModel : ObservableObject
 {
-    private readonly VehicleParameter originalParameter;
+    //private readonly VehicleParameter originalParameter;
 
-    [ObservableProperty] public partial string Name { get; set; } = string.Empty;
+    [ObservableProperty] public partial string Name { get; set; }
     [ObservableProperty] public partial float Value { get; set; }
 
     [DisplayName("Default")][ObservableProperty] public partial float OriginalValue { get; set; }
-    [ObservableProperty] public partial string? Description { get; set; }
     [ObservableProperty] public partial string? Units { get; set; }
 
-    [DataGridIgnore][ObservableProperty] public partial string Type { get; set; } = string.Empty;
-    [DataGridIgnore][ObservableProperty] public partial ushort Index { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial float? Min { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial float? Max { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial string? Range { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial string? Values { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial bool IsModified { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial bool IsReadOnly { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial bool Favorite { get; set; }
+    [ObservableProperty] public partial string? Options { get; set; }
+    [ObservableProperty] public partial string? Description { get; set; }
 
+    [DataGridIgnore][ObservableProperty] public partial VehicleParameter OriginalParameter { get; set; }
+
+    //[DataGridIgnore][ObservableProperty] public partial string Type { get; set; }
+    //[DataGridIgnore][ObservableProperty] public partial ushort Index { get; set; }
+    //[DataGridIgnore][ObservableProperty] public partial float? Min { get; set; }
+    //[DataGridIgnore][ObservableProperty] public partial float? Max { get; set; }
+    //[DataGridIgnore][ObservableProperty] public partial string? Range { get; set; }
+    //[DataGridIgnore][ObservableProperty] public partial string? Values { get; set; }
+    //[DataGridIgnore][ObservableProperty] public partial bool IsModified { get; set; }
+    //[DataGridIgnore][ObservableProperty] public partial bool IsReadOnly { get; set; }
+    //[DataGridIgnore][ObservableProperty] public partial bool Favorite { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ParameterItemViewModel"/> class.
+    /// </summary>
+    /// <param name="parameter">The vehicle parameter to wrap.</param>
     public ParameterItemViewModel(VehicleParameter parameter)
     {
-        originalParameter = parameter;
+        OriginalParameter = parameter;
         Name = parameter.Name;
         Value = parameter.Value;
         OriginalValue = parameter.Value;
-        Type = parameter.Type.ToString();
-        Index = parameter.Index;
+        //Type = parameter.Type.ToString();
+        //Index = parameter.Index;
+    }
+
+    public ParameterItemViewModel()
+    {
     }
 
     /// <summary>
@@ -52,11 +64,11 @@ public partial class ParameterItemViewModel : ObservableObject
 
         Description = metadata.Description;
         Units = metadata.Units;
-        Min = metadata.MinValue;
-        Max = metadata.MaxValue;
-        Range = metadata.Range;
-        Values = metadata.Values;
-        IsReadOnly = metadata.ReadOnly;
+        //Range = metadata.Range;
+        //Min = metadata.MinValue;
+        //Max = metadata.MaxValue;
+        //Values = metadata.Values;
+        //IsReadOnly = metadata.ReadOnly;
     }
 
     /// <summary>
@@ -64,7 +76,7 @@ public partial class ParameterItemViewModel : ObservableObject
     /// </summary>
     partial void OnValueChanged(float value)
     {
-        IsModified = Math.Abs(value - OriginalValue) > 0.0001f;
+        //IsModified = Math.Abs(value - OriginalValue) > 0.0001f;
     }
 
     /// <summary>
@@ -83,8 +95,9 @@ public partial class ParameterItemViewModel : ObservableObject
         return new VehicleParameter(
             Name,
             Value,
-            originalParameter.Type,
-            Index,
-            originalParameter.Count);
+            OriginalParameter.Type,
+            OriginalParameter.Index,
+            OriginalParameter.Count
+        );
     }
 }

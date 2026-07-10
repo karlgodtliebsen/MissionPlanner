@@ -49,6 +49,7 @@ public static class ApplicationConfigurator
         stateService.Initialize(state);
         services.TryAddSingleton(stateService);
 
+        services.TryAddSingleton<ParametersFileHandler>();
 
         //services.TryAddSingleton<Views.Vehicles.Views.ModelMapper>();
         services.TryAddSingleton<ThemeChangeViewModel>();
@@ -105,9 +106,6 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<QuickTabViewModel>();
         services.TryAddSingleton<QuickTabView>();
 
-        services.TryAddSingleton<FullParametersListTabViewModel>();
-        services.TryAddSingleton<FullParametersListTabView>();
-
         services.TryAddSingleton<StatusTabViewModel>();
         services.TryAddSingleton<StatusTabView>();
 
@@ -117,18 +115,22 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<InitSetupViewModel>();
         services.TryAddSingleton<InitSetupView>();
 
-        services.TryAddSingleton<MenuConfigTuningViewModel>();
-        services.TryAddSingleton<MenuConfigTuningView>();
-
         services.TryAddSingleton<SimulationViewModel>();
         services.TryAddSingleton<SimulationView>();
 
         services.TryAddSingleton<ExitViewModel>();
         services.TryAddSingleton<ExitView>();
 
-        //TryAddTransient
-        services.TryAddSingleton<FullParametersListTabViewModel>();
+        //Configuration TabViews
+        services.TryAddSingleton<GeoFenceTabView>();
+        services.TryAddSingleton<BasicTuningTabView>();
+        services.TryAddSingleton<ExtendedTuningTabView>();
+        services.TryAddSingleton<OnboardOSDTabView>();
+        services.TryAddSingleton<MAVFtpTabView>();
         services.TryAddSingleton<FullParametersListTabView>();
+        services.TryAddSingleton<FullParametersListTabViewModel>();
+        services.TryAddSingleton<PlannerTabView>();
+        services.TryAddSingleton<CubeLan8PortSwitchTabView>();
 
         return services;
     }

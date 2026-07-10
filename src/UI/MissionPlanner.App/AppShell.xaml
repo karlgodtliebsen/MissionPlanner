@@ -14,6 +14,7 @@
     xmlns:simulation="clr-namespace:MissionPlanner.App.Views.Simulation"
     xmlns:help="clr-namespace:MissionPlanner.App.Views.Help"
     xmlns:exit="clr-namespace:MissionPlanner.App.Views.Exit"
+    xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
     Title="MissionPlanner"
     x:Name="thisShell"
     FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
@@ -96,11 +97,17 @@
             Title=""
             ContentTemplate="{DataTemplate initSetup:InitSetupView}" Route="InitSetup" />
     </FlyoutItem>
-    <FlyoutItem Title="Config Tuning">
-        <ShellContent
-            Title=""
-            ContentTemplate="{DataTemplate configTuning:MenuConfigTuningView}" Route="ConfigTuning" />
+    <FlyoutItem Title="Config-Tuning" Icon="{FontImageSource Glyph={x:Static uranium:MaterialOutlined.Tab}, FontFamily=MaterialOutlined, Color={AppThemeBinding {StaticResource Primary}, Dark={StaticResource PrimaryDark}}}">
+        <ShellContent Title="Geo Fence" ContentTemplate="{DataTemplate tabs:GeoFenceTabView}"/>
+        <ShellContent Title="Basic Tuning" ContentTemplate="{DataTemplate tabs:BasicTuningTabView}"/>
+        <ShellContent Title="Extended Tuning" ContentTemplate="{DataTemplate tabs:ExtendedTuningTabView}"/>
+        <ShellContent Title="Onboard OSD" ContentTemplate="{DataTemplate tabs:OnboardOSDTabView}"/>
+        <ShellContent Title="MAV Ftp" ContentTemplate="{DataTemplate tabs:MAVFtpTabView}"/>
+        <ShellContent Title="Full Parameters List" ContentTemplate="{DataTemplate tabs:FullParametersListTabView}"/>
+        <ShellContent Title="Planner" ContentTemplate="{DataTemplate tabs:PlannerTabView}"/>
+        <ShellContent Title="CubeLan 8 Port Switch" ContentTemplate="{DataTemplate tabs:CubeLan8PortSwitchTabView}"/>
     </FlyoutItem>
+
     <FlyoutItem Title="Simulation">
         <ShellContent
             Title=""
