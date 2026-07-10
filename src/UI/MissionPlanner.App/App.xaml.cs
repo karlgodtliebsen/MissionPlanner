@@ -3,6 +3,7 @@ using MissionPlanner.App.Views.Exit;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Library;
 using MissionPlanner.Library.EventHub.Abstractions;
+using Serilog;
 
 namespace MissionPlanner.App;
 
@@ -57,7 +58,10 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
+            Log.Logger.Error(ex, "Error disposing connection service");
             System.Diagnostics.Debug.WriteLine($"Error disposing connection service: {ex.Message}");
         }
+
+        await Log.CloseAndFlushAsync().ConfigureAwait(false);
     }
 }

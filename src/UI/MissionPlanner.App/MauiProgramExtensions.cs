@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
 using Mopups.Hosting;
+using Serilog;
 using SkiaSharp.Views.Maui.Controls.Hosting;
 using UraniumUI;
 
@@ -21,6 +22,18 @@ public static class MauiProgramExtensions
     /// <returns>The configured MauiAppBuilder instance.</returns>
     public static MauiAppBuilder UseSharedMauiApp(this MauiAppBuilder builder)
     {
+        AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
+        {
+            if (e.ExceptionObject is Exception ex)
+            {
+                // Log the exception using your preferred logging framework
+                Console.WriteLine($"Unhandled exception: {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
+                Log.Logger.Error(ex, "Unhandled exception");
+                System.Diagnostics.Debug.WriteLine($"Unhandled exception: {ex.Message}");
+            }
+        };
+
         List<IConfigurationSource> configurationSources = [new JsonConfigurationSource { Path = "appsettings.json", Optional = false, ReloadOnChange = true }];
 
         var configurationBuilder = builder.Configuration;
