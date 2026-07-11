@@ -10,6 +10,7 @@ using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Parameters;
 using UraniumUI.Dialogs;
+using UraniumUI.Extensions;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
@@ -101,14 +102,14 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         HasConnection = vehicle != null;
         if (HasConnection)
         {
-            _ = LoadMetaDataAsync();
+            LoadMetaDataAsync().FireAndForget();
         }
     }
 
-    private Task VehicleDisconnected(VehicleDisconnected vehicle, CancellationToken cancellationToken)
+    private async Task VehicleDisconnected(VehicleDisconnected vehicle, CancellationToken cancellationToken)
     {
-        ResetUIState();
-        dispatcher.Dispatch(() =>
+        await ResetUIState();
+        await dispatcher.DispatchAsync(() =>
         {
             try
             {
@@ -120,12 +121,11 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
                 //Noop
             }
         });
-        return Task.CompletedTask;
     }
 
-    private Task VehicleRegistered(VehicleConnected vehicle, CancellationToken cancellationToken)
+    private async Task VehicleRegistered(VehicleConnected vehicle, CancellationToken cancellationToken)
     {
-        dispatcher.Dispatch(async () =>
+        await dispatcher.DispatchAsync(async () =>
         {
             try
             {
@@ -137,7 +137,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
                 //Noop
             }
         });
-        return Task.CompletedTask;
     }
 
     private async Task LoadMetaDataAsync()
@@ -171,7 +170,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         var vehicle = vehicles.FirstOrDefault();
         if (vehicle is not null)
         {
-            PrepareLoad();
+            await PrepareLoad();
             await Task.Run(async () => await LoadAsync(vehicle.Id, cts.Token), cts.Token);
         }
     }
@@ -179,31 +178,34 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     [RelayCommand]
     private async Task CreateTestParametersAsync()
     {
-        PrepareLoad();
+        await PrepareLoad();
         IList<ParameterItemViewModel> testParameters = [];
         for (var i = 0; i < 20; i++)
         {
             var vehicleParameter = new VehicleParameter($"VEHICLE_NAME {i}", i, MavParamType.Real32, (ushort)i, 100);
             var model = new ParameterItemViewModel(vehicleParameter) { Description = $"Vehicle Name Parameter {i}", Units = "N/A", Options = "1,2,3,4,5" };
             testParameters.Add(model);
-            Progress += 0.05;
+
+            await dispatcher.DispatchAsync(() =>
+            {
+                Progress += 0.05;
+            });
+
             await Task.Delay(10);
         }
 
-
-        dispatcher.Dispatch(() =>
+        await dispatcher.DispatchAsync(() =>
         {
             Parameters.Clear();
             Parameters.AddRange(testParameters);
         });
-        ResetUIState();
+        await ResetUIState();
     }
 
-    [RelayCommand]
-    //    [RelayCommand(CanExecute = nameof(CanExecuteConnection))]
+    [RelayCommand(CanExecute = nameof(CanExecuteConnection))]
     private async Task CreateTestParametersWithMetadata()
     {
-        PrepareLoad();
+        await PrepareLoad();
         IList<ParameterItemViewModel> testParameters = [];
 
         var vehicles = vehicleRegistry.Vehicles;
@@ -215,22 +217,27 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
                 metadata.AddAll(await metadataService.GetAllMetadataAsync(vehicle.Id, cts.Token));
             }
 
+            var vehicleParameter = new VehicleParameter("First Line", (float)1.0, MavParamType.Real32, (ushort)testParameters.Count, (ushort)metadata.Count());
+            var model = new ParameterItemViewModel(vehicleParameter) { Description = "description...", Units = "units", Options = "5,4,3,2,1" };
+            testParameters.Add(model);
+
+
             var parameterMetadata = metadata.Values.OrderBy(v => v.Name);
             foreach (var metaData in parameterMetadata)
             {
-                var vehicleParameter = new VehicleParameter(metaData.Name ?? "", (float)1.0, MavParamType.Real32, (ushort)testParameters.Count, (ushort)metadata.Count());
-                var model = new ParameterItemViewModel(vehicleParameter) { Description = metaData.Description ?? "", Units = metaData.Units ?? "", Options = "5,4,3,2,1" };
+                vehicleParameter = new VehicleParameter(metaData.Name ?? "", (float)1.0, MavParamType.Real32, (ushort)testParameters.Count, (ushort)metadata.Count());
+                model = new ParameterItemViewModel(vehicleParameter) { Description = metaData.Description ?? "", Units = metaData.Units ?? "", Options = "5,4,3,2,1" };
                 testParameters.Add(model);
             }
         }
 
-        dispatcher.Dispatch(() =>
+        await ResetUIState();
+
+        await dispatcher.DispatchAsync(() =>
         {
             Parameters.Clear();
             Parameters.AddRange(testParameters);
         });
-
-        ResetUIState();
     }
 
 
@@ -239,7 +246,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     {
         await ctsProgress.CancelAsync();
         ctsProgress = new CancellationTokenSource();
-        ResetUIState();
+        await ResetUIState();
     }
 
     [RelayCommand]
@@ -250,8 +257,8 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             var loadedParameters = await parametersFileHandler.LoadParametersFromFileAsync(
                 Parameters.Select(v => v.OriginalParameter).ToList(), cts.Token);
             //TODO: create a method to update existing parameters with loaded values instead of clearing and replacing
-            Parameters.Clear();
-            // Parameters.AddRange(loadedParameters);
+
+            await dispatcher.DispatchAsync(() => Parameters.Clear());
         }
         catch (Exception ex)
         {
@@ -265,8 +272,12 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         try
         {
             var loadedParameters = await parametersFileHandler.LoadParametersFromJsonFileAsync(cts.Token);
-            Parameters.Clear();
-            Parameters.AddRange(loadedParameters);
+
+            await dispatcher.DispatchAsync(() =>
+            {
+                Parameters.Clear();
+                Parameters.AddRange(loadedParameters);
+            });
         }
         catch (Exception ex)
         {
@@ -320,15 +331,16 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     }
 
     [RelayCommand]
-    private void ResetToDefault()
+    private async Task
+        ResetToDefault()
     {
-        ResetUIState();
+        await ResetUIState();
         Parameters.Clear();
     }
 
-    private void ResetUIState()
+    private async Task ResetUIState()
     {
-        dispatcher.Dispatch(() =>
+        await dispatcher.DispatchAsync(() =>
         {
             Progress = 0;
             IsBusy = false;
@@ -340,10 +352,10 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         });
     }
 
-    private void PrepareLoad()
+    private async Task PrepareLoad()
     {
-        ResetUIState();
-        dispatcher.Dispatch(() =>
+        await ResetUIState();
+        await dispatcher.DispatchAsync(() =>
         {
             IsBusy = true;
             ShowLoadingPanel = true;
@@ -360,7 +372,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         logger.LogDebug("Starting to load parameters for vehicle {VehicleId}", vehicleId);
 
         IProgress<ParameterStreamProgress>? progress = new Progress<ParameterStreamProgress>(p =>
-            dispatcher.Dispatch(() =>
+            dispatcher.DispatchAsync(() =>
             {
                 Progress = (double)p.ReceivedCount / p.TotalCount;
                 ProgressMessage = $"Loading parameters... {p.ReceivedCount}/{p.TotalCount}";
@@ -374,8 +386,8 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
             if (!result.Success)
             {
-                ResetUIState();
-                dispatcher.Dispatch(() =>
+                await ResetUIState();
+                await dispatcher.DispatchAsync(() =>
                 {
                     ShowLoadingPanel = true;
                     ShowLoadingCompletedWithError = true;
@@ -389,7 +401,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             parameters = new Dictionary<string, VehicleParameter>(result.Parameters);
 
             // Load metadata for the vehicle
-            dispatcher.Dispatch(() => ProgressMessage = "Loading parameter metadata...");
+            await dispatcher.DispatchAsync(() => ProgressMessage = "Loading parameter metadata...");
             await LoadMetaDataAsync();
 
             // Create ParameterItemViewModel instances
@@ -407,7 +419,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             }
 
             // Display all parameters initially
-            dispatcher.Dispatch(() =>
+            await dispatcher.DispatchAsync(() =>
             {
                 TotalParameterCount = allParameterItems.Count;
                 ModifiedParameterCount = 0;
@@ -415,15 +427,15 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
                 Parameters.AddRange(allParameterItems);
             });
 
-            ResetUIState();
+            await ResetUIState();
             //dispatcher.Dispatch(() => ShowLoadingPanel = false);
             logger.LogInformation("Successfully loaded {Count} parameters with metadata", parameters.Count);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error loading parameters");
-            ResetUIState();
-            dispatcher.Dispatch(async () =>
+            await ResetUIState();
+            await dispatcher.DispatchAsync(async () =>
             {
                 Parameters.Clear();
                 await dialogs.DisplayTextPromptAsync("Load failed. Ensure there is a connection and try again", ex.Message, "OK");
@@ -436,12 +448,12 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     /// </summary>
     partial void OnSearchTextChanged(string value)
     {
-        FilterParameters();
+        FilterParameters().FireAndForget();
     }
 
-    private void FilterParameters()
+    private async Task FilterParameters()
     {
-        dispatcher.Dispatch(() =>
+        await dispatcher.DispatchAsync(() =>
         {
             Parameters.Clear();
 

@@ -235,25 +235,25 @@
                         </material:DataGridColumn.CellItemTemplate>
                     </material:DataGridColumn>-->
 
-                    <material:DataGrid.Columns>
+                    <!--<material:DataGrid.Columns>
                         <material:DataGridColumn Title="Name">
                             <material:DataGridColumn.CellItemTemplate>
                                 <DataTemplate x:DataType="vm:ParameterItemViewModel">
-                                    <Label VerticalOptions="Center" HorizontalOptions="Start" Text="{Binding Name}" />
+                                    <Label VerticalOptions="Center" MaximumHeightRequest="40" HorizontalOptions="Start" Text="{Binding Name}" />
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
                         </material:DataGridColumn>
                         <material:DataGridColumn Title="Value">
                             <material:DataGridColumn.CellItemTemplate>
                                 <DataTemplate x:DataType="vm:ParameterItemViewModel">
-                                    <Label VerticalOptions="Center" HorizontalOptions="Start" Text="{Binding Value}" />
+                                    <Label VerticalOptions="Center" MaximumHeightRequest="40" HorizontalOptions="Start" Text="{Binding Value}" />
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
                         </material:DataGridColumn>
                         <material:DataGridColumn Title="Default">
                             <material:DataGridColumn.CellItemTemplate>
                                 <DataTemplate x:DataType="vm:ParameterItemViewModel">
-                                    <Label VerticalOptions="Center" HorizontalOptions="Start" Text="{Binding OriginalValue}" />
+                                    <Label VerticalOptions="Center" MaximumHeightRequest="40" HorizontalOptions="Start" Text="{Binding OriginalValue}" />
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
                         </material:DataGridColumn>
@@ -261,7 +261,7 @@
                         <material:DataGridColumn Title="Units">
                             <material:DataGridColumn.CellItemTemplate>
                                 <DataTemplate x:DataType="vm:ParameterItemViewModel">
-                                    <Label VerticalOptions="Center" HorizontalOptions="Start" Text="{Binding Units}" />
+                                    <Label VerticalOptions="Center" MaximumHeightRequest="40" HorizontalOptions="Start" Text="{Binding Units}" />
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
                         </material:DataGridColumn>
@@ -269,7 +269,7 @@
                         <material:DataGridColumn Title="Options">
                             <material:DataGridColumn.CellItemTemplate>
                                 <DataTemplate x:DataType="vm:ParameterItemViewModel">
-                                    <Label MaximumWidthRequest="200" VerticalOptions="Center" HorizontalOptions="Start" Text="{Binding Options}" />
+                                    <Label MaximumWidthRequest="200" MaximumHeightRequest="40" VerticalOptions="Center" HorizontalOptions="Start" Text="{Binding Options}" />
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
                         </material:DataGridColumn>
@@ -277,24 +277,22 @@
                         <material:DataGridColumn Title="Description">
                             <material:DataGridColumn.CellItemTemplate>
                                 <DataTemplate x:DataType="vm:ParameterItemViewModel">
-                                    <Label MaximumWidthRequest="300" VerticalOptions="Center" HorizontalOptions="Start" Text="{Binding Description}" />
+                                    <Label MaximumWidthRequest="300" MaximumHeightRequest="40" VerticalOptions="Center" HorizontalOptions="Start" Text="{Binding Description}" />
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
                         </material:DataGridColumn>
+                    </material:DataGrid.Columns>-->
 
-                        <!--<material:DataGridColumn  ValueBinding="{Binding Description}" Title="Description"  />-->
-
-                    </material:DataGrid.Columns>
-
-                    
-                    <!--<material:DataGrid.Columns>
+                         <!--<material:DataGridColumn  ValueBinding="{Binding Description}" Title="Description"  />-->
+                  
+                    <material:DataGrid.Columns>
                         <material:DataGridColumn   ValueBinding="{Binding Name}" Title="Name"  /> 
                         <material:DataGridColumn   ValueBinding="{Binding Value}" Title="Value"  />
                         <material:DataGridColumn   ValueBinding="{Binding OriginalValue}" Title="Default"  />
                         <material:DataGridColumn   ValueBinding="{Binding Units}" Title="Units"  />
                         <material:DataGridColumn   ValueBinding="{Binding Options}" Title="Options"  />
                         <material:DataGridColumn   ValueBinding="{Binding Description}" Title="Description"  />
-                    </material:DataGrid.Columns>-->
+                    </material:DataGrid.Columns>
                     
 
                     <!--<material:DataGrid.Columns>
