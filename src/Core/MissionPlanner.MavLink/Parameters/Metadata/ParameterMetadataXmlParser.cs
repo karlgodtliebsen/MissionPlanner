@@ -78,11 +78,12 @@ public sealed class ParameterMetadataXmlParser(ILogger<ParameterMetadataXmlParse
 
         // Get field values from <field name="..."> elements
         string? units = null;
+        string? unitText = null;
         string? range = null;
         string? increment = null;
         string? bitmaskStr = null;
-        bool rebootRequired = false;
-        bool readOnly = false;
+        var rebootRequired = false;
+        var readOnly = false;
 
         foreach (var field in element.Elements("field"))
         {
@@ -93,6 +94,9 @@ public sealed class ParameterMetadataXmlParser(ILogger<ParameterMetadataXmlParse
             {
                 case "Units":
                     units = fieldValue;
+                    break;
+                case "UnitText":
+                    unitText = fieldValue;
                     break;
                 case "Range":
                     range = fieldValue;
@@ -127,6 +131,7 @@ public sealed class ParameterMetadataXmlParser(ILogger<ParameterMetadataXmlParse
                     valuesList.Add($"{code}:{label}");
                 }
             }
+
             if (valuesList.Count > 0)
             {
                 valuesStr = string.Join(",", valuesList);
@@ -145,6 +150,7 @@ public sealed class ParameterMetadataXmlParser(ILogger<ParameterMetadataXmlParse
             displayName,
             description,
             units,
+            unitText,
             range,
             valuesStr,
             bitmaskStr,

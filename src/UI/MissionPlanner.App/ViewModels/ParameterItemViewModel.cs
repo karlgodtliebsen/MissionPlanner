@@ -12,27 +12,32 @@ namespace MissionPlanner.App.ViewModels;
 public partial class ParameterItemViewModel : ObservableObject
 {
     //private readonly VehicleParameter originalParameter;
+    private VehicleParameter? originalParameter;
+    private ParameterMetadata? originalMetadata;
+    public VehicleParameter? OriginalParameter => originalParameter;
 
     [ObservableProperty] public partial string Name { get; set; }
+    [ObservableProperty] public partial string? DisplayName { get; set; }
     [ObservableProperty] public partial float Value { get; set; }
 
     [DisplayName("Default")][ObservableProperty] public partial float OriginalValue { get; set; }
     [ObservableProperty] public partial string? Units { get; set; }
+    [ObservableProperty] public partial string? UnitText { get; set; }
 
-    [ObservableProperty] public partial string? Options { get; set; }
+    [ObservableProperty] public partial string? Values { get; set; }
+    [ObservableProperty] public partial string? Range { get; set; }
     [ObservableProperty] public partial string? Description { get; set; }
 
-    [DataGridIgnore][ObservableProperty] public partial VehicleParameter OriginalParameter { get; set; }
+    [ObservableProperty] public partial string? Options { get; set; }
+    [ObservableProperty] public partial string[]? ValuesData { get; set; }
+    [ObservableProperty] public partial string[]? RangeData { get; set; }
 
-    //[DataGridIgnore][ObservableProperty] public partial string Type { get; set; }
-    //[DataGridIgnore][ObservableProperty] public partial ushort Index { get; set; }
-    //[DataGridIgnore][ObservableProperty] public partial float? Min { get; set; }
-    //[DataGridIgnore][ObservableProperty] public partial float? Max { get; set; }
-    //[DataGridIgnore][ObservableProperty] public partial string? Range { get; set; }
-    //[DataGridIgnore][ObservableProperty] public partial string? Values { get; set; }
+    [DataGridIgnore][ObservableProperty] public partial string? Increment { get; set; }
+    [DataGridIgnore][ObservableProperty] public partial string? UserLevel { get; set; }
+    [DataGridIgnore][ObservableProperty] public partial string? Bitmask { get; set; }
     [DataGridIgnore][ObservableProperty] public partial bool IsModified { get; set; }
-    //[DataGridIgnore][ObservableProperty] public partial bool IsReadOnly { get; set; }
-    //[DataGridIgnore][ObservableProperty] public partial bool Favorite { get; set; }
+    [DataGridIgnore][ObservableProperty] public partial bool IsReadOnly { get; set; }
+    [DataGridIgnore][ObservableProperty] public partial bool RebootRequired { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ParameterItemViewModel"/> class.
@@ -40,35 +45,69 @@ public partial class ParameterItemViewModel : ObservableObject
     /// <param name="parameter">The vehicle parameter to wrap.</param>
     public ParameterItemViewModel(VehicleParameter parameter)
     {
-        OriginalParameter = parameter;
-        Name = parameter.Name;
-        Value = parameter.Value;
-        OriginalValue = parameter.Value;
-        //Type = parameter.Type.ToString();
-        //Index = parameter.Index;
+        SetData(parameter);
     }
 
-    public ParameterItemViewModel()
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ParameterItemViewModel"/> class with metadata.
+    /// </summary>
+    /// <param name="metadata">The parameter metadata to wrap.</param>
+    public ParameterItemViewModel(ParameterMetadata metadata)
     {
+        SetMetadata(metadata);
     }
+
 
     /// <summary>
     /// Sets metadata for this parameter.
     /// </summary>
     public void SetMetadata(ParameterMetadata? metadata)
     {
-        if (metadata == null)
+        originalMetadata = metadata;
+        Name = metadata.Name;
+        DisplayName = metadata.DisplayName;
+
+        //TODO: handle Range and values as Dictionary for better UI representation or add properties for data binding to Range/Values.
+
+        Description = metadata.Description ?? "";
+        Units = metadata.Units ?? "";
+        UnitText = metadata.UnitText ?? "";
+        Range = metadata.Range;
+        Values = metadata.Values;
+        Bitmask = metadata.Bitmask;
+        Increment = metadata.Increment;
+        UserLevel = metadata.UserLevel;
+        RebootRequired = metadata.RebootRequired;
+        IsReadOnly = metadata.ReadOnly;
+
+        ValuesData = [];
+        RangeData = [];
+        var opt = "";
+        if (Range is not null)
         {
-            return;
+            opt = Range + Environment.NewLine;
+            RangeData = Range.Split(" ");
         }
 
-        Description = metadata.Description;
-        Units = metadata.Units;
-        Options = metadata.Values; // Enumerated values like "0:Disabled,1:Enabled"
-        //Range = metadata.Range;
-        //Min = metadata.MinValue;
-        //Max = metadata.MaxValue;
-        //IsReadOnly = metadata.ReadOnly;
+        if (Values is not null)
+        {
+            var v = Values.Split(",");
+            ValuesData = v;
+            Options = opt + string.Join(Environment.NewLine, v);
+        }
+        // Options = opt + string.Join(Environment.NewLine, v);
+    }
+
+    /// <summary>
+    /// Sets the data for this parameter from a VehicleParameter instance.
+    /// </summary>
+    /// <param name="parameter">The VehicleParameter instance containing the data.</param>
+    public void SetData(VehicleParameter parameter)
+    {
+        originalParameter = parameter;
+        OriginalValue = parameter.Value;
+        Value = parameter.Value;
+        Value = parameter.Value;
     }
 
     /// <summary>
@@ -85,19 +124,5 @@ public partial class ParameterItemViewModel : ObservableObject
     public void ResetToOriginal()
     {
         Value = OriginalValue;
-    }
-
-    /// <summary>
-    /// Gets the original VehicleParameter for sending to the vehicle.
-    /// </summary>
-    public VehicleParameter ToVehicleParameter()
-    {
-        return new VehicleParameter(
-            Name,
-            Value,
-            OriginalParameter.Type,
-            OriginalParameter.Index,
-            OriginalParameter.Count
-        );
     }
 }

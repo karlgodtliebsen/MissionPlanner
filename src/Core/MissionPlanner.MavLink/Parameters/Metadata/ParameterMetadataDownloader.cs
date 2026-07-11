@@ -1,5 +1,4 @@
-using System.IO.Compression;
-using Microsoft.Extensions.Http;
+﻿using System.IO.Compression;
 using Microsoft.Extensions.Logging;
 
 namespace MissionPlanner.MavLink.Parameters.Metadata;
@@ -15,9 +14,7 @@ public sealed class ParameterMetadataDownloader(
     private const string BaseUrl = "https://autotest.ardupilot.org/Parameters";
 
     /// <inheritdoc/>
-    public async Task<Stream> DownloadAsync(
-        VehicleType vehicleType,
-        CancellationToken cancellationToken = default)
+    public async Task<Stream> DownloadAsync(VehicleType vehicleType, CancellationToken cancellationToken = default)
     {
         var vehicleName = GetVehicleName(vehicleType);
         var url = $"{BaseUrl}/{vehicleName}/apm.pdef.xml.gz";
@@ -82,7 +79,7 @@ public sealed class ParameterMetadataDownloader(
             VehicleType.SITL => "SITL",
             VehicleType.Blimp => "Blimp",
             VehicleType.Heli => "Heli",
-            _ => throw new ArgumentException($"Unknown vehicle type: {vehicleType}", nameof(vehicleType))
+            var _ => throw new ArgumentException($"Unknown vehicle type: {vehicleType}", nameof(vehicleType))
         };
     }
 }

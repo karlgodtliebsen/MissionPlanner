@@ -32,7 +32,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
     private readonly List<IDisposable> eventSubscriptions = [];
 
-    private IDictionary<string, VehicleParameter> parameters = new Dictionary<string, VehicleParameter>();
+    //private IDictionary<string, VehicleParameter> parameters = new Dictionary<string, VehicleParameter>();
     private readonly IDictionary<string, ParameterMetadata> metadata = new Dictionary<string, ParameterMetadata>();
     private readonly List<ParameterItemViewModel> allParameterItems = [];
 
@@ -108,7 +108,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
     private async Task VehicleDisconnected(VehicleDisconnected vehicle, CancellationToken cancellationToken)
     {
-        await ResetUIState();
+        await ResetState();
         await dispatcher.DispatchAsync(() =>
         {
             try
@@ -141,14 +141,113 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
     private async Task LoadMetaDataAsync()
     {
+        await SetLoadState();
+        // Load metadata for the vehicle
+        await dispatcher.DispatchAsync(() => ProgressMessage = "Loading parameter metadata...");
+
         metadata.Clear();
         var vehicles = vehicleRegistry.Vehicles;
         var vehicle = vehicles.FirstOrDefault();
         if (vehicle != null)
         {
-            metadata.Clear();
             metadata.AddAll(await metadataService.GetAllMetadataAsync(vehicle.Id, cts.Token));
             logger.LogInformation("Loaded metadata for {Count} parameters", metadata.Count);
+
+            IList<ParameterItemViewModel> parameters = [];
+
+            var parameterMetadata = metadata.Values.OrderBy(v => v.Name);
+            foreach (var metaData in parameterMetadata)
+            {
+                var model = new ParameterItemViewModel(metaData);
+                parameters.Add(model);
+            }
+
+            await ResetState();
+            allParameterItems.Clear();
+            allParameterItems.AddRange(parameters.OrderBy(p => p.Name));
+            await dispatcher.DispatchAsync(() =>
+            {
+                Parameters.Clear();
+                Parameters.AddRange(allParameterItems);
+            });
+        }
+    }
+
+    private async Task LoadAsync(VehicleId vehicleId, CancellationToken cancellationToken)
+    {
+        if (metadata.Count == 0)
+        {
+            logger.LogWarning("No metadata available for vehicle {VehicleId}", vehicleId);
+            return;
+        }
+
+        logger.LogDebug("Starting to load parameters for vehicle {VehicleId}", vehicleId);
+
+        IProgress<ParameterStreamProgress>? progress = new Progress<ParameterStreamProgress>(p =>
+            dispatcher.DispatchAsync(() =>
+            {
+                Progress = (double)p.ReceivedCount / p.TotalCount;
+                ProgressMessage = $"Loading parameters... {p.ReceivedCount}/{p.TotalCount}";
+            }));
+
+        try
+        {
+            // Stream all parameters with progress tracking
+            var vehicleParameterStreamService = session.ParameterStreamService;
+            var result = await vehicleParameterStreamService.StreamAllParametersWithRetryAsync(vehicleId, progress, 3, cancellationToken: ctsProgress.Token);
+
+            if (!result.Success)
+            {
+                await ResetState();
+                await dispatcher.DispatchAsync(() =>
+                {
+                    ShowLoadingPanel = true;
+                    ShowLoadingCompletedWithError = true;
+                });
+                logger.LogError("Failed to load parameters: {Error}", result.ErrorMessage);
+                return;
+            }
+
+            var parameters = new Dictionary<string, VehicleParameter>(result.Parameters);
+
+            foreach (var parameter in parameters.Values.OrderBy(p => p.Name))
+            {
+                var item = allParameterItems.FirstOrDefault(m => m.Name == parameter.Name);
+                if (item is not null)
+                {
+                    item.SetData(parameter);
+                }
+                else
+                {
+                    var vehicleParameter = new VehicleParameter(parameter.Name ?? "", 0, MavParamType.Real32, 0, (ushort)metadata.Count());
+                    var model = new ParameterItemViewModel(vehicleParameter);
+                    allParameterItems.Add(model);
+                }
+            }
+
+            await dispatcher.DispatchAsync(() =>
+            {
+                TotalParameterCount = allParameterItems.Count;
+                ModifiedParameterCount = 0;
+                if (allParameterItems.Count != Parameters.Count)
+                {
+                    Parameters.Clear();
+                    Parameters.AddRange(allParameterItems.OrderBy(p => p.Name));
+                }
+            });
+
+            await ResetState();
+            logger.LogInformation("Successfully loaded {Count} parameters with metadata", parameters.Count);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error loading parameters");
+            await ResetState();
+            await dispatcher.DispatchAsync(async () =>
+            {
+                Parameters.Clear();
+                await dialogs.DisplayTextPromptAsync("Load failed. Ensure there is a connection and try again", ex.Message, "OK");
+            });
         }
     }
 
@@ -170,7 +269,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         var vehicle = vehicles.FirstOrDefault();
         if (vehicle is not null)
         {
-            await PrepareLoad();
+            await SetLoadState();
             await Task.Run(async () => await LoadAsync(vehicle.Id, cts.Token), cts.Token);
         }
     }
@@ -178,12 +277,12 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     [RelayCommand]
     private async Task CreateTestParametersAsync()
     {
-        await PrepareLoad();
+        await SetLoadState();
         IList<ParameterItemViewModel> testParameters = [];
         for (var i = 0; i < 20; i++)
         {
             var vehicleParameter = new VehicleParameter($"VEHICLE_NAME {i}", i, MavParamType.Real32, (ushort)i, 100);
-            var model = new ParameterItemViewModel(vehicleParameter) { Description = $"Vehicle Name Parameter {i}", Units = "N/A", Options = "1,2,3,4,5" };
+            var model = new ParameterItemViewModel(vehicleParameter);
             testParameters.Add(model);
 
             await dispatcher.DispatchAsync(() =>
@@ -199,13 +298,13 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             Parameters.Clear();
             Parameters.AddRange(testParameters);
         });
-        await ResetUIState();
+        await ResetState();
     }
 
     [RelayCommand(CanExecute = nameof(CanExecuteConnection))]
     private async Task CreateTestParametersWithMetadata()
     {
-        await PrepareLoad();
+        await SetLoadState();
         IList<ParameterItemViewModel> testParameters = [];
 
         var vehicles = vehicleRegistry.Vehicles;
@@ -218,7 +317,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             }
 
             var vehicleParameter = new VehicleParameter("First Line", (float)1.0, MavParamType.Real32, (ushort)testParameters.Count, (ushort)metadata.Count());
-            var model = new ParameterItemViewModel(vehicleParameter) { Description = "description...", Units = "units", Options = "5,4,3,2,1" };
+            var model = new ParameterItemViewModel(vehicleParameter);
             testParameters.Add(model);
 
 
@@ -226,12 +325,13 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             foreach (var metaData in parameterMetadata)
             {
                 vehicleParameter = new VehicleParameter(metaData.Name ?? "", (float)1.0, MavParamType.Real32, (ushort)testParameters.Count, (ushort)metadata.Count());
-                model = new ParameterItemViewModel(vehicleParameter) { Description = metaData.Description ?? "", Units = metaData.Units ?? "", Options = "5,4,3,2,1" };
+                model = new ParameterItemViewModel(vehicleParameter);
+                model.SetMetadata(metaData);
                 testParameters.Add(model);
             }
         }
 
-        await ResetUIState();
+        await ResetState();
 
         await dispatcher.DispatchAsync(() =>
         {
@@ -246,7 +346,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     {
         await ctsProgress.CancelAsync();
         ctsProgress = new CancellationTokenSource();
-        await ResetUIState();
+        await ResetState();
     }
 
     [RelayCommand]
@@ -290,7 +390,8 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     {
         try
         {
-            var result = await parametersFileHandler.SaveParametersToFile(Parameters.Select(v => v.OriginalParameter).ToList(), cts.Token);
+            var parameters = Parameters.Where(v => v.OriginalParameter is not null).Select(v => v.OriginalParameter).ToList();
+            var result = await parametersFileHandler.SaveParametersToFile(parameters!, cts.Token);
             await dialogs.ConfirmAsync("Saved", $"File saved to:\n{result}", "OK");
         }
         catch (Exception ex)
@@ -331,18 +432,18 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     }
 
     [RelayCommand]
-    private async Task
-        ResetToDefault()
+    private async Task ResetToDefault()
     {
-        await ResetUIState();
+        await ResetState();
         Parameters.Clear();
     }
 
-    private async Task ResetUIState()
+    private async Task ResetState()
     {
         await dispatcher.DispatchAsync(() =>
         {
             Progress = 0;
+            ProgressMessage = "";
             IsBusy = false;
             ShowLoadingProgress = false;
             ShowLoadingPanel = false;
@@ -352,95 +453,18 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         });
     }
 
-    private async Task PrepareLoad()
+    private async Task SetLoadState()
     {
-        await ResetUIState();
+        await ResetState();
         await dispatcher.DispatchAsync(() =>
         {
             IsBusy = true;
             ShowLoadingPanel = true;
             ShowLoadingProgress = true;
             ProgressMessage = "Loading parameters...";
-            Parameters.Clear();
-            parameters.Clear();
-            allParameterItems.Clear();
+            //Parameters.Clear();
+            //allParameterItems.Clear();
         });
-    }
-
-    private async Task LoadAsync(VehicleId vehicleId, CancellationToken cancellationToken)
-    {
-        logger.LogDebug("Starting to load parameters for vehicle {VehicleId}", vehicleId);
-
-        IProgress<ParameterStreamProgress>? progress = new Progress<ParameterStreamProgress>(p =>
-            dispatcher.DispatchAsync(() =>
-            {
-                Progress = (double)p.ReceivedCount / p.TotalCount;
-                ProgressMessage = $"Loading parameters... {p.ReceivedCount}/{p.TotalCount}";
-            }));
-
-        try
-        {
-            // Stream all parameters with progress tracking
-            var vehicleParameterStreamService = session.ParameterStreamService;
-            var result = await vehicleParameterStreamService.StreamAllParametersWithRetryAsync(vehicleId, progress, 3, cancellationToken: ctsProgress.Token);
-
-            if (!result.Success)
-            {
-                await ResetUIState();
-                await dispatcher.DispatchAsync(() =>
-                {
-                    ShowLoadingPanel = true;
-                    ShowLoadingCompletedWithError = true;
-                });
-                logger.LogError("Failed to load parameters: {Error}", result.ErrorMessage);
-                return;
-            }
-
-            //dispatcher.Dispatch(() => ShowLoadingProgress = false);
-
-            parameters = new Dictionary<string, VehicleParameter>(result.Parameters);
-
-            // Load metadata for the vehicle
-            await dispatcher.DispatchAsync(() => ProgressMessage = "Loading parameter metadata...");
-            await LoadMetaDataAsync();
-
-            // Create ParameterItemViewModel instances
-            foreach (var parameter in parameters.Values.OrderBy(p => p.Name))
-            {
-                var item = new ParameterItemViewModel(parameter);
-
-                // Set metadata if available
-                if (metadata != null && metadata.TryGetValue(parameter.Name, out var paramMetadata))
-                {
-                    item.SetMetadata(paramMetadata);
-                }
-
-                allParameterItems.Add(item);
-            }
-
-            // Display all parameters initially
-            await dispatcher.DispatchAsync(() =>
-            {
-                TotalParameterCount = allParameterItems.Count;
-                ModifiedParameterCount = 0;
-                Parameters.Clear();
-                Parameters.AddRange(allParameterItems);
-            });
-
-            await ResetUIState();
-            //dispatcher.Dispatch(() => ShowLoadingPanel = false);
-            logger.LogInformation("Successfully loaded {Count} parameters with metadata", parameters.Count);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error loading parameters");
-            await ResetUIState();
-            await dispatcher.DispatchAsync(async () =>
-            {
-                Parameters.Clear();
-                await dialogs.DisplayTextPromptAsync("Load failed. Ensure there is a connection and try again", ex.Message, "OK");
-            });
-        }
     }
 
     /// <summary>

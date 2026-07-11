@@ -187,7 +187,7 @@
             </VerticalStackLayout>
 
             <!-- Parameter Grid -->
-            <Grid Grid.Row="3" RowDefinitions="*" VerticalOptions="Fill" HorizontalOptions="Fill">
+            <Grid Grid.Row="3" VerticalOptions="Fill" HorizontalOptions="Fill">
                 <material:DataGrid 
                            ItemsSource="{Binding Parameters}"
                            UseAutoColumns="False"
@@ -201,7 +201,7 @@
                             <Image
                         WidthRequest="40"
                         HeightRequest="40"
-                        HorizontalOptions="Center"
+                        HorizontalOptions="Start"
                         VerticalOptions="Center"
                         Source="{FontImageSource FontFamily=MaterialOutlined, Glyph={x:Static m:MaterialOutlined.Backup_table}, Color={AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}}"/>
                             <Label Text="No data available..." HorizontalOptions="Center"/>
@@ -286,12 +286,12 @@
                          <!--<material:DataGridColumn  ValueBinding="{Binding Description}" Title="Description"  />-->
                   
                     <material:DataGrid.Columns>
-                        <material:DataGridColumn   ValueBinding="{Binding Name}" Title="Name"  /> 
-                        <material:DataGridColumn   ValueBinding="{Binding Value}" Title="Value"  />
-                        <material:DataGridColumn   ValueBinding="{Binding OriginalValue}" Title="Default"  />
-                        <material:DataGridColumn   ValueBinding="{Binding Units}" Title="Units"  />
-                        <material:DataGridColumn   ValueBinding="{Binding Options}" Title="Options"  />
-                        <material:DataGridColumn   ValueBinding="{Binding Description}" Title="Description"  />
+                        <material:DataGridColumn  Width="200"  ValueBinding="{Binding Name}" Title="Name"  />
+                        <material:DataGridColumn  Width="120"  ValueBinding="{Binding Value}" Title="Value"  />
+                        <material:DataGridColumn  Width="120"  ValueBinding="{Binding OriginalValue}" Title="Default"  />
+                        <material:DataGridColumn  Width="120"   ValueBinding="{Binding Units}" Title="Units"  />
+                        <material:DataGridColumn  Width="*"  ValueBinding="{Binding Options}" Title="Options"  />
+                        <material:DataGridColumn  Width="4*"  ValueBinding="{Binding Description}" Title="Description"  />
                     </material:DataGrid.Columns>
                     
 

@@ -1,4 +1,4 @@
-namespace MissionPlanner.MavLink.Parameters;
+﻿namespace MissionPlanner.MavLink.Parameters;
 
 /// <summary>
 /// Represents metadata for a vehicle parameter.
@@ -8,6 +8,7 @@ namespace MissionPlanner.MavLink.Parameters;
 /// <param name="DisplayName">Human-readable display name.</param>
 /// <param name="Description">Detailed description of what the parameter does.</param>
 /// <param name="Units">Measurement units (e.g., "m/s", "deg", "Hz").</param>
+/// <param name="UnitText"></param>
 /// <param name="Range">Valid range as "min max" string (e.g., "0 100").</param>
 /// <param name="Values">Enumerated values as comma-separated list (e.g., "0:Disabled,1:Enabled").</param>
 /// <param name="Bitmask">Bit flags for boolean parameters (e.g., "0:Air-mode,1:Rate Loop Only").</param>
@@ -20,6 +21,7 @@ public sealed record ParameterMetadata(
     string? DisplayName,
     string? Description,
     string? Units,
+    string? UnitText,
     string? Range,
     string? Values,
     string? Bitmask,
@@ -36,13 +38,12 @@ public sealed record ParameterMetadata(
         get
         {
             if (string.IsNullOrWhiteSpace(Range))
+            {
                 return null;
+            }
 
             var parts = Range.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length >= 1 && float.TryParse(parts[0], out var min))
-                return min;
-
-            return null;
+            return parts.Length >= 1 && float.TryParse(parts[0], out var min) ? min : null;
         }
     }
 
@@ -54,32 +55,19 @@ public sealed record ParameterMetadata(
         get
         {
             if (string.IsNullOrWhiteSpace(Range))
+            {
                 return null;
+            }
 
             var parts = Range.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            if (parts.Length >= 2 && float.TryParse(parts[1], out var max))
-                return max;
-
-            return null;
+            return parts.Length >= 2 && float.TryParse(parts[1], out var max) ? max : null;
         }
     }
 
     /// <summary>
     /// Gets the increment value as a float, if available.
     /// </summary>
-    public float? IncrementValue
-    {
-        get
-        {
-            if (string.IsNullOrWhiteSpace(Increment))
-                return null;
-
-            if (float.TryParse(Increment, out var increment))
-                return increment;
-
-            return null;
-        }
-    }
+    public float? IncrementValue => string.IsNullOrWhiteSpace(Increment) ? null : float.TryParse(Increment, out var increment) ? increment : null;
 
     /// <summary>
     /// Parses the Values string into a dictionary of value->label mappings.
@@ -90,7 +78,9 @@ public sealed record ParameterMetadata(
         var options = new Dictionary<float, string>();
 
         if (string.IsNullOrWhiteSpace(Values))
+        {
             return options;
+        }
 
         // Format: "0:Disabled,1:Enabled,2:Auto"
         var pairs = Values.Split(',', StringSplitOptions.RemoveEmptyEntries);
@@ -115,7 +105,9 @@ public sealed record ParameterMetadata(
         var options = new Dictionary<int, string>();
 
         if (string.IsNullOrWhiteSpace(Bitmask))
+        {
             return options;
+        }
 
         // Format: "0:Air-mode,1:Rate Loop Only,2:Something Else"
         var pairs = Bitmask.Split(',', StringSplitOptions.RemoveEmptyEntries);
@@ -139,16 +131,12 @@ public sealed record ParameterMetadata(
     public bool IsValueValid(float value)
     {
         if (ReadOnly)
+        {
             return false;
+        }
 
         // Check range
-        if (MinValue.HasValue && value < MinValue.Value)
-            return false;
-
-        if (MaxValue.HasValue && value > MaxValue.Value)
-            return false;
-
-        return true;
+        return MinValue.HasValue && value < MinValue.Value ? false : !MaxValue.HasValue || value <= MaxValue.Value;
     }
 
     /// <summary>
@@ -159,14 +147,12 @@ public sealed record ParameterMetadata(
     public string? GetValidationError(float value)
     {
         if (ReadOnly)
+        {
             return "This parameter is read-only and cannot be modified.";
+        }
 
-        if (MinValue.HasValue && value < MinValue.Value)
-            return $"Value must be at least {MinValue.Value}.";
-
-        if (MaxValue.HasValue && value > MaxValue.Value)
-            return $"Value must be at most {MaxValue.Value}.";
-
-        return null;
+        return MinValue.HasValue && value < MinValue.Value
+            ? $"Value must be at least {MinValue.Value}."
+            : MaxValue.HasValue && value > MaxValue.Value ? $"Value must be at most {MaxValue.Value}." : null;
     }
 }
