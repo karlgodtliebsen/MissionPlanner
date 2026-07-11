@@ -1,6 +1,5 @@
-using MissionPlanner.Core.Models;
+﻿using MissionPlanner.Core.Models;
 using MissionPlanner.MavLink.Parameters;
-using MissionPlanner.MavLink.Parameters.Metadata;
 
 namespace MissionPlanner.Core.Services.Abstractions;
 
@@ -17,10 +16,7 @@ public interface IVehicleParameterMetadataService
     /// <param name="parameterName">The parameter name.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The parameter metadata, or null if not found.</returns>
-    Task<ParameterMetadata?> GetMetadataAsync(
-        VehicleId vehicleId,
-        string parameterName,
-        CancellationToken cancellationToken = default);
+    Task<ParameterMetadata?> GetMetadataAsync(VehicleId vehicleId, string parameterName, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets metadata for a specific parameter by vehicle type.
@@ -29,10 +25,7 @@ public interface IVehicleParameterMetadataService
     /// <param name="parameterName">The parameter name.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The parameter metadata, or null if not found.</returns>
-    Task<ParameterMetadata?> GetMetadataAsync(
-        VehicleType vehicleType,
-        string parameterName,
-        CancellationToken cancellationToken = default);
+    Task<ParameterMetadata?> GetMetadataAsync(VehicleType vehicleType, string parameterName, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets all metadata for a vehicle.
@@ -40,9 +33,7 @@ public interface IVehicleParameterMetadataService
     /// <param name="vehicleId">The vehicle ID.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Dictionary of parameter name to metadata.</returns>
-    Task<IReadOnlyDictionary<string, ParameterMetadata>> GetAllMetadataAsync(
-        VehicleId vehicleId,
-        CancellationToken cancellationToken = default);
+    Task<IReadOnlyDictionary<string, ParameterMetadata>> GetAllMetadataAsync(VehicleId vehicleId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets all metadata for a vehicle type.
@@ -50,9 +41,7 @@ public interface IVehicleParameterMetadataService
     /// <param name="vehicleType">The vehicle type.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Dictionary of parameter name to metadata.</returns>
-    Task<IReadOnlyDictionary<string, ParameterMetadata>> GetAllMetadataAsync(
-        VehicleType vehicleType,
-        CancellationToken cancellationToken = default);
+    Task<IReadOnlyDictionary<string, ParameterMetadata>> GetAllMetadataAsync(VehicleType vehicleType, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Forces a refresh of the metadata cache for a vehicle type.

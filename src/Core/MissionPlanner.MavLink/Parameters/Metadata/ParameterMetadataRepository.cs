@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 
 namespace MissionPlanner.MavLink.Parameters.Metadata;
@@ -13,13 +13,14 @@ public sealed class ParameterMetadataRepository(
     : IParameterMetadataRepository
 {
     private const int CacheExpiryDays = 7;
+
     private static readonly string CacheDirectory = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "MissionPlanner",
         "ParameterCache");
 
-    private readonly ConcurrentDictionary<VehicleType, Dictionary<string, ParameterMetadata>> _memoryCache = new();
-    private readonly SemaphoreSlim _downloadLock = new(1, 1);
+    private readonly ConcurrentDictionary<VehicleType, Dictionary<string, ParameterMetadata>> memoryCache = new();
+    private readonly SemaphoreSlim downloadLock = new(1, 1);
 
     /// <inheritdoc/>
     public async Task<ParameterMetadata?> GetMetadataAsync(
@@ -35,22 +36,20 @@ public sealed class ParameterMetadataRepository(
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyDictionary<string, ParameterMetadata>> GetAllMetadataAsync(
-        VehicleType vehicleType,
-        CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyDictionary<string, ParameterMetadata>> GetAllMetadataAsync(VehicleType vehicleType, CancellationToken cancellationToken = default)
     {
         // Check memory cache first
-        if (_memoryCache.TryGetValue(vehicleType, out var cached))
+        if (memoryCache.TryGetValue(vehicleType, out var cached))
         {
             return cached;
         }
 
         // Prevent concurrent downloads for the same vehicle type
-        await _downloadLock.WaitAsync(cancellationToken);
+        await downloadLock.WaitAsync(cancellationToken);
         try
         {
             // Double-check after acquiring lock
-            if (_memoryCache.TryGetValue(vehicleType, out cached))
+            if (memoryCache.TryGetValue(vehicleType, out cached))
             {
                 return cached;
             }
@@ -59,23 +58,21 @@ public sealed class ParameterMetadataRepository(
             var cacheFile = GetCacheFilePath(vehicleType);
             if (IsCacheValid(cacheFile))
             {
-                logger.LogInformation(
-                    "Loading parameter metadata for {VehicleType} from cache: {CacheFile}",
-                    vehicleType,
-                    cacheFile);
+                logger.LogInformation("Loading parameter metadata for {VehicleType} from cache: {CacheFile}", vehicleType, cacheFile);
 
                 try
                 {
                     await using var fileStream = File.OpenRead(cacheFile);
                     var metadata = await parser.ParseAsync(fileStream, vehicleType, cancellationToken);
-                    _memoryCache[vehicleType] = metadata;
-                    return metadata;
+                    if (metadata.Any())
+                    {
+                        memoryCache[vehicleType] = metadata;
+                        return metadata;
+                    }
                 }
                 catch (Exception ex)
                 {
-                    logger.LogWarning(ex,
-                        "Failed to load cached metadata for {VehicleType}, will download fresh copy",
-                        vehicleType);
+                    logger.LogWarning(ex, "Failed to load cached metadata for {VehicleType}, will download fresh copy", vehicleType);
                 }
             }
 
@@ -84,38 +81,38 @@ public sealed class ParameterMetadataRepository(
         }
         finally
         {
-            _downloadLock.Release();
+            downloadLock.Release();
         }
     }
 
     /// <inheritdoc/>
     public async Task RefreshAsync(VehicleType vehicleType, CancellationToken cancellationToken = default)
     {
-        await _downloadLock.WaitAsync(cancellationToken);
+        await downloadLock.WaitAsync(cancellationToken);
         try
         {
             // Remove from memory cache
-            _memoryCache.TryRemove(vehicleType, out _);
+            memoryCache.TryRemove(vehicleType, out var _);
 
             // Download fresh copy
             await DownloadAndCacheAsync(vehicleType, cancellationToken);
         }
         finally
         {
-            _downloadLock.Release();
+            downloadLock.Release();
         }
     }
 
     /// <inheritdoc/>
     public void ClearCache()
     {
-        _memoryCache.Clear();
+        memoryCache.Clear();
 
         try
         {
             if (Directory.Exists(CacheDirectory))
             {
-                Directory.Delete(CacheDirectory, recursive: true);
+                Directory.Delete(CacheDirectory, true);
                 logger.LogInformation("Cleared parameter metadata cache directory");
             }
         }
@@ -125,9 +122,7 @@ public sealed class ParameterMetadataRepository(
         }
     }
 
-    private async Task<Dictionary<string, ParameterMetadata>> DownloadAndCacheAsync(
-        VehicleType vehicleType,
-        CancellationToken cancellationToken)
+    private async Task<Dictionary<string, ParameterMetadata>> DownloadAndCacheAsync(VehicleType vehicleType, CancellationToken cancellationToken)
     {
         logger.LogInformation("Downloading fresh metadata for {VehicleType}", vehicleType);
 
@@ -140,15 +135,12 @@ public sealed class ParameterMetadataRepository(
         await SaveToCacheAsync(vehicleType, stream, cancellationToken);
 
         // Update memory cache
-        _memoryCache[vehicleType] = metadata;
+        memoryCache[vehicleType] = metadata;
 
         return metadata;
     }
 
-    private async Task SaveToCacheAsync(
-        VehicleType vehicleType,
-        Stream stream,
-        CancellationToken cancellationToken)
+    private async Task SaveToCacheAsync(VehicleType vehicleType, Stream stream, CancellationToken cancellationToken)
     {
         try
         {
@@ -166,10 +158,7 @@ public sealed class ParameterMetadataRepository(
             await using var fileStream = File.Create(cacheFile);
             await stream.CopyToAsync(fileStream, cancellationToken);
 
-            logger.LogInformation(
-                "Saved parameter metadata for {VehicleType} to cache: {CacheFile}",
-                vehicleType,
-                cacheFile);
+            logger.LogInformation("Saved parameter metadata for {VehicleType} to cache: {CacheFile}", vehicleType, cacheFile);
         }
         catch (Exception ex)
         {
@@ -196,11 +185,7 @@ public sealed class ParameterMetadataRepository(
 
         if (age.TotalDays > CacheExpiryDays)
         {
-            logger.LogInformation(
-                "Cache file {CacheFile} is {Days:F1} days old (expired after {ExpiryDays} days)",
-                cacheFile,
-                age.TotalDays,
-                CacheExpiryDays);
+            logger.LogInformation("Cache file {CacheFile} is {Days:F1} days old (expired after {ExpiryDays} days)", cacheFile, age.TotalDays, CacheExpiryDays);
             return false;
         }
 

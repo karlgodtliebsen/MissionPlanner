@@ -1,4 +1,4 @@
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 
 namespace MissionPlanner.MavLink.Parameters.Metadata;
@@ -10,10 +10,7 @@ public sealed class ParameterMetadataXmlParser(ILogger<ParameterMetadataXmlParse
     : IParameterMetadataParser
 {
     /// <inheritdoc/>
-    public async Task<Dictionary<string, ParameterMetadata>> ParseAsync(
-        Stream xmlStream,
-        VehicleType vehicleType,
-        CancellationToken cancellationToken = default)
+    public async Task<Dictionary<string, ParameterMetadata>> ParseAsync(Stream xmlStream, VehicleType vehicleType, CancellationToken cancellationToken = default)
     {
         var metadata = new Dictionary<string, ParameterMetadata>(StringComparer.OrdinalIgnoreCase);
 
@@ -21,23 +18,34 @@ public sealed class ParameterMetadataXmlParser(ILogger<ParameterMetadataXmlParse
         {
             var doc = await XDocument.LoadAsync(xmlStream, LoadOptions.None, cancellationToken);
 
-            // Get the vehicle-specific root element
+            // Navigate to the correct structure: <paramfile>/<vehicles>/<parameters name="ArduCopter">
             var vehicleElementName = GetVehicleElementName(vehicleType);
-            var vehicleElement = doc.Root?.Element(vehicleElementName);
+            var parametersElement = doc.Root?
+                .Element("vehicles")?
+                .Elements("parameters")
+                .FirstOrDefault(p => p.Attribute("name")?.Value == vehicleElementName);
 
-            if (vehicleElement == null)
+            if (parametersElement == null)
             {
-                logger.LogWarning(
-                    "No metadata found for vehicle type {VehicleType} (looking for element {ElementName})",
-                    vehicleType,
-                    vehicleElementName);
+                logger.LogWarning("No metadata found for vehicle type {VehicleType} (looking for parameters[@name='{ElementName}'])", vehicleType, vehicleElementName);
                 return metadata;
             }
 
-            // Parse each parameter
-            foreach (var paramElement in vehicleElement.Elements())
+            // Parse each <param> element
+            foreach (var paramElement in parametersElement.Elements("param"))
             {
-                var paramName = paramElement.Name.LocalName;
+                var paramNameAttr = paramElement.Attribute("name")?.Value;
+
+                if (string.IsNullOrWhiteSpace(paramNameAttr))
+                {
+                    logger.LogDebug("Skipping parameter with no name attribute");
+                    continue;
+                }
+
+                // Remove vehicle prefix from parameter name (e.g., "ArduCopter:FORMAT_VERSION" -> "FORMAT_VERSION")
+                var paramName = paramNameAttr.Contains(':')
+                    ? paramNameAttr.Substring(paramNameAttr.IndexOf(':') + 1)
+                    : paramNameAttr;
 
                 try
                 {
@@ -46,16 +54,11 @@ public sealed class ParameterMetadataXmlParser(ILogger<ParameterMetadataXmlParse
                 }
                 catch (Exception ex)
                 {
-                    logger.LogWarning(ex,
-                        "Failed to parse metadata for parameter {ParameterName}",
-                        paramName);
+                    logger.LogWarning(ex, "Failed to parse metadata for parameter {ParameterName}", paramName);
                 }
             }
 
-            logger.LogInformation(
-                "Parsed {Count} parameter metadata entries for {VehicleType}",
-                metadata.Count,
-                vehicleType);
+            logger.LogInformation("Parsed {Count} parameter metadata entries for {VehicleType}", metadata.Count, vehicleType);
         }
         catch (Exception ex)
         {
@@ -68,20 +71,74 @@ public sealed class ParameterMetadataXmlParser(ILogger<ParameterMetadataXmlParse
 
     private ParameterMetadata ParseParameterElement(string paramName, XElement element)
     {
-        var displayName = element.Element("DisplayName")?.Value;
-        var description = element.Element("Description")?.Value;
-        var units = element.Element("Units")?.Value;
-        var range = element.Element("Range")?.Value;
-        var values = element.Element("Values")?.Value;
-        var bitmask = element.Element("Bitmask")?.Value;
-        var increment = element.Element("Increment")?.Value;
-        var userLevel = element.Element("User")?.Value;
+        // Get attributes from <param> element
+        var displayName = element.Attribute("humanName")?.Value;
+        var description = element.Attribute("documentation")?.Value;
+        var userLevel = element.Attribute("user")?.Value;
 
-        var rebootRequired = element.Element("RebootRequired")?.Value?.Equals("True",
-            StringComparison.OrdinalIgnoreCase) ?? false;
+        // Get field values from <field name="..."> elements
+        string? units = null;
+        string? range = null;
+        string? increment = null;
+        string? bitmaskStr = null;
+        bool rebootRequired = false;
+        bool readOnly = false;
 
-        var readOnly = element.Element("ReadOnly")?.Value?.Equals("True",
-            StringComparison.OrdinalIgnoreCase) ?? false;
+        foreach (var field in element.Elements("field"))
+        {
+            var fieldName = field.Attribute("name")?.Value;
+            var fieldValue = field.Value;
+
+            switch (fieldName)
+            {
+                case "Units":
+                    units = fieldValue;
+                    break;
+                case "Range":
+                    range = fieldValue;
+                    break;
+                case "Increment":
+                    increment = fieldValue;
+                    break;
+                case "Bitmask":
+                    bitmaskStr = fieldValue;
+                    break;
+                case "RebootRequired":
+                    rebootRequired = fieldValue?.Equals("True", StringComparison.OrdinalIgnoreCase) ?? false;
+                    break;
+                case "ReadOnly":
+                    readOnly = fieldValue?.Equals("True", StringComparison.OrdinalIgnoreCase) ?? false;
+                    break;
+            }
+        }
+
+        // Parse <values> element if present (enumerated values)
+        string? valuesStr = null;
+        var valuesElement = element.Element("values");
+        if (valuesElement != null)
+        {
+            var valuesList = new List<string>();
+            foreach (var valueElement in valuesElement.Elements("value"))
+            {
+                var code = valueElement.Attribute("code")?.Value;
+                var label = valueElement.Value;
+                if (!string.IsNullOrWhiteSpace(code))
+                {
+                    valuesList.Add($"{code}:{label}");
+                }
+            }
+            if (valuesList.Count > 0)
+            {
+                valuesStr = string.Join(",", valuesList);
+            }
+        }
+
+        // Use bitmask from <field> if values wasn't set from <values> element
+        // (Some params have bitmask defined in field, others in dedicated element)
+        if (string.IsNullOrWhiteSpace(valuesStr) && !string.IsNullOrWhiteSpace(bitmaskStr))
+        {
+            // Bitmask is already in correct format from field
+        }
 
         return new ParameterMetadata(
             paramName,
@@ -89,8 +146,8 @@ public sealed class ParameterMetadataXmlParser(ILogger<ParameterMetadataXmlParse
             description,
             units,
             range,
-            values,
-            bitmask,
+            valuesStr,
+            bitmaskStr,
             increment,
             userLevel,
             rebootRequired,
@@ -101,7 +158,7 @@ public sealed class ParameterMetadataXmlParser(ILogger<ParameterMetadataXmlParse
     {
         return vehicleType switch
         {
-            VehicleType.ArduCopter => "ArduCopter2",
+            VehicleType.ArduCopter => "ArduCopter",
             VehicleType.ArduPlane => "ArduPlane",
             VehicleType.Rover => "Rover",
             VehicleType.ArduSub => "ArduSub",
@@ -110,7 +167,7 @@ public sealed class ParameterMetadataXmlParser(ILogger<ParameterMetadataXmlParse
             VehicleType.SITL => "SITL",
             VehicleType.Blimp => "Blimp",
             VehicleType.Heli => "Heli",
-            _ => throw new ArgumentException($"Unknown vehicle type: {vehicleType}", nameof(vehicleType))
+            var _ => throw new ArgumentException($"Unknown vehicle type: {vehicleType}", nameof(vehicleType))
         };
     }
 }

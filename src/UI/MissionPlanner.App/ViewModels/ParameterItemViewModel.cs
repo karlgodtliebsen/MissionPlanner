@@ -30,7 +30,7 @@ public partial class ParameterItemViewModel : ObservableObject
     //[DataGridIgnore][ObservableProperty] public partial float? Max { get; set; }
     //[DataGridIgnore][ObservableProperty] public partial string? Range { get; set; }
     //[DataGridIgnore][ObservableProperty] public partial string? Values { get; set; }
-    //[DataGridIgnore][ObservableProperty] public partial bool IsModified { get; set; }
+    [DataGridIgnore][ObservableProperty] public partial bool IsModified { get; set; }
     //[DataGridIgnore][ObservableProperty] public partial bool IsReadOnly { get; set; }
     //[DataGridIgnore][ObservableProperty] public partial bool Favorite { get; set; }
 
@@ -64,10 +64,10 @@ public partial class ParameterItemViewModel : ObservableObject
 
         Description = metadata.Description;
         Units = metadata.Units;
+        Options = metadata.Values; // Enumerated values like "0:Disabled,1:Enabled"
         //Range = metadata.Range;
         //Min = metadata.MinValue;
         //Max = metadata.MaxValue;
-        //Values = metadata.Values;
         //IsReadOnly = metadata.ReadOnly;
     }
 
@@ -76,7 +76,7 @@ public partial class ParameterItemViewModel : ObservableObject
     /// </summary>
     partial void OnValueChanged(float value)
     {
-        //IsModified = Math.Abs(value - OriginalValue) > 0.0001f;
+        IsModified = Math.Abs(value - OriginalValue) > 0.0001f;
     }
 
     /// <summary>

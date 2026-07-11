@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using DotNext.Collections.Generic;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.ViewModels;
@@ -22,6 +23,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     private readonly IDispatcher dispatcher;
     private readonly IDialogService dialogs;
     private readonly ParametersFileHandler parametersFileHandler;
+    private readonly IVehicleParameterMetadataService metadataService;
     private readonly CancellationTokenSource cts;
     private CancellationTokenSource ctsProgress = new();
 
@@ -30,6 +32,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     private readonly List<IDisposable> eventSubscriptions = [];
 
     private IDictionary<string, VehicleParameter> parameters = new Dictionary<string, VehicleParameter>();
+    private readonly IDictionary<string, ParameterMetadata> metadata = new Dictionary<string, ParameterMetadata>();
     private readonly List<ParameterItemViewModel> allParameterItems = [];
 
     /// <summary>
@@ -67,6 +70,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     /// <param name="logger">The logger.</param>
     /// <param name="dialogs">The dialog service.</param>
     /// <param name="parametersFileHandler">The parameters file handler.</param>
+    /// <param name="metadataService">The vehicle parameter metadata service.</param>
     public FullParametersListTabViewModel(
         IVehicleConnectionSession session,
         IVehicleRegistry vehicleRegistry,
@@ -74,6 +78,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         IDispatcher dispatcher,
         IDialogService dialogs,
         ParametersFileHandler parametersFileHandler,
+        IVehicleParameterMetadataService metadataService,
         CancellationTokenSource cts,
         ILogger<FullParametersListTabViewModel> logger)
     {
@@ -82,6 +87,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         this.dispatcher = dispatcher;
         this.dialogs = dialogs;
         this.parametersFileHandler = parametersFileHandler;
+        this.metadataService = metadataService;
         this.cts = cts;
         this.logger = logger;
         var eventSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(VehicleRegistered);
@@ -93,6 +99,10 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         var vehicles = vehicleRegistry.Vehicles;
         var vehicle = vehicles.FirstOrDefault();
         HasConnection = vehicle != null;
+        if (HasConnection)
+        {
+            _ = LoadMetaDataAsync();
+        }
     }
 
     private Task VehicleDisconnected(VehicleDisconnected vehicle, CancellationToken cancellationToken)
@@ -103,6 +113,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             try
             {
                 HasConnection = false;
+                metadata.Clear();
             }
             catch (Exception)
             {
@@ -114,11 +125,12 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
     private Task VehicleRegistered(VehicleConnected vehicle, CancellationToken cancellationToken)
     {
-        dispatcher.Dispatch(() =>
+        dispatcher.Dispatch(async () =>
         {
             try
             {
                 HasConnection = true;
+                await LoadMetaDataAsync();
             }
             catch (Exception)
             {
@@ -128,9 +140,28 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         return Task.CompletedTask;
     }
 
+    private async Task LoadMetaDataAsync()
+    {
+        metadata.Clear();
+        var vehicles = vehicleRegistry.Vehicles;
+        var vehicle = vehicles.FirstOrDefault();
+        if (vehicle != null)
+        {
+            metadata.Clear();
+            metadata.AddAll(await metadataService.GetAllMetadataAsync(vehicle.Id, cts.Token));
+            logger.LogInformation("Loaded metadata for {Count} parameters", metadata.Count);
+        }
+    }
+
     private bool CanExecuteConnection()
     {
         return HasConnection;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanExecuteConnection))]
+    private async Task LoadMetaData()
+    {
+        await LoadMetaDataAsync();
     }
 
     [RelayCommand(CanExecute = nameof(CanExecuteConnection))]
@@ -149,7 +180,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     private async Task CreateTestParametersAsync()
     {
         PrepareLoad();
-        await Task.Delay(100);
         IList<ParameterItemViewModel> testParameters = [];
         for (var i = 0; i < 20; i++)
         {
@@ -160,8 +190,46 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             await Task.Delay(10);
         }
 
-        Parameters.Clear();
-        Parameters.AddRange(testParameters);
+
+        dispatcher.Dispatch(() =>
+        {
+            Parameters.Clear();
+            Parameters.AddRange(testParameters);
+        });
+        ResetUIState();
+    }
+
+    [RelayCommand]
+    //    [RelayCommand(CanExecute = nameof(CanExecuteConnection))]
+    private async Task CreateTestParametersWithMetadata()
+    {
+        PrepareLoad();
+        IList<ParameterItemViewModel> testParameters = [];
+
+        var vehicles = vehicleRegistry.Vehicles;
+        var vehicle = vehicles.FirstOrDefault();
+        if (vehicle is not null)
+        {
+            if (metadata.Count == 0)
+            {
+                metadata.AddAll(await metadataService.GetAllMetadataAsync(vehicle.Id, cts.Token));
+            }
+
+            var parameterMetadata = metadata.Values.OrderBy(v => v.Name);
+            foreach (var metaData in parameterMetadata)
+            {
+                var vehicleParameter = new VehicleParameter(metaData.Name ?? "", (float)1.0, MavParamType.Real32, (ushort)testParameters.Count, (ushort)metadata.Count());
+                var model = new ParameterItemViewModel(vehicleParameter) { Description = metaData.Description ?? "", Units = metaData.Units ?? "", Options = "5,4,3,2,1" };
+                testParameters.Add(model);
+            }
+        }
+
+        dispatcher.Dispatch(() =>
+        {
+            Parameters.Clear();
+            Parameters.AddRange(testParameters);
+        });
+
         ResetUIState();
     }
 
@@ -187,7 +255,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         }
         catch (Exception ex)
         {
-            await dialogs.DisplayTextPromptAsync("Load failed", ex.Message, "OK");
+            await dialogs.ConfirmAsync("Load failed", ex.Message, "OK");
         }
     }
 
@@ -202,7 +270,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         }
         catch (Exception ex)
         {
-            await dialogs.DisplayTextPromptAsync("Load failed", ex.Message, "OK");
+            await dialogs.ConfirmAsync("Load failed", ex.Message, "OK");
         }
     }
 
@@ -212,11 +280,11 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         try
         {
             var result = await parametersFileHandler.SaveParametersToFile(Parameters.Select(v => v.OriginalParameter).ToList(), cts.Token);
-            await dialogs.DisplayTextPromptAsync("Saved", $"File saved to:\n{result}", "OK");
+            await dialogs.ConfirmAsync("Saved", $"File saved to:\n{result}", "OK");
         }
         catch (Exception ex)
         {
-            await dialogs.DisplayTextPromptAsync("Save failed", ex.Message, "OK");
+            await dialogs.ConfirmAsync("Save failed", ex.Message, "OK");
         }
     }
 
@@ -227,11 +295,11 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         try
         {
             var result = await parametersFileHandler.SaveParametersToJsonFile(Parameters, cts.Token);
-            await dialogs.DisplayTextPromptAsync("Saved", $"File saved to:\n{result}", "OK");
+            await dialogs.ConfirmAsync("Saved", $"File saved to:\n{result}", "OK");
         }
         catch (Exception ex)
         {
-            await dialogs.DisplayTextPromptAsync("Save failed", ex.Message, "OK");
+            await dialogs.ConfirmAsync("Save failed", ex.Message, "OK");
         }
     }
 
@@ -320,21 +388,20 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
             parameters = new Dictionary<string, VehicleParameter>(result.Parameters);
 
-            // TODO: Load metadata for the vehicle when metadata service is available
-            // ProgressMessage = "Loading parameter metadata...";
-            // var metadataService = session.ParameterMetadataService;
-            // var metadata = await metadataService.GetParameterMetadataAsync(vehicleId, cancellationToken);
+            // Load metadata for the vehicle
+            dispatcher.Dispatch(() => ProgressMessage = "Loading parameter metadata...");
+            await LoadMetaDataAsync();
 
             // Create ParameterItemViewModel instances
             foreach (var parameter in parameters.Values.OrderBy(p => p.Name))
             {
                 var item = new ParameterItemViewModel(parameter);
 
-                // TODO: Set metadata if available
-                // if (metadata != null && metadata.TryGetValue(parameter.Name, out var paramMetadata))
-                // {
-                //     item.SetMetadata(paramMetadata);
-                // }
+                // Set metadata if available
+                if (metadata != null && metadata.TryGetValue(parameter.Name, out var paramMetadata))
+                {
+                    item.SetMetadata(paramMetadata);
+                }
 
                 allParameterItems.Add(item);
             }
