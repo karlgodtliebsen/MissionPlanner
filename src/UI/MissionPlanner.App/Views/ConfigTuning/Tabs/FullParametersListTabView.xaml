@@ -4,6 +4,7 @@
              xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
              xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
              xmlns:m="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+             xmlns:vm="clr-namespace:MissionPlanner.App.ViewModels"
              x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.FullParametersListTabView"
              x:DataType="tabs:FullParametersListTabViewModel">
 
@@ -177,31 +178,29 @@
                            Margin="8" >
 
                     <material:DataGrid.EmptyView>
-                    <VerticalStackLayout Margin="80,20">
-                        <Image
+                        <VerticalStackLayout Margin="80,20">
+                            <Image
                         WidthRequest="40"
                         HeightRequest="40"
                         HorizontalOptions="Center"
                         VerticalOptions="Center"
                         Source="{FontImageSource FontFamily=MaterialOutlined, Glyph={x:Static m:MaterialOutlined.Backup_table}, Color={AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}}"/>
-                        <Label Text="No data available..." HorizontalOptions="Center"/>
-                    </VerticalStackLayout>
-                </material:DataGrid.EmptyView>
+                            <Label Text="No data available..." HorizontalOptions="Center"/>
+                        </VerticalStackLayout>
+                    </material:DataGrid.EmptyView>
 
                     <!--<ActivityIndicator IsRunning="{Binding IsBusy}" Margin="40" />-->
                     <!--<material:DataGrid.CellItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate  x:DataType="vm:ParameterItemViewModel">
                         <Editor Margin="10" Text="{material:DataGridValueBinding Mode=TwoWay}" />
                     </DataTemplate>
                 </material:DataGrid.CellItemTemplate>-->
 
-                    <material:DataGrid.Columns>
-                        <material:DataGridColumn ValueBinding="{Binding Name}" Title="Name"  />
-                        <!--<material:DataGridColumn ValueBinding="{Binding Value}" Title="Value"  />-->
+                    <!--<material:DataGridColumn  x:DataType="vm:ParameterItemViewModel" ValueBinding="{Binding Value}" Title="Value"  />-->
 
-                        <!--<material:DataGridColumn Title="Value">
+                    <!--<material:DataGridColumn Title="Value">
                         <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate>
+                            <DataTemplate  x:DataType="vm:ParameterItemViewModel">
                                 <Border  BackgroundColor="Transparent" Padding="5" >
                                     <Label Text="{Binding Value}" TextColor="Blue" />
                                 </Border>
@@ -211,21 +210,77 @@
 
                     <material:DataGridColumn Title="Value">
                         <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate>
+                            <DataTemplate  x:DataType="vm:ParameterItemViewModel">
                                 <Editor Margin="10" Text="{material:DataGridValueBinding Mode=TwoWay}" />
                             </DataTemplate>
                         </material:DataGridColumn.CellItemTemplate>
                     </material:DataGridColumn>-->
 
+                    <!--<material:DataGrid.Columns>
+                        <material:DataGridColumn Title="Name">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="vm:ParameterItemViewModel">
+                                    <Label VerticalOptions="Center" HorizontalOptions="Fill" Text="{Binding Name}" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
 
-                        <material:DataGridColumn ValueBinding="{Binding OriginalValue}" Title="Default"  />
-                        <material:DataGridColumn ValueBinding="{Binding Units}" Title="Units"  />
-                        <material:DataGridColumn ValueBinding="{Binding Options}" Title="Options"  />
-                        <material:DataGridColumn ValueBinding="{Binding Description}" Title="Description"  />
-                        <material:DataGridSelectionColumn />
+                        <material:DataGridColumn Title="Default">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="vm:ParameterItemViewModel">
+                                    <Label VerticalOptions="Center" HorizontalOptions="Fill" Text="{Binding OriginalValue}" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
+                        <material:DataGridColumn Title="Units">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="vm:ParameterItemViewModel">
+                                    <Label VerticalOptions="Center" HorizontalOptions="Fill" Text="{Binding Units}" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
+                        <material:DataGridColumn Title="Options">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="vm:ParameterItemViewModel">
+                                    <Label VerticalOptions="Center" HorizontalOptions="Fill" Text="{Binding Options}" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
+                        <material:DataGridColumn Title="Description">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="vm:ParameterItemViewModel">
+                                    <Label VerticalOptions="Center" HorizontalOptions="Fill" Text="{Binding Description}" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
+                        <material:DataGridColumn   ValueBinding="{Binding Description}" Title="Description"  />
+
+                    </material:DataGrid.Columns>-->
+
+                    
+                    <material:DataGrid.Columns>
+                        <material:DataGridColumn   ValueBinding="{Binding Name}" Title="Name"  /> 
+                        <material:DataGridColumn   ValueBinding="{Binding OriginalValue}" Title="Default"  />
+                        <material:DataGridColumn   ValueBinding="{Binding Units}" Title="Units"  />
+                        <material:DataGridColumn   ValueBinding="{Binding Options}" Title="Options"  />
+                        <material:DataGridColumn   ValueBinding="{Binding Description}" Title="Description"  />
                     </material:DataGrid.Columns>
+                    
 
-                    <!--<material:DataGridColumn ValueBinding="{Binding Favorite}" Title="Favorite"  />-->
+                    <!--<material:DataGrid.Columns>
+                        <material:DataGridColumn  x:DataType="vm:ParameterItemViewModel" ValueBinding="{Binding Name}" Title="Name"  /> 
+                        <material:DataGridColumn  x:DataType="vm:ParameterItemViewModel" ValueBinding="{Binding OriginalValue}" Title="Default"  />
+                        <material:DataGridColumn  x:DataType="vm:ParameterItemViewModel" ValueBinding="{Binding Units}" Title="Units"  />
+                        <material:DataGridColumn  x:DataType="vm:ParameterItemViewModel" ValueBinding="{Binding Options}" Title="Options"  />
+                        <material:DataGridColumn  x:DataType="vm:ParameterItemViewModel" ValueBinding="{Binding Description}" Title="Description"  />
+                    </material:DataGrid.Columns>-->
+
+                    <!--<material:DataGridSelectionColumn />-->
+                    <!--<material:DataGridColumn  x:DataType="vm:ParameterItemViewModel" ValueBinding="{Binding Favorite}" Title="Favorite"  />-->
 
                 </material:DataGrid>
             </Grid>

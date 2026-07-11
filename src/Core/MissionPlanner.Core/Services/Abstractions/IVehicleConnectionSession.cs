@@ -55,7 +55,25 @@ public interface IVehicleConnectionSession
     /// <param name="cancellationToken"></param>
     CancellationTokenSource CreateSerialConnection(string portName, int baudRate = 57600, Action<TransportEndpoint>? configure = null, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Creates a TCP connection to a vehicle using the specified port and host. Optionally, a configuration action can be provided to customize the transport endpoint settings. The connection process is cancellable via the provided cancellation token.
+    /// </summary>
+    /// <param name="port">The port number to connect to.</param>
+    /// <param name="host">The host address to connect to.</param>
+    /// <param name="configure">An optional action to configure the transport endpoint.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the connection process.</param>
+    /// <returns>A cancellation token source for the connection process.</returns>
     CancellationTokenSource CreateTcpConnection(int port, string host, Action<TransportEndpoint>? configure = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Creates a UDP connection to a vehicle using the specified local port and optional remote host and port. Optionally, a configuration action can be provided to customize the transport endpoint settings. The connection process is cancellable via the provided cancellation token.
+    /// </summary>
+    /// <param name="localPort">The local port number to bind to.</param>
+    /// <param name="remoteHost">The remote host address to connect to.</param>
+    /// <param name="remotePort">The remote port number to connect to.</param>
+    /// <param name="configure">An optional action to configure the transport endpoint.</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
     CancellationTokenSource CreateUdpConnection(int localPort, string? remoteHost = null, int? remotePort = null, Action<TransportEndpoint>? configure = null, CancellationToken cancellationToken = default);
 
     /// <summary>

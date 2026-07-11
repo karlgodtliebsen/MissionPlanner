@@ -72,8 +72,7 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
         SelectedBaudRate = stateService.SelectedBaudRate ?? "57600";
         IsConnected = stateService.IsConnected;
 
-
-        connectionService.DisconnectAsync(CancellationToken.None);
+        //  connectionService.DisconnectAsync(CancellationToken.None);
 
         // Subscribe to state changes
         stateService.PropertyChanged += (sender, args) =>
