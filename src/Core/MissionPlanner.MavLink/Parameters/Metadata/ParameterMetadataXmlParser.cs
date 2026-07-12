@@ -19,7 +19,7 @@ public sealed class ParameterMetadataXmlParser(ILogger<ParameterMetadataXmlParse
             var doc = await XDocument.LoadAsync(xmlStream, LoadOptions.None, cancellationToken);
 
             // Navigate to the correct structure: <paramfile>/<vehicles>/<parameters name="ArduCopter">
-            var vehicleElementName = GetVehicleElementName(vehicleType);
+            var vehicleElementName = VehicleTypeUtil.GetVehicleElementName(vehicleType);
             var parametersElement = doc.Root?
                 .Element("vehicles")?
                 .Elements("parameters")
@@ -159,8 +159,20 @@ public sealed class ParameterMetadataXmlParser(ILogger<ParameterMetadataXmlParse
             rebootRequired,
             readOnly);
     }
+}
 
-    private static string GetVehicleElementName(VehicleType vehicleType)
+/// <summary>
+/// Utility class for vehicle type related operations.
+/// </summary>
+public static class VehicleTypeUtil
+{
+    /// <summary>
+    /// Gets the XML element name for a given vehicle type.
+    /// </summary>
+    /// <param name="vehicleType">The vehicle type.</param>
+    /// <returns>The XML element name corresponding to the vehicle type.</returns>
+    /// <exception cref="ArgumentException">Thrown when the vehicle type is unknown.</exception>
+    public static string GetVehicleElementName(VehicleType vehicleType)
     {
         return vehicleType switch
         {

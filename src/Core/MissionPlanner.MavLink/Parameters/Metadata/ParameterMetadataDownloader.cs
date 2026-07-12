@@ -16,7 +16,7 @@ public sealed class ParameterMetadataDownloader(
     /// <inheritdoc/>
     public async Task<Stream> DownloadAsync(VehicleType vehicleType, CancellationToken cancellationToken = default)
     {
-        var vehicleName = GetVehicleName(vehicleType);
+        var vehicleName = VehicleTypeUtil.GetVehicleElementName(vehicleType);
         var url = $"{BaseUrl}/{vehicleName}/apm.pdef.xml.gz";
 
         logger.LogInformation("Downloading parameter metadata from {Url}", url);
@@ -64,22 +64,5 @@ public sealed class ParameterMetadataDownloader(
                 vehicleType);
             throw;
         }
-    }
-
-    private static string GetVehicleName(VehicleType vehicleType)
-    {
-        return vehicleType switch
-        {
-            VehicleType.ArduCopter => "ArduCopter",
-            VehicleType.ArduPlane => "ArduPlane",
-            VehicleType.Rover => "Rover",
-            VehicleType.ArduSub => "ArduSub",
-            VehicleType.AntennaTracker => "AntennaTracker",
-            VehicleType.AP_Periph => "AP_Periph",
-            VehicleType.SITL => "SITL",
-            VehicleType.Blimp => "Blimp",
-            VehicleType.Heli => "Heli",
-            var _ => throw new ArgumentException($"Unknown vehicle type: {vehicleType}", nameof(vehicleType))
-        };
     }
 }

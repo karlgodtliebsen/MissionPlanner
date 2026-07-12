@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MissionPlanner.MavLink.Parameters;
 using UraniumUI.Material.Controls;
@@ -19,6 +20,7 @@ public partial class ParameterItemViewModel : ObservableObject
     [ObservableProperty] public partial string Name { get; set; }
     [ObservableProperty] public partial string? DisplayName { get; set; }
     [ObservableProperty] public partial float Value { get; set; }
+    [ObservableProperty] public partial string? SelectedValue { get; set; }
 
     [DisplayName("Default")][ObservableProperty] public partial float OriginalValue { get; set; }
     [ObservableProperty] public partial string? Units { get; set; }
@@ -30,6 +32,7 @@ public partial class ParameterItemViewModel : ObservableObject
 
     [ObservableProperty] public partial string? Options { get; set; }
     [ObservableProperty] public partial string[]? ValuesData { get; set; }
+    [ObservableProperty] public partial SelectItem[] ValuesItems { get; set; } = [];
     [ObservableProperty] public partial string[]? RangeData { get; set; }
 
     [DataGridIgnore][ObservableProperty] public partial string? Increment { get; set; }
@@ -38,6 +41,8 @@ public partial class ParameterItemViewModel : ObservableObject
     [DataGridIgnore][ObservableProperty] public partial bool IsModified { get; set; }
     [DataGridIgnore][ObservableProperty] public partial bool IsReadOnly { get; set; }
     [DataGridIgnore][ObservableProperty] public partial bool RebootRequired { get; set; }
+    [DataGridIgnore][ObservableProperty] public partial bool HasValuesData { get; set; }
+    [DataGridIgnore][ObservableProperty] public partial bool IsSimpleValue { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ParameterItemViewModel"/> class.
@@ -61,13 +66,12 @@ public partial class ParameterItemViewModel : ObservableObject
     /// <summary>
     /// Sets metadata for this parameter.
     /// </summary>
-    public void SetMetadata(ParameterMetadata? metadata)
+    public void SetMetadata(ParameterMetadata metadata)
     {
         originalMetadata = metadata;
         Name = metadata.Name;
         DisplayName = metadata.DisplayName;
-
-        //TODO: handle Range and values as Dictionary for better UI representation or add properties for data binding to Range/Values.
+        IsSimpleValue = true;
 
         Description = metadata.Description ?? "";
         Units = metadata.Units ?? "";
@@ -82,20 +86,45 @@ public partial class ParameterItemViewModel : ObservableObject
 
         ValuesData = [];
         RangeData = [];
-        var opt = "";
+        ValuesItems ??= [];
+        var range = "";
         if (Range is not null)
         {
-            opt = Range + Environment.NewLine;
+            range = Range + Environment.NewLine;
             RangeData = Range.Split(" ");
         }
 
         if (Values is not null)
         {
+            //0:Disabled
             var v = Values.Split(",");
-            ValuesData = v;
-            Options = opt + string.Join(Environment.NewLine, v);
+            foreach (var s in v)
+            {
+                var x = s.Split(":");
+                if (x.Length == 2)
+                {
+                    var value = float.Parse(x[0], NumberStyles.AllowDecimalPoint, CultureInfo.GetCultureInfo("en-US"));
+                    var name = x[1];
+                    ValuesItems = ValuesItems.Append(new SelectItem(name, value)).ToArray();
+                    ValuesData = ValuesData.Append(name).ToArray();
+                }
+            }
+
+            HasValuesData = true;
+            IsSimpleValue = false;
+            SelectedValue = ValuesItems.FirstOrDefault()?.Name;
+            Options = range + string.Join(Environment.NewLine, v);
         }
-        // Options = opt + string.Join(Environment.NewLine, v);
+    }
+
+
+    partial void OnSelectedValueChanged(string? oldValue, string? newValue)
+    {
+        var item = ValuesItems.FirstOrDefault(i => i.Name == newValue);
+        if (item is not null)
+        {
+            Value = item.Value;
+        }
     }
 
     /// <summary>
@@ -107,7 +136,11 @@ public partial class ParameterItemViewModel : ObservableObject
         originalParameter = parameter;
         OriginalValue = parameter.Value;
         Value = parameter.Value;
-        Value = parameter.Value;
+        var item = ValuesItems.FirstOrDefault(i => Math.Abs(i.Value - Value) > 0.0001f);
+        if (item is not null)
+        {
+            SelectedValue = item.Name;
+        }
     }
 
     /// <summary>
@@ -126,3 +159,5 @@ public partial class ParameterItemViewModel : ObservableObject
         Value = OriginalValue;
     }
 }
+
+public sealed record SelectItem(string Name, float Value);

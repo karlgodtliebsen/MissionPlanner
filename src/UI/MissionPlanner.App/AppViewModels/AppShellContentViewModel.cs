@@ -1,7 +1,5 @@
 ﻿using System.Collections.ObjectModel;
-
 using CommunityToolkit.Mvvm.ComponentModel;
-
 using ShellItem = Microsoft.Maui.Controls.ShellItem;
 
 namespace MissionPlanner.App.AppViewModels;
@@ -39,88 +37,17 @@ public partial class AppShellContentViewModel : ObservableObject
 
     partial void OnSelectedItemChanged(ShellItem? value)
     {
-        if (CurrentShell.CurrentItem == value) return;
+        if (CurrentShell.CurrentItem == value)
+        {
+            return;
+        }
 
         CurrentShell.CurrentItem = value;
-        if (CurrentShell.FlyoutBehavior == FlyoutBehavior.Flyout) CurrentShell.FlyoutIsPresented = false;
-
-        SelectedItem = CurrentShell.CurrentItem;
-    }
-}
-/*
-/// <summary>
-/// ViewModel for the application's shell content.
-/// </summary>
-public class AppShellContentViewModel : ReactiveObject
-{
-    private Shell? currentShell;
-
-    /// <summary>
-    /// The current shell instance.
-    /// </summary>
-    public Shell CurrentShell
-    {
-        get => currentShell;
-        set
+        if (CurrentShell.FlyoutBehavior == FlyoutBehavior.Flyout)
         {
-            currentShell = value;
-            OnCurrentShellChanged();
+            CurrentShell.FlyoutIsPresented = false;
         }
-    }
-
-    private void OnCurrentShellChanged()
-    {
-        CurrentShell.Loaded += CurrentShell_Loaded;
-    }
-
-    private void CurrentShell_Loaded(object? sender, EventArgs e)
-    {
-        var observableFilter = this.WhenAnyValue(x => x.SearchText)
-            .Throttle(TimeSpan.FromMilliseconds(200))
-            .Select(searchText => (Func<ShellItem, bool>)(item => item.FlyoutItemIsVisible
-                                                                  && (string.IsNullOrEmpty(SearchText) || item.Title.Contains(SearchText, StringComparison.OrdinalIgnoreCase))));
-
-        CurrentShell.Items.AsObservableChangeSet()
-            .Filter(observableFilter)
-            //.GroupOn(x => x.GetId() ?? "Others")
-            //.Transform(group => new ShellItemGroup(group.GroupKey, group.List.Items.ToList()))
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .Bind(out var _shellItems)
-            .Subscribe();
-
-        Items = _shellItems;
 
         SelectedItem = CurrentShell.CurrentItem;
-
-        this.WhenAnyValue(x => x.SelectedItem)
-            .WhereNotNull()
-            .Subscribe(shellItem =>
-            {
-                CurrentShell.CurrentItem = shellItem;
-                if (CurrentShell.FlyoutBehavior == FlyoutBehavior.Flyout)
-                {
-                    CurrentShell.FlyoutIsPresented = false;
-                }
-            });
     }
-
-    /// <summary>
-    /// The text used to filter the items in the shell.
-    /// </summary>
-    [Reactive]
-    public string SearchText { get; set; } = null!;
-
-    /// <summary>
-    /// The collection of items in the shell.
-    /// </summary>
-    [Reactive]
-    public ReadOnlyObservableCollection<ShellItem> Items { get; private set; } = null!;
-
-    /// <summary>
-    /// The currently selected item in the shell.
-    /// </summary>
-    [Reactive]
-    public ShellItem? SelectedItem { get; set; } = null!;
 }
-
-*/

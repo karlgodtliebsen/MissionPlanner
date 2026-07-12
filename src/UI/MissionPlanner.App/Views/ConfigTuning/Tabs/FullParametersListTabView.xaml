@@ -5,6 +5,7 @@
              xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
              xmlns:m="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
              xmlns:vm="clr-namespace:MissionPlanner.App.ViewModels"
+             xmlns:controls="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
              x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.FullParametersListTabView"
              x:DataType="tabs:FullParametersListTabViewModel">
 
@@ -56,7 +57,7 @@
                 VerticalOptions="Center"
                 BackgroundColor="Transparent"
                 Command="{Binding WriteParametersCommand}" />
-                
+
                 <Button 
                     Text="Load Metadata"
                     FontSize="14"
@@ -80,7 +81,7 @@
                     VerticalOptions="Center"
                     BackgroundColor="Transparent"
                     Command="{Binding CreateTestParametersCommand}" />
-    
+
                 <Button 
                     Text="Refresh Params"
                     FontSize="14"
@@ -88,7 +89,7 @@
                     VerticalOptions="Center"
                     BackgroundColor="Transparent"
                     Command="{Binding RefreshParametersCommand}" />
-            
+
                 <Button 
                     Text="Compare Params"
                     FontSize="14"
@@ -208,94 +209,90 @@
                         </VerticalStackLayout>
                     </material:DataGrid.EmptyView>
 
-                    <!--<ActivityIndicator IsRunning="{Binding IsBusy}" Margin="40" />-->
-                    <!--<material:DataGrid.CellItemTemplate>
-                    <DataTemplate  x:DataType="vm:ParameterItemViewModel">
-                        <Editor Margin="10" Text="{material:DataGridValueBinding Mode=TwoWay}" />
-                    </DataTemplate>
-                </material:DataGrid.CellItemTemplate>-->
 
-                    <!--<material:DataGridColumn  x:DataType="vm:ParameterItemViewModel" ValueBinding="{Binding Value}" Title="Value"  />-->
-
-                    <!--<material:DataGridColumn Title="Value">
-                        <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate  x:DataType="vm:ParameterItemViewModel">
-                                <Border  BackgroundColor="Transparent" Padding="5" >
-                                    <Label Text="{Binding Value}" TextColor="Blue" />
-                                </Border>
-                            </DataTemplate>
-                        </material:DataGridColumn.CellItemTemplate>
-                    </material:DataGridColumn>
-
-                    <material:DataGridColumn Title="Value">
-                        <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate  x:DataType="vm:ParameterItemViewModel">
-                                <Editor Margin="10" Text="{material:DataGridValueBinding Mode=TwoWay}" />
-                            </DataTemplate>
-                        </material:DataGridColumn.CellItemTemplate>
-                    </material:DataGridColumn>-->
-
-                    <!--<material:DataGrid.Columns>
-                        <material:DataGridColumn Title="Name">
+                    <material:DataGrid.Columns>
+                        <material:DataGridColumn  Width="200"  ValueBinding="{Binding Name}" Title="Name"  />
+                        <!--<material:DataGridColumn Title="Value">
                             <material:DataGridColumn.CellItemTemplate>
-                                <DataTemplate x:DataType="vm:ParameterItemViewModel">
-                                    <Label VerticalOptions="Center" MaximumHeightRequest="40" HorizontalOptions="Start" Text="{Binding Name}" />
-                                </DataTemplate>
-                            </material:DataGridColumn.CellItemTemplate>
-                        </material:DataGridColumn>
-                        <material:DataGridColumn Title="Value">
-                            <material:DataGridColumn.CellItemTemplate>
-                                <DataTemplate x:DataType="vm:ParameterItemViewModel">
-                                    <Label VerticalOptions="Center" MaximumHeightRequest="40" HorizontalOptions="Start" Text="{Binding Value}" />
-                                </DataTemplate>
-                            </material:DataGridColumn.CellItemTemplate>
-                        </material:DataGridColumn>
-                        <material:DataGridColumn Title="Default">
-                            <material:DataGridColumn.CellItemTemplate>
-                                <DataTemplate x:DataType="vm:ParameterItemViewModel">
-                                    <Label VerticalOptions="Center" MaximumHeightRequest="40" HorizontalOptions="Start" Text="{Binding OriginalValue}" />
-                                </DataTemplate>
-                            </material:DataGridColumn.CellItemTemplate>
-                        </material:DataGridColumn>
+                                <DataTemplate  x:DataType="vm:ParameterItemViewModel">
 
-                        <material:DataGridColumn Title="Units">
-                            <material:DataGridColumn.CellItemTemplate>
-                                <DataTemplate x:DataType="vm:ParameterItemViewModel">
-                                    <Label VerticalOptions="Center" MaximumHeightRequest="40" HorizontalOptions="Start" Text="{Binding Units}" />
+                                    <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Fill"  Spacing="12">
+                                        <material:EditorField
+                                           
+                                            WidthRequest="150"
+                                            Keyboard="Keyboard.Numeric" Title="Enter a Value" HorizontalOptions="End" VerticalOptions="Center"  
+                                            Text="{Binding Value}" TextColor="Blue"/>
+                                      
+                                    </VerticalStackLayout>
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
                         </material:DataGridColumn>
 
                         <material:DataGridColumn Title="Options">
                             <material:DataGridColumn.CellItemTemplate>
-                                <DataTemplate x:DataType="vm:ParameterItemViewModel">
-                                    <Label MaximumWidthRequest="200" MaximumHeightRequest="40" VerticalOptions="Center" HorizontalOptions="Start" Text="{Binding Options}" />
+                                <DataTemplate  x:DataType="vm:ParameterItemViewModel">
+
+                                    <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Fill"  Spacing="12">
+                                         <material:SelectField
+                                            IsVisible="{Binding HasValuesData}"
+                                            Title="Select a value"
+                                            WidthRequest="150"
+                                            AllowClear="False"
+                                            ItemsSource="{Binding ValuesData}"
+                                            SelectedItem="{Binding SelectedValue}"
+                         
+                                        />
+                                    </VerticalStackLayout>
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
-                        </material:DataGridColumn>
+                        </material:DataGridColumn>-->
 
-                        <material:DataGridColumn Title="Description">
+                        <material:DataGridColumn Title="Value">
                             <material:DataGridColumn.CellItemTemplate>
-                                <DataTemplate x:DataType="vm:ParameterItemViewModel">
-                                    <Label MaximumWidthRequest="300" MaximumHeightRequest="40" VerticalOptions="Center" HorizontalOptions="Start" Text="{Binding Description}" />
+                                <DataTemplate  x:DataType="vm:ParameterItemViewModel">
+                                    <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Fill"  Spacing="12">
+                                        <material:EditorField
+                                           
+                                            WidthRequest="150"
+                                            Keyboard="Keyboard.Numeric" Title="Enter a Value" HorizontalOptions="End" VerticalOptions="Center"  
+                                            Text="{Binding Value}" TextColor="Blue"/>
+                                    </VerticalStackLayout>
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
                         </material:DataGridColumn>
-                    </material:DataGrid.Columns>-->
 
-                         <!--<material:DataGridColumn  ValueBinding="{Binding Description}" Title="Description"  />-->
-                  
-                    <material:DataGrid.Columns>
-                        <material:DataGridColumn  Width="200"  ValueBinding="{Binding Name}" Title="Name"  />
-                        <material:DataGridColumn  Width="120"  ValueBinding="{Binding Value}" Title="Value"  />
+                        <material:DataGridColumn Title="Options">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate  x:DataType="vm:ParameterItemViewModel">
+
+                                    <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Fill"  Spacing="12">
+                                        <material:PickerField
+                                            IsVisible="{Binding HasValuesData}"
+                                            Title="Select a value"
+                                            WidthRequest="150"
+                                            AllowClear="False"
+                                            ItemsSource="{Binding ValuesData}"
+                                            SelectedItem="{Binding SelectedValue}"
+                         
+                                        />
+                                    </VerticalStackLayout>
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
                         <material:DataGridColumn  Width="120"  ValueBinding="{Binding OriginalValue}" Title="Default"  />
-                        <material:DataGridColumn  Width="120"   ValueBinding="{Binding Units}" Title="Units"  />
+                        <material:DataGridColumn  Width="120"  ValueBinding="{Binding Units}" Title="Units"  />
+
+                        <!--                        
                         <material:DataGridColumn  Width="*"  ValueBinding="{Binding Options}" Title="Options"  />
+                        -->
                         <material:DataGridColumn  Width="4*"  ValueBinding="{Binding Description}" Title="Description"  />
                     </material:DataGrid.Columns>
-                    
 
-                    <!--<material:DataGrid.Columns>
+                    <!--
+                    <material:PickerField SelectedIndex="1" SelectedItem="Option 2" CharacterSpacing="12" Title="jiojioijjioji" ItemsSource="{Binding Items}" />
+                    
+                    <material:DataGrid.Columns>
                         <material:DataGridColumn  x:DataType="vm:ParameterItemViewModel" ValueBinding="{Binding Name}" Title="Name"  /> 
                         <material:DataGridColumn  x:DataType="vm:ParameterItemViewModel" ValueBinding="{Binding OriginalValue}" Title="Default"  />
                         <material:DataGridColumn  x:DataType="vm:ParameterItemViewModel" ValueBinding="{Binding Units}" Title="Units"  />

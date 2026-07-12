@@ -162,9 +162,7 @@ public sealed class ParameterMetadataRepository(
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex,
-                "Failed to save metadata to cache for {VehicleType}, will continue without file cache",
-                vehicleType);
+            logger.LogWarning(ex, "Failed to save metadata to cache for {VehicleType}, will continue without file cache", vehicleType);
         }
     }
 

@@ -475,6 +475,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         FilterParameters().FireAndForget();
     }
 
+
     private async Task FilterParameters()
     {
         await dispatcher.DispatchAsync(() =>
