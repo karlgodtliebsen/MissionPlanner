@@ -219,7 +219,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
                 }
                 else
                 {
-                    var vehicleParameter = new VehicleParameter(parameter.Name ?? "", 0, MavParamType.Real32, 0, (ushort)metadata.Count());
+                    var vehicleParameter = new VehicleParameter(parameter.Name ?? "noname", 0, MavParamType.Real32, 0, (ushort)metadata.Count());
                     var model = new ParameterItemViewModel(vehicleParameter);
                     allParameterItems.Add(model);
                 }

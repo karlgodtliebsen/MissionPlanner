@@ -135,6 +135,7 @@ public partial class ParameterItemViewModel : ObservableObject
     {
         originalParameter = parameter;
         OriginalValue = parameter.Value;
+        Name = parameter.Name;
         Value = parameter.Value;
         var item = ValuesItems.FirstOrDefault(i => Math.Abs(i.Value - Value) > 0.0001f);
         if (item is not null)
