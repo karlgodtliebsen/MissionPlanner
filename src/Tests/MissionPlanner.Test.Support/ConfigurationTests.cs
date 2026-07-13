@@ -65,16 +65,13 @@ public class ConfigurationTests
         serviceProvider.GetRequiredService<IVehicleService>();
         serviceProvider.GetRequiredService<IVehicleConnectionMonitor>();
 
-        serviceProvider.GetRequiredService<IHeartbeatVehicleHandler>();
-
-        serviceProvider.GetRequiredService<IAttitudeVehicleHandler>();
-
-        serviceProvider.GetRequiredService<IBatteryVehicleHandler>();
-        serviceProvider.GetRequiredService<IPositionVehicleHandler>();
         serviceProvider.GetRequiredService<IStatusTextHandler>();
-
-
         serviceProvider.GetRequiredService<ICommandAckTracker>();
+        serviceProvider.GetRequiredService<IParamValueVehicleHandler>();
+
+        serviceProvider.GetRequiredService<IVehicleMessageDispatcher>();
+
+        serviceProvider.GetRequiredService<IVehicleMessageHandler>();
         serviceProvider.GetRequiredService<IVehicleCommandPolicy>();
 
         serviceProvider.GetRequiredService<ISerialPortDiscoveryService>();

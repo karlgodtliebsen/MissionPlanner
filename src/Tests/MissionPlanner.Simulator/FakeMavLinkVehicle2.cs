@@ -111,15 +111,15 @@ public sealed class FakeMavLinkVehicle2 : IAsyncDisposable
 
     private async Task HandleArmDisarmAsync(MavLinkFrame frame, ushort command, CancellationToken cancellationToken)
     {
-        var arm = ReadFloat(frame.Payload.Span[0..4]) == 1.0f;
+        var isArmed = Math.Abs(ReadFloat(frame.Payload.Span[0..4]) - 1.0f) < 0.001;
 
         const byte mavModeFlagSafetyArmed = 0b1000_0000;
 
-        var newBaseMode = arm
+        var newBaseMode = isArmed
             ? (byte)(state.BaseMode | mavModeFlagSafetyArmed)
             : (byte)(state.BaseMode & ~mavModeFlagSafetyArmed);
 
-        state = state with { BaseMode = newBaseMode, IsArmed = arm };
+        state = VehicleStateFactory.CreateFromLegacyState(state, newBaseMode, isArmed);
         if (!acknowledgeCommands)
         {
             return;
@@ -132,9 +132,11 @@ public sealed class FakeMavLinkVehicle2 : IAsyncDisposable
 
     private async Task HandleSetModeAsync(MavLinkFrame frame, ushort command, CancellationToken cancellationToken)
     {
-        var customMode = (uint)ReadFloat(frame.Payload.Span[4..8]);
+        var customMode = (byte)ReadFloat(frame.Payload.Span[4..8]);
+        var mode = ArduCopterModeMapper.ToVehicleMode(customMode);
 
-        state = state with { CustomMode = customMode, Mode = ArduCopterModeMapper.ToVehicleMode(customMode) };
+        state = VehicleStateFactory.CreateFromLegacyState(state, customMode, mode);
+
         if (!acknowledgeCommands)
         {
             return;

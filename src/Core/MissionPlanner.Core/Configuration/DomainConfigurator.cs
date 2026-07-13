@@ -30,12 +30,6 @@ public static class DomainConfigurator
         services.TryAddTransient<IVehicleMessagePump, VehicleMessagePump>();
         services.TryAddTransient<IVehicleConnectionMonitor, VehicleConnectionMonitor>();
 
-        services.TryAddTransient<IHeartbeatVehicleHandler, HeartbeatVehicleHandler>();
-        services.TryAddTransient<IAttitudeVehicleHandler, AttitudeVehicleHandler>();
-        services.TryAddTransient<IBatteryVehicleHandler, BatteryVehicleHandler>();
-        services.TryAddTransient<IPositionVehicleHandler, PositionVehicleHandler>();
-        services.TryAddTransient<IStatusTextHandler, StatusTextHandler>();
-        services.TryAddTransient<IParamValueVehicleHandler, ParamValueVehicleHandler>();
 
         services.TryAddTransient<ICommandAckTracker, CommandAckTracker>();
         services.TryAddTransient<IVehicleCommandPolicy, VehicleCommandPolicy>();
@@ -51,7 +45,18 @@ public static class DomainConfigurator
         services.TryAddTransient<ISerialPortDiscoveryService, SerialPortDiscoveryService>();
 
         services.TryAddSingleton<IVehicleConnectionService, VehicleConnectionService>();
-        services.TryAddTransient<IVehicleHudDataService, VehicleHudDataService>();
+        services.TryAddSingleton<IVehicleHudDataService, VehicleHudDataService>();
+
+        services.TryAddTransient<IStatusTextHandler, StatusTextHandler>();
+        services.TryAddTransient<IParamValueVehicleHandler, ParamValueVehicleHandler>();
+
+        services.TryAddTransient<IVehicleMessageDispatcher, VehicleMessageDispatcher>();
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IVehicleMessageHandler, FlightTelemetryHandler>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IVehicleMessageHandler, NavigationTelemetryHandler>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IVehicleMessageHandler, PowerTelemetryHandler>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IVehicleMessageHandler, RadioTelemetryHandler>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IVehicleMessageHandler, HealthTelemetryHandler>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IVehicleMessageHandler, ControlMessageHandler>());
 
 
         services.TryAddTransient<IVehicleCommandService, VehicleCommandService>();
@@ -63,10 +68,7 @@ public static class DomainConfigurator
         // MAVLink parameter services
         services.TryAddTransient<IVehicleParameterService, VehicleParameterService>();
         services.TryAddSingleton<IVehicleParameterMetadataService, VehicleParameterMetadataService>();
-        //services.TryAddTransient<IVehicleParameterStreamService, VehicleParameterStreamService>();
-        //services.TryAddTransient<IVehicleParameterStreamService, VehicleParameterStreamServiceV2>();
-        // V3: Subscribes directly to MAVLink messages (not domain events) to avoid message loss
-        services.TryAddTransient<IVehicleParameterStreamService, VehicleParameterStreamServiceV3>();
+        services.TryAddTransient<IVehicleParameterStreamService, VehicleParameterStreamServiceV4>();
 
         return services;
     }
@@ -79,11 +81,15 @@ public static class DomainConfigurator
     public static IServiceProvider UseDomainServices(this IServiceProvider services)
     {
         var domainFactory = services.GetRequiredService<IDomainFactory>();
+
+
         domainFactory.Add<IHeartbeatVehicleHandler, HeartbeatVehicleHandler>();
         domainFactory.Add<IAttitudeVehicleHandler, AttitudeVehicleHandler>();
         domainFactory.Add<IBatteryVehicleHandler, BatteryVehicleHandler>();
         domainFactory.Add<IPositionVehicleHandler, PositionVehicleHandler>();
         domainFactory.Add<IParamValueVehicleHandler, ParamValueVehicleHandler>();
+
+
         domainFactory.Add<IVehicleMessagePump, VehicleMessagePump>();
         domainFactory.Add<ISerialMavLinkTransport, SerialMavLinkTransport>();
         domainFactory.Add<IUdpMavLinkTransport, UdpMavLinkTransport>();
@@ -92,7 +98,7 @@ public static class DomainConfigurator
         domainFactory.Add<IMavLinkConnection, MavLinkConnection>();
         domainFactory.Add<IMavLinkCommandService, MavLinkCommandService>();
         domainFactory.Add<IVehicleParameterService, VehicleParameterService>();
-        domainFactory.Add<IVehicleParameterStreamService, VehicleParameterStreamServiceV3>();
+        domainFactory.Add<IVehicleParameterStreamService, VehicleParameterStreamServiceV4>();
         return services;
     }
 }

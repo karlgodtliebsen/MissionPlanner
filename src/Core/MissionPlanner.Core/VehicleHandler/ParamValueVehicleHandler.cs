@@ -41,8 +41,7 @@ public sealed class ParamValueVehicleHandler(
             message.ParamIndex,
             message.ParamCount);
 
-        parameterRegistry.StoreParameter(vehicleId, parameter);
-
+        parameterRegistry.StoreParameter(vehicleId, parameter, cancellationToken);
         await domainEventHub.PublishDomainEventAsync(new VehicleParameterReceived(new VehicleParameterReceivedData(vehicleId, parameter)), cancellationToken);
     }
 }

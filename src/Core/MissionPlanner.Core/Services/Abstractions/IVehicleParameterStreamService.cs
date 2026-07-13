@@ -9,18 +9,6 @@ namespace MissionPlanner.Core.Services.Abstractions;
 public interface IVehicleParameterStreamService
 {
     /// <summary>
-    /// Requests and streams all parameters from a vehicle.
-    /// </summary>
-    /// <param name="vehicleId">The vehicle ID.</param>
-    /// <param name="progress">Optional progress reporter (reports percentage 0-100).</param>
-    /// <param name="onParameterReceived">Optional callback invoked for each parameter received.</param>
-    /// <param name="timeout">Maximum time to wait for all parameters.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>Result containing all parameters or error information.</returns>
-    Task<ParameterStreamResult> StreamAllParametersAsync(VehicleId vehicleId, IProgress<ParameterStreamProgress>? progress = null, Action<VehicleParameter>? onParameterReceived = null, TimeSpan? timeout = null,
-        CancellationToken cancellationToken = default);
-
-    /// <summary>
     /// Requests and streams parameters from a vehicle with retry logic.
     /// Automatically retries if parameters are missing or incomplete.
     /// </summary>

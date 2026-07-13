@@ -58,6 +58,7 @@ public class VehicleSerialCommunicationTests
         var availablePorts = serialPortDiscoveryService.GetAvailablePorts();
         Assert.True(availablePorts.Any(), "Connect a ArduPilot Vehicle");
         TaskCompletionSource ts = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource tsRegistered = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var dateTimeProvider = serviceProvider.GetRequiredService<IDateTimeProvider>();
         var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
@@ -85,6 +86,7 @@ public class VehicleSerialCommunicationTests
             logger.LogInformation("Test-Received VehicleRegistered Message {counter} With Vehicle: {VehicleId}", counter, evt.VehicleId);
             Assert.False(vehicleRegistered);
             vehicleRegistered = true;
+            tsRegistered.TrySetResult();
         });
 
         using var _2 = domainEventHub.SubscribeDomainEvent<VehicleStateUpdated>((VehicleStateUpdated evt) => logger.LogInformation("Test-Received VehicleStateUpdated Message {counter} With Vehicle: {VehicleId}", counter, evt.VehicleId));
@@ -109,8 +111,9 @@ public class VehicleSerialCommunicationTests
         _ = Task.Run(() => messagePump.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
         _ = Task.Run(() => connection.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
 
-        await ts.Task.WaitAsync(TimeSpan.FromSeconds(60), TestContext.Current.CancellationToken);
+        await tsRegistered.Task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.Current.CancellationToken);
 
+        //Assert.True(counter > 0);
         Assert.True(vehicleRegistered);
     }
 
@@ -195,6 +198,7 @@ public class VehicleSerialCommunicationTests
 
         var ct = new CancellationTokenSource(TimeSpan.FromSeconds(60)).Token;
         var ts = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tsRegistered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var serialPortDiscoveryService = serviceProvider.GetRequiredService<ISerialPortDiscoveryService>();
         var availablePorts = serialPortDiscoveryService.GetAvailablePorts();
         Assert.True(availablePorts.Any(), "Connect a ArduPilot Vehicle");
@@ -212,10 +216,18 @@ public class VehicleSerialCommunicationTests
         using var eventSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleConnected>((VehicleConnected evt, CancellationToken ct) =>
         {
             logger.LogInformation("Test-Received VehicleConnected Message With Vehicle: {VehicleId}", evt.VehicleId);
-            vehicleRegistered = true;
             ts.TrySetResult();
             return Task.CompletedTask;
         });
+
+        using var _1 = domainEventHub.SubscribeDomainEvent<VehicleRegistered>((VehicleRegistered evt) =>
+        {
+            logger.LogInformation("Test-Received VehicleRegistered Message With Vehicle: {VehicleId}", evt.VehicleId);
+            Assert.False(vehicleRegistered);
+            vehicleRegistered = true;
+            tsRegistered.TrySetResult();
+        });
+
         var connection = await vehicleConnectionService.ConnectSerialAsync(portName, baudRate, ct);
         DomainException.ThrowIfNull(connection);
 
@@ -223,7 +235,7 @@ public class VehicleSerialCommunicationTests
         await Task.Delay(1500, ct); // 1.5 seconds
 
         //If timeout happens, then the vehicle is not registered due to missing HeartbeatMessage, but it may be connected and receiving AttitudeMessage.
-        await ts.Task.WaitAsync(TimeSpan.FromSeconds(30), ct);
+        await tsRegistered.Task.WaitAsync(TimeSpan.FromSeconds(30), ct);
 
         ct = new CancellationTokenSource(TimeSpan.FromSeconds(120)).Token;
 

@@ -15,6 +15,8 @@
 /// <param name="VerticalSpeed">Vertical climb/descent rate in m/s. Positive = climbing.</param>
 /// <param name="BatteryVoltage">Battery voltage in volts.</param>
 /// <param name="BatteryRemaining">Battery remaining percentage, 0-100.</param>
+/// <param name="DistanceToMav">Distance to the MAV in meters.</param>
+/// <param name="DistanceToWp">Distance to the next waypoint in meters.</param>
 /// <param name="GpsSatellites">Number of GPS satellites in view.</param>
 /// <param name="IsArmed">Whether the vehicle is armed.</param>
 /// <param name="Mode">Current flight mode.</param>
@@ -32,6 +34,8 @@ public sealed record VehicleHudData(
     double VerticalSpeed,
     double BatteryVoltage,
     double BatteryRemaining,
+    double DistanceToMav,
+    double DistanceToWp,
     int GpsSatellites,
     bool IsArmed,
     VehicleMode Mode,
@@ -43,21 +47,26 @@ public sealed record VehicleHudData(
     /// </summary>
     /// <param name="vehicleId">The vehicle identifier.</param>
     /// <returns>A VehicleHudData instance with default values.</returns>
-    public static VehicleHudData CreateDefault(VehicleId vehicleId) => new(
-        vehicleId,
-        Pitch: 0,
-        Roll: 0,
-        Heading: 0,
-        Yaw: 0,
-        AirSpeed: 0,
-        GroundSpeed: 0,
-        Altitude: 0,
-        VerticalSpeed: 0,
-        BatteryVoltage: 0,
-        BatteryRemaining: 0,
-        GpsSatellites: 0,
-        IsArmed: false,
-        Mode: VehicleMode.Unknown,
-        Latitude: null,
-        Longitude: null);
+    public static VehicleHudData CreateDefault(VehicleId vehicleId)
+    {
+        return new VehicleHudData(
+            vehicleId,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            false,
+            VehicleMode.Unknown,
+            null,
+            null);
+    }
 }

@@ -1,11 +1,10 @@
 ﻿using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
-using MissionPlanner.MavLink.Messages;
-using MissionPlanner.MavLink.Services;
 
 namespace MissionPlanner.Core.Services;
 
@@ -13,28 +12,28 @@ namespace MissionPlanner.Core.Services;
 /// Parameter streaming service that subscribes directly to MAVLink messages (not domain events).
 /// This reduces the layers and ensures we don't miss any parameters.
 /// </summary>
-public sealed class VehicleParameterStreamServiceV3 : IVehicleParameterStreamService
+public sealed class VehicleParameterStreamServiceV4 : IVehicleParameterStreamService
 {
     private readonly IVehicleParameterService parameterService;
     private readonly IVehicleParameterRegistry parameterRegistry;
-    private readonly IEventHub eventHub;
+    private readonly IDomainEventHub domainEventHub;
     private readonly IDateTimeProvider dateTimeProvider;
-    private readonly ILogger<VehicleParameterStreamServiceV3> logger;
+    private readonly ILogger<VehicleParameterStreamServiceV4> logger;
     private static readonly TimeSpan defaultTimeout = TimeSpan.FromSeconds(30);
 
     /// <summary>
     /// Parameter streaming service that subscribes directly to MAVLink messages (not domain events).
     /// This reduces the layers and ensures we don't miss any parameters.
     /// </summary>
-    public VehicleParameterStreamServiceV3(IVehicleParameterService parameterService,
+    public VehicleParameterStreamServiceV4(IVehicleParameterService parameterService,
         IVehicleParameterRegistry parameterRegistry,
-        IEventHub eventHub, // Subscribe to MAVLink messages, not domain events!
+        IDomainEventHub domainEventHub, // Subscribe to MAVLink messages, not domain events!
         IDateTimeProvider dateTimeProvider,
-        ILogger<VehicleParameterStreamServiceV3> logger)
+        ILogger<VehicleParameterStreamServiceV4> logger)
     {
         this.parameterService = parameterService;
         this.parameterRegistry = parameterRegistry;
-        this.eventHub = eventHub;
+        this.domainEventHub = domainEventHub;
         this.dateTimeProvider = dateTimeProvider;
         this.logger = logger;
     }
@@ -65,43 +64,42 @@ public sealed class VehicleParameterStreamServiceV3 : IVehicleParameterStreamSer
 
             // Subscribe to ParamValueMessage directly at MAVLink message level
             // This is MUCH earlier in the pipeline than domain events!
-            using var subscription = eventHub.SubscribeAsync<ParamValueMessage>(MavLinkEventTopics.NewMessage,
-                async (message, ct) =>
+            using var subscription = domainEventHub.SubscribeDomainEventAsync<VehicleParameterReceived>(async (parameter, ct) =>
+            {
+                // Filter by vehicle
+                if (parameter.VehicleId.SystemId != vehicleId.SystemId || parameter.VehicleId.ComponentId != vehicleId.ComponentId)
                 {
-                    // Filter by vehicle
-                    if (message.SystemId != vehicleId.SystemId || message.ComponentId != vehicleId.ComponentId)
+                    return;
+                }
+
+                lastReceivedTime = dateTimeProvider.UtcNow;
+                totalCount = parameter.Parameter.Count;
+
+                // Track indices, excluding 65535 (special invalid index)
+                if (parameter.Parameter.Index != 65535)
+                {
+                    receivedIndices.Add(parameter.Parameter.Index);
+                }
+
+                // Report progress (count only non-65535 indices)
+                if (totalCount > 0)
+                {
+                    var receivedCount = receivedIndices.Count;
+                    var percentComplete = (int)(receivedCount / (double)totalCount * 100);
+                    var isComplete = receivedCount >= totalCount;
+
+                    progress?.Report(new ParameterStreamProgress(receivedCount, totalCount, percentComplete, isComplete));
+                    if (logger.IsEnabled(LogLevel.Debug))
                     {
-                        return;
+                        logger.LogDebug("Received parameter {Index}/{Count}: {Name} = {Value} (non-65535: {Received}/{Total})",
+                            parameter.Parameter.Index, parameter.Parameter.Count,
+                            parameter.Name, parameter.Parameter.Value,
+                            receivedCount, totalCount);
                     }
+                }
 
-                    lastReceivedTime = dateTimeProvider.UtcNow;
-                    totalCount = message.ParamCount;
-
-                    // Track indices, excluding 65535 (special invalid index)
-                    if (message.ParamIndex != 65535)
-                    {
-                        receivedIndices.Add(message.ParamIndex);
-                    }
-
-                    // Report progress (count only non-65535 indices)
-                    if (totalCount > 0)
-                    {
-                        var receivedCount = receivedIndices.Count;
-                        var percentComplete = (int)(receivedCount / (double)totalCount * 100);
-                        var isComplete = receivedCount >= totalCount;
-
-                        progress?.Report(new ParameterStreamProgress(receivedCount, totalCount, percentComplete, isComplete));
-                        if (logger.IsEnabled(LogLevel.Debug))
-                        {
-                            logger.LogDebug("Received parameter {Index}/{Count}: {Name} = {Value} (non-65535: {Received}/{Total})",
-                                message.ParamIndex, message.ParamCount,
-                                message.ParamId, message.ParamValue,
-                                receivedCount, totalCount);
-                        }
-                    }
-
-                    await Task.CompletedTask;
-                });
+                await Task.CompletedTask;
+            });
 
             // Send the request
             var requestSent = await parameterService.RequestParameterListAsync(vehicleId, cts.Token);

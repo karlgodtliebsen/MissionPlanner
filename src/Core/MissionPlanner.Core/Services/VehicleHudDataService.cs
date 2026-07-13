@@ -129,48 +129,79 @@ public sealed class VehicleHudDataService : IVehicleHudDataService, IDisposable
         return primaryVehicleId;
     }
 
+    private const double RadiansToDegrees = 180.0 / Math.PI;
+
     private static VehicleHudData TransformToHudData(VehicleState state)
     {
-        // Convert radians to degrees for display
-        const double RadiansToDegrees = 180.0 / Math.PI;
+        var pitchDegrees = state.Motion.PitchRadians is { } pitch
+            ? pitch * RadiansToDegrees
+            : 0.0;
 
-        double pitch = state.Pitch.HasValue ? state.Pitch.Value * RadiansToDegrees : 0;
-        double roll = state.Roll.HasValue ? state.Roll.Value * RadiansToDegrees : 0;
-        double yaw = state.Yaw.HasValue ? state.Yaw.Value * RadiansToDegrees : 0;
+        var rollDegrees = state.Motion.RollRadians is { } roll
+            ? roll * RadiansToDegrees
+            : 0.0;
 
-        // Convert yaw (-180 to 180 degrees) to heading (0 to 360 degrees)
-        var heading = yaw < 0 ? yaw + 360 : yaw;
+        var yawDegrees = state.Motion.YawRadians is { } yaw
+            ? yaw * RadiansToDegrees
+            : 0.0;
 
-        // Calculate vertical speed (would need velocity data from GPS or VFR_HUD message)
-        // For now, we'll set it to 0 as VehicleState doesn't have this yet
-        double verticalSpeed = 0;
+        // GLOBAL_POSITION_INT or similar navigation data normally provides the
+        // best heading for the HUD. Fall back to yaw when heading is unavailable.
+        var headingDegrees = state.Position.HeadingDegrees ?? NormalizeHeading(yawDegrees);
 
-        // Calculate ground speed from GPS data (would need velocity components)
-        // For now, we'll set it to 0 as VehicleState doesn't have this yet
-        double groundSpeed = 0;
+        var groundSpeed = ValueOrZero(state.Motion.GroundSpeedMetersPerSecond);
+        var airSpeed = ValueOrZero(state.Motion.AirSpeedMetersPerSecond);
+        var verticalSpeed = ValueOrZero(state.Motion.VerticalSpeedMetersPerSecond);
 
-        // Air speed would come from VFR_HUD or similar messages
-        double airSpeed = 0;
+        // A HUD normally shows altitude relative to the takeoff/home position.
+        // Fall back to mean-sea-level altitude when relative altitude is unavailable.
+        var altitude = ValueOrZero(state.Position.RelativeAltitudeMeters ?? state.Position.AltitudeMslMeters);
 
-        // GPS satellites count (would need GPS status message)
-        var gpsSatellites = 0;
+        var batteryVoltage = ValueOrZero(state.Power.BatteryVoltageVolts);
+        var batteryRemaining = ValueOrZero(state.Power.BatteryRemainingPercent);
+
+        var gpsSatellites = ValueOrZero(state.Gps.SatellitesVisible);
+
+        var distanceToMav = 0.0; //ValueOrZero(state.Position.DistanceToMav);
+        var distanceToWp = 0.0; //ValueOrZero(state.Position.DistanceToWp);
 
         return new VehicleHudData(
             state.VehicleId,
-            pitch,
-            roll,
-            heading,
-            yaw,
+            pitchDegrees,
+            rollDegrees,
+            headingDegrees,
+            yawDegrees,
             airSpeed,
             groundSpeed,
-            state.Altitude ?? 0,
+            altitude,
             verticalSpeed,
-            state.BatteryVoltage ?? 0,
-            state.BatteryRemaining ?? 0,
-            gpsSatellites,
-            state.IsArmed,
-            state.Mode,
-            state.Latitude,
-            state.Longitude);
+            batteryVoltage,
+            batteryRemaining,
+            distanceToMav,
+            distanceToWp,
+            (int)gpsSatellites,
+            state.Flight.IsArmed,
+            state.Flight.Mode,
+            state.Position.LatitudeDegrees,
+            state.Position.LongitudeDegrees);
+    }
+
+    private static double ValueOrZero(double? value)
+    {
+        return value is { } number && double.IsFinite(number)
+            ? number
+            : 0.0;
+    }
+
+    private static double NormalizeHeading(double degrees)
+    {
+        var normalized = degrees % 360.0;
+
+        if (normalized < 0.0)
+        {
+            normalized += 360.0;
+        }
+
+        return normalized;
     }
 }

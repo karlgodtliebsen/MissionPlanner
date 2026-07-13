@@ -25,7 +25,6 @@
                    VerticalOptions="Center" 
                    Text="Altitude (m)" />
             <Label FontSize="32"
-                   
                    HorizontalOptions="Center"
                    VerticalOptions="Center" Text="{Binding Altitude, StringFormat='{0:F2}'}" />
         </VerticalStackLayout>
@@ -37,7 +36,6 @@
                    VerticalOptions="Center" 
                    Text="GroundSpeed (m/s)" />
             <Label FontSize="32"
-                   
                    HorizontalOptions="Center"
                    VerticalOptions="Center" Text="{Binding GroundSpeed, StringFormat='{0:F2}'}" />
         </VerticalStackLayout>
@@ -50,9 +48,8 @@
                    VerticalOptions="Center" 
                    Text="Dist to WP (m)" />
             <Label FontSize="32"
-                   
                    HorizontalOptions="Center"
-                   VerticalOptions="Center" Text="{Binding DistWP, StringFormat='{0:F2}'}" />
+                   VerticalOptions="Center" Text="{Binding DistanceToWp, StringFormat='{0:F2}'}" />
         </VerticalStackLayout>
 
         <VerticalStackLayout  Grid.Column="1" Grid.Row="1" HorizontalOptions="Center"
@@ -63,7 +60,6 @@
                    VerticalOptions="Center" 
                    Text="Yaw (°)" />
             <Label FontSize="32"
-                   
                    HorizontalOptions="Center"
                    VerticalOptions="Center" Text="{Binding Yaw, StringFormat='{0:F2}'}" />
         </VerticalStackLayout>
@@ -90,7 +86,7 @@
                    Text="Dist to MAV (m)" />
             <Label FontSize="32"
                    HorizontalOptions="Center"
-                   VerticalOptions="Center" Text="{Binding DistToMav, StringFormat='{0:F2}'}" />
+                   VerticalOptions="Center" Text="{Binding DistanceToMav, StringFormat='{0:F2}'}" />
         </VerticalStackLayout>
 
 

@@ -1,172 +1,285 @@
-﻿using MissionPlanner.Core.DomainEvents;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
+using MissionPlanner.Core.Models.Observations;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.Transport;
 
 namespace MissionPlanner.Core.Services;
 
-/// <summary>
-/// Represents a session for a vehicle, managing its state and handling updates.
-/// </summary>
 public class VehicleSession(VehicleState initialState, TransportEndPoint endPoint)
 {
-    private VehicleState state = initialState;
     private const byte MavModeFlagSafetyArmed = 0b1000_0000;
+    private VehicleState state = initialState;
 
-    /// <summary>
-    /// Gets the unique identifier of the vehicle.
-    /// </summary>
     public VehicleId Id => state.VehicleId;
-
-    /// <summary>
-    /// Gets the current state of the vehicle.
-    /// </summary>
     public VehicleState State => state;
-
-    /// <summary>
-    /// Gets the endpoint of the vehicle.
-    /// </summary>
     public TransportEndPoint EndPoint => endPoint;
-
-
-    /// <summary>
-    /// Gets the notifications for the vehicle.
-    /// </summary>
     public IList<VehicleStatusText> Notifications { get; private set; } = [];
 
-
-    /// <summary>
-    /// Updates the connection state of the vehicle based on the elapsed time since the last heartbeat.
-    /// </summary>
-    /// <param name="now">The current date and time.</param>
-    /// <param name="staleAfter">The time span after which the vehicle is considered stale.</param>
-    /// <param name="degradedAfter">The time span after which the vehicle is considered degraded.</param>
-    /// <param name="offlineAfter">The time span after which the vehicle is considered offline.</param>
-    public VehicleConnectionStateChanged? UpdateConnectionState(DateTimeOffset now, TimeSpan staleAfter, TimeSpan degradedAfter, TimeSpan offlineAfter)
+    public VehicleConnectionStateChanged? UpdateConnectionState(
+        DateTimeOffset now,
+        TimeSpan staleAfter,
+        TimeSpan degradedAfter,
+        TimeSpan offlineAfter)
     {
-        var previousState = state.ConnectionState;
+        var previousState = state.Connection.State;
+        var age = now - state.Connection.LastHeartbeatAt;
+        var currentState = age > offlineAfter
+            ? VehicleConnectionState.Offline
+            : age > degradedAfter
+                ? VehicleConnectionState.Degraded
+                : age > staleAfter
+                    ? VehicleConnectionState.Stale
+                    : VehicleConnectionState.Online;
 
-        var age = now - state.LastHeartbeatAt;
-
-        var currentState =
-            age > offlineAfter
-                ? VehicleConnectionState.Offline
-                : age > degradedAfter
-                    ? VehicleConnectionState.Degraded
-                    : age > staleAfter
-                        ? VehicleConnectionState.Stale
-                        : VehicleConnectionState.Online;
-
-        state = state with { ConnectionState = currentState };
-
-        if (previousState == currentState)
-        {
-            return null;
-        }
-
-        var stateChanged = new VehicleConnectionStateChanged(new VehicleConnectionStateChange(state.VehicleId, previousState, currentState, now));
-        return stateChanged;
+        state = state with { Connection = state.Connection with { State = currentState } };
+        return previousState == currentState
+            ? null
+            : new VehicleConnectionStateChanged(
+                new VehicleConnectionStateChange(state.VehicleId, previousState, currentState, now));
     }
 
-
-    /// <summary>
-    /// Applies a heartbeat message to update the state of the vehicle.
-    /// </summary>
-    /// <param name="customMode">The custom mode of the vehicle.</param>
-    /// <param name="vehicleType">The type of the vehicle.</param>
-    /// <param name="autopilot">The autopilot type of the vehicle.</param>
-    /// <param name="baseMode">The base mode of the vehicle.</param>
-    /// <param name="systemStatus">The system status of the vehicle.</param>
-    /// <param name="mavLinkVersion">The MAVLink version of the vehicle.</param>
-    /// <param name="receivedAt">The timestamp when the heartbeat was received.</param>
-    public void ApplyHeartbeat(uint customMode, byte vehicleType, byte autopilot, byte baseMode, byte systemStatus, byte mavLinkVersion, DateTimeOffset receivedAt)
+    public void ApplyHeartbeat(VehicleHeartbeatObservation observation)
     {
         state = state with
         {
-            CustomMode = customMode,
-            VehicleType = vehicleType,
-            Autopilot = autopilot,
-            BaseMode = baseMode,
-            SystemStatus = systemStatus,
-            MavLinkVersion = mavLinkVersion,
-            Mode = MapMode(customMode),
-            IsArmed = (baseMode & MavModeFlagSafetyArmed) != 0,
-            ConnectionState = VehicleConnectionState.Online,
-            LastHeartbeatAt = receivedAt
+            Identity = new VehicleIdentityState(
+                observation.VehicleType,
+                observation.Autopilot,
+                observation.MavLinkVersion),
+            Flight = new VehicleFlightState(
+                observation.CustomMode,
+                observation.BaseMode,
+                observation.SystemStatus,
+                MapMode(observation.CustomMode),
+                (observation.BaseMode & MavModeFlagSafetyArmed) != 0),
+            Connection = new VehicleConnectionData(
+                VehicleConnectionState.Online,
+                observation.ObservedAt)
         };
     }
 
-    /// <summary>
-    /// Applies position information to the vehicle's state.
-    /// </summary>
-    /// <param name="latitude">The latitude of the vehicle.</param>
-    /// <param name="longitude">The longitude of the vehicle.</param>
-    /// <param name="altitude">The altitude of the vehicle.</param>
-    public void ApplyPosition(double latitude, double longitude, double altitude)
+    public void ApplyAttitude(VehicleAttitudeObservation observation)
     {
-        state = state with { Latitude = latitude, Longitude = longitude, Altitude = altitude };
-    }
-
-    /// <summary>
-    /// Applies attitude information to the vehicle's state.
-    /// </summary>
-    /// <param name="roll">The roll angle of the vehicle.</param>
-    /// <param name="pitch">The pitch angle of the vehicle.</param>
-    /// <param name="yaw">The yaw angle of the vehicle.</param>
-    public void ApplyAttitude(double roll, double pitch, double yaw)
-    {
-        state = state with { Roll = roll, Pitch = pitch, Yaw = yaw };
-    }
-
-    /// <summary>
-    /// Applies battery information to the vehicle's state.
-    /// </summary>
-    /// <param name="batteryRemaining">The remaining battery percentage.</param>
-    /// <param name="batteryVoltage">The battery voltage.</param>
-    public void ApplyBattery(int? batteryRemaining, float? batteryVoltage)
-    {
-        state = state with { BatteryRemaining = batteryRemaining, BatteryVoltage = batteryVoltage };
-    }
-
-    /// <summary>
-    /// Applies the armed state to the vehicle's state.
-    /// </summary>
-    /// <param name="isArmed">Indicates whether the vehicle is armed.</param>
-    public void ApplyArm(bool isArmed)
-    {
-        state = state with { IsArmed = isArmed };
-    }
-
-    /// <summary>
-    /// Applies the mode to the vehicle's state.
-    /// </summary>
-    /// <param name="mode">The mode to apply.</param>
-    public void ApplyMode(VehicleMode mode)
-    {
-        state = state with { Mode = mode };
-    }
-
-    /// <summary>
-    /// Applies a status text message to the vehicle's state.
-    /// </summary>
-    /// <param name="message">The status text message to apply.</param>
-    public void ApplyStatusText(StatusTextMessage message)
-    {
-        Notifications.Add(new VehicleStatusText(message.SystemId, message.ComponentId, message.Text, DateTimeOffset.UtcNow));
-    }
-
-
-    private static VehicleMode MapMode(uint customMode)
-    {
-        return customMode switch
+        state = state with
         {
-            0 => VehicleMode.Stabilize,
-            2 => VehicleMode.AltHold,
-            4 => VehicleMode.Guided,
-            5 => VehicleMode.Loiter,
-            6 => VehicleMode.Rtl,
-            9 => VehicleMode.Land,
-            var _ => VehicleMode.Unknown
+            Motion = state.Motion with
+            {
+                RollRadians = observation.RollRadians,
+                PitchRadians = observation.PitchRadians,
+                YawRadians = observation.YawRadians,
+                ObservedAt = observation.ObservedAt
+            }
         };
     }
+
+    public void ApplyGlobalPosition(VehicleGlobalPositionObservation observation)
+    {
+        state = state with
+        {
+            Position = state.Position with
+            {
+                LatitudeDegrees = observation.LatitudeDegrees,
+                LongitudeDegrees = observation.LongitudeDegrees,
+                AltitudeMslMeters = observation.AltitudeMslMeters,
+                ObservedAt = observation.ObservedAt
+            }
+        };
+    }
+
+    public void ApplyLocalPosition(VehicleLocalPositionObservation observation)
+    {
+        state = state with
+        {
+            Position = state.Position with
+            {
+                LocalNorthMeters = observation.NorthMeters,
+                LocalEastMeters = observation.EastMeters,
+                LocalDownMeters = observation.DownMeters,
+                ObservedAt = observation.ObservedAt
+            },
+            Motion = state.Motion with
+            {
+                VelocityNorthMetersPerSecond = observation.VelocityNorthMetersPerSecond,
+                VelocityEastMetersPerSecond = observation.VelocityEastMetersPerSecond,
+                VelocityDownMetersPerSecond = observation.VelocityDownMetersPerSecond,
+                VerticalSpeedMetersPerSecond = -observation.VelocityDownMetersPerSecond,
+                ObservedAt = observation.ObservedAt
+            }
+        };
+    }
+
+    public void ApplyGps(VehicleGpsObservation observation)
+    {
+        state = state with
+        {
+            Gps = new VehicleGpsState(
+                observation.FixType,
+                observation.SatellitesVisible,
+                observation.HorizontalDilution,
+                observation.VerticalDilution,
+                observation.GroundSpeedMetersPerSecond,
+                observation.CourseDegrees,
+                observation.HorizontalAccuracyMeters,
+                observation.VerticalAccuracyMeters,
+                observation.ObservedAt),
+            Motion = state.Motion with
+            {
+                GroundSpeedMetersPerSecond = observation.GroundSpeedMetersPerSecond
+                    ?? state.Motion.GroundSpeedMetersPerSecond,
+                ObservedAt = observation.ObservedAt
+            },
+            Position = state.Position with
+            {
+                HeadingDegrees = observation.CourseDegrees ?? state.Position.HeadingDegrees,
+                ObservedAt = observation.ObservedAt
+            }
+        };
+    }
+
+    public void ApplyHud(VehicleHudObservation observation)
+    {
+        state = state with
+        {
+            Motion = state.Motion with
+            {
+                AirSpeedMetersPerSecond = observation.AirSpeedMetersPerSecond,
+                GroundSpeedMetersPerSecond = observation.GroundSpeedMetersPerSecond,
+                VerticalSpeedMetersPerSecond = observation.VerticalSpeedMetersPerSecond,
+                ObservedAt = observation.ObservedAt
+            },
+            Position = state.Position with
+            {
+                AltitudeMslMeters = observation.AltitudeMslMeters,
+                HeadingDegrees = observation.HeadingDegrees,
+                ObservedAt = observation.ObservedAt
+            }
+        };
+    }
+
+    public void ApplyBattery(VehicleBatteryObservation observation)
+    {
+        state = state with
+        {
+            Power = state.Power with
+            {
+                BatteryVoltageVolts = observation.VoltageVolts ?? state.Power.BatteryVoltageVolts,
+                BatteryCurrentAmps = observation.CurrentAmps ?? state.Power.BatteryCurrentAmps,
+                BatteryConsumedMah = observation.ConsumedMah ?? state.Power.BatteryConsumedMah,
+                BatteryConsumedWh = observation.ConsumedWh ?? state.Power.BatteryConsumedWh,
+                BatteryRemainingPercent = observation.RemainingPercent ?? state.Power.BatteryRemainingPercent,
+                ObservedAt = observation.ObservedAt
+            }
+        };
+    }
+
+    public void ApplyPowerRail(VehiclePowerRailObservation observation)
+    {
+        state = state with
+        {
+            Power = state.Power with
+            {
+                ControllerVoltageVolts = observation.ControllerVoltageVolts,
+                ServoVoltageVolts = observation.ServoVoltageVolts,
+                StatusFlags = observation.Flags,
+                ObservedAt = observation.ObservedAt
+            }
+        };
+    }
+
+    public void ApplyRadio(VehicleRadioObservation observation)
+    {
+        state = state with
+        {
+            Radio = new VehicleRadioState(
+                observation.ChannelCount,
+                observation.ChannelsRaw,
+                observation.RssiPercent,
+                observation.ObservedAt)
+        };
+    }
+
+    public void ApplyNavigation(VehicleNavigationObservation observation)
+    {
+        state = state with
+        {
+            Navigation = state.Navigation with
+            {
+                DesiredRollDegrees = observation.DesiredRollDegrees,
+                DesiredPitchDegrees = observation.DesiredPitchDegrees,
+                NavigationBearingDegrees = observation.NavigationBearingDegrees,
+                TargetBearingDegrees = observation.TargetBearingDegrees,
+                WaypointDistanceMeters = observation.WaypointDistanceMeters,
+                AltitudeErrorMeters = observation.AltitudeErrorMeters,
+                AirspeedErrorMetersPerSecond = observation.AirspeedErrorMetersPerSecond,
+                CrossTrackErrorMeters = observation.CrossTrackErrorMeters,
+                ObservedAt = observation.ObservedAt
+            }
+        };
+    }
+
+    public void ApplyMissionProgress(VehicleMissionProgressObservation observation)
+    {
+        state = state with
+        {
+            Navigation = state.Navigation with
+            {
+                CurrentMissionSequence = observation.CurrentSequence,
+                MissionItemCount = observation.Total,
+                MissionState = observation.MissionState,
+                MissionMode = observation.MissionMode,
+                ObservedAt = observation.ObservedAt
+            }
+        };
+    }
+
+    public void ApplyEkf(VehicleEkfObservation observation)
+    {
+        state = state with
+        {
+            Health = new VehicleHealthState(
+                observation.Flags,
+                observation.IsHealthy,
+                observation.VelocityVariance,
+                observation.HorizontalPositionVariance,
+                observation.VerticalPositionVariance,
+                observation.CompassVariance,
+                observation.TerrainAltitudeVariance,
+                observation.AirspeedVariance,
+                observation.ObservedAt)
+        };
+    }
+
+    public void ApplyArm(bool isArmed) =>
+        state = state with { Flight = state.Flight with { IsArmed = isArmed } };
+
+    public void ApplyMode(VehicleMode mode) =>
+        state = state with { Flight = state.Flight with { Mode = mode } };
+
+    public void ApplyStatusText(StatusTextMessage message) =>
+        Notifications.Add(new VehicleStatusText(message.SystemId, message.ComponentId, message.Text, message.ReceivedAt));
+
+    // Compatibility methods for gradual migration.
+    public void ApplyHeartbeat(uint customMode, byte vehicleType, byte autopilot, byte baseMode, byte systemStatus, byte mavLinkVersion, DateTimeOffset receivedAt) =>
+        ApplyHeartbeat(new VehicleHeartbeatObservation(customMode, vehicleType, autopilot, baseMode, systemStatus, mavLinkVersion, receivedAt));
+
+    public void ApplyPosition(double latitude, double longitude, double altitude) =>
+        ApplyGlobalPosition(new VehicleGlobalPositionObservation(latitude, longitude, altitude, DateTimeOffset.UtcNow));
+
+    public void ApplyAttitude(double roll, double pitch, double yaw) =>
+        ApplyAttitude(new VehicleAttitudeObservation(roll, pitch, yaw, DateTimeOffset.UtcNow));
+
+    public void ApplyBattery(int? batteryRemaining, float? batteryVoltage) =>
+        ApplyBattery(new VehicleBatteryObservation(batteryVoltage, null, null, null, batteryRemaining, DateTimeOffset.UtcNow));
+
+    private static VehicleMode MapMode(uint customMode) => customMode switch
+    {
+        0 => VehicleMode.Stabilize,
+        2 => VehicleMode.AltHold,
+        4 => VehicleMode.Guided,
+        5 => VehicleMode.Loiter,
+        6 => VehicleMode.Rtl,
+        9 => VehicleMode.Land,
+        _ => VehicleMode.Unknown
+    };
 }

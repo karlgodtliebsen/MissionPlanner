@@ -13,10 +13,11 @@ public sealed class VehicleParameterRegistry : IVehicleParameterRegistry
     private readonly ConcurrentDictionary<VehicleId, VehicleParameterCollection> parametersByVehicle = new();
 
     /// <inheritdoc/>
-    public void StoreParameter(VehicleId vehicleId, VehicleParameter parameter)
+    public void StoreParameter(VehicleId vehicleId, VehicleParameter parameter, CancellationToken cancellationToken)
     {
         var collection = parametersByVehicle.GetOrAdd(vehicleId, _ => new VehicleParameterCollection());
         collection.AddOrUpdate(parameter);
+        //ParameterReceived?.Invoke(vehicleId, parameter, cancellationToken);
     }
 
     /// <inheritdoc/>

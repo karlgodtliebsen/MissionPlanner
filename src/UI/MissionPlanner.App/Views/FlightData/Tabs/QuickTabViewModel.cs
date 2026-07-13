@@ -1,73 +1,127 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.Core.DomainEvents;
-using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.Core.Services.Abstractions;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
 /// <inheritdoc />
 public partial class QuickTabViewModel : ObservableObject, IDisposable
 {
-    private readonly IDomainEventHub domainEventHub;
+    private readonly IVehicleHudDataService hudDataService;
+
     private readonly IDispatcher dispatcher;
-    private readonly CancellationTokenSource cts;
     private readonly ILogger<QuickTabViewModel> logger;
+    private IDisposable? hudDataSubscription;
 
-    private readonly List<IDisposable> eventSubscriptions = [];
-    [ObservableProperty] public partial double Altitude { get; set; }
-    [ObservableProperty] public partial double GroundSpeed { get; set; }
-    [ObservableProperty] public partial double DistWP { get; set; }
-    [ObservableProperty] public partial double Yaw { get; set; }
-    [ObservableProperty] public partial double VerticalSpeed { get; set; }
-    [ObservableProperty] public partial double DistToMav { get; set; }
+    /// <summary>
+    /// Yaw angle in degrees. Positive = nose right.
+    /// </summary>
+    [ObservableProperty]
+    public partial double Yaw { get; set; }
 
+    /// <summary>Pitch angle in degrees. Positive = nose up.</summary>
+    [ObservableProperty]
+    public partial double Pitch { get; set; }
+
+    /// <summary>Roll angle in degrees. Positive = right wing down.</summary>
+    [ObservableProperty]
+    public partial double Roll { get; set; }
+
+    /// <summary>
+    /// Distance to the MAV (Micro Air Vehicle) in meters.  
+    /// </summary>
+    [ObservableProperty]
+    public partial double DistanceToMav { get; set; }
+
+    /// <summary>
+    /// Distance to the next waypoint in meters.
+    /// </summary>
+    [ObservableProperty]
+    public partial double DistanceToWp { get; set; }
+
+    /// <summary>
+    /// Heading in degrees, 0-360.
+    /// </summary>
+    [ObservableProperty]
+    public partial double Heading { get; set; }
+
+    /// <summary>Indicated airspeed in m/s.</summary>
+    [ObservableProperty]
+    public partial double AirSpeed { get; set; }
+
+    /// <summary>Ground speed in m/s.</summary>
+    [ObservableProperty]
+    public partial double GroundSpeed { get; set; }
+
+    /// <summary>Altitude above home/sea level in meters.</summary>
+    [ObservableProperty]
+    public partial double Altitude { get; set; }
+
+    /// <summary>Vertical climb/descent rate in m/s.</summary>
+    [ObservableProperty]
+    public partial double VerticalSpeed { get; set; }
+
+    /// <summary>Battery voltage in volts.</summary>
+    [ObservableProperty]
+    public partial double BatteryVoltage { get; set; }
+
+    /// <summary>Battery remaining percentage, 0-100.</summary>
+    [ObservableProperty]
+    public partial double BatteryRemaining { get; set; } = 100;
+
+    /// <summary>Number of GPS satellites in view.</summary>
+    [ObservableProperty]
+    public partial int GpsSatellites { get; set; }
+
+    /// <summary>Whether the vehicle is armed.</summary>
+    [ObservableProperty]
+    public partial bool IsArmed { get; set; }
+
+    /// <summary>Current flight mode.</summary>
+    [ObservableProperty]
+    public partial string FlightMode { get; set; }
 
     /// <inheritdoc />
-    public QuickTabViewModel(
-        // IEventHub eventHub,
-        IDomainEventHub domainEventHub,
-        IDispatcher dispatcher,
-        CancellationTokenSource cts,
-        ILogger<QuickTabViewModel> logger)
+    public QuickTabViewModel(IVehicleHudDataService hudDataService, IDispatcher dispatcher, ILogger<QuickTabViewModel> logger)
     {
-        this.domainEventHub = domainEventHub;
+        this.hudDataService = hudDataService;
         this.dispatcher = dispatcher;
-        this.cts = cts;
         this.logger = logger;
-        var eventSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(VehicleStatusUpdated);
-        eventSubscriptions.Add(eventSubscription);
-        //  await domainEventHub.PublishDomainEventAsync(new VehicleStateUpdated(vehicle.State), cancellationToken);
-        //var eventSubscription = eventHub.SubscribeAsync<AttitudeMessage>(MavLinkEventTopics.NewMessage, AttitudeMessageRegistered);
-        //eventSubscriptions.Add(eventSubscription);
+        FlightMode = "Unknown";
+
+        SubscribeToVehicleData();
     }
 
-    private Task VehicleStatusUpdated(VehicleStateUpdated message, CancellationToken cancellationToken)
+    private void SubscribeToVehicleData()
     {
-        dispatcher.Dispatch(() =>
-        {
-            Yaw = message.VehicleState.Yaw ?? 0.0;
-            Altitude = message.VehicleState.Altitude ?? 0.0;
-            //GroundSpeed = message.VehicleState.GroundSpeed ?? 0.0;
-            //DistWP = message.VehicleState.DistWP ?? 0.0;
-            //VerticalSpeed = message.VehicleState.VerticalSpeed ?? 0.0;
-            //DistToMav = message.VehicleState.DistToMav ?? 0.0;
-        });
-        return Task.CompletedTask;
+        // Subscribe to HUD data updates from the primary vehicle
+        var observable = hudDataService.ObservePrimaryVehicleHudData();
+
+        hudDataSubscription = observable.Subscribe(hudData =>
+            // Update all properties with the new data
+            dispatcher.Dispatch(() =>
+            {
+                Pitch = hudData.Pitch;
+                Roll = hudData.Roll;
+                Yaw = hudData.Yaw;
+                Heading = hudData.Heading;
+                AirSpeed = hudData.AirSpeed;
+                GroundSpeed = hudData.GroundSpeed;
+                Altitude = hudData.Altitude;
+                VerticalSpeed = hudData.VerticalSpeed;
+                BatteryVoltage = hudData.BatteryVoltage;
+                BatteryRemaining = hudData.BatteryRemaining;
+                GpsSatellites = hudData.GpsSatellites;
+                IsArmed = hudData.IsArmed;
+                FlightMode = hudData.Mode.ToString();
+                DistanceToMav = hudData.DistanceToMav;
+                DistanceToWp = hudData.DistanceToWp;
+            }));
     }
 
-    //private Task AttitudeMessageRegistered(AttitudeMessage message, CancellationToken cancellationToken)
-    //{
-    //    dispatcher.Dispatch(() => Yaw = message.Yaw);
-    //    return Task.CompletedTask;
-    //}
-
-
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Dispose()
     {
-        foreach (var subscription in eventSubscriptions)
-        {
-            subscription.Dispose();
-        }
+        hudDataSubscription?.Dispose();
     }
 }

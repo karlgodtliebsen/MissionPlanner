@@ -1,4 +1,4 @@
-using MissionPlanner.Core.Models;
+﻿using MissionPlanner.Core.Models;
 using MissionPlanner.MavLink.Parameters;
 
 namespace MissionPlanner.Core.Services.Abstractions;
@@ -13,7 +13,8 @@ public interface IVehicleParameterRegistry
     /// </summary>
     /// <param name="vehicleId">The ID of the vehicle.</param>
     /// <param name="parameter">The parameter to store.</param>
-    void StoreParameter(VehicleId vehicleId, VehicleParameter parameter);
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    void StoreParameter(VehicleId vehicleId, VehicleParameter parameter, CancellationToken cancellationToken);
 
     /// <summary>
     /// Gets a specific parameter by name for a vehicle.
