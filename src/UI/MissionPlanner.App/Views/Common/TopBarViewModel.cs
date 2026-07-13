@@ -20,8 +20,8 @@ public partial class TopBarViewModel : ObservableObject
     private readonly IServiceFactory serviceFactory;
     private readonly IDomainEventHub? eventHub;
     private readonly IDisposable? eventSubscription;
-    private const string? ConnectImage = "Resources/Images/light_disconnect_icon.png";
-    private const string? DisConnectImage = "Resources/Images/light_connect_icon.png";
+    private const string? ConnectImage = "Resources/Images/x_light_disconnect_icon_x.png";
+    private const string? DisConnectImage = "Resources/Images/x_light_connect_icon_x.png";
 
     [ObservableProperty] public partial string ConnectionStatus { get; set; } = "Disconnected";
     [ObservableProperty] public partial string? IsConnectedImage { get; set; } = ConnectImage;

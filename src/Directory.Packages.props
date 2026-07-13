@@ -56,7 +56,7 @@
     <PackageVersion Include="UraniumUI.Dialogs.CommunityToolkit" Version="3.0.0" />
     <PackageVersion Include="UraniumUI.Dialogs.Mopups" Version="3.0.0" />
     <PackageVersion Include="UraniumUI.Icons.FontAwesome" Version="3.0.0" />
-    <PackageVersion Include="UraniumUI.Icons.MaterialIcons" Version="2.16.0" />
+    <PackageVersion Include="UraniumUI.Icons.MaterialIcons" Version="3.0.0" />
     <PackageVersion Include="UraniumUI.Icons.MaterialSymbols" Version="3.0.0" />
     <PackageVersion Include="UraniumUI.Icons.SegoeFluent" Version="3.0.0" />
     <PackageVersion Include="UraniumUI.Material" Version="3.0.0" />

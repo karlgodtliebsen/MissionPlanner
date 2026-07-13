@@ -45,6 +45,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
     [ObservableProperty] public partial double Progress { get; set; }
     [ObservableProperty] public partial bool ShowLoadingPanel { get; set; }
+    [ObservableProperty] public partial bool ShowEmptyView { get; set; }
 
     [ObservableProperty] public partial bool ShowLoadingProgress { get; set; }
     [ObservableProperty] public partial bool ShowLoadingCompletedWithError { get; set; }
@@ -169,6 +170,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             {
                 Parameters.Clear();
                 Parameters.AddRange(allParameterItems);
+                ShowEmptyView = Parameters.Count == 0;
             });
         }
     }
@@ -201,12 +203,18 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
                 await ResetState();
                 await dispatcher.DispatchAsync(() =>
                 {
+                    ShowEmptyView = Parameters.Count == 0;
                     ShowLoadingPanel = true;
                     ShowLoadingCompletedWithError = true;
                 });
                 logger.LogError("Failed to load parameters: {Error}", result.ErrorMessage);
                 return;
             }
+
+            await dispatcher.DispatchAsync(() =>
+            {
+                ProgressMessage = $"Rendering table";
+            });
 
             var parameters = new Dictionary<string, VehicleParameter>(result.Parameters);
 
@@ -233,6 +241,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
                 {
                     Parameters.Clear();
                     Parameters.AddRange(allParameterItems.OrderBy(p => p.Name));
+                    ShowEmptyView = Parameters.Count == 0;
                 }
             });
 
@@ -246,6 +255,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             await dispatcher.DispatchAsync(async () =>
             {
                 Parameters.Clear();
+                ShowEmptyView = Parameters.Count == 0;
                 await dialogs.DisplayTextPromptAsync("Load failed. Ensure there is a connection and try again", ex.Message, "OK");
             });
         }
@@ -297,6 +307,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         {
             Parameters.Clear();
             Parameters.AddRange(testParameters);
+            ShowEmptyView = Parameters.Count == 0;
         });
         await ResetState();
     }
@@ -337,6 +348,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         {
             Parameters.Clear();
             Parameters.AddRange(testParameters);
+            ShowEmptyView = Parameters.Count == 0;
         });
     }
 
@@ -358,7 +370,11 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
                 Parameters.Select(v => v.OriginalParameter).ToList(), cts.Token);
             //TODO: create a method to update existing parameters with loaded values instead of clearing and replacing
 
-            await dispatcher.DispatchAsync(() => Parameters.Clear());
+            await dispatcher.DispatchAsync(() =>
+            {
+                Parameters.Clear();
+                ShowEmptyView = Parameters.Count == 0;
+            });
         }
         catch (Exception ex)
         {
@@ -450,6 +466,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             ShowLoadingCompletedWithError = false;
             ShowLoadingCancelled = false;
             ShowVehicleDisconnected = false;
+            ShowEmptyView = Parameters.Count == 0;
         });
     }
 
@@ -462,8 +479,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             ShowLoadingPanel = true;
             ShowLoadingProgress = true;
             ProgressMessage = "Loading parameters...";
-            //Parameters.Clear();
-            //allParameterItems.Clear();
+            ShowEmptyView = Parameters.Count == 0;
         });
     }
 

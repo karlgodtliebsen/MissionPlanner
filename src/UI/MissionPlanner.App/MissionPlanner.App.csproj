@@ -30,6 +30,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiImage Remove="Resources\Images\readme.txt" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <None Remove="appsettings.json" />
 	</ItemGroup>
 
@@ -72,9 +76,7 @@
         <PackageReference Include="UraniumUI.Blurs" />
         <PackageReference Include="UraniumUI.Dialogs.CommunityToolkit" />
         <PackageReference Include="UraniumUI.Dialogs.Mopups" />
-        <PackageReference Include="UraniumUI.Icons.FontAwesome" />
         <PackageReference Include="UraniumUI.Icons.MaterialSymbols" />
-        <PackageReference Include="UraniumUI.Icons.SegoeFluent" />
         <PackageReference Include="UraniumUI.Material" />
         <PackageReference Include="UraniumUI.Validations.DataAnnotations" />
 

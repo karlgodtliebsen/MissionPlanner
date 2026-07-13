@@ -8,9 +8,10 @@ namespace MissionPlanner.App.Configuration;
 public partial class ApplicationStateService : ObservableObject
 {
     [ObservableProperty] public partial bool IsConnected { get; set; }
-    [ObservableProperty] public partial string SelectedPort { get; set; } = "AUTO";
+    [ObservableProperty] public partial string SelectedChannel { get; set; } = "AUTO";
     [ObservableProperty] public partial string SelectedBaudRate { get; set; } = "115200";
-    //[ObservableProperty] public partial string SelectedConnectionType { get; set; } = "Serial";
+    [ObservableProperty] public partial string SelectedPort { get; set; } = "14550";
+    [ObservableProperty] public partial string SelectedHost { get; set; } = "127.0.0.1";
 
     /// <summary>
     /// Initializes the service with values from ApplicationState.
@@ -18,8 +19,9 @@ public partial class ApplicationStateService : ObservableObject
     public void Initialize(ApplicationState state)
     {
         IsConnected = state.IsConnected;
-        SelectedPort = state.SelectedPort;
+        SelectedChannel = state.SelectedChannel;
         SelectedBaudRate = state.SelectedBaudRate;
-        //SelectedConnectionType = state.SelectedConnectionType;
+        SelectedPort = state.SelectedPort;
+        SelectedHost = state.SelectedHost;
     }
 }

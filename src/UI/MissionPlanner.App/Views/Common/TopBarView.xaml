@@ -16,7 +16,7 @@
 
 
             <Image Grid.Column="1" 
-                   Source="Resources/Images/ardupilot.png" 
+                   Source="Resources/Images/x_ardupilot_x.png" 
                    WidthRequest="120" 
                    HeightRequest="30"
                    VerticalOptions="Center"

@@ -11,17 +11,22 @@ public class ApplicationState
     public bool IsConnected { get; set; }
 
     /// <summary>
-    /// Gets or sets the selected port for the application.
+    /// Gets or sets the selected channel for the application.
     /// </summary>
-    public string SelectedPort { get; set; } = "AUTO";
+    public string SelectedChannel { get; set; } = "AUTO";
 
     /// <summary>
     /// Gets or sets the selected baud rate for the application.
     /// </summary>
     public string SelectedBaudRate { get; set; } = "115200";
 
-    ///// <summary>
-    ///// Gets or sets the selected connection type for the application.
-    ///// </summary>
-    //public string SelectedConnectionType { get; set; } = "Serial";
+    /// <summary>
+    /// Gets or sets the selected host for the application.
+    /// </summary>
+    public string SelectedHost { get; set; } = "127.0.0.1";
+
+    /// <summary>
+    /// Gets or sets the selected port for the application.
+    /// </summary>
+    public string SelectedPort { get; set; } = "14550";
 }

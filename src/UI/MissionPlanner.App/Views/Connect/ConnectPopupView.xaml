@@ -2,6 +2,11 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
               xmlns:connect="clr-namespace:MissionPlanner.App.Views.Connect"
+              xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+              xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+              xmlns:input="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
+              xmlns:validations="clr-namespace:InputKit.Shared.Validations;assembly=InputKit.Maui"
+
               x:Class="MissionPlanner.App.Views.Connect.ConnectPopupView"
               x:DataType="connect:ConnectPopupViewModel"
               BackgroundColor="#80000000">
@@ -9,17 +14,28 @@
 
     <VerticalStackLayout Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Spacing="12" Margin="25">
 
-        <!--<Picker Title="Connection type"
-                        ItemsSource="{Binding Options.ConnectionTypes}"
-                        SelectedItem="{Binding SelectedConnectionType}" />-->
+        <material:PickerField   Title="Channel"
+                                ItemsSource="{Binding Channels}"
+                                SelectedItem="{Binding SelectedChannel}" />
 
-        <Picker Title="Port"
-                        ItemsSource="{Binding Ports}"
-                        SelectedItem="{Binding SelectedPort}" />
+        <material:PickerField   Title="Baud rate" IsVisible="{Binding ShowSelectedCom}"
+                                ItemsSource="{Binding BaudRates}"
+                                SelectedItem="{Binding SelectedBaudRate}" />
 
-        <Picker Title="Baud rate"
-                        ItemsSource="{Binding BaudRates}"
-                        SelectedItem="{Binding SelectedBaudRate}" />
+        <material:EditorField Title="Host" Text="{Binding SelectedHost}" IsVisible="{Binding ShowSelectedHost}">
+            </material:EditorField>
+        <material:EditorField Title="Port" Text="{Binding SelectedPort}" IsVisible="{Binding ShowSelectedHost}"/>
+
+        <!--<validations:RequiredValidation />
+        <validations:RegexValidation Pattern="{x:Static input:AdvancedEntry.REGEX_EMAIL}" Message="Invalid email address" />-->
+
+        <!--
+        <material:TextField.Behaviors>
+            <uranium:DataAnnotationsBehavior Binding="{Binding Ip}" />
+        </material:TextField.Behaviors>
+        -->
+
+
 
         <Label Text="{Binding StatusMessage}"
                        TextColor="LightGray"
@@ -27,14 +43,23 @@
                        HorizontalOptions="Center"
                        Margin="0,4,0,0" />
 
-        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+
+            <Button Grid.Column="0"
+                    ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Find_replace}, FontFamily=MaterialSharp}"
+                    FontSize="20"
+                    Padding="8,4"
+                    VerticalOptions="Center"
+                    BackgroundColor="Transparent"
+                    Command="{Binding RefreshCommand}" />
+
             <Button Grid.Column="1"
-                            ImageSource="{Binding IsConnectedImage}"
-                            FontSize="20"
-                            Padding="8,4"
-                            VerticalOptions="Center"
-                            BackgroundColor="Transparent"
-                            Command="{Binding ConnectCommand}" />
+                    ImageSource="{Binding IsConnectedImage}"
+                    FontSize="20"
+                    Padding="8,4"
+                    VerticalOptions="Center"
+                    BackgroundColor="Transparent"
+                    Command="{Binding ConnectCommand}" />
 
         </Grid>
 

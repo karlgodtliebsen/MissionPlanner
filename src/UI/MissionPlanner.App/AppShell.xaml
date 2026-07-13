@@ -82,22 +82,24 @@
             </CollectionView>
         </Grid>
     </Shell.FlyoutContent>
-    <FlyoutItem Title="Flight Data">
+    <FlyoutItem Title="Flight Data"  Icon="Resources/Images/x_light_flightdata_icon_x.png">
         <ShellContent
             Title=""
             ContentTemplate="{DataTemplate flightData:FlightDataView}" Route="FlightData" />
     </FlyoutItem>
-    <FlyoutItem Title="Flight Plan">
+    <FlyoutItem Title="Flight Plan" Icon="Resources/Images/x_light_flightplan_icon_x.png">
         <ShellContent
             Title=""
             ContentTemplate="{DataTemplate flightPlanner:FlightPlannerView}" Route="FlightPlanner" />
     </FlyoutItem>
-    <FlyoutItem Title="Init Setup">
+    <FlyoutItem Title="Init Setup" Icon="Resources/Images/x_light_initialsetup_icon_x.png">
         <ShellContent
             Title=""
             ContentTemplate="{DataTemplate initSetup:InitSetupView}" Route="InitSetup" />
     </FlyoutItem>
-    <FlyoutItem Title="Config-Tuning" Icon="{FontImageSource Glyph={x:Static uranium:MaterialOutlined.Tab}, FontFamily=MaterialOutlined, Color={AppThemeBinding {StaticResource Primary}, Dark={StaticResource PrimaryDark}}}">
+    <FlyoutItem Title="Config-Tuning"  
+                Icon="Resources/Images/x_light_tuningconfig_icon_x.png">
+
         <ShellContent Title="Geo Fence" ContentTemplate="{DataTemplate tabs:GeoFenceTabView}"/>
         <ShellContent Title="Basic Tuning" ContentTemplate="{DataTemplate tabs:BasicTuningTabView}"/>
         <ShellContent Title="Extended Tuning" ContentTemplate="{DataTemplate tabs:ExtendedTuningTabView}"/>
@@ -108,19 +110,19 @@
         <ShellContent Title="CubeLan 8 Port Switch" ContentTemplate="{DataTemplate tabs:CubeLan8PortSwitchTabView}"/>
     </FlyoutItem>
 
-    <FlyoutItem Title="Simulation">
+    <FlyoutItem Title="Simulation" Icon="Resources/Images/x_light_simulation_icon_x.png" >
         <ShellContent
             Title=""
             ContentTemplate="{DataTemplate simulation:SimulationView}" Route="Simulation" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Help">
+    <FlyoutItem Title="Help" Icon="Resources/Images/x_light_help_icon_x.png">
         <ShellContent
             Title=""
             ContentTemplate="{DataTemplate help:HelpView}" Route="Help" />
     </FlyoutItem>
 
-    <FlyoutItem Title="Exit">
+    <FlyoutItem Title="Exit" >
         <ShellContent
             Title=""
             ContentTemplate="{DataTemplate exit:ExitView}" Route="Exit" />

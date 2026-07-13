@@ -14,7 +14,7 @@ public class ApplicationOptions
     /// <summary>
     /// 
     /// </summary>
-    public List<string> Ports { get; } =
+    public List<string> Channels { get; } =
     [
         "AUTO",
         "TCP",
@@ -40,9 +40,10 @@ public class ApplicationOptions
     ];
 
     /// <summary>
-    /// Gets or sets the configured port for the application.
+    /// Gets or sets the configured channel for the application.
     /// </summary>
-    public string Port { get; set; } = "AUTO";
+    public string Channel { get; set; } = "AUTO";
+
 
     /// <summary>
     /// Gets or sets the configured baud rate for the application.
@@ -50,12 +51,20 @@ public class ApplicationOptions
     public string BaudRate { get; set; } = "115200";
 
 
+    public string Host { get; set; } = "127.0.0.1";
+
+
+    public string Port { get; set; } = "14550";
+
+
     /// <summary>
     /// Gets the template for the application configuration.
     /// </summary>
     public static string Template => @"""
 ""Application"": {
-    ""Port"": ""AUTO"",
+    ""Channel"": ""AUTO"",
+    ""Host"": ""127.0.0.1"",
+    ""Port"": ""14550"",
     ""BaudRate"": ""115200"",
   },
 """;

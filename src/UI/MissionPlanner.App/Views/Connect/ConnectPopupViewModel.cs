@@ -1,11 +1,12 @@
-﻿using System.Collections.ObjectModel;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.Core.DomainEvents;
+using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
@@ -20,12 +21,19 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
     private readonly IDomainEventHub eventHub;
     private readonly IDisposable eventSubscription;
     private readonly ApplicationStateService stateService;
+    private readonly IDispatcher dispatcher;
 
-    public ObservableCollection<string> Ports { get; set; }
+    public ObservableRangeCollection<string> Channels { get; set; }
 
-    public ObservableCollection<string> BaudRates { get; set; }
+    public ObservableRangeCollection<string> BaudRates { get; set; }
+
+    [ObservableProperty] public partial string? SelectedHost { get; set; }
+
+
+    [ObservableProperty] public partial string? SelectedChannel { get; set; }
 
     [ObservableProperty] public partial string? SelectedPort { get; set; }
+
 
     [ObservableProperty] public partial string? SelectedBaudRate { get; set; }
 
@@ -36,10 +44,12 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
     [ObservableProperty] public partial bool IsConnecting { get; set; }
 
     [ObservableProperty] public partial string? StatusMessage { get; set; }
+    [ObservableProperty] public partial bool ShowSelectedHost { get; set; }
+    [ObservableProperty] public partial bool ShowSelectedCom { get; set; } = true;
 
-    private List<string> configuredPorts { get; set; }
-    private const string? ConnectImage = "Resources/Images/light_disconnect_icon.png";
-    private const string? DisConnectImage = "Resources/Images/light_connect_icon.png";
+    private List<string> configuredChannels { get; set; }
+    private const string? ConnectImage = "Resources/Images/x_light_disconnect_icon_x.png";
+    private const string? DisConnectImage = "Resources/Images/x_light_connect_icon_x.png";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ConnectPopupViewModel"/> class with the specified application state and options.
@@ -49,6 +59,7 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
     /// <param name="portDiscovery"></param>
     /// <param name="connectionService"></param>
     /// <param name="eventHub"></param>
+    /// <param name="dispatcher"></param>
     /// <param name="logger"></param>
     public ConnectPopupViewModel(
         ISerialPortDiscoveryService portDiscovery,
@@ -56,6 +67,7 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
         IDomainEventHub eventHub,
         ApplicationStateService stateService,
         IOptionsMonitor<ApplicationOptions> options,
+        IDispatcher dispatcher,
         ILogger<ConnectPopupViewModel> logger)
     {
         this.logger = logger;
@@ -63,13 +75,14 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
         this.connectionService = connectionService;
         this.eventHub = eventHub;
         this.stateService = stateService;
-        configuredPorts = options.CurrentValue.Ports.ToList();
-
-        Ports = new ObservableCollection<string>(options.CurrentValue.Ports);
-        BaudRates = new ObservableCollection<string>(options.CurrentValue.BaudRates);
-
-        SelectedPort = stateService.SelectedPort;
-        SelectedBaudRate = stateService.SelectedBaudRate ?? "57600";
+        this.dispatcher = dispatcher;
+        configuredChannels = options.CurrentValue.Channels.ToList();
+        Channels = new ObservableRangeCollection<string>(configuredChannels);
+        BaudRates = new ObservableRangeCollection<string>(options.CurrentValue.BaudRates);
+        SelectedHost = options.CurrentValue.Host;
+        SelectedPort = options.CurrentValue.Port;
+        SelectedChannel = stateService.SelectedChannel;
+        SelectedBaudRate = stateService.SelectedBaudRate;
         IsConnected = stateService.IsConnected;
 
         //  connectionService.DisconnectAsync(CancellationToken.None);
@@ -79,11 +92,35 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
         {
             switch (args.PropertyName)
             {
-                case nameof(ApplicationStateService.SelectedPort):
-                    SelectedPort = stateService.SelectedPort;
+                case nameof(ApplicationStateService.SelectedChannel):
+                    if (SelectedChannel != stateService.SelectedChannel)
+                    {
+                        SelectedChannel = stateService.SelectedChannel;
+                        ShowSelectedHost = SelectedChannel is "TCP" or "UDP" or "UDPCI";
+                        ShowSelectedCom = !ShowSelectedHost;
+                    }
+
                     break;
                 case nameof(ApplicationStateService.SelectedBaudRate):
-                    SelectedBaudRate = stateService.SelectedBaudRate;
+                    if (SelectedBaudRate != stateService.SelectedBaudRate)
+                    {
+                        SelectedBaudRate = stateService.SelectedBaudRate;
+                    }
+
+                    break;
+                case nameof(ApplicationStateService.SelectedPort):
+                    if (SelectedPort != stateService.SelectedPort)
+                    {
+                        SelectedPort = stateService.SelectedPort;
+                    }
+
+                    break;
+                case nameof(ApplicationStateService.SelectedHost):
+                    if (SelectedHost != stateService.SelectedHost)
+                    {
+                        SelectedHost = stateService.SelectedHost;
+                    }
+
                     break;
                 case nameof(ApplicationStateService.IsConnected):
                     IsConnected = stateService.IsConnected;
@@ -103,37 +140,33 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
 
     private void UpdateConnectionStatus()
     {
-        IsConnectedImage = stateService.IsConnected ? ConnectImage : DisConnectImage;
+        dispatcher.Dispatch(() => IsConnectedImage = stateService.IsConnected ? ConnectImage : DisConnectImage);
     }
 
     /// <summary>
     /// Refreshes the list of available serial ports
     /// </summary>
-    public void RefreshPortList()
+    private void RefreshPortList()
     {
         try
         {
             var availablePorts = portDiscovery.GetAvailablePorts();
-            Ports.Clear();
-
+            Channels.Clear();
+            var selectedChannel = SelectedChannel;
             if (availablePorts.Length > 0)
             {
-                var ports = availablePorts.Concat(configuredPorts).Distinct().Order().ToArray();
-                foreach (var port in ports)
-                {
-                    Ports.Add(port);
-                }
+                var channels = availablePorts.Concat(configuredChannels).Distinct().Order().ToArray();
 
-                // Auto-select first port if nothing is selected
-                if (Ports.Count > 0)
-                {
-                    SelectedPort = Ports.FirstOrDefault(p => p == availablePorts[0]);
-                }
+                Channels.AddRange(channels);
+                SelectedChannel = availablePorts[0];
             }
             else
             {
-                Ports = ["No ports found"];
-                StatusMessage = "No serial ports detected";
+                Channels.AddRange(configuredChannels);
+                SelectedChannel = selectedChannel;
+                //SelectedChannel = null;
+                //Channels = ["No channels found"];
+                //StatusMessage = "No serial ports detected";
             }
 
             logger.LogInformation("Refreshed port list: {PortCount} ports found", availablePorts.Length);
@@ -142,6 +175,7 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
         {
             logger.LogError(ex, "Failed to refresh port list");
             StatusMessage = "Error detecting ports";
+            SelectedChannel = null;
         }
     }
 
@@ -151,20 +185,52 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
         base.OnPropertyChanged(args);
         switch (args.PropertyName)
         {
-            //case nameof(SelectedConnectionType):
-            //    stateService?.SelectedConnectionType = SelectedConnectionType!;
-            //    break;
+            case nameof(SelectedChannel):
+                if (SelectedChannel != stateService.SelectedChannel)
+                {
+                    stateService?.SelectedChannel = SelectedChannel!;
+                    ShowSelectedHost = SelectedChannel is "TCP" or "UDP" or "UDPCI";
+                    ShowSelectedCom = !ShowSelectedHost;
+                }
+
+                break;
             case nameof(SelectedPort):
-                stateService?.SelectedPort = SelectedPort!;
+                if (SelectedPort != stateService.SelectedPort)
+                {
+                    stateService?.SelectedPort = SelectedPort!;
+                }
+
+                break;
+            case nameof(SelectedHost):
+                if (SelectedHost != stateService.SelectedHost)
+                {
+                    stateService?.SelectedHost = SelectedHost!;
+                }
+
                 break;
             case nameof(SelectedBaudRate):
-                stateService?.SelectedBaudRate = SelectedBaudRate!;
+                if (SelectedBaudRate != stateService.SelectedBaudRate)
+                {
+                    stateService?.SelectedBaudRate = SelectedBaudRate!;
+                }
+
                 break;
             case nameof(IsConnected):
-                stateService?.IsConnected = IsConnected;
-                UpdateConnectionStatus();
+                if (IsConnected != stateService.IsConnected)
+                {
+                    stateService?.IsConnected = IsConnected;
+                    UpdateConnectionStatus();
+                }
+
                 break;
         }
+    }
+
+
+    [RelayCommand]
+    private void Refresh()
+    {
+        RefreshPortList();
     }
 
     [RelayCommand]
@@ -177,29 +243,22 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
 
         if (IsConnected)
         {
-            // Disconnect
             await DisconnectAsync();
             return;
         }
 
-        //// Validate inputs
-        //if (string.IsNullOrEmpty(SelectedConnectionType))
-        //{
-        //    StatusMessage = "Please select a connection type";
-        //    return;
-        //}
-
-        IsConnecting = true;
-        StatusMessage = "Connecting...";
-        if (SelectedPort is null)
+        if (SelectedChannel is null)
         {
             return;
         }
 
+        IsConnecting = true;
+        StatusMessage = "Connecting...";
+
         try
 
         {
-            var selection = SelectedPort.ToLowerInvariant();
+            var selection = SelectedChannel.ToLowerInvariant();
 
             // Auto-detect connection type based on port name
             if (selection.StartsWith("COM", StringComparison.OrdinalIgnoreCase) ||
@@ -226,15 +285,29 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
                 var _ => new VehicleConnectionResult(false, null, null, "Unsupported connection type")
             };
 
-            if (result.Success)
+            if (result.Success && result.VehicleId.HasValue)
             {
-                IsConnected = true;
-                IsConnectedImage = DisConnectImage;
-                StatusMessage = $"Connected to vehicle {result.VehicleId}";
-                logger.LogInformation("Successfully connected to vehicle {VehicleId}", result.VehicleId);
+                SuccessConnection(result.VehicleId.Value);
             }
+            //else if (result.ErrorMessage is not null && result.ErrorMessage.Contains("A connection is already established."))
+            //{
+            //    if (connectionService.IsConnected)
+            //    {
+            //        VehicleId? vid = connectionService.ConnectedVehicles.FirstOrDefault();
+            //        if (vid is not null)
+            //        {
+            //            SuccessConnection(vid.Value);
+            //        }
+            //        else
+            //        {
+            //            StatusMessage = "Already connected to a vehicle. Disconnect first.";
+            //            logger.LogWarning("Connection attempt failed: {Error}", result.ErrorMessage);
+            //        }
+            //    }
+            //}
             else
             {
+                await DisconnectAsync();
                 StatusMessage = $"Connection failed: {result.ErrorMessage}";
                 logger.LogWarning("Connection failed: {Error}", result.ErrorMessage);
             }
@@ -251,29 +324,90 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
         }
     }
 
+    private void SuccessConnection(VehicleId vehicleId)
+    {
+        dispatcher.Dispatch(() =>
+            {
+                IsConnected = true;
+                IsConnectedImage = DisConnectImage;
+                StatusMessage = $"Connected to vehicle {vehicleId}";
+                logger.LogInformation("Successfully connected to vehicle {VehicleId}", vehicleId);
+            }
+        );
+    }
+
+    private void Disconnected()
+    {
+        UpdateConnectionStatus();
+        dispatcher.Dispatch(() =>
+            {
+                IsConnected = false;
+                StatusMessage = $"Disconnected from vehicle";
+            }
+        );
+        logger.LogInformation("Disconnected from vehicle");
+    }
+
+    private async Task DisconnectAsync()
+    {
+        try
+        {
+            Disconnected();
+            await dispatcher.DispatchAsync(async () =>
+            {
+                StatusMessage = "Disconnecting...";
+                await connectionService.DisconnectAsync();
+                StatusMessage = "Disconnected";
+                UpdateConnectionStatus();
+            });
+            logger.LogInformation("Disconnected from all vehicles");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error during disconnect");
+            StatusMessage = $"Disconnect error: {ex.Message}";
+        }
+    }
+
     private async Task<VehicleConnectionResult> ConnectSerialAsync()
     {
-        return string.IsNullOrEmpty(SelectedPort)
-            ? new VehicleConnectionResult(false, null, null, "No port selected")
+        return string.IsNullOrEmpty(SelectedChannel)
+            ? new VehicleConnectionResult(false, null, null, "No channel selected")
             : !int.TryParse(SelectedBaudRate, out var baudRate)
                 ? new VehicleConnectionResult(false, null, null, "Invalid baud rate")
-                : await connectionService.ConnectSerialAsync(SelectedPort, baudRate);
+                : await connectionService.ConnectSerialAsync(SelectedChannel, baudRate);
     }
 
     private async Task<VehicleConnectionResult> ConnectTcpAsync()
     {
-        // For TCP, the "port" field should contain host:port
-        // This is a simplified implementation - you might want a separate host/port UI
-        var parts = SelectedPort?.Split(':');
-        return parts?.Length != 2 || !int.TryParse(parts[1], out var port)
-            ? new VehicleConnectionResult(false, null, null, "TCP format should be host:port")
-            : await connectionService.ConnectTcpAsync(parts[0], port);
+        var host = SelectedHost;
+        if (host is null)
+        {
+            StatusMessage = "Host not specified";
+            return new VehicleConnectionResult(false, null, null, "Host not specified");
+        }
+
+        var port = SelectedPort;
+        if (port is null)
+        {
+            StatusMessage = "Port not specified";
+            return new VehicleConnectionResult(false, null, null, "Port not specified");
+        }
+
+        var p = int.TryParse(port, out var portNumber);
+        if (!p)
+        {
+            StatusMessage = "Invalid port number";
+            return new VehicleConnectionResult(false, null, null, "Invalid port number");
+        }
+
+        return await connectionService.ConnectTcpAsync(host, portNumber);
     }
 
     private async Task<VehicleConnectionResult> ConnectUdpAsync()
     {
         // For UDP, use the baud rate field as the local port (or a separate field in real UI)
-        if (!int.TryParse(SelectedBaudRate, out var localPort))
+        if (!int.TryParse(SelectedPort, out var localPort))
         {
             localPort = 14550; // Default UDP port
         }
@@ -281,37 +415,15 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
         return await connectionService.ConnectUdpAsync(localPort);
     }
 
-    private Task OnVehicleConnected(VehicleConnected evt, CancellationToken ct)
+    private async Task OnVehicleConnected(VehicleConnected evt, CancellationToken ct)
     {
         // Update UI on main thread
-        MainThread.BeginInvokeOnMainThread(() =>
+        await dispatcher.DispatchAsync(async () =>
         {
             IsConnected = true;
             UpdateConnectionStatus();
             StatusMessage = $"Vehicle {evt.VehicleId} connected via {evt.ConnectionType}";
         });
-        return Task.CompletedTask;
-    }
-
-    private async Task DisconnectAsync()
-    {
-        try
-        {
-            MainThread.BeginInvokeOnMainThread(async () =>
-            {
-                StatusMessage = "Disconnecting...";
-                await connectionService.DisconnectAsync();
-                IsConnected = false;
-                StatusMessage = "Disconnected";
-                UpdateConnectionStatus();
-                logger.LogInformation("Disconnected from all vehicles");
-            });
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error during disconnect");
-            StatusMessage = $"Disconnect error: {ex.Message}";
-        }
     }
 
 

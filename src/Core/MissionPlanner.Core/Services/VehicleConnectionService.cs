@@ -79,7 +79,7 @@ public class VehicleConnectionService(
             logger.LogInformation("Successfully connected to vehicle {VehicleId} via serial port {PortName}", vehicleId, portName);
             return new VehicleConnectionResult(true, vehicleId.Value, connectionSession);
         }
-        catch (Exception ex)
+        catch (Exception ex) //"A connection is already established."
         {
             logger.LogError(ex, "Failed to connect to vehicle via serial port {PortName}", portName);
             await PublishConnectionFailed("Serial", portName, ex.Message);

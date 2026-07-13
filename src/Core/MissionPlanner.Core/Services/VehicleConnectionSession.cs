@@ -85,12 +85,9 @@ public sealed class VehicleConnectionSession(
     /// <param name="cancellationToken"></param>
     public CancellationTokenSource CreateSerialConnection(string portName, int baudRate = 57600, Action<TransportEndpoint>? configure = null, CancellationToken cancellationToken = default)
     {
-        if (transport is not null && client is not null)
-        {
-            throw new InvalidOperationException("A connection is already established.");
-        }
-
         serviceCts = new CancellationTokenSource();
+        client?.DisposeAsync();
+
         var registry = serviceFactory.Create<IVehicleRegistry>();
 
         // Publish Reset event
