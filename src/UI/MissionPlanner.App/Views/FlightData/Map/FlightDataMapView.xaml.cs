@@ -9,7 +9,7 @@ namespace MissionPlanner.App.Views.FlightData.Map;
 /// <summary>
 /// Represents the view for displaying flight data on a map.
 /// </summary>
-public partial class FlightDataMapView : ContentView
+public partial class FlightDataMapView : ContentView, IDisposable
 {
     private readonly FlightDataMapViewModel viewModel;
     private readonly Pin vehiclePin;
@@ -43,5 +43,11 @@ public partial class FlightDataMapView : ContentView
             var (x, y) = Mapsui.Projections.SphericalMercator.FromLonLat(position.Longitude, position.Latitude);
             map.Navigator.CenterOn(new MPoint(x, y));
         }
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        viewModel.PropertyChanged -= ViewModel_PropertyChanged;
     }
 }

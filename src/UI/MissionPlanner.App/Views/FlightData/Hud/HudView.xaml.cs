@@ -7,7 +7,7 @@ namespace MissionPlanner.App.Views.FlightData.Hud;
 /// <summary>
 /// Represents the HUD (Head-Up Display) view.
 /// </summary>
-public partial class HudView : ContentView
+public partial class HudView : ContentView, IDisposable
 {
     private readonly HudViewModel viewModel;
 
@@ -32,5 +32,12 @@ public partial class HudView : ContentView
     private void Canvas_PaintSurface(object? sender, SKPaintSurfaceEventArgs e)
     {
         HudPainter.Draw(e.Surface.Canvas, e.Info, viewModel);
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        viewModel.PropertyChanged -= ViewModel_PropertyChanged;
+        viewModel.Dispose();
     }
 }

@@ -13,15 +13,17 @@
                     
                     >
 
-    <Grid  ColumnDefinitions="Auto,5,*" ColumnSpacing="0" Padding="5,0,0,0" Margin="0,0,0,0">
+    <Grid  ColumnDefinitions="250,5,*" ColumnSpacing="0" Padding="5,0,0,0" Margin="0,0,0,0">
 
         <!-- Left column: HUD + action tabs -->
-        <Grid Grid.Column="0" RowDefinitions="*,2*" RowSpacing="4">
+        <Grid Grid.Column="0" RowDefinitions="*,2*" RowSpacing="4" Grid.ColumnDefinitions="*" >
 
             <hud:HudView  Grid.Row="0" />
-            <StackLayout Grid.Row="1">
-
-                <material:TabView x:Name="TabView" TabHeaderItemColumnWidth="*">
+            <ScrollView Grid.Row="1" HorizontalScrollBarVisibility="Always" VerticalScrollBarVisibility="Never" HorizontalOptions="Fill"
+                        VerticalOptions="Fill"
+                        Padding="0"
+            >
+                <material:TabView x:Name="TabView" TabHeaderItemColumnWidth="*" >
 
                     <material:TabItem Title="Quick">
                         <tabs:QuickTabView />
@@ -68,7 +70,7 @@
                         <tabs:DataFlashLogsTabView />
                     </material:TabItem>
                 </material:TabView>
-            </StackLayout>
+       </ScrollView>
         </Grid>
 
         <!-- Vertical Grid Splitter -->
