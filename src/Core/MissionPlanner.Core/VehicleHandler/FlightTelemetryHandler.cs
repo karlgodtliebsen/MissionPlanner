@@ -1,3 +1,4 @@
+﻿using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Models.Observations;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.VehicleHandler.Abstractions;
@@ -25,7 +26,7 @@ public sealed class FlightTelemetryHandler(
         if (message is HeartbeatMessage heartbeat)
         {
             var result = vehicleRegistry.RegisterOrUpdateHeartbeat(
-                new(heartbeat.SystemId, heartbeat.ComponentId),
+                new VehicleId(heartbeat.SystemId, heartbeat.ComponentId),
                 heartbeat.EndPoint,
                 heartbeat.CustomMode,
                 heartbeat.VehicleType,
@@ -52,23 +53,25 @@ public sealed class FlightTelemetryHandler(
                     attitude.Roll,
                     attitude.Pitch,
                     attitude.Yaw,
+                    null,
+                    null,
+                    null,
                     attitude.ReceivedAt));
                 break;
 
             case Ahrs2Message ahrs2:
-                // Lower-priority fallback for attitude/position. ATTITUDE and GLOBAL_POSITION_INT
-                // can overwrite these values when available.
-                vehicle.ApplyAttitude(new VehicleAttitudeObservation(
-                    ahrs2.Roll,
-                    ahrs2.Pitch,
-                    ahrs2.Yaw,
-                    ahrs2.ReceivedAt));
-                vehicle.ApplyGlobalPosition(new VehicleGlobalPositionObservation(
-                    ahrs2.Latitude,
-                    ahrs2.Longitude,
-                    ahrs2.Altitude,
-                    ahrs2.ReceivedAt));
+                vehicle.ApplyAhrsFallback(
+                    new VehicleAhrsObservation(
+                        ahrs2.Roll,
+                        ahrs2.Pitch,
+                        ahrs2.Yaw,
+                        ahrs2.Latitude,
+                        ahrs2.Longitude,
+                        ahrs2.Altitude,
+                        true,
+                        ahrs2.ReceivedAt));
                 break;
+
 
             case VfrHudMessage hud:
                 vehicle.ApplyHud(new VehicleHudObservation(

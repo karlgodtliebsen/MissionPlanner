@@ -1,4 +1,4 @@
-using MissionPlanner.Core.Models;
+﻿using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Models.Observations;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.VehicleHandler.Abstractions;
@@ -32,11 +32,17 @@ public sealed class NavigationTelemetryHandler(
         switch (message)
         {
             case GlobalPositionIntMessage position:
-                vehicle.ApplyGlobalPosition(new VehicleGlobalPositionObservation(
-                    position.Latitude,
-                    position.Longitude,
-                    position.Altitude,
-                    position.ReceivedAt));
+                vehicle.ApplyGlobalPosition(
+                    new VehicleGlobalPositionObservation(
+                        position.LatitudeDegrees,
+                        position.LongitudeDegrees,
+                        position.AltitudeMslMeters,
+                        position.RelativeAltitudeMeters,
+                        position.VelocityNorthMetersPerSecond,
+                        position.VelocityEastMetersPerSecond,
+                        position.VelocityDownMetersPerSecond,
+                        position.HeadingDegrees,
+                        position.ReceivedAt));
                 break;
 
             case GpsRawIntMessage gps:
@@ -89,18 +95,21 @@ public sealed class NavigationTelemetryHandler(
         await PublishStateAsync(vehicle, cancellationToken).ConfigureAwait(false);
     }
 
-    private static GpsFixType MapFixType(byte value) => value switch
+    private static GpsFixType MapFixType(byte value)
     {
-        0 => GpsFixType.Unknown,
-        1 => GpsFixType.NoGps,
-        2 => GpsFixType.NoFix,
-        3 => GpsFixType.Fix2D,
-        4 => GpsFixType.Fix3D,
-        5 => GpsFixType.DifferentialGps,
-        6 => GpsFixType.RtkFloat,
-        7 => GpsFixType.RtkFixed,
-        8 => GpsFixType.Static,
-        9 => GpsFixType.Ppp,
-        _ => GpsFixType.Unknown
-    };
+        return value switch
+        {
+            0 => GpsFixType.Unknown,
+            1 => GpsFixType.NoGps,
+            2 => GpsFixType.NoFix,
+            3 => GpsFixType.Fix2D,
+            4 => GpsFixType.Fix3D,
+            5 => GpsFixType.DifferentialGps,
+            6 => GpsFixType.RtkFloat,
+            7 => GpsFixType.RtkFixed,
+            8 => GpsFixType.Static,
+            9 => GpsFixType.Ppp,
+            var _ => GpsFixType.Unknown
+        };
+    }
 }

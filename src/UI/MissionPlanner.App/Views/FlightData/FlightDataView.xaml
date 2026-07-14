@@ -14,11 +14,11 @@
     <Grid  ColumnDefinitions="Auto,5,*" ColumnSpacing="0" Padding="5,0,0,0" Margin="0,0,0,0">
 
         <!-- Left column: HUD + action tabs -->
-        <Grid Grid.Column="0" RowDefinitions="2*,Auto,3*" RowSpacing="4">
+        <Grid Grid.Column="0" RowDefinitions="*,2*" RowSpacing="4">
 
             <ContentView x:Name="HudHost" Grid.Row="0" />
 
-            <HorizontalStackLayout Grid.Row="1">
+            <StackLayout Grid.Row="1">
               
                 <material:TabView x:Name="TabView" TabHeaderItemColumnWidth="*">
                     <material:TabItem Title="Quick">
@@ -42,10 +42,9 @@
                     </material:TabItem>
                 </material:TabView>
 
+            </StackLayout>
 
-            </HorizontalStackLayout>
-
-            <ContentView x:Name="ActionTabContent" Grid.Row="2" />
+            <!--<ContentView x:Name="ActionTabContent" Grid.Row="2" />-->
 
         </Grid>
 

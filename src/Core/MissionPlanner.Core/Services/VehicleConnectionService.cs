@@ -212,7 +212,6 @@ public class VehicleConnectionService(
         }
     }
 
-
     private async Task<VehicleId?> WaitForVehicleHeartbeatAsync(IMavLinkClient client, CancellationToken cancellationToken)
     {
         var timeout = TimeSpan.FromSeconds(10);
@@ -263,47 +262,25 @@ public class VehicleConnectionService(
     {
         try
         {
-            // Create command service with the active MAVLink client
             var commandService = domainFactory.Create<IMavLinkCommandService, IMavLinkClient>(client);
 
-            // Request ATTITUDE stream (roll, pitch, yaw) at 10 Hz
-            await commandService.RequestDataStreamAsync(
-                vehicleId,
-                MavDataStream.Extra1,
-                10,
-                true,
-                cancellationToken);
+            await commandService.RequestDataStreamAsync(vehicleId, MavDataStream.Extra1, 10, true, cancellationToken);
 
-            // Request POSITION stream (GPS, altitude) at 5 Hz
-            await commandService.RequestDataStreamAsync(
-                vehicleId,
-                MavDataStream.Position,
-                5,
-                true,
-                cancellationToken);
+            await commandService.RequestDataStreamAsync(vehicleId, MavDataStream.Extra2, 5, true, cancellationToken);
 
-            // Request EXTENDED_STATUS stream (battery, system status) at 2 Hz
-            await commandService.RequestDataStreamAsync(
-                vehicleId,
-                MavDataStream.ExtendedStatus,
-                2,
-                true,
-                cancellationToken);
+            await commandService.RequestDataStreamAsync(vehicleId, MavDataStream.Position, 5, true, cancellationToken);
 
-            // Request RAW_SENSORS stream (GPS raw, IMU) at 5 Hz
-            await commandService.RequestDataStreamAsync(
-                vehicleId,
-                MavDataStream.RawSensors,
-                5,
-                true,
-                cancellationToken);
+            await commandService.RequestDataStreamAsync(vehicleId, MavDataStream.ExtendedStatus, 2, true, cancellationToken);
 
-            logger.LogInformation("✅ Telemetry streams requested for vehicle {VehicleId}", vehicleId);
+            await commandService.RequestDataStreamAsync(vehicleId, MavDataStream.RawSensors, 5, true, cancellationToken);
+
+            await commandService.RequestDataStreamAsync(vehicleId, MavDataStream.RcChannels, 5, true, cancellationToken);
+
+            logger.LogInformation("Telemetry streams requested for vehicle {VehicleId}", vehicleId);
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Failed to request telemetry streams for {VehicleId} - continuing anyway", vehicleId);
-            // Don't fail the connection if telemetry requests fail
+            logger.LogWarning(ex, "Failed to request telemetry streams for {VehicleId}", vehicleId);
         }
     }
 

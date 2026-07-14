@@ -1,4 +1,9 @@
-namespace MissionPlanner.Core.Models.Observations;
+﻿namespace MissionPlanner.Core.Models.Observations;
+
+public interface IVehicleObservation
+{
+    DateTimeOffset ObservedAt { get; }
+}
 
 public sealed record VehicleHeartbeatObservation(
     uint CustomMode,
@@ -7,19 +12,27 @@ public sealed record VehicleHeartbeatObservation(
     byte BaseMode,
     byte SystemStatus,
     byte MavLinkVersion,
-    DateTimeOffset ObservedAt);
+    DateTimeOffset ObservedAt) : IVehicleObservation;
 
 public sealed record VehicleAttitudeObservation(
     double RollRadians,
     double PitchRadians,
     double YawRadians,
-    DateTimeOffset ObservedAt);
+    double? RollRateRadiansPerSecond,
+    double? PitchRateRadiansPerSecond,
+    double? YawRateRadiansPerSecond,
+    DateTimeOffset ObservedAt) : IVehicleObservation;
 
 public sealed record VehicleGlobalPositionObservation(
     double LatitudeDegrees,
     double LongitudeDegrees,
     double AltitudeMslMeters,
-    DateTimeOffset ObservedAt);
+    double? RelativeAltitudeMeters,
+    double? VelocityNorthMetersPerSecond,
+    double? VelocityEastMetersPerSecond,
+    double? VelocityDownMetersPerSecond,
+    double? HeadingDegrees,
+    DateTimeOffset ObservedAt) : IVehicleObservation;
 
 public sealed record VehicleLocalPositionObservation(
     double NorthMeters,
@@ -28,7 +41,7 @@ public sealed record VehicleLocalPositionObservation(
     double VelocityNorthMetersPerSecond,
     double VelocityEastMetersPerSecond,
     double VelocityDownMetersPerSecond,
-    DateTimeOffset ObservedAt);
+    DateTimeOffset ObservedAt) : IVehicleObservation;
 
 public sealed record VehicleGpsObservation(
     GpsFixType FixType,
@@ -39,7 +52,7 @@ public sealed record VehicleGpsObservation(
     double? CourseDegrees,
     double? HorizontalAccuracyMeters,
     double? VerticalAccuracyMeters,
-    DateTimeOffset ObservedAt);
+    DateTimeOffset ObservedAt) : IVehicleObservation;
 
 public sealed record VehicleHudObservation(
     double AirSpeedMetersPerSecond,
@@ -47,27 +60,36 @@ public sealed record VehicleHudObservation(
     double HeadingDegrees,
     double AltitudeMslMeters,
     double VerticalSpeedMetersPerSecond,
-    DateTimeOffset ObservedAt);
+    DateTimeOffset ObservedAt) : IVehicleObservation;
 
-public sealed record VehicleBatteryObservation(
-    double? VoltageVolts,
-    double? CurrentAmps,
-    double? ConsumedMah,
-    double? ConsumedWh,
-    int? RemainingPercent,
-    DateTimeOffset ObservedAt);
+/// <summary>
+/// Represents an AHRS-based observation of the vehicle's attitude and position.
+/// This observation is typically used as a fallback when higher-priority telemetry
+/// (such as ATTITUDE or GLOBAL_POSITION_INT) is unavailable.
+/// </summary>
+/// <param name="RollRadians">Vehicle roll in radians.</param>
+/// <param name="PitchRadians">Vehicle pitch in radians.</param>
+/// <param name="YawRadians">Vehicle yaw in radians.</param>
+/// <param name="LatitudeDegrees">Latitude in decimal degrees.</param>
+/// <param name="LongitudeDegrees">Longitude in decimal degrees.</param>
+/// <param name="AltitudeMslMeters">Altitude above mean sea level in meters.</param>
+/// <param name="IsEstimated"></param>
+/// <param name="ObservedAt">Timestamp when the observation was received.</param>
+public sealed record VehicleAhrsObservation(
+    double RollRadians,
+    double PitchRadians,
+    double YawRadians,
+    double LatitudeDegrees,
+    double LongitudeDegrees,
+    double AltitudeMslMeters,
+    bool IsEstimated,
+    DateTimeOffset ObservedAt) : IVehicleObservation;
 
-public sealed record VehiclePowerRailObservation(
-    double? ControllerVoltageVolts,
-    double? ServoVoltageVolts,
-    ushort Flags,
-    DateTimeOffset ObservedAt);
+public sealed record VehicleBatteryObservation(double? VoltageVolts, double? CurrentAmps, double? ConsumedMah, double? ConsumedWh, int? RemainingPercent, DateTimeOffset ObservedAt) : IVehicleObservation;
 
-public sealed record VehicleRadioObservation(
-    int ChannelCount,
-    IReadOnlyList<ushort> ChannelsRaw,
-    int? RssiPercent,
-    DateTimeOffset ObservedAt);
+public sealed record VehiclePowerRailObservation(double? ControllerVoltageVolts, double? ServoVoltageVolts, ushort Flags, DateTimeOffset ObservedAt) : IVehicleObservation;
+
+public sealed record VehicleRadioObservation(int ChannelCount, IReadOnlyList<ushort> ChannelsRaw, int? RssiPercent, DateTimeOffset ObservedAt) : IVehicleObservation;
 
 public sealed record VehicleNavigationObservation(
     double DesiredRollDegrees,
@@ -78,14 +100,14 @@ public sealed record VehicleNavigationObservation(
     double AltitudeErrorMeters,
     double AirspeedErrorMetersPerSecond,
     double CrossTrackErrorMeters,
-    DateTimeOffset ObservedAt);
+    DateTimeOffset ObservedAt) : IVehicleObservation;
 
 public sealed record VehicleMissionProgressObservation(
     ushort CurrentSequence,
     ushort? Total,
     byte? MissionState,
     byte? MissionMode,
-    DateTimeOffset ObservedAt);
+    DateTimeOffset ObservedAt) : IVehicleObservation;
 
 public sealed record VehicleEkfObservation(
     ushort Flags,
@@ -96,4 +118,4 @@ public sealed record VehicleEkfObservation(
     double CompassVariance,
     double TerrainAltitudeVariance,
     double? AirspeedVariance,
-    DateTimeOffset ObservedAt);
+    DateTimeOffset ObservedAt) : IVehicleObservation;

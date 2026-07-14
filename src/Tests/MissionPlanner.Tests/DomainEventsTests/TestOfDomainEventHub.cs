@@ -6,6 +6,7 @@ using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services;
 using MissionPlanner.Library.Configuration;
+using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.EventHub.Events;
@@ -97,7 +98,7 @@ public class TestOfDomainEventHub
     public void Should_Publish_VehicleRegistered_When_First_Heartbeat_Is_Received()
     {
         var eventHub = new CapturingDomainEventHub(NSubstitute.Substitute.For<ILogger<EventHub>>());
-        var registry = new VehicleRegistry(eventHub, NSubstitute.Substitute.For<ILogger<VehicleRegistry>>());
+        var registry = new VehicleRegistry(eventHub, NSubstitute.Substitute.For<IDateTimeProvider>(), NSubstitute.Substitute.For<ILogger<VehicleRegistry>>());
 
         registry.RegisterOrUpdateHeartbeat(
             new VehicleId(1, 1),

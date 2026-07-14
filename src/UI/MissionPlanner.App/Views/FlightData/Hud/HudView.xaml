@@ -5,6 +5,7 @@
               xmlns:hud="clr-namespace:MissionPlanner.App.Views.FlightData.Hud"
               x:Class="MissionPlanner.App.Views.FlightData.Hud.HudView"
               x:DataType="hud:HudViewModel"
+              MinimumHeightRequest="500"
               BackgroundColor="Black">
 
     <skia:SKCanvasView x:Name="Canvas"

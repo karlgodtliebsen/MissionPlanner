@@ -97,18 +97,17 @@ public sealed class VehicleHudDataService : IVehicleHudDataService, IDisposable
 
     private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
     {
-        var vehicleSession = vehicleRegistry.GetRequired(evt.VehicleId);
-        if (vehicleSession == null)
-        {
-            return Task.CompletedTask;
-        }
+        var state = evt.VehicleState;
 
-        logger.LogDebug("VehicleHudDataService-Vehicle state updated for {VehicleId}: {State}", evt.VehicleId, vehicleSession.State);
-        var hudData = TransformToHudData(vehicleSession.State);
-        hudDataCache.AddOrUpdate(evt.VehicleId, hudData, (_, _) => hudData);
+        logger.LogDebug("HUD state update for {VehicleId}: {@State}", state.VehicleId, state);
 
-        // Publish the update to observers
+        var hudData = TransformToHudData(state);
+
+        //hudDataCache.AddOrUpdate(state.VehicleId, hudData, static (_, newValue) => newValue, hudData);
+        hudDataCache.AddOrUpdate(state.VehicleId, hudData, (_, _) => hudData);
+
         hudDataSubject.OnNext(hudData);
+
         return Task.CompletedTask;
     }
 
@@ -133,37 +132,17 @@ public sealed class VehicleHudDataService : IVehicleHudDataService, IDisposable
 
     private static VehicleHudData TransformToHudData(VehicleState state)
     {
-        var pitchDegrees = state.Motion.PitchRadians is { } pitch
-            ? pitch * RadiansToDegrees
-            : 0.0;
+        var pitchDegrees = RadiansToDisplayDegrees(state.Motion.PitchRadians);
 
-        var rollDegrees = state.Motion.RollRadians is { } roll
-            ? roll * RadiansToDegrees
-            : 0.0;
+        var rollDegrees = RadiansToDisplayDegrees(state.Motion.RollRadians);
 
-        var yawDegrees = state.Motion.YawRadians is { } yaw
-            ? yaw * RadiansToDegrees
-            : 0.0;
+        var yawDegrees = RadiansToDisplayDegrees(state.Motion.YawRadians);
 
-        // GLOBAL_POSITION_INT or similar navigation data normally provides the
-        // best heading for the HUD. Fall back to yaw when heading is unavailable.
-        var headingDegrees = state.Position.HeadingDegrees ?? NormalizeHeading(yawDegrees);
+        var headingDegrees = NormalizeHeading(state.Position.HeadingDegrees ?? yawDegrees);
 
-        var groundSpeed = ValueOrZero(state.Motion.GroundSpeedMetersPerSecond);
-        var airSpeed = ValueOrZero(state.Motion.AirSpeedMetersPerSecond);
-        var verticalSpeed = ValueOrZero(state.Motion.VerticalSpeedMetersPerSecond);
-
-        // A HUD normally shows altitude relative to the takeoff/home position.
-        // Fall back to mean-sea-level altitude when relative altitude is unavailable.
         var altitude = ValueOrZero(state.Position.RelativeAltitudeMeters ?? state.Position.AltitudeMslMeters);
 
-        var batteryVoltage = ValueOrZero(state.Power.BatteryVoltageVolts);
-        var batteryRemaining = ValueOrZero(state.Power.BatteryRemainingPercent);
-
-        var gpsSatellites = ValueOrZero(state.Gps.SatellitesVisible);
-
-        var distanceToMav = 0.0; //ValueOrZero(state.Position.DistanceToMav);
-        var distanceToWp = 0.0; //ValueOrZero(state.Position.DistanceToWp);
+        var distanceToWp = ValueOrZero(state.Navigation.WaypointDistanceMeters);
 
         return new VehicleHudData(
             state.VehicleId,
@@ -171,19 +150,24 @@ public sealed class VehicleHudDataService : IVehicleHudDataService, IDisposable
             rollDegrees,
             headingDegrees,
             yawDegrees,
-            airSpeed,
-            groundSpeed,
+            ValueOrZero(state.Motion.AirSpeedMetersPerSecond),
+            ValueOrZero(state.Motion.GroundSpeedMetersPerSecond),
             altitude,
-            verticalSpeed,
-            batteryVoltage,
-            batteryRemaining,
-            distanceToMav,
+            ValueOrZero(state.Motion.VerticalSpeedMetersPerSecond),
+            ValueOrZero(state.Power.BatteryVoltageVolts),
+            ValueOrZero(state.Power.BatteryRemainingPercent),
+            0.0,
             distanceToWp,
-            (int)gpsSatellites,
+            state.Gps.SatellitesVisible ?? 0,
             state.Flight.IsArmed,
             state.Flight.Mode,
             state.Position.LatitudeDegrees,
             state.Position.LongitudeDegrees);
+    }
+
+    private static double RadiansToDisplayDegrees(double? radians)
+    {
+        return radians is not { } value || !double.IsFinite(value) ? 0.0 : value * RadiansToDegrees;
     }
 
     private static double ValueOrZero(double? value)

@@ -32,7 +32,7 @@ public sealed class PositionVehicleHandler(IVehicleRegistry vehicleRegistry, IDo
             return;
         }
 
-        vehicle.ApplyPosition(message.Latitude, message.Longitude, message.Altitude);
+        vehicle.ApplyPosition(message.LatitudeDegrees, message.LongitudeDegrees, message.AltitudeMslMeters);
         await domainEventHub.PublishDomainEventAsync(new VehicleStateUpdated(vehicle.State), cancellationToken);
     }
 }

@@ -4,96 +4,90 @@
               xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
               xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
               x:Class="MissionPlanner.App.Views.FlightData.Tabs.QuickTabView"
+             
               x:DataType="tabs:QuickTabViewModel">
 
-        <!--ColumnGridLength="120"
-        RowGridLength="120"-->
 
     <Grid
-        Margin="10"
+        Margin="10,30,10,10"
         ColumnDefinitions="*,*"
         RowDefinitions="*,*,*"
-        ColumnSpacing="32" 
-        RowSpacing="5"
+        ColumnSpacing="10" 
+        RowSpacing="15"
         >
-       
-        <VerticalStackLayout  Grid.Column="0" Grid.Row="0" HorizontalOptions="Center"
-                             VerticalOptions="Center" 
+        <Grid RowDefinitions="*,5*" Grid.Column="0" Grid.Row="0" HorizontalOptions="Fill" HeightRequest="150"
+              VerticalOptions="Fill" 
         >
-            <Label FontSize="12"
+            <Label FontSize="12" Grid.Row="0" 
                    HorizontalOptions="Center"
-                   VerticalOptions="Center" 
+                   VerticalOptions="Start" 
                    Text="Altitude (m)" />
-            <Label FontSize="32"
+            
+            <Label FontSize="42" Grid.Row="1" 
                    HorizontalOptions="Center"
                    VerticalOptions="Center" Text="{Binding Altitude, StringFormat='{0:F2}'}" />
-        </VerticalStackLayout>
-        <VerticalStackLayout  Grid.Column="1" Grid.Row="0" HorizontalOptions="Center"
-                             VerticalOptions="Center" 
+
+        </Grid>
+
+        <Grid RowDefinitions="*,5*" Grid.Column="1" Grid.Row="0" HorizontalOptions="Fill" HeightRequest="150"
+              VerticalOptions="Fill" 
         >
-            <Label FontSize="12"
+            <Label FontSize="12" Grid.Row="0" 
                    HorizontalOptions="Center"
-                   VerticalOptions="Center" 
+                   VerticalOptions="Start" 
                    Text="GroundSpeed (m/s)" />
-            <Label FontSize="32"
+            <Label FontSize="42" Grid.Row="1" 
                    HorizontalOptions="Center"
                    VerticalOptions="Center" Text="{Binding GroundSpeed, StringFormat='{0:F2}'}" />
-        </VerticalStackLayout>
+        </Grid>
 
-        <VerticalStackLayout  Grid.Column="0" Grid.Row="1" HorizontalOptions="Center"
-                             VerticalOptions="Center" 
+        <Grid RowDefinitions="*,5*" Grid.Column="0" Grid.Row="1" HorizontalOptions="Fill" HeightRequest="150"
+              VerticalOptions="Fill" 
         >
-            <Label FontSize="12"
+            <Label FontSize="12" Grid.Row="0" 
                    HorizontalOptions="Center"
-                   VerticalOptions="Center" 
+                   VerticalOptions="Start" 
                    Text="Dist to WP (m)" />
-            <Label FontSize="32"
+            <Label FontSize="42" Grid.Row="1" 
                    HorizontalOptions="Center"
                    VerticalOptions="Center" Text="{Binding DistanceToWp, StringFormat='{0:F2}'}" />
-        </VerticalStackLayout>
+        </Grid>
 
-        <VerticalStackLayout  Grid.Column="1" Grid.Row="1" HorizontalOptions="Center"
-                             VerticalOptions="Center" 
+        <Grid RowDefinitions="*,5*" Grid.Column="1" Grid.Row="1" HorizontalOptions="Fill" HeightRequest="150"
+              VerticalOptions="Fill" 
         >
-            <Label FontSize="12"
+            <Label FontSize="12" Grid.Row="0" 
                    HorizontalOptions="Center"
-                   VerticalOptions="Center" 
+                   VerticalOptions="Start" 
                    Text="Yaw (°)" />
-            <Label FontSize="32"
+            <Label FontSize="42" Grid.Row="1"
                    HorizontalOptions="Center"
                    VerticalOptions="Center" Text="{Binding Yaw, StringFormat='{0:F2}'}" />
-        </VerticalStackLayout>
+        </Grid>
 
-        <VerticalStackLayout  Grid.Column="0" Grid.Row="2" HorizontalOptions="Center"
-                             VerticalOptions="Center" 
+        <Grid RowDefinitions="*,5*" Grid.Column="0" Grid.Row="2" HorizontalOptions="Fill" HeightRequest="150"
+              VerticalOptions="Fill" 
         >
-            <Label FontSize="12"
+            <Label FontSize="12" Grid.Row="0" 
                    HorizontalOptions="Center"
-                   VerticalOptions="Center" 
+                   VerticalOptions="Start" 
                    Text="Vertical Speed (m/s)" />
-            <Label FontSize="32"
-                   
+            <Label FontSize="42" Grid.Row="1" 
                    HorizontalOptions="Center"
                    VerticalOptions="Center" Text="{Binding VerticalSpeed, StringFormat='{0:F2}'}" />
-        </VerticalStackLayout>
+        </Grid>
 
-        <VerticalStackLayout  Grid.Column="1" Grid.Row="2" HorizontalOptions="Center"
-                             VerticalOptions="Center" 
+        <Grid RowDefinitions="*,5*"  Grid.Column="1" Grid.Row="2" HorizontalOptions="Fill" HeightRequest="150"
+              VerticalOptions="Fill" 
         >
-            <Label FontSize="12"
+            <Label FontSize="12" Grid.Row="0" 
                    HorizontalOptions="Center"
-                   VerticalOptions="Center" 
+                   VerticalOptions="Start" 
                    Text="Dist to MAV (m)" />
-            <Label FontSize="32"
+            <Label FontSize="42" Grid.Row="1" 
                    HorizontalOptions="Center"
                    VerticalOptions="Center" Text="{Binding DistanceToMav, StringFormat='{0:F2}'}" />
-        </VerticalStackLayout>
-
-
-
-
-
+        </Grid>
     </Grid>
-
 
 </ContentView>

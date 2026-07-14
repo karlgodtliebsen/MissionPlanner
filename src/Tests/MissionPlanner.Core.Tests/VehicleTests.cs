@@ -7,6 +7,7 @@ using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.VehicleHandler.Abstractions;
+using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink;
@@ -32,6 +33,7 @@ public class VehicleTests
     private readonly IPEndPoint simulatorIPEndPoint;
     private readonly IPEndPoint targetIPEndPoint;
     private readonly int port;
+    private readonly IDateTimeProvider dateTimeProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VehicleTests"/> class.
@@ -64,6 +66,8 @@ public class VehicleTests
         simulatorIPEndPoint = new IPEndPoint(targetAddress, targetPort);
 
         targetIPEndPoint = new IPEndPoint(IPAddress.Parse(targetIp), port);
+
+        dateTimeProvider = serviceProvider.GetRequiredService<IDateTimeProvider>();
     }
 
     /// <summary>
@@ -217,6 +221,7 @@ public class VehicleTests
     [Fact]
     public async Task Should_Update_Vehicle_Position_From_GlobalPositionInt_MessageAsync()
     {
+        var dateTimeProvider = serviceProvider.GetRequiredService<IDateTimeProvider>();
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
         var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
 
@@ -230,7 +235,7 @@ public class VehicleTests
             0,
             4,
             3,
-            DateTimeOffset.UtcNow);
+            dateTimeProvider.UtcNow);
 
         var handler = domainFactory.Create<IPositionVehicleHandler, IVehicleRegistry>(registry);
 
@@ -241,7 +246,12 @@ public class VehicleTests
                 56.1629,
                 10.2039,
                 12.5,
-                DateTimeOffset.UtcNow), TestContext.Current.CancellationToken);
+                null,
+                null,
+                null,
+                null,
+                null,
+                dateTimeProvider.UtcNow), TestContext.Current.CancellationToken);
 
         var vehicle = registry.GetRequired(vehicleId);
 
@@ -669,10 +679,7 @@ public class VehicleTests
     {
         var vehicle = CreateVehicleSession();
 
-        vehicle.ApplyPosition(
-            56.1629,
-            10.2039,
-            12.5);
+        vehicle.ApplyPosition(56.1629, 10.2039, 12.5);
 
         Assert.Equal(56.1629, vehicle.State.Latitude);
         Assert.Equal(10.2039, vehicle.State.Longitude);
@@ -734,15 +741,15 @@ public class VehicleTests
             null,
             null);
 
-        return new VehicleSession(state, simulatorIPEndPoint.ToEndPoint());
+        return new VehicleSession(state, simulatorIPEndPoint.ToEndPoint(), dateTimeProvider);
     }
 
-    private static async Task EventuallyAsync(Action assertion, TimeSpan timeout, CancellationToken cancellationToken)
+    private async Task EventuallyAsync(Action assertion, TimeSpan timeout, CancellationToken cancellationToken)
     {
-        var deadline = DateTimeOffset.UtcNow + timeout;
+        var deadline = dateTimeProvider.UtcNow + timeout;
         Exception? lastException = null;
 
-        while (DateTimeOffset.UtcNow < deadline)
+        while (dateTimeProvider.UtcNow < deadline)
         {
             cancellationToken.ThrowIfCancellationRequested();
 

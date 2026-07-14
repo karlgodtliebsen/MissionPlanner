@@ -1,13 +1,14 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Transport;
 
 namespace MissionPlanner.Core.Services;
 
-public sealed class VehicleRegistry(IDomainEventHub eventHub, ILogger<VehicleRegistry> logger) : IVehicleRegistry
+public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider dateTimeProvider, ILogger<VehicleRegistry> logger) : IVehicleRegistry
 {
     private readonly Dictionary<VehicleId, VehicleSession> vehicles = [];
 
@@ -28,13 +29,7 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, ILogger<VehicleReg
     {
         foreach (var vehicle in vehicles.Values)
         {
-            var offlineState = vehicle.State with
-            {
-                Connection = vehicle.State.Connection with
-                {
-                    State = VehicleConnectionState.Offline
-                }
-            };
+            var offlineState = vehicle.State with { Connection = vehicle.State.Connection with { State = VehicleConnectionState.Offline } };
 
             eventHub.PublishDomainEvent(new VehicleStateUpdated(offlineState));
         }
@@ -91,7 +86,7 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, ILogger<VehicleReg
                 VehicleNavigationState.Empty,
                 VehicleHealthState.Empty);
 
-            session = new VehicleSession(state, endPoint);
+            session = new VehicleSession(state, endPoint, dateTimeProvider);
             vehicles.Add(vehicleId, session);
             logger.LogTrace("Registered new vehicle: {VehicleId}", vehicleId);
             eventHub.PublishDomainEvent(new VehicleRegistered(vehicleId));
