@@ -62,8 +62,6 @@ public sealed class VehicleParameterStreamServiceV4 : IVehicleParameterStreamSer
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             cts.CancelAfter(actualTimeout);
 
-            // Subscribe to ParamValueMessage directly at MAVLink message level
-            // This is MUCH earlier in the pipeline than domain events!
             using var subscription = domainEventHub.SubscribeDomainEventAsync<VehicleParameterReceived>(async (parameter, ct) =>
             {
                 // Filter by vehicle
@@ -112,7 +110,7 @@ public sealed class VehicleParameterStreamServiceV4 : IVehicleParameterStreamSer
             var stableCount = 0;
             while (!cts.Token.IsCancellationRequested)
             {
-                await Task.Delay(100, cts.Token);
+                await Task.Delay(10, cts.Token);
 
                 // Check if complete (all non-65535 indices received)
                 if (totalCount > 0 && receivedIndices.Count >= totalCount)

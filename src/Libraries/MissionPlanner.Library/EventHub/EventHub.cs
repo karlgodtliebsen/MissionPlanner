@@ -256,7 +256,7 @@ public class EventHub(ILogger<EventHub> logger) : IEventHub
         {
             if (logger.IsEnabled(LogLevel.Trace))
             {
-                logger.LogWarning("genericDataSubscribers Found No Subscribers for event {EventName} with data type {DataType}", @event, data.GetType().Name);
+                logger.LogTrace("Publish<T>(T data) No Subscribers for event {EventName} with data type {DataType}", @event, data.GetType().Name);
             }
         }
 
@@ -289,7 +289,7 @@ public class EventHub(ILogger<EventHub> logger) : IEventHub
         {
             if (logger.IsEnabled(LogLevel.Trace))
             {
-                logger.LogWarning("genericDataSubscribers Found No Subscribers for event {EventName} with data type {DataType}", @event, data.GetType().Name);
+                logger.LogTrace("Publish<T>(string @event, T data) No Subscribers for event {EventName} with data type {DataType}", @event, data.GetType().Name);
             }
         }
 
@@ -316,7 +316,7 @@ public class EventHub(ILogger<EventHub> logger) : IEventHub
         {
             if (logger.IsEnabled(LogLevel.Trace))
             {
-                logger.LogWarning("subscribers Found No Subscribers for event {EventName}", @event);
+                logger.LogTrace("Publish(string @event) No Subscribers for event {EventName}", @event);
             }
         }
 
@@ -343,7 +343,7 @@ public class EventHub(ILogger<EventHub> logger) : IEventHub
         {
             if (logger.IsEnabled(LogLevel.Trace))
             {
-                logger.LogWarning("asyncSubscribers Found No Subscribers for event {EventName}", @event);
+                logger.LogTrace("PublishAsync(string @event) No Subscribers for event {EventName}", @event);
             }
         }
 
@@ -405,7 +405,7 @@ public class EventHub(ILogger<EventHub> logger) : IEventHub
         }
         else
         {
-            logger.LogWarning("asyncGenericDataSubscribers Found No Subscribers for event named {EventName} with data type {DataType}", eventName, data.GetType().Name);
+            logger.LogTrace("PublishAsync<T>(string eventName, string @event, T data)  No Subscribers for event named {EventName} {Event} with data type {DataType}", eventName, @event, data.GetType().Name);
         }
 
         BroadCastEvent(@event);
