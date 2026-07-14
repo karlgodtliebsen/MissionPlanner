@@ -6,6 +6,8 @@
                     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                     xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
+                    xmlns:hud="clr-namespace:MissionPlanner.App.Views.FlightData.Hud"
+                    xmlns:map="clr-namespace:MissionPlanner.App.Views.FlightData.Map"
                     x:Class="MissionPlanner.App.Views.FlightData.FlightDataView"
                     x:DataType="flightData:FlightDataViewModel"
                     
@@ -16,36 +18,57 @@
         <!-- Left column: HUD + action tabs -->
         <Grid Grid.Column="0" RowDefinitions="*,2*" RowSpacing="4">
 
-            <ContentView x:Name="HudHost" Grid.Row="0" />
-
+            <hud:HudView  Grid.Row="0" />
             <StackLayout Grid.Row="1">
-              
+
                 <material:TabView x:Name="TabView" TabHeaderItemColumnWidth="*">
+
                     <material:TabItem Title="Quick">
-                        <ContentView x:Name="QuickTabView"  />
+                        <tabs:QuickTabView />
                     </material:TabItem>
 
                     <material:TabItem Title="Actions">
-                        <material:TabItem.ContentTemplate>
-                            <DataTemplate>
-                                <Label Text="Actions" HorizontalOptions="Center" VerticalOptions="Center" Margin="50" />
-                            </DataTemplate>
-                        </material:TabItem.ContentTemplate>
+                        <tabs:ActionsTabView />
+                    </material:TabItem>
+                    <material:TabItem Title="Messages">
+                        <tabs:MessagesTabView />
                     </material:TabItem>
 
+
+                    <material:TabItem Title="PreFlight">
+                        <tabs:PreflightTabView />
+                    </material:TabItem>
+                    <material:TabItem Title="Gauges">
+                        <tabs:GaugesTabView />
+                    </material:TabItem>
+                    <material:TabItem Title="Transponder">
+                        <tabs:TransponderTabView />
+                    </material:TabItem>
                     <material:TabItem Title="Status">
-                        <material:TabItem.ContentTemplate>
-                            <DataTemplate>
-                                <Label Text="Status" HorizontalOptions="Center" VerticalOptions="Center" Margin="50" />
-                            </DataTemplate>
-                        </material:TabItem.ContentTemplate>
+                        <tabs:StatusTabView />
+                    </material:TabItem>
+
+                    <material:TabItem Title="Servo/Relay">
+                        <tabs:ServoRelayTabView />
+                    </material:TabItem>
+                    <material:TabItem Title="Aux Function">
+                        <tabs:AuxFunctionTabView />
+                    </material:TabItem>
+
+                    <material:TabItem Title="Scripts">
+                        <tabs:ScriptsTabView />
+                    </material:TabItem>
+                    <material:TabItem Title="Payload Control">
+                        <tabs:PayloadControlTabView />
+                    </material:TabItem>
+                    <material:TabItem Title="Telemetry Logs">
+                        <tabs:TelemetryLogsTabView />
+                    </material:TabItem>
+                    <material:TabItem Title="DataFlash Logs">
+                        <tabs:DataFlashLogsTabView />
                     </material:TabItem>
                 </material:TabView>
-
             </StackLayout>
-
-            <!--<ContentView x:Name="ActionTabContent" Grid.Row="2" />-->
-
         </Grid>
 
         <!-- Vertical Grid Splitter -->
@@ -56,9 +79,9 @@
 
         <!-- Right column: telemetry graph + map -->
         <Grid Grid.Column="2" RowDefinitions="*,Auto" RowSpacing="4">
-           
-            <ContentView x:Name="MapHost" Grid.Row="0" Margin="50"/>
-     
+
+            <map:FlightDataMapView  Grid.Row="0" Margin="10"/>
+
             <!-- Bottom status bar (mirrors Controls.Status) -->
             <Grid x:Name="StatusBar"
                   Grid.Row="1"
@@ -66,7 +89,7 @@
                   
                   ColumnSpacing="10"
                   BackgroundColor="#2d2d30">
-              
+
                 <Picker 
                         Grid.Column="0"
                         ItemsSource="{Binding MapStyles}"
@@ -80,13 +103,7 @@
                     Grid.Column="2"
                     Text="text"
                     VerticalOptions="Center" />
-
             </Grid>
-
-
-
-
-
 
         </Grid>
 

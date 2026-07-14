@@ -3,9 +3,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                     xmlns:vm="clr-namespace:MissionPlanner.App.Views.Help"
-                    xmlns:exit="clr-namespace:MissionPlanner.App.Views.Exit"
                     x:Class="MissionPlanner.App.Views.Help.HelpView"
-                    x:DataType="exit:ExitViewModel">
+                    x:DataType="vm:HelpViewModel">
 
     <Label Text="Help"
            FontSize="18"

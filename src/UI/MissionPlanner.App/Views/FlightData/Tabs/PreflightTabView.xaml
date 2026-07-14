@@ -2,10 +2,13 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
               xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
-              x:Class="MissionPlanner.App.Views.FlightData.Tabs.ActionsTabView"
-              x:DataType="tabs:ActionsTabViewModel">
+              xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+              x:Class="MissionPlanner.App.Views.FlightData.Tabs.PreflightTabView"
+             
+              x:DataType="tabs:PreflightTabViewModel">
 
-    <Label Text="Actions"
+
+    <Label Text="Preflight"
            FontSize="16"
            HorizontalOptions="Center"
            VerticalOptions="Center" />

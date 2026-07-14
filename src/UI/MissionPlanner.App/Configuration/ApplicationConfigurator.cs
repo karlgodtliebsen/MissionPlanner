@@ -7,13 +7,13 @@ using MissionPlanner.App.Views.Common;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.App.Views.Connect;
-using MissionPlanner.App.Views.Dashboard;
 using MissionPlanner.App.Views.Exit;
 using MissionPlanner.App.Views.FlightData;
 using MissionPlanner.App.Views.FlightData.Hud;
 using MissionPlanner.App.Views.FlightData.Map;
 using MissionPlanner.App.Views.FlightData.Tabs;
 using MissionPlanner.App.Views.FlightPlanner;
+using MissionPlanner.App.Views.Help;
 using MissionPlanner.App.Views.InitSetup;
 using MissionPlanner.App.Views.Simulation;
 using MissionPlanner.Core.Configuration;
@@ -77,61 +77,40 @@ public static class ApplicationConfigurator
 
         // Common/Shared UI Components
         services.TryAddSingleton<StatusBarViewModel>();
-        services.TryAddSingleton<StatusBarView>();
 
-        services.TryAddSingleton<DashboardPageViewModel>();
-        services.TryAddSingleton<DashboardPage>();
+        //services.TryAddSingleton<DashboardPageViewModel>();
+        //services.TryAddSingleton<DashboardPage>();
 
         services.TryAddSingleton<TopBarViewModel>();
-        services.TryAddSingleton<TopBarView>();
 
         services.TryAddSingleton<ExitViewModel>();
-        services.TryAddSingleton<ExitView>();
         services.TryAddSingleton<ExitContentView>();
 
-        //SubView/Controls
-
-        services.TryAddTransient<ConnectPopupView>();
+        services.TryAddSingleton<HelpViewModel>();
         services.TryAddTransient<ConnectPopupViewModel>();
+        services.TryAddTransient<ConnectPopupView>();
 
         services.TryAddSingleton<FlightDataViewModel>();
-        services.TryAddSingleton<ConnectionView>();
-
         services.TryAddSingleton<HudViewModel>();
-        services.TryAddSingleton<HudView>();
-
         services.TryAddSingleton<FlightDataMapViewModel>();
-        services.TryAddSingleton<FlightDataMapView>();
-
         services.TryAddSingleton<QuickTabViewModel>();
-        services.TryAddSingleton<QuickTabView>();
-
+        services.TryAddSingleton<ActionsTabViewModel>();
+        services.TryAddSingleton<AuxFunctionTabViewModel>();
+        services.TryAddSingleton<DataFlashLogsTabViewModel>();
+        services.TryAddSingleton<GaugesTabViewModel>();
+        services.TryAddSingleton<MessagesTabViewModel>();
+        services.TryAddSingleton<PayloadControlTabViewModel>();
         services.TryAddSingleton<StatusTabViewModel>();
-        services.TryAddSingleton<StatusTabView>();
-
+        services.TryAddSingleton<PreflightTabViewModel>();
+        services.TryAddSingleton<ScriptsTabViewModel>();
+        services.TryAddSingleton<ServoRelayTabViewModel>();
+        services.TryAddSingleton<TelemetryLogsTabViewModel>();
+        services.TryAddSingleton<TransponderTabViewModel>();
         services.TryAddSingleton<FlightPlannerViewModel>();
-        services.TryAddSingleton<FlightPlannerView>();
-
         services.TryAddSingleton<InitSetupViewModel>();
-        services.TryAddSingleton<InitSetupView>();
-
         services.TryAddSingleton<SimulationViewModel>();
-        services.TryAddSingleton<SimulationView>();
-
         services.TryAddSingleton<ExitViewModel>();
-        services.TryAddSingleton<ExitView>();
-
-        //Configuration TabViews
-        services.TryAddSingleton<GeoFenceTabView>();
-        services.TryAddSingleton<BasicTuningTabView>();
-        services.TryAddSingleton<ExtendedTuningTabView>();
-        services.TryAddSingleton<OnboardOSDTabView>();
-        services.TryAddSingleton<MAVFtpTabView>();
-        services.TryAddSingleton<FullParametersListTabView>();
         services.TryAddSingleton<FullParametersListTabViewModel>();
-        services.TryAddSingleton<PlannerTabView>();
-        services.TryAddSingleton<CubeLan8PortSwitchTabView>();
-
         return services;
     }
 

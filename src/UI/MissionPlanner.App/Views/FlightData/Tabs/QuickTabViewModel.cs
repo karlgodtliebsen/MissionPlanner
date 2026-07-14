@@ -88,7 +88,6 @@ public partial class QuickTabViewModel : ObservableObject, IDisposable
         this.dispatcher = dispatcher;
         this.logger = logger;
         FlightMode = "Unknown";
-
         SubscribeToVehicleData();
     }
 

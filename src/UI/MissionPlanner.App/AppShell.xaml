@@ -15,6 +15,7 @@
     xmlns:help="clr-namespace:MissionPlanner.App.Views.Help"
     xmlns:exit="clr-namespace:MissionPlanner.App.Views.Exit"
     xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
+    xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
     Title="MissionPlanner"
     x:Name="thisShell"
     FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
@@ -24,7 +25,7 @@
 
     <!-- Persistent Top Bar (visible on all pages) -->
     <Shell.TitleView>
-        <StackLayout x:Name="TopbarView" ></StackLayout>
+        <common:TopBarView />
     </Shell.TitleView>
 
     <Shell.Resources>

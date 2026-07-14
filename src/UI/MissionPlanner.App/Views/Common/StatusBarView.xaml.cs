@@ -1,22 +1,19 @@
-﻿namespace MissionPlanner.App.Views.Common;
+﻿using MissionPlanner.App.Configuration;
+
+namespace MissionPlanner.App.Views.Common;
 
 /// <summary>
 /// Persistent status bar control
 /// </summary>
 public partial class StatusBarView : ContentView
 {
-    public StatusBarView()
-    {
-        InitializeComponent();
-    }
-
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="viewModel"></param>
-    public StatusBarView(StatusBarViewModel viewModel)
+    public StatusBarView()
     {
         InitializeComponent();
+        var viewModel = ServiceHelper.GetRequiredService<StatusBarViewModel>();
         BindingContext = viewModel;
     }
 }

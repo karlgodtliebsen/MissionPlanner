@@ -101,9 +101,6 @@
 	  <Compile Update="Views\Connect\ConnectPopupView.xaml.cs">
 	    <DependentUpon>ConnectPopupView.xaml</DependentUpon>
 	  </Compile>
-	  <Compile Update="Views\Connect\ConnectionView.xaml.cs">
-	    <DependentUpon>ConnectionView.xaml</DependentUpon>
-	  </Compile>
 	  <Compile Update="Views\Exit\ExitContentView.xaml.cs">
 	    <DependentUpon>ExitContentView.xaml</DependentUpon>
 	  </Compile>
@@ -153,9 +150,6 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\ConfigTuning\Tabs\PlannerTabView.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
-	  <MauiXaml Update="Views\Connect\ConnectionView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\Exit\ExitContentView.xaml">
