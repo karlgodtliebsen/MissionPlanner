@@ -1,0 +1,950 @@
+
+
+\# MissionPlanner Design Concepts
+
+
+
+\## Introduction
+
+
+
+MissionPlanner is a modern, cross-platform Ground Control Station (GCS) for ArduPilot-based vehicles, written in .NET 10 using .NET MAUI.
+
+
+
+Although inspired by the original Windows Mission Planner, this project is \*\*not\*\* a port. It is a complete redesign using modern architectural principles, Domain Driven Design (DDD), dependency injection, immutable state, asynchronous messaging, and transport-independent communication.
+
+
+
+The primary goals are:
+
+
+
+\* Cross-platform operation
+
+\* Clean architecture
+
+\* Testability
+
+\* Extensibility
+
+\* Long-term maintainability
+
+
+
+\---
+
+
+
+\# Core Philosophy
+
+
+
+Everything in the project follows one simple principle:
+
+
+
+> \*\*Separate transport, protocol, domain and presentation.\*\*
+
+
+
+Those four layers should never become tightly coupled.
+
+
+
+```text
+
+&#x20;          User Interface
+
+&#x20;                │
+
+&#x20;        Application Services
+
+&#x20;                │
+
+&#x20;       Domain (Business Logic)
+
+&#x20;                │
+
+&#x20;     MAVLink Protocol Library
+
+&#x20;                │
+
+&#x20;     USB / UDP / TCP / Radio
+
+```
+
+
+
+Each layer knows only about the layer immediately beneath it.
+
+
+
+\---
+
+
+
+\# Domain Driven Design
+
+
+
+The Core project is the heart of the application.
+
+
+
+It contains concepts such as
+
+
+
+\* Vehicle
+
+\* Mission
+
+\* Parameters
+
+\* Telemetry
+
+\* Geofence
+
+
+
+—not MAVLink packets.
+
+
+
+The domain should answer questions such as
+
+
+
+> "What is the vehicle doing?"
+
+
+
+rather than
+
+
+
+> "Which MAVLink packet did we just receive?"
+
+
+
+\---
+
+
+
+\# Anti-Corruption Layer
+
+
+
+The MAVLink library acts as an Anti-Corruption Layer (ACL).
+
+
+
+It converts
+
+
+
+```text
+
+MAVLink packets
+
+
+
+↓
+
+
+
+Domain observations
+
+
+
+↓
+
+
+
+Vehicle state
+
+```
+
+
+
+The rest of the application should never depend directly on MAVLink packet formats.
+
+
+
+\---
+
+
+
+\# Transport Independence
+
+
+
+The transport layer moves bytes.
+
+
+
+Nothing more.
+
+
+
+Supported transports may include
+
+
+
+\* USB Serial
+
+\* UDP
+
+\* TCP
+
+\* DroneBridge
+
+\* ELRS
+
+\* Bluetooth
+
+
+
+The MAVLink library never knows which transport is being used.
+
+
+
+\---
+
+
+
+\# Pipeline Architecture
+
+
+
+Incoming telemetry flows through a pipeline.
+
+
+
+```text
+
+USB
+
+
+
+↓
+
+
+
+Transport
+
+
+
+↓
+
+
+
+Channel<ReceivedBytes>
+
+
+
+↓
+
+
+
+Frame Parser
+
+
+
+↓
+
+
+
+Message Decoder
+
+
+
+↓
+
+
+
+Channel<MavLinkMessage>
+
+
+
+↓
+
+
+
+VehicleMessagePump
+
+
+
+↓
+
+
+
+Domain
+
+
+
+↓
+
+
+
+Domain Events
+
+
+
+↓
+
+
+
+UI
+
+```
+
+
+
+Every stage has a single responsibility.
+
+
+
+\---
+
+
+
+\# Channels
+
+
+
+Channels are intentionally used only inside the communication pipeline.
+
+
+
+They provide
+
+
+
+\* buffering
+
+\* back-pressure
+
+\* isolation between workers
+
+
+
+They are \*\*not\*\* used as the application's event system.
+
+
+
+\---
+
+
+
+\# Event System
+
+
+
+The project contains its own EventHub.
+
+
+
+Domain events are published through EventHub.
+
+
+
+Examples
+
+
+
+\* VehicleConnected
+
+\* VehicleDisconnected
+
+\* VehicleStateUpdated
+
+\* MissionUploaded
+
+
+
+The EventHub is intentionally independent of MAVLink.
+
+
+
+\---
+
+
+
+\# Immutable Domain State
+
+
+
+VehicleState is immutable.
+
+
+
+Instead of modifying properties
+
+
+
+```csharp
+
+vehicle.State.Roll = ...
+
+```
+
+
+
+the domain creates a new state
+
+
+
+```csharp
+
+state = state with
+
+{
+
+&#x20;   Motion = ...
+
+};
+
+```
+
+
+
+Advantages
+
+
+
+\* thread safety
+
+
+
+\* easier testing
+
+
+
+\* deterministic state changes
+
+
+
+\* simpler debugging
+
+
+
+\---
+
+
+
+\# Vehicle State
+
+
+
+VehicleState is divided into logical capabilities rather than MAVLink messages.
+
+
+
+```
+
+VehicleState
+
+
+
+&#x20;   Identity
+
+
+
+&#x20;   Flight
+
+
+
+&#x20;   Motion
+
+
+
+&#x20;   Position
+
+
+
+&#x20;   GPS
+
+
+
+&#x20;   Power
+
+
+
+&#x20;   Navigation
+
+
+
+&#x20;   Radio
+
+
+
+&#x20;   Health
+
+```
+
+
+
+This avoids creating one property for every MAVLink field.
+
+
+
+\---
+
+
+
+\# Observations
+
+
+
+Handlers never update VehicleState directly.
+
+
+
+Instead they create observations.
+
+
+
+Example
+
+
+
+```
+
+ATTITUDE
+
+
+
+↓
+
+
+
+VehicleAttitudeObservation
+
+
+
+↓
+
+
+
+VehicleSession.ApplyAttitude()
+
+
+
+↓
+
+
+
+VehicleState
+
+```
+
+
+
+This keeps MAVLink details outside the domain.
+
+
+
+\---
+
+
+
+\# VehicleSession
+
+
+
+VehicleSession owns the state of one connected vehicle.
+
+
+
+It contains all domain logic for updating
+
+
+
+\* flight mode
+
+\* position
+
+\* attitude
+
+\* battery
+
+\* GPS
+
+\* navigation
+
+
+
+No UI code modifies VehicleState directly.
+
+
+
+\---
+
+
+
+\# Capability-Oriented Handlers
+
+
+
+Handlers represent capabilities instead of protocols.
+
+
+
+Examples
+
+
+
+\* FlightTelemetryHandler
+
+\* NavigationTelemetryHandler
+
+\* PowerTelemetryHandler
+
+
+
+rather than
+
+
+
+```
+
+AttitudeHandler
+
+
+
+GPSRawHandler
+
+
+
+VfrHudHandler
+
+
+
+...
+
+```
+
+
+
+Multiple MAVLink messages often contribute to one capability.
+
+
+
+\---
+
+
+
+\# Decoder Architecture
+
+
+
+Every MAVLink message has
+
+
+
+\* Message record
+
+\* Decoder
+
+
+
+The decoder is responsible for
+
+
+
+\* MessageId
+
+\* CRC extra
+
+\* Payload decoding
+
+
+
+A registry builds lookup tables automatically.
+
+
+
+\---
+
+
+
+\# Mission Planning
+
+
+
+Mission planning is modeled independently of MAVLink.
+
+
+
+```
+
+Mission
+
+
+
+↓
+
+
+
+MissionItems
+
+
+
+↓
+
+
+
+Validation
+
+
+
+↓
+
+
+
+Protocol Mapper
+
+
+
+↓
+
+
+
+MISSION\_ITEM\_INT
+
+```
+
+
+
+The domain contains
+
+
+
+Waypoint
+
+
+
+Takeoff
+
+
+
+RTL
+
+
+
+Land
+
+
+
+ChangeSpeed
+
+
+
+rather than generic Param1–Param4 values.
+
+
+
+\---
+
+
+
+\# UI Philosophy
+
+
+
+The UI observes the domain.
+
+
+
+It does not own it.
+
+
+
+ViewModels subscribe to
+
+
+
+```
+
+VehicleStateUpdated
+
+```
+
+
+
+and transform immutable domain state into display models.
+
+
+
+\---
+
+
+
+\# Testing
+
+
+
+The project emphasizes automated testing.
+
+
+
+Tests exist for
+
+
+
+\* protocol parsing
+
+\* decoders
+
+\* command encoding
+
+\* transports
+
+\* vehicle registration
+
+\* serial communication
+
+\* parameter download
+
+
+
+Whenever practical, new functionality should include tests.
+
+
+
+\---
+
+
+
+\# Dependency Injection
+
+
+
+All major services are resolved through dependency injection.
+
+
+
+Examples
+
+
+
+```
+
+IMavLinkTransport
+
+
+
+IMavLinkClient
+
+
+
+IMavLinkConnection
+
+
+
+IVehicleService
+
+
+
+IMissionTransferService
+
+```
+
+
+
+Avoid using `new` directly inside domain code.
+
+
+
+\---
+
+
+
+\# Long-Term Vision
+
+
+
+The goal is not merely to recreate Mission Planner.
+
+
+
+The goal is to build a reusable Ground Control Station framework capable of supporting
+
+
+
+\* multiple vehicles
+
+\* multiple transports
+
+\* future MAVLink dialects
+
+\* autonomous mission planning
+
+\* AI-assisted planning
+
+\* simulation
+
+\* plugins
+
+
+
+while maintaining a clean and testable architecture.
+
+
+
+\---
+
+
+
+\## I would also add one section that many projects miss
+
+
+
+At the end I'd include \*\*Architectural Principles\*\*, because they become the "constitution" of the project.
+
+
+
+Something like:
+
+
+
+```markdown
+
+\## Architectural Principles
+
+
+
+When adding new functionality:
+
+
+
+\- Keep MAVLink inside the MAVLink project.
+
+\- Keep business rules inside the Core project.
+
+\- Never expose MAVLink packets directly to the UI.
+
+\- Prefer immutable records over mutable objects.
+
+\- Prefer observations over direct state mutation.
+
+\- Prefer capability-oriented services over protocol-oriented services.
+
+\- Prefer composition over inheritance.
+
+\- Prefer asynchronous APIs.
+
+\- Keep transports interchangeable.
+
+\- Write tests for protocol and domain logic.
+
+\- Optimize only after measuring.
+
+```
+
+
+
+
+

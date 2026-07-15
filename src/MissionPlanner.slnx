@@ -6,8 +6,11 @@
   </Folder>
   <Folder Name="/Docs/">
     <File Path="../docs/ANALYSIS_HUD_VEHICLE_INTEGRATION.md" />
+    <File Path="../docs/ARCHITECTURE_DESICION_RECORDS.md" />
     <File Path="../docs/CONNECTION_CLEANUP_SOLUTION.md" />
     <File Path="../docs/CONNECTION_RESILIENCE.md" />
+    <File Path="../docs/DESIGN_CONCEPTS.md" />
+    <File Path="../docs/FEATURES.md" />
     <File Path="../docs/HUD_Implementation_Step1.md" />
     <File Path="../docs/MISSION_IMPLEMENTATION_NOTES.md" />
     <File Path="../docs/PARAMETER_DIAGNOSTICS.md" />
