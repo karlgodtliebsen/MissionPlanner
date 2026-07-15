@@ -38,6 +38,10 @@ public sealed class MissionValidator : IMissionValidator
                     when s.SpeedMetersPerSecond <= 0:
                     issues.Add(new MissionValidationIssue(MissionValidationSeverity.Error, s.Id, "speed.value", "Speed must be above zero."));
                     break;
+                case LoiterMissionItem o
+                    when !o.Position.IsValid:
+                    issues.Add(new MissionValidationIssue(MissionValidationSeverity.Error, o.Id, "loiter.position", "Loiter coordinates are invalid."));
+                    break;
             }
         }
 

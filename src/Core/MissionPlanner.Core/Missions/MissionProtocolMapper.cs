@@ -25,6 +25,10 @@ public sealed class MissionProtocolMapper : IMissionProtocolMapper
             ChangeSpeedMissionItem x => New(x, (float)x.SpeedType, (float)x.SpeedMetersPerSecond,
                 (float)(x.ThrottlePercent ?? -1), 0,
                 new GeoPosition(0, 0), 0, missionType),
+            LoiterMissionItem x => New(x,
+                x.Time is not null ? (float)x.Time.Value.TotalSeconds : (float)(x.Turns ?? 0), 0,
+                (float)(x.RadiusMeters ?? 0), (float)(x.DesiredYawDegrees ?? float.NaN),
+                x.Position, (float)x.Altitude.Meters, missionType),
             var _ => throw new NotSupportedException(item.GetType().Name)
         };
     }

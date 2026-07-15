@@ -7,6 +7,110 @@
               x:DataType="map:FlightDataMapViewModel"
               BackgroundColor="#1e1e1e">
 
-    <mapsui:MapView x:Name="VehicleMapView" />
+    <mapsui:MapView x:Name="VehicleMapView">
+        <FlyoutBase.ContextFlyout>
+            <MenuFlyout>
+
+                <MenuFlyoutItem Text="Delete WP" Command="{Binding DeleteWaypointCommand}" />
+                <MenuFlyoutSubItem Text="Insert WP">
+                    <MenuFlyoutItem Text="Here" Command="{Binding InsertWaypointCommand}" />
+                    <MenuFlyoutItem Text="At Current Position" Command="{Binding InsertWaypointAtVehicleCommand}" />
+                </MenuFlyoutSubItem>
+                <MenuFlyoutItem Text="Insert Spline WP" Command="{Binding NotImplementedCommand}" CommandParameter="Insert Spline WP" />
+
+                <MenuFlyoutSubItem Text="Loiter">
+                    <MenuFlyoutItem Text="Forever" Command="{Binding LoiterForeverCommand}" />
+                    <MenuFlyoutItem Text="Time" Command="{Binding LoiterTimeCommand}" />
+                    <MenuFlyoutItem Text="Circles" Command="{Binding LoiterCirclesCommand}" />
+                </MenuFlyoutSubItem>
+
+                <MenuFlyoutSubItem Text="Jump">
+                    <MenuFlyoutItem Text="Start" Command="{Binding NotImplementedCommand}" CommandParameter="Jump to Start" />
+                    <MenuFlyoutItem Text="WP #" Command="{Binding NotImplementedCommand}" CommandParameter="Jump to WP #" />
+                </MenuFlyoutSubItem>
+
+                <MenuFlyoutItem Text="RTL" Command="{Binding AddReturnToLaunchCommand}" />
+                <MenuFlyoutItem Text="Land" Command="{Binding AddLandCommand}" />
+                <MenuFlyoutItem Text="Takeoff" Command="{Binding AddTakeoffCommand}" />
+                <MenuFlyoutItem Text="DO_SET_ROI" Command="{Binding NotImplementedCommand}" CommandParameter="DO_SET_ROI" />
+                <MenuFlyoutItem Text="Clear Mission" Command="{Binding ClearMissionCommand}" />
+
+                <MenuFlyoutSeparator />
+
+                <MenuFlyoutSubItem Text="Polygon">
+                    <MenuFlyoutItem Text="Draw a Polygon" Command="{Binding NotImplementedCommand}" CommandParameter="Draw a Polygon" />
+                    <MenuFlyoutItem Text="Clear Polygon" Command="{Binding NotImplementedCommand}" CommandParameter="Clear Polygon" />
+                    <MenuFlyoutItem Text="Save Polygon" Command="{Binding NotImplementedCommand}" CommandParameter="Save Polygon" />
+                    <MenuFlyoutItem Text="Load Polygon" Command="{Binding NotImplementedCommand}" CommandParameter="Load Polygon" />
+                    <MenuFlyoutItem Text="From SHP" Command="{Binding NotImplementedCommand}" CommandParameter="Polygon from SHP" />
+                    <MenuFlyoutItem Text="From Current Waypoints" Command="{Binding NotImplementedCommand}" CommandParameter="Polygon from Current Waypoints" />
+                    <MenuFlyoutItem Text="Offset Polygon" Command="{Binding NotImplementedCommand}" CommandParameter="Offset Polygon" />
+                    <MenuFlyoutItem Text="Area" Command="{Binding NotImplementedCommand}" CommandParameter="Polygon Area" />
+                </MenuFlyoutSubItem>
+
+                <MenuFlyoutSubItem Text="Geo-Fence">
+                    <MenuFlyoutItem Text="Upload" Command="{Binding NotImplementedCommand}" CommandParameter="Geo-Fence Upload" />
+                    <MenuFlyoutItem Text="Download" Command="{Binding NotImplementedCommand}" CommandParameter="Geo-Fence Download" />
+                    <MenuFlyoutItem Text="Set Return Location" Command="{Binding NotImplementedCommand}" CommandParameter="Geo-Fence Set Return Location" />
+                    <MenuFlyoutItem Text="Load from File" Command="{Binding NotImplementedCommand}" CommandParameter="Geo-Fence Load from File" />
+                    <MenuFlyoutItem Text="Save to File" Command="{Binding NotImplementedCommand}" CommandParameter="Geo-Fence Save to File" />
+                    <MenuFlyoutItem Text="Clear" Command="{Binding NotImplementedCommand}" CommandParameter="Geo-Fence Clear" />
+                </MenuFlyoutSubItem>
+
+                <MenuFlyoutSubItem Text="Rally Points">
+                    <MenuFlyoutItem Text="Set Rally Point" Command="{Binding NotImplementedCommand}" CommandParameter="Set Rally Point" />
+                    <MenuFlyoutItem Text="Download" Command="{Binding NotImplementedCommand}" CommandParameter="Rally Points Download" />
+                    <MenuFlyoutItem Text="Upload" Command="{Binding NotImplementedCommand}" CommandParameter="Rally Points Upload" />
+                    <MenuFlyoutItem Text="Clear Rally Points" Command="{Binding NotImplementedCommand}" CommandParameter="Clear Rally Points" />
+                    <MenuFlyoutItem Text="Save Rally to File" Command="{Binding NotImplementedCommand}" CommandParameter="Save Rally to File" />
+                    <MenuFlyoutItem Text="Load Rally from File" Command="{Binding NotImplementedCommand}" CommandParameter="Load Rally from File" />
+                </MenuFlyoutSubItem>
+
+                <MenuFlyoutSubItem Text="Auto WP">
+                    <MenuFlyoutItem Text="Create WP Circle" Command="{Binding NotImplementedCommand}" CommandParameter="Create WP Circle" />
+                    <MenuFlyoutItem Text="Create Spline Circle" Command="{Binding NotImplementedCommand}" CommandParameter="Create Spline Circle" />
+                    <MenuFlyoutItem Text="Area" Command="{Binding NotImplementedCommand}" CommandParameter="Auto WP Area" />
+                    <MenuFlyoutItem Text="Text" Command="{Binding NotImplementedCommand}" CommandParameter="Auto WP Text" />
+                    <MenuFlyoutItem Text="Create Circle Survey" Command="{Binding NotImplementedCommand}" CommandParameter="Create Circle Survey" />
+                    <MenuFlyoutItem Text="Survey (Grid)" Command="{Binding NotImplementedCommand}" CommandParameter="Survey (Grid)" />
+                </MenuFlyoutSubItem>
+
+                <MenuFlyoutSubItem Text="Map Tool">
+                    <MenuFlyoutItem Text="Zoom In" Clicked="OnZoomInClicked" />
+                    <MenuFlyoutItem Text="Zoom Out" Clicked="OnZoomOutClicked" />
+                    <MenuFlyoutItem Text="Zoom To Vehicle" Clicked="OnZoomToVehicleClicked" />
+                    <MenuFlyoutItem Text="Center on My Location" Clicked="OnCenterOnMyLocationClicked" />
+                    <MenuFlyoutItem Text="Follow Vehicle (on/off)" Clicked="OnToggleFollowVehicleClicked" />
+                    <MenuFlyoutItem Text="Reverse WPs" Command="{Binding ReverseWaypointsCommand}" />
+                    <MenuFlyoutItem Text="Measure Distance" Command="{Binding NotImplementedCommand}" CommandParameter="Measure Distance" />
+                    <MenuFlyoutItem Text="Rotate Map" Command="{Binding NotImplementedCommand}" CommandParameter="Rotate Map" />
+                    <MenuFlyoutItem Text="Prefetch" Command="{Binding NotImplementedCommand}" CommandParameter="Prefetch" />
+                    <MenuFlyoutItem Text="Prefetch WP Path" Command="{Binding NotImplementedCommand}" CommandParameter="Prefetch WP Path" />
+                    <MenuFlyoutItem Text="KML Overlay" Command="{Binding NotImplementedCommand}" CommandParameter="KML Overlay" />
+                    <MenuFlyoutItem Text="Elevation Graph" Command="{Binding NotImplementedCommand}" CommandParameter="Elevation Graph" />
+                </MenuFlyoutSubItem>
+
+                <MenuFlyoutSubItem Text="File Load/Save">
+                    <MenuFlyoutItem Text="Load WP File" Command="{Binding NotImplementedCommand}" CommandParameter="Load WP File" />
+                    <MenuFlyoutItem Text="Load and Append" Command="{Binding NotImplementedCommand}" CommandParameter="Load and Append" />
+                    <MenuFlyoutItem Text="Save WP File" Command="{Binding SaveWpFileCommand}" />
+                    <MenuFlyoutItem Text="Load KML File" Command="{Binding NotImplementedCommand}" CommandParameter="Load KML File" />
+                    <MenuFlyoutItem Text="Load SHP File" Command="{Binding NotImplementedCommand}" CommandParameter="Load SHP File" />
+                </MenuFlyoutSubItem>
+
+                <MenuFlyoutSubItem Text="POI">
+                    <MenuFlyoutItem Text="Add" Command="{Binding NotImplementedCommand}" CommandParameter="POI Add" />
+                    <MenuFlyoutItem Text="Delete" Command="{Binding NotImplementedCommand}" CommandParameter="POI Delete" />
+                    <MenuFlyoutItem Text="Edit" Command="{Binding NotImplementedCommand}" CommandParameter="POI Edit" />
+                </MenuFlyoutSubItem>
+
+                <MenuFlyoutItem Text="Tracker Home" Command="{Binding NotImplementedCommand}" CommandParameter="Tracker Home" />
+                <MenuFlyoutItem Text="Modify Alt" Command="{Binding ModifyAltitudeCommand}" />
+                <MenuFlyoutItem Text="Enter UTM Coord" Command="{Binding NotImplementedCommand}" CommandParameter="Enter UTM Coord" />
+                <MenuFlyoutItem Text="Set Home Here" Command="{Binding SetHomeHereCommand}" />
+
+            </MenuFlyout>
+        </FlyoutBase.ContextFlyout>
+    </mapsui:MapView>
 
 </ContentView>

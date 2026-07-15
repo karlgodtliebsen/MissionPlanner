@@ -43,6 +43,7 @@ public sealed class Mission
     {
         WaypointMissionItem x => x with { Sequence=sequence }, TakeoffMissionItem x => x with { Sequence=sequence },
         LandMissionItem x => x with { Sequence=sequence }, ReturnToLaunchMissionItem x => x with { Sequence=sequence },
-        ChangeSpeedMissionItem x => x with { Sequence=sequence }, _ => throw new NotSupportedException(item.GetType().Name)
+        ChangeSpeedMissionItem x => x with { Sequence=sequence }, LoiterMissionItem x => x with { Sequence=sequence },
+        _ => throw new NotSupportedException(item.GetType().Name)
     };
 }

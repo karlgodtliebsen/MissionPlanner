@@ -1,5 +1,8 @@
-namespace MissionPlanner.Core.Missions;
+﻿namespace MissionPlanner.Core.Missions;
 
+/// <summary>
+/// Represents the various mission commands that can be issued in a mission plan.
+/// </summary>
 public enum MissionCommand : ushort
 {
     NavigateWaypoint = 16,
