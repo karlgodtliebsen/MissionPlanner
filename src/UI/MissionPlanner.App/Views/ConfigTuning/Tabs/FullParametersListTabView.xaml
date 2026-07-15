@@ -4,7 +4,6 @@
              xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
              xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
              xmlns:m="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
-             xmlns:vm="clr-namespace:MissionPlanner.App.ViewModels"
              xmlns:controls="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
              xmlns:configTuning="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
              x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.FullParametersListTabView"

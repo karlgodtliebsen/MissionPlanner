@@ -1,47 +1,51 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
+using BruTile.Predefined;
 using Mapsui;
 using Mapsui.Extensions;
+using Mapsui.Layers;
 using Mapsui.Projections;
 using Mapsui.Tiling;
+using Mapsui.Tiling.Layers;
 using Mapsui.UI.Maui;
 using MissionPlanner.App.Configuration;
 
-namespace MissionPlanner.App.Views.FlightData.Map;
+namespace MissionPlanner.App.Views.Missions;
 
 /// <summary>
-/// Represents the view for displaying flight data on a map. The map doubles as the mission plan
-/// editor: a right-click (context) menu mirrors the classic MissionPlanner flight planner menu.
+/// Shared mission map editor control. Renders the mission plan (pins + route) on a Mapsui map and
+/// hosts the right-click context menu mirroring the classic MissionPlanner flight planner menu.
+/// Bound to the singleton <see cref="MissionMapViewModel"/>, so every instance edits the same plan.
 /// </summary>
-public partial class FlightDataMapView : ContentView, IDisposable
+public partial class MissionMapView : ContentView, IDisposable
 {
     /// <summary>Resolution (meters/pixel at the equator) used when zooming to a point; roughly street level.</summary>
     private const double DefaultZoomResolution = 4.78;
 
-    private readonly FlightDataMapViewModel viewModel;
+    private readonly MissionMapViewModel viewModel;
     private readonly Pin vehiclePin;
     private readonly Polyline routeLine;
     private readonly List<Pin> missionPins = [];
     private readonly Mapsui.Map map;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="FlightDataMapView"/> class.
+    /// Initializes a new instance of the <see cref="MissionMapView"/> class.
     /// </summary>
-    public FlightDataMapView()
+    public MissionMapView()
     {
         InitializeComponent();
-        viewModel = ServiceHelper.GetRequiredService<FlightDataMapViewModel>();
+        viewModel = ServiceHelper.GetRequiredService<MissionMapViewModel>();
         BindingContext = viewModel;
         map = new Mapsui.Map();
-        map.Layers.Add(OpenStreetMap.CreateTileLayer());
-        VehicleMapView.Map = map;
+        map.Layers.Add(CreateTileLayer(viewModel.SelectedMapType));
+        MissionMap.Map = map;
 
-        vehiclePin = new Pin(VehicleMapView) { Label = "Vehicle", Type = PinType.Pin, Position = new Position(viewModel.VehicleLatitude, viewModel.VehicleLongitude) };
-        VehicleMapView.Pins.Add(vehiclePin);
+        vehiclePin = new Pin(MissionMap) { Label = "Vehicle", Type = PinType.Pin, Position = new Position(viewModel.VehicleLatitude, viewModel.VehicleLongitude) };
+        MissionMap.Pins.Add(vehiclePin);
 
         routeLine = new Polyline { StrokeColor = Colors.OrangeRed, StrokeWidth = 3 };
-        VehicleMapView.Drawables.Add(routeLine);
+        MissionMap.Drawables.Add(routeLine);
 
-        VehicleMapView.MapClicked += OnMapClicked;
+        MissionMap.MapClicked += OnMapClicked;
 
         var pointer = new PointerGestureRecognizer();
         pointer.PointerMoved += OnPointerMoved;
@@ -50,11 +54,13 @@ public partial class FlightDataMapView : ContentView, IDisposable
         viewModel.PropertyChanged += ViewModel_PropertyChanged;
         viewModel.MissionChanged += OnMissionChanged;
         Loaded += OnFirstLoaded;
+
+        RedrawMission();
     }
 
     private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(FlightDataMapViewModel.VehicleLatitude) or nameof(FlightDataMapViewModel.VehicleLongitude))
+        if (e.PropertyName is nameof(MissionMapViewModel.VehicleLatitude) or nameof(MissionMapViewModel.VehicleLongitude))
         {
             Position position = new(viewModel.VehicleLatitude, viewModel.VehicleLongitude);
             vehiclePin.Position = position;
@@ -64,9 +70,13 @@ public partial class FlightDataMapView : ContentView, IDisposable
                 CenterMap(position.Latitude, position.Longitude);
             }
         }
-        else if (e.PropertyName is nameof(FlightDataMapViewModel.HomePosition))
+        else if (e.PropertyName is nameof(MissionMapViewModel.HomePosition))
         {
             RedrawMission();
+        }
+        else if (e.PropertyName is nameof(MissionMapViewModel.SelectedMapType))
+        {
+            ApplyMapType(viewModel.SelectedMapType);
         }
     }
 
@@ -75,11 +85,33 @@ public partial class FlightDataMapView : ContentView, IDisposable
         RedrawMission();
     }
 
+    private void ApplyMapType(string mapType)
+    {
+        var previous = map.Layers.FirstOrDefault();
+        map.Layers.Insert(0, CreateTileLayer(mapType));
+        if (previous is not null)
+        {
+            map.Layers.Remove(previous);
+        }
+    }
+
+    private static ILayer CreateTileLayer(string mapType)
+    {
+        return mapType switch
+        {
+            "Esri World Topo" => new TileLayer(KnownTileSources.Create(KnownTileSource.EsriWorldTopo)),
+            "Esri World Physical" => new TileLayer(KnownTileSources.Create(KnownTileSource.EsriWorldPhysical)),
+            "Esri Shaded Relief" => new TileLayer(KnownTileSources.Create(KnownTileSource.EsriWorldShadedRelief)),
+            "Esri Dark Gray" => new TileLayer(KnownTileSources.Create(KnownTileSource.EsriWorldDarkGrayBase)),
+            var _ => OpenStreetMap.CreateTileLayer()
+        };
+    }
+
     private void RedrawMission()
     {
         foreach (var pin in missionPins)
         {
-            VehicleMapView.Pins.Remove(pin);
+            MissionMap.Pins.Remove(pin);
         }
 
         missionPins.Clear();
@@ -93,7 +125,7 @@ public partial class FlightDataMapView : ContentView, IDisposable
 
         foreach (var item in viewModel.Mission.Items)
         {
-            if (FlightDataMapViewModel.PositionOf(item) is not { } position)
+            if (MissionMapViewModel.PositionOf(item) is not { } position)
             {
                 continue;
             }
@@ -102,12 +134,12 @@ public partial class FlightDataMapView : ContentView, IDisposable
             routeLine.Positions.Add(new Position(position.LatitudeDegrees, position.LongitudeDegrees));
         }
 
-        VehicleMapView.RefreshGraphics();
+        MissionMap.RefreshGraphics();
     }
 
     private void AddMissionPin(string label, double latitude, double longitude, Color color)
     {
-        var pin = new Pin(VehicleMapView)
+        var pin = new Pin(MissionMap)
         {
             Label = label,
             Type = PinType.Pin,
@@ -116,7 +148,7 @@ public partial class FlightDataMapView : ContentView, IDisposable
             Position = new Position(latitude, longitude)
         };
         missionPins.Add(pin);
-        VehicleMapView.Pins.Add(pin);
+        MissionMap.Pins.Add(pin);
     }
 
     private void OnMapClicked(object? sender, MapClickedEventArgs e)
@@ -126,7 +158,7 @@ public partial class FlightDataMapView : ContentView, IDisposable
 
     private void OnPointerMoved(object? sender, PointerEventArgs e)
     {
-        if (e.GetPosition(VehicleMapView) is not { } point)
+        if (e.GetPosition(MissionMap) is not { } point)
         {
             return;
         }
@@ -213,6 +245,6 @@ public partial class FlightDataMapView : ContentView, IDisposable
     {
         viewModel.PropertyChanged -= ViewModel_PropertyChanged;
         viewModel.MissionChanged -= OnMissionChanged;
-        VehicleMapView.MapClicked -= OnMapClicked;
+        MissionMap.MapClicked -= OnMapClicked;
     }
 }

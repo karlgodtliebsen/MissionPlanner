@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Text;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Storage;
@@ -9,22 +10,23 @@ using MissionPlanner.Core.Missions;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.MavLink.Missions;
 
-namespace MissionPlanner.App.Views.FlightData.Map;
+namespace MissionPlanner.App.Views.Missions;
 
 /// <summary>
-/// View model for the flight data map. Besides tracking the vehicle it acts as the mission plan editor,
-/// exposing the commands behind the map's right-click context menu.
+/// Shared view model for the mission map editor. It tracks the vehicle, owns the mission plan being
+/// edited, and exposes the commands behind the map's right-click context menu. It is registered as a
+/// singleton so the FlightData map and the Plan screen edit the same mission.
 /// </summary>
-public partial class FlightDataMapViewModel : ObservableObject
+public partial class MissionMapViewModel : ObservableObject
 {
     private readonly IMissionProtocolMapper protocolMapper;
     private readonly IFileSaver fileSaver;
-    private readonly ILogger<FlightDataMapViewModel> logger;
+    private readonly ILogger<MissionMapViewModel> logger;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="FlightDataMapViewModel"/> class.
+    /// Initializes a new instance of the <see cref="MissionMapViewModel"/> class.
     /// </summary>
-    public FlightDataMapViewModel(IMissionProtocolMapper protocolMapper, IFileSaver fileSaver, ILogger<FlightDataMapViewModel> logger)
+    public MissionMapViewModel(IMissionProtocolMapper protocolMapper, IFileSaver fileSaver, ILogger<MissionMapViewModel> logger)
     {
         this.protocolMapper = protocolMapper;
         this.fileSaver = fileSaver;
@@ -53,6 +55,17 @@ public partial class FlightDataMapViewModel : ObservableObject
     [ObservableProperty]
     public partial string? StatusMessage { get; set; }
 
+    /// <summary>The name of the tile source rendered by map views bound to this view model.</summary>
+    [ObservableProperty]
+    public partial string SelectedMapType { get; set; } = "OpenStreetMap";
+
+    /// <summary>The tile sources the map views can render.</summary>
+    public IReadOnlyList<string> AvailableMapTypes { get; } =
+        ["OpenStreetMap", "Esri World Topo", "Esri World Physical", "Esri Shaded Relief", "Esri Dark Gray"];
+
+    /// <summary>Display rows for the mission items, kept in sync with <see cref="Mission"/>.</summary>
+    public ObservableCollection<MissionItemRow> MissionItems { get; } = [];
+
     /// <summary>
     /// The map position the context menu actions operate on (where the user right-clicked/tapped).
     /// Updated by the view before the menu opens.
@@ -62,7 +75,7 @@ public partial class FlightDataMapViewModel : ObservableObject
     /// <summary>The mission plan being edited.</summary>
     public Mission Mission { get; private set; } = new(MissionId.New(), "New Mission");
 
-    /// <summary>Raised whenever the mission items change so the view can redraw pins and the route.</summary>
+    /// <summary>Raised whenever the mission items change so the views can redraw pins and the route.</summary>
     public event EventHandler? MissionChanged;
 
     /// <summary>Records the map position the next context-menu action should apply to.</summary>
@@ -70,6 +83,23 @@ public partial class FlightDataMapViewModel : ObservableObject
     {
         ContextPosition = new GeoPosition(latitude, longitude);
     }
+
+    /// <summary>Replaces the mission being edited (e.g. after downloading from a vehicle).</summary>
+    public void ReplaceMission(Mission mission, string message)
+    {
+        Mission = mission;
+        OnMissionChanged(message);
+    }
+
+    /// <summary>
+    /// Clears the mission being edited and resets it to a new empty mission.   
+    /// </summary>
+    public void ClearMissionData()
+    {
+        Mission = new Mission(MissionId.New(), "New Mission");
+        OnMissionChanged("Mission cleared.");
+    }
+
 
     [RelayCommand]
     private void InsertWaypoint()
@@ -110,6 +140,27 @@ public partial class FlightDataMapViewModel : ObservableObject
 
         Mission.Remove(item.Id);
         OnMissionChanged($"Removed item {item.Sequence + 1} ({item.Command}).");
+    }
+
+    [RelayCommand]
+    private void RemoveItem(MissionItemRow row)
+    {
+        if (Mission.Remove(row.Id))
+        {
+            OnMissionChanged($"Removed item {row.Number} ({row.Command}).");
+        }
+    }
+
+    [RelayCommand]
+    private void MoveItemUp(MissionItemRow row)
+    {
+        MoveItem(row, -1);
+    }
+
+    [RelayCommand]
+    private void MoveItemDown(MissionItemRow row)
+    {
+        MoveItem(row, +1);
     }
 
     [RelayCommand]
@@ -178,8 +229,7 @@ public partial class FlightDataMapViewModel : ObservableObject
     [RelayCommand]
     private void ClearMission()
     {
-        Mission = new Mission(MissionId.New(), "New Mission");
-        OnMissionChanged("Mission cleared.");
+        ClearMissionData();
     }
 
     [RelayCommand]
@@ -269,13 +319,19 @@ public partial class FlightDataMapViewModel : ObservableObject
     [RelayCommand]
     private async Task LoadWpFileAsync()
     {
-        await LoadMissionFileAsync(append: false);
+        await LoadMissionFileAsync(false);
     }
 
     [RelayCommand]
     private async Task LoadAndAppendAsync()
     {
-        await LoadMissionFileAsync(append: true);
+        await LoadMissionFileAsync(true);
+    }
+
+    [RelayCommand]
+    private void NotImplemented(string feature)
+    {
+        ShowStatus($"{feature} is not implemented yet.");
     }
 
     private async Task LoadMissionFileAsync(bool append)
@@ -353,8 +409,8 @@ public partial class FlightDataMapViewModel : ObservableObject
                 (ushort)(sequence - 1),
                 byte.Parse(fields[2], CultureInfo.InvariantCulture),
                 ushort.Parse(fields[3], CultureInfo.InvariantCulture),
-                Current: false,
-                AutoContinue: fields[11] != "0",
+                false,
+                fields[11] != "0",
                 float.Parse(fields[4], CultureInfo.InvariantCulture),
                 float.Parse(fields[5], CultureInfo.InvariantCulture),
                 float.Parse(fields[6], CultureInfo.InvariantCulture),
@@ -377,10 +433,17 @@ public partial class FlightDataMapViewModel : ObservableObject
         return (items, home, skipped);
     }
 
-    [RelayCommand]
-    private void NotImplemented(string feature)
+    private void MoveItem(MissionItemRow row, int offset)
     {
-        ShowStatus($"{feature} is not implemented yet.");
+        var index = Mission.Items.ToList().FindIndex(x => x.Id == row.Id);
+        var destination = index + offset;
+        if (index < 0 || destination < 0 || destination >= Mission.Items.Count)
+        {
+            return;
+        }
+
+        Mission.Move(row.Id, destination);
+        OnMissionChanged($"Moved item {row.Number} {(offset < 0 ? "up" : "down")}.");
     }
 
     private void AddLoiter(TimeSpan? time, double? turns)
@@ -436,6 +499,18 @@ public partial class FlightDataMapViewModel : ObservableObject
         };
     }
 
+    private static MissionAltitude? AltitudeOf(MissionItem item)
+    {
+        return item switch
+        {
+            WaypointMissionItem x => x.Altitude,
+            LandMissionItem x => x.Altitude,
+            LoiterMissionItem x => x.Altitude,
+            TakeoffMissionItem x => x.Altitude,
+            var _ => null
+        };
+    }
+
     private static double DistanceSquared(GeoPosition a, GeoPosition b)
     {
         var dLat = a.LatitudeDegrees - b.LatitudeDegrees;
@@ -484,8 +559,26 @@ public partial class FlightDataMapViewModel : ObservableObject
 
     private void OnMissionChanged(string message)
     {
+        RebuildRows();
         MissionChanged?.Invoke(this, EventArgs.Empty);
         ShowStatus(message);
+    }
+
+    private void RebuildRows()
+    {
+        MissionItems.Clear();
+        foreach (var item in Mission.Items)
+        {
+            var position = PositionOf(item);
+            var altitude = AltitudeOf(item);
+            MissionItems.Add(new MissionItemRow(
+                item.Id,
+                item.Sequence + 1,
+                item.Command.ToString(),
+                position?.LatitudeDegrees.ToString("F6", CultureInfo.CurrentCulture) ?? string.Empty,
+                position?.LongitudeDegrees.ToString("F6", CultureInfo.CurrentCulture) ?? string.Empty,
+                altitude?.Meters.ToString("F0", CultureInfo.CurrentCulture) ?? string.Empty));
+        }
     }
 
     private void ShowStatus(string message)

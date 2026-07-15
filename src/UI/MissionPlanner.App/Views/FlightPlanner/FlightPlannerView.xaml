@@ -3,12 +3,98 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                     xmlns:vm="clr-namespace:MissionPlanner.App.Views.FlightPlanner"
+                    xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
+                    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                     x:Class="MissionPlanner.App.Views.FlightPlanner.FlightPlannerView"
                     x:DataType="vm:FlightPlannerViewModel">
 
-    <Label Text="Flight Planner"
-           FontSize="18"
-           HorizontalOptions="Center"
-           VerticalOptions="Center" />
+    <uranium:UraniumContentPage.Resources>
+        <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+    </uranium:UraniumContentPage.Resources>
+
+    <Grid RowDefinitions="Auto,*" RowSpacing="4" Padding="5">
+
+        <!-- Toolbar -->
+        <FlexLayout Grid.Row="0" Wrap="Wrap" AlignItems="Center" JustifyContent="Start">
+
+            <Button Text="Load File" BackgroundColor="Transparent" Command="{Binding Map.LoadWpFileCommand}" Margin="0,0,4,4" />
+            <Button Text="Save File" BackgroundColor="Transparent" Command="{Binding Map.SaveWpFileCommand}" Margin="0,0,12,4" />
+            <Button Text="Clear Mission" BackgroundColor="Transparent" Command="{Binding Map.ClearMissionCommand}" Margin="0,0,12,4" />
+
+            <Button Text="Read" BackgroundColor="Transparent" Command="{Binding ReadFromVehicleCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
+            <Button Text="Write" BackgroundColor="Transparent" Command="{Binding WriteToVehicleCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
+            <Button Text="Write Fast" BackgroundColor="Transparent" Command="{Binding WriteToVehicleFastCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,12,4" />
+
+            <Label Text="Map:" VerticalOptions="Center" Margin="0,0,4,4" />
+            <Picker ItemsSource="{Binding Map.AvailableMapTypes}"
+                    SelectedItem="{Binding Map.SelectedMapType}"
+                    WidthRequest="170"
+                    Margin="0,0,12,4" />
+
+            <Label Text="Default Alt (m):" VerticalOptions="Center" Margin="0,0,4,4" />
+            <Entry Text="{Binding Map.DefaultAltitudeMeters}"
+                   Keyboard="Numeric"
+                   WidthRequest="70"
+                   Margin="0,0,12,4" />
+
+            <Label Text="{Binding TransferStatus}" VerticalOptions="Center" Margin="0,0,8,4" />
+            <Label Text="{Binding Map.StatusMessage}" VerticalOptions="Center" Opacity="0.7" Margin="0,0,0,4" />
+
+        </FlexLayout>
+
+        <!-- Map + mission list -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,320" ColumnSpacing="4">
+
+            <missions:MissionMapView Grid.Column="0" />
+
+            <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*" RowSpacing="6" BackgroundColor="#252526" Padding="6" >
+
+                <Label Grid.Row="0" Text="Mission" FontAttributes="Bold" FontSize="16" />
+
+                <Label Grid.Row="1" Text="{Binding Map.HomePosition, StringFormat='Home: {0}'}" FontSize="12" Opacity="0.8" />
+
+                <CollectionView Grid.Row="2" ItemsSource="{Binding Map.MissionItems}" VerticalOptions="Fill">
+                    <CollectionView.Header>
+                        <Grid ColumnDefinitions="28,*,70,70,44,84" ColumnSpacing="2" Padding="2,2">
+                            <Label Grid.Column="0" Text="#" FontAttributes="Bold" FontSize="12" />
+                            <Label Grid.Column="1" Text="Command" FontAttributes="Bold" FontSize="12" />
+                            <Label Grid.Column="2" Text="Latitude" FontAttributes="Bold" FontSize="12" />
+                            <Label Grid.Column="3" Text="Longitude" FontAttributes="Bold" FontSize="12" />
+                            <Label Grid.Column="4" Text="Altitude" FontAttributes="Bold" FontSize="12" />
+                        </Grid>
+                    </CollectionView.Header>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="missions:MissionItemRow">
+                            <Grid ColumnDefinitions="28,*,70,70,44,84" ColumnSpacing="2" Padding="2,2">
+                                <Label Grid.Column="0" Text="{Binding Number}" FontSize="12" VerticalOptions="Center" />
+                                <Label Grid.Column="1" Text="{Binding Command}" FontSize="12" VerticalOptions="Center" LineBreakMode="TailTruncation" />
+                                <Label Grid.Column="2" Text="{Binding Latitude}" FontSize="11" VerticalOptions="Center" />
+                                <Label Grid.Column="3" Text="{Binding Longitude}" FontSize="11" VerticalOptions="Center" />
+                                <Label Grid.Column="4" Text="{Binding Altitude}" FontSize="12" VerticalOptions="Center" />
+                                <HorizontalStackLayout Grid.Column="5" Spacing="2">
+                                    <Button Text="▲" BackgroundColor="Transparent" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
+                                            Command="{Binding Map.MoveItemUpCommand, Source={RelativeSource AncestorType={x:Type vm:FlightPlannerViewModel}}}"
+                                            CommandParameter="{Binding .}" />
+                                    <Button Text="▼" BackgroundColor="Transparent" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
+                                            Command="{Binding Map.MoveItemDownCommand, Source={RelativeSource AncestorType={x:Type vm:FlightPlannerViewModel}}}"
+                                            CommandParameter="{Binding .}" />
+                                    <Button Text="✕" BackgroundColor="Transparent" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
+                                            Command="{Binding Map.RemoveItemCommand, Source={RelativeSource AncestorType={x:Type vm:FlightPlannerViewModel}}}"
+                                            CommandParameter="{Binding .}" />
+                                </HorizontalStackLayout>
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                    <CollectionView.EmptyView>
+                        <Label Text="No mission items. Right-click the map to add waypoints."
+                               FontSize="12" Opacity="0.6" Margin="0,20" />
+                    </CollectionView.EmptyView>
+                </CollectionView>
+
+            </Grid>
+
+        </Grid>
+
+    </Grid>
 
 </uranium:UraniumContentPage>

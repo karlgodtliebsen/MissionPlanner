@@ -7,7 +7,7 @@
                     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                     xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
                     xmlns:hud="clr-namespace:MissionPlanner.App.Views.FlightData.Hud"
-                    xmlns:map="clr-namespace:MissionPlanner.App.Views.FlightData.Map"
+                    xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
                     x:Class="MissionPlanner.App.Views.FlightData.FlightDataView"
                     x:DataType="flightData:FlightDataViewModel"
                     
@@ -82,7 +82,7 @@
         <!-- Right column: telemetry graph + map -->
         <Grid Grid.Column="2" RowDefinitions="*,Auto" RowSpacing="4">
 
-            <map:FlightDataMapView  Grid.Row="0" Margin="10"/>
+            <missions:MissionMapView  Grid.Row="0" Margin="10"/>
 
             <!-- Bottom status bar (mirrors Controls.Status) -->
             <Grid x:Name="StatusBar"

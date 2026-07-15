@@ -10,11 +10,11 @@ using MissionPlanner.App.Views.Connect;
 using MissionPlanner.App.Views.Exit;
 using MissionPlanner.App.Views.FlightData;
 using MissionPlanner.App.Views.FlightData.Hud;
-using MissionPlanner.App.Views.FlightData.Map;
 using MissionPlanner.App.Views.FlightData.Tabs;
 using MissionPlanner.App.Views.FlightPlanner;
 using MissionPlanner.App.Views.Help;
 using MissionPlanner.App.Views.InitSetup;
+using MissionPlanner.App.Views.Missions;
 using MissionPlanner.App.Views.Simulation;
 using MissionPlanner.Core.Configuration;
 using MissionPlanner.Library;
@@ -78,9 +78,6 @@ public static class ApplicationConfigurator
         // Common/Shared UI Components
         services.TryAddSingleton<StatusBarViewModel>();
 
-        //services.TryAddSingleton<DashboardPageViewModel>();
-        //services.TryAddSingleton<DashboardPage>();
-
         services.TryAddSingleton<TopBarViewModel>();
 
         services.TryAddSingleton<ExitViewModel>();
@@ -92,8 +89,9 @@ public static class ApplicationConfigurator
         services.TryAddTransient<StatisticsViewModel>();
 
         services.TryAddSingleton<FlightDataViewModel>();
+
         services.TryAddSingleton<HudViewModel>();
-        services.TryAddSingleton<FlightDataMapViewModel>();
+        services.TryAddSingleton<MissionMapViewModel>();
         services.TryAddSingleton<QuickTabViewModel>();
         services.TryAddSingleton<ActionsTabViewModel>();
         services.TryAddSingleton<AuxFunctionTabViewModel>();
