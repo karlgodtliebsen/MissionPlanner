@@ -8,10 +8,12 @@ using MissionPlanner.Transport;
 
 namespace MissionPlanner.Core.Services;
 
+/// <inheritdoc />
 public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider dateTimeProvider, ILogger<VehicleRegistry> logger) : IVehicleRegistry
 {
     private readonly Dictionary<VehicleId, VehicleSession> vehicles = [];
 
+    /// <inheritdoc />
     public VehicleSession? GetRequired(VehicleId vehicleId)
     {
         vehicles.TryGetValue(vehicleId, out var vehicle);
@@ -23,36 +25,37 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider 
         return vehicle;
     }
 
+    /// <inheritdoc />
     public IReadOnlyCollection<VehicleSession> Vehicles => vehicles.Values.ToArray();
 
-    public void Reset()
+    /// <summary>
+    /// Resets the vehicle registry by clearing all registered vehicles and publishing a VehicleRegistryReset event.
+    /// </summary>
+    public async Task Reset()
     {
         foreach (var vehicle in vehicles.Values)
         {
             var offlineState = vehicle.State with { Connection = vehicle.State.Connection with { State = VehicleConnectionState.Offline } };
 
-            eventHub.PublishDomainEvent(new VehicleStateUpdated(offlineState));
+            await eventHub.PublishDomainEventAsync(new VehicleStateUpdated(offlineState));
         }
 
         vehicles.Clear();
-        eventHub.PublishDomainEvent(new VehicleRegistryReset());
+        await eventHub.PublishDomainEventAsync(new VehicleRegistryReset());
     }
 
-    public VehicleUpdateConnectionStateResult UpdateConnectionStates(
-        DateTimeOffset now,
-        TimeSpan staleAfter,
-        TimeSpan degradedAfter,
-        TimeSpan offlineAfter)
+    /// <inheritdoc />
+    public async Task<VehicleUpdateConnectionStateResult> UpdateConnectionStates(DateTimeOffset now, TimeSpan staleAfter, TimeSpan degradedAfter, TimeSpan offlineAfter)
     {
         var result = new List<VehicleSession>();
         foreach (var vehicle in vehicles.Values)
         {
             result.Add(vehicle);
             var stateChanged = vehicle.UpdateConnectionState(now, staleAfter, degradedAfter, offlineAfter);
-            eventHub.PublishDomainEvent(new VehicleStateUpdated(vehicle.State));
+            await eventHub.PublishDomainEventAsync(new VehicleStateUpdated(vehicle.State));
             if (stateChanged is not null)
             {
-                eventHub.PublishDomainEvent(stateChanged);
+                await eventHub.PublishDomainEventAsync(stateChanged);
             }
         }
 
@@ -60,7 +63,20 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider 
         return new VehicleUpdateConnectionStateResult(result);
     }
 
-    public VehicleRegistryResult RegisterOrUpdateHeartbeat(
+    /// <summary>
+    /// Registers a new vehicle or updates the heartbeat of an existing vehicle.
+    /// </summary>
+    /// <param name="vehicleId">The unique identifier of the vehicle.</param>
+    /// <param name="endPoint">The transport endpoint of the vehicle.</param>
+    /// <param name="customMode">The custom mode of the vehicle.</param>
+    /// <param name="vehicleType">The type of the vehicle.</param>
+    /// <param name="autopilot">The autopilot type of the vehicle.</param>
+    /// <param name="baseMode">The base mode of the vehicle.</param>
+    /// <param name="systemStatus">The system status of the vehicle.</param>
+    /// <param name="mavLinkVersion">The MAVLink version of the vehicle.</param>
+    /// <param name="receivedAt">The timestamp when the heartbeat was received.</param>
+    /// <returns>A result containing the updated vehicle session.</returns>
+    public async Task<VehicleRegistryResult> RegisterOrUpdateHeartbeatAsync(
         VehicleId vehicleId,
         TransportEndPoint endPoint,
         uint customMode,
@@ -89,7 +105,7 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider 
             session = new VehicleSession(state, endPoint, dateTimeProvider);
             vehicles.Add(vehicleId, session);
             logger.LogTrace("Registered new vehicle: {VehicleId}", vehicleId);
-            eventHub.PublishDomainEvent(new VehicleRegistered(vehicleId));
+            await eventHub.PublishDomainEventAsync(new VehicleRegistered(vehicleId), CancellationToken.None);
         }
 
         session.ApplyHeartbeat(

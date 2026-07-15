@@ -17,14 +17,6 @@ public class DomainEventHub(ILogger<EventHub> logger) : EventHub(logger), IDomai
         return SubscribeAsync<T>(eventName, handler);
     }
 
-
-    /// <inheritdoc/>
-    public virtual IDisposable SubscribeDomainEvent<T>(Action<T> handler) where T : IDomainEvent
-    {
-        var eventName = typeof(T).FullName!;
-        return Subscribe<T>(eventName, handler);
-    }
-
     /// <inheritdoc/>
     public virtual async Task PublishDomainEventAsync<T>(T data, CancellationToken cancellationToken = default) where T : IDomainEvent
     {
@@ -34,17 +26,5 @@ public class DomainEventHub(ILogger<EventHub> logger) : EventHub(logger), IDomai
         await PublishAsync<IDomainEvent>(key, eventName, data, cancellationToken);
         eventName = data.GetType().FullName!;
         await PublishAsync(eventName, data, cancellationToken);
-    }
-
-    /// <inheritdoc/>
-    public virtual void PublishDomainEvent<T>(T data) where T : IDomainEvent
-    {
-        var eventName = data.Name;
-        var key = KeyGenerator.GetEventKey<T>(eventName);
-
-        Publish<T>(key, data);
-
-        eventName = data.GetType().FullName!;
-        Publish(eventName, data);
     }
 }

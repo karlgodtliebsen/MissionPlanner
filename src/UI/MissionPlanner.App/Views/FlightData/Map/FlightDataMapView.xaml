@@ -91,8 +91,8 @@
                 </MenuFlyoutSubItem>
 
                 <MenuFlyoutSubItem Text="File Load/Save">
-                    <MenuFlyoutItem Text="Load WP File" Command="{Binding NotImplementedCommand}" CommandParameter="Load WP File" />
-                    <MenuFlyoutItem Text="Load and Append" Command="{Binding NotImplementedCommand}" CommandParameter="Load and Append" />
+                    <MenuFlyoutItem Text="Load WP File" Command="{Binding LoadWpFileCommand}" />
+                    <MenuFlyoutItem Text="Load and Append" Command="{Binding LoadAndAppendCommand}" />
                     <MenuFlyoutItem Text="Save WP File" Command="{Binding SaveWpFileCommand}" />
                     <MenuFlyoutItem Text="Load KML File" Command="{Binding NotImplementedCommand}" CommandParameter="Load KML File" />
                     <MenuFlyoutItem Text="Load SHP File" Command="{Binding NotImplementedCommand}" CommandParameter="Load SHP File" />

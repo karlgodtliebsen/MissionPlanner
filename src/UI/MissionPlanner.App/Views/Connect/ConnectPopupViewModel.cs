@@ -164,9 +164,6 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
             {
                 Channels.AddRange(configuredChannels);
                 SelectedChannel = selectedChannel;
-                //SelectedChannel = null;
-                //Channels = ["No channels found"];
-                //StatusMessage = "No serial ports detected";
             }
 
             logger.LogInformation("Refreshed port list: {PortCount} ports found", availablePorts.Length);
@@ -289,22 +286,6 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
             {
                 SuccessConnection(result.VehicleId.Value);
             }
-            //else if (result.ErrorMessage is not null && result.ErrorMessage.Contains("A connection is already established."))
-            //{
-            //    if (connectionService.IsConnected)
-            //    {
-            //        VehicleId? vid = connectionService.ConnectedVehicles.FirstOrDefault();
-            //        if (vid is not null)
-            //        {
-            //            SuccessConnection(vid.Value);
-            //        }
-            //        else
-            //        {
-            //            StatusMessage = "Already connected to a vehicle. Disconnect first.";
-            //            logger.LogWarning("Connection attempt failed: {Error}", result.ErrorMessage);
-            //        }
-            //    }
-            //}
             else
             {
                 await DisconnectAsync();

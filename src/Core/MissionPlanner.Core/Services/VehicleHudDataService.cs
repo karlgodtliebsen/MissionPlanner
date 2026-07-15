@@ -16,7 +16,7 @@ namespace MissionPlanner.Core.Services;
 public sealed class VehicleHudDataService : IVehicleHudDataService, IDisposable
 {
     private readonly IVehicleRegistry vehicleRegistry;
-    private readonly IDomainEventHub eventHub;
+    private readonly IDomainEventHub domainEventHub;
     private readonly ConcurrentDictionary<VehicleId, VehicleHudData> hudDataCache;
     private readonly Subject<VehicleHudData> hudDataSubject;
     private readonly IDisposable eventSubscription;
@@ -27,18 +27,18 @@ public sealed class VehicleHudDataService : IVehicleHudDataService, IDisposable
     /// Initializes a new instance of the <see cref="VehicleHudDataService"/> class.
     /// </summary>
     /// <param name="vehicleRegistry">The vehicle registry to query current vehicle state.</param>
-    /// <param name="eventHub">The domain event hub to subscribe to vehicle updates.</param>
+    /// <param name="domainEventHub">The domain event hub to subscribe to vehicle updates.</param>
     /// <param name="logger">The logger instance.</param>
-    public VehicleHudDataService(IVehicleRegistry vehicleRegistry, IDomainEventHub eventHub, ILogger<VehicleHudDataService> logger)
+    public VehicleHudDataService(IVehicleRegistry vehicleRegistry, IDomainEventHub domainEventHub, ILogger<VehicleHudDataService> logger)
     {
         this.vehicleRegistry = vehicleRegistry ?? throw new ArgumentNullException(nameof(vehicleRegistry));
-        this.eventHub = eventHub ?? throw new ArgumentNullException(nameof(eventHub));
+        this.domainEventHub = domainEventHub ?? throw new ArgumentNullException(nameof(domainEventHub));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         hudDataCache = new ConcurrentDictionary<VehicleId, VehicleHudData>();
         hudDataSubject = new Subject<VehicleHudData>();
 
         // Subscribe to vehicle state updates
-        eventSubscription = this.eventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
+        eventSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
     }
 
     /// <inheritdoc/>

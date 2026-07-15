@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Missions;
 using MissionPlanner.Core.Missions.Abstractions;
+using MissionPlanner.MavLink.Missions;
 
 namespace MissionPlanner.App.Views.FlightData.Map;
 
@@ -263,6 +264,117 @@ public partial class FlightDataMapViewModel : ObservableObject
             logger.LogError(ex, "Failed to save mission file");
             ShowStatus($"Save failed: {ex.Message}");
         }
+    }
+
+    [RelayCommand]
+    private async Task LoadWpFileAsync()
+    {
+        await LoadMissionFileAsync(append: false);
+    }
+
+    [RelayCommand]
+    private async Task LoadAndAppendAsync()
+    {
+        await LoadMissionFileAsync(append: true);
+    }
+
+    private async Task LoadMissionFileAsync(bool append)
+    {
+        try
+        {
+            var file = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Select waypoint file" });
+            if (file is null)
+            {
+                return;
+            }
+
+            await using var stream = await file.OpenReadAsync();
+            using var reader = new StreamReader(stream);
+            var content = await reader.ReadToEndAsync();
+            var (items, home, skipped) = ParseQgcWplFile(content);
+
+            if (!append)
+            {
+                Mission = new Mission(MissionId.New(), Path.GetFileNameWithoutExtension(file.FileName));
+                if (home is not null)
+                {
+                    HomePosition = home;
+                }
+            }
+
+            foreach (var item in items)
+            {
+                Mission.Add(item);
+            }
+
+            OnMissionChanged(skipped == 0
+                ? $"Loaded {items.Count} items from {file.FileName}."
+                : $"Loaded {items.Count} items from {file.FileName}; skipped {skipped} unsupported.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to load mission file");
+            ShowStatus($"Load failed: {ex.Message}");
+        }
+    }
+
+    private (List<MissionItem> Items, GeoPosition? Home, int Skipped) ParseQgcWplFile(string content)
+    {
+        var lines = content.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (lines.Length == 0 || !lines[0].StartsWith("QGC WPL", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException("Not a QGC WPL waypoint file.");
+        }
+
+        List<MissionItem> items = [];
+        GeoPosition? home = null;
+        var skipped = 0;
+
+        foreach (var line in lines.Skip(1))
+        {
+            var fields = line.Split(['\t', ' '], StringSplitOptions.RemoveEmptyEntries);
+            if (fields.Length < 12)
+            {
+                continue;
+            }
+
+            var sequence = ushort.Parse(fields[0], CultureInfo.InvariantCulture);
+            var latitude = double.Parse(fields[8], CultureInfo.InvariantCulture);
+            var longitude = double.Parse(fields[9], CultureInfo.InvariantCulture);
+
+            // Line 0 is the home position by QGC WPL convention.
+            if (sequence == 0)
+            {
+                home = latitude != 0 || longitude != 0 ? new GeoPosition(latitude, longitude) : null;
+                continue;
+            }
+
+            var protocolItem = new MavLinkMissionItem(
+                (ushort)(sequence - 1),
+                byte.Parse(fields[2], CultureInfo.InvariantCulture),
+                ushort.Parse(fields[3], CultureInfo.InvariantCulture),
+                Current: false,
+                AutoContinue: fields[11] != "0",
+                float.Parse(fields[4], CultureInfo.InvariantCulture),
+                float.Parse(fields[5], CultureInfo.InvariantCulture),
+                float.Parse(fields[6], CultureInfo.InvariantCulture),
+                float.Parse(fields[7], CultureInfo.InvariantCulture),
+                (int)Math.Round(latitude * 1e7),
+                (int)Math.Round(longitude * 1e7),
+                float.Parse(fields[10], CultureInfo.InvariantCulture),
+                MavMissionType.Mission);
+
+            try
+            {
+                items.Add(protocolMapper.FromProtocol(protocolItem));
+            }
+            catch (NotSupportedException)
+            {
+                skipped++;
+            }
+        }
+
+        return (items, home, skipped);
     }
 
     [RelayCommand]

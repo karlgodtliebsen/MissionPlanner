@@ -49,7 +49,7 @@ public class TestOfDomainEventHub
         var metaData = new MetaData { Actor = "Karl", Source = "From Application" };
         var domainEvent = new DomainEvent<EventData, MetaData>("testing", eventData, metaData);
 
-        var disposable = eventHub.SubscribeDomainEventAsync<DomainEvent<EventData, MetaData>>((m, ct) =>
+        using var disposable = eventHub.SubscribeDomainEventAsync<DomainEvent<EventData, MetaData>>((m, ct) =>
         {
             messageReceived.SetResult(true);
             return Task.CompletedTask;
@@ -60,7 +60,6 @@ public class TestOfDomainEventHub
 
         await Task.WhenAny(messageReceived.Task, Task.Delay(TimeSpan.FromMinutes(1), cancellationToken));
         messageReceived.Task.IsCompleted.Should().BeTrue("DomainEvent was received in the expected time frame.");
-        disposable.Dispose();
     }
 
 
@@ -68,7 +67,7 @@ public class TestOfDomainEventHub
     /// 
     /// </summary>
     [Fact]
-    public void Verify_DomainEvent_Publish_And_Subscription_Is_Connected()
+    public async Task Verify_DomainEvent_Publish_And_Subscription_Is_ConnectedAsync()
     {
         var messageReceived = new TaskCompletionSource<bool>();
 
@@ -77,30 +76,29 @@ public class TestOfDomainEventHub
         var metaData = new MetaData { Actor = "Karl", Source = "From Application" };
         var domainEvent = new DomainEvent<EventData, MetaData>("testing", eventData, metaData);
 
-        var disposable = eventHub.SubscribeDomainEvent<DomainEvent<EventData, MetaData>>((m) =>
+        using var disposable = eventHub.SubscribeDomainEventAsync<DomainEvent<EventData, MetaData>>(async (m, ct) =>
         {
             messageReceived.SetResult(true);
-            return;
+            await Task.CompletedTask;
         });
 
 
-        eventHub.PublishDomainEvent(domainEvent);
+        await eventHub.PublishDomainEventAsync(domainEvent, cancellationToken);
 
-        Task.WhenAny(messageReceived.Task, Task.Delay(TimeSpan.FromMinutes(1), cancellationToken));
+        await Task.WhenAny(messageReceived.Task, Task.Delay(TimeSpan.FromMinutes(1), cancellationToken));
         messageReceived.Task.IsCompleted.Should().BeTrue("DomainEvent was received in the expected time frame.");
-        disposable.Dispose();
     }
 
     /// <summary>
     /// Verifies that a VehicleRegistered event is published when the first heartbeat is received.
     /// </summary>
     [Fact]
-    public void Should_Publish_VehicleRegistered_When_First_Heartbeat_Is_Received()
+    public async Task Should_Publish_VehicleRegistered_When_First_Heartbeat_Is_Received()
     {
         var eventHub = new CapturingDomainEventHub(NSubstitute.Substitute.For<ILogger<EventHub>>());
         var registry = new VehicleRegistry(eventHub, NSubstitute.Substitute.For<IDateTimeProvider>(), NSubstitute.Substitute.For<ILogger<VehicleRegistry>>());
 
-        registry.RegisterOrUpdateHeartbeat(
+        await registry.RegisterOrUpdateHeartbeatAsync(
             new VehicleId(1, 1),
             new IPEndPoint(IPAddress.Any, 0).ToTransportEndPoint("udp"),
             0,

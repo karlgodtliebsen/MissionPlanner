@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Models;
-using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Library;
 using MissionPlanner.MavLink.Services.Abstractions;
@@ -332,7 +331,7 @@ public class DomainVehicleServiceSimulatorTests
 
         var vehicleId = new VehicleId(1, 1);
         var receivedAt = DateTimeOffset.UtcNow.AddSeconds(-10);
-        var vehicle = registry.RegisterOrUpdateHeartbeat(
+        var vehicle = await registry.RegisterOrUpdateHeartbeatAsync(
             vehicleId,
             simulatorIPEndPoint.ToTransportEndPoint("udp"),
             0,
@@ -343,7 +342,7 @@ public class DomainVehicleServiceSimulatorTests
             3,
             receivedAt);
 
-        registry.UpdateConnectionStates(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10));
+        await registry.UpdateConnectionStates(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10));
 
         Assert.Equal(VehicleConnectionState.Offline, vehicle.Vehicle.State.ConnectionState);
         var response = await vehicleService.ArmAsync(vehicleId, TestContext.Current.CancellationToken);
@@ -360,7 +359,7 @@ public class DomainVehicleServiceSimulatorTests
         var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
         var vehicleId = new VehicleId(1, 1);
 
-        registry.RegisterOrUpdateHeartbeat(
+        await registry.RegisterOrUpdateHeartbeatAsync(
             vehicleId,
             simulatorIPEndPoint.ToTransportEndPoint("udp"),
             0,

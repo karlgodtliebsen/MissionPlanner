@@ -14,4 +14,11 @@ public interface IMissionProtocolMapper
     /// <param name="missionType">The type of the mission plan.</param>
     /// <returns>The protocol representation of the mission item.</returns>
     MavLinkMissionItem ToProtocol(MissionItem item, MissionPlanType missionType);
+
+    /// <summary>
+    /// Maps a protocol representation of a mission item back to its corresponding mission item.
+    /// </summary>
+    /// <param name="item">The protocol representation of the mission item.</param>
+    /// <returns>The mission item corresponding to the protocol representation.</returns>
+    MissionItem FromProtocol(MavLinkMissionItem item);
 }

@@ -25,7 +25,7 @@ public class VehicleHudDataServiceTests
         var mockLogger = Substitute.For<ILogger<VehicleHudDataService>>();
         var mockRegistry = Substitute.For<IVehicleRegistry>();
         var mockEventHub = Substitute.For<IDomainEventHub>();
-        mockEventHub.SubscribeDomainEvent<VehicleStateUpdated>(Arg.Any<Action<VehicleStateUpdated>>()).Returns(Substitute.For<IDisposable>());
+        mockEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(Arg.Any<Func<VehicleStateUpdated, CancellationToken, Task>>()).Returns(Substitute.For<IDisposable>());
 
         var service = new VehicleHudDataService(mockRegistry, mockEventHub, mockLogger);
         var vehicleId = new VehicleId(99, 99);
@@ -48,7 +48,7 @@ public class VehicleHudDataServiceTests
         var mockLogger = Substitute.For<ILogger<VehicleHudDataService>>();
         var mockRegistry = Substitute.For<IVehicleRegistry>();
         var mockEventHub = Substitute.For<IDomainEventHub>();
-        mockEventHub.SubscribeDomainEvent(Arg.Any<Action<VehicleStateUpdated>>()).Returns(Substitute.For<IDisposable>());
+        mockEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(Arg.Any<Func<VehicleStateUpdated, CancellationToken, Task>>()).Returns(Substitute.For<IDisposable>());
 
         var service = new VehicleHudDataService(mockRegistry, mockEventHub, mockLogger);
         mockRegistry.Vehicles.Returns(Array.Empty<VehicleSession>());

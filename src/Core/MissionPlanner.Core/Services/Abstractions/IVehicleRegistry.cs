@@ -24,7 +24,7 @@ public interface IVehicleRegistry
     /// <summary>
     /// Resets the vehicle registry, clearing all registered vehicle sessions.
     /// </summary>
-    void Reset();
+    Task Reset();
 
     /// <summary>
     /// Updates the connection states of all registered vehicle sessions based on the elapsed time since their last heartbeat.
@@ -33,7 +33,7 @@ public interface IVehicleRegistry
     /// <param name="staleAfter">The time span after which a vehicle is considered stale.</param>
     /// <param name="degradedAfter">The time span after which a vehicle is considered degraded.</param>
     /// <param name="offlineAfter">The time span after which a vehicle is considered offline.</param>
-    VehicleUpdateConnectionStateResult UpdateConnectionStates(DateTimeOffset now, TimeSpan staleAfter, TimeSpan degradedAfter, TimeSpan offlineAfter);
+    Task<VehicleUpdateConnectionStateResult> UpdateConnectionStates(DateTimeOffset now, TimeSpan staleAfter, TimeSpan degradedAfter, TimeSpan offlineAfter);
 
     /// <summary>
     /// Registers a new vehicle or updates an existing vehicle's state based on a received heartbeat message. 
@@ -48,7 +48,7 @@ public interface IVehicleRegistry
     /// <param name="mavLinkVersion">The MAVLink version of the vehicle.</param>
     /// <param name="receivedAt">The timestamp when the heartbeat was received.</param>
     /// <returns>The updated or newly registered vehicle session.</returns>
-    VehicleRegistryResult RegisterOrUpdateHeartbeat(
+    Task<VehicleRegistryResult> RegisterOrUpdateHeartbeatAsync(
         VehicleId vehicleId,
         TransportEndPoint endPoint,
         uint customMode,

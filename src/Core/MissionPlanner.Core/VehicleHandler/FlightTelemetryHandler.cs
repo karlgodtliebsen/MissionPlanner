@@ -7,11 +7,17 @@ using MissionPlanner.MavLink.Messages;
 
 namespace MissionPlanner.Core.VehicleHandler;
 
-public sealed class FlightTelemetryHandler(
-    IVehicleRegistry vehicleRegistry,
-    IDomainEventHub domainEventHub)
+/// <summary>
+/// Handles flight telemetry messages and updates the vehicle state accordingly.
+/// </summary>
+/// <param name="vehicleRegistry">The vehicle registry service.</param>
+/// <param name="domainEventHub">The domain event hub service.</param>
+public sealed class FlightTelemetryHandler(IVehicleRegistry vehicleRegistry, IDomainEventHub domainEventHub)
     : VehicleTelemetryHandlerBase(vehicleRegistry, domainEventHub), IVehicleMessageHandler
 {
+    /// <summary>
+    /// Gets the types of MAVLink messages that this handler can process.
+    /// </summary>
     public IReadOnlyCollection<Type> MessageTypes { get; } =
     [
         typeof(HeartbeatMessage),
@@ -20,12 +26,17 @@ public sealed class FlightTelemetryHandler(
         typeof(VfrHudMessage)
     ];
 
+    /// <summary>
+    /// Handles incoming MAVLink messages and updates the vehicle state accordingly.
+    /// </summary>
+    /// <param name="message">The MAVLink message to handle.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     public async ValueTask HandleAsync(MavLinkMessage message, CancellationToken cancellationToken)
     {
         // Heartbeat is special because it may create the session.
         if (message is HeartbeatMessage heartbeat)
         {
-            var result = vehicleRegistry.RegisterOrUpdateHeartbeat(
+            var result = await vehicleRegistry.RegisterOrUpdateHeartbeatAsync(
                 new VehicleId(heartbeat.SystemId, heartbeat.ComponentId),
                 heartbeat.EndPoint,
                 heartbeat.CustomMode,

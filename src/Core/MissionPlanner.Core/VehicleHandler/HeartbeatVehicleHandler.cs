@@ -23,7 +23,7 @@ public sealed class HeartbeatVehicleHandler(IVehicleRegistry vehicleRegistry, ID
 
         var vehicleId = new VehicleId(message.SystemId, message.ComponentId);
 
-        var registryResult = vehicleRegistry.RegisterOrUpdateHeartbeat(
+        var registryResult = await vehicleRegistry.RegisterOrUpdateHeartbeatAsync(
             vehicleId,
             message.EndPoint,
             message.CustomMode,

@@ -35,7 +35,7 @@ public class VehicleConnectionService(
 
 
     /// <inheritdoc/>
-    public async Task<VehicleConnectionResult> ConnectSerialAsync(string portName, int baudRate = 57600, CancellationToken cancellationToken = default)
+    public async Task<VehicleConnectionResult> ConnectSerialAsync(string portName, int baudRate = 115200, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(portName))
         {
@@ -222,7 +222,7 @@ public class VehicleConnectionService(
         var tcs = new TaskCompletionSource<VehicleId?>();
 
         // Subscribe to vehicle registered event (fires when heartbeat handler identifies a vehicle)
-        var subscription = domainEventHub.SubscribeDomainEvent<VehicleRegistered>(evt =>
+        using var subscription = domainEventHub.SubscribeDomainEventAsync<VehicleRegistered>(async (evt, ct) =>
         {
             vehicleId = evt.VehicleId;
             tcs.TrySetResult(vehicleId);

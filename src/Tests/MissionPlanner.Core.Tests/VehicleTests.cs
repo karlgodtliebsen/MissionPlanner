@@ -7,6 +7,7 @@ using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.VehicleHandler.Abstractions;
+using MissionPlanner.Library;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -90,7 +91,7 @@ public class VehicleTests
             0,
             4,
             3,
-            DateTimeOffset.UtcNow);
+            dateTimeProvider.UtcNow);
 
         await handler.Handle(heartbeat, TestContext.Current.CancellationToken);
         var vehicle = registry.GetRequired(new VehicleId(1, 1));
@@ -168,11 +169,11 @@ public class VehicleTests
 
         var first = new HeartbeatMessage(
             1, 1, simulatorIPEndPoint.ToTransportEndPoint("udp"), 0, 2, 3, 0, 4, 3,
-            DateTimeOffset.UtcNow);
+            dateTimeProvider.UtcNow);
 
         var second = new HeartbeatMessage(
             1, 1, simulatorIPEndPoint.ToTransportEndPoint("udp"), 42, 2, 3, 81, 4, 3,
-            DateTimeOffset.UtcNow.AddSeconds(1));
+            dateTimeProvider.UtcNow.AddSeconds(1));
 
         await handler.Handle(first, TestContext.Current.CancellationToken);
         await handler.Handle(second, TestContext.Current.CancellationToken);
@@ -196,6 +197,8 @@ public class VehicleTests
 
         await using var client = serviceProvider.GetRequiredService<IMavLinkClient>();
         await using var connection = serviceProvider.GetRequiredService<IMavLinkConnection>();
+        DomainException.ThrowIfNull(client);
+        DomainException.ThrowIfNull(connection);
 
         var messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
 
@@ -206,6 +209,8 @@ public class VehicleTests
             simulatorIPEndPoint.Port,
             port,
             TimeSpan.FromMilliseconds(100));
+        DomainException.ThrowIfNull(simulator);
+
 
         _ = Task.Run(() => connection.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
         _ = Task.Run(() => messagePump.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
@@ -228,7 +233,7 @@ public class VehicleTests
 
         var vehicleId = new VehicleId(1, 1);
 
-        registry.RegisterOrUpdateHeartbeat(
+        await registry.RegisterOrUpdateHeartbeatAsync(
             vehicleId, simulatorIPEndPoint.ToTransportEndPoint("udp"),
             0,
             2,
@@ -269,10 +274,11 @@ public class VehicleTests
     {
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
         var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
+        var dateTimeProvider = serviceProvider.GetRequiredService<IDateTimeProvider>();
 
         var vehicleId = new VehicleId(1, 1);
 
-        registry.RegisterOrUpdateHeartbeat(
+        await registry.RegisterOrUpdateHeartbeatAsync(
             vehicleId, simulatorIPEndPoint.ToTransportEndPoint("udp"),
             0,
             2,
@@ -280,7 +286,7 @@ public class VehicleTests
             0,
             4,
             3,
-            DateTimeOffset.UtcNow);
+            dateTimeProvider.UtcNow);
 
         var handler = domainFactory.Create<IBatteryVehicleHandler, IVehicleRegistry>(registry);
 
@@ -290,7 +296,7 @@ public class VehicleTests
                 1, simulatorIPEndPoint.ToTransportEndPoint("udp"),
                 56,
                 (float)10.0,
-                DateTimeOffset.UtcNow), TestContext.Current.CancellationToken);
+                dateTimeProvider.UtcNow), TestContext.Current.CancellationToken);
 
         var vehicle = registry.GetRequired(vehicleId);
 
@@ -306,10 +312,11 @@ public class VehicleTests
     {
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
         var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
+        var dateTimeProvider = serviceProvider.GetRequiredService<IDateTimeProvider>();
 
         var vehicleId = new VehicleId(1, 1);
 
-        registry.RegisterOrUpdateHeartbeat(
+        await registry.RegisterOrUpdateHeartbeatAsync(
             vehicleId, simulatorIPEndPoint.ToTransportEndPoint("udp"),
             0,
             2,
@@ -317,7 +324,7 @@ public class VehicleTests
             0,
             4,
             3,
-            DateTimeOffset.UtcNow);
+            dateTimeProvider.UtcNow);
 
         var handler = domainFactory.Create<IAttitudeVehicleHandler, IVehicleRegistry>(registry);
 
@@ -328,7 +335,7 @@ public class VehicleTests
                 56.1629,
                 10.2039,
                 12.5,
-                DateTimeOffset.UtcNow), TestContext.Current.CancellationToken);
+                dateTimeProvider.UtcNow), TestContext.Current.CancellationToken);
 
         var vehicle = registry.GetRequired(vehicleId);
 
@@ -342,15 +349,13 @@ public class VehicleTests
     /// Tests that a vehicle is marked as stale when its heartbeat is old.
     /// </summary>
     [Fact]
-    public void Should_Mark_Vehicle_As_Stale_When_Heartbeat_Is_Old()
+    public async Task Should_Mark_Vehicle_As_Stale_When_Heartbeat_Is_Old()
     {
         var eventHub = serviceProvider.GetRequiredService<IEventHub>();
-
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
-
-        var receivedAt = DateTimeOffset.UtcNow;
-
-        var vehicleRegistryResult = registry.RegisterOrUpdateHeartbeat(
+        var dateTimeProvider = serviceProvider.GetRequiredService<IDateTimeProvider>();
+        var receivedAt = dateTimeProvider.UtcNow;
+        var vehicleRegistryResult = await registry.RegisterOrUpdateHeartbeatAsync(
             new VehicleId(1, 1), simulatorIPEndPoint.ToTransportEndPoint("udp"),
             0,
             2,
@@ -360,7 +365,7 @@ public class VehicleTests
             3,
             receivedAt);
 
-        registry.UpdateConnectionStates(receivedAt.AddSeconds(3), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10));
+        await registry.UpdateConnectionStates(receivedAt.AddSeconds(3), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10));
 
         Assert.Equal(VehicleConnectionState.Stale,
             vehicleRegistryResult.Vehicle.State.ConnectionState);
@@ -370,13 +375,13 @@ public class VehicleTests
     /// Tests that a vehicle is marked as degraded when its heartbeat is very old.
     /// </summary>
     [Fact]
-    public void Should_Mark_Vehicle_As_Degraded_When_Heartbeat_Is_Old()
+    public async Task Should_Mark_Vehicle_As_Degraded_When_Heartbeat_Is_Old()
     {
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
+        var dateTimeProvider = serviceProvider.GetRequiredService<IDateTimeProvider>();
+        var receivedAt = dateTimeProvider.UtcNow;
 
-        var receivedAt = DateTimeOffset.UtcNow;
-
-        var vehicleRegistryResult = registry.RegisterOrUpdateHeartbeat(
+        var vehicleRegistryResult = await registry.RegisterOrUpdateHeartbeatAsync(
             new VehicleId(1, 1), simulatorIPEndPoint.ToTransportEndPoint("udp"),
             0,
             2,
@@ -395,13 +400,13 @@ public class VehicleTests
     /// Tests that a vehicle is marked as offline when its heartbeat is very old.
     /// </summary>
     [Fact]
-    public void Should_Mark_Vehicle_As_Offline_When_Heartbeat_Is_Very_Old()
+    public async Task Should_Mark_Vehicle_As_Offline_When_Heartbeat_Is_Very_Old()
     {
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
 
-        var receivedAt = DateTimeOffset.UtcNow;
+        var receivedAt = dateTimeProvider.UtcNow;
 
-        var vehicleRegistryResult = registry.RegisterOrUpdateHeartbeat(
+        var vehicleRegistryResult = await registry.RegisterOrUpdateHeartbeatAsync(
             new VehicleId(1, 1), simulatorIPEndPoint.ToTransportEndPoint("udp"),
             0,
             2,
@@ -421,15 +426,15 @@ public class VehicleTests
     /// Tests that a vehicle is marked as online when a new heartbeat arrives after it was marked degraded.
     /// </summary>
     [Fact]
-    public void Should_Mark_Vehicle_Online_When_New_Heartbeat_Arrives_After_Degraded()
+    public async Task Should_Mark_Vehicle_Online_When_New_Heartbeat_Arrives_After_Degraded()
     {
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
 
 
-        var receivedAt = DateTimeOffset.UtcNow;
+        var receivedAt = dateTimeProvider.UtcNow;
         var vehicleId = new VehicleId(1, 1);
 
-        var vehicleRegistryResult = registry.RegisterOrUpdateHeartbeat(
+        var vehicleRegistryResult = await registry.RegisterOrUpdateHeartbeatAsync(
             vehicleId, simulatorIPEndPoint.ToTransportEndPoint("udp"),
             0,
             2,
@@ -443,7 +448,7 @@ public class VehicleTests
 
         Assert.Equal(VehicleConnectionState.Degraded, vehicleRegistryResult.Vehicle.State.ConnectionState);
 
-        registry.RegisterOrUpdateHeartbeat(
+        await registry.RegisterOrUpdateHeartbeatAsync(
             vehicleId, simulatorIPEndPoint.ToTransportEndPoint("udp"),
             0,
             2,
@@ -462,15 +467,15 @@ public class VehicleTests
     /// Tests that a vehicle is marked as online when a new heartbeat arrives after it was marked offline.
     /// </summary>
     [Fact]
-    public void Should_Mark_Vehicle_Online_When_New_Heartbeat_Arrives_After_Offline()
+    public async Task Should_Mark_Vehicle_Online_When_New_Heartbeat_Arrives_After_Offline()
     {
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
 
 
-        var receivedAt = DateTimeOffset.UtcNow;
+        var receivedAt = dateTimeProvider.UtcNow;
         var vehicleId = new VehicleId(1, 1);
 
-        var vehicleRegistryResult = registry.RegisterOrUpdateHeartbeat(
+        var vehicleRegistryResult = await registry.RegisterOrUpdateHeartbeatAsync(
             vehicleId, simulatorIPEndPoint.ToTransportEndPoint("udp"),
             0,
             2,
@@ -485,7 +490,7 @@ public class VehicleTests
         Assert.Equal(
             VehicleConnectionState.Offline, vehicleRegistryResult.Vehicle.State.ConnectionState);
 
-        registry.RegisterOrUpdateHeartbeat(
+        await registry.RegisterOrUpdateHeartbeatAsync(
             vehicleId, simulatorIPEndPoint.ToTransportEndPoint("udp"),
             0,
             2,
@@ -540,7 +545,7 @@ public class VehicleTests
     [Fact]
     public void Should_Decode_CommandAck_Message()
     {
-        var receivedAt = DateTimeOffset.UtcNow;
+        var receivedAt = dateTimeProvider.UtcNow;
         var payload = new byte[]
         {
             0x90, 0x01, // 400 COMPONENT_ARM_DISARM
@@ -638,7 +643,7 @@ public class VehicleTests
             128,
             4,
             3,
-            DateTimeOffset.UtcNow);
+            dateTimeProvider.UtcNow);
 
         await handler.Handle(heartbeat, TestContext.Current.CancellationToken);
         var vehicle = registry.GetRequired(new VehicleId(1, 1))!;
@@ -664,7 +669,7 @@ public class VehicleTests
             0,
             4,
             3,
-            DateTimeOffset.UtcNow);
+            dateTimeProvider.UtcNow);
 
         await handler.Handle(heartbeat, TestContext.Current.CancellationToken);
         var vehicle = registry.GetRequired(new VehicleId(1, 1))!;
@@ -730,7 +735,7 @@ public class VehicleTests
             4,
             3,
             VehicleConnectionState.Online,
-            DateTimeOffset.UtcNow,
+            dateTimeProvider.UtcNow,
             VehicleMode.Stabilize,
             false,
             null,

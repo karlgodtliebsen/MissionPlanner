@@ -16,9 +16,9 @@ public static class SimulatedVehicleStateExtensions
     /// <param name="simulated"></param>
     /// <param name="registry"></param>
     /// <returns></returns>
-    public static VehicleSession ApplyTo(this SimulatedVehicleState simulated, IVehicleRegistry registry)
+    public static async Task<VehicleSession> ApplyToAsync(this SimulatedVehicleState simulated, IVehicleRegistry registry)
     {
-        var vehicleRegistryResult = registry.RegisterOrUpdateHeartbeat(
+        var vehicleRegistryResult = await registry.RegisterOrUpdateHeartbeatAsync(
             simulated.VehicleId,
             new IPEndPoint(IPAddress.Any, 0).ToTransportEndPoint("udp"),
             simulated.CustomMode,

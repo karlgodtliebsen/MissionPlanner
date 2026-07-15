@@ -50,12 +50,12 @@ public class DomainVehiclesTests
     /// 
     /// </summary>
     [Fact]
-    public void Should_Return_All_Simulated_Vehicles()
+    public async Task Should_Return_All_Simulated_VehiclesAsync()
     {
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
         var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
 
-        new SimulatedVehicleState
+        var result = new SimulatedVehicleState
         {
             VehicleId = new VehicleId(1, 1),
             Latitude = 56.1629,
@@ -63,7 +63,8 @@ public class DomainVehiclesTests
             Altitude = 12.5,
             BatteryRemaining = 87,
             BatteryVoltage = 11.4f
-        }.ApplyTo(registry);
+        };
+        await result.ApplyToAsync(registry);
 
         var vehicles = vehicleService.GetVehicles();
 
@@ -81,12 +82,13 @@ public class DomainVehiclesTests
     /// 
     /// </summary>
     [Fact]
-    public void Should_Return_Specific_Simulated_Vehicle()
+    public async Task Should_Return_Specific_Simulated_VehicleAsync()
     {
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
         var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
 
-        new SimulatedVehicleState { VehicleId = new VehicleId(1, 1), Roll = 0.1, Pitch = -0.2, Yaw = 1.5 }.ApplyTo(registry);
+        var result = new SimulatedVehicleState { VehicleId = new VehicleId(1, 1), Roll = 0.1, Pitch = -0.2, Yaw = 1.5 };
+        await result.ApplyToAsync(registry);
 
         var vehicle = vehicleService.GetVehicleState(new VehicleId(1, 1));
 

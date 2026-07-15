@@ -33,26 +33,27 @@ public class VehicleHudDataIntegrationTests
     /// Verifies that the service returns the current HUD data for a specified vehicle.
     /// </summary>
     [Fact]
-    public void Should_Get_Current_HudData_From_Registry()
+    public async Task Should_Get_Current_HudData_From_RegistryAsync()
     {
         // Arrange
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
         var hudDataService = serviceProvider.GetRequiredService<IVehicleHudDataService>();
 
         var vehicleId = new VehicleId(1, 1);
-
-        new SimulatedVehicleState
-        {
-            VehicleId = vehicleId,
-            Latitude = 56.1629,
-            Longitude = 10.2039,
-            Altitude = 125.5,
-            Pitch = -3.1,
-            Roll = 5.2,
-            Yaw = 90.0,
-            BatteryRemaining = 87,
-            BatteryVoltage = 11.4f
-        }.ApplyTo(registry);
+        var result =
+            new SimulatedVehicleState
+            {
+                VehicleId = vehicleId,
+                Latitude = 56.1629,
+                Longitude = 10.2039,
+                Altitude = 125.5,
+                Pitch = -3.1,
+                Roll = 5.2,
+                Yaw = 90.0,
+                BatteryRemaining = 87,
+                BatteryVoltage = 11.4f
+            };
+        await result.ApplyToAsync(registry);
 
         // Act
         var hudData = hudDataService.GetHudData(vehicleId);
@@ -69,7 +70,7 @@ public class VehicleHudDataIntegrationTests
     }
 
     [Fact]
-    public void Should_Get_Primary_Vehicle_HudData()
+    public async Task Should_Get_Primary_Vehicle_HudDataAsync()
     {
         // Arrange
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
@@ -78,14 +79,15 @@ public class VehicleHudDataIntegrationTests
         var vehicleId = new VehicleId(1, 1);
 
         // Add vehicle
-        new SimulatedVehicleState
+        var result = new SimulatedVehicleState
         {
             VehicleId = vehicleId,
             Latitude = 56.1629,
             Longitude = 10.2039,
             Altitude = 100.0,
             BatteryRemaining = 90
-        }.ApplyTo(registry);
+        };
+        await result.ApplyToAsync(registry);
 
         // Act
         var primaryHudData = hudDataService.GetPrimaryVehicleHudData();

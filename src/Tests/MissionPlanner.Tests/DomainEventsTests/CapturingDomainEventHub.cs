@@ -17,14 +17,6 @@ public sealed class CapturingDomainEventHub(ILogger<EventHub> logger) : DomainEv
     /// </summary>
     public IReadOnlyList<IDomainEvent> Events => events;
 
-
-    /// <inheritdoc />
-    public override void PublishDomainEvent<T>(T domainEvent)
-    {
-        events.Add(domainEvent);
-        base.PublishDomainEvent(domainEvent);
-    }
-
     /// <inheritdoc />
     public override Task PublishDomainEventAsync<T>(T domainEvent, CancellationToken cancellationToken = default)
     {
