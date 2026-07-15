@@ -1,6 +1,6 @@
 ﻿using MissionPlanner.MavLink.Missions;
 
-namespace MissionPlanner.Core.Missions;
+namespace MissionPlanner.Core.Missions.Abstractions;
 
 /// <summary>
 /// Defines the contract for a service that maps mission items to their corresponding protocol representations.

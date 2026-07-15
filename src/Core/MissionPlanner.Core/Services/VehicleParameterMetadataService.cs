@@ -1,8 +1,7 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.MavLink.Parameters;
-using MissionPlanner.MavLink.Parameters.Metadata;
 
 namespace MissionPlanner.Core.Services;
 
@@ -12,7 +11,7 @@ namespace MissionPlanner.Core.Services;
 /// </summary>
 public sealed class VehicleParameterMetadataService(
     IVehicleRegistry vehicleRegistry,
-    IParameterMetadataRepository metadataRepository,
+    MavLink.Parameters.Metadata.Abstractions.IParameterMetadataRepository metadataRepository,
     ILogger<VehicleParameterMetadataService> logger)
     : IVehicleParameterMetadataService
 {
@@ -85,16 +84,16 @@ public sealed class VehicleParameterMetadataService(
         // MAV_TYPE enumeration values
         return vehicle.State.VehicleType switch
         {
-            2 => VehicleType.ArduCopter,     // MAV_TYPE_QUADROTOR and other multirotor types
-            3 => VehicleType.ArduCopter,     // MAV_TYPE_HELICOPTER
-            13 => VehicleType.ArduCopter,    // MAV_TYPE_HEXAROTOR
-            14 => VehicleType.ArduCopter,    // MAV_TYPE_OCTOROTOR
-            15 => VehicleType.ArduCopter,    // MAV_TYPE_TRICOPTER
-            1 => VehicleType.ArduPlane,      // MAV_TYPE_FIXED_WING
-            10 => VehicleType.Rover,         // MAV_TYPE_GROUND_ROVER
-            12 => VehicleType.ArduSub,       // MAV_TYPE_SUBMARINE
+            2 => VehicleType.ArduCopter, // MAV_TYPE_QUADROTOR and other multirotor types
+            3 => VehicleType.ArduCopter, // MAV_TYPE_HELICOPTER
+            13 => VehicleType.ArduCopter, // MAV_TYPE_HEXAROTOR
+            14 => VehicleType.ArduCopter, // MAV_TYPE_OCTOROTOR
+            15 => VehicleType.ArduCopter, // MAV_TYPE_TRICOPTER
+            1 => VehicleType.ArduPlane, // MAV_TYPE_FIXED_WING
+            10 => VehicleType.Rover, // MAV_TYPE_GROUND_ROVER
+            12 => VehicleType.ArduSub, // MAV_TYPE_SUBMARINE
             4 => VehicleType.AntennaTracker, // MAV_TYPE_ANTENNA_TRACKER
-            _ => VehicleType.ArduCopter      // Default fallback
+            var _ => VehicleType.ArduCopter // Default fallback
         };
     }
 }

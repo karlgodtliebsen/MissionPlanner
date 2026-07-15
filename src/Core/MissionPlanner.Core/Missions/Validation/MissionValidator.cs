@@ -1,3 +1,5 @@
+﻿using MissionPlanner.Core.Missions.Abstractions;
+
 namespace MissionPlanner.Core.Missions.Validation;
 
 public sealed class MissionValidator : IMissionValidator

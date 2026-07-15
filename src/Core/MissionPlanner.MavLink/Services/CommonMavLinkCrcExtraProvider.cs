@@ -1,4 +1,5 @@
 ﻿using MissionPlanner.MavLink.Messages;
+using MissionPlanner.MavLink.Services.Abstractions;
 
 namespace MissionPlanner.MavLink.Services;
 

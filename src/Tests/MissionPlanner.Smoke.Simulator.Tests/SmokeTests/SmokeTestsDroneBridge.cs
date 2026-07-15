@@ -7,6 +7,7 @@ using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
+using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Simulator.SmokeTests;
 using MissionPlanner.Smoke.Simulator.Tests.Configuration;
 using MissionPlanner.Transport;

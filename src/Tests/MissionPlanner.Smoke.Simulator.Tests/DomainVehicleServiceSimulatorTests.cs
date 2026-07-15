@@ -7,7 +7,7 @@ using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Library;
-using MissionPlanner.MavLink.Services;
+using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Simulator;
 using MissionPlanner.Smoke.Simulator.Tests.Configuration;
 using MissionPlanner.Smoke.Simulator.Tests.SmokeTests;

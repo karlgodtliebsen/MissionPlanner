@@ -5,6 +5,7 @@ using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Decoding.Utils;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
+using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Simulator;
 using MissionPlanner.Test.Support.Configuration;
 

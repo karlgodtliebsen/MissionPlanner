@@ -1,22 +1,12 @@
 ﻿using MissionPlanner.MavLink.Messages;
 
-namespace MissionPlanner.MavLink.Services;
+namespace MissionPlanner.MavLink.Services.Abstractions;
 
 /// <summary>
 /// Defines a contract for decoding MAVLink messages from frames.
 /// </summary>
-public interface IMavLinkMessageDecoder
+public interface IMavLinkMessageDecodeHandler
 {
-    /// <summary>
-    /// Gets the MAVLink message ID that this decoder can handle.
-    /// </summary>
-    uint MessageId { get; }
-
-    /// <summary>
-    /// Gets the CRC extra value for the MAVLink message.
-    /// </summary>
-    byte CrcExtra { get; }
-
     /// <summary>
     /// Tries to decode a MAVLink message from the given frame.
     /// </summary>

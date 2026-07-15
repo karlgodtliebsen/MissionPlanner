@@ -1,6 +1,7 @@
-﻿using MissionPlanner.Core.Models;
+﻿using MissionPlanner.Core.Missions.Transfer;
+using MissionPlanner.Core.Models;
 
-namespace MissionPlanner.Core.Missions.Transfer;
+namespace MissionPlanner.Core.Missions.Abstractions;
 
 /// <summary>
 /// Defines the contract for a service that handles mission transfers to and from vehicles.

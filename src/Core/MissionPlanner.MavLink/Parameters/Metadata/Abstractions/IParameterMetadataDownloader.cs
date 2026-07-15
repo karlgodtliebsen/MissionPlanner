@@ -1,4 +1,4 @@
-namespace MissionPlanner.MavLink.Parameters.Metadata;
+namespace MissionPlanner.MavLink.Parameters.Metadata.Abstractions;
 
 /// <summary>
 /// Downloads parameter metadata from ArduPilot's servers.

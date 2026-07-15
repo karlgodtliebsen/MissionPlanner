@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.MavLink.Services;
+﻿namespace MissionPlanner.MavLink.Services.Abstractions;
 
 /// <summary>
 /// Provides CRC extra bytes for common MAVLink messages.

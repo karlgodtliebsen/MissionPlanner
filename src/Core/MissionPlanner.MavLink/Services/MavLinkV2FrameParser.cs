@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Transport;
 
 namespace MissionPlanner.MavLink.Services;

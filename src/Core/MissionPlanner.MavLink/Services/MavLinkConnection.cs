@@ -5,6 +5,7 @@ using MissionPlanner.Library;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Messages;
+using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Transport;
 
 namespace MissionPlanner.MavLink.Services;

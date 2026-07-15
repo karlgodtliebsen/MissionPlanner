@@ -1,4 +1,5 @@
-﻿using MissionPlanner.MavLink.Missions;
+﻿using MissionPlanner.Core.Missions.Abstractions;
+using MissionPlanner.MavLink.Missions;
 
 namespace MissionPlanner.Core.Missions;
 

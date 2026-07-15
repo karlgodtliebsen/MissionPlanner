@@ -1,5 +1,6 @@
 ﻿using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.MavLink.Parameters.Metadata.Abstractions;
 
 namespace MissionPlanner.MavLink.Parameters.Metadata;
 
@@ -58,7 +59,10 @@ public sealed class ParameterMetadataXmlParser(ILogger<ParameterMetadataXmlParse
                 }
             }
 
-            logger.LogInformation("Parsed {Count} parameter metadata entries for {VehicleType}", metadata.Count, vehicleType);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                logger.LogInformation("Parsed {Count} parameter metadata entries for {VehicleType}", metadata.Count, vehicleType);
+            }
         }
         catch (Exception ex)
         {

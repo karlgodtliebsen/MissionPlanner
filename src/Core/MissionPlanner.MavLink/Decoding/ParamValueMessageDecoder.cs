@@ -1,7 +1,7 @@
 ﻿using System.Buffers.Binary;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Parameters;
-using MissionPlanner.MavLink.Services;
+using MissionPlanner.MavLink.Services.Abstractions;
 
 namespace MissionPlanner.MavLink.Decoding;
 

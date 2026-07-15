@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.MavLink.Parameters.Metadata.Abstractions;
 
 namespace MissionPlanner.MavLink.Parameters.Metadata;
 

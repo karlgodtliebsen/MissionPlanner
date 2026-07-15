@@ -7,7 +7,7 @@ using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Commands;
 using MissionPlanner.MavLink.Encoding;
-using MissionPlanner.MavLink.Services;
+using MissionPlanner.MavLink.Services.Abstractions;
 
 namespace MissionPlanner.Core.Commands;
 

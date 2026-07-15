@@ -1,6 +1,6 @@
 ﻿using MissionPlanner.Core.Models;
 using MissionPlanner.MavLink.Client;
-using MissionPlanner.MavLink.Services;
+using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Transport;
 using MissionPlanner.Transport.Abstractions;
 

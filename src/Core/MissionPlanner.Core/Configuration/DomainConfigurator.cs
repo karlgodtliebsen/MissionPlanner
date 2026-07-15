@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Missions;
+using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Transfer;
 using MissionPlanner.Core.Missions.Validation;
 using MissionPlanner.Core.Services;
@@ -12,6 +13,7 @@ using MissionPlanner.Core.VehicleHandler.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Services;
+using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Transport;
 using MissionPlanner.Transport.Abstractions;
 

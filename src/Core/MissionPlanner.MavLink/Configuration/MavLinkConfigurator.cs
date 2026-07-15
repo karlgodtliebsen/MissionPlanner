@@ -8,7 +8,9 @@ using MissionPlanner.MavLink.Decoding;
 using MissionPlanner.MavLink.Decoding.Utils;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.Parameters.Metadata;
+using MissionPlanner.MavLink.Parameters.Metadata.Abstractions;
 using MissionPlanner.MavLink.Services;
+using MissionPlanner.MavLink.Services.Abstractions;
 
 namespace MissionPlanner.MavLink.Configuration;
 

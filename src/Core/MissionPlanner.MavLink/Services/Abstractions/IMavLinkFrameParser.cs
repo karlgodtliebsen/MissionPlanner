@@ -1,6 +1,6 @@
 ﻿using MissionPlanner.Transport;
 
-namespace MissionPlanner.MavLink.Services;
+namespace MissionPlanner.MavLink.Services.Abstractions;
 
 /// <summary>
 /// 
