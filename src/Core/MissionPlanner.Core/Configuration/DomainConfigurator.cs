@@ -2,6 +2,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MissionPlanner.Core.Commands;
+using MissionPlanner.Core.Missions;
+using MissionPlanner.Core.Missions.Transfer;
+using MissionPlanner.Core.Missions.Validation;
 using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.VehicleHandler;
@@ -27,6 +30,11 @@ public static class DomainConfigurator
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddDomainServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.TryAddTransient<IMissionTransferService, MissionTransferService>();
+        services.TryAddTransient<IMissionProtocolMapper, MissionProtocolMapper>();
+        services.TryAddTransient<IMissionValidator, MissionValidator>();
+
+
         services.TryAddTransient<IVehicleMessagePump, VehicleMessagePump>();
         services.TryAddTransient<IVehicleConnectionMonitor, VehicleConnectionMonitor>();
 

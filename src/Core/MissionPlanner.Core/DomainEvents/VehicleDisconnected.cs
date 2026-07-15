@@ -17,11 +17,3 @@ public class VehicleDisconnected : DomainEvent<VehicleDisconnectedData>
     {
     }
 }
-
-/// <summary>
-/// Data payload for VehicleDisconnected event.
-/// </summary>
-public record VehicleDisconnectedData(
-    VehicleId VehicleId,
-    DateTimeOffset DisconnectedAt,
-    string? Reason);

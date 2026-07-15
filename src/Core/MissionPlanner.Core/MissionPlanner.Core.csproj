@@ -15,8 +15,4 @@
     <ProjectReference Include="..\MissionPlanner.MavLink\MissionPlanner.MavLink.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Models\MissionDomain\" />
-  </ItemGroup>
-
 </Project>

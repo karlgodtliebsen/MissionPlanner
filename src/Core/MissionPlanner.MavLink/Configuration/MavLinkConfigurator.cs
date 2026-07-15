@@ -27,7 +27,6 @@ public static class MavLinkConfigurator
     {
         services.TryAddSingleton<IMavLinkClient, MavLinkClient>();
         services.TryAddSingleton<IMavLinkConnection, MavLinkConnection>();
-        //services.AddMavLinkPipeline();
         services.TryAddTransient<IMavLinkCrcExtraProvider, CommonMavLinkCrcExtraProvider>();
         services.TryAddTransient<IMavLinkFrameParser, MavLinkV2FrameParser>();
         services.TryAddTransient<IMavLinkCommandEncoder, MavLinkCommandEncoder>();
@@ -49,6 +48,11 @@ public static class MavLinkConfigurator
             new LocalPositionNedMessageDecoder(),
             new MemInfoMessageDecoder(),
             new MissionCurrentMessageDecoder(),
+            new MissionAckMessageDecoder(),
+            new MissionCountMessageDecoder(),
+            new MissionItemIntMessageDecoder(),
+            new MissionItemReachedMessageDecoder(),
+            new MissionRequestIntMessageDecoder(),
             new NavControllerOutputMessageDecoder(),
             new ParamValueMessageDecoder(),
             new PowerStatusMessageDecoder(),
@@ -81,44 +85,6 @@ public static class MavLinkConfigurator
 
         return services;
     }
-
-    //private static IServiceCollection AddMavLinkPipeline(
-    //    this IServiceCollection services,
-    //    Action<MavLinkClientPipelineOptions>? configureClient = null,
-    //    Action<MavLinkConnectionPipelineOptions>? configureConnection = null)
-    //{
-    //    services.AddOptions<MavLinkClientPipelineOptions>()
-    //        .Configure(options => configureClient?.Invoke(options))
-    //        .Validate(options =>
-    //        {
-    //            try
-    //            {
-    //                options.Validate();
-    //                return true;
-    //            }
-    //            catch
-    //            {
-    //                return false;
-    //            }
-    //        }, "Invalid MAVLink client pipeline options.");
-
-    //    services.AddOptions<MavLinkConnectionPipelineOptions>()
-    //        .Configure(options => configureConnection?.Invoke(options))
-    //        .Validate(options =>
-    //        {
-    //            try
-    //            {
-    //                options.Validate();
-    //                return true;
-    //            }
-    //            catch
-    //            {
-    //                return false;
-    //            }
-    //        }, "Invalid MAVLink connection pipeline options.");
-
-    //    return services;
-    //}
 
     /// <summary>
     /// Configures MAVLink services and dependencies using the specified <see cref="IServiceProvider"/>.
