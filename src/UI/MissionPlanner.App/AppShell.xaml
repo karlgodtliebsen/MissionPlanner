@@ -98,7 +98,7 @@
             Title=""
             ContentTemplate="{DataTemplate initSetup:InitSetupView}" Route="InitSetup" />
     </FlyoutItem>
-    <FlyoutItem Title="Config-Tuning"  
+    <FlyoutItem Title="Config"  
                 Icon="Resources/Images/x_light_tuningconfig_icon_x.png">
 
         <ShellContent Title="Geo Fence" ContentTemplate="{DataTemplate tabs:GeoFenceTabView}"/>

@@ -89,6 +89,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<HelpViewModel>();
         services.TryAddTransient<ConnectPopupViewModel>();
         services.TryAddTransient<ConnectPopupView>();
+        services.TryAddTransient<StatisticsViewModel>();
 
         services.TryAddSingleton<FlightDataViewModel>();
         services.TryAddSingleton<HudViewModel>();

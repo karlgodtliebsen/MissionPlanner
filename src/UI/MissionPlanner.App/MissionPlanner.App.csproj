@@ -152,6 +152,9 @@
 	  <MauiXaml Update="Views\ConfigTuning\Tabs\PlannerTabView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Views\Connect\StatisticsView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\Exit\ExitContentView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
