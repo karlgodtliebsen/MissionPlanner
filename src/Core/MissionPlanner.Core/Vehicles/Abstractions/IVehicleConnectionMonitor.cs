@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Core.Services.Abstractions;
+﻿namespace MissionPlanner.Core.Vehicles.Abstractions;
 
 /// <summary>
 /// Monitors the connection state of vehicles.

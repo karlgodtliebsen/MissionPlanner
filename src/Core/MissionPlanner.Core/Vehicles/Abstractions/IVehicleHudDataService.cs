@@ -1,6 +1,6 @@
-﻿using MissionPlanner.Core.Models;
+﻿using MissionPlanner.Core.Vehicles.Models;
 
-namespace MissionPlanner.Core.Services.Abstractions;
+namespace MissionPlanner.Core.Vehicles.Abstractions;
 
 /// <summary>
 /// Service that provides HUD-specific vehicle data for display purposes.

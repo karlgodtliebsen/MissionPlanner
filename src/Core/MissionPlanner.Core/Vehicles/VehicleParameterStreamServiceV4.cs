@@ -1,12 +1,12 @@
 ﻿using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.DomainEvents;
-using MissionPlanner.Core.Models;
-using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 
-namespace MissionPlanner.Core.Services;
+namespace MissionPlanner.Core.Vehicles;
 
 /// <summary>
 /// Parameter streaming service that subscribes directly to MAVLink messages (not domain events).

@@ -1,7 +1,7 @@
 ﻿using MissionPlanner.Core.Commands;
-using MissionPlanner.Core.Models;
+using MissionPlanner.Core.Vehicles.Models;
 
-namespace MissionPlanner.Core.Services.Abstractions;
+namespace MissionPlanner.Core.Vehicles.Abstractions;
 
 /// <summary>
 /// Defines the policy for validating vehicle commands.

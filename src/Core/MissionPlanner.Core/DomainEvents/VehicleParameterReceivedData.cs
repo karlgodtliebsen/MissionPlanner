@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.Models;
+﻿using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.Parameters;
 
 namespace MissionPlanner.Core.DomainEvents;

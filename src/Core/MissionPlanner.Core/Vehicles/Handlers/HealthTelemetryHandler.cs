@@ -1,10 +1,10 @@
-using MissionPlanner.Core.Models.Observations;
-using MissionPlanner.Core.Services.Abstractions;
-using MissionPlanner.Core.VehicleHandler.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Handlers.Abstractions;
+using MissionPlanner.Core.Vehicles.Observations;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Messages;
 
-namespace MissionPlanner.Core.VehicleHandler;
+namespace MissionPlanner.Core.Vehicles.Handlers;
 
 public sealed class HealthTelemetryHandler(
     IVehicleRegistry vehicleRegistry,
@@ -42,5 +42,8 @@ public sealed class HealthTelemetryHandler(
 
     // Conservative initial rule: flags == 0 means no estimator capability/health flags.
     // Replace with named EKF flag semantics when those enums are introduced.
-    private static bool IsEkfHealthy(ushort flags) => flags != 0;
+    private static bool IsEkfHealthy(ushort flags)
+    {
+        return flags != 0;
+    }
 }

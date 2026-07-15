@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Core.Missions;
+﻿namespace MissionPlanner.Core.Missions.Models;
 
 public sealed record MissionExecutionState(
     MissionPlanType MissionType,

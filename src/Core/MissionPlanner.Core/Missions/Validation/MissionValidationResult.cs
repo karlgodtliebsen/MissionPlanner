@@ -1,3 +1,5 @@
+using MissionPlanner.Core.Missions.Models;
+
 namespace MissionPlanner.Core.Missions.Validation;
 
 public sealed record MissionValidationResult(IReadOnlyList<MissionValidationIssue> Issues)

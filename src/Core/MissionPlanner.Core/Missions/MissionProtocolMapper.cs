@@ -1,4 +1,5 @@
 ﻿using MissionPlanner.Core.Missions.Abstractions;
+using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.MavLink.Missions;
 
 namespace MissionPlanner.Core.Missions;
@@ -46,11 +47,11 @@ public sealed class MissionProtocolMapper : IMissionProtocolMapper
                 TimeSpan.FromSeconds(item.Param1), NullIfZero(item.Param2), NullIfZero(item.Param3),
                 NullIfNaN(item.Param4), item.AutoContinue),
             MissionCommand.LoiterUnlimited => new LoiterMissionItem(id, item.Sequence, position, altitude,
-                Time: null, Turns: null, NullIfZero(item.Param3), NullIfNaN(item.Param4), item.AutoContinue),
+                null, null, NullIfZero(item.Param3), NullIfNaN(item.Param4), item.AutoContinue),
             MissionCommand.LoiterTurns => new LoiterMissionItem(id, item.Sequence, position, altitude,
-                Time: null, Turns: item.Param1, NullIfZero(item.Param3), NullIfNaN(item.Param4), item.AutoContinue),
+                null, item.Param1, NullIfZero(item.Param3), NullIfNaN(item.Param4), item.AutoContinue),
             MissionCommand.LoiterTime => new LoiterMissionItem(id, item.Sequence, position, altitude,
-                Time: TimeSpan.FromSeconds(item.Param1), Turns: null, NullIfZero(item.Param3),
+                TimeSpan.FromSeconds(item.Param1), null, NullIfZero(item.Param3),
                 NullIfNaN(item.Param4), item.AutoContinue),
             MissionCommand.ReturnToLaunch => new ReturnToLaunchMissionItem(id, item.Sequence, item.AutoContinue),
             MissionCommand.Land => new LandMissionItem(id, item.Sequence, position, altitude,

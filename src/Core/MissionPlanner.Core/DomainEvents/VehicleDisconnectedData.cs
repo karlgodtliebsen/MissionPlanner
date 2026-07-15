@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.Models;
+﻿using MissionPlanner.Core.Vehicles.Models;
 
 namespace MissionPlanner.Core.DomainEvents;
 

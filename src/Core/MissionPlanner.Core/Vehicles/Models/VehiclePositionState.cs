@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Models;
+namespace MissionPlanner.Core.Vehicles.Models;
 
 public sealed record VehiclePositionState(
     double? LatitudeDegrees,

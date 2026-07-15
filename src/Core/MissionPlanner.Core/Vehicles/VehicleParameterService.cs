@@ -1,12 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
-using MissionPlanner.Core.Models;
-using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.Transport;
 
-namespace MissionPlanner.Core.Services;
+namespace MissionPlanner.Core.Vehicles;
 
 /// <summary>
 /// Service for managing vehicle parameters via MAVLink.

@@ -1,9 +1,9 @@
 ﻿using System.Collections.ObjectModel;
 using MissionPlanner.Core.Commands;
-using MissionPlanner.Core.Models;
-using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 
-namespace MissionPlanner.Core.Services;
+namespace MissionPlanner.Core.Vehicles;
 
 /// <summary>
 /// Represents a service for managing vehicles and their states.

@@ -1,19 +1,22 @@
 using MissionPlanner.Core.DomainEvents;
-using MissionPlanner.Core.Models;
-using MissionPlanner.Core.Services;
-using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Messages;
 
-namespace MissionPlanner.Core.VehicleHandler;
+namespace MissionPlanner.Core.Vehicles.Handlers;
 
 public abstract class VehicleTelemetryHandlerBase(
     IVehicleRegistry vehicleRegistry,
     IDomainEventHub domainEventHub)
 {
-    protected VehicleSession? GetVehicle(MavLinkMessage message) =>
-        vehicleRegistry.GetRequired(new VehicleId(message.SystemId, message.ComponentId));
+    protected VehicleSession? GetVehicle(MavLinkMessage message)
+    {
+        return vehicleRegistry.GetRequired(new VehicleId(message.SystemId, message.ComponentId));
+    }
 
-    protected ValueTask PublishStateAsync(VehicleSession vehicle, CancellationToken cancellationToken) =>
-        new(domainEventHub.PublishDomainEventAsync(new VehicleStateUpdated(vehicle.State), cancellationToken));
+    protected ValueTask PublishStateAsync(VehicleSession vehicle, CancellationToken cancellationToken)
+    {
+        return new ValueTask(domainEventHub.PublishDomainEventAsync(new VehicleStateUpdated(vehicle.State), cancellationToken));
+    }
 }

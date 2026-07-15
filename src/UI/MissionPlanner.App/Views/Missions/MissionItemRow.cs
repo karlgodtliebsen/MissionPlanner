@@ -1,4 +1,5 @@
 using MissionPlanner.Core.Missions;
+using MissionPlanner.Core.Missions.Models;
 
 namespace MissionPlanner.App.Views.Missions;
 

@@ -1,7 +1,7 @@
-﻿using MissionPlanner.Core.Models;
-using MissionPlanner.Core.Services.Abstractions;
+﻿using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 
-namespace MissionPlanner.Core.Services;
+namespace MissionPlanner.Core.Vehicles;
 
 /// <summary>
 /// Result of a vehicle connection attempt.

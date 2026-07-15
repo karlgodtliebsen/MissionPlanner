@@ -1,10 +1,10 @@
 ﻿using System.Diagnostics;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.Core.Models;
-using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.Parameters;
 
-namespace MissionPlanner.Core.Services;
+namespace MissionPlanner.Core.Vehicles;
 
 /// <summary>
 /// Simplified parameter streaming service that mimics original MissionPlanner's proven approach.

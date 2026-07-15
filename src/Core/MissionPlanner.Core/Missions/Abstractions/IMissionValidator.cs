@@ -1,4 +1,5 @@
-﻿using MissionPlanner.Core.Missions.Validation;
+﻿using MissionPlanner.Core.Missions.Models;
+using MissionPlanner.Core.Missions.Validation;
 
 namespace MissionPlanner.Core.Missions.Abstractions;
 

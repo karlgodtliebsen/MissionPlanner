@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.DomainEvents;
-using MissionPlanner.Core.Models;
-using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -11,7 +11,7 @@ using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Transport;
 using MissionPlanner.Transport.Abstractions;
 
-namespace MissionPlanner.Core.Services;
+namespace MissionPlanner.Core.Vehicles;
 
 /// <summary>
 /// Represents a session for a vehicle connection, managing its state and handling updates.

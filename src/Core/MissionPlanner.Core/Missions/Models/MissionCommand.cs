@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Core.Missions;
+﻿namespace MissionPlanner.Core.Missions.Models;
 
 /// <summary>
 /// Represents the various mission commands that can be issued in a mission plan.

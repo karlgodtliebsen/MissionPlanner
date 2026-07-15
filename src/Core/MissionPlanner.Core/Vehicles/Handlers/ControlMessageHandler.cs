@@ -1,9 +1,8 @@
 using MissionPlanner.Core.Commands;
-using MissionPlanner.Core.VehicleHandler.Abstractions;
+using MissionPlanner.Core.Vehicles.Handlers.Abstractions;
 using MissionPlanner.MavLink.Messages;
-using MissionPlanner.MavLink.Services;
 
-namespace MissionPlanner.Core.VehicleHandler;
+namespace MissionPlanner.Core.Vehicles.Handlers;
 
 public sealed class ControlMessageHandler(
     IStatusTextHandler statusTextHandler,

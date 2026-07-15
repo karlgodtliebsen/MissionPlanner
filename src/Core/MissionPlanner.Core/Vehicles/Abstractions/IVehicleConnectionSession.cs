@@ -1,10 +1,10 @@
-﻿using MissionPlanner.Core.Models;
+﻿using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Transport;
 using MissionPlanner.Transport.Abstractions;
 
-namespace MissionPlanner.Core.Services.Abstractions;
+namespace MissionPlanner.Core.Vehicles.Abstractions;
 
 /// <summary>
 /// Represents a session for a vehicle connection, managing its state and handling updates.

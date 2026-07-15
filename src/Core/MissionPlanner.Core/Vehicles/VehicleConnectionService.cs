@@ -2,6 +2,8 @@
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
@@ -9,7 +11,7 @@ using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.Transport.Abstractions;
 
-namespace MissionPlanner.Core.Services;
+namespace MissionPlanner.Core.Vehicles;
 
 /// <summary>
 /// Service for managing vehicle connections via MAVLink transport.

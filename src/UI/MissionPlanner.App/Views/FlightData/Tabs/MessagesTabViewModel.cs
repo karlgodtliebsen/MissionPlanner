@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 

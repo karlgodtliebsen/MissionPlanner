@@ -1,6 +1,6 @@
 ﻿using MissionPlanner.MavLink.Parameters;
 
-namespace MissionPlanner.Core.Services.Abstractions;
+namespace MissionPlanner.Core.Vehicles.Models;
 
 /// <summary>
 /// Result of a parameter streaming operation.

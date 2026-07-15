@@ -1,8 +1,8 @@
-using MissionPlanner.Core.Services.Abstractions;
-using MissionPlanner.Core.VehicleHandler.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Handlers.Abstractions;
 using MissionPlanner.MavLink.Messages;
 
-namespace MissionPlanner.Core.Services;
+namespace MissionPlanner.Core.Vehicles;
 
 public sealed class VehicleMessageDispatcher : IVehicleMessageDispatcher
 {

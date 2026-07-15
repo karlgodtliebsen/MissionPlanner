@@ -1,4 +1,6 @@
-﻿namespace MissionPlanner.Core.Models.Observations;
+﻿using MissionPlanner.Core.Vehicles.Abstractions;
+
+namespace MissionPlanner.Core.Vehicles.Observations;
 
 public sealed record VehicleHeartbeatObservation(
     uint CustomMode,

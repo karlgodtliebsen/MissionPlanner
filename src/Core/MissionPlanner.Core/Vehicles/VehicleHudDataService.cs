@@ -3,11 +3,11 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.DomainEvents;
-using MissionPlanner.Core.Models;
-using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
 
-namespace MissionPlanner.Core.Services;
+namespace MissionPlanner.Core.Vehicles;
 
 /// <summary>
 /// Service that transforms vehicle state into HUD-specific data format.

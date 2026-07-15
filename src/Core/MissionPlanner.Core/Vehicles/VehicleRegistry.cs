@@ -1,12 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.DomainEvents;
-using MissionPlanner.Core.Models;
-using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Transport;
 
-namespace MissionPlanner.Core.Services;
+namespace MissionPlanner.Core.Vehicles;
 
 /// <inheritdoc />
 public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider dateTimeProvider, ILogger<VehicleRegistry> logger) : IVehicleRegistry

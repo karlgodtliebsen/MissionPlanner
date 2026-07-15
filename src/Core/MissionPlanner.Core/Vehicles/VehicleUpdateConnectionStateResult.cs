@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Core.Services;
+﻿namespace MissionPlanner.Core.Vehicles;
 
 /// <summary>
 /// Represents the result of updating the connection state of vehicles.

@@ -1,6 +1,6 @@
-﻿using MissionPlanner.Core.Models;
+﻿using MissionPlanner.Core.Vehicles.Models;
 
-namespace MissionPlanner.Core.Services.Abstractions;
+namespace MissionPlanner.Core.Vehicles.Abstractions;
 
 /// <summary>
 /// Service for streaming all parameters from a vehicle with progress tracking.

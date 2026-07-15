@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Core.Services.Abstractions;
+﻿namespace MissionPlanner.Core.Models;
 
 /// <summary>
 /// MAVLink data stream identifiers for REQUEST_DATA_STREAM command.

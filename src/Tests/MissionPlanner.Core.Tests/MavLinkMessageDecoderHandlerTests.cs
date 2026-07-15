@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Decoding.Utils;

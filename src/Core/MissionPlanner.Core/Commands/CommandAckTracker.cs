@@ -1,5 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using MissionPlanner.Core.Models;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.Messages;
 
 namespace MissionPlanner.Core.Commands;

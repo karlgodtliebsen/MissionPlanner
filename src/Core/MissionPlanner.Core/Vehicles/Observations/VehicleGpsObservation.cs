@@ -1,4 +1,7 @@
-﻿namespace MissionPlanner.Core.Models.Observations;
+﻿using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
+
+namespace MissionPlanner.Core.Vehicles.Observations;
 
 public sealed record VehicleGpsObservation(
     GpsFixType FixType,

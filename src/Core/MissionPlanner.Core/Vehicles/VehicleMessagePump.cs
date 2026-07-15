@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
-using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
 
-namespace MissionPlanner.Core.Services;
+namespace MissionPlanner.Core.Vehicles;
 
 /// <summary>
 /// A message pump that listens for MAVLink messages and dispatches them to the appropriate handlers.

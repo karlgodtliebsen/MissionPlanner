@@ -1,6 +1,6 @@
 using MissionPlanner.MavLink.Messages;
 
-namespace MissionPlanner.Core.VehicleHandler.Abstractions;
+namespace MissionPlanner.Core.Vehicles.Handlers.Abstractions;
 
 /// <summary>
 /// Capability-oriented adapter from one or more MAVLink messages to domain state.

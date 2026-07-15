@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Core.Models.Observations;
+﻿namespace MissionPlanner.Core.Vehicles.Abstractions;
 
 public interface IVehicleObservation
 {

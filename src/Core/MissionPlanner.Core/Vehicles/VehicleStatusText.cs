@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Core.Services;
+﻿namespace MissionPlanner.Core.Vehicles;
 
 /// <summary>
 /// Represents a status text message from a vehicle.

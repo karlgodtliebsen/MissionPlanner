@@ -1,12 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.DomainEvents;
-using MissionPlanner.Core.Models;
-using MissionPlanner.Core.Services.Abstractions;
-using MissionPlanner.Core.VehicleHandler.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Handlers.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Messages;
 
-namespace MissionPlanner.Core.VehicleHandler;
+namespace MissionPlanner.Core.Vehicles.Handlers;
 
 /// <summary>
 /// Handles status text messages from vehicles.

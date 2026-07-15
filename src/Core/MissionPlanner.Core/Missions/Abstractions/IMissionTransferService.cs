@@ -1,5 +1,6 @@
-﻿using MissionPlanner.Core.Missions.Transfer;
-using MissionPlanner.Core.Models;
+﻿using MissionPlanner.Core.Missions.Models;
+using MissionPlanner.Core.Missions.Transfer;
+using MissionPlanner.Core.Vehicles.Models;
 
 namespace MissionPlanner.Core.Missions.Abstractions;
 

@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Core.Models;
+﻿namespace MissionPlanner.Core.Vehicles.Models;
 
 /// <summary>
 /// Provides mapping between <see cref="VehicleMode"/> and ArduCopter custom mode values.

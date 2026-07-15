@@ -2,11 +2,13 @@
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Services.Abstractions;
-using MissionPlanner.Core.VehicleHandler.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Handlers.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Decoding;
+using MissionPlanner.MavLink.Decoding.Utils;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Test.Support.Configuration;

@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Core.Models;
+﻿namespace MissionPlanner.Core.Vehicles.Models;
 
 /// <summary>
 /// Immutable snapshot of the domain state known for a vehicle.

@@ -1,7 +1,7 @@
 ﻿using System.Buffers.Binary;
 using System.Net;
 using System.Net.Sockets;
-using MissionPlanner.Core.Models;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink;
 using MissionPlanner.MavLink.Commands;
 using MissionPlanner.MavLink.Messages;

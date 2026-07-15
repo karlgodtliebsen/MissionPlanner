@@ -1,5 +1,6 @@
-﻿using MissionPlanner.Core.Models;
-using MissionPlanner.Core.Services.Abstractions;
+﻿using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Simulator;
 using MissionPlanner.Test.Support.Configuration;
 

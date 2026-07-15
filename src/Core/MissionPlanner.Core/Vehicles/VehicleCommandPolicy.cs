@@ -1,8 +1,8 @@
 ﻿using MissionPlanner.Core.Commands;
-using MissionPlanner.Core.Models;
-using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 
-namespace MissionPlanner.Core.Services;
+namespace MissionPlanner.Core.Vehicles;
 
 /// <inheritdoc />
 public sealed class VehicleCommandPolicy : IVehicleCommandPolicy

@@ -1,4 +1,6 @@
-﻿namespace MissionPlanner.Core.Models.Observations;
+﻿using MissionPlanner.Core.Vehicles.Abstractions;
+
+namespace MissionPlanner.Core.Vehicles.Observations;
 
 /// <summary>
 /// Represents an AHRS-based observation of the vehicle's attitude and position.

@@ -6,8 +6,8 @@ using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.Core.Missions;
 using MissionPlanner.Core.Missions.Abstractions;
+using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.MavLink.Missions;
 
 namespace MissionPlanner.App.Views.Missions;

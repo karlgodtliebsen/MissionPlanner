@@ -1,12 +1,12 @@
 ﻿using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.DomainEvents;
-using MissionPlanner.Core.Models;
-using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Parameters;
 
-namespace MissionPlanner.Core.Services;
+namespace MissionPlanner.Core.Vehicles;
 
 /// <summary>
 /// Service for streaming all parameters from a vehicle with progress tracking.

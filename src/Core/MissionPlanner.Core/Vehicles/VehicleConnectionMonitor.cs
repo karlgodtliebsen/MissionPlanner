@@ -1,7 +1,7 @@
-﻿using MissionPlanner.Core.Services.Abstractions;
+﻿using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 
-namespace MissionPlanner.Core.Services;
+namespace MissionPlanner.Core.Vehicles;
 
 /// <summary>
 /// Monitors the connection state of vehicles.

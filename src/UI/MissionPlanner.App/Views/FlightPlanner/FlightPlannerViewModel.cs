@@ -2,11 +2,11 @@
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Views.Missions;
-using MissionPlanner.Core.Missions;
 using MissionPlanner.Core.Missions.Abstractions;
+using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Missions.Transfer;
-using MissionPlanner.Core.Models;
-using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 
 namespace MissionPlanner.App.Views.FlightPlanner;
 

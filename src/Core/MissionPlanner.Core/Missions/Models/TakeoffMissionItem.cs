@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Core.Missions;
+﻿namespace MissionPlanner.Core.Missions.Models;
 
 /// <summary>
 /// Represents a takeoff mission item in a mission plan.

@@ -1,6 +1,6 @@
 using MissionPlanner.MavLink.Messages;
 
-namespace MissionPlanner.Core.Services.Abstractions;
+namespace MissionPlanner.Core.Vehicles.Abstractions;
 
 public interface IVehicleMessageDispatcher
 {

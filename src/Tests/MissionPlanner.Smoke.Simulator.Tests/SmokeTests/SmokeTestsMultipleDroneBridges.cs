@@ -2,9 +2,10 @@
 using System.Net.Sockets;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Commands;
-using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library;
 using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Simulator.SmokeTests;

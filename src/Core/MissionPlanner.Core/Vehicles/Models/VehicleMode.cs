@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Core.Models;
+﻿namespace MissionPlanner.Core.Vehicles.Models;
 
 /// <summary>
 /// Represents the mode of a vehicle.

@@ -1,6 +1,8 @@
 ﻿using System.Net;
 using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Vehicles;
+using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Transport;
 
 namespace MissionPlanner.Simulator;

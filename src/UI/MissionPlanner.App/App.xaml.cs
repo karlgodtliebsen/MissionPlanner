@@ -1,5 +1,6 @@
 ﻿using MissionPlanner.App.Views.Exit;
 using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library;
 using MissionPlanner.Library.EventHub.Abstractions;
 using Serilog;

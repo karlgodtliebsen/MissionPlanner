@@ -1,13 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.DomainEvents;
-using MissionPlanner.Core.Models;
-using MissionPlanner.Core.Services.Abstractions;
-using MissionPlanner.Core.VehicleHandler.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Handlers.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Parameters;
 
-namespace MissionPlanner.Core.VehicleHandler;
+namespace MissionPlanner.Core.Vehicles.Handlers;
 
 /// <summary>
 /// Handles PARAM_VALUE messages and updates the parameter registry accordingly.

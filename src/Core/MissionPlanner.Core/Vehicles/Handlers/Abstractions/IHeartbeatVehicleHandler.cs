@@ -1,6 +1,6 @@
 ﻿using MissionPlanner.MavLink.Messages;
 
-namespace MissionPlanner.Core.VehicleHandler.Abstractions;
+namespace MissionPlanner.Core.Vehicles.Handlers.Abstractions;
 
 /// <summary>
 /// Handles heartbeat messages and updates the vehicle registry accordingly.

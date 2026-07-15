@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.Transport;
@@ -41,13 +42,13 @@ public class MavLinkCommandService(
         try
         {
             // Build REQUEST_DATA_STREAM packet
-            byte[] packet = MavLinkPacketBuilder.BuildRequestDataStreamPacket(
-                targetSystem: vehicleId.SystemId,
-                targetComponent: vehicleId.ComponentId,
-                streamId: (byte)streamId,
-                messageRate: (ushort)rateHz,
-                startStop: start ? (byte)1 : (byte)0,
-                sequenceNumber: sequenceNumber++);
+            var packet = MavLinkPacketBuilder.BuildRequestDataStreamPacket(
+                vehicleId.SystemId,
+                vehicleId.ComponentId,
+                (byte)streamId,
+                (ushort)rateHz,
+                start ? (byte)1 : (byte)0,
+                sequenceNumber++);
 
             // Create endpoint for this vehicle
             // Note: For serial/TCP/UDP, the transport layer handles routing

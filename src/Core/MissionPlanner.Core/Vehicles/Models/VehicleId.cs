@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Core.Models;
+﻿namespace MissionPlanner.Core.Vehicles.Models;
 
 /// <summary>
 /// Represents the unique identifier of a vehicle, consisting of a system ID and a component ID.

@@ -1,6 +1,6 @@
 ﻿using MissionPlanner.MavLink.Messages;
 
-namespace MissionPlanner.Core.VehicleHandler.Abstractions;
+namespace MissionPlanner.Core.Vehicles.Handlers.Abstractions;
 
 /// <summary>
 /// Defines the interface for handling attitude messages and updating the vehicle registry accordingly.

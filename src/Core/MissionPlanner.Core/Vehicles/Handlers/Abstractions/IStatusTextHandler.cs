@@ -1,6 +1,6 @@
 ﻿using MissionPlanner.MavLink.Messages;
 
-namespace MissionPlanner.Core.VehicleHandler.Abstractions;
+namespace MissionPlanner.Core.Vehicles.Handlers.Abstractions;
 
 /// <summary>
 /// Defines the interface for handling status text messages and updating the vehicle registry accordingly.

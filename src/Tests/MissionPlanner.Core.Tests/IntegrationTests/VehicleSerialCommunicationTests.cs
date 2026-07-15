@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
