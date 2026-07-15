@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Input;
 using DotNext.Collections.Generic;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.ViewModels;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services.Abstractions;

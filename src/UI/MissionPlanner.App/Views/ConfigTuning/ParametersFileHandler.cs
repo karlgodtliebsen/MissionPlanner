@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
 using CommunityToolkit.Maui.Storage;
-using MissionPlanner.App.ViewModels;
 using MissionPlanner.MavLink.Parameters;
 
 namespace MissionPlanner.App.Views.ConfigTuning;

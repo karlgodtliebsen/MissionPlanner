@@ -4,7 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using MissionPlanner.MavLink.Parameters;
 using UraniumUI.Material.Controls;
 
-namespace MissionPlanner.App.ViewModels;
+namespace MissionPlanner.App.Views.ConfigTuning;
 
 /// <summary>
 /// View model for a single parameter item in the grid.
@@ -12,7 +12,6 @@ namespace MissionPlanner.App.ViewModels;
 /// </summary>
 public partial class ParameterItemViewModel : ObservableObject
 {
-    //private readonly VehicleParameter originalParameter;
     private VehicleParameter? originalParameter;
     private ParameterMetadata? originalMetadata;
     public VehicleParameter? OriginalParameter => originalParameter;

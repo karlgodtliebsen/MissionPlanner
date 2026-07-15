@@ -6,6 +6,7 @@
              xmlns:m="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
              xmlns:vm="clr-namespace:MissionPlanner.App.ViewModels"
              xmlns:controls="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
+             xmlns:configTuning="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
              x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.FullParametersListTabView"
              x:DataType="tabs:FullParametersListTabViewModel">
 
@@ -235,7 +236,7 @@
 
                             <material:DataGridColumn Title="Value" >
                                 <material:DataGridColumn.CellItemTemplate >
-                                    <DataTemplate  x:DataType="vm:ParameterItemViewModel" >
+                                    <DataTemplate  x:DataType="configTuning:ParameterItemViewModel" >
                                         <VerticalStackLayout HorizontalOptions="End" VerticalOptions="Fill"   Margin="10,0,0,0">
                                             <material:EditorField
                                             WidthRequest="100"
@@ -249,7 +250,7 @@
 
                             <material:DataGridColumn Title="Options">
                                 <material:DataGridColumn.CellItemTemplate>
-                                    <DataTemplate  x:DataType="vm:ParameterItemViewModel">
+                                    <DataTemplate  x:DataType="configTuning:ParameterItemViewModel">
                                         <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Fill" Margin="10,0,0,0">
                                             <material:PickerField
                                             IsVisible="{Binding HasValuesData}"
@@ -271,7 +272,7 @@
 
                             <material:DataGridColumn Title="Description" Width="*" >
                                 <material:DataGridColumn.CellItemTemplate>
-                                    <DataTemplate  x:DataType="vm:ParameterItemViewModel">
+                                    <DataTemplate  x:DataType="configTuning:ParameterItemViewModel">
 
                                         <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Fill" Margin="10,0,0,0">
                                             <Label VerticalOptions="Center" VerticalTextAlignment="Center" LineBreakMode="MiddleTruncation"  
