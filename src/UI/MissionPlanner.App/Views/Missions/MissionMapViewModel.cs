@@ -571,19 +571,19 @@ public partial class MissionMapViewModel : ObservableObject
             var altitude = AltitudeOf(item);
             var protocol = protocolMapper.ToProtocol(item, Mission.Type);
 
-            string distance = string.Empty, azimuth = string.Empty, gradient = string.Empty;
+            double? distance = null, azimuth = null, gradient = null;
             if (position is { } current && previousPosition is { } previous)
             {
                 var legMeters = GeoMath.ApproximateDistanceMeters(
                     previous.LatitudeDegrees, previous.LongitudeDegrees,
                     current.LatitudeDegrees, current.LongitudeDegrees);
                 totalDistance += legMeters;
-                distance = legMeters.ToString("F0", CultureInfo.CurrentCulture);
-                azimuth = BearingDegrees(previous, current).ToString("F0", CultureInfo.CurrentCulture);
+                distance = legMeters;
+                azimuth = BearingDegrees(previous, current);
 
                 if (altitude is { } alt && legMeters > 0.5)
                 {
-                    gradient = ((alt.Meters - previousAltitude) / legMeters * 100.0).ToString("F1", CultureInfo.CurrentCulture);
+                    gradient = (alt.Meters - previousAltitude) / legMeters * 100.0;
                 }
             }
 
@@ -604,9 +604,9 @@ public partial class MissionMapViewModel : ObservableObject
                 Param2 = FormatParam(protocol.Param2),
                 Param3 = FormatParam(protocol.Param3),
                 Param4 = FormatParam(protocol.Param4),
-                Latitude = position?.LatitudeDegrees.ToString("F6", CultureInfo.CurrentCulture) ?? string.Empty,
-                Longitude = position?.LongitudeDegrees.ToString("F6", CultureInfo.CurrentCulture) ?? string.Empty,
-                Altitude = altitude?.Meters.ToString("F0", CultureInfo.CurrentCulture) ?? string.Empty,
+                Latitude = position?.LatitudeDegrees,
+                Longitude = position?.LongitudeDegrees,
+                Altitude = altitude?.Meters,
                 Distance = distance,
                 Azimuth = azimuth,
                 Gradient = gradient,
@@ -652,9 +652,9 @@ public partial class MissionMapViewModel : ObservableObject
                 ParseParam(row.Param3),
                 // Param4 is yaw/heading where NaN means "not set"; keep an empty cell as NaN.
                 ParseParam(row.Param4, float.NaN),
-                (int)Math.Round(ParseCoordinate(row.Latitude) * 1e7),
-                (int)Math.Round(ParseCoordinate(row.Longitude) * 1e7),
-                ParseParam(row.Altitude),
+                (int)Math.Round(row.Latitude.HasValue ? row.Latitude.Value * 1e7 : 0.0),
+                (int)Math.Round(row.Longitude.HasValue ? row.Longitude.Value * 1e7 : 0.0),
+                row.Altitude.HasValue ? (float)row.Altitude.Value : 0.0f,
                 MavMissionType.Mission);
 
             var replacement = protocolMapper.FromProtocol(protocolItem);

@@ -15,6 +15,6 @@ public readonly record struct GeoPosition(double LatitudeDegrees, double Longitu
     /// <inheritdoc />
     public override string ToString()
     {
-        return $"Lat: {LatitudeDegrees}, Lon: {LongitudeDegrees}";
+        return $"Latitude: {LatitudeDegrees:F7}, Longitude: {LongitudeDegrees:F7}";
     }
 }

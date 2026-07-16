@@ -50,22 +50,22 @@ public sealed partial class MissionItemRow : ObservableObject
     public string Param4 { get; set; } = string.Empty;
 
     /// <summary>The latitude in degrees (editable), or empty when the item has no position.</summary>
-    public string Latitude { get; set; } = string.Empty;
+    public double? Latitude { get; set; }
 
     /// <summary>The longitude in degrees (editable), or empty when the item has no position.</summary>
-    public string Longitude { get; set; } = string.Empty;
+    public double? Longitude { get; set; }
 
     /// <summary>The altitude in meters (editable), or empty when the item has no altitude.</summary>
-    public string Altitude { get; set; } = string.Empty;
+    public double? Altitude { get; set; }
 
     /// <summary>Ground distance in meters from the previous positioned item (or home), display only.</summary>
-    public string Distance { get; init; } = string.Empty;
+    public double? Distance { get; init; }
 
     /// <summary>Bearing in degrees from the previous positioned item (or home), display only.</summary>
-    public string Azimuth { get; init; } = string.Empty;
+    public double? Azimuth { get; init; }
 
     /// <summary>Climb gradient in percent over the leg, display only.</summary>
-    public string Gradient { get; init; } = string.Empty;
+    public double? Gradient { get; init; }
 
     /// <summary>
     /// Attaches the callback invoked when the command or frame selection changes. Attach after

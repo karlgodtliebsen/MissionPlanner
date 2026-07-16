@@ -25,7 +25,7 @@
             
             <Label FontSize="40" Grid.Row="1" 
                    HorizontalOptions="Center"
-                   VerticalOptions="Center" Text="{Binding Altitude, StringFormat='{0:F2}'}" />
+                   VerticalOptions="Center" Text="{Binding Altitude, StringFormat='{0:F1}'}" />
 
         </Grid>
 

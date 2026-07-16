@@ -60,9 +60,9 @@
                         <Grid ColumnDefinitions="20,65,62,62,55,*" ColumnSpacing="2" Padding="2,2">
                             <Label Grid.Column="0" Text="{Binding Number}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
                             <Label Grid.Column="1" Text="{Binding SelectedCommand}" FontSize="11" VerticalOptions="Center" LineBreakMode="TailTruncation" HorizontalOptions="Center" />
-                            <Label Grid.Column="2" Text="{Binding Latitude}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
-                            <Label Grid.Column="3" Text="{Binding Longitude}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
-                            <Label Grid.Column="4" Text="{Binding Altitude}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Label Grid.Column="2" Text="{Binding Latitude, StringFormat='{0:F7}'}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Label Grid.Column="3" Text="{Binding Longitude, StringFormat='{0:F7}'}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Label Grid.Column="4" Text="{Binding Altitude, StringFormat='{0:F1}'}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
                             <HorizontalStackLayout Grid.Column="5" Spacing="2">
                                 <Button Text="▲" BackgroundColor="Transparent" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
                                         Command="{Binding MoveItemUpCommand, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
@@ -112,14 +112,6 @@
                     <DataTemplate x:DataType="missions:MissionItemRow">
                         <Grid ColumnDefinitions="22,160,54,54,54,54,80,80,50,110,48,40,44,84" ColumnSpacing="2" Padding="2,1">
                             <Label Grid.Column="0" Text="{Binding Number}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
-                            <!--<material:PickerField Grid.Column="1"
-                                                  AllowClear="False"
-                                                  FontSize="11"
-                                                  VerticalOptions="Center"
-                                                  ItemsSource="{Binding CommandOptions, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
-                                                  SelectedItem="{Binding SelectedCommand}" />-->
-
-
                             <Picker ItemsSource="{Binding CommandOptions, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
                                     SelectedItem="{Binding SelectedCommand}"
                                     Grid.Column="1"
@@ -130,26 +122,18 @@
                             <Entry Grid.Column="3" Text="{Binding Param2}" FontSize="11" HeightRequest="30" Completed="OnRowEditCompleted" Unfocused="OnRowEditCompleted" />
                             <Entry Grid.Column="4" Text="{Binding Param3}" FontSize="11" HeightRequest="30" Completed="OnRowEditCompleted" Unfocused="OnRowEditCompleted" />
                             <Entry Grid.Column="5" Text="{Binding Param4}" FontSize="11" HeightRequest="30" Completed="OnRowEditCompleted" Unfocused="OnRowEditCompleted" />
-                            <Entry Grid.Column="6" Text="{Binding Latitude}" FontSize="11" HeightRequest="30" Completed="OnRowEditCompleted" Unfocused="OnRowEditCompleted" />
-                            <Entry Grid.Column="7" Text="{Binding Longitude}" FontSize="11" HeightRequest="30" Completed="OnRowEditCompleted" Unfocused="OnRowEditCompleted" />
-                            <Entry Grid.Column="8" Text="{Binding Altitude}" FontSize="11" HeightRequest="30" Completed="OnRowEditCompleted" Unfocused="OnRowEditCompleted" />
-                            <!--<material:PickerField Grid.Column="9"
-                                                  AllowClear="False"
-                                                  FontSize="11"
-                                                  VerticalOptions="Center"
-                                                  ItemsSource="{Binding FrameOptions, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
-                                                  SelectedItem="{Binding SelectedFrame}" />-->
-
-
+                            <Entry Grid.Column="6" Text="{Binding Latitude, StringFormat='{0:F7}'}" FontSize="11" HeightRequest="30" Completed="OnRowEditCompleted" Unfocused="OnRowEditCompleted" />
+                            <Entry Grid.Column="7" Text="{Binding Longitude, StringFormat='{0:F7}'}" FontSize="11" HeightRequest="30" Completed="OnRowEditCompleted" Unfocused="OnRowEditCompleted" />
+                            <Entry Grid.Column="8" Text="{Binding Altitude, StringFormat='{0:F1}'}" FontSize="11" HeightRequest="30" Completed="OnRowEditCompleted" Unfocused="OnRowEditCompleted" />
                             <Picker ItemsSource="{Binding FrameOptions, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
                                     SelectedItem="{Binding SelectedFrame}"
                                     Grid.Column="9"
                                     FontSize="11"
                                     VerticalOptions="Center" />
 
-                            <Label Grid.Column="10" Text="{Binding Distance}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
-                            <Label Grid.Column="11" Text="{Binding Azimuth}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
-                            <Label Grid.Column="12" Text="{Binding Gradient}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Label Grid.Column="10" Text="{Binding Distance, StringFormat='{0:F1}'}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Label Grid.Column="11" Text="{Binding Azimuth, StringFormat='{0:F0}'}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Label Grid.Column="12" Text="{Binding Gradient, StringFormat='{0:F1}'}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
                             <HorizontalStackLayout Grid.Column="13" Spacing="2">
                                 <Button Text="▲" BackgroundColor="Transparent" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
                                         Command="{Binding MoveItemUpCommand, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
