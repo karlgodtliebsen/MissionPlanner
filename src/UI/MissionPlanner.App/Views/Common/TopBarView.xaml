@@ -6,7 +6,7 @@
              x:DataType="common:TopBarViewModel"
              x:Class="MissionPlanner.App.Views.Common.TopBarView">
 
-    <Grid ColumnDefinitions="Auto,*,Auto,Auto" 
+    <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" 
           HorizontalOptions="Fill"
           Padding="8,0" 
           BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
@@ -15,15 +15,28 @@
         <!-- App Title/Logo -->
 
 
-            <Image Grid.Column="1" 
+        <Image Grid.Column="1" 
                    Source="Resources/Images/x_ardupilot_x.png" 
                    WidthRequest="120" 
                    HeightRequest="30"
                    VerticalOptions="Center"
                    HorizontalOptions="Center"/>
 
+        <HorizontalStackLayout Grid.Row="0" Grid.Column="2" IsVisible="{Binding IsConnected}" VerticalOptions="Center" Spacing="5" Margin="0,0,10,0">
+            <Label Text="Channel:" FontAttributes="Bold" FontSize="16"  VerticalOptions="Center"/>
+            <Label Text="{Binding Channel}" FontAttributes="Bold" FontSize="12"  VerticalOptions="Center"/>
+            <Label Text="Host:" FontAttributes="Bold" FontSize="16" IsVisible="{Binding ShowHost}" VerticalOptions="Center"/>
+            <Label Text="{Binding Host}" FontAttributes="Bold" FontSize="12" IsVisible="{Binding ShowHost}" VerticalOptions="Center"/>
+            <Label Text="Port:" FontAttributes="Bold" FontSize="16" IsVisible="{Binding ShowHost}" VerticalOptions="Center"/>
+            <Label Text="{Binding Port}" FontAttributes="Bold" FontSize="12" IsVisible="{Binding ShowHost}" VerticalOptions="Center"/>
+            <Label Text="BaudRate:" FontAttributes="Bold" FontSize="16" IsVisible="{Binding ShowCom}" VerticalOptions="Center"/>
+            <Label Text="{Binding BaudRate}" FontAttributes="Bold" FontSize="12" IsVisible="{Binding ShowCom}" VerticalOptions="Center"/>
+            <Label Text="VehicleName:" FontAttributes="Bold" FontSize="16" IsVisible="{Binding ShowVehicle}" VerticalOptions="Center"/>
+            <Label Text="{Binding VehicleName}" FontAttributes="Bold" FontSize="16" IsVisible="{Binding ShowVehicle}" VerticalOptions="Center"/>
+        </HorizontalStackLayout>
+
         <!-- Connect Button -->
-        <Button Grid.Column="2"
+        <Button Grid.Column="3"
                 ImageSource="{Binding IsConnectedImage}"
                 FontSize="20"
                 Padding="8,4"
@@ -32,7 +45,7 @@
                 Command="{Binding ConnectCommand}" />
 
         <!-- Settings/Options -->
-        <Button Grid.Column="3"
+        <Button Grid.Column="4"
                     Text="⚙"
                     FontSize="20"
                     Padding="8,4"

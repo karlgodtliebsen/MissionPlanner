@@ -12,6 +12,7 @@ public partial class ApplicationStateService : ObservableObject
     [ObservableProperty] public partial string SelectedBaudRate { get; set; } = "115200";
     [ObservableProperty] public partial string SelectedPort { get; set; } = "14550";
     [ObservableProperty] public partial string SelectedHost { get; set; } = "127.0.0.1";
+    [ObservableProperty] public partial string? VehicleName { get; set; }
 
     /// <summary>
     /// Initializes the service with values from ApplicationState.
@@ -23,5 +24,6 @@ public partial class ApplicationStateService : ObservableObject
         SelectedBaudRate = state.SelectedBaudRate;
         SelectedPort = state.SelectedPort;
         SelectedHost = state.SelectedHost;
+        VehicleName = state.VehicleName;
     }
 }

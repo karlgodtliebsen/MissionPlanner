@@ -169,8 +169,32 @@ public class GridSplitter : ContentView
                 const double minWidth = 100;
                 if (newLeftWidth >= minWidth && newRightWidth >= minWidth)
                 {
-                    leftColumn.Width = new GridLength(newLeftWidth, GridUnitType.Absolute);
-                    rightColumn.Width = new GridLength(newRightWidth, GridUnitType.Absolute);
+                    // Never convert a star column to an absolute width: the star column is what
+                    // absorbs window resizes (maximize/restore). Pin only the non-star side and
+                    // let the star side take the remaining space, which yields the same visual
+                    // drag behavior while keeping the layout responsive.
+                    var leftIsStar = leftColumn.Width.IsStar;
+                    var rightIsStar = rightColumn.Width.IsStar;
+
+                    if (leftIsStar && rightIsStar)
+                    {
+                        // Both proportional: adjust the star weights so the ratio follows the drag.
+                        leftColumn.Width = new GridLength(newLeftWidth, GridUnitType.Star);
+                        rightColumn.Width = new GridLength(newRightWidth, GridUnitType.Star);
+                    }
+                    else if (leftIsStar)
+                    {
+                        rightColumn.Width = new GridLength(newRightWidth, GridUnitType.Absolute);
+                    }
+                    else if (rightIsStar)
+                    {
+                        leftColumn.Width = new GridLength(newLeftWidth, GridUnitType.Absolute);
+                    }
+                    else
+                    {
+                        leftColumn.Width = new GridLength(newLeftWidth, GridUnitType.Absolute);
+                        rightColumn.Width = new GridLength(newRightWidth, GridUnitType.Absolute);
+                    }
 
                     // Force the grid to re-layout immediately
                     ForceGridLayout();

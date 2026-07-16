@@ -4,6 +4,7 @@
              xmlns:local="clr-namespace:MissionPlanner"
              xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
              xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="MissionPlanner.App.App">
     <Application.Resources>
         <ResourceDictionary>
@@ -13,6 +14,7 @@
                 <material:StyleResource BasedOn="{x:Reference AppStyles}" />
                 <ResourceDictionary x:Name="OverrideStyles" Source="Resources/Styles/Override.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <toolkit:MultiConverter x:Key="NullToBoolConverter" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>

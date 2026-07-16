@@ -6,7 +6,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.Core.DomainEvents;
-using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -31,12 +30,11 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
 
     [ObservableProperty] public partial string? SelectedHost { get; set; }
 
-
     [ObservableProperty] public partial string? SelectedChannel { get; set; }
 
     [ObservableProperty] public partial string? SelectedPort { get; set; }
 
-
+    [ObservableProperty] public partial string? VehicleName { get; set; }
     [ObservableProperty] public partial string? SelectedBaudRate { get; set; }
 
     [ObservableProperty] public partial bool IsConnected { get; set; }
