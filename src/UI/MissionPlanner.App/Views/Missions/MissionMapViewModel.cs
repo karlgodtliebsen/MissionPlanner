@@ -9,6 +9,8 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Files;
 using MissionPlanner.Core.Missions.Models;
+using MissionPlanner.Core.Vehicles;
+using MissionPlanner.MavLink.Missions;
 
 namespace MissionPlanner.App.Views.Missions;
 
@@ -20,15 +22,17 @@ namespace MissionPlanner.App.Views.Missions;
 public partial class MissionMapViewModel : ObservableObject
 {
     private readonly IMissionFileCodec fileCodec;
+    private readonly IMissionProtocolMapper protocolMapper;
     private readonly IFileSaver fileSaver;
     private readonly ILogger<MissionMapViewModel> logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MissionMapViewModel"/> class.
     /// </summary>
-    public MissionMapViewModel(IMissionFileCodec fileCodec, IFileSaver fileSaver, ILogger<MissionMapViewModel> logger)
+    public MissionMapViewModel(IMissionFileCodec fileCodec, IMissionProtocolMapper protocolMapper, IFileSaver fileSaver, ILogger<MissionMapViewModel> logger)
     {
         this.fileCodec = fileCodec;
+        this.protocolMapper = protocolMapper;
         this.fileSaver = fileSaver;
         this.logger = logger;
     }
@@ -59,9 +63,59 @@ public partial class MissionMapViewModel : ObservableObject
     [ObservableProperty]
     public partial string SelectedMapType { get; set; } = "OpenStreetMap";
 
+    /// <summary>When true the waypoint list shows the complete editor (all columns + header inputs).</summary>
+    [ObservableProperty]
+    public partial bool IsCompleteEditorMode { get; set; }
+
+    /// <summary>Waypoint acceptance radius in meters (editor setting, v1.38 "WP Radius").</summary>
+    [ObservableProperty]
+    public partial double WaypointRadiusMeters { get; set; } = 30;
+
+    /// <summary>Loiter radius in meters (editor setting, v1.38 "Loiter Radius").</summary>
+    [ObservableProperty]
+    public partial double LoiterRadiusMeters { get; set; } = 45;
+
+    /// <summary>Altitude warning threshold in meters (editor setting, v1.38 "Alt Warn").</summary>
+    [ObservableProperty]
+    public partial double AltWarnMeters { get; set; }
+
+    /// <summary>Summary line for the mission (item count, total distance).</summary>
+    [ObservableProperty]
+    public partial string MissionSummary { get; set; } = "0 items";
+
     /// <summary>The tile sources the map views can render.</summary>
     public IReadOnlyList<string> AvailableMapTypes { get; } =
         ["OpenStreetMap", "Esri World Topo", "Esri World Physical", "Esri Shaded Relief", "Esri Dark Gray"];
+
+    /// <summary>
+    /// Commands selectable in the waypoint editor. Names follow v1.38's mavcmd.xml; the set is
+    /// limited to the commands the mission domain supports.
+    /// </summary>
+    private static readonly (string Name, ushort Id)[] commandDefinitions =
+    [
+        ("WAYPOINT", 16),
+        ("LOITER_UNLIM", 17),
+        ("LOITER_TURNS", 18),
+        ("LOITER_TIME", 19),
+        ("RETURN_TO_LAUNCH", 20),
+        ("LAND", 21),
+        ("TAKEOFF", 22),
+        ("DO_CHANGE_SPEED", 178)
+    ];
+
+    /// <summary>Altitude frames selectable in the waypoint editor (v1.38 altmode naming).</summary>
+    private static readonly (string Name, byte Id)[] frameDefinitions =
+    [
+        ("Absolute", 0),
+        ("Relative", 3),
+        ("Terrain", 10)
+    ];
+
+    /// <summary>The command names offered by the editor's Command select.</summary>
+    public IReadOnlyList<string> CommandOptions { get; } = commandDefinitions.Select(x => x.Name).ToArray();
+
+    /// <summary>The frame names offered by the editor's Frame select.</summary>
+    public IReadOnlyList<string> FrameOptions { get; } = frameDefinitions.Select(x => x.Name).ToArray();
 
     /// <summary>Display rows for the mission items, kept in sync with <see cref="Mission"/>.</summary>
     public ObservableCollection<MissionItemRow> MissionItems { get; } = [];
@@ -152,7 +206,7 @@ public partial class MissionMapViewModel : ObservableObject
     {
         if (Mission.Remove(row.Id))
         {
-            OnMissionChanged($"Removed item {row.Number} ({row.Command}).");
+            OnMissionChanged($"Removed item {row.Number} ({row.SelectedCommand}).");
         }
     }
 
@@ -301,6 +355,7 @@ public partial class MissionMapViewModel : ObservableObject
     }
 
     [RelayCommand]
+    [Obsolete]
     private async Task SaveWpFileAsync()
     {
         if (Mission.Items.Count == 0)
@@ -329,6 +384,7 @@ public partial class MissionMapViewModel : ObservableObject
         }
     }
 
+    [Obsolete]
     private static async Task<(MissionFileFormat? Format, string? Extension)> PickSaveFormatAsync()
     {
         var page = Application.Current?.Windows.FirstOrDefault()?.Page;
@@ -504,18 +560,187 @@ public partial class MissionMapViewModel : ObservableObject
     private void RebuildRows()
     {
         MissionItems.Clear();
+
+        var previousPosition = HomePosition;
+        var previousAltitude = 0.0;
+        var totalDistance = 0.0;
+
         foreach (var item in Mission.Items)
         {
             var position = PositionOf(item);
             var altitude = AltitudeOf(item);
-            MissionItems.Add(new MissionItemRow(
-                item.Id,
-                item.Sequence + 1,
-                item.Command.ToString(),
-                position?.LatitudeDegrees.ToString("F6", CultureInfo.CurrentCulture) ?? string.Empty,
-                position?.LongitudeDegrees.ToString("F6", CultureInfo.CurrentCulture) ?? string.Empty,
-                altitude?.Meters.ToString("F0", CultureInfo.CurrentCulture) ?? string.Empty));
+            var protocol = protocolMapper.ToProtocol(item, Mission.Type);
+
+            string distance = string.Empty, azimuth = string.Empty, gradient = string.Empty;
+            if (position is { } current && previousPosition is { } previous)
+            {
+                var legMeters = GeoMath.ApproximateDistanceMeters(
+                    previous.LatitudeDegrees, previous.LongitudeDegrees,
+                    current.LatitudeDegrees, current.LongitudeDegrees);
+                totalDistance += legMeters;
+                distance = legMeters.ToString("F0", CultureInfo.CurrentCulture);
+                azimuth = BearingDegrees(previous, current).ToString("F0", CultureInfo.CurrentCulture);
+
+                if (altitude is { } alt && legMeters > 0.5)
+                {
+                    gradient = ((alt.Meters - previousAltitude) / legMeters * 100.0).ToString("F1", CultureInfo.CurrentCulture);
+                }
+            }
+
+            if (position is not null)
+            {
+                previousPosition = position;
+                previousAltitude = altitude?.Meters ?? previousAltitude;
+            }
+
+            var row = new MissionItemRow
+            {
+                Id = item.Id,
+                Number = item.Sequence + 1,
+                CommandId = protocol.Command,
+                Frame = protocol.Frame,
+                AutoContinue = protocol.AutoContinue,
+                Param1 = FormatParam(protocol.Param1),
+                Param2 = FormatParam(protocol.Param2),
+                Param3 = FormatParam(protocol.Param3),
+                Param4 = FormatParam(protocol.Param4),
+                Latitude = position?.LatitudeDegrees.ToString("F6", CultureInfo.CurrentCulture) ?? string.Empty,
+                Longitude = position?.LongitudeDegrees.ToString("F6", CultureInfo.CurrentCulture) ?? string.Empty,
+                Altitude = altitude?.Meters.ToString("F0", CultureInfo.CurrentCulture) ?? string.Empty,
+                Distance = distance,
+                Azimuth = azimuth,
+                Gradient = gradient,
+                // Set the initial selections before attaching the callback so building rows never applies edits.
+                SelectedCommand = CommandNameFor(protocol.Command),
+                SelectedFrame = FrameNameFor(protocol.Frame)
+            };
+            row.AttachSelectionChanged(ApplyRowEdit);
+
+            MissionItems.Add(row);
         }
+
+        MissionSummary = Mission.Items.Count == 0
+            ? "0 items"
+            : $"{Mission.Items.Count} items • {totalDistance:F0} m total";
+    }
+
+    /// <summary>
+    /// Applies the edited values of a row (params, lat/lon, altitude) back to the mission item.
+    /// </summary>
+    [RelayCommand]
+    private void ApplyRowEdit(MissionItemRow row)
+    {
+        var index = Mission.Items.ToList().FindIndex(x => x.Id == row.Id);
+        if (index < 0)
+        {
+            return;
+        }
+
+        try
+        {
+            var commandId = CommandIdFor(row.SelectedCommand) ?? row.CommandId;
+            var frameId = FrameIdFor(row.SelectedFrame) ?? row.Frame;
+
+            var protocolItem = new MavLinkMissionItem(
+                (ushort)index,
+                frameId,
+                commandId,
+                false,
+                row.AutoContinue,
+                ParseParam(row.Param1),
+                ParseParam(row.Param2),
+                ParseParam(row.Param3),
+                // Param4 is yaw/heading where NaN means "not set"; keep an empty cell as NaN.
+                ParseParam(row.Param4, float.NaN),
+                (int)Math.Round(ParseCoordinate(row.Latitude) * 1e7),
+                (int)Math.Round(ParseCoordinate(row.Longitude) * 1e7),
+                ParseParam(row.Altitude),
+                MavMissionType.Mission);
+
+            var replacement = protocolMapper.FromProtocol(protocolItem);
+            Mission.Replace(row.Id, replacement);
+            OnMissionChanged($"Item {row.Number} updated.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to apply row edit for item {Number}", row.Number);
+            ShowStatus($"Edit failed: {ex.Message}");
+        }
+    }
+
+    private static string FormatParam(float value)
+    {
+        return float.IsNaN(value) ? string.Empty : value.ToString("0.###", CultureInfo.CurrentCulture);
+    }
+
+    private static float ParseParam(string text, float emptyValue = 0f)
+    {
+        return float.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out var value) ? value : emptyValue;
+    }
+
+    private static double ParseCoordinate(string text)
+    {
+        return double.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out var value) ? value : 0.0;
+    }
+
+    private static string CommandNameFor(ushort commandId)
+    {
+        foreach (var (name, id) in commandDefinitions)
+        {
+            if (id == commandId)
+            {
+                return name;
+            }
+        }
+
+        return $"ID {commandId}";
+    }
+
+    private static ushort? CommandIdFor(string? commandName)
+    {
+        foreach (var (name, id) in commandDefinitions)
+        {
+            if (name == commandName)
+            {
+                return id;
+            }
+        }
+
+        return null;
+    }
+
+    private static string FrameNameFor(byte frame)
+    {
+        foreach (var (name, id) in frameDefinitions)
+        {
+            if (id == frame)
+            {
+                return name;
+            }
+        }
+
+        return frame.ToString(CultureInfo.InvariantCulture);
+    }
+
+    private static byte? FrameIdFor(string? frameName)
+    {
+        foreach (var (name, id) in frameDefinitions)
+        {
+            if (name == frameName)
+            {
+                return id;
+            }
+        }
+
+        return null;
+    }
+
+    private static double BearingDegrees(GeoPosition from, GeoPosition to)
+    {
+        var deltaY = to.LatitudeDegrees - from.LatitudeDegrees;
+        var deltaX = (to.LongitudeDegrees - from.LongitudeDegrees) * Math.Cos(from.LatitudeDegrees * Math.PI / 180.0);
+        var degrees = Math.Atan2(deltaX, deltaY) * 180.0 / Math.PI;
+        return degrees < 0 ? degrees + 360.0 : degrees;
     }
 
     private void ShowStatus(string message)

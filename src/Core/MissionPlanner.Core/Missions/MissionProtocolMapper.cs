@@ -43,7 +43,7 @@ public sealed class MissionProtocolMapper : IMissionProtocolMapper
 
         return (MissionCommand)item.Command switch
         {
-            MissionCommand.NavigateWaypoint => new WaypointMissionItem(id, item.Sequence, position, altitude,
+            MissionCommand.Waypoint => new WaypointMissionItem(id, item.Sequence, position, altitude,
                 TimeSpan.FromSeconds(item.Param1), NullIfZero(item.Param2), NullIfZero(item.Param3),
                 NullIfNaN(item.Param4), item.AutoContinue),
             MissionCommand.LoiterUnlimited => new LoiterMissionItem(id, item.Sequence, position, altitude,

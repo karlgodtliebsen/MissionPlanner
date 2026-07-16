@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+              xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
+              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+              xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+              x:Class="MissionPlanner.App.Views.Missions.MissionItemListView"
+              x:DataType="missions:MissionMapViewModel"
+              x:Name="Root">
+
+    <ContentView.Resources>
+        <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+    </ContentView.Resources>
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="6" BackgroundColor="#252526" Padding="6">
+
+        <!-- Title + mode switch -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="6">
+            <Label Grid.Column="0" Text="Mission" FontAttributes="Bold" FontSize="16" VerticalOptions="Center" />
+            <Label Grid.Column="1" Text="Extended" FontSize="12" Opacity="0.8" VerticalOptions="Center" />
+            <Switch Grid.Column="2" IsToggled="{Binding IsCompleteEditorMode}" VerticalOptions="Center" />
+        </Grid>
+
+        <Label Grid.Row="1" Text="{Binding HomePosition, StringFormat='Home: {0}'}" FontSize="12" Opacity="0.8" />
+
+        <!-- Complete-mode header: info + editor settings -->
+        <Label Grid.Row="2" Text="{Binding MissionSummary}" FontSize="12" FontAttributes="Bold"  IsVisible="{Binding IsCompleteEditorMode}"/>
+
+        <Grid Grid.Row="3" HorizontalOptions="Start"  ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" VerticalOptions="Center" ColumnSpacing="6"  IsVisible="{Binding IsCompleteEditorMode}">
+            <Label Grid.Column="0" Text="WP Radius (m):" FontSize="11" VerticalOptions="Center"  />
+            <Entry Grid.Column="1" Text="{Binding WaypointRadiusMeters}" Keyboard="Numeric" HorizontalTextAlignment="End"  FontSize="11" WidthRequest="25"   />
+
+            <Label Grid.Column="2" Text="Loiter Radius (m):" FontSize="11" VerticalOptions="Center"  />
+            <Entry Grid.Column="3" Text="{Binding LoiterRadiusMeters}" Keyboard="Numeric" HorizontalTextAlignment="End" FontSize="11" WidthRequest="25"  />
+
+            <Label Grid.Column="4" Text="Default Alt (m):" FontSize="11" VerticalOptions="Center" />
+            <Entry Grid.Column="5" Text="{Binding DefaultAltitudeMeters}" Keyboard="Numeric" HorizontalTextAlignment="End"  FontSize="11" WidthRequest="25"  />
+
+            <Label Grid.Column="6" Text="Alt Warn (m):" FontSize="11" VerticalOptions="Center"  />
+            <Entry Grid.Column="7" Text="{Binding AltWarnMeters}" Keyboard="Numeric" HorizontalTextAlignment="End"  FontSize="11" WidthRequest="25"  />
+        </Grid>
+
+        <!-- Mode 1: compact list -->
+        <ScrollView Grid.Row="4"
+                    IsVisible="{Binding IsCompleteEditorMode, Converter={StaticResource InvertedBoolConverter}}"
+                    HorizontalScrollBarVisibility="Default" VerticalScrollBarVisibility="Default"
+                    HorizontalOptions="Fill" VerticalOptions="Fill" Padding="0">
+            <CollectionView ItemsSource="{Binding MissionItems}" VerticalOptions="Fill">
+                <CollectionView.Header>
+                    <Grid ColumnDefinitions="20,65,62,62,55,*" ColumnSpacing="2" Padding="2,2">
+                        <Label Grid.Column="0" Text="#" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center" />
+                        <Label Grid.Column="1" Text="Command" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center" />
+                        <Label Grid.Column="2" Text="Latitude" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center" />
+                        <Label Grid.Column="3" Text="Longitude" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center" />
+                        <Label Grid.Column="4" Text="Alt (m)" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center" />
+                    </Grid>
+                </CollectionView.Header>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="missions:MissionItemRow">
+                        <Grid ColumnDefinitions="20,65,62,62,55,*" ColumnSpacing="2" Padding="2,2">
+                            <Label Grid.Column="0" Text="{Binding Number}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Label Grid.Column="1" Text="{Binding SelectedCommand}" FontSize="11" VerticalOptions="Center" LineBreakMode="TailTruncation" HorizontalOptions="Center" />
+                            <Label Grid.Column="2" Text="{Binding Latitude}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Label Grid.Column="3" Text="{Binding Longitude}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Label Grid.Column="4" Text="{Binding Altitude}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <HorizontalStackLayout Grid.Column="5" Spacing="2">
+                                <Button Text="▲" BackgroundColor="Transparent" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
+                                        Command="{Binding MoveItemUpCommand, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
+                                        CommandParameter="{Binding .}" />
+                                <Button Text="▼" BackgroundColor="Transparent" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
+                                        Command="{Binding MoveItemDownCommand, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
+                                        CommandParameter="{Binding .}" />
+                                <Button Text="✕" BackgroundColor="Transparent" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
+                                        Command="{Binding RemoveItemCommand, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
+                                        CommandParameter="{Binding .}" />
+                            </HorizontalStackLayout>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                <CollectionView.EmptyView>
+                    <Label Text="No mission items. Right-click the map to add waypoints."
+                           FontSize="12" Opacity="0.6" Margin="0,20" />
+                </CollectionView.EmptyView>
+            </CollectionView>
+        </ScrollView>
+
+        <!-- Mode 2: complete editable grid (v1.38-style) -->
+        <ScrollView Grid.Row="4"
+                    IsVisible="{Binding IsCompleteEditorMode}"
+                    Orientation="Both"
+                    HorizontalScrollBarVisibility="Default" VerticalScrollBarVisibility="Default"
+                    HorizontalOptions="Fill" VerticalOptions="Fill" Padding="0">
+            <CollectionView ItemsSource="{Binding MissionItems}" VerticalOptions="Fill">
+                <CollectionView.Header>
+                    <Grid ColumnDefinitions="22,160,54,54,54,54,80,80,50,110,48,40,44,84" ColumnSpacing="2" Padding="2,2">
+                        <Label Grid.Column="0" Text="#" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center" />
+                        <Label Grid.Column="1" Text="Command" FontAttributes="Bold" FontSize="11" />
+                        <Label Grid.Column="2" Text="P1" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center" />
+                        <Label Grid.Column="3" Text="P2" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center" />
+                        <Label Grid.Column="4" Text="P3" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center" />
+                        <Label Grid.Column="5" Text="P4" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center" />
+                        <Label Grid.Column="6" Text="Latitude" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center" />
+                        <Label Grid.Column="7" Text="Longitude" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center" />
+                        <Label Grid.Column="8" Text="Alt" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center" />
+                        <Label Grid.Column="9" Text="Frame" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center" />
+                        <Label Grid.Column="10" Text="Dist" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center" />
+                        <Label Grid.Column="11" Text="AZ" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center" />
+                        <Label Grid.Column="12" Text="Grad %" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center" />
+                    </Grid>
+                </CollectionView.Header>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="missions:MissionItemRow">
+                        <Grid ColumnDefinitions="22,160,54,54,54,54,80,80,50,110,48,40,44,84" ColumnSpacing="2" Padding="2,1">
+                            <Label Grid.Column="0" Text="{Binding Number}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <!--<material:PickerField Grid.Column="1"
+                                                  AllowClear="False"
+                                                  FontSize="11"
+                                                  VerticalOptions="Center"
+                                                  ItemsSource="{Binding CommandOptions, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
+                                                  SelectedItem="{Binding SelectedCommand}" />-->
+
+
+                            <Picker ItemsSource="{Binding CommandOptions, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
+                                    SelectedItem="{Binding SelectedCommand}"
+                                    Grid.Column="1"
+                                    FontSize="11"
+                                    VerticalOptions="Center" />
+
+                            <Entry Grid.Column="2" Text="{Binding Param1}" FontSize="11" HeightRequest="30" Completed="OnRowEditCompleted" Unfocused="OnRowEditCompleted" />
+                            <Entry Grid.Column="3" Text="{Binding Param2}" FontSize="11" HeightRequest="30" Completed="OnRowEditCompleted" Unfocused="OnRowEditCompleted" />
+                            <Entry Grid.Column="4" Text="{Binding Param3}" FontSize="11" HeightRequest="30" Completed="OnRowEditCompleted" Unfocused="OnRowEditCompleted" />
+                            <Entry Grid.Column="5" Text="{Binding Param4}" FontSize="11" HeightRequest="30" Completed="OnRowEditCompleted" Unfocused="OnRowEditCompleted" />
+                            <Entry Grid.Column="6" Text="{Binding Latitude}" FontSize="11" HeightRequest="30" Completed="OnRowEditCompleted" Unfocused="OnRowEditCompleted" />
+                            <Entry Grid.Column="7" Text="{Binding Longitude}" FontSize="11" HeightRequest="30" Completed="OnRowEditCompleted" Unfocused="OnRowEditCompleted" />
+                            <Entry Grid.Column="8" Text="{Binding Altitude}" FontSize="11" HeightRequest="30" Completed="OnRowEditCompleted" Unfocused="OnRowEditCompleted" />
+                            <!--<material:PickerField Grid.Column="9"
+                                                  AllowClear="False"
+                                                  FontSize="11"
+                                                  VerticalOptions="Center"
+                                                  ItemsSource="{Binding FrameOptions, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
+                                                  SelectedItem="{Binding SelectedFrame}" />-->
+
+
+                            <Picker ItemsSource="{Binding FrameOptions, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
+                                    SelectedItem="{Binding SelectedFrame}"
+                                    Grid.Column="9"
+                                    FontSize="11"
+                                    VerticalOptions="Center" />
+
+                            <Label Grid.Column="10" Text="{Binding Distance}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Label Grid.Column="11" Text="{Binding Azimuth}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <Label Grid.Column="12" Text="{Binding Gradient}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
+                            <HorizontalStackLayout Grid.Column="13" Spacing="2">
+                                <Button Text="▲" BackgroundColor="Transparent" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
+                                        Command="{Binding MoveItemUpCommand, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
+                                        CommandParameter="{Binding .}" />
+                                <Button Text="▼" BackgroundColor="Transparent" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
+                                        Command="{Binding MoveItemDownCommand, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
+                                        CommandParameter="{Binding .}" />
+                                <Button Text="✕" BackgroundColor="Transparent" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
+                                        Command="{Binding RemoveItemCommand, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
+                                        CommandParameter="{Binding .}" />
+                            </HorizontalStackLayout>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                <CollectionView.EmptyView>
+                    <Label Text="No mission items. Right-click the map to add waypoints."
+                           FontSize="12" Opacity="0.6" Margin="0,20" />
+                </CollectionView.EmptyView>
+            </CollectionView>
+        </ScrollView>
+
+    </Grid>
+
+</ContentView>

@@ -6,7 +6,6 @@
               xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
               xmlns:input="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
               xmlns:validations="clr-namespace:InputKit.Shared.Validations;assembly=InputKit.Maui"
-
               x:Class="MissionPlanner.App.Views.Connect.ConnectPopupView"
               x:DataType="connect:ConnectPopupViewModel"
               BackgroundColor="#80000000">
@@ -14,13 +13,25 @@
 
     <VerticalStackLayout Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Spacing="12" Margin="25">
 
-        <material:PickerField   Title="Channel"
+        <!--<material:PickerField   Title="Channel"
                                 ItemsSource="{Binding Channels}"
                                 SelectedItem="{Binding SelectedChannel}" />
 
-        <material:PickerField   Title="Baud rate" IsVisible="{Binding ShowSelectedCom}"
+        <material:PickerField   Title="Baud rate" 
+                                IsVisible="{Binding ShowSelectedCom}"
                                 ItemsSource="{Binding BaudRates}"
-                                SelectedItem="{Binding SelectedBaudRate}" />
+                                SelectedItem="{Binding SelectedBaudRate}" />-->
+
+
+        <Picker ItemsSource="{Binding Channels}"
+                SelectedItem="{Binding SelectedChannel}"
+                Title="Channel"
+                Margin="0,0,12,4" />
+        <Picker ItemsSource="{Binding BaudRates}"
+                SelectedItem="{Binding SelectedBaudRate}"
+                IsVisible="{Binding ShowSelectedCom}"
+                Title="Baud rate" 
+                Margin="0,0,12,4" />
 
         <material:EditorField Title="Host" Text="{Binding SelectedHost}" IsVisible="{Binding ShowSelectedHost}">
             </material:EditorField>

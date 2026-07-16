@@ -53,55 +53,7 @@
                                    SplitterColor="#3e3e42"
                                    HoverColor="#007acc" />
 
-            <Grid Grid.Column="2" RowDefinitions="Auto,Auto,*" RowSpacing="6" BackgroundColor="#252526" Padding="6" >
-
-                <Label Grid.Row="0" Text="Mission" FontAttributes="Bold" FontSize="16" />
-
-                <Label Grid.Row="1" Text="{Binding Map.HomePosition, StringFormat='Home: {0}'}" FontSize="12" Opacity="0.8" />
-
-                <ScrollView Grid.Row="2" HorizontalScrollBarVisibility="Default" VerticalScrollBarVisibility="Default" HorizontalOptions="Fill"
-                            VerticalOptions="Fill"
-                            Padding="0"
-                >
-                    <CollectionView Grid.Row="2" ItemsSource="{Binding Map.MissionItems}" VerticalOptions="Fill">
-                        <CollectionView.Header>
-                            <Grid ColumnDefinitions="20,65,62,62,55,*" ColumnSpacing="2" Padding="2,2">
-                                <Label Grid.Column="0" Text="#" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center"/>
-                                <Label Grid.Column="1" Text="Command" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center"/>
-                                <Label Grid.Column="2" Text="Latitude" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center"/>
-                                <Label Grid.Column="3" Text="Longitude" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center"/>
-                                <Label Grid.Column="4" Text="Altitude" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center"/>
-                            </Grid>
-                        </CollectionView.Header>
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="missions:MissionItemRow">
-                                <Grid ColumnDefinitions="20,65,62,62,55,*" ColumnSpacing="2" Padding="2,2">
-                                    <Label Grid.Column="0" Text="{Binding Number}" FontSize="11" VerticalOptions="Center"  HorizontalOptions="Center"/>
-                                    <Label Grid.Column="1" Text="{Binding Command}" FontSize="11" VerticalOptions="Center" LineBreakMode="TailTruncation"  HorizontalOptions="Center"/>
-                                    <Label Grid.Column="2" Text="{Binding Latitude}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
-                                    <Label Grid.Column="3" Text="{Binding Longitude}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
-                                    <Label Grid.Column="4" Text="{Binding Altitude}" FontSize="11" VerticalOptions="Center"  HorizontalOptions="Center"/>
-                                    <HorizontalStackLayout Grid.Column="5" Spacing="2">
-                                        <Button Text="▲" BackgroundColor="Transparent" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
-                                            Command="{Binding Map.MoveItemUpCommand, Source={RelativeSource AncestorType={x:Type vm:FlightPlannerViewModel}}}"
-                                            CommandParameter="{Binding .}" />
-                                        <Button Text="▼" BackgroundColor="Transparent" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
-                                            Command="{Binding Map.MoveItemDownCommand, Source={RelativeSource AncestorType={x:Type vm:FlightPlannerViewModel}}}"
-                                            CommandParameter="{Binding .}" />
-                                        <Button Text="✕" BackgroundColor="Transparent" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
-                                            Command="{Binding Map.RemoveItemCommand, Source={RelativeSource AncestorType={x:Type vm:FlightPlannerViewModel}}}"
-                                            CommandParameter="{Binding .}" />
-                                    </HorizontalStackLayout>
-                                </Grid>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                        <CollectionView.EmptyView>
-                            <Label Text="No mission items. Right-click the map to add waypoints."
-                               FontSize="12" Opacity="0.6" Margin="0,20" />
-                        </CollectionView.EmptyView>
-                    </CollectionView>
-                </ScrollView>
-            </Grid>
+            <missions:MissionItemListView Grid.Column="2" />
 
         </Grid>
 

@@ -23,18 +23,18 @@
                    HorizontalOptions="Center"/>
 
         <HorizontalStackLayout Grid.Column="2" IsVisible="{Binding IsConnected}" VerticalOptions="Center" Spacing="5" Margin="0,0,10,0">
-            <Label Text="Channel:" FontAttributes="Bold" FontSize="16"  VerticalOptions="Center"/>
-            <Label Text="{Binding Channel}" FontAttributes="Bold" FontSize="12"  VerticalOptions="Center"/>
-            <Label Text="Host:" FontAttributes="Bold" FontSize="16" IsVisible="{Binding ShowHost}" VerticalOptions="Center"/>
-            <Label Text="{Binding Host}" FontAttributes="Bold" FontSize="12" IsVisible="{Binding ShowHost}" VerticalOptions="Center"/>
-            <Label Text="Port:" FontAttributes="Bold" FontSize="16" IsVisible="{Binding ShowHost}" VerticalOptions="Center"/>
-            <Label Text="{Binding Port}" FontAttributes="Bold" FontSize="12" IsVisible="{Binding ShowHost}" VerticalOptions="Center"/>
-            <Label Text="BaudRate:" FontAttributes="Bold" FontSize="16" IsVisible="{Binding ShowCom}" VerticalOptions="Center"/>
-            <Label Text="{Binding BaudRate}" FontAttributes="Bold" FontSize="12" IsVisible="{Binding ShowCom}" VerticalOptions="Center"/>
-            <Label Text="Name:" FontAttributes="Bold" FontSize="16" IsVisible="{Binding ShowVehicleName}" VerticalOptions="Center"/>
-            <Label Text="{Binding VehicleName}" FontAttributes="Bold" FontSize="16" IsVisible="{Binding ShowVehicleName}" VerticalOptions="Center"/>
-            <Label Text="Id:" FontAttributes="Bold" FontSize="16"  VerticalOptions="Center"/>
-            <Label Text="{Binding VehicleId}" FontAttributes="Bold" FontSize="16"  VerticalOptions="Center"/>
+            <Label Text="Channel:"  FontSize="16"  VerticalOptions="Center"/>
+            <Label Text="{Binding Channel}" FontSize="12"  VerticalOptions="Center"/>
+            <Label Text="Host:"  FontSize="16" IsVisible="{Binding ShowHost}" VerticalOptions="Center"/>
+            <Label Text="{Binding Host}" FontSize="12" IsVisible="{Binding ShowHost}" VerticalOptions="Center"/>
+            <Label Text="Port:" FontSize="16" IsVisible="{Binding ShowHost}" VerticalOptions="Center"/>
+            <Label Text="{Binding Port}" FontSize="12" IsVisible="{Binding ShowHost}" VerticalOptions="Center"/>
+            <Label Text="BaudRate:" FontSize="16" IsVisible="{Binding ShowCom}" VerticalOptions="Center"/>
+            <Label Text="{Binding BaudRate}" FontSize="12" IsVisible="{Binding ShowCom}" VerticalOptions="Center"/>
+            <Label Text="Name:" FontSize="16" IsVisible="{Binding ShowVehicleName}" VerticalOptions="Center"/>
+            <Label Text="{Binding VehicleName}" FontSize="12" IsVisible="{Binding ShowVehicleName}" VerticalOptions="Center"/>
+            <Label Text="Id:" FontSize="16"  VerticalOptions="Center"/>
+            <Label Text="{Binding VehicleId}" FontSize="12"  VerticalOptions="Center"/>
         </HorizontalStackLayout>
 
         <!-- Connect Button -->

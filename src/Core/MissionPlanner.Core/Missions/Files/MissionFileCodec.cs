@@ -58,7 +58,7 @@ public sealed class MissionFileCodec(IMissionProtocolMapper protocolMapper) : IM
         builder.AppendLine(QgcWplHeader);
 
         var homePosition = ResolveHome(mission, home);
-        AppendWplLine(builder, 0, 1, 0, (ushort)MissionCommand.NavigateWaypoint,
+        AppendWplLine(builder, 0, 1, 0, (ushort)MissionCommand.Waypoint,
             0, 0, 0, 0, homePosition.LatitudeDegrees, homePosition.LongitudeDegrees, 0, 1);
 
         foreach (var item in mission.Items)

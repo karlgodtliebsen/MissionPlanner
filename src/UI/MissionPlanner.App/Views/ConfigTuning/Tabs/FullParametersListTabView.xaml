@@ -220,28 +220,20 @@
 
                         <material:DataGrid.Columns>
                             <material:DataGridColumn   Width="200"  ValueBinding="{Binding Name}" Title="Name"  />
-                            <!--<material:DataGridColumn Title="Name" >
-                                <material:DataGridColumn.CellItemTemplate >
-                                    <DataTemplate  x:DataType="vm:ParameterItemViewModel" >
-                                        <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Fill"  Margin="10,0,10,0">
-                                            <VerticalStackLayout.BackgroundColor>Purple</VerticalStackLayout.BackgroundColor>
-                                            <Label VerticalOptions="Center"  
-                                                   HorizontalOptions="Start" HorizontalTextAlignment="Start" Text="{Binding Name}"/>
-                                        </VerticalStackLayout>
-                                    </DataTemplate>
-                                </material:DataGridColumn.CellItemTemplate>
-                            </material:DataGridColumn>-->
-
-
                             <material:DataGridColumn Title="Value" >
                                 <material:DataGridColumn.CellItemTemplate >
                                     <DataTemplate  x:DataType="configTuning:ParameterItemViewModel" >
-                                        <VerticalStackLayout HorizontalOptions="End" VerticalOptions="Fill"   Margin="10,0,0,0">
-                                            <material:EditorField
+                                        <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="10,0,0,0">
+                                            <!--<material:EditorField
                                             WidthRequest="100"
                                             FontSize="16"
                                             Keyboard="Keyboard.Numeric" Title="Value" HorizontalOptions="End" VerticalOptions="Center"  
-                                            Text="{Binding Value}" TextColor="Blue"/>
+                                            Text="{Binding Value}" TextColor="Blue"/>-->
+                                            <Entry  Text="{Binding Value}" FontSize="16"  
+                                                    Keyboard="Numeric" HorizontalTextAlignment="End" 
+                                                    HorizontalOptions="End" VerticalOptions="Center"  
+                                                    WidthRequest="100"   />
+
                                         </VerticalStackLayout>
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
@@ -250,16 +242,24 @@
                             <material:DataGridColumn Title="Options">
                                 <material:DataGridColumn.CellItemTemplate>
                                     <DataTemplate  x:DataType="configTuning:ParameterItemViewModel">
-                                        <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Fill" Margin="10,0,0,0">
-                                            <material:PickerField
-                                            IsVisible="{Binding HasValuesData}"
-                                            Title="Select a value"
-                                            WidthRequest="175"
-                                            AllowClear="False"
-                                            ItemsSource="{Binding ValuesData}"
-                                            SelectedItem="{Binding SelectedValue}"
+                                        <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="10,0,0,0">
+                                            
+                                            <!--<material:PickerField
+                                                IsVisible="{Binding HasValuesData}"
+                                                Title="Select a value"
+                                                WidthRequest="175"
+                                                AllowClear="False"
+                                                ItemsSource="{Binding ValuesData}"
+                                                SelectedItem="{Binding SelectedValue}"
                          
-                                        />
+                                            />-->
+
+                                            <Picker IsVisible="{Binding HasValuesData}"
+                                                    FontSize="16"  
+                                                    WidthRequest="175"
+                                                    ItemsSource="{Binding ValuesData}"
+                                                    SelectedItem="{Binding SelectedValue}" />
+
                                         </VerticalStackLayout>
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>

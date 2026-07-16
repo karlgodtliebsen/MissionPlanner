@@ -212,7 +212,7 @@ same control and the same mission plan, so edits made on either screen show up o
 * Core Missions domain: `Mission` aggregate; items for Waypoint, Takeoff, Land, RTL, ChangeSpeed, Loiter (unlimited/time/turns); validation; plan types Mission/Geofence/RallyPoints
 * Protocol mapping in both directions (`IMissionProtocolMapper.ToProtocol` / `FromProtocol`) with round-trip tests
 * Plan page (`FlightPlannerView`): shared mission map + toolbar with Load File / Save File, Read / Write / Write Fast (wired to `IMissionTransferService` via `IVehicleRegistry`, with upload progress and validation before Write; Write Fast skips validation), map type select box, Default Alt input, status readouts
-* Mission item list panel on the Plan page: number, command, lat/lon/alt per row, move up/down, delete, synced with the map; Clear Mission toolbar button
+* Two-mode waypoint list/editor (`MissionItemListView`, right column of the Plan page): **Simple** mode is the compact list (number, command, lat/lon/alt, up/down/delete); **Complete** mode mirrors the v1.38 grid — editable P1–P4/Lat/Lon/Alt cells applied back to the mission, Frame column, derived per-leg Dist/AZ/Grad % columns, and a header (visible in Complete mode only) with mission summary (item count, total distance) and editor settings (WP Radius, Loiter Radius, Default Alt, Alt Warn); Clear Mission toolbar button
 * Mission file Load / Load and Append / Save in three formats: `.waypoints` and `.txt` (QGC WPL 110, v1.38-compatible) and `.mission` (JSON document with version/name/home/items) — format detected from file content on load, chosen via dialog on save; implemented as `IMissionFileCodec` in Core with round-trip tests
 * Map pans/zooms to fit the whole mission after loading a file or reading from the vehicle
 
@@ -257,22 +257,29 @@ Complete inventory of the `MissionMapView` context menu, mirroring v1.38.
 
 * Switch Docking (WinForms-specific), GDAL Opacity (no GDAL in the new stack)
 
-## Full waypoint editor (Missing — planned as overlay/popup)
+## Full waypoint editor
 
-v1.38 hosts the full mission editor detail in a fold/unfold panel below the map. **That
-layout will not be replicated.** The new design keeps the slim waypoint list in the
-rightmost column (resizable via grid splitter) and will expose the full editor on demand
-as a popup/overlay/moveable window/expandable view opened from that list.
+v1.38 hosts the full mission editor detail in a fold/unfold panel below the map. That
+layout is not replicated: the right column hosts the two-mode `MissionItemListView`
+(resizable via grid splitter) — Simple mode for the compact list, Complete mode for the
+v1.38-style grid with header. Implemented in Complete mode: editable P1–P4/Lat/Lon/Alt
+(applied to the mission on commit), **Command and Frame selects** per row (v1.38 mavcmd
+naming; changing the selection converts the item in place — command list limited to the
+domain-supported set: WAYPOINT, LOITER_UNLIM/TURNS/TIME, RETURN_TO_LAUNCH, LAND, TAKEOFF,
+DO_CHANGE_SPEED; frames Absolute/Relative/Terrain), Dist/AZ/Grad % derived columns, header
+with mission summary and WP Radius / Loiter Radius / Default Alt / Alt Warn inputs.
 
-Features the full editor must cover (currently missing):
+### Missing from the complete editor
 
-* Waypoint grid: one row per item with Command (full MAV_CMD combo), Frame, P1–P4, Lat, Lon, Alt — in-place editable, synced live with the map
-* Derived columns: UTM Zone/Easting/Northing, MGRS, Grad %, Angle, Dist, AZ
-* Row operations beyond the list's current up/down/delete: Add Below, TagData
-* Settings: WP Radius, Loiter Radius, Alt Warn, Verify Height (SRTM), Spline-by-default checkbox, altitude mode selector (Relative/Absolute/Terrain)
-* Home Location entry (lat/lng/alt, set from vehicle or map click)
+* Commands beyond the domain set in the Command select (v1.38 offers the full firmware
+  MAV_CMD list from mavcmd.xml — grows as `MissionCommand`/`FromProtocol` grow)
+* Derived UTM Zone/Easting/Northing and MGRS columns; Angle column
+* Row operations: Add Below, TagData
+* WP Radius / Loiter Radius / Alt Warn are editor settings only — not yet fed into new
+  items (acceptance radius) or validation warnings
+* Verify Height (SRTM) and Spline-by-default (need terrain service / spline support)
 * Mission type selector (Mission/Fence/Rally) driving the editor payload
-* Distance/total readouts and cursor coordinate readout (Lat/Lng/UTM/MGRS + terrain elevation)
+* Cursor coordinate readout (Lat/Lng/UTM/MGRS + terrain elevation)
 
 Also missing on the map itself: **spline waypoints** (needs the spline command in the
 domain plus curved path rendering), left-click-to-add waypoint, draggable waypoint/home

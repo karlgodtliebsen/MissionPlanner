@@ -5,7 +5,7 @@
 /// </summary>
 public enum MissionCommand : ushort
 {
-    NavigateWaypoint = 16,
+    Waypoint = 16,
     LoiterUnlimited = 17,
     LoiterTurns = 18,
     LoiterTime = 19,

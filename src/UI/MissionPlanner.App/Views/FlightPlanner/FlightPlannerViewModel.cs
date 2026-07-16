@@ -78,7 +78,7 @@ public partial class FlightPlannerViewModel : ObservableObject
             foreach (var protocolItem in result.Items)
             {
                 // Sequence 0 is the home position by ArduPilot convention.
-                if (protocolItem.Sequence == 0 && protocolItem.Command == (ushort)MissionCommand.NavigateWaypoint)
+                if (protocolItem.Sequence == 0 && protocolItem.Command == (ushort)MissionCommand.Waypoint)
                 {
                     var position = new GeoPosition(protocolItem.X / 1e7, protocolItem.Y / 1e7);
                     home = position is { IsValid: true } && (protocolItem.X != 0 || protocolItem.Y != 0) ? position : null;
