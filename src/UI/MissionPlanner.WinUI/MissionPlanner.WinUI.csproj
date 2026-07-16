@@ -39,6 +39,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<!-- App icon (shared file in the App library; MauiIcon must be declared per head project) -->
+		<MauiIcon Include="..\MissionPlanner.App\Resources\AppIcon\mpdesktop.svg" Link="Resources\AppIcon\mpdesktop.svg" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<!-- Make sure all image assets to be in the root of the package to match the other platforms -->
 		<Content Update="Assets\Images\*" TargetPath="%(Filename)%(Extension)" />
 	</ItemGroup>

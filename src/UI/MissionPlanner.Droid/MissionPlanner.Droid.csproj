@@ -27,4 +27,9 @@
 		<ProjectReference Include="..\MissionPlanner.App\MissionPlanner.App.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<!-- App icon (shared file in the App library; MauiIcon must be declared per head project) -->
+		<MauiIcon Include="..\MissionPlanner.App\Resources\AppIcon\mpdesktop.svg" Link="Resources\AppIcon\mpdesktop.svg" Color="#2b2b29" />
+	</ItemGroup>
+
 </Project>

@@ -27,11 +27,9 @@
 
 		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+		<!-- NOTE: MauiIcon has no effect in a class library; each platform head project declares it. -->
 	</ItemGroup>
 
-	<ItemGroup>
-	  <MauiImage Remove="Resources\Images\readme.txt" />
-	</ItemGroup>
 
 	<ItemGroup>
 	  <None Remove="appsettings.json" />
