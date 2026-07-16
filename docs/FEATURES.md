@@ -182,7 +182,7 @@ Jump/ROI commands are still missing from the MissionCommand enum; files containi
 
 # PLAN (FlightPlan)
 
-The Plan screen is the dedicated mission editor, replacing `src-v.1/GCSViews/FlightPlanner.cs`.
+The Plan screen is the dedicated mission editor, replacing `src-v.1.38/GCSViews/FlightPlanner.cs`.
 Feature inventory below comes from the old FlightPlanner code (designer + handlers) and the
 official docs (https://ardupilot.org/planner/docs/mission-planner-flight-plan.html).
 

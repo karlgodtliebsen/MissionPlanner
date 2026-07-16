@@ -944,6 +944,36 @@ When adding new functionality:
 
 ```
 
+---
+
+# UI Shell and Persistent Chrome
+
+The MAUI app uses Shell (`AppShell`) as the navigation container, with persistent chrome
+that survives page navigation:
+
+- **Top bar** — `Shell.TitleView` in `AppShell.xaml` hosts `TopBarView`
+  (`Views/Common`): app title, connection status, connect button.
+- **Bottom status bar** — the reusable `StatusBarView` + singleton `StatusBarViewModel`
+  (`Views/Common`): clock, connection dot, status messages. It reflects
+  `ApplicationStateService` and domain events such as `VehicleConnected`; pages opt in by
+  placing it in the bottom row of a two-row grid.
+- Because the chrome ViewModels are singletons, every page shows the same live state.
+
+# View construction pattern
+
+Views instantiate their ViewModel in a parameterless constructor via
+`ServiceHelper.GetRequiredService<TViewModel>()` and set `BindingContext`. Views are used
+directly as XAML elements and are not registered in the container; only ViewModels are
+registered (mostly singletons) in `ApplicationConfigurator`. This keeps XAML instantiation
+(`<tabs:GaugesTabView />`) working while ViewModels still come from DI.
+
+# Shared mission editor
+
+The mission map editor (`MissionMapView` + singleton `MissionMapViewModel`,
+`Views/Missions`) is a shared component hosted by both the FlightData map and the Plan
+page. Both screens therefore edit the same mission plan; map pins and the route line are
+projections of the domain `Mission` aggregate, never the source of truth.
+
 
 
 
