@@ -82,6 +82,12 @@ public partial class MissionMapView : ContentView, IDisposable
 
     private void OnMissionChanged(object? sender, EventArgs e)
     {
+        //TODO: They seem to not work well with the map control. I have currently no idea on how to properly refresh UI
+        //MissionMap.ForceUpdate();
+        //MissionMap.Refresh();
+        //MissionMap.RefreshData();
+        //MissionMap.RefreshGraphics();
+
         RedrawMission();
     }
 

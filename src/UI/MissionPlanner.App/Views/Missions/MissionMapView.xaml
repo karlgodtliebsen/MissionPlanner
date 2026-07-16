@@ -105,8 +105,8 @@
                 </MenuFlyoutSubItem>
 
                 <MenuFlyoutItem Text="Tracker Home" Command="{Binding NotImplementedCommand}" CommandParameter="Tracker Home" />
-                <MenuFlyoutItem Text="Modify Alt" Command="{Binding ModifyAltitudeCommand}" />
-                <MenuFlyoutItem Text="Enter UTM Coord" Command="{Binding NotImplementedCommand}" CommandParameter="Enter UTM Coord" />
+                <MenuFlyoutItem Text="Modify Altitude" Command="{Binding ModifyAltitudeCommand}" />
+                <MenuFlyoutItem Text="Enter UTM Coordinate" Command="{Binding NotImplementedCommand}" CommandParameter="Enter UTM Coordinate" />
                 <MenuFlyoutItem Text="Set Home Here" Command="{Binding SetHomeHereCommand}" />
 
             </MenuFlyout>

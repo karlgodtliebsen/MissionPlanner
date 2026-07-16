@@ -96,6 +96,7 @@ public partial class MissionMapViewModel : ObservableObject
     /// </summary>
     public void ClearMissionData()
     {
+        HomePosition = null;
         Mission = new Mission(MissionId.New(), "New Mission");
         OnMissionChanged("Mission cleared.");
     }
@@ -155,12 +156,14 @@ public partial class MissionMapViewModel : ObservableObject
     private void MoveItemUp(MissionItemRow row)
     {
         MoveItem(row, -1);
+        OnMissionChanged($"MoveItemUp");
     }
 
     [RelayCommand]
     private void MoveItemDown(MissionItemRow row)
     {
         MoveItem(row, +1);
+        OnMissionChanged($"MoveItemDown");
     }
 
     [RelayCommand]
@@ -560,7 +563,7 @@ public partial class MissionMapViewModel : ObservableObject
     private void OnMissionChanged(string message)
     {
         RebuildRows();
-        MissionChanged?.Invoke(this, EventArgs.Empty);
+        MissionChanged?.Invoke(this, new MissionEventArgs(message));
         ShowStatus(message);
     }
 
