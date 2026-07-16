@@ -115,6 +115,23 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
     }
 
     /// <summary>
+    /// Applies the vehicle's home (launch) position from a HOME_POSITION message.
+    /// </summary>
+    /// <param name="observation">The home position observation.</param>
+    public void ApplyHomePosition(VehicleHomePositionObservation observation)
+    {
+        state = state with
+        {
+            Position = state.Position with
+            {
+                HomeLatitudeDegrees = observation.LatitudeDegrees,
+                HomeLongitudeDegrees = observation.LongitudeDegrees,
+                HomeAltitudeMslMeters = observation.AltitudeMslMeters
+            }
+        };
+    }
+
+    /// <summary>
     /// Compatibility methods for gradual migration.
     /// </summary>
     /// <param name="observation"></param>

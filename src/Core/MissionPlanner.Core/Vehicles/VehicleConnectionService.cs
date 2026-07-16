@@ -278,6 +278,9 @@ public class VehicleConnectionService(
 
             await commandService.RequestDataStreamAsync(vehicleId, MavDataStream.RcChannels, 5, true, cancellationToken);
 
+            // Home position is not streamed; ask for it once so distance-to-home readouts work.
+            await commandService.RequestHomePositionAsync(vehicleId, cancellationToken);
+
             logger.LogInformation("Telemetry streams requested for vehicle {VehicleId}", vehicleId);
         }
         catch (Exception ex)

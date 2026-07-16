@@ -9,7 +9,10 @@ public sealed record VehiclePositionState(
     double? LocalEastMeters,
     double? LocalDownMeters,
     double? HeadingDegrees,
-    DateTimeOffset? ObservedAt)
+    DateTimeOffset? ObservedAt,
+    double? HomeLatitudeDegrees = null,
+    double? HomeLongitudeDegrees = null,
+    double? HomeAltitudeMslMeters = null)
 {
     public static VehiclePositionState Empty { get; } = new(null, null, null, null, null, null, null, null, null);
 }

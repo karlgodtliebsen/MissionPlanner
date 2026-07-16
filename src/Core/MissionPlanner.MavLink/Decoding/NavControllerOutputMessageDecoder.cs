@@ -25,11 +25,8 @@ public sealed class NavControllerOutputMessageDecoder : IMavLinkMessageDecoder
             return false;
         }
 
-        if (frame.Payload.Length < 26)
-        {
-            return false;
-        }
-
+        // MAVLink v2 truncates trailing zero bytes, so short payloads are valid;
+        // the OrDefault readers treat missing fields as zero.
         var span = frame.Payload.Span;
 
         message = new NavControllerOutputMessage(

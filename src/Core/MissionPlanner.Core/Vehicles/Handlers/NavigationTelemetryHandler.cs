@@ -18,7 +18,8 @@ public sealed class NavigationTelemetryHandler(
         typeof(GpsRawIntMessage),
         typeof(LocalPositionNedMessage),
         typeof(NavControllerOutputMessage),
-        typeof(MissionCurrentMessage)
+        typeof(MissionCurrentMessage),
+        typeof(HomePositionMessage)
     ];
 
     public async ValueTask HandleAsync(MavLinkMessage message, CancellationToken cancellationToken)
@@ -89,6 +90,14 @@ public sealed class NavigationTelemetryHandler(
                     mission.MissionState,
                     mission.MissionMode,
                     mission.ReceivedAt));
+                break;
+
+            case HomePositionMessage home:
+                vehicle.ApplyHomePosition(new VehicleHomePositionObservation(
+                    home.LatitudeDegrees,
+                    home.LongitudeDegrees,
+                    home.AltitudeMslMeters,
+                    home.ReceivedAt));
                 break;
         }
 

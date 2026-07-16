@@ -48,6 +48,7 @@ public static class MavLinkConfigurator
             new GlobalPositionIntMessageDecoder(),
             new GpsRawIntMessageDecoder(),
             new HeartbeatMessageDecoder(),
+            new HomePositionMessageDecoder(),
             new LocalPositionNedMessageDecoder(),
             new MemInfoMessageDecoder(),
             new MissionCurrentMessageDecoder(),

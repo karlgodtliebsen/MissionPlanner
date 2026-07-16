@@ -182,6 +182,11 @@ public static class MessageIds
     /// </summary>
     public const uint VfrHud = 74;
 
+    /// <summary>
+    /// The vehicle's home (launch) position.
+    /// </summary>
+    public const uint HomePosition = 242;
+
     #endregion
 
     #region Commands

@@ -116,6 +116,10 @@ public sealed class CommonMavLinkCrcExtraProvider : IMavLinkCrcExtraProvider
                 crcExtra = 83;
                 return true;
 
+            case MessageIds.HomePosition:
+                crcExtra = 104;
+                return true;
+
             default:
                 crcExtra = 0;
                 return false;

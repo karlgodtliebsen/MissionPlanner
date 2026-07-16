@@ -90,6 +90,71 @@ public static class MavLinkPacketBuilder
     }
 
     /// <summary>
+    /// Builds a COMMAND_LONG packet (MAVLink v1) carrying a MAV_CMD with up to seven parameters.
+    /// </summary>
+    /// <param name="targetSystem">Target system ID (usually 1)</param>
+    /// <param name="targetComponent">Target component ID (usually 1 for autopilot)</param>
+    /// <param name="command">MAV_CMD command id</param>
+    /// <param name="param1">Command parameter 1</param>
+    /// <param name="param2">Command parameter 2</param>
+    /// <param name="param3">Command parameter 3</param>
+    /// <param name="param4">Command parameter 4</param>
+    /// <param name="param5">Command parameter 5</param>
+    /// <param name="param6">Command parameter 6</param>
+    /// <param name="param7">Command parameter 7</param>
+    /// <param name="sequenceNumber">Packet sequence number for tracking</param>
+    /// <returns>Complete MAVLink v1 packet ready to send</returns>
+    public static byte[] BuildCommandLongPacket(
+        byte targetSystem,
+        byte targetComponent,
+        ushort command,
+        float param1 = 0,
+        float param2 = 0,
+        float param3 = 0,
+        float param4 = 0,
+        float param5 = 0,
+        float param6 = 0,
+        float param7 = 0,
+        byte sequenceNumber = 0)
+    {
+        const byte MESSAGE_ID = 76; // COMMAND_LONG
+        const byte PAYLOAD_LENGTH = 33;
+
+        byte[] packet = new byte[HeaderLength + PAYLOAD_LENGTH + CrcLength];
+
+        packet[0] = MavLinkV1StartByte;
+        packet[1] = PAYLOAD_LENGTH;
+        packet[2] = sequenceNumber;
+        packet[3] = 255; // GCS system ID
+        packet[4] = 190; // GCS component ID (MAV_COMP_ID_MISSIONPLANNER)
+        packet[5] = MESSAGE_ID;
+
+        // Payload: COMMAND_LONG
+        // - param1..param7 (float) : bytes 0-27
+        // - command (uint16)       : bytes 28-29
+        // - target_system (uint8)  : byte 30
+        // - target_component (uint8): byte 31
+        // - confirmation (uint8)   : byte 32
+
+        int payloadOffset = HeaderLength;
+        Span<float> parameters = [param1, param2, param3, param4, param5, param6, param7];
+        for (var i = 0; i < parameters.Length; i++)
+        {
+            BinaryPrimitives.WriteSingleLittleEndian(packet.AsSpan(payloadOffset + i * 4), parameters[i]);
+        }
+
+        BinaryPrimitives.WriteUInt16LittleEndian(packet.AsSpan(payloadOffset + 28), command);
+        packet[payloadOffset + 30] = targetSystem;
+        packet[payloadOffset + 31] = targetComponent;
+        packet[payloadOffset + 32] = 0; // confirmation
+
+        ushort crc = CalculateCrc(packet.AsSpan(1, HeaderLength - 1 + PAYLOAD_LENGTH), MESSAGE_ID);
+        BinaryPrimitives.WriteUInt16LittleEndian(packet.AsSpan(HeaderLength + PAYLOAD_LENGTH), crc);
+
+        return packet;
+    }
+
+    /// <summary>
     /// Calculates MAVLink CRC-16/X.25 checksum with CRC_EXTRA seed.
     /// </summary>
     /// <param name="data">Packet data (length + seq + sysid + compid + msgid + payload)</param>

@@ -76,4 +76,36 @@ public class MavLinkCommandService(
             return false;
         }
     }
+
+    /// <inheritdoc/>
+    public async Task<bool> RequestHomePositionAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
+    {
+        if (!client.IsConnected)
+        {
+            logger.LogWarning("Cannot send MAV_CMD_GET_HOME_POSITION: MAVLink client is not connected");
+            return false;
+        }
+
+        try
+        {
+            const ushort GetHomePositionCommand = 410; // MAV_CMD_GET_HOME_POSITION
+
+            var packet = MavLinkPacketBuilder.BuildCommandLongPacket(
+                vehicleId.SystemId,
+                vehicleId.ComponentId,
+                GetHomePositionCommand,
+                sequenceNumber: sequenceNumber++);
+
+            var endpoint = new TransportEndPoint("mavlink", "unknown", 0);
+            await client.SendAsync(packet, endpoint, cancellationToken);
+
+            logger.LogInformation("📤 Sent MAV_CMD_GET_HOME_POSITION to {VehicleId}", vehicleId);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to send MAV_CMD_GET_HOME_POSITION to {VehicleId}", vehicleId);
+            return false;
+        }
+    }
 }

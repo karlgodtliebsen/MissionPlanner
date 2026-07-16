@@ -23,7 +23,7 @@ public partial class MissionMapView : ContentView, IDisposable
 
     private readonly MissionMapViewModel viewModel;
     private readonly Pin vehiclePin;
-    private readonly Polyline routeLine;
+    private Polyline routeLine;
     private readonly List<Pin> missionPins = [];
     private readonly Mapsui.Map map;
 
@@ -82,12 +82,6 @@ public partial class MissionMapView : ContentView, IDisposable
 
     private void OnMissionChanged(object? sender, EventArgs e)
     {
-        //TODO: They seem to not work well with the map control. I have currently no idea on how to properly refresh UI
-        //MissionMap.ForceUpdate();
-        //MissionMap.Refresh();
-        //MissionMap.RefreshData();
-        //MissionMap.RefreshGraphics();
-
         RedrawMission();
     }
 
@@ -121,12 +115,15 @@ public partial class MissionMapView : ContentView, IDisposable
         }
 
         missionPins.Clear();
-        routeLine.Positions.Clear();
+
+        // The MapView only rebuilds its drawables layer on collection changes, so mutating
+        // the existing Polyline's positions never repaints. Replace the instance instead.
+        var newRouteLine = new Polyline { StrokeColor = Colors.OrangeRed, StrokeWidth = 3 };
 
         if (viewModel.HomePosition is { } home)
         {
             AddMissionPin("H: Home", home.LatitudeDegrees, home.LongitudeDegrees, Colors.Green);
-            routeLine.Positions.Add(new Position(home.LatitudeDegrees, home.LongitudeDegrees));
+            newRouteLine.Positions.Add(new Position(home.LatitudeDegrees, home.LongitudeDegrees));
         }
 
         foreach (var item in viewModel.Mission.Items)
@@ -137,8 +134,12 @@ public partial class MissionMapView : ContentView, IDisposable
             }
 
             AddMissionPin($"{item.Sequence + 1}: {item.Command}", position.LatitudeDegrees, position.LongitudeDegrees, Colors.DodgerBlue);
-            routeLine.Positions.Add(new Position(position.LatitudeDegrees, position.LongitudeDegrees));
+            newRouteLine.Positions.Add(new Position(position.LatitudeDegrees, position.LongitudeDegrees));
         }
+
+        MissionMap.Drawables.Remove(routeLine);
+        MissionMap.Drawables.Add(newRouteLine);
+        routeLine = newRouteLine;
 
         MissionMap.RefreshGraphics();
     }

@@ -144,6 +144,8 @@ public sealed class VehicleHudDataService : IVehicleHudDataService, IDisposable
 
         var distanceToWp = ValueOrZero(state.Navigation.WaypointDistanceMeters);
 
+        var distanceToMav = CalculateDistanceToMav(state.Position);
+
         return new VehicleHudData(
             state.VehicleId,
             pitchDegrees,
@@ -156,13 +158,33 @@ public sealed class VehicleHudDataService : IVehicleHudDataService, IDisposable
             ValueOrZero(state.Motion.VerticalSpeedMetersPerSecond),
             ValueOrZero(state.Power.BatteryVoltageVolts),
             ValueOrZero(state.Power.BatteryRemainingPercent),
-            0.0,
+            distanceToMav,
             distanceToWp,
             state.Gps.SatellitesVisible ?? 0,
             state.Flight.IsArmed,
             state.Flight.Mode,
             state.Position.LatitudeDegrees,
             state.Position.LongitudeDegrees);
+    }
+
+    /// <summary>
+    /// Distance from the home (launch) position to the vehicle — what the classic
+    /// MissionPlanner displays as "DistToMAV" (bound to DistToHome). Zero until both a
+    /// home position (HOME_POSITION message) and a vehicle fix are known.
+    /// </summary>
+    private static double CalculateDistanceToMav(VehiclePositionState position)
+    {
+        if (position.HomeLatitudeDegrees is not { } homeLat ||
+            position.HomeLongitudeDegrees is not { } homeLng ||
+            position.LatitudeDegrees is not { } lat ||
+            position.LongitudeDegrees is not { } lng ||
+            (lat == 0 && lng == 0) ||
+            (homeLat == 0 && homeLng == 0))
+        {
+            return 0.0;
+        }
+
+        return GeoMath.ApproximateDistanceMeters(homeLat, homeLng, lat, lng);
     }
 
     private static double RadiansToDisplayDegrees(double? radians)

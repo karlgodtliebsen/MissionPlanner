@@ -23,4 +23,13 @@ public interface IMavLinkCommandService
         int rateHz,
         bool start = true,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Asks the vehicle to send its home position (MAV_CMD_GET_HOME_POSITION).
+    /// The vehicle answers with a HOME_POSITION message once home is set.
+    /// </summary>
+    /// <param name="vehicleId">Target vehicle identifier</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>True if the command was sent successfully</returns>
+    Task<bool> RequestHomePositionAsync(VehicleId vehicleId, CancellationToken cancellationToken = default);
 }
