@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using MissionPlanner.Core.Vehicles.Models;
 
 namespace MissionPlanner.App.Configuration;
 
@@ -13,6 +14,7 @@ public partial class ApplicationStateService : ObservableObject
     [ObservableProperty] public partial string SelectedPort { get; set; } = "14550";
     [ObservableProperty] public partial string SelectedHost { get; set; } = "127.0.0.1";
     [ObservableProperty] public partial string? VehicleName { get; set; }
+    [ObservableProperty] public partial VehicleId? VehicleId { get; set; }
 
     /// <summary>
     /// Initializes the service with values from ApplicationState.
@@ -24,6 +26,7 @@ public partial class ApplicationStateService : ObservableObject
         SelectedBaudRate = state.SelectedBaudRate;
         SelectedPort = state.SelectedPort;
         SelectedHost = state.SelectedHost;
-        VehicleName = state.VehicleName;
+        VehicleName = null;
+        VehicleId = null;
     }
 }

@@ -29,9 +29,4 @@ public class ApplicationState
     /// Gets or sets the selected port for the application.
     /// </summary>
     public string SelectedPort { get; set; } = "14550";
-
-    /// <summary>
-    /// Gets or sets the name of the vehicle.
-    /// </summary>
-    public string? VehicleName { get; set; }
 }

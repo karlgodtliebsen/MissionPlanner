@@ -45,7 +45,7 @@ public static class ApplicationConfigurator
 
         ApplicationState state = new() { SelectedBaudRate = applicationOptions.BaudRate, /* SelectedConnectionType = applicationOptions.ConnectionType,*/ SelectedPort = applicationOptions.Port };
         // Register shared state service as singleton for runtime state management
-        ApplicationStateService stateService = new();
+        var stateService = new ApplicationStateService();
         stateService.Initialize(state);
         services.TryAddSingleton(stateService);
 

@@ -12,4 +12,16 @@ public readonly record struct VehicleId(byte SystemId, byte ComponentId)
     {
         return $"{SystemId}:{ComponentId}";
     }
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(SystemId, ComponentId);
+    }
+
+    /// <inheritdoc />
+    public bool Equals(VehicleId? other)
+    {
+        return other is not null && SystemId == other.Value.SystemId && ComponentId == other.Value.ComponentId;
+    }
 }
