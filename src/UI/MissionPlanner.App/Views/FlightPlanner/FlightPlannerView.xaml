@@ -65,22 +65,22 @@
                 >
                     <CollectionView Grid.Row="2" ItemsSource="{Binding Map.MissionItems}" VerticalOptions="Fill">
                         <CollectionView.Header>
-                            <Grid ColumnDefinitions="20,62,55,62,55,*" ColumnSpacing="2" Padding="2,2">
-                                <Label Grid.Column="0" Text="#" FontAttributes="Bold" FontSize="12" HorizontalOptions="Center"/>
-                                <Label Grid.Column="1" Text="Command" FontAttributes="Bold" FontSize="12" HorizontalOptions="Center"/>
-                                <Label Grid.Column="2" Text="Latitude" FontAttributes="Bold" FontSize="12" HorizontalOptions="Center"/>
-                                <Label Grid.Column="3" Text="Longitude" FontAttributes="Bold" FontSize="12" HorizontalOptions="Center"/>
-                                <Label Grid.Column="4" Text="Altitude" FontAttributes="Bold" FontSize="12" HorizontalOptions="Center"/>
+                            <Grid ColumnDefinitions="20,65,62,62,55,*" ColumnSpacing="2" Padding="2,2">
+                                <Label Grid.Column="0" Text="#" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center"/>
+                                <Label Grid.Column="1" Text="Command" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center"/>
+                                <Label Grid.Column="2" Text="Latitude" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center"/>
+                                <Label Grid.Column="3" Text="Longitude" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center"/>
+                                <Label Grid.Column="4" Text="Altitude" FontAttributes="Bold" FontSize="11" HorizontalOptions="Center"/>
                             </Grid>
                         </CollectionView.Header>
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="missions:MissionItemRow">
-                                <Grid ColumnDefinitions="20,62,55,62,55,*" ColumnSpacing="2" Padding="2,2">
-                                    <Label Grid.Column="0" Text="{Binding Number}" FontSize="12" VerticalOptions="Center"  HorizontalOptions="Center"/>
-                                    <Label Grid.Column="1" Text="{Binding Command}" FontSize="12" VerticalOptions="Center" LineBreakMode="TailTruncation"  HorizontalOptions="Center"/>
+                                <Grid ColumnDefinitions="20,65,62,62,55,*" ColumnSpacing="2" Padding="2,2">
+                                    <Label Grid.Column="0" Text="{Binding Number}" FontSize="11" VerticalOptions="Center"  HorizontalOptions="Center"/>
+                                    <Label Grid.Column="1" Text="{Binding Command}" FontSize="11" VerticalOptions="Center" LineBreakMode="TailTruncation"  HorizontalOptions="Center"/>
                                     <Label Grid.Column="2" Text="{Binding Latitude}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
                                     <Label Grid.Column="3" Text="{Binding Longitude}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
-                                    <Label Grid.Column="4" Text="{Binding Altitude}" FontSize="12" VerticalOptions="Center"  HorizontalOptions="Center"/>
+                                    <Label Grid.Column="4" Text="{Binding Altitude}" FontSize="11" VerticalOptions="Center"  HorizontalOptions="Center"/>
                                     <HorizontalStackLayout Grid.Column="5" Spacing="2">
                                         <Button Text="▲" BackgroundColor="Transparent" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
                                             Command="{Binding Map.MoveItemUpCommand, Source={RelativeSource AncestorType={x:Type vm:FlightPlannerViewModel}}}"
