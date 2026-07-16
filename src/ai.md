@@ -1,4 +1,4 @@
-# MissionPlanner AI Contributor Guide
+﻿# MissionPlanner AI Contributor Guide
 
 ## Purpose
 
@@ -36,7 +36,7 @@ Logging
     docs/SERILOG_QUICKSTART.md
 
 Mission planning
-    docs/MISSIONS.md (when available)
+    docs/MISSIONS.md
 
 Do not duplicate architecture already described in these documents.
 
@@ -314,3 +314,12 @@ The goal is to build a reusable Ground Control Station framework supporting
 - AI-assisted workflows
 
 while preserving a clean and maintainable architecture.
+---
+
+# Codex
+
+Repository-level Codex instructions are stored in `../AGENTS.md`.
+
+`AGENTS.md` is intentionally concise and points back to this guide, the documentation set,
+and `.editorconfig`. Keep architecture and subsystem knowledge in the canonical documents
+rather than duplicating it in agent-specific files.

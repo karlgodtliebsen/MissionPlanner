@@ -93,10 +93,10 @@
             Title=""
             ContentTemplate="{DataTemplate flightPlanner:FlightPlannerView}" Route="FlightPlanner" />
     </FlyoutItem>
-    <FlyoutItem Title="Init Setup" Icon="Resources/Images/x_light_initialsetup_icon_x.png">
+    <FlyoutItem Title="Setup" Icon="Resources/Images/x_light_initialsetup_icon_x.png">
         <ShellContent
             Title=""
-            ContentTemplate="{DataTemplate initSetup:InitSetupView}" Route="InitSetup" />
+            ContentTemplate="{DataTemplate initSetup:InitSetupView}" Route="Setup" />
     </FlyoutItem>
     <FlyoutItem Title="Config"  
                 Icon="Resources/Images/x_light_tuningconfig_icon_x.png">

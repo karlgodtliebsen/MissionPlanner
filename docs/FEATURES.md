@@ -1,4 +1,4 @@
-# Domain
+﻿# Domain
 
 
 
@@ -282,8 +282,11 @@ with mission summary and WP Radius / Loiter Radius / Default Alt / Alt Warn inpu
 * Cursor coordinate readout (Lat/Lng/UTM/MGRS + terrain elevation)
 
 Also missing on the map itself: **spline waypoints** (needs the spline command in the
-domain plus curved path rendering), left-click-to-add waypoint, draggable waypoint/home
-markers, WP radius circles.
+domain plus curved path rendering), draggable waypoint/home markers, and WP radius circles.
+
+Implemented 2026-07-17: optional **click map to add WP** mode in the Plan toolbar. Newly
+created waypoints use the configured WP acceptance radius, and new loiter items use the
+configured loiter radius.
 
 ## Map providers
 
