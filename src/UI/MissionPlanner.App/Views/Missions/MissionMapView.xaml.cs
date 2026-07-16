@@ -53,6 +53,7 @@ public partial class MissionMapView : ContentView, IDisposable
 
         viewModel.PropertyChanged += ViewModel_PropertyChanged;
         viewModel.MissionChanged += OnMissionChanged;
+        viewModel.FitToMissionRequested += OnFitToMissionRequested;
         Loaded += OnFirstLoaded;
 
         RedrawMission();
@@ -83,6 +84,52 @@ public partial class MissionMapView : ContentView, IDisposable
     private void OnMissionChanged(object? sender, EventArgs e)
     {
         RedrawMission();
+    }
+
+    private void OnFitToMissionRequested(object? sender, EventArgs e)
+    {
+        var positions = new List<(double Latitude, double Longitude)>();
+
+        if (viewModel.HomePosition is { } home)
+        {
+            positions.Add((home.LatitudeDegrees, home.LongitudeDegrees));
+        }
+
+        foreach (var item in viewModel.Mission.Items)
+        {
+            if (MissionMapViewModel.PositionOf(item) is { } position)
+            {
+                positions.Add((position.LatitudeDegrees, position.LongitudeDegrees));
+            }
+        }
+
+        if (positions.Count == 0)
+        {
+            return;
+        }
+
+        if (positions.Count == 1)
+        {
+            CenterMap(positions[0].Latitude, positions[0].Longitude, DefaultZoomResolution);
+            return;
+        }
+
+        double minX = double.MaxValue, minY = double.MaxValue, maxX = double.MinValue, maxY = double.MinValue;
+        foreach (var (latitude, longitude) in positions)
+        {
+            var (x, y) = SphericalMercator.FromLonLat(longitude, latitude);
+            minX = Math.Min(minX, x);
+            minY = Math.Min(minY, y);
+            maxX = Math.Max(maxX, x);
+            maxY = Math.Max(maxY, y);
+        }
+
+        // 15% padding around the mission so pins are not glued to the viewport edge.
+        var paddingX = Math.Max((maxX - minX) * 0.15, 50);
+        var paddingY = Math.Max((maxY - minY) * 0.15, 50);
+        var box = new MRect(minX - paddingX, minY - paddingY, maxX + paddingX, maxY + paddingY);
+
+        map.Navigator.ZoomToBox(box);
     }
 
     private void ApplyMapType(string mapType)
@@ -252,6 +299,7 @@ public partial class MissionMapView : ContentView, IDisposable
     {
         viewModel.PropertyChanged -= ViewModel_PropertyChanged;
         viewModel.MissionChanged -= OnMissionChanged;
+        viewModel.FitToMissionRequested -= OnFitToMissionRequested;
         MissionMap.MapClicked -= OnMapClicked;
     }
 }

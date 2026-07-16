@@ -212,8 +212,9 @@ same control and the same mission plan, so edits made on either screen show up o
 * Core Missions domain: `Mission` aggregate; items for Waypoint, Takeoff, Land, RTL, ChangeSpeed, Loiter (unlimited/time/turns); validation; plan types Mission/Geofence/RallyPoints
 * Protocol mapping in both directions (`IMissionProtocolMapper.ToProtocol` / `FromProtocol`) with round-trip tests
 * Plan page (`FlightPlannerView`): shared mission map + toolbar with Load File / Save File, Read / Write / Write Fast (wired to `IMissionTransferService` via `IVehicleRegistry`, with upload progress and validation before Write; Write Fast skips validation), map type select box, Default Alt input, status readouts
-* Mission item list panel on the Plan page: number, command, lat/lon/alt per row, move up/down, delete, synced with the map
-* WP file Load / Load and Append / Save (QGC WPL 110) with FilePicker/FileSaver
+* Mission item list panel on the Plan page: number, command, lat/lon/alt per row, move up/down, delete, synced with the map; Clear Mission toolbar button
+* Mission file Load / Load and Append / Save in three formats: `.waypoints` and `.txt` (QGC WPL 110, v1.38-compatible) and `.mission` (JSON document with version/name/home/items) — format detected from file content on load, chosen via dialog on save; implemented as `IMissionFileCodec` in Core with round-trip tests
+* Map pans/zooms to fit the whole mission after loading a file or reading from the vehicle
 
 ### Issues
 
@@ -234,7 +235,7 @@ Complete inventory of the `MissionMapView` context menu, mirroring v1.38.
 * RTL, Land, Takeoff (altitude prompt)
 * Clear Mission
 * Map Tool → Zoom In, Zoom Out, Zoom To Vehicle, Center on My Location, Follow Vehicle (on/off), Reverse WPs
-* File Load/Save → Load WP File, Load and Append, Save WP File (QGC WPL 110)
+* File Load/Save → Load WP File, Load and Append, Save WP File (.waypoints/.txt QGC WPL, .mission JSON)
 * Modify Alt (all items + default)
 * Set Home Here
 
@@ -256,22 +257,26 @@ Complete inventory of the `MissionMapView` context menu, mirroring v1.38.
 
 * Switch Docking (WinForms-specific), GDAL Opacity (no GDAL in the new stack)
 
-## Below-map collapsible waypoint panel (Missing)
+## Full waypoint editor (Missing — planned as overlay/popup)
 
-v1.38 has a fold/unfold panel under the map (collapse button `˅`) hosting the full mission
-editor detail. None of it is implemented yet:
+v1.38 hosts the full mission editor detail in a fold/unfold panel below the map. **That
+layout will not be replicated.** The new design keeps the slim waypoint list in the
+rightmost column (resizable via grid splitter) and will expose the full editor on demand
+as a popup/overlay/moveable window/expandable view opened from that list.
 
-* Waypoint grid: one row per item with Command (full MAV_CMD combo), Frame, P1–P4, Lat, Lon, Alt — in-place editable, synced live with the map (the Plan page's read-only item list is the seed for this)
-* Derived grid columns: UTM Zone/Easting/Northing, MGRS, Grad %, Angle, Dist, AZ
-* Row operations: Up/Down, Delete, Add Below, TagData
-* Settings row: WP Radius, Loiter Radius, Default Alt, Alt Warn, Verify Height (SRTM), Spline-by-default checkbox, altitude mode selector (Relative/Absolute/Terrain)
-* Home Location panel (lat/lng/alt entry, set from vehicle or map click)
+Features the full editor must cover (currently missing):
+
+* Waypoint grid: one row per item with Command (full MAV_CMD combo), Frame, P1–P4, Lat, Lon, Alt — in-place editable, synced live with the map
+* Derived columns: UTM Zone/Easting/Northing, MGRS, Grad %, Angle, Dist, AZ
+* Row operations beyond the list's current up/down/delete: Add Below, TagData
+* Settings: WP Radius, Loiter Radius, Alt Warn, Verify Height (SRTM), Spline-by-default checkbox, altitude mode selector (Relative/Absolute/Terrain)
+* Home Location entry (lat/lng/alt, set from vehicle or map click)
 * Mission type selector (Mission/Fence/Rally) driving the editor payload
 * Distance/total readouts and cursor coordinate readout (Lat/Lng/UTM/MGRS + terrain elevation)
-* Fold/unfold behavior itself (MAUI equivalent: an Expander or grid-splitter row)
 
-Also missing on the map itself: left-click-to-add waypoint, draggable waypoint/home
-markers, WP radius circles and spline path rendering.
+Also missing on the map itself: **spline waypoints** (needs the spline command in the
+domain plus curved path rendering), left-click-to-add waypoint, draggable waypoint/home
+markers, WP radius circles.
 
 ## Map providers
 
@@ -307,63 +312,96 @@ v1.38 uses GMap.NET with dozens of providers; the new app uses Mapsui + BruTile.
 
 
 
-\# SETUP
+# SETUP
+
+The Setup screen replaces v1.38's Initial Setup (`src-v.1.38/GCSViews/InitialSetup.cs` +
+`ConfigurationView/Config*.cs` panels). New UI: `InitSetupView` (placeholder page).
+
+### Status
+
+* Nothing implemented yet — placeholder page only
+
+### Missing (v1.38 feature inventory)
+
+* **Install Firmware**: manifest-driven firmware download/flash (stable/beta/custom), board detection, bootloader handling; "Wizard" guided first-time setup
+* **Mandatory Hardware**: Frame Class/Type selection, Accelerometer Calibration, Compass calibration (incl. onboard cal), Radio Calibration, Servo Output mapping, ESC Calibration, Flight Modes assignment, FailSafe configuration
+* **Optional Hardware**: Battery Monitor (analog/smart), CompassMot, Range Finder/Sonar, Airspeed sensor, Optical Flow / PX4Flow, OSD, Camera Gimbal (Mount), Motor Test, Bluetooth, SiK Radio configuration, Antenna Tracker, Parachute, ADSB, DroneCAN/UAVCAN, Serial port mapping, GPS ordering, ESP8266, CubeID, Joystick
+
+Note: calibration flows (accel/compass/radio/ESC) require interactive MAVLink command
+sequences (MAV_CMD_PREFLIGHT_CALIBRATION etc.) that the domain does not implement yet.
 
 
 
+# CONFIG
 
+The Config screen replaces v1.38's Config/Tuning (`SoftwareConfig.cs`). New UI:
+`Views/ConfigTuning` — tab views exist for GeoFence, Basic Tuning, Extended Tuning,
+Onboard OSD, MAVFtp, Full Parameters List, Planner and CubeLan8PortSwitch, but only
+**Full Parameters List** is implemented.
 
+## Full Parameters List
 
+### Status
 
-\# CONFIG
+* Loads metadata and parameters and merges these (see PARAMETERS.md)
+* Currently a lot of buttons for testing purposes. Needs trimming
 
-
-
-\## Full Parameters List
-
-
-
-\### Status
-
-* Loads Meta data and Parameters and merges these
-* Currently a lot of Buttons for testing purposes. Needs trimming
-
-
-
-\### Missing
-
-
-
-
+### Missing
 
 * Extend validation/range support in param editor
-* Write
+* Write (send changed values to the vehicle)
+* Load/save parameter files (.param), compare/diff
+* Search/filter, favorites, modified-only view (v1.38 raw params features)
 
+### Issues
 
+* Parameter loading is way too slow (profile the metadata/value merge)
 
+## Other Config tabs (Missing)
 
+v1.38 feature inventory per tab; the new tab views are placeholders:
 
-### Issues:
-
-Parameter loading is way to slow
-
-
-
-
+* **Flight Modes**: assign flight modes to RC switch positions (not present as a tab yet)
+* **GeoFence**: fence enable/type/action, altitudes/radius (tab view exists, empty)
+* **Basic Tuning**: simplified sliders (roll/pitch sensitivity, throttle hover, climb rates)
+* **Extended Tuning**: per-vehicle PID editors (Copter/Plane/Rover), filters, TX tuning knob
+* **Standard / Advanced Params**: "friendly" curated parameter lists with combos/sliders
+* **Full Parameter Tree**: tree-grouped variant of the raw parameter editor
+* **Planner**: GCS application settings (units, speech, layout, video, map options)
+* **MAVFtp**: browse the vehicle's filesystem over MAVLink FTP (tab view exists, empty)
+* **Onboard OSD**: OSD layout editor (tab view exists, empty)
+* v1.38 extras to consider later: FFT analysis, REPL/Terminal, DroneCAN tooling
 
 
 
 # SIMULATION
 
+Replaces v1.38's Simulation screen (SITL). New UI: `SimulationView` (placeholder page).
 
+### Status
+
+* Placeholder page only
+* Asset: `src/Tests/MissionPlanner.Simulator` already hosts a simulator used by the smoke
+  tests — a candidate backend for an in-app SITL experience
+
+### Missing (v1.38 feature inventory)
+
+* Select vehicle model (multirotor, heli, plane, quadplane, rover, sub)
+* Download prebuilt SITL binary (stable/dev) from the ArduPilot build server
+* Launch SITL with home location/speedup parameters and auto-connect over TCP
+* Multi-vehicle / swarm launch options
 
 
 
 # HELP
 
+### Status
 
+* Placeholder page only
 
+### Missing
 
+* Version/about info, update check (v1.38: check for updates, changelog display)
 
 
 

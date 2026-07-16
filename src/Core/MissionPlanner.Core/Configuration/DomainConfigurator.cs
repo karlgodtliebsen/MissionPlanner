@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Missions;
 using MissionPlanner.Core.Missions.Abstractions;
+using MissionPlanner.Core.Missions.Files;
 using MissionPlanner.Core.Missions.Transfer;
 using MissionPlanner.Core.Missions.Validation;
 using MissionPlanner.Core.Services;
@@ -37,6 +38,7 @@ public static class DomainConfigurator
         services.TryAddTransient<IMissionTransferService, MissionTransferService>();
         services.TryAddTransient<IMissionProtocolMapper, MissionProtocolMapper>();
         services.TryAddTransient<IMissionValidator, MissionValidator>();
+        services.TryAddTransient<IMissionFileCodec, MissionFileCodec>();
 
 
         services.TryAddTransient<IVehicleMessagePump, VehicleMessagePump>();

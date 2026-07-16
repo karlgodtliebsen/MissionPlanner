@@ -7,8 +7,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Missions.Abstractions;
+using MissionPlanner.Core.Missions.Files;
 using MissionPlanner.Core.Missions.Models;
-using MissionPlanner.MavLink.Missions;
 
 namespace MissionPlanner.App.Views.Missions;
 
@@ -19,16 +19,16 @@ namespace MissionPlanner.App.Views.Missions;
 /// </summary>
 public partial class MissionMapViewModel : ObservableObject
 {
-    private readonly IMissionProtocolMapper protocolMapper;
+    private readonly IMissionFileCodec fileCodec;
     private readonly IFileSaver fileSaver;
     private readonly ILogger<MissionMapViewModel> logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MissionMapViewModel"/> class.
     /// </summary>
-    public MissionMapViewModel(IMissionProtocolMapper protocolMapper, IFileSaver fileSaver, ILogger<MissionMapViewModel> logger)
+    public MissionMapViewModel(IMissionFileCodec fileCodec, IFileSaver fileSaver, ILogger<MissionMapViewModel> logger)
     {
-        this.protocolMapper = protocolMapper;
+        this.fileCodec = fileCodec;
         this.fileSaver = fileSaver;
         this.logger = logger;
     }
@@ -78,6 +78,9 @@ public partial class MissionMapViewModel : ObservableObject
     /// <summary>Raised whenever the mission items change so the views can redraw pins and the route.</summary>
     public event EventHandler? MissionChanged;
 
+    /// <summary>Raised when the map should pan/zoom to show the whole mission (after load or vehicle read).</summary>
+    public event EventHandler? FitToMissionRequested;
+
     /// <summary>Records the map position the next context-menu action should apply to.</summary>
     public void SetContextPosition(double latitude, double longitude)
     {
@@ -89,6 +92,7 @@ public partial class MissionMapViewModel : ObservableObject
     {
         Mission = mission;
         OnMissionChanged(message);
+        FitToMissionRequested?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>
@@ -307,9 +311,15 @@ public partial class MissionMapViewModel : ObservableObject
 
         try
         {
-            var content = BuildQgcWplFile();
+            var (format, extension) = await PickSaveFormatAsync();
+            if (format is null || extension is null)
+            {
+                return;
+            }
+
+            var content = fileCodec.Build(Mission, HomePosition, format.Value);
             using var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
-            var result = await fileSaver.SaveAsync($"{Mission.Name}.waypoints", stream, CancellationToken.None);
+            var result = await fileSaver.SaveAsync($"{Mission.Name}{extension}", stream, CancellationToken.None);
             ShowStatus(result.IsSuccessful ? $"Mission saved to {result.FilePath}." : "Save cancelled.");
         }
         catch (Exception ex)
@@ -317,6 +327,26 @@ public partial class MissionMapViewModel : ObservableObject
             logger.LogError(ex, "Failed to save mission file");
             ShowStatus($"Save failed: {ex.Message}");
         }
+    }
+
+    private static async Task<(MissionFileFormat? Format, string? Extension)> PickSaveFormatAsync()
+    {
+        var page = Application.Current?.Windows.FirstOrDefault()?.Page;
+        if (page is null)
+        {
+            return (MissionFileFormat.QgcWpl, ".waypoints");
+        }
+
+        var choice = await page.DisplayActionSheet("Save mission as", "Cancel", null,
+            "Waypoints (.waypoints)", "Text (.txt)", "Mission JSON (.mission)");
+
+        return choice switch
+        {
+            "Waypoints (.waypoints)" => (MissionFileFormat.QgcWpl, ".waypoints"),
+            "Text (.txt)" => (MissionFileFormat.QgcWpl, ".txt"),
+            "Mission JSON (.mission)" => (MissionFileFormat.MissionJson, ".mission"),
+            var _ => (null, null)
+        };
     }
 
     [RelayCommand]
@@ -341,7 +371,7 @@ public partial class MissionMapViewModel : ObservableObject
     {
         try
         {
-            var file = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Select waypoint file" });
+            var file = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Select mission file (.waypoints, .txt, .mission)" });
             if (file is null)
             {
                 return;
@@ -350,90 +380,33 @@ public partial class MissionMapViewModel : ObservableObject
             await using var stream = await file.OpenReadAsync();
             using var reader = new StreamReader(stream);
             var content = await reader.ReadToEndAsync();
-            var (items, home, skipped) = ParseQgcWplFile(content);
+            var parsed = fileCodec.Parse(content);
 
             if (!append)
             {
-                Mission = new Mission(MissionId.New(), Path.GetFileNameWithoutExtension(file.FileName));
-                if (home is not null)
+                Mission = new Mission(MissionId.New(), parsed.Name ?? Path.GetFileNameWithoutExtension(file.FileName));
+                if (parsed.Home is not null)
                 {
-                    HomePosition = home;
+                    HomePosition = parsed.Home;
                 }
             }
 
-            foreach (var item in items)
+            foreach (var item in parsed.Items)
             {
                 Mission.Add(item);
             }
 
-            OnMissionChanged(skipped == 0
-                ? $"Loaded {items.Count} items from {file.FileName}."
-                : $"Loaded {items.Count} items from {file.FileName}; skipped {skipped} unsupported.");
+            OnMissionChanged(parsed.SkippedItems == 0
+                ? $"Loaded {parsed.Items.Count} items from {file.FileName}."
+                : $"Loaded {parsed.Items.Count} items from {file.FileName}; skipped {parsed.SkippedItems} unsupported.");
+
+            FitToMissionRequested?.Invoke(this, EventArgs.Empty);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to load mission file");
             ShowStatus($"Load failed: {ex.Message}");
         }
-    }
-
-    private (List<MissionItem> Items, GeoPosition? Home, int Skipped) ParseQgcWplFile(string content)
-    {
-        var lines = content.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        if (lines.Length == 0 || !lines[0].StartsWith("QGC WPL", StringComparison.OrdinalIgnoreCase))
-        {
-            throw new InvalidDataException("Not a QGC WPL waypoint file.");
-        }
-
-        List<MissionItem> items = [];
-        GeoPosition? home = null;
-        var skipped = 0;
-
-        foreach (var line in lines.Skip(1))
-        {
-            var fields = line.Split(['\t', ' '], StringSplitOptions.RemoveEmptyEntries);
-            if (fields.Length < 12)
-            {
-                continue;
-            }
-
-            var sequence = ushort.Parse(fields[0], CultureInfo.InvariantCulture);
-            var latitude = double.Parse(fields[8], CultureInfo.InvariantCulture);
-            var longitude = double.Parse(fields[9], CultureInfo.InvariantCulture);
-
-            // Line 0 is the home position by QGC WPL convention.
-            if (sequence == 0)
-            {
-                home = latitude != 0 || longitude != 0 ? new GeoPosition(latitude, longitude) : null;
-                continue;
-            }
-
-            var protocolItem = new MavLinkMissionItem(
-                (ushort)(sequence - 1),
-                byte.Parse(fields[2], CultureInfo.InvariantCulture),
-                ushort.Parse(fields[3], CultureInfo.InvariantCulture),
-                false,
-                fields[11] != "0",
-                float.Parse(fields[4], CultureInfo.InvariantCulture),
-                float.Parse(fields[5], CultureInfo.InvariantCulture),
-                float.Parse(fields[6], CultureInfo.InvariantCulture),
-                float.Parse(fields[7], CultureInfo.InvariantCulture),
-                (int)Math.Round(latitude * 1e7),
-                (int)Math.Round(longitude * 1e7),
-                float.Parse(fields[10], CultureInfo.InvariantCulture),
-                MavMissionType.Mission);
-
-            try
-            {
-                items.Add(protocolMapper.FromProtocol(protocolItem));
-            }
-            catch (NotSupportedException)
-            {
-                skipped++;
-            }
-        }
-
-        return (items, home, skipped);
     }
 
     private void MoveItem(MissionItemRow row, int offset)
@@ -519,45 +492,6 @@ public partial class MissionMapViewModel : ObservableObject
         var dLat = a.LatitudeDegrees - b.LatitudeDegrees;
         var dLon = (a.LongitudeDegrees - b.LongitudeDegrees) * Math.Cos(b.LatitudeDegrees * Math.PI / 180);
         return (dLat * dLat) + (dLon * dLon);
-    }
-
-    private string BuildQgcWplFile()
-    {
-        var builder = new StringBuilder();
-        builder.AppendLine("QGC WPL 110");
-
-        var home = HomePosition
-                   ?? Mission.Items.Select(PositionOf).FirstOrDefault(p => p is not null)
-                   ?? new GeoPosition(0, 0);
-        AppendWplLine(builder, 0, 1, 0, (ushort)MissionCommand.NavigateWaypoint,
-            0, 0, 0, 0, home.LatitudeDegrees, home.LongitudeDegrees, 0, 1);
-
-        foreach (var item in Mission.Items)
-        {
-            var p = protocolMapper.ToProtocol(item, Mission.Type);
-            AppendWplLine(builder, p.Sequence + 1, 0, p.Frame, p.Command,
-                p.Param1, p.Param2, p.Param3, p.Param4, p.X / 1e7, p.Y / 1e7, p.Z, p.AutoContinue ? 1 : 0);
-        }
-
-        return builder.ToString();
-    }
-
-    private static void AppendWplLine(StringBuilder builder, int sequence, int current, byte frame, ushort command,
-        float p1, float p2, float p3, float p4, double latitude, double longitude, float altitude, int autoContinue)
-    {
-        builder.AppendLine(string.Join('\t',
-            sequence.ToString(CultureInfo.InvariantCulture),
-            current.ToString(CultureInfo.InvariantCulture),
-            frame.ToString(CultureInfo.InvariantCulture),
-            command.ToString(CultureInfo.InvariantCulture),
-            p1.ToString("0.########", CultureInfo.InvariantCulture),
-            p2.ToString("0.########", CultureInfo.InvariantCulture),
-            p3.ToString("0.########", CultureInfo.InvariantCulture),
-            p4.ToString("0.########", CultureInfo.InvariantCulture),
-            latitude.ToString("0.########", CultureInfo.InvariantCulture),
-            longitude.ToString("0.########", CultureInfo.InvariantCulture),
-            altitude.ToString("0.######", CultureInfo.InvariantCulture),
-            autoContinue.ToString(CultureInfo.InvariantCulture)));
     }
 
     private void OnMissionChanged(string message)
