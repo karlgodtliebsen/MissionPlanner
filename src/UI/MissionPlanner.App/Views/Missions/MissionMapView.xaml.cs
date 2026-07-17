@@ -207,7 +207,7 @@ public partial class MissionMapView : ContentView, IDisposable
 
     private void OnMapClicked(object? sender, MapClickedEventArgs e)
     {
-        viewModel.SetContextPosition(e.Point.Latitude, e.Point.Longitude);
+        viewModel.HandleMapClick(e.Point.Latitude, e.Point.Longitude);
     }
 
     private void OnPointerMoved(object? sender, PointerEventArgs e)

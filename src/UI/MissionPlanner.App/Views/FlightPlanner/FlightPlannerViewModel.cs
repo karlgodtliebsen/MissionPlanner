@@ -117,7 +117,7 @@ public partial class FlightPlannerViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task ClearMissionAsync()
+    private void ClearMission()
     {
         Map.ClearMissionData();
     }

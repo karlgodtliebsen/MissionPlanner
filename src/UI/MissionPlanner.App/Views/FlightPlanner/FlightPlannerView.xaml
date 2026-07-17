@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <uranium:UraniumContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
@@ -37,6 +37,11 @@
                    Keyboard="Numeric"
                    WidthRequest="70"
                    Margin="0,0,12,4" />
+
+            <Grid  ColumnDefinitions="30,Auto" Margin="0,0,12,4"  >
+                <CheckBox IsChecked="{Binding Map.AddWaypointOnMapClick}"  VerticalOptions="Center"  />
+                <Label Grid.Column="1" Text="Click map to add WP" VerticalOptions="Center"  />
+            </Grid>
 
             <Label Text="{Binding TransferStatus}" VerticalOptions="Center" Margin="0,0,8,4" />
             <Label Text="{Binding Map.StatusMessage}" VerticalOptions="Center" Opacity="0.7" Margin="0,0,0,4" />

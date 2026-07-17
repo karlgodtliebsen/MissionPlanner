@@ -67,6 +67,10 @@ public partial class MissionMapViewModel : ObservableObject
     [ObservableProperty]
     public partial bool IsCompleteEditorMode { get; set; }
 
+    /// <summary>When true, a primary map click appends a waypoint at the clicked position.</summary>
+    [ObservableProperty]
+    public partial bool AddWaypointOnMapClick { get; set; }
+
     /// <summary>Waypoint acceptance radius in meters (editor setting, v1.38 "WP Radius").</summary>
     [ObservableProperty]
     public partial double WaypointRadiusMeters { get; set; } = 30;
@@ -103,14 +107,11 @@ public partial class MissionMapViewModel : ObservableObject
         ("DO_CHANGE_SPEED", 178)
     ];
 
-    /// <summary>
-    /// Altitude frames selectable in the waypoint editor (v1.38 altmode naming).
-    /// Relative is first on purpose: the first entry is the default selection.
-    /// </summary>
+    /// <summary>Altitude frames selectable in the waypoint editor (v1.38 altmode naming).</summary>
     private static readonly (string Name, byte Id)[] frameDefinitions =
     [
-        ("Relative", 3),
         ("Absolute", 0),
+        ("Relative", 3),
         ("Terrain", 10)
     ];
 
@@ -144,6 +145,20 @@ public partial class MissionMapViewModel : ObservableObject
         ContextPosition = new GeoPosition(latitude, longitude);
     }
 
+    /// <summary>Handles a primary map click according to the active map editing mode.</summary>
+    public void HandleMapClick(double latitude, double longitude)
+    {
+        var position = new GeoPosition(latitude, longitude);
+        ContextPosition = position;
+
+        if (!AddWaypointOnMapClick)
+        {
+            return;
+        }
+
+        AddWaypoint(position, "Waypoint added from map click.");
+    }
+
     /// <summary>Replaces the mission being edited (e.g. after downloading from a vehicle).</summary>
     public void ReplaceMission(Mission mission, string message)
     {
@@ -172,8 +187,7 @@ public partial class MissionMapViewModel : ObservableObject
             return;
         }
 
-        Mission.Add(new WaypointMissionItem(MissionItemId.New(), 0, position, DefaultAltitude(), TimeSpan.Zero));
-        OnMissionChanged($"Waypoint {Mission.Items.Count} added.");
+        AddWaypoint(position, $"Waypoint {Mission.Items.Count + 1} added.");
     }
 
     [RelayCommand]
@@ -186,8 +200,7 @@ public partial class MissionMapViewModel : ObservableObject
             return;
         }
 
-        Mission.Add(new WaypointMissionItem(MissionItemId.New(), 0, position, DefaultAltitude(), TimeSpan.Zero));
-        OnMissionChanged($"Waypoint {Mission.Items.Count} added at vehicle.");
+        AddWaypoint(position, $"Waypoint {Mission.Items.Count + 1} added at vehicle.");
     }
 
     [RelayCommand]
@@ -489,8 +502,33 @@ public partial class MissionMapViewModel : ObservableObject
             return;
         }
 
-        Mission.Add(new LoiterMissionItem(MissionItemId.New(), 0, position, DefaultAltitude(), time, turns));
+        Mission.Add(new LoiterMissionItem(
+            MissionItemId.New(),
+            0,
+            position,
+            DefaultAltitude(),
+            time,
+            turns,
+            RadiusMeters: LoiterRadiusMeters));
         OnMissionChanged("Loiter added.");
+    }
+
+    private void AddWaypoint(GeoPosition position, string message)
+    {
+        if (!position.IsValid)
+        {
+            ShowStatus("Waypoint coordinates are invalid.");
+            return;
+        }
+
+        Mission.Add(new WaypointMissionItem(
+            MissionItemId.New(),
+            0,
+            position,
+            DefaultAltitude(),
+            TimeSpan.Zero,
+            AcceptanceRadiusMeters: WaypointRadiusMeters));
+        OnMissionChanged(message);
     }
 
     private GeoPosition? TargetPosition()
@@ -696,8 +734,7 @@ public partial class MissionMapViewModel : ObservableObject
             }
         }
 
-        // Unknown command: fall back to the first option so the select is never empty.
-        return commandDefinitions[0].Name;
+        return $"ID {commandId}";
     }
 
     private static ushort? CommandIdFor(string? commandName)
@@ -723,8 +760,7 @@ public partial class MissionMapViewModel : ObservableObject
             }
         }
 
-        // Unknown frame: fall back to the first option so the select is never empty.
-        return frameDefinitions[0].Name;
+        return frame.ToString(CultureInfo.InvariantCulture);
     }
 
     private static byte? FrameIdFor(string? frameName)

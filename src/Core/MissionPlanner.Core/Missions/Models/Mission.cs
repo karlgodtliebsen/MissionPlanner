@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Missions.Models;
+﻿namespace MissionPlanner.Core.Missions.Models;
 
 public sealed class Mission
 {
@@ -41,6 +41,9 @@ public sealed class Mission
 
     public void Insert(int index, MissionItem item)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(index, items.Count);
+
         items.Insert(index, item);
         Resequence();
         Revision++;
@@ -60,6 +63,9 @@ public sealed class Mission
 
     public void Move(MissionItemId id, int destinationIndex)
     {
+        ArgumentOutOfRangeException.ThrowIfNegative(destinationIndex);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(destinationIndex, items.Count);
+
         var index = items.FindIndex(x => x.Id == id);
         if (index < 0)
         {
