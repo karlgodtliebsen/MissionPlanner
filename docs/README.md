@@ -2,6 +2,8 @@
 
 The new application lives in `src/`; the original MissionPlanner v1.38 (WinForms) source
 is kept for reference in `src-v.1.38/`.
+Documentation lives in `docs/` and is organized into three categories: core documents, subsystem references, and point-in-time reviews.
+
 
 ## Core documents (keep these current)
 

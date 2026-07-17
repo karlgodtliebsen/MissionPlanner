@@ -5,7 +5,10 @@
     <Project Path="Core/MissionPlanner.Transport/MissionPlanner.Transport.csproj" />
   </Folder>
   <Folder Name="/Docs/">
+    <File Path="../docs/AGENTS.md" />
+    <File Path="../docs/AI.md" />
     <File Path="../docs/ARCHITECTURE_DECISION_RECORDS.md" />
+    <File Path="../docs/CODEX.md" />
     <File Path="../docs/DESIGN_CONCEPTS.md" />
     <File Path="../docs/FEATURES.md" />
     <File Path="../docs/MISSIONS.md" />
