@@ -78,6 +78,14 @@ public sealed partial class MissionItemRow : ObservableObject
 
     partial void OnSelectedCommandChanged(string? oldValue, string? newValue)
     {
+        // A picker clear (or recycle race) pushes null: restore the previous value so the
+        // select never sits without a selection. The restore itself does not apply an edit.
+        if (newValue is null && oldValue is not null)
+        {
+            SelectedCommand = oldValue;
+            return;
+        }
+
         if (oldValue is not null && newValue is not null && oldValue != newValue)
         {
             selectionChanged?.Invoke(this);
@@ -86,6 +94,12 @@ public sealed partial class MissionItemRow : ObservableObject
 
     partial void OnSelectedFrameChanged(string? oldValue, string? newValue)
     {
+        if (newValue is null && oldValue is not null)
+        {
+            SelectedFrame = oldValue;
+            return;
+        }
+
         if (oldValue is not null && newValue is not null && oldValue != newValue)
         {
             selectionChanged?.Invoke(this);

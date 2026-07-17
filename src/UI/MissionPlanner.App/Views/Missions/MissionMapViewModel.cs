@@ -103,11 +103,14 @@ public partial class MissionMapViewModel : ObservableObject
         ("DO_CHANGE_SPEED", 178)
     ];
 
-    /// <summary>Altitude frames selectable in the waypoint editor (v1.38 altmode naming).</summary>
+    /// <summary>
+    /// Altitude frames selectable in the waypoint editor (v1.38 altmode naming).
+    /// Relative is first on purpose: the first entry is the default selection.
+    /// </summary>
     private static readonly (string Name, byte Id)[] frameDefinitions =
     [
-        ("Absolute", 0),
         ("Relative", 3),
+        ("Absolute", 0),
         ("Terrain", 10)
     ];
 
@@ -693,7 +696,8 @@ public partial class MissionMapViewModel : ObservableObject
             }
         }
 
-        return $"ID {commandId}";
+        // Unknown command: fall back to the first option so the select is never empty.
+        return commandDefinitions[0].Name;
     }
 
     private static ushort? CommandIdFor(string? commandName)
@@ -719,7 +723,8 @@ public partial class MissionMapViewModel : ObservableObject
             }
         }
 
-        return frame.ToString(CultureInfo.InvariantCulture);
+        // Unknown frame: fall back to the first option so the select is never empty.
+        return frameDefinitions[0].Name;
     }
 
     private static byte? FrameIdFor(string? frameName)
