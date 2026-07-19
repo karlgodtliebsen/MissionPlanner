@@ -12,7 +12,7 @@ namespace MissionPlanner.Core.Vehicles;
 /// Service for managing vehicle parameters via MAVLink.
 /// Handles parameter requests and updates through the MAVLink protocol.
 /// </summary>
-public sealed class VehicleParameterService(IMavLinkClient client, IMavLinkParameterEncoder encoder, ILogger<VehicleParameterService> logger)
+public sealed class VehicleParameterService(IMavLinkClient client, IMavLinkParameterEncoder encoder, IVehicleRegistry vehicleRegistry, ILogger<VehicleParameterService> logger)
     : IVehicleParameterService
 {
     /// <inheritdoc/>
@@ -28,7 +28,7 @@ public sealed class VehicleParameterService(IMavLinkClient client, IMavLinkParam
         {
             var packet = encoder.EncodeParamRequestList(vehicleId.SystemId, vehicleId.ComponentId);
 
-            var endpoint = new TransportEndPoint("mavlink", "unknown", 0);
+            var endpoint = vehicleRegistry.GetRequired(vehicleId).EndPoint;
 
             await client.SendAsync(packet, endpoint, cancellationToken);
 
@@ -68,7 +68,7 @@ public sealed class VehicleParameterService(IMavLinkClient client, IMavLinkParam
         {
             var packet = encoder.EncodeParamRequestRead(vehicleId.SystemId, vehicleId.ComponentId, parameterName);
 
-            var endpoint = new TransportEndPoint("mavlink", "unknown", 0);
+            var endpoint = vehicleRegistry.GetRequired(vehicleId).EndPoint;
 
             await client.SendAsync(packet, endpoint, cancellationToken);
 
@@ -97,7 +97,7 @@ public sealed class VehicleParameterService(IMavLinkClient client, IMavLinkParam
             // Use empty string for paramId and provide the index
             var packet = encoder.EncodeParamRequestRead(vehicleId.SystemId, vehicleId.ComponentId, string.Empty, (short)parameterIndex);
 
-            var endpoint = new TransportEndPoint("mavlink", "unknown", 0);
+            var endpoint = vehicleRegistry.GetRequired(vehicleId).EndPoint;
 
             await client.SendAsync(packet, endpoint, cancellationToken);
 
@@ -137,7 +137,7 @@ public sealed class VehicleParameterService(IMavLinkClient client, IMavLinkParam
         {
             var packet = encoder.EncodeParamSet(vehicleId.SystemId, vehicleId.ComponentId, parameterName, value, paramType);
 
-            var endpoint = new TransportEndPoint("mavlink", "unknown", 0);
+            var endpoint = vehicleRegistry.GetRequired(vehicleId).EndPoint;
 
             await client.SendAsync(packet, endpoint, cancellationToken);
 

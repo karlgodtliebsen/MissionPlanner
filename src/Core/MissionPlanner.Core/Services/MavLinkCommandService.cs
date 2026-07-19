@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Encoding;
@@ -14,6 +15,7 @@ namespace MissionPlanner.Core.Services;
 /// </summary>
 public class MavLinkCommandService(
     IMavLinkClient client,
+    IVehicleRegistry vehicleRegistry,
     ILogger<MavLinkCommandService> logger)
     : IMavLinkCommandService
 {
@@ -50,10 +52,7 @@ public class MavLinkCommandService(
                 start ? (byte)1 : (byte)0,
                 sequenceNumber++);
 
-            // Create endpoint for this vehicle
-            // Note: For serial/TCP/UDP, the transport layer handles routing
-            // We use a generic endpoint here since the client is already bound to the transport
-            var endpoint = new TransportEndPoint("mavlink", "unknown", 0);
+            var endpoint = vehicleRegistry.GetRequired(vehicleId).EndPoint;
 
             // Send packet
             await client.SendAsync(packet, endpoint, cancellationToken);
@@ -96,7 +95,7 @@ public class MavLinkCommandService(
                 GetHomePositionCommand,
                 sequenceNumber: sequenceNumber++);
 
-            var endpoint = new TransportEndPoint("mavlink", "unknown", 0);
+            var endpoint = vehicleRegistry.GetRequired(vehicleId).EndPoint;
             await client.SendAsync(packet, endpoint, cancellationToken);
 
             logger.LogInformation("📤 Sent MAV_CMD_GET_HOME_POSITION to {VehicleId}", vehicleId);
