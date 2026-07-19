@@ -8,6 +8,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.MavLink.MavFtp;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
@@ -223,8 +224,23 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
         }
         catch (TimeoutException ex)
         {
-            ErrorText = "MAVFTP transfer timed out.";
+            ErrorText = "MAVFTP transfer timed out.";//The vehicle did not respond to MAVFTP.
             logger.LogWarning(ex, "MAVFTP UI operation timed out.");
+        }
+        catch (MavFtpRemoteException ex) when (
+            ex.Error == MavFtpNakError.UnknownCommand)
+        {
+            ErrorText = "The connected vehicle does not support this MAVFTP operation.";
+        }
+        catch (MavFtpRemoteException ex) when (
+            ex.Error == MavFtpNakError.FileNotFound)
+        {
+            ErrorText = "The remote file or directory was not found.";
+        }
+        catch (MavFtpProtocolException ex)
+        {
+            ErrorText = "The vehicle returned an invalid MAVFTP response.";
+            logger.LogError(ex, "Invalid MAVFTP protocol response.");
         }
         catch (InvalidOperationException ex)
         {
@@ -236,6 +252,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
             ErrorText = "MAVFTP operation failed. The vehicle may not support MAVFTP.";
             logger.LogError(ex, "MAVFTP UI operation failed.");
         }
+
         finally
         {
             IsBusy = false;

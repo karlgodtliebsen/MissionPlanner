@@ -63,7 +63,10 @@ public sealed class MavFtpClient : IMavFtpClient
             {
                 return new MavFtpFileInfo(remotePath, opened.Size);
             }
-            finally { await CleanupSessionAsync(target, opened.Session).ConfigureAwait(false); }
+            finally
+            {
+                await CleanupSessionAsync(target, opened.Session).ConfigureAwait(false);
+            }
         }, cancellationToken);
     }
 
@@ -81,7 +84,11 @@ public sealed class MavFtpClient : IMavFtpClient
                 {
                     response = await RequestAsync(target, 0, MavFtpOpcode.ListDirectory, offset, PathBytes(remotePath), remotePath, ct).ConfigureAwait(false);
                 }
-                catch (MavFtpRemoteException ex) when (ex.Error == MavFtpNakError.EndOfFile) { break; }
+                catch (MavFtpRemoteException ex)
+                    when (ex.Error == MavFtpNakError.EndOfFile)
+                {
+                    break;
+                }
 
                 var page = MavFtpDirectoryCodec.Decode(response.Data.Span);
                 if (page.Count == 0)
@@ -160,7 +167,10 @@ public sealed class MavFtpClient : IMavFtpClient
 
                 progress?.Report(new MavFtpProgress(remotePath, written, opened.Size, written / Math.Max(stopwatch.Elapsed.TotalSeconds, 0.001)));
             }
-            finally { await CleanupSessionAsync(target, opened.Session).ConfigureAwait(false); }
+            finally
+            {
+                await CleanupSessionAsync(target, opened.Session).ConfigureAwait(false);
+            }
 
             return 0;
         }, cancellationToken);
@@ -197,7 +207,8 @@ public sealed class MavFtpClient : IMavFtpClient
 
                 return response.Opcode != MavFtpOpcode.Ack ? throw new MavFtpProtocolException("Expected MAVFTP ACK or NAK.") : response;
             }
-            catch (TimeoutException) when (attempt < options.MaximumRequestAttempts)
+            catch (TimeoutException)
+                when (attempt < options.MaximumRequestAttempts)
             {
                 logger.LogWarning("MAVFTP {Opcode} timed out; retrying attempt {Attempt}/{MaximumAttempts}.", opcode, attempt + 1, options.MaximumRequestAttempts);
             }
