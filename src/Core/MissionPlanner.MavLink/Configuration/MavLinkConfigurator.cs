@@ -7,6 +7,7 @@ using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Decoding;
 using MissionPlanner.MavLink.Decoding.Utils;
 using MissionPlanner.MavLink.Encoding;
+using MissionPlanner.MavLink.MavFtp;
 using MissionPlanner.MavLink.Parameters.Metadata;
 using MissionPlanner.MavLink.Parameters.Metadata.Abstractions;
 using MissionPlanner.MavLink.Services;
@@ -35,6 +36,10 @@ public static class MavLinkConfigurator
         services.TryAddTransient<IMavLinkParameterEncoder, MavLinkParameterEncoder>();
         services.TryAddTransient<IMavLinkMessageDecodeHandler, MavLinkMessageDecoderHandler>();
         services.TryAddTransient<IMavLinkMissionEncoder, MavLinkMissionEncoder>();
+        services.TryAddSingleton<IMavFtpPacketCodec, MavFtpPacketCodec>();
+        services.TryAddSingleton<IMavFtpMessageEncoder, MavFtpMessageEncoder>();
+        services.TryAddSingleton<IMavFtpClient, MavFtpClient>();
+        services.AddSingleton(Options.Create(new MavFtpOptions()));
 
         services.AddSingleton(Options.Create(new MavLinkClientPipelineOptions()));
         services.AddSingleton(Options.Create(new MavLinkConnectionPipelineOptions()));
@@ -45,6 +50,7 @@ public static class MavLinkConfigurator
             new BatteryStatusMessageDecoder(),
             new CommandAckMessageDecoder(),
             new EkfStatusReportMessageDecoder(),
+            new FileTransferProtocolMessageDecoder(),
             new GlobalPositionIntMessageDecoder(),
             new GpsRawIntMessageDecoder(),
             new HeartbeatMessageDecoder(),

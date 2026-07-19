@@ -421,6 +421,13 @@ Replaces v1.38's Simulation screen (SITL). New UI: `SimulationView` (placeholder
 
 Completed
 
+# MAVFTP
+
+Protocol codecs, session reset, read-only open, streaming download, typed NAKs, retries,
+cancellation, progress, cleanup, and directory listing are implemented. 
+Multi-packet burst gap recovery remains planned; 
+see [MAVFTP.md](MAVFTP.md).
+
 
 
 

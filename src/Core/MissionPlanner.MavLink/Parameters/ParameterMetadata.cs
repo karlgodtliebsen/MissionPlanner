@@ -136,7 +136,7 @@ public sealed record ParameterMetadata(
         }
 
         // Check range
-        return MinValue.HasValue && value < MinValue.Value ? false : !MaxValue.HasValue || value <= MaxValue.Value;
+        return (!MinValue.HasValue || !(value < MinValue.Value)) && (!MaxValue.HasValue || value <= MaxValue.Value);
     }
 
     /// <summary>
@@ -146,13 +146,12 @@ public sealed record ParameterMetadata(
     /// <returns>Error message, or null if valid.</returns>
     public string? GetValidationError(float value)
     {
-        if (ReadOnly)
-        {
-            return "This parameter is read-only and cannot be modified.";
-        }
-
-        return MinValue.HasValue && value < MinValue.Value
-            ? $"Value must be at least {MinValue.Value}."
-            : MaxValue.HasValue && value > MaxValue.Value ? $"Value must be at most {MaxValue.Value}." : null;
+        return ReadOnly
+            ? "This parameter is read-only and cannot be modified."
+            : MinValue.HasValue && value < MinValue.Value
+                ? $"Value must be at least {MinValue.Value}."
+                : MaxValue.HasValue && value > MaxValue.Value
+                    ? $"Value must be at most {MaxValue.Value}."
+                    : null;
     }
 }

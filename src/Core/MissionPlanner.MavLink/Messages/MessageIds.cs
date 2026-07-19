@@ -9,6 +9,7 @@
 /// </remarks>
 public static class MessageIds
 {
+    public const uint FileTransferProtocol = 110;
     #region Vehicle status
 
     /// <summary>
