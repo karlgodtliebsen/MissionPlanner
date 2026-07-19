@@ -16,7 +16,12 @@ public sealed class MavFtpResponseRegistration : IDisposable
         Session = session;
         MultipleResponses = multipleResponses;
         this.dispose = dispose;
-        responses = Channel.CreateBounded<MavFtpPacket>(new BoundedChannelOptions(capacity) { SingleReader = true, SingleWriter = true, FullMode = BoundedChannelFullMode.DropWrite });
+        responses = Channel.CreateBounded<MavFtpPacket>(new BoundedChannelOptions(capacity)
+        {
+            SingleReader = true,
+            SingleWriter = false,
+            FullMode = BoundedChannelFullMode.Wait
+        });
     }
 
     internal MavFtpTarget Target { get; }
@@ -25,6 +30,8 @@ public sealed class MavFtpResponseRegistration : IDisposable
     internal byte? Session { get; }
     internal bool MultipleResponses { get; }
     internal bool TryWrite(MavFtpPacket packet) => responses.Writer.TryWrite(packet);
+
+    internal void Fail(Exception exception) => responses.Writer.TryComplete(exception);
 
     public ValueTask<MavFtpPacket> ReadAsync(TimeSpan timeout, CancellationToken cancellationToken)
     {

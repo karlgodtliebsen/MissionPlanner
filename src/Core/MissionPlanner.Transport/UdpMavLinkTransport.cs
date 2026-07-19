@@ -81,23 +81,20 @@ public sealed class UdpMavLinkTransport : IUdpMavLinkTransport
         var localHost = endpoint.LocalHost;
 
         // Use Polly retry mechanism to handle transient network errors when binding UDP socket
-        await retryPipeline.ExecuteAsync(async ct =>
+        await retryPipeline.ExecuteAsync(async ct => await Task.Run(() =>
         {
-            await Task.Run(() =>
-            {
-                ct.ThrowIfCancellationRequested();
+            ct.ThrowIfCancellationRequested();
 
-                var localAddress = string.IsNullOrWhiteSpace(localHost)
-                    ? IPAddress.Any
-                    : IPAddress.Parse(localHost);
+            var localAddress = string.IsNullOrWhiteSpace(localHost)
+                ? IPAddress.Any
+                : IPAddress.Parse(localHost);
 
-                udpClient = new UdpClient(new IPEndPoint(localAddress, localPort));
-                isConnected = true;
+            udpClient = new UdpClient(new IPEndPoint(localAddress, localPort));
+            isConnected = true;
 
-                logger.LogInformation("UDP transport connected successfully to host: {LocalHost} on port: {LocalPort}", 
-                    localHost ?? "Any", localPort);
-            }, ct).ConfigureAwait(false);
-        }, cancellationToken).ConfigureAwait(false);
+            logger.LogInformation("UDP transport connected successfully to host: {LocalHost} on port: {LocalPort}",
+                localHost ?? "Any", localPort);
+        }, ct).ConfigureAwait(false), cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -173,7 +170,7 @@ public sealed class UdpMavLinkTransport : IUdpMavLinkTransport
         }
 
         logger.LogTrace("UdpMavLinkTransport - UDP transport disposed");
-        GC.SuppressFinalize(this);
+
         return ValueTask.CompletedTask;
     }
 }

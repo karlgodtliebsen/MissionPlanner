@@ -55,7 +55,7 @@ public class VehicleConnectionService(
             }
 
             logger.LogInformation("Connecting to vehicle using serial port {PortName} at {BaudRate} baud", portName, baudRate);
-            var linkedCts = connectionSession.CreateSerialConnection(portName, baudRate, cancellationToken: cancellationToken);
+            var linkedCts = await connectionSession.CreateSerialConnection(portName, baudRate, cancellationToken: cancellationToken);
 
             var client = connectionSession.Client;
             var transport = connectionSession.Transport;
@@ -115,7 +115,7 @@ public class VehicleConnectionService(
 
             var endpoint = $"{host}:{port}";
 
-            var linkedCts = connectionSession.CreateTcpConnection(port, host, null, cancellationToken);
+            var linkedCts = await connectionSession.CreateTcpConnection(port, host, null, cancellationToken);
             var connection = connectionSession.Connection;
             var messagePump = connectionSession.MessagePump;
             var parameterService = connectionSession.ParameterService;
@@ -174,7 +174,7 @@ public class VehicleConnectionService(
             var endpoint = $"UDP:{localPort}";
 
 
-            var linkedCts = connectionSession.CreateUdpConnection(localPort, remoteHost ?? "127.0.0.1", remotePort ?? 14550, null, cancellationToken);
+            var linkedCts = await connectionSession.CreateUdpConnection(localPort, remoteHost ?? "127.0.0.1", remotePort ?? 14550, null, cancellationToken);
             var connection = connectionSession.Connection;
             var messagePump = connectionSession.MessagePump;
             var parameterService = connectionSession.ParameterService;
@@ -339,8 +339,6 @@ public class VehicleConnectionService(
 
         var vehicleId = activeConnection.VehicleId;
         DomainException.ThrowIfNull(vehicleId);
-        var conn = activeConnection;
-
         try
         {
             logger.LogInformation("Disconnecting vehicle {VehicleId}", vehicleId);
@@ -351,16 +349,26 @@ public class VehicleConnectionService(
             await connectionSession.DisconnectAsync(cancellationToken: cancellationToken);
 
             // Publish disconnect event
-            await domainEventHub.PublishDomainEventAsync(new VehicleDisconnected(vehicleId, dateTimeProvider.UtcNow, "User requested disconnect"), cancellationToken);
+            try
+            {
+                await domainEventHub.PublishDomainEventAsync(new VehicleDisconnected(vehicleId, dateTimeProvider.UtcNow, "User requested disconnect"), cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error while publishing disconnect event for vehicle {VehicleId}", vehicleId);
+                activeConnection = null;
+                return;
+            }
 
             logger.LogInformation("Successfully disconnected vehicle {VehicleId}", vehicleId);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error while disconnecting vehicle {VehicleId}", vehicleId);
-            // Still clear the connection even if there were errors
-            activeConnection = null;
+            logger.LogError(ex, "Error while executing internal disconnecting vehicle {VehicleId}", vehicleId);
         }
+
+        // Still clear the connection even if there were errors
+        activeConnection = null;
     }
 
     /// <inheritdoc />

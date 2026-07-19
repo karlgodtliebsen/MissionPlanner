@@ -3,7 +3,7 @@
 /// <summary>
 /// Represents a client for interacting with a MAVLink FTP server.
 /// </summary>
-public interface IMavFtpClient
+public interface IMavFtpClient : IAsyncDisposable
 {
     /// <summary>
     /// Resets all active sessions for the specified MAVLink FTP target.

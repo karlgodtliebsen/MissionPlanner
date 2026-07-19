@@ -31,31 +31,31 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider 
     /// <summary>
     /// Resets the vehicle registry by clearing all registered vehicles and publishing a VehicleRegistryReset event.
     /// </summary>
-    public async Task Reset()
+    public async Task Reset(CancellationToken cancellationToken)
     {
         foreach (var vehicle in vehicles.Values)
         {
             var offlineState = vehicle.State with { Connection = vehicle.State.Connection with { State = VehicleConnectionState.Offline } };
 
-            await eventHub.PublishDomainEventAsync(new VehicleStateUpdated(offlineState));
+            await eventHub.PublishDomainEventAsync(new VehicleStateUpdated(offlineState), cancellationToken);
         }
 
         vehicles.Clear();
-        await eventHub.PublishDomainEventAsync(new VehicleRegistryReset());
+        await eventHub.PublishDomainEventAsync(new VehicleRegistryReset(), cancellationToken);
     }
 
     /// <inheritdoc />
-    public async Task<VehicleUpdateConnectionStateResult> UpdateConnectionStates(DateTimeOffset now, TimeSpan staleAfter, TimeSpan degradedAfter, TimeSpan offlineAfter)
+    public async Task<VehicleUpdateConnectionStateResult> UpdateConnectionStates(DateTimeOffset now, TimeSpan staleAfter, TimeSpan degradedAfter, TimeSpan offlineAfter, CancellationToken cancellationToken)
     {
         var result = new List<VehicleSession>();
         foreach (var vehicle in vehicles.Values)
         {
             result.Add(vehicle);
             var stateChanged = vehicle.UpdateConnectionState(now, staleAfter, degradedAfter, offlineAfter);
-            await eventHub.PublishDomainEventAsync(new VehicleStateUpdated(vehicle.State));
+            await eventHub.PublishDomainEventAsync(new VehicleStateUpdated(vehicle.State), cancellationToken);
             if (stateChanged is not null)
             {
-                await eventHub.PublishDomainEventAsync(stateChanged);
+                await eventHub.PublishDomainEventAsync(stateChanged, cancellationToken);
             }
         }
 
@@ -75,6 +75,7 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider 
     /// <param name="systemStatus">The system status of the vehicle.</param>
     /// <param name="mavLinkVersion">The MAVLink version of the vehicle.</param>
     /// <param name="receivedAt">The timestamp when the heartbeat was received.</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>A result containing the updated vehicle session.</returns>
     public async Task<VehicleRegistryResult> RegisterOrUpdateHeartbeatAsync(
         VehicleId vehicleId,
@@ -85,7 +86,8 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider 
         byte baseMode,
         byte systemStatus,
         byte mavLinkVersion,
-        DateTimeOffset receivedAt)
+        DateTimeOffset receivedAt,
+        CancellationToken cancellationToken)
     {
         if (!vehicles.TryGetValue(vehicleId, out var session))
         {
@@ -105,7 +107,7 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider 
             session = new VehicleSession(state, endPoint, dateTimeProvider);
             vehicles.Add(vehicleId, session);
             logger.LogTrace("Registered new vehicle: {VehicleId}", vehicleId);
-            await eventHub.PublishDomainEventAsync(new VehicleRegistered(vehicleId), CancellationToken.None);
+            await eventHub.PublishDomainEventAsync(new VehicleRegistered(vehicleId), cancellationToken);
         }
 
         session.ApplyHeartbeat(

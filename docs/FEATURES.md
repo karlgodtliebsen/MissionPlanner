@@ -1,4 +1,4 @@
-﻿# Domain
+# Domain
 
 
 
@@ -378,7 +378,7 @@ v1.38 feature inventory per tab; the new tab views are placeholders:
 * **Standard / Advanced Params**: "friendly" curated parameter lists with combos/sliders
 * **Full Parameter Tree**: tree-grouped variant of the raw parameter editor
 * **Planner**: GCS application settings (units, speech, layout, video, map options)
-* **MAVFtp**: browse the vehicle's filesystem over MAVLink FTP (tab view exists, empty)
+* **MAVFTP**: remote filesystem browser, navigation, session reset, streaming download, progress, cancellation, burst recovery; SITL re-validation pending after endpoint/sequence interoperability fixes
 * **Onboard OSD**: OSD layout editor (tab view exists, empty)
 * v1.38 extras to consider later: FFT analysis, REPL/Terminal, DroneCAN tooling
 

@@ -14,7 +14,7 @@ namespace MissionPlanner.MavLink.Services;
 /// Owns the MAVLink processing pipeline: received byte blocks -> frames -> decoded messages -> event hub.
 /// The serial receive loop is intentionally not blocked by frame decoding or event subscribers.
 /// </summary>
-public sealed class MavLinkConnection : IMavLinkConnection, IAsyncDisposable
+public sealed class MavLinkConnection : IMavLinkConnection
 {
     private readonly IMavLinkClient client;
     private readonly IMavLinkFrameParser frameParser;
@@ -123,10 +123,7 @@ public sealed class MavLinkConnection : IMavLinkConnection, IAsyncDisposable
                         {
                             if (logger.IsEnabled(LogLevel.Warning))
                             {
-                                logger.LogWarning("Failed to decode MAVLink frame. MessageId={MessageId}, SystemId={SystemId}, ComponentId={ComponentId}",
-                                    frame.MessageId,
-                                    frame.SystemId,
-                                    frame.ComponentId);
+                                logger.LogWarning("Failed to decode MAVLink frame. MessageId={MessageId}, SystemId={SystemId}, ComponentId={ComponentId}", frame.MessageId, frame.SystemId, frame.ComponentId);
                             }
 
                             continue;
@@ -242,7 +239,6 @@ public sealed class MavLinkConnection : IMavLinkConnection, IAsyncDisposable
         await StopAsync().ConfigureAwait(false);
         await client.DisposeAsync().ConfigureAwait(false);
         disposed = true;
-        GC.SuppressFinalize(this);
     }
 
     private void ThrowIfDisposed()

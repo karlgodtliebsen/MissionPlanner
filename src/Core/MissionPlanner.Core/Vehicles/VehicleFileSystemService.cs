@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.MavFtp;
 using MissionPlanner.MavLink.MavFtp.Abstractions;
@@ -35,7 +35,12 @@ public sealed class VehicleFileSystemService(IMavFtpClient client, IVehicleRegis
     /// <inheritdoc />
     public Task DownloadFileAsync(VehicleId vehicleId, string remotePath, Stream destination, IProgress<VehicleFileTransferProgress>? progress = null, CancellationToken cancellationToken = default)
     {
-        IProgress<MavFtpProgress>? mapped = progress is null ? null : new Progress<MavFtpProgress>(x => progress.Report(new VehicleFileTransferProgress(x.RemotePath, x.BytesTransferred, x.TotalBytes, x.BytesPerSecond)));
+        IProgress<MavFtpProgress>? mapped = progress is null
+            ? null
+            : new MappingProgress<MavFtpProgress, VehicleFileTransferProgress>(
+                progress,
+                static x => new VehicleFileTransferProgress(
+                    x.RemotePath, x.BytesTransferred, x.TotalBytes, x.BytesPerSecond));
         return client.DownloadFileAsync(Resolve(vehicleId), remotePath, destination, mapped, cancellationToken);
     }
 
@@ -49,5 +54,19 @@ public sealed class VehicleFileSystemService(IMavFtpClient client, IVehicleRegis
     {
         var session = vehicleRegistry.GetRequired(vehicleId) ?? throw new InvalidOperationException($"Vehicle {vehicleId} is not connected.");
         return new MavFtpTarget(vehicleId.SystemId, vehicleId.ComponentId, session.EndPoint);
+    }
+
+    private sealed class MappingProgress<TSource, TTarget>(IProgress<TTarget> target, Func<TSource, TTarget> map) : IProgress<TSource>
+    {
+        public void Report(TSource value)
+        {
+            target.Report(map(value));
+        }
+    }
+
+    /// <inheritdoc />
+    public ValueTask DisposeAsync()
+    {
+        return client.DisposeAsync();
     }
 }

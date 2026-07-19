@@ -5,7 +5,7 @@ namespace MissionPlanner.Core.Vehicles.Abstractions;
 /// <summary>
 /// Service for interacting with the vehicle file system.
 /// </summary>
-public interface IVehicleFileSystemService
+public interface IVehicleFileSystemService : IAsyncDisposable
 {
     /// <summary>
     /// Lists the contents of a directory on the vehicle's file system.

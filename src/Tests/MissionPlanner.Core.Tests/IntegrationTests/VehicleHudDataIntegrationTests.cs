@@ -1,5 +1,4 @@
 ﻿using FluentAssertions;
-using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Simulator;
@@ -54,7 +53,7 @@ public class VehicleHudDataIntegrationTests
                 BatteryRemaining = 87,
                 BatteryVoltage = 11.4f
             };
-        await result.ApplyToAsync(registry);
+        await result.ApplyToAsync(registry, TestContext.Current.CancellationToken);
 
         // Act
         var hudData = hudDataService.GetHudData(vehicleId);
@@ -88,7 +87,7 @@ public class VehicleHudDataIntegrationTests
             Altitude = 100.0,
             BatteryRemaining = 90
         };
-        await result.ApplyToAsync(registry);
+        await result.ApplyToAsync(registry, TestContext.Current.CancellationToken);
 
         // Act
         var primaryHudData = hudDataService.GetPrimaryVehicleHudData();

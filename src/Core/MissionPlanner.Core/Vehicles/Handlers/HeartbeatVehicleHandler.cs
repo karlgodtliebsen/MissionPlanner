@@ -32,7 +32,7 @@ public sealed class HeartbeatVehicleHandler(IVehicleRegistry vehicleRegistry, ID
             message.BaseMode,
             message.SystemStatus,
             message.MavLinkVersion,
-            message.ReceivedAt);
+            message.ReceivedAt, cancellationToken);
         await domainEventHub.PublishDomainEventAsync(new VehicleStateUpdated(registryResult.Vehicle.State), cancellationToken);
     }
 }

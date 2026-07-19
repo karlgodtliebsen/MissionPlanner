@@ -3,7 +3,7 @@
 /// <summary>
 /// Provides methods for registering and dispatching MAVFTP responses.
 /// </summary>
-public interface IMavFtpResponseDispatcher
+public interface IMavFtpResponseDispatcher : IDisposable
 {
     /// <summary>
     /// Registers a MAVFTP response for a specific request.

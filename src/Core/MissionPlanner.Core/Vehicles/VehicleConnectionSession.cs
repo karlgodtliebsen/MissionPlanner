@@ -93,7 +93,7 @@ public sealed class VehicleConnectionSession(
     /// <param name="baudRate"></param>
     /// <param name="configure"></param>
     /// <param name="cancellationToken"></param>
-    public CancellationTokenSource CreateSerialConnection(string portName, int baudRate = 57600, Action<TransportEndpoint>? configure = null, CancellationToken cancellationToken = default)
+    public async Task<CancellationTokenSource> CreateSerialConnection(string portName, int baudRate = 57600, Action<TransportEndpoint>? configure = null, CancellationToken cancellationToken = default)
     {
         serviceCts = new CancellationTokenSource();
         client?.DisposeAsync();
@@ -101,7 +101,7 @@ public sealed class VehicleConnectionSession(
         var registry = serviceFactory.Create<IVehicleRegistry>();
 
         // Publish Reset event
-        registry.Reset();
+        await registry.Reset(cancellationToken);
 
         // Create serial transport
         transport = domainFactory.Create<ISerialMavLinkTransport, string, int>(portName, baudRate);
@@ -122,13 +122,8 @@ public sealed class VehicleConnectionSession(
 
 
     /// <inheritdoc/>
-    public CancellationTokenSource CreateTcpConnection(int port, string host, Action<TransportEndpoint>? configure = null, CancellationToken cancellationToken = default)
+    public async Task<CancellationTokenSource> CreateTcpConnection(int port, string host, Action<TransportEndpoint>? configure = null, CancellationToken cancellationToken = default)
     {
-        if (transport is not null && client is not null)
-        {
-            throw new InvalidOperationException("A connection is already established.");
-        }
-
         serviceCts = new CancellationTokenSource();
         var transportOptions = serviceFactory.Create<IOptions<TransportEndpoint>>();
         transportOptions.Value.Protocol = "tcp";
@@ -137,9 +132,8 @@ public sealed class VehicleConnectionSession(
         configure?.Invoke(transportOptions.Value);
         var registry = serviceFactory.Create<IVehicleRegistry>();
 
-
         // Publish Reset event
-        registry.Reset();
+        await registry.Reset(cancellationToken);
 
         // Create TCP transport
         transport = domainFactory.Create<ITcpMavLinkTransport, IOptions<TransportEndpoint>>(transportOptions);
@@ -161,13 +155,8 @@ public sealed class VehicleConnectionSession(
 
 
     /// <inheritdoc/>
-    public CancellationTokenSource CreateUdpConnection(int localPort, string? remoteHost = null, int? remotePort = null, Action<TransportEndpoint>? configure = null, CancellationToken cancellationToken = default)
+    public async Task<CancellationTokenSource> CreateUdpConnection(int localPort, string? remoteHost = null, int? remotePort = null, Action<TransportEndpoint>? configure = null, CancellationToken cancellationToken = default)
     {
-        if (transport is not null && client is not null)
-        {
-            throw new InvalidOperationException("A connection is already established.");
-        }
-
         serviceCts = new CancellationTokenSource();
         var transportOptions = serviceFactory.Create<IOptions<TransportEndpoint>>();
         transportOptions.Value.Protocol = "udp";
@@ -178,7 +167,7 @@ public sealed class VehicleConnectionSession(
         var registry = serviceFactory.Create<IVehicleRegistry>();
 
         // Publish Reset event
-        registry.Reset();
+        await registry.Reset(cancellationToken);
 
         // Create UDP transport
         transport = domainFactory.Create<IUdpMavLinkTransport, IOptions<TransportEndpoint>>(transportOptions);
@@ -204,15 +193,13 @@ public sealed class VehicleConnectionSession(
     /// </summary>
     public async Task DisconnectAsync(VehicleId? vehicleId = null, CancellationToken cancellationToken = default)
     {
-        //  DomainException.ThrowIfNull(vehicleId);
-
         try
         {
             logger.LogInformation("Disconnecting vehicle {VehicleId}", vehicleId);
             var registry = serviceFactory.Create<IVehicleRegistry>();
 
             // Publish Reset event
-            registry.Reset();
+            await registry.Reset(cancellationToken);
 
 
             // Stop background tasks gracefully. Cancel first; otherwise the wait below just waits for the timeout.
@@ -287,7 +274,10 @@ public sealed class VehicleConnectionSession(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Error while disconnecting vehicle {VehicleId}", vehicleId);
+            if (vehicleId is not null)
+            {
+                logger.LogError(ex, "Error while disconnecting vehicle {VehicleId}", vehicleId);
+            }
             // Still clear the connection even if there were errors
         }
     }

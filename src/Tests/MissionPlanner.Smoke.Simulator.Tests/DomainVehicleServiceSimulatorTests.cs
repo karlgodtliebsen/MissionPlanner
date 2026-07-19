@@ -3,7 +3,6 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Commands;
-using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library;
@@ -318,7 +317,7 @@ public class DomainVehicleServiceSimulatorTests
         Assert.Equal(VehicleCommandResult.Denied, response.Result);
 
         var state = vehicleService.GetVehicleState(vehicleId);
-        Assert.False(state.IsArmed);
+        Assert.False(state!.IsArmed);
     }
 
     /// <summary>
@@ -341,9 +340,9 @@ public class DomainVehicleServiceSimulatorTests
             0,
             4,
             3,
-            receivedAt);
+            receivedAt, TestContext.Current.CancellationToken);
 
-        await registry.UpdateConnectionStates(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10));
+        await registry.UpdateConnectionStates(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
 
         Assert.Equal(VehicleConnectionState.Offline, vehicle.Vehicle.State.ConnectionState);
         var response = await vehicleService.ArmAsync(vehicleId, TestContext.Current.CancellationToken);
@@ -369,7 +368,7 @@ public class DomainVehicleServiceSimulatorTests
             0,
             4,
             3,
-            DateTimeOffset.UtcNow);
+            DateTimeOffset.UtcNow, TestContext.Current.CancellationToken);
 
         var response = await vehicleService.SetModeAsync(vehicleId, VehicleMode.Guided, TestContext.Current.CancellationToken);
 

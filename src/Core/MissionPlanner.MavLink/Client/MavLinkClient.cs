@@ -233,8 +233,9 @@ public sealed class MavLinkClient : IMavLinkClient
 
         await StopAsync().ConfigureAwait(false);
         await transport.DisposeAsync().ConfigureAwait(false);
+        memoryPool.Dispose();
+        lifecycleLock.Dispose();
         disposed = true;
-        GC.SuppressFinalize(this);
     }
 
     private Channel<PooledMavLinkDataReceived> CreateReceiveChannel()

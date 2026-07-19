@@ -24,7 +24,7 @@ public interface IVehicleRegistry
     /// <summary>
     /// Resets the vehicle registry, clearing all registered vehicle sessions.
     /// </summary>
-    Task Reset();
+    Task Reset(CancellationToken cancellationToken);
 
     /// <summary>
     /// Updates the connection states of all registered vehicle sessions based on the elapsed time since their last heartbeat.
@@ -33,7 +33,8 @@ public interface IVehicleRegistry
     /// <param name="staleAfter">The time span after which a vehicle is considered stale.</param>
     /// <param name="degradedAfter">The time span after which a vehicle is considered degraded.</param>
     /// <param name="offlineAfter">The time span after which a vehicle is considered offline.</param>
-    Task<VehicleUpdateConnectionStateResult> UpdateConnectionStates(DateTimeOffset now, TimeSpan staleAfter, TimeSpan degradedAfter, TimeSpan offlineAfter);
+    /// <param name="cancellationToken">The cancellation token.</param>
+    Task<VehicleUpdateConnectionStateResult> UpdateConnectionStates(DateTimeOffset now, TimeSpan staleAfter, TimeSpan degradedAfter, TimeSpan offlineAfter, CancellationToken cancellationToken);
 
     /// <summary>
     /// Registers a new vehicle or updates an existing vehicle's state based on a received heartbeat message. 
@@ -47,6 +48,7 @@ public interface IVehicleRegistry
     /// <param name="systemStatus">The system status of the vehicle.</param>
     /// <param name="mavLinkVersion">The MAVLink version of the vehicle.</param>
     /// <param name="receivedAt">The timestamp when the heartbeat was received.</param>
+    /// <param name="cancellationToken"></param>
     /// <returns>The updated or newly registered vehicle session.</returns>
     Task<VehicleRegistryResult> RegisterOrUpdateHeartbeatAsync(
         VehicleId vehicleId,
@@ -57,5 +59,6 @@ public interface IVehicleRegistry
         byte baseMode,
         byte systemStatus,
         byte mavLinkVersion,
-        DateTimeOffset receivedAt);
+        DateTimeOffset receivedAt,
+        CancellationToken cancellationToken);
 }

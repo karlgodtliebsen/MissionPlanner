@@ -1,4 +1,4 @@
-﻿using System.Buffers.Binary;
+using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
@@ -18,8 +18,7 @@ public sealed class MavFtpClient : IMavFtpClient
     private readonly IMavFtpResponseDispatcher responseDispatcher;
     private readonly ILogger<MavFtpClient> logger;
     private readonly MavFtpOptions options;
-    private readonly ConcurrentDictionary<MavFtpTarget, SemaphoreSlim> targetLocks = new();
-    private int nextSequence;
+    private readonly ConcurrentDictionary<MavFtpTarget, TargetOperationState> targetStates = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MavFtpClient"/> class.
@@ -184,9 +183,10 @@ public sealed class MavFtpClient : IMavFtpClient
             : ((byte Session, long Size))(response.Session, BinaryPrimitives.ReadUInt32LittleEndian(response.Data.Span));
     }
 
-    private async Task<MavFtpPacket> RequestAsync(MavFtpTarget target, byte session, MavFtpOpcode opcode, uint offset, ReadOnlyMemory<byte> data, string? path, CancellationToken ct)
+    private async Task<MavFtpPacket> RequestAsync(MavFtpTarget target, byte session, MavFtpOpcode opcode, uint offset, ReadOnlyMemory<byte> data, string? path, CancellationToken ct, TimeSpan? requestTimeout = null, int? maximumAttempts = null)
     {
-        var sequence = unchecked((ushort)Interlocked.Increment(ref nextSequence));
+        var state = targetStates.GetOrAdd(target, static _ => new TargetOperationState());
+        var sequence = state.AllocateRequestSequence();
         var request = new MavFtpPacket(sequence, session, opcode, MavFtpOpcode.None, false, offset, data);
         for (var attempt = 1; ; attempt++)
         {
@@ -194,7 +194,8 @@ public sealed class MavFtpClient : IMavFtpClient
             await connection.SendRawAsync(messageEncoder.Encode(target.SystemId, target.ComponentId, packetCodec.Encode(request)), target.EndPoint, ct).ConfigureAwait(false);
             try
             {
-                var response = await registration.ReadAsync(options.RequestTimeout, ct).ConfigureAwait(false);
+                var response = await registration.ReadAsync(requestTimeout ?? options.RequestTimeout, ct).ConfigureAwait(false);
+                state.ObserveResponse(response.Sequence);
                 if (response.Opcode == MavFtpOpcode.Nak)
                 {
                     if (response.Data.IsEmpty)
@@ -208,16 +209,17 @@ public sealed class MavFtpClient : IMavFtpClient
                 return response.Opcode != MavFtpOpcode.Ack ? throw new MavFtpProtocolException("Expected MAVFTP ACK or NAK.") : response;
             }
             catch (TimeoutException)
-                when (attempt < options.MaximumRequestAttempts)
+                when (attempt < (maximumAttempts ?? options.MaximumRequestAttempts))
             {
-                logger.LogWarning("MAVFTP {Opcode} timed out; retrying attempt {Attempt}/{MaximumAttempts}.", opcode, attempt + 1, options.MaximumRequestAttempts);
+                logger.LogWarning("MAVFTP {Opcode} timed out; retrying attempt {Attempt}/{MaximumAttempts}.", opcode, attempt + 1, maximumAttempts ?? options.MaximumRequestAttempts);
             }
         }
     }
 
     private async Task<byte[]> ReadBurstWindowAsync(MavFtpTarget target, byte session, uint offset, int expectedLength, string path, CancellationToken ct)
     {
-        var sequence = unchecked((ushort)Interlocked.Increment(ref nextSequence));
+        var state = targetStates.GetOrAdd(target, static _ => new TargetOperationState());
+        var sequence = state.AllocateRequestSequence();
         var request = new MavFtpPacket(sequence, session, MavFtpOpcode.BurstReadFile, MavFtpOpcode.None, false, offset, new byte[Math.Min(options.ReadChunkSize, expectedLength)]);
         using var registration = responseDispatcher.Register(target, sequence, MavFtpOpcode.BurstReadFile, session, true);
         await connection.SendRawAsync(messageEncoder.Encode(target.SystemId, target.ComponentId, packetCodec.Encode(request)), target.EndPoint, ct).ConfigureAwait(false);
@@ -230,8 +232,12 @@ public sealed class MavFtpClient : IMavFtpClient
             try
             {
                 packet = await registration.ReadAsync(options.RequestTimeout, ct).ConfigureAwait(false);
+                state.ObserveResponse(packet.Sequence);
             }
-            catch (TimeoutException) { break; }
+            catch (TimeoutException)
+            {
+                break;
+            }
 
             if (packet.Opcode == MavFtpOpcode.Nak)
             {
@@ -334,22 +340,31 @@ public sealed class MavFtpClient : IMavFtpClient
 
     private async Task CleanupSessionAsync(MavFtpTarget target, byte session)
     {
+        using var cleanupCancellation = new CancellationTokenSource(options.CleanupTimeout);
         try
         {
-            await RequestAsync(target, session, MavFtpOpcode.TerminateSession, 0, ReadOnlyMemory<byte>.Empty, null, CancellationToken.None).ConfigureAwait(false);
+            await RequestAsync(
+                target, session, MavFtpOpcode.TerminateSession, 0, ReadOnlyMemory<byte>.Empty, null,
+                cleanupCancellation.Token, options.CleanupTimeout, options.CleanupAttempts).ConfigureAwait(false);
         }
-        catch (Exception ex) { logger.LogWarning(ex, "MAVFTP session {Session} cleanup failed.", session); }
+        catch (Exception ex) when (ex is not StackOverflowException and not OutOfMemoryException)
+        {
+            logger.LogWarning(ex, "MAVFTP session {Session} cleanup failed.", session);
+        }
     }
 
     private async Task<T> InOperationLockAsync<T>(MavFtpTarget target, Func<CancellationToken, Task<T>> action, CancellationToken ct)
     {
-        var gate = targetLocks.GetOrAdd(target, static _ => new SemaphoreSlim(1, 1));
-        await gate.WaitAsync(ct).ConfigureAwait(false);
+        var state = targetStates.GetOrAdd(target, static _ => new TargetOperationState());
+        await state.Gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
             return await action(ct).ConfigureAwait(false);
         }
-        finally { gate.Release(); }
+        finally
+        {
+            state.Gate.Release();
+        }
     }
 
     private static byte[] PathBytes(string path)
@@ -364,5 +379,29 @@ public sealed class MavFtpClient : IMavFtpClient
         return bytes.Length > 239
             ? throw new ArgumentOutOfRangeException(nameof(path), "UTF-8 remote path exceeds MAVFTP payload capacity.")
             : bytes;
+    }
+
+    private sealed class TargetOperationState
+    {
+        private int nextRequestSequence;
+
+        public SemaphoreSlim Gate { get; } = new(1, 1);
+
+        public ushort AllocateRequestSequence()
+        {
+            return unchecked((ushort)Volatile.Read(ref nextRequestSequence));
+        }
+
+        public void ObserveResponse(ushort responseSequence)
+        {
+            Volatile.Write(ref nextRequestSequence, MavFtpSequence.Next(responseSequence));
+        }
+    }
+
+    /// <inheritdoc />
+    public ValueTask DisposeAsync()
+    {
+        responseDispatcher.Dispose();
+        return connection.DisposeAsync();
     }
 }

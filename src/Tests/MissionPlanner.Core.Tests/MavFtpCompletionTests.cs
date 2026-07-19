@@ -3,6 +3,8 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.MavLink.MavFtp;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
+using MissionPlanner.Transport;
+using System.Net;
 
 namespace MissionPlanner.Core.Tests;
 
@@ -30,6 +32,34 @@ public sealed class MavFtpCompletionTests
         MavFtpSequence.Next(ushort.MaxValue).Should().Be(0);
         MavFtpSequence.IsInResponseWindow(ushort.MaxValue, 0).Should().BeTrue();
         MavFtpSequence.IsInResponseWindow(10, 500).Should().BeFalse();
+    }
+
+    [Fact]
+    public void TransportEndPoint_UsesValueEquality_ForEquivalentUdpEndpoints()
+    {
+        var first = new TransportEndPoint("udp", new IPEndPoint(IPAddress.Loopback, 14450));
+        var second = new TransportEndPoint("UDP", "127.0.0.1", 14450);
+
+        first.Should().Be(second);
+        first.GetHashCode().Should().Be(second.GetHashCode());
+
+        var targets = new HashSet<MavFtpTarget>
+        {
+            new(1, 1, first),
+            new(1, 1, second)
+        };
+        targets.Should().ContainSingle();
+    }
+
+    [Fact]
+    public void Sequence_NextRequest_FollowsTheLastServerResponse()
+    {
+        var request = (ushort)42;
+        var response = MavFtpSequence.FirstResponse(request);
+        var nextRequest = MavFtpSequence.Next(response);
+
+        response.Should().Be(43);
+        nextRequest.Should().Be(44);
     }
 
     [Fact]

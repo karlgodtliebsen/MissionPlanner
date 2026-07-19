@@ -1,5 +1,4 @@
-﻿using MissionPlanner.Core.Services.Abstractions;
-using MissionPlanner.Core.Vehicles.Abstractions;
+﻿using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Simulator;
 using MissionPlanner.Test.Support.Configuration;
@@ -65,7 +64,7 @@ public class DomainVehiclesTests
             BatteryRemaining = 87,
             BatteryVoltage = 11.4f
         };
-        await result.ApplyToAsync(registry);
+        await result.ApplyToAsync(registry, TestContext.Current.CancellationToken);
 
         var vehicles = vehicleService.GetVehicles();
 
@@ -89,7 +88,7 @@ public class DomainVehiclesTests
         var vehicleService = serviceProvider.GetRequiredService<IVehicleService>();
 
         var result = new SimulatedVehicleState { VehicleId = new VehicleId(1, 1), Roll = 0.1, Pitch = -0.2, Yaw = 1.5 };
-        await result.ApplyToAsync(registry);
+        await result.ApplyToAsync(registry, TestContext.Current.CancellationToken);
 
         var vehicle = vehicleService.GetVehicleState(new VehicleId(1, 1));
 

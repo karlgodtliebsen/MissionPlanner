@@ -3,7 +3,6 @@ using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.DomainEvents;
-using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.Configuration;
@@ -108,7 +107,7 @@ public class TestOfDomainEventHub
             0,
             4,
             3,
-            DateTimeOffset.UtcNow);
+            DateTimeOffset.UtcNow, TestContext.Current.CancellationToken);
 
         Assert.Contains(eventHub.Events, e => e is VehicleRegistered registered && registered.VehicleId == new VehicleId(1, 1));
     }

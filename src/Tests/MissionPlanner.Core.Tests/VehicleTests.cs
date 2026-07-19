@@ -3,8 +3,6 @@ using System.Net;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MissionPlanner.Core.Services;
-using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Handlers.Abstractions;
@@ -229,7 +227,6 @@ public class VehicleTests
     [Fact]
     public async Task Should_Update_Vehicle_Position_From_GlobalPositionInt_MessageAsync()
     {
-        var dateTimeProvider = serviceProvider.GetRequiredService<IDateTimeProvider>();
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
         var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
 
@@ -243,7 +240,7 @@ public class VehicleTests
             0,
             4,
             3,
-            dateTimeProvider.UtcNow);
+            dateTimeProvider.UtcNow, TestContext.Current.CancellationToken);
 
         var handler = domainFactory.Create<IPositionVehicleHandler, IVehicleRegistry>(registry);
 
@@ -262,7 +259,7 @@ public class VehicleTests
                 dateTimeProvider.UtcNow), TestContext.Current.CancellationToken);
 
         var vehicle = registry.GetRequired(vehicleId);
-
+        Assert.NotNull(vehicle);
         Assert.Equal(56.1629, vehicle.State.Latitude);
         Assert.Equal(10.2039, vehicle.State.Longitude);
         Assert.Equal(12.5, vehicle.State.Altitude);
@@ -276,7 +273,6 @@ public class VehicleTests
     {
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
         var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
-        var dateTimeProvider = serviceProvider.GetRequiredService<IDateTimeProvider>();
 
         var vehicleId = new VehicleId(1, 1);
 
@@ -288,7 +284,7 @@ public class VehicleTests
             0,
             4,
             3,
-            dateTimeProvider.UtcNow);
+            dateTimeProvider.UtcNow, TestContext.Current.CancellationToken);
 
         var handler = domainFactory.Create<IBatteryVehicleHandler, IVehicleRegistry>(registry);
 
@@ -326,7 +322,7 @@ public class VehicleTests
             0,
             4,
             3,
-            dateTimeProvider.UtcNow);
+            dateTimeProvider.UtcNow, TestContext.Current.CancellationToken);
 
         var handler = domainFactory.Create<IAttitudeVehicleHandler, IVehicleRegistry>(registry);
 
@@ -365,9 +361,9 @@ public class VehicleTests
             0,
             4,
             3,
-            receivedAt);
+            receivedAt, TestContext.Current.CancellationToken);
 
-        await registry.UpdateConnectionStates(receivedAt.AddSeconds(3), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10));
+        await registry.UpdateConnectionStates(receivedAt.AddSeconds(3), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
 
         Assert.Equal(VehicleConnectionState.Stale,
             vehicleRegistryResult.Vehicle.State.ConnectionState);
@@ -391,9 +387,9 @@ public class VehicleTests
             0,
             4,
             3,
-            receivedAt);
+            receivedAt, TestContext.Current.CancellationToken);
 
-        registry.UpdateConnectionStates(receivedAt.AddSeconds(6), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10));
+        registry.UpdateConnectionStates(receivedAt.AddSeconds(6), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
 
         Assert.Equal(VehicleConnectionState.Degraded, vehicleRegistryResult.Vehicle.State.ConnectionState);
     }
@@ -416,9 +412,9 @@ public class VehicleTests
             0,
             4,
             3,
-            receivedAt);
+            receivedAt, TestContext.Current.CancellationToken);
 
-        registry.UpdateConnectionStates(receivedAt.AddSeconds(12), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10));
+        await registry.UpdateConnectionStates(receivedAt.AddSeconds(12), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
 
         Assert.Equal(VehicleConnectionState.Offline, vehicleRegistryResult.Vehicle.State.ConnectionState);
     }
@@ -444,9 +440,9 @@ public class VehicleTests
             0,
             4,
             3,
-            receivedAt);
+            receivedAt, TestContext.Current.CancellationToken);
 
-        registry.UpdateConnectionStates(receivedAt.AddSeconds(6), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10));
+        await registry.UpdateConnectionStates(receivedAt.AddSeconds(6), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
 
         Assert.Equal(VehicleConnectionState.Degraded, vehicleRegistryResult.Vehicle.State.ConnectionState);
 
@@ -458,7 +454,7 @@ public class VehicleTests
             0,
             4,
             3,
-            receivedAt.AddSeconds(7));
+            receivedAt.AddSeconds(7), TestContext.Current.CancellationToken);
 
         Assert.Equal(
             VehicleConnectionState.Online,
@@ -485,9 +481,9 @@ public class VehicleTests
             0,
             4,
             3,
-            receivedAt);
+            receivedAt, TestContext.Current.CancellationToken);
 
-        registry.UpdateConnectionStates(receivedAt.AddSeconds(12), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10));
+        await registry.UpdateConnectionStates(receivedAt.AddSeconds(12), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
 
         Assert.Equal(
             VehicleConnectionState.Offline, vehicleRegistryResult.Vehicle.State.ConnectionState);
@@ -500,7 +496,7 @@ public class VehicleTests
             0,
             4,
             3,
-            receivedAt.AddSeconds(7));
+            receivedAt.AddSeconds(7), TestContext.Current.CancellationToken);
 
         Assert.Equal(
             VehicleConnectionState.Online,

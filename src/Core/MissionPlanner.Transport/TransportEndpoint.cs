@@ -1,11 +1,11 @@
-﻿using System.Net;
+using System.Net;
 
 namespace MissionPlanner.Transport;
 
 /// <summary>
 /// Represents a combined endpoint that can be initialized with either a string or an <see cref="IPEndPoint"/>.
 /// </summary>
-public sealed class TransportEndPoint
+public sealed class TransportEndPoint : IEquatable<TransportEndPoint>
 {
     private readonly IPEndPoint? iPEndPoint;
     private readonly string? endpoint;
@@ -72,6 +72,30 @@ public sealed class TransportEndPoint
     public override string ToString()
     {
         return endpoint ?? iPEndPoint?.ToString() ?? throw new InvalidOperationException("Both endpoint and iPEndPoint are null.");
+    }
+
+    /// <inheritdoc />
+    public bool Equals(TransportEndPoint? other)
+    {
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        return other is not null
+            && string.Equals(TransportName, other.TransportName, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(ToString(), other.ToString(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj) => obj is TransportEndPoint other && Equals(other);
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(
+            StringComparer.OrdinalIgnoreCase.GetHashCode(TransportName ?? string.Empty),
+            StringComparer.OrdinalIgnoreCase.GetHashCode(ToString()));
     }
 
     /// <summary>

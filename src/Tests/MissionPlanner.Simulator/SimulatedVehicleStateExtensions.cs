@@ -1,6 +1,4 @@
 ﻿using System.Net;
-using MissionPlanner.Core.Services;
-using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Transport;
@@ -17,8 +15,9 @@ public static class SimulatedVehicleStateExtensions
     /// </summary>
     /// <param name="simulated"></param>
     /// <param name="registry"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static async Task<VehicleSession> ApplyToAsync(this SimulatedVehicleState simulated, IVehicleRegistry registry)
+    public static async Task<VehicleSession> ApplyToAsync(this SimulatedVehicleState simulated, IVehicleRegistry registry, CancellationToken cancellationToken)
     {
         var vehicleRegistryResult = await registry.RegisterOrUpdateHeartbeatAsync(
             simulated.VehicleId,
@@ -29,7 +28,7 @@ public static class SimulatedVehicleStateExtensions
             simulated.BaseMode,
             simulated.SystemStatus,
             simulated.MavLinkVersion,
-            simulated.Timestamp);
+            simulated.Timestamp, cancellationToken);
 
         if (simulated.Latitude is not null &&
             simulated.Longitude is not null &&

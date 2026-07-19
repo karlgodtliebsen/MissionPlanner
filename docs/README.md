@@ -1,4 +1,4 @@
-﻿# Documentation Index
+# Documentation Index
 
 The new application lives in `src/`; the original MissionPlanner v1.38 (WinForms) source
 is kept for reference in `src-v.1.38/`.
@@ -32,3 +32,5 @@ documents above in July 2026 and deleted; recover them from git history if neede
 | Document | Purpose |
 |---|---|
 | [CODE_REVIEW_20260717.md](CODE_REVIEW_20260717.md) | Review findings and recommended mission-planner refactors for the 2026-07-17 source snapshot |
+
+- [MAVFTP implementation review (2026-07-19)](MAVFTP_REVIEW_20260719.md)

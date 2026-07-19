@@ -4,38 +4,30 @@
               xmlns:connect="clr-namespace:MissionPlanner.App.Views.Connect"
               xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
               xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
-              xmlns:input="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
               xmlns:validations="clr-namespace:InputKit.Shared.Validations;assembly=InputKit.Maui"
+              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
               x:Class="MissionPlanner.App.Views.Connect.ConnectPopupView"
               x:DataType="connect:ConnectPopupViewModel"
               BackgroundColor="#80000000">
 
+    <ContentView.Resources>
+        <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+    </ContentView.Resources>     
 
-    <VerticalStackLayout Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Spacing="12" Margin="25">
-
-        <!--<material:PickerField   Title="Channel"
-                                ItemsSource="{Binding Channels}"
-                                SelectedItem="{Binding SelectedChannel}" />
-
-        <material:PickerField   Title="Baud rate" 
-                                IsVisible="{Binding ShowSelectedCom}"
-                                ItemsSource="{Binding BaudRates}"
-                                SelectedItem="{Binding SelectedBaudRate}" />-->
-
+    <VerticalStackLayout Spacing="12" Margin="25">
 
         <Picker ItemsSource="{Binding Channels}"
                 SelectedItem="{Binding SelectedChannel}"
-                Title="Channel"
+                Title="Channel" IsEnabled="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}" 
                 Margin="0,0,12,4" />
         <Picker ItemsSource="{Binding BaudRates}"
                 SelectedItem="{Binding SelectedBaudRate}"
                 IsVisible="{Binding ShowSelectedCom}"
-                Title="Baud rate" 
+                Title="Baud rate"  IsEnabled="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}" 
                 Margin="0,0,12,4" />
 
-        <material:EditorField Title="Host" Text="{Binding SelectedHost}" IsVisible="{Binding ShowSelectedHost}">
-            </material:EditorField>
-        <material:EditorField Title="Port" Text="{Binding SelectedPort}" IsVisible="{Binding ShowSelectedHost}"/>
+        <material:EditorField IsEnabled="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}" Title="Host" Text="{Binding SelectedHost}" IsVisible="{Binding ShowSelectedHost}" />
+        <material:EditorField IsEnabled="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}" Title="Port" Text="{Binding SelectedPort}" IsVisible="{Binding ShowSelectedHost}"/>
 
         <!--<validations:RequiredValidation />
         <validations:RegexValidation Pattern="{x:Static input:AdvancedEntry.REGEX_EMAIL}" Message="Invalid email address" />-->
@@ -45,8 +37,6 @@
             <uranium:DataAnnotationsBehavior Binding="{Binding Ip}" />
         </material:TextField.Behaviors>
         -->
-
-
 
         <Label Text="{Binding StatusMessage}"
                        TextColor="LightGray"
@@ -62,6 +52,7 @@
                     Padding="8,4"
                     VerticalOptions="Center"
                     BackgroundColor="Transparent"
+                    IsEnabled="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}" 
                     Command="{Binding RefreshCommand}" />
 
             <Button Grid.Column="1"

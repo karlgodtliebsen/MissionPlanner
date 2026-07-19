@@ -19,7 +19,6 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
     private readonly ILogger<ConnectPopupViewModel> logger;
     private readonly ISerialPortDiscoveryService portDiscovery;
     private readonly IVehicleConnectionService connectionService;
-    private readonly IDomainEventHub eventHub;
     private readonly IList<IDisposable> disposables = [];
     private readonly ApplicationStateService stateService;
     private readonly IDispatcher dispatcher;
@@ -51,6 +50,7 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
     private readonly List<string> configuredChannels;
     private const string? ConnectImage = "Resources/Images/x_light_disconnect_icon_x.png";
     private const string? DisConnectImage = "Resources/Images/x_light_connect_icon_x.png";
+    private readonly string defaultChannel;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ConnectPopupViewModel"/> class with the specified application state and options.
@@ -59,13 +59,13 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
     /// <param name="stateService"></param>
     /// <param name="portDiscovery"></param>
     /// <param name="connectionService"></param>
-    /// <param name="eventHub"></param>
+    /// <param name="domainEventHub"></param>
     /// <param name="dispatcher"></param>
     /// <param name="logger"></param>
     public ConnectPopupViewModel(
         ISerialPortDiscoveryService portDiscovery,
         IVehicleConnectionService connectionService,
-        IDomainEventHub eventHub,
+        IDomainEventHub domainEventHub,
         ApplicationStateService stateService,
         IOptionsMonitor<ApplicationOptions> options,
         IDispatcher dispatcher,
@@ -74,7 +74,6 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
         this.logger = logger;
         this.portDiscovery = portDiscovery;
         this.connectionService = connectionService;
-        this.eventHub = eventHub;
         this.stateService = stateService;
         this.dispatcher = dispatcher;
         configuredChannels = options.CurrentValue.Channels.ToList();
@@ -83,6 +82,7 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
         SelectedHost = options.CurrentValue.Host;
         SelectedPort = options.CurrentValue.Port;
         SelectedChannel = stateService.SelectedChannel;
+        defaultChannel = options.CurrentValue.Channel;
         SelectedBaudRate = stateService.SelectedBaudRate;
         IsConnected = stateService.IsConnected;
         // Subscribe to state changes
@@ -151,8 +151,8 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
         };
 
         // Subscribe to connection events
-        disposables.Add(eventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected));
-        disposables.Add(eventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
+        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected));
+        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
 
         // Initialize port list
         RefreshPortList();
@@ -178,21 +178,15 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
         try
         {
             var availablePorts = portDiscovery.GetAvailablePorts();
-            Channels.Clear();
-            var selectedChannel = SelectedChannel;
             if (availablePorts.Length > 0)
             {
                 var channels = availablePorts.Concat(configuredChannels).Distinct().Order().ToArray();
-
+                Channels.Clear();
                 Channels.AddRange(channels);
                 SelectedChannel = availablePorts[0];
             }
-            else
-            {
-                Channels.AddRange(configuredChannels);
-                SelectedChannel = selectedChannel;
-            }
 
+            SelectedChannel ??= defaultChannel;
             logger.LogInformation("Refreshed port list: {PortCount} ports found", availablePorts.Length);
         }
         catch (Exception ex)
@@ -293,10 +287,12 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
             else if (selection.Contains(":"))
             {
                 selection = "tcp";
+                SelectedChannel = "TCP";
             }
             else
             {
                 selection = "udp"; // Default to UDP if unknown
+                SelectedChannel = "UDP";
             }
 
             logger.LogInformation("Connecting to vehicle using transport: {transport}", selection);
@@ -341,6 +337,15 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
                     stateService.VehicleId = vehicleId;
                     VehicleId = vehicleId;
                 }
+
+                //if (stateService.SelectedHost != SelectedHost)
+                //{
+                //    stateService.SelectedHost = SelectedHost!;
+                //}
+                //if (stateService.SelectedPort != SelectedPort)
+                //{
+                //    stateService.SelectedPort = SelectedPort!;
+                //}   
 
                 StatusMessage = $"Connected to vehicle {vehicleId}";
                 logger.LogInformation("Successfully connected to vehicle {VehicleId}", vehicleId);
@@ -424,7 +429,9 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
             localPort = 14550; // Default UDP port
         }
 
-        return await connectionService.ConnectUdpAsync(localPort);
+        var result = await connectionService.ConnectUdpAsync(localPort);
+
+        return result;
     }
 
     private async Task OnVehicleConnected(VehicleConnected evt, CancellationToken ct)

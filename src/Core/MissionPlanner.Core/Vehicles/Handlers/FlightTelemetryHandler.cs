@@ -45,7 +45,7 @@ public sealed class FlightTelemetryHandler(IVehicleRegistry vehicleRegistry, IDo
                 heartbeat.BaseMode,
                 heartbeat.SystemStatus,
                 heartbeat.MavLinkVersion,
-                heartbeat.ReceivedAt);
+                heartbeat.ReceivedAt, cancellationToken);
 
             await PublishStateAsync(result.Vehicle, cancellationToken).ConfigureAwait(false);
             return;

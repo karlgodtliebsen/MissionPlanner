@@ -20,12 +20,28 @@ registration collects all packets until completion or timeout. Blocks may arrive
 identical duplicates are ignored, while conflicting overlaps and out-of-window data are rejected.
 The client computes minimal missing ranges and repairs them with ordinary `ReadFile` requests.
 Each reordered window is then written sequentially, supporting non-seekable output without a
-whole-file allocation. Unknown-command and repeated burst timeouts fall back once to normal reads.
+whole-file allocation. Unknown-command responses fall back to normal reads. A burst window is collected until complete, explicitly terminated, or idle-timeout; missing ranges are then recovered with ordinary `ReadFile` requests.
 
 `IVehicleFileSystemService` resolves a `VehicleId` through the registry and hides the MAVFTP target
 and transport endpoint from the application. The Config/Tuning MAVFTP tab lists and navigates
 remote Unix-style paths, resets sessions, downloads a selected file with progress, and cancels an
 active operation.
+
+## SITL interoperability fix (2026-07-19)
+
+UDP receive creates a new `TransportEndPoint` object for each datagram. MAVFTP response correlation
+therefore requires endpoint **value equality**, not object identity. `TransportEndPoint` now compares
+transport name, address, and port by value, allowing valid SITL replies to reach the active response
+registration.
+
+MAVFTP sequence numbers also follow the protocol conversation: the server responds with request
+sequence + 1, and the next client request uses the sequence following the latest server response.
+This is especially important after a multi-packet burst, where every reply advances the sequence.
+Retries reuse the original request sequence.
+
+Session cleanup uses a separate short timeout and bounded attempt count so cancellation is not held
+up by the normal transfer retry policy. Response-queue overflow is surfaced as a protocol failure
+instead of being silently treated as packet loss.
 
 Automated SITL tests are not yet available. Manual validation requires connecting to ArduPilot
 SITL, listing `/`, downloading and byte-comparing a known multi-packet file twice, and cancelling

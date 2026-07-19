@@ -17,8 +17,8 @@ public sealed class VehicleConnectionMonitor(IVehicleRegistry vehicleRegistry, I
     /// <summary>
     /// Updates the connection states of all monitored vehicles.
     /// </summary>
-    public void UpdateConnectionStates()
+    public async Task UpdateConnectionStatesAsync(CancellationToken cancellationToken)
     {
-        vehicleRegistry.UpdateConnectionStates(clock.UtcNow, StaleAfter, DegradedAfter, OfflineAfter);
+        await vehicleRegistry.UpdateConnectionStates(clock.UtcNow, StaleAfter, DegradedAfter, OfflineAfter, cancellationToken);
     }
 }
