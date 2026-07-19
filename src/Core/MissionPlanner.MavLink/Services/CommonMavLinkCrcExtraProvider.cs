@@ -120,6 +120,10 @@ public sealed class CommonMavLinkCrcExtraProvider : IMavLinkCrcExtraProvider
                 crcExtra = 104;
                 return true;
 
+            case MessageIds.FileTransferProtocol:
+                crcExtra = 84;
+                return true;
+
             default:
                 crcExtra = 0;
                 return false;

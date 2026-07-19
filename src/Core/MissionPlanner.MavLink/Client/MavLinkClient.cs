@@ -45,7 +45,6 @@ public sealed class MavLinkClient : IMavLinkClient
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
         this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         this.options.Validate();
-        //this.memoryPool = memoryPool ?? MemoryPool<byte>.Shared;
         memoryPool = MemoryPool<byte>.Shared;
         receivedBytes = CreateReceiveChannel();
     }
@@ -240,13 +239,7 @@ public sealed class MavLinkClient : IMavLinkClient
 
     private Channel<PooledMavLinkDataReceived> CreateReceiveChannel()
     {
-        return Channel.CreateBounded<PooledMavLinkDataReceived>(new BoundedChannelOptions(options.ReceiveChannelCapacity)
-        {
-            SingleWriter = true,
-            SingleReader = true,
-            FullMode = BoundedChannelFullMode.Wait,
-            AllowSynchronousContinuations = false
-        });
+        return Channel.CreateBounded<PooledMavLinkDataReceived>(new BoundedChannelOptions(options.ReceiveChannelCapacity) { SingleWriter = true, SingleReader = true, FullMode = BoundedChannelFullMode.Wait, AllowSynchronousContinuations = false });
     }
 
     private void ThrowIfDisposed()

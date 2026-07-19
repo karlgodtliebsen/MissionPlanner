@@ -6,6 +6,7 @@ public sealed class MavFtpOptions
     public int MaximumRequestAttempts { get; init; } = 3;
     public int ReadChunkSize { get; init; } = 200;
     public bool PreferBurstRead { get; init; } = true;
+    public int BurstWindowSize { get; init; } = 3824;
 
     public void Validate()
     {
@@ -22,6 +23,11 @@ public sealed class MavFtpOptions
         if (ReadChunkSize is < 1 or > 239)
         {
             throw new ArgumentOutOfRangeException(nameof(ReadChunkSize));
+        }
+
+        if (BurstWindowSize < ReadChunkSize || BurstWindowSize > 1024 * 1024)
+        {
+            throw new ArgumentOutOfRangeException(nameof(BurstWindowSize));
         }
     }
 }

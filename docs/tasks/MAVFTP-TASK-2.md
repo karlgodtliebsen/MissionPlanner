@@ -1,0 +1,1658 @@
+\# Codex Task: Complete MAVFTP Burst Transfers and Add the First MAVFTP UI
+
+
+
+\## Objective
+
+
+
+Complete the unfinished general MAVFTP download implementation and make it usable through the existing `MAVFtpTabView`.
+
+
+
+This task has two coordinated parts:
+
+
+
+1\. Complete robust multi-packet MAVFTP burst downloading.
+
+2\. Add an application-level remote filesystem browser for the connected vehicle.
+
+
+
+Do not implement packed-parameter decoding in this task.
+
+
+
+The existing `VehicleParameterStreamService` must remain unchanged and continue using the standard MAVLink parameter protocol.
+
+
+
+\---
+
+
+
+\# Read Before Changing Code
+
+
+
+Read:
+
+
+
+1\. `docs/AGENTS.md`
+
+2\. `docs/AI.md`
+
+3\. `docs/CODEX.md`
+
+4\. `docs/DESIGN\_CONCEPTS.md`
+
+5\. `docs/ARCHITECTURE\_DECISION\_RECORDS.md`
+
+6\. `docs/VEHICLE\_CONNECTION.md`
+
+7\. `docs/MAVFTP.md`
+
+8\. `docs/FEATURES.md`
+
+9\. `src/.editorconfig`
+
+
+
+Inspect the current implementation, especially:
+
+
+
+```text
+
+src/Core/MissionPlanner.MavLink/MavFtp/
+
+src/Core/MissionPlanner.MavLink/Services/
+
+src/Core/MissionPlanner.Core/Vehicles/
+
+src/UI/MissionPlanner.App/Views/ConfigTuning/Tabs/MAVFtpTabView.xaml
+
+src/UI/MissionPlanner.App/Views/ConfigTuning/Tabs/MAVFtpTabView.xaml.cs
+
+```
+
+
+
+Follow the repository’s existing dependency-injection, EventHub, ViewModel, command, logging, and cancellation conventions.
+
+
+
+\---
+
+
+
+\# Current State
+
+
+
+The current MAVFTP implementation already supports:
+
+
+
+\* `FILE\_TRANSFER\_PROTOCOL` decoding and encoding
+
+\* MAVFTP packet encoding and decoding
+
+\* Session reset
+
+\* File open and file information
+
+\* Directory listing
+
+\* Buffered download
+
+\* Streaming download
+
+\* Bounded timeout retries
+
+\* Cancellation
+
+\* Progress reporting
+
+\* Session termination
+
+\* Per-target operation serialization
+
+\* Typed NAK errors
+
+
+
+The current burst implementation is incomplete.
+
+
+
+`MavFtpClient.RequestAsync` waits for one matching response and disposes its EventHub subscription afterward.
+
+
+
+A real `BurstReadFile` operation may produce multiple packets from one request.
+
+
+
+The current implementation therefore accepts only the first burst packet and downloads the remaining file with ordinary `ReadFile` requests.
+
+
+
+\---
+
+
+
+\# Authoritative References
+
+
+
+Use as primary references:
+
+
+
+\* Official MAVLink MAVFTP service specification
+
+\* MAVLink `FILE\_TRANSFER\_PROTOCOL` message definition
+
+\* Current ArduPilot MAVFTP documentation
+
+\* Current ArduPilot `GCS\_FTP` implementation for interoperability details
+
+
+
+Do not rely solely on old Mission Planner, QGroundControl, MAVSDK, or forum implementations.
+
+
+
+Document any ArduPilot-specific compatibility behavior.
+
+
+
+\---
+
+
+
+\# Part 1 — Response Dispatcher
+
+
+
+\## Problem
+
+
+
+Temporary per-request EventHub subscriptions are insufficient for multi-packet burst operations and create unnecessary subscription churn.
+
+
+
+\## Required Design
+
+
+
+Introduce a singleton MAVFTP response dispatcher in `MissionPlanner.MavLink`.
+
+
+
+Equivalent responsibilities:
+
+
+
+```text
+
+Incoming FILE\_TRANSFER\_PROTOCOL
+
+&#x20;       ↓
+
+Decode MAVFTP packet once
+
+&#x20;       ↓
+
+Validate source endpoint/system/component
+
+&#x20;       ↓
+
+Route packet to matching active operation
+
+```
+
+
+
+A possible interface is:
+
+
+
+```csharp
+
+public interface IMavFtpResponseDispatcher
+
+{
+
+&#x20;   MavFtpResponseRegistration Register(
+
+&#x20;       MavFtpTarget target,
+
+&#x20;       ushort requestSequence,
+
+&#x20;       MavFtpOpcode requestedOpcode,
+
+&#x20;       byte? session = null);
+
+}
+
+```
+
+
+
+The concrete API may differ if another shape fits the existing architecture better.
+
+
+
+The dispatcher must support:
+
+
+
+\* One-response request operations
+
+\* Multi-response burst operations
+
+\* Timeout
+
+\* Cancellation
+
+\* Duplicate packets
+
+\* Late packets
+
+\* Wrong endpoint
+
+\* Wrong system
+
+\* Wrong component
+
+\* Wrong sequence
+
+\* Wrong requested opcode
+
+\* Malformed packets
+
+\* Disposal and cleanup of registrations
+
+
+
+Do not expose EventHub or raw `FileTransferProtocolMessage` objects outside the MAVLink layer.
+
+
+
+Do not retain completed registrations.
+
+
+
+Do not create unbounded channels or dictionaries.
+
+
+
+\---
+
+
+
+\# Sequence Correlation
+
+
+
+Review the current use of:
+
+
+
+```csharp
+
+packet.Sequence == unchecked((ushort)(sequence + 1))
+
+```
+
+
+
+Verify this against the official protocol and ArduPilot implementation.
+
+
+
+Encapsulate response-sequence matching in one place.
+
+
+
+Add tests for:
+
+
+
+\* Normal request/response sequence
+
+\* Sequence wraparound from `ushort.MaxValue`
+
+\* Duplicate response
+
+\* Delayed response from a previous operation
+
+\* Wrong sequence
+
+\* Retry using the correct sequence semantics
+
+
+
+Do not duplicate sequence arithmetic in several classes.
+
+
+
+\---
+
+
+
+\# Part 2 — Full Multi-Packet Burst Read
+
+
+
+Implement a real burst-transfer coordinator.
+
+
+
+A burst operation must continue receiving packets generated by one `BurstReadFile` request until one of these occurs:
+
+
+
+\* The burst-complete flag is received
+
+\* End of file is reached
+
+\* The expected file range is complete
+
+\* A timeout occurs
+
+\* Cancellation is requested
+
+\* A non-recoverable NAK is received
+
+
+
+A suitable internal abstraction may be:
+
+
+
+```csharp
+
+internal interface IMavFtpBurstReader
+
+{
+
+&#x20;   Task<MavFtpBurstResult> ReadAsync(
+
+&#x20;       MavFtpTarget target,
+
+&#x20;       byte session,
+
+&#x20;       uint offset,
+
+&#x20;       int expectedLength,
+
+&#x20;       CancellationToken cancellationToken);
+
+}
+
+```
+
+
+
+Adapt naming to project conventions.
+
+
+
+\## Burst Requirements
+
+
+
+Support:
+
+
+
+\* Multiple packets from a single request
+
+\* Contiguous packets
+
+\* Out-of-order packets
+
+\* Duplicate packets
+
+\* Missing packets
+
+\* Short final packet
+
+\* Burst-complete flag
+
+\* End-of-file response
+
+\* Timeout before burst completion
+
+\* Sequence wraparound
+
+\* Cancellation
+
+\* Packet offsets larger than the requested range
+
+\* Overlapping blocks
+
+\* Invalid block lengths
+
+\* Empty data packets
+
+
+
+Do not assume burst packets arrive in order.
+
+
+
+Do not write duplicate ranges twice.
+
+
+
+Do not treat the first packet as completion unless it actually completes the requested range or carries a valid completion indication.
+
+
+
+\---
+
+
+
+\# Gap Detection and Recovery
+
+
+
+Collect received block ranges by offset.
+
+
+
+After burst completion or timeout, determine missing ranges.
+
+
+
+Example:
+
+
+
+```text
+
+Expected: 0–959
+
+Received:
+
+&#x20;   0–238
+
+&#x20;   478–716
+
+&#x20;   717–955
+
+
+
+Missing:
+
+&#x20;   239–477
+
+&#x20;   956–959
+
+```
+
+
+
+Recover missing ranges with regular `ReadFile` requests.
+
+
+
+Requirements:
+
+
+
+\* Keep recovery ranges minimal
+
+\* Merge adjacent missing ranges
+
+\* Do not request bytes already received
+
+\* Bound recovery attempts
+
+\* Fail with useful diagnostics when recovery is exhausted
+
+\* Preserve cancellation
+
+\* Report recovered bytes through normal progress reporting
+
+
+
+Do not require the entire remote file to be stored in one large byte array.
+
+
+
+A bounded per-burst buffer is acceptable.
+
+
+
+\---
+
+
+
+\# Streaming Output
+
+
+
+Continue supporting caller-provided destination streams.
+
+
+
+Requirements:
+
+
+
+\* Leave caller-owned streams open
+
+\* Do not require the complete file in memory
+
+\* Support large files
+
+\* Preserve correct byte ordering
+
+\* Handle non-seekable destination streams
+
+
+
+For a non-seekable stream, reorder data within the bounded burst window before writing it sequentially.
+
+
+
+For a seekable stream, direct offset writes may be used only if they do not break progress accounting or concurrent safety.
+
+
+
+Document the selected strategy.
+
+
+
+\---
+
+
+
+\# Burst Fallback Policy
+
+
+
+Retain ordinary `ReadFile` as a fallback.
+
+
+
+Fall back when:
+
+
+
+\* Burst operation returns `UnknownCommand`
+
+\* The target does not support FTP burst behavior
+
+\* Burst operation repeatedly fails in a recoverable way
+
+\* A configured compatibility policy disables burst mode
+
+
+
+Do not silently fall back on malformed protocol data that should be surfaced as an error.
+
+
+
+Log the fallback once per operation at `Information` or `Debug`, not once per block.
+
+
+
+\---
+
+
+
+\# Part 3 — Deterministic Fake MAVFTP Server
+
+
+
+Implement a fake MAVFTP server for tests.
+
+
+
+Place it in the test project or existing test-support infrastructure.
+
+
+
+It must support configurable behavior for:
+
+
+
+\* Reset sessions
+
+\* Open file read-only
+
+\* Normal reads
+
+\* Burst reads
+
+\* Directory listing
+
+\* Terminate session
+
+\* File not found
+
+\* Unknown command
+
+\* Invalid session
+
+\* Packet loss
+
+\* Packet duplication
+
+\* Packet reordering
+
+\* Delayed packet delivery
+
+\* Burst completion
+
+\* Premature burst completion
+
+\* End-of-file
+
+
+
+Use in-memory files.
+
+
+
+Do not add test-only switches to production code.
+
+
+
+\---
+
+
+
+\# Part 4 — SITL Integration Tests
+
+
+
+Add opt-in ArduPilot SITL tests.
+
+
+
+Normal test execution must not require SITL.
+
+
+
+Use an explicit test category, trait, environment variable, or equivalent mechanism.
+
+
+
+Test at least:
+
+
+
+1\. Reset sessions
+
+2\. List root directory
+
+3\. Download a known file
+
+4\. Download a multi-packet file
+
+5\. Compare downloaded bytes with expected bytes
+
+6\. Cancellation during a transfer
+
+7\. Repeated transfer after session cleanup
+
+
+
+Document how to run the SITL tests.
+
+
+
+Do not mark SITL tests as ordinary unit tests.
+
+
+
+\---
+
+
+
+\# Part 5 — Application-Level MAVFTP Service
+
+
+
+The UI must not construct `MavFtpTarget`.
+
+
+
+Create an application-facing service in Core or the appropriate application layer.
+
+
+
+A suitable API is:
+
+
+
+```csharp
+
+public interface IVehicleFileSystemService
+
+{
+
+&#x20;   Task<IReadOnlyList<VehicleFileSystemEntry>> ListDirectoryAsync(
+
+&#x20;       VehicleId vehicleId,
+
+&#x20;       string remotePath,
+
+&#x20;       CancellationToken cancellationToken = default);
+
+
+
+&#x20;   Task DownloadFileAsync(
+
+&#x20;       VehicleId vehicleId,
+
+&#x20;       string remotePath,
+
+&#x20;       Stream destination,
+
+&#x20;       IProgress<VehicleFileTransferProgress>? progress = null,
+
+&#x20;       CancellationToken cancellationToken = default);
+
+
+
+&#x20;   Task<VehicleFileInfo> GetFileInfoAsync(
+
+&#x20;       VehicleId vehicleId,
+
+&#x20;       string remotePath,
+
+&#x20;       CancellationToken cancellationToken = default);
+
+}
+
+```
+
+
+
+Use project naming conventions if another name fits better.
+
+
+
+The service must:
+
+
+
+1\. Resolve the `VehicleSession` through `IVehicleRegistry`.
+
+2\. Obtain the correct `TransportEndPoint`.
+
+3\. Construct the internal `MavFtpTarget`.
+
+4\. Delegate to `IMavFtpClient`.
+
+5\. Map MAVFTP models into application-facing models.
+
+6\. Return a clear error when the vehicle is not connected.
+
+
+
+Do not expose these types to the UI:
+
+
+
+```text
+
+MavFtpTarget
+
+MavFtpPacket
+
+MavFtpOpcode
+
+FileTransferProtocolMessage
+
+TransportEndPoint
+
+```
+
+
+
+The application-facing models must not depend on `MissionPlanner.MavLink`.
+
+
+
+\---
+
+
+
+\# Vehicle Selection
+
+
+
+Inspect how the rest of the application identifies the active vehicle.
+
+
+
+Reuse the existing active/current vehicle mechanism if present.
+
+
+
+Do not create a second independent selected-vehicle state.
+
+
+
+The ViewModel should operate on `VehicleId`.
+
+
+
+When there is:
+
+
+
+\* No connected vehicle: show a clear empty state
+
+\* One connected vehicle: select it automatically
+
+\* Multiple connected vehicles: use the established vehicle selection mechanism
+
+
+
+Do not assume system ID `1` or component ID `1`.
+
+
+
+\---
+
+
+
+\# Part 6 — MAVFTP ViewModel
+
+
+
+Create:
+
+
+
+```text
+
+MAVFtpTabViewModel
+
+```
+
+
+
+or use repository naming conventions.
+
+
+
+Use constructor injection.
+
+
+
+The code-behind may resolve the ViewModel through the existing MAUI `ServiceHelper` exception documented in `docs/CODEX.md`.
+
+
+
+The ViewModel should expose equivalent state:
+
+
+
+```csharp
+
+ObservableCollection<VehicleFileSystemEntryViewModel> Entries
+
+
+
+string CurrentPath
+
+string? SelectedEntryName
+
+bool IsBusy
+
+bool CanNavigateUp
+
+double TransferProgress
+
+string StatusText
+
+string? ErrorText
+
+```
+
+
+
+Commands:
+
+
+
+```text
+
+Refresh
+
+Open selected item
+
+Navigate up
+
+Download selected file
+
+Cancel current operation
+
+```
+
+
+
+Optional commands only if the underlying client already supports them:
+
+
+
+```text
+
+Reset sessions
+
+```
+
+
+
+Do not add upload, rename, delete, create-directory, or remove-directory buttons until the corresponding client operations exist.
+
+
+
+\---
+
+
+
+\# Navigation Behavior
+
+
+
+Use remote Unix-style path semantics.
+
+
+
+Expected behavior:
+
+
+
+```text
+
+/
+
+└── APM
+
+&#x20;   └── scripts
+
+&#x20;       └── example.lua
+
+```
+
+
+
+Requirements:
+
+
+
+\* Directories open on double-click or command
+
+\* Files are selected but not opened as directories
+
+\* Navigate-up works correctly at all levels
+
+\* Refresh retains the current directory
+
+\* Current path is always visible
+
+\* Root navigation cannot go above root
+
+\* Do not use `System.IO.Path` if it introduces Windows separators
+
+\* Directory entries appear before files
+
+\* Sort names case-insensitively for display without altering original names
+
+
+
+Keep remote-path joining and normalization in one tested helper.
+
+
+
+\---
+
+
+
+\# Download UI
+
+
+
+Use MAUI file/folder APIs consistently with existing file handling in the project.
+
+
+
+The user must be able to:
+
+
+
+1\. Select a remote file.
+
+2\. Choose a local destination.
+
+3\. Start the download.
+
+4\. See transferred bytes and percentage when total size is known.
+
+5\. Cancel the transfer.
+
+6\. Receive a completion or error message.
+
+
+
+Do not buffer the complete remote file in the ViewModel.
+
+
+
+Use the stream-based service API.
+
+
+
+Ensure the local stream is disposed by the UI/application layer after transfer completion.
+
+
+
+Do not overwrite an existing local file silently.
+
+
+
+Use existing toast/dialog abstractions rather than platform-specific calls directly in the ViewModel.
+
+
+
+\---
+
+
+
+\# UI Layout
+
+
+
+Replace the placeholder content in:
+
+
+
+```text
+
+Views/ConfigTuning/Tabs/MAVFtpTabView.xaml
+
+```
+
+
+
+Create a practical first version containing:
+
+
+
+\## Header
+
+
+
+\* Connected vehicle status
+
+\* Current remote path
+
+\* Navigate-up button
+
+\* Refresh button
+
+\* Reset sessions button, optional
+
+
+
+\## File list
+
+
+
+Columns or responsive rows showing:
+
+
+
+\* Name
+
+\* Type
+
+\* Size
+
+
+
+Directory and file icons should be visually distinguishable.
+
+
+
+\## Transfer area
+
+
+
+\* Selected file
+
+\* Progress bar
+
+\* Bytes transferred
+
+\* Transfer speed, if available
+
+\* Status text
+
+\* Download button
+
+\* Cancel button
+
+
+
+\## Empty/error states
+
+
+
+\* No vehicle connected
+
+\* Directory empty
+
+\* MAVFTP unsupported
+
+\* File not found
+
+\* Permission denied
+
+\* Timeout
+
+\* Cancelled
+
+
+
+Use current project controls, styling resources, UraniumUI patterns, and responsive layout conventions.
+
+
+
+Do not introduce a new UI framework.
+
+
+
+\---
+
+
+
+\# Capability Detection
+
+
+
+Check whether the connected vehicle advertises:
+
+
+
+```text
+
+MAV\_PROTOCOL\_CAPABILITY\_FTP
+
+```
+
+
+
+Use existing AUTOPILOT\_VERSION/capability state if already decoded and stored.
+
+
+
+If capabilities are not currently available, do not expand the task into a large vehicle-capability subsystem.
+
+
+
+Instead:
+
+
+
+\* Attempt a safe MAVFTP operation
+
+\* Map `UnknownCommand` or timeout into a user-readable unsupported/unavailable state
+
+\* Document capability-based detection as a follow-up
+
+
+
+Do not permanently disable MAVFTP solely because one operation timed out.
+
+
+
+\---
+
+
+
+\# Error Mapping for UI
+
+
+
+Map expected protocol errors into user-facing categories:
+
+
+
+```text
+
+Not connected
+
+MAVFTP unsupported
+
+File not found
+
+Directory not found
+
+Permission denied
+
+Invalid session
+
+Transfer timed out
+
+Transfer cancelled
+
+Protocol error
+
+Local file error
+
+```
+
+
+
+Do not display raw exception stack traces.
+
+
+
+Preserve detailed exceptions in structured logs.
+
+
+
+\---
+
+
+
+\# Dependency Injection
+
+
+
+Register:
+
+
+
+```text
+
+IMavFtpResponseDispatcher
+
+IMavFtpBurstReader
+
+IVehicleFileSystemService
+
+MAVFtpTabViewModel
+
+```
+
+
+
+Use the existing configurator classes.
+
+
+
+Confirm the lifetime choices.
+
+
+
+Expected lifetimes:
+
+
+
+\* Dispatcher: singleton
+
+\* MAVFTP client: singleton or same lifetime as MAVLink connection
+
+\* Vehicle filesystem service: singleton or transient according to existing application services
+
+\* ViewModel: follow existing Config/Tuning ViewModel conventions
+
+
+
+Do not create multiple dispatcher instances subscribed to the same message stream.
+
+
+
+\---
+
+
+
+\# Tests
+
+
+
+\## Dispatcher tests
+
+
+
+Add tests for:
+
+
+
+\* Single ACK
+
+\* Multiple burst packets
+
+\* Wrong target
+
+\* Wrong component
+
+\* Wrong sequence
+
+\* Wrong requested opcode
+
+\* Duplicate response
+
+\* Late response
+
+\* Registration disposal
+
+\* Cancellation
+
+\* Timeout cleanup
+
+\* Malformed packet logging
+
+
+
+\## Burst tests
+
+
+
+Add tests for:
+
+
+
+\* Two-packet burst
+
+\* Large multi-packet burst
+
+\* Out-of-order packets
+
+\* Duplicate packets
+
+\* Missing middle packet
+
+\* Missing final packet
+
+\* Short final packet
+
+\* Burst-complete marker
+
+\* Premature completion
+
+\* Timeout recovery using `ReadFile`
+
+\* Unknown-command fallback
+
+\* Cancellation
+
+\* Session cleanup
+
+\* Sequence wraparound
+
+
+
+\## Application-service tests
+
+
+
+Add tests for:
+
+
+
+\* Vehicle session target resolution
+
+\* Vehicle not connected
+
+\* Correct endpoint mapping
+
+\* Directory-entry mapping
+
+\* Progress mapping
+
+\* Exception mapping
+
+
+
+\## ViewModel tests
+
+
+
+Add tests for:
+
+
+
+\* Initial no-vehicle state
+
+\* Automatic refresh
+
+\* Navigate into directory
+
+\* Navigate up
+
+\* Root behavior
+
+\* Sorting directories before files
+
+\* Download command enablement
+
+\* Progress updates
+
+\* Cancellation
+
+\* User-facing error state
+
+
+
+Do not require MAUI platform startup for ViewModel tests.
+
+
+
+\---
+
+
+
+\# Documentation
+
+
+
+Update:
+
+
+
+```text
+
+docs/MAVFTP.md
+
+docs/FEATURES.md
+
+docs/README.md
+
+```
+
+
+
+`MAVFTP.md` must describe:
+
+
+
+\* Multi-packet burst handling
+
+\* Response dispatcher
+
+\* Gap detection and recovery
+
+\* Fallback behavior
+
+\* Application-facing filesystem service
+
+\* UI usage
+
+\* SITL test instructions
+
+\* Remaining limitations
+
+
+
+Update `FEATURES.md` to distinguish:
+
+
+
+```text
+
+General MAVFTP protocol
+
+MAVFTP file browser UI
+
+MAVFTP upload/mutations
+
+Fast packed-parameter download
+
+```
+
+
+
+Do not mark packed parameters as complete.
+
+
+
+\---
+
+
+
+\# Scope Exclusions
+
+
+
+Do not implement:
+
+
+
+\* `@PARAM/param.pck` decoding
+
+\* Fast parameter registry loading
+
+\* Replacement of `VehicleParameterStreamService`
+
+\* Log analysis
+
+\* Mission loading through MAVFTP
+
+\* Lua editor
+
+\* Firmware upload
+
+\* Terrain interpretation
+
+\* Generic local file-manager functionality
+
+\* Upload or delete UI without matching protocol support
+
+\* Broad unrelated refactoring
+
+
+
+\---
+
+
+
+\# Definition of Done
+
+
+
+This task is complete when:
+
+
+
+1\. Multi-packet burst responses are collected from one `BurstReadFile` request.
+
+2\. Missing, duplicate, and out-of-order blocks are handled deterministically.
+
+3\. Missing ranges can be recovered through ordinary reads.
+
+4\. Downloads remain streaming and do not allocate the complete file.
+
+5\. Response registrations cannot steal traffic from another target or operation.
+
+6\. The deterministic fake server covers normal and faulty burst behavior.
+
+7\. Optional SITL tests verify listing and downloading against ArduPilot.
+
+8\. `IVehicleFileSystemService` hides MAVFTP target and transport details from the UI.
+
+9\. `MAVFtpTabView` displays the connected vehicle’s remote filesystem.
+
+10\. The user can navigate directories and download a selected file.
+
+11\. Progress and cancellation work.
+
+12\. No vehicle, unsupported FTP, timeout, cancellation, and remote errors have clear UI states.
+
+13\. Existing standard parameter downloading remains unchanged.
+
+14\. Existing tests continue to pass except already documented environment-dependent tests.
+
+15\. Documentation accurately reflects the completed and remaining work.
+
+
+
+\---
+
+
+
+\# Required Final Report
+
+
+
+At completion, report:
+
+
+
+\* Files changed
+
+\* Response-dispatcher design
+
+\* Burst collection and recovery algorithm
+
+\* Sequence and session decisions
+
+\* UI architecture
+
+\* Operations available in the UI
+
+\* Tests added
+
+\* SITL verification results
+
+\* Build/test results
+
+\* Existing unrelated failures
+
+\* Remaining limitations
+
+\* Recommended next task
+
+
+
+The recommended next task after successful completion should be one of:
+
+
+
+1\. Implement MAVFTP upload and filesystem mutations.
+
+2\. Implement ArduPilot packed-parameter download as a consumer of `IVehicleFileSystemService` or `IMavFtpClient`.
+
+
+
+Do not start either follow-up within this task.
+
+
+

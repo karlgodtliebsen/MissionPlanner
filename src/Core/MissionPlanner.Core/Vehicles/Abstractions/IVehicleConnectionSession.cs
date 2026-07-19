@@ -12,6 +12,12 @@ namespace MissionPlanner.Core.Vehicles.Abstractions;
 public interface IVehicleConnectionSession
 {
     /// <summary>
+    /// Creates a MAVFTP connection for the vehicle.
+    /// </summary>
+    /// <returns>The vehicle file system service.</returns>
+    IVehicleFileSystemService CreateMavFtpConnection();
+
+    /// <summary>
     /// Gets the established MAVLink connection. Throws an exception if no connection is established.
     /// </summary>
     IMavLinkConnection Connection { get; }

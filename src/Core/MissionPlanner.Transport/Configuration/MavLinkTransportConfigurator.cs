@@ -21,6 +21,10 @@ public static class MavLinkTransportConfigurator
     {
         services.TryAddTransient<IMavLinkTransport, UdpMavLinkTransport>();
 
+        services.TryAddTransient<ISerialMavLinkTransport, SerialMavLinkTransport>();
+        services.TryAddTransient<IUdpMavLinkTransport, UdpMavLinkTransport>();
+        services.TryAddTransient<ITcpMavLinkTransport, TcpMavLinkTransport>();
+
         //TODO: must be based on configuration data
         services.AddSingleton(Options.Create(new TransportEndpoint()));
 

@@ -48,9 +48,6 @@ public static class DomainConfigurator
         services.TryAddTransient<ICommandAckTracker, CommandAckTracker>();
         services.TryAddTransient<IVehicleCommandPolicy, VehicleCommandPolicy>();
 
-        services.TryAddTransient<ISerialMavLinkTransport, SerialMavLinkTransport>();
-        services.TryAddTransient<IUdpMavLinkTransport, UdpMavLinkTransport>();
-        services.TryAddTransient<ITcpMavLinkTransport, TcpMavLinkTransport>();
         services.TryAddSingleton<IVehicleConnectionSession, VehicleConnectionSession>();
 
         services.TryAddSingleton<IVehicleRegistry, VehicleRegistry>();
@@ -60,6 +57,7 @@ public static class DomainConfigurator
 
         services.TryAddSingleton<IVehicleConnectionService, VehicleConnectionService>();
         services.TryAddSingleton<IVehicleHudDataService, VehicleHudDataService>();
+        services.TryAddSingleton<IVehicleFileSystemService, VehicleFileSystemService>();
 
         services.TryAddTransient<IStatusTextHandler, StatusTextHandler>();
         services.TryAddTransient<IParamValueVehicleHandler, ParamValueVehicleHandler>();
@@ -71,7 +69,6 @@ public static class DomainConfigurator
         services.TryAddEnumerable(ServiceDescriptor.Transient<IVehicleMessageHandler, RadioTelemetryHandler>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IVehicleMessageHandler, HealthTelemetryHandler>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IVehicleMessageHandler, ControlMessageHandler>());
-
 
         services.TryAddTransient<IVehicleCommandService, VehicleCommandService>();
         services.TryAddTransient<IVehicleService, VehicleService>();
@@ -95,14 +92,13 @@ public static class DomainConfigurator
     public static IServiceProvider UseDomainServices(this IServiceProvider services)
     {
         var domainFactory = services.GetRequiredService<IDomainFactory>();
-
+        domainFactory.Add<IVehicleFileSystemService, VehicleFileSystemService>();
 
         domainFactory.Add<IHeartbeatVehicleHandler, HeartbeatVehicleHandler>();
         domainFactory.Add<IAttitudeVehicleHandler, AttitudeVehicleHandler>();
         domainFactory.Add<IBatteryVehicleHandler, BatteryVehicleHandler>();
         domainFactory.Add<IPositionVehicleHandler, PositionVehicleHandler>();
         domainFactory.Add<IParamValueVehicleHandler, ParamValueVehicleHandler>();
-
 
         domainFactory.Add<IVehicleMessagePump, VehicleMessagePump>();
         domainFactory.Add<ISerialMavLinkTransport, SerialMavLinkTransport>();

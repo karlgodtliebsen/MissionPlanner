@@ -17,7 +17,7 @@ public sealed class DomainFactory(IServiceProvider serviceProvider) : IDomainFac
     /// </summary>
     /// <typeparam name="TService"></typeparam>
     /// <typeparam name="TImplementation"></typeparam>
-    public void Add<TService, TImplementation>() where TService : notnull where TImplementation : notnull, TService
+    public void Add<TService, TImplementation>() where TService : notnull where TImplementation : class, TService
     {
         if (!typeMap.ContainsKey(typeof(TService)))
         {

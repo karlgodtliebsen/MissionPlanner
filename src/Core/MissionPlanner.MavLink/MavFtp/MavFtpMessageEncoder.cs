@@ -1,13 +1,26 @@
-using MissionPlanner.MavLink.Encoding;
+using MissionPlanner.MavLink.MavFtp.Abstractions;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services.Abstractions;
 
 namespace MissionPlanner.MavLink.MavFtp;
 
+/// <summary>
+/// Encodes MAVFTP messages.
+/// </summary>
+/// <param name="crcExtraProvider">The CRC extra provider.</param>
 public sealed class MavFtpMessageEncoder(IMavLinkCrcExtraProvider crcExtraProvider) : IMavFtpMessageEncoder
 {
     private int sequence;
 
+    /// <summary>
+    /// Encodes a MAVFTP message.
+    /// </summary>
+    /// <param name="targetSystem">The target system ID.</param>
+    /// <param name="targetComponent">The target component ID.</param>
+    /// <param name="ftpPayload">The FTP payload.</param>
+    /// <returns>The encoded MAVFTP message.</returns>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    /// <exception cref="InvalidOperationException"></exception>
     public byte[] Encode(byte targetSystem, byte targetComponent, ReadOnlySpan<byte> ftpPayload)
     {
         if (ftpPayload.Length > 251)

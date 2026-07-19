@@ -7,6 +7,7 @@ using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Client;
+using MissionPlanner.MavLink.MavFtp.Abstractions;
 using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Transport;
 using MissionPlanner.Transport.Abstractions;
@@ -75,6 +76,15 @@ public sealed class VehicleConnectionSession(
     /// Gets the established MAVLink transport. Throws an exception if no transport is established.
     /// </summary>
     public IMavLinkTransport Transport => transport ?? throw new InvalidOperationException("No transport established");
+
+
+    /// <inheritdoc />
+    public IVehicleFileSystemService CreateMavFtpConnection()
+    {
+        var mavClient = domainFactory.Create<IMavFtpClient, IMavLinkConnection>(Connection);
+        var service = domainFactory.Create<IVehicleFileSystemService, IMavFtpClient>(mavClient);
+        return service;
+    }
 
     /// <summary>
     /// Creates a serial connection to a vehicle using the specified port name and baud rate. Optionally, a configuration action can be provided to customize the transport endpoint settings. The connection process is cancellable via the provided cancellation token.

@@ -8,6 +8,7 @@ using MissionPlanner.MavLink.Decoding;
 using MissionPlanner.MavLink.Decoding.Utils;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.MavFtp;
+using MissionPlanner.MavLink.MavFtp.Abstractions;
 using MissionPlanner.MavLink.Parameters.Metadata;
 using MissionPlanner.MavLink.Parameters.Metadata.Abstractions;
 using MissionPlanner.MavLink.Services;
@@ -38,6 +39,7 @@ public static class MavLinkConfigurator
         services.TryAddTransient<IMavLinkMissionEncoder, MavLinkMissionEncoder>();
         services.TryAddSingleton<IMavFtpPacketCodec, MavFtpPacketCodec>();
         services.TryAddSingleton<IMavFtpMessageEncoder, MavFtpMessageEncoder>();
+        services.TryAddSingleton<IMavFtpResponseDispatcher, MavFtpResponseDispatcher>();
         services.TryAddSingleton<IMavFtpClient, MavFtpClient>();
         services.AddSingleton(Options.Create(new MavFtpOptions()));
 
@@ -104,8 +106,7 @@ public static class MavLinkConfigurator
     public static IServiceProvider UseMavLinkServices(this IServiceProvider services)
     {
         var domainFactory = services.GetRequiredService<IDomainFactory>();
-        //domainFactory.Add<IMavLinkMessageDecoder, MavLinkMessageDecoderHandler>();
-        //domainFactory.Add<IMavLinkClient, MavLinkClient>();
+        domainFactory.Add<IMavFtpClient, MavFtpClient>();
         return services;
     }
 }

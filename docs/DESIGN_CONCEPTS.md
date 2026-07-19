@@ -1,10 +1,10 @@
 
 
-\# MissionPlanner Design Concepts
+# MissionPlanner Design Concepts
 
 
 
-\## Introduction
+## Introduction
 
 
 
@@ -12,7 +12,7 @@ MissionPlanner is a modern, cross-platform Ground Control Station (GCS) for Ardu
 
 
 
-Although inspired by the original Windows Mission Planner, this project is \*\*not\*\* a port. It is a complete redesign using modern architectural principles, Domain Driven Design (DDD), dependency injection, immutable state, asynchronous messaging, and transport-independent communication.
+Although inspired by the original Windows Mission Planner, this project is **not** a port. It is a complete redesign using modern architectural principles, Domain Driven Design (DDD), dependency injection, immutable state, asynchronous messaging, and transport-independent communication.
 
 
 
@@ -20,23 +20,23 @@ The primary goals are:
 
 
 
-\* Cross-platform operation
+* Cross-platform operation
 
-\* Clean architecture
+* Clean architecture
 
-\* Testability
+* Testability
 
-\* Extensibility
+* Extensibility
 
-\* Long-term maintainability
-
-
-
-\---
+* Long-term maintainability
 
 
 
-\# Core Philosophy
+---
+
+
+
+# Core Philosophy
 
 
 
@@ -44,7 +44,7 @@ Everything in the project follows one simple principle:
 
 
 
-> \*\*Separate transport, protocol, domain and presentation.\*\*
+> **Separate transport, protocol, domain and presentation.**
 
 
 
@@ -80,11 +80,11 @@ Each layer knows only about the layer immediately beneath it.
 
 
 
-\---
+---
 
 
 
-\# Domain Driven Design
+# Domain Driven Design
 
 
 
@@ -96,15 +96,15 @@ It contains concepts such as
 
 
 
-\* Vehicle
+* Vehicle
 
-\* Mission
+* Mission
 
-\* Parameters
+* Parameters
 
-\* Telemetry
+* Telemetry
 
-\* Geofence
+* Geofence
 
 
 
@@ -128,11 +128,11 @@ rather than
 
 
 
-\---
+---
 
 
 
-\# Anti-Corruption Layer
+# Anti-Corruption Layer
 
 
 
@@ -172,11 +172,11 @@ The rest of the application should never depend directly on MAVLink packet forma
 
 
 
-\---
+---
 
 
 
-\# Transport Independence
+# Transport Independence
 
 
 
@@ -192,17 +192,17 @@ Supported transports may include
 
 
 
-\* USB Serial
+* USB Serial
 
-\* UDP
+* UDP
 
-\* TCP
+* TCP
 
-\* DroneBridge
+* DroneBridge
 
-\* ELRS
+* ELRS
 
-\* Bluetooth
+* Bluetooth
 
 
 
@@ -210,11 +210,11 @@ The MAVLink library never knows which transport is being used.
 
 
 
-\---
+---
 
 
 
-\# Pipeline Architecture
+# Pipeline Architecture
 
 
 
@@ -306,11 +306,11 @@ Every stage has a single responsibility.
 
 
 
-\---
+---
 
 
 
-\# Channels
+# Channels
 
 
 
@@ -322,23 +322,23 @@ They provide
 
 
 
-\* buffering
+* buffering
 
-\* back-pressure
+* back-pressure
 
-\* isolation between workers
-
-
-
-They are \*\*not\*\* used as the application's event system.
+* isolation between workers
 
 
 
-\---
+They are **not** used as the application's event system.
 
 
 
-\# Event System
+---
+
+
+
+# Event System
 
 
 
@@ -354,13 +354,13 @@ Examples
 
 
 
-\* VehicleConnected
+* VehicleConnected
 
-\* VehicleDisconnected
+* VehicleDisconnected
 
-\* VehicleStateUpdated
+* VehicleStateUpdated
 
-\* MissionUploaded
+* MissionUploaded
 
 
 
@@ -368,11 +368,11 @@ The EventHub is intentionally independent of MAVLink.
 
 
 
-\---
+---
 
 
 
-\# Immutable Domain State
+# Immutable Domain State
 
 
 
@@ -414,27 +414,27 @@ Advantages
 
 
 
-\* thread safety
+* thread safety
 
 
 
-\* easier testing
+* easier testing
 
 
 
-\* deterministic state changes
+* deterministic state changes
 
 
 
-\* simpler debugging
+* simpler debugging
 
 
 
-\---
+---
 
 
 
-\# Vehicle State
+# Vehicle State
 
 
 
@@ -490,11 +490,11 @@ This avoids creating one property for every MAVLink field.
 
 
 
-\---
+---
 
 
 
-\# Observations
+# Observations
 
 
 
@@ -546,11 +546,11 @@ This keeps MAVLink details outside the domain.
 
 
 
-\---
+---
 
 
 
-\# VehicleSession
+# VehicleSession
 
 
 
@@ -562,17 +562,17 @@ It contains all domain logic for updating
 
 
 
-\* flight mode
+* flight mode
 
-\* position
+* position
 
-\* attitude
+* attitude
 
-\* battery
+* battery
 
-\* GPS
+* GPS
 
-\* navigation
+* navigation
 
 
 
@@ -580,11 +580,11 @@ No UI code modifies VehicleState directly.
 
 
 
-\---
+---
 
 
 
-\# Capability-Oriented Handlers
+# Capability-Oriented Handlers
 
 
 
@@ -596,11 +596,11 @@ Examples
 
 
 
-\* FlightTelemetryHandler
+* FlightTelemetryHandler
 
-\* NavigationTelemetryHandler
+* NavigationTelemetryHandler
 
-\* PowerTelemetryHandler
+* PowerTelemetryHandler
 
 
 
@@ -632,11 +632,11 @@ Multiple MAVLink messages often contribute to one capability.
 
 
 
-\---
+---
 
 
 
-\# Decoder Architecture
+# Decoder Architecture
 
 
 
@@ -644,9 +644,9 @@ Every MAVLink message has
 
 
 
-\* Message record
+* Message record
 
-\* Decoder
+* Decoder
 
 
 
@@ -654,11 +654,11 @@ The decoder is responsible for
 
 
 
-\* MessageId
+* MessageId
 
-\* CRC extra
+* CRC extra
 
-\* Payload decoding
+* Payload decoding
 
 
 
@@ -666,11 +666,11 @@ A registry builds lookup tables automatically.
 
 
 
-\---
+---
 
 
 
-\# Mission Planning
+# Mission Planning
 
 
 
@@ -712,7 +712,7 @@ Protocol Mapper
 
 
 
-MISSION\_ITEM\_INT
+MISSION_ITEM_INT
 
 ```
 
@@ -746,11 +746,11 @@ rather than generic Param1–Param4 values.
 
 
 
-\---
+---
 
 
 
-\# UI Philosophy
+# UI Philosophy
 
 
 
@@ -778,11 +778,11 @@ and transform immutable domain state into display models.
 
 
 
-\---
+---
 
 
 
-\# Testing
+# Testing
 
 
 
@@ -794,19 +794,19 @@ Tests exist for
 
 
 
-\* protocol parsing
+* protocol parsing
 
-\* decoders
+* decoders
 
-\* command encoding
+* command encoding
 
-\* transports
+* transports
 
-\* vehicle registration
+* vehicle registration
 
-\* serial communication
+* serial communication
 
-\* parameter download
+* parameter download
 
 
 
@@ -814,11 +814,11 @@ Whenever practical, new functionality should include tests.
 
 
 
-\---
+---
 
 
 
-\# Dependency Injection
+# Dependency Injection
 
 
 
@@ -858,11 +858,11 @@ Avoid using `new` directly inside domain code.
 
 
 
-\---
+---
 
 
 
-\# Long-Term Vision
+# Long-Term Vision
 
 
 
@@ -874,19 +874,19 @@ The goal is to build a reusable Ground Control Station framework capable of supp
 
 
 
-\* multiple vehicles
+* multiple vehicles
 
-\* multiple transports
+* multiple transports
 
-\* future MAVLink dialects
+* future MAVLink dialects
 
-\* autonomous mission planning
+* autonomous mission planning
 
-\* AI-assisted planning
+* AI-assisted planning
 
-\* simulation
+* simulation
 
-\* plugins
+* plugins
 
 
 
@@ -894,15 +894,15 @@ while maintaining a clean and testable architecture.
 
 
 
-\---
+---
 
 
 
-\## I would also add one section that many projects miss
+## I would also add one section that many projects miss
 
 
 
-At the end I'd include \*\*Architectural Principles\*\*, because they become the "constitution" of the project.
+At the end I'd include **Architectural Principles**, because they become the "constitution" of the project.
 
 
 
@@ -912,7 +912,7 @@ Something like:
 
 ```markdown
 
-\## Architectural Principles
+## Architectural Principles
 
 
 
@@ -920,27 +920,27 @@ When adding new functionality:
 
 
 
-\- Keep MAVLink inside the MAVLink project.
+- Keep MAVLink inside the MAVLink project.
 
-\- Keep business rules inside the Core project.
+- Keep business rules inside the Core project.
 
-\- Never expose MAVLink packets directly to the UI.
+- Never expose MAVLink packets directly to the UI.
 
-\- Prefer immutable records over mutable objects.
+- Prefer immutable records over mutable objects.
 
-\- Prefer observations over direct state mutation.
+- Prefer observations over direct state mutation.
 
-\- Prefer capability-oriented services over protocol-oriented services.
+- Prefer capability-oriented services over protocol-oriented services.
 
-\- Prefer composition over inheritance.
+- Prefer composition over inheritance.
 
-\- Prefer asynchronous APIs.
+- Prefer asynchronous APIs.
 
-\- Keep transports interchangeable.
+- Keep transports interchangeable.
 
-\- Write tests for protocol and domain logic.
+- Write tests for protocol and domain logic.
 
-\- Optimize only after measuring.
+- Optimize only after measuring.
 
 ```
 

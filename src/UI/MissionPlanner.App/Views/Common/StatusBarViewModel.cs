@@ -9,10 +9,11 @@ namespace MissionPlanner.App.Views.Common;
 /// <summary>
 /// ViewModel for the global status bar
 /// </summary>
-public partial class StatusBarViewModel : ObservableObject
+public partial class StatusBarViewModel : ObservableObject, IDisposable
 {
     private readonly ILogger<StatusBarViewModel> logger;
     private readonly ApplicationStateService stateService;
+    private readonly IDispatcher dispatcher;
     private readonly IDomainEventHub? eventHub;
     private readonly IDisposable? eventSubscription;
     private IDispatcherTimer? timer;
@@ -24,6 +25,7 @@ public partial class StatusBarViewModel : ObservableObject
     [ObservableProperty] public partial Color ConnectionDotColor { get; set; } = Colors.Gray;
 
     [ObservableProperty] public partial string CurrentTime { get; set; } = DateTime.Now.ToString("HH:mm:ss");
+    private readonly IList<IDisposable> disposables = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="StatusBarViewModel"/> class.
@@ -36,13 +38,15 @@ public partial class StatusBarViewModel : ObservableObject
     /// Initializes a new instance of the <see cref="StatusBarViewModel"/> class.
     /// </summary>
     /// <param name="stateService">The application state service.</param>
-    /// <param name="eventHub">The domain event hub.</param>
+    /// <param name="dispatcher">The dispatcher for UI thread operations.</param>
+    /// <param name="domainEventHub">The domain event hub.</param>
     /// <param name="logger">The logger instance.</param>
-    public StatusBarViewModel(ApplicationStateService stateService, IDomainEventHub eventHub, ILogger<StatusBarViewModel> logger) : this()
+    public StatusBarViewModel(ApplicationStateService stateService, IDispatcher dispatcher, IDomainEventHub domainEventHub, ILogger<StatusBarViewModel> logger) : this()
     {
         this.logger = logger;
         this.stateService = stateService;
-        this.eventHub = eventHub;
+        this.dispatcher = dispatcher;
+        eventHub = eventHub;
 
         // Subscribe to connection state changes
         stateService.PropertyChanged += (s, e) =>
@@ -55,7 +59,8 @@ public partial class StatusBarViewModel : ObservableObject
 
         // Subscribe to vehicle connection events
 
-        eventSubscription = eventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected);
+        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected));
+        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
 
 
         // Start clock timer
@@ -65,9 +70,10 @@ public partial class StatusBarViewModel : ObservableObject
         UpdateConnectionStatus();
     }
 
+
     private void StartClock()
     {
-        timer = Application.Current?.Dispatcher.CreateTimer();
+        timer = dispatcher.CreateTimer();
         if (timer != null)
         {
             timer.Interval = TimeSpan.FromSeconds(1);
@@ -90,14 +96,36 @@ public partial class StatusBarViewModel : ObservableObject
         }
     }
 
+    private Task OnVehicleDisconnected(VehicleDisconnected evt, CancellationToken ct)
+    {
+        dispatcher.Dispatch(() =>
+        {
+            ConnectionStatus = $"Disconnected: {evt.VehicleId}";
+            ConnectionDotColor = Colors.Gray;
+            StatusMessage = $"Vehicle {evt.VehicleId} disconnected";
+        });
+        return Task.CompletedTask;
+    }
+
     private Task OnVehicleConnected(VehicleConnected evt, CancellationToken ct)
     {
-        MainThread.BeginInvokeOnMainThread(() =>
+        dispatcher.Dispatch(() =>
         {
             ConnectionStatus = $"Connected: {evt.VehicleId}";
             ConnectionDotColor = Colors.LimeGreen;
             StatusMessage = $"Vehicle {evt.VehicleId} connected via {evt.ConnectionType}";
         });
         return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        foreach (var disposable in disposables)
+        {
+            disposable.Dispose();
+        }
+
+        disposables.Clear();
     }
 }

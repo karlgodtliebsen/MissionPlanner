@@ -110,6 +110,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<SimulationViewModel>();
         services.TryAddSingleton<ExitViewModel>();
         services.TryAddSingleton<FullParametersListTabViewModel>();
+        services.TryAddSingleton<MavFtpTabViewModel>();
         return services;
     }
 

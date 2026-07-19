@@ -423,10 +423,11 @@ Completed
 
 # MAVFTP
 
-Protocol codecs, session reset, read-only open, streaming download, typed NAKs, retries,
-cancellation, progress, cleanup, and directory listing are implemented. 
-Multi-packet burst gap recovery remains planned; 
-see [MAVFTP.md](MAVFTP.md).
+* General protocol: codecs, singleton dispatcher, bounded multi-packet burst reordering and gap
+  recovery, normal-read fallback, streaming, retry, cancellation, cleanup, and listing implemented.
+* File browser UI: listing, navigation, refresh, reset, download, progress, save, and cancellation implemented.
+* Upload and filesystem mutations: not implemented.
+* Fast packed-parameter download: not implemented; classic parameter loading is unchanged.
 
 
 

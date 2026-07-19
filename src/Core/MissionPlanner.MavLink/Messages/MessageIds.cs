@@ -9,9 +9,6 @@
 /// </remarks>
 public static class MessageIds
 {
-    public const uint FileTransferProtocol = 110;
-    #region Vehicle status
-
     /// <summary>
     /// Periodic vehicle heartbeat containing type, autopilot, mode,
     /// arming state and system status.
@@ -23,9 +20,6 @@ public static class MessageIds
     /// </summary>
     public const uint SysStatus = 1;
 
-    #endregion
-
-    #region Parameters
 
     /// <summary>
     /// Requests one parameter by name or index.
@@ -47,9 +41,6 @@ public static class MessageIds
     /// </summary>
     public const uint ParamSet = 23;
 
-    #endregion
-
-    #region Sensor and position telemetry
 
     /// <summary>
     /// Raw GPS position, fix status, velocity and satellite information.
@@ -86,9 +77,6 @@ public static class MessageIds
     /// </summary>
     public const uint ServoOutputRaw = 36;
 
-    #endregion
-
-    #region Mission protocol
 
     /// <summary>
     /// Requests a subset of mission items using the legacy floating-point format.
@@ -162,9 +150,6 @@ public static class MessageIds
     /// </summary>
     public const uint MissionItemInt = 73;
 
-    #endregion
-
-    #region Navigation and flight telemetry
 
     /// <summary>
     /// Navigation-controller output, including bearings, waypoint distance
@@ -188,9 +173,6 @@ public static class MessageIds
     /// </summary>
     public const uint HomePosition = 242;
 
-    #endregion
-
-    #region Commands
 
     /// <summary>
     /// Sends a MAVLink command with seven command parameters.
@@ -202,9 +184,12 @@ public static class MessageIds
     /// </summary>
     public const uint CommandAck = 77;
 
-    #endregion
 
-    #region Time and power
+    /// <summary>
+    /// File transfer protocol message.
+    /// </summary>
+    public const uint FileTransferProtocol = 110;
+
 
     /// <summary>
     /// Synchronizes timestamps between MAVLink systems.
@@ -221,9 +206,6 @@ public static class MessageIds
     /// </summary>
     public const uint BatteryStatus = 147;
 
-    #endregion
-
-    #region ArduPilotMega messages
 
     /// <summary>
     /// ArduPilot memory usage information.
@@ -241,16 +223,12 @@ public static class MessageIds
     /// </summary>
     public const uint EkfStatusReport = 193;
 
-    #endregion
-
-    #region Text and diagnostics
 
     /// <summary>
     /// Human-readable status, warning or error text.
     /// </summary>
     public const uint StatusText = 253;
 
-    #endregion
 
     public const uint DefaultFallback = 65555;
 }

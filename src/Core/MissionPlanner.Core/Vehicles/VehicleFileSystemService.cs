@@ -1,0 +1,53 @@
+﻿using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.MavLink.MavFtp;
+using MissionPlanner.MavLink.MavFtp.Abstractions;
+
+namespace MissionPlanner.Core.Vehicles;
+
+/// <summary>
+/// Service for interacting with the vehicle file system.
+/// </summary>
+/// <param name="client">The MAVFTP client.</param>
+/// <param name="vehicleRegistry">The vehicle registry.</param>
+public sealed class VehicleFileSystemService(IMavFtpClient client, IVehicleRegistry vehicleRegistry) : IVehicleFileSystemService
+{
+    /// <summary>
+    /// Lists the contents of a directory on the vehicle's file system.
+    /// </summary>
+    /// <param name="vehicleId">The ID of the vehicle.</param>
+    /// <param name="remotePath">The path of the directory to list.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns>A list of file system entries.</returns>
+    public async Task<IReadOnlyList<VehicleFileSystemEntry>> ListDirectoryAsync(VehicleId vehicleId, string remotePath, CancellationToken cancellationToken = default)
+    {
+        var entries = await client.ListDirectoryAsync(Resolve(vehicleId), remotePath, cancellationToken).ConfigureAwait(false);
+        return entries.Select(x => new VehicleFileSystemEntry(x.Name, x.Type == MavFtpDirectoryEntryType.Directory ? VehicleFileSystemEntryType.Directory : VehicleFileSystemEntryType.File, x.Size)).ToArray();
+    }
+
+    /// <inheritdoc />
+    public async Task<VehicleFileInfo> GetFileInfoAsync(VehicleId vehicleId, string remotePath, CancellationToken cancellationToken = default)
+    {
+        var info = await client.GetFileInfoAsync(Resolve(vehicleId), remotePath, cancellationToken).ConfigureAwait(false);
+        return new VehicleFileInfo(info.RemotePath, info.Size);
+    }
+
+    /// <inheritdoc />
+    public Task DownloadFileAsync(VehicleId vehicleId, string remotePath, Stream destination, IProgress<VehicleFileTransferProgress>? progress = null, CancellationToken cancellationToken = default)
+    {
+        IProgress<MavFtpProgress>? mapped = progress is null ? null : new Progress<MavFtpProgress>(x => progress.Report(new VehicleFileTransferProgress(x.RemotePath, x.BytesTransferred, x.TotalBytes, x.BytesPerSecond)));
+        return client.DownloadFileAsync(Resolve(vehicleId), remotePath, destination, mapped, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task ResetSessionsAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
+    {
+        return client.ResetSessionsAsync(Resolve(vehicleId), cancellationToken);
+    }
+
+    private MavFtpTarget Resolve(VehicleId vehicleId)
+    {
+        var session = vehicleRegistry.GetRequired(vehicleId) ?? throw new InvalidOperationException($"Vehicle {vehicleId} is not connected.");
+        return new MavFtpTarget(vehicleId.SystemId, vehicleId.ComponentId, session.EndPoint);
+    }
+}
