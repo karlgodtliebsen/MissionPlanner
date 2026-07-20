@@ -1,5 +1,17 @@
 namespace MissionPlanner.Core.Vehicles.Models;
 
+/// <summary>
+/// Provides the public API for VehicleGpsState.
+/// </summary>
+/// <param name="FixType">The FixType value.</param>
+/// <param name="SatellitesVisible">The SatellitesVisible value.</param>
+/// <param name="HorizontalDilution">The HorizontalDilution value.</param>
+/// <param name="VerticalDilution">The VerticalDilution value.</param>
+/// <param name="GroundSpeedMetersPerSecond">The GroundSpeedMetersPerSecond value.</param>
+/// <param name="CourseDegrees">The CourseDegrees value.</param>
+/// <param name="HorizontalAccuracyMeters">The HorizontalAccuracyMeters value.</param>
+/// <param name="VerticalAccuracyMeters">The VerticalAccuracyMeters value.</param>
+/// <param name="ObservedAt">The ObservedAt value.</param>
 public sealed record VehicleGpsState(
     GpsFixType FixType,
     int? SatellitesVisible,
@@ -11,5 +23,8 @@ public sealed record VehicleGpsState(
     double? VerticalAccuracyMeters,
     DateTimeOffset? ObservedAt)
 {
+    /// <summary>
+    /// Provides the public API for Empty.
+    /// </summary>
     public static VehicleGpsState Empty { get; } = new(GpsFixType.Unknown, null, null, null, null, null, null, null, null);
 }

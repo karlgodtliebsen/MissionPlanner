@@ -6,11 +6,17 @@ using MissionPlanner.MavLink.Messages;
 
 namespace MissionPlanner.Core.Vehicles.Handlers;
 
+/// <summary>
+/// Provides the public API for PowerTelemetryHandler.
+/// </summary>
 public sealed class PowerTelemetryHandler(
     IVehicleRegistry vehicleRegistry,
     IDomainEventHub domainEventHub)
     : VehicleTelemetryHandlerBase(vehicleRegistry, domainEventHub), IVehicleMessageHandler
 {
+    /// <summary>
+    /// Provides the public API for MessageTypes.
+    /// </summary>
     public IReadOnlyCollection<Type> MessageTypes { get; } =
     [
         typeof(SysStatusMessage),
@@ -18,6 +24,9 @@ public sealed class PowerTelemetryHandler(
         typeof(PowerStatusMessage)
     ];
 
+    /// <summary>
+    /// Provides the public API for HandleAsync.
+    /// </summary>
     public async ValueTask HandleAsync(MavLinkMessage message, CancellationToken cancellationToken)
     {
         var vehicle = GetVehicle(message);

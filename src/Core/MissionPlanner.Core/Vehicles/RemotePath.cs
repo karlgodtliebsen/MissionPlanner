@@ -1,7 +1,13 @@
 namespace MissionPlanner.Core.Vehicles;
 
+/// <summary>
+/// Provides the public API for RemotePath.
+/// </summary>
 public static class RemotePath
 {
+    /// <summary>
+    /// Provides the public API for Normalize.
+    /// </summary>
     public static string Normalize(string path)
     {
         if (string.IsNullOrWhiteSpace(path) || path == "/") return "/";
@@ -16,7 +22,13 @@ public static class RemotePath
         return "/" + string.Join('/', normalized);
     }
 
+    /// <summary>
+    /// Provides the public API for Join.
+    /// </summary>
     public static string Join(string parent, string child) => Normalize($"{Normalize(parent).TrimEnd('/')}/{child}");
+    /// <summary>
+    /// Provides the public API for Parent.
+    /// </summary>
     public static string Parent(string path)
     {
         var normalized = Normalize(path);

@@ -71,12 +71,18 @@ public class NullablePeriod
         To = to;
     }
 
+    /// <summary>
+    /// Provides the public API for NullablePeriod.
+    /// </summary>
     public NullablePeriod(DateTimeOffset from, DateTimeOffset to)
     {
         From = from.DateTime;
         To = to.DateTime;
     }
 
+    /// <summary>
+    /// Provides the public API for NullablePeriod.
+    /// </summary>
     public NullablePeriod(DateTimeOffset from, DateTimeOffset? to)
     {
         From = from.DateTime;
@@ -86,11 +92,23 @@ public class NullablePeriod
         }
     }
 
+    /// <summary>
+    /// Provides the public API for From.
+    /// </summary>
     public System.DateTime? From { get; private set; }
+    /// <summary>
+    /// Provides the public API for To.
+    /// </summary>
     public System.DateTime? To { get; set; } = default!;
 
+    /// <summary>
+    /// Provides the public API for IsOpenEnded.
+    /// </summary>
     public bool IsOpenEnded => To == default!;
 
+    /// <summary>
+    /// Provides the public API for Close.
+    /// </summary>
     public void Close(System.DateTime closeAt)
     {
         To = closeAt;

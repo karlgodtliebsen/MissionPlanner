@@ -7,10 +7,25 @@ namespace MissionPlanner.Core.Vehicles.Models;
 /// </summary>
 public sealed class ParameterStreamResult
 {
+    /// <summary>
+    /// Provides the public API for Success.
+    /// </summary>
     public bool Success { get; init; }
+    /// <summary>
+    /// Provides the public API for Parameters.
+    /// </summary>
     public IReadOnlyDictionary<string, VehicleParameter> Parameters { get; init; } = new Dictionary<string, VehicleParameter>();
+    /// <summary>
+    /// Provides the public API for TotalCount.
+    /// </summary>
     public int TotalCount { get; init; }
+    /// <summary>
+    /// Provides the public API for ErrorMessage.
+    /// </summary>
     public string? ErrorMessage { get; init; }
+    /// <summary>
+    /// Provides the public API for Duration.
+    /// </summary>
     public TimeSpan Duration { get; init; }
 
     /// <summary>

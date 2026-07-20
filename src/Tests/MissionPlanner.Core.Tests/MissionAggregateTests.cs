@@ -8,6 +8,9 @@ namespace MissionPlanner.Core.Tests;
 /// </summary>
 public sealed class MissionAggregateTests
 {
+    /// <summary>
+    /// Provides the public API for Should_Resequence_Items_After_Move.
+    /// </summary>
     [Fact]
     public void Should_Resequence_Items_After_Move()
     {
@@ -20,6 +23,9 @@ public sealed class MissionAggregateTests
         mission.Items[2].Id.Should().Be(first.Id);
     }
 
+    /// <summary>
+    /// Provides the public API for Should_Reject_Invalid_Move_Destination.
+    /// </summary>
     [Theory]
     [InlineData(-1)]
     [InlineData(3)]
@@ -32,6 +38,9 @@ public sealed class MissionAggregateTests
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
 
+    /// <summary>
+    /// Provides the public API for Should_Reject_Invalid_Insert_Index.
+    /// </summary>
     [Theory]
     [InlineData(-1)]
     [InlineData(4)]

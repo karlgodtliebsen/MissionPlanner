@@ -5,10 +5,16 @@ using MissionPlanner.MavLink.Services.Abstractions;
 
 namespace MissionPlanner.MavLink.Encoding;
 
+/// <summary>
+/// Provides the public API for MavLinkMissionEncoder.
+/// </summary>
 public sealed class MavLinkMissionEncoder(IMavLinkCrcExtraProvider crc) : IMavLinkMissionEncoder
 {
     private byte sequence;
 
+    /// <summary>
+    /// Provides the public API for EncodeMissionCount.
+    /// </summary>
     public byte[] EncodeMissionCount(byte ts, byte tc, ushort count, MavMissionType mt)
     {
         Span<byte> p = stackalloc byte[5];
@@ -19,6 +25,9 @@ public sealed class MavLinkMissionEncoder(IMavLinkCrcExtraProvider crc) : IMavLi
         return Build(MessageIds.MissionCount, p);
     }
 
+    /// <summary>
+    /// Provides the public API for EncodeMissionRequestList.
+    /// </summary>
     public byte[] EncodeMissionRequestList(byte ts, byte tc, MavMissionType mt)
     {
         Span<byte> p = stackalloc byte[3];
@@ -28,6 +37,9 @@ public sealed class MavLinkMissionEncoder(IMavLinkCrcExtraProvider crc) : IMavLi
         return Build(MessageIds.MissionRequestList, p);
     }
 
+    /// <summary>
+    /// Provides the public API for EncodeMissionRequestInt.
+    /// </summary>
     public byte[] EncodeMissionRequestInt(byte ts, byte tc, ushort seq, MavMissionType mt)
     {
         Span<byte> p = stackalloc byte[5];
@@ -38,6 +50,9 @@ public sealed class MavLinkMissionEncoder(IMavLinkCrcExtraProvider crc) : IMavLi
         return Build(MessageIds.MissionRequestInt, p);
     }
 
+    /// <summary>
+    /// Provides the public API for EncodeMissionAck.
+    /// </summary>
     public byte[] EncodeMissionAck(byte ts, byte tc, byte result, MavMissionType mt)
     {
         Span<byte> p = stackalloc byte[4];
@@ -48,6 +63,9 @@ public sealed class MavLinkMissionEncoder(IMavLinkCrcExtraProvider crc) : IMavLi
         return Build(MessageIds.MissionAck, p);
     }
 
+    /// <summary>
+    /// Provides the public API for EncodeMissionClearAll.
+    /// </summary>
     public byte[] EncodeMissionClearAll(byte ts, byte tc, MavMissionType mt)
     {
         Span<byte> p = stackalloc byte[3];
@@ -57,6 +75,9 @@ public sealed class MavLinkMissionEncoder(IMavLinkCrcExtraProvider crc) : IMavLi
         return Build(MessageIds.MissionClearAll, p);
     }
 
+    /// <summary>
+    /// Provides the public API for EncodeMissionItemInt.
+    /// </summary>
     public byte[] EncodeMissionItemInt(byte ts, byte tc, MavLinkMissionItem i)
     {
         Span<byte> p = stackalloc byte[38];

@@ -9,7 +9,16 @@ namespace MissionPlanner.Core.Missions.Abstractions;
 /// </summary>
 public interface IMissionTransferService
 {
+    /// <summary>
+    /// Provides the public API for UploadAsync.
+    /// </summary>
     Task<MissionUploadResult> UploadAsync(VehicleId vehicleId, Mission mission, IProgress<MissionUploadProgress>? progress = null, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Provides the public API for DownloadAsync.
+    /// </summary>
     Task<MissionDownloadResult> DownloadAsync(VehicleId vehicleId, MissionPlanType missionType = MissionPlanType.FlightMission, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Provides the public API for ClearAsync.
+    /// </summary>
     Task ClearAsync(VehicleId vehicleId, MissionPlanType missionType = MissionPlanType.FlightMission, CancellationToken cancellationToken = default);
 }

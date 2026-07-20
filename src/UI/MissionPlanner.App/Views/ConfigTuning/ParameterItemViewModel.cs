@@ -14,6 +14,9 @@ public partial class ParameterItemViewModel : ObservableObject
 {
     private VehicleParameter? originalParameter;
     private ParameterMetadata? originalMetadata;
+    /// <summary>
+    /// Provides the public API for OriginalParameter.
+    /// </summary>
     public VehicleParameter? OriginalParameter => originalParameter;
 
     [ObservableProperty] public partial string Name { get; set; }
@@ -160,4 +163,7 @@ public partial class ParameterItemViewModel : ObservableObject
     }
 }
 
+/// <summary>
+/// Provides the public API for SelectItem.
+/// </summary>
 public sealed record SelectItem(string Name, float Value);

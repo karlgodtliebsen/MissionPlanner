@@ -51,9 +51,15 @@ public class ApplicationOptions
     public string BaudRate { get; set; } = "115200";
 
 
+    /// <summary>
+    /// Provides the public API for Host.
+    /// </summary>
     public string Host { get; set; } = "127.0.0.1";
 
 
+    /// <summary>
+    /// Provides the public API for Port.
+    /// </summary>
     public string Port { get; set; } = "14550";
 
 

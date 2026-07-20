@@ -18,9 +18,21 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
     private const byte MavModeFlagSafetyArmed = 0b1000_0000;
     private VehicleState state = initialState;
 
+    /// <summary>
+    /// Provides the public API for Id.
+    /// </summary>
     public VehicleId Id => state.VehicleId;
+    /// <summary>
+    /// Provides the public API for State.
+    /// </summary>
     public VehicleState State => state;
+    /// <summary>
+    /// Provides the public API for EndPoint.
+    /// </summary>
     public TransportEndPoint EndPoint => endPoint;
+    /// <summary>
+    /// Provides the public API for Notifications.
+    /// </summary>
     public IList<VehicleStatusText> Notifications { get; private set; } = [];
 
     /// <summary>

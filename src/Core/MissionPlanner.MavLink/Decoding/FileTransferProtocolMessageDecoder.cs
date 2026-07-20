@@ -3,14 +3,26 @@ using MissionPlanner.MavLink.Services.Abstractions;
 
 namespace MissionPlanner.MavLink.Decoding;
 
+/// <summary>
+/// Provides the public API for FileTransferProtocolMessageDecoder.
+/// </summary>
 public sealed class FileTransferProtocolMessageDecoder : IMavLinkMessageDecoder
 {
     private const int HeaderLength = 3;
     private const int FtpPayloadLength = 251;
 
+    /// <summary>
+    /// Provides the public API for MessageId.
+    /// </summary>
     public uint MessageId => MessageIds.FileTransferProtocol;
+    /// <summary>
+    /// Provides the public API for CrcExtra.
+    /// </summary>
     public byte CrcExtra => 84;
 
+    /// <summary>
+    /// Provides the public API for TryDecode.
+    /// </summary>
     public bool TryDecode(MavLinkFrame frame, out MavLinkMessage? message)
     {
         if (frame.Payload.Length < HeaderLength)

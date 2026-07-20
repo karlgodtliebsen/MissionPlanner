@@ -1,7 +1,13 @@
 namespace MissionPlanner.MavLink.MavFtp;
 
+/// <summary>
+/// Provides the public API for MavFtpDirectoryCodec.
+/// </summary>
 public static class MavFtpDirectoryCodec
 {
+    /// <summary>
+    /// Provides the public API for Decode.
+    /// </summary>
     public static IReadOnlyList<MavFtpDirectoryEntry> Decode(ReadOnlySpan<byte> data)
     {
         var entries = new List<MavFtpDirectoryEntry>();

@@ -4,11 +4,23 @@ using MissionPlanner.MavLink.Services.Abstractions;
 
 namespace MissionPlanner.MavLink.Decoding;
 
+/// <summary>
+/// Provides the public API for MissionCountMessageDecoder.
+/// </summary>
 public sealed class MissionCountMessageDecoder : IMavLinkMessageDecoder
 {
+    /// <summary>
+    /// Provides the public API for MessageId.
+    /// </summary>
     public uint MessageId => MessageIds.MissionCount;
+    /// <summary>
+    /// Provides the public API for CrcExtra.
+    /// </summary>
     public byte CrcExtra => 221;
 
+    /// <summary>
+    /// Provides the public API for TryDecode.
+    /// </summary>
     public bool TryDecode(MavLinkFrame f, out MavLinkMessage? m)
     {
         m = null;

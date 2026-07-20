@@ -20,6 +20,9 @@ public sealed class MavLinkMessageDecoderHandlerTests
     private readonly ITestOutputHelper output;
     private readonly IServiceProvider serviceProvider;
 
+    /// <summary>
+    /// Provides the public API for MavLinkMessageDecoderHandlerTests.
+    /// </summary>
     public MavLinkMessageDecoderHandlerTests(ITestOutputHelper output)
     {
         this.output = output;

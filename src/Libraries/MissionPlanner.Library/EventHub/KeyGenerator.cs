@@ -7,16 +7,25 @@ public static class KeyGenerator
 {
     private const string Separator = ":";
 
+    /// <summary>
+    /// Provides the public API for GetEventKey&lt;T&gt;.
+    /// </summary>
     public static string GetEventKey<T>(string eventName)
     {
         return $"{eventName}{Separator}{typeof(T).FullName}";
     }
 
+    /// <summary>
+    /// Provides the public API for GetEventKey&lt;T&gt;.
+    /// </summary>
     public static string GetEventKey<T>()
     {
         return $"data{Separator}{typeof(T).FullName}";
     }
 
+    /// <summary>
+    /// Provides the public API for SplitKey.
+    /// </summary>
     public static string SplitKey(string key)
     {
         return key.Contains(Separator) ? key.Split(Separator)[0] : key;

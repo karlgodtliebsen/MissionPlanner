@@ -23,8 +23,14 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
     private readonly ApplicationStateService stateService;
     private readonly IDispatcher dispatcher;
 
+    /// <summary>
+    /// Provides the public API for Channels.
+    /// </summary>
     public ObservableRangeCollection<string> Channels { get; set; }
 
+    /// <summary>
+    /// Provides the public API for BaudRates.
+    /// </summary>
     public ObservableRangeCollection<string> BaudRates { get; set; }
 
     [ObservableProperty] public partial string? SelectedHost { get; set; }

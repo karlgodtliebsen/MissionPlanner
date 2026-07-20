@@ -25,6 +25,9 @@ public static partial class MauiImageFileNameSanitizer
         ".ico"
     };
 
+    /// <summary>
+    /// Provides the public API for IsValid.
+    /// </summary>
     public static bool IsValid(string fileName)
     {
         var stem = Path.GetFileNameWithoutExtension(fileName);

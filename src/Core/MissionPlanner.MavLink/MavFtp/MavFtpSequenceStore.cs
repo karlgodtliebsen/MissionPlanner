@@ -11,11 +11,17 @@ public sealed class MavFtpSequenceStore : IMavFtpSequenceStore
 {
     private readonly ConcurrentDictionary<MavFtpTarget, SequenceState> states = new();
 
+    /// <summary>
+    /// Provides the public API for GetNextRequest.
+    /// </summary>
     public ushort GetNextRequest(MavFtpTarget target)
     {
         return states.GetOrAdd(target, static _ => new SequenceState()).Read();
     }
 
+    /// <summary>
+    /// Provides the public API for ObserveResponse.
+    /// </summary>
     public void ObserveResponse(MavFtpTarget target, ushort responseSequence)
     {
         states.GetOrAdd(target, static _ => new SequenceState()).Write(MavFtpSequence.Next(responseSequence));

@@ -2,6 +2,9 @@ using UIKit;
 
 namespace MissionPlanner.Mac;
 
+/// <summary>
+/// Provides the public API for Program.
+/// </summary>
 public class Program
 {
     // This is the main entry point of the application.

@@ -3,10 +3,16 @@ using MissionPlanner.MavLink.MavFtp;
 
 namespace MissionPlanner.Core.Tests;
 
+/// <summary>
+/// Provides the public API for MavFtpPacketCodecTests.
+/// </summary>
 public sealed class MavFtpPacketCodecTests
 {
     private readonly MavFtpPacketCodec codec = new();
 
+    /// <summary>
+    /// Provides the public API for RoundTrip_PreservesFields.
+    /// </summary>
     [Fact]
     public void RoundTrip_PreservesFields()
     {
@@ -16,6 +22,9 @@ public sealed class MavFtpPacketCodecTests
         actual.Data.ToArray().Should().Equal(p.Data.ToArray());
     }
 
+    /// <summary>
+    /// Provides the public API for RoundTrip_SupportsOpcodes.
+    /// </summary>
     [Theory]
     [InlineData(MavFtpOpcode.ResetSessions)]
     [InlineData(MavFtpOpcode.OpenFileReadOnly)]
@@ -30,12 +39,18 @@ public sealed class MavFtpPacketCodecTests
         codec.Decode(codec.Encode(new MavFtpPacket(1, 0, opcode, 0, false, 0, ReadOnlyMemory<byte>.Empty))).Opcode.Should().Be(opcode);
     }
 
+    /// <summary>
+    /// Provides the public API for MaximumPayload_IsAccepted.
+    /// </summary>
     [Fact]
     public void MaximumPayload_IsAccepted()
     {
         codec.Encode(new MavFtpPacket(1, 1, MavFtpOpcode.Ack, MavFtpOpcode.ReadFile, false, 0, new byte[239])).Should().HaveCount(251);
     }
 
+    /// <summary>
+    /// Provides the public API for MalformedPayloads_AreRejected.
+    /// </summary>
     [Fact]
     public void MalformedPayloads_AreRejected()
     {
@@ -48,6 +63,9 @@ public sealed class MavFtpPacketCodecTests
         c.Should().Throw<MavFtpProtocolException>();
     }
 
+    /// <summary>
+    /// Provides the public API for SequenceWraparound_IsPreserved.
+    /// </summary>
     [Fact]
     public void SequenceWraparound_IsPreserved()
     {
@@ -55,6 +73,9 @@ public sealed class MavFtpPacketCodecTests
         codec.Decode(codec.Encode(new MavFtpPacket(ushort.MaxValue, 0, MavFtpOpcode.ResetSessions, 0, false, 0, ReadOnlyMemory<byte>.Empty))).Sequence.Should().Be(ushort.MaxValue);
     }
 
+    /// <summary>
+    /// Provides the public API for DirectoryCodec_ParsesAndRejectsMalformedEntries.
+    /// </summary>
     [Fact]
     public void DirectoryCodec_ParsesAndRejectsMalformedEntries()
     {

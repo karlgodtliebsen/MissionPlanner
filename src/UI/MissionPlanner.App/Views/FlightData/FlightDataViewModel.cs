@@ -4,6 +4,9 @@ namespace MissionPlanner.App.Views.FlightData;
 
 public partial class FlightDataViewModel : ObservableObject
 {
+    /// <summary>
+    /// Provides the public API for MapStyles.
+    /// </summary>
     public List<string> MapStyles { get; } =
     [
         "GEO",

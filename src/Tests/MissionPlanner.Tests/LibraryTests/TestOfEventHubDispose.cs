@@ -14,6 +14,9 @@ public class TestOfEventHubDispose
     private readonly ILogger<EventHub> logger = NSubstitute.Substitute.For<ILogger<EventHub>>();
     private readonly CancellationToken cancellationToken = TestContext.Current.CancellationToken;
 
+    /// <summary>
+    /// Provides the public API for VerifyEventSubscriptionCanBeCreatedAndPublishesIsWorking.
+    /// </summary>
     [Fact]
     public void VerifyEventSubscriptionCanBeCreatedAndPublishesIsWorking()
     {
@@ -35,6 +38,9 @@ public class TestOfEventHubDispose
         count.Should().Be(6);
     }
 
+    /// <summary>
+    /// Provides the public API for VerifyEventSubscriptionCanBeCreatedAndPublishesIsWorkingAsync.
+    /// </summary>
     [Fact]
     public async Task VerifyEventSubscriptionCanBeCreatedAndPublishesIsWorkingAsync()
     {
@@ -68,6 +74,9 @@ public class TestOfEventHubDispose
         count.Should().Be(6);
     }
 
+    /// <summary>
+    /// Provides the public API for VerifyEventSubscriptionCanBeCreatedAndReturnIDisposable.
+    /// </summary>
     [Fact]
     public void VerifyEventSubscriptionCanBeCreatedAndReturnIDisposable()
     {
@@ -83,6 +92,9 @@ public class TestOfEventHubDispose
         count.Should().Be(1);
     }
 
+    /// <summary>
+    /// Provides the public API for VerifyEventSubscriptionUsingGenericCanBeCreatedAndReturnIDisposable.
+    /// </summary>
     [Fact]
     public void VerifyEventSubscriptionUsingGenericCanBeCreatedAndReturnIDisposable()
     {
@@ -98,6 +110,9 @@ public class TestOfEventHubDispose
         message.Should().Be("hello world");
     }
 
+    /// <summary>
+    /// Provides the public API for VerifyEventSubscriptionUsingPayloadCanBeCreatedAndReturnIDisposable.
+    /// </summary>
     [Fact]
     public void VerifyEventSubscriptionUsingPayloadCanBeCreatedAndReturnIDisposable()
     {
@@ -116,6 +131,9 @@ public class TestOfEventHubDispose
         message.Should().Be("hello universe");
     }
 
+    /// <summary>
+    /// Provides the public API for VerifyEventSubscriptionCanBeCreatedAndSubscribedToMultipleTimesAndReturnIDisposable.
+    /// </summary>
     [Fact]
     public void VerifyEventSubscriptionCanBeCreatedAndSubscribedToMultipleTimesAndReturnIDisposable()
     {
@@ -140,6 +158,9 @@ public class TestOfEventHubDispose
         disposables.Dispose();
     }
 
+    /// <summary>
+    /// Provides the public API for VerifyEventSubscriptionCanBeCreatedAnd2TimesSubscribedToMultipleTimesAndReturnIDisposable.
+    /// </summary>
     [Fact]
     public void VerifyEventSubscriptionCanBeCreatedAnd2TimesSubscribedToMultipleTimesAndReturnIDisposable()
     {
@@ -177,6 +198,9 @@ public class TestOfEventHubDispose
         disposables.Dispose();
     }
 
+    /// <summary>
+    /// Provides the public API for VerifySubscriptionMultipleTimesCanRemoveTheCorrectSubscription.
+    /// </summary>
     [Fact]
     public void VerifySubscriptionMultipleTimesCanRemoveTheCorrectSubscription()
     {
@@ -213,6 +237,9 @@ public class TestOfEventHubDispose
         disposables.Dispose();
     }
 
+    /// <summary>
+    /// Provides the public API for VerifySubscriptionMultipleTimesCanRemoveTheCorrectLastSubscription.
+    /// </summary>
     [Fact]
     public void VerifySubscriptionMultipleTimesCanRemoveTheCorrectLastSubscription()
     {
@@ -249,6 +276,9 @@ public class TestOfEventHubDispose
         disposables.Dispose();
     }
 
+    /// <summary>
+    /// Provides the public API for VerifyEventAsyncSubscriptionCanBeCreatedAndPublishesIsWorking.
+    /// </summary>
     [Fact]
     public async Task VerifyEventAsyncSubscriptionCanBeCreatedAndPublishesIsWorking()
     {
@@ -267,6 +297,9 @@ public class TestOfEventHubDispose
         count.Should().Be(2);
     }
 
+    /// <summary>
+    /// Provides the public API for VerifyEventAsyncSubscriptionCanBeCreatedAndReturnIDisposable.
+    /// </summary>
     [Fact]
     public async Task VerifyEventAsyncSubscriptionCanBeCreatedAndReturnIDisposable()
     {
@@ -286,6 +319,9 @@ public class TestOfEventHubDispose
         count.Should().Be(1);
     }
 
+    /// <summary>
+    /// Provides the public API for VerifyEventAsyncSubscriptionUsingGenericCanBeCreatedAndReturnIDisposable.
+    /// </summary>
     [Fact]
     public async Task VerifyEventAsyncSubscriptionUsingGenericCanBeCreatedAndReturnIDisposable()
     {
@@ -305,6 +341,9 @@ public class TestOfEventHubDispose
         message.Should().Be("hello world");
     }
 
+    /// <summary>
+    /// Provides the public API for VerifyEventAsyncSubscriptionUsingPayloadCanBeCreatedAndReturnIDisposable.
+    /// </summary>
     [Fact]
     public async Task VerifyEventAsyncSubscriptionUsingPayloadCanBeCreatedAndReturnIDisposable()
     {
@@ -327,6 +366,9 @@ public class TestOfEventHubDispose
         message.Should().Be("hello universe");
     }
 
+    /// <summary>
+    /// Provides the public API for VerifyEventAsyncSubscriptionCanBeCreatedAndSubscribedToMultipleTimesAndReturnIDisposable.
+    /// </summary>
     [Fact]
     public async Task VerifyEventAsyncSubscriptionCanBeCreatedAndSubscribedToMultipleTimesAndReturnIDisposable()
     {
@@ -355,6 +397,9 @@ public class TestOfEventHubDispose
         disposables.Dispose();
     }
 
+    /// <summary>
+    /// Provides the public API for VerifyEventSubscriptionCanBeCreatedAndSubscribedToMultipleTimesAndAllSubscriptionIsInvoked.
+    /// </summary>
     [Fact]
     public async Task VerifyEventSubscriptionCanBeCreatedAndSubscribedToMultipleTimesAndAllSubscriptionIsInvoked()
     {

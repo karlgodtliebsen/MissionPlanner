@@ -19,6 +19,9 @@ namespace MissionPlanner.WinUI
             this.InitializeComponent();
         }
 
+        /// <summary>
+        /// Provides the public API for CreateMauiApp.
+        /// </summary>
         protected override MauiApp CreateMauiApp() => MauiProgram.CreateMauiApp();
     }
 

@@ -60,6 +60,9 @@ public static class TestConfigurator
         return services;
     }
 
+    /// <summary>
+    /// Provides the public API for AddDefaultTestLogging.
+    /// </summary>
     public static IServiceCollection AddDefaultTestLogging(this IServiceCollection services, IConfiguration configuration, ITestOutputHelper? output)
     {
         services.AddLogging((ILoggingBuilder loggingBuilder) =>

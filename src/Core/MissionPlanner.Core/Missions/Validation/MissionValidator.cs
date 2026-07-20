@@ -3,8 +3,14 @@ using MissionPlanner.Core.Missions.Models;
 
 namespace MissionPlanner.Core.Missions.Validation;
 
+/// <summary>
+/// Provides the public API for MissionValidator.
+/// </summary>
 public sealed class MissionValidator : IMissionValidator
 {
+    /// <summary>
+    /// Provides the public API for Validate.
+    /// </summary>
     public MissionValidationResult Validate(Mission mission)
     {
         var issues = new List<MissionValidationIssue>();

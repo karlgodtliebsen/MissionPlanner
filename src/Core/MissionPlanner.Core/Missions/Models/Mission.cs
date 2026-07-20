@@ -1,9 +1,15 @@
 ﻿namespace MissionPlanner.Core.Missions.Models;
 
+/// <summary>
+/// Provides the public API for Mission.
+/// </summary>
 public sealed class Mission
 {
     private readonly List<MissionItem> items = [];
 
+    /// <summary>
+    /// Provides the public API for Mission.
+    /// </summary>
     public Mission(MissionId id, string name, MissionPlanType type = MissionPlanType.FlightMission)
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -16,12 +22,30 @@ public sealed class Mission
         Type = type;
     }
 
+    /// <summary>
+    /// Provides the public API for Id.
+    /// </summary>
     public MissionId Id { get; }
+    /// <summary>
+    /// Provides the public API for Name.
+    /// </summary>
     public string Name { get; private set; }
+    /// <summary>
+    /// Provides the public API for Type.
+    /// </summary>
     public MissionPlanType Type { get; }
+    /// <summary>
+    /// Provides the public API for Revision.
+    /// </summary>
     public int Revision { get; private set; }
+    /// <summary>
+    /// Provides the public API for Items.
+    /// </summary>
     public IReadOnlyList<MissionItem> Items => items;
 
+    /// <summary>
+    /// Provides the public API for Rename.
+    /// </summary>
     public void Rename(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
@@ -33,12 +57,18 @@ public sealed class Mission
         Revision++;
     }
 
+    /// <summary>
+    /// Provides the public API for Add.
+    /// </summary>
     public void Add(MissionItem item)
     {
         items.Add(WithSequence(item, checked((ushort)items.Count)));
         Revision++;
     }
 
+    /// <summary>
+    /// Provides the public API for Insert.
+    /// </summary>
     public void Insert(int index, MissionItem item)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(index);
@@ -49,6 +79,9 @@ public sealed class Mission
         Revision++;
     }
 
+    /// <summary>
+    /// Provides the public API for Remove.
+    /// </summary>
     public bool Remove(MissionItemId id)
     {
         var n = items.RemoveAll(x => x.Id == id);
@@ -61,6 +94,9 @@ public sealed class Mission
         return n > 0;
     }
 
+    /// <summary>
+    /// Provides the public API for Move.
+    /// </summary>
     public void Move(MissionItemId id, int destinationIndex)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(destinationIndex);
@@ -79,6 +115,9 @@ public sealed class Mission
         Revision++;
     }
 
+    /// <summary>
+    /// Provides the public API for Replace.
+    /// </summary>
     public void Replace(MissionItemId id, MissionItem replacement)
     {
         var index = items.FindIndex(x => x.Id == id);

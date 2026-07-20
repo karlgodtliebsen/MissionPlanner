@@ -407,8 +407,14 @@ public class TestOfFactories
     /// </summary>
     public class ApplicationData
     {
+        /// <summary>
+        /// Provides the public API for Size.
+        /// </summary>
         public double Size { get; set; }
 
+        /// <summary>
+        /// Provides the public API for ToString.
+        /// </summary>
         public override string ToString()
         {
             return Size.ToString("F1");
@@ -420,9 +426,21 @@ public class TestOfFactories
     /// </summary>
     public interface IExtendedService
     {
+        /// <summary>
+        /// Provides the public API for TrackingId.
+        /// </summary>
         Guid TrackingId { get; }
+        /// <summary>
+        /// Provides the public API for Service1.
+        /// </summary>
         IService1 Service1 { get; }
+        /// <summary>
+        /// Provides the public API for Service2.
+        /// </summary>
         IService2 Service2 { get; }
+        /// <summary>
+        /// Provides the public API for Options.
+        /// </summary>
         ApplicationData Options { get; }
     }
 
@@ -452,11 +470,23 @@ public class TestOfFactories
             TrackingId = Guid.NewGuid();
         }
 
+        /// <summary>
+        /// Provides the public API for Service1.
+        /// </summary>
         public IService1 Service1 { get; }
+        /// <summary>
+        /// Provides the public API for Service2.
+        /// </summary>
         public IService2 Service2 { get; }
 
+        /// <summary>
+        /// Provides the public API for TrackingId.
+        /// </summary>
         public Guid TrackingId { get; set; }
 
+        /// <summary>
+        /// Provides the public API for ToString.
+        /// </summary>
         public override string ToString()
         {
             return TrackingId.ToString("D");
@@ -468,6 +498,9 @@ public class TestOfFactories
     /// </summary>
     public interface IService1
     {
+        /// <summary>
+        /// Provides the public API for TrackingId.
+        /// </summary>
         Guid TrackingId { get; }
     }
 
@@ -484,28 +517,52 @@ public class TestOfFactories
             TrackingId = Guid.NewGuid();
         }
 
+        /// <summary>
+        /// Provides the public API for TrackingId.
+        /// </summary>
         public Guid TrackingId { get; set; }
 
+        /// <summary>
+        /// Provides the public API for ToString.
+        /// </summary>
         public override string ToString()
         {
             return TrackingId.ToString("D");
         }
     }
 
+    /// <summary>
+    /// Provides the public API for IService2.
+    /// </summary>
     public interface IService2
     {
+        /// <summary>
+        /// Provides the public API for TrackingId.
+        /// </summary>
         Guid TrackingId { get; }
     }
 
+    /// <summary>
+    /// Provides the public API for Service2.
+    /// </summary>
     public class Service2 : IService2
     {
+        /// <summary>
+        /// Provides the public API for Service2.
+        /// </summary>
         public Service2()
         {
             TrackingId = Guid.NewGuid();
         }
 
+        /// <summary>
+        /// Provides the public API for TrackingId.
+        /// </summary>
         public Guid TrackingId { get; set; }
 
+        /// <summary>
+        /// Provides the public API for ToString.
+        /// </summary>
         public override string ToString()
         {
             return TrackingId.ToString("D");
@@ -517,14 +574,41 @@ public class TestOfFactories
     /// </summary>
     public interface ISuperExtendedService
     {
+        /// <summary>
+        /// Provides the public API for TrackingId.
+        /// </summary>
         Guid TrackingId { get; }
+        /// <summary>
+        /// Provides the public API for Service1.
+        /// </summary>
         IService1 Service1 { get; }
+        /// <summary>
+        /// Provides the public API for Service2.
+        /// </summary>
         IService2 Service2 { get; }
+        /// <summary>
+        /// Provides the public API for Service3.
+        /// </summary>
         IService3 Service3 { get; }
+        /// <summary>
+        /// Provides the public API for Service4.
+        /// </summary>
         IService4 Service4 { get; }
+        /// <summary>
+        /// Provides the public API for Service5.
+        /// </summary>
         IService5 Service5 { get; }
+        /// <summary>
+        /// Provides the public API for Service6.
+        /// </summary>
         IService6 Service6 { get; }
+        /// <summary>
+        /// Provides the public API for Service7.
+        /// </summary>
         IService7 Service7 { get; }
+        /// <summary>
+        /// Provides the public API for Options.
+        /// </summary>
         ApplicationData Options { get; }
     }
 
@@ -549,18 +633,48 @@ public class TestOfFactories
         IService7 service7,
         IOptions<ApplicationData> options) : ISuperExtendedService
     {
+        /// <summary>
+        /// Provides the public API for Options.
+        /// </summary>
         public ApplicationData Options => options.Value;
 
+        /// <summary>
+        /// Provides the public API for Service1.
+        /// </summary>
         public IService1 Service1 => service1;
+        /// <summary>
+        /// Provides the public API for Service2.
+        /// </summary>
         public IService2 Service2 => service2;
+        /// <summary>
+        /// Provides the public API for Service3.
+        /// </summary>
         public IService3 Service3 => service3;
+        /// <summary>
+        /// Provides the public API for Service4.
+        /// </summary>
         public IService4 Service4 => service4;
+        /// <summary>
+        /// Provides the public API for Service5.
+        /// </summary>
         public IService5 Service5 => service5;
+        /// <summary>
+        /// Provides the public API for Service6.
+        /// </summary>
         public IService6 Service6 => service6;
+        /// <summary>
+        /// Provides the public API for Service7.
+        /// </summary>
         public IService7 Service7 => service7;
 
+        /// <summary>
+        /// Provides the public API for TrackingId.
+        /// </summary>
         public Guid TrackingId { get; } = Guid.NewGuid();
 
+        /// <summary>
+        /// Provides the public API for ToString.
+        /// </summary>
         public override string ToString()
         {
             return TrackingId.ToString("D");
@@ -572,6 +686,9 @@ public class TestOfFactories
     /// </summary>
     public interface IService3
     {
+        /// <summary>
+        /// Provides the public API for TrackingId.
+        /// </summary>
         Guid TrackingId { get; }
     }
 
@@ -580,13 +697,22 @@ public class TestOfFactories
     /// </summary>
     public class Service3 : IService3
     {
+        /// <summary>
+        /// Provides the public API for Service3.
+        /// </summary>
         public Service3()
         {
             TrackingId = Guid.NewGuid();
         }
 
+        /// <summary>
+        /// Provides the public API for TrackingId.
+        /// </summary>
         public Guid TrackingId { get; set; }
 
+        /// <summary>
+        /// Provides the public API for ToString.
+        /// </summary>
         public override string ToString()
         {
             return TrackingId.ToString("D");
@@ -598,6 +724,9 @@ public class TestOfFactories
     /// </summary>
     public interface IService4
     {
+        /// <summary>
+        /// Provides the public API for TrackingId.
+        /// </summary>
         Guid TrackingId { get; }
     }
 
@@ -606,53 +735,98 @@ public class TestOfFactories
     /// </summary>
     public class Service4 : IService4
     {
+        /// <summary>
+        /// Provides the public API for Service4.
+        /// </summary>
         public Service4()
         {
             TrackingId = Guid.NewGuid();
         }
 
+        /// <summary>
+        /// Provides the public API for TrackingId.
+        /// </summary>
         public Guid TrackingId { get; set; }
 
+        /// <summary>
+        /// Provides the public API for ToString.
+        /// </summary>
         public override string ToString()
         {
             return TrackingId.ToString("D");
         }
     }
 
+    /// <summary>
+    /// Provides the public API for IService5.
+    /// </summary>
     public interface IService5
     {
+        /// <summary>
+        /// Provides the public API for TrackingId.
+        /// </summary>
         Guid TrackingId { get; }
     }
 
+    /// <summary>
+    /// Provides the public API for Service5.
+    /// </summary>
     public class Service5 : IService5
     {
+        /// <summary>
+        /// Provides the public API for Service5.
+        /// </summary>
         public Service5()
         {
             TrackingId = Guid.NewGuid();
         }
 
+        /// <summary>
+        /// Provides the public API for TrackingId.
+        /// </summary>
         public Guid TrackingId { get; set; }
 
+        /// <summary>
+        /// Provides the public API for ToString.
+        /// </summary>
         public override string ToString()
         {
             return TrackingId.ToString("D");
         }
     }
 
+    /// <summary>
+    /// Provides the public API for IService6.
+    /// </summary>
     public interface IService6
     {
+        /// <summary>
+        /// Provides the public API for TrackingId.
+        /// </summary>
         Guid TrackingId { get; }
     }
 
+    /// <summary>
+    /// Provides the public API for Service6.
+    /// </summary>
     public class Service6 : IService6
     {
+        /// <summary>
+        /// Provides the public API for Service6.
+        /// </summary>
         public Service6()
         {
             TrackingId = Guid.NewGuid();
         }
 
+        /// <summary>
+        /// Provides the public API for TrackingId.
+        /// </summary>
         public Guid TrackingId { get; set; }
 
+        /// <summary>
+        /// Provides the public API for ToString.
+        /// </summary>
         public override string ToString()
         {
             return TrackingId.ToString("D");
@@ -660,20 +834,38 @@ public class TestOfFactories
     }
 
 
+    /// <summary>
+    /// Provides the public API for IService7.
+    /// </summary>
     public interface IService7
     {
+        /// <summary>
+        /// Provides the public API for TrackingId.
+        /// </summary>
         Guid TrackingId { get; }
     }
 
+    /// <summary>
+    /// Provides the public API for Service7.
+    /// </summary>
     public class Service7 : IService7
     {
+        /// <summary>
+        /// Provides the public API for Service7.
+        /// </summary>
         public Service7()
         {
             TrackingId = Guid.NewGuid();
         }
 
+        /// <summary>
+        /// Provides the public API for TrackingId.
+        /// </summary>
         public Guid TrackingId { get; set; }
 
+        /// <summary>
+        /// Provides the public API for ToString.
+        /// </summary>
         public override string ToString()
         {
             return TrackingId.ToString("D");

@@ -11,6 +11,9 @@ public static class HudPainter
 {
     private const float PixelsPerDegree = 8f;
 
+    /// <summary>
+    /// Provides the public API for Draw.
+    /// </summary>
     public static void Draw(SKCanvas canvas, SKImageInfo info, HudViewModel hud)
     {
         canvas.Clear(SKColors.Black);

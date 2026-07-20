@@ -14,8 +14,14 @@ using NSubstitute;
 
 namespace MissionPlanner.Core.Tests;
 
+/// <summary>
+/// Provides the public API for MavFtpCompletionTests.
+/// </summary>
 public sealed class MavFtpCompletionTests
 {
+    /// <summary>
+    /// Provides the public API for RemotePath_NormalizesProtocolPaths.
+    /// </summary>
     [Theory]
     [InlineData("/", "/")]
     [InlineData("/APM/scripts/../logs", "/APM/logs")]
@@ -25,6 +31,9 @@ public sealed class MavFtpCompletionTests
         RemotePath.Normalize(input).Should().Be(expected);
     }
 
+    /// <summary>
+    /// Provides the public API for RemotePath_JoinsAndStopsAtRoot.
+    /// </summary>
     [Fact]
     public void RemotePath_JoinsAndStopsAtRoot()
     {
@@ -33,6 +42,9 @@ public sealed class MavFtpCompletionTests
         RemotePath.Parent("/").Should().Be("/");
     }
 
+    /// <summary>
+    /// Provides the public API for Sequence_ResponseAndWraparound_AreCentralized.
+    /// </summary>
     [Fact]
     public void Sequence_ResponseAndWraparound_AreCentralized()
     {
@@ -47,6 +59,9 @@ public sealed class MavFtpCompletionTests
         MavFtpSequence.MatchesSingleResponse(ushort.MaxValue, 0).Should().BeTrue();
     }
 
+    /// <summary>
+    /// Provides the public API for TransportEndPoint_UsesValueEquality_ForEquivalentUdpEndpoints.
+    /// </summary>
     [Fact]
     public void TransportEndPoint_UsesValueEquality_ForEquivalentUdpEndpoints()
     {
@@ -60,6 +75,9 @@ public sealed class MavFtpCompletionTests
         targets.Should().ContainSingle();
     }
 
+    /// <summary>
+    /// Provides the public API for Sequence_NextRequest_FollowsTheLastServerResponse.
+    /// </summary>
     [Fact]
     public void Sequence_NextRequest_FollowsTheLastServerResponse()
     {
@@ -71,6 +89,9 @@ public sealed class MavFtpCompletionTests
         nextRequest.Should().Be(44);
     }
 
+    /// <summary>
+    /// Provides the public API for FileTransferProtocol_CrcExtra_IsRegisteredAndEncoderCanBuildPacket.
+    /// </summary>
     [Fact]
     public void FileTransferProtocol_CrcExtra_IsRegisteredAndEncoderCanBuildPacket()
     {
@@ -87,6 +108,9 @@ public sealed class MavFtpCompletionTests
         packet[7].Should().Be((byte)MessageIds.FileTransferProtocol);
     }
 
+    /// <summary>
+    /// Provides the public API for MavFtpClient_Dispose_DoesNotDisposeSharedDispatcherOrSessionConnection.
+    /// </summary>
     [Fact]
     public async Task MavFtpClient_Dispose_DoesNotDisposeSharedDispatcherOrSessionConnection()
     {
@@ -110,6 +134,9 @@ public sealed class MavFtpCompletionTests
         await connection.DidNotReceive().DisposeAsync();
     }
 
+    /// <summary>
+    /// Provides the public API for SequenceStore_PersistsAcrossClientLifetimesAndWraps.
+    /// </summary>
     [Fact]
     public void SequenceStore_PersistsAcrossClientLifetimesAndWraps()
     {

@@ -18,6 +18,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<!-- Resource dictionaries do not require public source-generated backing types. -->
+		<MauiXaml Update="Resources\Styles\Colors.xaml" Inflator="XamlC" />
+		<MauiXaml Update="Resources\Styles\Override.xaml" Inflator="XamlC" />
+		<MauiXaml Update="Resources\Styles\Styles.xaml" Inflator="XamlC" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
 		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />

@@ -14,6 +14,9 @@ public class VehicleConnectionStateChanged : DomainEvent<VehicleConnectionStateC
     {
     }
 
+    /// <summary>
+    /// Provides the public API for VehicleConnectionStateChange.
+    /// </summary>
     public VehicleConnectionStateChange VehicleConnectionStateChange => (VehicleConnectionStateChange)Payload!;
 
     /// <summary>

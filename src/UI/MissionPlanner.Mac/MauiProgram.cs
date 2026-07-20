@@ -3,8 +3,14 @@ using MissionPlanner.App.Configuration;
 
 namespace MissionPlanner.Mac;
 
+/// <summary>
+/// Provides the public API for MauiProgram.
+/// </summary>
 public static class MauiProgram
 {
+    /// <summary>
+    /// Provides the public API for CreateMauiApp.
+    /// </summary>
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();

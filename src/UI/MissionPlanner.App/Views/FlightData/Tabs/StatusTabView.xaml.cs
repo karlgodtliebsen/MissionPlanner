@@ -2,6 +2,9 @@ using MissionPlanner.App.Configuration;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
+/// <summary>
+/// Provides the public API for StatusTabView.
+/// </summary>
 public partial class StatusTabView : ContentView
 {
     /// <summary>

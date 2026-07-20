@@ -4,11 +4,17 @@ using MissionPlanner.MavLink.Messages;
 
 namespace MissionPlanner.Core.Vehicles.Handlers;
 
+/// <summary>
+/// Provides the public API for ControlMessageHandler.
+/// </summary>
 public sealed class ControlMessageHandler(
     IStatusTextHandler statusTextHandler,
     IParamValueVehicleHandler paramValueHandler,
     ICommandAckTracker commandAckTracker) : IVehicleMessageHandler
 {
+    /// <summary>
+    /// Provides the public API for MessageTypes.
+    /// </summary>
     public IReadOnlyCollection<Type> MessageTypes { get; } =
     [
         typeof(StatusTextMessage),
@@ -16,6 +22,9 @@ public sealed class ControlMessageHandler(
         typeof(CommandAckMessage)
     ];
 
+    /// <summary>
+    /// Provides the public API for HandleAsync.
+    /// </summary>
     public async ValueTask HandleAsync(MavLinkMessage message, CancellationToken cancellationToken)
     {
         switch (message)

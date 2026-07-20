@@ -69,6 +69,9 @@ public class VehicleHudDataIntegrationTests
         hudData.BatteryRemaining.Should().Be(87);
     }
 
+    /// <summary>
+    /// Provides the public API for Should_Get_Primary_Vehicle_HudDataAsync.
+    /// </summary>
     [Fact]
     public async Task Should_Get_Primary_Vehicle_HudDataAsync()
     {

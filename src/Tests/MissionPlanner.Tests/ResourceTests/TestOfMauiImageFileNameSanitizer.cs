@@ -2,6 +2,9 @@
 
 namespace MissionPlanner.Tests.ResourceTests;
 
+/// <summary>
+/// Provides the public API for TestOfMauiImageFileNameSanitizer.
+/// </summary>
 public class TestOfMauiImageFileNameSanitizer(ITestOutputHelper output)
 {
     /// <summary>

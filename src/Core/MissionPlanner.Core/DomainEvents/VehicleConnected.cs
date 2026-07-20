@@ -8,9 +8,21 @@ namespace MissionPlanner.Core.DomainEvents;
 /// </summary>
 public class VehicleConnected : DomainEvent<VehicleConnectedData>
 {
+    /// <summary>
+    /// Provides the public API for VehicleId.
+    /// </summary>
     public VehicleId VehicleId => ((VehicleConnectedData)Payload!).VehicleId;
+    /// <summary>
+    /// Provides the public API for ConnectionType.
+    /// </summary>
     public string ConnectionType => ((VehicleConnectedData)Payload!).ConnectionType;
+    /// <summary>
+    /// Provides the public API for Endpoint.
+    /// </summary>
     public string Endpoint => ((VehicleConnectedData)Payload!).Endpoint;
+    /// <summary>
+    /// Provides the public API for ConnectedAt.
+    /// </summary>
     public DateTimeOffset ConnectedAt => ((VehicleConnectedData)Payload!).ConnectedAt;
 
     /// <summary>

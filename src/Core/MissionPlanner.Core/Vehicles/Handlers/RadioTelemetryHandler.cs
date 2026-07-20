@@ -6,13 +6,22 @@ using MissionPlanner.MavLink.Messages;
 
 namespace MissionPlanner.Core.Vehicles.Handlers;
 
+/// <summary>
+/// Provides the public API for RadioTelemetryHandler.
+/// </summary>
 public sealed class RadioTelemetryHandler(
     IVehicleRegistry vehicleRegistry,
     IDomainEventHub domainEventHub)
     : VehicleTelemetryHandlerBase(vehicleRegistry, domainEventHub), IVehicleMessageHandler
 {
+    /// <summary>
+    /// Provides the public API for MessageTypes.
+    /// </summary>
     public IReadOnlyCollection<Type> MessageTypes { get; } = [typeof(RcChannelsMessage)];
 
+    /// <summary>
+    /// Provides the public API for HandleAsync.
+    /// </summary>
     public async ValueTask HandleAsync(MavLinkMessage message, CancellationToken cancellationToken)
     {
         if (message is not RcChannelsMessage channels)

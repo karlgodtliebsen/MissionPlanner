@@ -230,5 +230,8 @@ public static class MessageIds
     public const uint StatusText = 253;
 
 
+    /// <summary>
+    /// Provides the public API for DefaultFallback.
+    /// </summary>
     public const uint DefaultFallback = 65555;
 }
