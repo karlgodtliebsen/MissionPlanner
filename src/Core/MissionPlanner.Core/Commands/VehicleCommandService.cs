@@ -1,7 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-using MissionPlanner.Core.DomainEvents;
-using MissionPlanner.Core.Services;
-using MissionPlanner.Core.Services.Abstractions;
+﻿using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
@@ -22,11 +19,10 @@ public sealed class VehicleCommandService(
     IMavLinkCommandEncoder encoder,
     ICommandAckTracker commandAckTracker,
     IDateTimeProvider dateTimeProvider,
-    IVehicleCommandPolicy commandPolicy,
-    ILogger<VehicleCommandService> logger)
+    IVehicleCommandPolicy commandPolicy)
     : IVehicleCommandService
 {
-    private static readonly TimeSpan CommandAckTimeout = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan commandAckTimeout = TimeSpan.FromSeconds(5);
 
     private VehicleCommandResponse? ValidateLand(VehicleState state)
     {
@@ -133,7 +129,7 @@ public sealed class VehicleCommandService(
 
         var customMode = ArduCopterModeMapper.ToCustomMode(mode);
 
-        var waitForAckTask = commandAckTracker.WaitForAckAsync(vehicleId, MavLinkCommandIds.DoSetMode, CommandAckTimeout, cancellationToken);
+        var waitForAckTask = commandAckTracker.WaitForAckAsync(vehicleId, MavLinkCommandIds.DoSetMode, commandAckTimeout, cancellationToken);
 
         var packet = encoder.EncodeSetMode(vehicleId.SystemId, vehicleId.ComponentId, customMode);
 
@@ -163,7 +159,7 @@ public sealed class VehicleCommandService(
 
         var vehicleSession = registry.GetRequired(vehicleId)!;
 
-        var waitForAckTask = commandAckTracker.WaitForAckAsync(vehicleId, MavLinkCommandIds.ComponentArmDisarm, CommandAckTimeout, cancellationToken);
+        var waitForAckTask = commandAckTracker.WaitForAckAsync(vehicleId, MavLinkCommandIds.ComponentArmDisarm, commandAckTimeout, cancellationToken);
 
         var packet = encoder.EncodeArmDisarm(vehicleId.SystemId, vehicleId.ComponentId, arm);
 

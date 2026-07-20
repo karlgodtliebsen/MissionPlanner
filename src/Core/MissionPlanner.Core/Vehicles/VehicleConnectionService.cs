@@ -194,7 +194,7 @@ public class VehicleConnectionService(
 
             // Store active connection
             activeConnection = new ActiveConnection(vehicleId.Value, transport, client, "UDP", endpoint);
-            domainEventHub.PublishDomainEventAsync(new VehicleConnected(vehicleId.Value, "UDP", endpoint, dateTimeProvider.UtcNow), linkedCts.Token);
+            await domainEventHub.PublishDomainEventAsync(new VehicleConnected(vehicleId.Value, "UDP", endpoint, dateTimeProvider.UtcNow), linkedCts.Token);
 
             logger.LogInformation("Successfully connected to vehicle {VehicleId} via UDP {Endpoint}", vehicleId, endpoint);
             return new VehicleConnectionResult(true, vehicleId.Value, connectionSession);

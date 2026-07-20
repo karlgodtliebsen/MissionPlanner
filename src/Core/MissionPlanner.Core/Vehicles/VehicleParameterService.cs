@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Library;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.Parameters;
-using MissionPlanner.Transport;
 
 namespace MissionPlanner.Core.Vehicles;
 
@@ -24,11 +24,13 @@ public sealed class VehicleParameterService(IMavLinkClient client, IMavLinkParam
             return false;
         }
 
+        DomainException.ThrowIfNull(vehicleRegistry);
+
         try
         {
             var packet = encoder.EncodeParamRequestList(vehicleId.SystemId, vehicleId.ComponentId);
 
-            var endpoint = vehicleRegistry.GetRequired(vehicleId).EndPoint;
+            var endpoint = vehicleRegistry.GetRequired(vehicleId)!.EndPoint;
 
             await client.SendAsync(packet, endpoint, cancellationToken);
 
@@ -52,6 +54,8 @@ public sealed class VehicleParameterService(IMavLinkClient client, IMavLinkParam
             return false;
         }
 
+        DomainException.ThrowIfNull(vehicleRegistry);
+
         if (string.IsNullOrWhiteSpace(parameterName))
         {
             logger.LogWarning("Parameter name cannot be empty");
@@ -68,7 +72,7 @@ public sealed class VehicleParameterService(IMavLinkClient client, IMavLinkParam
         {
             var packet = encoder.EncodeParamRequestRead(vehicleId.SystemId, vehicleId.ComponentId, parameterName);
 
-            var endpoint = vehicleRegistry.GetRequired(vehicleId).EndPoint;
+            var endpoint = vehicleRegistry.GetRequired(vehicleId)!.EndPoint;
 
             await client.SendAsync(packet, endpoint, cancellationToken);
 
@@ -92,12 +96,14 @@ public sealed class VehicleParameterService(IMavLinkClient client, IMavLinkParam
             return false;
         }
 
+        DomainException.ThrowIfNull(vehicleRegistry);
+
         try
         {
             // Use empty string for paramId and provide the index
             var packet = encoder.EncodeParamRequestRead(vehicleId.SystemId, vehicleId.ComponentId, string.Empty, (short)parameterIndex);
 
-            var endpoint = vehicleRegistry.GetRequired(vehicleId).EndPoint;
+            var endpoint = vehicleRegistry.GetRequired(vehicleId)!.EndPoint;
 
             await client.SendAsync(packet, endpoint, cancellationToken);
 
@@ -121,6 +127,8 @@ public sealed class VehicleParameterService(IMavLinkClient client, IMavLinkParam
             return false;
         }
 
+        DomainException.ThrowIfNull(vehicleRegistry);
+
         if (string.IsNullOrWhiteSpace(parameterName))
         {
             logger.LogWarning("Parameter name cannot be empty");
@@ -137,7 +145,7 @@ public sealed class VehicleParameterService(IMavLinkClient client, IMavLinkParam
         {
             var packet = encoder.EncodeParamSet(vehicleId.SystemId, vehicleId.ComponentId, parameterName, value, paramType);
 
-            var endpoint = vehicleRegistry.GetRequired(vehicleId).EndPoint;
+            var endpoint = vehicleRegistry.GetRequired(vehicleId)!.EndPoint;
 
             await client.SendAsync(packet, endpoint, cancellationToken);
 

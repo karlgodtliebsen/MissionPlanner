@@ -3,9 +3,9 @@ using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Library;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Encoding;
-using MissionPlanner.Transport;
 
 namespace MissionPlanner.Core.Services;
 
@@ -35,7 +35,8 @@ public class MavLinkCommandService(
             return false;
         }
 
-        if (rateHz < 0 || rateHz > 50)
+        DomainException.ThrowIfNull(vehicleRegistry);
+        if (rateHz is < 0 or > 50)
         {
             logger.LogWarning("Invalid data stream rate {RateHz} Hz (must be 0-50)", rateHz);
             return false;
@@ -52,7 +53,7 @@ public class MavLinkCommandService(
                 start ? (byte)1 : (byte)0,
                 sequenceNumber++);
 
-            var endpoint = vehicleRegistry.GetRequired(vehicleId).EndPoint;
+            var endpoint = vehicleRegistry.GetRequired(vehicleId)!.EndPoint;
 
             // Send packet
             await client.SendAsync(packet, endpoint, cancellationToken);
@@ -85,17 +86,19 @@ public class MavLinkCommandService(
             return false;
         }
 
+        DomainException.ThrowIfNull(vehicleRegistry);
+
         try
         {
-            const ushort GetHomePositionCommand = 410; // MAV_CMD_GET_HOME_POSITION
+            const ushort getHomePositionCommand = 410; // MAV_CMD_GET_HOME_POSITION
 
             var packet = MavLinkPacketBuilder.BuildCommandLongPacket(
                 vehicleId.SystemId,
                 vehicleId.ComponentId,
-                GetHomePositionCommand,
+                getHomePositionCommand,
                 sequenceNumber: sequenceNumber++);
 
-            var endpoint = vehicleRegistry.GetRequired(vehicleId).EndPoint;
+            var endpoint = vehicleRegistry.GetRequired(vehicleId)!.EndPoint;
             await client.SendAsync(packet, endpoint, cancellationToken);
 
             logger.LogInformation("📤 Sent MAV_CMD_GET_HOME_POSITION to {VehicleId}", vehicleId);
