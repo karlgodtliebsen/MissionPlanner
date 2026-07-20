@@ -9,6 +9,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.MavFtp;
+using UraniumUI.Extensions;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
@@ -25,20 +26,24 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
     private CancellationTokenSource? operationCancellation;
     private VehicleId? activeVehicleId;
     private readonly IList<IDisposable> disposables = [];
+    private IDispatcherTimer? timer = null;
 
     private IVehicleFileSystemService? fileSystem;
     private const string NoConnection = "No connected vehicle.";
     private const string NoFiles = "No files available.";
 
 
-    [ObservableProperty] private string currentPath = "/";
-    [ObservableProperty] private VehicleFileSystemEntryViewModel? selectedEntry;
-    [ObservableProperty] private bool isBusy;
-    [ObservableProperty] private double transferProgress;
-    [ObservableProperty] private string transferDetails = string.Empty;
-    [ObservableProperty] private string? statusText;
-    [ObservableProperty] private string? emptyText;
-    [ObservableProperty] private string? errorText;
+    [ObservableProperty] public partial string CurrentPath { get; set; } = "/";
+    [ObservableProperty] public partial VehicleFileSystemEntryViewModel? SelectedEntry { get; set; }
+    [ObservableProperty] public partial bool IsBusy { get; set; }
+    [ObservableProperty] public partial double TransferProgress { get; set; }
+    [ObservableProperty] public partial string TransferDetails { get; set; } = string.Empty;
+    [ObservableProperty] public partial string? StatusText { get; set; }
+    [ObservableProperty] public partial string? EmptyText { get; set; }
+    [ObservableProperty] public partial string? ErrorText { get; set; }
+    [ObservableProperty] public partial bool HasEntries { get; set; }
+    [ObservableProperty] public partial bool HasConnection { get; set; }
+
 
     /// <summary>
     /// Gets the collection of file system entries.
@@ -68,7 +73,6 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
     public MavFtpTabViewModel(IVehicleRegistry vehicleRegistry, IVehicleConnectionSession connectionSession, IDomainEventHub domainEventHub, IFileSaver fileSaver,
         IDispatcher dispatcher, ILogger<MavFtpTabViewModel> logger)
     {
-        fileSystem = connectionSession.CreateMavFtpConnection();
         this.vehicleRegistry = vehicleRegistry;
         this.connectionSession = connectionSession;
         this.fileSaver = fileSaver;
@@ -76,36 +80,63 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
         this.logger = logger;
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected));
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
+        fileSystem = connectionSession.CreateMavFtpConnection();
         SetConnectionStatus();
+        StartDelayedRefresh(1);
     }
 
     private async Task OnVehicleDisconnected(VehicleDisconnected evt, CancellationToken ct)
     {
-        if (activeVehicleId == evt.VehicleId)
-        {
-            activeVehicleId = vehicleRegistry.Vehicles.FirstOrDefault()?.Id;
-        }
-
+        activeVehicleId = null;
+        HasConnection = false;
+        HasEntries = false;
+        Entries.Clear();
         if (fileSystem is not null)
         {
+            await fileSystem.ResetSessionsAsync(evt.VehicleId, ct);
             await fileSystem.DisposeAsync();
+            fileSystem = null;
         }
 
-        fileSystem = null;
         SetConnectionStatus();
     }
-
 
     private async Task OnVehicleConnected(VehicleConnected evt, CancellationToken ct)
     {
         activeVehicleId = evt.VehicleId;
+        Entries.Clear();
         SetConnectionStatus();
         if (fileSystem is not null)
         {
+            await fileSystem.ResetSessionsAsync(evt.VehicleId, ct);
             await fileSystem.DisposeAsync();
         }
 
+        await Task.Delay(TimeSpan.FromSeconds(5), ct);
         fileSystem = connectionSession.CreateMavFtpConnection();
+
+        SetConnectionStatus();
+        StartDelayedRefresh(1);
+    }
+
+    private void StartDelayedRefresh(int seconds)
+    {
+        timer?.Stop();
+        timer = null;
+        timer = dispatcher.CreateTimer();
+        if (timer != null)
+        {
+            timer.Interval = TimeSpan.FromSeconds(seconds);
+            timer.Tick += (s, e) =>
+            {
+                timer.Stop();
+                timer = null;
+                ResetSessionsAsync().FireAndForget();
+                RefreshAsync().FireAndForget();
+                SetConnectionStatus();
+            };
+            timer.Start();
+        }
     }
 
     private void SetConnectionStatus()
@@ -121,9 +152,12 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
                 StatusText = NoConnection;
                 ErrorText = StatusText;
                 EmptyText = NoConnection;
+                HasConnection = false;
                 return;
             }
 
+            HasConnection = true;
+            HasEntries = Entries.Any();
             EmptyText = NoFiles;
         });
     }
@@ -165,14 +199,27 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
 
         await RunAsync(async ct =>
         {
-            if (fileSystem is null)
+            try
             {
-                dispatcher.Dispatch(() => StatusText = "MAVFTP sessions not initialized.");
-                return;
+                if (fileSystem is null)
+                {
+                    dispatcher.Dispatch(() => StatusText = "MAVFTP sessions not initialized.");
+                    return;
+                }
+
+                await fileSystem.ResetSessionsAsync(vehicle.Id, ct);
+            }
+            catch (Exception)
+            {
+                //
             }
 
-            await fileSystem.ResetSessionsAsync(vehicle.Id, ct);
-            dispatcher.Dispatch(() => StatusText = "MAVFTP sessions reset.");
+            dispatcher.Dispatch(() =>
+            {
+                StatusText = "MAVFTP sessions reset.";
+                Entries.Clear();
+                HasEntries = Entries.Any();
+            });
         });
     }
 
@@ -252,6 +299,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
                     Entries.Add(new VehicleFileSystemEntryViewModel(entry.Name, entry.Type, entry.Size));
                 }
 
+                HasEntries = Entries.Any();
                 CurrentPath = RemotePath.Normalize(path);
                 StatusText = Entries.Count == 0 ? "Directory is empty." : $"{Entries.Count} entries.";
                 SelectedEntry = null;

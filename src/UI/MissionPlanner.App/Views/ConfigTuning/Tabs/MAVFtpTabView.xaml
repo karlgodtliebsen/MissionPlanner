@@ -5,13 +5,13 @@
         <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
             <Button BackgroundColor="Transparent" Text="↑" Command="{Binding NavigateUpCommand}" IsEnabled="{Binding CanNavigateUp}" />
             <Label Grid.Column="1" Text="{Binding CurrentPath}" FontAttributes="Bold" VerticalTextAlignment="Center" LineBreakMode="MiddleTruncation" />
-            <Button BackgroundColor="Transparent" Grid.Column="2" Text="Refresh" Command="{Binding RefreshCommand}" />
-            <Button BackgroundColor="Transparent" Grid.Column="3" Text="Open" Command="{Binding OpenSelectedCommand}" />
-            <Button BackgroundColor="Transparent" Grid.Column="4" Text="Reset sessions" Command="{Binding ResetSessionsCommand}" />
+            <Button BackgroundColor="Transparent" Grid.Column="2" Text="Refresh"  IsVisible="{Binding HasConnection}" Command="{Binding RefreshCommand}" />
+            <Button BackgroundColor="Transparent" Grid.Column="3" Text="Open" IsVisible="{Binding HasEntries}" Command="{Binding OpenSelectedCommand}" />
+            <Button BackgroundColor="Transparent" Grid.Column="4" Text="Reset sessions"  IsVisible="{Binding HasConnection}" Command="{Binding ResetSessionsCommand}" />
         </Grid>
         <Grid Grid.Row="1">
             <CollectionView ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry}" SelectionMode="Single" 
-                            EmptyView="{Binding EmptyText}">
+                            EmptyView="{Binding EmptyText}" >
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <Grid Padding="8" ColumnDefinitions="36,*,120,140">
@@ -30,7 +30,7 @@
             <Label Text="{Binding TransferDetails}" FontSize="12" />
             <Label Text="{Binding StatusText}" />
             <HorizontalStackLayout Spacing="8">
-                <Button BackgroundColor="Transparent" Text="Download selected" Command="{Binding DownloadSelectedCommand}" />
+                <Button BackgroundColor="Transparent" Text="Download selected" Command="{Binding DownloadSelectedCommand}"  IsVisible="{Binding HasEntries}"/>
                 <Button BackgroundColor="Transparent" Text="Cancel" Command="{Binding CancelCommand}" IsEnabled="{Binding IsBusy}" />
                 <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
             </HorizontalStackLayout>

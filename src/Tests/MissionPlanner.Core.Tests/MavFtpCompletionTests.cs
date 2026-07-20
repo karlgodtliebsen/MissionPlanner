@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.MavLink.MavFtp;
 using MissionPlanner.MavLink.Messages;
@@ -32,6 +32,10 @@ public sealed class MavFtpCompletionTests
         MavFtpSequence.Next(ushort.MaxValue).Should().Be(0);
         MavFtpSequence.IsInResponseWindow(ushort.MaxValue, 0).Should().BeTrue();
         MavFtpSequence.IsInResponseWindow(10, 500).Should().BeFalse();
+        MavFtpSequence.MatchesSingleResponse(41, 41).Should().BeTrue();
+        MavFtpSequence.MatchesSingleResponse(41, 42).Should().BeTrue();
+        MavFtpSequence.MatchesSingleResponse(41, 43).Should().BeFalse();
+        MavFtpSequence.MatchesSingleResponse(ushort.MaxValue, 0).Should().BeTrue();
     }
 
     [Fact]
@@ -73,6 +77,8 @@ public sealed class MavFtpCompletionTests
         var packet = encoder.Encode(1, 1, new byte[12]);
 
         packet.Should().NotBeEmpty();
+        packet[5].Should().Be(254, "MAVFTP must not share MAVProxy's common 255:190 sender identity");
+        packet[6].Should().Be(190);
         packet[7].Should().Be((byte)MessageIds.FileTransferProtocol);
     }
 }

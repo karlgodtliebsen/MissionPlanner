@@ -4,7 +4,6 @@ using DotNext.Collections.Generic;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.DomainEvents;
-using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
@@ -32,7 +31,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
     private readonly List<IDisposable> eventSubscriptions = [];
 
-    //private IDictionary<string, VehicleParameter> parameters = new Dictionary<string, VehicleParameter>();
     private readonly IDictionary<string, ParameterMetadata> metadata = new Dictionary<string, ParameterMetadata>();
     private readonly List<ParameterItemViewModel> allParameterItems = [];
 

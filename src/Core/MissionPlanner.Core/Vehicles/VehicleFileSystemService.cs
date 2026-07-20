@@ -1,4 +1,4 @@
-using MissionPlanner.Core.Vehicles.Abstractions;
+﻿using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.MavFtp;
 using MissionPlanner.MavLink.MavFtp.Abstractions;
@@ -47,7 +47,16 @@ public sealed class VehicleFileSystemService(IMavFtpClient client, IVehicleRegis
     /// <inheritdoc />
     public Task ResetSessionsAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
     {
-        return client.ResetSessionsAsync(Resolve(vehicleId), cancellationToken);
+        try
+        {
+            return client.ResetSessionsAsync(Resolve(vehicleId), cancellationToken);
+        }
+        catch (Exception)
+        {
+            //
+        }
+
+        return Task.CompletedTask;
     }
 
     private MavFtpTarget Resolve(VehicleId vehicleId)

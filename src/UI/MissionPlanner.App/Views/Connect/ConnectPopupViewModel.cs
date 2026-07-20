@@ -156,6 +156,15 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
 
         // Initialize port list
         RefreshPortList();
+        if (IsConnected)
+        {
+            VehicleId = stateService.VehicleId;
+            if (VehicleId is not null)
+            {
+                SuccessConnection(VehicleId.Value);
+            }
+        }
+
         UpdateConnectionStatus();
     }
 
@@ -337,15 +346,6 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
                     stateService.VehicleId = vehicleId;
                     VehicleId = vehicleId;
                 }
-
-                //if (stateService.SelectedHost != SelectedHost)
-                //{
-                //    stateService.SelectedHost = SelectedHost!;
-                //}
-                //if (stateService.SelectedPort != SelectedPort)
-                //{
-                //    stateService.SelectedPort = SelectedPort!;
-                //}   
 
                 StatusMessage = $"Connected to vehicle {vehicleId}";
                 logger.LogInformation("Successfully connected to vehicle {VehicleId}", vehicleId);

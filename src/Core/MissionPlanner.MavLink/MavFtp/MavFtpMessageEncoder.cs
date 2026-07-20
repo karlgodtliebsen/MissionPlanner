@@ -1,4 +1,4 @@
-using MissionPlanner.MavLink.MavFtp.Abstractions;
+﻿using MissionPlanner.MavLink.MavFtp.Abstractions;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services.Abstractions;
 
@@ -10,6 +10,12 @@ namespace MissionPlanner.MavLink.MavFtp;
 /// <param name="crcExtraProvider">The CRC extra provider.</param>
 public sealed class MavFtpMessageEncoder(IMavLinkCrcExtraProvider crcExtraProvider) : IMavFtpMessageEncoder
 {
+    // MAVProxy commonly uses the standard GCS identity 255:190. MAVFTP state is
+    // keyed by sender identity, so sharing that identity causes sequence/session
+    // collisions when both clients use FTP through the same vehicle link.
+    private const byte SourceSystemId = 254;
+    private const byte SourceComponentId = 190;
+
     private int sequence;
 
     /// <summary>
@@ -38,8 +44,8 @@ public sealed class MavFtpMessageEncoder(IMavLinkCrcExtraProvider crcExtraProvid
         packet[0] = 0xFD;
         packet[1] = checked((byte)payload.Length);
         packet[4] = unchecked((byte)Interlocked.Increment(ref sequence));
-        packet[5] = 255;
-        packet[6] = 190;
+        packet[5] = SourceSystemId;
+        packet[6] = SourceComponentId;
         packet[7] = (byte)MessageIds.FileTransferProtocol;
         payload.CopyTo(packet.AsSpan(10));
         if (!crcExtraProvider.TryGetCrcExtra(MessageIds.FileTransferProtocol, out var crcExtra))

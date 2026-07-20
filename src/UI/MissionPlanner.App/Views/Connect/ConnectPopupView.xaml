@@ -12,50 +12,50 @@
 
     <ContentView.Resources>
         <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
-    </ContentView.Resources>     
-
-    <VerticalStackLayout Spacing="12" Margin="25">
-
-        <Picker ItemsSource="{Binding Channels}"
-                SelectedItem="{Binding SelectedChannel}"
-                Title="Channel" IsEnabled="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}" 
-                Margin="0,0,12,4" />
-        <Picker ItemsSource="{Binding BaudRates}"
-                SelectedItem="{Binding SelectedBaudRate}"
-                IsVisible="{Binding ShowSelectedCom}"
-                Title="Baud rate"  IsEnabled="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}" 
-                Margin="0,0,12,4" />
-
-        <material:EditorField IsEnabled="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}" Title="Host" Text="{Binding SelectedHost}" IsVisible="{Binding ShowSelectedHost}" />
-        <material:EditorField IsEnabled="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}" Title="Port" Text="{Binding SelectedPort}" IsVisible="{Binding ShowSelectedHost}"/>
-
-        <!--<validations:RequiredValidation />
+    </ContentView.Resources>
+    <!--<validations:RequiredValidation />
         <validations:RegexValidation Pattern="{x:Static input:AdvancedEntry.REGEX_EMAIL}" Message="Invalid email address" />-->
 
-        <!--
+    <!--
         <material:TextField.Behaviors>
             <uranium:DataAnnotationsBehavior Binding="{Binding Ip}" />
         </material:TextField.Behaviors>
         -->
+    <Grid>
 
-        <Label Text="{Binding StatusMessage}"
+        <VerticalStackLayout Spacing="12" Margin="25" IsVisible="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}">
+
+            <Picker ItemsSource="{Binding Channels}"
+                SelectedItem="{Binding SelectedChannel}"
+                Title="Channel" 
+                Margin="0,0,12,4" />
+            <Picker ItemsSource="{Binding BaudRates}"
+                SelectedItem="{Binding SelectedBaudRate}"
+                IsVisible="{Binding ShowSelectedCom}"
+                Title="Baud rate"  
+                Margin="0,0,12,4" />
+
+            <material:EditorField Title="Host" Text="{Binding SelectedHost}" IsVisible="{Binding ShowSelectedHost}" />
+            <material:EditorField Title="Port" Text="{Binding SelectedPort}" IsVisible="{Binding ShowSelectedHost}"/>
+
+            <Label Text="{Binding StatusMessage}"
                        TextColor="LightGray"
                        FontSize="12"
                        HorizontalOptions="Center"
                        Margin="0,4,0,0" />
 
-        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
 
-            <Button Grid.Column="0"
+                <Button Grid.Column="0"
                     ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Find_replace}, FontFamily=MaterialSharp}"
                     FontSize="20"
                     Padding="8,4"
                     VerticalOptions="Center"
                     BackgroundColor="Transparent"
-                    IsEnabled="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}" 
+                     
                     Command="{Binding RefreshCommand}" />
 
-            <Button Grid.Column="1"
+                <Button Grid.Column="1"
                     ImageSource="{Binding IsConnectedImage}"
                     FontSize="20"
                     Padding="8,4"
@@ -63,8 +63,29 @@
                     BackgroundColor="Transparent"
                     Command="{Binding ConnectCommand}" />
 
-        </Grid>
+            </Grid>
+        </VerticalStackLayout>
+        <VerticalStackLayout Spacing="12" Margin="25" IsVisible="{Binding IsConnected}">
+            <Label Text="{Binding StatusMessage}"
+                       TextColor="LightGray"
+                       FontSize="12"
+                       HorizontalOptions="Center"
+                       Margin="0,4,0,0" />
 
-    </VerticalStackLayout>
+            <HorizontalStackLayout HorizontalOptions="Center" >
+
+                <Button 
+                    ImageSource="{Binding IsConnectedImage}"
+                    FontSize="20"
+                    Padding="8,4"
+                    VerticalOptions="Center"
+                    BackgroundColor="Transparent"
+                    Command="{Binding ConnectCommand}" />
+
+            </HorizontalStackLayout>
+
+        </VerticalStackLayout>
+
+    </Grid>
 
 </ContentView>

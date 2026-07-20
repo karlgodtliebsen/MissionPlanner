@@ -1,4 +1,4 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
@@ -45,11 +45,20 @@ public sealed class MavFtpClient : IMavFtpClient
     /// <inheritdoc />
     public Task ResetSessionsAsync(MavFtpTarget target, CancellationToken cancellationToken = default)
     {
-        return InOperationLockAsync(target, async ct =>
+        try
         {
-            await RequestAsync(target, 0, MavFtpOpcode.ResetSessions, 0, ReadOnlyMemory<byte>.Empty, null, ct).ConfigureAwait(false);
-            return 0;
-        }, cancellationToken);
+            return InOperationLockAsync(target, async ct =>
+            {
+                await RequestAsync(target, 0, MavFtpOpcode.ResetSessions, 0, ReadOnlyMemory<byte>.Empty, null, ct).ConfigureAwait(false);
+                return 0;
+            }, cancellationToken);
+        }
+        catch (Exception)
+        {
+            //
+        }
+
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc />
