@@ -16,6 +16,7 @@ public sealed class MavFtpClient : IMavFtpClient
     private readonly IMavFtpMessageEncoder messageEncoder;
     private readonly IMavFtpPacketCodec packetCodec;
     private readonly IMavFtpResponseDispatcher responseDispatcher;
+    private readonly IMavFtpSequenceStore sequenceStore;
     private readonly ILogger<MavFtpClient> logger;
     private readonly MavFtpOptions options;
     private readonly ConcurrentDictionary<MavFtpTarget, TargetOperationState> targetStates = new();
@@ -27,16 +28,18 @@ public sealed class MavFtpClient : IMavFtpClient
     /// <param name="messageEncoder">The MAVLink FTP message encoder.</param>
     /// <param name="packetCodec">The MAVLink FTP packet codec.</param>
     /// <param name="responseDispatcher">The MAVLink FTP response dispatcher.</param>
+    /// <param name="sequenceStore">The application-scoped sequence state store.</param>
     /// <param name="options">The MAVLink FTP options.</param>
     /// <param name="logger">The logger instance.</param>
     public MavFtpClient(IMavLinkConnection connection, IMavFtpMessageEncoder messageEncoder,
-        IMavFtpPacketCodec packetCodec, IMavFtpResponseDispatcher responseDispatcher, IOptions<MavFtpOptions> options,
+        IMavFtpPacketCodec packetCodec, IMavFtpResponseDispatcher responseDispatcher, IMavFtpSequenceStore sequenceStore, IOptions<MavFtpOptions> options,
         ILogger<MavFtpClient> logger)
     {
         this.connection = connection;
         this.messageEncoder = messageEncoder;
         this.packetCodec = packetCodec;
         this.responseDispatcher = responseDispatcher;
+        this.sequenceStore = sequenceStore;
         this.logger = logger;
         this.options = options.Value;
         this.options.Validate();
@@ -194,8 +197,7 @@ public sealed class MavFtpClient : IMavFtpClient
 
     private async Task<MavFtpPacket> RequestAsync(MavFtpTarget target, byte session, MavFtpOpcode opcode, uint offset, ReadOnlyMemory<byte> data, string? path, CancellationToken ct, TimeSpan? requestTimeout = null, int? maximumAttempts = null)
     {
-        var state = targetStates.GetOrAdd(target, static _ => new TargetOperationState());
-        var sequence = state.AllocateRequestSequence();
+        var sequence = sequenceStore.GetNextRequest(target);
         var request = new MavFtpPacket(sequence, session, opcode, MavFtpOpcode.None, false, offset, data);
         for (var attempt = 1; ; attempt++)
         {
@@ -204,7 +206,7 @@ public sealed class MavFtpClient : IMavFtpClient
             try
             {
                 var response = await registration.ReadAsync(requestTimeout ?? options.RequestTimeout, ct).ConfigureAwait(false);
-                state.ObserveResponse(response.Sequence);
+                sequenceStore.ObserveResponse(target, response.Sequence);
                 if (response.Opcode == MavFtpOpcode.Nak)
                 {
                     if (response.Data.IsEmpty)
@@ -227,8 +229,7 @@ public sealed class MavFtpClient : IMavFtpClient
 
     private async Task<byte[]> ReadBurstWindowAsync(MavFtpTarget target, byte session, uint offset, int expectedLength, string path, CancellationToken ct)
     {
-        var state = targetStates.GetOrAdd(target, static _ => new TargetOperationState());
-        var sequence = state.AllocateRequestSequence();
+        var sequence = sequenceStore.GetNextRequest(target);
         var request = new MavFtpPacket(sequence, session, MavFtpOpcode.BurstReadFile, MavFtpOpcode.None, false, offset, new byte[Math.Min(options.ReadChunkSize, expectedLength)]);
         using var registration = responseDispatcher.Register(target, sequence, MavFtpOpcode.BurstReadFile, session, true);
         await connection.SendRawAsync(messageEncoder.Encode(target.SystemId, target.ComponentId, packetCodec.Encode(request)), target.EndPoint, ct).ConfigureAwait(false);
@@ -241,7 +242,7 @@ public sealed class MavFtpClient : IMavFtpClient
             try
             {
                 packet = await registration.ReadAsync(options.RequestTimeout, ct).ConfigureAwait(false);
-                state.ObserveResponse(packet.Sequence);
+                sequenceStore.ObserveResponse(target, packet.Sequence);
             }
             catch (TimeoutException)
             {
@@ -270,14 +271,27 @@ public sealed class MavFtpClient : IMavFtpClient
             }
 
             var blockEnd = checked(packet.Offset + (uint)packet.Data.Length);
-            if (packet.Offset < offset || blockEnd > end)
+            if (packet.Offset < offset)
             {
                 throw new MavFtpProtocolException("MAVFTP burst block is outside the requested window.");
             }
 
+            // The MAVFTP request specifies the size of each returned block, not the total
+            // client-side burst window. ArduPilot may therefore send a final block which
+            // crosses our batching boundary. Keep the part belonging to this window; the
+            // following request will resume at the exact boundary.
+            if (packet.Offset >= end)
+            {
+                break;
+            }
+
+            var dataLength = checked((int)Math.Min((uint)packet.Data.Length, end - packet.Offset));
+            var packetData = packet.Data.Slice(0, dataLength);
+            blockEnd = packet.Offset + (uint)dataLength;
+
             if (blocks.TryGetValue(packet.Offset, out var duplicate))
             {
-                if (!duplicate.AsSpan().SequenceEqual(packet.Data.Span))
+                if (!duplicate.AsSpan().SequenceEqual(packetData.Span))
                 {
                     throw new MavFtpProtocolException("Conflicting duplicate MAVFTP burst block.");
                 }
@@ -293,7 +307,7 @@ public sealed class MavFtpClient : IMavFtpClient
                     }
                 }
 
-                blocks.Add(packet.Offset, packet.Data.ToArray());
+                blocks.Add(packet.Offset, packetData.ToArray());
             }
 
             if (packet.BurstComplete || CoveredLength(blocks) == expectedLength)
@@ -392,19 +406,7 @@ public sealed class MavFtpClient : IMavFtpClient
 
     private sealed class TargetOperationState
     {
-        private int nextRequestSequence;
-
         public SemaphoreSlim Gate { get; } = new(1, 1);
-
-        public ushort AllocateRequestSequence()
-        {
-            return unchecked((ushort)Volatile.Read(ref nextRequestSequence));
-        }
-
-        public void ObserveResponse(ushort responseSequence)
-        {
-            Volatile.Write(ref nextRequestSequence, MavFtpSequence.Next(responseSequence));
-        }
     }
 
     /// <inheritdoc />

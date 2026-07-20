@@ -100,12 +100,28 @@ public sealed class MavFtpCompletionTests
             encoder,
             codec,
             dispatcher,
+            new MavFtpSequenceStore(),
             Options.Create(new MavFtpOptions()),
             NullLogger<MavFtpClient>.Instance);
 
         await client.DisposeAsync();
 
         dispatcher.DidNotReceive().Dispose();
-        connection.DidNotReceive().DisposeAsync();
+        await connection.DidNotReceive().DisposeAsync();
+    }
+
+    [Fact]
+    public void SequenceStore_PersistsAcrossClientLifetimesAndWraps()
+    {
+        var store = new MavFtpSequenceStore();
+        var target = new MavFtpTarget(1, 1, new TransportEndPoint("udp", "127.0.0.1", 14550));
+
+        store.GetNextRequest(target).Should().Be(0);
+
+        store.ObserveResponse(target, 1);
+        store.GetNextRequest(target).Should().Be(2);
+
+        store.ObserveResponse(target, ushort.MaxValue);
+        store.GetNextRequest(target).Should().Be(0);
     }
 }

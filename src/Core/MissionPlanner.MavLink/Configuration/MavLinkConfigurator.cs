@@ -40,6 +40,7 @@ public static class MavLinkConfigurator
         services.TryAddSingleton<IMavFtpPacketCodec, MavFtpPacketCodec>();
         services.TryAddSingleton<IMavFtpMessageEncoder, MavFtpMessageEncoder>();
         services.TryAddSingleton<IMavFtpResponseDispatcher, MavFtpResponseDispatcher>();
+        services.TryAddSingleton<IMavFtpSequenceStore, MavFtpSequenceStore>();
         services.TryAddSingleton<IMavFtpClient, MavFtpClient>();
         services.AddSingleton(Options.Create(new MavFtpOptions()));
 

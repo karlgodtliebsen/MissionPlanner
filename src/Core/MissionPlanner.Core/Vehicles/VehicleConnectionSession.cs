@@ -149,6 +149,7 @@ public sealed class VehicleConnectionSession(
         connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
 
         parameterService = domainFactory.Create<IVehicleParameterService, IMavLinkClient>(client);
+        parameterStreamService = domainFactory.Create<IVehicleParameterStreamService, IVehicleParameterService>(parameterService);
 
         var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
 
@@ -181,8 +182,8 @@ public sealed class VehicleConnectionSession(
         messagePump = serviceFactory.Create<IVehicleMessagePump>();
         connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
 
-        //connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
         parameterService = domainFactory.Create<IVehicleParameterService, IMavLinkClient>(client);
+        parameterStreamService = domainFactory.Create<IVehicleParameterStreamService, IVehicleParameterService>(parameterService);
 
         var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
 
@@ -283,6 +284,9 @@ public sealed class VehicleConnectionSession(
                 connection = null;
             }
 
+            parameterStreamService = null;
+            parameterService = null;
+
             // Stop and disconnect transport
             if (transport is not null)
             {
@@ -326,6 +330,8 @@ public sealed class VehicleConnectionSession(
             transport = null;
             client = null;
             messagePump = null;
+            parameterStreamService = null;
+            parameterService = null;
         }
 
         logger.LogInformation("Successfully disconnected vehicle {VehicleId}", vehicleId);

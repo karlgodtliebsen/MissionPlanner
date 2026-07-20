@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.MAVFtpTabView" Title="Vehicle Files">
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Name="RootPage"
+             x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.MAVFtpTabView"
+             Title="Vehicle Files">
     <Grid Padding="16" RowDefinitions="Auto,*,Auto" RowSpacing="12">
         <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
             <Button BackgroundColor="Transparent" Text="↑" Command="{Binding NavigateUpCommand}" IsEnabled="{Binding CanNavigateUp}" />
@@ -15,6 +18,11 @@
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <Grid Padding="8" ColumnDefinitions="36,*,120,140">
+                            <Grid.GestureRecognizers>
+                                <TapGestureRecognizer NumberOfTapsRequired="2"
+                                                      Command="{Binding Source={x:Reference RootPage}, Path=BindingContext.OpenEntryCommand}"
+                                                      CommandParameter="{Binding .}" />
+                            </Grid.GestureRecognizers>
                             <Label Text="{Binding Icon}" FontSize="20" />
                             <Label Grid.Column="1" Text="{Binding Name}" VerticalTextAlignment="Center" />
                             <Label Grid.Column="2" Text="{Binding TypeText}" VerticalTextAlignment="Center" />

@@ -196,10 +196,23 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task OpenSelectedAsync()
     {
-        if (SelectedEntry?.IsDirectory == true)
+        if (SelectedEntry is not null)
         {
-            await LoadDirectoryAsync(RemotePath.Join(CurrentPath, SelectedEntry.Name));
+            await OpenEntryAsync(SelectedEntry);
         }
+    }
+
+    [RelayCommand]
+    private async Task OpenEntryAsync(VehicleFileSystemEntryViewModel entry)
+    {
+        SelectedEntry = entry;
+        if (entry.IsDirectory)
+        {
+            await LoadDirectoryAsync(RemotePath.Join(CurrentPath, entry.Name));
+            return;
+        }
+
+        await DownloadSelectedAsync();
     }
 
     [RelayCommand]
@@ -372,7 +385,6 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
         {
             dispatcher.Dispatch(() => ErrorText = "MAVFTP transfer timed out. Retrying Connection.");
             logger.LogWarning(ex, "MAVFTP transfer timed out. Retrying Connection.");
-            // StartDelayedRefresh(1);
         }
         catch (MavFtpRemoteException ex) when (
             ex.Error == MavFtpNakError.UnknownCommand)
@@ -386,7 +398,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
         }
         catch (MavFtpProtocolException ex)
         {
-            dispatcher.Dispatch(() => ErrorText = "The vehicle returned an invalid MAVFTP response.");
+            dispatcher.Dispatch(() => ErrorText = "The vehicle returned an invalid MAVFTP response: " + ex.Message);
             logger.LogError(ex, "Invalid MAVFTP protocol response.");
         }
         catch (InvalidOperationException ex)
