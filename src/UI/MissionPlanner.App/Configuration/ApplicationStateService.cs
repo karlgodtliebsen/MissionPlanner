@@ -1,13 +1,49 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.App.Configuration;
 
 /// <summary>
 /// Singleton service for managing shared application state across the application.
 /// </summary>
-public partial class ApplicationStateService : ObservableObject
+public partial class ApplicationStateService : ObservableObject, IDisposable
 {
+    private readonly IList<IDisposable> disposables = [];
+
+    /// <summary>
+    /// Singleton service for managing shared application state across the application.
+    /// </summary>
+    public ApplicationStateService(IDomainEventHub domainEventHub)
+    {
+        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected));
+        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
+    }
+
+    private Task OnVehicleDisconnected(VehicleDisconnected evt, CancellationToken ct)
+    {
+        IsConnected = false;
+        return Task.CompletedTask;
+    }
+
+    private Task OnVehicleConnected(VehicleConnected evt, CancellationToken ct)
+    {
+        IsConnected = true;
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        foreach (var disposable in disposables)
+        {
+            disposable.Dispose();
+        }
+
+        disposables.Clear();
+    }
+
     [ObservableProperty] public partial bool IsConnected { get; set; }
     [ObservableProperty] public partial string SelectedChannel { get; set; } = "AUTO";
     [ObservableProperty] public partial string SelectedBaudRate { get; set; } = "115200";

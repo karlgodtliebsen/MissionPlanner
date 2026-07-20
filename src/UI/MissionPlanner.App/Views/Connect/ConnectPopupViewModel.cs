@@ -85,6 +85,28 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
         defaultChannel = options.CurrentValue.Channel;
         SelectedBaudRate = stateService.SelectedBaudRate;
         IsConnected = stateService.IsConnected;
+        OnStateServiceChanged();
+
+        // Subscribe to connection events
+        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected));
+        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
+
+        // Initialize port list
+        RefreshPortList();
+        if (IsConnected)
+        {
+            VehicleId = stateService.VehicleId;
+            if (VehicleId is not null)
+            {
+                SuccessConnection(VehicleId.Value);
+            }
+        }
+
+        UpdateConnectionStatus();
+    }
+
+    private void OnStateServiceChanged()
+    {
         // Subscribe to state changes
         stateService.PropertyChanged += (sender, args) =>
         {
@@ -149,23 +171,6 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
                     break;
             }
         };
-
-        // Subscribe to connection events
-        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected));
-        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
-
-        // Initialize port list
-        RefreshPortList();
-        if (IsConnected)
-        {
-            VehicleId = stateService.VehicleId;
-            if (VehicleId is not null)
-            {
-                SuccessConnection(VehicleId.Value);
-            }
-        }
-
-        UpdateConnectionStatus();
     }
 
 
@@ -344,6 +349,10 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
                 if (stateService.VehicleId != vehicleId)
                 {
                     stateService.VehicleId = vehicleId;
+                }
+
+                if (VehicleId != vehicleId)
+                {
                     VehicleId = vehicleId;
                 }
 
@@ -440,9 +449,14 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
         await dispatcher.DispatchAsync(async () =>
         {
             IsConnected = true;
+            stateService.IsConnected = true;
             if (stateService.VehicleId != evt.VehicleId)
             {
                 stateService.VehicleId = evt.VehicleId;
+            }
+
+            if (VehicleId != evt.VehicleId)
+            {
                 VehicleId = evt.VehicleId;
             }
 
@@ -459,6 +473,7 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
             VehicleId = null;
             stateService.VehicleId = null;
             IsConnected = false;
+            stateService.IsConnected = false;
             UpdateConnectionStatus();
             StatusMessage = $"Vehicle {evt.VehicleId} disconnected";
         });

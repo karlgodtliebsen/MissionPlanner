@@ -79,8 +79,13 @@ public sealed class VehicleConnectionSession(
 
 
     /// <inheritdoc />
-    public IVehicleFileSystemService CreateMavFtpConnection()
+    public IVehicleFileSystemService? CreateMavFtpConnection()
     {
+        if (connection == null)
+        {
+            return null;
+        }
+
         var mavClient = domainFactory.Create<IMavFtpClient, IMavLinkConnection>(Connection);
         var service = domainFactory.Create<IVehicleFileSystemService, IMavFtpClient>(mavClient);
         return service;
@@ -143,7 +148,6 @@ public sealed class VehicleConnectionSession(
         messagePump = serviceFactory.Create<IVehicleMessagePump>();
         connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
 
-        //connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
         parameterService = domainFactory.Create<IVehicleParameterService, IMavLinkClient>(client);
 
         var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
@@ -195,12 +199,25 @@ public sealed class VehicleConnectionSession(
     {
         try
         {
-            logger.LogInformation("Disconnecting vehicle {VehicleId}", vehicleId);
+            // Publish disconnect event
+            if (vehicleId is not null)
+            {
+                try
+                {
+                    logger.LogInformation("Disconnecting vehicle {VehicleId}", vehicleId);
+                    await domainEventHub.PublishDomainEventAsync(new VehicleDisconnected(vehicleId.Value, dateTimeProvider.UtcNow, "User requested disconnect"), cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Error Publishing VehicleDisconnected while disconnecting Session {VehicleId}", vehicleId);
+                }
+            }
+
             var registry = serviceFactory.Create<IVehicleRegistry>();
 
-            // Publish Reset event
+            // Invoke Reset event
             await registry.Reset(cancellationToken);
-
+            registry = null;
 
             // Stop background tasks gracefully. Cancel first; otherwise the wait below just waits for the timeout.
             await serviceCts.CancelAsync().ConfigureAwait(false);
@@ -240,45 +257,77 @@ public sealed class VehicleConnectionSession(
             // Stop and dispose services
             if (messagePump is not null)
             {
-                await messagePump.DisposeAsync();
+                try
+                {
+                    await messagePump.DisposeAsync();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogDebug(ex, "Non Critical Failure Disposing messagePump ");
+                }
+
                 messagePump = null;
             }
 
             if (connection is not null)
             {
-                await connection.DisposeAsync();
+                try
+                {
+                    await connection.DisposeAsync();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogDebug(ex, "Non Critical Failure Disposing connection ");
+                }
+
                 connection = null;
             }
 
-            // Stop client and disconnect transport
-            if (client is not null)
-            {
-                await client.StopAsync();
-            }
-
+            // Stop and disconnect transport
             if (transport is not null)
             {
-                await transport.DisconnectAsync(cancellationToken);
-                await transport.DisposeAsync();
+                try
+                {
+                    await transport.DisconnectAsync(cancellationToken);
+                    await transport.DisposeAsync();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogDebug(ex, "Non Critical Failure Disposing transport ");
+                }
+
+                transport = null;
             }
 
-            client = null;
-            transport = null;
-
-            // Publish disconnect event
-            if (vehicleId is not null)
+            // Stop and disconnect client
+            if (client is not null)
             {
-                await domainEventHub.PublishDomainEventAsync(new VehicleDisconnected(vehicleId.Value, dateTimeProvider.UtcNow, "User requested disconnect"), cancellationToken);
-                logger.LogInformation("Successfully disconnected vehicle {VehicleId}", vehicleId);
+                try
+                {
+                    await client.StopAsync();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogDebug(ex, "Non Critical Failure Disposing client ");
+                }
+
+                client = null;
             }
         }
         catch (Exception ex)
         {
             if (vehicleId is not null)
             {
-                logger.LogError(ex, "Error while disconnecting vehicle {VehicleId}", vehicleId);
+                logger.LogError(ex, "Error while disconnecting Session {VehicleId}", vehicleId);
             }
-            // Still clear the connection even if there were errors
+
+            // Still null the fields  even if there were errors
+            connection = null;
+            transport = null;
+            client = null;
+            messagePump = null;
         }
+
+        logger.LogInformation("Successfully disconnected vehicle {VehicleId}", vehicleId);
     }
 }

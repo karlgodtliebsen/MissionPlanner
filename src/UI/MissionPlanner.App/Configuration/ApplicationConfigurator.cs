@@ -43,12 +43,8 @@ public static class ApplicationConfigurator
 
         services.AddSingleton(Options.Create(applicationOptions));
 
-        ApplicationState state = new() { SelectedBaudRate = applicationOptions.BaudRate, /* SelectedConnectionType = applicationOptions.ConnectionType,*/ SelectedPort = applicationOptions.Port };
         // Register shared state service as singleton for runtime state management
-        var stateService = new ApplicationStateService();
-        stateService.Initialize(state);
-        services.TryAddSingleton(stateService);
-
+        services.TryAddSingleton<ApplicationStateService>();
         services.TryAddSingleton<ParametersFileHandler>();
 
         //services.TryAddSingleton<Views.Vehicles.Views.ModelMapper>();
@@ -129,6 +125,11 @@ public static class ApplicationConfigurator
             .UseDomainServices()
             ;
 
+        var applicationOptions = serviceProvider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
+        ApplicationState state = new() { SelectedBaudRate = applicationOptions.BaudRate, SelectedPort = applicationOptions.Port };
+        // Register shared state service as singleton for runtime state management
+        var stateService = serviceProvider.GetRequiredService<ApplicationStateService>();
+        stateService.Initialize(state);
         return serviceProvider;
     }
 }

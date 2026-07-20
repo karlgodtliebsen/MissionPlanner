@@ -4,7 +4,6 @@ using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
-using MissionPlanner.Library;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -195,9 +194,7 @@ public class VehicleConnectionService(
 
             // Store active connection
             activeConnection = new ActiveConnection(vehicleId.Value, transport, client, "UDP", endpoint);
-
-            // Publish success event
-            await domainEventHub.PublishDomainEventAsync(new VehicleConnected(vehicleId.Value, "UDP", endpoint, dateTimeProvider.UtcNow), linkedCts.Token);
+            domainEventHub.PublishDomainEventAsync(new VehicleConnected(vehicleId.Value, "UDP", endpoint, dateTimeProvider.UtcNow), linkedCts.Token);
 
             logger.LogInformation("Successfully connected to vehicle {VehicleId} via UDP {Endpoint}", vehicleId, endpoint);
             return new VehicleConnectionResult(true, vehicleId.Value, connectionSession);
@@ -302,23 +299,11 @@ public class VehicleConnectionService(
             return;
         }
 
-        VehicleId? vehicleId = activeConnection.VehicleId;
-        DomainException.ThrowIfNull(vehicleId);
+        //  VehicleId? vehicleId = activeConnection.VehicleId;
+        // DomainException.ThrowIfNull(vehicleId);
         await connectionLock.WaitAsync(cancellationToken);
         try
         {
-            if (activeConnection == null)
-            {
-                logger.LogWarning("No active connection to disconnect");
-                return;
-            }
-
-            if (activeConnection.VehicleId != vehicleId)
-            {
-                logger.LogWarning("Attempted to disconnect vehicle {VehicleId} but current connection is {CurrentVehicleId}", vehicleId, activeConnection.VehicleId);
-                return;
-            }
-
             await DisconnectInternalAsync(cancellationToken);
         }
         finally
@@ -338,28 +323,13 @@ public class VehicleConnectionService(
         }
 
         var vehicleId = activeConnection.VehicleId;
-        DomainException.ThrowIfNull(vehicleId);
         try
         {
             logger.LogInformation("Disconnecting vehicle {VehicleId}", vehicleId);
 
-
             // Clear active connection
             activeConnection = null;
-            await connectionSession.DisconnectAsync(cancellationToken: cancellationToken);
-
-            // Publish disconnect event
-            try
-            {
-                await domainEventHub.PublishDomainEventAsync(new VehicleDisconnected(vehicleId, dateTimeProvider.UtcNow, "User requested disconnect"), cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "Error while publishing disconnect event for vehicle {VehicleId}", vehicleId);
-                activeConnection = null;
-                return;
-            }
-
+            await connectionSession.DisconnectAsync(vehicleId, cancellationToken);
             logger.LogInformation("Successfully disconnected vehicle {VehicleId}", vehicleId);
         }
         catch (Exception ex)

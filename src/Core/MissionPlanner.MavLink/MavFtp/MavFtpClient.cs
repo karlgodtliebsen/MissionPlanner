@@ -217,10 +217,10 @@ public sealed class MavFtpClient : IMavFtpClient
 
                 return response.Opcode != MavFtpOpcode.Ack ? throw new MavFtpProtocolException("Expected MAVFTP ACK or NAK.") : response;
             }
-            catch (TimeoutException)
+            catch (TimeoutException ex)
                 when (attempt < (maximumAttempts ?? options.MaximumRequestAttempts))
             {
-                logger.LogWarning("MAVFTP {Opcode} timed out; retrying attempt {Attempt}/{MaximumAttempts}.", opcode, attempt + 1, maximumAttempts ?? options.MaximumRequestAttempts);
+                logger.LogWarning(ex, "MAVFTP {Opcode} timed out; retrying attempt {Attempt}/{MaximumAttempts}.", opcode, attempt + 1, maximumAttempts ?? options.MaximumRequestAttempts);
             }
         }
     }

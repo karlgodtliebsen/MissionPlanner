@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Library.EventHub.Abstractions;
@@ -50,15 +50,19 @@ public sealed class MavFtpResponseDispatcher : IMavFtpResponseDispatcher
     public MavFtpResponseRegistration Register(MavFtpTarget target, ushort requestSequence, MavFtpOpcode requestedOpcode, byte? session = null, bool multipleResponses = false)
     {
         var id = Interlocked.Increment(ref nextId);
-        var registration = new MavFtpResponseRegistration(target, requestSequence, requestedOpcode, session, multipleResponses, responseQueueCapacity, () => registrations.TryRemove(id, out var _));
+        var registration = new MavFtpResponseRegistration(target, requestSequence, requestedOpcode, session, multipleResponses, responseQueueCapacity,
+            () => registrations.TryRemove(id, out var _));
         if (!registrations.TryAdd(id, registration))
         {
             throw new InvalidOperationException("Unable to register MAVFTP response operation.");
         }
 
-        logger.LogDebug(
-            "Registered MAVFTP request. Target={Target}, Sequence={Sequence}, Opcode={Opcode}, Session={Session}, MultipleResponses={MultipleResponses}.",
-            target, requestSequence, requestedOpcode, session, multipleResponses);
+        if (logger.IsEnabled(LogLevel.Debug))
+        {
+            logger.LogDebug(
+                "Registered MAVFTP request. Target={Target}, Sequence={Sequence}, Opcode={Opcode}, Session={Session}, MultipleResponses={MultipleResponses}.",
+                target, requestSequence, requestedOpcode, session, multipleResponses);
+        }
 
         return registration;
     }
@@ -81,9 +85,11 @@ public sealed class MavFtpResponseDispatcher : IMavFtpResponseDispatcher
             return Task.CompletedTask;
         }
 
-        logger.LogDebug(
-            "Received MAVFTP response. Source={SystemId}:{ComponentId}, Endpoint={Endpoint}, Sequence={Sequence}, Session={Session}, Opcode={Opcode}, RequestedOpcode={RequestedOpcode}, Registrations={RegistrationCount}.",
-            ftp.SystemId, ftp.ComponentId, ftp.EndPoint, packet.Sequence, packet.Session, packet.Opcode, packet.RequestedOpcode, registrations.Count);
+        if (logger.IsEnabled(LogLevel.Debug))
+        {
+            logger.LogDebug("Received MAVFTP response. Source={SystemId}:{ComponentId}, Endpoint={Endpoint}, Sequence={Sequence}, Session={Session}, Opcode={Opcode}, RequestedOpcode={RequestedOpcode}, Registrations={RegistrationCount}.",
+                ftp.SystemId, ftp.ComponentId, ftp.EndPoint, packet.Sequence, packet.Session, packet.Opcode, packet.RequestedOpcode, registrations.Count);
+        }
 
         foreach (var pair in registrations)
         {
@@ -91,9 +97,11 @@ public sealed class MavFtpResponseDispatcher : IMavFtpResponseDispatcher
 
             if (ftp.SystemId != item.Target.SystemId)
             {
-                logger.LogTrace(
-                    "Rejected MAVFTP response for registration {RegistrationId}: system mismatch. Response={ResponseSystemId}, Target={TargetSystemId}.",
-                    pair.Key, ftp.SystemId, item.Target.SystemId);
+                if (logger.IsEnabled(LogLevel.Trace))
+                {
+                    logger.LogTrace("Rejected MAVFTP response for registration {RegistrationId}: system mismatch. Response={ResponseSystemId}, Target={TargetSystemId}.", pair.Key, ftp.SystemId, item.Target.SystemId);
+                }
+
                 continue;
             }
 
@@ -102,58 +110,77 @@ public sealed class MavFtpResponseDispatcher : IMavFtpResponseDispatcher
             // packet itself still targets the connected vehicle.
             if (!ftp.EndPoint.Equals(item.Target.EndPoint))
             {
-                logger.LogTrace(
-                    "Rejected MAVFTP response for registration {RegistrationId}: endpoint mismatch. Response={ResponseEndpoint}, Target={TargetEndpoint}.",
-                    pair.Key, ftp.EndPoint, item.Target.EndPoint);
+                if (logger.IsEnabled(LogLevel.Trace))
+                {
+                    logger.LogTrace("Rejected MAVFTP response for registration {RegistrationId}: endpoint mismatch. Response={ResponseEndpoint}, Target={TargetEndpoint}.",
+                        pair.Key, ftp.EndPoint, item.Target.EndPoint);
+                }
+
                 continue;
             }
 
             if (packet.RequestedOpcode != item.RequestedOpcode)
             {
-                logger.LogTrace(
-                    "Rejected MAVFTP response for registration {RegistrationId}: opcode mismatch. Response={ResponseOpcode}, Target={TargetOpcode}.",
-                    pair.Key, packet.RequestedOpcode, item.RequestedOpcode);
+                if (logger.IsEnabled(LogLevel.Trace))
+                {
+                    logger.LogTrace("Rejected MAVFTP response for registration {RegistrationId}: opcode mismatch. Response={ResponseOpcode}, Target={TargetOpcode}.",
+                        pair.Key, packet.RequestedOpcode, item.RequestedOpcode);
+                }
+
                 continue;
             }
 
             if (item.Session.HasValue && packet.Session != item.Session.Value)
             {
-                logger.LogTrace(
-                    "Rejected MAVFTP response for registration {RegistrationId}: session mismatch. Response={ResponseSession}, Target={TargetSession}.",
-                    pair.Key, packet.Session, item.Session.Value);
+                if (logger.IsEnabled(LogLevel.Trace))
+                {
+                    logger.LogTrace("Rejected MAVFTP response for registration {RegistrationId}: session mismatch. Response={ResponseSession}, Target={TargetSession}.",
+                        pair.Key, packet.Session, item.Session.Value);
+                }
+
                 continue;
             }
 
             if (!item.MultipleResponses && !MavFtpSequence.MatchesSingleResponse(item.RequestSequence, packet.Sequence))
             {
-                logger.LogTrace(
-                    "Rejected MAVFTP response for registration {RegistrationId}: sequence mismatch. Response={ResponseSequence}, Request={RequestSequence}.",
-                    pair.Key, packet.Sequence, item.RequestSequence);
+                if (logger.IsEnabled(LogLevel.Trace))
+                {
+                    logger.LogTrace("Rejected MAVFTP response for registration {RegistrationId}: sequence mismatch. Response={ResponseSequence}, Request={RequestSequence}.",
+                        pair.Key, packet.Sequence, item.RequestSequence);
+                }
+
                 continue;
             }
 
             if (item.MultipleResponses && !MavFtpSequence.IsInResponseWindow(item.RequestSequence, packet.Sequence))
             {
-                logger.LogTrace(
-                    "Rejected MAVFTP burst response for registration {RegistrationId}: sequence outside response window. Response={ResponseSequence}, Request={RequestSequence}.",
-                    pair.Key, packet.Sequence, item.RequestSequence);
+                if (logger.IsEnabled(LogLevel.Trace))
+                {
+                    logger.LogTrace("Rejected MAVFTP burst response for registration {RegistrationId}: sequence outside response window. Response={ResponseSequence}, Request={RequestSequence}.",
+                        pair.Key, packet.Sequence, item.RequestSequence);
+                }
+
                 continue;
             }
 
             if (!item.TryWrite(packet))
             {
-                var exception = new MavFtpProtocolException(
-                    $"MAVFTP response queue overflow for {item.Target}, request sequence {item.RequestSequence}.");
-                logger.LogError(exception,
-                    "MAVFTP response queue overflow for {Target}, request sequence {RequestSequence}.",
-                    item.Target, item.RequestSequence);
+                var exception = new MavFtpProtocolException($"MAVFTP response queue overflow for {item.Target}, request sequence {item.RequestSequence}.");
+                if (logger.IsEnabled(LogLevel.Error))
+                {
+                    logger.LogError(exception, "MAVFTP response queue overflow for {Target}, request sequence {RequestSequence}.", item.Target, item.RequestSequence);
+                }
+
                 item.Fail(exception);
             }
             else
             {
-                logger.LogDebug(
-                    "Matched MAVFTP response to registration {RegistrationId}. Target={Target}, Sequence={Sequence}, RequestedOpcode={RequestedOpcode}.",
-                    pair.Key, item.Target, packet.Sequence, packet.RequestedOpcode);
+                if (logger.IsEnabled(LogLevel.Debug))
+                {
+                    logger.LogDebug(
+                        "Matched MAVFTP response to registration {RegistrationId}. Target={Target}, Sequence={Sequence}, RequestedOpcode={RequestedOpcode}.",
+                        pair.Key, item.Target, packet.Sequence, packet.RequestedOpcode);
+                }
             }
 
             break;

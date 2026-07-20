@@ -1,4 +1,5 @@
-﻿using MissionPlanner.Core.Vehicles.Abstractions;
+﻿using Microsoft.Extensions.Logging;
+using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.MavFtp;
 using MissionPlanner.MavLink.MavFtp.Abstractions;
@@ -10,7 +11,8 @@ namespace MissionPlanner.Core.Vehicles;
 /// </summary>
 /// <param name="client">The MAVFTP client.</param>
 /// <param name="vehicleRegistry">The vehicle registry.</param>
-public sealed class VehicleFileSystemService(IMavFtpClient client, IVehicleRegistry vehicleRegistry) : IVehicleFileSystemService
+/// <param name="logger">The logger.</param>
+public sealed class VehicleFileSystemService(IMavFtpClient client, IVehicleRegistry vehicleRegistry, ILogger<VehicleFileSystemService> logger) : IVehicleFileSystemService
 {
     /// <summary>
     /// Lists the contents of a directory on the vehicle's file system.
@@ -51,9 +53,9 @@ public sealed class VehicleFileSystemService(IMavFtpClient client, IVehicleRegis
         {
             return client.ResetSessionsAsync(Resolve(vehicleId), cancellationToken);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            //
+            logger.LogDebug(ex, "Non Critical Error while Executing ResetSessionsAsync for vehicle {VehicleId}", vehicleId);
         }
 
         return Task.CompletedTask;
