@@ -372,7 +372,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
         {
             dispatcher.Dispatch(() => ErrorText = "MAVFTP transfer timed out. Retrying Connection.");
             logger.LogWarning(ex, "MAVFTP transfer timed out. Retrying Connection.");
-            StartDelayedRefresh(1);
+            // StartDelayedRefresh(1);
         }
         catch (MavFtpRemoteException ex) when (
             ex.Error == MavFtpNakError.UnknownCommand)

@@ -1,10 +1,16 @@
-﻿using FluentAssertions;
+﻿using System.Net;
+using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Vehicles;
+using MissionPlanner.MavLink.Configuration;
 using MissionPlanner.MavLink.MavFtp;
+using MissionPlanner.MavLink.MavFtp.Abstractions;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
+using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Transport;
-using System.Net;
+using NSubstitute;
 
 namespace MissionPlanner.Core.Tests;
 
@@ -14,7 +20,10 @@ public sealed class MavFtpCompletionTests
     [InlineData("/", "/")]
     [InlineData("/APM/scripts/../logs", "/APM/logs")]
     [InlineData("APM\\scripts", "/APM/scripts")]
-    public void RemotePath_NormalizesProtocolPaths(string input, string expected) => RemotePath.Normalize(input).Should().Be(expected);
+    public void RemotePath_NormalizesProtocolPaths(string input, string expected)
+    {
+        RemotePath.Normalize(input).Should().Be(expected);
+    }
 
     [Fact]
     public void RemotePath_JoinsAndStopsAtRoot()
@@ -47,11 +56,7 @@ public sealed class MavFtpCompletionTests
         first.Should().Be(second);
         first.GetHashCode().Should().Be(second.GetHashCode());
 
-        var targets = new HashSet<MavFtpTarget>
-        {
-            new(1, 1, first),
-            new(1, 1, second)
-        };
+        var targets = new HashSet<MavFtpTarget> { new(1, 1, first), new(1, 1, second) };
         targets.Should().ContainSingle();
     }
 
@@ -80,5 +85,27 @@ public sealed class MavFtpCompletionTests
         packet[5].Should().Be(254, "MAVFTP must not share MAVProxy's common 255:190 sender identity");
         packet[6].Should().Be(190);
         packet[7].Should().Be((byte)MessageIds.FileTransferProtocol);
+    }
+
+    [Fact]
+    public async Task MavFtpClient_Dispose_DoesNotDisposeSharedDispatcherOrSessionConnection()
+    {
+        var connection = Substitute.For<IMavLinkConnection>();
+        var dispatcher = Substitute.For<IMavFtpResponseDispatcher>();
+        var encoder = Substitute.For<IMavFtpMessageEncoder>();
+        var codec = Substitute.For<IMavFtpPacketCodec>();
+
+        var client = new MavFtpClient(
+            connection,
+            encoder,
+            codec,
+            dispatcher,
+            Options.Create(new MavFtpOptions()),
+            NullLogger<MavFtpClient>.Instance);
+
+        await client.DisposeAsync();
+
+        dispatcher.DidNotReceive().Dispose();
+        connection.DidNotReceive().DisposeAsync();
     }
 }

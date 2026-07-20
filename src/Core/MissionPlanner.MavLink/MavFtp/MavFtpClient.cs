@@ -410,7 +410,17 @@ public sealed class MavFtpClient : IMavFtpClient
     /// <inheritdoc />
     public ValueTask DisposeAsync()
     {
-        responseDispatcher.Dispose();
-        return connection.DisposeAsync();
+        // MavFtpClient does not own either dependency:
+        // - the response dispatcher is a container-owned singleton shared by every FTP client;
+        // - the MAVLink connection is owned by VehicleConnectionSession.
+        // Disposing either dependency here permanently breaks MAVFTP after a reconnect and
+        // can also cause the vehicle connection to be disposed more than once.
+        foreach (var state in targetStates.Values)
+        {
+            state.Gate.Dispose();
+        }
+
+        targetStates.Clear();
+        return ValueTask.CompletedTask;
     }
 }
