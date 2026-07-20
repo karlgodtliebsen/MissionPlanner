@@ -38,7 +38,7 @@
     <PackageVersion Include="Spectre.Console" Version="0.57.0" />
     <PackageVersion Include="Spectre.Console.Cli" Version="0.55.0" />
     <PackageVersion Include="System.IO.Ports" Version="10.0.10" />
-    <PackageVersion Include="System.Reactive" Version="6.1.0" />
+    <PackageVersion Include="System.Reactive" Version="7.0.0" />
     <!--Other-->
     <PackageVersion Include="DynamicData" Version="9.4.31" />
     <PackageVersion Include="Riok.Mapperly" Version="4.3.1" />
@@ -48,7 +48,7 @@
     <PackageVersion Include="Mapsui" Version="5.1.0" />
     <PackageVersion Include="Mapsui.Maui" Version="5.1.0" />
     <PackageVersion Include="SkiaSharp.Views.Maui.Controls" Version="4.150.1" />
-    <PackageVersion Include="CommunityToolkit.Maui" Version="14.2.0" />
+    <PackageVersion Include="CommunityToolkit.Maui" Version="14.2.2" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.80" />
     <!--MAUI Uranium-->
