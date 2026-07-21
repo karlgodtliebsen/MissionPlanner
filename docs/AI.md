@@ -200,6 +200,11 @@ Prefer constructor injection.
 
 ---
 
+# Code Comments
+Remember to add xml comments to all public types/members etc. 
+Use build and check for CS1591/CS1587 warnings.
+
+---
 # Testing
 
 Whenever practical:

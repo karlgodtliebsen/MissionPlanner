@@ -1,14 +1,14 @@
 # MissionPlanner Codex Instructions
 
 This file provides repository-level instructions for Codex and other coding agents.
-Detailed architecture and coding rules remain authoritative in `src/ai.md`, the files in
+Detailed architecture and coding rules remain authoritative in `docs/ai.md`, the files in
 `docs/`, and `src/.editorconfig`.
 
 ## Read before editing
 
 Read the documents relevant to the task:
 
-1. `src/ai.md`
+1. `docs/ai.md`
 2. `docs/DESIGN_CONCEPTS.md`
 3. `docs/ARCHITECTURE_DECISION_RECORDS.md`
 4. `docs/FEATURES.md`
@@ -38,6 +38,7 @@ Do not duplicate those documents here.
 - Avoid blocking, per-message allocations, and verbose logging in telemetry hot paths.
 - Follow `src/.editorconfig`; do not restate or override its formatting and naming rules.
 - Write comments and developer documentation in English.
+- Always add XML Comments where relevant.  Use build and check for CS1591/CS1587 warnings.
 
 ## Verification
 
