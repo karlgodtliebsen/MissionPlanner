@@ -46,11 +46,7 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
     /// <param name="degradedAfter"></param>
     /// <param name="offlineAfter"></param>
     /// <returns></returns>
-    public VehicleConnectionStateChanged? UpdateConnectionState(
-        DateTimeOffset now,
-        TimeSpan staleAfter,
-        TimeSpan degradedAfter,
-        TimeSpan offlineAfter)
+    public VehicleConnectionStateChanged? UpdateConnectionState(DateTimeOffset now, TimeSpan staleAfter, TimeSpan degradedAfter, TimeSpan offlineAfter)
     {
         var previousState = state.Connection.State;
         var age = now - state.Connection.LastHeartbeatAt;

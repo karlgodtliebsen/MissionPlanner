@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Vehicles.Models;
+﻿namespace MissionPlanner.Core.Vehicles.Models;
 
 /// <summary>
 /// Provides the public API for VehicleConnectionData.

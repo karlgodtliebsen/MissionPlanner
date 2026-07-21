@@ -1,4 +1,4 @@
-using MissionPlanner.Core.DomainEvents;
+﻿using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;

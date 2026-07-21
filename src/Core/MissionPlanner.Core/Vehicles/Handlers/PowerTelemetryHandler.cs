@@ -1,4 +1,4 @@
-using MissionPlanner.Core.Vehicles.Abstractions;
+﻿using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Handlers.Abstractions;
 using MissionPlanner.Core.Vehicles.Observations;
 using MissionPlanner.Library.EventHub.Abstractions;
