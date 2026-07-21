@@ -58,13 +58,14 @@
                 BackgroundColor="Transparent"
                 Command="{Binding WriteParametersCommand}" />
 
-                <Button 
+                <!--<Button 
                     Text="Load Metadata"
                     FontSize="14"
                     Padding="8,4"
                     VerticalOptions="Center"
                     BackgroundColor="Transparent"
-                    Command="{Binding LoadMetaDataCommand}" />
+                    Command="{Binding LoadMetaDataCommand}" />-->
+
                 <Button 
                     Text="Refresh Params"
                     FontSize="14"
@@ -245,7 +246,7 @@
                                                                            WidthRequest="225" VerticalOptions="Center" HorizontalOptions="Fill"
                                                                            ItemsSource="{Binding BitmaskOptions}" 
                                                                            SelectedValuesChangedCommand="{Binding SelectedValuesChanged}"
-                                                                           SelectedItems="{Binding SelectedBitmaskItem}" />
+                                                                           SelectedItems="{Binding SelectedBitmaskItems}" />
 
 
                                             <Grid ColumnDefinitions="*,Auto,Auto" WidthRequest="225" IsVisible="{Binding HasNumericRangeData}"  
@@ -278,10 +279,10 @@
                                 </material:DataGridColumn.CellItemTemplate>
                             </material:DataGridColumn>
 
-                            <material:DataGridColumn  Width="125"  ValueBinding="{Binding Range}" Title="Range"  />
-                            <material:DataGridColumn  Width="125"  ValueBinding="{Binding OriginalValue}" Title="Default"  />
+                            <!--<material:DataGridColumn  Width="125"  ValueBinding="{Binding Range}" Title="Range"  />-->
+                            <!--<material:DataGridColumn  Width="125"  ValueBinding="{Binding OriginalValue}" Title="Default"  />-->
                             <material:DataGridColumn  Width="125"  ValueBinding="{Binding Units}" Title="Units"  />
-                            <material:DataGridColumn Title="Options" Width="125" >
+                            <!--<material:DataGridColumn Title="Options" Width="125" >
                                 <material:DataGridColumn.CellItemTemplate>
                                     <DataTemplate  x:DataType="configTuning:ParameterItemViewModel">
                                         <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Fill" Margin="0,0,0,0">
@@ -290,17 +291,17 @@
                                         </VerticalStackLayout>
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
-                            </material:DataGridColumn>
+                            </material:DataGridColumn>-->
                             <material:DataGridColumn Title="Description" Width="*">
                                 <material:DataGridColumn.CellItemTemplate>
                                     <DataTemplate  x:DataType="configTuning:ParameterItemViewModel">
 
                                         <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Fill" Margin="10,10,0,10">
-                                            <Label FontSize="12" VerticalOptions="Center" VerticalTextAlignment="Center" LineBreakMode="MiddleTruncation"  
+                                            <Label FontSize="12" VerticalOptions="Center" VerticalTextAlignment="Center" LineBreakMode="WordWrap"  
                                                    HorizontalOptions="Start" HorizontalTextAlignment="Start" Text="{Binding DisplayName}"/>
                                             <Label FontSize="12" VerticalOptions="Fill" 
                                                    HorizontalOptions="Fill"  Text=" "/>
-                                            <Label FontSize="12" VerticalOptions="Center" VerticalTextAlignment="Center" LineBreakMode="MiddleTruncation"  
+                                            <Label FontSize="12" VerticalOptions="Center" VerticalTextAlignment="Center" LineBreakMode="WordWrap"  
                                                    HorizontalOptions="Start" HorizontalTextAlignment="Start" Text="{Binding Description}"/>
                                         </VerticalStackLayout>
                                     </DataTemplate>

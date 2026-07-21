@@ -53,12 +53,8 @@ public partial class ParameterItemViewModel : ObservableObject
     [ObservableProperty] public partial string[]? RangeData { get; set; }
 
     [ObservableProperty] public partial SelectItem[]? ValuesItems { get; set; }
-
     [ObservableProperty] public partial SelectItem[]? BitmaskOptions { get; set; }
-
-    //[ObservableProperty] public partial string[]? BitmaskItems { get; set; }
-    [ObservableProperty] public partial SelectItem? SelectedBitmaskItem { get; set; }
-
+    [ObservableProperty] public partial SelectItem? SelectedBitmaskItems { get; set; }
     [DataGridIgnore][ObservableProperty] public partial string? Increment { get; set; }
     [DataGridIgnore][ObservableProperty] public partial string? UserLevel { get; set; }
     [DataGridIgnore][ObservableProperty] public partial string? Bitmask { get; set; }
@@ -106,13 +102,7 @@ public partial class ParameterItemViewModel : ObservableObject
     protected override void OnPropertyChanged(PropertyChangedEventArgs e)
     {
         base.OnPropertyChanged(e);
-
         if (e.PropertyName == nameof(Value))
-        {
-            //  EnsureNumericValueValid();
-        }
-
-        if (e.PropertyName == nameof(SelectedBitmaskItem))
         {
         }
     }
@@ -138,14 +128,20 @@ public partial class ParameterItemViewModel : ObservableObject
         Range = metadata.Range;
         Values = metadata.Values;
         Bitmask = metadata.Bitmask; //0:Air-mode,1:Rate Loop Only
-        Increment = metadata.Increment;
         UserLevel = metadata.UserLevel;
         RebootRequired = metadata.RebootRequired;
         IsReadOnly = metadata.ReadOnly;
         Max = metadata.MaxValue ?? float.MaxValue;
         Min = metadata.MinValue ?? float.MinValue;
-        stepSize = metadata.IncrementValue ?? 0.1f;
-
+        Increment = metadata.Increment;
+        if (Increment is not null)
+        {
+            stepSize = metadata.IncrementValue ?? 0.1f;
+        }
+        else if (metadata.MaxValue is not null && metadata.MinValue is not null)
+        {
+            stepSize = (float)Math.Round((Max - Min) / 10.0);
+        }
 
         if (Range is not null)
         {
@@ -170,11 +166,46 @@ public partial class ParameterItemViewModel : ObservableObject
             HasBitmask = true;
             var bitmaskOptions = metadata.GetBitmaskOptions();
             BitmaskOptions = bitmaskOptions.Keys.Select(k => new SelectItem(bitmaskOptions[k], k)).ToArray();
-            //BitmaskItems = bitmaskOptions.Values.ToArray();
-            SelectedBitmaskItem = null;
+            SelectedBitmaskItems = null;
             Options = string.Join(Environment.NewLine, bitmaskOptions.Select(b => $"{b.Key}:{b.Value}"));
             IsReadOnly = true;
         }
+
+        loadingData = false;
+    }
+
+    /// <summary>
+    /// Sets the data for this parameter from a VehicleParameter instance.
+    /// </summary>
+    /// <param name="parameter">The VehicleParameter instance containing the data.</param>
+    public void SetData(VehicleParameter parameter)
+    {
+        loadingData = true;
+        originalParameter = parameter;
+        OriginalValue = parameter.Value;
+        if (!string.IsNullOrEmpty(parameter.Name))
+        {
+            Name = parameter.Name;
+        }
+
+        Value = parameter.Value;
+        if (ValuesItems is not null)
+        {
+            var item = ValuesItems.FirstOrDefault(i => Math.Abs(i.Value - Value) < 0.0001f);
+            if (item is not null && SelectedValue != item.Name)
+            {
+                SelectedValue = item.Name;
+            }
+        }
+
+        if (BitmaskOptions is not null)
+        {
+            //TODO: The Value needs to be used to set SelectedBitmaskItems.
+            //Ex. If Value is 1 and the BitMaskOptions is: //0:Air-mode,1:Rate Loop Only then selection must be set
+
+            var item = BitmaskOptions.FirstOrDefault(i => Math.Abs(i.Value - Value) < 0.0001f);
+        }
+
 
         loadingData = false;
     }
@@ -202,26 +233,6 @@ public partial class ParameterItemViewModel : ObservableObject
         }
     }
 
-    /// <summary>
-    /// Sets the data for this parameter from a VehicleParameter instance.
-    /// </summary>
-    /// <param name="parameter">The VehicleParameter instance containing the data.</param>
-    public void SetData(VehicleParameter parameter)
-    {
-        loadingData = true;
-        originalParameter = parameter;
-        OriginalValue = parameter.Value;
-        Name = parameter.Name;
-        Value = parameter.Value;
-        var item = ValuesItems.FirstOrDefault(i => Math.Abs(i.Value - Value) < 0.0001f);
-        if (item is not null && SelectedValue != item.Name)
-        {
-            SelectedValue = item.Name;
-        }
-
-        loadingData = false;
-    }
-
 
     partial void OnSelectedValueChanged(string? oldValue, string? newValue)
     {
@@ -230,10 +241,13 @@ public partial class ParameterItemViewModel : ObservableObject
             return;
         }
 
-        var item = ValuesItems.FirstOrDefault(i => i.Name == newValue);
-        if (item is not null && Math.Abs(item.Value - Value) > 0.0001f)
+        if (ValuesItems is not null)
         {
-            Value = item.Value;
+            var item = ValuesItems.FirstOrDefault(i => i.Name == newValue);
+            if (item is not null && Math.Abs(item.Value - Value) > 0.0001f)
+            {
+                Value = item.Value;
+            }
         }
     }
 

@@ -174,21 +174,18 @@ public sealed class VehicleParameterStreamService : IVehicleParameterStreamServi
     }
 
     /// <inheritdoc/>
-    public async Task<ParameterStreamResult> StreamAllParametersWithRetryAsync(
-        VehicleId vehicleId,
-        IProgress<ParameterStreamProgress>? progress = null,
-        int maxRetries = 3,
-        TimeSpan? timeout = null,
-        CancellationToken cancellationToken = default)
+    public async Task<ParameterStreamResult> StreamAllParametersWithRetryAsync(VehicleId vehicleId, IProgress<ParameterStreamProgress>? progress = null, int maxRetries = 3,
+        TimeSpan? timeout = null, CancellationToken cancellationToken = default)
     {
         var overallStopwatch = Stopwatch.StartNew();
+        //progress?.Report(new ParameterStreamProgress(0, 0, 0, false));
+        //var ftpResult = await TryDownloadPackedParametersAsync(vehicleId, progress, overallStopwatch, cancellationToken).ConfigureAwait(false);
+        //if (ftpResult is not null)
+        //{
+        //    return ftpResult;
+        //}
 
-        var ftpResult = await TryDownloadPackedParametersAsync(vehicleId, progress, overallStopwatch, cancellationToken).ConfigureAwait(false);
-        if (ftpResult is not null)
-        {
-            return ftpResult;
-        }
-
+        progress?.Report(new ParameterStreamProgress(0, 0, 0, false));
         for (var attempt = 0; attempt <= maxRetries; attempt++)
         {
             if (cancellationToken.IsCancellationRequested)
@@ -201,7 +198,7 @@ public sealed class VehicleParameterStreamService : IVehicleParameterStreamServi
                 logger.LogInformation("Retry attempt {Attempt}/{MaxRetries} for vehicle {VehicleId}", attempt, maxRetries, vehicleId);
 
                 // Small delay before retry
-                await Task.Delay(500, cancellationToken);
+                await Task.Delay(100, cancellationToken);
             }
 
             var result = await StreamAllParametersAsync(vehicleId, progress, timeout, cancellationToken);
@@ -225,11 +222,7 @@ public sealed class VehicleParameterStreamService : IVehicleParameterStreamServi
         return ParameterStreamResult.CreateFailure($"Failed after {maxRetries + 1} attempts. Stored {finalParams.Count}/{finalCount} parameters.", overallStopwatch.Elapsed);
     }
 
-    private async Task<ParameterStreamResult?> TryDownloadPackedParametersAsync(
-        VehicleId vehicleId,
-        IProgress<ParameterStreamProgress>? progress,
-        Stopwatch stopwatch,
-        CancellationToken cancellationToken)
+    private async Task<ParameterStreamResult?> TryDownloadPackedParametersAsync(VehicleId vehicleId, IProgress<ParameterStreamProgress>? progress, Stopwatch stopwatch, CancellationToken cancellationToken)
     {
         if (fileSystemService is null)
         {

@@ -95,6 +95,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="Views\Common\ErrorView.xaml.cs">
+	    <DependentUpon>ErrorView.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\Common\StatusBarView.xaml.cs">
 	    <DependentUpon>StatusBarView.xaml</DependentUpon>
 	  </Compile>
@@ -128,6 +131,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="Views\Common\ErrorView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\Common\StatusBarView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

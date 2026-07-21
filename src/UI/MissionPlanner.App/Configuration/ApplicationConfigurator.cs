@@ -19,6 +19,7 @@ using MissionPlanner.App.Views.Simulation;
 using MissionPlanner.Core.Configuration;
 using MissionPlanner.Library;
 using MissionPlanner.Library.Configuration;
+using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Configuration;
 using MissionPlanner.Transport.Configuration;
 
@@ -66,6 +67,14 @@ public static class ApplicationConfigurator
         return services;
     }
 
+    private static IServiceProvider UseApplicationServices(this IServiceProvider services)
+    {
+        var domainFactory = services.GetRequiredService<IDomainFactory>();
+        domainFactory.Add<ErrorViewModel, ErrorViewModel>();
+        domainFactory.Add<ErrorView, ErrorView>();
+        return services;
+    }
+
     private static IServiceCollection AddViewsConfiguration(this IServiceCollection services)
     {
         services.TryAddSingleton<App>();
@@ -78,6 +87,8 @@ public static class ApplicationConfigurator
 
         services.TryAddSingleton<ExitViewModel>();
         services.TryAddSingleton<ExitContentView>();
+        services.TryAddTransient<ErrorViewModel>();
+        services.TryAddTransient<ErrorView>();
 
         services.TryAddSingleton<HelpViewModel>();
         services.TryAddTransient<ConnectPopupViewModel>();
@@ -130,6 +141,9 @@ public static class ApplicationConfigurator
         // Register shared state service as singleton for runtime state management
         var stateService = serviceProvider.GetRequiredService<ApplicationStateService>();
         stateService.Initialize(state);
+
+        serviceProvider.UseApplicationServices();
+
         return serviceProvider;
     }
 }

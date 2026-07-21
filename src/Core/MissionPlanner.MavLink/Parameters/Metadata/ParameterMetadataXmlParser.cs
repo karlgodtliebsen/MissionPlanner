@@ -11,58 +11,69 @@ public sealed class ParameterMetadataXmlParser(ILogger<ParameterMetadataXmlParse
     : IParameterMetadataParser
 {
     /// <inheritdoc/>
-    public async Task<Dictionary<string, ParameterMetadata>> ParseAsync(Stream xmlStream, VehicleType vehicleType, CancellationToken cancellationToken = default)
+    public async Task<Dictionary<string, ParameterMetadata>> ParseAsync(
+        Stream xmlStream,
+        VehicleType vehicleType,
+        CancellationToken cancellationToken = default)
     {
         var metadata = new Dictionary<string, ParameterMetadata>(StringComparer.OrdinalIgnoreCase);
 
         try
         {
             var doc = await XDocument.LoadAsync(xmlStream, LoadOptions.None, cancellationToken);
+            var root = doc.Root;
 
-            // Navigate to the correct structure: <paramfile>/<vehicles>/<parameters name="ArduCopter">
-            var vehicleElementName = VehicleTypeUtil.GetVehicleElementName(vehicleType);
-            var parametersElement = doc.Root?
-                .Element("vehicles")?
-                .Elements("parameters")
-                .FirstOrDefault(p => p.Attribute("name")?.Value == vehicleElementName);
-
-            if (parametersElement == null)
+            if (root is null)
             {
-                logger.LogWarning("No metadata found for vehicle type {VehicleType} (looking for parameters[@name='{ElementName}'])", vehicleType, vehicleElementName);
+                logger.LogWarning("Parameter metadata XML has no root element");
                 return metadata;
             }
 
-            // Parse each <param> element
-            foreach (var paramElement in parametersElement.Elements("param"))
+            var vehicleElementName = VehicleTypeUtil.GetVehicleElementName(vehicleType);
+            var vehicleParameters = root
+                .Element("vehicles")?
+                .Elements("parameters")
+                .FirstOrDefault(p => string.Equals(
+                    p.Attribute("name")?.Value,
+                    vehicleElementName,
+                    StringComparison.OrdinalIgnoreCase));
+
+            if (vehicleParameters is null)
             {
-                var paramNameAttr = paramElement.Attribute("name")?.Value;
-
-                if (string.IsNullOrWhiteSpace(paramNameAttr))
-                {
-                    logger.LogDebug("Skipping parameter with no name attribute");
-                    continue;
-                }
-
-                // Remove vehicle prefix from parameter name (e.g., "ArduCopter:FORMAT_VERSION" -> "FORMAT_VERSION")
-                var paramName = paramNameAttr.Contains(':')
-                    ? paramNameAttr.Substring(paramNameAttr.IndexOf(':') + 1)
-                    : paramNameAttr;
-
-                try
-                {
-                    var paramMetadata = ParseParameterElement(paramName, paramElement);
-                    metadata[paramName] = paramMetadata;
-                }
-                catch (Exception ex)
-                {
-                    logger.LogWarning(ex, "Failed to parse metadata for parameter {ParameterName}", paramName);
-                }
+                logger.LogWarning(
+                    "No vehicle-specific metadata found for vehicle type {VehicleType} " +
+                    "(looking for vehicles/parameters[@name='{ElementName}'])",
+                    vehicleType,
+                    vehicleElementName);
             }
 
-            if (logger.IsEnabled(LogLevel.Information))
+            // A per-vehicle apm.pdef.xml contains both the selected vehicle's own
+            // parameters and every library parameter applicable to that firmware.
+            // Load libraries first, then vehicle-specific metadata so the latter wins
+            // if the same parameter name is present in both sections.
+            var libraryGroups = root
+                .Element("libraries")?
+                .Elements("parameters")
+                .ToArray() ?? [];
+
+            var libraryCount = 0;
+            foreach (var libraryGroup in libraryGroups)
             {
-                logger.LogInformation("Parsed {Count} parameter metadata entries for {VehicleType}", metadata.Count, vehicleType);
+                libraryCount += ParseParameterGroup(libraryGroup, metadata, overwriteExisting: false);
             }
+
+            var vehicleCount = vehicleParameters is null
+                ? 0
+                : ParseParameterGroup(vehicleParameters, metadata, overwriteExisting: true);
+
+            logger.LogInformation(
+                "Parsed {TotalCount} parameter metadata entries for {VehicleType}: " +
+                "{VehicleCount} vehicle entries and {LibraryCount} library entries from {LibraryGroupCount} library groups",
+                metadata.Count,
+                vehicleType,
+                vehicleCount,
+                libraryCount,
+                libraryGroups.Length);
         }
         catch (Exception ex)
         {
@@ -73,14 +84,76 @@ public sealed class ParameterMetadataXmlParser(ILogger<ParameterMetadataXmlParse
         return metadata;
     }
 
-    private ParameterMetadata ParseParameterElement(string paramName, XElement element)
+    private int ParseParameterGroup(
+        XElement parametersElement,
+        Dictionary<string, ParameterMetadata> metadata,
+        bool overwriteExisting)
     {
-        // Get attributes from <param> element
+        var parsedCount = 0;
+        var groupName = parametersElement.Attribute("name")?.Value ?? "<unnamed>";
+
+        foreach (var paramElement in parametersElement.Elements("param"))
+        {
+            var qualifiedName = paramElement.Attribute("name")?.Value;
+
+            if (string.IsNullOrWhiteSpace(qualifiedName))
+            {
+                logger.LogDebug("Skipping parameter with no name attribute in metadata group {GroupName}", groupName);
+                continue;
+            }
+
+            var paramName = GetUnqualifiedParameterName(qualifiedName);
+
+            try
+            {
+                var paramMetadata = ParseParameterElement(paramName, paramElement);
+
+                if (overwriteExisting)
+                {
+                    metadata[paramName] = paramMetadata;
+                    parsedCount++;
+                    continue;
+                }
+
+                if (metadata.TryAdd(paramName, paramMetadata))
+                {
+                    parsedCount++;
+                }
+                else
+                {
+                    logger.LogDebug(
+                        "Ignoring duplicate library metadata for parameter {ParameterName} from group {GroupName}",
+                        paramName,
+                        groupName);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(
+                    ex,
+                    "Failed to parse metadata for parameter {ParameterName} from group {GroupName}",
+                    paramName,
+                    groupName);
+            }
+        }
+
+        return parsedCount;
+    }
+
+    private static string GetUnqualifiedParameterName(string qualifiedName)
+    {
+        var separatorIndex = qualifiedName.IndexOf(':');
+        return separatorIndex >= 0
+            ? qualifiedName[(separatorIndex + 1)..]
+            : qualifiedName;
+    }
+
+    private static ParameterMetadata ParseParameterElement(string paramName, XElement element)
+    {
         var displayName = element.Attribute("humanName")?.Value;
         var description = element.Attribute("documentation")?.Value;
         var userLevel = element.Attribute("user")?.Value;
 
-        // Get field values from <field name="..."> elements
         string? units = null;
         string? unitText = null;
         string? range = null;
@@ -112,18 +185,17 @@ public sealed class ParameterMetadataXmlParser(ILogger<ParameterMetadataXmlParse
                     bitmaskStr = fieldValue;
                     break;
                 case "RebootRequired":
-                    rebootRequired = fieldValue?.Equals("True", StringComparison.OrdinalIgnoreCase) ?? false;
+                    rebootRequired = fieldValue.Equals("True", StringComparison.OrdinalIgnoreCase);
                     break;
                 case "ReadOnly":
-                    readOnly = fieldValue?.Equals("True", StringComparison.OrdinalIgnoreCase) ?? false;
+                    readOnly = fieldValue.Equals("True", StringComparison.OrdinalIgnoreCase);
                     break;
             }
         }
 
-        // Parse <values> element if present (enumerated values)
         string? valuesStr = null;
         var valuesElement = element.Element("values");
-        if (valuesElement != null)
+        if (valuesElement is not null)
         {
             var valuesList = new List<string>();
             foreach (var valueElement in valuesElement.Elements("value"))
@@ -140,13 +212,6 @@ public sealed class ParameterMetadataXmlParser(ILogger<ParameterMetadataXmlParse
             {
                 valuesStr = string.Join(",", valuesList);
             }
-        }
-
-        // Use bitmask from <field> if values wasn't set from <values> element
-        // (Some params have bitmask defined in field, others in dedicated element)
-        if (string.IsNullOrWhiteSpace(valuesStr) && !string.IsNullOrWhiteSpace(bitmaskStr))
-        {
-            // Bitmask is already in correct format from field
         }
 
         return new ParameterMetadata(
