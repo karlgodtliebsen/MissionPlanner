@@ -11,8 +11,5 @@ public partial class AppShell : Shell
     public AppShell()
     {
         InitializeComponent();
-        //var viewModel = ServiceHelper.GetRequiredService<ConnectionViewModel>();
-        //var view = FindByName("TopbarView") as StackLayout;
-        //view!.Children.Add(topbarView);
     }
 }

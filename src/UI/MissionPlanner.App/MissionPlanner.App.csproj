@@ -81,6 +81,7 @@
         <PackageReference Include="UraniumUI.Blurs" />
         <PackageReference Include="UraniumUI.Dialogs.CommunityToolkit" />
         <PackageReference Include="UraniumUI.Dialogs.Mopups" />
+        <PackageReference Include="UraniumUI.Icons.FontAwesome" />
         <PackageReference Include="UraniumUI.Icons.MaterialSymbols" />
         <PackageReference Include="UraniumUI.Material" />
         <PackageReference Include="UraniumUI.Validations.DataAnnotations" />

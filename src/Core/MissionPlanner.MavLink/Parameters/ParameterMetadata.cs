@@ -30,6 +30,9 @@ public sealed record ParameterMetadata(
     bool RebootRequired,
     bool ReadOnly)
 {
+    private float? max;
+    private float? min;
+
     /// <summary>
     /// Gets the minimum value from the range, if available.
     /// </summary>
@@ -37,13 +40,19 @@ public sealed record ParameterMetadata(
     {
         get
         {
+            if (min.HasValue)
+            {
+                return min.Value;
+            }
+
             if (string.IsNullOrWhiteSpace(Range))
             {
                 return null;
             }
 
             var parts = Range.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            return parts.Length >= 1 && float.TryParse(parts[0], out var min) ? min : null;
+            min = parts.Length >= 1 && float.TryParse(parts[0], out var m) ? m : null;
+            return min;
         }
     }
 
@@ -54,13 +63,19 @@ public sealed record ParameterMetadata(
     {
         get
         {
+            if (max.HasValue)
+            {
+                return max.Value;
+            }
+
             if (string.IsNullOrWhiteSpace(Range))
             {
                 return null;
             }
 
             var parts = Range.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            return parts.Length >= 2 && float.TryParse(parts[1], out var max) ? max : null;
+            max = parts.Length >= 2 && float.TryParse(parts[1], out var m) ? m : null;
+            return max;
         }
     }
 
@@ -136,7 +151,7 @@ public sealed record ParameterMetadata(
         }
 
         // Check range
-        return (!MinValue.HasValue || !(value < MinValue.Value)) && (!MaxValue.HasValue || value <= MaxValue.Value);
+        return (!min.HasValue || !(value < min.Value)) && (!max.HasValue || value <= max.Value);
     }
 
     /// <summary>
@@ -148,10 +163,10 @@ public sealed record ParameterMetadata(
     {
         return ReadOnly
             ? "This parameter is read-only and cannot be modified."
-            : MinValue.HasValue && value < MinValue.Value
-                ? $"Value must be at least {MinValue.Value}."
-                : MaxValue.HasValue && value > MaxValue.Value
-                    ? $"Value must be at most {MaxValue.Value}."
+            : min.HasValue && value < min.Value
+                ? $"Value must be at least {min.Value}."
+                : max.HasValue && value > max.Value
+                    ? $"Value must be at most {max.Value}."
                     : null;
     }
 }

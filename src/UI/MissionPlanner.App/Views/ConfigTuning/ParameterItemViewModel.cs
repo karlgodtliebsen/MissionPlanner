@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MissionPlanner.MavLink.Parameters;
@@ -18,8 +17,7 @@ public partial class ParameterItemViewModel : ObservableObject
 
     private bool loadingData;
 
-    //private float[]? numericRange = [];
-    private float stepSize = 0.0f;
+    private float stepSize = 0.1f;
 
     /// <summary>
     /// Provides the public API for OriginalParameter.
@@ -91,13 +89,12 @@ public partial class ParameterItemViewModel : ObservableObject
     /// </summary>
     public void SetMetadata(ParameterMetadata metadata)
     {
-        //Value = 0.0f;
+        Value = 0f;
         loadingData = true;
         originalMetadata = metadata;
         ValuesData = [];
         RangeData = [];
         ValuesItems ??= [];
-        var range = "";
 
         Name = metadata.Name;
         DisplayName = metadata.DisplayName;
@@ -117,7 +114,6 @@ public partial class ParameterItemViewModel : ObservableObject
 
         if (Range is not null)
         {
-            range = Range + Environment.NewLine;
             RangeData = Range.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             HasNumericRangeData = RangeData.Length == 2;
             stepSize = metadata.IncrementValue ?? 0.1f;
@@ -125,25 +121,15 @@ public partial class ParameterItemViewModel : ObservableObject
 
         if (Values is not null)
         {
-            var v = Values.Split(",");
-            foreach (var s in v)
-            {
-                var x = s.Split(":");
-                if (x.Length == 2)
-                {
-                    var value = float.Parse(x[0], NumberStyles.Float, CultureInfo.InvariantCulture);
-                    var name = x[1];
-                    ValuesItems = ValuesItems.Append(new SelectItem(name, value)).ToArray();
-                    ValuesData = ValuesData.Append(name).ToArray();
-                }
-            }
-
+            var vals = metadata.GetValueOptions();
+            ValuesItems = vals.Keys.Select(k => new SelectItem(vals[k], k)).ToArray();
+            ValuesData = vals.Values.ToArray();
             HasValuesData = true;
             HasNumericRangeData = false;
             IsSimpleValue = false;
             SelectedValue = ValuesItems.FirstOrDefault()?.Name;
-            Options = range + string.Join(Environment.NewLine, v);
-            IsReadOnly = ValuesItems.Length > 0;
+            Options = string.Join(Environment.NewLine, vals.Select(v => $"{v.Key}:{v.Value}"));
+            //IsReadOnly = ValuesItems.Length > 0;
         }
 
         loadingData = false;
@@ -154,9 +140,11 @@ public partial class ParameterItemViewModel : ObservableObject
     {
         if (HasNumericRangeData)
         {
-            if (Value + stepSize <= Max)
+            var v = Value;
+            if (v + stepSize <= Max)
             {
-                Value += stepSize;
+                v += stepSize;
+                Value = v;
             }
         }
     }
@@ -183,9 +171,12 @@ public partial class ParameterItemViewModel : ObservableObject
     {
         if (HasNumericRangeData)
         {
-            if (Value - stepSize >= Min)
+            var v = Value;
+
+            if (v - stepSize >= Min)
             {
-                Value -= stepSize;
+                v -= stepSize;
+                Value = v;
             }
         }
     }

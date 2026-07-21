@@ -170,14 +170,11 @@
 
             </VerticalStackLayout>
 
-            <!-- Parameter Grid -->
             <Grid Grid.Row="3" VerticalOptions="Fill" HorizontalOptions="Fill" Padding="10">
 
                 <ScrollView HorizontalScrollBarVisibility="Default" VerticalScrollBarVisibility="Always" HorizontalOptions="Fill"
                             VerticalOptions="Fill"
-
                              Padding="10"
-
                     >
 
                     <material:DataGrid 
@@ -203,17 +200,15 @@
 
 
                         <material:DataGrid.Columns>
-                            <material:DataGridColumn   Width="200"  ValueBinding="{Binding Name}" Title="Param"  />
+                            <material:DataGridColumn Width="200"  ValueBinding="{Binding Name}" Title="Param"  />
                             <material:DataGridColumn Title="Value" >
                                 <material:DataGridColumn.CellItemTemplate >
                                     <DataTemplate  x:DataType="configTuning:ParameterItemViewModel" >
                                         <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="10,0,0,0">
-
                                             <Entry  Text="{Binding Value, Mode=TwoWay}" IsReadOnly="{Binding IsReadOnly}" FontSize="16"  
                                                     Keyboard="Numeric" HorizontalTextAlignment="End" 
                                                     HorizontalOptions="End" VerticalOptions="Center"  
                                                     WidthRequest="100"   />
-
                                         </VerticalStackLayout>
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
@@ -224,22 +219,34 @@
                                     <DataTemplate  x:DataType="configTuning:ParameterItemViewModel">
                                         <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="10,0,0,0">
                                             <Picker IsVisible="{Binding HasValuesData}"
-                                                    FontSize="16"  
+                                                    FontSize="16" 
+                                                    HorizontalTextAlignment="End"
                                                     WidthRequest="175"
                                                     ItemsSource="{Binding ValuesData}"
                                                     SelectedItem="{Binding SelectedValue}" />
 
-                                           <Grid ColumnDefinitions="Auto,*,Auto"  IsVisible="{Binding HasNumericRangeData}" WidthRequest="175" VerticalOptions="Fill">
-                                                <Button Background="Transparent" Margin="0,0,5,0" Grid.Column="0" Text="-"  HorizontalOptions="Center" VerticalOptions="Center"  Command="{Binding DecrementNumberCommand}" />
-                                                <Entry FontSize="16" HorizontalTextAlignment="End"  Grid.Column="1" 
+                                            <Grid ColumnDefinitions="*,Auto,Auto"  IsVisible="{Binding HasNumericRangeData}" WidthRequest="175" VerticalOptions="Center">
+                                                <Button Background="LightGray"
+                                                        BorderColor="Transparent"
+                                                        TextColor="Black"
+                                                        Text="-"
+                                                        FontSize="16"
+                                                        Margin="0,0,0,0" Grid.Column="1"  HorizontalOptions="Center" VerticalOptions="Center"  
+                                                        Command="{Binding DecrementNumberCommand}" />
+
+                                                <Entry FontSize="16" HorizontalTextAlignment="End"  Grid.Column="0" 
                                                        Keyboard="Numeric"
                                                        HorizontalOptions="Fill" VerticalOptions="Fill"  
                                                        Text="{Binding Value, Mode=TwoWay}"
                                                 />
-                                                <Button Background="Transparent"
-                                                    Margin="5,0,0,0" Grid.Column="2" Text="+"  HorizontalOptions="Center" VerticalOptions="Center"  Command="{Binding IncrementNumberCommand}" />
+                                                <Button Background="LightGray" 
+                                                        BorderColor="Transparent"
+                                                        TextColor="Black"
+                                                        FontSize="16"
+                                                        Text="+"
+                                                        Margin="0,0,0,0"  Grid.Column="2"  HorizontalOptions="Center" VerticalOptions="Center"  
+                                                        Command="{Binding IncrementNumberCommand}" />
                                             </Grid>
-
                                         </VerticalStackLayout>
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
@@ -249,13 +256,15 @@
                             <material:DataGridColumn  Width="125"  ValueBinding="{Binding OriginalValue}" Title="Default"  />
                             <material:DataGridColumn  Width="125"  ValueBinding="{Binding Units}" Title="Units"  />
                             <material:DataGridColumn  Width="125"  ValueBinding="{Binding Options}" Title="Options"  />
-                            <material:DataGridColumn Title="Description" Width="*" >
+                            <material:DataGridColumn Title="Description" Width="*">
                                 <material:DataGridColumn.CellItemTemplate>
                                     <DataTemplate  x:DataType="configTuning:ParameterItemViewModel">
 
-                                        <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Fill" Margin="10,0,0,0">
+                                        <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Fill" Margin="10,10,0,10">
                                             <Label VerticalOptions="Center" VerticalTextAlignment="Center" LineBreakMode="MiddleTruncation"  
                                                HorizontalOptions="Start" HorizontalTextAlignment="Start" Text="{Binding DisplayName}"/>
+                                            <Label VerticalOptions="Fill" 
+                                                   HorizontalOptions="Fill"  Text=" "/>
                                             <Label VerticalOptions="Center" VerticalTextAlignment="Center" LineBreakMode="MiddleTruncation"  
                                                    HorizontalOptions="Start" HorizontalTextAlignment="Start" Text="{Binding Description}"/>
                                         </VerticalStackLayout>
