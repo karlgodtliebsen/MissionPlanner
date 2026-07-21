@@ -41,7 +41,7 @@
         <Button Grid.Column="3"
                 ImageSource="{Binding IsConnectedImage}"
                 FontSize="20"
-                Padding="8,4"
+                Padding="5"
                 VerticalOptions="Center"
                 BackgroundColor="Transparent"
                 Command="{Binding ConnectCommand}" />
@@ -50,7 +50,7 @@
         <Button Grid.Column="4"
                     Text="⚙"
                     FontSize="20"
-                    Padding="8,4"
+                    Padding="5"
                     VerticalOptions="Center"
                     BackgroundColor="Transparent"></Button>
     </Grid>

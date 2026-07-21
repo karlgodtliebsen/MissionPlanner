@@ -1,4 +1,6 @@
-﻿using System.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MissionPlanner.MavLink.Parameters;
@@ -24,12 +26,17 @@ public partial class ParameterItemViewModel : ObservableObject
     /// </summary>
     public VehicleParameter? OriginalParameter => originalParameter;
 
+    /// <summary>
+    /// Command that is triggered when the selected values change.
+    /// </summary>
+    public ICommand SelectedValuesChanged { get; }
+
+    [DisplayName("Default")][ObservableProperty] public partial float OriginalValue { get; set; }
+
     [ObservableProperty] public partial string Name { get; set; } = null!;
     [ObservableProperty] public partial string? DisplayName { get; set; }
     [ObservableProperty] public partial float Value { get; set; }
     [ObservableProperty] public partial string? SelectedValue { get; set; }
-
-    [DisplayName("Default")][ObservableProperty] public partial float OriginalValue { get; set; }
 
     [ObservableProperty] public partial float Max { get; set; }
     [ObservableProperty] public partial float Min { get; set; }
@@ -43,8 +50,14 @@ public partial class ParameterItemViewModel : ObservableObject
 
     [ObservableProperty] public partial string? Options { get; set; }
     [ObservableProperty] public partial string[]? ValuesData { get; set; }
-    [ObservableProperty] public partial SelectItem[] ValuesItems { get; set; } = [];
     [ObservableProperty] public partial string[]? RangeData { get; set; }
+
+    [ObservableProperty] public partial SelectItem[]? ValuesItems { get; set; }
+
+    [ObservableProperty] public partial SelectItem[]? BitmaskOptions { get; set; }
+
+    //[ObservableProperty] public partial string[]? BitmaskItems { get; set; }
+    [ObservableProperty] public partial SelectItem? SelectedBitmaskItem { get; set; }
 
     [DataGridIgnore][ObservableProperty] public partial string? Increment { get; set; }
     [DataGridIgnore][ObservableProperty] public partial string? UserLevel { get; set; }
@@ -54,7 +67,7 @@ public partial class ParameterItemViewModel : ObservableObject
     [DataGridIgnore][ObservableProperty] public partial bool RebootRequired { get; set; }
     [DataGridIgnore][ObservableProperty] public partial bool HasValuesData { get; set; }
     [DataGridIgnore][ObservableProperty] public partial bool HasNumericRangeData { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial bool IsSimpleValue { get; set; }
+    [DataGridIgnore][ObservableProperty] public partial bool HasBitmask { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ParameterItemViewModel"/> class.
@@ -62,6 +75,7 @@ public partial class ParameterItemViewModel : ObservableObject
     /// <param name="parameter">The vehicle parameter to wrap.</param>
     public ParameterItemViewModel(VehicleParameter parameter)
     {
+        SelectedValuesChanged = new Command<object>(OnSelectedValuesChanged);
         SetData(parameter);
     }
 
@@ -71,15 +85,35 @@ public partial class ParameterItemViewModel : ObservableObject
     /// <param name="metadata">The parameter metadata to wrap.</param>
     public ParameterItemViewModel(ParameterMetadata metadata)
     {
+        SelectedValuesChanged = new Command<object>(OnSelectedValuesChanged);
         SetMetadata(metadata);
+    }
+
+    private void OnSelectedValuesChanged(object value)
+    {
+        Value = 0.0f;
+        if (value is ObservableCollection<object> items)
+        {
+            foreach (var item in items)
+            {
+                var x = item as SelectItem;
+                Value += x?.Value ?? 0.0f;
+            }
+        }
     }
 
     /// <inheritdoc />
     protected override void OnPropertyChanged(PropertyChangedEventArgs e)
     {
+        base.OnPropertyChanged(e);
+
         if (e.PropertyName == nameof(Value))
         {
             //  EnsureNumericValueValid();
+        }
+
+        if (e.PropertyName == nameof(SelectedBitmaskItem))
+        {
         }
     }
 
@@ -89,34 +123,34 @@ public partial class ParameterItemViewModel : ObservableObject
     /// </summary>
     public void SetMetadata(ParameterMetadata metadata)
     {
+        originalMetadata = metadata;
         Value = 0f;
         loadingData = true;
-        originalMetadata = metadata;
         ValuesData = [];
         RangeData = [];
         ValuesItems ??= [];
 
         Name = metadata.Name;
         DisplayName = metadata.DisplayName;
-        IsSimpleValue = true;
         Description = metadata.Description ?? "";
         Units = metadata.Units ?? "";
         UnitText = metadata.UnitText ?? "";
         Range = metadata.Range;
         Values = metadata.Values;
-        Bitmask = metadata.Bitmask;
+        Bitmask = metadata.Bitmask; //0:Air-mode,1:Rate Loop Only
         Increment = metadata.Increment;
         UserLevel = metadata.UserLevel;
         RebootRequired = metadata.RebootRequired;
         IsReadOnly = metadata.ReadOnly;
         Max = metadata.MaxValue ?? float.MaxValue;
         Min = metadata.MinValue ?? float.MinValue;
+        stepSize = metadata.IncrementValue ?? 0.1f;
+
 
         if (Range is not null)
         {
             RangeData = Range.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             HasNumericRangeData = RangeData.Length == 2;
-            stepSize = metadata.IncrementValue ?? 0.1f;
         }
 
         if (Values is not null)
@@ -126,10 +160,20 @@ public partial class ParameterItemViewModel : ObservableObject
             ValuesData = vals.Values.ToArray();
             HasValuesData = true;
             HasNumericRangeData = false;
-            IsSimpleValue = false;
             SelectedValue = ValuesItems.FirstOrDefault()?.Name;
             Options = string.Join(Environment.NewLine, vals.Select(v => $"{v.Key}:{v.Value}"));
             //IsReadOnly = ValuesItems.Length > 0;
+        }
+
+        if (Bitmask is not null)
+        {
+            HasBitmask = true;
+            var bitmaskOptions = metadata.GetBitmaskOptions();
+            BitmaskOptions = bitmaskOptions.Keys.Select(k => new SelectItem(bitmaskOptions[k], k)).ToArray();
+            //BitmaskItems = bitmaskOptions.Values.ToArray();
+            SelectedBitmaskItem = null;
+            Options = string.Join(Environment.NewLine, bitmaskOptions.Select(b => $"{b.Key}:{b.Value}"));
+            IsReadOnly = true;
         }
 
         loadingData = false;
@@ -138,46 +182,23 @@ public partial class ParameterItemViewModel : ObservableObject
     [RelayCommand]
     private void IncrementNumber()
     {
-        if (HasNumericRangeData)
+        var v = Value;
+        if (v + stepSize <= Max)
         {
-            var v = Value;
-            if (v + stepSize <= Max)
-            {
-                v += stepSize;
-                Value = v;
-            }
-        }
-    }
-
-    private void EnsureNumericValueValid()
-    {
-        if (HasNumericRangeData && originalMetadata is not null)
-        {
-            //originalMetadata.IsValueValid(Value)
-            if (Value > Max)
-            {
-                Value = Max;
-            }
-
-            if (Value < Min)
-            {
-                Value = Min;
-            }
+            v += stepSize;
+            Value = v;
         }
     }
 
     [RelayCommand]
     private void DecrementNumber()
     {
-        if (HasNumericRangeData)
-        {
-            var v = Value;
+        var v = Value;
 
-            if (v - stepSize >= Min)
-            {
-                v -= stepSize;
-                Value = v;
-            }
+        if (v - stepSize >= Min)
+        {
+            v -= stepSize;
+            Value = v;
         }
     }
 
@@ -242,4 +263,11 @@ public partial class ParameterItemViewModel : ObservableObject
 /// <summary>
 /// Provides the public API for SelectItem.
 /// </summary>
-public sealed record SelectItem(string Name, float Value);
+public sealed record SelectItem(string Name, float Value)
+{
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        return Name;
+    }
+}
