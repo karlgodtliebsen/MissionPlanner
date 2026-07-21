@@ -40,6 +40,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     public ObservableRangeCollection<ParameterItemViewModel> Parameters { get; set; } = [];
 
     [ObservableProperty] public partial string ProgressMessage { get; set; } = null!;
+    [ObservableProperty] public partial bool ShowDataGrid { get; set; }
 
     [ObservableProperty] public partial double Progress { get; set; }
     [ObservableProperty] public partial bool ShowLoadingPanel { get; set; }
@@ -90,18 +91,14 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         this.metadataService = metadataService;
         this.cts = cts;
         this.logger = logger;
-        var eventSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(VehicleRegistered);
-        eventSubscriptions.Add(eventSubscription);
-
-        eventSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(VehicleDisconnected);
-        eventSubscriptions.Add(eventSubscription);
-
+        eventSubscriptions.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(VehicleRegistered));
+        eventSubscriptions.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(VehicleDisconnected));
         var vehicles = vehicleRegistry.Vehicles;
         var vehicle = vehicles.FirstOrDefault();
         HasConnection = vehicle != null;
         if (HasConnection)
         {
-            LoadMetaDataAsync().FireAndForget();
+            //LoadMetaDataAsync().FireAndForget();
         }
     }
 
@@ -142,7 +139,11 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     {
         await SetLoadState();
         // Load metadata for the vehicle
-        await dispatcher.DispatchAsync(() => ProgressMessage = "Loading parameter metadata...");
+        await dispatcher.DispatchAsync(() =>
+        {
+            ProgressMessage = "Loading parameter metadata...";
+            ShowDataGrid = false;
+        });
 
         metadata.Clear();
         var vehicles = vehicleRegistry.Vehicles;
@@ -169,23 +170,25 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
                 Parameters.Clear();
                 Parameters.AddRange(allParameterItems);
                 ShowEmptyView = Parameters.Count == 0;
+                ShowDataGrid = true;
             });
         }
     }
 
     private async Task LoadAsync(VehicleId vehicleId, CancellationToken cancellationToken)
     {
-        if (metadata.Count == 0)
-        {
-            logger.LogWarning("No metadata available for vehicle {VehicleId}", vehicleId);
-            return;
-        }
+        //if (metadata.Count == 0)
+        //{
+        //    logger.LogWarning("No metadata available for vehicle {VehicleId}", vehicleId);
+        //    return;
+        //}
 
         logger.LogDebug("Starting to load parameters for vehicle {VehicleId}", vehicleId);
 
         IProgress<ParameterStreamProgress>? progress = new Progress<ParameterStreamProgress>(p =>
             dispatcher.DispatchAsync(() =>
             {
+                ShowDataGrid = false;
                 Progress = (double)p.ReceivedCount / p.TotalCount;
                 ProgressMessage = $"Loading parameters... {p.ReceivedCount}/{p.TotalCount}";
             }));
@@ -198,9 +201,10 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
             if (!result.Success)
             {
-                await ResetState();
                 await dispatcher.DispatchAsync(() =>
                 {
+                    ShowDataGrid = true;
+                    NullState();
                     ShowEmptyView = Parameters.Count == 0;
                     ShowLoadingPanel = true;
                     ShowLoadingCompletedWithError = true;
@@ -209,30 +213,56 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
                 return;
             }
 
+            var _ = Task.Run(() => AddAndRenderParameters(result.Parameters), cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error loading parameters");
             await dispatcher.DispatchAsync(() =>
             {
-                ProgressMessage = $"Rendering table";
+                ShowDataGrid = true;
+                NullState();
+                Parameters.Clear();
+                ShowEmptyView = Parameters.Count == 0;
+                dialogs.DisplayTextPromptAsync("Load failed. Ensure there is a connection and try again", ex.Message, "OK");
             });
+        }
+    }
 
-            var parameters = new Dictionary<string, VehicleParameter>(result.Parameters);
-
-            foreach (var parameter in parameters.Values.OrderBy(p => p.Name))
+    private async Task AddAndRenderParameters(IReadOnlyDictionary<string, VehicleParameter> p)
+    {
+        await dispatcher.DispatchAsync(() =>
+        {
+            ShowDataGrid = false;
+            Progress = 1;
+            ProgressMessage = $"Initializing table";
+        });
+        var parameters = new Dictionary<string, VehicleParameter>(p);
+        foreach (var parameter in parameters.Values.OrderBy(p => p.Name))
+        {
+            var item = allParameterItems.FirstOrDefault(m => m.Name == parameter.Name);
+            if (item is not null)
             {
-                var item = allParameterItems.FirstOrDefault(m => m.Name == parameter.Name);
-                if (item is not null)
-                {
-                    item.SetData(parameter);
-                }
-                else
-                {
-                    var vehicleParameter = new VehicleParameter(parameter.Name ?? "noname", 0, MavParamType.Real32, 0, (ushort)metadata.Count());
-                    var model = new ParameterItemViewModel(vehicleParameter);
-                    allParameterItems.Add(model);
-                }
+                item.SetData(parameter);
             }
-
-            await dispatcher.DispatchAsync(() =>
+            else
             {
+                var vehicleParameter = new VehicleParameter(parameter.Name ?? "noname", 0, MavParamType.Real32, 0, (ushort)metadata.Count());
+                var model = new ParameterItemViewModel(vehicleParameter);
+                allParameterItems.Add(model);
+            }
+        }
+
+        var timer = dispatcher.CreateTimer();
+        timer.Interval = TimeSpan.FromSeconds(1);
+        timer.Tick += (s, e) =>
+        {
+            timer.Stop();
+            timer = null;
+            dispatcher.DispatchAsync(() =>
+            {
+                Progress = 1;
+                ProgressMessage = $"Initializing table";
                 TotalParameterCount = allParameterItems.Count;
                 ModifiedParameterCount = 0;
                 if (allParameterItems.Count != Parameters.Count)
@@ -241,23 +271,15 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
                     Parameters.AddRange(allParameterItems.OrderBy(p => p.Name));
                     ShowEmptyView = Parameters.Count == 0;
                 }
-            });
 
-            await ResetState();
-            logger.LogInformation("Successfully loaded {Count} parameters with metadata", parameters.Count);
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error loading parameters");
-            await ResetState();
-            await dispatcher.DispatchAsync(async () =>
-            {
-                Parameters.Clear();
-                ShowEmptyView = Parameters.Count == 0;
-                await dialogs.DisplayTextPromptAsync("Load failed. Ensure there is a connection and try again", ex.Message, "OK");
+                NullState();
+                ShowDataGrid = true;
+                logger.LogInformation("Successfully loaded {Count} parameters with metadata", TotalParameterCount);
             });
-        }
+        };
+        timer.Start();
     }
+
 
     private bool CanExecuteConnection()
     {
@@ -328,7 +350,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             var vehicleParameter = new VehicleParameter("First Line", (float)1.0, MavParamType.Real32, (ushort)testParameters.Count, (ushort)metadata.Count());
             var model = new ParameterItemViewModel(vehicleParameter);
             testParameters.Add(model);
-
 
             var parameterMetadata = metadata.Values.OrderBy(v => v.Name);
             foreach (var metaData in parameterMetadata)
@@ -454,25 +475,27 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
     private async Task ResetState()
     {
-        await dispatcher.DispatchAsync(() =>
-        {
-            Progress = 0;
-            ProgressMessage = "";
-            IsBusy = false;
-            ShowLoadingProgress = false;
-            ShowLoadingPanel = false;
-            ShowLoadingCompletedWithError = false;
-            ShowLoadingCancelled = false;
-            ShowVehicleDisconnected = false;
-            ShowEmptyView = Parameters.Count == 0;
-        });
+        await dispatcher.DispatchAsync(NullState);
+    }
+
+    private void NullState()
+    {
+        Progress = 0;
+        ProgressMessage = "";
+        IsBusy = false;
+        ShowLoadingProgress = false;
+        ShowLoadingPanel = false;
+        ShowLoadingCompletedWithError = false;
+        ShowLoadingCancelled = false;
+        ShowVehicleDisconnected = false;
+        ShowEmptyView = Parameters.Count == 0;
     }
 
     private async Task SetLoadState()
     {
-        await ResetState();
         await dispatcher.DispatchAsync(() =>
         {
+            NullState();
             IsBusy = true;
             ShowLoadingPanel = true;
             ShowLoadingProgress = true;
@@ -529,6 +552,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             disposable.Dispose();
         }
 
+        Parameters.Clear();
         eventSubscriptions.Clear();
     }
 }

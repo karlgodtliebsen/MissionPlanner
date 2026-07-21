@@ -79,6 +79,7 @@ public static class DomainConfigurator
         // MAVLink parameter services
         services.TryAddTransient<IVehicleParameterService, VehicleParameterService>();
         services.TryAddSingleton<IVehicleParameterMetadataService, VehicleParameterMetadataService>();
+        services.TryAddSingleton<IArduPilotPackedParameterDecoder, ArduPilotPackedParameterDecoder>();
         services.TryAddTransient<IVehicleParameterStreamService, VehicleParameterStreamService>();
 
         return services;

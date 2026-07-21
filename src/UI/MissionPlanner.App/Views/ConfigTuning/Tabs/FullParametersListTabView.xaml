@@ -65,23 +65,6 @@
                     VerticalOptions="Center"
                     BackgroundColor="Transparent"
                     Command="{Binding LoadMetaDataCommand}" />
-
-                <!--<Button 
-                Text="Create Test data using  Metadata"
-                FontSize="14"
-                Padding="8,4"
-                VerticalOptions="Center"
-                BackgroundColor="Transparent"
-                Command="{Binding CreateTestParametersWithMetadataCommand}" />
-
-                <Button 
-                    Text="Create Test Params"
-                    FontSize="14"
-                    Padding="8,4"
-                    VerticalOptions="Center"
-                    BackgroundColor="Transparent"
-                    Command="{Binding CreateTestParametersCommand}" />-->
-
                 <Button 
                     Text="Refresh Params"
                     FontSize="14"
@@ -198,13 +181,14 @@
                     >
 
                     <material:DataGrid 
+                        IsVisible="{Binding ShowDataGrid}"
                     ItemsSource="{Binding Parameters}"
                     UseAutoColumns="False"
                     VerticalOptions="Fill"
                     HorizontalOptions="Fill"
                     Margin="8" >
 
-                        
+
                         <material:DataGrid.EmptyView>
                             <VerticalStackLayout  VerticalOptions="Center" HorizontalOptions="Center" IsVisible="{Binding ShowEmptyView}">
                                 <Image
@@ -219,17 +203,13 @@
 
 
                         <material:DataGrid.Columns>
-                            <material:DataGridColumn   Width="200"  ValueBinding="{Binding Name}" Title="Name"  />
+                            <material:DataGridColumn   Width="200"  ValueBinding="{Binding Name}" Title="Param"  />
                             <material:DataGridColumn Title="Value" >
                                 <material:DataGridColumn.CellItemTemplate >
                                     <DataTemplate  x:DataType="configTuning:ParameterItemViewModel" >
                                         <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="10,0,0,0">
-                                            <!--<material:EditorField
-                                            WidthRequest="100"
-                                            FontSize="16"
-                                            Keyboard="Keyboard.Numeric" Title="Value" HorizontalOptions="End" VerticalOptions="Center"  
-                                            Text="{Binding Value}" TextColor="Blue"/>-->
-                                            <Entry  Text="{Binding Value}" FontSize="16"  
+
+                                            <Entry  Text="{Binding Value, Mode=TwoWay}" IsReadOnly="{Binding IsReadOnly}" FontSize="16"  
                                                     Keyboard="Numeric" HorizontalTextAlignment="End" 
                                                     HorizontalOptions="End" VerticalOptions="Center"  
                                                     WidthRequest="100"   />
@@ -239,56 +219,51 @@
                                 </material:DataGridColumn.CellItemTemplate>
                             </material:DataGridColumn>
 
-                            <material:DataGridColumn Title="Options">
+                            <material:DataGridColumn Title="Selections">
                                 <material:DataGridColumn.CellItemTemplate>
                                     <DataTemplate  x:DataType="configTuning:ParameterItemViewModel">
                                         <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="10,0,0,0">
-                                            
-                                            <!--<material:PickerField
-                                                IsVisible="{Binding HasValuesData}"
-                                                Title="Select a value"
-                                                WidthRequest="175"
-                                                AllowClear="False"
-                                                ItemsSource="{Binding ValuesData}"
-                                                SelectedItem="{Binding SelectedValue}"
-                         
-                                            />-->
-
                                             <Picker IsVisible="{Binding HasValuesData}"
                                                     FontSize="16"  
                                                     WidthRequest="175"
                                                     ItemsSource="{Binding ValuesData}"
                                                     SelectedItem="{Binding SelectedValue}" />
 
+                                           <Grid ColumnDefinitions="Auto,*,Auto"  IsVisible="{Binding HasNumericRangeData}" WidthRequest="175" VerticalOptions="Fill">
+                                                <Button Background="Transparent" Margin="0,0,5,0" Grid.Column="0" Text="-"  HorizontalOptions="Center" VerticalOptions="Center"  Command="{Binding DecrementNumberCommand}" />
+                                                <Entry FontSize="16" HorizontalTextAlignment="End"  Grid.Column="1" 
+                                                       Keyboard="Numeric"
+                                                       HorizontalOptions="Fill" VerticalOptions="Fill"  
+                                                       Text="{Binding Value, Mode=TwoWay}"
+                                                />
+                                                <Button Background="Transparent"
+                                                    Margin="5,0,0,0" Grid.Column="2" Text="+"  HorizontalOptions="Center" VerticalOptions="Center"  Command="{Binding IncrementNumberCommand}" />
+                                            </Grid>
+
                                         </VerticalStackLayout>
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
                             </material:DataGridColumn>
 
+                            <material:DataGridColumn  Width="125"  ValueBinding="{Binding Range}" Title="Range"  />
                             <material:DataGridColumn  Width="125"  ValueBinding="{Binding OriginalValue}" Title="Default"  />
                             <material:DataGridColumn  Width="125"  ValueBinding="{Binding Units}" Title="Units"  />
-                            <!--<material:DataGridColumn  Width="4*"  ValueBinding="{Binding Description}" Title="Description"  />-->
-
+                            <material:DataGridColumn  Width="125"  ValueBinding="{Binding Options}" Title="Options"  />
                             <material:DataGridColumn Title="Description" Width="*" >
                                 <material:DataGridColumn.CellItemTemplate>
                                     <DataTemplate  x:DataType="configTuning:ParameterItemViewModel">
 
                                         <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Fill" Margin="10,0,0,0">
                                             <Label VerticalOptions="Center" VerticalTextAlignment="Center" LineBreakMode="MiddleTruncation"  
-                                               HorizontalOptions="Start" HorizontalTextAlignment="Start" Text="{Binding Description}"
-                        
-                                        />
+                                               HorizontalOptions="Start" HorizontalTextAlignment="Start" Text="{Binding DisplayName}"/>
+                                            <Label VerticalOptions="Center" VerticalTextAlignment="Center" LineBreakMode="MiddleTruncation"  
+                                                   HorizontalOptions="Start" HorizontalTextAlignment="Start" Text="{Binding Description}"/>
                                         </VerticalStackLayout>
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
                             </material:DataGridColumn>
-
-
                         </material:DataGrid.Columns>
-
                     </material:DataGrid>
-
-
                 </ScrollView>
             </Grid>
 

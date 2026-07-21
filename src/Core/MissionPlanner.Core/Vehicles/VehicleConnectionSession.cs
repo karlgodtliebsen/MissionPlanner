@@ -117,7 +117,7 @@ public sealed class VehicleConnectionSession(
         connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
         parameterService = domainFactory.Create<IVehicleParameterService, IMavLinkClient>(client);
 
-        parameterStreamService = domainFactory.Create<IVehicleParameterStreamService, IVehicleParameterService>(parameterService);
+        parameterStreamService = CreateParameterStreamService();
         var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
 
         messagePumpTask = Task.Run(() => messagePump.StartAsync(linkedCts.Token), linkedCts.Token);
@@ -149,7 +149,7 @@ public sealed class VehicleConnectionSession(
         connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
 
         parameterService = domainFactory.Create<IVehicleParameterService, IMavLinkClient>(client);
-        parameterStreamService = domainFactory.Create<IVehicleParameterStreamService, IVehicleParameterService>(parameterService);
+        parameterStreamService = CreateParameterStreamService();
 
         var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
 
@@ -183,7 +183,7 @@ public sealed class VehicleConnectionSession(
         connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
 
         parameterService = domainFactory.Create<IVehicleParameterService, IMavLinkClient>(client);
-        parameterStreamService = domainFactory.Create<IVehicleParameterStreamService, IVehicleParameterService>(parameterService);
+        parameterStreamService = CreateParameterStreamService();
 
         var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
 
@@ -335,5 +335,12 @@ public sealed class VehicleConnectionSession(
         }
 
         logger.LogInformation("Successfully disconnected vehicle {VehicleId}", vehicleId);
+    }
+
+    private IVehicleParameterStreamService CreateParameterStreamService()
+    {
+        var mavFtpClient = domainFactory.Create<IMavFtpClient, IMavLinkConnection>(Connection);
+        var fileSystemService = domainFactory.Create<IVehicleFileSystemService, IMavFtpClient>(mavFtpClient);
+        return domainFactory.Create<IVehicleParameterStreamService, IVehicleParameterService, IVehicleFileSystemService>(ParameterService, fileSystemService);
     }
 }

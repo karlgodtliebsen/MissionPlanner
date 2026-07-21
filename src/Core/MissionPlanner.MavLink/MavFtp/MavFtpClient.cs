@@ -164,9 +164,9 @@ public sealed class MavFtpClient : IMavFtpClient
                         }
                     }
 
-                    var requested = Math.Min(options.ReadChunkSize, checked((int)(opened.Size - written)));
-                    var response = await RequestAsync(target, opened.Session, MavFtpOpcode.ReadFile, checked((uint)written), new byte[requested], remotePath, ct).ConfigureAwait(false);
-                    if (response.Offset != written || response.Data.IsEmpty)
+                    var remaining = checked((int)(opened.Size - written));
+                    var response = await RequestAsync(target, opened.Session, MavFtpOpcode.ReadFile, checked((uint)written), new byte[options.ReadChunkSize], remotePath, ct).ConfigureAwait(false);
+                    if (response.Offset != written || response.Data.IsEmpty || response.Data.Length > remaining)
                     {
                         throw new MavFtpProtocolException("MAVFTP returned an impossible or empty read block.");
                     }
@@ -230,7 +230,7 @@ public sealed class MavFtpClient : IMavFtpClient
     private async Task<byte[]> ReadBurstWindowAsync(MavFtpTarget target, byte session, uint offset, int expectedLength, string path, CancellationToken ct)
     {
         var sequence = sequenceStore.GetNextRequest(target);
-        var request = new MavFtpPacket(sequence, session, MavFtpOpcode.BurstReadFile, MavFtpOpcode.None, false, offset, new byte[Math.Min(options.ReadChunkSize, expectedLength)]);
+        var request = new MavFtpPacket(sequence, session, MavFtpOpcode.BurstReadFile, MavFtpOpcode.None, false, offset, new byte[options.ReadChunkSize]);
         using var registration = responseDispatcher.Register(target, sequence, MavFtpOpcode.BurstReadFile, session, true);
         await connection.SendRawAsync(messageEncoder.Encode(target.SystemId, target.ComponentId, packetCodec.Encode(request)), target.EndPoint, ct).ConfigureAwait(false);
 
@@ -343,16 +343,16 @@ public sealed class MavFtpClient : IMavFtpClient
         var cursor = start;
         while (remaining > 0)
         {
-            var count = Math.Min(options.ReadChunkSize, remaining);
-            var packet = await RequestAsync(target, session, MavFtpOpcode.ReadFile, cursor, new byte[count], path, ct).ConfigureAwait(false);
-            if (packet.Offset != cursor || packet.Data.IsEmpty || packet.Data.Length > count)
+            var packet = await RequestAsync(target, session, MavFtpOpcode.ReadFile, cursor, new byte[options.ReadChunkSize], path, ct).ConfigureAwait(false);
+            if (packet.Offset != cursor || packet.Data.IsEmpty)
             {
                 throw new MavFtpProtocolException("MAVFTP gap recovery returned an invalid block.");
             }
 
-            packet.Data.CopyTo(result.AsMemory(checked((int)(cursor - windowOffset))));
-            cursor += (uint)packet.Data.Length;
-            remaining -= packet.Data.Length;
+            var recoveredLength = Math.Min(packet.Data.Length, remaining);
+            packet.Data[..recoveredLength].CopyTo(result.AsMemory(checked((int)(cursor - windowOffset))));
+            cursor += (uint)recoveredLength;
+            remaining -= recoveredLength;
         }
     }
 

@@ -19,7 +19,10 @@ public sealed class VehicleParameterStreamService : IVehicleParameterStreamServi
     private readonly IDomainEventHub domainEventHub;
     private readonly IDateTimeProvider dateTimeProvider;
     private readonly ILogger<VehicleParameterStreamService> logger;
+    private readonly IArduPilotPackedParameterDecoder packedParameterDecoder;
+    private readonly IVehicleFileSystemService? fileSystemService;
     private static readonly TimeSpan defaultTimeout = TimeSpan.FromSeconds(30);
+    private const string PackedParameterPath = "@PARAM/param.pck";
 
     /// <summary>
     /// Parameter streaming service that subscribes to domain events.
@@ -29,13 +32,17 @@ public sealed class VehicleParameterStreamService : IVehicleParameterStreamServi
         IVehicleParameterRegistry parameterRegistry,
         IDomainEventHub domainEventHub,
         IDateTimeProvider dateTimeProvider,
-        ILogger<VehicleParameterStreamService> logger)
+        ILogger<VehicleParameterStreamService> logger,
+        IArduPilotPackedParameterDecoder packedParameterDecoder,
+        IVehicleFileSystemService? fileSystemService = null)
     {
         this.parameterService = parameterService;
         this.parameterRegistry = parameterRegistry;
         this.domainEventHub = domainEventHub;
         this.dateTimeProvider = dateTimeProvider;
         this.logger = logger;
+        this.packedParameterDecoder = packedParameterDecoder;
+        this.fileSystemService = fileSystemService;
     }
 
 
@@ -176,6 +183,12 @@ public sealed class VehicleParameterStreamService : IVehicleParameterStreamServi
     {
         var overallStopwatch = Stopwatch.StartNew();
 
+        var ftpResult = await TryDownloadPackedParametersAsync(vehicleId, progress, overallStopwatch, cancellationToken).ConfigureAwait(false);
+        if (ftpResult is not null)
+        {
+            return ftpResult;
+        }
+
         for (var attempt = 0; attempt <= maxRetries; attempt++)
         {
             if (cancellationToken.IsCancellationRequested)
@@ -191,8 +204,7 @@ public sealed class VehicleParameterStreamService : IVehicleParameterStreamServi
                 await Task.Delay(500, cancellationToken);
             }
 
-            // Each attempt uses 30-second timeout
-            var result = await StreamAllParametersAsync(vehicleId, progress, TimeSpan.FromSeconds(30), cancellationToken);
+            var result = await StreamAllParametersAsync(vehicleId, progress, timeout, cancellationToken);
 
             if (result.Success)
             {
@@ -211,5 +223,53 @@ public sealed class VehicleParameterStreamService : IVehicleParameterStreamServi
         logger.LogError("Failed after {Retries} retries. Stored: {Stored}, Expected: {Total}", maxRetries + 1, finalParams.Count, finalCount);
 
         return ParameterStreamResult.CreateFailure($"Failed after {maxRetries + 1} attempts. Stored {finalParams.Count}/{finalCount} parameters.", overallStopwatch.Elapsed);
+    }
+
+    private async Task<ParameterStreamResult?> TryDownloadPackedParametersAsync(
+        VehicleId vehicleId,
+        IProgress<ParameterStreamProgress>? progress,
+        Stopwatch stopwatch,
+        CancellationToken cancellationToken)
+    {
+        if (fileSystemService is null)
+        {
+            logger.LogDebug("MAVFTP parameter loading is unavailable because no file-system service is attached to the connection.");
+            return null;
+        }
+
+        try
+        {
+            logger.LogInformation("Loading parameters for {VehicleId} through MAVFTP {Path}.", vehicleId, PackedParameterPath);
+            using var packedFile = new MemoryStream();
+            await fileSystemService.DownloadFileAsync(vehicleId, PackedParameterPath, packedFile, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            var parameters = packedParameterDecoder.Decode(packedFile.GetBuffer().AsSpan(0, checked((int)packedFile.Length)));
+            if (parameters.Count == 0)
+            {
+                throw new InvalidDataException("ArduPilot packed parameter file contained no parameters.");
+            }
+
+            parameterRegistry.ClearParameters(vehicleId);
+            for (var index = 0; index < parameters.Count; index++)
+            {
+                var parameter = parameters[index];
+                parameterRegistry.StoreParameter(vehicleId, parameter, cancellationToken);
+                var received = index + 1;
+                progress?.Report(new ParameterStreamProgress(received, parameters.Count, received * 100 / parameters.Count, received == parameters.Count));
+            }
+
+            var stored = parameterRegistry.GetAllParameters(vehicleId);
+            logger.LogInformation("Loaded {Count} parameters for {VehicleId} through MAVFTP in {Duration}s.", stored.Count, vehicleId, stopwatch.Elapsed.TotalSeconds);
+            return ParameterStreamResult.CreateSuccess(stored, parameters.Count, stopwatch.Elapsed);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            logger.LogInformation(ex, "MAVFTP packed parameter loading is unavailable for {VehicleId}; falling back to PARAM_REQUEST_LIST.", vehicleId);
+            return null;
+        }
     }
 }
