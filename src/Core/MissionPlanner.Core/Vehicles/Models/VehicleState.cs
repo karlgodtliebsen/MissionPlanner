@@ -132,7 +132,7 @@ public sealed record VehicleState(
         float? batteryVoltage)
         : this(
             vehicleId,
-            new VehicleIdentityState(vehicleType, autopilot, mavLinkVersion),
+            new VehicleIdentityState(vehicleType, autopilot, mavLinkVersion, VehicleFirmwareIdentityFactory.FromHeartbeat(vehicleType, autopilot)),
             new VehicleConnectionData(connectionState, lastHeartbeatAt),
             new VehicleFlightState(customMode, baseMode, systemStatus, mode, isArmed),
             VehiclePositionState.Empty with { LatitudeDegrees = latitude, LongitudeDegrees = longitude, AltitudeMslMeters = altitude },

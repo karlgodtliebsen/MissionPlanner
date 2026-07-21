@@ -22,14 +22,17 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
     /// Provides the public API for Id.
     /// </summary>
     public VehicleId Id => state.VehicleId;
+
     /// <summary>
     /// Provides the public API for State.
     /// </summary>
     public VehicleState State => state;
+
     /// <summary>
     /// Provides the public API for EndPoint.
     /// </summary>
     public TransportEndPoint EndPoint => endPoint;
+
     /// <summary>
     /// Provides the public API for Notifications.
     /// </summary>
@@ -72,7 +75,48 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
     /// <param name="observation"></param>
     public void ApplyHeartbeat(VehicleHeartbeatObservation observation)
     {
-        state = state with { Identity = new VehicleIdentityState(observation.VehicleType, observation.Autopilot, observation.MavLinkVersion), Flight = new VehicleFlightState(observation.CustomMode, observation.BaseMode, observation.SystemStatus, MapMode(observation.CustomMode), (observation.BaseMode & MavModeFlagSafetyArmed) != 0), Connection = new VehicleConnectionData(VehicleConnectionState.Online, observation.ObservedAt) };
+        var firmware = state.Identity.Firmware with { Family = VehicleFirmwareIdentityFactory.MapFamily(observation.VehicleType, observation.Autopilot), MavType = observation.VehicleType, Autopilot = observation.Autopilot };
+        state = state with { Identity = new VehicleIdentityState(observation.VehicleType, observation.Autopilot, observation.MavLinkVersion, firmware), Flight = new VehicleFlightState(observation.CustomMode, observation.BaseMode, observation.SystemStatus, MapMode(observation.CustomMode), (observation.BaseMode & MavModeFlagSafetyArmed) != 0), Connection = new VehicleConnectionData(VehicleConnectionState.Online, observation.ObservedAt) };
+    }
+
+    /// <summary>
+    /// Enriches the current connection identity with AUTOPILOT_VERSION data.
+    /// </summary>
+    /// <param name="observation">The decoded firmware observation.</param>
+    public void ApplyFirmwareIdentity(VehicleFirmwareObservation observation)
+    {
+        var flightHash = ToOptionalHex(observation.FlightCustomVersion);
+        var uid2 = ToOptionalHex(observation.Uid2);
+        state = state with
+        {
+            Identity = state.Identity with
+            {
+                Firmware = state.Identity.Firmware with
+                {
+                    FlightVersion = FirmwareSemanticVersion.FromPacked(observation.FlightSoftwareVersion),
+                    FlightGitHash = flightHash,
+                    Capabilities = observation.Capabilities,
+                    BoardVersion = observation.BoardVersion,
+                    VendorId = observation.VendorId,
+                    ProductId = observation.ProductId,
+                    HardwareUid = observation.Uid == 0 ? null : observation.Uid,
+                    HardwareUid2 = uid2
+                }
+            }
+        };
+    }
+
+    private static string? ToOptionalHex(ReadOnlySpan<byte> bytes)
+    {
+        foreach (var value in bytes)
+        {
+            if (value != 0)
+            {
+                return Convert.ToHexString(bytes).ToLowerInvariant();
+            }
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -123,7 +167,7 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
 
     private static double? CalculateHorizontalSpeed(double? northMetersPerSecond, double? eastMetersPerSecond)
     {
-        return northMetersPerSecond is not { } north || eastMetersPerSecond is not { } east ? null : Math.Sqrt(north * north + east * east);
+        return northMetersPerSecond is not { } north || eastMetersPerSecond is not { } east ? null : Math.Sqrt((north * north) + (east * east));
     }
 
     /// <summary>
@@ -132,15 +176,7 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
     /// <param name="observation">The home position observation.</param>
     public void ApplyHomePosition(VehicleHomePositionObservation observation)
     {
-        state = state with
-        {
-            Position = state.Position with
-            {
-                HomeLatitudeDegrees = observation.LatitudeDegrees,
-                HomeLongitudeDegrees = observation.LongitudeDegrees,
-                HomeAltitudeMslMeters = observation.AltitudeMslMeters
-            }
-        };
+        state = state with { Position = state.Position with { HomeLatitudeDegrees = observation.LatitudeDegrees, HomeLongitudeDegrees = observation.LongitudeDegrees, HomeAltitudeMslMeters = observation.AltitudeMslMeters } };
     }
 
     /// <summary>

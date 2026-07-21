@@ -21,6 +21,7 @@ public class VehicleConnectionService(
     IDomainEventHub domainEventHub,
     IDateTimeProvider dateTimeProvider,
     IDomainFactory domainFactory,
+    IVehicleRegistry vehicleRegistry,
     ILogger<VehicleConnectionService> logger)
     : IVehicleConnectionService
 {
@@ -67,6 +68,8 @@ public class VehicleConnectionService(
                 await PublishConnectionFailed("SERIAL", $"{portName} {baudRate}", "No heartbeat received from vehicle");
                 return new VehicleConnectionResult(false, null, null, "Timeout waiting for vehicle heartbeat");
             }
+
+            await RequestFirmwareIdentityAsync(client, vehicleId.Value, linkedCts.Token);
 
             // Request telemetry streams from vehicle
             await RequestTelemetryStreamsAsync(client, vehicleId.Value, linkedCts.Token);
@@ -131,6 +134,8 @@ public class VehicleConnectionService(
             }
 
 
+            await RequestFirmwareIdentityAsync(client, vehicleId.Value, linkedCts.Token);
+
             // Request telemetry streams from vehicle
             await RequestTelemetryStreamsAsync(client, vehicleId.Value, linkedCts.Token);
 
@@ -188,6 +193,8 @@ public class VehicleConnectionService(
                 await PublishConnectionFailed("UDP", endpoint, "No heartbeat received from vehicle");
                 return new VehicleConnectionResult(false, null, null, "Timeout waiting for vehicle heartbeat");
             }
+
+            await RequestFirmwareIdentityAsync(client, vehicleId.Value, linkedCts.Token);
 
             // Request telemetry streams from vehicle
             await RequestTelemetryStreamsAsync(client, vehicleId.Value, linkedCts.Token);
@@ -284,6 +291,33 @@ public class VehicleConnectionService(
         {
             logger.LogWarning(ex, "Failed to request telemetry streams for {VehicleId}", vehicleId);
         }
+    }
+
+    private async Task RequestFirmwareIdentityAsync(IMavLinkClient client, VehicleId vehicleId, CancellationToken cancellationToken)
+    {
+        const int maxAttempts = 2;
+        var commandService = domainFactory.Create<IMavLinkCommandService, IMavLinkClient>(client);
+
+        for (var attempt = 1; attempt <= maxAttempts && !cancellationToken.IsCancellationRequested; attempt++)
+        {
+            if (!await commandService.RequestAutopilotVersionAsync(vehicleId, cancellationToken).ConfigureAwait(false))
+            {
+                return;
+            }
+
+            var deadline = dateTimeProvider.UtcNow + TimeSpan.FromSeconds(1);
+            while (dateTimeProvider.UtcNow < deadline && !cancellationToken.IsCancellationRequested)
+            {
+                if (vehicleRegistry.GetRequired(vehicleId)?.State.Identity.Firmware.FlightVersion is not null)
+                {
+                    return;
+                }
+
+                await Task.Delay(50, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        logger.LogWarning("AUTOPILOT_VERSION was not received from {VehicleId}", vehicleId);
     }
 
     private async Task PublishConnectionFailed(string connectionType, string endpoint, string error)

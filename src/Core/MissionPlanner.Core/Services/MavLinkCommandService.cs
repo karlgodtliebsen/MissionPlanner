@@ -13,10 +13,7 @@ namespace MissionPlanner.Core.Services;
 /// Service for sending MAVLink commands to vehicles.
 /// Wraps packet building and transmission via MAVLink client.
 /// </summary>
-public class MavLinkCommandService(
-    IMavLinkClient client,
-    IVehicleRegistry vehicleRegistry,
-    ILogger<MavLinkCommandService> logger)
+public class MavLinkCommandService(IMavLinkClient client, IVehicleRegistry vehicleRegistry, ILogger<MavLinkCommandService> logger)
     : IMavLinkCommandService
 {
     private byte sequenceNumber = 0;
@@ -107,6 +104,44 @@ public class MavLinkCommandService(
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to send MAV_CMD_GET_HOME_POSITION to {VehicleId}", vehicleId);
+            return false;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task<bool> RequestAutopilotVersionAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
+    {
+        if (!client.IsConnected)
+        {
+            return false;
+        }
+
+        try
+        {
+            const ushort requestMessageCommand = 512;
+            var packet = MavLinkPacketBuilder.BuildCommandLongPacket(
+                vehicleId.SystemId,
+                vehicleId.ComponentId,
+                requestMessageCommand,
+                148,
+                sequenceNumber: sequenceNumber++);
+            var endpoint = vehicleRegistry.GetRequired(vehicleId)?.EndPoint;
+            if (endpoint is null)
+            {
+                return false;
+            }
+
+            await client.SendAsync(packet, endpoint, cancellationToken).ConfigureAwait(false);
+            logger.LogInformation("Requested AUTOPILOT_VERSION from {VehicleId}", vehicleId);
+            return true;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            return false;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to request AUTOPILOT_VERSION from {VehicleId}", vehicleId);
             return false;
         }
     }

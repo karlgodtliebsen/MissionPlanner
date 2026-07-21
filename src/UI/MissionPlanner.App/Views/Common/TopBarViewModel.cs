@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.App.Views.Connect;
 using MissionPlanner.Core.DomainEvents;
+using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using UraniumUI.Dialogs;
@@ -29,6 +30,7 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
     [ObservableProperty] public partial string? BaudRate { get; set; }
     [ObservableProperty] public partial string? VehicleName { get; set; }
     [ObservableProperty] public partial string? VehicleId { get; set; }
+    [ObservableProperty] public partial string? FirmwareIdentity { get; set; }
     [ObservableProperty] public partial string? Channel { get; set; }
     [ObservableProperty] public partial string ConnectionStatus { get; set; } = "Disconnected";
     [ObservableProperty] public partial string? IsConnectedImage { get; set; } = ConnectImage;
@@ -54,6 +56,7 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
         // Subscribe to connection events
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected));
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
+        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated));
 
         // Initial state
         UpdateConnectionStatus();
@@ -120,7 +123,17 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
 
     private async Task OnVehicleDisconnected(VehicleDisconnected evt, CancellationToken ct)
     {
-        await dispatcher.DispatchAsync(async () => ConnectionStatus = $"Disconnected: {evt.VehicleId}");
+        await dispatcher.DispatchAsync(async () =>
+        {
+            ConnectionStatus = $"Disconnected: {evt.VehicleId}";
+            FirmwareIdentity = null;
+        });
+    }
+
+    private async Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken ct)
+    {
+        var display = VehicleFirmwareDisplayFormatter.Format(evt.VehicleState.Identity.Firmware);
+        await dispatcher.DispatchAsync(async () => FirmwareIdentity = display);
     }
 
     [RelayCommand]

@@ -16,6 +16,8 @@
 
 * Complete Domain Model
 
+* Connection-scoped vehicle firmware identity from HEARTBEAT and AUTOPILOT_VERSION, including semantic version, ArduPilot family, protocol capabilities, and hardware IDs
+
 
 
 ## Messages
@@ -428,7 +430,6 @@ Completed
 * File browser UI: listing, navigation, refresh, reset, download, progress, save, and cancellation implemented.
 * Upload and filesystem mutations: not implemented.
 * Fast packed-parameter download: not implemented; classic parameter loading is unchanged.
-
 
 
 

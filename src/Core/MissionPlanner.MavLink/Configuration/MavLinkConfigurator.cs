@@ -50,6 +50,7 @@ public static class MavLinkConfigurator
         [
             new Ahrs2MessageDecoder(),
             new AttitudeMessageDecoder(),
+            new AutopilotVersionMessageDecoder(),
             new BatteryStatusMessageDecoder(),
             new CommandAckMessageDecoder(),
             new EkfStatusReportMessageDecoder(),

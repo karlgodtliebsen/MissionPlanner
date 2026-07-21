@@ -21,6 +21,7 @@ public sealed class FlightTelemetryHandler(IVehicleRegistry vehicleRegistry, IDo
     public IReadOnlyCollection<Type> MessageTypes { get; } =
     [
         typeof(HeartbeatMessage),
+        typeof(AutopilotVersionMessage),
         typeof(AttitudeMessage),
         typeof(Ahrs2Message),
         typeof(VfrHudMessage)
@@ -59,6 +60,19 @@ public sealed class FlightTelemetryHandler(IVehicleRegistry vehicleRegistry, IDo
 
         switch (message)
         {
+            case AutopilotVersionMessage version:
+                vehicle.ApplyFirmwareIdentity(new VehicleFirmwareObservation(
+                    version.Capabilities,
+                    version.FlightSoftwareVersion,
+                    version.BoardVersion,
+                    version.FlightCustomVersion,
+                    version.VendorId,
+                    version.ProductId,
+                    version.Uid,
+                    version.Uid2,
+                    version.ReceivedAt));
+                break;
+
             case AttitudeMessage attitude:
                 vehicle.ApplyAttitude(new VehicleAttitudeObservation(
                     attitude.Roll,

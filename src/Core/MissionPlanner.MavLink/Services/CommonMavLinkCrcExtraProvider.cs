@@ -100,6 +100,10 @@ public sealed class CommonMavLinkCrcExtraProvider : IMavLinkCrcExtraProvider
                 crcExtra = 154;
                 return true;
 
+            case MessageIds.AutopilotVersion:
+                crcExtra = 178;
+                return true;
+
             case MessageIds.MemInfo:
                 crcExtra = 208;
                 return true;

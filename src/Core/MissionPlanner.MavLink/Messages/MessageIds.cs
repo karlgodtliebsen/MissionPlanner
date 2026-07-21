@@ -206,6 +206,11 @@ public static class MessageIds
     /// </summary>
     public const uint BatteryStatus = 147;
 
+    /// <summary>
+    /// Reports autopilot software, protocol capabilities, board, vendor, and hardware identity.
+    /// </summary>
+    public const uint AutopilotVersion = 148;
+
 
     /// <summary>
     /// ArduPilot memory usage information.

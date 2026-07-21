@@ -32,4 +32,12 @@ public interface IMavLinkCommandService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>True if the command was sent successfully</returns>
     Task<bool> RequestHomePositionAsync(VehicleId vehicleId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Requests AUTOPILOT_VERSION using MAV_CMD_REQUEST_MESSAGE.
+    /// </summary>
+    /// <param name="vehicleId">Target vehicle identifier.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns><see langword="true"/> when the request was sent.</returns>
+    Task<bool> RequestAutopilotVersionAsync(VehicleId vehicleId, CancellationToken cancellationToken = default);
 }

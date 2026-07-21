@@ -93,7 +93,7 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider 
         {
             var state = new VehicleState(
                 vehicleId,
-                new VehicleIdentityState(vehicleType, autopilot, mavLinkVersion),
+                new VehicleIdentityState(vehicleType, autopilot, mavLinkVersion, VehicleFirmwareIdentityFactory.FromHeartbeat(vehicleType, autopilot)),
                 new VehicleConnectionData(VehicleConnectionState.Unknown, receivedAt),
                 new VehicleFlightState(customMode, baseMode, systemStatus, VehicleMode.Unknown, false),
                 VehiclePositionState.Empty,
