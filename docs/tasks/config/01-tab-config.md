@@ -48,3 +48,10 @@ Review `AppShell.xaml`, `FullParametersListTabViewModel`, parameter registry/ser
 - No config page writes parameters directly from code-behind.
 - Partial failures remain visible and retryable.
 - MAV FTP and Full Parameters List continue working.
+
+## Completion
+
+Completed 2026-07-22. The shared Core editing session, active-vehicle/firmware lifecycle
+guard, metadata validation, alias/presence definitions, grouped confirmed apply/revert/
+refresh behavior, Config navigation warning, Full Parameters List integration, DI
+registrations, and deterministic tests are implemented.

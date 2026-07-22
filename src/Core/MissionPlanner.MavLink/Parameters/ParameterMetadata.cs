@@ -51,7 +51,7 @@ public sealed record ParameterMetadata(
             }
 
             var parts = Range.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            min = parts.Length >= 1 && float.TryParse(parts[0], out var m) ? m : null;
+            min = parts.Length >= 1 && TryParseMetadataNumber(parts[0], out var m) ? m : null;
             return min;
         }
     }
@@ -74,7 +74,7 @@ public sealed record ParameterMetadata(
             }
 
             var parts = Range.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-            max = parts.Length >= 2 && float.TryParse(parts[1], out var m) ? m : null;
+            max = parts.Length >= 2 && TryParseMetadataNumber(parts[1], out var m) ? m : null;
             return max;
         }
     }
@@ -82,7 +82,7 @@ public sealed record ParameterMetadata(
     /// <summary>
     /// Gets the increment value as a float, if available.
     /// </summary>
-    public float? IncrementValue => string.IsNullOrWhiteSpace(Increment) ? null : float.TryParse(Increment, out var increment) ? increment : null;
+    public float? IncrementValue => string.IsNullOrWhiteSpace(Increment) ? null : TryParseMetadataNumber(Increment, out var increment) ? increment : null;
 
     /// <summary>
     /// Parses the Values string into a dictionary of value->label mappings.
@@ -102,7 +102,7 @@ public sealed record ParameterMetadata(
         foreach (var pair in pairs)
         {
             var parts = pair.Split(':', 2);
-            if (parts.Length == 2 && float.TryParse(parts[0], out var value))
+            if (parts.Length == 2 && TryParseMetadataNumber(parts[0], out var value))
             {
                 options[value] = parts[1].Trim();
             }
@@ -169,4 +169,11 @@ public sealed record ParameterMetadata(
                     ? $"Value must be at most {max.Value}."
                     : null;
     }
+
+    private static bool TryParseMetadataNumber(string value, out float result) =>
+        float.TryParse(
+            value,
+            System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture,
+            out result);
 }

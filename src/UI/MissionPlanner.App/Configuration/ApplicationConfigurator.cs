@@ -55,6 +55,7 @@ public static class ApplicationConfigurator
         // Register shared state service as singleton for runtime state management
         services.TryAddSingleton<ApplicationStateService>();
         services.TryAddSingleton<ParametersFileHandler>();
+        services.TryAddSingleton<IConfigNavigationGuard, ConfigNavigationGuard>();
 
         //services.TryAddSingleton<Views.Vehicles.Views.ModelMapper>();
         services.TryAddSingleton<ThemeChangeViewModel>();

@@ -1,61 +1,65 @@
-﻿using System.Text;
+using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using CommunityToolkit.Maui.Storage;
 using MissionPlanner.MavLink.Parameters;
 
 namespace MissionPlanner.App.Views.ConfigTuning;
 
-/// <summary>
-/// Handles saving and loading parameters to and from a file in CSV format.
-/// </summary>
-public class ParametersFileHandler(IFileSaver fileSaver)
+/// <summary>Imports and exports vehicle parameter files for the Config editing session.</summary>
+public sealed class ParametersFileHandler(IFileSaver fileSaver)
 {
-    private static readonly JsonSerializerOptions options = new() { };
+    private static readonly JsonSerializerOptions options = new();
 
-
-    /// <summary>
-    /// Saves the provided list of parameters to a file in CSV format, with each parameter's name and value on a separate line.
-    /// </summary>
-    /// <param name="parameters">The list of parameters to save.</param>
+    /// <summary>Saves parameters as invariant-culture comma-separated name/value pairs.</summary>
+    /// <param name="parameters">The parameters to save.</param>
     /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>
+    /// <returns>The saved file path, when supplied by the platform.</returns>
     public async Task<string?> SaveParametersToFile(IList<VehicleParameter> parameters, CancellationToken cancellationToken)
     {
-        var ms = new MemoryStream();
-        await using var s = new StreamWriter(ms, Encoding.UTF8, leaveOpen: true);
+        await using var stream = new MemoryStream();
+        await using var writer = new StreamWriter(stream, new UTF8Encoding(false), leaveOpen: true);
         foreach (var parameter in parameters)
         {
-            await s.WriteLineAsync($"{parameter.Name},{parameter.Value}");
+            await writer.WriteLineAsync($"{parameter.Name},{parameter.Value.ToString("R", CultureInfo.InvariantCulture)}");
         }
 
-        var result = await fileSaver.SaveAsync("ardupilot.params", s.BaseStream, cancellationToken);
+        await writer.FlushAsync(cancellationToken);
+        stream.Position = 0;
+        var result = await fileSaver.SaveAsync("ardupilot.params", stream, cancellationToken);
         return result.FilePath;
     }
 
-    /// <summary>
-    /// Saves the provided list of parameters to a JSON file.
-    /// </summary>
-    /// <param name="parameters">The list of parameters to save.</param>
+    /// <summary>Saves the displayed parameter fields as JSON.</summary>
+    /// <param name="parameters">The displayed parameter fields.</param>
     /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>
-    /// <returns>The file path of the saved JSON file.</returns>
+    /// <returns>The saved file path, when supplied by the platform.</returns>
     public async Task<string?> SaveParametersToJsonFile(IList<ParameterItemViewModel> parameters, CancellationToken cancellationToken)
     {
-        var ms = new MemoryStream();
-        await JsonSerializer.SerializeAsync(ms, parameters, options, cancellationToken);
-
-        var result = await fileSaver.SaveAsync("ardupilot.params.json", ms, cancellationToken);
+        await using var stream = new MemoryStream();
+        await JsonSerializer.SerializeAsync(stream, parameters, options, cancellationToken);
+        stream.Position = 0;
+        var result = await fileSaver.SaveAsync("ardupilot.params.json", stream, cancellationToken);
         return result.FilePath;
     }
 
-    /// <summary>
-    /// Loads parameters from a JSON file and returns them as a list of ParameterItemViewModel.
-    /// </summary>
+    /// <summary>Loads displayed parameter fields from a JSON file.</summary>
     /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>
-    /// <returns>A list of ParameterItemViewModel loaded from the file.</returns>
+    /// <returns>The fields loaded from the selected file.</returns>
     public async Task<IList<ParameterItemViewModel>> LoadParametersFromJsonFileAsync(CancellationToken cancellationToken)
     {
-        var result = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Select a Parameters file", FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>> { { DevicePlatform.iOS, new[] { "public.json" } }, { DevicePlatform.Android, new[] { "application/json" } }, { DevicePlatform.WinUI, new[] { ".json" } }, { DevicePlatform.MacCatalyst, new[] { "public.json" } } }) });
-
-        if (result == null)
+        var result = await FilePicker.Default.PickAsync(new PickOptions
+        {
+            PickerTitle = "Select a Parameters file",
+            FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+            {
+                [DevicePlatform.iOS] = ["public.json"],
+                [DevicePlatform.Android] = ["application/json"],
+                [DevicePlatform.WinUI] = [".json"],
+                [DevicePlatform.MacCatalyst] = ["public.json"]
+            })
+        });
+        if (result is null)
         {
             return [];
         }
@@ -65,55 +69,39 @@ public class ParametersFileHandler(IFileSaver fileSaver)
         return data ?? [];
     }
 
-    /// <summary>
-    /// Loads parameters from a file and updates the existing parameters list with the values from the file. If a parameter from the file does not exist in the existing list, it is ignored.
-    /// </summary>
-    /// <param name="existingParameters">The list of existing parameters to update.</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns>A list of updated parameters.</returns>
-    public async Task<IList<VehicleParameter>> LoadParametersFromFileAsync(IList<VehicleParameter> existingParameters, CancellationToken cancellationToken)
+    /// <summary>Loads matching invariant-culture values from an ArduPilot parameter file.</summary>
+    /// <param name="existingParameters">The live parameters that imported values are allowed to target.</param>
+    /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>
+    /// <returns>The matching imported parameter values.</returns>
+    public async Task<IList<VehicleParameter>> LoadParametersFromFileAsync(
+        IList<VehicleParameter> existingParameters,
+        CancellationToken cancellationToken)
     {
-        IList<VehicleParameter> parameters = [];
-
+        var parameters = new List<VehicleParameter>();
         var result = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Select a Parameters file" });
-
-        if (result == null)
+        if (result is null)
         {
-            return [];
+            return parameters;
         }
 
+        var existingByName = existingParameters.ToDictionary(parameter => parameter.Name, StringComparer.Ordinal);
         await using var stream = await result.OpenReadAsync();
         using var reader = new StreamReader(stream);
-        //var content = await reader.ReadToEndAsync(cancellationToken);
-        var line = string.Empty;
-        while ((line = await reader.ReadLineAsync(cancellationToken)) != null)
+        while (await reader.ReadLineAsync(cancellationToken) is { } line)
         {
-            var parts = line.Split(',');
-            if (parts.Length == 2)
+            if (string.IsNullOrWhiteSpace(line) || line.TrimStart().StartsWith('#'))
             {
-                var existingParameter = existingParameters.FirstOrDefault(p => p.Name == parts[0]);
-                if (existingParameter != null)
-                {
-                    var name = parts[0];
-                    var value = float.TryParse(parts[1], out var parsedValue) ? parsedValue : 0;
-
-                    parameters.Add(new VehicleParameter(
-                        name,
-                        value,
-                        existingParameter.Type,
-                        existingParameter.Index,
-                        existingParameter.Count)
-                    );
-                }
-                else
-                {
-                    //parameters.Add(new ParameterItemViewModel
-                    //{
-                    //    Name = parts[0],
-                    //    Value = parts[1]
-                    //});
-                }
+                continue;
             }
+
+            var parts = line.Split([',', '\t'], 2, StringSplitOptions.TrimEntries);
+            if (parts.Length != 2 || !existingByName.TryGetValue(parts[0], out var existing) ||
+                !float.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
+            {
+                continue;
+            }
+
+            parameters.Add(existing with { Value = value });
         }
 
         return parameters;

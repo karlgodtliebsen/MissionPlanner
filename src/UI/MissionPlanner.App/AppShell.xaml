@@ -116,14 +116,14 @@
     <FlyoutItem Title="Config"  
                 Icon="Resources/Images/x_light_tuningconfig_icon_x.png">
 
-        <ShellContent Title="Geo Fence" ContentTemplate="{DataTemplate tabs:GeoFenceTabView}"/>
-        <ShellContent Title="Basic Tuning" ContentTemplate="{DataTemplate tabs:BasicTuningTabView}"/>
-        <ShellContent Title="Extended Tuning" ContentTemplate="{DataTemplate tabs:ExtendedTuningTabView}"/>
-        <ShellContent Title="Onboard OSD" ContentTemplate="{DataTemplate tabs:OnboardOSDTabView}"/>
-        <ShellContent Title="MAV Ftp" ContentTemplate="{DataTemplate tabs:MAVFtpTabView}"/>
-        <ShellContent Title="Full Parameters List" ContentTemplate="{DataTemplate tabs:FullParametersListTabView}"/>
-        <ShellContent Title="Planner" ContentTemplate="{DataTemplate tabs:PlannerTabView}"/>
-        <ShellContent Title="CubeLan 8 Port Switch" ContentTemplate="{DataTemplate tabs:CubeLan8PortSwitchTabView}"/>
+        <ShellContent Title="Geo Fence" Route="ConfigGeoFence" ContentTemplate="{DataTemplate tabs:GeoFenceTabView}"/>
+        <ShellContent Title="Basic Tuning" Route="ConfigBasicTuning" ContentTemplate="{DataTemplate tabs:BasicTuningTabView}"/>
+        <ShellContent Title="Extended Tuning" Route="ConfigExtendedTuning" ContentTemplate="{DataTemplate tabs:ExtendedTuningTabView}"/>
+        <ShellContent Title="Onboard OSD" Route="ConfigOnboardOSD" ContentTemplate="{DataTemplate tabs:OnboardOSDTabView}"/>
+        <ShellContent Title="MAV Ftp" Route="ConfigMavFtp" ContentTemplate="{DataTemplate tabs:MAVFtpTabView}"/>
+        <ShellContent Title="Full Parameters List" Route="ConfigFullParameters" ContentTemplate="{DataTemplate tabs:FullParametersListTabView}"/>
+        <ShellContent Title="Planner" Route="ConfigPlanner" ContentTemplate="{DataTemplate tabs:PlannerTabView}"/>
+        <ShellContent Title="CubeLan 8 Port Switch" Route="ConfigCubeLan8PortSwitch" ContentTemplate="{DataTemplate tabs:CubeLan8PortSwitchTabView}"/>
     </FlyoutItem>
 
     <FlyoutItem Title="Simulation" Icon="Resources/Images/x_light_simulation_icon_x.png" >

@@ -18,6 +18,7 @@ PARAMETER_METADATA_SYSTEM documents and reflects the current code
 | Per-vehicle storage | `IVehicleParameterRegistry` → `VehicleParameterRegistry` (singleton) | `MissionPlanner.Core.Vehicles` |
 | Rich metadata (descriptions, ranges, units) | `IVehicleParameterMetadataService` → `VehicleParameterMetadataService` | `MissionPlanner.Core.Vehicles` + `MissionPlanner.MavLink.Parameters.Metadata` |
 | Incoming PARAM_VALUE handling | `ParamValueVehicleHandler` → stores + publishes `VehicleParameterReceived` | `MissionPlanner.Core.Vehicles.Handlers` |
+| Shared Config edit state | `IParameterEditSessionFactory` → `ParameterEditSessionFactory` | `MissionPlanner.Core.Configuration` |
 | Save/load parameter files (UI) | `ParametersFileHandler` | `MissionPlanner.App.Views.ConfigTuning` |
 | Parameter editor UI | `FullParametersListTabView(Model)` | `MissionPlanner.App.Views.ConfigTuning.Tabs` |
 
@@ -150,9 +151,34 @@ if (metadata is { RebootRequired: true }) WarnRebootRequired();
 await parameterService.SetParameterAsync(vehicleId, name, newValue, param.Type);
 ```
 
-The UI editor (`FullParametersListTabViewModel`) merges metadata with live values, which
-is also the model for future editors: ComboBox for `Values`, checkboxes for `Bitmask`,
-numeric editors clamped to `Range`, tooltips from `Description`.
+### Shared configuration editing session
+
+Config pages edit parameters through the singleton `IParameterEditSessionFactory`. The
+factory creates one session for the active `VehicleId` and reported firmware identity. A
+session retains the value first loaded, the latest confirmed live value, and the pending
+editor value separately. It also projects ranges, increments, enum values, bitmask flags,
+units, descriptions, read-only state, and reboot requirements from firmware metadata.
+
+Pending edits are validated immediately. Grouped apply operations deduplicate parameter
+names, write each value through `IVehicleParameterService`, and require matching registry
+readback before reporting success. A partial failure does not erase other pending values,
+so failed writes remain visible and retryable. Refresh and revert are likewise session
+operations rather than view-side transport calls.
+
+The factory invalidates the session when the vehicle disconnects, the active vehicle
+changes, or the firmware identity changes. Invalid sessions retain pending edits for user
+review but refuse all writes. Leaving the Config workspace with unapplied edits requires
+explicit confirmation; moving between Config tabs keeps the shared edits intact.
+
+Firmware-specific Config pages define ordered aliases with `ParameterFieldDefinition` and
+optional `ParameterPresenceRule` predicates. Resolution selects only an alias that exists
+in the live registry and whose explicit presence rule is satisfied; it never invents or
+silently guesses a parameter name.
+
+`FullParametersListTabViewModel` uses this session after its existing bulk download. The
+bulk service continues to prefer packed MAVFTP parameters and automatically falls back to
+the classic parameter stream. File imports populate pending values, while Apply performs
+confirmed session writes.
 
 ### Frame setup transaction
 
@@ -180,6 +206,5 @@ the registry. Calibration completion is not inferred from a parameter write or U
 
 - Parameter loading into the Full Parameters List UI is slow (see FEATURES.md) — the
   merge of ~1000 values with metadata needs profiling.
-- Parameter write support in the editor UI is incomplete.
 - Delete the unused `VehicleParameterStreamService` V1–V3 classes.
 - Parameter file compare (diff two `.param` files) is not yet implemented.

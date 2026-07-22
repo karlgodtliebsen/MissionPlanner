@@ -8,6 +8,9 @@ namespace MissionPlanner.Core.Configuration;
 /// </summary>
 public interface IParameterEditSession
 {
+    /// <summary>Gets the vehicle and firmware identity captured by this session.</summary>
+    ParameterEditScope Scope { get; }
+
     /// <summary>Gets the vehicle this session edits.</summary>
     VehicleId VehicleId { get; }
 
@@ -17,6 +20,12 @@ public interface IParameterEditSession
     /// <summary>Gets whether any field has an unwritten modification.</summary>
     bool IsDirty { get; }
 
+    /// <summary>Gets whether the session still targets the active online vehicle and captured firmware.</summary>
+    bool IsValid { get; }
+
+    /// <summary>Gets the reason the session can no longer be used, when invalid.</summary>
+    string? InvalidReason { get; }
+
     /// <summary>Occurs when the field set, values, or dirty state change.</summary>
     event EventHandler? Changed;
 
@@ -25,6 +34,12 @@ public interface IParameterEditSession
     /// <param name="cancellationToken">A token that cancels metadata resolution.</param>
     /// <returns>A task that completes when the fields are loaded.</returns>
     Task LoadAsync(IReadOnlyList<string>? names = null, CancellationToken cancellationToken = default);
+
+    /// <summary>Loads fields resolved from explicit parameter aliases and presence rules.</summary>
+    /// <param name="definitions">The logical field definitions to resolve.</param>
+    /// <param name="cancellationToken">A token that cancels metadata resolution.</param>
+    /// <returns>A task that completes when all present fields are loaded.</returns>
+    Task LoadDefinitionsAsync(IReadOnlyList<ParameterFieldDefinition> definitions, CancellationToken cancellationToken = default);
 
     /// <summary>Gets a field by name.</summary>
     /// <param name="name">The parameter name.</param>
@@ -61,8 +76,17 @@ public interface IParameterEditSession
 /// <summary>Creates vehicle-scoped parameter editing sessions.</summary>
 public interface IParameterEditSessionFactory
 {
-    /// <summary>Creates a session for the given vehicle.</summary>
+    /// <summary>Gets whether the shared session has unapplied edits.</summary>
+    bool HasUnappliedChanges { get; }
+
+    /// <summary>Occurs when the shared session or its dirty state changes.</summary>
+    event EventHandler? Changed;
+
+    /// <summary>Gets or creates the shared session for the given active vehicle and firmware identity.</summary>
     /// <param name="vehicleId">The target vehicle.</param>
-    /// <returns>The new session.</returns>
+    /// <returns>The shared session.</returns>
     IParameterEditSession Create(VehicleId vehicleId);
+
+    /// <summary>Reverts all unapplied edits in the shared session.</summary>
+    void DiscardPendingChanges();
 }

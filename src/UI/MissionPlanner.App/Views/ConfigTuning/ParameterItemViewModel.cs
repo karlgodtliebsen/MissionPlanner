@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MissionPlanner.Core.Configuration;
 using MissionPlanner.MavLink.Parameters;
 using UraniumUI.Material.Controls;
 
@@ -16,6 +17,7 @@ public partial class ParameterItemViewModel : ObservableObject
 {
     private VehicleParameter? originalParameter;
     private ParameterMetadata? originalMetadata;
+    private IParameterEditSession? editSession;
 
     private bool loadingData;
 
@@ -36,6 +38,7 @@ public partial class ParameterItemViewModel : ObservableObject
     [ObservableProperty] public partial string Name { get; set; } = null!;
     [ObservableProperty] public partial string? DisplayName { get; set; }
     [ObservableProperty] public partial float Value { get; set; }
+    [ObservableProperty] public partial float LiveValue { get; set; }
     [ObservableProperty] public partial string? SelectedValue { get; set; }
 
     [ObservableProperty] public partial float Max { get; set; }
@@ -54,7 +57,7 @@ public partial class ParameterItemViewModel : ObservableObject
 
     [ObservableProperty] public partial SelectItem[]? ValuesItems { get; set; }
     [ObservableProperty] public partial SelectItem[]? BitmaskOptions { get; set; }
-    [ObservableProperty] public partial SelectItem? SelectedBitmaskItems { get; set; }
+    [ObservableProperty] public partial ObservableCollection<object> SelectedBitmaskItems { get; set; } = [];
     [DataGridIgnore][ObservableProperty] public partial string? Increment { get; set; }
     [DataGridIgnore][ObservableProperty] public partial string? UserLevel { get; set; }
     [DataGridIgnore][ObservableProperty] public partial string? Bitmask { get; set; }
@@ -64,6 +67,17 @@ public partial class ParameterItemViewModel : ObservableObject
     [DataGridIgnore][ObservableProperty] public partial bool HasValuesData { get; set; }
     [DataGridIgnore][ObservableProperty] public partial bool HasNumericRangeData { get; set; }
     [DataGridIgnore][ObservableProperty] public partial bool HasBitmask { get; set; }
+    [DataGridIgnore][ObservableProperty] public partial string? ValidationError { get; set; }
+    [DataGridIgnore][ObservableProperty] public partial ParameterEditWriteStatus WriteStatus { get; set; }
+    [DataGridIgnore][ObservableProperty] public partial string? WriteMessage { get; set; }
+
+    /// <summary>
+    /// Initializes an empty parameter item for serializers and design-time tooling.
+    /// </summary>
+    public ParameterItemViewModel()
+    {
+        SelectedValuesChanged = new Command<object>(OnSelectedValuesChanged);
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ParameterItemViewModel"/> class.
@@ -83,6 +97,16 @@ public partial class ParameterItemViewModel : ObservableObject
     {
         SelectedValuesChanged = new Command<object>(OnSelectedValuesChanged);
         SetMetadata(metadata);
+    }
+
+    /// <summary>Initializes an item backed by the shared parameter editing session.</summary>
+    /// <param name="editSession">The shared vehicle parameter editing session.</param>
+    /// <param name="field">The initial field projection.</param>
+    public ParameterItemViewModel(IParameterEditSession editSession, ParameterEditField field)
+    {
+        this.editSession = editSession;
+        SelectedValuesChanged = new Command<object>(OnSelectedValuesChanged);
+        SetField(field);
     }
 
     private void OnSelectedValuesChanged(object value)
@@ -166,11 +190,73 @@ public partial class ParameterItemViewModel : ObservableObject
             HasBitmask = true;
             var bitmaskOptions = metadata.GetBitmaskOptions();
             BitmaskOptions = bitmaskOptions.Keys.Select(k => new SelectItem(bitmaskOptions[k], k)).ToArray();
-            SelectedBitmaskItems = null;
+            SelectedBitmaskItems.Clear();
             Options = string.Join(Environment.NewLine, bitmaskOptions.Select(b => $"{b.Key}:{b.Value}"));
             IsReadOnly = true;
         }
 
+        loadingData = false;
+    }
+
+    /// <summary>Updates this item from the shared editing-session field.</summary>
+    /// <param name="field">The latest field projection.</param>
+    public void SetField(ParameterEditField field)
+    {
+        loadingData = true;
+        originalParameter = new VehicleParameter(field.Name, (float)field.OriginalValue, field.Type, 0, 0);
+        originalMetadata = null;
+        Name = field.Name;
+        DisplayName = field.Metadata.DisplayName ?? field.Name;
+        Description = field.Metadata.Description ?? string.Empty;
+        Units = field.Metadata.Units ?? string.Empty;
+        UnitText = field.Metadata.Units ?? string.Empty;
+        OriginalValue = (float)field.OriginalValue;
+        LiveValue = (float)field.LiveValue;
+        Value = (float)field.PendingValue;
+        Min = field.Metadata.Minimum is { } minimum ? (float)minimum : float.MinValue;
+        Max = field.Metadata.Maximum is { } maximum ? (float)maximum : float.MaxValue;
+        Increment = field.Metadata.Increment?.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        stepSize = field.Metadata.Increment is > 0 ? (float)field.Metadata.Increment.Value : 0.1f;
+        IsReadOnly = field.Metadata.ReadOnly;
+        RebootRequired = field.Metadata.RebootRequired;
+        ValidationError = field.ValidationError;
+        WriteStatus = field.WriteStatus;
+        WriteMessage = field.WriteMessage;
+        IsModified = field.IsModified;
+
+        ValuesItems = field.Metadata.Options
+            .Select(option => new SelectItem(option.Label, (float)option.Value))
+            .ToArray();
+        ValuesData = ValuesItems.Select(option => option.Name).ToArray();
+        HasValuesData = ValuesItems.Length > 0;
+        SelectedValue = ValuesItems.FirstOrDefault(option => Math.Abs(option.Value - Value) < 0.0001f)?.Name;
+
+        BitmaskOptions = field.Metadata.Bitmask
+            .Where(option => option.Bit is >= 0 and < 64)
+            .Select(option => new SelectItem(option.Label, (float)(1UL << option.Bit)))
+            .ToArray();
+        SelectedBitmaskItems.Clear();
+        var selectedMask = (ulong)Math.Max(0, Math.Round(field.PendingValue));
+        foreach (var option in field.Metadata.Bitmask.Where(option => option.Bit is >= 0 and < 64))
+        {
+            if ((selectedMask & 1UL << option.Bit) != 0 && BitmaskOptions.FirstOrDefault(item => item.Name == option.Label) is { } selected)
+            {
+                SelectedBitmaskItems.Add(selected);
+            }
+        }
+
+        HasBitmask = BitmaskOptions.Length > 0;
+        HasNumericRangeData = !HasValuesData && !HasBitmask &&
+            (field.Metadata.Minimum is not null || field.Metadata.Maximum is not null);
+        Range = field.Metadata.Minimum is null && field.Metadata.Maximum is null
+            ? null
+            : $"{field.Metadata.Minimum?.ToString(System.Globalization.CultureInfo.InvariantCulture)} {field.Metadata.Maximum?.ToString(System.Globalization.CultureInfo.InvariantCulture)}";
+        RangeData = Range?.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        Options = HasValuesData
+            ? string.Join(Environment.NewLine, field.Metadata.Options.Select(option => $"{option.Value}:{option.Label}"))
+            : HasBitmask
+                ? string.Join(Environment.NewLine, field.Metadata.Bitmask.Select(option => $"{option.Bit}:{option.Label}"))
+                : null;
         loadingData = false;
     }
 
@@ -183,6 +269,7 @@ public partial class ParameterItemViewModel : ObservableObject
         loadingData = true;
         originalParameter = parameter;
         OriginalValue = parameter.Value;
+        LiveValue = parameter.Value;
         if (!string.IsNullOrEmpty(parameter.Name))
         {
             Name = parameter.Name;
@@ -200,10 +287,11 @@ public partial class ParameterItemViewModel : ObservableObject
 
         if (BitmaskOptions is not null)
         {
-            //TODO: The Value needs to be used to set SelectedBitmaskItems.
-            //Ex. If Value is 1 and the BitMaskOptions is: //0:Air-mode,1:Rate Loop Only then selection must be set
-
-            var item = BitmaskOptions.FirstOrDefault(i => Math.Abs(i.Value - Value) < 0.0001f);
+            SelectedBitmaskItems.Clear();
+            foreach (var item in BitmaskOptions.Where(item => ((int)Value & (int)item.Value) != 0))
+            {
+                SelectedBitmaskItems.Add(item);
+            }
         }
 
 
@@ -263,6 +351,17 @@ public partial class ParameterItemViewModel : ObservableObject
         }
 
         IsModified = Math.Abs(value - OriginalValue) > 0.0001f;
+        if (editSession is not null)
+        {
+            editSession.TrySetPending(Name, value, out var error);
+            ValidationError = error;
+            if (editSession.GetField(Name) is { } current)
+            {
+                IsModified = current.IsModified;
+                WriteStatus = current.WriteStatus;
+                WriteMessage = current.WriteMessage;
+            }
+        }
     }
 
     /// <summary>
@@ -270,7 +369,17 @@ public partial class ParameterItemViewModel : ObservableObject
     /// </summary>
     public void ResetToOriginal()
     {
-        Value = OriginalValue;
+        if (editSession is null)
+        {
+            Value = OriginalValue;
+            return;
+        }
+
+        editSession.Revert(Name);
+        if (editSession.GetField(Name) is { } current)
+        {
+            SetField(current);
+        }
     }
 }
 

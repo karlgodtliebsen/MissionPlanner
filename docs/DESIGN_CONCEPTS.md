@@ -974,6 +974,21 @@ The mission map editor (`MissionMapView` + singleton `MissionMapViewModel`,
 page. Both screens therefore edit the same mission plan; map pins and the route line are
 projections of the domain `Mission` aggregate, never the source of truth.
 
+# Shared Config parameter editor
+
+Config parameter changes are owned by the singleton `IParameterEditSessionFactory` in
+Core, not individual pages. Its session is scoped to both the active `VehicleId` and the
+protocol-reported firmware identity. It maintains original, live, and pending values,
+projects firmware metadata, validates edits, batches writes, and waits for parameter-
+registry readback. Disconnects, vehicle switches, and firmware changes invalidate the
+session and fail closed before any further write.
+
+Config pages declare only the fields they present. Ordered cross-firmware aliases and
+presence rules are explicit `ParameterFieldDefinition` data; pages do not probe guessed
+names or access MAVLink transports. Full Parameters List uses the same session for the
+complete live registry. Shell navigation preserves pending state between Config tabs and
+asks for confirmation before leaving the Config workspace.
+
 # Setup workflow shell
 
 Initial Setup is an orchestration surface over existing domain and Config capabilities.

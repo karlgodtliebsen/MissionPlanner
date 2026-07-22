@@ -51,7 +51,7 @@
                     Command="{Binding SaveToJsonFileCommand}" />
 
                 <Button 
-                Text="Write Params"
+                Text="Apply modified"
                 FontSize="14"
                 Padding="8,4"
                 VerticalOptions="Center"
@@ -92,7 +92,7 @@
 
 
                 <Button 
-                Text="Reset to Default"
+                Text="Revert changes"
                 FontSize="14"
                 Padding="8,4"
                 VerticalOptions="Center"
@@ -129,6 +129,15 @@
                     </Label>
                 </HorizontalStackLayout>
             </Grid>
+
+            <HorizontalStackLayout Grid.Row="2" Padding="8,4" Spacing="12">
+                <Label Text="{Binding StatusMessage}" LineBreakMode="WordWrap" VerticalOptions="Center" />
+                <Label Text="Reboot required after confirmed changes"
+                       IsVisible="{Binding RebootRequired}"
+                       TextColor="OrangeRed"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center" />
+            </HorizontalStackLayout>
 
 
 
@@ -214,6 +223,8 @@
                                                                   HorizontalOptions="End" VerticalOptions="Center"  
                                                                   Text="{Binding Value, Mode=TwoWay}"
                                             />
+                                            <Label Text="{Binding ValidationError}" TextColor="OrangeRed" FontSize="11"
+                                                   IsVisible="{Binding IsModified}" LineBreakMode="WordWrap" />
                                         </VerticalStackLayout>
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
@@ -273,7 +284,23 @@
 
                             <!--<material:DataGridColumn  Width="125"  ValueBinding="{Binding Range}" Title="Range"  />-->
                             <!--<material:DataGridColumn  Width="125"  ValueBinding="{Binding OriginalValue}" Title="Default"  />-->
-                            <material:DataGridColumn  Width="125"  ValueBinding="{Binding Units}" Title="Units"  />
+                            <material:DataGridColumn Width="125" Title="Units">
+                                <material:DataGridColumn.CellItemTemplate>
+                                    <DataTemplate x:DataType="configTuning:ParameterItemViewModel">
+                                        <Label Text="{Binding Units}" Margin="10,0" VerticalOptions="Center" />
+                                    </DataTemplate>
+                                </material:DataGridColumn.CellItemTemplate>
+                            </material:DataGridColumn>
+                            <material:DataGridColumn Width="130" Title="Write status">
+                                <material:DataGridColumn.CellItemTemplate>
+                                    <DataTemplate x:DataType="configTuning:ParameterItemViewModel">
+                                        <VerticalStackLayout Margin="10,4" VerticalOptions="Center">
+                                            <Label Text="{Binding WriteStatus}" />
+                                            <Label Text="{Binding WriteMessage}" FontSize="10" LineBreakMode="WordWrap" />
+                                        </VerticalStackLayout>
+                                    </DataTemplate>
+                                </material:DataGridColumn.CellItemTemplate>
+                            </material:DataGridColumn>
                             <!--<material:DataGridColumn Title="Options" Width="125" >
                                 <material:DataGridColumn.CellItemTemplate>
                                     <DataTemplate  x:DataType="configTuning:ParameterItemViewModel">

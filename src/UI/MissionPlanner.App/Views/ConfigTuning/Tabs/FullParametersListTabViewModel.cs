@@ -1,342 +1,325 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using DotNext.Collections.Generic;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Views.Common;
-using MissionPlanner.Core.DomainEvents;
+using MissionPlanner.Core.Configuration;
+using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
-using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Parameters;
 using UraniumUI.Dialogs;
-using UraniumUI.Extensions;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
-/// <summary>
-/// ViewModel for the full list of parameters for a vehicle.
-/// </summary>
+/// <summary>Provides the searchable full parameter list through the shared safe editing session.</summary>
 public partial class FullParametersListTabViewModel : ObservableObject, IDisposable
 {
-    private readonly IVehicleConnectionSession session;
-    private readonly IVehicleRegistry vehicleRegistry;
+    private readonly IVehicleConnectionSession connectionSession;
+    private readonly IActiveVehicleContext activeVehicle;
+    private readonly IParameterEditSessionFactory editSessionFactory;
     private readonly IDispatcher dispatcher;
     private readonly IDialogService dialogService;
     private readonly IExtendedDialogService extendedDialogService;
     private readonly IDomainFactory domainFactory;
     private readonly ParametersFileHandler parametersFileHandler;
-    private readonly IVehicleParameterMetadataService metadataService;
-    private readonly CancellationTokenSource cts;
-    private CancellationTokenSource ctsProgress = new();
-
     private readonly ILogger<FullParametersListTabViewModel> logger;
-
-    private readonly List<IDisposable> eventSubscriptions = [];
-
-    private readonly IDictionary<string, ParameterMetadata> metadata = new Dictionary<string, ParameterMetadata>();
     private readonly List<ParameterItemViewModel> allParameterItems = [];
+    private CancellationTokenSource? loadCancellation;
+    private IParameterEditSession? editSession;
     private IDisposable? progressDialog;
+    private bool active;
+    private bool disposed;
 
-    /// <summary>
-    /// Gets the collection of vehicle parameters.
-    /// </summary>
-    public ObservableRangeCollection<ParameterItemViewModel> Parameters { get; set; } = [];
-
-    [ObservableProperty] public partial string ProgressMessage { get; set; } = null!;
-    [ObservableProperty] public partial bool ShowDataGrid { get; set; }
-
-    [ObservableProperty] public partial bool ShowEmptyView { get; set; }
-
-    [ObservableProperty] public partial bool ShowLoadingProgress { get; set; }
-    [ObservableProperty] public partial bool ShowLoadingCompletedWithError { get; set; }
-    [ObservableProperty] public partial bool ShowLoadingCancelled { get; set; }
-    [ObservableProperty] public partial bool ShowVehicleDisconnected { get; set; }
-    [ObservableProperty] public partial int ModifiedParameterCount { get; set; }
-    [ObservableProperty] public partial int TotalParameterCount { get; set; }
-    [ObservableProperty] public partial string SearchText { get; set; } = string.Empty;
-    [ObservableProperty] public partial bool IsBusy { get; set; }
-
-    [NotifyCanExecuteChangedFor(nameof(CancelLoadCommand))]
-    [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
-    [ObservableProperty]
-    public partial bool HasConnection { get; set; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="FullParametersListTabViewModel"/> class.
-    /// </summary>
-    /// <param name="session">The vehicle connection session.</param>
-    /// <param name="vehicleRegistry">The vehicle registry.</param>
-    /// <param name="domainEventHub">The domain event hub.</param>
-    /// <param name="dispatcher">The dispatcher.</param>
-    /// <param name="cts">The cancellation token source.</param>
-    /// <param name="logger">The logger.</param>
+    /// <summary>Initializes the Full Parameters List tab.</summary>
+    /// <param name="connectionSession">The current connection-scoped services.</param>
+    /// <param name="activeVehicle">The application active-vehicle context.</param>
+    /// <param name="editSessionFactory">The shared parameter editing-session factory.</param>
+    /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="dialogService">The dialog service.</param>
     /// <param name="extendedDialogService">The extended dialog service.</param>
-    /// <param name="domainFactory">The service factory.</param>
-    /// <param name="parametersFileHandler">The parameters file handler.</param>
-    /// <param name="metadataService">The vehicle parameter metadata service.</param>
+    /// <param name="domainFactory">The domain view factory.</param>
+    /// <param name="parametersFileHandler">The parameter import/export adapter.</param>
+    /// <param name="logger">The logger.</param>
     public FullParametersListTabViewModel(
-        IVehicleConnectionSession session,
-        IVehicleRegistry vehicleRegistry,
-        IDomainEventHub domainEventHub,
+        IVehicleConnectionSession connectionSession,
+        IActiveVehicleContext activeVehicle,
+        IParameterEditSessionFactory editSessionFactory,
         IDispatcher dispatcher,
         IDialogService dialogService,
         IExtendedDialogService extendedDialogService,
         IDomainFactory domainFactory,
         ParametersFileHandler parametersFileHandler,
-        IVehicleParameterMetadataService metadataService,
-        CancellationTokenSource cts,
         ILogger<FullParametersListTabViewModel> logger)
     {
-        this.session = session;
-        this.vehicleRegistry = vehicleRegistry;
+        this.connectionSession = connectionSession;
+        this.activeVehicle = activeVehicle;
+        this.editSessionFactory = editSessionFactory;
         this.dispatcher = dispatcher;
         this.dialogService = dialogService;
         this.extendedDialogService = extendedDialogService;
         this.domainFactory = domainFactory;
         this.parametersFileHandler = parametersFileHandler;
-        this.metadataService = metadataService;
-        this.cts = cts;
         this.logger = logger;
-        eventSubscriptions.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(VehicleConnected));
-        eventSubscriptions.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(VehicleDisconnected));
-        var vehicles = vehicleRegistry.Vehicles;
-        var vehicle = vehicles.FirstOrDefault();
-        HasConnection = vehicle != null;
-        if (HasConnection)
+        HasConnection = activeVehicle.IsOnline;
+    }
+
+    /// <summary>Gets the currently visible parameter rows.</summary>
+    public ObservableRangeCollection<ParameterItemViewModel> Parameters { get; } = [];
+
+    /// <summary>Gets the current loading-progress message.</summary>
+    [ObservableProperty]
+    public partial string ProgressMessage { get; set; } = string.Empty;
+
+    /// <summary>Gets whether the parameter grid is visible.</summary>
+    [ObservableProperty]
+    public partial bool ShowDataGrid { get; set; }
+
+    /// <summary>Gets whether the current parameter view is empty.</summary>
+    [ObservableProperty]
+    public partial bool ShowEmptyView { get; set; } = true;
+
+    /// <summary>Gets whether parameter loading is in progress.</summary>
+    [ObservableProperty]
+    public partial bool ShowLoadingProgress { get; set; }
+
+    /// <summary>Gets whether the most recent load failed.</summary>
+    [ObservableProperty]
+    public partial bool ShowLoadingCompletedWithError { get; set; }
+
+    /// <summary>Gets whether the most recent load was cancelled.</summary>
+    [ObservableProperty]
+    public partial bool ShowLoadingCancelled { get; set; }
+
+    /// <summary>Gets whether the active vehicle is disconnected.</summary>
+    [ObservableProperty]
+    public partial bool ShowVehicleDisconnected { get; set; }
+
+    /// <summary>Gets the number of unapplied parameter values.</summary>
+    [ObservableProperty]
+    public partial int ModifiedParameterCount { get; set; }
+
+    /// <summary>Gets the total number of loaded parameter fields.</summary>
+    [ObservableProperty]
+    public partial int TotalParameterCount { get; set; }
+
+    /// <summary>Gets or sets the parameter name and description filter.</summary>
+    [ObservableProperty]
+    public partial string SearchText { get; set; } = string.Empty;
+
+    /// <summary>Gets whether a load or apply operation is active.</summary>
+    [ObservableProperty]
+    public partial bool IsBusy { get; set; }
+
+    /// <summary>Gets whether an active vehicle connection is available.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CancelLoadCommand))]
+    [NotifyCanExecuteChangedFor(nameof(WriteParametersCommand))]
+    public partial bool HasConnection { get; set; }
+
+    /// <summary>Gets the latest editing or apply status.</summary>
+    [ObservableProperty]
+    public partial string StatusMessage { get; set; } = "Connect a vehicle, then refresh parameters.";
+
+    /// <summary>Gets whether at least one confirmed change requires a vehicle reboot.</summary>
+    [ObservableProperty]
+    public partial bool RebootRequired { get; set; }
+
+    /// <summary>Gets whether loading has completed and the parameter tools may be shown.</summary>
+    public bool ShowLoadingCompleted => ShowDataGrid && !IsBusy;
+
+    /// <summary>Activates vehicle lifecycle tracking while the tab is visible.</summary>
+    public void Activate()
+    {
+        if (active || disposed)
         {
-            Task.Run(LoadMetaDataAsync).FireAndForget();
+            return;
         }
+
+        active = true;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        HasConnection = activeVehicle.IsOnline;
+        ShowVehicleDisconnected = !HasConnection;
     }
 
-    private async Task VehicleDisconnected(VehicleDisconnected vehicle, CancellationToken cancellationToken)
+    /// <summary>Deactivates lifecycle tracking and cancels the visible loading operation.</summary>
+    public void Deactivate()
     {
-        await ResetState();
-        await dispatcher.DispatchAsync(() =>
+        if (!active)
         {
-            try
-            {
-                HasConnection = false;
-                metadata.Clear();
-                allParameterItems.Clear();
-            }
-            catch (Exception)
-            {
-                //Noop
-            }
-        });
-    }
-
-    private async Task VehicleConnected(VehicleConnected vehicle, CancellationToken cancellationToken)
-    {
-        await dispatcher.DispatchAsync(async () =>
-        {
-            try
-            {
-                HasConnection = true;
-            }
-            catch (Exception)
-            {
-                //Noop
-            }
-        });
-
-        await Task.Run(LoadMetaDataAsync, cancellationToken);
-    }
-
-    private async Task LoadMetaDataAsync()
-    {
-        metadata.Clear();
-        var vehicles = vehicleRegistry.Vehicles;
-        var vehicle = vehicles.FirstOrDefault();
-        if (vehicle != null)
-        {
-            metadata.AddAll(await metadataService.GetAllMetadataAsync(vehicle.Id, cts.Token));
-            logger.LogInformation("Loaded metadata for {Count} parameters", metadata.Count);
-        }
-    }
-
-    private async Task LoadAsync(VehicleId vehicleId, CancellationToken cancellationToken)
-    {
-        await ResetCancellationToken();
-        if (metadata.Count == 0)
-        {
-            allParameterItems.Clear();
-            logger.LogWarning("No metadata available for vehicle {VehicleId}", vehicleId);
-            metadata.AddAll(await metadataService.GetAllMetadataAsync(vehicleId, cts.Token));
-            logger.LogInformation("Loaded metadata for {Count} parameters", metadata.Count);
+            return;
         }
 
-        logger.LogDebug("Starting to load parameters for vehicle {VehicleId}", vehicleId);
+        active = false;
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        CancelLoadOperation();
+        CloseProgressDialog();
+        IsBusy = false;
+        ShowLoadingProgress = false;
+    }
 
-        IProgress<ParameterStreamProgress>? progress = new Progress<ParameterStreamProgress>(p =>
-            dispatcher.DispatchAsync(() =>
-            {
-                ShowDataGrid = false;
-                ProgressMessage = p.TotalCount > 0 ? $"Processing parameters... {p.ReceivedCount}/{p.TotalCount}" : $"Processing parameters...";
-            }));
+    partial void OnShowDataGridChanged(bool value) => OnPropertyChanged(nameof(ShowLoadingCompleted));
 
-        progressDialog = await extendedDialogService.DisplayProgressCancellableAsync("Handling parameters", () => ProgressMessage, tokenSource: ctsProgress);
+    partial void OnIsBusyChanged(bool value)
+    {
+        OnPropertyChanged(nameof(ShowLoadingCompleted));
+        RefreshParametersCommand.NotifyCanExecuteChanged();
+        CancelLoadCommand.NotifyCanExecuteChanged();
+        WriteParametersCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnSearchTextChanged(string value) => FilterParameters();
+
+    [RelayCommand(CanExecute = nameof(CanRefreshParameters))]
+    private async Task RefreshParametersAsync()
+    {
+        if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
+        {
+            SetDisconnectedState();
+            return;
+        }
+
+        CancelLoadOperation();
+        loadCancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
+        var cancellationToken = loadCancellation.Token;
+        await SetLoadStateAsync();
+        progressDialog = await extendedDialogService.DisplayProgressCancellableAsync(
+            "Handling parameters",
+            () => ProgressMessage,
+            tokenSource: loadCancellation);
+
+        var progress = new Progress<ParameterStreamProgress>(value => dispatcher.Dispatch(() =>
+        {
+            ShowDataGrid = false;
+            ProgressMessage = value.TotalCount > 0
+                ? $"Processing parameters... {value.ReceivedCount}/{value.TotalCount}"
+                : "Processing parameters...";
+        }));
 
         try
         {
-            // Stream all parameters with progress tracking
-            var vehicleParameterStreamService = session.ParameterStreamService;
-            var result = await vehicleParameterStreamService.StreamAllParametersWithRetryAsync(vehicleId, progress, 3, cancellationToken: ctsProgress.Token);
-
+            logger.LogInformation("Loading the Full Parameters List for {VehicleId}.", vehicleId);
+            var result = await connectionSession.ParameterStreamService.StreamAllParametersWithRetryAsync(
+                vehicleId,
+                progress,
+                3,
+                cancellationToken: cancellationToken);
             if (!result.Success)
             {
                 await dispatcher.DispatchAsync(() =>
                 {
-                    ShowDataGrid = true;
-                    NullState();
-                    ShowEmptyView = Parameters.Count == 0;
+                    CompleteBusyState();
                     ShowLoadingCompletedWithError = true;
+                    StatusMessage = result.ErrorMessage ?? "Parameter loading failed.";
                 });
-                logger.LogError("Failed to load parameters: {Error}", result.ErrorMessage);
-                await ResetCancellationToken();
+                logger.LogError("Full Parameters List load failed for {VehicleId}: {Error}", vehicleId, result.ErrorMessage);
                 return;
             }
 
-            await Task.Run(() => PrepareParameters(result.Parameters), cancellationToken);
+            var session = editSessionFactory.Create(vehicleId);
+            AttachSession(session);
+            await session.LoadAsync(cancellationToken: cancellationToken);
+            await dispatcher.DispatchAsync(() =>
+            {
+                SynchronizeParameterItems();
+                CompleteBusyState();
+                ShowDataGrid = true;
+                StatusMessage = $"Loaded {session.Fields.Count} parameters for {session.Scope.FirmwareIdentity.Family}.";
+            });
+            logger.LogInformation("Loaded {Count} editable parameter fields for {VehicleId}.", session.Fields.Count, vehicleId);
         }
-        catch (Exception ex)
+        catch (OperationCanceledException)
         {
-            logger.LogError(ex, "Error loading parameters");
-            allParameterItems.Clear();
+            await dispatcher.DispatchAsync(() =>
+            {
+                CompleteBusyState();
+                ShowLoadingCancelled = true;
+                StatusMessage = activeVehicle.IsOnline ? "Parameter loading was cancelled." : "The vehicle disconnected while parameters were loading.";
+                ShowVehicleDisconnected = !activeVehicle.IsOnline;
+            });
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Error loading parameters for {VehicleId}.", vehicleId);
             await dispatcher.DispatchAsync(async () =>
             {
-                ShowDataGrid = true;
-                NullState();
-                Parameters.Clear();
-                ShowEmptyView = Parameters.Count == 0;
-                var errorModel = domainFactory.Create<ErrorViewModel, string>(ex.Message + "\nEnsure there is a connection and try again");
+                CompleteBusyState();
+                ShowLoadingCompletedWithError = true;
+                StatusMessage = exception.Message;
+                var errorModel = domainFactory.Create<ErrorViewModel, string>(exception.Message + "\nEnsure there is a connection and try again");
                 var view = domainFactory.Create<ErrorView, ErrorViewModel>(errorModel);
                 await dialogService.DisplayViewAsync("Load failed.", view, "OK");
             });
         }
-    }
-
-    private async Task PrepareParameters(IReadOnlyDictionary<string, VehicleParameter> parameters)
-    {
-        await dispatcher.DispatchAsync(() =>
+        finally
         {
-            ShowDataGrid = false;
-            ProgressMessage = $"Initializing data grid";
-        });
-        await Task.Delay(100); // Add a small delay to allow UI to update
-        await Task.Run(() => AddParameters(parameters), ctsProgress.Token);
-    }
-
-    private async Task AddParameters(IReadOnlyDictionary<string, VehicleParameter> parameters)
-    {
-        allParameterItems.Clear();
-        foreach (var parameter in parameters.Values.OrderBy(p => p.Name))
-        {
-            if (metadata.TryGetValue(parameter.Name, out var md))
-            {
-                var model = new ParameterItemViewModel(md);
-                model.SetData(parameter);
-                allParameterItems.Add(model);
-            }
-            else
-            {
-                var vehicleParameter = new VehicleParameter(parameter.Name, parameter.Value, MavParamType.Real32, 0, (ushort)metadata.Count());
-                var model = new ParameterItemViewModel(vehicleParameter);
-                allParameterItems.Add(model);
-            }
-        }
-
-        await Task.Run(RenderParameters, ctsProgress.Token);
-    }
-
-    private async Task RenderParameters()
-    {
-        await dispatcher.DispatchAsync(() =>
-        {
-            ProgressMessage = $"Populating data grid";
-            TotalParameterCount = allParameterItems.Count;
-            ModifiedParameterCount = 0;
-            Parameters.Clear();
-            ShowEmptyView = allParameterItems.Count == 0;
-        });
-        await Task.Delay(100); // Add a small delay to allow UI to update
-        await dispatcher.DispatchAsync(() =>
-        {
-            Parameters.AddRange(allParameterItems.OrderBy(p => p.Name));
-            NullState();
-            ShowDataGrid = true;
-            logger.LogInformation("Successfully loaded {Count} parameters with metadata", TotalParameterCount);
-        });
-
-        await ResetCancellationToken();
-    }
-
-
-    private bool CanExecuteConnection()
-    {
-        return HasConnection;
-    }
-
-    [RelayCommand(CanExecute = nameof(CanExecuteConnection))]
-    private async Task RefreshParameters()
-    {
-        var vehicles = vehicleRegistry.Vehicles;
-        var vehicle = vehicles.FirstOrDefault();
-        if (vehicle is not null)
-        {
-            await SetLoadState();
-            await Task.Run(async () => await LoadAsync(vehicle.Id, cts.Token), cts.Token);
+            CloseProgressDialog();
+            loadCancellation?.Dispose();
+            loadCancellation = null;
         }
     }
 
-
-    [RelayCommand(CanExecute = nameof(CanExecuteConnection))]
-    private async Task CancelLoad()
+    [RelayCommand(CanExecute = nameof(CanCancelLoad))]
+    private void CancelLoad()
     {
-        await ResetCancellationToken();
-        await ResetState();
+        CancelLoadOperation();
+        CompleteBusyState();
+        ShowLoadingCancelled = true;
+        StatusMessage = "Parameter loading was cancelled.";
     }
 
     [RelayCommand]
     private async Task LoadFromFileAsync()
     {
+        if (editSession is null)
+        {
+            StatusMessage = "Refresh vehicle parameters before importing a parameter file.";
+            return;
+        }
+
         try
         {
-            var loadedParameters = await parametersFileHandler.LoadParametersFromFileAsync(
-                Parameters.Select(v => v.OriginalParameter).ToList(), cts.Token);
-            //TODO: create a method to update existing parameters with loaded values instead of clearing and replacing
-
-            await dispatcher.DispatchAsync(() =>
+            var loaded = await parametersFileHandler.LoadParametersFromFileAsync(
+                editSession.Fields.Select(ToVehicleParameter).ToList(),
+                activeVehicle.ConnectionCancellationToken);
+            foreach (var parameter in loaded)
             {
-                Parameters.Clear();
-                ShowEmptyView = Parameters.Count == 0;
-            });
+                editSession.TrySetPending(parameter.Name, parameter.Value, out _);
+            }
+
+            StatusMessage = $"Imported {loaded.Count} matching values as unapplied edits.";
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            await dialogService.ConfirmAsync("Load failed", ex.Message, "OK");
+            await dialogService.ConfirmAsync("Load failed", exception.Message, "OK");
         }
     }
 
     [RelayCommand]
     private async Task LoadFromJsonFileAsync()
     {
+        if (editSession is null)
+        {
+            StatusMessage = "Refresh vehicle parameters before importing a parameter file.";
+            return;
+        }
+
         try
         {
-            var loadedParameters = await parametersFileHandler.LoadParametersFromJsonFileAsync(cts.Token);
-
-            await dispatcher.DispatchAsync(() =>
+            var loaded = await parametersFileHandler.LoadParametersFromJsonFileAsync(activeVehicle.ConnectionCancellationToken);
+            foreach (var parameter in loaded)
             {
-                Parameters.Clear();
-                Parameters.AddRange(loadedParameters);
-            });
+                editSession.TrySetPending(parameter.Name, parameter.Value, out _);
+            }
+
+            StatusMessage = $"Imported {loaded.Count} matching values as unapplied edits.";
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            await dialogService.ConfirmAsync("Load failed", ex.Message, "OK");
+            await dialogService.ConfirmAsync("Load failed", exception.Message, "OK");
         }
     }
 
@@ -345,140 +328,251 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     {
         try
         {
-            var parameters = Parameters.Where(v => v.OriginalParameter is not null).Select(v => v.OriginalParameter).ToList();
-            var result = await parametersFileHandler.SaveParametersToFile(parameters!, cts.Token);
+            var parameters = editSession?.Fields.Select(ToVehicleParameter).ToList() ?? [];
+            var result = await parametersFileHandler.SaveParametersToFile(parameters, CancellationToken.None);
             await dialogService.ConfirmAsync("Saved", $"File saved to:\n{result}", "OK");
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            await dialogService.ConfirmAsync("Save failed", ex.Message, "OK");
+            await dialogService.ConfirmAsync("Save failed", exception.Message, "OK");
         }
     }
-
 
     [RelayCommand]
     private async Task SaveToJsonFileAsync()
     {
         try
         {
-            var result = await parametersFileHandler.SaveParametersToJsonFile(Parameters, cts.Token);
+            var result = await parametersFileHandler.SaveParametersToJsonFile(allParameterItems, CancellationToken.None);
             await dialogService.ConfirmAsync("Saved", $"File saved to:\n{result}", "OK");
         }
-        catch (Exception ex)
+        catch (Exception exception)
         {
-            await dialogService.ConfirmAsync("Save failed", ex.Message, "OK");
+            await dialogService.ConfirmAsync("Save failed", exception.Message, "OK");
         }
     }
 
-
-    [RelayCommand]
-    private void WriteParameters()
+    [RelayCommand(CanExecute = nameof(CanWriteParameters))]
+    private async Task WriteParametersAsync(CancellationToken cancellationToken)
     {
-    }
-
-    [RelayCommand]
-    private void CompareParameters()
-    {
-    }
-
-    [RelayCommand]
-    private void LoadPreSaved()
-    {
-    }
-
-    [RelayCommand]
-    private async Task ResetToDefault()
-    {
-        await ResetState();
-        Parameters.Clear();
-    }
-
-    private async Task ResetState()
-    {
-        await dispatcher.DispatchAsync(NullState);
-    }
-
-    private async Task ResetCancellationToken()
-    {
-        await ctsProgress.CancelAsync();
-        ctsProgress.Dispose();
-        ctsProgress = new CancellationTokenSource();
-    }
-
-    private void NullState()
-    {
-        progressDialog?.Dispose();
-        progressDialog = null;
-        ProgressMessage = "";
-        IsBusy = false;
-        ShowLoadingProgress = false;
-        ShowLoadingCompletedWithError = false;
-        ShowLoadingCancelled = false;
-        ShowVehicleDisconnected = false;
-        ShowEmptyView = Parameters.Count == 0;
-    }
-
-    private async Task SetLoadState()
-    {
-        await dispatcher.DispatchAsync(() =>
+        if (editSession is null)
         {
-            NullState();
-            IsBusy = true;
-            ShowLoadingProgress = true;
-            ProgressMessage = "Loading parameters...";
-            ShowEmptyView = Parameters.Count == 0;
-        });
-    }
+            return;
+        }
 
-    /// <summary>
-    /// Filters parameters based on search text.
-    /// </summary>
-    partial void OnSearchTextChanged(string value)
-    {
-        FilterParameters().FireAndForget();
-    }
-
-
-    private async Task FilterParameters()
-    {
-        await dispatcher.DispatchAsync(() =>
+        IsBusy = true;
+        StatusMessage = $"Applying {ModifiedParameterCount} modified parameters...";
+        try
         {
-            Parameters.Clear();
+            using var connectionCancellation = CancellationTokenSource.CreateLinkedTokenSource(
+                cancellationToken,
+                activeVehicle.ConnectionCancellationToken);
+            var report = await editSession.ApplyAsync(cancellationToken: connectionCancellation.Token);
+            RebootRequired |= report.RebootRequired;
+            StatusMessage = report.Success
+                ? $"Confirmed {report.Confirmed.Count} parameter changes by vehicle readback."
+                : $"Confirmed {report.Confirmed.Count}; {report.Failed.Count} changes still require attention.";
+        }
+        catch (OperationCanceledException)
+        {
+            StatusMessage = "Parameter apply was cancelled before all values were confirmed.";
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Failed to apply Full Parameters List edits.");
+            StatusMessage = exception.Message;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
 
-            if (string.IsNullOrWhiteSpace(SearchText))
-            {
-                // Show all parameters
-                foreach (var item in allParameterItems)
-                {
-                    Parameters.Add(item);
-                }
-            }
-            else
-            {
-                // Filter by name or description
-                var searchLower = SearchText.ToLower();
-                foreach (var item in allParameterItems.Where(p =>
-                             p.Name.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ||
-                             (p.Description?.Contains(searchLower, StringComparison.OrdinalIgnoreCase) ?? false)))
-                {
-                    Parameters.Add(item);
-                }
-            }
+    [RelayCommand]
+    private void CompareParameters() => StatusMessage = "Parameter comparison is not implemented yet.";
 
-            // Update modified count
-            // ModifiedParameterCount = allParameterItems.Count(p => p.IsModified);
-        });
+    [RelayCommand]
+    private void LoadPreSaved() => StatusMessage = "Presaved parameter profiles are not implemented yet.";
+
+    [RelayCommand]
+    private void ResetToDefault()
+    {
+        editSession?.RevertAll();
+        StatusMessage = "All unapplied values were reverted to current live values.";
     }
 
     /// <inheritdoc />
     public void Dispose()
     {
-        foreach (var disposable in eventSubscriptions)
+        if (disposed)
         {
-            disposable.Dispose();
+            return;
+        }
+
+        disposed = true;
+        Deactivate();
+        if (editSession is not null)
+        {
+            editSession.Changed -= OnEditSessionChanged;
         }
 
         Parameters.Clear();
-        eventSubscriptions.Clear();
+        allParameterItems.Clear();
     }
+
+    private bool CanRefreshParameters() => HasConnection && !IsBusy;
+
+    private bool CanCancelLoad() => IsBusy;
+
+    private bool CanWriteParameters() =>
+        HasConnection && !IsBusy && editSession is { IsDirty: true, IsValid: true };
+
+    private void AttachSession(IParameterEditSession session)
+    {
+        if (ReferenceEquals(editSession, session))
+        {
+            return;
+        }
+
+        if (editSession is not null)
+        {
+            editSession.Changed -= OnEditSessionChanged;
+        }
+
+        editSession = session;
+        editSession.Changed += OnEditSessionChanged;
+    }
+
+    private void OnEditSessionChanged(object? sender, EventArgs args)
+    {
+        dispatcher.Dispatch(() =>
+        {
+            if (disposed || editSession is null)
+            {
+                return;
+            }
+
+            SynchronizeParameterItems();
+            if (!editSession.IsValid)
+            {
+                StatusMessage = editSession.InvalidReason ?? "This parameter session is stale.";
+            }
+        });
+    }
+
+    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    {
+        var scopeChanged =
+            args.Previous.VehicleId != args.Current.VehicleId ||
+            args.Previous.IsOnline != args.Current.IsOnline ||
+            args.Previous.State?.Identity.Firmware != args.Current.State?.Identity.Firmware;
+        if (!scopeChanged)
+        {
+            return;
+        }
+
+        dispatcher.Dispatch(() =>
+        {
+            if (!active)
+            {
+                return;
+            }
+
+            HasConnection = args.Current.IsOnline;
+            ShowVehicleDisconnected = !HasConnection;
+            CancelLoadOperation();
+            CompleteBusyState();
+            StatusMessage = HasConnection
+                ? "Vehicle scope changed. Refresh parameters before editing."
+                : editSession?.InvalidReason ?? "The vehicle is disconnected.";
+        });
+    }
+
+    private void SynchronizeParameterItems()
+    {
+        if (editSession is null)
+        {
+            return;
+        }
+
+        var itemsByName = allParameterItems.ToDictionary(item => item.Name, StringComparer.Ordinal);
+        foreach (var field in editSession.Fields)
+        {
+            if (itemsByName.TryGetValue(field.Name, out var item))
+            {
+                item.SetField(field);
+            }
+            else
+            {
+                allParameterItems.Add(new ParameterItemViewModel(editSession, field));
+            }
+        }
+
+        allParameterItems.Sort((left, right) => StringComparer.Ordinal.Compare(left.Name, right.Name));
+        TotalParameterCount = allParameterItems.Count;
+        ModifiedParameterCount = editSession.Fields.Count(field => field.IsModified);
+        FilterParameters();
+        WriteParametersCommand.NotifyCanExecuteChanged();
+    }
+
+    private void FilterParameters()
+    {
+        var filtered = string.IsNullOrWhiteSpace(SearchText)
+            ? allParameterItems
+            : allParameterItems.Where(item =>
+                item.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                item.Description?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true ||
+                item.DisplayName?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true).ToList();
+        Parameters.Clear();
+        Parameters.AddRange(filtered);
+        ShowEmptyView = Parameters.Count == 0;
+    }
+
+    private async Task SetLoadStateAsync()
+    {
+        await dispatcher.DispatchAsync(() =>
+        {
+            CompleteBusyState();
+            IsBusy = true;
+            ShowLoadingProgress = true;
+            ShowDataGrid = false;
+            ProgressMessage = "Loading parameters...";
+            StatusMessage = ProgressMessage;
+        });
+    }
+
+    private void CompleteBusyState()
+    {
+        CloseProgressDialog();
+        ProgressMessage = string.Empty;
+        IsBusy = false;
+        ShowLoadingProgress = false;
+        ShowLoadingCompletedWithError = false;
+        ShowLoadingCancelled = false;
+        ShowEmptyView = Parameters.Count == 0;
+    }
+
+    private void SetDisconnectedState()
+    {
+        HasConnection = false;
+        ShowVehicleDisconnected = true;
+        StatusMessage = "Connect a vehicle before loading parameters.";
+        CompleteBusyState();
+    }
+
+    private void CancelLoadOperation()
+    {
+        loadCancellation?.Cancel();
+        loadCancellation?.Dispose();
+        loadCancellation = null;
+    }
+
+    private void CloseProgressDialog()
+    {
+        progressDialog?.Dispose();
+        progressDialog = null;
+    }
+
+    private static VehicleParameter ToVehicleParameter(ParameterEditField field) =>
+        new(field.Name, (float)field.PendingValue, field.Type, 0, 0);
 }

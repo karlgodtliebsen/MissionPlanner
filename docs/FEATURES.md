@@ -488,22 +488,31 @@ MAVLink command sequences that the domain does not implement yet.
 
 The Config screen replaces v1.38's Config/Tuning (`SoftwareConfig.cs`). New UI:
 `Views/ConfigTuning` — tab views exist for GeoFence, Basic Tuning, Extended Tuning,
-Onboard OSD, MAVFtp, Full Parameters List, Planner and CubeLan8PortSwitch, but only
-**Full Parameters List** is implemented.
+Onboard OSD, MAVFtp, Full Parameters List, Planner and CubeLan8PortSwitch. Full Parameters
+List and MAVFTP are implemented; the remaining tabs are covered by the sequential Config
+tasks.
+
+All parameter-editing Config pages share a vehicle-and-firmware-scoped editing session.
+It separates original, live, and pending values; validates metadata ranges, increments,
+enums, bitmasks, and read-only flags; confirms grouped writes by registry readback; keeps
+partial failures retryable; aggregates reboot requirements; and blocks stale writes after
+disconnect, vehicle switch, or firmware change. Navigation within Config preserves edits,
+while leaving Config warns before discarding them.
 
 ## Full Parameters List
 
 ### Status
 
 * Loads metadata and parameters and merges these (see PARAMETERS.md)
-* Currently a lot of buttons for testing purposes. Needs trimming
+* Uses the shared Config editing session for search, validation, pending values, grouped
+  apply/revert, per-field write status, confirmed readback, and reboot warnings
+* Loads and saves `.param`/JSON files using invariant numeric formatting
+* Retains the packed MAVFTP download with automatic classic-stream fallback
 
 ### Missing
 
-* Extend validation/range support in param editor
-* Write (send changed values to the vehicle)
-* Load/save parameter files (.param), compare/diff
-* Search/filter, favorites, modified-only view (v1.38 raw params features)
+* Parameter file compare/diff
+* Favorites and modified-only views (v1.38 raw params features)
 
 ### Issues
 

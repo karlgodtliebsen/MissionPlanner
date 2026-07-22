@@ -120,6 +120,8 @@ public static class DomainConfigurator
         services.TryAddSingleton<IVehicleParameterMetadataService, VehicleParameterMetadataService>();
         services.TryAddSingleton<IArduPilotPackedParameterDecoder, ArduPilotPackedParameterDecoder>();
         services.TryAddTransient<IVehicleParameterStreamService, VehicleParameterStreamService>();
+        services.Configure<ParameterEditSessionOptions>(configuration.GetSection(ParameterEditSessionOptions.SectionName));
+        services.TryAddSingleton<IParameterEditSessionFactory, ParameterEditSessionFactory>();
 
         return services;
     }

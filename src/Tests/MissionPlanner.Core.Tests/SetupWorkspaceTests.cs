@@ -4,10 +4,12 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.App.Presentation;
+using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
 using MissionPlanner.Core.Firmware;
+using MissionPlanner.Core.Configuration;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -191,6 +193,8 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<ISetupWorkflowViewModelFactory>().Should().NotBeNull();
         provider.GetRequiredService<ISetupNavigationService>().Should().NotBeNull();
         provider.GetRequiredService<MandatoryHardwareViewModel>().Should().NotBeNull();
+        provider.GetRequiredService<IParameterEditSessionFactory>().Should().NotBeNull();
+        provider.GetRequiredService<IConfigNavigationGuard>().Should().NotBeNull();
     }
 
     private static SetupWorkflowEvaluation Evaluation(
