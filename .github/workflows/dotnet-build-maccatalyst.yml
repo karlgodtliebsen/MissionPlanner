@@ -1,0 +1,56 @@
+name: .NET 10 Mac Catalyst Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-maccatalyst:
+    name: Build Mac Catalyst Release
+    runs-on: macos-latest
+    timeout-minutes: 45
+
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up .NET 10 and .NET MAUI for Mac Catalyst
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+          workloads: maccatalyst
+
+      - name: Show Apple build environment
+        run: |
+          xcodebuild -version
+          dotnet --info
+          dotnet workload list
+
+      - name: Restore Mac Catalyst application
+        run: dotnet restore src/UI/MissionPlanner.Mac/MissionPlanner.Mac.csproj
+
+      - name: Build Mac Catalyst application
+        run: >-
+          dotnet build
+          src/UI/MissionPlanner.Mac/MissionPlanner.Mac.csproj
+          --configuration Release
+          --framework net10.0-maccatalyst
+          --no-restore
+          -p:EnableCodeSigning=false
+          -p:CreatePackage=false
+
+      - name: Upload Mac Catalyst build
+        uses: actions/upload-artifact@v7
+        with:
+          name: MissionPlanner-MacCatalyst-Release
+          path: src/UI/MissionPlanner.Mac/bin/Release/net10.0-maccatalyst/
+          if-no-files-found: error
+          retention-days: 14
