@@ -107,9 +107,24 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
     /// <summary>Gets whether the specialized compass workflow is selected.</summary>
     public bool IsCompassSelected => SelectedCompassViewModel is not null;
 
+    /// <summary>Gets the specialized radio workflow when selected.</summary>
+    [ObservableProperty]
+    public partial RadioSetupViewModel? SelectedRadioViewModel { get; private set; }
+
+    /// <summary>Gets whether the specialized radio workflow is selected.</summary>
+    public bool IsRadioSelected => SelectedRadioViewModel is not null;
+
+    /// <summary>Gets the specialized flight-mode workflow when selected.</summary>
+    [ObservableProperty]
+    public partial FlightModesSetupViewModel? SelectedFlightModesViewModel { get; private set; }
+
+    /// <summary>Gets whether the specialized flight-mode workflow is selected.</summary>
+    public bool IsFlightModesSelected => SelectedFlightModesViewModel is not null;
+
     /// <summary>Gets whether the selected workflow may be recorded through generic manual review.</summary>
     public bool CanRecordSelectedWorkflowManually =>
-        SelectedWorkflow?.Descriptor.Key is not SetupWorkflowKey.Frame and not SetupWorkflowKey.Accelerometer and not SetupWorkflowKey.Compass;
+        SelectedWorkflow?.Descriptor.Key is not SetupWorkflowKey.Frame and not SetupWorkflowKey.Accelerometer and
+            not SetupWorkflowKey.Compass and not SetupWorkflowKey.Radio;
 
     /// <summary>Gets the active vehicle heading.</summary>
     [ObservableProperty]
@@ -215,6 +230,8 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
             SelectedFrameViewModel = null;
             SelectedAccelerometerViewModel = null;
             SelectedCompassViewModel = null;
+            SelectedRadioViewModel = null;
+            SelectedFlightModesViewModel = null;
             OnPropertyChanged(nameof(CanRecordSelectedWorkflowManually));
             return;
         }
@@ -241,6 +258,9 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
             _ = SelectedCompassViewModel.LoadAsync();
         }
 
+        SelectedRadioViewModel = SelectedWorkflowViewModel as RadioSetupViewModel;
+        SelectedFlightModesViewModel = SelectedWorkflowViewModel as FlightModesSetupViewModel;
+
         OnPropertyChanged(nameof(CanRecordSelectedWorkflowManually));
     }
 
@@ -255,6 +275,12 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
 
     partial void OnSelectedCompassViewModelChanged(CompassSetupViewModel? value) =>
         OnPropertyChanged(nameof(IsCompassSelected));
+
+    partial void OnSelectedRadioViewModelChanged(RadioSetupViewModel? value) =>
+        OnPropertyChanged(nameof(IsRadioSelected));
+
+    partial void OnSelectedFlightModesViewModelChanged(FlightModesSetupViewModel? value) =>
+        OnPropertyChanged(nameof(IsFlightModesSelected));
 
     [RelayCommand]
     private void Refresh() => RefreshCore();
@@ -424,5 +450,7 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
         SelectedFrameViewModel = null;
         SelectedAccelerometerViewModel = null;
         SelectedCompassViewModel = null;
+        SelectedRadioViewModel = null;
+        SelectedFlightModesViewModel = null;
     }
 }

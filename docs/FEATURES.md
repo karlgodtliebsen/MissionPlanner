@@ -430,15 +430,24 @@ The Setup screen replaces v1.38's Initial Setup (`src-v.1.38/GCSViews/InitialSet
   (`MAV_CMD_DO_ACCEPT_MAG_CAL`), cancel (`MAV_CMD_DO_CANCEL_MAG_CAL`), retry, disconnect
   recovery, and a post-calibration fitness quality summary.
 
+* Radio and flight-mode workflows implemented (2026-07-22): RC channels are projected live
+  from `VehicleState.Radio` with PWM, normalized travel, endpoints/trim, reversal, mapped
+  pilot function, and stale detection. Endpoint calibration is a state machine that captures
+  live extremes, validates insufficient movement/invalid ranges/throttle reversal, and writes
+  `RC*_MIN/MAX/TRIM` with readback confirmation under the shared operation lease. Flight-mode
+  assignment projects the six firmware PWM slots (FLTMODE/MODE per family) with the live active
+  slot resolved from the mode-channel PWM, and applies confirmed slot writes. Transmitter
+  configuration is never changed automatically.
+
 ### Missing (v1.38 feature inventory)
 
 * **Install Firmware**: manifest-driven firmware download/flash (stable/beta/custom), board detection, bootloader handling; "Wizard" guided first-time setup
-* **Mandatory Hardware**: Radio Calibration, Servo Output mapping, ESC Calibration, Flight Modes assignment, FailSafe configuration
+* **Mandatory Hardware**: Servo Output mapping, ESC Calibration, FailSafe configuration
 * **Optional Hardware**: Battery Monitor (analog/smart), CompassMot, Range Finder/Sonar, Airspeed sensor, Optical Flow / PX4Flow, OSD, Camera Gimbal (Mount), Motor Test, Bluetooth, SiK Radio configuration, Antenna Tracker, Parachute, ADSB, DroneCAN/UAVCAN, Serial port mapping, GPS ordering, ESP8266, CubeID, Joystick
 
-Note: accelerometer/level and compass calibration flows are implemented (2026-07-22). The
-remaining interactive calibration flows (radio, ESC) still require MAVLink command sequences
-that the domain does not implement yet.
+Note: accelerometer/level, compass, and radio calibration plus flight-mode assignment are
+implemented (2026-07-22). The remaining interactive calibration flow (ESC) still requires
+MAVLink command sequences that the domain does not implement yet.
 
 
 

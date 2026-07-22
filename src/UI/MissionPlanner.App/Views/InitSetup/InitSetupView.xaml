@@ -245,6 +245,76 @@
                         </HorizontalStackLayout>
                     </VerticalStackLayout>
 
+                    <VerticalStackLayout IsVisible="{Binding IsRadioSelected}" Spacing="10">
+                        <Label Text="Radio calibration" FontSize="18" FontAttributes="Bold" />
+                        <Label Text="Remove propellers and keep the vehicle disarmed. Turn on the transmitter before calibrating."
+                               TextColor="OrangeRed" FontAttributes="Bold" LineBreakMode="WordWrap" />
+                        <Label IsVisible="{Binding SelectedRadioViewModel.IsStale}"
+                               Text="RC telemetry is stale — values shown may not reflect live stick positions."
+                               TextColor="OrangeRed" LineBreakMode="WordWrap" />
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedRadioViewModel.Channels}" Spacing="4">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:RadioChannelDisplayViewModel">
+                                    <Grid ColumnDefinitions="150,90,*" ColumnSpacing="8">
+                                        <Label Text="{Binding Title}" FontAttributes="Bold" />
+                                        <Label Grid.Column="1" Text="{Binding Pwm, StringFormat='{0} us'}" />
+                                        <Label Grid.Column="2" Text="{Binding Range}" Opacity="0.75" />
+                                    </Grid>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                        <Label Text="{Binding SelectedRadioViewModel.CalibrationState, StringFormat='State: {0}'}" FontAttributes="Bold" />
+                        <Label Text="{Binding SelectedRadioViewModel.Instruction}" FontSize="16" LineBreakMode="WordWrap" />
+                        <Label Text="{Binding SelectedRadioViewModel.CaptureSummary}" LineBreakMode="WordWrap" />
+                        <VerticalStackLayout IsVisible="{Binding SelectedRadioViewModel.HasIssues}" BindableLayout.ItemsSource="{Binding SelectedRadioViewModel.Issues}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                        <HorizontalStackLayout Spacing="10">
+                            <Button Text="Start calibration"
+                                    IsEnabled="{Binding SelectedRadioViewModel.CanStart}"
+                                    Command="{Binding SelectedRadioViewModel.StartCommand}" />
+                            <Button BackgroundColor="Transparent" FontSize="14" Text="Finish and write"
+                                    IsEnabled="{Binding SelectedRadioViewModel.CanFinish}"
+                                    Command="{Binding SelectedRadioViewModel.FinishCommand}" />
+                            <Button BackgroundColor="Transparent" FontSize="14" Text="Cancel"
+                                    IsEnabled="{Binding SelectedRadioViewModel.CanFinish}"
+                                    Command="{Binding SelectedRadioViewModel.CancelCalibrationCommand}" />
+                            <Button BackgroundColor="Transparent" FontSize="14" Text="Reset / retry"
+                                    IsEnabled="{Binding SelectedRadioViewModel.CanStart}"
+                                    Command="{Binding SelectedRadioViewModel.ResetCommand}" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout IsVisible="{Binding IsFlightModesSelected}" Spacing="10">
+                        <Label Text="Flight-mode assignment" FontSize="18" FontAttributes="Bold" />
+                        <Label Text="{Binding SelectedFlightModesViewModel.ModeChannelDescription}" FontAttributes="Bold" />
+                        <Label Text="{Binding SelectedFlightModesViewModel.Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
+                        <VerticalStackLayout IsVisible="{Binding SelectedFlightModesViewModel.IsSupported}"
+                                             BindableLayout.ItemsSource="{Binding SelectedFlightModesViewModel.Slots}" Spacing="6">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:FlightModeSlotViewModel">
+                                    <Border Padding="10" StrokeThickness="1">
+                                        <Grid ColumnDefinitions="Auto,*,*" ColumnSpacing="8">
+                                            <Label Text="●" TextColor="LimeGreen" IsVisible="{Binding IsActive}" VerticalOptions="Center" />
+                                            <Label Grid.Column="1" Text="{Binding BandDescription}" VerticalOptions="Center" />
+                                            <Picker Grid.Column="2" Title="Mode"
+                                                    ItemsSource="{Binding Options}"
+                                                    SelectedItem="{Binding SelectedMode}"
+                                                    ItemDisplayBinding="{Binding Name}" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                        <Button BackgroundColor="Transparent" FontSize="14" Text="Refresh flight modes"
+                                Command="{Binding SelectedFlightModesViewModel.RefreshCommand}"
+                                HorizontalOptions="Start" />
+                    </VerticalStackLayout>
+
                     <HorizontalStackLayout Spacing="10">
                         <Button BackgroundColor="Transparent" FontSize="14" Text="Record reviewed"
                                 IsEnabled="{Binding SelectedWorkflow.CanOpen}"

@@ -1,5 +1,7 @@
 # Setup 06 — Radio input calibration and flight-mode assignment
 
+**Implementation status:** Completed 2026-07-22.
+
 ## Objective
 
 Implement radio calibration and flight-mode setup with live channel visualization, endpoint capture, reversal awareness, mode-slot mapping, and failsafe-safe behavior.
