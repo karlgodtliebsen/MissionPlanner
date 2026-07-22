@@ -675,13 +675,30 @@ Remaining v1.38 feature inventory:
 
 # SIMULATION
 
-Replaces v1.38's Simulation screen (SITL). New UI: `SimulationView` (placeholder page).
+Replaces v1.38's Simulation screen (SITL). New UI: `SimulationView`.
 
 ### Status
 
-* Placeholder page only
+* Implemented (2026-07-23): persisted simulator profile workspace covering firmware family,
+  frame/model, location, speedup, named ports, binary/version, tokenized arguments, and
+  environment
+* Process/container/remote-neutral Core runtime and owned-session contracts; explicit
+  Stopped, Validating, Starting, WaitingForHeartbeat, Running, Stopping, Completed, and
+  Failed states
+* Start/stop/restart controls, bounded live stdout/stderr, elapsed time, exact runtime/PID
+  identity, connection endpoints, structured lifecycle logging, and redacted diagnostics
+  export
+* Pre-start validation covers values, port duplication/conflicts, paths, host executable
+  permission, and runtime-specific incompatibility
+* Navigation preserves an owned session; app shutdown performs bounded cleanup of that
+  exact session and never kills by process name
+* Runtime availability is explicit. The initial adapter reports unsupported until the
+  verified ArduPilot SITL runtime is implemented by sequential task 03
 * Asset: `src/Tests/MissionPlanner.Simulator` already hosts a simulator used by the smoke
   tests — a candidate backend for an in-app SITL experience
+
+See [SIMULATION.md](SIMULATION.md) for architecture, persistence, diagnostics, and the
+current verification boundary.
 
 ### Missing (v1.38 feature inventory)
 

@@ -17,6 +17,7 @@ using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Handlers;
@@ -59,6 +60,12 @@ public static class DomainConfigurator
         services.TryAddSingleton<IDeviceOperationClient, DeviceOperationClient>();
         services.TryAddSingleton<ICubeLanConfigurationCodec, CubeLanConfigurationCodec>();
         services.TryAddSingleton<IVendorDeviceAdapter<CubeLanConfiguration>, CubeLanDeviceAdapter>();
+        services.Configure<SimulationWorkspaceOptions>(configuration.GetSection(SimulationWorkspaceOptions.SectionName));
+        services.TryAddSingleton<ISimulatorHostEnvironment, LocalSimulatorHostEnvironment>();
+        services.TryAddSingleton<ISimulatorProfileValidator, SimulatorProfileValidator>();
+        services.TryAddSingleton<ISimulatorRuntime, UnavailableSimulatorRuntime>();
+        services.TryAddSingleton<ISimulationSessionManager, SimulationSessionManager>();
+        services.TryAddSingleton<ISimulationDiagnosticsService, SimulationDiagnosticsService>();
 
 
         services.TryAddTransient<IVehicleMessagePump, VehicleMessagePump>();

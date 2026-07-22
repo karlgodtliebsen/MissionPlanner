@@ -48,3 +48,17 @@ Implement `SimulationView`/`SimulationViewModel` and Core abstractions without b
 - Sessions are explicit, cancellable, and observable.
 - Owned processes are cleaned up safely.
 - Runtime adapters can be added without changing the UI model.
+
+## Completion
+
+Completed 2026-07-23. The placeholder is now a persisted profile and live-session
+workspace. Core owns process/container/remote-neutral runtime contracts, strict profile and
+host validation, all required lifecycle states, bounded stdout/stderr, exact runtime/PID
+identity, endpoints, cancellation, crash/timeout handling, and bounded cleanup. Navigation
+only detaches presentation observation; application shutdown stops the exact owned session.
+Profiles contain typed firmware, model, location, speedup, endpoints, binary/version,
+argument tokens, and environment data. Redacted JSON diagnostics and structured lifecycle
+logging are available. The default runtime explicitly reports unavailable until the
+verified ArduPilot SITL adapter is introduced in sequential task 03. Fake-runtime,
+validation, persistence, diagnostics, navigation, shutdown, and DI tests cover this
+boundary; [SIMULATION.md](../../SIMULATION.md) documents it.

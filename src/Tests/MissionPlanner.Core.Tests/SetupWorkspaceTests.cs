@@ -9,6 +9,7 @@ using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
+using MissionPlanner.App.Views.Simulation;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Configuration;
 using MissionPlanner.Core.Configuration.Fences;
@@ -19,6 +20,7 @@ using MissionPlanner.Core.Configuration.VendorDevices;
 using MissionPlanner.Core.Configuration.VendorDevices.CubeLan;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -222,6 +224,13 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<IVendorDeviceAdapter<CubeLanConfiguration>>().Should().NotBeNull();
         provider.GetRequiredService<CubeLan8PortSwitchTabViewModel>().Should().NotBeNull();
         provider.GetRequiredService<GeoFenceTabViewModel>().Should().NotBeNull();
+        provider.GetRequiredService<ISimulatorProfileStore>().Should().NotBeNull();
+        provider.GetRequiredService<ISimulatorProfileService>().Should().NotBeNull();
+        provider.GetRequiredService<ISimulatorProfileValidator>().Should().NotBeNull();
+        provider.GetRequiredService<ISimulatorRuntime>().Should().NotBeNull();
+        provider.GetRequiredService<ISimulationSessionManager>().Should().NotBeNull();
+        provider.GetRequiredService<ISimulationDiagnosticsService>().Should().NotBeNull();
+        provider.GetRequiredService<SimulationViewModel>().Should().NotBeNull();
     }
 
     private static SetupWorkflowEvaluation Evaluation(

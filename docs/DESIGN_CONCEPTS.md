@@ -1076,6 +1076,21 @@ MAUI workflow is a projection of immutable `CalibrationSnapshot` values. A singl
 `IVehicleOperationGate` is also shared with `VehicleCommandService`, ensuring one
 state-changing command or calibration owns a vehicle at a time.
 
+# Simulation workspace
+
+Simulation lifecycle belongs in Core behind `ISimulatorRuntime` and
+`ISimulatorRuntimeSession`; the UI never owns a process or transport. Runtime adapters may
+be local, containerized, or remote, but every start returns one exact MissionPlanner-owned
+identity and a stop operation scoped to that identity. The session manager validates before
+start, publishes immutable state transitions, bounds output retention, distinguishes
+runtime creation from heartbeat readiness, and cleans up on cancellation or application
+shutdown. It never locates or kills processes by name.
+
+Simulator profiles are versioned application data, separate from vehicle parameters. They
+store argument tokens rather than shell command strings, allowing a later local adapter to
+use safe argument-list APIs. Platform persistence and file export stay in MAUI adapters;
+profile validation, lifecycle, and diagnostic redaction stay in Core.
+
 
 
 

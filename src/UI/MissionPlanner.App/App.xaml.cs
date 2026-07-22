@@ -1,6 +1,7 @@
 ﻿using MissionPlanner.App.Views.Exit;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library;
 using MissionPlanner.Library.EventHub.Abstractions;
@@ -51,6 +52,18 @@ public partial class App : Application
     private async void OnWindowDestroying(object? sender, EventArgs e)
     {
         // Ensure the connection is properly closed when the app is closing
+
+        try
+        {
+            var simulationManager = serviceProvider.GetRequiredService<ISimulationSessionManager>();
+            using var simulationShutdown = new CancellationTokenSource(TimeSpan.FromSeconds(12));
+            await simulationManager.ShutdownAsync(simulationShutdown.Token).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Log.Logger.Error(ex, "Error stopping the simulation workspace");
+            System.Diagnostics.Debug.WriteLine($"Error stopping the simulation workspace: {ex.Message}");
+        }
 
         try
         {

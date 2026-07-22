@@ -1,14 +1,135 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <uranium:UraniumContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
-                    xmlns:vm="clr-namespace:MissionPlanner.App.Views.Simulation"
-                    x:Class="MissionPlanner.App.Views.Simulation.SimulationView"
-                    x:DataType="vm:SimulationViewModel">
+                            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                            xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                            xmlns:simulation="clr-namespace:MissionPlanner.Core.Simulation;assembly=MissionPlanner.Core"
+                            xmlns:vm="clr-namespace:MissionPlanner.App.Views.Simulation"
+                            x:Class="MissionPlanner.App.Views.Simulation.SimulationView"
+                            x:DataType="vm:SimulationViewModel"
+                            Title="Simulation">
+    <Grid Padding="18" RowDefinitions="Auto,*" RowSpacing="12">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <VerticalStackLayout Spacing="3">
+                <Label Text="Simulation workspace" FontSize="24" FontAttributes="Bold" />
+                <Label Text="Persisted profiles and an owned, observable simulator session. Launch adapters are capability-driven; unavailable runtimes fail explicitly." />
+            </VerticalStackLayout>
+            <Button Grid.Column="1" Text="Export diagnostics" Command="{Binding ExportDiagnosticsCommand}" VerticalOptions="Center" />
+        </Grid>
 
-    <Label Text="Simulation"
-           FontSize="18"
-           HorizontalOptions="Center"
-           VerticalOptions="Center" />
+        <Grid Grid.Row="1" ColumnDefinitions="0.85*,1.15*" ColumnSpacing="14">
+            <ScrollView>
+                <VerticalStackLayout Spacing="12">
+                    <Border Padding="12">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Profiles" FontSize="18" FontAttributes="Bold" />
+                            <Picker Title="Select profile"
+                                    ItemsSource="{Binding Profiles}"
+                                    ItemDisplayBinding="{Binding Name}"
+                                    SelectedItem="{Binding SelectedProfile}" />
+                            <HorizontalStackLayout Spacing="8">
+                                <Button Text="New" Command="{Binding NewProfileCommand}" />
+                                <Button Text="Save" Command="{Binding SaveProfileCommand}" />
+                                <Button Text="Delete" Command="{Binding DeleteProfileCommand}" />
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
 
+                    <Border Padding="12">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Launch profile" FontSize="18" FontAttributes="Bold" />
+                            <Label Text="Name" />
+                            <Entry Text="{Binding ProfileName}" />
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                <VerticalStackLayout>
+                                    <Label Text="Firmware" />
+                                    <Picker ItemsSource="{Binding FirmwareFamilies}" SelectedItem="{Binding SelectedFirmwareFamily}" />
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Column="1">
+                                    <Label Text="Frame / model" />
+                                    <Entry Text="{Binding FrameModel}" />
+                                </VerticalStackLayout>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                <VerticalStackLayout>
+                                    <Label Text="Binary version" />
+                                    <Entry Text="{Binding BinaryVersion}" />
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Column="1">
+                                    <Label Text="Speedup" />
+                                    <Entry Text="{Binding Speedup}" Keyboard="Numeric" />
+                                </VerticalStackLayout>
+                            </Grid>
+                            <Label Text="Absolute executable path" />
+                            <Entry Text="{Binding BinaryPath}" Placeholder="Select an installed SITL binary in step 02" />
+                            <Label Text="Start location (latitude, longitude, altitude, heading)" />
+                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                                <Entry Text="{Binding Latitude}" Keyboard="Numeric" Placeholder="Latitude" />
+                                <Entry Grid.Column="1" Text="{Binding Longitude}" Keyboard="Numeric" Placeholder="Longitude" />
+                                <Entry Grid.Row="1" Text="{Binding Altitude}" Keyboard="Numeric" Placeholder="Altitude m" />
+                                <Entry Grid.Row="1" Grid.Column="1" Text="{Binding Heading}" Keyboard="Numeric" Placeholder="Heading °" />
+                            </Grid>
+                            <Label Text="Ports" />
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                <Entry Text="{Binding MavLinkPort}" Keyboard="Numeric" Placeholder="MAVLink UDP" />
+                                <Entry Grid.Column="1" Text="{Binding ConsolePort}" Keyboard="Numeric" Placeholder="Console TCP" />
+                            </Grid>
+                            <Label Text="Additional argument tokens (one token per line)" />
+                            <Editor Text="{Binding AdditionalArgumentsText}" AutoSize="TextChanges" MinimumHeightRequest="70" />
+                            <Label Text="Environment (one NAME=VALUE per line)" />
+                            <Editor Text="{Binding EnvironmentText}" AutoSize="TextChanges" MinimumHeightRequest="70" />
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*" RowSpacing="12">
+                <Border Padding="12">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="{Binding SessionState}" FontSize="20" FontAttributes="Bold" />
+                            <Label Text="{Binding StatusMessage}" />
+                            <Label Text="{Binding FailureMessage}" TextColor="Red" />
+                        </VerticalStackLayout>
+                        <ActivityIndicator Grid.Column="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="1" Padding="12">
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="6">
+                        <Label Text="Elapsed" FontAttributes="Bold" />
+                        <Label Grid.Column="1" Text="{Binding Elapsed}" />
+                        <Label Grid.Row="1" Text="Runtime" FontAttributes="Bold" />
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding RuntimeIdentity}" />
+                        <Label Grid.Row="2" Text="Endpoints" FontAttributes="Bold" />
+                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding ConnectionEndpoints}" />
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Row="2" RowDefinitions="Auto,*" RowSpacing="8">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <Label Text="Live stdout / stderr" FontSize="18" FontAttributes="Bold" />
+                        <HorizontalStackLayout Grid.Column="1" Spacing="8">
+                            <Button Text="Start" Command="{Binding StartCommand}" IsEnabled="{Binding CanStart}" />
+                            <Button Text="Stop" Command="{Binding StopCommand}" IsEnabled="{Binding CanStop}" />
+                            <Button Text="Restart" Command="{Binding RestartCommand}" IsEnabled="{Binding CanRestart}" />
+                        </HorizontalStackLayout>
+                    </Grid>
+                    <CollectionView Grid.Row="1" ItemsSource="{Binding RecentOutput}">
+                        <CollectionView.EmptyView>
+                            <Label Text="Runtime output will appear here." Padding="12" />
+                        </CollectionView.EmptyView>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="simulation:SimulatorOutputLine">
+                                <Grid Padding="4" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+                                    <Label Text="{Binding Timestamp, StringFormat='{}{0:HH:mm:ss}'}" />
+                                    <Label Grid.Column="1" Text="{Binding Stream}" FontAttributes="Bold" />
+                                    <Label Grid.Column="2" Text="{Binding Text}" LineBreakMode="WordWrap" />
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
 </uranium:UraniumContentPage>

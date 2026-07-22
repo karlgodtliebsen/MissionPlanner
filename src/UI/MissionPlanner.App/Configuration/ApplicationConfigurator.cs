@@ -25,6 +25,7 @@ using MissionPlanner.Core.Configuration.Planner;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Simulation;
 using MissionPlanner.Library;
 using MissionPlanner.Library.Configuration;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -61,6 +62,8 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<IPlannerSecretStore, SecurePlannerSecretStore>();
         services.TryAddSingleton<IPlannerSettingsService, PlannerSettingsService>();
         services.TryAddSingleton<PlannerSettingsRuntime>();
+        services.TryAddSingleton<ISimulatorProfileStore, PreferencesSimulatorProfileStore>();
+        services.TryAddSingleton<ISimulatorProfileService, SimulatorProfileService>();
 
         //services.TryAddSingleton<Views.Vehicles.Views.ModelMapper>();
         services.TryAddSingleton<ThemeChangeViewModel>();
