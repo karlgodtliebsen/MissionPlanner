@@ -489,8 +489,8 @@ MAVLink command sequences that the domain does not implement yet.
 The Config screen replaces v1.38's Config/Tuning (`SoftwareConfig.cs`). New UI:
 `Views/ConfigTuning` — tab views exist for GeoFence, Basic Tuning, Extended Tuning,
 Onboard OSD, MAVFtp, Full Parameters List, Planner and CubeLan8PortSwitch. Full Parameters
-List, MAVFTP, GeoFence, Basic Tuning, Extended Tuning, and Onboard OSD are implemented;
-the remaining tabs are covered by the sequential Config tasks.
+List, MAVFTP, GeoFence, Basic Tuning, Extended Tuning, Onboard OSD, and Planner are
+implemented; CubeLAN is covered by the final sequential Config task.
 
 All parameter-editing Config pages share a vehicle-and-firmware-scoped editing session.
 It separates original, live, and pending values; validates metadata ranges, increments,
@@ -610,6 +610,32 @@ while leaving Config warns before discarding them.
   video backend, font, or firmware-dynamic item width
 * Physical OSD hardware validation is still required after layout changes
 
+## Planner application preferences
+
+### Status
+
+* Edits local, typed settings for units, map source/style/default zoom, telemetry display
+  rates, theme, logging and retention, connection defaults, parameter-cache policy,
+  confirmations, update checks, and telemetry accessibility
+* Persists a versioned JSON document through MAUI Preferences, migrates older schemas, and
+  replaces corrupt or invalid documents with validated safe defaults
+* Applies theme previews immediately and publishes all saved changes to observable runtime
+  consumers; disconnected connection defaults and new-map defaults consume the live snapshot
+* Marks map tile-source/style, logging, and update-channel changes as restart-required
+* Resets individual sections or all settings and supports JSON import/export; unknown secret
+  fields are ignored and exports contain only the typed non-secret model
+* Keeps credentials and tokens behind the platform SecureStorage abstraction and never in
+  ordinary preferences, exports, or structured settings logs
+
+See [PLANNER_SETTINGS.md](PLANNER_SETTINGS.md) for the settings inventory and persistence
+contract.
+
+### Limitations
+
+* Telemetry refresh, cache, confirmation, update, and accessibility settings are observable
+  application policy; individual feature consumers may adopt them incrementally
+* Map source/style changes are intentionally applied when map views are recreated
+
 ## Other Config tabs (Missing)
 
 v1.38 feature inventory per tab; the new tab views are placeholders:
@@ -617,7 +643,6 @@ v1.38 feature inventory per tab; the new tab views are placeholders:
 * **Flight Modes**: assign flight modes to RC switch positions (not present as a tab yet)
 * **Standard / Advanced Params**: "friendly" curated parameter lists with combos/sliders
 * **Full Parameter Tree**: tree-grouped variant of the raw parameter editor
-* **Planner**: GCS application settings (units, speech, layout, video, map options)
 * **MAVFTP**: remote filesystem browser, navigation, session reset, streaming download, progress, cancellation, burst recovery; SITL re-validation pending after endpoint/sequence interoperability fixes
 * v1.38 extras to consider later: FFT analysis, REPL/Terminal, DroneCAN tooling
 

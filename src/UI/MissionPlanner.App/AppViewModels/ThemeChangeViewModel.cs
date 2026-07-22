@@ -1,78 +1,110 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.Logging;
+using MissionPlanner.App.Configuration;
+using MissionPlanner.Core.Configuration.Planner;
 
 namespace MissionPlanner.App.AppViewModels;
 
-public partial class ThemeChangeViewModel : ObservableObject
+/// <summary>Synchronizes the Shell theme selector with versioned Planner preferences.</summary>
+public sealed partial class ThemeChangeViewModel : ObservableObject, IDisposable
 {
-    /// <summary>
-    ///  
-    /// </summary>
-    public AppTheme[] AppThemeList { get; } = [AppTheme.Light, AppTheme.Dark];
+    private readonly IPlannerSettingsService settingsService;
+    private readonly PlannerSettingsRuntime runtime;
+    private readonly ILogger<ThemeChangeViewModel> logger;
+    private bool synchronizing;
+    private bool disposed;
 
-    [ObservableProperty] public partial AppTheme SelectedTheme { get; set; }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public ThemeChangeViewModel()
+    /// <summary>Initializes the theme selector.</summary>
+    /// <param name="settingsService">The Planner settings service.</param>
+    /// <param name="runtime">The live settings bridge.</param>
+    /// <param name="logger">The logger.</param>
+    public ThemeChangeViewModel(
+        IPlannerSettingsService settingsService,
+        PlannerSettingsRuntime runtime,
+        ILogger<ThemeChangeViewModel> logger)
     {
-        var current = App.Current!;
-        SelectedTheme = current.RequestedTheme == AppTheme.Dark ? AppTheme.Dark : AppTheme.Light;
+        this.settingsService = settingsService;
+        this.runtime = runtime;
+        this.logger = logger;
+        synchronizing = true;
+        SelectedTheme = ToAppTheme(settingsService.Current.Appearance.Theme);
+        synchronizing = false;
+        settingsService.SettingsChanged += OnSettingsChanged;
+    }
 
-        current.RequestedThemeChanged += (s, e) =>
+    /// <summary>Gets the system, light, and dark theme choices.</summary>
+    public AppTheme[] AppThemeList { get; } = [AppTheme.Unspecified, AppTheme.Light, AppTheme.Dark];
+
+    /// <summary>Gets the selected MAUI application theme.</summary>
+    [ObservableProperty]
+    public partial AppTheme SelectedTheme { get; set; }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        if (disposed)
         {
-            if (SelectedTheme != current.RequestedTheme) SelectedTheme = current.RequestedTheme;
-        };
+            return;
+        }
+
+        disposed = true;
+        settingsService.SettingsChanged -= OnSettingsChanged;
     }
 
     partial void OnSelectedThemeChanged(AppTheme value)
     {
-        var current = App.Current!;
-
-        if (current.UserAppTheme != value) current.UserAppTheme = value;
+        runtime.PreviewTheme(ToPlannerTheme(value));
+        if (!synchronizing)
+        {
+            _ = PersistThemeAsync(ToPlannerTheme(value));
+        }
     }
+
+    private void OnSettingsChanged(object? sender, PlannerSettingsChangedEventArgs e)
+    {
+        var selected = ToAppTheme(e.Current.Appearance.Theme);
+        if (SelectedTheme == selected)
+        {
+            return;
+        }
+
+        synchronizing = true;
+        try
+        {
+            SelectedTheme = selected;
+        }
+        finally
+        {
+            synchronizing = false;
+        }
+    }
+
+    private async Task PersistThemeAsync(PlannerTheme theme)
+    {
+        try
+        {
+            await settingsService.SaveAsync(settingsService.Current with
+            {
+                Appearance = new PlannerAppearanceSettings { Theme = theme }
+            });
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Could not persist the application theme preference.");
+        }
+    }
+
+    private static AppTheme ToAppTheme(PlannerTheme theme) => theme switch
+    {
+        PlannerTheme.Light => AppTheme.Light,
+        PlannerTheme.Dark => AppTheme.Dark,
+        _ => AppTheme.Unspecified
+    };
+
+    private static PlannerTheme ToPlannerTheme(AppTheme theme) => theme switch
+    {
+        AppTheme.Light => PlannerTheme.Light,
+        AppTheme.Dark => PlannerTheme.Dark,
+        _ => PlannerTheme.System
+    };
 }
-
-
-///// <summary>
-///// 
-///// </summary>
-////[RegisterAs(typeof(ThemeChangeViewModel), ServiceLifetime.Singleton)]
-//public class ThemeChangeViewModel : ReactiveObject
-//{
-//    /// <summary>
-//    ///  
-//    /// </summary>
-//    public AppTheme[] AppThemeList { get; } = [AppTheme.Light, AppTheme.Dark];
-
-//    /// <summary>
-//    /// 
-//    /// </summary>
-//    [Reactive]
-//    public AppTheme SelectedTheme { get; set; }
-
-//    /// <summary>
-//    /// 
-//    /// </summary>
-//    public ThemeChangeViewModel()
-//    {
-//        var current = App.Current;
-//        SelectedTheme = current.RequestedTheme == AppTheme.Dark ? AppTheme.Dark : AppTheme.Light;
-
-//        current.RequestedThemeChanged += (s, e) =>
-//        {
-//            if (SelectedTheme != current.RequestedTheme)
-//            {
-//                SelectedTheme = current.RequestedTheme;
-//            }
-//        };
-
-//        this.WhenAnyValue(x => x.SelectedTheme).Subscribe(theme =>
-//        {
-//            if (current.UserAppTheme != theme)
-//            {
-//                current.UserAppTheme = theme;
-//            }
-//        });
-//    }
-//}

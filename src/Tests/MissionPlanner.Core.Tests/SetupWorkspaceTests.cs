@@ -14,6 +14,7 @@ using MissionPlanner.Core.Configuration;
 using MissionPlanner.Core.Configuration.Fences;
 using MissionPlanner.Core.Configuration.Tuning;
 using MissionPlanner.Core.Configuration.Osd;
+using MissionPlanner.Core.Configuration.Planner;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -208,6 +209,10 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<IExtendedTuningService>().Should().NotBeNull();
         provider.GetRequiredService<IControlResponseMetricsService>().Should().NotBeNull();
         provider.GetRequiredService<IOsdConfigurationService>().Should().NotBeNull();
+        provider.GetRequiredService<IPlannerSettingsStore>().Should().NotBeNull();
+        provider.GetRequiredService<IPlannerSecretStore>().Should().NotBeNull();
+        provider.GetRequiredService<IPlannerSettingsService>().Should().NotBeNull();
+        provider.GetRequiredService<PlannerTabViewModel>().Should().NotBeNull();
         provider.GetRequiredService<GeoFenceTabViewModel>().Should().NotBeNull();
     }
 

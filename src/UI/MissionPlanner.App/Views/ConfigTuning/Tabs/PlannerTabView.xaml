@@ -1,12 +1,172 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
              x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.PlannerTabView"
-             Title="PlannerTabView">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             x:DataType="tabs:PlannerTabViewModel"
+             Title="Planner">
+    <ScrollView>
+        <VerticalStackLayout Padding="20" Spacing="14" MaximumWidthRequest="1050" HorizontalOptions="Center">
+            <Label Text="Planner application preferences" FontSize="24" FontAttributes="Bold" />
+            <Label Text="These settings belong to MissionPlanner on this device. They never write flight-controller parameters. Credentials and tokens are stored separately in platform secure storage and are never exported." />
+
+            <Border Padding="14">
+                <VerticalStackLayout Spacing="8">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Units and appearance" FontSize="18" FontAttributes="Bold" VerticalOptions="Center" />
+                        <HorizontalStackLayout Grid.Column="1">
+                            <Button Text="Reset units" Command="{Binding ResetSectionCommand}" CommandParameter="Units" />
+                            <Button Text="Reset appearance" Command="{Binding ResetSectionCommand}" CommandParameter="Appearance" />
+                        </HorizontalStackLayout>
+                    </Grid>
+                    <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto" RowSpacing="8">
+                        <Label Text="Unit system" VerticalOptions="Center" />
+                        <Picker Grid.Column="1" ItemsSource="{Binding UnitSystems}" SelectedItem="{Binding SelectedUnitSystem}" />
+                        <Label Grid.Row="1" Text="Theme (live preview)" VerticalOptions="Center" />
+                        <Picker Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Padding="14">
+                <VerticalStackLayout Spacing="8">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Map" FontSize="18" FontAttributes="Bold" VerticalOptions="Center" />
+                        <Button Grid.Column="1" Text="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Map" />
+                    </Grid>
+                    <Label Text="Provider and style changes require restart because map tile layers are created during view initialization." FontSize="12" />
+                    <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+                        <Label Text="Provider" VerticalOptions="Center" />
+                        <Picker Grid.Column="1" ItemsSource="{Binding MapProviders}" SelectedItem="{Binding SelectedMapProvider}" />
+                        <Label Grid.Row="1" Text="Style" VerticalOptions="Center" />
+                        <Picker Grid.Row="1" Grid.Column="1" ItemsSource="{Binding MapStyles}" SelectedItem="{Binding SelectedMapStyle}" />
+                        <Label Grid.Row="2" Text="Default zoom (1–22)" VerticalOptions="Center" />
+                        <Entry Grid.Row="2" Grid.Column="1" Text="{Binding DefaultMapZoom}" Keyboard="Numeric" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Padding="14">
+                <VerticalStackLayout Spacing="8">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Telemetry display" FontSize="18" FontAttributes="Bold" VerticalOptions="Center" />
+                        <Button Grid.Column="1" Text="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Telemetry" />
+                    </Grid>
+                    <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto" RowSpacing="8">
+                        <Label Text="Maximum display rate (Hz)" VerticalOptions="Center" />
+                        <Entry Grid.Column="1" Text="{Binding TelemetryDisplayRateHz}" Keyboard="Numeric" />
+                        <Label Grid.Row="1" Text="Chart history (seconds)" VerticalOptions="Center" />
+                        <Entry Grid.Row="1" Grid.Column="1" Text="{Binding ChartHistorySeconds}" Keyboard="Numeric" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Padding="14">
+                <VerticalStackLayout Spacing="8">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Connection defaults" FontSize="18" FontAttributes="Bold" VerticalOptions="Center" />
+                        <Button Grid.Column="1" Text="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Connection" />
+                    </Grid>
+                    <Label Text="Defaults update the connection UI immediately while disconnected; they never interrupt an active connection." FontSize="12" />
+                    <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8">
+                        <Label Text="Channel" VerticalOptions="Center" />
+                        <Picker Grid.Column="1" ItemsSource="{Binding ConnectionChannels}" SelectedItem="{Binding ConnectionChannel}" />
+                        <Label Grid.Row="1" Text="Host" VerticalOptions="Center" />
+                        <Entry Grid.Row="1" Grid.Column="1" Text="{Binding ConnectionHost}" />
+                        <Label Grid.Row="2" Text="Port" VerticalOptions="Center" />
+                        <Entry Grid.Row="2" Grid.Column="1" Text="{Binding ConnectionPort}" Keyboard="Numeric" />
+                        <Label Grid.Row="3" Text="Serial baud rate" VerticalOptions="Center" />
+                        <Entry Grid.Row="3" Grid.Column="1" Text="{Binding ConnectionBaudRate}" Keyboard="Numeric" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Padding="14">
+                <VerticalStackLayout Spacing="8">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Parameter cache" FontSize="18" FontAttributes="Bold" VerticalOptions="Center" />
+                        <Button Grid.Column="1" Text="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="ParameterCache" />
+                    </Grid>
+                    <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto" RowSpacing="8">
+                        <Label Text="Policy" VerticalOptions="Center" />
+                        <Picker Grid.Column="1" ItemsSource="{Binding ParameterCachePolicies}" SelectedItem="{Binding SelectedParameterCachePolicy}" />
+                        <Label Grid.Row="1" Text="Maximum age (minutes)" VerticalOptions="Center" />
+                        <Entry Grid.Row="1" Grid.Column="1" Text="{Binding ParameterCacheMaximumAgeMinutes}" Keyboard="Numeric" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Padding="14">
+                <VerticalStackLayout Spacing="8">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Confirmations" FontSize="18" FontAttributes="Bold" VerticalOptions="Center" />
+                        <Button Grid.Column="1" Text="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Confirmations" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+                        <Label Text="Confirm vehicle parameter writes" VerticalOptions="Center" />
+                        <Switch Grid.Column="1" IsToggled="{Binding ConfirmParameterWrites}" />
+                        <Label Grid.Row="1" Text="Confirm arm/disarm operations" VerticalOptions="Center" />
+                        <Switch Grid.Row="1" Grid.Column="1" IsToggled="{Binding ConfirmArmDisarm}" />
+                        <Label Grid.Row="2" Text="Confirm firmware changes" VerticalOptions="Center" />
+                        <Switch Grid.Row="2" Grid.Column="1" IsToggled="{Binding ConfirmFirmwareChanges}" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Padding="14">
+                <VerticalStackLayout Spacing="8">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Logging and updates" FontSize="18" FontAttributes="Bold" VerticalOptions="Center" />
+                        <HorizontalStackLayout Grid.Column="1">
+                            <Button Text="Reset logging" Command="{Binding ResetSectionCommand}" CommandParameter="Logging" />
+                            <Button Text="Reset updates" Command="{Binding ResetSectionCommand}" CommandParameter="Updates" />
+                        </HorizontalStackLayout>
+                    </Grid>
+                    <Label Text="Logging changes and update-channel changes take effect after restart." FontSize="12" />
+                    <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
+                        <Label Text="Logging level" VerticalOptions="Center" />
+                        <Picker Grid.Column="1" ItemsSource="{Binding LoggingLevels}" SelectedItem="{Binding SelectedLoggingLevel}" />
+                        <Label Grid.Row="1" Text="Log retention (days)" VerticalOptions="Center" />
+                        <Entry Grid.Row="1" Grid.Column="1" Text="{Binding LogRetentionDays}" Keyboard="Numeric" />
+                        <Label Grid.Row="2" Text="Automatic update checks" VerticalOptions="Center" />
+                        <Switch Grid.Row="2" Grid.Column="1" IsToggled="{Binding CheckUpdatesAutomatically}" HorizontalOptions="Start" />
+                        <Label Grid.Row="3" Text="Check interval (days)" VerticalOptions="Center" />
+                        <Entry Grid.Row="3" Grid.Column="1" Text="{Binding UpdateCheckIntervalDays}" Keyboard="Numeric" />
+                        <Label Grid.Row="4" Text="Update channel" VerticalOptions="Center" />
+                        <Picker Grid.Row="4" Grid.Column="1" ItemsSource="{Binding UpdateChannels}" SelectedItem="{Binding UpdateChannel}" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Padding="14">
+                <VerticalStackLayout Spacing="8">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Accessibility" FontSize="18" FontAttributes="Bold" VerticalOptions="Center" />
+                        <Button Grid.Column="1" Text="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Accessibility" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8">
+                        <Label Text="High-contrast telemetry" VerticalOptions="Center" />
+                        <Switch Grid.Column="1" IsToggled="{Binding HighContrastTelemetry}" />
+                        <Label Grid.Row="1" Text="Reduce telemetry motion" VerticalOptions="Center" />
+                        <Switch Grid.Row="1" Grid.Column="1" IsToggled="{Binding ReduceMotion}" />
+                        <Label Grid.Row="2" Text="Text scale (0.8–2.0)" VerticalOptions="Center" />
+                        <Entry Grid.Row="2" Grid.Column="1" WidthRequest="140" Text="{Binding TextScale}" Keyboard="Numeric" />
+                        <Label Grid.Row="3" Text="Announce telemetry warnings" VerticalOptions="Center" />
+                        <Switch Grid.Row="3" Grid.Column="1" IsToggled="{Binding AnnounceTelemetryWarnings}" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <Label Text="{Binding RestartRequiredMessage}" IsVisible="{Binding RestartRequired}" TextColor="DarkOrange" FontAttributes="Bold" />
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" />
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+
+            <FlexLayout Direction="Row" Wrap="Wrap" JustifyContent="End">
+                <Button Text="Import" Command="{Binding ImportCommand}" Margin="4" />
+                <Button Text="Export" Command="{Binding ExportCommand}" Margin="4" />
+                <Button Text="Reset all" Command="{Binding ResetAllCommand}" Margin="4" />
+                <Button Text="Save preferences" Command="{Binding SaveCommand}" Margin="4" />
+            </FlexLayout>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

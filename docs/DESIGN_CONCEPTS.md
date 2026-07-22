@@ -1013,6 +1013,15 @@ drawing stays in the view integration. Static overlaps are errors, while firmwar
 dynamic overlaps are warnings that still require explicit acknowledgement. No font upload
 command exists until a real transfer service can own that capability.
 
+Planner preferences deliberately do not use the vehicle parameter session. Core owns an
+immutable, typed `PlannerSettings` snapshot, validation, schema migration, atomic import,
+and an observable change event. The MAUI layer supplies an opaque Preferences document
+store and a separate SecureStorage adapter for credentials or tokens. Export serializes
+only the typed non-secret snapshot, so unknown secret-shaped fields cannot round-trip.
+`PlannerSettingsRuntime` applies safe live changes such as theme and disconnected connection
+defaults; map tile source/style, logging, and update channel report an explicit restart
+requirement. Invalid stored data fails closed to validated defaults.
+
 GeoFence extends this model with a singleton, vehicle-scoped geometry workspace. Its
 `FencePlan` is independent from the flight mission and maps to typed fence mission items
 only inside `IFenceProtocolMapper`. Local and last-confirmed vehicle revisions remain

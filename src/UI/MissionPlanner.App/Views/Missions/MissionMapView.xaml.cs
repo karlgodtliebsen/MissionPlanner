@@ -8,6 +8,7 @@ using Mapsui.Tiling;
 using Mapsui.Tiling.Layers;
 using Mapsui.UI.Maui;
 using MissionPlanner.App.Configuration;
+using MissionPlanner.Core.Configuration.Planner;
 
 namespace MissionPlanner.App.Views.Missions;
 
@@ -18,14 +19,14 @@ namespace MissionPlanner.App.Views.Missions;
 /// </summary>
 public partial class MissionMapView : ContentView, IDisposable
 {
-    /// <summary>Resolution (meters/pixel at the equator) used when zooming to a point; roughly street level.</summary>
-    private const double DefaultZoomResolution = 4.78;
+    private const double WebMercatorInitialResolution = 156543.03392804097;
 
     private readonly MissionMapViewModel viewModel;
     private readonly Pin vehiclePin;
     private Polyline routeLine;
     private readonly List<Pin> missionPins = [];
     private readonly Mapsui.Map map;
+    private readonly IPlannerSettingsService plannerSettings;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MissionMapView"/> class.
@@ -34,6 +35,7 @@ public partial class MissionMapView : ContentView, IDisposable
     {
         InitializeComponent();
         viewModel = ServiceHelper.GetRequiredService<MissionMapViewModel>();
+        plannerSettings = ServiceHelper.GetRequiredService<IPlannerSettingsService>();
         BindingContext = viewModel;
         map = new Mapsui.Map();
         map.Layers.Add(CreateTileLayer(viewModel.SelectedMapType));
@@ -268,6 +270,9 @@ public partial class MissionMapView : ContentView, IDisposable
             map.Navigator.CenterOn(new MPoint(x, y));
         }
     }
+
+    private double DefaultZoomResolution =>
+        WebMercatorInitialResolution / Math.Pow(2, plannerSettings.Current.Map.DefaultZoom);
 
     private void OnZoomInClicked(object? sender, EventArgs e)
     {

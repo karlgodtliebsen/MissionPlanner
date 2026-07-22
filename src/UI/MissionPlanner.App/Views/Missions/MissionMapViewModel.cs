@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Files;
 using MissionPlanner.Core.Missions.Models;
+using MissionPlanner.Core.Configuration.Planner;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.MavLink.Missions;
 
@@ -29,12 +30,18 @@ public partial class MissionMapViewModel : ObservableObject
     /// <summary>
     /// Initializes a new instance of the <see cref="MissionMapViewModel"/> class.
     /// </summary>
-    public MissionMapViewModel(IMissionFileCodec fileCodec, IMissionProtocolMapper protocolMapper, IFileSaver fileSaver, ILogger<MissionMapViewModel> logger)
+    public MissionMapViewModel(
+        IMissionFileCodec fileCodec,
+        IMissionProtocolMapper protocolMapper,
+        IFileSaver fileSaver,
+        IPlannerSettingsService settingsService,
+        ILogger<MissionMapViewModel> logger)
     {
         this.fileCodec = fileCodec;
         this.protocolMapper = protocolMapper;
         this.fileSaver = fileSaver;
         this.logger = logger;
+        SelectedMapType = MapType(settingsService.Current.Map);
     }
 
     [ObservableProperty] public partial double VehicleLatitude { get; set; }
@@ -90,6 +97,18 @@ public partial class MissionMapViewModel : ObservableObject
     /// <summary>The tile sources the map views can render.</summary>
     public IReadOnlyList<string> AvailableMapTypes { get; } =
         ["OpenStreetMap", "Esri World Topo", "Esri World Physical", "Esri Shaded Relief", "Esri Dark Gray"];
+
+    private static string MapType(PlannerMapSettings settings) => settings.Provider switch
+    {
+        PlannerMapProvider.OpenStreetMap => "OpenStreetMap",
+        _ => settings.Style switch
+        {
+            PlannerMapStyle.Physical => "Esri World Physical",
+            PlannerMapStyle.ShadedRelief => "Esri Shaded Relief",
+            PlannerMapStyle.DarkGray => "Esri Dark Gray",
+            _ => "Esri World Topo"
+        }
+    };
 
     /// <summary>
     /// Commands selectable in the waypoint editor. Names follow v1.38's mavcmd.xml; the set is

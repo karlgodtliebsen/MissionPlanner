@@ -21,6 +21,7 @@ using MissionPlanner.App.Views.InitSetup.OptionalHardware;
 using MissionPlanner.App.Views.Missions;
 using MissionPlanner.App.Views.Simulation;
 using MissionPlanner.Core.Configuration;
+using MissionPlanner.Core.Configuration.Planner;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Setup;
@@ -56,6 +57,10 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<ApplicationStateService>();
         services.TryAddSingleton<ParametersFileHandler>();
         services.TryAddSingleton<IConfigNavigationGuard, ConfigNavigationGuard>();
+        services.TryAddSingleton<IPlannerSettingsStore, PreferencesPlannerSettingsStore>();
+        services.TryAddSingleton<IPlannerSecretStore, SecurePlannerSecretStore>();
+        services.TryAddSingleton<IPlannerSettingsService, PlannerSettingsService>();
+        services.TryAddSingleton<PlannerSettingsRuntime>();
 
         //services.TryAddSingleton<Views.Vehicles.Views.ModelMapper>();
         services.TryAddSingleton<ThemeChangeViewModel>();
@@ -150,6 +155,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<BasicTuningTabViewModel>();
         services.TryAddSingleton<ExtendedTuningTabViewModel>();
         services.TryAddSingleton<OnboardOsdTabViewModel>();
+        services.TryAddSingleton<PlannerTabViewModel>();
         services.TryAddSingleton<MavFtpTabViewModel>();
         return services;
     }
@@ -169,11 +175,20 @@ public static class ApplicationConfigurator
             .UseDomainServices()
             ;
 
-        var applicationOptions = serviceProvider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
-        ApplicationState state = new() { SelectedBaudRate = applicationOptions.BaudRate, SelectedPort = applicationOptions.Port };
+        var plannerSettingsService = serviceProvider.GetRequiredService<IPlannerSettingsService>();
+        var loadResult = plannerSettingsService.InitializeAsync().AsTask().GetAwaiter().GetResult();
+        var connection = loadResult.Settings.Connection;
+        ApplicationState state = new()
+        {
+            SelectedChannel = connection.Channel,
+            SelectedHost = connection.Host,
+            SelectedPort = connection.Port.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            SelectedBaudRate = connection.BaudRate.ToString(System.Globalization.CultureInfo.InvariantCulture)
+        };
         // Register shared state service as singleton for runtime state management
         var stateService = serviceProvider.GetRequiredService<ApplicationStateService>();
         stateService.Initialize(state);
+        _ = serviceProvider.GetRequiredService<PlannerSettingsRuntime>();
 
         serviceProvider.UseApplicationServices();
 

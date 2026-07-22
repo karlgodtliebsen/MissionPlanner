@@ -225,6 +225,11 @@ tagged, restricted to discovered OSD parameters, and restores previous pending s
 metadata or bounds error. Reset means revert to confirmed live values; firmware defaults are
 not guessed.
 
+The Planner tab is intentionally outside this parameter architecture. Its units, map,
+theme, logging, connection-default, cache, confirmation, update, and accessibility values
+are local application preferences; saving or importing them never creates a parameter edit
+session and never sends `PARAM_SET`.
+
 ### Frame setup transaction
 
 Initial Setup uses `IFrameConfigurationService` rather than writing parameters from the

@@ -179,7 +179,7 @@ public sealed record ControlResponseMetric(
     DateTimeOffset ReceivedAt);
 
 /// <summary>Provides the event payload for a read-only control-response update.</summary>
-/// <param name="Metric">The latest metric.</param>
+/// <param name="metric">The latest metric.</param>
 public sealed class ControlResponseMetricChangedEventArgs(ControlResponseMetric metric) : EventArgs
 {
     /// <summary>Gets the latest metric.</summary>

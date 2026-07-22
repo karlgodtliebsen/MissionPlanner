@@ -52,3 +52,15 @@ Implement `PlannerTabView` with a typed settings service backed by MAUI Preferen
 - Settings persist and migrate safely.
 - Secrets are excluded from export/logging.
 - Restart-required changes are clear.
+
+## Completion
+
+Completed 2026-07-22. The placeholder Planner page now edits a typed, validated,
+schema-versioned local settings snapshot covering units, supported map sources/styles and
+zoom, telemetry presentation, appearance, logging, connection defaults, parameter cache,
+confirmations, updates, and accessibility. MAUI Preferences persists only the non-secret
+document; a separate SecureStorage adapter owns future credentials and tokens. Safe live
+changes are observable, theme has immediate preview, disconnected connection defaults and
+map defaults consume the snapshot, and restart-bound settings are reported explicitly.
+Section/all reset, migration, atomic import/export, corrupt-data recovery, DI validation,
+and view-model behavior are covered by deterministic tests.
