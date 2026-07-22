@@ -448,10 +448,19 @@ The Setup screen replaces v1.38's Initial Setup (`src-v.1.38/GCSViews/InitialSet
   Invalid failsafe combinations (low ≤ critical, non-positive capacity/multipliers) are
   rejected before writing and surfaced as blocking issues.
 
+* ESC/motor/servo workflow implemented (2026-07-22): motor testing is a bounded, safety-gated
+  Core service driven by `MAV_CMD_DO_MOTOR_TEST` (single and sequence), always passing a
+  duration timeout, blocked while armed, capped at a maximum duration/throttle, with an
+  emergency stop that re-issues zero throttle and an audit log of every operation. ESC
+  calibration is presented as protocol-aware guidance (analog PWM requires the manual
+  all-at-once procedure; DShot does not), never a fake protocol. Servo output functions are
+  projected with live PWM and reassigned with readback-confirmed writes. Motor testing is
+  only exposed for rotorcraft-style families.
+
 ### Missing (v1.38 feature inventory)
 
 * **Install Firmware**: manifest-driven firmware download/flash (stable/beta/custom), board detection, bootloader handling; "Wizard" guided first-time setup
-* **Mandatory Hardware**: Servo Output mapping, ESC Calibration, FailSafe configuration
+* **Mandatory Hardware**: FailSafe configuration
 * **Optional Hardware**: Battery Monitor (analog/smart), CompassMot, Range Finder/Sonar, Airspeed sensor, Optical Flow / PX4Flow, OSD, Camera Gimbal (Mount), Motor Test, Bluetooth, SiK Radio configuration, Antenna Tracker, Parachute, ADSB, DroneCAN/UAVCAN, Serial port mapping, GPS ordering, ESP8266, CubeID, Joystick
 
 Note: accelerometer/level, compass, and radio calibration plus flight-mode assignment are

@@ -378,6 +378,69 @@
                                 Command="{Binding SelectedBatteryViewModel.RefreshCommand}" HorizontalOptions="Start" />
                     </VerticalStackLayout>
 
+                    <VerticalStackLayout IsVisible="{Binding IsEscSelected}" Spacing="10">
+                        <Label Text="ESC calibration and motor test" FontSize="18" FontAttributes="Bold" />
+                        <Label Text="Remove ALL propellers before any actuator test. Motors will spin."
+                               TextColor="OrangeRed" FontAttributes="Bold" LineBreakMode="WordWrap" />
+                        <Label Text="{Binding SelectedEscViewModel.EscExplanation}" LineBreakMode="WordWrap" />
+                        <VerticalStackLayout IsVisible="{Binding SelectedEscViewModel.EscCalibrationApplicable}"
+                                             BindableLayout.ItemsSource="{Binding SelectedEscViewModel.EscSteps}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Label Text="{Binding .}" LineBreakMode="WordWrap" />
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout IsVisible="{Binding SelectedEscViewModel.SupportsMotorTest}" Spacing="6">
+                            <Label Text="Motor test" FontSize="16" FontAttributes="Bold" />
+                            <Grid ColumnDefinitions="120,*,120,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="6">
+                                <Label Text="Motor / count" VerticalOptions="Center" />
+                                <Entry Grid.Column="1" Text="{Binding SelectedEscViewModel.MotorIndex}" Keyboard="Numeric" />
+                                <Label Grid.Column="2" Text="Throttle %" VerticalOptions="Center" />
+                                <Entry Grid.Column="3" Text="{Binding SelectedEscViewModel.ThrottlePercent}" Keyboard="Numeric" />
+                                <Label Grid.Row="1" Text="Duration (s)" VerticalOptions="Center" />
+                                <Entry Grid.Row="1" Grid.Column="1" Text="{Binding SelectedEscViewModel.DurationSeconds}" Keyboard="Numeric" />
+                            </Grid>
+                            <Label Text="{Binding SelectedEscViewModel.Instruction}" FontAttributes="Bold" LineBreakMode="WordWrap" />
+                            <HorizontalStackLayout Spacing="10">
+                                <Button Text="Test motor" Command="{Binding SelectedEscViewModel.TestMotorCommand}" />
+                                <Button BackgroundColor="Transparent" FontSize="14" Text="Test sequence" Command="{Binding SelectedEscViewModel.TestSequenceCommand}" />
+                                <Button BackgroundColor="OrangeRed" TextColor="White" Text="STOP" Command="{Binding SelectedEscViewModel.StopCommand}" />
+                            </HorizontalStackLayout>
+                            <Label Text="Operation log" FontAttributes="Bold" />
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedEscViewModel.Log}">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="x:String">
+                                        <Label Text="{Binding .}" FontSize="12" Opacity="0.8" />
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout IsVisible="{Binding IsServoOutputSelected}" Spacing="10">
+                        <Label Text="Servo output functions" FontSize="18" FontAttributes="Bold" />
+                        <Label Text="{Binding SelectedServoOutputViewModel.Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedServoOutputViewModel.Outputs}" Spacing="6">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:ServoOutputItemViewModel">
+                                    <Border Padding="10" StrokeThickness="1">
+                                        <Grid ColumnDefinitions="100,*,120" ColumnSpacing="8">
+                                            <Label Text="{Binding Header}" FontAttributes="Bold" VerticalOptions="Center" />
+                                            <Picker Grid.Column="1" Title="Function"
+                                                    ItemsSource="{Binding Functions}"
+                                                    SelectedItem="{Binding SelectedFunction}"
+                                                    ItemDisplayBinding="{Binding Name}" />
+                                            <Label Grid.Column="2" Text="{Binding LiveDescription}" VerticalOptions="Center" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                        <Button BackgroundColor="Transparent" FontSize="14" Text="Refresh servo outputs"
+                                Command="{Binding SelectedServoOutputViewModel.RefreshCommand}" HorizontalOptions="Start" />
+                    </VerticalStackLayout>
+
                     <HorizontalStackLayout Spacing="10">
                         <Button BackgroundColor="Transparent" FontSize="14" Text="Record reviewed"
                                 IsEnabled="{Binding SelectedWorkflow.CanOpen}"

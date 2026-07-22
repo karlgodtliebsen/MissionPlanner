@@ -22,6 +22,8 @@ public sealed class SetupWorkflowViewModelFactory : ISetupWorkflowViewModelFacto
         SetupWorkflowKey.Radio => ActivatorUtilities.CreateInstance<RadioSetupViewModel>(services, descriptor),
         SetupWorkflowKey.FlightModes => ActivatorUtilities.CreateInstance<FlightModesSetupViewModel>(services, descriptor),
         SetupWorkflowKey.Battery => ActivatorUtilities.CreateInstance<BatterySetupViewModel>(services, descriptor),
+        SetupWorkflowKey.Esc => ActivatorUtilities.CreateInstance<EscMotorSetupViewModel>(services, descriptor),
+        SetupWorkflowKey.ServoOutput => ActivatorUtilities.CreateInstance<ServoOutputSetupViewModel>(services, descriptor),
         _ => new SetupWorkflowDetailViewModel(descriptor)
     };
 }

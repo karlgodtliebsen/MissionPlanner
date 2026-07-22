@@ -1,5 +1,7 @@
 # Setup 08 — ESC calibration, motor test, and servo output setup
 
+**Implementation status:** Completed 2026-07-22.
+
 ## Objective
 
 Implement ESC/motor/servo setup with strict armed-state policies and bounded actuator tests.

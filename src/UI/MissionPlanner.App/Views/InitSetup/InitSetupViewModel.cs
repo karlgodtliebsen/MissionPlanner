@@ -128,6 +128,20 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
     /// <summary>Gets whether the specialized battery workflow is selected.</summary>
     public bool IsBatterySelected => SelectedBatteryViewModel is not null;
 
+    /// <summary>Gets the specialized ESC and motor-test workflow when selected.</summary>
+    [ObservableProperty]
+    public partial EscMotorSetupViewModel? SelectedEscViewModel { get; private set; }
+
+    /// <summary>Gets whether the specialized ESC workflow is selected.</summary>
+    public bool IsEscSelected => SelectedEscViewModel is not null;
+
+    /// <summary>Gets the specialized servo output workflow when selected.</summary>
+    [ObservableProperty]
+    public partial ServoOutputSetupViewModel? SelectedServoOutputViewModel { get; private set; }
+
+    /// <summary>Gets whether the specialized servo output workflow is selected.</summary>
+    public bool IsServoOutputSelected => SelectedServoOutputViewModel is not null;
+
     /// <summary>Gets whether the selected workflow may be recorded through generic manual review.</summary>
     public bool CanRecordSelectedWorkflowManually =>
         SelectedWorkflow?.Descriptor.Key is not SetupWorkflowKey.Frame and not SetupWorkflowKey.Accelerometer and
@@ -240,6 +254,8 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
             SelectedRadioViewModel = null;
             SelectedFlightModesViewModel = null;
             SelectedBatteryViewModel = null;
+            SelectedEscViewModel = null;
+            SelectedServoOutputViewModel = null;
             OnPropertyChanged(nameof(CanRecordSelectedWorkflowManually));
             return;
         }
@@ -269,6 +285,8 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
         SelectedRadioViewModel = SelectedWorkflowViewModel as RadioSetupViewModel;
         SelectedFlightModesViewModel = SelectedWorkflowViewModel as FlightModesSetupViewModel;
         SelectedBatteryViewModel = SelectedWorkflowViewModel as BatterySetupViewModel;
+        SelectedEscViewModel = SelectedWorkflowViewModel as EscMotorSetupViewModel;
+        SelectedServoOutputViewModel = SelectedWorkflowViewModel as ServoOutputSetupViewModel;
 
         OnPropertyChanged(nameof(CanRecordSelectedWorkflowManually));
     }
@@ -293,6 +311,12 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
 
     partial void OnSelectedBatteryViewModelChanged(BatterySetupViewModel? value) =>
         OnPropertyChanged(nameof(IsBatterySelected));
+
+    partial void OnSelectedEscViewModelChanged(EscMotorSetupViewModel? value) =>
+        OnPropertyChanged(nameof(IsEscSelected));
+
+    partial void OnSelectedServoOutputViewModelChanged(ServoOutputSetupViewModel? value) =>
+        OnPropertyChanged(nameof(IsServoOutputSelected));
 
     [RelayCommand]
     private void Refresh() => RefreshCore();
@@ -465,5 +489,7 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
         SelectedRadioViewModel = null;
         SelectedFlightModesViewModel = null;
         SelectedBatteryViewModel = null;
+        SelectedEscViewModel = null;
+        SelectedServoOutputViewModel = null;
     }
 }

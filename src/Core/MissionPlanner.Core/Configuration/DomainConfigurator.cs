@@ -66,6 +66,8 @@ public static class DomainConfigurator
         services.TryAddTransient<IRadioCalibrationService, RadioCalibrationService>();
         services.TryAddTransient<IFlightModeConfigurationService, FlightModeConfigurationService>();
         services.TryAddTransient<IBatteryConfigurationService, BatteryConfigurationService>();
+        services.TryAddTransient<IActuatorTestService, ActuatorTestService>();
+        services.TryAddTransient<IServoOutputConfigurationService, ServoOutputConfigurationService>();
         services.Configure<FirmwareManifestOptions>(configuration.GetSection(FirmwareManifestOptions.SectionName));
         services.AddHttpClient("Firmware");
         services.TryAddSingleton<IFirmwareManifestProvider, JsonFirmwareManifestProvider>();
