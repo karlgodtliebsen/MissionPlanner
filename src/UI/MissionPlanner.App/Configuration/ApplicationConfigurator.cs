@@ -52,6 +52,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<ThemeChangeViewModel>();
 
         services.TryAddSingleton(new CancellationTokenSource());
+        services.TryAddTransient<IExtendedDialogService, ExtendedDialogService>();
 
         services
             .AddLibraryServices()

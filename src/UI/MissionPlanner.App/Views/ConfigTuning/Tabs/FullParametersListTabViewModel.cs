@@ -23,7 +23,8 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     private readonly IVehicleConnectionSession session;
     private readonly IVehicleRegistry vehicleRegistry;
     private readonly IDispatcher dispatcher;
-    private readonly IDialogService dialogs;
+    private readonly IDialogService dialogService;
+    private readonly IExtendedDialogService extendedDialogService;
     private readonly IDomainFactory domainFactory;
     private readonly ParametersFileHandler parametersFileHandler;
     private readonly IVehicleParameterMetadataService metadataService;
@@ -46,8 +47,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     [ObservableProperty] public partial string ProgressMessage { get; set; } = null!;
     [ObservableProperty] public partial bool ShowDataGrid { get; set; }
 
-    [ObservableProperty] public partial double Progress { get; set; }
-    [ObservableProperty] public partial bool ShowLoadingPanel { get; set; }
     [ObservableProperty] public partial bool ShowEmptyView { get; set; }
 
     [ObservableProperty] public partial bool ShowLoadingProgress { get; set; }
@@ -73,7 +72,8 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     /// <param name="dispatcher">The dispatcher.</param>
     /// <param name="cts">The cancellation token source.</param>
     /// <param name="logger">The logger.</param>
-    /// <param name="dialogs">The dialog service.</param>
+    /// <param name="dialogService">The dialog service.</param>
+    /// <param name="extendedDialogService">The extended dialog service.</param>
     /// <param name="domainFactory">The service factory.</param>
     /// <param name="parametersFileHandler">The parameters file handler.</param>
     /// <param name="metadataService">The vehicle parameter metadata service.</param>
@@ -82,7 +82,8 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         IVehicleRegistry vehicleRegistry,
         IDomainEventHub domainEventHub,
         IDispatcher dispatcher,
-        IDialogService dialogs,
+        IDialogService dialogService,
+        IExtendedDialogService extendedDialogService,
         IDomainFactory domainFactory,
         ParametersFileHandler parametersFileHandler,
         IVehicleParameterMetadataService metadataService,
@@ -92,7 +93,8 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         this.session = session;
         this.vehicleRegistry = vehicleRegistry;
         this.dispatcher = dispatcher;
-        this.dialogs = dialogs;
+        this.dialogService = dialogService;
+        this.extendedDialogService = extendedDialogService;
         this.domainFactory = domainFactory;
         this.parametersFileHandler = parametersFileHandler;
         this.metadataService = metadataService;
@@ -158,6 +160,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
     private async Task LoadAsync(VehicleId vehicleId, CancellationToken cancellationToken)
     {
+        await ResetCancellationToken();
         if (metadata.Count == 0)
         {
             allParameterItems.Clear();
@@ -172,19 +175,11 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             dispatcher.DispatchAsync(() =>
             {
                 ShowDataGrid = false;
-                if (p.TotalCount > 0)
-                {
-                    Progress = (double)p.ReceivedCount / p.TotalCount;
-                    ProgressMessage = $"Loading parameters... {p.ReceivedCount}/{p.TotalCount}";
-                }
-                else
-                {
-                    Progress = 0;
-                    ProgressMessage = $"Loading parameters...";
-                }
+                ProgressMessage = p.TotalCount > 0 ? $"Processing parameters... {p.ReceivedCount}/{p.TotalCount}" : $"Processing parameters...";
             }));
 
-        progressDialog = await dialogs.DisplayProgressAsync("Loading parameters", "Work in progress, please wait...");
+        progressDialog = await extendedDialogService.DisplayProgressCancellableAsync(dispatcher, "Handling parameters", () => ProgressMessage, tokenSource: ctsProgress);
+
         try
         {
             // Stream all parameters with progress tracking
@@ -198,44 +193,45 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
                     ShowDataGrid = true;
                     NullState();
                     ShowEmptyView = Parameters.Count == 0;
-                    ShowLoadingPanel = true;
                     ShowLoadingCompletedWithError = true;
                 });
                 logger.LogError("Failed to load parameters: {Error}", result.ErrorMessage);
+                await ResetCancellationToken();
                 return;
             }
 
-            await Task.Run(() => AddAndRenderParameters(result.Parameters), cancellationToken);
+            await Task.Run(() => PrepareParameters(result.Parameters), cancellationToken);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Error loading parameters");
+            allParameterItems.Clear();
             await dispatcher.DispatchAsync(async () =>
             {
                 ShowDataGrid = true;
                 NullState();
-                allParameterItems.Clear();
                 Parameters.Clear();
                 ShowEmptyView = Parameters.Count == 0;
-
                 var errorModel = domainFactory.Create<ErrorViewModel, string>(ex.Message + "\nEnsure there is a connection and try again");
                 var view = domainFactory.Create<ErrorView, ErrorViewModel>(errorModel);
-                await dialogs.DisplayViewAsync("Load failed.", view, "OK");
+                await dialogService.DisplayViewAsync("Load failed.", view, "OK");
             });
         }
     }
 
-    private async Task AddAndRenderParameters(IReadOnlyDictionary<string, VehicleParameter> parameters)
+    private async Task PrepareParameters(IReadOnlyDictionary<string, VehicleParameter> parameters)
     {
-        await dispatcher.DispatchAsync(async () =>
+        await dispatcher.DispatchAsync(() =>
         {
             ShowDataGrid = false;
-            Progress = 1;
             ProgressMessage = $"Initializing data grid";
-            progressDialog?.Dispose();
-            progressDialog = await dialogs.DisplayProgressAsync("Creating data grid", "Work in progress, please wait...");
         });
+        await Task.Delay(100); // Add a small delay to allow UI to update
+        await Task.Run(() => AddParameters(parameters), ctsProgress.Token);
+    }
 
+    private async Task AddParameters(IReadOnlyDictionary<string, VehicleParameter> parameters)
+    {
         allParameterItems.Clear();
         foreach (var parameter in parameters.Values.OrderBy(p => p.Name))
         {
@@ -247,40 +243,35 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             }
             else
             {
-                var vehicleParameter = new VehicleParameter(parameter.Name ?? "noname", 0, MavParamType.Real32, 0, (ushort)metadata.Count());
+                var vehicleParameter = new VehicleParameter(parameter.Name, parameter.Value, MavParamType.Real32, 0, (ushort)metadata.Count());
                 var model = new ParameterItemViewModel(vehicleParameter);
                 allParameterItems.Add(model);
             }
         }
 
-        var timer = dispatcher.CreateTimer();
-        timer.Interval = TimeSpan.FromSeconds(1);
-        timer.Tick += (s, e) =>
+        await Task.Run(RenderParameters, ctsProgress.Token);
+    }
+
+    private async Task RenderParameters()
+    {
+        await dispatcher.DispatchAsync(() =>
         {
-            timer.Stop();
-            timer = null;
-            dispatcher.DispatchAsync(async () =>
-            {
-                progressDialog?.Dispose();
-                progressDialog = await dialogs.DisplayProgressAsync("Initializing data grid", "Work in progress, please wait...");
+            ProgressMessage = $"Populating data grid";
+            TotalParameterCount = allParameterItems.Count;
+            ModifiedParameterCount = 0;
+            Parameters.Clear();
+            ShowEmptyView = allParameterItems.Count == 0;
+        });
+        await Task.Delay(100); // Add a small delay to allow UI to update
+        await dispatcher.DispatchAsync(() =>
+        {
+            Parameters.AddRange(allParameterItems.OrderBy(p => p.Name));
+            NullState();
+            ShowDataGrid = true;
+            logger.LogInformation("Successfully loaded {Count} parameters with metadata", TotalParameterCount);
+        });
 
-                Progress = 0.5;
-                ProgressMessage = $"Initializing data grid";
-                TotalParameterCount = allParameterItems.Count;
-                ModifiedParameterCount = 0;
-                if (allParameterItems.Count != Parameters.Count)
-                {
-                    Parameters.Clear();
-                    Parameters.AddRange(allParameterItems.OrderBy(p => p.Name));
-                    ShowEmptyView = Parameters.Count == 0;
-                }
-
-                NullState();
-                ShowDataGrid = true;
-                logger.LogInformation("Successfully loaded {Count} parameters with metadata", TotalParameterCount);
-            });
-        };
-        timer.Start();
+        await ResetCancellationToken();
     }
 
 
@@ -305,8 +296,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     [RelayCommand(CanExecute = nameof(CanExecuteConnection))]
     private async Task CancelLoad()
     {
-        await ctsProgress.CancelAsync();
-        ctsProgress = new CancellationTokenSource();
+        await ResetCancellationToken();
         await ResetState();
     }
 
@@ -327,7 +317,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         }
         catch (Exception ex)
         {
-            await dialogs.ConfirmAsync("Load failed", ex.Message, "OK");
+            await dialogService.ConfirmAsync("Load failed", ex.Message, "OK");
         }
     }
 
@@ -346,7 +336,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         }
         catch (Exception ex)
         {
-            await dialogs.ConfirmAsync("Load failed", ex.Message, "OK");
+            await dialogService.ConfirmAsync("Load failed", ex.Message, "OK");
         }
     }
 
@@ -357,11 +347,11 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         {
             var parameters = Parameters.Where(v => v.OriginalParameter is not null).Select(v => v.OriginalParameter).ToList();
             var result = await parametersFileHandler.SaveParametersToFile(parameters!, cts.Token);
-            await dialogs.ConfirmAsync("Saved", $"File saved to:\n{result}", "OK");
+            await dialogService.ConfirmAsync("Saved", $"File saved to:\n{result}", "OK");
         }
         catch (Exception ex)
         {
-            await dialogs.ConfirmAsync("Save failed", ex.Message, "OK");
+            await dialogService.ConfirmAsync("Save failed", ex.Message, "OK");
         }
     }
 
@@ -372,11 +362,11 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         try
         {
             var result = await parametersFileHandler.SaveParametersToJsonFile(Parameters, cts.Token);
-            await dialogs.ConfirmAsync("Saved", $"File saved to:\n{result}", "OK");
+            await dialogService.ConfirmAsync("Saved", $"File saved to:\n{result}", "OK");
         }
         catch (Exception ex)
         {
-            await dialogs.ConfirmAsync("Save failed", ex.Message, "OK");
+            await dialogService.ConfirmAsync("Save failed", ex.Message, "OK");
         }
     }
 
@@ -408,15 +398,20 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         await dispatcher.DispatchAsync(NullState);
     }
 
+    private async Task ResetCancellationToken()
+    {
+        await ctsProgress.CancelAsync();
+        ctsProgress.Dispose();
+        ctsProgress = new CancellationTokenSource();
+    }
+
     private void NullState()
     {
         progressDialog?.Dispose();
         progressDialog = null;
-        Progress = 0;
         ProgressMessage = "";
         IsBusy = false;
         ShowLoadingProgress = false;
-        ShowLoadingPanel = false;
         ShowLoadingCompletedWithError = false;
         ShowLoadingCancelled = false;
         ShowVehicleDisconnected = false;
@@ -429,7 +424,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         {
             NullState();
             IsBusy = true;
-            ShowLoadingPanel = true;
             ShowLoadingProgress = true;
             ProgressMessage = "Loading parameters...";
             ShowEmptyView = Parameters.Count == 0;
