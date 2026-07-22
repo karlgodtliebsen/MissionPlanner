@@ -1,12 +1,135 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
              x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.BasicTuningTabView"
-             Title="BasicTuningTabView">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             x:DataType="tabs:BasicTuningTabViewModel"
+             Title="Basic Tuning">
+    <Grid RowDefinitions="Auto,Auto,*" Padding="12" RowSpacing="10">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <VerticalStackLayout Spacing="2">
+                <Label Text="Basic Tuning" FontAttributes="Bold" FontSize="24" />
+                <Label Text="{Binding FirmwareFamilyText, StringFormat='Firmware profile: {0}'}" />
+            </VerticalStackLayout>
+            <HorizontalStackLayout Grid.Column="1" Spacing="8">
+                <Button Text="Import presented fields" Command="{Binding ImportCommand}" />
+                <Button Text="Export presented fields" Command="{Binding ExportCommand}" />
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+            </HorizontalStackLayout>
+        </Grid>
+
+        <Border Grid.Row="1" Padding="10">
+            <VerticalStackLayout Spacing="4">
+                <Label Text="{Binding StatusMessage}" LineBreakMode="WordWrap" />
+                <Label Text="Basic Tuning intentionally hides expert control-loop fields. Use Extended Tuning or Full Parameters only when you understand the stability risks."
+                       TextColor="OrangeRed"
+                       FontAttributes="Bold"
+                       IsVisible="{Binding HasSupportedProfile}" />
+                <Label Text="This connected firmware has no supported Basic Tuning profile."
+                       TextColor="OrangeRed"
+                       IsVisible="{Binding IsUnsupported}" />
+            </VerticalStackLayout>
+        </Border>
+
+        <ScrollView Grid.Row="2" IsVisible="{Binding HasSupportedProfile}">
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Groups}" Spacing="12">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="tabs:BasicTuningGroupViewModel">
+                        <Border Padding="12">
+                            <VerticalStackLayout Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                    <VerticalStackLayout Spacing="2">
+                                        <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="20" />
+                                        <Label Text="{Binding Description}" LineBreakMode="WordWrap" />
+                                    </VerticalStackLayout>
+                                    <HorizontalStackLayout Grid.Column="1" Spacing="6">
+                                        <Button Text="Refresh" Command="{Binding RefreshCommand}" />
+                                        <Button Text="Revert group" Command="{Binding RevertCommand}" />
+                                        <Button Text="Apply group" Command="{Binding ApplyCommand}" />
+                                    </HorizontalStackLayout>
+                                </Grid>
+
+                                <Label Text="{Binding Warning}"
+                                       TextColor="OrangeRed"
+                                       FontAttributes="Bold"
+                                       LineBreakMode="WordWrap"
+                                       IsVisible="{Binding HasWarning}" />
+                                <Label Text="{Binding ValidationMessage}"
+                                       TextColor="OrangeRed"
+                                       LineBreakMode="WordWrap"
+                                       IsVisible="{Binding HasValidationError}" />
+                                <Label Text="This group has pending changes."
+                                       TextColor="DarkOrange"
+                                       IsVisible="{Binding IsModified}" />
+
+                                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Parameters}" Spacing="8">
+                                    <BindableLayout.ItemTemplate>
+                                        <DataTemplate x:DataType="tabs:BasicTuningParameterViewModel">
+                                            <Border Padding="10" StrokeThickness="1">
+                                                <Grid ColumnDefinitions="2*,Auto,180" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="4">
+                                                    <VerticalStackLayout>
+                                                        <Label Text="{Binding Title}" FontAttributes="Bold" />
+                                                        <Label Text="{Binding ParameterName}" FontSize="11" Opacity="0.7" />
+                                                    </VerticalStackLayout>
+
+                                                    <Label Grid.Column="1"
+                                                           Text="{Binding Editor.LiveValue, StringFormat='Live: {0:G}'}"
+                                                           VerticalOptions="Center" />
+
+                                                    <Grid Grid.Column="2">
+                                                        <Entry Text="{Binding Editor.Value, Mode=TwoWay}"
+                                                               Keyboard="Numeric"
+                                                               IsReadOnly="{Binding Editor.IsReadOnly}">
+                                                            <Entry.Triggers>
+                                                                <DataTrigger TargetType="Entry" Binding="{Binding Editor.HasValuesData}" Value="True">
+                                                                    <Setter Property="IsVisible" Value="False" />
+                                                                </DataTrigger>
+                                                            </Entry.Triggers>
+                                                        </Entry>
+                                                        <Picker ItemsSource="{Binding Editor.ValuesData}"
+                                                                SelectedItem="{Binding Editor.SelectedValue, Mode=TwoWay}"
+                                                                IsVisible="{Binding Editor.HasValuesData}" />
+                                                    </Grid>
+
+                                                    <Label Grid.Row="1" Grid.ColumnSpan="2"
+                                                           Text="{Binding Description}"
+                                                           LineBreakMode="WordWrap"
+                                                           FontSize="12" />
+                                                    <Label Grid.Row="1" Grid.Column="2"
+                                                           Text="{Binding Units, StringFormat='Units: {0}'}"
+                                                           FontSize="12" />
+
+                                                    <Slider Grid.Row="2" Grid.ColumnSpan="3"
+                                                            Minimum="{Binding Editor.Min}"
+                                                            Maximum="{Binding Editor.Max}"
+                                                            Value="{Binding Editor.Value, Mode=TwoWay}"
+                                                            IsVisible="{Binding Editor.HasNumericRangeData}" />
+
+                                                    <VerticalStackLayout Grid.Row="3" Grid.ColumnSpan="3" Spacing="2">
+                                                        <Label Text="{Binding RecommendationText}"
+                                                               IsVisible="{Binding HasRecommendation}"
+                                                               TextColor="ForestGreen"
+                                                               FontSize="12" />
+                                                        <Label Text="{Binding Warning}"
+                                                               IsVisible="{Binding HasWarning}"
+                                                               TextColor="OrangeRed"
+                                                               FontSize="12" />
+                                                        <Label Text="{Binding Editor.ValidationError}"
+                                                               TextColor="OrangeRed"
+                                                               FontSize="12" />
+                                                        <Label Text="{Binding Editor.WriteMessage}"
+                                                               FontSize="12" />
+                                                    </VerticalStackLayout>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </BindableLayout.ItemTemplate>
+                                </VerticalStackLayout>
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
 </ContentPage>

@@ -489,7 +489,7 @@ MAVLink command sequences that the domain does not implement yet.
 The Config screen replaces v1.38's Config/Tuning (`SoftwareConfig.cs`). New UI:
 `Views/ConfigTuning` — tab views exist for GeoFence, Basic Tuning, Extended Tuning,
 Onboard OSD, MAVFtp, Full Parameters List, Planner and CubeLan8PortSwitch. Full Parameters
-List, MAVFTP, and GeoFence are implemented; the remaining tabs are covered by the
+List, MAVFTP, GeoFence, and Basic Tuning are implemented; the remaining tabs are covered by the
 sequential Config tasks.
 
 All parameter-editing Config pages share a vehicle-and-firmware-scoped editing session.
@@ -539,12 +539,35 @@ while leaving Config warns before discarding them.
   configuration remains available when that protocol is not supported
 * Physical-vehicle/SITL validation is still required for firmware-specific option values
 
+## Basic Tuning
+
+### Status
+
+* Selects separate curated profiles for ArduCopter, ArduPlane, Rover, and ArduSub; only
+  fields present in the connected vehicle's registry are shown
+* Groups pilot feel/responsiveness, climb and descent, navigation, cruise/throttle,
+  loiter/turn behavior, and acceleration as appropriate to each firmware family
+* Uses firmware metadata for range sliders, enums, read-only state, increments, live and
+  pending values, while curated descriptions and unit fallbacks keep every field explained
+* Applies, refreshes, and reverts one group at a time through the shared confirmed-readback
+  editing session; coupled ordering and speed/acceleration rules block unsafe combinations
+* Imports and exports invariant JSON containing only the parameters presented by the active
+  profile; imports are atomic and unsupported names are reported and ignored
+* Hides expert loop-gain fields and displays explicit control-stability warnings before
+  applying risk-bearing groups
+
+### Limitations
+
+* No static defaults are presented because the repository has no authoritative,
+  vehicle/version-specific recommendation source; metadata and live vehicle values remain
+  the source of truth
+* Physical flight/drive/dive testing remains essential after tuning changes
+
 ## Other Config tabs (Missing)
 
 v1.38 feature inventory per tab; the new tab views are placeholders:
 
 * **Flight Modes**: assign flight modes to RC switch positions (not present as a tab yet)
-* **Basic Tuning**: simplified sliders (roll/pitch sensitivity, throttle hover, climb rates)
 * **Extended Tuning**: per-vehicle PID editors (Copter/Plane/Rover), filters, TX tuning knob
 * **Standard / Advanced Params**: "friendly" curated parameter lists with combos/sliders
 * **Full Parameter Tree**: tree-grouped variant of the raw parameter editor

@@ -12,6 +12,7 @@ using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Configuration;
 using MissionPlanner.Core.Configuration.Fences;
+using MissionPlanner.Core.Configuration.Tuning;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -200,6 +201,8 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<IFenceProtocolMapper>().Should().NotBeNull();
         provider.GetRequiredService<IFenceGeometryValidator>().Should().NotBeNull();
         provider.GetRequiredService<IFenceConfigurationService>().Should().NotBeNull();
+        provider.GetRequiredService<IBasicTuningProfileCatalog>().Should().NotBeNull();
+        provider.GetRequiredService<IBasicTuningService>().Should().NotBeNull();
         provider.GetRequiredService<GeoFenceTabViewModel>().Should().NotBeNull();
     }
 

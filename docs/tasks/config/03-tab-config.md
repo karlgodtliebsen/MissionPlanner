@@ -52,3 +52,12 @@ Create tuning profiles/catalogs keyed by firmware family and parameter presence.
 - No raw numeric fields lack units/descriptions.
 - Unsupported parameters are not displayed.
 - Writes use the shared safe editing session.
+
+## Completion
+
+Completed 2026-07-22. Basic Tuning now selects presence-gated profiles for Copter, Plane,
+Rover, and Sub; derives editor behavior from firmware metadata; provides curated units,
+descriptions, and stability warnings; validates coupled values; and supports group-scoped
+refresh, revert, and confirmed apply. Family-tagged import/export contains only presented
+parameters and is atomic on validation failure. Lifecycle, alias, catalog, validation,
+file-round-trip, safe-write, UI projection, and DI tests are included.

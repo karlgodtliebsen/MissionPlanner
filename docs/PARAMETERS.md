@@ -186,6 +186,19 @@ before uploading typed fence geometry. Cross-field checks, such as minimum/maxim
 ordering and return-altitude bounds, run together with geometry validation; a rejected or
 unconfirmed parameter write prevents the geometry phase.
 
+Basic Tuning also opens the shared session, but first selects a curated profile for the
+reported Copter, Plane, Rover, or Sub family. Each logical field resolves only an explicitly
+listed live parameter or justified legacy alias. Metadata determines the actual editor,
+range, enum values, increment, read-only state, and reported units; the catalog supplies a
+plain-language description and unit fallback. Group apply/revert/refresh operations contain
+only fields displayed in that group and retain the session's confirmed-readback behavior.
+
+Coupled group validation runs before writes and after imports. Basic Tuning JSON is
+invariant, family-tagged, and restricted to the active profile's presented parameter names.
+An invalid import restores the previous pending values atomically. Static recommendations
+are not guessed: the UI only exposes a recommended/default value when the catalog has both
+an authoritative value and its source.
+
 ### Frame setup transaction
 
 Initial Setup uses `IFrameConfigurationService` rather than writing parameters from the

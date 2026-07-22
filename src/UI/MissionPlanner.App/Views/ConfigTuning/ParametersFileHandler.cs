@@ -30,6 +30,37 @@ public sealed class ParametersFileHandler(IFileSaver fileSaver)
         return result.FilePath;
     }
 
+    /// <summary>Saves a UTF-8 text document through the platform file saver.</summary>
+    /// <param name="fileName">The suggested file name.</param>
+    /// <param name="content">The text content.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The saved file path, when supplied by the platform.</returns>
+    public async Task<string?> SaveTextFileAsync(string fileName, string content, CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(fileName);
+        ArgumentNullException.ThrowIfNull(content);
+        await using var stream = new MemoryStream(new UTF8Encoding(false).GetBytes(content));
+        var result = await fileSaver.SaveAsync(fileName, stream, cancellationToken);
+        return result.FilePath;
+    }
+
+    /// <summary>Loads a UTF-8 text document selected through the platform file picker.</summary>
+    /// <param name="pickerTitle">The picker title.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The file content, or <see langword="null"/> when selection is cancelled.</returns>
+    public async Task<string?> LoadTextFileAsync(string pickerTitle, CancellationToken cancellationToken)
+    {
+        var result = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = pickerTitle });
+        if (result is null)
+        {
+            return null;
+        }
+
+        await using var stream = await result.OpenReadAsync();
+        using var reader = new StreamReader(stream, Encoding.UTF8);
+        return await reader.ReadToEndAsync(cancellationToken);
+    }
+
     /// <summary>Saves the displayed parameter fields as JSON.</summary>
     /// <param name="parameters">The displayed parameter fields.</param>
     /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>

@@ -989,6 +989,13 @@ names or access MAVLink transports. Full Parameters List uses the same session f
 complete live registry. Shell navigation preserves pending state between Config tabs and
 asks for confirmation before leaving the Config workspace.
 
+Basic Tuning is a profile projection over that session. `BasicTuningProfileCatalog` owns
+firmware-family groups, explicit parameter names/aliases, safety text, and coupled rules;
+the live registry removes absent and expert-only fields. `BasicTuningService` owns atomic
+profile-scoped import/export and delegates group writes to the session. The view model never
+writes parameters or invents firmware defaults, and telemetry-only active-vehicle changes do
+not rebuild the page.
+
 GeoFence extends this model with a singleton, vehicle-scoped geometry workspace. Its
 `FencePlan` is independent from the flight mission and maps to typed fence mission items
 only inside `IFenceProtocolMapper`. Local and last-confirmed vehicle revisions remain
