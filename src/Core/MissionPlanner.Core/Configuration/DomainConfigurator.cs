@@ -75,6 +75,8 @@ public static class DomainConfigurator
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, CanBusModule>());
         services.TryAddSingleton<IOptionalHardwareCatalog, OptionalHardwareCatalog>();
         services.TryAddTransient<IOptionalHardwareService, OptionalHardwareService>();
+        services.TryAddTransient<ISafetyAssessmentService, SafetyAssessmentService>();
+        services.TryAddTransient<ISetupSummaryService, SetupSummaryService>();
         services.Configure<FirmwareManifestOptions>(configuration.GetSection(FirmwareManifestOptions.SectionName));
         services.AddHttpClient("Firmware");
         services.TryAddSingleton<IFirmwareManifestProvider, JsonFirmwareManifestProvider>();

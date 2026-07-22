@@ -149,6 +149,20 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
     /// <summary>Gets whether the specialized optional-hardware workflow is selected.</summary>
     public bool IsOptionalHardwareSelected => SelectedOptionalHardwareViewModel is not null;
 
+    /// <summary>Gets the specialized safety workflow when selected.</summary>
+    [ObservableProperty]
+    public partial SafetySetupViewModel? SelectedSafetyViewModel { get; private set; }
+
+    /// <summary>Gets whether the specialized safety workflow is selected.</summary>
+    public bool IsSafetySelected => SelectedSafetyViewModel is not null;
+
+    /// <summary>Gets the specialized summary workflow when selected.</summary>
+    [ObservableProperty]
+    public partial SetupSummaryViewModel? SelectedSummaryViewModel { get; private set; }
+
+    /// <summary>Gets whether the specialized summary workflow is selected.</summary>
+    public bool IsSummarySelected => SelectedSummaryViewModel is not null;
+
     /// <summary>Gets whether the selected workflow may be recorded through generic manual review.</summary>
     public bool CanRecordSelectedWorkflowManually =>
         SelectedWorkflow?.Descriptor.Key is not SetupWorkflowKey.Frame and not SetupWorkflowKey.Accelerometer and
@@ -264,6 +278,8 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
             SelectedEscViewModel = null;
             SelectedServoOutputViewModel = null;
             SelectedOptionalHardwareViewModel = null;
+            SelectedSafetyViewModel = null;
+            SelectedSummaryViewModel = null;
             OnPropertyChanged(nameof(CanRecordSelectedWorkflowManually));
             return;
         }
@@ -296,6 +312,8 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
         SelectedEscViewModel = SelectedWorkflowViewModel as EscMotorSetupViewModel;
         SelectedServoOutputViewModel = SelectedWorkflowViewModel as ServoOutputSetupViewModel;
         SelectedOptionalHardwareViewModel = SelectedWorkflowViewModel as OptionalHardwareSetupViewModel;
+        SelectedSafetyViewModel = SelectedWorkflowViewModel as SafetySetupViewModel;
+        SelectedSummaryViewModel = SelectedWorkflowViewModel as SetupSummaryViewModel;
 
         OnPropertyChanged(nameof(CanRecordSelectedWorkflowManually));
     }
@@ -329,6 +347,12 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
 
     partial void OnSelectedOptionalHardwareViewModelChanged(OptionalHardwareSetupViewModel? value) =>
         OnPropertyChanged(nameof(IsOptionalHardwareSelected));
+
+    partial void OnSelectedSafetyViewModelChanged(SafetySetupViewModel? value) =>
+        OnPropertyChanged(nameof(IsSafetySelected));
+
+    partial void OnSelectedSummaryViewModelChanged(SetupSummaryViewModel? value) =>
+        OnPropertyChanged(nameof(IsSummarySelected));
 
     [RelayCommand]
     private void Refresh() => RefreshCore();
@@ -504,5 +528,7 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
         SelectedEscViewModel = null;
         SelectedServoOutputViewModel = null;
         SelectedOptionalHardwareViewModel = null;
+        SelectedSafetyViewModel = null;
+        SelectedSummaryViewModel = null;
     }
 }

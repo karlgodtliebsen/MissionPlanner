@@ -465,10 +465,17 @@ The Setup screen replaces v1.38's Initial Setup (`src-v.1.38/GCSViews/InitialSet
   module can be written; edits are metadata-backed, readback-confirmed, and aggregate a
   reboot-required banner. Sensitive values are marked and never logged.
 
+* Safety and summary workflows implemented (2026-07-22): an evidence-based safety assessment
+  reports arming checks, the hardware safety switch, radio/battery/GCS/EKF failsafes, and the
+  geofence with per-item Pass/Warning/NotConfigured/Unsupported/NotAssessed status and
+  contradiction warnings (unsupported checks are never shown as passed). A consolidated setup
+  summary aggregates identity, firmware, frame, per-workflow completion evidence, and safety,
+  exportable as indented JSON and readable Markdown, explicitly stating it is not a
+  safe-to-fly certification.
+
 ### Missing (v1.38 feature inventory)
 
 * **Install Firmware**: manifest-driven firmware download/flash (stable/beta/custom), board detection, bootloader handling; "Wizard" guided first-time setup
-* **Mandatory Hardware**: FailSafe configuration
 * **Optional Hardware**: Battery Monitor (analog/smart), CompassMot, Range Finder/Sonar, Airspeed sensor, Optical Flow / PX4Flow, OSD, Camera Gimbal (Mount), Motor Test, Bluetooth, SiK Radio configuration, Antenna Tracker, Parachute, ADSB, DroneCAN/UAVCAN, Serial port mapping, GPS ordering, ESP8266, CubeID, Joystick
 
 Note: accelerometer/level, compass, and radio calibration plus flight-mode assignment are

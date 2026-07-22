@@ -1,5 +1,7 @@
 # Setup 10 — Safety, arming, geofence prerequisites, and setup summary
 
+**Implementation status:** Completed 2026-07-22.
+
 ## Objective
 
 Complete Setup with safety-related parameters, arming prerequisites, failsafe overview, and a consolidated exportable setup summary.

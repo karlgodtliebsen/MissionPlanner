@@ -3,6 +3,7 @@
                             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                             xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                             xmlns:vm="clr-namespace:MissionPlanner.App.Views.InitSetup"
+                            xmlns:setup="clr-namespace:MissionPlanner.Core.Setup;assembly=MissionPlanner.Core"
                             x:Class="MissionPlanner.App.Views.InitSetup.InitSetupView"
                             x:DataType="vm:InitSetupViewModel"
                             Title="Initial Setup">
@@ -486,6 +487,74 @@
                         </VerticalStackLayout>
                         <Button BackgroundColor="Transparent" FontSize="14" Text="Refresh optional hardware"
                                 Command="{Binding SelectedOptionalHardwareViewModel.RefreshCommand}" HorizontalOptions="Start" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout IsVisible="{Binding IsSafetySelected}" Spacing="10">
+                        <Label Text="Safety and arming" FontSize="18" FontAttributes="Bold" />
+                        <Label Text="{Binding SelectedSafetyViewModel.Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
+                        <VerticalStackLayout IsVisible="{Binding SelectedSafetyViewModel.HasWarnings}" BindableLayout.ItemsSource="{Binding SelectedSafetyViewModel.Warnings}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedSafetyViewModel.Items}" Spacing="4">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="setup:SafetyCheckItem">
+                                    <Grid ColumnDefinitions="220,120,*" ColumnSpacing="8">
+                                        <Label Text="{Binding Name}" FontAttributes="Bold" />
+                                        <Label Grid.Column="1" Text="{Binding Status}" />
+                                        <Label Grid.Column="2" Text="{Binding Detail}" LineBreakMode="WordWrap" Opacity="0.8" />
+                                    </Grid>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                        <Button BackgroundColor="Transparent" FontSize="14" Text="Re-assess safety"
+                                Command="{Binding SelectedSafetyViewModel.RefreshCommand}" HorizontalOptions="Start" />
+                    </VerticalStackLayout>
+
+                    <VerticalStackLayout IsVisible="{Binding IsSummarySelected}" Spacing="10">
+                        <Label Text="Setup summary" FontSize="18" FontAttributes="Bold" />
+                        <Label Text="{Binding SelectedSummaryViewModel.Heading}" FontAttributes="Bold" LineBreakMode="WordWrap" />
+                        <Label Text="This report describes configuration evidence only and is not a safe-to-fly certification."
+                               Opacity="0.75" LineBreakMode="WordWrap" />
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedSummaryViewModel.Sections}" Spacing="8">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:SetupSummarySectionViewModel">
+                                    <Border Padding="10" StrokeThickness="1">
+                                        <VerticalStackLayout Spacing="4">
+                                            <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="15" />
+                                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Entries}">
+                                                <BindableLayout.ItemTemplate>
+                                                    <DataTemplate x:DataType="setup:SetupSummaryEntry">
+                                                        <Grid ColumnDefinitions="200,*,120" ColumnSpacing="8">
+                                                            <Label Text="{Binding Label}" />
+                                                            <Label Grid.Column="1" Text="{Binding Value}" LineBreakMode="WordWrap" Opacity="0.8" />
+                                                            <Label Grid.Column="2" Text="{Binding Status}" />
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </BindableLayout.ItemTemplate>
+                                            </VerticalStackLayout>
+                                        </VerticalStackLayout>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout IsVisible="{Binding SelectedSummaryViewModel.HasWarnings}" BindableLayout.ItemsSource="{Binding SelectedSummaryViewModel.Warnings}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                        <HorizontalStackLayout Spacing="10">
+                            <Button BackgroundColor="Transparent" FontSize="14" Text="Rebuild summary" Command="{Binding SelectedSummaryViewModel.RefreshCommand}" />
+                            <Button BackgroundColor="Transparent" FontSize="14" Text="Export JSON" Command="{Binding SelectedSummaryViewModel.ExportJsonCommand}" />
+                            <Button BackgroundColor="Transparent" FontSize="14" Text="Export Markdown" Command="{Binding SelectedSummaryViewModel.ExportMarkdownCommand}" />
+                        </HorizontalStackLayout>
+                        <Editor Text="{Binding SelectedSummaryViewModel.ExportedText}" IsReadOnly="True" HeightRequest="180"
+                                IsVisible="{Binding SelectedSummaryViewModel.HasExport}" />
                     </VerticalStackLayout>
 
                     <HorizontalStackLayout Spacing="10">

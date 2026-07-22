@@ -150,6 +150,8 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<IServoOutputConfigurationService>().Should().NotBeNull();
         provider.GetRequiredService<IOptionalHardwareService>().Should().NotBeNull();
         provider.GetRequiredService<IOptionalHardwareCatalog>().Modules.Should().NotBeEmpty();
+        provider.GetRequiredService<ISafetyAssessmentService>().Should().NotBeNull();
+        provider.GetRequiredService<ISetupSummaryService>().Should().NotBeNull();
         provider.GetRequiredService<ISetupWorkflowViewModelFactory>().Should().NotBeNull();
         provider.GetRequiredService<ISetupNavigationService>().Should().NotBeNull();
         provider.GetRequiredService<InitSetupViewModel>().Should().NotBeNull();
