@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -10,7 +10,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 
-namespace MissionPlanner.App.Views.InitSetup;
+namespace MissionPlanner.App.Views.InitSetup.Tabs;
 
 /// <summary>Presents firmware identity and guarded discovery, verification, and flashing actions.</summary>
 public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewModel
@@ -223,7 +223,10 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         }
     }
 
-    private bool CanDownload() => SelectedRelease is not null && activeVehicle.IsOnline;
+    private bool CanDownload()
+    {
+        return SelectedRelease is not null && activeVehicle.IsOnline;
+    }
 
     [RelayCommand(CanExecute = nameof(CanDownload))]
     private async Task DownloadAsync()
@@ -248,7 +251,10 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         }
     }
 
-    private bool CanFlash() => UpdateState == FirmwareUpdateState.ReadyToFlash && activeVehicle.IsOnline;
+    private bool CanFlash()
+    {
+        return UpdateState == FirmwareUpdateState.ReadyToFlash && activeVehicle.IsOnline;
+    }
 
     [RelayCommand(CanExecute = nameof(CanFlash))]
     private async Task FlashAsync()
@@ -276,7 +282,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
             return;
         }
 
-        var operationToken = StartOperation(linkToConnection: false);
+        var operationToken = StartOperation(false);
         var result = await coordinator.FlashAsync(state.VehicleId, state.Identity.Firmware, true, operationToken);
         if (!result.Succeeded)
         {
@@ -294,10 +300,13 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         return operationCancellation.Token;
     }
 
-    private void OnStateChanged(object? sender, FirmwareUpdateStateChangedEventArgs args) => dispatcher.Dispatch(() =>
+    private void OnStateChanged(object? sender, FirmwareUpdateStateChangedEventArgs args)
     {
-        UpdateState = args.State;
-        Status = args.Status;
-        Progress = args.Progress;
-    });
+        dispatcher.Dispatch(() =>
+        {
+            UpdateState = args.State;
+            Status = args.Status;
+            Progress = args.Progress;
+        });
+    }
 }

@@ -6,7 +6,7 @@ using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 
-namespace MissionPlanner.App.Views.InitSetup;
+namespace MissionPlanner.App.Views.InitSetup.Tabs;
 
 /// <summary>Projects the evidence-based safety assessment into Setup controls.</summary>
 public sealed partial class SafetySetupViewModel : SetupWorkflowDetailViewModel

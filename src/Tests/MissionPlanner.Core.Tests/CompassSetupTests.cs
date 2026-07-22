@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.InitSetup;
+using MissionPlanner.App.Views.InitSetup.Tabs;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
@@ -32,19 +33,19 @@ public sealed class CompassSetupTests
     public async Task TwoCompassCalibrationRequiresExplicitAcceptance()
     {
         using var fixture = CreateFixture();
-        var start = fixture.Service.StartAsync(vehicleId, autoSave: false, TestContext.Current.CancellationToken);
+        var start = fixture.Service.StartAsync(vehicleId, false, TestContext.Current.CancellationToken);
         await fixture.CommandSent.Task;
         await fixture.PublishAckAsync(MavResult.Accepted);
         await start;
 
         fixture.Service.Current.State.Should().Be(CompassCalibrationWorkflowState.Running);
-        await fixture.PublishProgressAsync(compassId: 0, calMask: 0b11, MagCalStatus.MagCalRunningStepOne, pct: 40);
-        await fixture.PublishProgressAsync(compassId: 1, calMask: 0b11, MagCalStatus.MagCalRunningStepOne, pct: 60);
+        await fixture.PublishProgressAsync(0, 0b11, MagCalStatus.MagCalRunningStepOne, 40);
+        await fixture.PublishProgressAsync(1, 0b11, MagCalStatus.MagCalRunningStepOne, 60);
         fixture.Service.Current.OverallProgress.Should().BeApproximately(0.5, 0.01);
 
-        await fixture.PublishReportAsync(compassId: 0, calMask: 0b11, MagCalStatus.MagCalSuccess, autosaved: 0, fitness: 5);
+        await fixture.PublishReportAsync(0, 0b11, MagCalStatus.MagCalSuccess, 0, 5);
         fixture.Service.Current.State.Should().Be(CompassCalibrationWorkflowState.Running, "the second compass has not reported yet");
-        await fixture.PublishReportAsync(compassId: 1, calMask: 0b11, MagCalStatus.MagCalSuccess, autosaved: 0, fitness: 7);
+        await fixture.PublishReportAsync(1, 0b11, MagCalStatus.MagCalSuccess, 0, 7);
 
         fixture.Service.Current.State.Should().Be(CompassCalibrationWorkflowState.PendingAcceptance);
         fixture.Service.Current.RequiresAcceptance.Should().BeTrue();
@@ -60,11 +61,11 @@ public sealed class CompassSetupTests
     public async Task AutoSavedSuccessCompletesWithoutAcceptance()
     {
         using var fixture = CreateFixture();
-        var start = fixture.Service.StartAsync(vehicleId, autoSave: true, TestContext.Current.CancellationToken);
+        var start = fixture.Service.StartAsync(vehicleId, true, TestContext.Current.CancellationToken);
         await fixture.CommandSent.Task;
-        await fixture.PublishProgressAsync(compassId: 0, calMask: 0b1, MagCalStatus.MagCalRunningStepTwo, pct: 90);
+        await fixture.PublishProgressAsync(0, 0b1, MagCalStatus.MagCalRunningStepTwo, 90);
         await start;
-        await fixture.PublishReportAsync(compassId: 0, calMask: 0b1, MagCalStatus.MagCalSuccess, autosaved: 1, fitness: 4);
+        await fixture.PublishReportAsync(0, 0b1, MagCalStatus.MagCalSuccess, 1, 4);
 
         fixture.Service.Current.State.Should().Be(CompassCalibrationWorkflowState.Success);
         fixture.Service.Current.OverallProgress.Should().Be(1);
@@ -75,11 +76,11 @@ public sealed class CompassSetupTests
     public async Task FailedReportEndsCalibration()
     {
         using var fixture = CreateFixture();
-        var start = fixture.Service.StartAsync(vehicleId, autoSave: false, TestContext.Current.CancellationToken);
+        var start = fixture.Service.StartAsync(vehicleId, false, TestContext.Current.CancellationToken);
         await fixture.CommandSent.Task;
-        await fixture.PublishProgressAsync(compassId: 0, calMask: 0b1, MagCalStatus.MagCalRunningStepOne, pct: 30);
+        await fixture.PublishProgressAsync(0, 0b1, MagCalStatus.MagCalRunningStepOne, 30);
         await start;
-        await fixture.PublishReportAsync(compassId: 0, calMask: 0b1, MagCalStatus.MagCalFailed, autosaved: 0, fitness: 40);
+        await fixture.PublishReportAsync(0, 0b1, MagCalStatus.MagCalFailed, 0, 40);
 
         fixture.Service.Current.State.Should().Be(CompassCalibrationWorkflowState.Failed);
         fixture.Service.Current.FailureReason.Should().Contain("compass 1");
@@ -93,9 +94,9 @@ public sealed class CompassSetupTests
     {
         using (var cancelled = CreateFixture())
         {
-            var start = cancelled.Service.StartAsync(vehicleId, autoSave: false, TestContext.Current.CancellationToken);
+            var start = cancelled.Service.StartAsync(vehicleId, false, TestContext.Current.CancellationToken);
             await cancelled.CommandSent.Task;
-            await cancelled.PublishProgressAsync(compassId: 0, calMask: 0b1, MagCalStatus.MagCalRunningStepOne, pct: 10);
+            await cancelled.PublishProgressAsync(0, 0b1, MagCalStatus.MagCalRunningStepOne, 10);
             await start;
             await cancelled.Service.CancelAsync(TestContext.Current.CancellationToken);
             cancelled.Service.Current.State.Should().Be(CompassCalibrationWorkflowState.Cancelled);
@@ -104,9 +105,9 @@ public sealed class CompassSetupTests
 
         using (var disconnected = CreateFixture())
         {
-            var start = disconnected.Service.StartAsync(vehicleId, autoSave: false, TestContext.Current.CancellationToken);
+            var start = disconnected.Service.StartAsync(vehicleId, false, TestContext.Current.CancellationToken);
             await disconnected.CommandSent.Task;
-            await disconnected.PublishProgressAsync(compassId: 0, calMask: 0b1, MagCalStatus.MagCalRunningStepOne, pct: 10);
+            await disconnected.PublishProgressAsync(0, 0b1, MagCalStatus.MagCalRunningStepOne, 10);
             await start;
             disconnected.Active.SetOnline(false);
             disconnected.Service.Current.State.Should().Be(CompassCalibrationWorkflowState.Disconnected);
@@ -125,7 +126,7 @@ public sealed class CompassSetupTests
         Store(registry, "COMPASS_DEV_ID3", 300); // Sparse slot: slot 2 is absent.
         Store(registry, "COMPASS_USE3", 1);
         Store(registry, "COMPASS_PRIO1_ID", 100); // Slot 3 is enabled but unranked.
-        var service = CreateConfigurationService(registry, magnetometerHealthy: true);
+        var service = CreateConfigurationService(registry, true);
 
         var inventory = await service.GetInventoryAsync(vehicleId, TestContext.Current.CancellationToken);
 
@@ -146,7 +147,7 @@ public sealed class CompassSetupTests
         Store(registry, "COMPASS_USE", 1);
         Store(registry, "COMPASS_DEV_ID2", 100); // Same device ID as slot 1.
         Store(registry, "COMPASS_USE2", 1);
-        var service = CreateConfigurationService(registry, magnetometerHealthy: null);
+        var service = CreateConfigurationService(registry, null);
 
         var inventory = await service.GetInventoryAsync(vehicleId, TestContext.Current.CancellationToken);
 
@@ -162,7 +163,7 @@ public sealed class CompassSetupTests
         Store(registry, "COMPASS_USE", 1);
         Store(registry, "COMPASS_DEV_ID2", 200);
         Store(registry, "COMPASS_USE2", 0);
-        var service = CreateConfigurationService(registry, magnetometerHealthy: null);
+        var service = CreateConfigurationService(registry, null);
 
         var inventory = await service.GetInventoryAsync(vehicleId, TestContext.Current.CancellationToken);
 
@@ -206,11 +207,7 @@ public sealed class CompassSetupTests
         store.GetAll().Should().BeEmpty();
 
         calibration.StateChanged += Raise.Event<EventHandler<CompassCalibrationStateChangedEventArgs>>(
-            calibration, new CompassCalibrationStateChangedEventArgs(running with
-            {
-                State = CompassCalibrationWorkflowState.Success,
-                OverallProgress = 1
-            }));
+            calibration, new CompassCalibrationStateChangedEventArgs(running with { State = CompassCalibrationWorkflowState.Success, OverallProgress = 1 }));
         store.GetAll().Should().ContainSingle(item => item.Workflow == SetupWorkflowKey.Compass);
     }
 
@@ -231,8 +228,10 @@ public sealed class CompassSetupTests
             Substitute.For<ILogger<CompassConfigurationService>>());
     }
 
-    private static void Store(VehicleParameterRegistry registry, string name, float value) =>
-        registry.StoreParameter(vehicleId, new VehicleParameter(name, value, MissionPlanner.MavLink.Parameters.MavParamType.Real32, 0, 1), CancellationToken.None);
+    private static void Store(VehicleParameterRegistry registry, string name, float value)
+    {
+        registry.StoreParameter(vehicleId, new VehicleParameter(name, value, MavLink.Parameters.MavParamType.Real32, 0, 1), CancellationToken.None);
+    }
 
     private static CompassFixture CreateFixture()
     {
@@ -268,11 +267,11 @@ public sealed class CompassSetupTests
     {
         var now = DateTimeOffset.UtcNow;
         var state = new VehicleState(vehicleId, 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online, now,
-            VehicleMode.Stabilize, false, null, null, null, null, null, null, null, null) with
-        {
-            Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
-                LandedState: VehicleLandedState.OnGround, ObservedAt: now)
-        };
+                VehicleMode.Stabilize, false, null, null, null, null, null, null, null, null) with
+            {
+                Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
+                    LandedState: VehicleLandedState.OnGround, ObservedAt: now)
+            };
         if (magnetometerHealthy is { } healthy)
         {
             state = state with { Health = VehicleHealthState.Empty with { SensorsPresent = 0x04, SensorsHealthy = healthy ? 0x04u : 0u } };
@@ -299,23 +298,35 @@ public sealed class CompassSetupTests
         IMavLinkCommandEncoder Encoder,
         TaskCompletionSource CommandSent) : IDisposable
     {
-        public Task PublishAckAsync(MavResult result) => EventHub.PublishAsync<MavLinkMessage>(
-            MavLinkEventTopics.ReceivedMessage,
-            new CommandAckMessage(1, 1, endPoint, (ushort)MavCmd.DoStartMagCal, (byte)result, DateTimeOffset.UtcNow),
-            TestContext.Current.CancellationToken);
+        public Task PublishAckAsync(MavResult result)
+        {
+            return EventHub.PublishAsync<MavLinkMessage>(
+                MavLinkEventTopics.ReceivedMessage,
+                new CommandAckMessage(1, 1, endPoint, (ushort)MavCmd.DoStartMagCal, (byte)result, DateTimeOffset.UtcNow),
+                TestContext.Current.CancellationToken);
+        }
 
-        public Task PublishProgressAsync(byte compassId, byte calMask, MagCalStatus status, byte pct) => EventHub.PublishAsync<MavLinkMessage>(
-            MavLinkEventTopics.ReceivedMessage,
-            new MagCalProgressMessage(1, 1, endPoint, compassId, calMask, (byte)status, 1, pct, new byte[10], 0, 0, 0, DateTimeOffset.UtcNow),
-            TestContext.Current.CancellationToken);
+        public Task PublishProgressAsync(byte compassId, byte calMask, MagCalStatus status, byte pct)
+        {
+            return EventHub.PublishAsync<MavLinkMessage>(
+                MavLinkEventTopics.ReceivedMessage,
+                new MagCalProgressMessage(1, 1, endPoint, compassId, calMask, (byte)status, 1, pct, new byte[10], 0, 0, 0, DateTimeOffset.UtcNow),
+                TestContext.Current.CancellationToken);
+        }
 
-        public Task PublishReportAsync(byte compassId, byte calMask, MagCalStatus status, byte autosaved, float fitness) => EventHub.PublishAsync<MavLinkMessage>(
-            MavLinkEventTopics.ReceivedMessage,
-            new MagCalReportMessage(1, 1, endPoint, compassId, calMask, (byte)status, autosaved, fitness,
-                0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, DateTimeOffset.UtcNow),
-            TestContext.Current.CancellationToken);
+        public Task PublishReportAsync(byte compassId, byte calMask, MagCalStatus status, byte autosaved, float fitness)
+        {
+            return EventHub.PublishAsync<MavLinkMessage>(
+                MavLinkEventTopics.ReceivedMessage,
+                new MagCalReportMessage(1, 1, endPoint, compassId, calMask, (byte)status, autosaved, fitness,
+                    0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, DateTimeOffset.UtcNow),
+                TestContext.Current.CancellationToken);
+        }
 
-        public void Dispose() => Service.Dispose();
+        public void Dispose()
+        {
+            Service.Dispose();
+        }
     }
 
     private sealed class TestActiveVehicleContext(VehicleState state) : IActiveVehicleContext
@@ -337,13 +348,7 @@ public sealed class CompassSetupTests
         public void SetOnline(bool online)
         {
             var previous = Current;
-            var nextState = Current.State! with
-            {
-                Connection = Current.State!.Connection with
-                {
-                    State = online ? VehicleConnectionState.Online : VehicleConnectionState.Offline
-                }
-            };
+            var nextState = Current.State! with { Connection = Current.State!.Connection with { State = online ? VehicleConnectionState.Online : VehicleConnectionState.Offline } };
             Current = new ActiveVehicleSnapshot(nextState.VehicleId, nextState);
             if (!online)
             {
@@ -358,11 +363,19 @@ public sealed class CompassSetupTests
     {
         private readonly List<SetupCompletionEvidence> values = [];
 
-        public IReadOnlyList<SetupCompletionEvidence> GetAll() => values;
+        public IReadOnlyList<SetupCompletionEvidence> GetAll()
+        {
+            return values;
+        }
 
-        public void Save(SetupCompletionEvidence evidence) => values.Add(evidence);
+        public void Save(SetupCompletionEvidence evidence)
+        {
+            values.Add(evidence);
+        }
 
-        public void Remove(string vehicleKey, SetupWorkflowKey workflow) =>
+        public void Remove(string vehicleKey, SetupWorkflowKey workflow)
+        {
             values.RemoveAll(item => item.VehicleKey == vehicleKey && item.Workflow == workflow);
+        }
     }
 }

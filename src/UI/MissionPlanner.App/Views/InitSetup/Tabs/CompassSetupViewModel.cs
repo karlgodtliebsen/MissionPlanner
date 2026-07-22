@@ -5,10 +5,9 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 
-namespace MissionPlanner.App.Views.InitSetup;
+namespace MissionPlanner.App.Views.InitSetup.Tabs;
 
 /// <summary>Projects compass discovery, editing, and the onboard calibration state machine into Setup controls.</summary>
 public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
@@ -201,7 +200,7 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
 
             Status = messages.Count == 0 ? "No compass changes were pending." : string.Join(Environment.NewLine, messages);
             var inventory = await compassService.GetInventoryAsync(vehicleId, token);
-            dispatcher.Dispatch(() => ShowInventory(inventory, preserveStatus: true));
+            dispatcher.Dispatch(() => ShowInventory(inventory, true));
         }
         catch (OperationCanceledException)
         {
@@ -266,7 +265,7 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
         var token = StartOperation();
         try
         {
-            await calibration.StartAsync(vehicleId, autoSave: false, token);
+            await calibration.StartAsync(vehicleId, false, token);
         }
         catch (OperationCanceledException)
         {

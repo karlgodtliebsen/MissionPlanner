@@ -14,6 +14,7 @@ using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink.Parameters;
 using NSubstitute;
+using MissionPlanner.App.Views.InitSetup.Tabs;
 
 namespace MissionPlanner.Core.Tests;
 
@@ -124,13 +125,7 @@ public sealed class SetupWorkspaceTests
     [Fact]
     public async Task DependencyInjectionResolvesSetupWorkspace()
     {
-        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
-        {
-            ["ApplicationSettings:Channel"] = "UDP",
-            ["ApplicationSettings:BaudRate"] = "115200",
-            ["ApplicationSettings:Host"] = "127.0.0.1",
-            ["ApplicationSettings:Port"] = "14550"
-        }).Build();
+        var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?> { ["ApplicationSettings:Channel"] = "UDP", ["ApplicationSettings:BaudRate"] = "115200", ["ApplicationSettings:Host"] = "127.0.0.1", ["ApplicationSettings:Port"] = "14550" }).Build();
         var services = new ServiceCollection();
         services.AddSingleton(Substitute.For<ISetupCompletionStore>());
         services.AddSingleton(Substitute.For<IFirmwarePackageCache>());
@@ -161,10 +156,15 @@ public sealed class SetupWorkspaceTests
         ISetupWorkflowCatalog catalog,
         VehicleState state,
         IReadOnlyDictionary<string, VehicleParameter> parameters,
-        SetupCompletionEvidence evidence) =>
-        catalog.Evaluate(Snapshot(state), parameters, [evidence]).Single(item => item.Descriptor.Key == SetupWorkflowKey.Firmware);
+        SetupCompletionEvidence evidence)
+    {
+        return catalog.Evaluate(Snapshot(state), parameters, [evidence]).Single(item => item.Descriptor.Key == SetupWorkflowKey.Firmware);
+    }
 
-    private static ActiveVehicleSnapshot Snapshot(VehicleState state) => new(state.VehicleId, state);
+    private static ActiveVehicleSnapshot Snapshot(VehicleState state)
+    {
+        return new ActiveVehicleSnapshot(state.VehicleId, state);
+    }
 
     private static VehicleState State(FirmwareFamily family, ulong capabilities = 0, byte versionMajor = 4)
     {
@@ -186,14 +186,18 @@ public sealed class SetupWorkspaceTests
         return state with { Identity = state.Identity with { Firmware = firmware } };
     }
 
-    private static IReadOnlyDictionary<string, VehicleParameter> EmptyParameters() =>
-        new Dictionary<string, VehicleParameter>();
+    private static IReadOnlyDictionary<string, VehicleParameter> EmptyParameters()
+    {
+        return new Dictionary<string, VehicleParameter>();
+    }
 
-    private static IReadOnlyDictionary<string, VehicleParameter> Parameters(params (string Name, float Value)[] values) =>
-        values.ToDictionary(
+    private static IReadOnlyDictionary<string, VehicleParameter> Parameters(params (string Name, float Value)[] values)
+    {
+        return values.ToDictionary(
             item => item.Name,
             item => new VehicleParameter(item.Name, item.Value, MavParamType.Real32, 0, (ushort)values.Length),
             StringComparer.Ordinal);
+    }
 
     private static IDispatcher ImmediateDispatcher()
     {
@@ -210,7 +214,10 @@ public sealed class SetupWorkspaceTests
     {
         private readonly List<SetupCompletionEvidence> evidence = [];
 
-        public IReadOnlyList<SetupCompletionEvidence> GetAll() => evidence.ToArray();
+        public IReadOnlyList<SetupCompletionEvidence> GetAll()
+        {
+            return evidence.ToArray();
+        }
 
         public void Save(SetupCompletionEvidence value)
         {
@@ -218,8 +225,10 @@ public sealed class SetupWorkspaceTests
             evidence.Add(value);
         }
 
-        public void Remove(string vehicleKey, SetupWorkflowKey workflow) =>
+        public void Remove(string vehicleKey, SetupWorkflowKey workflow)
+        {
             evidence.RemoveAll(item => item.VehicleKey == vehicleKey && item.Workflow == workflow);
+        }
     }
 
     private sealed class TestActiveVehicleContext(VehicleState state) : IActiveVehicleContext

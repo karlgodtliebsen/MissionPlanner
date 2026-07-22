@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.InitSetup;
+using MissionPlanner.App.Views.InitSetup.Tabs;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
@@ -42,7 +43,7 @@ public sealed class AccelerometerCalibrationTests
 
         fixture.Service.Current.State.Should().Be(CalibrationWorkflowState.WaitingForOrientation);
         fixture.Service.Current.RequiredOrientation.Should().Be(CalibrationOrientation.Level);
-        fixture.MessageStore.Add(new VehicleStatusText(vehicleId, 1, 1, MissionPlanner.MavLink.MavSeverity.Info,
+        fixture.MessageStore.Add(new VehicleStatusText(vehicleId, 1, 1, MavLink.MavSeverity.Info,
             "Place vehicle level", DateTimeOffset.UtcNow));
         fixture.Service.Current.SupplementalStatus.Should().Be("Place vehicle level");
 
@@ -222,12 +223,7 @@ public sealed class AccelerometerCalibrationTests
         store.GetAll().Should().BeEmpty();
 
         calibration.StateChanged += Raise.Event<EventHandler<CalibrationStateChangedEventArgs>>(
-            calibration, new CalibrationStateChangedEventArgs(waiting with
-            {
-                State = CalibrationWorkflowState.Success,
-                RequiredOrientation = null,
-                Progress = 1
-            }));
+            calibration, new CalibrationStateChangedEventArgs(waiting with { State = CalibrationWorkflowState.Success, RequiredOrientation = null, Progress = 1 }));
         store.GetAll().Should().ContainSingle(item => item.Workflow == SetupWorkflowKey.Accelerometer);
     }
 
@@ -267,11 +263,7 @@ public sealed class AccelerometerCalibrationTests
             messageStore,
             new VehicleParameterRegistry(),
             Substitute.For<IVehicleParameterService>(),
-            Options.Create(new CalibrationOptions
-            {
-                StartTimeout = startTimeout ?? TimeSpan.FromSeconds(2),
-                LevelTimeout = TimeSpan.FromSeconds(2)
-            }),
+            Options.Create(new CalibrationOptions { StartTimeout = startTimeout ?? TimeSpan.FromSeconds(2), LevelTimeout = TimeSpan.FromSeconds(2) }),
             Substitute.For<ILogger<ArduPilotCalibrationService>>());
         return new CalibrationFixture(service, active, eventHub, messageStore, gate, encoder, commandSent);
     }
@@ -280,11 +272,11 @@ public sealed class AccelerometerCalibrationTests
     {
         var now = DateTimeOffset.UtcNow;
         return new VehicleState(vehicleId, 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online, now,
-            VehicleMode.Stabilize, false, null, null, null, null, null, null, null, null) with
-        {
-            Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
-                LandedState: VehicleLandedState.OnGround, ObservedAt: now)
-        };
+                VehicleMode.Stabilize, false, null, null, null, null, null, null, null, null) with
+            {
+                Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
+                    LandedState: VehicleLandedState.OnGround, ObservedAt: now)
+            };
     }
 
     private static IDispatcher ImmediateDispatcher()
@@ -307,21 +299,33 @@ public sealed class AccelerometerCalibrationTests
         IMavLinkCommandEncoder Encoder,
         TaskCompletionSource CommandSent) : IDisposable
     {
-        public Task PublishOrientationAsync(CalibrationOrientation orientation) => PublishRawOrientationAsync((float)orientation);
+        public Task PublishOrientationAsync(CalibrationOrientation orientation)
+        {
+            return PublishRawOrientationAsync((float)orientation);
+        }
 
-        public Task PublishRawOrientationAsync(float orientation) => EventHub.PublishAsync<MavLinkMessage>(
-            MavLinkEventTopics.ReceivedMessage,
-            new CommandLongMessage(1, 1, endPoint, 255, 190, (ushort)MavCmd.AccelcalVehiclePos, 0,
-                orientation, 0, 0, 0, 0, 0, 0, DateTimeOffset.UtcNow),
-            TestContext.Current.CancellationToken);
+        public Task PublishRawOrientationAsync(float orientation)
+        {
+            return EventHub.PublishAsync<MavLinkMessage>(
+                MavLinkEventTopics.ReceivedMessage,
+                new CommandLongMessage(1, 1, endPoint, 255, 190, (ushort)MavCmd.AccelcalVehiclePos, 0,
+                    orientation, 0, 0, 0, 0, 0, 0, DateTimeOffset.UtcNow),
+                TestContext.Current.CancellationToken);
+        }
 
-        public Task PublishAckAsync(MavResult result, byte progress = byte.MaxValue) => EventHub.PublishAsync<MavLinkMessage>(
-            MavLinkEventTopics.ReceivedMessage,
-            new CommandAckMessage(1, 1, endPoint, (ushort)MavCmd.PreflightCalibration, (byte)result,
-                DateTimeOffset.UtcNow, progress),
-            TestContext.Current.CancellationToken);
+        public Task PublishAckAsync(MavResult result, byte progress = byte.MaxValue)
+        {
+            return EventHub.PublishAsync<MavLinkMessage>(
+                MavLinkEventTopics.ReceivedMessage,
+                new CommandAckMessage(1, 1, endPoint, (ushort)MavCmd.PreflightCalibration, (byte)result,
+                    DateTimeOffset.UtcNow, progress),
+                TestContext.Current.CancellationToken);
+        }
 
-        public void Dispose() => Service.Dispose();
+        public void Dispose()
+        {
+            Service.Dispose();
+        }
     }
 
     private sealed class TestActiveVehicleContext(VehicleState state) : IActiveVehicleContext
@@ -343,13 +347,7 @@ public sealed class AccelerometerCalibrationTests
         public void SetOnline(bool online)
         {
             var previous = Current;
-            var nextState = Current.State! with
-            {
-                Connection = Current.State!.Connection with
-                {
-                    State = online ? VehicleConnectionState.Online : VehicleConnectionState.Offline
-                }
-            };
+            var nextState = Current.State! with { Connection = Current.State!.Connection with { State = online ? VehicleConnectionState.Online : VehicleConnectionState.Offline } };
             Current = new ActiveVehicleSnapshot(nextState.VehicleId, nextState);
             if (!online)
             {
@@ -364,11 +362,19 @@ public sealed class AccelerometerCalibrationTests
     {
         private readonly List<SetupCompletionEvidence> values = [];
 
-        public IReadOnlyList<SetupCompletionEvidence> GetAll() => values;
+        public IReadOnlyList<SetupCompletionEvidence> GetAll()
+        {
+            return values;
+        }
 
-        public void Save(SetupCompletionEvidence evidence) => values.Add(evidence);
+        public void Save(SetupCompletionEvidence evidence)
+        {
+            values.Add(evidence);
+        }
 
-        public void Remove(string vehicleKey, SetupWorkflowKey workflow) =>
+        public void Remove(string vehicleKey, SetupWorkflowKey workflow)
+        {
             values.RemoveAll(item => item.VehicleKey == vehicleKey && item.Workflow == workflow);
+        }
     }
 }

@@ -2,13 +2,12 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 
-namespace MissionPlanner.App.Views.InitSetup;
+namespace MissionPlanner.App.Views.InitSetup.Tabs;
 
 /// <summary>Projects firmware flight-mode slot configuration and confirmed slot writes into Setup controls.</summary>
 public sealed partial class FlightModesSetupViewModel : SetupWorkflowDetailViewModel

@@ -1,13 +1,16 @@
 using MissionPlanner.Core.Setup;
 
-namespace MissionPlanner.App.Views.InitSetup;
+namespace MissionPlanner.App.Views.InitSetup.Tabs;
 
 /// <summary>Represents one vehicle-evaluated workflow card in the Setup shell.</summary>
 public sealed class SetupWorkflowItemViewModel
 {
     /// <summary>Initializes a workflow card.</summary>
     /// <param name="evaluation">The evaluated workflow.</param>
-    public SetupWorkflowItemViewModel(SetupWorkflowEvaluation evaluation) => Evaluation = evaluation;
+    public SetupWorkflowItemViewModel(SetupWorkflowEvaluation evaluation)
+    {
+        Evaluation = evaluation;
+    }
 
     /// <summary>Gets the underlying evaluation.</summary>
     public SetupWorkflowEvaluation Evaluation { get; }
@@ -37,7 +40,7 @@ public sealed class SetupWorkflowItemViewModel
         SetupWorkflowState.InProgress => "… IN PROGRESS",
         SetupWorkflowState.Completed => "✓ COMPLETED",
         SetupWorkflowState.Warning => "⚠ REVIEW",
-        _ => "✖ FAILED"
+        var _ => "✖ FAILED"
     };
 
     /// <summary>Gets whether the workflow may be reviewed for the online vehicle.</summary>

@@ -6,10 +6,9 @@ using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 
-namespace MissionPlanner.App.Views.InitSetup;
+namespace MissionPlanner.App.Views.InitSetup.Tabs;
 
 /// <summary>Projects live RC channels and the radio endpoint-calibration state machine into Setup controls.</summary>
 public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel

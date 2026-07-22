@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.InitSetup;
+using MissionPlanner.App.Views.InitSetup.Tabs;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -198,13 +199,7 @@ public sealed class FrameConfigurationTests
         var now = DateTimeOffset.UtcNow;
         var state = new VehicleState(vehicleId, 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online, now, VehicleMode.Stabilize,
             false, null, null, null, null, null, null, null, null);
-        return state with
-        {
-            Identity = state.Identity with
-            {
-                Firmware = state.Identity.Firmware with { Family = family }
-            }
-        };
+        return state with { Identity = state.Identity with { Firmware = state.Identity.Firmware with { Family = family } } };
     }
 
     private static VehicleParameterRegistry Registry(params (string Name, float Value)[] values)
@@ -218,16 +213,23 @@ public sealed class FrameConfigurationTests
         return registry;
     }
 
-    private static VehicleParameter Parameter(string name, float value) => new(name, value, MavParamType.Real32, 0, 10);
+    private static VehicleParameter Parameter(string name, float value)
+    {
+        return new VehicleParameter(name, value, MavParamType.Real32, 0, 10);
+    }
 
-    private static IReadOnlyDictionary<string, ParameterMetadata> Metadata(params (string Name, string? Values, bool Reboot)[] definitions) =>
-        definitions.ToDictionary(
+    private static IReadOnlyDictionary<string, ParameterMetadata> Metadata(params (string Name, string? Values, bool Reboot)[] definitions)
+    {
+        return definitions.ToDictionary(
             item => item.Name,
             item => new ParameterMetadata(item.Name, item.Name, item.Name, null, null, "0 100", item.Values, null, null, "Standard", item.Reboot, false),
             StringComparer.Ordinal);
+    }
 
-    private static IReadOnlyDictionary<string, ParameterMetadata> Metadata(params (string Name, string? Values)[] definitions) =>
-        Metadata(definitions.Select(item => (item.Name, item.Values, false)).ToArray());
+    private static IReadOnlyDictionary<string, ParameterMetadata> Metadata(params (string Name, string? Values)[] definitions)
+    {
+        return Metadata(definitions.Select(item => (item.Name, item.Values, false)).ToArray());
+    }
 
     private static IDispatcher ImmediateDispatcher()
     {
@@ -248,11 +250,20 @@ public sealed class FrameConfigurationTests
 
         public List<string> SetNames { get; } = [];
 
-        public Task<bool> RequestParameterListAsync(VehicleId id, CancellationToken cancellationToken = default) => Task.FromResult(true);
+        public Task<bool> RequestParameterListAsync(VehicleId id, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(true);
+        }
 
-        public Task<bool> RequestParameterAsync(VehicleId id, string parameterName, CancellationToken cancellationToken = default) => Task.FromResult(true);
+        public Task<bool> RequestParameterAsync(VehicleId id, string parameterName, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(true);
+        }
 
-        public Task<bool> RequestParameterByIndexAsync(VehicleId id, ushort parameterIndex, CancellationToken cancellationToken = default) => Task.FromResult(true);
+        public Task<bool> RequestParameterByIndexAsync(VehicleId id, ushort parameterIndex, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(true);
+        }
 
         public Task<bool> SetParameterAsync(VehicleId id, string parameterName, float value, MavParamType paramType, CancellationToken cancellationToken = default)
         {
@@ -276,11 +287,19 @@ public sealed class FrameConfigurationTests
     {
         private readonly List<SetupCompletionEvidence> values = [];
 
-        public IReadOnlyList<SetupCompletionEvidence> GetAll() => values;
+        public IReadOnlyList<SetupCompletionEvidence> GetAll()
+        {
+            return values;
+        }
 
-        public void Save(SetupCompletionEvidence evidence) => values.Add(evidence);
+        public void Save(SetupCompletionEvidence evidence)
+        {
+            values.Add(evidence);
+        }
 
-        public void Remove(string vehicleKey, SetupWorkflowKey workflow) =>
+        public void Remove(string vehicleKey, SetupWorkflowKey workflow)
+        {
             values.RemoveAll(item => item.VehicleKey == vehicleKey && item.Workflow == workflow);
+        }
     }
 }

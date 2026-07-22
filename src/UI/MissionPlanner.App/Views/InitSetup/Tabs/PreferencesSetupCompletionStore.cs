@@ -1,7 +1,7 @@
 using System.Text.Json;
 using MissionPlanner.Core.Setup;
 
-namespace MissionPlanner.App.Views.InitSetup;
+namespace MissionPlanner.App.Views.InitSetup.Tabs;
 
 /// <summary>Persists setup-completion evidence in the application's local preferences.</summary>
 public sealed class PreferencesSetupCompletionStore : ISetupCompletionStore

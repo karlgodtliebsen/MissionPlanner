@@ -5,10 +5,9 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 
-namespace MissionPlanner.App.Views.InitSetup;
+namespace MissionPlanner.App.Views.InitSetup.Tabs;
 
 /// <summary>Presents metadata-backed frame choices and confirmed, recoverable writes.</summary>
 public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
@@ -197,7 +196,7 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
             if (activeVehicle.IsOnline && activeVehicle.VehicleId == vehicleId)
             {
                 var configuration = await frameService.GetConfigurationAsync(vehicleId, token);
-                dispatcher.Dispatch(() => ShowConfiguration(configuration, preserveStatus: true));
+                dispatcher.Dispatch(() => ShowConfiguration(configuration, true));
             }
         }
         catch (OperationCanceledException)

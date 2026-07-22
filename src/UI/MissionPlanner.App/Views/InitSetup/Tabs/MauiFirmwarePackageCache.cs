@@ -1,6 +1,6 @@
 using MissionPlanner.Core.Firmware;
 
-namespace MissionPlanner.App.Views.InitSetup;
+namespace MissionPlanner.App.Views.InitSetup.Tabs;
 
 /// <summary>Stores verified firmware downloads beneath the MAUI cache directory.</summary>
 public sealed class MauiFirmwarePackageCache : IFirmwarePackageCache

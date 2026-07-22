@@ -2,13 +2,12 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 
-namespace MissionPlanner.App.Views.InitSetup;
+namespace MissionPlanner.App.Views.InitSetup.Tabs;
 
 /// <summary>Projects battery monitor discovery, live readings, calibration, and failsafe editing into Setup controls.</summary>
 public sealed partial class BatterySetupViewModel : SetupWorkflowDetailViewModel
@@ -197,7 +196,7 @@ public sealed partial class BatterySetupViewModel : SetupWorkflowDetailViewModel
     private async Task ReloadAsync(VehicleId vehicleId, CancellationToken token)
     {
         var configuration = await batteryService.GetConfigurationAsync(vehicleId, token);
-        dispatcher.Dispatch(() => Show(configuration, preserveStatus: true));
+        dispatcher.Dispatch(() => Show(configuration, true));
     }
 
     private CancellationToken StartOperation()
@@ -403,10 +402,10 @@ public sealed partial class BatteryInstanceViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private Task CalibrateVoltage() => parent.CalibrateAsync(Index, current: false, liveVoltage, ReferenceVoltage);
+    private Task CalibrateVoltage() => parent.CalibrateAsync(Index, false, liveVoltage, ReferenceVoltage);
 
     [RelayCommand]
-    private Task CalibrateCurrent() => parent.CalibrateAsync(Index, current: true, liveCurrent, ReferenceCurrent);
+    private Task CalibrateCurrent() => parent.CalibrateAsync(Index, true, liveCurrent, ReferenceCurrent);
 
     private static string Format(double? value) => value is { } number ? number.ToString("0.##") : "—";
 }

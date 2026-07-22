@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
@@ -7,7 +7,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 
-namespace MissionPlanner.App.Views.InitSetup;
+namespace MissionPlanner.App.Views.InitSetup.Tabs;
 
 /// <summary>Projects the Core accelerometer calibration state machine into guided Setup controls.</summary>
 public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailViewModel
@@ -116,7 +116,10 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
         base.Dispose();
     }
 
-    private bool CanStartCommand() => CanStart && activeVehicle.IsOnline;
+    private bool CanStartCommand()
+    {
+        return CanStart && activeVehicle.IsOnline;
+    }
 
     [RelayCommand(CanExecute = nameof(CanStartCommand))]
     private async Task StartSixPositionAsync()
@@ -140,7 +143,10 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
         await RunAsync((vehicleId, token) => calibration.StartLevelAsync(vehicleId, token));
     }
 
-    private bool CanConfirm() => CanConfirmOrientation;
+    private bool CanConfirm()
+    {
+        return CanConfirmOrientation;
+    }
 
     [RelayCommand(CanExecute = nameof(CanConfirm))]
     private async Task ConfirmOrientationAsync()
@@ -156,7 +162,10 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
         }
     }
 
-    private bool CanCancelCommand() => CanCancel;
+    private bool CanCancelCommand()
+    {
+        return CanCancel;
+    }
 
     [RelayCommand(CanExecute = nameof(CanCancelCommand))]
     private async Task CancelCalibrationAsync()
@@ -173,13 +182,18 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
     }
 
     [RelayCommand]
-    private void Reset() => calibration.Reset();
+    private void Reset()
+    {
+        calibration.Reset();
+    }
 
-    private async Task<bool> ConfirmSafeStartAsync(string operation) =>
-        activeVehicle.IsOnline && await confirmation.ConfirmAsync(
+    private async Task<bool> ConfirmSafeStartAsync(string operation)
+    {
+        return activeVehicle.IsOnline && await confirmation.ConfirmAsync(
             "Start calibration",
             $"Remove propellers, keep the vehicle disarmed, and place it on a stable surface before starting {operation}.",
             "Start calibration");
+    }
 
     private async Task RunAsync(Func<VehicleId, CancellationToken, Task> operation)
     {
@@ -206,8 +220,10 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
         }
     }
 
-    private void OnCalibrationStateChanged(object? sender, CalibrationStateChangedEventArgs args) =>
+    private void OnCalibrationStateChanged(object? sender, CalibrationStateChangedEventArgs args)
+    {
         dispatcher.Dispatch(() => Show(args.Snapshot));
+    }
 
     private void Show(CalibrationSnapshot snapshot)
     {
@@ -238,14 +254,17 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
         }
     }
 
-    private static string ImageFor(CalibrationOrientation? orientation) => orientation switch
+    private static string ImageFor(CalibrationOrientation? orientation)
     {
-        CalibrationOrientation.Level => "x_calibration02_x.jpg",
-        CalibrationOrientation.Left => "x_calibration04_x.jpg",
-        CalibrationOrientation.Right => "x_calibration06_x.jpg",
-        CalibrationOrientation.NoseDown => "x_calibration05_x.jpg",
-        CalibrationOrientation.NoseUp => "x_calibration07_x.jpg",
-        CalibrationOrientation.Back => "x_calibration03_x.jpg",
-        _ => "x_calibration01_x.jpg"
-    };
+        return orientation switch
+        {
+            CalibrationOrientation.Level => "x_calibration02_x.jpg",
+            CalibrationOrientation.Left => "x_calibration04_x.jpg",
+            CalibrationOrientation.Right => "x_calibration06_x.jpg",
+            CalibrationOrientation.NoseDown => "x_calibration05_x.jpg",
+            CalibrationOrientation.NoseUp => "x_calibration07_x.jpg",
+            CalibrationOrientation.Back => "x_calibration03_x.jpg",
+            var _ => "x_calibration01_x.jpg"
+        };
+    }
 }

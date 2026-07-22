@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.InitSetup;
+using MissionPlanner.App.Views.InitSetup.Tabs;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
@@ -70,20 +71,20 @@ public sealed class FirmwareManagementTests
     public async Task ManifestProviderReadsStringChannelsAndFamilies()
     {
         const string json = """
-            [{
-              "family":"ArduCopter",
-              "boardTarget":"fmuv6c",
-              "vendorId":4617,
-              "productId":22336,
-              "boardVersion":42,
-              "version":"4.5.6",
-              "channel":"Stable",
-              "downloadUri":"https://firmware.example.test/fmuv6c.bin",
-              "sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-              "releaseNotes":"notes",
-              "publishedAt":"2026-07-22T10:00:00Z"
-            }]
-            """;
+                            [{
+                              "family":"ArduCopter",
+                              "boardTarget":"fmuv6c",
+                              "vendorId":4617,
+                              "productId":22336,
+                              "boardVersion":42,
+                              "version":"4.5.6",
+                              "channel":"Stable",
+                              "downloadUri":"https://firmware.example.test/fmuv6c.bin",
+                              "sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                              "releaseNotes":"notes",
+                              "publishedAt":"2026-07-22T10:00:00Z"
+                            }]
+                            """;
         var factory = Substitute.For<IHttpClientFactory>();
         factory.CreateClient("Firmware").Returns(new HttpClient(new StaticContentHandler(System.Text.Encoding.UTF8.GetBytes(json))));
         var provider = new JsonFirmwareManifestProvider(
@@ -244,20 +245,26 @@ public sealed class FirmwareManagementTests
         return [];
     }
 
-    private static string Hash(byte[] value) => Convert.ToHexString(SHA256.HashData(value)).ToLowerInvariant();
+    private static string Hash(byte[] value)
+    {
+        return Convert.ToHexString(SHA256.HashData(value)).ToLowerInvariant();
+    }
 
-    private static FirmwareManifestEntry Release(FirmwareReleaseChannel channel) => new(
-        FirmwareFamily.ArduCopter,
-        "fmuv6c",
-        0x1209,
-        0x5740,
-        42,
-        "4.5.6",
-        channel,
-        new Uri("https://firmware.example.test/fmuv6c.bin"),
-        new string('a', 64),
-        "Release notes",
-        DateTimeOffset.Parse("2026-07-22T10:00:00Z"));
+    private static FirmwareManifestEntry Release(FirmwareReleaseChannel channel)
+    {
+        return new FirmwareManifestEntry(
+            FirmwareFamily.ArduCopter,
+            "fmuv6c",
+            0x1209,
+            0x5740,
+            42,
+            "4.5.6",
+            channel,
+            new Uri("https://firmware.example.test/fmuv6c.bin"),
+            new string('a', 64),
+            "Release notes",
+            DateTimeOffset.Parse("2026-07-22T10:00:00Z"));
+    }
 
     private static VehicleState State()
     {
@@ -292,8 +299,10 @@ public sealed class FirmwareManagementTests
 
     private sealed class StaticContentHandler(byte[] content) : HttpMessageHandler
     {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
-            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(content) });
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(content) });
+        }
     }
 
     private sealed class MemoryPackageCache : IFirmwarePackageCache
@@ -302,10 +311,15 @@ public sealed class FirmwareManagementTests
 
         public bool Saved { get; private set; }
 
-        public string GetPath(string cacheKey) => cacheKey;
+        public string GetPath(string cacheKey)
+        {
+            return cacheKey;
+        }
 
-        public Task<Stream?> OpenReadAsync(string cacheKey, CancellationToken cancellationToken = default) =>
-            Task.FromResult<Stream?>(value is null ? null : new MemoryStream(value, writable: false));
+        public Task<Stream?> OpenReadAsync(string cacheKey, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<Stream?>(value is null ? null : new MemoryStream(value, false));
+        }
 
         public async Task<string> SaveAsync(string cacheKey, Stream content, CancellationToken cancellationToken = default)
         {
@@ -316,7 +330,10 @@ public sealed class FirmwareManagementTests
             return cacheKey;
         }
 
-        public void Remove(string cacheKey) => value = null;
+        public void Remove(string cacheKey)
+        {
+            value = null;
+        }
     }
 
     private sealed class TestActiveVehicleContext(VehicleState state) : IActiveVehicleContext

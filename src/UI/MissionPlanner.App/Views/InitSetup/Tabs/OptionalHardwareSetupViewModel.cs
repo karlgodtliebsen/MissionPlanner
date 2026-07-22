@@ -2,11 +2,10 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles.Abstractions;
 
-namespace MissionPlanner.App.Views.InitSetup;
+namespace MissionPlanner.App.Views.InitSetup.Tabs;
 
 /// <summary>Hosts discovered optional-hardware modules as independent editable groups.</summary>
 public sealed partial class OptionalHardwareSetupViewModel : SetupWorkflowDetailViewModel
@@ -107,7 +106,7 @@ public sealed partial class OptionalHardwareSetupViewModel : SetupWorkflowDetail
             {
                 RebootRequired |= result.RequiresReboot;
                 var modules = await hardwareService.GetModulesAsync(vehicleId, token);
-                dispatcher.Dispatch(() => Show(modules, preserveStatus: true));
+                dispatcher.Dispatch(() => Show(modules, true));
             }
         }
         catch (OperationCanceledException)

@@ -1,7 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using MissionPlanner.Core.Setup;
 
-namespace MissionPlanner.App.Views.InitSetup;
+namespace MissionPlanner.App.Views.InitSetup.Tabs;
 
 /// <summary>Provides the lazily created host model for one Setup workflow.</summary>
 public partial class SetupWorkflowDetailViewModel : ObservableObject, IDisposable

@@ -1,6 +1,6 @@
 using MissionPlanner.Core.Setup;
 
-namespace MissionPlanner.App.Views.InitSetup;
+namespace MissionPlanner.App.Views.InitSetup.Tabs;
 
 /// <summary>Creates workflow hosts lazily so later Setup tasks can replace their content independently.</summary>
 public interface ISetupWorkflowViewModelFactory

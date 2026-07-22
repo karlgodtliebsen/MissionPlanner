@@ -1,4 +1,4 @@
-namespace MissionPlanner.App.Views.InitSetup;
+namespace MissionPlanner.App.Views.InitSetup.Tabs;
 
 /// <summary>Navigates from Setup to an existing Config page without coupling the view model to Shell.</summary>
 public interface ISetupNavigationService
