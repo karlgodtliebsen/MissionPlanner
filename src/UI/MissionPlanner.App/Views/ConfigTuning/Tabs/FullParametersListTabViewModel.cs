@@ -178,7 +178,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
                 ProgressMessage = p.TotalCount > 0 ? $"Processing parameters... {p.ReceivedCount}/{p.TotalCount}" : $"Processing parameters...";
             }));
 
-        progressDialog = await extendedDialogService.DisplayProgressCancellableAsync(dispatcher, "Handling parameters", () => ProgressMessage, tokenSource: ctsProgress);
+        progressDialog = await extendedDialogService.DisplayProgressCancellableAsync("Handling parameters", () => ProgressMessage, tokenSource: ctsProgress);
 
         try
         {

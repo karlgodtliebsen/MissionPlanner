@@ -1001,6 +1001,14 @@ each write through parameter-registry readback, and attempts rollback when a lat
 fails. Setup completion is recorded only after all requested values have confirmed readback;
 optional initial recommendations are separate opt-in changes.
 
+Interactive calibration is modeled as a Core state machine, not a sequence of UI button
+side effects. `ArduPilotCalibrationService` consumes decoded `COMMAND_ACK` and
+`ACCELCAL_VEHICLE_POS` messages, uses status text only as supplemental evidence, and owns
+timeouts, cancellation, disconnect recovery, parameter refresh, and terminal success. The
+MAUI workflow is a projection of immutable `CalibrationSnapshot` values. A singleton
+`IVehicleOperationGate` is also shared with `VehicleCommandService`, ensuring one
+state-changing command or calibration owns a vehicle at a time.
+
 
 
 

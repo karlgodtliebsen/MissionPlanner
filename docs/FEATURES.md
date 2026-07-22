@@ -409,11 +409,21 @@ The Setup screen replaces v1.38's Initial Setup (`src-v.1.38/GCSViews/InitialSet
   produce explicit manual-recovery guidance. Completion evidence is saved only after every
   requested value is confirmed. Initial safety recommendations are opt-in and never silently
   added to a frame write.
+* Accelerometer workflow implemented (2026-07-22): Core owns a non-blocking state machine
+  for six-position accelerometer and level calibration. Six-position progress follows
+  ArduPilot `ACCELCAL_VEHICLE_POS` orientation/success/failure commands; level completion
+  requires terminal `COMMAND_ACK`. MAVLink 2 ACK progress is retained and monotonic, while
+  `STATUSTEXT` is supplemental guidance only.
+* Setup shows unambiguous placement instructions with the existing calibration images,
+  explicit Confirm orientation, progress, cancellation, timeout/failure, and reconnect/retry
+  states. A shared per-vehicle operation lease prevents calibration and ordinary commands
+  from competing. Calibration parameters are refreshed and completion evidence is recorded
+  only after protocol-confirmed success.
 
 ### Missing (v1.38 feature inventory)
 
 * **Install Firmware**: manifest-driven firmware download/flash (stable/beta/custom), board detection, bootloader handling; "Wizard" guided first-time setup
-* **Mandatory Hardware**: Accelerometer Calibration, Compass calibration (incl. onboard cal), Radio Calibration, Servo Output mapping, ESC Calibration, Flight Modes assignment, FailSafe configuration
+* **Mandatory Hardware**: Compass calibration (incl. onboard cal), Radio Calibration, Servo Output mapping, ESC Calibration, Flight Modes assignment, FailSafe configuration
 * **Optional Hardware**: Battery Monitor (analog/smart), CompassMot, Range Finder/Sonar, Airspeed sensor, Optical Flow / PX4Flow, OSD, Camera Gimbal (Mount), Motor Test, Bluetooth, SiK Radio configuration, Antenna Tracker, Parachute, ADSB, DroneCAN/UAVCAN, Serial port mapping, GPS ordering, ESP8266, CubeID, Joystick
 
 Note: calibration flows (accel/compass/radio/ESC) require interactive MAVLink command

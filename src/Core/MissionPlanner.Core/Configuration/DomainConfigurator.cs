@@ -50,6 +50,7 @@ public static class DomainConfigurator
 
         // Command ACK correlation must be shared by the command sender and inbound control handler.
         services.TryAddSingleton<ICommandAckTracker, CommandAckTracker>();
+        services.TryAddSingleton<IVehicleOperationGate, VehicleOperationGate>();
         services.TryAddTransient<IVehicleCommandPolicy, VehicleCommandPolicy>();
         services.TryAddSingleton<IArduPilotModeCatalog, ArduPilotModeCatalog>();
         services.Configure<VehicleMessageStoreOptions>(configuration.GetSection(VehicleMessageStoreOptions.SectionName));
@@ -57,6 +58,8 @@ public static class DomainConfigurator
         services.TryAddSingleton<IApplicationNotificationStore, ApplicationNotificationStore>();
         services.TryAddSingleton<ISetupWorkflowCatalog, SetupWorkflowCatalog>();
         services.TryAddTransient<IFrameConfigurationService, FrameConfigurationService>();
+        services.Configure<CalibrationOptions>(configuration.GetSection(CalibrationOptions.SectionName));
+        services.TryAddTransient<IArduPilotCalibrationService, ArduPilotCalibrationService>();
         services.Configure<FirmwareManifestOptions>(configuration.GetSection(FirmwareManifestOptions.SectionName));
         services.AddHttpClient("Firmware");
         services.TryAddSingleton<IFirmwareManifestProvider, JsonFirmwareManifestProvider>();

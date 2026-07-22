@@ -8,30 +8,18 @@ namespace MissionPlanner.App.Views.Common;
 /// <summary>
 /// Provides extended dialog services.
 /// </summary>
-public interface IExtendedDialogService : IDialogService
-{
-    /// <summary>
-    /// Displays a cancellable progress dialog.
-    /// </summary>
-    /// <param name="dispatcher">The dispatcher to use for UI updates.</param>
-    /// <param name="title">The title of the dialog.</param>
-    /// <param name="message">A function that returns the message to display.</param>
-    /// <param name="cancelText">The text for the cancel button.</param>
-    /// <param name="tokenSource">The cancellation token source.</param>
-    /// <returns>A disposable object that can be used to close the dialog.</returns>
-    Task<IDisposable> DisplayProgressCancellableAsync(IDispatcher dispatcher, string title, Func<string> message, string cancelText = "Cancel", CancellationTokenSource? tokenSource = default);
-}
-
-/// <inheritdoc />
 public class ExtendedDialogService : DefaultDialogService, IExtendedDialogService
 {
+    private readonly IDispatcher dispatcher;
+
     /// <inheritdoc />
-    public ExtendedDialogService(IOptions<DialogOptions> options) : base(options)
+    public ExtendedDialogService(IDispatcher dispatcher, IOptions<DialogOptions> options) : base(options)
     {
+        this.dispatcher = dispatcher;
     }
 
     /// <inheritdoc />
-    public async Task<IDisposable> DisplayProgressCancellableAsync(IDispatcher dispatcher, string title, Func<string> message, string cancelText = "Cancel", CancellationTokenSource? tokenSource = default)
+    public async Task<IDisposable> DisplayProgressCancellableAsync(string title, Func<string> message, string cancelText = "Cancel", CancellationTokenSource? tokenSource = default)
     {
         tokenSource ??= new CancellationTokenSource();
 

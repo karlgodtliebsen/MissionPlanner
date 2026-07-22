@@ -170,6 +170,10 @@ review. Cancellation is connection-scoped. The UI shows current and pending valu
 metadata reboot requirements, and separately selected initial recommendations; it stores
 Setup evidence only after every requested value was confirmed.
 
+Accelerometer calibration requests fresh `INS_ACCOFFS_*`, `INS_ACCSCAL_*`, and
+`AHRS_TRIM_*` values after protocol-confirmed success when those parameters are present in
+the registry. Calibration completion is not inferred from a parameter write or UI action.
+
 ---
 
 ## Known issues / next steps

@@ -1,5 +1,7 @@
 # Setup 04 — Accelerometer and level calibration workflows
 
+**Implementation status:** Completed 2026-07-22.
+
 ## Objective
 
 Implement guided accelerometer calibration, level calibration, and related orientation workflows using ArduPilot command/progress/status protocols.

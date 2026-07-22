@@ -15,6 +15,7 @@
         </VerticalStackLayout>
 
         <Button Grid.Row="1"
+                BackgroundColor="Transparent" FontSize="14" 
                 Text="Re-evaluate vehicle"
                 Command="{Binding RefreshCommand}"
                 HorizontalOptions="Start" />
@@ -79,8 +80,8 @@
                             <Picker Title="Channel"
                                     ItemsSource="{Binding SelectedFirmwareViewModel.Channels}"
                                     SelectedItem="{Binding SelectedFirmwareViewModel.SelectedChannel}" />
-                            <Button Text="Discover compatible releases"
-                                    Command="{Binding SelectedFirmwareViewModel.DiscoverCommand}" />
+                        <Button BackgroundColor="Transparent" FontSize="14" Text="Discover compatible releases"
+                                Command="{Binding SelectedFirmwareViewModel.DiscoverCommand}" />
                         </HorizontalStackLayout>
                         <Picker Title="Compatible release (exact board IDs)"
                                 ItemsSource="{Binding SelectedFirmwareViewModel.Releases}"
@@ -89,9 +90,9 @@
                         <Label Text="{Binding SelectedFirmwareViewModel.SelectedBoardTarget, StringFormat='Technical board target: {0}'}" FontAttributes="Bold" />
                         <Label Text="{Binding SelectedFirmwareViewModel.SelectedReleaseNotes}" LineBreakMode="WordWrap" />
                         <HorizontalStackLayout Spacing="10">
-                            <Button Text="Download and verify"
-                                    Command="{Binding SelectedFirmwareViewModel.DownloadCommand}" />
-                            <Button Text="Flash verified package"
+                        <Button BackgroundColor="Transparent" FontSize="14" Text="Download and verify"
+                                Command="{Binding SelectedFirmwareViewModel.DownloadCommand}" />
+                            <Button BackgroundColor="Transparent" FontSize="14" Text="Flash verified package"
                                     Command="{Binding SelectedFirmwareViewModel.FlashCommand}" />
                         </HorizontalStackLayout>
                         <Label Text="{Binding SelectedFirmwareViewModel.Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
@@ -136,8 +137,8 @@
                             </BindableLayout.ItemTemplate>
                         </VerticalStackLayout>
                         <HorizontalStackLayout Spacing="10">
-                            <Button Text="Refresh vehicle values" Command="{Binding SelectedFrameViewModel.RefreshCommand}" />
-                            <Button Text="Write and verify" Command="{Binding SelectedFrameViewModel.ApplyCommand}" />
+                            <Button BackgroundColor="Transparent" FontSize="14" Text="Refresh vehicle values" Command="{Binding SelectedFrameViewModel.RefreshCommand}" />
+                            <Button BackgroundColor="Transparent" FontSize="14" Text="Write and verify" Command="{Binding SelectedFrameViewModel.ApplyCommand}" />
                         </HorizontalStackLayout>
                         <Label Text="{Binding SelectedFrameViewModel.Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
                         <Label IsVisible="{Binding SelectedFrameViewModel.RebootRequired}"
@@ -145,12 +146,44 @@
                                TextColor="OrangeRed" FontAttributes="Bold" LineBreakMode="WordWrap" />
                     </VerticalStackLayout>
 
+                    <VerticalStackLayout IsVisible="{Binding IsAccelerometerSelected}" Spacing="10">
+                        <Label Text="Accelerometer and level calibration" FontSize="18" FontAttributes="Bold" />
+                        <Label Text="Remove propellers. Keep the vehicle disarmed and clear of people before calibration."
+                               TextColor="OrangeRed" FontAttributes="Bold" LineBreakMode="WordWrap" />
+                        <HorizontalStackLayout Spacing="10">
+                            <Button Text="Start six-position calibration"
+                                    Command="{Binding SelectedAccelerometerViewModel.StartSixPositionCommand}" />
+                            <Button Text="Calibrate level"
+                                    Command="{Binding SelectedAccelerometerViewModel.StartLevelCommand}" />
+                        </HorizontalStackLayout>
+                        <Label Text="{Binding SelectedAccelerometerViewModel.CalibrationState, StringFormat='State: {0}'}" FontAttributes="Bold" />
+                        <Label Text="{Binding SelectedAccelerometerViewModel.Instruction}" FontSize="17" FontAttributes="Bold" LineBreakMode="WordWrap" />
+                        <Image Source="{Binding SelectedAccelerometerViewModel.OrientationImage}"
+                               HeightRequest="260" Aspect="AspectFit" />
+                        <Label Text="{Binding SelectedAccelerometerViewModel.Orientation, StringFormat='Requested orientation: {0}'}" />
+                        <Label Text="{Binding SelectedAccelerometerViewModel.CompletedOrientations}" />
+                        <Button BackgroundColor="Transparent" FontSize="14" Text="Confirm orientation"
+                                IsEnabled="{Binding SelectedAccelerometerViewModel.CanConfirmOrientation}"
+                                Command="{Binding SelectedAccelerometerViewModel.ConfirmOrientationCommand}"
+                                HorizontalOptions="Start" />
+                        <Label Text="{Binding SelectedAccelerometerViewModel.SupplementalStatus, StringFormat='Vehicle status: {0}'}"
+                               FontAttributes="Italic" LineBreakMode="WordWrap" />
+                        <HorizontalStackLayout Spacing="10">
+                            <Button BackgroundColor="Transparent" FontSize="14" Text="Cancel calibration"
+                                    IsEnabled="{Binding SelectedAccelerometerViewModel.CanCancel}"
+                                    Command="{Binding SelectedAccelerometerViewModel.CancelCalibrationCommand}" />
+                            <Button BackgroundColor="Transparent" FontSize="14" Text="Reset / retry"
+                                    IsEnabled="{Binding SelectedAccelerometerViewModel.CanStart}"
+                                    Command="{Binding SelectedAccelerometerViewModel.ResetCommand}" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+
                     <HorizontalStackLayout Spacing="10">
-                        <Button Text="Record reviewed"
+                        <Button BackgroundColor="Transparent" FontSize="14" Text="Record reviewed"
                                 IsEnabled="{Binding SelectedWorkflow.CanOpen}"
                                 IsVisible="{Binding CanRecordSelectedWorkflowManually}"
                                 Command="{Binding MarkCompleteCommand}" />
-                        <Button Text="Open related Config page"
+                        <Button BackgroundColor="Transparent" FontSize="14" Text="Open related Config page"
                                 IsVisible="{Binding SelectedWorkflowViewModel.HasConfigDestination}"
                                 Command="{Binding OpenConfigCommand}" />
                     </HorizontalStackLayout>

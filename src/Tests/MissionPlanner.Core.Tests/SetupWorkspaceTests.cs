@@ -140,6 +140,7 @@ public sealed class SetupWorkspaceTests
         await using var provider = services.BuildServiceProvider();
 
         provider.GetRequiredService<ISetupWorkflowCatalog>().Should().NotBeNull();
+        provider.GetRequiredService<IArduPilotCalibrationService>().Should().NotBeNull();
         provider.GetRequiredService<ISetupWorkflowViewModelFactory>().Should().NotBeNull();
         provider.GetRequiredService<ISetupNavigationService>().Should().NotBeNull();
         provider.GetRequiredService<InitSetupViewModel>().Should().NotBeNull();

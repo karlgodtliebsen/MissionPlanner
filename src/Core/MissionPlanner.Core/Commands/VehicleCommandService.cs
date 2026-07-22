@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -21,11 +20,12 @@ public sealed class VehicleCommandService(
     ICommandAckTracker commandAckTracker,
     IDateTimeProvider clock,
     IVehicleCommandPolicy commandPolicy,
-    IArduPilotModeCatalog modeCatalog)
+    IArduPilotModeCatalog modeCatalog,
+    IVehicleOperationGate? operationGate = null)
     : IVehicleCommandService
 {
     private static readonly TimeSpan commandAckTimeout = TimeSpan.FromSeconds(5);
-    private static readonly ConcurrentDictionary<VehicleId, byte> pendingVehicles = new();
+    private readonly IVehicleOperationGate operationGate = operationGate ?? new VehicleOperationGate();
 
     /// <inheritdoc />
     public Task<VehicleCommandResponse> ArmAsync(VehicleId vehicleId, CancellationToken cancellationToken) =>
@@ -185,13 +185,13 @@ public sealed class VehicleCommandService(
             return Denied(vehicleId, decision.Reason ?? "Explicit confirmation is required.");
         }
 
-        if (!pendingVehicles.TryAdd(vehicleId, 0))
+        if (!operationGate.TryAcquire(vehicleId, $"command {commandId}", out var operationLease))
         {
             return new VehicleCommandResponse(vehicleId, VehicleCommandResult.Busy, clock.UtcNow,
-                "Another command is already pending for this vehicle.");
+                $"Another operation is already pending for this vehicle ({operationGate.GetCurrentOperation(vehicleId)}).");
         }
 
-        try
+        using (operationLease)
         {
             var packet = encoder.EncodeCommandLong(vehicleId.SystemId, vehicleId.ComponentId, commandId, parameters);
             using var ackLifetime = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -219,10 +219,6 @@ public sealed class VehicleCommandService(
             {
                 await ackLifetime.CancelAsync().ConfigureAwait(false);
             }
-        }
-        finally
-        {
-            pendingVehicles.TryRemove(vehicleId, out _);
         }
     }
 

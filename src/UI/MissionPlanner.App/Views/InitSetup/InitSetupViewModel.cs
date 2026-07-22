@@ -93,9 +93,16 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
     /// <summary>Gets whether the specialized frame workflow is selected.</summary>
     public bool IsFrameSelected => SelectedFrameViewModel is not null;
 
+    /// <summary>Gets the specialized accelerometer workflow when selected.</summary>
+    [ObservableProperty]
+    public partial AccelerometerSetupViewModel? SelectedAccelerometerViewModel { get; private set; }
+
+    /// <summary>Gets whether the specialized accelerometer workflow is selected.</summary>
+    public bool IsAccelerometerSelected => SelectedAccelerometerViewModel is not null;
+
     /// <summary>Gets whether the selected workflow may be recorded through generic manual review.</summary>
     public bool CanRecordSelectedWorkflowManually =>
-        SelectedWorkflow?.Descriptor.Key is not SetupWorkflowKey.Frame;
+        SelectedWorkflow?.Descriptor.Key is not SetupWorkflowKey.Frame and not SetupWorkflowKey.Accelerometer;
 
     /// <summary>Gets the active vehicle heading.</summary>
     [ObservableProperty]
@@ -199,6 +206,7 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
             SelectedWorkflowViewModel = null;
             SelectedFirmwareViewModel = null;
             SelectedFrameViewModel = null;
+            SelectedAccelerometerViewModel = null;
             OnPropertyChanged(nameof(CanRecordSelectedWorkflowManually));
             return;
         }
@@ -218,6 +226,8 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
             _ = SelectedFrameViewModel.LoadAsync();
         }
 
+        SelectedAccelerometerViewModel = SelectedWorkflowViewModel as AccelerometerSetupViewModel;
+
         OnPropertyChanged(nameof(CanRecordSelectedWorkflowManually));
     }
 
@@ -226,6 +236,9 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
 
     partial void OnSelectedFrameViewModelChanged(FrameSetupViewModel? value) =>
         OnPropertyChanged(nameof(IsFrameSelected));
+
+    partial void OnSelectedAccelerometerViewModelChanged(AccelerometerSetupViewModel? value) =>
+        OnPropertyChanged(nameof(IsAccelerometerSelected));
 
     [RelayCommand]
     private void Refresh() => RefreshCore();
@@ -239,9 +252,9 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
             return;
         }
 
-        if (SelectedWorkflow.Descriptor.Key == SetupWorkflowKey.Frame)
+        if (SelectedWorkflow.Descriptor.Key is SetupWorkflowKey.Frame or SetupWorkflowKey.Accelerometer)
         {
-            Error = "Frame setup is recorded only after every requested value is confirmed by vehicle readback.";
+            Error = "This workflow is recorded only after explicit vehicle protocol confirmation.";
             return;
         }
 
@@ -393,5 +406,6 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
         SelectedWorkflowViewModel = null;
         SelectedFirmwareViewModel = null;
         SelectedFrameViewModel = null;
+        SelectedAccelerometerViewModel = null;
     }
 }

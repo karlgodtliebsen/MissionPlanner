@@ -35,6 +35,10 @@ public sealed class CommandAckMessageDecoder : IMavLinkMessageDecoder
         var command = BinaryPrimitives.ReadUInt16LittleEndian(span[0..2]);
 
         var result = span[2];
+        var progress = span.Length > 3 ? span[3] : byte.MaxValue;
+        var resultParameter2 = span.Length >= 8 ? BinaryPrimitives.ReadInt32LittleEndian(span[4..8]) : 0;
+        var targetSystemId = span.Length > 8 ? span[8] : (byte?)null;
+        var targetComponentId = span.Length > 9 ? span[9] : (byte?)null;
 
         message = new CommandAckMessage(
             frame.SystemId,
@@ -42,7 +46,11 @@ public sealed class CommandAckMessageDecoder : IMavLinkMessageDecoder
             frame.EndPoint,
             command,
             result,
-            frame.ReceivedAt);
+            frame.ReceivedAt,
+            progress,
+            resultParameter2,
+            targetSystemId,
+            targetComponentId);
 
         return true;
     }

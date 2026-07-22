@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.Vehicles.Abstractions;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
@@ -107,10 +106,16 @@ public partial class QuickTabViewModel : ObservableObject, IFlightDataTabLifecyc
     public bool IsInitialized => lifecycle.IsInitialized;
 
     /// <inheritdoc />
-    public Task ActivateAsync(CancellationToken cancellationToken = default) => lifecycle.ActivateAsync(cancellationToken);
+    public Task ActivateAsync(CancellationToken cancellationToken = default)
+    {
+        return lifecycle.ActivateAsync(cancellationToken);
+    }
 
     /// <inheritdoc />
-    public Task DeactivateAsync() => lifecycle.DeactivateAsync();
+    public Task DeactivateAsync()
+    {
+        return lifecycle.DeactivateAsync();
+    }
 
     private IDisposable SubscribeToVehicleData(IVehicleHudDataService hudDataService)
     {

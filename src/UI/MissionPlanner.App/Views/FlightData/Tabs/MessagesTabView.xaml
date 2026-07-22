@@ -4,7 +4,7 @@
               xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
               x:Class="MissionPlanner.App.Views.FlightData.Tabs.MessagesTabView"
               x:DataType="tabs:MessagesTabViewModel">
-    <Grid Padding="8" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="8">
+    <Grid Padding="8" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="15">
         <Grid Grid.Row="0" ColumnDefinitions="140,*" ColumnSpacing="8">
             <Picker Grid.Column="0"
                     Title="Severity"
@@ -15,14 +15,14 @@
                        Text="{Binding SearchText}" />
         </Grid>
 
-        <ScrollView Grid.Row="1" Orientation="Horizontal">
+        <ScrollView Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
             <HorizontalStackLayout Spacing="6">
-                <Button Text="{Binding PauseButtonText}" Command="{Binding TogglePauseCommand}" />
-                <Button Text="Clear View" Command="{Binding ClearCurrentViewCommand}" />
-                <Button Text="Copy Selected" Command="{Binding CopySelectedCommand}" />
-                <Button Text="Copy All" Command="{Binding CopyAllCommand}" />
-                <Button Text="Export Text" Command="{Binding ExportTextCommand}" />
-                <Button Text="Export JSON" Command="{Binding ExportJsonCommand}" />
+                <Button BackgroundColor="Transparent" FontSize="14" Text="{Binding PauseButtonText}" Command="{Binding TogglePauseCommand}" />
+                <Button BackgroundColor="Transparent" FontSize="14" Text="Clear View" Command="{Binding ClearCurrentViewCommand}" />
+                <Button BackgroundColor="Transparent" FontSize="14" Text="Copy Selected" Command="{Binding CopySelectedCommand}" />
+                <Button BackgroundColor="Transparent" FontSize="14" Text="Copy All" Command="{Binding CopyAllCommand}" />
+                <Button BackgroundColor="Transparent" FontSize="14" Text="Export Text" Command="{Binding ExportTextCommand}" />
+                <Button BackgroundColor="Transparent" Text="Export JSON" Command="{Binding ExportJsonCommand}" />
             </HorizontalStackLayout>
         </ScrollView>
 

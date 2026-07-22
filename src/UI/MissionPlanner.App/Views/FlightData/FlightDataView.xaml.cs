@@ -1,4 +1,5 @@
 ﻿using MissionPlanner.App.Configuration;
+using UraniumUI.Extensions;
 using UraniumUI.Pages;
 
 namespace MissionPlanner.App.Views.FlightData;
@@ -22,16 +23,16 @@ public partial class FlightDataView : UraniumContentPage
     }
 
     /// <inheritdoc />
-    protected override async void OnAppearing()
+    protected override void OnAppearing()
     {
         base.OnAppearing();
-        await viewModel.ActivateAsync(GetSelectedTabIndex());
+        viewModel.ActivateAsync(GetSelectedTabIndex()).FireAndForget();
     }
 
     /// <inheritdoc />
-    protected override async void OnDisappearing()
+    protected override void OnDisappearing()
     {
-        await viewModel.DeactivateAsync();
+        viewModel.DeactivateAsync().FireAndForget();
         base.OnDisappearing();
     }
 
