@@ -17,6 +17,7 @@ jobs:
     env:
       DOTNET_NOLOGO: true
       DOTNET_CLI_TELEMETRY_OPTOUT: true
+      MACCATALYST_RID: maccatalyst-arm64
 
     steps:
       - name: Checkout
@@ -45,7 +46,7 @@ jobs:
           dotnet-version: 10.0.302
           workloads: maui-maccatalyst
 
-      - name: Show .NET build environment
+      - name: Show build environment
         run: |
           dotnet --info
           dotnet workload list
@@ -59,6 +60,8 @@ jobs:
         run: >-
           dotnet restore
           src/UI/MissionPlanner.Mac/MissionPlanner.Mac.csproj
+          --runtime $MACCATALYST_RID
+          -p:Configuration=Release
 
       - name: Build Mac Catalyst application
         run: >-
@@ -66,6 +69,7 @@ jobs:
           src/UI/MissionPlanner.Mac/MissionPlanner.Mac.csproj
           --configuration Release
           --framework net10.0-maccatalyst
+          --runtime $MACCATALYST_RID
           --no-restore
           -p:EnableCodeSigning=false
           -p:CreatePackage=false
@@ -73,7 +77,7 @@ jobs:
       - name: Upload Mac Catalyst build
         uses: actions/upload-artifact@v7
         with:
-          name: MissionPlanner-MacCatalyst-Release
-          path: src/UI/MissionPlanner.Mac/bin/Release/net10.0-maccatalyst/
+          name: MissionPlanner-MacCatalyst-arm64-Release
+          path: src/UI/MissionPlanner.Mac/bin/Release/net10.0-maccatalyst/maccatalyst-arm64/
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 
