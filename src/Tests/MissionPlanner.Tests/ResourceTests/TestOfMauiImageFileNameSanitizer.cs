@@ -12,7 +12,7 @@ public class TestOfMauiImageFileNameSanitizer(ITestOutputHelper output)
     /// old names can be located and updated in XAML/C# references afterwards.
     /// </summary>
     [Theory]
-    [InlineData(@"c:\projects\MissionPlanner\src\UI\MissionPlanner.App\Resources\Images")]
+    [InlineData(@"c:\projects\MissionPlanner\src\UI\MissionPlanner.App\Resources\Images", Skip = "Only local dev run")]
     public void RenameInvalidResourceImages(string relativeDirectory)
     {
         var directory = Path.Combine(FindRepositoryRoot(), relativeDirectory);
