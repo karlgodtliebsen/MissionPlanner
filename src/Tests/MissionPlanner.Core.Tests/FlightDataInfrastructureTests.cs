@@ -148,7 +148,7 @@ public sealed class FlightDataInfrastructureTests
     /// Verifies that the application dependency graph resolves every current Flight Data view model and shared service.
     /// </summary>
     [Fact]
-    public void DependencyInjectionResolvesFlightDataViewModels()
+    public async Task DependencyInjectionResolvesFlightDataViewModels()
     {
         var values = new Dictionary<string, string?>
         {
@@ -161,10 +161,11 @@ public sealed class FlightDataInfrastructureTests
         var services = new ServiceCollection();
         services.AddApplicationConfiguration(configuration);
         services.AddSingleton(Substitute.For<IDispatcher>());
-        using var provider = services.BuildServiceProvider();
+        await using var provider = services.BuildServiceProvider();
 
         provider.GetRequiredService<IActiveVehicleContext>().Should().NotBeNull();
         provider.GetRequiredService<IUserNotificationService>().Should().NotBeNull();
+        provider.GetRequiredService<IUserConfirmationService>().Should().NotBeNull();
         provider.GetRequiredService<AsyncOperationRunner>().Should().NotBeNull();
         provider.GetRequiredService<FlightDataViewModel>().Should().NotBeNull();
         provider.GetRequiredService<HudViewModel>().Should().NotBeNull();

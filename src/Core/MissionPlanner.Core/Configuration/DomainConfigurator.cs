@@ -48,6 +48,7 @@ public static class DomainConfigurator
         // Command ACK correlation must be shared by the command sender and inbound control handler.
         services.TryAddSingleton<ICommandAckTracker, CommandAckTracker>();
         services.TryAddTransient<IVehicleCommandPolicy, VehicleCommandPolicy>();
+        services.TryAddSingleton<IArduPilotModeCatalog, ArduPilotModeCatalog>();
 
         services.TryAddSingleton<IVehicleConnectionSession, VehicleConnectionSession>();
 

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.MavLink.Generated;
 using MissionPlanner.MavLink.Messages;
 
 namespace MissionPlanner.Core.Commands;
@@ -32,6 +33,13 @@ public sealed class CommandAckTracker : ICommandAckTracker
         var key = new CommandAckKey(
             new VehicleId(message.SystemId, message.ComponentId),
             message.Command);
+
+        // MAV_RESULT_IN_PROGRESS is followed by a terminal COMMAND_ACK. Keep the
+        // correlation alive so callers never mistake a progress update for failure.
+        if (message.Result == (byte)MavResult.InProgress)
+        {
+            return;
+        }
 
         if (pending.TryRemove(key, out var completion))
         {

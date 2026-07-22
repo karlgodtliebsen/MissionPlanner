@@ -11,73 +11,44 @@ public sealed class MavLinkCommandEncoder(IMavLinkCrcExtraProvider crcExtraProvi
     private byte sequence;
 
     /// <inheritdoc />
-    public byte[] EncodeArmDisarm(byte targetSystemId, byte targetComponentId, bool arm)
+    public byte[] EncodeCommandLong(byte targetSystemId, byte targetComponentId, ushort commandId, IReadOnlyList<float> parameters)
     {
+        ArgumentNullException.ThrowIfNull(parameters);
+        if (parameters.Count > 7)
+        {
+            throw new ArgumentException("COMMAND_LONG supports at most seven parameters.", nameof(parameters));
+        }
+
         Span<byte> payload = stackalloc byte[33];
+        for (var index = 0; index < 7; index++)
+        {
+            var value = index < parameters.Count ? parameters[index] : 0;
+            if (!float.IsFinite(value))
+            {
+                throw new ArgumentException("COMMAND_LONG parameters must be finite.", nameof(parameters));
+            }
 
-        // COMMAND_LONG payload layout:
-        // float param1..param7
-        // uint16 command
-        // uint8 target_system
-        // uint8 target_component
-        // uint8 confirmation
+            WriteFloat(payload.Slice(index * 4, 4), value);
+        }
 
-        WriteFloat(payload[0..4], arm ? 1.0f : 0.0f); // param1
-        WriteFloat(payload[4..8], 0);
-        WriteFloat(payload[8..12], 0);
-        WriteFloat(payload[12..16], 0);
-        WriteFloat(payload[16..20], 0);
-        WriteFloat(payload[20..24], 0);
-        WriteFloat(payload[24..28], 0);
-
-        BinaryPrimitives.WriteUInt16LittleEndian(
-            payload[28..30],
-            MavLinkCommandIds.ComponentArmDisarm);
-
+        BinaryPrimitives.WriteUInt16LittleEndian(payload[28..30], commandId);
         payload[30] = targetSystemId;
         payload[31] = targetComponentId;
-        payload[32] = 0; // confirmation
+        payload[32] = 0;
+        return BuildV2Packet(255, 190, MessageIds.CommandLong, payload);
+    }
 
-        return BuildV2Packet(
-            255, // GCS
-            190, // MAV_COMP_ID_MISSIONPLANNER-ish
-            MessageIds.CommandLong,
-            payload);
+    /// <inheritdoc />
+    public byte[] EncodeArmDisarm(byte targetSystemId, byte targetComponentId, bool arm)
+    {
+        return EncodeCommandLong(targetSystemId, targetComponentId, MavLinkCommandIds.ComponentArmDisarm, [arm ? 1.0f : 0.0f]);
     }
 
 
     /// <inheritdoc />
     public byte[] EncodeSetMode(byte targetSystemId, byte targetComponentId, uint customMode)
     {
-        Span<byte> payload = stackalloc byte[33];
-
-        // COMMAND_LONG payload:
-        // float param1..param7
-        // uint16 command
-        // uint8 target_system
-        // uint8 target_component
-        // uint8 confirmation
-        //
-        // MAV_CMD_DO_SET_MODE:
-        // param1 = MAV_MODE_FLAG_CUSTOM_MODE_ENABLED
-        // param2 = custom mode
-        // param3 = custom submode, unused here
-
-        WriteFloat(payload[0..4], 1.0f); // param1
-        WriteFloat(payload[4..8], customMode); // param2
-        WriteFloat(payload[8..12], 0);
-        WriteFloat(payload[12..16], 0);
-        WriteFloat(payload[16..20], 0);
-        WriteFloat(payload[20..24], 0);
-        WriteFloat(payload[24..28], 0);
-
-        BinaryPrimitives.WriteUInt16LittleEndian(payload[28..30], MavLinkCommandIds.DoSetMode);
-
-        payload[30] = targetSystemId;
-        payload[31] = targetComponentId;
-        payload[32] = 0;
-
-        return BuildV2Packet(255, 190, MessageIds.CommandLong, payload);
+        return EncodeCommandLong(targetSystemId, targetComponentId, MavLinkCommandIds.DoSetMode, [1.0f, customMode]);
     }
 
 

@@ -16,4 +16,13 @@ public static class MavLinkCommandIds
 
     /// <summary>Requests the current home position using the legacy command.</summary>
     public const ushort GetHomePosition = (ushort)Generated.MavCmd.GetHomePosition;
+
+    /// <summary>Starts a vehicle takeoff.</summary>
+    public const ushort NavTakeoff = (ushort)Generated.MavCmd.NavTakeoff;
+
+    /// <summary>Sets the vehicle home position.</summary>
+    public const ushort DoSetHome = (ushort)Generated.MavCmd.DoSetHome;
+
+    /// <summary>Reboots or shuts down an autopilot component.</summary>
+    public const ushort PreflightRebootShutdown = (ushort)Generated.MavCmd.PreflightRebootShutdown;
 }

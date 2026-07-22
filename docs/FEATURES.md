@@ -103,10 +103,24 @@ Feature description per tab comes from v1.38 (`FlightData.Designer.cs` tab pages
   MAV_CMD_GET_HOME_POSITION). Dist to WP decoding now tolerates MAVLink v2 zero-truncated
   NAV_CONTROLLER_OUTPUT payloads instead of dropping them (stale values).
 
-### Actions (Missing)
+### Actions
 
-* Set flight mode (mode combo + Set Mode), quick mode buttons (Auto / Loiter / RTL)
-* Arm/Disarm, Do Action (MAV_CMD list: takeoff, land, camera trigger, …)
+#### Status
+
+* Implemented (2026-07-22): safety-aware Arm, Disarm, firmware-family-specific Set Mode,
+  Takeoff, Land, RTL, Loiter/Hold, reboot autopilot, and Set Home Here actions.
+* Every action targets the active `VehicleId`, passes a Core safety policy, prevents another
+  concurrent command for that vehicle, and displays pending, terminal COMMAND_ACK, timeout,
+  denial, and telemetry-confirmed state. In-progress ACKs retain their correlation until a
+  terminal result arrives.
+* Hazardous operations require explicit confirmation. Takeoff and home changes require fresh
+  position/GPS state; flight actions require fresh landed/armed state. Raw `COMMAND_LONG`
+  execution is isolated in a validated, clearly marked expert section.
+* ArduCopter, ArduPlane, Rover, and ArduSub mode choices come from separate Core catalogs, so
+  Copter custom-mode numbers are never reused for another family.
+
+#### Remaining
+
 * Change speed and altitude in flight, Restart Mission, Set current WP
 * Joystick enable, Clear Track, Resume Mission
 
@@ -496,7 +510,9 @@ Completed
   typed and inspector/log accessible but deliberately bypass immutable aggregate events to
   avoid allocation and EventHub pressure.
 * Command acknowledgement correlation is connection-wide and keyed by vehicle and command;
-  transient command services do not own or dispose the shared MAVLink connection.
+  transient command services do not own or dispose the shared MAVLink connection. Action
+  commands are safety-gated in Core, serialized per vehicle, and keep `IN_PROGRESS`
+  correlations alive until a terminal acknowledgement.
 * The mission transfer state machine filters source vehicle and mission type, buffers early
   and out-of-order INT items, ignores duplicates, and retains typed legacy float mission
   compatibility. The pinned source revision has no `MISSION_CHANGED` schema.

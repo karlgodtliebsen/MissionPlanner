@@ -9,6 +9,14 @@ namespace MissionPlanner.Core.Vehicles.Abstractions;
 public interface IVehicleCommandPolicy
 {
     /// <summary>
+    /// Evaluates whether an action is safe for the current immutable vehicle state.
+    /// </summary>
+    /// <param name="state">The current vehicle state.</param>
+    /// <param name="action">The requested action.</param>
+    /// <returns>The policy decision and user-facing reason.</returns>
+    VehicleCommandDecision Evaluate(VehicleState state, VehicleAction action);
+
+    /// <summary>
     /// Validates whether a vehicle can be armed based on its current state.
     /// </summary>
     /// <param name="state">The current state of the vehicle.</param>

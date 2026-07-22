@@ -1,5 +1,7 @@
 # Flight Data 02 — Actions tab and safety-aware vehicle commands
 
+**Implementation status:** Completed 2026-07-22.
+
 ## Objective
 
 Complete the Actions tab with the common in-flight and ground actions appropriate to the connected ArduPilot vehicle, backed by acknowledged MAVLink commands and explicit safety policies.

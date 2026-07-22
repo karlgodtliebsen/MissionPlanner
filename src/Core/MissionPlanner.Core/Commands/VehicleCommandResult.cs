@@ -30,6 +30,10 @@ public enum VehicleCommandResult
     /// </summary>
     Failed = 5,
     /// <summary>
+    /// Another command is already pending for the target vehicle.
+    /// </summary>
+    Busy = 6,
+    /// <summary>
     /// Provides the public API for Timeout.
     /// </summary>
     Timeout = 100

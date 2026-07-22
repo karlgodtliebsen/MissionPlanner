@@ -6,6 +6,16 @@
 public interface IMavLinkCommandEncoder
 {
     /// <summary>
+    /// Encodes a MAVLink 2 COMMAND_LONG packet.
+    /// </summary>
+    /// <param name="targetSystemId">The target system ID.</param>
+    /// <param name="targetComponentId">The target component ID.</param>
+    /// <param name="commandId">The MAV_CMD identifier.</param>
+    /// <param name="parameters">Up to seven command parameters.</param>
+    /// <returns>The encoded MAVLink packet.</returns>
+    byte[] EncodeCommandLong(byte targetSystemId, byte targetComponentId, ushort commandId, IReadOnlyList<float> parameters);
+
+    /// <summary>
     /// 
     /// </summary>
     /// <param name="targetSystemId"></param>
