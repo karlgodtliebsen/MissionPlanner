@@ -1,11 +1,9 @@
 using FluentAssertions;
 using MissionPlanner.App.Configuration;
-using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
-using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Transport;
 using NSubstitute;
 
@@ -20,33 +18,38 @@ public sealed class ApplicationVehicleNameTests
     /// Verifies connect, identity correction, and disconnect presentation behavior.
     /// </summary>
     [Fact]
-    public async Task ApplicationStateTracksAndRetainsDerivedVehicleName()
+    public void ApplicationStateTracksAndRetainsDerivedVehicleName()
     {
-        Func<VehicleConnected, CancellationToken, Task>? connected = null;
-        Func<VehicleDisconnected, CancellationToken, Task>? disconnected = null;
-        Func<VehicleStateUpdated, CancellationToken, Task>? updated = null;
-        var eventHub = Substitute.For<IDomainEventHub>();
-        eventHub.SubscribeDomainEventAsync(Arg.Do<Func<VehicleConnected, CancellationToken, Task>>(handler => connected = handler))
-            .Returns(Substitute.For<IDisposable>());
-        eventHub.SubscribeDomainEventAsync(Arg.Do<Func<VehicleDisconnected, CancellationToken, Task>>(handler => disconnected = handler))
-            .Returns(Substitute.For<IDisposable>());
-        eventHub.SubscribeDomainEventAsync(Arg.Do<Func<VehicleStateUpdated, CancellationToken, Task>>(handler => updated = handler))
-            .Returns(Substitute.For<IDisposable>());
-
         var session = CreateSession(1, 2);
-        var registry = Substitute.For<IVehicleRegistry>();
-        registry.GetRequired(session.Id).Returns(session);
-        using var state = new ApplicationStateService(eventHub, registry);
+        var activeVehicle = Substitute.For<IActiveVehicleContext>();
+        activeVehicle.Current.Returns(ActiveVehicleSnapshot.Empty);
+        using var state = new ApplicationStateService(activeVehicle);
 
-        await connected!(new VehicleConnected(session.Id, "UDP", "14550", DateTimeOffset.UtcNow), TestContext.Current.CancellationToken);
+        var connected = new ActiveVehicleSnapshot(session.Id, session.State);
+        activeVehicle.Current.Returns(connected);
+        activeVehicle.Changed += Raise.Event<EventHandler<ActiveVehicleChangedEventArgs>>(
+            activeVehicle,
+            new ActiveVehicleChangedEventArgs(ActiveVehicleSnapshot.Empty, connected));
         state.VehicleId.Should().Be(session.Id);
         state.VehicleName.Should().Be("SysID 1:Copter");
 
         session.ApplyHeartbeat(0, 1, 3, 0, 4, 3, DateTimeOffset.UtcNow);
-        await updated!(new VehicleStateUpdated(session.State), TestContext.Current.CancellationToken);
+        var updated = new ActiveVehicleSnapshot(session.Id, session.State);
+        activeVehicle.Current.Returns(updated);
+        activeVehicle.Changed += Raise.Event<EventHandler<ActiveVehicleChangedEventArgs>>(
+            activeVehicle,
+            new ActiveVehicleChangedEventArgs(connected, updated));
         state.VehicleName.Should().Be("SysID 1:Plane");
 
-        await disconnected!(new VehicleDisconnected(session.Id, DateTimeOffset.UtcNow), TestContext.Current.CancellationToken);
+        var disconnectedState = session.State with
+        {
+            Connection = session.State.Connection with { State = VehicleConnectionState.Offline }
+        };
+        var disconnected = new ActiveVehicleSnapshot(session.Id, disconnectedState);
+        activeVehicle.Current.Returns(disconnected);
+        activeVehicle.Changed += Raise.Event<EventHandler<ActiveVehicleChangedEventArgs>>(
+            activeVehicle,
+            new ActiveVehicleChangedEventArgs(updated, disconnected));
         state.IsConnected.Should().BeFalse();
         state.VehicleName.Should().Be("SysID 1:Plane");
     }

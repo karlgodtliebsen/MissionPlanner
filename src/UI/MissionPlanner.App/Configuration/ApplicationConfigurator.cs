@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.AppViewModels;
+using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.Common;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
@@ -17,6 +18,7 @@ using MissionPlanner.App.Views.InitSetup;
 using MissionPlanner.App.Views.Missions;
 using MissionPlanner.App.Views.Simulation;
 using MissionPlanner.Core.Configuration;
+using MissionPlanner.Core.Notifications;
 using MissionPlanner.Library;
 using MissionPlanner.Library.Configuration;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -97,10 +99,13 @@ public static class ApplicationConfigurator
         services.TryAddTransient<StatisticsViewModel>();
 
         services.TryAddSingleton<FlightDataViewModel>();
+        services.TryAddSingleton<IUserNotificationService, MauiUserNotificationService>();
+        services.TryAddTransient<AsyncOperationRunner>();
 
         services.TryAddSingleton<HudViewModel>();
         services.TryAddSingleton<MissionMapViewModel>();
         services.TryAddSingleton<QuickTabViewModel>();
+        services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<QuickTabViewModel>());
         services.TryAddSingleton<ActionsTabViewModel>();
         services.TryAddSingleton<AuxFunctionTabViewModel>();
         services.TryAddSingleton<DataFlashLogsTabViewModel>();

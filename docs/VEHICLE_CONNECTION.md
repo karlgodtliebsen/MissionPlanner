@@ -28,9 +28,9 @@ public interface IVehicleConnectionService : IAsyncDisposable
 
 - Connecting while already connected **automatically disconnects** the previous link first;
   a `SemaphoreSlim` serializes connect/disconnect so there are no races or orphaned connections.
-- The registered vehicle (heartbeat) is tracked by `IVehicleRegistry`
-  (`Vehicles` collection of `VehicleSession`); consumers take
-  `vehicleRegistry.Vehicles.FirstOrDefault()?.Id` as "the current vehicle".
+- Registered vehicles (heartbeats) are tracked by `IVehicleRegistry`. Application and presentation
+  consumers use the singleton `IActiveVehicleContext` for the selected `VehicleId`, latest immutable
+  `VehicleState`, and online state instead of selecting directly from registry order.
 - Connection status transitions (stale/degraded/offline based on heartbeat age) are driven
   by `VehicleConnectionMonitor`.
 
@@ -47,6 +47,18 @@ ConnectSerialAsync / ConnectTcpAsync / ConnectUdpAsync
 The message-pump and connection tasks are stored as instance fields and linked to a
 service-level `CancellationTokenSource`, so they live for the duration of the connection
 (not the method call) and are cancelled/awaited on disconnect and `DisposeAsync`.
+
+### Consumer connection lifetime
+
+`ActiveVehicleContext` follows `VehicleConnected`, `VehicleStateUpdated`, `VehicleDisconnected`,
+and registry-reset events. Its `ConnectionCancellationToken` is replaced and the old token is
+cancelled whenever the active vehicle changes or crosses the online boundary. This gives UI workflows
+a common cancellation boundary without retaining a `VehicleSession` or transport reference.
+
+Flight Data tabs compose `FlightDataTabLifecycle`: expensive initialization runs once on the first
+online activation, connection-bound subscriptions are recreated after reconnect, and all background
+work is cancelled and disposed when a tab is hidden. `ApplicationStateService` also derives its
+vehicle identity and connection flag from this context so application chrome and pages share one source.
 
 ---
 

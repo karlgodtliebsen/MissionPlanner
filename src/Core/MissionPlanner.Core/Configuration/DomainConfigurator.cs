@@ -52,6 +52,7 @@ public static class DomainConfigurator
         services.TryAddSingleton<IVehicleConnectionSession, VehicleConnectionSession>();
 
         services.TryAddSingleton<IVehicleRegistry, VehicleRegistry>();
+        services.TryAddSingleton<IActiveVehicleContext, ActiveVehicleContext>();
         services.TryAddSingleton<IVehicleParameterRegistry, VehicleParameterRegistry>();
 
         services.TryAddTransient<ISerialPortDiscoveryService, SerialPortDiscoveryService>();

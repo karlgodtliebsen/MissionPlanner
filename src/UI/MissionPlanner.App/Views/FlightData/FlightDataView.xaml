@@ -87,7 +87,7 @@
             <!-- Bottom status bar (mirrors Controls.Status) -->
             <Grid x:Name="StatusBar"
                   Grid.Row="1"
-                  ColumnDefinitions="Auto,Auto,Auto"
+                  ColumnDefinitions="Auto,Auto,Auto,Auto,Auto"
                   
                   ColumnSpacing="10"
                   BackgroundColor="#2d2d30">
@@ -98,12 +98,22 @@
                         SelectedItem="{Binding SelectedMapStyle}" />
                 <Label 
                     Grid.Column="1"
-                    Text="text"
+                    Text="{Binding VehicleDisplayName}"
                     VerticalOptions="Center" />
 
                 <Label 
                     Grid.Column="2"
-                    Text="text"
+                    Text="{Binding ConnectionStatus}"
+                    VerticalOptions="Center" />
+
+                <Label
+                    Grid.Column="3"
+                    Text="{Binding TelemetryFreshness}"
+                    VerticalOptions="Center" />
+
+                <Label
+                    Grid.Column="4"
+                    Text="{Binding MapFreshness}"
                     VerticalOptions="Center" />
             </Grid>
 

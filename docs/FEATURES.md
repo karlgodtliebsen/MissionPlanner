@@ -72,6 +72,19 @@ HUD + tabset on the left, shared mission map on the right.
 All tab views exist (`Views/FlightData/Tabs`), but only **Quick** has an implementation.
 Feature description per tab comes from v1.38 (`FlightData.Designer.cs` tab pages).
 
+### Shared infrastructure
+
+#### Status
+
+* Implemented (2026-07-22): `IActiveVehicleContext` exposes one immutable active-vehicle snapshot,
+  online state, change notification, and a cancellation token scoped to the current connection.
+* Implemented: lifecycle-aware Flight Data tabs lazy-initialize on their first online activation,
+  dispose vehicle subscriptions when hidden or reconnected, and stop in-flight work on disconnect.
+* Implemented: reusable async-operation/command-result states cover busy, success, warning, error,
+  timeout, and disconnected outcomes; framework-neutral notifications are adapted to MAUI in the UI layer.
+* Implemented: the Flight Data status strip displays the derived vehicle name, connection state,
+  heartbeat freshness, and map-position freshness. Quick telemetry starts only while Quick is visible.
+
 ### Quick
 
 #### Status

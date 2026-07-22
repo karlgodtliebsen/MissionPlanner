@@ -8,13 +8,36 @@ namespace MissionPlanner.App.Views.FlightData;
 /// </summary>
 public partial class FlightDataView : UraniumContentPage
 {
+    private readonly FlightDataViewModel viewModel;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="FlightDataView"/> class.
     /// </summary>
     public FlightDataView()
     {
         InitializeComponent();
-        var viewModel = ServiceHelper.GetRequiredService<FlightDataViewModel>();
+        viewModel = ServiceHelper.GetRequiredService<FlightDataViewModel>();
         BindingContext = viewModel;
+        TabView.SelectedTabChanged += async (_, _) => await viewModel.SelectTabAsync(GetSelectedTabIndex());
+    }
+
+    /// <inheritdoc />
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        await viewModel.ActivateAsync(GetSelectedTabIndex());
+    }
+
+    /// <inheritdoc />
+    protected override async void OnDisappearing()
+    {
+        await viewModel.DeactivateAsync();
+        base.OnDisappearing();
+    }
+
+    private int GetSelectedTabIndex()
+    {
+        var index = TabView.Tabs.IndexOf(TabView.SelectedTab);
+        return index < 0 ? 0 : index;
     }
 }

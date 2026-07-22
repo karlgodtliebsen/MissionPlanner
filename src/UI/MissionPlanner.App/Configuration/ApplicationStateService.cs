@@ -1,8 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using MissionPlanner.Core.DomainEvents;
+using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
-using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.App.Configuration;
 
@@ -11,55 +10,35 @@ namespace MissionPlanner.App.Configuration;
 /// </summary>
 public partial class ApplicationStateService : ObservableObject, IDisposable
 {
-    private readonly IList<IDisposable> disposables = [];
-    private readonly IVehicleRegistry vehicleRegistry;
+    private readonly IActiveVehicleContext activeVehicle;
 
     /// <summary>
     /// Singleton service for managing shared application state across the application.
     /// </summary>
-    /// <param name="domainEventHub">The domain event hub.</param>
-    /// <param name="vehicleRegistry">The connected vehicle registry.</param>
-    public ApplicationStateService(IDomainEventHub domainEventHub, IVehicleRegistry vehicleRegistry)
+    /// <param name="activeVehicle">The shared active-vehicle context.</param>
+    public ApplicationStateService(IActiveVehicleContext activeVehicle)
     {
-        this.vehicleRegistry = vehicleRegistry;
-        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected));
-        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
-        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated));
+        this.activeVehicle = activeVehicle;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        ApplyActiveVehicle(activeVehicle.Current);
     }
 
-    private Task OnVehicleDisconnected(VehicleDisconnected evt, CancellationToken ct)
+    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs e)
     {
-        IsConnected = false;
-        return Task.CompletedTask;
+        ApplyActiveVehicle(e.Current);
     }
 
-    private Task OnVehicleConnected(VehicleConnected evt, CancellationToken ct)
+    private void ApplyActiveVehicle(ActiveVehicleSnapshot snapshot)
     {
-        VehicleId = evt.VehicleId;
-        VehicleName = vehicleRegistry.GetRequired(evt.VehicleId)?.State.DisplayName ?? $"{evt.VehicleId.SystemId}:Unknown";
-        IsConnected = true;
-        return Task.CompletedTask;
-    }
-
-    private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken ct)
-    {
-        if (VehicleId == evt.VehicleId)
-        {
-            VehicleName = evt.VehicleState.DisplayName;
-        }
-
-        return Task.CompletedTask;
+        VehicleId = snapshot.VehicleId;
+        VehicleName = snapshot.State?.DisplayName ?? VehicleName;
+        IsConnected = snapshot.IsOnline;
     }
 
     /// <inheritdoc />
     public void Dispose()
     {
-        foreach (var disposable in disposables)
-        {
-            disposable.Dispose();
-        }
-
-        disposables.Clear();
+        activeVehicle.Changed -= OnActiveVehicleChanged;
     }
 
     [ObservableProperty] public partial bool IsConnected { get; set; }
@@ -82,5 +61,6 @@ public partial class ApplicationStateService : ObservableObject, IDisposable
         SelectedHost = state.SelectedHost;
         VehicleName = null;
         VehicleId = null;
+        ApplyActiveVehicle(activeVehicle.Current);
     }
 }

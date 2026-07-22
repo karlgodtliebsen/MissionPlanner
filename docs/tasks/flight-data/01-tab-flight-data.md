@@ -1,5 +1,7 @@
 # Flight Data 01 — Shared tab infrastructure and active-vehicle lifecycle
 
+**Implementation status:** Completed 2026-07-22.
+
 ## Objective
 
 Establish the common infrastructure required by every unfinished Flight Data tab: active-vehicle binding, connection state, lifecycle-safe subscriptions, command execution state, notifications, and reusable UI states.
