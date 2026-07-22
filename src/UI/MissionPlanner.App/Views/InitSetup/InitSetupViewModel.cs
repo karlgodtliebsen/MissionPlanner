@@ -86,6 +86,17 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
     /// <summary>Gets whether the specialized firmware workflow is selected.</summary>
     public bool IsFirmwareSelected => SelectedFirmwareViewModel is not null;
 
+    /// <summary>Gets the specialized frame workflow when Frame is selected.</summary>
+    [ObservableProperty]
+    public partial FrameSetupViewModel? SelectedFrameViewModel { get; private set; }
+
+    /// <summary>Gets whether the specialized frame workflow is selected.</summary>
+    public bool IsFrameSelected => SelectedFrameViewModel is not null;
+
+    /// <summary>Gets whether the selected workflow may be recorded through generic manual review.</summary>
+    public bool CanRecordSelectedWorkflowManually =>
+        SelectedWorkflow?.Descriptor.Key is not SetupWorkflowKey.Frame;
+
     /// <summary>Gets the active vehicle heading.</summary>
     [ObservableProperty]
     public partial string VehicleHeading { get; private set; } = "No vehicle connected";
@@ -187,6 +198,8 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
         {
             SelectedWorkflowViewModel = null;
             SelectedFirmwareViewModel = null;
+            SelectedFrameViewModel = null;
+            OnPropertyChanged(nameof(CanRecordSelectedWorkflowManually));
             return;
         }
 
@@ -199,10 +212,20 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
 
         SelectedFirmwareViewModel = SelectedWorkflowViewModel as FirmwareSetupViewModel;
         SelectedFirmwareViewModel?.UpdateVehicle(activeVehicle.State);
+        SelectedFrameViewModel = SelectedWorkflowViewModel as FrameSetupViewModel;
+        if (SelectedFrameViewModel is not null)
+        {
+            _ = SelectedFrameViewModel.LoadAsync();
+        }
+
+        OnPropertyChanged(nameof(CanRecordSelectedWorkflowManually));
     }
 
     partial void OnSelectedFirmwareViewModelChanged(FirmwareSetupViewModel? value) =>
         OnPropertyChanged(nameof(IsFirmwareSelected));
+
+    partial void OnSelectedFrameViewModelChanged(FrameSetupViewModel? value) =>
+        OnPropertyChanged(nameof(IsFrameSelected));
 
     [RelayCommand]
     private void Refresh() => RefreshCore();
@@ -213,6 +236,12 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
         if (SelectedWorkflow is null || activeVehicle.State is not { } state || !activeVehicle.IsOnline)
         {
             Error = "Connect a vehicle and select a workflow first.";
+            return;
+        }
+
+        if (SelectedWorkflow.Descriptor.Key == SetupWorkflowKey.Frame)
+        {
+            Error = "Frame setup is recorded only after every requested value is confirmed by vehicle readback.";
             return;
         }
 
@@ -363,5 +392,6 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
         workflowViewModels.Clear();
         SelectedWorkflowViewModel = null;
         SelectedFirmwareViewModel = null;
+        SelectedFrameViewModel = null;
     }
 }

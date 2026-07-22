@@ -400,11 +400,20 @@ The Setup screen replaces v1.38's Initial Setup (`src-v.1.38/GCSViews/InitialSet
   normal MAVLink, invoking `IFirmwareFlashingService`, and detecting post-flash reconnect.
   The shipped adapter explicitly blocks flashing until a safe platform/bootloader adapter
   is installed; identity and verified downloads remain usable.
+* Frame workflow implemented (2026-07-22): Copter `FRAME_CLASS`/`FRAME_TYPE`, Plane
+  `Q_FRAME_CLASS`/`Q_FRAME_TYPE`, and applicable Rover frame parameters are offered only
+  when both a live value and writable firmware metadata exist. Selectors contain only the
+  values advertised by that metadata and show current versus pending values and reboot state.
+* Reviewed frame changes are written sequentially and confirmed from live parameter
+  readback. Later failures trigger best-effort rollback; cancellation and incomplete rollback
+  produce explicit manual-recovery guidance. Completion evidence is saved only after every
+  requested value is confirmed. Initial safety recommendations are opt-in and never silently
+  added to a frame write.
 
 ### Missing (v1.38 feature inventory)
 
 * **Install Firmware**: manifest-driven firmware download/flash (stable/beta/custom), board detection, bootloader handling; "Wizard" guided first-time setup
-* **Mandatory Hardware**: Frame Class/Type selection, Accelerometer Calibration, Compass calibration (incl. onboard cal), Radio Calibration, Servo Output mapping, ESC Calibration, Flight Modes assignment, FailSafe configuration
+* **Mandatory Hardware**: Accelerometer Calibration, Compass calibration (incl. onboard cal), Radio Calibration, Servo Output mapping, ESC Calibration, Flight Modes assignment, FailSafe configuration
 * **Optional Hardware**: Battery Monitor (analog/smart), CompassMot, Range Finder/Sonar, Airspeed sensor, Optical Flow / PX4Flow, OSD, Camera Gimbal (Mount), Motor Test, Bluetooth, SiK Radio configuration, Antenna Tracker, Parachute, ADSB, DroneCAN/UAVCAN, Serial port mapping, GPS ordering, ESP8266, CubeID, Joystick
 
 Note: calibration flows (accel/compass/radio/ESC) require interactive MAVLink command

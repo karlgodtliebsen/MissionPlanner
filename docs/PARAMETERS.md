@@ -154,6 +154,22 @@ The UI editor (`FullParametersListTabViewModel`) merges metadata with live value
 is also the model for future editors: ComboBox for `Values`, checkboxes for `Bitmask`,
 numeric editors clamped to `Range`, tooltips from `Description`.
 
+### Frame setup transaction
+
+Initial Setup uses `IFrameConfigurationService` rather than writing parameters from the
+ViewModel. Its family catalog identifies candidate frame parameter names, while live
+parameter presence and metadata enum values determine what is actually visible. Copter uses
+`FRAME_CLASS` and `FRAME_TYPE`; Plane uses the corresponding `Q_FRAME_CLASS` and
+`Q_FRAME_TYPE` values when the connected firmware exposes them; Rover choices are likewise
+presence- and metadata-gated.
+
+The service revalidates every reviewed value, writes changes sequentially, and waits for the
+matching registry readback after each `PARAM_SET`. If a later write fails it attempts to
+restore already-confirmed values in reverse order and reports anything that needs manual
+review. Cancellation is connection-scoped. The UI shows current and pending values,
+metadata reboot requirements, and separately selected initial recommendations; it stores
+Setup evidence only after every requested value was confirmed.
+
 ---
 
 ## Known issues / next steps

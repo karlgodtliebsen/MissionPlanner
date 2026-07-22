@@ -992,6 +992,15 @@ with a valid manifest SHA-256 and writes them to the platform cache only after v
 machine. Bootloader and serial details belong exclusively behind
 `IFirmwareFlashingService`; the default adapter reports unsupported and never disconnects.
 
+Frame setup follows the same fail-closed approach at the parameter boundary.
+`FrameConfigurationService` maps each supported firmware family to candidate parameter
+names, but a choice reaches the UI only when the connected vehicle has that live parameter
+and the current firmware metadata advertises writable enum values. The service validates
+reviewed changes again immediately before writing, targets the active `VehicleId`, confirms
+each write through parameter-registry readback, and attempts rollback when a later write
+fails. Setup completion is recorded only after all requested values have confirmed readback;
+optional initial recommendations are separate opt-in changes.
+
 
 
 

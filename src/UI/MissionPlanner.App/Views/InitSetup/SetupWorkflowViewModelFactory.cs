@@ -13,8 +13,10 @@ public sealed class SetupWorkflowViewModelFactory : ISetupWorkflowViewModelFacto
     public SetupWorkflowViewModelFactory(IServiceProvider services) => this.services = services;
 
     /// <inheritdoc />
-    public SetupWorkflowDetailViewModel Create(SetupWorkflowDescriptor descriptor) =>
-        descriptor.Key == SetupWorkflowKey.Firmware
-            ? ActivatorUtilities.CreateInstance<FirmwareSetupViewModel>(services, descriptor)
-            : new SetupWorkflowDetailViewModel(descriptor);
+    public SetupWorkflowDetailViewModel Create(SetupWorkflowDescriptor descriptor) => descriptor.Key switch
+    {
+        SetupWorkflowKey.Firmware => ActivatorUtilities.CreateInstance<FirmwareSetupViewModel>(services, descriptor),
+        SetupWorkflowKey.Frame => ActivatorUtilities.CreateInstance<FrameSetupViewModel>(services, descriptor),
+        _ => new SetupWorkflowDetailViewModel(descriptor)
+    };
 }

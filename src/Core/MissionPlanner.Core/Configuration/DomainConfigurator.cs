@@ -56,6 +56,7 @@ public static class DomainConfigurator
         services.TryAddSingleton<IVehicleMessageStore, VehicleMessageStore>();
         services.TryAddSingleton<IApplicationNotificationStore, ApplicationNotificationStore>();
         services.TryAddSingleton<ISetupWorkflowCatalog, SetupWorkflowCatalog>();
+        services.TryAddTransient<IFrameConfigurationService, FrameConfigurationService>();
         services.Configure<FirmwareManifestOptions>(configuration.GetSection(FirmwareManifestOptions.SectionName));
         services.AddHttpClient("Firmware");
         services.TryAddSingleton<IFirmwareManifestProvider, JsonFirmwareManifestProvider>();

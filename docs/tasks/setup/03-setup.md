@@ -1,5 +1,7 @@
 # Setup 03 — Frame class, frame type, and vehicle-specific initial parameters
 
+**Implementation status:** Completed 2026-07-22.
+
 ## Objective
 
 Implement frame selection and initial parameter setup for ArduCopter and corresponding initial-configuration choices for Plane/Rover where applicable.
