@@ -26,16 +26,23 @@ jobs:
         uses: actions/setup-dotnet@v6
         with:
           dotnet-version: 10.0.x
-          workloads: maccatalyst
+          workloads: maui-maccatalyst
 
-      - name: Show Apple build environment
+      - name: Show Apple and .NET build environment
         run: |
           xcodebuild -version
           dotnet --info
           dotnet workload list
 
+      - name: Restore required workloads
+        run: >-
+          dotnet workload restore
+          src/UI/MissionPlanner.Mac/MissionPlanner.Mac.csproj
+
       - name: Restore Mac Catalyst application
-        run: dotnet restore src/UI/MissionPlanner.Mac/MissionPlanner.Mac.csproj
+        run: >-
+          dotnet restore
+          src/UI/MissionPlanner.Mac/MissionPlanner.Mac.csproj
 
       - name: Build Mac Catalyst application
         run: >-
