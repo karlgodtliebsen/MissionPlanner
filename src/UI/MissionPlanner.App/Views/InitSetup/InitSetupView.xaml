@@ -441,6 +441,53 @@
                                 Command="{Binding SelectedServoOutputViewModel.RefreshCommand}" HorizontalOptions="Start" />
                     </VerticalStackLayout>
 
+                    <VerticalStackLayout IsVisible="{Binding IsOptionalHardwareSelected}" Spacing="10">
+                        <Label Text="Optional hardware" FontSize="18" FontAttributes="Bold" />
+                        <Label Text="{Binding SelectedOptionalHardwareViewModel.Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
+                        <Label IsVisible="{Binding SelectedOptionalHardwareViewModel.RebootRequired}"
+                               Text="Reboot required. Reconnect, then refresh to confirm the persisted configuration."
+                               TextColor="OrangeRed" FontAttributes="Bold" LineBreakMode="WordWrap" />
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedOptionalHardwareViewModel.Modules}" Spacing="10">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:OptionalHardwareModuleViewModel">
+                                    <Border Padding="12" StrokeThickness="1">
+                                        <VerticalStackLayout Spacing="6">
+                                            <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="16" />
+                                            <Label Text="{Binding Description}" Opacity="0.75" LineBreakMode="WordWrap" />
+                                            <VerticalStackLayout IsVisible="{Binding HasIssues}" BindableLayout.ItemsSource="{Binding Issues}">
+                                                <BindableLayout.ItemTemplate>
+                                                    <DataTemplate x:DataType="x:String">
+                                                        <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
+                                                    </DataTemplate>
+                                                </BindableLayout.ItemTemplate>
+                                            </VerticalStackLayout>
+                                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}" Spacing="4">
+                                                <BindableLayout.ItemTemplate>
+                                                    <DataTemplate x:DataType="vm:PeripheralSettingViewModel">
+                                                        <Grid ColumnDefinitions="200,*,Auto" ColumnSpacing="8">
+                                                            <Label Text="{Binding DisplayName}" VerticalOptions="Center" />
+                                                            <Picker Grid.Column="1" Title="Value"
+                                                                    IsVisible="{Binding HasOptions}"
+                                                                    ItemsSource="{Binding Options}"
+                                                                    SelectedItem="{Binding SelectedOption}"
+                                                                    ItemDisplayBinding="{Binding Name}" />
+                                                            <Entry Grid.Column="1" Text="{Binding NumericValue}"
+                                                                   IsVisible="{Binding IsNumeric}" Keyboard="Numeric" />
+                                                            <Button Grid.Column="2" BackgroundColor="Transparent" FontSize="14" Text="Write"
+                                                                    Command="{Binding ApplyCommand}" />
+                                                        </Grid>
+                                                    </DataTemplate>
+                                                </BindableLayout.ItemTemplate>
+                                            </VerticalStackLayout>
+                                        </VerticalStackLayout>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                        <Button BackgroundColor="Transparent" FontSize="14" Text="Refresh optional hardware"
+                                Command="{Binding SelectedOptionalHardwareViewModel.RefreshCommand}" HorizontalOptions="Start" />
+                    </VerticalStackLayout>
+
                     <HorizontalStackLayout Spacing="10">
                         <Button BackgroundColor="Transparent" FontSize="14" Text="Record reviewed"
                                 IsEnabled="{Binding SelectedWorkflow.CanOpen}"

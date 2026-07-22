@@ -68,6 +68,13 @@ public static class DomainConfigurator
         services.TryAddTransient<IBatteryConfigurationService, BatteryConfigurationService>();
         services.TryAddTransient<IActuatorTestService, ActuatorTestService>();
         services.TryAddTransient<IServoOutputConfigurationService, ServoOutputConfigurationService>();
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, SerialPortsModule>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, GpsModule>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, RangefinderModule>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, AirspeedModule>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, CanBusModule>());
+        services.TryAddSingleton<IOptionalHardwareCatalog, OptionalHardwareCatalog>();
+        services.TryAddTransient<IOptionalHardwareService, OptionalHardwareService>();
         services.Configure<FirmwareManifestOptions>(configuration.GetSection(FirmwareManifestOptions.SectionName));
         services.AddHttpClient("Firmware");
         services.TryAddSingleton<IFirmwareManifestProvider, JsonFirmwareManifestProvider>();

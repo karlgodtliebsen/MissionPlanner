@@ -142,6 +142,13 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
     /// <summary>Gets whether the specialized servo output workflow is selected.</summary>
     public bool IsServoOutputSelected => SelectedServoOutputViewModel is not null;
 
+    /// <summary>Gets the specialized optional-hardware workflow when selected.</summary>
+    [ObservableProperty]
+    public partial OptionalHardwareSetupViewModel? SelectedOptionalHardwareViewModel { get; private set; }
+
+    /// <summary>Gets whether the specialized optional-hardware workflow is selected.</summary>
+    public bool IsOptionalHardwareSelected => SelectedOptionalHardwareViewModel is not null;
+
     /// <summary>Gets whether the selected workflow may be recorded through generic manual review.</summary>
     public bool CanRecordSelectedWorkflowManually =>
         SelectedWorkflow?.Descriptor.Key is not SetupWorkflowKey.Frame and not SetupWorkflowKey.Accelerometer and
@@ -256,6 +263,7 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
             SelectedBatteryViewModel = null;
             SelectedEscViewModel = null;
             SelectedServoOutputViewModel = null;
+            SelectedOptionalHardwareViewModel = null;
             OnPropertyChanged(nameof(CanRecordSelectedWorkflowManually));
             return;
         }
@@ -287,6 +295,7 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
         SelectedBatteryViewModel = SelectedWorkflowViewModel as BatterySetupViewModel;
         SelectedEscViewModel = SelectedWorkflowViewModel as EscMotorSetupViewModel;
         SelectedServoOutputViewModel = SelectedWorkflowViewModel as ServoOutputSetupViewModel;
+        SelectedOptionalHardwareViewModel = SelectedWorkflowViewModel as OptionalHardwareSetupViewModel;
 
         OnPropertyChanged(nameof(CanRecordSelectedWorkflowManually));
     }
@@ -317,6 +326,9 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
 
     partial void OnSelectedServoOutputViewModelChanged(ServoOutputSetupViewModel? value) =>
         OnPropertyChanged(nameof(IsServoOutputSelected));
+
+    partial void OnSelectedOptionalHardwareViewModelChanged(OptionalHardwareSetupViewModel? value) =>
+        OnPropertyChanged(nameof(IsOptionalHardwareSelected));
 
     [RelayCommand]
     private void Refresh() => RefreshCore();
@@ -491,5 +503,6 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
         SelectedBatteryViewModel = null;
         SelectedEscViewModel = null;
         SelectedServoOutputViewModel = null;
+        SelectedOptionalHardwareViewModel = null;
     }
 }

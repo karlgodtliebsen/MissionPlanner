@@ -457,6 +457,14 @@ The Setup screen replaces v1.38's Initial Setup (`src-v.1.38/GCSViews/InitialSet
   projected with live PWM and reassigned with readback-confirmed writes. Motor testing is
   only exposed for rotorcraft-style families.
 
+* Optional-hardware workflow implemented (2026-07-22): peripherals are discovered through a
+  plugin-style module catalog (`IOptionalHardwareModule` registered via DI, no central switch),
+  each with a parameter-presence availability predicate. First-wave modules cover serial ports
+  (with exclusive-protocol conflict detection), GPS/GNSS (cross-version parameter names),
+  sparse rangefinder instances, airspeed, and CAN. Only settings belonging to an available
+  module can be written; edits are metadata-backed, readback-confirmed, and aggregate a
+  reboot-required banner. Sensitive values are marked and never logged.
+
 ### Missing (v1.38 feature inventory)
 
 * **Install Firmware**: manifest-driven firmware download/flash (stable/beta/custom), board detection, bootloader handling; "Wizard" guided first-time setup

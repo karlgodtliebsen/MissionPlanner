@@ -1,5 +1,7 @@
 # Setup 09 — Optional hardware and serial/CAN peripheral setup
 
+**Implementation status:** Completed 2026-07-22.
+
 ## Objective
 
 Implement discoverable setup for optional hardware: GPS, airspeed, rangefinder, optical flow, proximity, CAN, serial ports, telemetry radios, and network peripherals.
