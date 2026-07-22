@@ -122,8 +122,8 @@
 	  <Compile Update="Views\Help\HelpView.xaml.cs">
 	    <DependentUpon>HelpView.xaml</DependentUpon>
 	  </Compile>
-	  <Compile Update="Views\InitSetup\SetupView.xaml.cs">
-	    <DependentUpon>SetupView.xaml</DependentUpon>
+	  <Compile Update="Views\InitSetup\MandatoryHardware\MandatoryHardwareView.xaml.cs">
+	    <DependentUpon>MandatoryHardwareView.xaml</DependentUpon>
 	  </Compile>
 	  <Compile Update="Views\Simulation\SimulationView.xaml.cs">
 	    <DependentUpon>SimulationView.xaml</DependentUpon>
@@ -171,6 +171,15 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\Exit\ExitView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\InitSetup\Advanced\AdvancedView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\InitSetup\InstallFirmware\InstallFirmwareView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\InitSetup\OptionalHardware\OptionalHardwareView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>

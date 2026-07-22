@@ -14,8 +14,10 @@ using MissionPlanner.App.Views.FlightData.Hud;
 using MissionPlanner.App.Views.FlightData.Tabs;
 using MissionPlanner.App.Views.FlightPlanner;
 using MissionPlanner.App.Views.Help;
-using MissionPlanner.App.Views.InitSetup;
-using MissionPlanner.App.Views.InitSetup.Services;
+using MissionPlanner.App.Views.InitSetup.Advanced;
+using MissionPlanner.App.Views.InitSetup.InstallFirmware;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
+using MissionPlanner.App.Views.InitSetup.OptionalHardware;
 using MissionPlanner.App.Views.Missions;
 using MissionPlanner.App.Views.Simulation;
 using MissionPlanner.Core.Configuration;
@@ -27,6 +29,7 @@ using MissionPlanner.Library.Configuration;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Configuration;
 using MissionPlanner.Transport.Configuration;
+using MandatoryHardwareViewModel = MissionPlanner.App.Views.InitSetup.MandatoryHardware.MandatoryHardwareViewModel;
 
 namespace MissionPlanner.App.Configuration;
 
@@ -58,6 +61,14 @@ public static class ApplicationConfigurator
 
         services.TryAddSingleton(new CancellationTokenSource());
         services.TryAddTransient<IExtendedDialogService, ExtendedDialogService>();
+        services.TryAddSingleton<IUserNotificationService, UserNotificationService>();
+        services.TryAddSingleton<IUserConfirmationService, UserConfirmationService>();
+        services.TryAddSingleton<ITextClipboardService, TextClipboardService>();
+        services.TryAddSingleton<ISetupCompletionStore, PreferencesSetupCompletionStore>();
+        services.TryAddSingleton<IFirmwarePackageCache, FirmwarePackageCache>();
+        services.TryAddSingleton<ISetupNavigationService, ShellSetupNavigationService>();
+        services.TryAddSingleton<ISetupWorkflowViewModelFactory, SetupWorkflowViewModelFactory>();
+
 
         services
             .AddLibraryServices()
@@ -102,22 +113,26 @@ public static class ApplicationConfigurator
         services.TryAddTransient<StatisticsViewModel>();
 
         services.TryAddSingleton<FlightDataViewModel>();
-        services.TryAddSingleton<IUserNotificationService, MauiUserNotificationService>();
-        services.TryAddSingleton<IUserConfirmationService, MauiUserConfirmationService>();
-        services.TryAddSingleton<ITextClipboardService, MauiTextClipboardService>();
         services.TryAddTransient<AsyncOperationRunner>();
 
         services.TryAddSingleton<HudViewModel>();
         services.TryAddSingleton<MissionMapViewModel>();
         services.TryAddSingleton<QuickTabViewModel>();
-        services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<QuickTabViewModel>());
+
         services.TryAddSingleton<ActionsTabViewModel>();
+        services.TryAddSingleton<AdvancedViewModel>();
+        services.TryAddSingleton<InstallFirmwareViewModel>();
+        services.TryAddSingleton<OptionalHardwareViewModel>();
+
         services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<ActionsTabViewModel>());
+        services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<QuickTabViewModel>());
+        services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<MessagesTabViewModel>());
+
         services.TryAddSingleton<AuxFunctionTabViewModel>();
         services.TryAddSingleton<DataFlashLogsTabViewModel>();
         services.TryAddSingleton<GaugesTabViewModel>();
         services.TryAddSingleton<MessagesTabViewModel>();
-        services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<MessagesTabViewModel>());
+
         services.TryAddSingleton<PayloadControlTabViewModel>();
         services.TryAddSingleton<StatusTabViewModel>();
         services.TryAddSingleton<PreflightTabViewModel>();
@@ -126,11 +141,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<TelemetryLogsTabViewModel>();
         services.TryAddSingleton<TransponderTabViewModel>();
         services.TryAddSingleton<FlightPlannerViewModel>();
-        services.TryAddSingleton<ISetupCompletionStore, PreferencesSetupCompletionStore>();
-        services.TryAddSingleton<IFirmwarePackageCache, FirmwarePackageCache>();
-        services.TryAddSingleton<ISetupNavigationService, ShellSetupNavigationService>();
-        services.TryAddSingleton<ISetupWorkflowViewModelFactory, SetupWorkflowViewModelFactory>();
-        services.TryAddSingleton<SetupViewModel>();
+        services.TryAddSingleton<MandatoryHardwareViewModel>();
         services.TryAddSingleton<SimulationViewModel>();
         services.TryAddSingleton<ExitViewModel>();
         services.TryAddSingleton<FullParametersListTabViewModel>();

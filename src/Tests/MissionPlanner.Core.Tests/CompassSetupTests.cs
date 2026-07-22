@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Views.InitSetup.Sections;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;

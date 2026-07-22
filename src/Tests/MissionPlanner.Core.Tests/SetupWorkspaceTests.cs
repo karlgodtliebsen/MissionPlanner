@@ -4,9 +4,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Views.InitSetup;
-using MissionPlanner.App.Views.InitSetup.Sections;
-using MissionPlanner.App.Views.InitSetup.Services;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
@@ -80,7 +80,7 @@ public sealed class SetupWorkspaceTests
         confirmation.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
         var clock = Substitute.For<IDateTimeProvider>();
         clock.UtcNow.Returns(DateTimeOffset.UtcNow);
-        using var viewModel = new SetupViewModel(
+        using var viewModel = new MandatoryHardwareViewModel(
             context,
             parameters,
             new SetupWorkflowCatalog(),
@@ -90,7 +90,7 @@ public sealed class SetupWorkspaceTests
             confirmation,
             clock,
             dispatcher,
-            Substitute.For<ILogger<SetupViewModel>>());
+            Substitute.For<ILogger<MandatoryHardwareViewModel>>());
         viewModel.Activate();
         factory.Received(1).Create(Arg.Any<SetupWorkflowDescriptor>());
         viewModel.SelectedWorkflow = viewModel.Workflows.Single(item => item.Descriptor.Key == SetupWorkflowKey.Frame);
@@ -149,7 +149,7 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<ISetupSummaryService>().Should().NotBeNull();
         provider.GetRequiredService<ISetupWorkflowViewModelFactory>().Should().NotBeNull();
         provider.GetRequiredService<ISetupNavigationService>().Should().NotBeNull();
-        provider.GetRequiredService<SetupViewModel>().Should().NotBeNull();
+        provider.GetRequiredService<MandatoryHardwareViewModel>().Should().NotBeNull();
     }
 
     private static SetupWorkflowEvaluation Evaluation(
