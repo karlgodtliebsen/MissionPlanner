@@ -100,9 +100,16 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
     /// <summary>Gets whether the specialized accelerometer workflow is selected.</summary>
     public bool IsAccelerometerSelected => SelectedAccelerometerViewModel is not null;
 
+    /// <summary>Gets the specialized compass workflow when selected.</summary>
+    [ObservableProperty]
+    public partial CompassSetupViewModel? SelectedCompassViewModel { get; private set; }
+
+    /// <summary>Gets whether the specialized compass workflow is selected.</summary>
+    public bool IsCompassSelected => SelectedCompassViewModel is not null;
+
     /// <summary>Gets whether the selected workflow may be recorded through generic manual review.</summary>
     public bool CanRecordSelectedWorkflowManually =>
-        SelectedWorkflow?.Descriptor.Key is not SetupWorkflowKey.Frame and not SetupWorkflowKey.Accelerometer;
+        SelectedWorkflow?.Descriptor.Key is not SetupWorkflowKey.Frame and not SetupWorkflowKey.Accelerometer and not SetupWorkflowKey.Compass;
 
     /// <summary>Gets the active vehicle heading.</summary>
     [ObservableProperty]
@@ -207,6 +214,7 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
             SelectedFirmwareViewModel = null;
             SelectedFrameViewModel = null;
             SelectedAccelerometerViewModel = null;
+            SelectedCompassViewModel = null;
             OnPropertyChanged(nameof(CanRecordSelectedWorkflowManually));
             return;
         }
@@ -227,6 +235,11 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
         }
 
         SelectedAccelerometerViewModel = SelectedWorkflowViewModel as AccelerometerSetupViewModel;
+        SelectedCompassViewModel = SelectedWorkflowViewModel as CompassSetupViewModel;
+        if (SelectedCompassViewModel is not null)
+        {
+            _ = SelectedCompassViewModel.LoadAsync();
+        }
 
         OnPropertyChanged(nameof(CanRecordSelectedWorkflowManually));
     }
@@ -239,6 +252,9 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
 
     partial void OnSelectedAccelerometerViewModelChanged(AccelerometerSetupViewModel? value) =>
         OnPropertyChanged(nameof(IsAccelerometerSelected));
+
+    partial void OnSelectedCompassViewModelChanged(CompassSetupViewModel? value) =>
+        OnPropertyChanged(nameof(IsCompassSelected));
 
     [RelayCommand]
     private void Refresh() => RefreshCore();
@@ -407,5 +423,6 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
         SelectedFirmwareViewModel = null;
         SelectedFrameViewModel = null;
         SelectedAccelerometerViewModel = null;
+        SelectedCompassViewModel = null;
     }
 }

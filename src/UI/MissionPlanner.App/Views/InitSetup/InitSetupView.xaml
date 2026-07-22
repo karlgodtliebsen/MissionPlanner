@@ -178,6 +178,73 @@
                         </HorizontalStackLayout>
                     </VerticalStackLayout>
 
+                    <VerticalStackLayout IsVisible="{Binding IsCompassSelected}" Spacing="10">
+                        <Label Text="Compass discovery and calibration" FontSize="18" FontAttributes="Bold" />
+                        <Label Text="{Binding SelectedCompassViewModel.Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
+                        <VerticalStackLayout IsVisible="{Binding SelectedCompassViewModel.HasIssues}" Spacing="4">
+                            <Label Text="Configuration warnings" FontAttributes="Bold" TextColor="OrangeRed" />
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedCompassViewModel.Issues}">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="x:String">
+                                        <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedCompassViewModel.Compasses}" Spacing="8">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:CompassInstanceViewModel">
+                                    <Border Padding="10" StrokeThickness="1">
+                                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="8">
+                                            <Label Text="{Binding Header}" FontAttributes="Bold" />
+                                            <Label Grid.Column="1" Text="{Binding HealthLabel}" />
+                                            <Label Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding DeviceLabel}" />
+                                            <Label Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding OffsetsLabel}" Opacity="0.75" />
+                                            <Label Grid.Row="3" Grid.ColumnSpan="2" Text="{Binding MotorCompensationLabel}" Opacity="0.75" />
+                                            <HorizontalStackLayout Grid.Row="4" Grid.ColumnSpan="2" Spacing="10">
+                                                <Label Text="Use" VerticalOptions="Center" />
+                                                <Switch IsToggled="{Binding IsUsed}" />
+                                                <Label Text="External" VerticalOptions="Center" IsVisible="{Binding SupportsExternal}" />
+                                                <Switch IsToggled="{Binding IsExternal}" IsVisible="{Binding SupportsExternal}" />
+                                                <Picker Title="Orientation"
+                                                        ItemsSource="{Binding Orientations}"
+                                                        SelectedItem="{Binding SelectedOrientation}"
+                                                        ItemDisplayBinding="{Binding Name}" />
+                                                <Button BackgroundColor="Transparent" FontSize="14" Text="Write and verify"
+                                                        Command="{Binding ApplyCommand}" />
+                                            </HorizontalStackLayout>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                        <Button BackgroundColor="Transparent" FontSize="14" Text="Refresh compass values"
+                                Command="{Binding SelectedCompassViewModel.RefreshInventoryCommand}"
+                                HorizontalOptions="Start" />
+
+                        <Label Text="Onboard calibration" FontSize="18" FontAttributes="Bold" />
+                        <Label Text="Move away from metal, vehicles, and magnetic interference before starting calibration."
+                               TextColor="OrangeRed" FontAttributes="Bold" LineBreakMode="WordWrap" />
+                        <Label Text="{Binding SelectedCompassViewModel.CalibrationState, StringFormat='State: {0}'}" FontAttributes="Bold" />
+                        <Label Text="{Binding SelectedCompassViewModel.Instruction}" FontSize="17" FontAttributes="Bold" LineBreakMode="WordWrap" />
+                        <Label Text="{Binding SelectedCompassViewModel.ProgressSummary}" LineBreakMode="WordWrap" />
+                        <Label Text="{Binding SelectedCompassViewModel.QualitySummary}" FontAttributes="Italic" LineBreakMode="WordWrap" />
+                        <HorizontalStackLayout Spacing="10">
+                            <Button Text="Start calibration"
+                                    IsEnabled="{Binding SelectedCompassViewModel.CanStart}"
+                                    Command="{Binding SelectedCompassViewModel.StartCalibrationCommand}" />
+                            <Button BackgroundColor="Transparent" FontSize="14" Text="Accept results"
+                                    IsEnabled="{Binding SelectedCompassViewModel.CanAccept}"
+                                    Command="{Binding SelectedCompassViewModel.AcceptCalibrationCommand}" />
+                            <Button BackgroundColor="Transparent" FontSize="14" Text="Cancel calibration"
+                                    IsEnabled="{Binding SelectedCompassViewModel.CanCancel}"
+                                    Command="{Binding SelectedCompassViewModel.CancelCalibrationCommand}" />
+                            <Button BackgroundColor="Transparent" FontSize="14" Text="Reset / retry"
+                                    IsEnabled="{Binding SelectedCompassViewModel.CanStart}"
+                                    Command="{Binding SelectedCompassViewModel.ResetCommand}" />
+                        </HorizontalStackLayout>
+                    </VerticalStackLayout>
+
                     <HorizontalStackLayout Spacing="10">
                         <Button BackgroundColor="Transparent" FontSize="14" Text="Record reviewed"
                                 IsEnabled="{Binding SelectedWorkflow.CanOpen}"

@@ -419,15 +419,26 @@ The Setup screen replaces v1.38's Initial Setup (`src-v.1.38/GCSViews/InitialSet
   states. A shared per-vehicle operation lease prevents calibration and ordinary commands
   from competing. Calibration parameters are refreshed and completion evidence is recorded
   only after protocol-confirmed success.
+* Compass workflow implemented (2026-07-22): compass instances are discovered from
+  `COMPASS_DEV_ID*` presence (sparse-index aware) with use/external flags, board orientation,
+  priority ordering, offsets, motor-compensation visibility, and aggregate 3D-magnetometer
+  health. Orientation, use, and external edits are metadata-backed and readback-confirmed,
+  and are kept separate from calibration. Duplicate device IDs and unranked/stale priorities
+  are surfaced as warnings, and disabling the last enabled compass requires explicit
+  confirmation. Onboard calibration is a Core state machine driven by ArduPilot
+  `MAG_CAL_PROGRESS`/`MAG_CAL_REPORT` with per-compass progress, an acceptance step
+  (`MAV_CMD_DO_ACCEPT_MAG_CAL`), cancel (`MAV_CMD_DO_CANCEL_MAG_CAL`), retry, disconnect
+  recovery, and a post-calibration fitness quality summary.
 
 ### Missing (v1.38 feature inventory)
 
 * **Install Firmware**: manifest-driven firmware download/flash (stable/beta/custom), board detection, bootloader handling; "Wizard" guided first-time setup
-* **Mandatory Hardware**: Compass calibration (incl. onboard cal), Radio Calibration, Servo Output mapping, ESC Calibration, Flight Modes assignment, FailSafe configuration
+* **Mandatory Hardware**: Radio Calibration, Servo Output mapping, ESC Calibration, Flight Modes assignment, FailSafe configuration
 * **Optional Hardware**: Battery Monitor (analog/smart), CompassMot, Range Finder/Sonar, Airspeed sensor, Optical Flow / PX4Flow, OSD, Camera Gimbal (Mount), Motor Test, Bluetooth, SiK Radio configuration, Antenna Tracker, Parachute, ADSB, DroneCAN/UAVCAN, Serial port mapping, GPS ordering, ESP8266, CubeID, Joystick
 
-Note: calibration flows (accel/compass/radio/ESC) require interactive MAVLink command
-sequences (MAV_CMD_PREFLIGHT_CALIBRATION etc.) that the domain does not implement yet.
+Note: accelerometer/level and compass calibration flows are implemented (2026-07-22). The
+remaining interactive calibration flows (radio, ESC) still require MAVLink command sequences
+that the domain does not implement yet.
 
 
 

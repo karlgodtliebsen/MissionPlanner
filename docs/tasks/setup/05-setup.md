@@ -1,5 +1,7 @@
 # Setup 05 — Compass discovery, orientation, calibration, and priority
 
+**Implementation status:** Completed 2026-07-22.
+
 ## Objective
 
 Implement compass setup covering detected devices, use/external flags, orientation, priority, offsets, motor compensation visibility, and guided calibration.

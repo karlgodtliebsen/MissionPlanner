@@ -18,6 +18,7 @@ public sealed class SetupWorkflowViewModelFactory : ISetupWorkflowViewModelFacto
         SetupWorkflowKey.Firmware => ActivatorUtilities.CreateInstance<FirmwareSetupViewModel>(services, descriptor),
         SetupWorkflowKey.Frame => ActivatorUtilities.CreateInstance<FrameSetupViewModel>(services, descriptor),
         SetupWorkflowKey.Accelerometer => ActivatorUtilities.CreateInstance<AccelerometerSetupViewModel>(services, descriptor),
+        SetupWorkflowKey.Compass => ActivatorUtilities.CreateInstance<CompassSetupViewModel>(services, descriptor),
         _ => new SetupWorkflowDetailViewModel(descriptor)
     };
 }
