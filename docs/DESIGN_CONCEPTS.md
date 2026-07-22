@@ -996,6 +996,15 @@ profile-scoped import/export and delegates group writes to the session. The view
 writes parameters or invents firmware defaults, and telemetry-only active-vehicle changes do
 not rebuild the page.
 
+Extended Tuning reuses the same safe session but expands data descriptors rather than a
+hard-coded form. An `AdvancedTuningDescriptor` combines a parameter prefix pattern with
+axes, instances, components, coupled rules, and an expert warning. Expansion and live
+presence selection happen in Core. The virtualized UI materializes editor rows only when a
+descriptor is expanded or searched. Axis copies remain non-mutating, vehicle/firmware-
+scoped previews until a separate user confirmation copies them into pending session state;
+normal group review is still required before vehicle writes. `ControlResponseMetricsService`
+only observes decoded `PID_TUNING` messages and exposes latest read-only response context.
+
 GeoFence extends this model with a singleton, vehicle-scoped geometry workspace. Its
 `FencePlan` is independent from the flight mission and maps to typed fence mission items
 only inside `IFenceProtocolMapper`. Local and last-confirmed vehicle revisions remain

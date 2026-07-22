@@ -203,6 +203,9 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<IFenceConfigurationService>().Should().NotBeNull();
         provider.GetRequiredService<IBasicTuningProfileCatalog>().Should().NotBeNull();
         provider.GetRequiredService<IBasicTuningService>().Should().NotBeNull();
+        provider.GetRequiredService<IExtendedTuningProfileCatalog>().Should().NotBeNull();
+        provider.GetRequiredService<IExtendedTuningService>().Should().NotBeNull();
+        provider.GetRequiredService<IControlResponseMetricsService>().Should().NotBeNull();
         provider.GetRequiredService<GeoFenceTabViewModel>().Should().NotBeNull();
     }
 

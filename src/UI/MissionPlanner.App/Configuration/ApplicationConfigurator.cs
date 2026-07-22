@@ -148,6 +148,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<FullParametersListTabViewModel>();
         services.TryAddSingleton<GeoFenceTabViewModel>();
         services.TryAddSingleton<BasicTuningTabViewModel>();
+        services.TryAddSingleton<ExtendedTuningTabViewModel>();
         services.TryAddSingleton<MavFtpTabViewModel>();
         return services;
     }

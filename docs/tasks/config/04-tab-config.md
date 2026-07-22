@@ -52,3 +52,14 @@ Build on the tuning catalog from task 03 and metadata-driven reusable editors. C
 - The form remains responsive.
 - Every edit is metadata validated and reviewable.
 - Expert parameters are clearly identified.
+
+## Completion
+
+Completed 2026-07-22. Extended Tuning now selects family-specific advanced descriptors for
+controllers, navigation/depth, estimators, filters/notches, and autotune configuration;
+expands repeated axes and sensor instances; presence-gates every field; and edits through
+the shared confirmed session. The virtualized page lazily materializes groups, searches the
+curated set, validates PID/filter relationships, compares normalized axes, requires an
+explicit copy-axis preview and confirmation, displays expert change summaries, and observes
+live PID response metrics without executing autotune. Descriptor, validation, preview,
+comparison, metrics, performance, lifecycle, and DI tests are included.

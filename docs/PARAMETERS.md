@@ -199,6 +199,19 @@ An invalid import restores the previous pending values atomically. Static recomm
 are not guessed: the UI only exposes a recommended/default value when the catalog has both
 an authoritative value and its source.
 
+Extended Tuning applies the same presence and metadata rules to reusable advanced
+descriptors. Descriptor expansion generates repeated axis and sensor-instance names for
+controller, filter, estimator, and navigation families, then removes parameters absent from
+the live registry. Editor rows are materialized only when a virtualized group is expanded or
+matched by search. Cross-field rules and normalized axis comparisons operate on pending
+session values.
+
+Axis copy is deliberately two-stage: the Core service creates a scope-bound, non-mutating
+preview, and only an unchanged preview can be copied into pending state after confirmation.
+Writing still happens later through the group's shared-session apply and readback. The UI
+shows `PID_TUNING` response metrics as read-only context; the metrics collector never sends
+commands and Extended Tuning does not execute autotune.
+
 ### Frame setup transaction
 
 Initial Setup uses `IFrameConfigurationService` rather than writing parameters from the

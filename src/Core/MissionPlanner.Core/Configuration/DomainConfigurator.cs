@@ -49,6 +49,9 @@ public static class DomainConfigurator
         services.TryAddSingleton<IFenceConfigurationService, FenceConfigurationService>();
         services.TryAddSingleton<IBasicTuningProfileCatalog, BasicTuningProfileCatalog>();
         services.TryAddTransient<IBasicTuningService, BasicTuningService>();
+        services.TryAddSingleton<IExtendedTuningProfileCatalog, ExtendedTuningProfileCatalog>();
+        services.TryAddTransient<IExtendedTuningService, ExtendedTuningService>();
+        services.TryAddSingleton<IControlResponseMetricsService, ControlResponseMetricsService>();
 
 
         services.TryAddTransient<IVehicleMessagePump, VehicleMessagePump>();

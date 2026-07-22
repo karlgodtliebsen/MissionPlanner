@@ -489,8 +489,8 @@ MAVLink command sequences that the domain does not implement yet.
 The Config screen replaces v1.38's Config/Tuning (`SoftwareConfig.cs`). New UI:
 `Views/ConfigTuning` — tab views exist for GeoFence, Basic Tuning, Extended Tuning,
 Onboard OSD, MAVFtp, Full Parameters List, Planner and CubeLan8PortSwitch. Full Parameters
-List, MAVFTP, GeoFence, and Basic Tuning are implemented; the remaining tabs are covered by the
-sequential Config tasks.
+List, MAVFTP, GeoFence, Basic Tuning, and Extended Tuning are implemented; the remaining
+tabs are covered by the sequential Config tasks.
 
 All parameter-editing Config pages share a vehicle-and-firmware-scoped editing session.
 It separates original, live, and pending values; validates metadata ranges, increments,
@@ -563,12 +563,35 @@ while leaving Config warns before discarding them.
   the source of truth
 * Physical flight/drive/dive testing remains essential after tuning changes
 
+## Extended Tuning
+
+### Status
+
+* Selects structured Copter, Plane, Rover, and Sub advanced profiles covering rate/attitude
+  controllers, position/velocity/depth control, feed-forward, TECS/L1, steering/speed,
+  estimator noise, filters/notches, and autotune configuration where parameters are present
+* Generates repeated axis and gyro-instance editors from descriptors and keeps editor rows
+  lazy inside a virtualized group collection; a 10,000-field synthetic expansion is covered
+  by the performance test
+* Searches only the curated advanced set, validates metadata plus PID integrator and notch
+  relationships, and shows normalized pending magnitudes across controller axes
+* Requires a non-mutating source/target preview and a separate confirmation before an axis
+  copy enters pending state; vehicle writes still require the group's expert review prompt
+* Shows a complete pending change summary and explicit stability warnings before confirmed
+  group writes through the shared Config editing session
+* Displays latest `PID_TUNING` desired/achieved/error values as read-only context; it does
+  not start or orchestrate autotune
+
+### Limitations
+
+* Live response context appears only when firmware is already emitting `PID_TUNING`
+* The page is a curated expert surface, not a replacement for Full Parameters List
+
 ## Other Config tabs (Missing)
 
 v1.38 feature inventory per tab; the new tab views are placeholders:
 
 * **Flight Modes**: assign flight modes to RC switch positions (not present as a tab yet)
-* **Extended Tuning**: per-vehicle PID editors (Copter/Plane/Rover), filters, TX tuning knob
 * **Standard / Advanced Params**: "friendly" curated parameter lists with combos/sliders
 * **Full Parameter Tree**: tree-grouped variant of the raw parameter editor
 * **Planner**: GCS application settings (units, speech, layout, video, map options)
