@@ -11,7 +11,11 @@
     <File Path="../docs/CODEX.md" />
     <File Path="../docs/DESIGN_CONCEPTS.md" />
     <File Path="../docs/FEATURES.md" />
+    <File Path="../docs/FIRMWARE.md" />
+    <File Path="../docs/KNOWN_TEST_FAILURES.md" />
     <File Path="../docs/MAVFTP.md" />
+    <File Path="../docs/MAVLINK.md" />
+    <File Path="../docs/MAVLINK_DOMAIN_PROMOTION.md" />
     <File Path="../docs/MISSIONS.md" />
     <File Path="../docs/PARAMETERS.md" />
     <File Path="../docs/README.md" />
