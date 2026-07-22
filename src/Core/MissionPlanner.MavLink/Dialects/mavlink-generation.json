@@ -1,0 +1,66 @@
+{
+  "sourceRevision": "de1e078a3a7c53c9262a95b7417959a0f8bf4150",
+  "rootDialect": "ardupilotmega.xml",
+  "inheritedDialects": [
+    "common.xml",
+    "standard.xml",
+    "minimal.xml",
+    "uAvionix.xml",
+    "icarous.xml",
+    "loweheiser.xml",
+    "cubepilot.xml",
+    "csAirLink.xml"
+  ],
+  "handWrittenOverrides": [
+    "AHRS2",
+    "ATTITUDE",
+    "AUTOPILOT_VERSION",
+    "BATTERY_STATUS",
+    "COMMAND_ACK",
+    "EKF_STATUS_REPORT",
+    "FILE_TRANSFER_PROTOCOL",
+    "GLOBAL_POSITION_INT",
+    "GPS_RAW_INT",
+    "HEARTBEAT",
+    "HOME_POSITION",
+    "LOCAL_POSITION_NED",
+    "MEMINFO",
+    "MEMORY_VECT",
+    "MISSION_ACK",
+    "MISSION_COUNT",
+    "MISSION_CURRENT",
+    "MISSION_ITEM_INT",
+    "MISSION_ITEM_REACHED",
+    "MISSION_REQUEST_INT",
+    "MISSION_REQUEST_LIST",
+    "NAV_CONTROLLER_OUTPUT",
+    "PARAM_VALUE",
+    "POWER_STATUS",
+    "RAW_IMU",
+    "RC_CHANNELS",
+    "SCALED_PRESSURE",
+    "SERVO_OUTPUT_RAW",
+    "STATUSTEXT",
+    "SYS_STATUS",
+    "TIMESYNC",
+    "VFR_HUD"
+  ],
+  "deprecatedGeneratedExceptions": [
+    "BATTERY2",
+    "HWSTATUS",
+    "MISSION_ITEM",
+    "MISSION_REQUEST"
+  ],
+  "knownLegacyConstants": [
+    "MissionChanged=52"
+  ],
+  "domainPromotionCatalog": "docs/mavlink-promotion-catalog.json",
+  "outputs": {
+    "registry": "src/Core/MissionPlanner.MavLink/Generated/MavLinkMessageDefinitions.g.cs",
+    "enums": "src/Core/MissionPlanner.MavLink/Generated/MavLinkEnums.g.cs",
+    "wireModels": "src/Core/MissionPlanner.MavLink/Generated/MavLinkWireMessages.g.cs",
+    "wireDecoders": "src/Core/MissionPlanner.MavLink/Generated/MavLinkWireDecoders.g.cs",
+    "coverage": "artifacts/mavlink-coverage.json",
+    "conformanceFixtures": "src/Tests/MissionPlanner.Core.Tests/Fixtures/mavlink-conformance.json"
+  }
+}

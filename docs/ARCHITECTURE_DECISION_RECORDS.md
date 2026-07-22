@@ -84,7 +84,23 @@ Reason:
 - Channels solve buffering and throughput problems, not domain communication.
 
 
+## ADR-0003 - MAVLink dialect generation is an offline protocol boundary
 
+Status: Accepted
+
+Decision:
+- Official MAVLink XML is pinned and vendored with provenance and license data.
+- A committed manifest defines the root/include graph, generator ownership, compatibility
+  exceptions, promotion catalog, and deterministic outputs.
+- Generated protocol files are never edited manually and normal builds never download
+  dialect data.
+
+Consequences:
+- CI regenerates into a temporary directory and fails when committed output drifts.
+- Hand-written wire overrides must be declared in both generator ownership and the manifest.
+- Independent conformance vectors are committed data, not a Python runtime dependency.
+- Generating a typed packet does not promote it into immutable domain state; promotion stays
+  an explicit architectural decision governed by `MAVLINK_DOMAIN_PROMOTION.md`.
 
 
 ## Naming Conventions

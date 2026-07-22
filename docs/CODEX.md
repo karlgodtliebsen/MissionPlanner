@@ -67,6 +67,13 @@ Do Not
 - Add service locators
 - Introduce anemic domain models
 
+- Edit MAVLink files under `src/Core/MissionPlanner.MavLink/Generated/` or the generated
+  promotion catalog manually. Use `scripts/Generate-MavLinkDialect.ps1` and follow
+  `docs/MAVLINK.md`.
+
+- Download MAVLink dialect data during normal builds or tests. The pinned vendored inputs
+  and generation manifest are the authoritative offline source.
+
 
 
 

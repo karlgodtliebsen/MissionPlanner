@@ -300,3 +300,66 @@ protocol request/response families remain owned by dedicated services; and outbo
 messages stay behind command/setpoint APIs. Each entry names one owner, observation/model
 when applicable, intended frequency, stale timeout, and UI consumers. Catalog tests enforce
 the existing six cohesive dispatcher handlers and prevent accidental multiple ownership.
+
+## Reproducible generation and maintenance
+
+[`mavlink-generation.json`](../src/Core/MissionPlanner.MavLink/Dialects/mavlink-generation.json)
+is the generation contract. It records the official source revision, root dialect, complete
+include closure, hand-written overrides, retained deprecated compatibility messages, the
+known legacy `MissionChanged=52` allow-list, the domain-promotion catalog, and every generated
+output. The vendored XML graph and upstream `COPYING` file are sufficient for normal builds,
+tests, and drift verification; none of those operations downloads dialect data.
+
+Do not edit files under `src/Core/MissionPlanner.MavLink/Generated/` or
+`docs/mavlink-promotion-catalog.json` manually. Verify a checkout with:
+
+```powershell
+./scripts/Generate-MavLinkDialect.ps1 -Mode Verify
+```
+
+The script generates the registry, enums, wire models/decoders, and promotion catalog into a
+validated temporary directory, compares SHA-256 hashes with the committed artifacts, emits
+coverage counts, and runs registry, generated-source, raw-fallback, decoder-catalog,
+promotion, and conformance tests. `-SkipTests` is available for a generation-only diagnostic.
+`-Mode Write` copies deterministic differences into the committed output paths for review.
+
+CRC extras are calculated from the official message name and base-field signature according
+to MAVLink's X.25 rules. Base payload length is calculated from size-sorted non-extension
+fields; maximum length includes MAVLink 2 extension fields. Include resolution is recursive,
+relative to each XML file, cycle-safe, and rejects duplicate message IDs or incompatible
+definitions.
+
+### Updating the official MAVLink revision
+
+1. Check out the intended revision of the official `mavlink/mavlink` repository separately.
+2. Replace the manifest's root/include XML files and `COPYING` with exact upstream copies.
+3. Update `sourceRevision`, `rootDialect`, and `inheritedDialects` in the generation manifest,
+   and update the provenance text in `Dialects/README.md`.
+4. Run `./scripts/Generate-MavLinkDialect.ps1 -Mode Write -SkipTests` and review every
+   generated and promotion-catalog change.
+5. Install the documented fixture tool (`python -m pip install pymavlink==2.4.49`) and run
+   `python scripts/generate-mavlink-conformance-fixtures.py`. Pymavlink is a generation-time
+   dependency only; the committed JSON has no Python runtime dependency.
+6. Run `./scripts/Generate-MavLinkDialect.ps1 -Mode Verify` and commit the manifest, vendored
+   sources, generated files, promotion decisions, fixture, tests, and documentation together.
+
+### Adding a hand-written override
+
+Add the message name to both `MavLinkWireModelSourceGenerator.HandWrittenOverrides` and the
+manifest's `handWrittenOverrides` array. Supply a protocol-layer model and decoder whose ID,
+CRC, and payload window match the registry; declare workflow ownership where applicable.
+Then regenerate, add focused codec/workflow tests, and run the verification script. The
+manifest test and startup decoder catalog reject undeclared, missing, or duplicate ownership.
+
+Raw fallback and domain promotion are separate decisions. A CRC-valid selected-dialect frame
+without an accepting typed decoder is preserved as `RawMavLinkMessage`; an unknown-dialect ID
+is rejected because its CRC extra is unavailable. Promote a typed message only when it is
+durable product state or a meaningful transition, then update
+`mavlink-promotion-catalog.json`, use a cohesive handler/immutable observation, define stale
+semantics, and add state/event tests. Otherwise keep it diagnostic/raw, protocol-workflow, or
+outbound-only.
+
+Coverage can be inspected in `artifacts/mavlink-coverage.json` after the verification script,
+or generated directly with the generator's coverage command documented above. The dedicated
+GitHub Actions workflow `.github/workflows/mavlink.yml` performs the same offline regeneration
+comparison and test gate on relevant changes, so stale or manually edited output fails CI.

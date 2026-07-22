@@ -246,6 +246,21 @@ Do not leave documentation inconsistent with implementation.
 
 ---
 
+# Generated MAVLink Artifacts
+
+The MAVLink dialect XML is vendored and pinned by
+`src/Core/MissionPlanner.MavLink/Dialects/mavlink-generation.json`. Generated registry,
+enum, wire-model, wire-decoder, and promotion-catalog files are generator output: never edit
+them manually.
+
+Use `scripts/Generate-MavLinkDialect.ps1 -Mode Verify` to detect drift. Intentional dialect
+updates use `-Mode Write`, followed by conformance-fixture regeneration and review as
+documented in `docs/MAVLINK.md`. Normal builds and tests must not fetch dialect sources from
+the network. Protocol generation does not authorize domain promotion; promotion remains an
+explicit catalog, observation, handler, stale-data, and test decision.
+
+---
+
 # Coding Style
 
 Follow

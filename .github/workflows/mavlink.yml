@@ -1,0 +1,47 @@
+name: MAVLink Generated Artifacts
+
+on:
+  push:
+    paths:
+      - '.github/workflows/mavlink.yml'
+      - 'docs/MAVLINK*.md'
+      - 'docs/mavlink-promotion-catalog.json'
+      - 'scripts/Generate-MavLinkDialect.ps1'
+      - 'scripts/generate-mavlink-conformance-fixtures.py'
+      - 'src/Core/MissionPlanner.MavLink/**'
+      - 'src/Tools/MissionPlanner.MavLink.Generator/**'
+      - 'src/Tests/MissionPlanner.Core.Tests/MavLink*'
+      - 'src/Tests/MissionPlanner.Core.Tests/Fixtures/mavlink-conformance.json'
+  pull_request:
+    paths:
+      - '.github/workflows/mavlink.yml'
+      - 'docs/MAVLINK*.md'
+      - 'docs/mavlink-promotion-catalog.json'
+      - 'scripts/Generate-MavLinkDialect.ps1'
+      - 'scripts/generate-mavlink-conformance-fixtures.py'
+      - 'src/Core/MissionPlanner.MavLink/**'
+      - 'src/Tools/MissionPlanner.MavLink.Generator/**'
+      - 'src/Tests/MissionPlanner.Core.Tests/MavLink*'
+      - 'src/Tests/MissionPlanner.Core.Tests/Fixtures/mavlink-conformance.json'
+  workflow_dispatch:
+
+jobs:
+  generated-artifacts:
+    name: Verify generated dialect artifacts
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore test gate
+        shell: pwsh
+        run: dotnet restore src/Tests/MissionPlanner.Core.Tests/MissionPlanner.Core.Tests.csproj
+
+      - name: Regenerate, compare, report coverage, and test
+        shell: pwsh
+        run: ./scripts/Generate-MavLinkDialect.ps1 -Mode Verify

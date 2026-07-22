@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using System.Text.Json;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -217,6 +218,35 @@ public sealed class MavLinkGeneratedWireModelTests
 
         models.Should().Be(File.ReadAllText(Path.Combine(repositoryRoot, "src", "Core", "MissionPlanner.MavLink", "Generated", "MavLinkWireMessages.g.cs")));
         decoders.Should().Be(File.ReadAllText(Path.Combine(repositoryRoot, "src", "Core", "MissionPlanner.MavLink", "Generated", "MavLinkWireDecoders.g.cs")));
+    }
+
+    /// <summary>
+    /// Verifies the committed generation manifest matches generator ownership and vendored inputs.
+    /// </summary>
+    [Fact]
+    public void GenerationManifestDeclaresEveryInputAndOverride()
+    {
+        var repositoryRoot = FindRepositoryRoot();
+        var dialectDirectory = Path.Combine(repositoryRoot, "src", "Core", "MissionPlanner.MavLink", "Dialects");
+        using var document = JsonDocument.Parse(File.ReadAllText(Path.Combine(dialectDirectory, "mavlink-generation.json")));
+        var root = document.RootElement;
+
+        root.GetProperty("sourceRevision").GetString().Should().Be(SourceRevision);
+        root.GetProperty("rootDialect").GetString().Should().Be("ardupilotmega.xml");
+        var inherited = root.GetProperty("inheritedDialects").EnumerateArray().Select(item => item.GetString()!).ToArray();
+        inherited.Should().BeEquivalentTo(
+        [
+            "common.xml", "standard.xml", "minimal.xml", "uAvionix.xml", "icarous.xml",
+            "loweheiser.xml", "cubepilot.xml", "csAirLink.xml"
+        ]);
+        inherited.Append("ardupilotmega.xml").Should().OnlyContain(name => File.Exists(Path.Combine(dialectDirectory, name)));
+        root.GetProperty("handWrittenOverrides").EnumerateArray().Select(item => item.GetString()!)
+            .Should().BeEquivalentTo(MavLinkWireModelSourceGenerator.HandWrittenOverrides);
+        root.GetProperty("deprecatedGeneratedExceptions").EnumerateArray().Select(item => item.GetString()!)
+            .Should().BeEquivalentTo(MavLinkWireModelSourceGenerator.DeprecatedCompatibilityMessages);
+        root.GetProperty("knownLegacyConstants").EnumerateArray().Select(item => item.GetString()!)
+            .Should().Equal("MissionChanged=52");
+        root.GetProperty("domainPromotionCatalog").GetString().Should().Be("docs/mavlink-promotion-catalog.json");
     }
 
     private static ServiceProvider CreateServices()

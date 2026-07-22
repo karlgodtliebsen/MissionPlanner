@@ -21,7 +21,6 @@ from xml.etree import ElementTree
 from pymavlink.generator import mavgen
 
 
-SOURCE_REVISION = "de1e078a3a7c53c9262a95b7417959a0f8bf4150"
 SYSTEM_ID = 17
 COMPONENT_ID = 42
 
@@ -167,7 +166,7 @@ def build_fixture(dialect: Any, message_type: Any, extension_fields: set[str], i
     minimum_payload = payload_hex(minimum_v2)
     maximum_payload = payload_hex(maximum_v2)
     minimum_v1 = None
-    if int(message_type.id) <= 255:
+    if int(message_type.id) <= 255 and maximum_payload == minimum_payload:
         minimum_v1 = encode_message(dialect, message_type, minimum_values, sequence, True).hex()
 
     variants: list[dict[str, Any]] = [
@@ -208,7 +207,8 @@ def main() -> None:
     args = parse_args()
     repository_root = args.repository_root.resolve()
     dialect_root = repository_root / "src" / "Core" / "MissionPlanner.MavLink" / "Dialects"
-    root_dialect = dialect_root / "ardupilotmega.xml"
+    manifest = json.loads((dialect_root / "mavlink-generation.json").read_text(encoding="utf-8"))
+    root_dialect = dialect_root / manifest["rootDialect"]
     decoder_source = (
         repository_root
         / "src"
@@ -240,8 +240,8 @@ def main() -> None:
 
     artifact = {
         "schemaVersion": 1,
-        "sourceRevision": SOURCE_REVISION,
-        "rootDialect": "ardupilotmega.xml",
+        "sourceRevision": manifest["sourceRevision"],
+        "rootDialect": manifest["rootDialect"],
         "generator": "pymavlink",
         "generatorVersion": importlib.metadata.version("pymavlink"),
         "fixtures": fixtures,

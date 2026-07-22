@@ -74,6 +74,11 @@ public static class MavLinkWireModelSourceGenerator
     public static IReadOnlySet<string> HandWrittenOverrides => Overrides;
 
     /// <summary>
+    /// Gets deprecated message names intentionally retained as generated compatibility records.
+    /// </summary>
+    public static IReadOnlySet<string> DeprecatedCompatibilityMessages => DeprecatedGeneratedExceptions;
+
+    /// <summary>
     /// Generates the wire model source.
     /// </summary>
     /// <param name="definitions">The resolved wire schemas.</param>

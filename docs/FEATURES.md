@@ -491,7 +491,12 @@ Completed
   fallback. Log, camera, gimbal, ADS-B, generator/EFI, ESC, winch, landing-target,
   OpenDroneID, cellular/Wi-Fi, CAN, serial/tunnel, and device-operation families have typed
   protocol access and inspector visibility; product services are added only when required.
-* Conformance and generation/CI work remains tracked by Tasks 11–12.
+* Independent pymavlink fixtures cover all 287 generated decoders, including MAVLink 1 and 2
+  stream cases, without adding a Python runtime dependency.
+* A committed generation manifest and `Generate-MavLinkDialect.ps1` provide offline,
+  deterministic verify/write workflows. A dedicated GitHub Actions gate detects manual or
+  stale generated output, reports all 325 coverage classifications, and runs registry,
+  decoder, raw-fallback, promotion, and conformance tests.
 
 
 
