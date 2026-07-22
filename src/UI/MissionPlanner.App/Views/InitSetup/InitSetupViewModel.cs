@@ -121,6 +121,13 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
     /// <summary>Gets whether the specialized flight-mode workflow is selected.</summary>
     public bool IsFlightModesSelected => SelectedFlightModesViewModel is not null;
 
+    /// <summary>Gets the specialized battery workflow when selected.</summary>
+    [ObservableProperty]
+    public partial BatterySetupViewModel? SelectedBatteryViewModel { get; private set; }
+
+    /// <summary>Gets whether the specialized battery workflow is selected.</summary>
+    public bool IsBatterySelected => SelectedBatteryViewModel is not null;
+
     /// <summary>Gets whether the selected workflow may be recorded through generic manual review.</summary>
     public bool CanRecordSelectedWorkflowManually =>
         SelectedWorkflow?.Descriptor.Key is not SetupWorkflowKey.Frame and not SetupWorkflowKey.Accelerometer and
@@ -232,6 +239,7 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
             SelectedCompassViewModel = null;
             SelectedRadioViewModel = null;
             SelectedFlightModesViewModel = null;
+            SelectedBatteryViewModel = null;
             OnPropertyChanged(nameof(CanRecordSelectedWorkflowManually));
             return;
         }
@@ -260,6 +268,7 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
 
         SelectedRadioViewModel = SelectedWorkflowViewModel as RadioSetupViewModel;
         SelectedFlightModesViewModel = SelectedWorkflowViewModel as FlightModesSetupViewModel;
+        SelectedBatteryViewModel = SelectedWorkflowViewModel as BatterySetupViewModel;
 
         OnPropertyChanged(nameof(CanRecordSelectedWorkflowManually));
     }
@@ -281,6 +290,9 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
 
     partial void OnSelectedFlightModesViewModelChanged(FlightModesSetupViewModel? value) =>
         OnPropertyChanged(nameof(IsFlightModesSelected));
+
+    partial void OnSelectedBatteryViewModelChanged(BatterySetupViewModel? value) =>
+        OnPropertyChanged(nameof(IsBatterySelected));
 
     [RelayCommand]
     private void Refresh() => RefreshCore();
@@ -452,5 +464,6 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
         SelectedCompassViewModel = null;
         SelectedRadioViewModel = null;
         SelectedFlightModesViewModel = null;
+        SelectedBatteryViewModel = null;
     }
 }

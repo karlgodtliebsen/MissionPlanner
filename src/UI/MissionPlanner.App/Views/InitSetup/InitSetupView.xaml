@@ -315,6 +315,69 @@
                                 HorizontalOptions="Start" />
                     </VerticalStackLayout>
 
+                    <VerticalStackLayout IsVisible="{Binding IsBatterySelected}" Spacing="10">
+                        <Label Text="Battery monitors and failsafe" FontSize="18" FontAttributes="Bold" />
+                        <Label Text="{Binding SelectedBatteryViewModel.Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
+                        <VerticalStackLayout IsVisible="{Binding SelectedBatteryViewModel.HasIssues}" BindableLayout.ItemsSource="{Binding SelectedBatteryViewModel.Issues}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedBatteryViewModel.Instances}" Spacing="10">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="vm:BatteryInstanceViewModel">
+                                    <Border Padding="12" StrokeThickness="1">
+                                        <VerticalStackLayout Spacing="6">
+                                            <Label Text="{Binding Header}" FontAttributes="Bold" FontSize="16" />
+                                            <Label Text="{Binding LiveReadings}" />
+                                            <Label Text="Remaining percentage is an estimate, not a measured capacity truth." Opacity="0.7" FontSize="12" />
+                                            <Grid ColumnDefinitions="140,*,Auto" RowSpacing="6" ColumnSpacing="8"
+                                                  IsVisible="{Binding SupportsCapacity}">
+                                                <Label Text="Capacity (mAh)" VerticalOptions="Center" />
+                                                <Entry Grid.Column="1" Text="{Binding Capacity}" Keyboard="Numeric" />
+                                                <Button Grid.Column="2" BackgroundColor="Transparent" FontSize="14" Text="Write" Command="{Binding ApplyCapacityCommand}" />
+                                            </Grid>
+                                            <VerticalStackLayout IsVisible="{Binding SupportsVoltageFailsafe}" Spacing="4">
+                                                <Label Text="Voltage failsafe (V)" FontAttributes="Bold" />
+                                                <Grid ColumnDefinitions="140,*,140,*,Auto" ColumnSpacing="8">
+                                                    <Label Text="Low" VerticalOptions="Center" />
+                                                    <Entry Grid.Column="1" Text="{Binding LowVoltage}" Keyboard="Numeric" />
+                                                    <Label Grid.Column="2" Text="Critical" VerticalOptions="Center" />
+                                                    <Entry Grid.Column="3" Text="{Binding CriticalVoltage}" Keyboard="Numeric" />
+                                                    <Button Grid.Column="4" BackgroundColor="Transparent" FontSize="14" Text="Write" Command="{Binding ApplyVoltageFailsafeCommand}" />
+                                                </Grid>
+                                            </VerticalStackLayout>
+                                            <VerticalStackLayout IsVisible="{Binding SupportsCapacityFailsafe}" Spacing="4">
+                                                <Label Text="Capacity failsafe (mAh)" FontAttributes="Bold" />
+                                                <Grid ColumnDefinitions="140,*,140,*,Auto" ColumnSpacing="8">
+                                                    <Label Text="Low" VerticalOptions="Center" />
+                                                    <Entry Grid.Column="1" Text="{Binding LowCapacity}" Keyboard="Numeric" />
+                                                    <Label Grid.Column="2" Text="Critical" VerticalOptions="Center" />
+                                                    <Entry Grid.Column="3" Text="{Binding CriticalCapacity}" Keyboard="Numeric" />
+                                                    <Button Grid.Column="4" BackgroundColor="Transparent" FontSize="14" Text="Write" Command="{Binding ApplyCapacityFailsafeCommand}" />
+                                                </Grid>
+                                            </VerticalStackLayout>
+                                            <Grid ColumnDefinitions="180,*,Auto" ColumnSpacing="8" IsVisible="{Binding SupportsVoltageCalibration}">
+                                                <Label Text="Measured voltage (V)" VerticalOptions="Center" />
+                                                <Entry Grid.Column="1" Text="{Binding ReferenceVoltage}" Keyboard="Numeric" />
+                                                <Button Grid.Column="2" BackgroundColor="Transparent" FontSize="14" Text="Calibrate voltage" Command="{Binding CalibrateVoltageCommand}" />
+                                            </Grid>
+                                            <Grid ColumnDefinitions="180,*,Auto" ColumnSpacing="8" IsVisible="{Binding SupportsCurrentCalibration}">
+                                                <Label Text="Measured current (A)" VerticalOptions="Center" />
+                                                <Entry Grid.Column="1" Text="{Binding ReferenceCurrent}" Keyboard="Numeric" />
+                                                <Button Grid.Column="2" BackgroundColor="Transparent" FontSize="14" Text="Calibrate current" Command="{Binding CalibrateCurrentCommand}" />
+                                            </Grid>
+                                        </VerticalStackLayout>
+                                    </Border>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                        <Button BackgroundColor="Transparent" FontSize="14" Text="Refresh battery values"
+                                Command="{Binding SelectedBatteryViewModel.RefreshCommand}" HorizontalOptions="Start" />
+                    </VerticalStackLayout>
+
                     <HorizontalStackLayout Spacing="10">
                         <Button BackgroundColor="Transparent" FontSize="14" Text="Record reviewed"
                                 IsEnabled="{Binding SelectedWorkflow.CanOpen}"

@@ -439,6 +439,15 @@ The Setup screen replaces v1.38's Initial Setup (`src-v.1.38/GCSViews/InitialSet
   slot resolved from the mode-channel PWM, and applies confirmed slot writes. Transmitter
   configuration is never changed automatically.
 
+* Battery workflow implemented (2026-07-22): battery monitor instances are discovered from
+  `BATT*_MONITOR` presence (sparse-aware) with monitor backend, capacity, multipliers, and
+  failsafe thresholds/actions surfaced only when their parameters exist. Live voltage/current/
+  consumed/remaining are shown with freshness (remaining is labelled an estimate, never exact
+  capacity truth). Measured-vs-reference voltage and current calibration scale
+  `BATT_VOLT_MULT`/`BATT_AMP_PERVLT`; all writes are readback-confirmed with reboot flags.
+  Invalid failsafe combinations (low ≤ critical, non-positive capacity/multipliers) are
+  rejected before writing and surfaced as blocking issues.
+
 ### Missing (v1.38 feature inventory)
 
 * **Install Firmware**: manifest-driven firmware download/flash (stable/beta/custom), board detection, bootloader handling; "Wizard" guided first-time setup

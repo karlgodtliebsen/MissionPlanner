@@ -1,5 +1,7 @@
 # Setup 07 — Battery monitor, power module, and battery failsafe setup
 
+**Implementation status:** Completed 2026-07-22.
+
 ## Objective
 
 Implement battery monitor configuration with live validation, multiple battery instances, monitor/backend selection, scaling/calibration, capacity, and failsafe thresholds.

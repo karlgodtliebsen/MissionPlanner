@@ -145,6 +145,7 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<IArduPilotCompassCalibrationService>().Should().NotBeNull();
         provider.GetRequiredService<IRadioCalibrationService>().Should().NotBeNull();
         provider.GetRequiredService<IFlightModeConfigurationService>().Should().NotBeNull();
+        provider.GetRequiredService<IBatteryConfigurationService>().Should().NotBeNull();
         provider.GetRequiredService<ISetupWorkflowViewModelFactory>().Should().NotBeNull();
         provider.GetRequiredService<ISetupNavigationService>().Should().NotBeNull();
         provider.GetRequiredService<InitSetupViewModel>().Should().NotBeNull();

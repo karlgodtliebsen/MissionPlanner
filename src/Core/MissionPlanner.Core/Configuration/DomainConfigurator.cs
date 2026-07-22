@@ -65,6 +65,7 @@ public static class DomainConfigurator
         services.TryAddTransient<IArduPilotCompassCalibrationService, ArduPilotCompassCalibrationService>();
         services.TryAddTransient<IRadioCalibrationService, RadioCalibrationService>();
         services.TryAddTransient<IFlightModeConfigurationService, FlightModeConfigurationService>();
+        services.TryAddTransient<IBatteryConfigurationService, BatteryConfigurationService>();
         services.Configure<FirmwareManifestOptions>(configuration.GetSection(FirmwareManifestOptions.SectionName));
         services.AddHttpClient("Firmware");
         services.TryAddSingleton<IFirmwareManifestProvider, JsonFirmwareManifestProvider>();
