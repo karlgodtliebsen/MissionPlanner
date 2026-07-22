@@ -83,7 +83,7 @@
                                     </HorizontalStackLayout>
                                     <Label Text="{Binding Description}" LineBreakMode="WordWrap" />
                                 </VerticalStackLayout>
-                                <Button Grid.Column="1" Text="Expand / collapse" Command="{Binding ToggleExpandedCommand}" />
+                                <Button BackgroundColor="Transparent" FontSize="14" Grid.Column="1" Text="Expand / collapse" Command="{Binding ToggleExpandedCommand}" />
                             </Grid>
 
                             <Label Text="{Binding ExpertWarning}"
@@ -101,14 +101,14 @@
                             <VerticalStackLayout IsVisible="{Binding IsExpanded}" Spacing="8">
                                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                                     <HorizontalStackLayout Spacing="6">
-                                        <Button Text="Refresh" Command="{Binding RefreshCommand}" />
-                                        <Button Text="Revert group" Command="{Binding RevertCommand}" />
-                                        <Button Text="Review &amp; apply group" Command="{Binding ApplyCommand}" />
+                                        <Button BackgroundColor="Transparent" FontSize="14" Text="Refresh" Command="{Binding RefreshCommand}" />
+                                        <Button BackgroundColor="Transparent" FontSize="14" Text="Revert group" Command="{Binding RevertCommand}" />
+                                        <Button BackgroundColor="Transparent" FontSize="14" Text="Review &amp; apply group" Command="{Binding ApplyCommand}" />
                                     </HorizontalStackLayout>
                                     <HorizontalStackLayout Grid.Column="1" Spacing="6" IsVisible="{Binding SupportsAxisCopy}">
                                         <Picker Title="Source axis" WidthRequest="110" ItemsSource="{Binding Axes}" SelectedItem="{Binding SelectedSourceAxis}" />
                                         <Picker Title="Target axis" WidthRequest="110" ItemsSource="{Binding Axes}" SelectedItem="{Binding SelectedTargetAxis}" />
-                                        <Button Text="Preview axis copy" Command="{Binding PreviewCopyCommand}" />
+                                        <Button BackgroundColor="Transparent" FontSize="14" Text="Preview axis copy" Command="{Binding PreviewCopyCommand}" />
                                     </HorizontalStackLayout>
                                 </Grid>
 
@@ -128,7 +128,7 @@
                                                 </DataTemplate>
                                             </BindableLayout.ItemTemplate>
                                         </VerticalStackLayout>
-                                        <Button Text="Confirm preview into pending values" Command="{Binding ApplyCopyCommand}" HorizontalOptions="End" />
+                                        <Button BackgroundColor="Transparent" FontSize="14" Text="Confirm preview into pending values" Command="{Binding ApplyCopyCommand}" HorizontalOptions="End" />
                                     </VerticalStackLayout>
                                 </Border>
 

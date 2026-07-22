@@ -12,8 +12,8 @@
                 <Label Text="{Binding FirmwareFamilyText, StringFormat='Firmware profile: {0}'}" />
             </VerticalStackLayout>
             <HorizontalStackLayout Grid.Column="1" Spacing="8">
-                <Button Text="Import presented fields" Command="{Binding ImportCommand}" />
-                <Button Text="Export presented fields" Command="{Binding ExportCommand}" />
+                <Button BackgroundColor="Transparent" FontSize="14" Text="Import presented fields" Command="{Binding ImportCommand}" />
+                <Button BackgroundColor="Transparent" FontSize="14" Text="Export presented fields" Command="{Binding ExportCommand}" />
                 <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
             </HorizontalStackLayout>
         </Grid>
@@ -43,9 +43,9 @@
                                         <Label Text="{Binding Description}" LineBreakMode="WordWrap" />
                                     </VerticalStackLayout>
                                     <HorizontalStackLayout Grid.Column="1" Spacing="6">
-                                        <Button Text="Refresh" Command="{Binding RefreshCommand}" />
-                                        <Button Text="Revert group" Command="{Binding RevertCommand}" />
-                                        <Button Text="Apply group" Command="{Binding ApplyCommand}" />
+                                        <Button BackgroundColor="Transparent" FontSize="14" Text="Refresh" Command="{Binding RefreshCommand}" />
+                                        <Button BackgroundColor="Transparent" FontSize="14" Text="Revert group" Command="{Binding RevertCommand}" />
+                                        <Button BackgroundColor="Transparent" FontSize="14" Text="Apply group" Command="{Binding ApplyCommand}" />
                                     </HorizontalStackLayout>
                                 </Grid>
 

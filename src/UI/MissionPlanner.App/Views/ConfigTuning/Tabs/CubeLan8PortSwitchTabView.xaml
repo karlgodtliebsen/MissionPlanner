@@ -19,7 +19,7 @@
                     <Label Text="{Binding Status}" FontAttributes="Bold" />
                     <Label Text="{Binding StatusMessage}" />
                 </VerticalStackLayout>
-                <Button Grid.Column="2" Text="Discover / read" Command="{Binding RefreshCommand}" VerticalOptions="Center" />
+                <Button BackgroundColor="Transparent" FontSize="14" Grid.Column="2" Text="Discover / read" Command="{Binding RefreshCommand}" VerticalOptions="Center" />
             </Grid>
         </Border>
 
@@ -68,9 +68,9 @@
         <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="12">
             <Label Text="{Binding IsDirty, StringFormat='Pending local changes: {0}'}" VerticalOptions="Center" />
             <HorizontalStackLayout Grid.Column="1">
-                <Button Text="Export" Command="{Binding ExportCommand}" />
-                <Button Text="Revert" Command="{Binding RevertCommand}" IsEnabled="{Binding CanEdit}" />
-                <Button Text="Apply and verify" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanEdit}" />
+                <Button BackgroundColor="Transparent" FontSize="14" Text="Export" Command="{Binding ExportCommand}" />
+                <Button BackgroundColor="Transparent" FontSize="14" Text="Revert" Command="{Binding RevertCommand}" IsEnabled="{Binding CanEdit}" />
+                <Button BackgroundColor="Transparent" FontSize="14" Text="Apply and verify" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanEdit}" />
             </HorizontalStackLayout>
         </Grid>
     </Grid>

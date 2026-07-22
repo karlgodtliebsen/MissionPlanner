@@ -8,12 +8,12 @@
              Title="GeoFence">
     <Grid RowDefinitions="Auto,Auto,*" Padding="12" RowSpacing="10">
         <HorizontalStackLayout Spacing="8">
-            <Button Text="Download" Command="{Binding DownloadCommand}" />
-            <Button Text="Validate &amp; upload" Command="{Binding UploadCommand}" />
-            <Button Text="Clear vehicle" Command="{Binding ClearVehicleCommand}" />
-            <Button Text="Restore backup" Command="{Binding RestoreBackupCommand}" />
-            <Button Text="Refresh parameters" Command="{Binding RefreshParametersCommand}" />
-            <Button Text="Revert parameters" Command="{Binding RevertParametersCommand}" />
+            <Button BackgroundColor="Transparent" FontSize="14" Text="Download" Command="{Binding DownloadCommand}" />
+            <Button BackgroundColor="Transparent" FontSize="14" Text="Validate &amp; upload" Command="{Binding UploadCommand}" />
+            <Button BackgroundColor="Transparent" FontSize="14" Text="Clear vehicle" Command="{Binding ClearVehicleCommand}" />
+            <Button BackgroundColor="Transparent" FontSize="14" Text="Restore backup" Command="{Binding RestoreBackupCommand}" />
+            <Button BackgroundColor="Transparent" FontSize="14" Text="Refresh parameters" Command="{Binding RefreshParametersCommand}" />
+            <Button BackgroundColor="Transparent" FontSize="14" Text="Revert parameters" Command="{Binding RevertParametersCommand}" />
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
         </HorizontalStackLayout>
 
@@ -67,16 +67,16 @@
                         <VerticalStackLayout Spacing="8">
                             <Label Text="Fence map edit mode" FontAttributes="Bold" FontSize="18" />
                             <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="6" RowSpacing="6">
-                                <Button Text="Inclusion polygon" Command="{Binding BeginPolygonInclusionCommand}" />
-                                <Button Grid.Column="1" Text="Exclusion polygon" Command="{Binding BeginPolygonExclusionCommand}" />
-                                <Button Grid.Row="1" Text="Inclusion circle" Command="{Binding BeginCircleInclusionCommand}" />
-                                <Button Grid.Row="1" Grid.Column="1" Text="Exclusion circle" Command="{Binding BeginCircleExclusionCommand}" />
-                                <Button Grid.Row="2" Text="Set return point" Command="{Binding BeginReturnPointCommand}" />
+                                <Button BackgroundColor="Transparent" FontSize="14" Text="Inclusion polygon" Command="{Binding BeginPolygonInclusionCommand}" />
+                                <Button BackgroundColor="Transparent" FontSize="14" Grid.Column="1" Text="Exclusion polygon" Command="{Binding BeginPolygonExclusionCommand}" />
+                                <Button BackgroundColor="Transparent" FontSize="14" Grid.Row="1" Text="Inclusion circle" Command="{Binding BeginCircleInclusionCommand}" />
+                                <Button BackgroundColor="Transparent" FontSize="14" Grid.Row="1" Grid.Column="1" Text="Exclusion circle" Command="{Binding BeginCircleExclusionCommand}" />
+                                <Button BackgroundColor="Transparent" FontSize="14" Grid.Row="2" Text="Set return point" Command="{Binding BeginReturnPointCommand}" />
                                 <Entry Grid.Row="2" Grid.Column="1" Placeholder="Circle radius (m)" Text="{Binding CircleRadiusMeters, Mode=TwoWay}" Keyboard="Numeric" />
                             </Grid>
                             <HorizontalStackLayout Spacing="6" IsVisible="{Binding IsFenceEditMode}">
-                                <Button Text="Finish polygon" Command="{Binding FinishPolygonCommand}" />
-                                <Button Text="Cancel edit" Command="{Binding CancelEditCommand}" />
+                                <Button BackgroundColor="Transparent" FontSize="14" Text="Finish polygon" Command="{Binding FinishPolygonCommand}" />
+                                <Button BackgroundColor="Transparent" FontSize="14" Text="Cancel edit" Command="{Binding CancelEditCommand}" />
                             </HorizontalStackLayout>
                         </VerticalStackLayout>
                     </Border>
@@ -98,8 +98,8 @@
                                 </CollectionView.ItemTemplate>
                             </CollectionView>
                             <HorizontalStackLayout Spacing="6">
-                                <Button Text="Remove selected" Command="{Binding RemoveAreaCommand}" CommandParameter="{Binding SelectedArea}" />
-                                <Button Text="Remove return" Command="{Binding RemoveReturnPointCommand}" />
+                                <Button BackgroundColor="Transparent" FontSize="14" Text="Remove selected" Command="{Binding RemoveAreaCommand}" CommandParameter="{Binding SelectedArea}" />
+                                <Button BackgroundColor="Transparent" FontSize="14" Text="Remove return" Command="{Binding RemoveReturnPointCommand}" />
                             </HorizontalStackLayout>
                         </VerticalStackLayout>
                     </Border>

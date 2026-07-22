@@ -11,10 +11,10 @@
             <Label Text="Screen" VerticalOptions="Center" />
             <Picker Grid.Column="1" ItemsSource="{Binding Screens}" SelectedItem="{Binding SelectedScreen}" />
             <HorizontalStackLayout Grid.Column="2" Spacing="8">
-                <Button Text="Apply selected screen" Command="{Binding ApplyScreenCommand}" />
-                <Button Text="Reset to live" Command="{Binding ResetScreenCommand}" />
-                <Button Text="Import layout" Command="{Binding ImportCommand}" />
-                <Button Text="Export layout" Command="{Binding ExportCommand}" />
+                <Button BackgroundColor="Transparent" FontSize="14" Text="Apply selected screen" Command="{Binding ApplyScreenCommand}" />
+                <Button BackgroundColor="Transparent" FontSize="14" Text="Reset to live" Command="{Binding ResetScreenCommand}" />
+                <Button BackgroundColor="Transparent" FontSize="14" Text="Import layout" Command="{Binding ImportCommand}" />
+                <Button BackgroundColor="Transparent" FontSize="14" Text="Export layout" Command="{Binding ExportCommand}" />
             </HorizontalStackLayout>
             <ActivityIndicator Grid.Column="3" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
         </Grid>
@@ -121,10 +121,10 @@
                             <Entry Grid.Column="3" Text="{Binding SelectedItem.Row, Mode=TwoWay}" Keyboard="Numeric" />
                         </Grid>
                         <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="6">
-                            <Button Text="← Left" Command="{Binding MoveLeftCommand}" />
-                            <Button Grid.Column="1" Text="↑ Up" Command="{Binding MoveUpCommand}" />
-                            <Button Grid.Column="2" Text="↓ Down" Command="{Binding MoveDownCommand}" />
-                            <Button Grid.Column="3" Text="Right →" Command="{Binding MoveRightCommand}" />
+                            <Button BackgroundColor="Transparent" FontSize="14" Text="← Left" Command="{Binding MoveLeftCommand}" />
+                            <Button BackgroundColor="Transparent" FontSize="14" Grid.Column="1" Text="↑ Up" Command="{Binding MoveUpCommand}" />
+                            <Button BackgroundColor="Transparent" FontSize="14" Grid.Column="2" Text="↓ Down" Command="{Binding MoveDownCommand}" />
+                            <Button BackgroundColor="Transparent" FontSize="14" Grid.Column="3" Text="Right →" Command="{Binding MoveRightCommand}" />
                         </Grid>
                         <Label Text="{Binding SelectedItem.ValidationError}" TextColor="OrangeRed" FontSize="12" />
                         <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedItem.AdditionalParameters}" Spacing="4">
