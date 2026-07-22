@@ -7,6 +7,7 @@ using MissionPlanner.App.Configuration;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.InitSetup;
 using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -121,7 +122,7 @@ public sealed class SetupWorkspaceTests
 
     /// <summary>Verifies Setup shell services resolve from the application dependency graph.</summary>
     [Fact]
-    public void DependencyInjectionResolvesSetupWorkspace()
+    public async Task DependencyInjectionResolvesSetupWorkspace()
     {
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
@@ -132,10 +133,11 @@ public sealed class SetupWorkspaceTests
         }).Build();
         var services = new ServiceCollection();
         services.AddSingleton(Substitute.For<ISetupCompletionStore>());
+        services.AddSingleton(Substitute.For<IFirmwarePackageCache>());
         services.AddSingleton(Substitute.For<IDispatcher>());
         services.AddSingleton(Substitute.For<IFileSaver>());
         services.AddApplicationConfiguration(configuration);
-        using var provider = services.BuildServiceProvider();
+        await using var provider = services.BuildServiceProvider();
 
         provider.GetRequiredService<ISetupWorkflowCatalog>().Should().NotBeNull();
         provider.GetRequiredService<ISetupWorkflowViewModelFactory>().Should().NotBeNull();

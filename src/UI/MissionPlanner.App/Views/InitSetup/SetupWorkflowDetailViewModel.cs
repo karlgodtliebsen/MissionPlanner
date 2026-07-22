@@ -4,7 +4,7 @@ using MissionPlanner.Core.Setup;
 namespace MissionPlanner.App.Views.InitSetup;
 
 /// <summary>Provides the lazily created host model for one Setup workflow.</summary>
-public sealed partial class SetupWorkflowDetailViewModel : ObservableObject
+public partial class SetupWorkflowDetailViewModel : ObservableObject, IDisposable
 {
     /// <summary>Initializes a workflow host.</summary>
     /// <param name="descriptor">The workflow definition.</param>
@@ -29,4 +29,12 @@ public sealed partial class SetupWorkflowDetailViewModel : ObservableObject
     /// <summary>Gets or sets the latest shared workflow error.</summary>
     [ObservableProperty]
     public partial string? Error { get; set; }
+
+    /// <summary>Cancels work owned by this workflow host.</summary>
+    public virtual void Cancel()
+    {
+    }
+
+    /// <inheritdoc />
+    public virtual void Dispose() => Cancel();
 }

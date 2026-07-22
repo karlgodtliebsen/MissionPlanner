@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MissionPlanner.Core.Commands;
+using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Missions;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Files;
@@ -55,6 +56,13 @@ public static class DomainConfigurator
         services.TryAddSingleton<IVehicleMessageStore, VehicleMessageStore>();
         services.TryAddSingleton<IApplicationNotificationStore, ApplicationNotificationStore>();
         services.TryAddSingleton<ISetupWorkflowCatalog, SetupWorkflowCatalog>();
+        services.Configure<FirmwareManifestOptions>(configuration.GetSection(FirmwareManifestOptions.SectionName));
+        services.AddHttpClient("Firmware");
+        services.TryAddSingleton<IFirmwareManifestProvider, JsonFirmwareManifestProvider>();
+        services.TryAddSingleton<IFirmwareManifestSelector, FirmwareManifestSelector>();
+        services.TryAddTransient<IFirmwarePackageManager, FirmwarePackageManager>();
+        services.TryAddSingleton<IFirmwareFlashingService, UnsupportedFirmwareFlashingService>();
+        services.TryAddTransient<IFirmwareUpdateCoordinator, FirmwareUpdateCoordinator>();
 
         services.TryAddSingleton<IVehicleConnectionSession, VehicleConnectionSession>();
 

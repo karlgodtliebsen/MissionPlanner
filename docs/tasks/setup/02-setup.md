@@ -1,5 +1,7 @@
 # Setup 02 — Firmware identity, board information, and firmware management
 
+**Implementation status:** Completed 2026-07-22.
+
 ## Objective
 
 Implement a Setup firmware page that identifies the connected autopilot and board and provides a safe architecture for firmware discovery, download, verification, and flashing.

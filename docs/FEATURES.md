@@ -389,6 +389,17 @@ The Setup screen replaces v1.38's Initial Setup (`src-v.1.38/GCSViews/InitialSet
   configuration editors.
 * Workflow hosts are created lazily and discarded across vehicle changes; page lifecycle
   detaches parameter/vehicle subscriptions and cancels active work.
+* Firmware workflow implemented (2026-07-22): displays the complete protocol-reported
+  vehicle/firmware/board identity, including semantic version and release type, Git hash,
+  board/vendor/product identifiers, UID/UID2, MAVLink version, and named/raw capabilities.
+* Firmware manifests support stable, beta, and development channels, technical board
+  targets, exact vendor/product/board matching, release notes, HTTPS package locations,
+  and SHA-256 checksums. Marketing names are never used to infer a flash target.
+* Firmware downloads use a platform cache and fail closed on checksum mismatch. A guarded
+  state machine requires verification and a confirmed parameter backup before disconnecting
+  normal MAVLink, invoking `IFirmwareFlashingService`, and detecting post-flash reconnect.
+  The shipped adapter explicitly blocks flashing until a safe platform/bootloader adapter
+  is installed; identity and verified downloads remain usable.
 
 ### Missing (v1.38 feature inventory)
 

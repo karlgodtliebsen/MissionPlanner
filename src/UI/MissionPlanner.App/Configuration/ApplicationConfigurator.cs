@@ -16,6 +16,7 @@ using MissionPlanner.App.Views.FlightPlanner;
 using MissionPlanner.App.Views.Help;
 using MissionPlanner.App.Views.InitSetup;
 using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Firmware;
 using MissionPlanner.App.Views.Missions;
 using MissionPlanner.App.Views.Simulation;
 using MissionPlanner.Core.Configuration;
@@ -125,6 +126,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<TransponderTabViewModel>();
         services.TryAddSingleton<FlightPlannerViewModel>();
         services.TryAddSingleton<ISetupCompletionStore, PreferencesSetupCompletionStore>();
+        services.TryAddSingleton<IFirmwarePackageCache, MauiFirmwarePackageCache>();
         services.TryAddSingleton<ISetupNavigationService, ShellSetupNavigationService>();
         services.TryAddSingleton<ISetupWorkflowViewModelFactory, SetupWorkflowViewModelFactory>();
         services.TryAddSingleton<InitSetupViewModel>();

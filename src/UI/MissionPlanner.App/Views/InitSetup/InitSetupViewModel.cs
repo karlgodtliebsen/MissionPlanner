@@ -79,6 +79,13 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     public partial SetupWorkflowDetailViewModel? SelectedWorkflowViewModel { get; private set; }
 
+    /// <summary>Gets the specialized firmware workflow when Firmware is selected.</summary>
+    [ObservableProperty]
+    public partial FirmwareSetupViewModel? SelectedFirmwareViewModel { get; private set; }
+
+    /// <summary>Gets whether the specialized firmware workflow is selected.</summary>
+    public bool IsFirmwareSelected => SelectedFirmwareViewModel is not null;
+
     /// <summary>Gets the active vehicle heading.</summary>
     [ObservableProperty]
     public partial string VehicleHeading { get; private set; } = "No vehicle connected";
@@ -167,6 +174,7 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
 
         disposed = true;
         Deactivate();
+        DisposeWorkflowViewModels();
     }
 
     partial void OnSelectedWorkflowChanged(SetupWorkflowItemViewModel? value)
@@ -178,6 +186,7 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
         if (value is null)
         {
             SelectedWorkflowViewModel = null;
+            SelectedFirmwareViewModel = null;
             return;
         }
 
@@ -187,7 +196,13 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
             SelectedWorkflowViewModel = workflowFactory.Create(value.Descriptor);
             workflowViewModels[value.Descriptor.Key] = SelectedWorkflowViewModel;
         }
+
+        SelectedFirmwareViewModel = SelectedWorkflowViewModel as FirmwareSetupViewModel;
+        SelectedFirmwareViewModel?.UpdateVehicle(activeVehicle.State);
     }
+
+    partial void OnSelectedFirmwareViewModelChanged(FirmwareSetupViewModel? value) =>
+        OnPropertyChanged(nameof(IsFirmwareSelected));
 
     [RelayCommand]
     private void Refresh() => RefreshCore();
@@ -283,7 +298,7 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
     {
         CancelParameterRefresh();
         CancelWorkflow();
-        workflowViewModels.Clear();
+        DisposeWorkflowViewModels();
         Refresh();
     });
 
@@ -332,8 +347,21 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
 
     private void CancelWorkflow()
     {
+        SelectedWorkflowViewModel?.Cancel();
         workflowCancellation?.Cancel();
         workflowCancellation?.Dispose();
         workflowCancellation = null;
+    }
+
+    private void DisposeWorkflowViewModels()
+    {
+        foreach (var viewModel in workflowViewModels.Values)
+        {
+            viewModel.Dispose();
+        }
+
+        workflowViewModels.Clear();
+        SelectedWorkflowViewModel = null;
+        SelectedFirmwareViewModel = null;
     }
 }
