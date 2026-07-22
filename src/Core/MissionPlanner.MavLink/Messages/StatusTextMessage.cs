@@ -13,5 +13,15 @@ namespace MissionPlanner.MavLink.Messages;
 /// <param name="Id">The ID of the status message.</param>
 /// <param name="ChunkSequence">The sequence number of the chunk if the message is split into multiple chunks.</param>
 /// <param name="ReceivedAt">The timestamp when the message was received.</param>
-public sealed record StatusTextMessage(byte SystemId, byte ComponentId, TransportEndPoint EndPoint, MavSeverity Severity, string Text, ushort? Id, byte? ChunkSequence, DateTimeOffset ReceivedAt)
+/// <param name="IsTextTerminated">Whether the frame contains the final text chunk.</param>
+public sealed record StatusTextMessage(
+    byte SystemId,
+    byte ComponentId,
+    TransportEndPoint EndPoint,
+    MavSeverity Severity,
+    string Text,
+    ushort? Id,
+    byte? ChunkSequence,
+    DateTimeOffset ReceivedAt,
+    bool IsTextTerminated = true)
     : MavLinkMessage(SystemId, ComponentId, MessageIds.StatusText, EndPoint, ReceivedAt);

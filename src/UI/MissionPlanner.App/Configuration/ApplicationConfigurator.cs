@@ -101,6 +101,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<FlightDataViewModel>();
         services.TryAddSingleton<IUserNotificationService, MauiUserNotificationService>();
         services.TryAddSingleton<IUserConfirmationService, MauiUserConfirmationService>();
+        services.TryAddSingleton<ITextClipboardService, MauiTextClipboardService>();
         services.TryAddTransient<AsyncOperationRunner>();
 
         services.TryAddSingleton<HudViewModel>();
@@ -113,6 +114,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<DataFlashLogsTabViewModel>();
         services.TryAddSingleton<GaugesTabViewModel>();
         services.TryAddSingleton<MessagesTabViewModel>();
+        services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<MessagesTabViewModel>());
         services.TryAddSingleton<PayloadControlTabViewModel>();
         services.TryAddSingleton<StatusTabViewModel>();
         services.TryAddSingleton<PreflightTabViewModel>();

@@ -7,6 +7,7 @@ using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Files;
 using MissionPlanner.Core.Missions.Transfer;
 using MissionPlanner.Core.Missions.Validation;
+using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.Vehicles;
@@ -49,6 +50,9 @@ public static class DomainConfigurator
         services.TryAddSingleton<ICommandAckTracker, CommandAckTracker>();
         services.TryAddTransient<IVehicleCommandPolicy, VehicleCommandPolicy>();
         services.TryAddSingleton<IArduPilotModeCatalog, ArduPilotModeCatalog>();
+        services.Configure<VehicleMessageStoreOptions>(configuration.GetSection(VehicleMessageStoreOptions.SectionName));
+        services.TryAddSingleton<IVehicleMessageStore, VehicleMessageStore>();
+        services.TryAddSingleton<IApplicationNotificationStore, ApplicationNotificationStore>();
 
         services.TryAddSingleton<IVehicleConnectionSession, VehicleConnectionSession>();
 
@@ -62,7 +66,7 @@ public static class DomainConfigurator
         services.TryAddSingleton<IVehicleHudDataService, VehicleHudDataService>();
         services.TryAddSingleton<IVehicleFileSystemService, VehicleFileSystemService>();
 
-        services.TryAddTransient<IStatusTextHandler, StatusTextHandler>();
+        services.TryAddSingleton<IStatusTextHandler, StatusTextHandler>();
         services.TryAddTransient<IParamValueVehicleHandler, ParamValueVehicleHandler>();
 
         services.TryAddTransient<IVehicleMessageDispatcher, VehicleMessageDispatcher>();

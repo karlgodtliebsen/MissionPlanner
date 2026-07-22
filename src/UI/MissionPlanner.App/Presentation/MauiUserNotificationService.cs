@@ -1,5 +1,6 @@
 using CommunityToolkit.Maui.Alerts;
 using MissionPlanner.Core.Notifications;
+using MissionPlanner.Library.DateTime.Domain;
 
 namespace MissionPlanner.App.Presentation;
 
@@ -9,19 +10,30 @@ namespace MissionPlanner.App.Presentation;
 public sealed class MauiUserNotificationService : IUserNotificationService
 {
     private readonly IDispatcher dispatcher;
+    private readonly IApplicationNotificationStore notificationStore;
+    private readonly IDateTimeProvider clock;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MauiUserNotificationService"/> class.
     /// </summary>
     /// <param name="dispatcher">The UI dispatcher.</param>
-    public MauiUserNotificationService(IDispatcher dispatcher)
+    /// <param name="notificationStore">The bounded local-notification history.</param>
+    /// <param name="clock">The application clock.</param>
+    public MauiUserNotificationService(
+        IDispatcher dispatcher,
+        IApplicationNotificationStore notificationStore,
+        IDateTimeProvider clock)
     {
         this.dispatcher = dispatcher;
+        this.notificationStore = notificationStore;
+        this.clock = clock;
     }
 
     /// <inheritdoc />
-    public Task NotifyAsync(UserNotification notification, CancellationToken cancellationToken = default) =>
-        dispatcher.DispatchAsync(async () =>
+    public Task NotifyAsync(UserNotification notification, CancellationToken cancellationToken = default)
+    {
+        notificationStore.Add(notification, clock.UtcNow);
+        return dispatcher.DispatchAsync(async () =>
         {
             switch (notification.Presentation)
             {
@@ -43,4 +55,5 @@ public sealed class MauiUserNotificationService : IUserNotificationService
                     throw new ArgumentOutOfRangeException(nameof(notification), notification.Presentation, "Unsupported notification presentation.");
             }
         });
+    }
 }

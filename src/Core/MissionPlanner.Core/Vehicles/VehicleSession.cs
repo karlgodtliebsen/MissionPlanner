@@ -613,10 +613,10 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
     /// <summary>
     /// Compatibility methods for gradual migration.
     /// </summary>
-    /// <param name="message"></param>
-    public void ApplyStatusText(StatusTextMessage message)
+    /// <param name="message">The complete or explicitly truncated status-text entry.</param>
+    public void ApplyStatusText(VehicleStatusText message)
     {
-        Notifications.Add(new VehicleStatusText(message.SystemId, message.ComponentId, message.Text, message.ReceivedAt));
+        Notifications.Add(message);
     }
 
 

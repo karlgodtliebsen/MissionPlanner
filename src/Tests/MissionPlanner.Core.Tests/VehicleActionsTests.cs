@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.FlightData.Tabs;
 using MissionPlanner.Core.Commands;
+using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -348,6 +349,7 @@ public sealed class VehicleActionsTests
             new VehicleCommandPolicy(clock),
             new ArduPilotModeCatalog(),
             confirmation,
+            Substitute.For<IUserNotificationService>(),
             dispatcher,
             Substitute.For<ILogger<ActionsTabViewModel>>());
         return new ViewModelFixture(viewModel, commands, confirmation, active.State!);

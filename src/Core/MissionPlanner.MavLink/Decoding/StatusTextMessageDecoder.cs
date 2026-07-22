@@ -39,12 +39,13 @@ public sealed class StatusTextMessageDecoder : IMavLinkMessageDecoder
 
         var nullIndex = textBytes.IndexOf((byte)0);
 
+        var isTextTerminated = nullIndex >= 0 || textLength < 50;
         if (nullIndex >= 0)
         {
             textBytes = textBytes[..nullIndex];
         }
 
-        var text = System.Text.Encoding.ASCII.GetString(textBytes).TrimEnd();
+        var text = System.Text.Encoding.ASCII.GetString(textBytes);
 
         ushort? id = null;
         byte? chunkSequence = null;
@@ -68,7 +69,8 @@ public sealed class StatusTextMessageDecoder : IMavLinkMessageDecoder
             text,
             id,
             chunkSequence,
-            frame.ReceivedAt);
+            frame.ReceivedAt,
+            isTextTerminated);
 
         return true;
     }

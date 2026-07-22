@@ -124,9 +124,24 @@ Feature description per tab comes from v1.38 (`FlightData.Designer.cs` tab pages
 * Change speed and altitude in flight, Restart Mission, Set current WP
 * Joystick enable, Clear Track, Resume Mission
 
-### Messages (Missing)
+### Messages
 
-* Scrolling STATUSTEXT log from the vehicle (severity-colored)
+#### Status
+
+* Implemented (2026-07-22): bounded, configurable, per-vehicle `STATUSTEXT` history that
+  preserves severity, complete timestamp, source system/component, MAVLink 2 message ID,
+  assembly state, and explicit truncation state.
+* MAVLink 1 text is handled as a single frame. MAVLink 2 chunks are assembled by source,
+  ID, and sequence with duplicate suppression, interleaved-ID isolation, missing-chunk
+  detection, and timeout flushing.
+* The Messages tab supports exact severity filters, case-insensitive search, pause/resume
+  auto-scroll, clear-current-view, selection, copy selected/all, and UTF-8 text/JSON export.
+  Severity is distinguished with text and symbols as well as styling hooks.
+* Local application/workflow notifications use a separate bounded stream and are explicitly
+  labeled as non-MAVLink. Action-command denial, timeout, and rejected ACK feedback is routed
+  into this stream. Histories remain isolated by vehicle and survive temporary disconnects.
+* Capacity and chunk timeout can be overridden with `VehicleMessages:Capacity` and
+  `VehicleMessages:ChunkTimeout`; defaults are 500 messages per vehicle and two seconds.
 
 ### PreFlight (Missing)
 

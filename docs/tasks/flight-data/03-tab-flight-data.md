@@ -1,5 +1,7 @@
 # Flight Data 03 — Messages and status-text history
 
+**Implementation status:** Completed 2026-07-22.
+
 ## Objective
 
 Complete the Messages tab as a bounded, filterable, vehicle-scoped stream of MAVLink `STATUSTEXT` and important application/protocol messages.

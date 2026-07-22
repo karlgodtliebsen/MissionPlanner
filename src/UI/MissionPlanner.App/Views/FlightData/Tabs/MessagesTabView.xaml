@@ -2,14 +2,71 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
               xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
-              xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
               x:Class="MissionPlanner.App.Views.FlightData.Tabs.MessagesTabView"
-             
               x:DataType="tabs:MessagesTabViewModel">
+    <Grid Padding="8" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="8">
+        <Grid Grid.Row="0" ColumnDefinitions="140,*" ColumnSpacing="8">
+            <Picker Grid.Column="0"
+                    Title="Severity"
+                    ItemsSource="{Binding SeverityFilters}"
+                    SelectedItem="{Binding SelectedSeverity}" />
+            <SearchBar Grid.Column="1"
+                       Placeholder="Search text or source"
+                       Text="{Binding SearchText}" />
+        </Grid>
 
-    <Label Text="Messages"
-           FontSize="16"
-           HorizontalOptions="Center"
-           VerticalOptions="Center" />
+        <ScrollView Grid.Row="1" Orientation="Horizontal">
+            <HorizontalStackLayout Spacing="6">
+                <Button Text="{Binding PauseButtonText}" Command="{Binding TogglePauseCommand}" />
+                <Button Text="Clear View" Command="{Binding ClearCurrentViewCommand}" />
+                <Button Text="Copy Selected" Command="{Binding CopySelectedCommand}" />
+                <Button Text="Copy All" Command="{Binding CopyAllCommand}" />
+                <Button Text="Export Text" Command="{Binding ExportTextCommand}" />
+                <Button Text="Export JSON" Command="{Binding ExportJsonCommand}" />
+            </HorizontalStackLayout>
+        </ScrollView>
 
+        <CollectionView x:Name="MessageCollection"
+                        Grid.Row="2"
+                        ItemsSource="{Binding Items}"
+                        SelectedItem="{Binding SelectedMessage}"
+                        SelectionMode="Single">
+            <CollectionView.EmptyView>
+                <Label Text="No messages match the current vehicle and filter."
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center" />
+            </CollectionView.EmptyView>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="tabs:MessageListItem">
+                    <Border Padding="8" Margin="0,0,0,5">
+                        <Grid ColumnDefinitions="145,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="8">
+                            <Label Grid.Row="0" Grid.Column="0"
+                                   Text="{Binding SeverityDisplay}"
+                                   FontAttributes="Bold" />
+                            <Label Grid.Row="0" Grid.Column="1"
+                                   Text="{Binding Text}"
+                                   LineBreakMode="WordWrap" />
+                            <Label Grid.Row="1" Grid.ColumnSpan="2"
+                                   Text="{Binding Details}"
+                                   FontSize="11"
+                                   Opacity="0.75" />
+                            <Label Grid.Row="2" Grid.ColumnSpan="2"
+                                   Text="Local application notification — not MAVLink STATUSTEXT"
+                                   FontSize="11"
+                                   FontAttributes="Italic"
+                                   IsVisible="False">
+                                <Label.Triggers>
+                                    <DataTrigger TargetType="Label" Binding="{Binding Origin}" Value="Application">
+                                        <Setter Property="IsVisible" Value="True" />
+                                    </DataTrigger>
+                                </Label.Triggers>
+                            </Label>
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Label Grid.Row="3" Text="{Binding Status}" LineBreakMode="TailTruncation" />
+    </Grid>
 </ContentView>

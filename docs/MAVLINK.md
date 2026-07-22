@@ -164,6 +164,12 @@ they participate in existing domain or protocol workflows:
 `SCALED_PRESSURE`, `SERVO_OUTPUT_RAW`, `STATUSTEXT`, `SYS_STATUS`, `TIMESYNC`, and
 `VFR_HUD`.
 
+`STATUSTEXT` decoding retains whether its 50-byte text field was terminated. Core uses that
+signal with MAVLink 2 `id` and `chunk_seq` to assemble interleaved multi-frame messages,
+suppress duplicate chunks, and explicitly mark missing or timed-out assemblies as truncated.
+The resulting bounded history retains the original system/component source independently of
+the vehicle session that owns the history.
+
 Task 05 also corrected the retained `MemoryVectMessage` contract: its ID is
 `MEMORY_VECT` (249), not `MEMINFO` (152), and its required `type` byte is now represented.
 `MISSION_REQUEST_LIST` and `MEMORY_VECT` received matching hand-written decoders so every

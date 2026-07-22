@@ -10,7 +10,11 @@ namespace MissionPlanner.Core.Vehicles;
 /// </summary>
 /// <param name="registry">The vehicle registry to be used by the service.</param>
 /// <param name="commandService">The vehicle command service to be used by the service.</param>
-public sealed class VehicleService(IVehicleRegistry registry, IVehicleCommandService commandService) : IVehicleService
+/// <param name="messageStore">The bounded vehicle status-text store.</param>
+public sealed class VehicleService(
+    IVehicleRegistry registry,
+    IVehicleCommandService commandService,
+    IVehicleMessageStore messageStore) : IVehicleService
 {
     /// <inheritdoc />
     public IReadOnlyCollection<VehicleState> GetVehicles()
@@ -35,7 +39,7 @@ public sealed class VehicleService(IVehicleRegistry registry, IVehicleCommandSer
     /// <inheritdoc />
     public IReadOnlyCollection<VehicleStatusText> GetVehicleNotifications(VehicleId vehicleId)
     {
-        return new ReadOnlyCollection<VehicleStatusText>(registry.GetRequired(vehicleId)!.Notifications);
+        return new ReadOnlyCollection<VehicleStatusText>(messageStore.GetMessages(vehicleId).ToList());
     }
 
 

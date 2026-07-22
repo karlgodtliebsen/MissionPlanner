@@ -1,4 +1,5 @@
 using FluentAssertions;
+using CommunityToolkit.Maui.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MissionPlanner.App.Configuration;
@@ -161,10 +162,14 @@ public sealed class FlightDataInfrastructureTests
         var services = new ServiceCollection();
         services.AddApplicationConfiguration(configuration);
         services.AddSingleton(Substitute.For<IDispatcher>());
+        services.AddSingleton(Substitute.For<IFileSaver>());
         await using var provider = services.BuildServiceProvider();
 
         provider.GetRequiredService<IActiveVehicleContext>().Should().NotBeNull();
         provider.GetRequiredService<IUserNotificationService>().Should().NotBeNull();
+        provider.GetRequiredService<IApplicationNotificationStore>().Should().NotBeNull();
+        provider.GetRequiredService<IVehicleMessageStore>().Should().NotBeNull();
+        provider.GetRequiredService<ITextClipboardService>().Should().NotBeNull();
         provider.GetRequiredService<IUserConfirmationService>().Should().NotBeNull();
         provider.GetRequiredService<AsyncOperationRunner>().Should().NotBeNull();
         provider.GetRequiredService<FlightDataViewModel>().Should().NotBeNull();

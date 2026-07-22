@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Commands;
+using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -20,6 +21,7 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
     private readonly IVehicleCommandPolicy commandPolicy;
     private readonly IArduPilotModeCatalog modeCatalog;
     private readonly IUserConfirmationService confirmationService;
+    private readonly IUserNotificationService notificationService;
     private readonly IDispatcher dispatcher;
     private readonly AsyncOperationRunner operationRunner;
     private readonly ILogger<ActionsTabViewModel> logger;
@@ -33,6 +35,7 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
     /// <param name="commandPolicy">The vehicle safety policy.</param>
     /// <param name="modeCatalog">The firmware-specific mode catalog.</param>
     /// <param name="confirmationService">The hazardous-action confirmation service.</param>
+    /// <param name="notificationService">The separate application-notification stream.</param>
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public ActionsTabViewModel(
@@ -41,6 +44,7 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
         IVehicleCommandPolicy commandPolicy,
         IArduPilotModeCatalog modeCatalog,
         IUserConfirmationService confirmationService,
+        IUserNotificationService notificationService,
         IDispatcher dispatcher,
         ILogger<ActionsTabViewModel> logger)
     {
@@ -49,6 +53,7 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
         this.commandPolicy = commandPolicy;
         this.modeCatalog = modeCatalog;
         this.confirmationService = confirmationService;
+        this.notificationService = notificationService;
         this.dispatcher = dispatcher;
         this.logger = logger;
         operationRunner = new AsyncOperationRunner(activeVehicle);
@@ -239,6 +244,13 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
         if (!decision.IsAllowed)
         {
             OperationState = AsyncOperationState.Warning(decision.Reason ?? "Command denied by safety policy.");
+            await notificationService.NotifyAsync(
+                new UserNotification(
+                    OperationState.Message!,
+                    $"{label} denied",
+                    UserNotificationSeverity.Warning,
+                    VehicleId: state.VehicleId),
+                cancellationToken);
             return;
         }
 
@@ -276,6 +288,15 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
                 dispatcher.Dispatch(() => AckResult = $"{response.Result}: {response.Message}");
                 if (response.Result != VehicleCommandResult.Accepted)
                 {
+                    await notificationService.NotifyAsync(
+                        new UserNotification(
+                            response.Message ?? $"{label} failed with {response.Result}.",
+                            label,
+                            response.Result is VehicleCommandResult.Timeout or VehicleCommandResult.Failed
+                                ? UserNotificationSeverity.Error
+                                : UserNotificationSeverity.Warning,
+                            VehicleId: vehicleId),
+                        token).ConfigureAwait(false);
                     return MapResponse(response);
                 }
 
