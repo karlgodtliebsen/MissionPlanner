@@ -11,7 +11,7 @@ permissions:
 jobs:
   build-maccatalyst:
     name: Build Mac Catalyst Release
-    runs-on: macos-latest
+    runs-on: macos-26
     timeout-minutes: 45
 
     env:
@@ -22,15 +22,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Select Xcode 26.6
+        shell: bash
+        run: |
+          XCODE_DEVELOPER_DIR="/Applications/Xcode_26.6.app/Contents/Developer"
+
+          if [[ ! -d "$XCODE_DEVELOPER_DIR" ]]; then
+            echo "::error::Xcode 26.6 was not found at $XCODE_DEVELOPER_DIR"
+            ls -1 /Applications | grep '^Xcode' || true
+            exit 1
+          fi
+
+          sudo xcode-select --switch "$XCODE_DEVELOPER_DIR"
+          echo "DEVELOPER_DIR=$XCODE_DEVELOPER_DIR" >> "$GITHUB_ENV"
+
+          xcodebuild -version
+          xcode-select --print-path
+
       - name: Set up .NET 10 and .NET MAUI for Mac Catalyst
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: 10.0.302
           workloads: maui-maccatalyst
 
-      - name: Show Apple and .NET build environment
+      - name: Show .NET build environment
         run: |
-          xcodebuild -version
           dotnet --info
           dotnet workload list
 
