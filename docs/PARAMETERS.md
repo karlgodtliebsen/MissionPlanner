@@ -180,6 +180,12 @@ bulk service continues to prefer packed MAVFTP parameters and automatically fall
 the classic parameter stream. File imports populate pending values, while Apply performs
 confirmed session writes.
 
+`GeoFenceTabViewModel` opens the same session with an explicit fence field catalog. It
+resolves only parameters present for the connected firmware and commits parameter changes
+before uploading typed fence geometry. Cross-field checks, such as minimum/maximum altitude
+ordering and return-altitude bounds, run together with geometry validation; a rejected or
+unconfirmed parameter write prevents the geometry phase.
+
 ### Frame setup transaction
 
 Initial Setup uses `IFrameConfigurationService` rather than writing parameters from the

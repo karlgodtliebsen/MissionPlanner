@@ -52,3 +52,12 @@ Use mission/fence protocol services and `MissionMapView` abstractions. Do not tr
 - Invalid geometry cannot be uploaded.
 - Vehicle and local versions are distinguishable.
 - Clear/replace is recoverable and confirmed.
+
+## Completion
+
+Completed 2026-07-22. GeoFence now uses the shared vehicle-scoped parameter session and a
+dedicated fence aggregate/protocol mapper for acknowledged download, upload, and clear.
+The Config page supports map editing for polygon/circle inclusion and exclusion plus the
+return point, pre-transfer validation, progress, local versus synchronized revisions,
+recoverable replace/clear backups, reconnect/partial-transfer recovery, DI registration,
+and deterministic domain, protocol, and view-model tests.

@@ -13,5 +13,7 @@ public enum MavProtocolCapability : ulong
     /// <summary>Supports union parameter encoding.</summary>
     ParamUnion = 1UL << 4,
     /// <summary>Supports MAVLink FTP.</summary>
-    Ftp = 1UL << 5
+    Ftp = 1UL << 5,
+    /// <summary>Supports the typed mission fence protocol.</summary>
+    MissionFence = 1UL << 14
 }

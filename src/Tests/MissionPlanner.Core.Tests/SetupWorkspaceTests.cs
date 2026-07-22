@@ -5,11 +5,13 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.ConfigTuning;
+using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Configuration;
+using MissionPlanner.Core.Configuration.Fences;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -195,6 +197,10 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<MandatoryHardwareViewModel>().Should().NotBeNull();
         provider.GetRequiredService<IParameterEditSessionFactory>().Should().NotBeNull();
         provider.GetRequiredService<IConfigNavigationGuard>().Should().NotBeNull();
+        provider.GetRequiredService<IFenceProtocolMapper>().Should().NotBeNull();
+        provider.GetRequiredService<IFenceGeometryValidator>().Should().NotBeNull();
+        provider.GetRequiredService<IFenceConfigurationService>().Should().NotBeNull();
+        provider.GetRequiredService<GeoFenceTabViewModel>().Should().NotBeNull();
     }
 
     private static SetupWorkflowEvaluation Evaluation(

@@ -1,12 +1,112 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
+             xmlns:config="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
              x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.GeoFenceTabView"
-             Title="GeoFenceTabView">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             x:DataType="tabs:GeoFenceTabViewModel"
+             Title="GeoFence">
+    <Grid RowDefinitions="Auto,Auto,*" Padding="12" RowSpacing="10">
+        <HorizontalStackLayout Spacing="8">
+            <Button Text="Download" Command="{Binding DownloadCommand}" />
+            <Button Text="Validate &amp; upload" Command="{Binding UploadCommand}" />
+            <Button Text="Clear vehicle" Command="{Binding ClearVehicleCommand}" />
+            <Button Text="Restore backup" Command="{Binding RestoreBackupCommand}" />
+            <Button Text="Refresh parameters" Command="{Binding RefreshParametersCommand}" />
+            <Button Text="Revert parameters" Command="{Binding RevertParametersCommand}" />
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+        </HorizontalStackLayout>
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <Label Text="{Binding StatusMessage}" LineBreakMode="WordWrap" />
+            <ProgressBar Grid.Column="1" WidthRequest="180" Progress="{Binding TransferPercent}" />
+        </Grid>
+
+        <Grid Grid.Row="2" ColumnDefinitions="380,*" ColumnSpacing="12">
+            <ScrollView>
+                <VerticalStackLayout Spacing="10">
+                    <Border Padding="10">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Fence synchronization" FontAttributes="Bold" FontSize="18" />
+                            <Label Text="{Binding LocalRevisionText}" />
+                            <Label Text="{Binding VehicleRevisionText}" />
+                            <Label Text="{Binding ReturnPointText}" />
+                            <Label Text="Local geometry has unapplied changes"
+                                   TextColor="OrangeRed"
+                                   IsVisible="{Binding IsGeometryDirty}" />
+                            <Label Text="Typed geometry is not advertised by this firmware."
+                                   TextColor="OrangeRed"
+                                   IsVisible="{Binding IsTypedGeometryUnsupported}" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Padding="10">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Fence parameters" FontAttributes="Bold" FontSize="18" />
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Parameters}" Spacing="6">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="config:ParameterItemViewModel">
+                                        <Grid ColumnDefinitions="*,110" RowDefinitions="Auto,Auto" ColumnSpacing="8">
+                                            <Label Text="{Binding DisplayName}" FontAttributes="Bold" />
+                                            <Entry Grid.Column="1"
+                                                   Text="{Binding Value, Mode=TwoWay}"
+                                                   IsReadOnly="{Binding IsReadOnly}"
+                                                   Keyboard="Numeric" />
+                                            <Label Grid.Row="1" Grid.ColumnSpan="2"
+                                                   Text="{Binding ValidationError}"
+                                                   TextColor="OrangeRed"
+                                                   FontSize="12" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Padding="10">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Fence map edit mode" FontAttributes="Bold" FontSize="18" />
+                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="6" RowSpacing="6">
+                                <Button Text="Inclusion polygon" Command="{Binding BeginPolygonInclusionCommand}" />
+                                <Button Grid.Column="1" Text="Exclusion polygon" Command="{Binding BeginPolygonExclusionCommand}" />
+                                <Button Grid.Row="1" Text="Inclusion circle" Command="{Binding BeginCircleInclusionCommand}" />
+                                <Button Grid.Row="1" Grid.Column="1" Text="Exclusion circle" Command="{Binding BeginCircleExclusionCommand}" />
+                                <Button Grid.Row="2" Text="Set return point" Command="{Binding BeginReturnPointCommand}" />
+                                <Entry Grid.Row="2" Grid.Column="1" Placeholder="Circle radius (m)" Text="{Binding CircleRadiusMeters, Mode=TwoWay}" Keyboard="Numeric" />
+                            </Grid>
+                            <HorizontalStackLayout Spacing="6" IsVisible="{Binding IsFenceEditMode}">
+                                <Button Text="Finish polygon" Command="{Binding FinishPolygonCommand}" />
+                                <Button Text="Cancel edit" Command="{Binding CancelEditCommand}" />
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Padding="10">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Local geometry" FontAttributes="Bold" FontSize="18" />
+                            <CollectionView ItemsSource="{Binding Areas}"
+                                            SelectedItem="{Binding SelectedArea}"
+                                            SelectionMode="Single"
+                                            HeightRequest="180">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="tabs:FenceAreaListItem">
+                                        <Grid ColumnDefinitions="*,Auto" Padding="4">
+                                            <Label Text="{Binding Kind}" />
+                                            <Label Grid.Column="1" Text="{Binding Summary}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                            <HorizontalStackLayout Spacing="6">
+                                <Button Text="Remove selected" Command="{Binding RemoveAreaCommand}" CommandParameter="{Binding SelectedArea}" />
+                                <Button Text="Remove return" Command="{Binding RemoveReturnPointCommand}" />
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <tabs:GeoFenceMapView Grid.Column="1" />
+        </Grid>
+    </Grid>
 </ContentPage>

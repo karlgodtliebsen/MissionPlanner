@@ -274,6 +274,23 @@ relying on physical flight hardware.
 
 ---
 
+## Fence mission transfers
+
+GeoFence has its own Core aggregate and protocol mapper. Inclusion/exclusion polygons,
+inclusion/exclusion circles, and the optional return point are represented as fence areas
+and converted only at the transfer boundary to `MAV_MISSION_TYPE_FENCE` items. They are
+never inserted into the flight mission aggregate or rendered as ordinary waypoints.
+
+`IMissionTransferService` accepts typed raw mission items for non-flight mission domains,
+reports download progress, and confirms clear operations with `MISSION_ACK`. The GeoFence
+configuration service combines those transfers with the shared parameter editing session,
+validates the whole proposed configuration before writes, preserves the previous plan as a
+local backup before replace/clear, and publishes a synchronized vehicle revision only
+after a successful acknowledgement. Partial downloads and disconnects leave the existing
+local plan intact for recovery.
+
+---
+
 ## Known gaps and next steps
 
 See `FEATURES.md` for the complete inventory. High-value next steps are:
@@ -284,7 +301,7 @@ See `FEATURES.md` for the complete inventory. High-value next steps are:
 4. `DO_JUMP` and ROI commands.
 5. Mission capability validation against vehicle/firmware type.
 6. Terrain and elevation services.
-7. Fence and rally aggregates separated from the flight mission.
+7. Rally aggregate separated from the flight mission.
 8. Survey/grid generation retaining its source definition.
 9. Transfer serialization and stronger mission-type correlation.
 10. Decomposition of `MissionMapViewModel` into editing, file, interaction, and presentation services.

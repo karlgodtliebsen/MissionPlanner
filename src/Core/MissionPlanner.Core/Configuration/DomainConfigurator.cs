@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MissionPlanner.Core.Commands;
+using MissionPlanner.Core.Configuration.Fences;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Missions;
 using MissionPlanner.Core.Missions.Abstractions;
@@ -42,6 +43,9 @@ public static class DomainConfigurator
         services.TryAddTransient<IMissionProtocolMapper, MissionProtocolMapper>();
         services.TryAddTransient<IMissionValidator, MissionValidator>();
         services.TryAddTransient<IMissionFileCodec, MissionFileCodec>();
+        services.TryAddSingleton<IFenceProtocolMapper, FenceProtocolMapper>();
+        services.TryAddSingleton<IFenceGeometryValidator, FenceGeometryValidator>();
+        services.TryAddSingleton<IFenceConfigurationService, FenceConfigurationService>();
 
 
         services.TryAddTransient<IVehicleMessagePump, VehicleMessagePump>();

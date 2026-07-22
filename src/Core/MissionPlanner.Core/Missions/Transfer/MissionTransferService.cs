@@ -27,14 +27,36 @@ public sealed class MissionTransferService(
     public async Task<MissionUploadResult> UploadAsync(VehicleId vehicleId, Mission mission, IProgress<MissionUploadProgress>? progress = null,
         CancellationToken cancellationToken = default)
     {
-        var session = vehicleRegistry.GetRequired(vehicleId) ?? throw new InvalidOperationException($"Vehicle {vehicleId} is not connected.");
         var items = mission.Items.Select(x => mapper.ToProtocol(x, mission.Type)).ToArray();
+        return await UploadItemsAsync(vehicleId, items, mission.Type, progress, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public async Task<MissionUploadResult> UploadItemsAsync(
+        VehicleId vehicleId,
+        IReadOnlyList<MavLinkMissionItem> items,
+        MissionPlanType missionType,
+        IProgress<MissionUploadProgress>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(items);
+        if (items.Count > ushort.MaxValue)
+        {
+            return new MissionUploadResult(false, null, $"Plan contains {items.Count} items; the protocol limit is {ushort.MaxValue}.");
+        }
+
+        if (items.Select((item, index) => item.Sequence == index && item.MissionType == (MavMissionType)(byte)missionType).Any(valid => !valid))
+        {
+            return new MissionUploadResult(false, null, "Plan items must be contiguous and match the requested mission type.");
+        }
+
+        var session = vehicleRegistry.GetRequired(vehicleId) ?? throw new InvalidOperationException($"Vehicle {vehicleId} is not connected.");
         var requests = Channel.CreateUnbounded<MavLinkMessage>(new UnboundedChannelOptions { SingleReader = true, SingleWriter = false });
         using var subscription = eventHub.SubscribeAsync<MavLinkMessage>(MavLinkEventTopics.ReceivedMessage, (m, _) =>
         {
             if (m.SystemId == vehicleId.SystemId && m.ComponentId == vehicleId.ComponentId
-                && ((m is MissionRequestIntMessage request && request.MissionType == (byte)mission.Type)
-                    || (m is MissionAckMessage ack && ack.MissionType == (byte)mission.Type)))
+                && ((m is MissionRequestIntMessage request && request.MissionType == (byte)missionType)
+                    || (m is MissionAckMessage ack && ack.MissionType == (byte)missionType)))
             {
                 requests.Writer.TryWrite(m);
             }
@@ -44,7 +66,7 @@ public sealed class MissionTransferService(
 
         for (var attempt = 0; attempt < MaxAttempts; attempt++)
         {
-            await connection.SendRawAsync(encoder.EncodeMissionCount(vehicleId.SystemId, vehicleId.ComponentId, checked((ushort)items.Length), (MavMissionType)(byte)mission.Type), session.EndPoint, cancellationToken);
+            await connection.SendRawAsync(encoder.EncodeMissionCount(vehicleId.SystemId, vehicleId.ComponentId, checked((ushort)items.Count), (MavMissionType)(byte)missionType), session.EndPoint, cancellationToken);
             var sent = new HashSet<ushort>();
             while (true)
             {
@@ -61,14 +83,14 @@ public sealed class MissionTransferService(
                 }
 
                 var request = (MissionRequestIntMessage)incoming;
-                if (request.Sequence >= items.Length)
+                if (request.Sequence >= items.Count)
                 {
                     return new MissionUploadResult(false, null, $"Vehicle requested invalid mission sequence {request.Sequence}.");
                 }
 
                 await connection.SendRawAsync(encoder.EncodeMissionItemInt(vehicleId.SystemId, vehicleId.ComponentId, items[request.Sequence]), session.EndPoint, cancellationToken);
                 sent.Add(request.Sequence);
-                progress?.Report(new MissionUploadProgress(sent.Count, items.Length, request.Sequence));
+                progress?.Report(new MissionUploadProgress(sent.Count, items.Count, request.Sequence));
             }
         }
 
@@ -77,6 +99,14 @@ public sealed class MissionTransferService(
 
     /// <inheritdoc/>
     public async Task<MissionDownloadResult> DownloadAsync(VehicleId vehicleId, MissionPlanType missionType = MissionPlanType.FlightMission, CancellationToken cancellationToken = default)
+        => await DownloadAsync(vehicleId, missionType, null, cancellationToken).ConfigureAwait(false);
+
+    /// <inheritdoc/>
+    public async Task<MissionDownloadResult> DownloadAsync(
+        VehicleId vehicleId,
+        MissionPlanType missionType,
+        IProgress<MissionDownloadProgress>? progress,
+        CancellationToken cancellationToken = default)
     {
         var session = vehicleRegistry.GetRequired(vehicleId) ?? throw new InvalidOperationException($"Vehicle {vehicleId} is not connected.");
         var messages = Channel.CreateUnbounded<MavLinkMessage>(new UnboundedChannelOptions { SingleReader = true, SingleWriter = false });
@@ -150,6 +180,7 @@ public sealed class MissionTransferService(
 
             result[seq] = new MavLinkMissionItem(item.Sequence, item.Frame, item.Command, item.Current != 0,
                 item.AutoContinue != 0, item.Param1, item.Param2, item.Param3, item.Param4, item.X, item.Y, item.Z, (MavMissionType)item.MissionType);
+            progress?.Report(new MissionDownloadProgress(seq + 1, count.Count, seq));
         }
 
         await connection.SendRawAsync(encoder.EncodeMissionAck(vehicleId.SystemId, vehicleId.ComponentId, 0,
@@ -158,10 +189,41 @@ public sealed class MissionTransferService(
     }
 
     /// <inheritdoc/>
-    public async Task ClearAsync(VehicleId vehicleId, MissionPlanType missionType = MissionPlanType.FlightMission, CancellationToken cancellationToken = default)
+    public async Task<MissionUploadResult> ClearAsync(VehicleId vehicleId, MissionPlanType missionType = MissionPlanType.FlightMission, CancellationToken cancellationToken = default)
     {
         var session = vehicleRegistry.GetRequired(vehicleId) ?? throw new InvalidOperationException($"Vehicle {vehicleId} is not connected.");
-        await connection.SendRawAsync(encoder.EncodeMissionClearAll(vehicleId.SystemId, vehicleId.ComponentId, (MavMissionType)(byte)missionType), session.EndPoint, cancellationToken);
+        var acknowledgements = Channel.CreateUnbounded<MavLinkMessage>(new UnboundedChannelOptions { SingleReader = true, SingleWriter = false });
+        using var subscription = eventHub.SubscribeAsync<MavLinkMessage>(MavLinkEventTopics.ReceivedMessage, (message, _) =>
+        {
+            if (message.SystemId == vehicleId.SystemId && message.ComponentId == vehicleId.ComponentId &&
+                message is MissionAckMessage acknowledgement && acknowledgement.MissionType == (byte)missionType)
+            {
+                acknowledgements.Writer.TryWrite(acknowledgement);
+            }
+
+            return Task.CompletedTask;
+        });
+
+        for (var attempt = 0; attempt < MaxAttempts; attempt++)
+        {
+            await connection.SendRawAsync(
+                encoder.EncodeMissionClearAll(vehicleId.SystemId, vehicleId.ComponentId, (MavMissionType)(byte)missionType),
+                session.EndPoint,
+                cancellationToken);
+            try
+            {
+                var acknowledgement = (MissionAckMessage)await ReadWithTimeout(acknowledgements.Reader, cancellationToken).ConfigureAwait(false);
+                return new MissionUploadResult(
+                    acknowledgement.Result == 0,
+                    acknowledgement.Result,
+                    acknowledgement.Result == 0 ? null : $"Vehicle rejected plan clear with result {acknowledgement.Result}.");
+            }
+            catch (TimeoutException)
+            {
+            }
+        }
+
+        return new MissionUploadResult(false, null, "Plan clear timed out before MISSION_ACK was received.");
     }
 
     private static async Task<MavLinkMessage> ReadWithTimeout(ChannelReader<MavLinkMessage> reader, CancellationToken cancellationToken)

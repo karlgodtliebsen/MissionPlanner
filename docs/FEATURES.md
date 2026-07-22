@@ -489,8 +489,8 @@ MAVLink command sequences that the domain does not implement yet.
 The Config screen replaces v1.38's Config/Tuning (`SoftwareConfig.cs`). New UI:
 `Views/ConfigTuning` — tab views exist for GeoFence, Basic Tuning, Extended Tuning,
 Onboard OSD, MAVFtp, Full Parameters List, Planner and CubeLan8PortSwitch. Full Parameters
-List and MAVFTP are implemented; the remaining tabs are covered by the sequential Config
-tasks.
+List, MAVFTP, and GeoFence are implemented; the remaining tabs are covered by the
+sequential Config tasks.
 
 All parameter-editing Config pages share a vehicle-and-firmware-scoped editing session.
 It separates original, live, and pending values; validates metadata ranges, increments,
@@ -518,12 +518,32 @@ while leaving Config warns before discarding them.
 
 * Parameter loading is way too slow (profile the metadata/value merge)
 
+## GeoFence
+
+### Status
+
+* Resolves fence enable, type, action, altitude, radius, margin, return, auto-enable, and
+  option parameters from live metadata through the shared Config editing session
+* Downloads, uploads, and clears dedicated `MAV_MISSION_TYPE_FENCE` geometry with
+  acknowledged retry behavior and item-level progress
+* Edits inclusion/exclusion polygons and circles plus the return point on a dedicated map;
+  fence geometry is not added to the flight mission aggregate
+* Rejects undersized, open, self-intersecting, non-finite, or over-limit geometry and
+  invalid radius/altitude relationships before any vehicle change
+* Distinguishes local and synchronized vehicle revisions, preserves a backup before
+  replace/clear, and keeps local work recoverable after disconnects or partial downloads
+
+### Limitations
+
+* Typed geometry requires the vehicle's fence mission protocol; parameter-only fence
+  configuration remains available when that protocol is not supported
+* Physical-vehicle/SITL validation is still required for firmware-specific option values
+
 ## Other Config tabs (Missing)
 
 v1.38 feature inventory per tab; the new tab views are placeholders:
 
 * **Flight Modes**: assign flight modes to RC switch positions (not present as a tab yet)
-* **GeoFence**: fence enable/type/action, altitudes/radius (tab view exists, empty)
 * **Basic Tuning**: simplified sliders (roll/pitch sensitivity, throttle hover, climb rates)
 * **Extended Tuning**: per-vehicle PID editors (Copter/Plane/Rover), filters, TX tuning knob
 * **Standard / Advanced Params**: "friendly" curated parameter lists with combos/sliders

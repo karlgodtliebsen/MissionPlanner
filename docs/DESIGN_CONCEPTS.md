@@ -989,6 +989,14 @@ names or access MAVLink transports. Full Parameters List uses the same session f
 complete live registry. Shell navigation preserves pending state between Config tabs and
 asks for confirmation before leaving the Config workspace.
 
+GeoFence extends this model with a singleton, vehicle-scoped geometry workspace. Its
+`FencePlan` is independent from the flight mission and maps to typed fence mission items
+only inside `IFenceProtocolMapper`. Local and last-confirmed vehicle revisions remain
+separate. Download replacement and vehicle clear preserve a local backup, while incomplete
+transfers never replace the editor's current plan. A connection-scoped operation gate
+serializes the parameter and geometry phases, and an acknowledgement is required before a
+revision is marked synchronized.
+
 # Setup workflow shell
 
 Initial Setup is an orchestration surface over existing domain and Config capabilities.
