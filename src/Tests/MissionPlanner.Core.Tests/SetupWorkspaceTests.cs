@@ -121,6 +121,47 @@ public sealed class SetupWorkspaceTests
         viewModel.VehicleHeading.Should().Be(heading);
     }
 
+    /// <summary>Verifies telemetry-only snapshots do not rebuild the Setup workflow collection.</summary>
+    [Fact]
+    public void ViewModelIgnoresTelemetryOnlyActiveVehicleChanges()
+    {
+        var context = new TestActiveVehicleContext(State(FirmwareFamily.ArduCopter));
+        var factory = Substitute.For<ISetupWorkflowViewModelFactory>();
+        factory.Create(Arg.Any<SetupWorkflowDescriptor>()).Returns(call => new SetupWorkflowDetailViewModel(call.Arg<SetupWorkflowDescriptor>()!));
+        var dispatcher = ImmediateDispatcher();
+        using var viewModel = new MandatoryHardwareViewModel(
+            context,
+            new VehicleParameterRegistry(),
+            new SetupWorkflowCatalog(),
+            new MemoryCompletionStore(),
+            factory,
+            Substitute.For<ISetupNavigationService>(),
+            Substitute.For<IUserConfirmationService>(),
+            Substitute.For<IDateTimeProvider>(),
+            dispatcher,
+            Substitute.For<ILogger<MandatoryHardwareViewModel>>());
+        viewModel.Activate();
+        viewModel.SelectedWorkflow = viewModel.Workflows.Single(item => item.Descriptor.Key == SetupWorkflowKey.Frame);
+        var workflowItems = viewModel.Workflows.ToArray();
+        var selectedWorkflow = viewModel.SelectedWorkflow;
+        dispatcher.ClearReceivedCalls();
+
+        var current = context.Current.State!;
+        context.Set(current with
+        {
+            Connection = current.Connection with { LastHeartbeatAt = current.LastHeartbeatAt.AddSeconds(1) },
+            Flight = current.Flight with { IsArmed = true }
+        });
+
+        dispatcher.DidNotReceive().Dispatch(Arg.Any<Action>());
+        viewModel.SelectedWorkflow.Should().BeSameAs(selectedWorkflow);
+        viewModel.Workflows.Should().HaveCount(workflowItems.Length);
+        for (var index = 0; index < workflowItems.Length; index++)
+        {
+            viewModel.Workflows[index].Should().BeSameAs(workflowItems[index]);
+        }
+    }
+
     /// <summary>Verifies Setup shell services resolve from the application dependency graph.</summary>
     [Fact]
     public async Task DependencyInjectionResolvesSetupWorkspace()

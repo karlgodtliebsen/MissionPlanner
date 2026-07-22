@@ -497,11 +497,29 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
 
     private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
     {
+        var connectionBoundaryChanged =
+            args.Previous.VehicleId != args.Current.VehicleId ||
+            args.Previous.IsOnline != args.Current.IsOnline;
+        var identityChanged = args.Previous.State?.Identity != args.Current.State?.Identity;
+        if (!connectionBoundaryChanged && !identityChanged)
+        {
+            return;
+        }
+
         dispatcher.Dispatch(() =>
         {
-            CancelParameterRefresh();
-            CancelWorkflow();
-            DisposeWorkflowViewModels();
+            if (!active)
+            {
+                return;
+            }
+
+            if (connectionBoundaryChanged)
+            {
+                CancelParameterRefresh();
+                CancelWorkflow();
+                DisposeWorkflowViewModels();
+            }
+
             Refresh();
         });
     }
