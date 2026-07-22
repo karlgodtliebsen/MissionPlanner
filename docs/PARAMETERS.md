@@ -212,6 +212,19 @@ Writing still happens later through the group's shared-session apply and readbac
 shows `PID_TUNING` response metrics as read-only context; the metrics collector never sends
 commands and Extended Tuning does not execute autotune.
 
+Onboard OSD performs discovery before opening its editor: live names matching numbered
+`OSD<n>_*` screen and item-property patterns select the fields loaded into the shared
+session. Item stems are not hard-coded, so custom firmware items with enable, X, and Y
+parameters appear automatically; further parameters under the same stem are exposed as
+metadata-backed options. Coordinate metadata supplies character-grid bounds.
+
+OSD validation rejects non-integral/out-of-grid positions and same-cell collisions unless
+screen metadata explicitly advertises dynamic/overlapping items. Such collisions remain
+warnings that require confirmation before group apply. Layout import is firmware-family-
+tagged, restricted to discovered OSD parameters, and restores previous pending state on any
+metadata or bounds error. Reset means revert to confirmed live values; firmware defaults are
+not guessed.
+
 ### Frame setup transaction
 
 Initial Setup uses `IFrameConfigurationService` rather than writing parameters from the

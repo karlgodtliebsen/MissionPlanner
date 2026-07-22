@@ -52,3 +52,13 @@ Use OSD parameter metadata and presence to discover screens/items. Reference leg
 - Layout is derived from the connected firmware.
 - Invalid coordinates cannot be applied.
 - Existing Full Parameters functionality is not duplicated.
+
+## Completion
+
+Completed 2026-07-22. Onboard OSD now discovers screens, built-in/custom item stems,
+placement fields, and additional options from live parameter names and metadata. A
+platform-neutral character-grid model drives the MAUI graphics preview and accessible
+numeric/directional placement controls. Bounds and overlap validation, explicit dynamic-
+overlap acknowledgement, selected-screen confirmed apply, reset-to-live, atomic
+family-tagged import/export, lifecycle handling, and DI registration are implemented and
+covered by deterministic discovery, layout, movement, file, readback, and view-model tests.

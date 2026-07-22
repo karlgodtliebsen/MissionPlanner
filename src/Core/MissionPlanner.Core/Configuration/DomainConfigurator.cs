@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Configuration.Fences;
+using MissionPlanner.Core.Configuration.Osd;
 using MissionPlanner.Core.Configuration.Tuning;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Missions;
@@ -52,6 +53,7 @@ public static class DomainConfigurator
         services.TryAddSingleton<IExtendedTuningProfileCatalog, ExtendedTuningProfileCatalog>();
         services.TryAddTransient<IExtendedTuningService, ExtendedTuningService>();
         services.TryAddSingleton<IControlResponseMetricsService, ControlResponseMetricsService>();
+        services.TryAddTransient<IOsdConfigurationService, OsdConfigurationService>();
 
 
         services.TryAddTransient<IVehicleMessagePump, VehicleMessagePump>();

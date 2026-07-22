@@ -1005,6 +1005,14 @@ scoped previews until a separate user confirmation copies them into pending sess
 normal group review is still required before vehicle writes. `ControlResponseMetricsService`
 only observes decoded `PID_TUNING` messages and exposes latest read-only response context.
 
+Onboard OSD is also a projection over the shared session, but its catalog is discovered from
+live parameter-name structure. Core groups `OSD<n>_<item>_EN/X/Y` fields into screen/item
+definitions, attaches additional fields under each item stem, and derives character-grid
+bounds from metadata. The preview consumes platform-neutral `OsdPreviewItem` values; MAUI
+drawing stays in the view integration. Static overlaps are errors, while firmware-advertised
+dynamic overlaps are warnings that still require explicit acknowledgement. No font upload
+command exists until a real transfer service can own that capability.
+
 GeoFence extends this model with a singleton, vehicle-scoped geometry workspace. Its
 `FencePlan` is independent from the flight mission and maps to typed fence mission items
 only inside `IFenceProtocolMapper`. Local and last-confirmed vehicle revisions remain

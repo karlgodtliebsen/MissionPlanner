@@ -1,12 +1,145 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
+             xmlns:config="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
              x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.OnboardOSDTabView"
-             Title="OnboardOSDTabView">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             x:DataType="tabs:OnboardOsdTabViewModel"
+             Title="Onboard OSD">
+    <Grid RowDefinitions="Auto,Auto,*" Padding="12" RowSpacing="10">
+        <Grid ColumnDefinitions="Auto,220,*,Auto" ColumnSpacing="8">
+            <Label Text="Screen" VerticalOptions="Center" />
+            <Picker Grid.Column="1" ItemsSource="{Binding Screens}" SelectedItem="{Binding SelectedScreen}" />
+            <HorizontalStackLayout Grid.Column="2" Spacing="8">
+                <Button Text="Apply selected screen" Command="{Binding ApplyScreenCommand}" />
+                <Button Text="Reset to live" Command="{Binding ResetScreenCommand}" />
+                <Button Text="Import layout" Command="{Binding ImportCommand}" />
+                <Button Text="Export layout" Command="{Binding ExportCommand}" />
+            </HorizontalStackLayout>
+            <ActivityIndicator Grid.Column="3" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+        </Grid>
+
+        <Border Grid.Row="1" Padding="10">
+            <VerticalStackLayout Spacing="3">
+                <Label Text="{Binding StatusMessage}" LineBreakMode="WordWrap" />
+                <Label Text="{Binding ValidationMessage}"
+                       TextColor="OrangeRed"
+                       IsVisible="{Binding HasValidationIssues}"
+                       LineBreakMode="WordWrap" />
+                <Label Text="Font upload is not offered because no font-transfer service is registered."
+                       FontSize="12"
+                       Opacity="0.75"
+                       IsVisible="{Binding HasOsdConfiguration}" />
+                <Label Text="The connected firmware exposes no discoverable OSD screens/items."
+                       TextColor="OrangeRed"
+                       IsVisible="{Binding IsUnsupported}" />
+            </VerticalStackLayout>
+        </Border>
+
+        <Grid Grid.Row="2" ColumnDefinitions="3*,2*" ColumnSpacing="12" IsVisible="{Binding HasOsdConfiguration}">
+            <ScrollView>
+                <VerticalStackLayout Spacing="10">
+                    <Border Padding="8">
+                        <VerticalStackLayout Spacing="6">
+                            <HorizontalStackLayout Spacing="10">
+                                <Label Text="Visual character-grid preview" FontAttributes="Bold" FontSize="18" />
+                                <Label Text="{Binding SelectedScreen.GridSizeText}" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                            <tabs:OnboardOsdPreviewView />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Padding="8">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Screen enable and options" FontAttributes="Bold" FontSize="18" />
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedScreen.Parameters}" Spacing="4">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="config:ParameterItemViewModel">
+                                        <Grid ColumnDefinitions="2*,Auto,130" ColumnSpacing="8">
+                                            <VerticalStackLayout>
+                                                <Label Text="{Binding DisplayName}" FontAttributes="Bold" />
+                                                <Label Text="{Binding Name}" FontSize="11" />
+                                            </VerticalStackLayout>
+                                            <Label Grid.Column="1" Text="{Binding LiveValue, StringFormat='Live {0:G}'}" VerticalOptions="Center" />
+                                            <Entry Grid.Column="2" Text="{Binding Value, Mode=TwoWay}" Keyboard="Numeric" IsReadOnly="{Binding IsReadOnly}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Padding="8" IsVisible="{Binding HasGlobalParameters}">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Global OSD options" FontAttributes="Bold" FontSize="18" />
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding GlobalParameters}" Spacing="4">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="config:ParameterItemViewModel">
+                                        <Grid ColumnDefinitions="*,130" ColumnSpacing="8">
+                                            <Label Text="{Binding DisplayName}" />
+                                            <Entry Grid.Column="1" Text="{Binding Value, Mode=TwoWay}" Keyboard="Numeric" IsReadOnly="{Binding IsReadOnly}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <Grid Grid.Column="1" RowDefinitions="2*,Auto" RowSpacing="10">
+                <CollectionView ItemsSource="{Binding SelectedScreen.Items}"
+                                SelectedItem="{Binding SelectedItem}"
+                                SelectionMode="Single"
+                                EmptyView="No items discovered for this screen.">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="tabs:OsdItemViewModel">
+                            <Border Padding="8" Margin="0,0,0,5">
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="8">
+                                    <VerticalStackLayout>
+                                        <Label Text="{Binding Title}" FontAttributes="Bold" />
+                                        <Label Text="{Binding Key}" FontSize="11" />
+                                    </VerticalStackLayout>
+                                    <Switch Grid.Column="1" IsToggled="{Binding IsEnabled, Mode=TwoWay}" />
+                                    <Label Grid.Row="1" Text="{Binding Column, StringFormat='Column {0}'}" FontSize="12" />
+                                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding Row, StringFormat='Row {0}'}" FontSize="12" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <Border Grid.Row="1" Padding="10">
+                    <VerticalStackLayout Spacing="6">
+                        <Label Text="Selected item placement" FontAttributes="Bold" FontSize="18" />
+                        <Label Text="{Binding SelectedItem.Title}" FontAttributes="Bold" />
+                        <Label Text="{Binding SelectedItem.Description}" FontSize="12" LineBreakMode="WordWrap" />
+                        <Grid ColumnDefinitions="Auto,90,Auto,90" ColumnSpacing="6">
+                            <Label Text="Column" VerticalOptions="Center" />
+                            <Entry Grid.Column="1" Text="{Binding SelectedItem.Column, Mode=TwoWay}" Keyboard="Numeric" />
+                            <Label Grid.Column="2" Text="Row" VerticalOptions="Center" />
+                            <Entry Grid.Column="3" Text="{Binding SelectedItem.Row, Mode=TwoWay}" Keyboard="Numeric" />
+                        </Grid>
+                        <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="6">
+                            <Button Text="← Left" Command="{Binding MoveLeftCommand}" />
+                            <Button Grid.Column="1" Text="↑ Up" Command="{Binding MoveUpCommand}" />
+                            <Button Grid.Column="2" Text="↓ Down" Command="{Binding MoveDownCommand}" />
+                            <Button Grid.Column="3" Text="Right →" Command="{Binding MoveRightCommand}" />
+                        </Grid>
+                        <Label Text="{Binding SelectedItem.ValidationError}" TextColor="OrangeRed" FontSize="12" />
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedItem.AdditionalParameters}" Spacing="4">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="config:ParameterItemViewModel">
+                                    <Grid ColumnDefinitions="*,110" ColumnSpacing="6">
+                                        <Label Text="{Binding DisplayName}" />
+                                        <Entry Grid.Column="1" Text="{Binding Value, Mode=TwoWay}" Keyboard="Numeric" IsReadOnly="{Binding IsReadOnly}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
 </ContentPage>

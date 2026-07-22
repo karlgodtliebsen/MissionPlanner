@@ -489,8 +489,8 @@ MAVLink command sequences that the domain does not implement yet.
 The Config screen replaces v1.38's Config/Tuning (`SoftwareConfig.cs`). New UI:
 `Views/ConfigTuning` — tab views exist for GeoFence, Basic Tuning, Extended Tuning,
 Onboard OSD, MAVFtp, Full Parameters List, Planner and CubeLan8PortSwitch. Full Parameters
-List, MAVFTP, GeoFence, Basic Tuning, and Extended Tuning are implemented; the remaining
-tabs are covered by the sequential Config tasks.
+List, MAVFTP, GeoFence, Basic Tuning, Extended Tuning, and Onboard OSD are implemented;
+the remaining tabs are covered by the sequential Config tasks.
 
 All parameter-editing Config pages share a vehicle-and-firmware-scoped editing session.
 It separates original, live, and pending values; validates metadata ranges, increments,
@@ -587,6 +587,29 @@ while leaving Config warns before discarding them.
 * Live response context appears only when firmware is already emitting `PID_TUNING`
 * The page is a curated expert surface, not a replacement for Full Parameters List
 
+## Onboard OSD
+
+### Status
+
+* Discovers numbered screens, built-in/custom item stems, enable/X/Y fields, and additional
+  option/unit/warning parameters from live `OSD<n>_*` names and metadata
+* Derives character-grid dimensions from coordinate metadata and renders enabled items in a
+  MAUI `GraphicsView`; selected items can be placed by exact numeric row/column or accessible
+  directional controls
+* Validates whole-number bounds and detects same-cell overlaps. Static overlaps block apply;
+  metadata-advertised dynamic overlaps require an explicit warning confirmation
+* Exposes discovered screen enable/options/resolution fields and firmware-global OSD options
+  through shared metadata-backed editors
+* Applies only the selected screen through the shared confirmed-readback session and supports
+  reset-to-live plus family-tagged, atomic JSON import/export of discovered parameters
+* Does not expose a font upload action because no font-transfer service currently exists
+
+### Limitations
+
+* The preview is a character-grid placement model, not a pixel-perfect emulation of every
+  video backend, font, or firmware-dynamic item width
+* Physical OSD hardware validation is still required after layout changes
+
 ## Other Config tabs (Missing)
 
 v1.38 feature inventory per tab; the new tab views are placeholders:
@@ -596,7 +619,6 @@ v1.38 feature inventory per tab; the new tab views are placeholders:
 * **Full Parameter Tree**: tree-grouped variant of the raw parameter editor
 * **Planner**: GCS application settings (units, speech, layout, video, map options)
 * **MAVFTP**: remote filesystem browser, navigation, session reset, streaming download, progress, cancellation, burst recovery; SITL re-validation pending after endpoint/sequence interoperability fixes
-* **Onboard OSD**: OSD layout editor (tab view exists, empty)
 * v1.38 extras to consider later: FFT analysis, REPL/Terminal, DroneCAN tooling
 
 
