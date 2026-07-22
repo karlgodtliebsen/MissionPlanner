@@ -36,7 +36,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
     private readonly IDictionary<string, ParameterMetadata> metadata = new Dictionary<string, ParameterMetadata>();
     private readonly List<ParameterItemViewModel> allParameterItems = [];
-
+    private IDisposable? progressDialog;
 
     /// <summary>
     /// Gets the collection of vehicle parameters.
@@ -184,6 +184,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
                 }
             }));
 
+        progressDialog = await dialogs.DisplayProgressAsync("Loading parameters", "Work in progress, please wait...");
         try
         {
             // Stream all parameters with progress tracking
@@ -226,11 +227,13 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
     private async Task AddAndRenderParameters(IReadOnlyDictionary<string, VehicleParameter> parameters)
     {
-        await dispatcher.DispatchAsync(() =>
+        await dispatcher.DispatchAsync(async () =>
         {
             ShowDataGrid = false;
             Progress = 1;
-            ProgressMessage = $"Initializing table";
+            ProgressMessage = $"Initializing data grid";
+            progressDialog?.Dispose();
+            progressDialog = await dialogs.DisplayProgressAsync("Creating data grid", "Work in progress, please wait...");
         });
 
         allParameterItems.Clear();
@@ -256,10 +259,13 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         {
             timer.Stop();
             timer = null;
-            dispatcher.DispatchAsync(() =>
+            dispatcher.DispatchAsync(async () =>
             {
+                progressDialog?.Dispose();
+                progressDialog = await dialogs.DisplayProgressAsync("Initializing data grid", "Work in progress, please wait...");
+
                 Progress = 0.5;
-                ProgressMessage = $"Initializing table";
+                ProgressMessage = $"Initializing data grid";
                 TotalParameterCount = allParameterItems.Count;
                 ModifiedParameterCount = 0;
                 if (allParameterItems.Count != Parameters.Count)
@@ -404,6 +410,8 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
     private void NullState()
     {
+        progressDialog?.Dispose();
+        progressDialog = null;
         Progress = 0;
         ProgressMessage = "";
         IsBusy = false;

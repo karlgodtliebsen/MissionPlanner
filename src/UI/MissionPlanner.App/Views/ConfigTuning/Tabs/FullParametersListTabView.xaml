@@ -58,14 +58,6 @@
                 BackgroundColor="Transparent"
                 Command="{Binding WriteParametersCommand}" />
 
-                <!--<Button 
-                    Text="Load Metadata"
-                    FontSize="14"
-                    Padding="8,4"
-                    VerticalOptions="Center"
-                    BackgroundColor="Transparent"
-                    Command="{Binding LoadMetaDataCommand}" />-->
-
                 <Button 
                     Text="Refresh Params"
                     FontSize="14"
@@ -140,7 +132,7 @@
 
 
 
-            <VerticalStackLayout Grid.Row="2" Padding="20" Spacing="12" VerticalOptions="Center" HorizontalOptions="Center"
+            <!--<VerticalStackLayout Grid.Row="2" Padding="20" Spacing="12" VerticalOptions="Center" HorizontalOptions="Center"
                              IsVisible="{Binding ShowLoadingPanel}"
                              
         >
@@ -169,7 +161,7 @@
                                Text="Loading cancelled"
                                />
 
-            </VerticalStackLayout>
+            </VerticalStackLayout>-->
 
             <Grid Grid.Row="3" VerticalOptions="Fill" HorizontalOptions="Fill" Padding="10">
 

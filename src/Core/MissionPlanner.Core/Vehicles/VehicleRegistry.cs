@@ -89,8 +89,10 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider 
         DateTimeOffset receivedAt,
         CancellationToken cancellationToken)
     {
+        var identityWasNew = false;
         if (!vehicles.TryGetValue(vehicleId, out var session))
         {
+            identityWasNew = true;
             var state = new VehicleState(
                 vehicleId,
                 new VehicleIdentityState(vehicleType, autopilot, mavLinkVersion, VehicleFirmwareIdentityFactory.FromHeartbeat(vehicleType, autopilot)),
@@ -110,6 +112,7 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider 
             await eventHub.PublishDomainEventAsync(new VehicleRegistered(vehicleId), cancellationToken);
         }
 
+        var previousDisplayName = session.State.DisplayName;
         session.ApplyHeartbeat(
             customMode,
             vehicleType,
@@ -118,6 +121,17 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider 
             systemStatus,
             mavLinkVersion,
             receivedAt);
+
+        if (identityWasNew || !string.Equals(previousDisplayName, session.State.DisplayName, StringComparison.Ordinal))
+        {
+            logger.LogDebug(
+                "Resolved vehicle identity: VehicleId={VehicleId}, Autopilot={Autopilot}, MavType={MavType}, FirmwareFamily={FirmwareFamily}, DisplayName={DisplayName}",
+                vehicleId,
+                autopilot,
+                vehicleType,
+                session.State.Identity.Firmware.Family,
+                session.State.DisplayName);
+        }
 
         return new VehicleRegistryResult(session);
     }

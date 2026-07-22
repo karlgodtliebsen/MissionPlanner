@@ -71,8 +71,14 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
     /// <param name="observation"></param>
     public void ApplyHeartbeat(VehicleHeartbeatObservation observation)
     {
-        var firmware = state.Identity.Firmware with { Family = VehicleFirmwareIdentityFactory.MapFamily(observation.VehicleType, observation.Autopilot), MavType = observation.VehicleType, Autopilot = observation.Autopilot };
-        state = state with { Identity = new VehicleIdentityState(observation.VehicleType, observation.Autopilot, observation.MavLinkVersion, firmware), Flight = new VehicleFlightState(observation.CustomMode, observation.BaseMode, observation.SystemStatus, MapMode(observation.CustomMode), (observation.BaseMode & MavModeFlagSafetyArmed) != 0), Connection = new VehicleConnectionData(VehicleConnectionState.Online, observation.ObservedAt) };
+        var identity = state.Identity;
+        if (identity.VehicleType != observation.VehicleType || identity.Autopilot != observation.Autopilot || identity.MavLinkVersion != observation.MavLinkVersion)
+        {
+            var firmware = identity.Firmware with { Family = VehicleFirmwareIdentityFactory.MapFamily(observation.VehicleType, observation.Autopilot), MavType = observation.VehicleType, Autopilot = observation.Autopilot };
+            identity = new VehicleIdentityState(observation.VehicleType, observation.Autopilot, observation.MavLinkVersion, firmware);
+        }
+
+        state = state with { Identity = identity, Flight = new VehicleFlightState(observation.CustomMode, observation.BaseMode, observation.SystemStatus, MapMode(observation.CustomMode), (observation.BaseMode & MavModeFlagSafetyArmed) != 0), Connection = new VehicleConnectionData(VehicleConnectionState.Online, observation.ObservedAt) };
     }
 
     /// <summary>

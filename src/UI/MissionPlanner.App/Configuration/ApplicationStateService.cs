@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using MissionPlanner.Core.DomainEvents;
+using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
 
@@ -11,14 +12,19 @@ namespace MissionPlanner.App.Configuration;
 public partial class ApplicationStateService : ObservableObject, IDisposable
 {
     private readonly IList<IDisposable> disposables = [];
+    private readonly IVehicleRegistry vehicleRegistry;
 
     /// <summary>
     /// Singleton service for managing shared application state across the application.
     /// </summary>
-    public ApplicationStateService(IDomainEventHub domainEventHub)
+    /// <param name="domainEventHub">The domain event hub.</param>
+    /// <param name="vehicleRegistry">The connected vehicle registry.</param>
+    public ApplicationStateService(IDomainEventHub domainEventHub, IVehicleRegistry vehicleRegistry)
     {
+        this.vehicleRegistry = vehicleRegistry;
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected));
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
+        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated));
     }
 
     private Task OnVehicleDisconnected(VehicleDisconnected evt, CancellationToken ct)
@@ -29,7 +35,19 @@ public partial class ApplicationStateService : ObservableObject, IDisposable
 
     private Task OnVehicleConnected(VehicleConnected evt, CancellationToken ct)
     {
+        VehicleId = evt.VehicleId;
+        VehicleName = vehicleRegistry.GetRequired(evt.VehicleId)?.State.DisplayName ?? $"{evt.VehicleId.SystemId}:Unknown";
         IsConnected = true;
+        return Task.CompletedTask;
+    }
+
+    private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken ct)
+    {
+        if (VehicleId == evt.VehicleId)
+        {
+            VehicleName = evt.VehicleState.DisplayName;
+        }
+
         return Task.CompletedTask;
     }
 

@@ -362,8 +362,9 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
                     VehicleId = vehicleId;
                 }
 
-                StatusMessage = $"Connected to vehicle {vehicleId}";
-                logger.LogInformation("Successfully connected to vehicle {VehicleId}", vehicleId);
+                VehicleName = stateService.VehicleName;
+                StatusMessage = $"Connected to {VehicleName ?? vehicleId.ToString()}";
+                logger.LogInformation("Successfully connected to vehicle {VehicleId} ({VehicleName})", vehicleId, VehicleName);
             }
         );
     }
@@ -467,7 +468,8 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
             }
 
             UpdateConnectionStatus();
-            StatusMessage = $"Vehicle {evt.VehicleId} connected via {evt.ConnectionType}";
+            VehicleName = stateService.VehicleName;
+            StatusMessage = $"{VehicleName ?? evt.VehicleId.ToString()} connected via {evt.ConnectionType}";
         });
     }
 

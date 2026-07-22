@@ -108,6 +108,35 @@ public sealed class VehicleFirmwareIdentityTests
         VehicleFirmwareDisplayFormatter.Format(identity).Should().Be("ArduCopter 4.6.2-dev");
     }
 
+    /// <summary>Verifies friendly vehicle names for known families and MAV type fallbacks.</summary>
+    [Theory]
+    [InlineData(1, FirmwareFamily.ArduCopter, 2, "SysID 1:Copter")]
+    [InlineData(2, FirmwareFamily.ArduPlane, 1, "SysID 2:Plane")]
+    [InlineData(3, FirmwareFamily.Rover, 10, "SysID 3:Rover")]
+    [InlineData(4, FirmwareFamily.Unknown, 2, "SysID 4:Quadrotor")]
+    [InlineData(9, FirmwareFamily.Unknown, 0, "SysID 9:Unknown")]
+    public void FormatsVehicleDisplayName(byte systemId, FirmwareFamily family, byte mavType, string expected)
+    {
+        VehicleDisplayNameFormatter.Format(new VehicleId(systemId, 1), family, mavType).Should().Be(expected);
+    }
+
+    /// <summary>Verifies identical heartbeats preserve identity and changed types update the name.</summary>
+    [Fact]
+    public void HeartbeatUpdatesDisplayNameOnlyWhenIdentityChanges()
+    {
+        var session = CreateSession();
+        var originalIdentity = session.State.Identity;
+
+        session.ApplyHeartbeat(0, 2, 3, 0, 4, 3, DateTimeOffset.UtcNow);
+        session.State.Identity.Should().BeSameAs(originalIdentity);
+        session.State.DisplayName.Should().Be("SysID 1:Copter");
+
+        session.ApplyHeartbeat(0, 1, 3, 0, 4, 3, DateTimeOffset.UtcNow);
+        session.State.Identity.Should().NotBeSameAs(originalIdentity);
+        session.State.DisplayName.Should().Be("SysID 1:Plane");
+        session.Id.ComponentId.Should().Be(1);
+    }
+
     /// <summary>Verifies one request emits MAV_CMD_REQUEST_MESSAGE for AUTOPILOT_VERSION.</summary>
     [Fact]
     public async Task SendsOneAutopilotVersionRequest()

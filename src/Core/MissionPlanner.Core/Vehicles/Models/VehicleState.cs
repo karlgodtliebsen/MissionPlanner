@@ -17,6 +17,11 @@ public sealed record VehicleState(
     VehicleHealthState Health)
 {
     /// <summary>
+    /// Gets the derived user-facing vehicle name.
+    /// </summary>
+    public string DisplayName => VehicleDisplayNameFormatter.Format(VehicleId, Identity.Firmware.Family, Identity.VehicleType);
+
+    /// <summary>
     /// Gets the CustomMode.
     /// </summary>
     public uint CustomMode => Flight.CustomMode;
