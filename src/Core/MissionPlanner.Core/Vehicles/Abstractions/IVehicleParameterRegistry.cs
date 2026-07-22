@@ -8,6 +8,9 @@ namespace MissionPlanner.Core.Vehicles.Abstractions;
 /// </summary>
 public interface IVehicleParameterRegistry
 {
+    /// <summary>Occurs after a parameter is stored or a vehicle's parameter set is cleared.</summary>
+    event EventHandler<VehicleParameterChangedEventArgs>? Changed;
+
     /// <summary>
     /// Stores or updates a parameter for a vehicle.
     /// </summary>

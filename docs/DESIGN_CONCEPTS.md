@@ -974,6 +974,16 @@ The mission map editor (`MissionMapView` + singleton `MissionMapViewModel`,
 page. Both screens therefore edit the same mission plan; map pins and the route line are
 projections of the domain `Mission` aggregate, never the source of truth.
 
+# Setup workflow shell
+
+Initial Setup is an orchestration surface over existing domain and Config capabilities.
+`SetupWorkflowCatalog` owns workflow ordering, firmware-family relevance, recommended
+dependencies, and revalidation rules. `InitSetupViewModel` owns page lifecycle and creates
+workflow hosts only when selected. Local completion evidence is fingerprinted with vehicle
+identity, firmware, and the known parameter set; it is advisory and becomes a warning when
+those inputs change. Later Setup workflows should plug into this shell and call domain
+services rather than adding transport access or duplicate parameter editors to the UI.
+
 
 
 

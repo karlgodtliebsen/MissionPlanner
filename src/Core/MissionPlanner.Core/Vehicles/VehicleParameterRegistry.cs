@@ -12,12 +12,15 @@ public sealed class VehicleParameterRegistry : IVehicleParameterRegistry
 {
     private readonly ConcurrentDictionary<VehicleId, VehicleParameterCollection> parametersByVehicle = new();
 
+    /// <inheritdoc />
+    public event EventHandler<VehicleParameterChangedEventArgs>? Changed;
+
     /// <inheritdoc/>
     public void StoreParameter(VehicleId vehicleId, VehicleParameter parameter, CancellationToken cancellationToken)
     {
         var collection = parametersByVehicle.GetOrAdd(vehicleId, _ => new VehicleParameterCollection());
         collection.AddOrUpdate(parameter);
-        //ParameterReceived?.Invoke(vehicleId, parameter, cancellationToken);
+        Changed?.Invoke(this, new VehicleParameterChangedEventArgs(vehicleId, parameter));
     }
 
     /// <inheritdoc/>
@@ -44,6 +47,7 @@ public sealed class VehicleParameterRegistry : IVehicleParameterRegistry
     public void ClearParameters(VehicleId vehicleId)
     {
         parametersByVehicle.TryRemove(vehicleId, out var _);
+        Changed?.Invoke(this, new VehicleParameterChangedEventArgs(vehicleId, null));
     }
 
     private sealed class VehicleParameterCollection

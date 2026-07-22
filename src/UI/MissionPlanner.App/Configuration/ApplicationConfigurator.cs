@@ -15,6 +15,7 @@ using MissionPlanner.App.Views.FlightData.Tabs;
 using MissionPlanner.App.Views.FlightPlanner;
 using MissionPlanner.App.Views.Help;
 using MissionPlanner.App.Views.InitSetup;
+using MissionPlanner.Core.Setup;
 using MissionPlanner.App.Views.Missions;
 using MissionPlanner.App.Views.Simulation;
 using MissionPlanner.Core.Configuration;
@@ -123,6 +124,9 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<TelemetryLogsTabViewModel>();
         services.TryAddSingleton<TransponderTabViewModel>();
         services.TryAddSingleton<FlightPlannerViewModel>();
+        services.TryAddSingleton<ISetupCompletionStore, PreferencesSetupCompletionStore>();
+        services.TryAddSingleton<ISetupNavigationService, ShellSetupNavigationService>();
+        services.TryAddSingleton<ISetupWorkflowViewModelFactory, SetupWorkflowViewModelFactory>();
         services.TryAddSingleton<InitSetupViewModel>();
         services.TryAddSingleton<SimulationViewModel>();
         services.TryAddSingleton<ExitViewModel>();

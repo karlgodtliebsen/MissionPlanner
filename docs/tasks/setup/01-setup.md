@@ -1,5 +1,7 @@
 # Setup 01 — Setup shell, workflow catalog, and completion state
 
+**Implementation status:** Completed 2026-07-22.
+
 ## Objective
 
 Replace the placeholder Setup page with a vehicle-aware setup workspace that dynamically exposes relevant setup workflows and tracks completion without duplicating configuration logic.

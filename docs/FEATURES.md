@@ -370,11 +370,25 @@ v1.38 uses GMap.NET with dozens of providers; the new app uses Mapsui + BruTile.
 # SETUP
 
 The Setup screen replaces v1.38's Initial Setup (`src-v.1.38/GCSViews/InitialSetup.cs` +
-`ConfigurationView/Config*.cs` panels). New UI: `InitSetupView` (placeholder page).
+`ConfigurationView/Config*.cs` panels). The new UI is the vehicle-aware `InitSetupView`.
 
 ### Status
 
-* Nothing implemented yet — placeholder page only
+* Implemented (2026-07-22): responsive workflow-card shell for Firmware, Frame,
+  Accelerometer, Compass, Radio, Flight Modes, Battery, ESC, Servo Output, Optional
+  Hardware, Safety, and Summary.
+* Workflow relevance is evaluated from connection state, firmware family, MAVLink
+  capabilities, and known parameter names. Recommended dependencies guide users without
+  forcing a rigid wizard.
+* The shell exposes Available, Unsupported, Not Connected, Not Started, In Progress,
+  Completed, Warning, and Failed states, plus shared confirmation, progress, error, and
+  connection-cancellation behavior for later workflows.
+* Completion evidence is local only and keyed to a stable vehicle identity. Firmware or
+  parameter changes invalidate that evidence to Warning so vehicle state is always
+  revalidated. Related workflows link to existing Config pages instead of duplicating
+  configuration editors.
+* Workflow hosts are created lazily and discarded across vehicle changes; page lifecycle
+  detaches parameter/vehicle subscriptions and cancels active work.
 
 ### Missing (v1.38 feature inventory)
 

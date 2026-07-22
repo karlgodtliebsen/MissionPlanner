@@ -10,6 +10,7 @@ using MissionPlanner.Core.Missions.Validation;
 using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Handlers;
@@ -53,6 +54,7 @@ public static class DomainConfigurator
         services.Configure<VehicleMessageStoreOptions>(configuration.GetSection(VehicleMessageStoreOptions.SectionName));
         services.TryAddSingleton<IVehicleMessageStore, VehicleMessageStore>();
         services.TryAddSingleton<IApplicationNotificationStore, ApplicationNotificationStore>();
+        services.TryAddSingleton<ISetupWorkflowCatalog, SetupWorkflowCatalog>();
 
         services.TryAddSingleton<IVehicleConnectionSession, VehicleConnectionSession>();
 

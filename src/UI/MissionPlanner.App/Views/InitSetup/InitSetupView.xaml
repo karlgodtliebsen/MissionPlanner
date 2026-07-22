@@ -1,14 +1,62 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <uranium:UraniumContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
-                    xmlns:vm="clr-namespace:MissionPlanner.App.Views.InitSetup"
-                    x:Class="MissionPlanner.App.Views.InitSetup.InitSetupView"
-                    x:DataType="vm:InitSetupViewModel">
+                            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                            xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                            xmlns:vm="clr-namespace:MissionPlanner.App.Views.InitSetup"
+                            x:Class="MissionPlanner.App.Views.InitSetup.InitSetupView"
+                            x:DataType="vm:InitSetupViewModel"
+                            Title="Initial Setup">
+    <Grid Padding="20" RowDefinitions="Auto,Auto,190,*" RowSpacing="14">
+        <VerticalStackLayout Spacing="4">
+            <Label Text="Initial Setup" FontSize="26" FontAttributes="Bold" />
+            <Label Text="{Binding VehicleHeading}" FontSize="16" />
+            <Label Text="{Binding SummaryReport}" Opacity="0.75" />
+            <Label Text="{Binding Error}" TextColor="Red" />
+        </VerticalStackLayout>
 
-    <Label Text="Initial Setup"
-           FontSize="18"
-           HorizontalOptions="Center"
-           VerticalOptions="Center" />
+        <Button Grid.Row="1"
+                Text="Re-evaluate vehicle"
+                Command="{Binding RefreshCommand}"
+                HorizontalOptions="Start" />
 
+        <CollectionView Grid.Row="2"
+                        ItemsSource="{Binding Workflows}"
+                            SelectedItem="{Binding SelectedWorkflow, Mode=TwoWay}"
+                            SelectionMode="Single">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Horizontal" ItemSpacing="10" />
+            </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:SetupWorkflowItemViewModel">
+                        <Border WidthRequest="290" Padding="14" StrokeThickness="1">
+                            <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="5">
+                                <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="16" />
+                                <Label Grid.Column="1" Text="{Binding StateDisplay}" FontAttributes="Bold" />
+                                <Label Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding Description}" LineBreakMode="WordWrap" />
+                                <Label Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding StatusText}" Opacity="0.72" LineBreakMode="WordWrap" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <ScrollView Grid.Row="3">
+                <VerticalStackLayout Spacing="14" BindableLayout.EmptyView="Select a setup workflow.">
+                    <Label Text="{Binding SelectedWorkflowViewModel.Title}" FontSize="24" FontAttributes="Bold" />
+                    <Label Text="{Binding SelectedWorkflowViewModel.Description}" FontSize="16" LineBreakMode="WordWrap" />
+                    <Label Text="{Binding SelectedWorkflow.StatusText}" FontAttributes="Italic" />
+                    <ProgressBar Progress="{Binding SelectedWorkflowViewModel.Progress}" />
+                    <Label Text="{Binding SelectedWorkflowViewModel.Error}" TextColor="Red" />
+                    <HorizontalStackLayout Spacing="10">
+                        <Button Text="Record reviewed"
+                                IsEnabled="{Binding SelectedWorkflow.CanOpen}"
+                                Command="{Binding MarkCompleteCommand}" />
+                        <Button Text="Open related Config page"
+                                IsVisible="{Binding SelectedWorkflowViewModel.HasConfigDestination}"
+                                Command="{Binding OpenConfigCommand}" />
+                    </HorizontalStackLayout>
+                    <Label Text="Completion is stored locally and automatically requires review when firmware or parameters change. Prerequisites are guidance, not a rigid wizard." LineBreakMode="WordWrap" Opacity="0.7" />
+                </VerticalStackLayout>
+            </ScrollView>
+    </Grid>
 </uranium:UraniumContentPage>
