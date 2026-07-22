@@ -3,17 +3,31 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Views.InitSetup.Tabs;
+using MissionPlanner.App.Views.InitSetup.Sections;
+using MissionPlanner.App.Views.InitSetup.Services;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
+using AccelerometerSetupViewModel = MissionPlanner.App.Views.InitSetup.Sections.AccelerometerSetupViewModel;
+using BatterySetupViewModel = MissionPlanner.App.Views.InitSetup.Sections.BatterySetupViewModel;
+using CompassSetupViewModel = MissionPlanner.App.Views.InitSetup.Sections.CompassSetupViewModel;
+using EscMotorSetupViewModel = MissionPlanner.App.Views.InitSetup.Sections.EscMotorSetupViewModel;
+using FirmwareSetupViewModel = MissionPlanner.App.Views.InitSetup.Sections.FirmwareSetupViewModel;
+using FlightModesSetupViewModel = MissionPlanner.App.Views.InitSetup.Sections.FlightModesSetupViewModel;
+using FrameSetupViewModel = MissionPlanner.App.Views.InitSetup.Sections.FrameSetupViewModel;
+using OptionalHardwareSetupViewModel = MissionPlanner.App.Views.InitSetup.Sections.OptionalHardwareSetupViewModel;
+using RadioSetupViewModel = MissionPlanner.App.Views.InitSetup.Sections.RadioSetupViewModel;
+using SafetySetupViewModel = MissionPlanner.App.Views.InitSetup.Sections.SafetySetupViewModel;
+using ServoOutputSetupViewModel = MissionPlanner.App.Views.InitSetup.Sections.ServoOutputSetupViewModel;
+using SetupSummaryViewModel = MissionPlanner.App.Views.InitSetup.Sections.SetupSummaryViewModel;
+using SetupWorkflowDetailViewModel = MissionPlanner.App.Views.InitSetup.Sections.SetupWorkflowDetailViewModel;
 
 namespace MissionPlanner.App.Views.InitSetup;
 
 /// <summary>Presents the vehicle-aware initial-setup workflow shell and shared operation state.</summary>
-public partial class InitSetupViewModel : ObservableObject, IDisposable
+public partial class SetupViewModel : ObservableObject, IDisposable
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleParameterRegistry parameterRegistry;
@@ -24,8 +38,8 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
     private readonly IUserConfirmationService confirmation;
     private readonly IDateTimeProvider clock;
     private readonly IDispatcher dispatcher;
-    private readonly ILogger<InitSetupViewModel> logger;
-    private readonly Dictionary<SetupWorkflowKey, Tabs.SetupWorkflowDetailViewModel> workflowViewModels = [];
+    private readonly ILogger<SetupViewModel> logger;
+    private readonly Dictionary<SetupWorkflowKey, SetupWorkflowDetailViewModel> workflowViewModels = [];
     private readonly object parameterRefreshSync = new();
     private CancellationTokenSource? workflowCancellation;
     private CancellationTokenSource? parameterRefreshCancellation;
@@ -44,7 +58,7 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
     /// <param name="clock">The application clock.</param>
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="logger">The logger.</param>
-    public InitSetupViewModel(
+    public SetupViewModel(
         IActiveVehicleContext activeVehicle,
         IVehicleParameterRegistry parameterRegistry,
         ISetupWorkflowCatalog catalog,
@@ -54,7 +68,7 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
         IUserConfirmationService confirmation,
         IDateTimeProvider clock,
         IDispatcher dispatcher,
-        ILogger<InitSetupViewModel> logger)
+        ILogger<SetupViewModel> logger)
     {
         this.activeVehicle = activeVehicle;
         this.parameterRegistry = parameterRegistry;
@@ -78,88 +92,88 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
 
     /// <summary>Gets the lazily created selected-workflow host.</summary>
     [ObservableProperty]
-    public partial Tabs.SetupWorkflowDetailViewModel? SelectedWorkflowViewModel { get; private set; }
+    public partial SetupWorkflowDetailViewModel? SelectedWorkflowViewModel { get; private set; }
 
     /// <summary>Gets the specialized firmware workflow when Firmware is selected.</summary>
     [ObservableProperty]
-    public partial Tabs.FirmwareSetupViewModel? SelectedFirmwareViewModel { get; private set; }
+    public partial FirmwareSetupViewModel? SelectedFirmwareViewModel { get; private set; }
 
     /// <summary>Gets whether the specialized firmware workflow is selected.</summary>
     public bool IsFirmwareSelected => SelectedFirmwareViewModel is not null;
 
     /// <summary>Gets the specialized frame workflow when Frame is selected.</summary>
     [ObservableProperty]
-    public partial Tabs.FrameSetupViewModel? SelectedFrameViewModel { get; private set; }
+    public partial FrameSetupViewModel? SelectedFrameViewModel { get; private set; }
 
     /// <summary>Gets whether the specialized frame workflow is selected.</summary>
     public bool IsFrameSelected => SelectedFrameViewModel is not null;
 
     /// <summary>Gets the specialized accelerometer workflow when selected.</summary>
     [ObservableProperty]
-    public partial Tabs.AccelerometerSetupViewModel? SelectedAccelerometerViewModel { get; private set; }
+    public partial AccelerometerSetupViewModel? SelectedAccelerometerViewModel { get; private set; }
 
     /// <summary>Gets whether the specialized accelerometer workflow is selected.</summary>
     public bool IsAccelerometerSelected => SelectedAccelerometerViewModel is not null;
 
     /// <summary>Gets the specialized compass workflow when selected.</summary>
     [ObservableProperty]
-    public partial Tabs.CompassSetupViewModel? SelectedCompassViewModel { get; private set; }
+    public partial CompassSetupViewModel? SelectedCompassViewModel { get; private set; }
 
     /// <summary>Gets whether the specialized compass workflow is selected.</summary>
     public bool IsCompassSelected => SelectedCompassViewModel is not null;
 
     /// <summary>Gets the specialized radio workflow when selected.</summary>
     [ObservableProperty]
-    public partial Tabs.RadioSetupViewModel? SelectedRadioViewModel { get; private set; }
+    public partial RadioSetupViewModel? SelectedRadioViewModel { get; private set; }
 
     /// <summary>Gets whether the specialized radio workflow is selected.</summary>
     public bool IsRadioSelected => SelectedRadioViewModel is not null;
 
     /// <summary>Gets the specialized flight-mode workflow when selected.</summary>
     [ObservableProperty]
-    public partial Tabs.FlightModesSetupViewModel? SelectedFlightModesViewModel { get; private set; }
+    public partial FlightModesSetupViewModel? SelectedFlightModesViewModel { get; private set; }
 
     /// <summary>Gets whether the specialized flight-mode workflow is selected.</summary>
     public bool IsFlightModesSelected => SelectedFlightModesViewModel is not null;
 
     /// <summary>Gets the specialized battery workflow when selected.</summary>
     [ObservableProperty]
-    public partial Tabs.BatterySetupViewModel? SelectedBatteryViewModel { get; private set; }
+    public partial BatterySetupViewModel? SelectedBatteryViewModel { get; private set; }
 
     /// <summary>Gets whether the specialized battery workflow is selected.</summary>
     public bool IsBatterySelected => SelectedBatteryViewModel is not null;
 
     /// <summary>Gets the specialized ESC and motor-test workflow when selected.</summary>
     [ObservableProperty]
-    public partial Tabs.EscMotorSetupViewModel? SelectedEscViewModel { get; private set; }
+    public partial EscMotorSetupViewModel? SelectedEscViewModel { get; private set; }
 
     /// <summary>Gets whether the specialized ESC workflow is selected.</summary>
     public bool IsEscSelected => SelectedEscViewModel is not null;
 
     /// <summary>Gets the specialized servo output workflow when selected.</summary>
     [ObservableProperty]
-    public partial Tabs.ServoOutputSetupViewModel? SelectedServoOutputViewModel { get; private set; }
+    public partial ServoOutputSetupViewModel? SelectedServoOutputViewModel { get; private set; }
 
     /// <summary>Gets whether the specialized servo output workflow is selected.</summary>
     public bool IsServoOutputSelected => SelectedServoOutputViewModel is not null;
 
     /// <summary>Gets the specialized optional-hardware workflow when selected.</summary>
     [ObservableProperty]
-    public partial Tabs.OptionalHardwareSetupViewModel? SelectedOptionalHardwareViewModel { get; private set; }
+    public partial OptionalHardwareSetupViewModel? SelectedOptionalHardwareViewModel { get; private set; }
 
     /// <summary>Gets whether the specialized optional-hardware workflow is selected.</summary>
     public bool IsOptionalHardwareSelected => SelectedOptionalHardwareViewModel is not null;
 
     /// <summary>Gets the specialized safety workflow when selected.</summary>
     [ObservableProperty]
-    public partial Tabs.SafetySetupViewModel? SelectedSafetyViewModel { get; private set; }
+    public partial SafetySetupViewModel? SelectedSafetyViewModel { get; private set; }
 
     /// <summary>Gets whether the specialized safety workflow is selected.</summary>
     public bool IsSafetySelected => SelectedSafetyViewModel is not null;
 
     /// <summary>Gets the specialized summary workflow when selected.</summary>
     [ObservableProperty]
-    public partial Tabs.SetupSummaryViewModel? SelectedSummaryViewModel { get; private set; }
+    public partial SetupSummaryViewModel? SelectedSummaryViewModel { get; private set; }
 
     /// <summary>Gets whether the specialized summary workflow is selected.</summary>
     public bool IsSummarySelected => SelectedSummaryViewModel is not null;
@@ -293,89 +307,89 @@ public partial class InitSetupViewModel : ObservableObject, IDisposable
             workflowViewModels[value.Descriptor.Key] = SelectedWorkflowViewModel;
         }
 
-        SelectedFirmwareViewModel = SelectedWorkflowViewModel as Tabs.FirmwareSetupViewModel;
+        SelectedFirmwareViewModel = SelectedWorkflowViewModel as FirmwareSetupViewModel;
         SelectedFirmwareViewModel?.UpdateVehicle(activeVehicle.State);
-        SelectedFrameViewModel = SelectedWorkflowViewModel as Tabs.FrameSetupViewModel;
+        SelectedFrameViewModel = SelectedWorkflowViewModel as FrameSetupViewModel;
         if (SelectedFrameViewModel is not null)
         {
             _ = SelectedFrameViewModel.LoadAsync();
         }
 
-        SelectedAccelerometerViewModel = SelectedWorkflowViewModel as Tabs.AccelerometerSetupViewModel;
-        SelectedCompassViewModel = SelectedWorkflowViewModel as Tabs.CompassSetupViewModel;
+        SelectedAccelerometerViewModel = SelectedWorkflowViewModel as AccelerometerSetupViewModel;
+        SelectedCompassViewModel = SelectedWorkflowViewModel as CompassSetupViewModel;
         if (SelectedCompassViewModel is not null)
         {
             _ = SelectedCompassViewModel.LoadAsync();
         }
 
-        SelectedRadioViewModel = SelectedWorkflowViewModel as Tabs.RadioSetupViewModel;
-        SelectedFlightModesViewModel = SelectedWorkflowViewModel as Tabs.FlightModesSetupViewModel;
-        SelectedBatteryViewModel = SelectedWorkflowViewModel as Tabs.BatterySetupViewModel;
-        SelectedEscViewModel = SelectedWorkflowViewModel as Tabs.EscMotorSetupViewModel;
-        SelectedServoOutputViewModel = SelectedWorkflowViewModel as Tabs.ServoOutputSetupViewModel;
-        SelectedOptionalHardwareViewModel = SelectedWorkflowViewModel as Tabs.OptionalHardwareSetupViewModel;
-        SelectedSafetyViewModel = SelectedWorkflowViewModel as Tabs.SafetySetupViewModel;
-        SelectedSummaryViewModel = SelectedWorkflowViewModel as Tabs.SetupSummaryViewModel;
+        SelectedRadioViewModel = SelectedWorkflowViewModel as RadioSetupViewModel;
+        SelectedFlightModesViewModel = SelectedWorkflowViewModel as FlightModesSetupViewModel;
+        SelectedBatteryViewModel = SelectedWorkflowViewModel as BatterySetupViewModel;
+        SelectedEscViewModel = SelectedWorkflowViewModel as EscMotorSetupViewModel;
+        SelectedServoOutputViewModel = SelectedWorkflowViewModel as ServoOutputSetupViewModel;
+        SelectedOptionalHardwareViewModel = SelectedWorkflowViewModel as OptionalHardwareSetupViewModel;
+        SelectedSafetyViewModel = SelectedWorkflowViewModel as SafetySetupViewModel;
+        SelectedSummaryViewModel = SelectedWorkflowViewModel as SetupSummaryViewModel;
 
         OnPropertyChanged(nameof(CanRecordSelectedWorkflowManually));
     }
 
-    partial void OnSelectedFirmwareViewModelChanged(Tabs.FirmwareSetupViewModel? value)
+    partial void OnSelectedFirmwareViewModelChanged(FirmwareSetupViewModel? value)
     {
         OnPropertyChanged(nameof(IsFirmwareSelected));
     }
 
-    partial void OnSelectedFrameViewModelChanged(Tabs.FrameSetupViewModel? value)
+    partial void OnSelectedFrameViewModelChanged(FrameSetupViewModel? value)
     {
         OnPropertyChanged(nameof(IsFrameSelected));
     }
 
-    partial void OnSelectedAccelerometerViewModelChanged(Tabs.AccelerometerSetupViewModel? value)
+    partial void OnSelectedAccelerometerViewModelChanged(AccelerometerSetupViewModel? value)
     {
         OnPropertyChanged(nameof(IsAccelerometerSelected));
     }
 
-    partial void OnSelectedCompassViewModelChanged(Tabs.CompassSetupViewModel? value)
+    partial void OnSelectedCompassViewModelChanged(CompassSetupViewModel? value)
     {
         OnPropertyChanged(nameof(IsCompassSelected));
     }
 
-    partial void OnSelectedRadioViewModelChanged(Tabs.RadioSetupViewModel? value)
+    partial void OnSelectedRadioViewModelChanged(RadioSetupViewModel? value)
     {
         OnPropertyChanged(nameof(IsRadioSelected));
     }
 
-    partial void OnSelectedFlightModesViewModelChanged(Tabs.FlightModesSetupViewModel? value)
+    partial void OnSelectedFlightModesViewModelChanged(FlightModesSetupViewModel? value)
     {
         OnPropertyChanged(nameof(IsFlightModesSelected));
     }
 
-    partial void OnSelectedBatteryViewModelChanged(Tabs.BatterySetupViewModel? value)
+    partial void OnSelectedBatteryViewModelChanged(BatterySetupViewModel? value)
     {
         OnPropertyChanged(nameof(IsBatterySelected));
     }
 
-    partial void OnSelectedEscViewModelChanged(Tabs.EscMotorSetupViewModel? value)
+    partial void OnSelectedEscViewModelChanged(EscMotorSetupViewModel? value)
     {
         OnPropertyChanged(nameof(IsEscSelected));
     }
 
-    partial void OnSelectedServoOutputViewModelChanged(Tabs.ServoOutputSetupViewModel? value)
+    partial void OnSelectedServoOutputViewModelChanged(ServoOutputSetupViewModel? value)
     {
         OnPropertyChanged(nameof(IsServoOutputSelected));
     }
 
-    partial void OnSelectedOptionalHardwareViewModelChanged(Tabs.OptionalHardwareSetupViewModel? value)
+    partial void OnSelectedOptionalHardwareViewModelChanged(OptionalHardwareSetupViewModel? value)
     {
         OnPropertyChanged(nameof(IsOptionalHardwareSelected));
     }
 
-    partial void OnSelectedSafetyViewModelChanged(Tabs.SafetySetupViewModel? value)
+    partial void OnSelectedSafetyViewModelChanged(SafetySetupViewModel? value)
     {
         OnPropertyChanged(nameof(IsSafetySelected));
     }
 
-    partial void OnSelectedSummaryViewModelChanged(Tabs.SetupSummaryViewModel? value)
+    partial void OnSelectedSummaryViewModelChanged(SetupSummaryViewModel? value)
     {
         OnPropertyChanged(nameof(IsSummarySelected));
     }

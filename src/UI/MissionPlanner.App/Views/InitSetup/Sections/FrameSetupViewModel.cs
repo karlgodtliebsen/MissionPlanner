@@ -7,7 +7,7 @@ using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 
-namespace MissionPlanner.App.Views.InitSetup.Tabs;
+namespace MissionPlanner.App.Views.InitSetup.Sections;
 
 /// <summary>Presents metadata-backed frame choices and confirmed, recoverable writes.</summary>
 public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel

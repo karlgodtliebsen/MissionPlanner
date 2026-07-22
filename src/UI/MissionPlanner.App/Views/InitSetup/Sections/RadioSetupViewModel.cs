@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -8,7 +8,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 
-namespace MissionPlanner.App.Views.InitSetup.Tabs;
+namespace MissionPlanner.App.Views.InitSetup.Sections;
 
 /// <summary>Projects live RC channels and the radio endpoint-calibration state machine into Setup controls.</summary>
 public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
@@ -120,7 +120,10 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
         base.Dispose();
     }
 
-    private bool CanStartCommand() => CanStart && activeVehicle.IsOnline;
+    private bool CanStartCommand()
+    {
+        return CanStart && activeVehicle.IsOnline;
+    }
 
     [RelayCommand(CanExecute = nameof(CanStartCommand))]
     private async Task StartAsync()
@@ -152,7 +155,10 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
         }
     }
 
-    private bool CanFinishCommand() => CanFinish;
+    private bool CanFinishCommand()
+    {
+        return CanFinish;
+    }
 
     [RelayCommand(CanExecute = nameof(CanFinishCommand))]
     private async Task FinishAsync()
@@ -188,13 +194,20 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
     }
 
     [RelayCommand]
-    private void Reset() => radioService.Reset();
+    private void Reset()
+    {
+        radioService.Reset();
+    }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args) =>
+    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    {
         dispatcher.Dispatch(RefreshLiveChannels);
+    }
 
-    private void OnCalibrationStateChanged(object? sender, RadioCalibrationStateChangedEventArgs args) =>
+    private void OnCalibrationStateChanged(object? sender, RadioCalibrationStateChangedEventArgs args)
+    {
         dispatcher.Dispatch(() => Show(args.Snapshot));
+    }
 
     private void RefreshLiveChannels()
     {

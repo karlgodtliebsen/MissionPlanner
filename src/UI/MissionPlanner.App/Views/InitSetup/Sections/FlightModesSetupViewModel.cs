@@ -7,7 +7,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 
-namespace MissionPlanner.App.Views.InitSetup.Tabs;
+namespace MissionPlanner.App.Views.InitSetup.Sections;
 
 /// <summary>Projects firmware flight-mode slot configuration and confirmed slot writes into Setup controls.</summary>
 public sealed partial class FlightModesSetupViewModel : SetupWorkflowDetailViewModel

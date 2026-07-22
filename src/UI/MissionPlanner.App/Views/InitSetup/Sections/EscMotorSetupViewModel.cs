@@ -6,7 +6,7 @@ using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles.Abstractions;
 
-namespace MissionPlanner.App.Views.InitSetup.Tabs;
+namespace MissionPlanner.App.Views.InitSetup.Sections;
 
 /// <summary>Projects ESC calibration guidance and bounded, safety-gated motor testing into Setup controls.</summary>
 public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewModel

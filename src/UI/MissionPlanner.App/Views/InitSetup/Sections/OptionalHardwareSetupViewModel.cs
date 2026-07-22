@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles.Abstractions;
 
-namespace MissionPlanner.App.Views.InitSetup.Tabs;
+namespace MissionPlanner.App.Views.InitSetup.Sections;
 
 /// <summary>Hosts discovered optional-hardware modules as independent editable groups.</summary>
 public sealed partial class OptionalHardwareSetupViewModel : SetupWorkflowDetailViewModel

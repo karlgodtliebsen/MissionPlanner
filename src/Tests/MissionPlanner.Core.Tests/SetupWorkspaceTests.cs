@@ -1,20 +1,20 @@
-using CommunityToolkit.Maui.Storage;
+﻿using CommunityToolkit.Maui.Storage;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.InitSetup;
-using MissionPlanner.Core.Setup;
+using MissionPlanner.App.Views.InitSetup.Sections;
+using MissionPlanner.App.Views.InitSetup.Services;
 using MissionPlanner.Core.Firmware;
+using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink.Parameters;
 using NSubstitute;
-using MissionPlanner.App.Views.InitSetup.Tabs;
 
 namespace MissionPlanner.Core.Tests;
 
@@ -80,7 +80,7 @@ public sealed class SetupWorkspaceTests
         confirmation.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
         var clock = Substitute.For<IDateTimeProvider>();
         clock.UtcNow.Returns(DateTimeOffset.UtcNow);
-        using var viewModel = new InitSetupViewModel(
+        using var viewModel = new SetupViewModel(
             context,
             parameters,
             new SetupWorkflowCatalog(),
@@ -90,7 +90,7 @@ public sealed class SetupWorkspaceTests
             confirmation,
             clock,
             dispatcher,
-            Substitute.For<ILogger<InitSetupViewModel>>());
+            Substitute.For<ILogger<SetupViewModel>>());
         viewModel.Activate();
         factory.Received(1).Create(Arg.Any<SetupWorkflowDescriptor>());
         viewModel.SelectedWorkflow = viewModel.Workflows.Single(item => item.Descriptor.Key == SetupWorkflowKey.Frame);
@@ -149,7 +149,7 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<ISetupSummaryService>().Should().NotBeNull();
         provider.GetRequiredService<ISetupWorkflowViewModelFactory>().Should().NotBeNull();
         provider.GetRequiredService<ISetupNavigationService>().Should().NotBeNull();
-        provider.GetRequiredService<InitSetupViewModel>().Should().NotBeNull();
+        provider.GetRequiredService<SetupViewModel>().Should().NotBeNull();
     }
 
     private static SetupWorkflowEvaluation Evaluation(

@@ -122,8 +122,8 @@
 	  <Compile Update="Views\Help\HelpView.xaml.cs">
 	    <DependentUpon>HelpView.xaml</DependentUpon>
 	  </Compile>
-	  <Compile Update="Views\InitSetup\InitSetupView.xaml.cs">
-	    <DependentUpon>InitSetupView.xaml</DependentUpon>
+	  <Compile Update="Views\InitSetup\SetupView.xaml.cs">
+	    <DependentUpon>SetupView.xaml</DependentUpon>
 	  </Compile>
 	  <Compile Update="Views\Simulation\SimulationView.xaml.cs">
 	    <DependentUpon>SimulationView.xaml</DependentUpon>

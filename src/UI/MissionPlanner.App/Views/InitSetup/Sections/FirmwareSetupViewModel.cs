@@ -10,7 +10,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 
-namespace MissionPlanner.App.Views.InitSetup.Tabs;
+namespace MissionPlanner.App.Views.InitSetup.Sections;
 
 /// <summary>Presents firmware identity and guarded discovery, verification, and flashing actions.</summary>
 public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewModel

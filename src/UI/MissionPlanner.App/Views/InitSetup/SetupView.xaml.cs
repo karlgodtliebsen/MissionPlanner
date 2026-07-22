@@ -4,19 +4,19 @@ using UraniumUI.Pages;
 namespace MissionPlanner.App.Views.InitSetup;
 
 /// <summary>
-/// Provides the public API for InitSetupView.
+/// Provides the public API for SetupView.
 /// </summary>
-public partial class InitSetupView : UraniumContentPage
+public partial class SetupView : UraniumContentPage
 {
-    private readonly InitSetupViewModel viewModel;
+    private readonly SetupViewModel viewModel;
 
     /// <summary>
-    /// Provides the public API for InitSetupView.
+    /// Provides the public API for SetupView.
     /// </summary>
-    public InitSetupView()
+    public SetupView()
     {
         InitializeComponent();
-        viewModel = ServiceHelper.GetRequiredService<InitSetupViewModel>();
+        viewModel = ServiceHelper.GetRequiredService<SetupViewModel>();
         BindingContext = viewModel;
     }
 

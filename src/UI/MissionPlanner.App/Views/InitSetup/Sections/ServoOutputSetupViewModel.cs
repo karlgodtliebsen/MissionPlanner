@@ -7,7 +7,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 
-namespace MissionPlanner.App.Views.InitSetup.Tabs;
+namespace MissionPlanner.App.Views.InitSetup.Sections;
 
 /// <summary>Projects servo output functions with live PWM and confirmed function writes into Setup controls.</summary>
 public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewModel

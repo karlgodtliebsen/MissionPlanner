@@ -7,7 +7,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 
-namespace MissionPlanner.App.Views.InitSetup.Tabs;
+namespace MissionPlanner.App.Views.InitSetup.Sections;
 
 /// <summary>Projects battery monitor discovery, live readings, calibration, and failsafe editing into Setup controls.</summary>
 public sealed partial class BatterySetupViewModel : SetupWorkflowDetailViewModel

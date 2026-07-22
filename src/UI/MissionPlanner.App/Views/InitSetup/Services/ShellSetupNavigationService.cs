@@ -1,4 +1,4 @@
-namespace MissionPlanner.App.Views.InitSetup.Tabs;
+﻿namespace MissionPlanner.App.Views.InitSetup.Services;
 
 /// <summary>Implements Setup-to-Config navigation through the application Shell hierarchy.</summary>
 public sealed class ShellSetupNavigationService : ISetupNavigationService

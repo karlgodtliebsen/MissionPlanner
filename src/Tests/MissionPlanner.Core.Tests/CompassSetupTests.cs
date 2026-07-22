@@ -1,9 +1,8 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Views.InitSetup;
-using MissionPlanner.App.Views.InitSetup.Tabs;
+using MissionPlanner.App.Views.InitSetup.Sections;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
@@ -268,10 +267,10 @@ public sealed class CompassSetupTests
         var now = DateTimeOffset.UtcNow;
         var state = new VehicleState(vehicleId, 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online, now,
                 VehicleMode.Stabilize, false, null, null, null, null, null, null, null, null) with
-            {
-                Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
+        {
+            Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
                     LandedState: VehicleLandedState.OnGround, ObservedAt: now)
-            };
+        };
         if (magnetometerHealthy is { } healthy)
         {
             state = state with { Health = VehicleHealthState.Empty with { SensorsPresent = 0x04, SensorsHealthy = healthy ? 0x04u : 0u } };

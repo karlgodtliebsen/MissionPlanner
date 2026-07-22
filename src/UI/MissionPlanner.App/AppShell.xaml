@@ -96,7 +96,7 @@
     <FlyoutItem Title="Setup" Icon="Resources/Images/x_light_initialsetup_icon_x.png">
         <ShellContent
             Title=""
-            ContentTemplate="{DataTemplate initSetup:InitSetupView}" Route="Setup" />
+            ContentTemplate="{DataTemplate initSetup:SetupView}" Route="Setup" />
     </FlyoutItem>
     <FlyoutItem Title="Config"  
                 Icon="Resources/Images/x_light_tuningconfig_icon_x.png">

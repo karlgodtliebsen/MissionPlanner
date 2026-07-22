@@ -1,11 +1,10 @@
-using System.Net;
+﻿using System.Net;
 using System.Security.Cryptography;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Views.InitSetup;
-using MissionPlanner.App.Views.InitSetup.Tabs;
+using MissionPlanner.App.Views.InitSetup.Sections;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;

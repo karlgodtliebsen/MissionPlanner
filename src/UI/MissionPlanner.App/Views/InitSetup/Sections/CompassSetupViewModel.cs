@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -7,7 +7,7 @@ using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 
-namespace MissionPlanner.App.Views.InitSetup.Tabs;
+namespace MissionPlanner.App.Views.InitSetup.Sections;
 
 /// <summary>Projects compass discovery, editing, and the onboard calibration state machine into Setup controls.</summary>
 public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
@@ -214,7 +214,10 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
     }
 
     [RelayCommand]
-    private Task LoadInventoryAsync() => LoadAsync();
+    private Task LoadInventoryAsync()
+    {
+        return LoadAsync();
+    }
 
     [RelayCommand]
     private async Task RefreshInventoryAsync()
@@ -242,7 +245,10 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
         }
     }
 
-    private bool CanStartCommand() => CanStart && activeVehicle.IsOnline;
+    private bool CanStartCommand()
+    {
+        return CanStart && activeVehicle.IsOnline;
+    }
 
     [RelayCommand(CanExecute = nameof(CanStartCommand))]
     private async Task StartCalibrationAsync()
@@ -277,7 +283,10 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
         }
     }
 
-    private bool CanAcceptCommand() => CanAccept;
+    private bool CanAcceptCommand()
+    {
+        return CanAccept;
+    }
 
     [RelayCommand(CanExecute = nameof(CanAcceptCommand))]
     private async Task AcceptCalibrationAsync()
@@ -293,7 +302,10 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
         }
     }
 
-    private bool CanCancelCommand() => CanCancel;
+    private bool CanCancelCommand()
+    {
+        return CanCancel;
+    }
 
     [RelayCommand(CanExecute = nameof(CanCancelCommand))]
     private async Task CancelCalibrationAsync()
@@ -310,7 +322,10 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
     }
 
     [RelayCommand]
-    private void Reset() => calibration.Reset();
+    private void Reset()
+    {
+        calibration.Reset();
+    }
 
     private bool WouldDisableLastEnabledCompass(CompassInstanceViewModel item)
     {
@@ -357,8 +372,10 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
         OnPropertyChanged(nameof(HasIssues));
     }
 
-    private void OnCalibrationStateChanged(object? sender, CompassCalibrationStateChangedEventArgs args) =>
+    private void OnCalibrationStateChanged(object? sender, CompassCalibrationStateChangedEventArgs args)
+    {
         dispatcher.Dispatch(() => Show(args.Snapshot));
+    }
 
     private void Show(CompassCalibrationSnapshot snapshot)
     {
@@ -389,79 +406,4 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
             logger.LogInformation("Recorded confirmed compass setup evidence for {VehicleId}.", vehicleId);
         }
     }
-}
-
-/// <summary>Presents one discovered compass instance and its reviewed edits.</summary>
-public sealed partial class CompassInstanceViewModel : ObservableObject
-{
-    private readonly CompassSetupViewModel parent;
-
-    /// <summary>Initializes a compass row.</summary>
-    /// <param name="instance">The discovered compass instance.</param>
-    /// <param name="options">The orientation choices available for editing.</param>
-    /// <param name="parent">The owning compass workflow.</param>
-    public CompassInstanceViewModel(CompassInstance instance, IReadOnlyList<CompassOrientationOption> options, CompassSetupViewModel parent)
-    {
-        this.parent = parent;
-        Instance = instance;
-        Orientations = options;
-        SupportsExternal = instance.External is not null;
-        IsUsed = instance.Use;
-        IsExternal = instance.External ?? false;
-        SelectedOrientation = options.FirstOrDefault(option => option.Value == instance.Orientation);
-    }
-
-    /// <summary>Gets the underlying discovered instance.</summary>
-    public CompassInstance Instance { get; }
-
-    /// <summary>Gets the orientation choices available for editing.</summary>
-    public IReadOnlyList<CompassOrientationOption> Orientations { get; }
-
-    /// <summary>Gets the one-based slot index.</summary>
-    public int Index => Instance.Index;
-
-    /// <summary>Gets the compass header describing slot, priority, and identity.</summary>
-    public string Header => Instance.Priority > 0
-        ? $"Compass {Instance.Index} · priority {Instance.Priority}{(Instance.IsPrimary ? " (primary)" : string.Empty)}"
-        : $"Compass {Instance.Index} · unranked";
-
-    /// <summary>Gets the device identity label.</summary>
-    public string DeviceLabel => $"Device ID {Instance.DeviceId}";
-
-    /// <summary>Gets the health label.</summary>
-    public string HealthLabel => Instance.Healthy switch
-    {
-        true => "Healthy",
-        false => "Unhealthy",
-        null => "Health not reported"
-    };
-
-    /// <summary>Gets the offsets label.</summary>
-    public string OffsetsLabel => $"Offsets X {Instance.OffsetX:F0}, Y {Instance.OffsetY:F0}, Z {Instance.OffsetZ:F0}";
-
-    /// <summary>Gets the motor-compensation label.</summary>
-    public string MotorCompensationLabel => Instance.MotorCompensationConfigured
-        ? "Motor compensation configured"
-        : "Motor compensation disabled";
-
-    /// <summary>Gets whether the vehicle exposes an external flag for this compass.</summary>
-    public bool SupportsExternal { get; }
-
-    /// <summary>Gets or sets whether the compass is enabled for navigation.</summary>
-    [ObservableProperty]
-    public partial bool IsUsed { get; set; }
-
-    /// <summary>Gets or sets whether the compass is marked external.</summary>
-    [ObservableProperty]
-    public partial bool IsExternal { get; set; }
-
-    /// <summary>Gets or sets the reviewed orientation selection.</summary>
-    [ObservableProperty]
-    public partial CompassOrientationOption? SelectedOrientation { get; set; }
-
-    /// <summary>Restores the used flag to the discovered value after a declined confirmation.</summary>
-    public void RevertUse() => IsUsed = Instance.Use;
-
-    [RelayCommand]
-    private Task ApplyAsync() => parent.ApplyCompassAsync(this);
 }

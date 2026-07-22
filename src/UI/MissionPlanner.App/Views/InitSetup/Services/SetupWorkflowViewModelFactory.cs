@@ -1,13 +1,30 @@
-using MissionPlanner.Core.Setup;
+﻿using MissionPlanner.Core.Setup;
+using AccelerometerSetupViewModel = MissionPlanner.App.Views.InitSetup.Sections.AccelerometerSetupViewModel;
+using BatterySetupViewModel = MissionPlanner.App.Views.InitSetup.Sections.BatterySetupViewModel;
+using CompassSetupViewModel = MissionPlanner.App.Views.InitSetup.Sections.CompassSetupViewModel;
+using EscMotorSetupViewModel = MissionPlanner.App.Views.InitSetup.Sections.EscMotorSetupViewModel;
+using FirmwareSetupViewModel = MissionPlanner.App.Views.InitSetup.Sections.FirmwareSetupViewModel;
+using FlightModesSetupViewModel = MissionPlanner.App.Views.InitSetup.Sections.FlightModesSetupViewModel;
+using FrameSetupViewModel = MissionPlanner.App.Views.InitSetup.Sections.FrameSetupViewModel;
+using OptionalHardwareSetupViewModel = MissionPlanner.App.Views.InitSetup.Sections.OptionalHardwareSetupViewModel;
+using RadioSetupViewModel = MissionPlanner.App.Views.InitSetup.Sections.RadioSetupViewModel;
+using SafetySetupViewModel = MissionPlanner.App.Views.InitSetup.Sections.SafetySetupViewModel;
+using ServoOutputSetupViewModel = MissionPlanner.App.Views.InitSetup.Sections.ServoOutputSetupViewModel;
+using SetupSummaryViewModel = MissionPlanner.App.Views.InitSetup.Sections.SetupSummaryViewModel;
+using SetupWorkflowDetailViewModel = MissionPlanner.App.Views.InitSetup.Sections.SetupWorkflowDetailViewModel;
 
-namespace MissionPlanner.App.Views.InitSetup.Tabs;
+namespace MissionPlanner.App.Views.InitSetup.Services;
 
-/// <summary>Creates generic or specialized workflow hosts only when selected.</summary>
+/// <summary>
+/// Creates generic or specialized workflow hosts only when selected.
+/// </summary>
 public sealed class SetupWorkflowViewModelFactory : ISetupWorkflowViewModelFactory
 {
     private readonly IServiceProvider services;
 
-    /// <summary>Initializes the lazy workflow factory.</summary>
+    /// <summary>
+    /// Initializes the lazy workflow factory.
+    /// </summary>
     /// <param name="services">The application service provider.</param>
     public SetupWorkflowViewModelFactory(IServiceProvider services)
     {

@@ -1,9 +1,9 @@
-using MissionPlanner.Core.Firmware;
+﻿using MissionPlanner.Core.Firmware;
 
-namespace MissionPlanner.App.Views.InitSetup.Tabs;
+namespace MissionPlanner.App.Views.InitSetup.Services;
 
-/// <summary>Stores verified firmware downloads beneath the MAUI cache directory.</summary>
-public sealed class MauiFirmwarePackageCache : IFirmwarePackageCache
+/// <summary>Stores verified firmware downloads beneath the OS cache directory.</summary>
+public sealed class FirmwarePackageCache : IFirmwarePackageCache
 {
     private readonly string cacheDirectory = Path.Combine(FileSystem.CacheDirectory, "firmware");
 

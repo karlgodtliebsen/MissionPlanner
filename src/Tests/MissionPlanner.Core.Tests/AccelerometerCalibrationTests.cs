@@ -1,10 +1,9 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Views.InitSetup;
-using MissionPlanner.App.Views.InitSetup.Tabs;
+using MissionPlanner.App.Views.InitSetup.Sections;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
@@ -17,7 +16,6 @@ using MissionPlanner.MavLink.Decoding;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.Generated;
 using MissionPlanner.MavLink.Messages;
-using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Transport;
@@ -273,10 +271,10 @@ public sealed class AccelerometerCalibrationTests
         var now = DateTimeOffset.UtcNow;
         return new VehicleState(vehicleId, 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online, now,
                 VehicleMode.Stabilize, false, null, null, null, null, null, null, null, null) with
-            {
-                Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
+        {
+            Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
                     LandedState: VehicleLandedState.OnGround, ObservedAt: now)
-            };
+        };
     }
 
     private static IDispatcher ImmediateDispatcher()
@@ -330,7 +328,7 @@ public sealed class AccelerometerCalibrationTests
 
     private sealed class TestActiveVehicleContext(VehicleState state) : IActiveVehicleContext
     {
-        private CancellationTokenSource lifetime = new();
+        private readonly CancellationTokenSource lifetime = new();
 
         public ActiveVehicleSnapshot Current { get; private set; } = new(state.VehicleId, state);
 

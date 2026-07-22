@@ -7,7 +7,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 
-namespace MissionPlanner.App.Views.InitSetup.Tabs;
+namespace MissionPlanner.App.Views.InitSetup.Sections;
 
 /// <summary>Projects the Core accelerometer calibration state machine into guided Setup controls.</summary>
 public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailViewModel

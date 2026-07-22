@@ -1,6 +1,6 @@
-using MissionPlanner.Core.Setup;
+﻿using MissionPlanner.Core.Setup;
 
-namespace MissionPlanner.App.Views.InitSetup.Tabs;
+namespace MissionPlanner.App.Views.InitSetup.Sections;
 
 /// <summary>Represents one vehicle-evaluated workflow card in the Setup shell.</summary>
 public sealed class SetupWorkflowItemViewModel
