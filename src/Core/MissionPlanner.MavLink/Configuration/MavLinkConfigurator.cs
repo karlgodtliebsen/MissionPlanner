@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Client;
-using MissionPlanner.MavLink.Decoding;
 using MissionPlanner.MavLink.Decoding.Utils;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.MavFtp;
@@ -31,6 +30,7 @@ public static class MavLinkConfigurator
     {
         services.TryAddSingleton<IMavLinkClient, MavLinkClient>();
         services.TryAddSingleton<IMavLinkConnection, MavLinkConnection>();
+        services.TryAddSingleton<IMavLinkMessageDefinitionRegistry, MavLinkMessageDefinitionRegistry>();
         services.TryAddTransient<IMavLinkCrcExtraProvider, CommonMavLinkCrcExtraProvider>();
         services.TryAddTransient<IMavLinkFrameParser, MavLinkV2FrameParser>();
         services.TryAddTransient<IMavLinkCommandEncoder, MavLinkCommandEncoder>();
@@ -46,43 +46,7 @@ public static class MavLinkConfigurator
 
         services.AddSingleton(Options.Create(new MavLinkClientPipelineOptions()));
         services.AddSingleton(Options.Create(new MavLinkConnectionPipelineOptions()));
-        IList<IMavLinkMessageDecoder> decoders =
-        [
-            new Ahrs2MessageDecoder(),
-            new AttitudeMessageDecoder(),
-            new AutopilotVersionMessageDecoder(),
-            new BatteryStatusMessageDecoder(),
-            new CommandAckMessageDecoder(),
-            new EkfStatusReportMessageDecoder(),
-            new FileTransferProtocolMessageDecoder(),
-            new GlobalPositionIntMessageDecoder(),
-            new GpsRawIntMessageDecoder(),
-            new HeartbeatMessageDecoder(),
-            new HomePositionMessageDecoder(),
-            new LocalPositionNedMessageDecoder(),
-            new MemInfoMessageDecoder(),
-            new MissionCurrentMessageDecoder(),
-            new MissionAckMessageDecoder(),
-            new MissionCountMessageDecoder(),
-            new MissionItemIntMessageDecoder(),
-            new MissionItemReachedMessageDecoder(),
-            new MissionRequestIntMessageDecoder(),
-            new NavControllerOutputMessageDecoder(),
-            new ParamValueMessageDecoder(),
-            new PowerStatusMessageDecoder(),
-            new RawImuMessageDecoder(),
-            new RcChannelsMessageDecoder(),
-            new ScaledPressureMessageDecoder(),
-            new ServoOutputRawMessageDecoder(),
-            new StatusTextMessageDecoder(),
-            new SysStatusMessageDecoder(),
-            new TimeSyncMessageDecoder(),
-            new VfrHudMessageDecoder(),
-            new RawMavLinkMessageDecoder()
-        ];
-
-
-        services.TryAddSingleton(new MavLinkMessageDecoders(decoders));
+        services.AddGeneratedMavLinkDecoders();
 
         // Parameter metadata services
         services.TryAddSingleton<IParameterMetadataParser, ParameterMetadataXmlParser>();

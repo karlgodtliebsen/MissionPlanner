@@ -33,6 +33,9 @@
     <Project Path="Tests/MissionPlanner.Test.Support/MissionPlanner.Test.Support.csproj" />
     <Project Path="Tests/MissionPlanner.Tests/MissionPlanner.Tests.csproj" />
   </Folder>
+  <Folder Name="/Tools/">
+    <Project Path="Tools/MissionPlanner.MavLink.Generator/MissionPlanner.MavLink.Generator.csproj" />
+  </Folder>
   <Folder Name="/UI/">
     <Project Path="UI/MissionPlanner.App/MissionPlanner.App.csproj" Id="ff20c388-4a20-4f5d-a4ef-dd949c6ed9d9" />
     <Project Path="UI/MissionPlanner.Droid/MissionPlanner.Droid.csproj" Id="e2e925ba-c006-4814-b4bd-1075bfe650f9" />

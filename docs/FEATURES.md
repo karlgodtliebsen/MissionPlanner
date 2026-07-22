@@ -430,7 +430,68 @@ Completed
   recovery, normal-read fallback, streaming, retry, cancellation, cleanup, and listing implemented.
 * File browser UI: listing, navigation, refresh, reset, download, progress, save, and cancellation implemented.
 * Upload and filesystem mutations: not implemented.
-* Fast packed-parameter download: not implemented; classic parameter loading is unchanged.
+* Fast packed-parameter download: implemented through `@PARAM/param.pck`; decoding or
+  transfer failure falls back to the classic parameter stream automatically.
+
+# MAVLINK DIALECT COVERAGE
+
+* A deterministic inventory resolves the pinned official `ardupilotmega` dialect and its
+  transitive includes without network access during normal builds or tests.
+* A generated frozen registry now supplies names, CRC extras, payload bounds, dialect
+  origins, and deprecation state for all 325 resolved messages.
+* All 221 inherited protocol enums and command IDs are generated with XML-defined flag
+  semantics and wire-field-derived storage widths; undefined future values remain round-trippable.
+* Protocol-to-domain mappings keep generated identity and capability enums separate from
+  `FirmwareFamily` and the vehicle domain capability subset.
+* Frame validation uses the registry, including MAVLink 2 extension truncation bounds and
+  signed-frame sizing; it no longer depends on a typed decoder or hand-maintained CRC switch.
+* The coverage report includes registry, CRC, typed wire,
+  decoder, domain-handler, and observation coverage in `artifacts/mavlink-coverage.json`.
+* The vendored dialect revision, baseline counts, known legacy constant mismatch, and report
+  command are documented in [MAVLINK.md](MAVLINK.md).
+* Every CRC-valid selected-dialect frame now reaches consumers: registered typed decoders
+  take priority and all other frames become lossless `RawMavLinkMessage` instances. Raw
+  dispatch is debug-level, while IDs outside the selected dialect are trace-diagnosed and
+  rejected because their CRC extra is unknown.
+* Typed wire coverage now spans every one of the 315 non-deprecated selected-dialect
+  messages: 287 generated protocol records/decoders (including the retained deprecated
+  `HWSTATUS`, `BATTERY2`, `MISSION_ITEM`, and `MISSION_REQUEST` compatibility messages) and
+  32 documented hand-written workflow overrides.
+* Generated models preserve protocol field order and exact numeric/array types, decode
+  byte-level MAVLink 2 extension truncation with zero defaults, and provide outbound payload
+  serialization with optional extension trimming.
+* Decoder DI is generated and startup-validated: exactly one effective decoder exists per
+  typed schema slot, with fail-fast diagnostics for duplicate IDs, missing registry entries,
+  undeclared overrides, coverage gaps, or stale CRC/payload metadata. No runtime assembly
+  scanning or configurator decoder array is used.
+* All 325 messages have a machine-readable domain-promotion category, single owner,
+  frequency, stale-data decision, and intended consumers. Diagnostic/raw remains the default;
+  generation does not create aggregate handlers automatically.
+* Core flight-display telemetry is promoted through cohesive flight, navigation, power,
+  radio, health, and control handlers. This includes quaternion attitude, GPS2, landed/VTOL
+  state, primary and secondary batteries, controller/sensor health, both radio-status
+  variants, and raw servo outputs while preserving the existing HUD-facing primary fields.
+* Protocol sentinels are normalized to nullable domain values, scaled units are converted
+  once at the handler boundary, and GPS, motion, flight, power, health, and radio state expose
+  timestamp-based stale checks. Repeated identical samples no longer publish redundant
+  `VehicleStateUpdated` events from the cohesive telemetry handlers.
+* Navigation-quality and low-rate sensor promotion now adds coherent estimator, vibration,
+  multi-instance pressure, keyed range, environment, and vehicle-time state. AHRS/AHRS3,
+  vibration, three barometers, distance sensors, terrain, wind/covariance, altitude, and
+  system time use focused observations and change-gated state publication.
+* High-rate raw/scaled/high-resolution IMU, obstacle arrays, optical flow, and odometry stay
+  typed and inspector/log accessible but deliberately bypass immutable aggregate events to
+  avoid allocation and EventHub pressure.
+* Command acknowledgement correlation is connection-wide and keyed by vehicle and command;
+  transient command services do not own or dispose the shared MAVLink connection.
+* The mission transfer state machine filters source vehicle and mission type, buffers early
+  and out-of-order INT items, ignores duplicates, and retains typed legacy float mission
+  compatibility. The pinned source revision has no `MISSION_CHANGED` schema.
+* Packed MAVFTP parameters are preferred with classic parameter streaming as an automatic
+  fallback. Log, camera, gimbal, ADS-B, generator/EFI, ESC, winch, landing-target,
+  OpenDroneID, cellular/Wi-Fi, CAN, serial/tunnel, and device-operation families have typed
+  protocol access and inspector visibility; product services are added only when required.
+* Conformance and generation/CI work remains tracked by Tasks 11–12.
 
 
 

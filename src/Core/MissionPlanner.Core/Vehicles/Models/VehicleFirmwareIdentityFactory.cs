@@ -5,8 +5,6 @@ namespace MissionPlanner.Core.Vehicles.Models;
 /// </summary>
 public static class VehicleFirmwareIdentityFactory
 {
-    private const byte ArduPilotMega = 3;
-
     /// <summary>Creates the initial identity reported by a heartbeat.</summary>
     /// <param name="mavType">The MAV_TYPE value.</param>
     /// <param name="autopilot">The MAV_AUTOPILOT value.</param>
@@ -18,22 +16,15 @@ public static class VehicleFirmwareIdentityFactory
     /// <param name="mavType">The MAV_TYPE value.</param>
     /// <param name="autopilot">The MAV_AUTOPILOT value.</param>
     /// <returns>The mapped family, or <see cref="FirmwareFamily.Unknown"/>.</returns>
-    public static FirmwareFamily MapFamily(byte mavType, byte autopilot)
-    {
-        if (autopilot != ArduPilotMega)
-        {
-            return FirmwareFamily.Unknown;
-        }
+    public static FirmwareFamily MapFamily(byte mavType, byte autopilot) =>
+        ((MavLink.Generated.MavType)mavType).ToFirmwareFamily((MavLink.Generated.MavAutopilot)autopilot);
 
-        return mavType switch
-        {
-            1 => FirmwareFamily.ArduPlane,
-            2 or 3 or 4 or 13 or 14 or 15 or 29 or 35 => FirmwareFamily.ArduCopter,
-            10 or 11 => FirmwareFamily.Rover,
-            12 => FirmwareFamily.ArduSub,
-            5 => FirmwareFamily.AntennaTracker,
-            42 => FirmwareFamily.Blimp,
-            _ => FirmwareFamily.Unknown
-        };
-    }
+    /// <summary>Maps generated MAVLink identity enums to a broad firmware family.</summary>
+    /// <param name="mavType">The generated MAV_TYPE value.</param>
+    /// <param name="autopilot">The generated MAV_AUTOPILOT value.</param>
+    /// <returns>The mapped family, or <see cref="FirmwareFamily.Unknown"/>.</returns>
+    public static FirmwareFamily MapFamily(
+        MavLink.Generated.MavType mavType,
+        MavLink.Generated.MavAutopilot autopilot) =>
+        mavType.ToFirmwareFamily(autopilot);
 }

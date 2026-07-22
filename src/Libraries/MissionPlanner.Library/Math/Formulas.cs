@@ -54,7 +54,7 @@ public static class Formulas
         return result.AddDays(-3);
     }
 
-    // <summary>
+    /// <summary>
     /// Returns the first day of the week that the specified
     /// date is in using the current culture. 
     /// </summary>

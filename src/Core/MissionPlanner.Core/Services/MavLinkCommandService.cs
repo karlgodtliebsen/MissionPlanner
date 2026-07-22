@@ -5,6 +5,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library;
 using MissionPlanner.MavLink.Client;
+using MissionPlanner.MavLink.Commands;
 using MissionPlanner.MavLink.Encoding;
 
 namespace MissionPlanner.Core.Services;
@@ -87,12 +88,10 @@ public class MavLinkCommandService(IMavLinkClient client, IVehicleRegistry vehic
 
         try
         {
-            const ushort getHomePositionCommand = 410; // MAV_CMD_GET_HOME_POSITION
-
             var packet = MavLinkPacketBuilder.BuildCommandLongPacket(
                 vehicleId.SystemId,
                 vehicleId.ComponentId,
-                getHomePositionCommand,
+                MavLinkCommandIds.GetHomePosition,
                 sequenceNumber: sequenceNumber++);
 
             var endpoint = vehicleRegistry.GetRequired(vehicleId)!.EndPoint;
@@ -118,11 +117,10 @@ public class MavLinkCommandService(IMavLinkClient client, IVehicleRegistry vehic
 
         try
         {
-            const ushort requestMessageCommand = 512;
             var packet = MavLinkPacketBuilder.BuildCommandLongPacket(
                 vehicleId.SystemId,
                 vehicleId.ComponentId,
-                requestMessageCommand,
+                MavLinkCommandIds.RequestMessage,
                 148,
                 sequenceNumber: sequenceNumber++);
             var endpoint = vehicleRegistry.GetRequired(vehicleId)?.EndPoint;

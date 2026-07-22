@@ -21,6 +21,7 @@ public sealed class PowerTelemetryHandler(
     [
         typeof(SysStatusMessage),
         typeof(BatteryStatusMessage),
+        typeof(Battery2Message),
         typeof(PowerStatusMessage)
     ];
 
@@ -34,16 +35,25 @@ public sealed class PowerTelemetryHandler(
         {
             return;
         }
+        var previous = vehicle.State;
 
         switch (message)
         {
             case SysStatusMessage status:
                 vehicle.ApplyBattery(new VehicleBatteryObservation(
                     status.BatteryVoltage,
-                    null,
+                    status.BatteryCurrent,
                     null,
                     null,
                     status.BatteryRemaining,
+                    status.ReceivedAt));
+                vehicle.ApplySystemHealth(new VehicleSystemHealthObservation(
+                    status.SensorsPresent ?? 0,
+                    status.SensorsEnabled ?? 0,
+                    status.SensorsHealthy ?? 0,
+                    status.ControllerLoadPercent ?? 0,
+                    status.CommunicationDropRatePercent ?? 0,
+                    status.CommunicationErrors ?? 0,
                     status.ReceivedAt));
                 break;
 
@@ -54,7 +64,19 @@ public sealed class PowerTelemetryHandler(
                     battery.CurrentConsumed < 0 ? null : battery.CurrentConsumed,
                     battery.EnergyConsumed < 0 ? null : battery.EnergyConsumed / 36.0,
                     battery.BatteryRemaining < 0 ? null : battery.BatteryRemaining,
-                    battery.ReceivedAt));
+                    battery.ReceivedAt,
+                    battery.Id));
+                break;
+
+            case Battery2Message battery2:
+                vehicle.ApplyBattery(new VehicleBatteryObservation(
+                    battery2.Voltage == ushort.MaxValue ? null : battery2.Voltage / 1000.0,
+                    battery2.CurrentBattery < 0 ? null : battery2.CurrentBattery / 100.0,
+                    null,
+                    null,
+                    null,
+                    battery2.ReceivedAt,
+                    1));
                 break;
 
             case PowerStatusMessage power:
@@ -66,7 +88,7 @@ public sealed class PowerTelemetryHandler(
                 break;
         }
 
-        await PublishStateAsync(vehicle, cancellationToken).ConfigureAwait(false);
+        await PublishStateIfChangedAsync(previous, vehicle, cancellationToken).ConfigureAwait(false);
     }
 
     private static double? SumValidCellVoltages(

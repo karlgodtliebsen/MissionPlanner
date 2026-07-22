@@ -199,7 +199,7 @@ public class MavLinkTests
     [Fact]
     public void Should_Reject_Frame_With_Invalid_Crc()
     {
-        MavLinkV2FrameParser parser = new(new CommonMavLinkCrcExtraProvider());
+        MavLinkV2FrameParser parser = new(new MavLinkMessageDefinitionRegistry());
 
         CommonMavLinkCrcExtraProvider provider = new();
         var frame = MavLinkKnownFrames.CreateHeartbeatV2(provider);

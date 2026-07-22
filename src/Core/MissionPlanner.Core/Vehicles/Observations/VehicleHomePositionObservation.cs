@@ -1,3 +1,5 @@
+﻿using MissionPlanner.Core.Vehicles.Abstractions;
+
 namespace MissionPlanner.Core.Vehicles.Observations;
 
 /// <summary>
@@ -11,4 +13,4 @@ public sealed record VehicleHomePositionObservation(
     double LatitudeDegrees,
     double LongitudeDegrees,
     double AltitudeMslMeters,
-    DateTimeOffset ObservedAt);
+    DateTimeOffset ObservedAt) : IVehicleObservation;

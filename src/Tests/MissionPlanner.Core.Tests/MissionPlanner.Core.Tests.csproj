@@ -45,6 +45,7 @@
       <ProjectReference Include="..\..\UI\MissionPlanner.App\MissionPlanner.App.csproj" />
       <ProjectReference Include="..\MissionPlanner.Simulator\MissionPlanner.Simulator.csproj" />
       <ProjectReference Include="..\MissionPlanner.Test.Support\MissionPlanner.Test.Support.csproj" />
+      <ProjectReference Include="..\..\Tools\MissionPlanner.MavLink.Generator\MissionPlanner.MavLink.Generator.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -45,7 +45,8 @@ public static class DomainConfigurator
         services.TryAddTransient<IVehicleConnectionMonitor, VehicleConnectionMonitor>();
 
 
-        services.TryAddTransient<ICommandAckTracker, CommandAckTracker>();
+        // Command ACK correlation must be shared by the command sender and inbound control handler.
+        services.TryAddSingleton<ICommandAckTracker, CommandAckTracker>();
         services.TryAddTransient<IVehicleCommandPolicy, VehicleCommandPolicy>();
 
         services.TryAddSingleton<IVehicleConnectionSession, VehicleConnectionSession>();
@@ -68,6 +69,7 @@ public static class DomainConfigurator
         services.TryAddEnumerable(ServiceDescriptor.Transient<IVehicleMessageHandler, PowerTelemetryHandler>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IVehicleMessageHandler, RadioTelemetryHandler>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IVehicleMessageHandler, HealthTelemetryHandler>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IVehicleMessageHandler, SensorTelemetryHandler>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IVehicleMessageHandler, ControlMessageHandler>());
 
         services.TryAddTransient<IVehicleCommandService, VehicleCommandService>();

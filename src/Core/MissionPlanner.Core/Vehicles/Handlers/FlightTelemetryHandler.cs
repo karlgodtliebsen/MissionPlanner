@@ -23,6 +23,8 @@ public sealed class FlightTelemetryHandler(IVehicleRegistry vehicleRegistry, IDo
         typeof(HeartbeatMessage),
         typeof(AutopilotVersionMessage),
         typeof(AttitudeMessage),
+        typeof(AttitudeQuaternionMessage),
+        typeof(ExtendedSysStateMessage),
         typeof(Ahrs2Message),
         typeof(VfrHudMessage)
     ];
@@ -37,8 +39,10 @@ public sealed class FlightTelemetryHandler(IVehicleRegistry vehicleRegistry, IDo
         // Heartbeat is special because it may create the session.
         if (message is HeartbeatMessage heartbeat)
         {
-            var result = await vehicleRegistry.RegisterOrUpdateHeartbeatAsync(
-                new VehicleId(heartbeat.SystemId, heartbeat.ComponentId),
+            var vehicleId = new VehicleId(heartbeat.SystemId, heartbeat.ComponentId);
+            var previousState = VehicleRegistry.Vehicles.FirstOrDefault(vehicle => vehicle.Id == vehicleId)?.State;
+            var result = await VehicleRegistry.RegisterOrUpdateHeartbeatAsync(
+                vehicleId,
                 heartbeat.EndPoint,
                 heartbeat.CustomMode,
                 heartbeat.VehicleType,
@@ -48,7 +52,14 @@ public sealed class FlightTelemetryHandler(IVehicleRegistry vehicleRegistry, IDo
                 heartbeat.MavLinkVersion,
                 heartbeat.ReceivedAt, cancellationToken);
 
-            await PublishStateAsync(result.Vehicle, cancellationToken).ConfigureAwait(false);
+            if (previousState is null)
+            {
+                await PublishStateAsync(result.Vehicle, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                await PublishStateIfChangedAsync(previousState, result.Vehicle, cancellationToken).ConfigureAwait(false);
+            }
             return;
         }
 
@@ -57,6 +68,7 @@ public sealed class FlightTelemetryHandler(IVehicleRegistry vehicleRegistry, IDo
         {
             return;
         }
+        var previous = vehicle.State;
 
         switch (message)
         {
@@ -84,6 +96,25 @@ public sealed class FlightTelemetryHandler(IVehicleRegistry vehicleRegistry, IDo
                     attitude.ReceivedAt));
                 break;
 
+            case AttitudeQuaternionMessage quaternion:
+                var euler = ToEuler(quaternion.Q1, quaternion.Q2, quaternion.Q3, quaternion.Q4);
+                vehicle.ApplyAttitude(new VehicleAttitudeObservation(
+                    euler.Roll,
+                    euler.Pitch,
+                    euler.Yaw,
+                    quaternion.Rollspeed,
+                    quaternion.Pitchspeed,
+                    quaternion.Yawspeed,
+                    quaternion.ReceivedAt));
+                break;
+
+            case ExtendedSysStateMessage extended:
+                vehicle.ApplyExtendedFlightState(new VehicleExtendedFlightStateObservation(
+                    MapVtolState(extended.VtolState),
+                    MapLandedState(extended.LandedState),
+                    extended.ReceivedAt));
+                break;
+
             case Ahrs2Message ahrs2:
                 vehicle.ApplyAhrsFallback(
                     new VehicleAhrsObservation(
@@ -109,7 +140,7 @@ public sealed class FlightTelemetryHandler(IVehicleRegistry vehicleRegistry, IDo
                 break;
         }
 
-        await PublishStateAsync(vehicle, cancellationToken).ConfigureAwait(false);
+        await PublishStateIfChangedAsync(previous, vehicle, cancellationToken).ConfigureAwait(false);
     }
 
     private static double NormalizeHeading(short heading)
@@ -117,4 +148,27 @@ public sealed class FlightTelemetryHandler(IVehicleRegistry vehicleRegistry, IDo
         var value = heading % 360;
         return value < 0 ? value + 360 : value;
     }
+
+    private static (double Roll, double Pitch, double Yaw) ToEuler(double w, double x, double y, double z)
+    {
+        var norm = Math.Sqrt((w * w) + (x * x) + (y * y) + (z * z));
+        if (norm <= double.Epsilon)
+        {
+            return (0, 0, 0);
+        }
+
+        w /= norm;
+        x /= norm;
+        y /= norm;
+        z /= norm;
+        var roll = Math.Atan2(2 * ((w * x) + (y * z)), 1 - (2 * ((x * x) + (y * y))));
+        var pitchTerm = Math.Clamp(2 * ((w * y) - (z * x)), -1, 1);
+        var pitch = Math.Asin(pitchTerm);
+        var yaw = Math.Atan2(2 * ((w * z) + (x * y)), 1 - (2 * ((y * y) + (z * z))));
+        return (roll, pitch, yaw);
+    }
+
+    private static VehicleVtolState MapVtolState(byte value) => value <= 4 ? (VehicleVtolState)value : VehicleVtolState.Undefined;
+
+    private static VehicleLandedState MapLandedState(byte value) => value <= 4 ? (VehicleLandedState)value : VehicleLandedState.Undefined;
 }

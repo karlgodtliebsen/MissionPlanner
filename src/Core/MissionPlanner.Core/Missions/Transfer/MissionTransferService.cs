@@ -32,7 +32,9 @@ public sealed class MissionTransferService(
         var requests = Channel.CreateUnbounded<MavLinkMessage>(new UnboundedChannelOptions { SingleReader = true, SingleWriter = false });
         using var subscription = eventHub.SubscribeAsync<MavLinkMessage>(MavLinkEventTopics.ReceivedMessage, (m, _) =>
         {
-            if (m.SystemId == vehicleId.SystemId && m.ComponentId == vehicleId.ComponentId && m is MissionRequestIntMessage or MissionAckMessage)
+            if (m.SystemId == vehicleId.SystemId && m.ComponentId == vehicleId.ComponentId
+                && ((m is MissionRequestIntMessage request && request.MissionType == (byte)mission.Type)
+                    || (m is MissionAckMessage ack && ack.MissionType == (byte)mission.Type)))
             {
                 requests.Writer.TryWrite(m);
             }
@@ -90,26 +92,52 @@ public sealed class MissionTransferService(
         await connection.SendRawAsync(encoder.EncodeMissionRequestList(vehicleId.SystemId, vehicleId.ComponentId,
             (MavMissionType)(byte)missionType), session.EndPoint, cancellationToken);
         MissionCountMessage count;
+        var pendingItems = new Dictionary<ushort, MissionItemIntMessage>();
         try
         {
-            count = (MissionCountMessage)await ReadWithTimeout(messages.Reader, cancellationToken);
+            while (true)
+            {
+                var incoming = await ReadWithTimeout(messages.Reader, cancellationToken);
+                if (incoming is MissionCountMessage candidate && candidate.MissionType == (byte)missionType)
+                {
+                    count = candidate;
+                    break;
+                }
+
+                if (incoming is MissionItemIntMessage early && early.MissionType == (byte)missionType)
+                {
+                    pendingItems.TryAdd(early.Sequence, early);
+                }
+            }
         }
         catch (Exception ex) when (ex is TimeoutException) { return new MissionDownloadResult(false, [], "Timed out waiting for MISSION_COUNT."); }
 
         var result = new MavLinkMissionItem[count.Count];
         for (ushort seq = 0; seq < count.Count; seq++)
         {
-            MissionItemIntMessage? item = null;
+            pendingItems.Remove(seq, out var item);
             for (var attempt = 0; attempt < MaxAttempts && item is null; attempt++)
             {
                 await connection.SendRawAsync(encoder.EncodeMissionRequestInt(vehicleId.SystemId, vehicleId.ComponentId, seq,
                     (MavMissionType)(byte)missionType), session.EndPoint, cancellationToken);
                 try
                 {
-                    var m = await ReadWithTimeout(messages.Reader, cancellationToken);
-                    if (m is MissionItemIntMessage x && x.Sequence == seq)
+                    while (item is null)
                     {
-                        item = x;
+                        var m = await ReadWithTimeout(messages.Reader, cancellationToken);
+                        if (m is not MissionItemIntMessage x || x.MissionType != (byte)missionType || x.Sequence >= count.Count)
+                        {
+                            continue;
+                        }
+
+                        if (x.Sequence == seq)
+                        {
+                            item = x;
+                        }
+                        else
+                        {
+                            pendingItems.TryAdd(x.Sequence, x);
+                        }
                     }
                 }
                 catch (TimeoutException) { }

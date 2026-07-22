@@ -16,6 +16,24 @@ public sealed record VehicleState(
     VehicleNavigationState Navigation,
     VehicleHealthState Health)
 {
+    /// <summary>Gets estimator diagnostics and alternate estimator output.</summary>
+    public VehicleEstimatorState Estimator { get; init; } = VehicleEstimatorState.Empty;
+
+    /// <summary>Gets the latest vibration diagnostics.</summary>
+    public VehicleVibrationState Vibration { get; init; } = VehicleVibrationState.Empty;
+
+    /// <summary>Gets pressure and air-data sensor state.</summary>
+    public VehiclePressureState Pressure { get; init; } = VehiclePressureState.Empty;
+
+    /// <summary>Gets keyed range-sensor state.</summary>
+    public VehicleRangeState Range { get; init; } = VehicleRangeState.Empty;
+
+    /// <summary>Gets terrain, wind, and altitude environment state.</summary>
+    public VehicleEnvironmentState Environment { get; init; } = VehicleEnvironmentState.Empty;
+
+    /// <summary>Gets vehicle clock observations.</summary>
+    public VehicleTimeState Time { get; init; } = VehicleTimeState.Empty;
+
     /// <summary>
     /// Gets the derived user-facing vehicle name.
     /// </summary>

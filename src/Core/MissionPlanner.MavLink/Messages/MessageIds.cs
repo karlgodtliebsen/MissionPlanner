@@ -173,6 +173,11 @@ public static class MessageIds
     /// </summary>
     public const uint HomePosition = 242;
 
+    /// <summary>
+    /// Raw controller memory vector used for protocol diagnostics.
+    /// </summary>
+    public const uint MemoryVect = 249;
+
 
     /// <summary>
     /// Sends a MAVLink command with seven command parameters.
@@ -233,10 +238,4 @@ public static class MessageIds
     /// Human-readable status, warning or error text.
     /// </summary>
     public const uint StatusText = 253;
-
-
-    /// <summary>
-    /// Provides the public API for DefaultFallback.
-    /// </summary>
-    public const uint DefaultFallback = 65555;
 }

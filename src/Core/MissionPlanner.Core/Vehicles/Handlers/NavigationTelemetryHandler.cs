@@ -22,6 +22,7 @@ public sealed class NavigationTelemetryHandler(
     [
         typeof(GlobalPositionIntMessage),
         typeof(GpsRawIntMessage),
+        typeof(Gps2RawMessage),
         typeof(LocalPositionNedMessage),
         typeof(NavControllerOutputMessage),
         typeof(MissionCurrentMessage),
@@ -38,6 +39,7 @@ public sealed class NavigationTelemetryHandler(
         {
             return;
         }
+        var previous = vehicle.State;
 
         switch (message)
         {
@@ -66,6 +68,20 @@ public sealed class NavigationTelemetryHandler(
                     gps.HorizontalAccuracy is null or uint.MaxValue ? null : gps.HorizontalAccuracy / 1000.0,
                     gps.VerticalAccuracy is null or uint.MaxValue ? null : gps.VerticalAccuracy / 1000.0,
                     gps.ReceivedAt));
+                break;
+
+            case Gps2RawMessage gps2:
+                vehicle.ApplyGps(new VehicleGpsObservation(
+                    MapFixType(gps2.FixType),
+                    gps2.SatellitesVisible == byte.MaxValue ? null : gps2.SatellitesVisible,
+                    gps2.Eph == ushort.MaxValue ? null : gps2.Eph / 100.0,
+                    gps2.Epv == ushort.MaxValue ? null : gps2.Epv / 100.0,
+                    gps2.Vel == ushort.MaxValue ? null : gps2.Vel / 100.0,
+                    gps2.Cog == ushort.MaxValue ? null : gps2.Cog / 100.0,
+                    gps2.HAcc == uint.MaxValue ? null : gps2.HAcc / 1000.0,
+                    gps2.VAcc == uint.MaxValue ? null : gps2.VAcc / 1000.0,
+                    gps2.ReceivedAt,
+                    1));
                 break;
 
             case LocalPositionNedMessage local:
@@ -110,7 +126,7 @@ public sealed class NavigationTelemetryHandler(
                 break;
         }
 
-        await PublishStateAsync(vehicle, cancellationToken).ConfigureAwait(false);
+        await PublishStateIfChangedAsync(previous, vehicle, cancellationToken).ConfigureAwait(false);
     }
 
     private static GpsFixType MapFixType(byte value)

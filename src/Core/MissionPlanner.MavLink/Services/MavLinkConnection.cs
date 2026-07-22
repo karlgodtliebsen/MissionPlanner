@@ -71,6 +71,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
                 return;
             }
 
+            frameParser.Reset();
             cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             decodedMessages = Channel.CreateBounded<DecodedMavLinkMessage>(new BoundedChannelOptions(options.DecodedMessageChannelCapacity) { SingleWriter = true, SingleReader = true, FullMode = BoundedChannelFullMode.Wait, AllowSynchronousContinuations = false });
 

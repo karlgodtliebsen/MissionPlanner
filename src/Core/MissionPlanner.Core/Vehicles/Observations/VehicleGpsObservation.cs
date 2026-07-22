@@ -15,6 +15,7 @@ namespace MissionPlanner.Core.Vehicles.Observations;
 /// <param name="HorizontalAccuracyMeters">The HorizontalAccuracyMeters value.</param>
 /// <param name="VerticalAccuracyMeters">The VerticalAccuracyMeters value.</param>
 /// <param name="ObservedAt">The ObservedAt value.</param>
+/// <param name="ReceiverIndex">The zero-based GPS receiver index.</param>
 public sealed record VehicleGpsObservation(
     GpsFixType FixType,
     int? SatellitesVisible,
@@ -24,4 +25,5 @@ public sealed record VehicleGpsObservation(
     double? CourseDegrees,
     double? HorizontalAccuracyMeters,
     double? VerticalAccuracyMeters,
-    DateTimeOffset ObservedAt) : IVehicleObservation;
+    DateTimeOffset ObservedAt,
+    int ReceiverIndex = 0) : IVehicleObservation;

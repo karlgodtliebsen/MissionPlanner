@@ -20,6 +20,8 @@ Documentation lives in `docs/` and is organized into three categories: core docu
 | [VEHICLE_CONNECTION.md](VEHICLE_CONNECTION.md) | Connection model, transports & resilience, telemetry streams, cleanup, test practices |
 | [MISSIONS.md](MISSIONS.md) | Mission domain, planner UI, files, validation, upload/download, execution monitoring |
 | [PARAMETERS.md](PARAMETERS.md) | Parameter request/set, bulk streaming, storage, metadata system |
+| [MAVLINK.md](MAVLINK.md) | Official dialect provenance, generated coverage, and maintenance workflow |
+| [MAVLINK_DOMAIN_PROMOTION.md](MAVLINK_DOMAIN_PROMOTION.md) | Rules and machine-readable ownership catalog for domain promotion |
 | [MAVFTP.md](MAVFTP.md) | MAVLink filesystem streaming, correlation, retries, and limitations |
 | [SERILOG_QUICKSTART.md](SERILOG_QUICKSTART.md) | Logging setup and diagnostic workflow |
 

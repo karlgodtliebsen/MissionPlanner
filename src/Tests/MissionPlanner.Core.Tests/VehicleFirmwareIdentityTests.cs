@@ -13,6 +13,8 @@ using MissionPlanner.MavLink.Decoding;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.Transport;
 using NSubstitute;
+using MavAutopilot = MissionPlanner.MavLink.Generated.MavAutopilot;
+using MavType = MissionPlanner.MavLink.Generated.MavType;
 
 namespace MissionPlanner.Core.Tests;
 
@@ -63,10 +65,11 @@ public sealed class VehicleFirmwareIdentityTests
 
     /// <summary>Verifies firmware family mapping is restricted to ArduPilot.</summary>
     [Theory]
-    [InlineData(2, 3, FirmwareFamily.ArduCopter)]
-    [InlineData(1, 3, FirmwareFamily.ArduPlane)]
-    [InlineData(2, 12, FirmwareFamily.Unknown)]
-    public void MapsHeartbeatIdentity(byte mavType, byte autopilot, FirmwareFamily expected)
+    [InlineData(MavType.Quadrotor, MavAutopilot.ArduPilotMega, FirmwareFamily.ArduCopter)]
+    [InlineData(MavType.FixedWing, MavAutopilot.ArduPilotMega, FirmwareFamily.ArduPlane)]
+    [InlineData(MavType.Quadrotor, MavAutopilot.Px4, FirmwareFamily.Unknown)]
+    [InlineData(MavType.Airship, MavAutopilot.ArduPilotMega, FirmwareFamily.Blimp)]
+    public void MapsHeartbeatIdentity(MavType mavType, MavAutopilot autopilot, FirmwareFamily expected)
     {
         VehicleFirmwareIdentityFactory.MapFamily(mavType, autopilot).Should().Be(expected);
     }

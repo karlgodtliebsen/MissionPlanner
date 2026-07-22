@@ -5,20 +5,22 @@ using MissionPlanner.Transport;
 namespace MissionPlanner.MavLink.Services;
 
 /// <summary>
-/// Stateful parser for MAVLink v2 frames.
+/// Stateful parser for MAVLink v1 and v2 frames.
 /// This parser accepts arbitrary byte chunks: one chunk may contain partial frames, one frame, or many frames.
 /// </summary>
 public sealed class MavLinkV2FrameParser : IMavLinkFrameParser
 {
+    private const byte MavLinkV1Magic = 0xFE;
     private const byte MavLinkV2Magic = 0xFD;
-    private const int HeaderLength = 10;
+    private const int V1HeaderLength = 6;
+    private const int V2HeaderLength = 10;
     private const int ChecksumLength = 2;
     private const int SignatureLength = 13;
     private const int MaxPayloadLength = 255;
-    private const int MaxFrameLength = HeaderLength + MaxPayloadLength + ChecksumLength + SignatureLength;
+    private const int MaxFrameLength = V2HeaderLength + MaxPayloadLength + ChecksumLength + SignatureLength;
     private const int CompactThreshold = 4096;
 
-    private readonly IMavLinkCrcExtraProvider crcExtraProvider;
+    private readonly IMavLinkMessageDefinitionRegistry messageDefinitions;
     private readonly ILogger<MavLinkV2FrameParser>? logger;
     private readonly object syncRoot = new();
     private readonly List<byte> buffer = new(8192);
@@ -28,12 +30,14 @@ public sealed class MavLinkV2FrameParser : IMavLinkFrameParser
     /// <summary>
     /// Initializes a new instance of the <see cref="MavLinkV2FrameParser"/> class.
     /// </summary>
-    /// <param name="crcExtraProvider">The CRC extra provider.</param>
+    /// <param name="messageDefinitions">The generated MAVLink message-definition registry.</param>
     /// <param name="logger">The logger.</param>
     /// <exception cref="ArgumentNullException"></exception>
-    public MavLinkV2FrameParser(IMavLinkCrcExtraProvider crcExtraProvider, ILogger<MavLinkV2FrameParser>? logger = null)
+    public MavLinkV2FrameParser(
+        IMavLinkMessageDefinitionRegistry messageDefinitions,
+        ILogger<MavLinkV2FrameParser>? logger = null)
     {
-        this.crcExtraProvider = crcExtraProvider ?? throw new ArgumentNullException(nameof(crcExtraProvider));
+        this.messageDefinitions = messageDefinitions ?? throw new ArgumentNullException(nameof(messageDefinitions));
         this.logger = logger;
     }
 
@@ -44,7 +48,7 @@ public sealed class MavLinkV2FrameParser : IMavLinkFrameParser
     /// <param name="endPoint">The transport endpoint from which the data was received.</param>
     /// <param name="receivedAt">The timestamp when the data was received.</param>
     /// <returns>A list of parsed MAVLink frames.</returns>
-    public IReadOnlyList<MavLinkFrame> Parse(ReadOnlySpan<byte> data, TransportEndPoint? endPoint, DateTimeOffset receivedAt)
+    public IReadOnlyList<MavLinkFrame> Parse(ReadOnlySpan<byte> data, TransportEndPoint endPoint, DateTimeOffset receivedAt)
     {
         if (data.IsEmpty)
         {
@@ -70,6 +74,16 @@ public sealed class MavLinkV2FrameParser : IMavLinkFrameParser
         }
     }
 
+    /// <inheritdoc />
+    public void Reset()
+    {
+        lock (syncRoot)
+        {
+            buffer.Clear();
+            readOffset = 0;
+        }
+    }
+
     private void Append(ReadOnlySpan<byte> data)
     {
         buffer.EnsureCapacity(buffer.Count + data.Length);
@@ -80,23 +94,30 @@ public sealed class MavLinkV2FrameParser : IMavLinkFrameParser
         }
     }
 
-    private bool TryReadFrame(TransportEndPoint? endPoint, DateTimeOffset receivedAt, out MavLinkFrame? frame)
+    private bool TryReadFrame(TransportEndPoint endPoint, DateTimeOffset receivedAt, out MavLinkFrame? frame)
     {
         frame = null;
 
         SkipUntilMagic();
 
-        if (AvailableBytes < HeaderLength)
+        if (AvailableBytes < 2)
+        {
+            return false;
+        }
+
+        var isV2 = buffer[readOffset] == MavLinkV2Magic;
+        var headerLength = isV2 ? V2HeaderLength : V1HeaderLength;
+        if (AvailableBytes < headerLength)
         {
             return false;
         }
 
         var payloadLength = buffer[readOffset + 1];
-        var incompatFlags = buffer[readOffset + 2];
-        var isSigned = (incompatFlags & 0x01) != 0;
-        var frameLength = HeaderLength + payloadLength + ChecksumLength + (isSigned ? SignatureLength : 0);
+        var incompatFlags = isV2 ? buffer[readOffset + 2] : (byte)0;
+        var isSigned = isV2 && (incompatFlags & 0x01) != 0;
+        var frameLength = headerLength + payloadLength + ChecksumLength + (isSigned ? SignatureLength : 0);
 
-        if (frameLength is < HeaderLength + ChecksumLength or > MaxFrameLength)
+        if (frameLength < headerLength + ChecksumLength || frameLength > MaxFrameLength)
         {
             // Impossible MAVLink v2 frame. Drop this magic byte and search again.
             readOffset++;
@@ -111,35 +132,58 @@ public sealed class MavLinkV2FrameParser : IMavLinkFrameParser
         var rawBytes = new byte[frameLength];
         CopyFromBuffer(readOffset, rawBytes);
 
-        var sequence = rawBytes[4];
-        var systemId = rawBytes[5];
-        var componentId = rawBytes[6];
-        var messageId = rawBytes[7] | ((uint)rawBytes[8] << 8) | ((uint)rawBytes[9] << 16);
+        var sequence = rawBytes[isV2 ? 4 : 2];
+        var systemId = rawBytes[isV2 ? 5 : 3];
+        var componentId = rawBytes[isV2 ? 6 : 4];
+        var messageId = isV2
+            ? rawBytes[7] | ((uint)rawBytes[8] << 8) | ((uint)rawBytes[9] << 16)
+            : rawBytes[5];
 
-        if (!crcExtraProvider.TryGetCrcExtra(messageId, out var crcExtra))
+        if (!messageDefinitions.TryGet(messageId, out var definition))
         {
             if (logger?.IsEnabled(LogLevel.Trace) == true)
             {
-                logger.LogTrace("Skipping MAVLink frame with unknown CRC extra. MessageId={MessageId}", messageId);
+                logger.LogTrace("Skipping MAVLink frame for unknown message. MessageId={MessageId}", messageId);
             }
 
-            // Unknown CRC normally means unsupported dialect. It can also mean we locked onto a false 0xFD byte.
+            // An unknown ID normally means an unsupported dialect. It can also mean we locked onto a false 0xFD byte.
             // Drop only the magic byte so the parser can quickly resynchronise instead of discarding a large
             // candidate frame that may contain valid frames after the false magic byte.
             readOffset++;
             return true;
         }
 
-        var receivedCrcOffset = HeaderLength + payloadLength;
+        var validPayloadLength = isV2
+            ? payloadLength >= definition.MinimumPayloadLength && payloadLength <= definition.MaximumPayloadLength
+            : payloadLength == definition.MinimumPayloadLength;
+        if (!validPayloadLength)
+        {
+            if (logger?.IsEnabled(LogLevel.Debug) == true)
+            {
+                logger.LogDebug(
+                    "Skipping MAVLink frame with invalid payload length. MessageId={MessageId}, MessageName={MessageName}, PayloadLength={PayloadLength}, MinimumPayloadLength={MinimumPayloadLength}, MaximumPayloadLength={MaximumPayloadLength}",
+                    messageId,
+                    definition.Name,
+                    payloadLength,
+                    definition.MinimumPayloadLength,
+                    definition.MaximumPayloadLength);
+            }
+
+            readOffset++;
+            return true;
+        }
+
+        var receivedCrcOffset = headerLength + payloadLength;
         var receivedCrc = (ushort)(rawBytes[receivedCrcOffset] | (rawBytes[receivedCrcOffset + 1] << 8));
-        var calculatedCrc = MavLinkCrc.Calculate(rawBytes.AsSpan(1, HeaderLength - 1 + payloadLength), crcExtra);
+        var calculatedCrc = MavLinkCrc.Calculate(rawBytes.AsSpan(1, headerLength - 1 + payloadLength), definition.CrcExtra);
 
         if (receivedCrc != calculatedCrc)
         {
             if (logger?.IsEnabled(LogLevel.Debug) == true)
             {
-                logger.LogDebug("Skipping MAVLink frame with invalid CRC. MessageId={MessageId}, ReceivedCrc={ReceivedCrc}, CalculatedCrc={CalculatedCrc}",
+                logger.LogDebug("Skipping MAVLink frame with invalid CRC. MessageId={MessageId}, MessageName={MessageName}, ReceivedCrc={ReceivedCrc}, CalculatedCrc={CalculatedCrc}",
                     messageId,
+                    definition.Name,
                     receivedCrc,
                     calculatedCrc);
             }
@@ -154,7 +198,7 @@ public sealed class MavLinkV2FrameParser : IMavLinkFrameParser
         readOffset += frameLength;
 
         var payload = new byte[payloadLength];
-        rawBytes.AsSpan(HeaderLength, payloadLength).CopyTo(payload);
+        rawBytes.AsSpan(headerLength, payloadLength).CopyTo(payload);
 
         frame = new MavLinkFrame(systemId, componentId, endPoint, messageId, sequence, payload, rawBytes, receivedAt);
         return true;
@@ -164,7 +208,7 @@ public sealed class MavLinkV2FrameParser : IMavLinkFrameParser
 
     private void SkipUntilMagic()
     {
-        while (AvailableBytes > 0 && buffer[readOffset] != MavLinkV2Magic)
+        while (AvailableBytes > 0 && buffer[readOffset] is not MavLinkV1Magic and not MavLinkV2Magic)
         {
             readOffset++;
         }

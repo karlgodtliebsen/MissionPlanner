@@ -9,14 +9,19 @@ namespace MissionPlanner.MavLink.Decoding.Utils;
 public sealed class MavLinkMessageDecoders
 {
     private readonly IReadOnlyDictionary<uint, IMavLinkMessageDecoder> decoders;
+    private readonly RawMavLinkMessageDecoder rawDecoder;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MavLinkMessageDecoders"/> class with the specified decoders.   
     /// </summary>
-    /// <param name="decoders"></param>
-    public MavLinkMessageDecoders(IEnumerable<IMavLinkMessageDecoder> decoders)
+    /// <param name="decoders">The typed message decoders.</param>
+    /// <param name="definitions">The selected-dialect message-definition registry.</param>
+    public MavLinkMessageDecoders(
+        IEnumerable<IMavLinkMessageDecoder> decoders,
+        IMavLinkMessageDefinitionRegistry definitions)
     {
         this.decoders = decoders.ToDictionary(x => x.MessageId);
+        rawDecoder = new RawMavLinkMessageDecoder(definitions);
     }
 
     /// <summary>
@@ -29,10 +34,13 @@ public sealed class MavLinkMessageDecoders
     {
         if (decoders.TryGetValue(frame.MessageId, out var decoder))
         {
-            return decoder.TryDecode(frame, out message);
+            if (decoder.TryDecode(frame, out message) && message is not null)
+            {
+                return true;
+            }
         }
 
-        message = null;
-        return false;
+        message = rawDecoder.Decode(frame);
+        return true;
     }
 }

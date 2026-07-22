@@ -13,7 +13,7 @@ public sealed class MemInfoMessageDecoder : IMavLinkMessageDecoder
     public uint MessageId { get; } = MessageIds.MemInfo;
 
     /// <inheritdoc />
-    public byte CrcExtra { get; }
+    public byte CrcExtra => 208;
 
     /// <inheritdoc />
     public bool TryDecode(MavLinkFrame frame, out MavLinkMessage? message)

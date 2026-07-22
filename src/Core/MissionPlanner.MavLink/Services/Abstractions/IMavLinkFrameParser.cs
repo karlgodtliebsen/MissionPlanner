@@ -3,7 +3,7 @@
 namespace MissionPlanner.MavLink.Services.Abstractions;
 
 /// <summary>
-/// 
+/// Parses stateful MAVLink byte streams into validated protocol frames.
 /// </summary>
 public interface IMavLinkFrameParser
 {
@@ -15,4 +15,9 @@ public interface IMavLinkFrameParser
     /// <param name="receivedAt">The timestamp when the data was received.</param>
     /// <returns>A list of parsed MAVLink frames.</returns>
     IReadOnlyList<MavLinkFrame> Parse(ReadOnlySpan<byte> data, TransportEndPoint endpoint, DateTimeOffset receivedAt);
+
+    /// <summary>
+    /// Discards any incomplete frame bytes retained from the previous transport stream.
+    /// </summary>
+    void Reset();
 }

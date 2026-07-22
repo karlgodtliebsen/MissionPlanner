@@ -17,36 +17,45 @@ public sealed class HealthTelemetryHandler(
     /// <summary>
     /// Provides the public API for MessageTypes.
     /// </summary>
-    public IReadOnlyCollection<Type> MessageTypes { get; } = [typeof(EkfStatusReportMessage)];
+    public IReadOnlyCollection<Type> MessageTypes { get; } = [typeof(EkfStatusReportMessage), typeof(AhrsMessage), typeof(Ahrs3Message)];
 
     /// <summary>
     /// Provides the public API for HandleAsync.
     /// </summary>
     public async ValueTask HandleAsync(MavLinkMessage message, CancellationToken cancellationToken)
     {
-        if (message is not EkfStatusReportMessage ekf)
-        {
-            throw new ArgumentException("Unsupported message type.", nameof(message));
-        }
-
-        var vehicle = GetVehicle(ekf);
+        var vehicle = GetVehicle(message);
         if (vehicle is null)
         {
             return;
         }
+        var previous = vehicle.State;
 
-        vehicle.ApplyEkf(new VehicleEkfObservation(
-            ekf.Flags,
-            IsEkfHealthy(ekf.Flags),
-            ekf.VelocityVariance,
-            ekf.PositionHorizontalVariance,
-            ekf.PositionVerticalVariance,
-            ekf.CompassVariance,
-            ekf.TerrainAltitudeVariance,
-            ekf.AirspeedVariance,
-            ekf.ReceivedAt));
+        switch (message)
+        {
+            case EkfStatusReportMessage ekf:
+                vehicle.ApplyEkf(new VehicleEkfObservation(
+                    ekf.Flags,
+                    IsEkfHealthy(ekf.Flags),
+                    ekf.VelocityVariance,
+                    ekf.PositionHorizontalVariance,
+                    ekf.PositionVerticalVariance,
+                    ekf.CompassVariance,
+                    ekf.TerrainAltitudeVariance,
+                    ekf.AirspeedVariance,
+                    ekf.ReceivedAt));
+                break;
+            case AhrsMessage ahrs:
+                vehicle.ApplyEstimatorDiagnostic(new VehicleEstimatorDiagnosticObservation(ahrs.Omegaix, ahrs.Omegaiy, ahrs.Omegaiz, ahrs.ErrorRp, ahrs.ErrorYaw, ahrs.ReceivedAt));
+                break;
+            case Ahrs3Message ahrs3:
+                vehicle.ApplyEstimatorPose(new VehicleEstimatorPoseObservation(2, ahrs3.Roll, ahrs3.Pitch, ahrs3.Yaw, ahrs3.Lat / 10_000_000.0, ahrs3.Lng / 10_000_000.0, ahrs3.Altitude, ahrs3.ReceivedAt));
+                break;
+            default:
+                throw new ArgumentException("Unsupported message type.", nameof(message));
+        }
 
-        await PublishStateAsync(vehicle, cancellationToken).ConfigureAwait(false);
+        await PublishStateIfChangedAsync(previous, vehicle, cancellationToken).ConfigureAwait(false);
     }
 
     // Conservative initial rule: flags == 0 means no estimator capability/health flags.

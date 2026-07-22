@@ -13,18 +13,8 @@ public static class MavLinkPacketBuilder
     private const int HeaderLength = 6;
     private const int CrcLength = 2;
 
-    // CRC-16/X.25 (CCITT) polynomial
-    private const ushort X25CrcPolynomial = 0x1021;
-    private const ushort X25CrcInit = 0xFFFF;
-
-    // CRC_EXTRA seeds for MAVLink messages (per-message type)
-    // See: https://mavlink.io/en/guide/serialization.html#crc_extra
-    private static readonly Dictionary<byte, byte> CrcExtraSeeds = new()
-    {
-        [66] = 148,  // REQUEST_DATA_STREAM
-        [76] = 152,  // COMMAND_LONG
-        [244] = 223, // MESSAGE_INTERVAL (for SET_MESSAGE_INTERVAL)
-    };
+    private static readonly Services.Abstractions.IMavLinkMessageDefinitionRegistry MessageDefinitions =
+        new Services.MavLinkMessageDefinitionRegistry();
 
     /// <summary>
     /// Builds a REQUEST_DATA_STREAM packet to request telemetry streams from ArduPilot.
@@ -162,36 +152,11 @@ public static class MavLinkPacketBuilder
     /// <returns>16-bit CRC checksum</returns>
     private static ushort CalculateCrc(ReadOnlySpan<byte> data, byte messageId)
     {
-        ushort crc = X25CrcInit;
-
-        // Process packet data
-        foreach (byte b in data)
+        if (!MessageDefinitions.TryGet(messageId, out var definition))
         {
-            crc = CrcAccumulate(b, crc);
+            throw new InvalidOperationException($"MAVLink message definition not found for message ID {messageId}.");
         }
 
-        // Add CRC_EXTRA seed (required by MAVLink spec)
-        if (CrcExtraSeeds.TryGetValue(messageId, out byte crcExtra))
-        {
-            crc = CrcAccumulate(crcExtra, crc);
-        }
-        else
-        {
-            throw new InvalidOperationException($"CRC_EXTRA seed not defined for message ID {messageId}");
-        }
-
-        return crc;
-    }
-
-    /// <summary>
-    /// Accumulates one byte into the CRC-16/X.25 checksum.
-    /// Implementation follows MAVLink specification.
-    /// </summary>
-    private static ushort CrcAccumulate(byte b, ushort crc)
-    {
-        byte tmp = (byte)(b ^ (byte)(crc & 0xFF));
-        tmp ^= (byte)(tmp << 4);
-        crc = (ushort)((crc >> 8) ^ (tmp << 8) ^ (tmp << 3) ^ (tmp >> 4));
-        return crc;
+        return MavLinkCrc.Calculate(data, definition.CrcExtra);
     }
 }

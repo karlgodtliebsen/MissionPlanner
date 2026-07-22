@@ -178,14 +178,13 @@ public sealed class VehicleParameterStreamService : IVehicleParameterStreamServi
         TimeSpan? timeout = null, CancellationToken cancellationToken = default)
     {
         var overallStopwatch = Stopwatch.StartNew();
-        //progress?.Report(new ParameterStreamProgress(0, 0, 0, false));
-        //var ftpResult = await TryDownloadPackedParametersAsync(vehicleId, progress, overallStopwatch, cancellationToken).ConfigureAwait(false);
-        //if (ftpResult is not null)
-        //{
-        //    return ftpResult;
-        //}
-
         progress?.Report(new ParameterStreamProgress(0, 0, 0, false));
+        var ftpResult = await TryDownloadPackedParametersAsync(vehicleId, progress, overallStopwatch, cancellationToken).ConfigureAwait(false);
+        if (ftpResult is not null)
+        {
+            return ftpResult;
+        }
+
         for (var attempt = 0; attempt <= maxRetries; attempt++)
         {
             if (cancellationToken.IsCancellationRequested)

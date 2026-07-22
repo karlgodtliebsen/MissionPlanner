@@ -191,8 +191,9 @@ public sealed class VehicleCommandService(
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
-        await connection.DisposeAsync().ConfigureAwait(false);
+        // The connection is shared connection-session infrastructure and is not owned by this transient service.
+        return ValueTask.CompletedTask;
     }
 }

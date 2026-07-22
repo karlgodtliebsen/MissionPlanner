@@ -14,7 +14,7 @@ public sealed class ParamValueMessageDecoder : IMavLinkMessageDecoder
     public uint MessageId { get; } = MessageIds.ParamValue;
 
     /// <inheritdoc />
-    public byte CrcExtra { get; } = 22;
+    public byte CrcExtra { get; } = 220;
 
     /// <summary>
     /// Tries to decode a MAVLink PARAM_VALUE message from the given frame.

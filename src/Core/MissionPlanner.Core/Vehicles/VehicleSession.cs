@@ -127,7 +127,26 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
     /// <param name="observation"></param>
     public void ApplyAttitude(VehicleAttitudeObservation observation)
     {
-        state = state with { Motion = state.Motion with { RollRadians = observation.RollRadians, PitchRadians = observation.PitchRadians, YawRadians = observation.YawRadians, ObservedAt = observation.ObservedAt } };
+        state = state with
+        {
+            Motion = state.Motion with
+            {
+                RollRadians = observation.RollRadians,
+                PitchRadians = observation.PitchRadians,
+                YawRadians = observation.YawRadians,
+                RollRateRadiansPerSecond = observation.RollRateRadiansPerSecond,
+                PitchRateRadiansPerSecond = observation.PitchRateRadiansPerSecond,
+                YawRateRadiansPerSecond = observation.YawRateRadiansPerSecond,
+                ObservedAt = observation.ObservedAt
+            }
+        };
+    }
+
+    /// <summary>Applies normalized VTOL and landed state.</summary>
+    /// <param name="observation">The extended flight-state observation.</param>
+    public void ApplyExtendedFlightState(VehicleExtendedFlightStateObservation observation)
+    {
+        state = state with { Flight = state.Flight with { VtolState = observation.VtolState, LandedState = observation.LandedState, ObservedAt = observation.ObservedAt } };
     }
 
     /// <summary>
@@ -207,6 +226,27 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
     /// <param name="observation"></param>
     public void ApplyGps(VehicleGpsObservation observation)
     {
+        if (observation.ReceiverIndex > 0)
+        {
+            state = state with
+            {
+                Gps = state.Gps with
+                {
+                    SecondaryReceiver = new VehicleGpsReceiverState(
+                        observation.FixType,
+                        observation.SatellitesVisible,
+                        observation.HorizontalDilution,
+                        observation.VerticalDilution,
+                        observation.GroundSpeedMetersPerSecond,
+                        observation.CourseDegrees,
+                        observation.HorizontalAccuracyMeters,
+                        observation.VerticalAccuracyMeters,
+                        observation.ObservedAt)
+                }
+            };
+            return;
+        }
+
         state = state with
         {
             Gps = new VehicleGpsState(
@@ -241,6 +281,17 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
 
         state = state with
         {
+            Estimator = state.Estimator with
+            {
+                RollRadians = observation.RollRadians,
+                PitchRadians = observation.PitchRadians,
+                YawRadians = observation.YawRadians,
+                LatitudeDegrees = observation.LatitudeDegrees,
+                LongitudeDegrees = observation.LongitudeDegrees,
+                AltitudeMslMeters = observation.AltitudeMslMeters,
+                Instance = 1,
+                ObservedAt = observation.ObservedAt
+            },
             Motion = attitudeIsStale
                 ? state.Motion with { RollRadians = observation.RollRadians, PitchRadians = observation.PitchRadians, YawRadians = observation.YawRadians, ObservedAt = observation.ObservedAt }
                 : state.Motion,
@@ -265,6 +316,25 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
     /// <param name="observation"></param>
     public void ApplyBattery(VehicleBatteryObservation observation)
     {
+        if (observation.BatteryId > 0)
+        {
+            state = state with
+            {
+                Power = state.Power with
+                {
+                    SecondaryBattery = new VehicleBatteryState(
+                        observation.BatteryId,
+                        observation.VoltageVolts,
+                        observation.CurrentAmps,
+                        observation.ConsumedMah,
+                        observation.ConsumedWh,
+                        observation.RemainingPercent,
+                        observation.ObservedAt)
+                }
+            };
+            return;
+        }
+
         state = state with
         {
             Power = state.Power with
@@ -294,7 +364,169 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
     /// <param name="observation"></param>
     public void ApplyRadio(VehicleRadioObservation observation)
     {
-        state = state with { Radio = new VehicleRadioState(observation.ChannelCount, observation.ChannelsRaw, observation.RssiPercent, observation.ObservedAt) };
+        var channels = state.Radio.ChannelsRaw.SequenceEqual(observation.ChannelsRaw)
+            ? state.Radio.ChannelsRaw
+            : observation.ChannelsRaw.ToArray();
+        state = state with { Radio = state.Radio with { ChannelCount = observation.ChannelCount, ChannelsRaw = channels, RssiPercent = observation.RssiPercent, ObservedAt = observation.ObservedAt } };
+    }
+
+    /// <summary>Applies controller and onboard-sensor health.</summary>
+    /// <param name="observation">The normalized system-health observation.</param>
+    public void ApplySystemHealth(VehicleSystemHealthObservation observation)
+    {
+        state = state with
+        {
+            Health = state.Health with
+            {
+                SensorsPresent = observation.SensorsPresent,
+                SensorsEnabled = observation.SensorsEnabled,
+                SensorsHealthy = observation.SensorsHealthy,
+                ControllerLoadPercent = observation.ControllerLoadPercent,
+                CommunicationDropRatePercent = observation.CommunicationDropRatePercent,
+                CommunicationErrors = observation.CommunicationErrors,
+                SystemObservedAt = observation.ObservedAt
+            }
+        };
+    }
+
+    /// <summary>Applies estimator drift and error diagnostics.</summary>
+    public void ApplyEstimatorDiagnostic(VehicleEstimatorDiagnosticObservation observation)
+    {
+        state = state with
+        {
+            Estimator = state.Estimator with
+            {
+                GyroDriftX = observation.GyroDriftX,
+                GyroDriftY = observation.GyroDriftY,
+                GyroDriftZ = observation.GyroDriftZ,
+                RollPitchError = observation.RollPitchError,
+                YawError = observation.YawError,
+                ObservedAt = observation.ObservedAt
+            }
+        };
+    }
+
+    /// <summary>Applies an alternate estimator pose.</summary>
+    public void ApplyEstimatorPose(VehicleEstimatorPoseObservation observation)
+    {
+        state = state with
+        {
+            Estimator = state.Estimator with
+            {
+                RollRadians = observation.RollRadians,
+                PitchRadians = observation.PitchRadians,
+                YawRadians = observation.YawRadians,
+                LatitudeDegrees = observation.LatitudeDegrees,
+                LongitudeDegrees = observation.LongitudeDegrees,
+                AltitudeMslMeters = observation.AltitudeMslMeters,
+                Instance = observation.Instance,
+                ObservedAt = observation.ObservedAt
+            }
+        };
+    }
+
+    /// <summary>Applies vibration diagnostics.</summary>
+    public void ApplyVibration(VehicleVibrationObservation observation)
+    {
+        var clipping = state.Vibration.Clipping.SequenceEqual(observation.Clipping) ? state.Vibration.Clipping : observation.Clipping.ToArray();
+        state = state with { Vibration = new VehicleVibrationState(observation.X, observation.Y, observation.Z, clipping, observation.ObservedAt) };
+    }
+
+    /// <summary>Applies one pressure-sensor sample.</summary>
+    public void ApplyPressure(VehiclePressureObservation observation)
+    {
+        var sample = new VehiclePressureSample(observation.Instance, observation.AbsoluteHectopascals, observation.DifferentialHectopascals, observation.TemperatureCelsius, observation.DifferentialTemperatureCelsius, observation.ObservedAt);
+        state = state with { Pressure = observation.Instance switch { 0 => state.Pressure with { Primary = sample }, 1 => state.Pressure with { Secondary = sample }, var _ => state.Pressure with { Tertiary = sample } } };
+    }
+
+    /// <summary>Applies one keyed range-sensor sample.</summary>
+    public void ApplyRange(VehicleRangeObservation observation)
+    {
+        var sample = new VehicleRangeSensorState(observation.Id, observation.DistanceMeters, observation.MinimumMeters, observation.MaximumMeters, observation.Orientation, observation.SignalQualityPercent, observation.ObservedAt);
+        if (state.Range.Sensors.TryGetValue(observation.Id, out var current) && current == sample)
+        {
+            return;
+        }
+
+        var sensors = new Dictionary<byte, VehicleRangeSensorState>(state.Range.Sensors) { [observation.Id] = sample };
+        state = state with { Range = new VehicleRangeState(sensors) };
+    }
+
+    /// <summary>Applies a wind-vector sample.</summary>
+    public void ApplyWind(VehicleWindObservation observation)
+    {
+        state = state with
+        {
+            Environment = state.Environment with
+            {
+                WindNorthMetersPerSecond = observation.NorthMetersPerSecond,
+                WindEastMetersPerSecond = observation.EastMetersPerSecond,
+                WindDownMetersPerSecond = observation.DownMetersPerSecond,
+                WindHorizontalVariance = observation.HorizontalVariance,
+                WindVerticalVariance = observation.VerticalVariance,
+                ObservedAt = observation.ObservedAt
+            }
+        };
+    }
+
+    /// <summary>Applies terrain height.</summary>
+    public void ApplyTerrain(VehicleTerrainObservation observation)
+    {
+        state = state with { Environment = state.Environment with { TerrainHeightMslMeters = observation.TerrainHeightMslMeters, HeightAboveTerrainMeters = observation.HeightAboveTerrainMeters, ObservedAt = observation.ObservedAt } };
+    }
+
+    /// <summary>Applies altitude-source telemetry.</summary>
+    public void ApplyAltitude(VehicleAltitudeObservation observation)
+    {
+        state = state with
+        {
+            Environment = state.Environment with
+            {
+                AltitudeMonotonicMeters = observation.MonotonicMeters,
+                AltitudeMslMeters = observation.MslMeters,
+                AltitudeLocalMeters = observation.LocalMeters,
+                AltitudeRelativeMeters = observation.RelativeMeters,
+                TerrainHeightMslMeters = observation.TerrainMeters ?? state.Environment.TerrainHeightMslMeters,
+                BottomClearanceMeters = observation.BottomClearanceMeters,
+                ObservedAt = observation.ObservedAt
+            }
+        };
+    }
+
+    /// <summary>Applies a vehicle system-clock sample.</summary>
+    public void ApplyTime(VehicleTimeObservation observation)
+    {
+        state = state with { Time = new VehicleTimeState(observation.UnixTime, observation.BootTime, observation.ObservedAt) };
+    }
+
+    /// <summary>Applies telemetry-radio link statistics.</summary>
+    /// <param name="observation">The normalized radio-link observation.</param>
+    public void ApplyRadioLink(VehicleRadioLinkObservation observation)
+    {
+        state = state with
+        {
+            Radio = state.Radio with
+            {
+                LocalRssi = observation.LocalRssi,
+                RemoteRssi = observation.RemoteRssi,
+                TransmitBufferPercent = observation.TransmitBufferPercent,
+                LocalNoise = observation.LocalNoise,
+                RemoteNoise = observation.RemoteNoise,
+                ReceiveErrors = observation.ReceiveErrors,
+                CorrectedPackets = observation.CorrectedPackets,
+                LinkObservedAt = observation.ObservedAt
+            }
+        };
+    }
+
+    /// <summary>Applies one bank of raw servo outputs.</summary>
+    /// <param name="observation">The servo-output observation.</param>
+    public void ApplyServoOutputs(VehicleServoOutputObservation observation)
+    {
+        var outputs = state.Radio.ServoOutputsRaw is { } current && current.SequenceEqual(observation.OutputsMicroseconds)
+            ? current
+            : observation.OutputsMicroseconds.ToArray();
+        state = state with { Radio = state.Radio with { ServoOutputPort = observation.Port, ServoOutputsRaw = outputs, ServoObservedAt = observation.ObservedAt } };
     }
 
     /// <summary>

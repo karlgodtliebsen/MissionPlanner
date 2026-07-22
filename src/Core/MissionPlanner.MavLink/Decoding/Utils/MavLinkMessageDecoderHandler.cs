@@ -31,17 +31,21 @@ public sealed class MavLinkMessageDecoderHandler : IMavLinkMessageDecodeHandler
         logger.LogTrace("MavLinkMessageDecoderHandler - Decoding MAVLink frame: {SystemId}, {ComponentId}, {MessageId}", frame.SystemId, frame.ComponentId, frame.MessageId);
         if (decoders.TryDecode(frame, out message))
         {
-            logger.LogTrace("MavLinkMessageDecoderHandler - Decoded MAVLink frame MessageId={MessageId} as {MessageType}", frame.MessageId, message?.GetType().Name);
+            if (message is RawMavLinkMessage raw)
+            {
+                logger.LogDebug(
+                    "Using raw MAVLink fallback. MessageId={MessageId}, MessageName={MessageName}, PayloadLength={PayloadLength}",
+                    raw.MessageId,
+                    raw.MessageName,
+                    raw.Payload.Length);
+            }
+            else
+            {
+                logger.LogTrace("MavLinkMessageDecoderHandler - Decoded MAVLink frame MessageId={MessageId} as {MessageType}", frame.MessageId, message?.GetType().Name);
+            }
+
             return true;
         }
-
-        logger.LogWarning(
-            "MavLinkMessageDecoderHandler - No decoder accepted MAVLink frame MessageId={MessageId}, SystemId={SystemId}, ComponentId={ComponentId}, PayloadLength={PayloadLength}",
-            frame.MessageId,
-            frame.SystemId,
-            frame.ComponentId,
-            frame.Payload.Length);
-
 
         message = null;
         return false;

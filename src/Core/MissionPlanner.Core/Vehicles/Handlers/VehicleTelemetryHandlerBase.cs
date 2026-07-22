@@ -13,6 +13,9 @@ public abstract class VehicleTelemetryHandlerBase(
     IVehicleRegistry vehicleRegistry,
     IDomainEventHub domainEventHub)
 {
+    /// <summary>Gets the vehicle registry used by the cohesive handler.</summary>
+    protected IVehicleRegistry VehicleRegistry => vehicleRegistry;
+
     /// <summary>
     /// Provides the public API for GetVehicle.
     /// </summary>
@@ -27,5 +30,11 @@ public abstract class VehicleTelemetryHandlerBase(
     protected ValueTask PublishStateAsync(VehicleSession vehicle, CancellationToken cancellationToken)
     {
         return new ValueTask(domainEventHub.PublishDomainEventAsync(new VehicleStateUpdated(vehicle.State), cancellationToken));
+    }
+
+    /// <summary>Publishes a state update only when the immutable aggregate changed.</summary>
+    protected ValueTask PublishStateIfChangedAsync(VehicleState previousState, VehicleSession vehicle, CancellationToken cancellationToken)
+    {
+        return previousState == vehicle.State ? ValueTask.CompletedTask : PublishStateAsync(vehicle, cancellationToken);
     }
 }

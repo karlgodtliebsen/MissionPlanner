@@ -1,3 +1,5 @@
+﻿using MissionPlanner.Core.Vehicles.Abstractions;
+
 namespace MissionPlanner.Core.Vehicles.Observations;
 
 /// <summary>
@@ -21,4 +23,4 @@ public sealed record VehicleFirmwareObservation(
     ushort ProductId,
     ulong Uid,
     byte[] Uid2,
-    DateTimeOffset ObservedAt);
+    DateTimeOffset ObservedAt) : IVehicleObservation;

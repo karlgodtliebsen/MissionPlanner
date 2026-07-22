@@ -31,6 +31,7 @@ public sealed class SysStatusMessageDecoder : IMavLinkMessageDecoder
         var span = frame.Payload.Span;
 
         var voltageBatteryMv = BinaryPrimitives.ReadUInt16LittleEndian(span[14..16]);
+        var currentBatteryCa = BinaryPrimitives.ReadInt16LittleEndian(span[16..18]);
 
         var batteryRemainingRaw = unchecked((sbyte)span[30]);
 
@@ -47,7 +48,14 @@ public sealed class SysStatusMessageDecoder : IMavLinkMessageDecoder
             frame.EndPoint,
             batteryRemaining,
             voltage,
-            frame.ReceivedAt);
+            frame.ReceivedAt,
+            currentBatteryCa < 0 ? null : currentBatteryCa / 100.0,
+            BinaryPrimitives.ReadUInt32LittleEndian(span[0..4]),
+            BinaryPrimitives.ReadUInt32LittleEndian(span[4..8]),
+            BinaryPrimitives.ReadUInt32LittleEndian(span[8..12]),
+            BinaryPrimitives.ReadUInt16LittleEndian(span[12..14]) / 10.0,
+            BinaryPrimitives.ReadUInt16LittleEndian(span[18..20]) / 100.0,
+            BinaryPrimitives.ReadUInt16LittleEndian(span[20..22]));
 
         return true;
     }

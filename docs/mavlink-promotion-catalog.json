@@ -1,0 +1,4112 @@
+{
+  "SourceRevision": "de1e078a3a7c53c9262a95b7417959a0f8bf4150",
+  "RootDialect": "ardupilotmega.xml",
+  "Policy": "Diagnostic/raw is the default. Promote only durable vehicle state, meaningful domain transitions, or dedicated protocol workflows with a named owner.",
+  "Messages": [
+    {
+      "MessageId": 0,
+      "Name": "HEARTBEAT",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "FlightTelemetryHandler",
+      "ObservationType": "VehicleHeartbeatObservation",
+      "IntendedUpdateFrequency": "1 Hz",
+      "StaleTimeout": "PT3S",
+      "UiConsumers": [
+        "Vehicle selector",
+        "Top bar",
+        "HUD"
+      ]
+    },
+    {
+      "MessageId": 1,
+      "Name": "SYS_STATUS",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "PowerTelemetryHandler",
+      "ObservationType": "VehicleSystemHealthObservation",
+      "IntendedUpdateFrequency": "1 Hz",
+      "StaleTimeout": "PT5S",
+      "UiConsumers": [
+        "HUD",
+        "Power status",
+        "Health status"
+      ]
+    },
+    {
+      "MessageId": 2,
+      "Name": "SYSTEM_TIME",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "SensorTelemetryHandler",
+      "ObservationType": "VehicleTimeObservation",
+      "IntendedUpdateFrequency": "1 Hz",
+      "StaleTimeout": "PT5S",
+      "UiConsumers": [
+        "Time diagnostics"
+      ]
+    },
+    {
+      "MessageId": 4,
+      "Name": "PING",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 5,
+      "Name": "CHANGE_OPERATOR_CONTROL",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 6,
+      "Name": "CHANGE_OPERATOR_CONTROL_ACK",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 7,
+      "Name": "AUTH_KEY",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 8,
+      "Name": "LINK_NODE_STATUS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 11,
+      "Name": "SET_MODE",
+      "Category": "OutboundOnly",
+      "Owner": "Outbound command/setpoint API",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "caller-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Control workflows"
+      ]
+    },
+    {
+      "MessageId": 20,
+      "Name": "PARAM_REQUEST_READ",
+      "Category": "ProtocolWorkflow",
+      "Owner": "VehicleParameterStreamService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 21,
+      "Name": "PARAM_REQUEST_LIST",
+      "Category": "ProtocolWorkflow",
+      "Owner": "VehicleParameterStreamService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 22,
+      "Name": "PARAM_VALUE",
+      "Category": "ProtocolWorkflow",
+      "Owner": "ControlMessageHandler / VehicleParameterStreamService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Full Parameter List"
+      ]
+    },
+    {
+      "MessageId": 23,
+      "Name": "PARAM_SET",
+      "Category": "ProtocolWorkflow",
+      "Owner": "VehicleParameterStreamService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 24,
+      "Name": "GPS_RAW_INT",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "NavigationTelemetryHandler",
+      "ObservationType": "VehicleGpsObservation",
+      "IntendedUpdateFrequency": "1-10 Hz",
+      "StaleTimeout": "PT3S",
+      "UiConsumers": [
+        "HUD",
+        "GPS status"
+      ]
+    },
+    {
+      "MessageId": 25,
+      "Name": "GPS_STATUS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 26,
+      "Name": "SCALED_IMU",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 27,
+      "Name": "RAW_IMU",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 28,
+      "Name": "RAW_PRESSURE",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 29,
+      "Name": "SCALED_PRESSURE",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "SensorTelemetryHandler",
+      "ObservationType": "VehiclePressureObservation",
+      "IntendedUpdateFrequency": "1-20 Hz",
+      "StaleTimeout": "PT3S",
+      "UiConsumers": [
+        "Sensor status"
+      ]
+    },
+    {
+      "MessageId": 30,
+      "Name": "ATTITUDE",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "FlightTelemetryHandler",
+      "ObservationType": "VehicleAttitudeObservation",
+      "IntendedUpdateFrequency": "10-100 Hz",
+      "StaleTimeout": "PT1S",
+      "UiConsumers": [
+        "HUD"
+      ]
+    },
+    {
+      "MessageId": 31,
+      "Name": "ATTITUDE_QUATERNION",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "FlightTelemetryHandler",
+      "ObservationType": "VehicleAttitudeObservation",
+      "IntendedUpdateFrequency": "10-100 Hz",
+      "StaleTimeout": "PT1S",
+      "UiConsumers": [
+        "HUD"
+      ]
+    },
+    {
+      "MessageId": 32,
+      "Name": "LOCAL_POSITION_NED",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "NavigationTelemetryHandler",
+      "ObservationType": "VehicleLocalPositionObservation",
+      "IntendedUpdateFrequency": "1-20 Hz",
+      "StaleTimeout": "PT2S",
+      "UiConsumers": [
+        "HUD",
+        "Map"
+      ]
+    },
+    {
+      "MessageId": 33,
+      "Name": "GLOBAL_POSITION_INT",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "NavigationTelemetryHandler",
+      "ObservationType": "VehicleGlobalPositionObservation",
+      "IntendedUpdateFrequency": "1-20 Hz",
+      "StaleTimeout": "PT2S",
+      "UiConsumers": [
+        "HUD",
+        "Map"
+      ]
+    },
+    {
+      "MessageId": 34,
+      "Name": "RC_CHANNELS_SCALED",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 35,
+      "Name": "RC_CHANNELS_RAW",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 36,
+      "Name": "SERVO_OUTPUT_RAW",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "RadioTelemetryHandler",
+      "ObservationType": "VehicleServoOutputObservation",
+      "IntendedUpdateFrequency": "1-20 Hz",
+      "StaleTimeout": "PT3S",
+      "UiConsumers": [
+        "Servo status"
+      ]
+    },
+    {
+      "MessageId": 37,
+      "Name": "MISSION_REQUEST_PARTIAL_LIST",
+      "Category": "ProtocolWorkflow",
+      "Owner": "MissionTransferService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 38,
+      "Name": "MISSION_WRITE_PARTIAL_LIST",
+      "Category": "ProtocolWorkflow",
+      "Owner": "MissionTransferService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 39,
+      "Name": "MISSION_ITEM",
+      "Category": "ProtocolWorkflow",
+      "Owner": "MissionTransferService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 40,
+      "Name": "MISSION_REQUEST",
+      "Category": "ProtocolWorkflow",
+      "Owner": "MissionTransferService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 41,
+      "Name": "MISSION_SET_CURRENT",
+      "Category": "ProtocolWorkflow",
+      "Owner": "MissionTransferService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 42,
+      "Name": "MISSION_CURRENT",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "NavigationTelemetryHandler",
+      "ObservationType": "VehicleMissionProgressObservation",
+      "IntendedUpdateFrequency": "event-driven",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Mission progress",
+        "HUD"
+      ]
+    },
+    {
+      "MessageId": 43,
+      "Name": "MISSION_REQUEST_LIST",
+      "Category": "ProtocolWorkflow",
+      "Owner": "MissionTransferService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 44,
+      "Name": "MISSION_COUNT",
+      "Category": "ProtocolWorkflow",
+      "Owner": "MissionTransferService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 45,
+      "Name": "MISSION_CLEAR_ALL",
+      "Category": "ProtocolWorkflow",
+      "Owner": "MissionTransferService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 46,
+      "Name": "MISSION_ITEM_REACHED",
+      "Category": "DomainEvent",
+      "Owner": "MissionTransferService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "event-driven",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Mission progress"
+      ]
+    },
+    {
+      "MessageId": 47,
+      "Name": "MISSION_ACK",
+      "Category": "ProtocolWorkflow",
+      "Owner": "MissionTransferService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 48,
+      "Name": "SET_GPS_GLOBAL_ORIGIN",
+      "Category": "OutboundOnly",
+      "Owner": "Outbound command/setpoint API",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "caller-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Control workflows"
+      ]
+    },
+    {
+      "MessageId": 49,
+      "Name": "GPS_GLOBAL_ORIGIN",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 50,
+      "Name": "PARAM_MAP_RC",
+      "Category": "ProtocolWorkflow",
+      "Owner": "VehicleParameterStreamService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 51,
+      "Name": "MISSION_REQUEST_INT",
+      "Category": "ProtocolWorkflow",
+      "Owner": "MissionTransferService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 54,
+      "Name": "SAFETY_SET_ALLOWED_AREA",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 55,
+      "Name": "SAFETY_ALLOWED_AREA",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 61,
+      "Name": "ATTITUDE_QUATERNION_COV",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 62,
+      "Name": "NAV_CONTROLLER_OUTPUT",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "NavigationTelemetryHandler",
+      "ObservationType": "VehicleNavigationObservation",
+      "IntendedUpdateFrequency": "1-10 Hz",
+      "StaleTimeout": "PT3S",
+      "UiConsumers": [
+        "HUD",
+        "Mission guidance"
+      ]
+    },
+    {
+      "MessageId": 63,
+      "Name": "GLOBAL_POSITION_INT_COV",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 64,
+      "Name": "LOCAL_POSITION_NED_COV",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 65,
+      "Name": "RC_CHANNELS",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "RadioTelemetryHandler",
+      "ObservationType": "VehicleRadioObservation",
+      "IntendedUpdateFrequency": "1-20 Hz",
+      "StaleTimeout": "PT3S",
+      "UiConsumers": [
+        "Radio status"
+      ]
+    },
+    {
+      "MessageId": 66,
+      "Name": "REQUEST_DATA_STREAM",
+      "Category": "OutboundOnly",
+      "Owner": "Outbound command/setpoint API",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "caller-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Control workflows"
+      ]
+    },
+    {
+      "MessageId": 67,
+      "Name": "DATA_STREAM",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 69,
+      "Name": "MANUAL_CONTROL",
+      "Category": "OutboundOnly",
+      "Owner": "Outbound command/setpoint API",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "caller-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Control workflows"
+      ]
+    },
+    {
+      "MessageId": 70,
+      "Name": "RC_CHANNELS_OVERRIDE",
+      "Category": "OutboundOnly",
+      "Owner": "Outbound command/setpoint API",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "caller-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Control workflows"
+      ]
+    },
+    {
+      "MessageId": 73,
+      "Name": "MISSION_ITEM_INT",
+      "Category": "ProtocolWorkflow",
+      "Owner": "MissionTransferService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 74,
+      "Name": "VFR_HUD",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "FlightTelemetryHandler",
+      "ObservationType": "VehicleHudObservation",
+      "IntendedUpdateFrequency": "1-10 Hz",
+      "StaleTimeout": "PT2S",
+      "UiConsumers": [
+        "HUD"
+      ]
+    },
+    {
+      "MessageId": 75,
+      "Name": "COMMAND_INT",
+      "Category": "ProtocolWorkflow",
+      "Owner": "MavLinkCommandService / CommandAckTracker",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 76,
+      "Name": "COMMAND_LONG",
+      "Category": "ProtocolWorkflow",
+      "Owner": "MavLinkCommandService / CommandAckTracker",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 77,
+      "Name": "COMMAND_ACK",
+      "Category": "ProtocolWorkflow",
+      "Owner": "ControlMessageHandler / CommandAckTracker",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "event-driven",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Command status"
+      ]
+    },
+    {
+      "MessageId": 80,
+      "Name": "COMMAND_CANCEL",
+      "Category": "ProtocolWorkflow",
+      "Owner": "MavLinkCommandService / CommandAckTracker",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 81,
+      "Name": "MANUAL_SETPOINT",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 82,
+      "Name": "SET_ATTITUDE_TARGET",
+      "Category": "OutboundOnly",
+      "Owner": "Outbound command/setpoint API",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "caller-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Control workflows"
+      ]
+    },
+    {
+      "MessageId": 83,
+      "Name": "ATTITUDE_TARGET",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 84,
+      "Name": "SET_POSITION_TARGET_LOCAL_NED",
+      "Category": "OutboundOnly",
+      "Owner": "Outbound command/setpoint API",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "caller-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Control workflows"
+      ]
+    },
+    {
+      "MessageId": 85,
+      "Name": "POSITION_TARGET_LOCAL_NED",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 86,
+      "Name": "SET_POSITION_TARGET_GLOBAL_INT",
+      "Category": "OutboundOnly",
+      "Owner": "Outbound command/setpoint API",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "caller-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Control workflows"
+      ]
+    },
+    {
+      "MessageId": 87,
+      "Name": "POSITION_TARGET_GLOBAL_INT",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 89,
+      "Name": "LOCAL_POSITION_NED_SYSTEM_GLOBAL_OFFSET",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 90,
+      "Name": "HIL_STATE",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 91,
+      "Name": "HIL_CONTROLS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 92,
+      "Name": "HIL_RC_INPUTS_RAW",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 93,
+      "Name": "HIL_ACTUATOR_CONTROLS",
+      "Category": "OutboundOnly",
+      "Owner": "Outbound command/setpoint API",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "caller-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Control workflows"
+      ]
+    },
+    {
+      "MessageId": 100,
+      "Name": "OPTICAL_FLOW",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 101,
+      "Name": "GLOBAL_VISION_POSITION_ESTIMATE",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 102,
+      "Name": "VISION_POSITION_ESTIMATE",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 103,
+      "Name": "VISION_SPEED_ESTIMATE",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 104,
+      "Name": "VICON_POSITION_ESTIMATE",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 105,
+      "Name": "HIGHRES_IMU",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 106,
+      "Name": "OPTICAL_FLOW_RAD",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 107,
+      "Name": "HIL_SENSOR",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 108,
+      "Name": "SIM_STATE",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 109,
+      "Name": "RADIO_STATUS",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "RadioTelemetryHandler",
+      "ObservationType": "VehicleRadioLinkObservation",
+      "IntendedUpdateFrequency": "1-10 Hz",
+      "StaleTimeout": "PT3S",
+      "UiConsumers": [
+        "Radio status"
+      ]
+    },
+    {
+      "MessageId": 110,
+      "Name": "FILE_TRANSFER_PROTOCOL",
+      "Category": "ProtocolWorkflow",
+      "Owner": "MavFtpClient",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 111,
+      "Name": "TIMESYNC",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 112,
+      "Name": "CAMERA_TRIGGER",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Camera protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 113,
+      "Name": "HIL_GPS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 114,
+      "Name": "HIL_OPTICAL_FLOW",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 115,
+      "Name": "HIL_STATE_QUATERNION",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 116,
+      "Name": "SCALED_IMU2",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 117,
+      "Name": "LOG_REQUEST_LIST",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Log transfer service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 118,
+      "Name": "LOG_ENTRY",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Log transfer service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 119,
+      "Name": "LOG_REQUEST_DATA",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Log transfer service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 120,
+      "Name": "LOG_DATA",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Log transfer service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 121,
+      "Name": "LOG_ERASE",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Log transfer service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 122,
+      "Name": "LOG_REQUEST_END",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Log transfer service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 123,
+      "Name": "GPS_INJECT_DATA",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 124,
+      "Name": "GPS2_RAW",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "NavigationTelemetryHandler",
+      "ObservationType": "VehicleGpsObservation",
+      "IntendedUpdateFrequency": "1-10 Hz",
+      "StaleTimeout": "PT3S",
+      "UiConsumers": [
+        "GPS status"
+      ]
+    },
+    {
+      "MessageId": 125,
+      "Name": "POWER_STATUS",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "PowerTelemetryHandler",
+      "ObservationType": "VehiclePowerRailObservation",
+      "IntendedUpdateFrequency": "1 Hz",
+      "StaleTimeout": "PT5S",
+      "UiConsumers": [
+        "Power status"
+      ]
+    },
+    {
+      "MessageId": 126,
+      "Name": "SERIAL_CONTROL",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 127,
+      "Name": "GPS_RTK",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 128,
+      "Name": "GPS2_RTK",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 129,
+      "Name": "SCALED_IMU3",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 130,
+      "Name": "DATA_TRANSMISSION_HANDSHAKE",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 131,
+      "Name": "ENCAPSULATED_DATA",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 132,
+      "Name": "DISTANCE_SENSOR",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "SensorTelemetryHandler",
+      "ObservationType": "VehicleRangeObservation",
+      "IntendedUpdateFrequency": "1-20 Hz",
+      "StaleTimeout": "PT2S",
+      "UiConsumers": [
+        "Proximity status"
+      ]
+    },
+    {
+      "MessageId": 133,
+      "Name": "TERRAIN_REQUEST",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 134,
+      "Name": "TERRAIN_DATA",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 135,
+      "Name": "TERRAIN_CHECK",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 136,
+      "Name": "TERRAIN_REPORT",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "SensorTelemetryHandler",
+      "ObservationType": "VehicleTerrainObservation",
+      "IntendedUpdateFrequency": "1-5 Hz",
+      "StaleTimeout": "PT5S",
+      "UiConsumers": [
+        "Terrain status",
+        "HUD"
+      ]
+    },
+    {
+      "MessageId": 137,
+      "Name": "SCALED_PRESSURE2",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "SensorTelemetryHandler",
+      "ObservationType": "VehiclePressureObservation",
+      "IntendedUpdateFrequency": "1-20 Hz",
+      "StaleTimeout": "PT3S",
+      "UiConsumers": [
+        "Sensor status"
+      ]
+    },
+    {
+      "MessageId": 138,
+      "Name": "ATT_POS_MOCAP",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 139,
+      "Name": "SET_ACTUATOR_CONTROL_TARGET",
+      "Category": "OutboundOnly",
+      "Owner": "Outbound command/setpoint API",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "caller-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Control workflows"
+      ]
+    },
+    {
+      "MessageId": 140,
+      "Name": "ACTUATOR_CONTROL_TARGET",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 141,
+      "Name": "ALTITUDE",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "SensorTelemetryHandler",
+      "ObservationType": "VehicleAltitudeObservation",
+      "IntendedUpdateFrequency": "1-20 Hz",
+      "StaleTimeout": "PT2S",
+      "UiConsumers": [
+        "HUD",
+        "Altitude diagnostics"
+      ]
+    },
+    {
+      "MessageId": 142,
+      "Name": "RESOURCE_REQUEST",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 143,
+      "Name": "SCALED_PRESSURE3",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "SensorTelemetryHandler",
+      "ObservationType": "VehiclePressureObservation",
+      "IntendedUpdateFrequency": "1-20 Hz",
+      "StaleTimeout": "PT3S",
+      "UiConsumers": [
+        "Sensor status"
+      ]
+    },
+    {
+      "MessageId": 144,
+      "Name": "FOLLOW_TARGET",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 146,
+      "Name": "CONTROL_SYSTEM_STATE",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 147,
+      "Name": "BATTERY_STATUS",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "PowerTelemetryHandler",
+      "ObservationType": "VehicleBatteryObservation",
+      "IntendedUpdateFrequency": "1 Hz",
+      "StaleTimeout": "PT5S",
+      "UiConsumers": [
+        "HUD",
+        "Power status"
+      ]
+    },
+    {
+      "MessageId": 148,
+      "Name": "AUTOPILOT_VERSION",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "FlightTelemetryHandler",
+      "ObservationType": "VehicleFirmwareObservation",
+      "IntendedUpdateFrequency": "on connect/on request",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Vehicle identity",
+        "Firmware display"
+      ]
+    },
+    {
+      "MessageId": 149,
+      "Name": "LANDING_TARGET",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 150,
+      "Name": "SENSOR_OFFSETS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 151,
+      "Name": "SET_MAG_OFFSETS",
+      "Category": "OutboundOnly",
+      "Owner": "Outbound command/setpoint API",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "caller-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Control workflows"
+      ]
+    },
+    {
+      "MessageId": 152,
+      "Name": "MEMINFO",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 153,
+      "Name": "AP_ADC",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 154,
+      "Name": "DIGICAM_CONFIGURE",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 155,
+      "Name": "DIGICAM_CONTROL",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 156,
+      "Name": "MOUNT_CONFIGURE",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Gimbal protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 157,
+      "Name": "MOUNT_CONTROL",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Gimbal protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 158,
+      "Name": "MOUNT_STATUS",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Gimbal protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 160,
+      "Name": "FENCE_POINT",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 161,
+      "Name": "FENCE_FETCH_POINT",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 162,
+      "Name": "FENCE_STATUS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 163,
+      "Name": "AHRS",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "HealthTelemetryHandler",
+      "ObservationType": "VehicleEstimatorDiagnosticObservation",
+      "IntendedUpdateFrequency": "1-20 Hz",
+      "StaleTimeout": "PT3S",
+      "UiConsumers": [
+        "Estimator status"
+      ]
+    },
+    {
+      "MessageId": 164,
+      "Name": "SIMSTATE",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 165,
+      "Name": "HWSTATUS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 166,
+      "Name": "RADIO",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "RadioTelemetryHandler",
+      "ObservationType": "VehicleRadioLinkObservation",
+      "IntendedUpdateFrequency": "1-10 Hz",
+      "StaleTimeout": "PT3S",
+      "UiConsumers": [
+        "Radio status"
+      ]
+    },
+    {
+      "MessageId": 167,
+      "Name": "LIMITS_STATUS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 168,
+      "Name": "WIND",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "SensorTelemetryHandler",
+      "ObservationType": "VehicleWindObservation",
+      "IntendedUpdateFrequency": "1-10 Hz",
+      "StaleTimeout": "PT3S",
+      "UiConsumers": [
+        "HUD",
+        "Environment status"
+      ]
+    },
+    {
+      "MessageId": 169,
+      "Name": "DATA16",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 170,
+      "Name": "DATA32",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 171,
+      "Name": "DATA64",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 172,
+      "Name": "DATA96",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 173,
+      "Name": "RANGEFINDER",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 174,
+      "Name": "AIRSPEED_AUTOCAL",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 175,
+      "Name": "RALLY_POINT",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 176,
+      "Name": "RALLY_FETCH_POINT",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 177,
+      "Name": "COMPASSMOT_STATUS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 178,
+      "Name": "AHRS2",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "FlightTelemetryHandler",
+      "ObservationType": "VehicleAhrsObservation",
+      "IntendedUpdateFrequency": "1-20 Hz",
+      "StaleTimeout": "PT2S",
+      "UiConsumers": [
+        "HUD",
+        "Map"
+      ]
+    },
+    {
+      "MessageId": 179,
+      "Name": "CAMERA_STATUS",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Camera protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 180,
+      "Name": "CAMERA_FEEDBACK",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Camera protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 181,
+      "Name": "BATTERY2",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "PowerTelemetryHandler",
+      "ObservationType": "VehicleBatteryObservation",
+      "IntendedUpdateFrequency": "1 Hz",
+      "StaleTimeout": "PT5S",
+      "UiConsumers": [
+        "Power status"
+      ]
+    },
+    {
+      "MessageId": 182,
+      "Name": "AHRS3",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "HealthTelemetryHandler",
+      "ObservationType": "VehicleEstimatorPoseObservation",
+      "IntendedUpdateFrequency": "1-20 Hz",
+      "StaleTimeout": "PT3S",
+      "UiConsumers": [
+        "Estimator status"
+      ]
+    },
+    {
+      "MessageId": 183,
+      "Name": "AUTOPILOT_VERSION_REQUEST",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 184,
+      "Name": "REMOTE_LOG_DATA_BLOCK",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Log transfer service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 185,
+      "Name": "REMOTE_LOG_BLOCK_STATUS",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Log transfer service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 186,
+      "Name": "LED_CONTROL",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 191,
+      "Name": "MAG_CAL_PROGRESS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 192,
+      "Name": "MAG_CAL_REPORT",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 193,
+      "Name": "EKF_STATUS_REPORT",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "HealthTelemetryHandler",
+      "ObservationType": "VehicleEkfObservation",
+      "IntendedUpdateFrequency": "1-10 Hz",
+      "StaleTimeout": "PT3S",
+      "UiConsumers": [
+        "Health status"
+      ]
+    },
+    {
+      "MessageId": 194,
+      "Name": "PID_TUNING",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 195,
+      "Name": "DEEPSTALL",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 200,
+      "Name": "GIMBAL_REPORT",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Gimbal protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 201,
+      "Name": "GIMBAL_CONTROL",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Gimbal protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 214,
+      "Name": "GIMBAL_TORQUE_CMD_REPORT",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Gimbal protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 215,
+      "Name": "GOPRO_HEARTBEAT",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 216,
+      "Name": "GOPRO_GET_REQUEST",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 217,
+      "Name": "GOPRO_GET_RESPONSE",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 218,
+      "Name": "GOPRO_SET_REQUEST",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 219,
+      "Name": "GOPRO_SET_RESPONSE",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 225,
+      "Name": "EFI_STATUS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 226,
+      "Name": "RPM",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 230,
+      "Name": "ESTIMATOR_STATUS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 231,
+      "Name": "WIND_COV",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "SensorTelemetryHandler",
+      "ObservationType": "VehicleWindObservation",
+      "IntendedUpdateFrequency": "1-10 Hz",
+      "StaleTimeout": "PT3S",
+      "UiConsumers": [
+        "Environment status"
+      ]
+    },
+    {
+      "MessageId": 232,
+      "Name": "GPS_INPUT",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 233,
+      "Name": "GPS_RTCM_DATA",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 234,
+      "Name": "HIGH_LATENCY",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 235,
+      "Name": "HIGH_LATENCY2",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 241,
+      "Name": "VIBRATION",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "SensorTelemetryHandler",
+      "ObservationType": "VehicleVibrationObservation",
+      "IntendedUpdateFrequency": "1-10 Hz",
+      "StaleTimeout": "PT3S",
+      "UiConsumers": [
+        "Sensor status"
+      ]
+    },
+    {
+      "MessageId": 242,
+      "Name": "HOME_POSITION",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "NavigationTelemetryHandler",
+      "ObservationType": "VehicleHomePositionObservation",
+      "IntendedUpdateFrequency": "event-driven",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Map",
+        "Mission planning"
+      ]
+    },
+    {
+      "MessageId": 243,
+      "Name": "SET_HOME_POSITION",
+      "Category": "OutboundOnly",
+      "Owner": "Outbound command/setpoint API",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "caller-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Control workflows"
+      ]
+    },
+    {
+      "MessageId": 244,
+      "Name": "MESSAGE_INTERVAL",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 245,
+      "Name": "EXTENDED_SYS_STATE",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "FlightTelemetryHandler",
+      "ObservationType": "VehicleExtendedFlightStateObservation",
+      "IntendedUpdateFrequency": "1-5 Hz",
+      "StaleTimeout": "PT3S",
+      "UiConsumers": [
+        "HUD",
+        "Landed state"
+      ]
+    },
+    {
+      "MessageId": 246,
+      "Name": "ADSB_VEHICLE",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 247,
+      "Name": "COLLISION",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 248,
+      "Name": "V2_EXTENSION",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 249,
+      "Name": "MEMORY_VECT",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 250,
+      "Name": "DEBUG_VECT",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 251,
+      "Name": "NAMED_VALUE_FLOAT",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 252,
+      "Name": "NAMED_VALUE_INT",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 253,
+      "Name": "STATUSTEXT",
+      "Category": "VehicleStateTelemetry",
+      "Owner": "ControlMessageHandler / StatusTextHandler",
+      "ObservationType": "VehicleStatusText",
+      "IntendedUpdateFrequency": "event-driven",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Messages",
+        "Notifications"
+      ]
+    },
+    {
+      "MessageId": 254,
+      "Name": "DEBUG",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 256,
+      "Name": "SETUP_SIGNING",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 257,
+      "Name": "BUTTON_CHANGE",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 258,
+      "Name": "PLAY_TUNE",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 259,
+      "Name": "CAMERA_INFORMATION",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Camera protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 260,
+      "Name": "CAMERA_SETTINGS",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Camera protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 261,
+      "Name": "STORAGE_INFORMATION",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 262,
+      "Name": "CAMERA_CAPTURE_STATUS",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Camera protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 263,
+      "Name": "CAMERA_IMAGE_CAPTURED",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Camera protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 264,
+      "Name": "FLIGHT_INFORMATION",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 265,
+      "Name": "MOUNT_ORIENTATION",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Gimbal protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 266,
+      "Name": "LOGGING_DATA",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 267,
+      "Name": "LOGGING_DATA_ACKED",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 268,
+      "Name": "LOGGING_ACK",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 269,
+      "Name": "VIDEO_STREAM_INFORMATION",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Camera protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 270,
+      "Name": "VIDEO_STREAM_STATUS",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Camera protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 271,
+      "Name": "CAMERA_FOV_STATUS",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Camera protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 275,
+      "Name": "CAMERA_TRACKING_IMAGE_STATUS",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Camera protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 276,
+      "Name": "CAMERA_TRACKING_GEO_STATUS",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Camera protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 277,
+      "Name": "CAMERA_THERMAL_RANGE",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Camera protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 280,
+      "Name": "GIMBAL_MANAGER_INFORMATION",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Gimbal protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 281,
+      "Name": "GIMBAL_MANAGER_STATUS",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Gimbal protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 282,
+      "Name": "GIMBAL_MANAGER_SET_ATTITUDE",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Gimbal protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 283,
+      "Name": "GIMBAL_DEVICE_INFORMATION",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Gimbal protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 284,
+      "Name": "GIMBAL_DEVICE_SET_ATTITUDE",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Gimbal protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 285,
+      "Name": "GIMBAL_DEVICE_ATTITUDE_STATUS",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Gimbal protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 286,
+      "Name": "AUTOPILOT_STATE_FOR_GIMBAL_DEVICE",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 287,
+      "Name": "GIMBAL_MANAGER_SET_PITCHYAW",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Gimbal protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 288,
+      "Name": "GIMBAL_MANAGER_SET_MANUAL_CONTROL",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Gimbal protocol service (planned)",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 290,
+      "Name": "ESC_INFO",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 291,
+      "Name": "ESC_STATUS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 295,
+      "Name": "AIRSPEED",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 296,
+      "Name": "GLOBAL_POSITION_SENSOR",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 299,
+      "Name": "WIFI_CONFIG_AP",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 300,
+      "Name": "PROTOCOL_VERSION",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 301,
+      "Name": "AIS_VESSEL",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 310,
+      "Name": "UAVCAN_NODE_STATUS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 311,
+      "Name": "UAVCAN_NODE_INFO",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 320,
+      "Name": "PARAM_EXT_REQUEST_READ",
+      "Category": "ProtocolWorkflow",
+      "Owner": "VehicleParameterStreamService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 321,
+      "Name": "PARAM_EXT_REQUEST_LIST",
+      "Category": "ProtocolWorkflow",
+      "Owner": "VehicleParameterStreamService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 322,
+      "Name": "PARAM_EXT_VALUE",
+      "Category": "ProtocolWorkflow",
+      "Owner": "VehicleParameterStreamService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 323,
+      "Name": "PARAM_EXT_SET",
+      "Category": "ProtocolWorkflow",
+      "Owner": "VehicleParameterStreamService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 324,
+      "Name": "PARAM_EXT_ACK",
+      "Category": "ProtocolWorkflow",
+      "Owner": "VehicleParameterStreamService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 330,
+      "Name": "OBSTACLE_DISTANCE",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 331,
+      "Name": "ODOMETRY",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 332,
+      "Name": "TRAJECTORY_REPRESENTATION_WAYPOINTS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 333,
+      "Name": "TRAJECTORY_REPRESENTATION_BEZIER",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 334,
+      "Name": "CELLULAR_STATUS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 335,
+      "Name": "ISBD_LINK_STATUS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 336,
+      "Name": "CELLULAR_CONFIG",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 339,
+      "Name": "RAW_RPM",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 340,
+      "Name": "UTM_GLOBAL_POSITION",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 345,
+      "Name": "PARAM_ERROR",
+      "Category": "ProtocolWorkflow",
+      "Owner": "VehicleParameterStreamService",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 350,
+      "Name": "DEBUG_FLOAT_ARRAY",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 360,
+      "Name": "ORBIT_EXECUTION_STATUS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 361,
+      "Name": "FIGURE_EIGHT_EXECUTION_STATUS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 370,
+      "Name": "SMART_BATTERY_INFO",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 371,
+      "Name": "FUEL_STATUS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 372,
+      "Name": "BATTERY_INFO",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 373,
+      "Name": "GENERATOR_STATUS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 375,
+      "Name": "ACTUATOR_OUTPUT_STATUS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 376,
+      "Name": "RELAY_STATUS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 380,
+      "Name": "TIME_ESTIMATE_TO_TARGET",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 385,
+      "Name": "TUNNEL",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 386,
+      "Name": "CAN_FRAME",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 387,
+      "Name": "CANFD_FRAME",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 388,
+      "Name": "CAN_FILTER_MODIFY",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 390,
+      "Name": "ONBOARD_COMPUTER_STATUS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 395,
+      "Name": "COMPONENT_INFORMATION",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 396,
+      "Name": "COMPONENT_INFORMATION_BASIC",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 397,
+      "Name": "COMPONENT_METADATA",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 400,
+      "Name": "PLAY_TUNE_V2",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 401,
+      "Name": "SUPPORTED_TUNES",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 410,
+      "Name": "EVENT",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 411,
+      "Name": "CURRENT_EVENT_SEQUENCE",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 412,
+      "Name": "REQUEST_EVENT",
+      "Category": "OutboundOnly",
+      "Owner": "Outbound command/setpoint API",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "caller-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Control workflows"
+      ]
+    },
+    {
+      "MessageId": 413,
+      "Name": "RESPONSE_EVENT_ERROR",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 435,
+      "Name": "AVAILABLE_MODES",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 436,
+      "Name": "CURRENT_MODE",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 437,
+      "Name": "AVAILABLE_MODES_MONITOR",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 440,
+      "Name": "ILLUMINATOR_STATUS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 9000,
+      "Name": "WHEEL_DISTANCE",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 9005,
+      "Name": "WINCH_STATUS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 10001,
+      "Name": "UAVIONIX_ADSB_OUT_CFG",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 10002,
+      "Name": "UAVIONIX_ADSB_OUT_DYNAMIC",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 10003,
+      "Name": "UAVIONIX_ADSB_TRANSCEIVER_HEALTH_REPORT",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 10004,
+      "Name": "UAVIONIX_ADSB_OUT_CFG_REGISTRATION",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 10005,
+      "Name": "UAVIONIX_ADSB_OUT_CFG_FLIGHTID",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 10006,
+      "Name": "UAVIONIX_ADSB_GET",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 10007,
+      "Name": "UAVIONIX_ADSB_OUT_CONTROL",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 10008,
+      "Name": "UAVIONIX_ADSB_OUT_STATUS",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 10151,
+      "Name": "LOWEHEISER_GOV_EFI",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 11000,
+      "Name": "DEVICE_OP_READ",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 11001,
+      "Name": "DEVICE_OP_READ_REPLY",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 11002,
+      "Name": "DEVICE_OP_WRITE",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 11003,
+      "Name": "DEVICE_OP_WRITE_REPLY",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 11004,
+      "Name": "SECURE_COMMAND",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 11005,
+      "Name": "SECURE_COMMAND_REPLY",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 11010,
+      "Name": "ADAP_TUNING",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 11011,
+      "Name": "VISION_POSITION_DELTA",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 11020,
+      "Name": "AOA_SSA",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 11030,
+      "Name": "ESC_TELEMETRY_1_TO_4",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 11031,
+      "Name": "ESC_TELEMETRY_5_TO_8",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 11032,
+      "Name": "ESC_TELEMETRY_9_TO_12",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 11033,
+      "Name": "OSD_PARAM_CONFIG",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 11034,
+      "Name": "OSD_PARAM_CONFIG_REPLY",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 11035,
+      "Name": "OSD_PARAM_SHOW_CONFIG",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 11036,
+      "Name": "OSD_PARAM_SHOW_CONFIG_REPLY",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 11037,
+      "Name": "OBSTACLE_DISTANCE_3D",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 11038,
+      "Name": "WATER_DEPTH",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 11039,
+      "Name": "MCU_STATUS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 11040,
+      "Name": "ESC_TELEMETRY_13_TO_16",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 11041,
+      "Name": "ESC_TELEMETRY_17_TO_20",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 11042,
+      "Name": "ESC_TELEMETRY_21_TO_24",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 11043,
+      "Name": "ESC_TELEMETRY_25_TO_28",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 11044,
+      "Name": "ESC_TELEMETRY_29_TO_32",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 11060,
+      "Name": "NAMED_VALUE_STRING",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 12900,
+      "Name": "OPEN_DRONE_ID_BASIC_ID",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 12901,
+      "Name": "OPEN_DRONE_ID_LOCATION",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 12902,
+      "Name": "OPEN_DRONE_ID_AUTHENTICATION",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 12903,
+      "Name": "OPEN_DRONE_ID_SELF_ID",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 12904,
+      "Name": "OPEN_DRONE_ID_SYSTEM",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 12905,
+      "Name": "OPEN_DRONE_ID_OPERATOR_ID",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 12915,
+      "Name": "OPEN_DRONE_ID_MESSAGE_PACK",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 12918,
+      "Name": "OPEN_DRONE_ID_ARM_STATUS",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 12919,
+      "Name": "OPEN_DRONE_ID_SYSTEM_UPDATE",
+      "Category": "ProtocolWorkflow",
+      "Owner": "Dedicated protocol service / inspector",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "request/response",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "Protocol diagnostics"
+      ]
+    },
+    {
+      "MessageId": 12920,
+      "Name": "HYGROMETER_SENSOR",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 42000,
+      "Name": "ICAROUS_HEARTBEAT",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 42001,
+      "Name": "ICAROUS_KINEMATIC_BANDS",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 50001,
+      "Name": "CUBEPILOT_RAW_RC",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 50002,
+      "Name": "HERELINK_VIDEO_STREAM_INFORMATION",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 50003,
+      "Name": "HERELINK_TELEM",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 50004,
+      "Name": "CUBEPILOT_FIRMWARE_UPDATE_START",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 50005,
+      "Name": "CUBEPILOT_FIRMWARE_UPDATE_RESP",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 52000,
+      "Name": "AIRLINK_AUTH",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    },
+    {
+      "MessageId": 52001,
+      "Name": "AIRLINK_AUTH_RESPONSE",
+      "Category": "DiagnosticRawTelemetry",
+      "Owner": "MAVLink inspector / telemetry log",
+      "ObservationType": null,
+      "IntendedUpdateFrequency": "source-defined",
+      "StaleTimeout": null,
+      "UiConsumers": [
+        "MAVLink inspector",
+        "Telemetry logs"
+      ]
+    }
+  ]
+}
