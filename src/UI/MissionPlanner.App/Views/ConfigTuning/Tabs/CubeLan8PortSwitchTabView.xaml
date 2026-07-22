@@ -1,12 +1,77 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
              x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.CubeLan8PortSwitchTabView"
-             Title="CubeLan8PortSwitchTabView">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             x:DataType="tabs:CubeLan8PortSwitchTabViewModel"
+             Title="CubeLAN 8 Port Switch">
+    <Grid Padding="20" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
+        <VerticalStackLayout Spacing="4">
+            <Label Text="CubeLAN 8 Port Switch" FontSize="24" FontAttributes="Bold" />
+            <Label Text="{Binding VehicleHeading}" FontAttributes="Bold" />
+            <Label Text="Discovery uses only the repository-documented MAVLink DEVICE_OP I²C path at address 0x50. The editor exposes COS, COS priority, EEE, VLAN tagging, and the 8×8 VLAN membership matrix. PoE, port enablement, VLAN IDs, modes, authentication, and editable labels are not exposed because no verified protocol definition exists for them." />
+        </VerticalStackLayout>
+
+        <Border Grid.Row="1" Padding="12">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" VerticalOptions="Center" />
+                <VerticalStackLayout Grid.Column="1">
+                    <Label Text="{Binding Status}" FontAttributes="Bold" />
+                    <Label Text="{Binding StatusMessage}" />
+                </VerticalStackLayout>
+                <Button Grid.Column="2" Text="Discover / read" Command="{Binding RefreshCommand}" VerticalOptions="Center" />
+            </Grid>
+        </Border>
+
+        <CollectionView Grid.Row="2" ItemsSource="{Binding Ports}" SelectionMode="None" IsEnabled="{Binding CanEdit}">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout Padding="20" Spacing="8" HorizontalOptions="Center">
+                    <Label Text="No editable CubeLAN device is available." FontSize="18" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                    <Label Text="Unsupported, not discovered, authentication-required, and disconnected states remain explicit and send no undocumented commands." HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" Span="2" HorizontalItemSpacing="12" VerticalItemSpacing="12" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="tabs:CubeLanPortViewModel">
+                    <Border Padding="12">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="{Binding DisplayName}" FontSize="18" FontAttributes="Bold" />
+                            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="6">
+                                <Label Text="Class of service" VerticalOptions="Center" />
+                                <Switch Grid.Column="1" IsToggled="{Binding ClassOfServiceEnabled}" />
+                                <Label Grid.Row="1" Text="COS high priority" VerticalOptions="Center" />
+                                <Switch Grid.Row="1" Grid.Column="1" IsToggled="{Binding ClassOfServiceHighPriority}" />
+                                <Label Grid.Row="2" Text="Energy Efficient Ethernet" VerticalOptions="Center" />
+                                <Switch Grid.Row="2" Grid.Column="1" IsToggled="{Binding EnergyEfficientEthernetEnabled}" />
+                                <Label Grid.Row="3" Text="VLAN tagged" VerticalOptions="Center" />
+                                <Switch Grid.Row="3" Grid.Column="1" IsToggled="{Binding VlanTagged}" />
+                            </Grid>
+                            <Label Text="VLAN membership" FontAttributes="Bold" />
+                            <FlexLayout BindableLayout.ItemsSource="{Binding Memberships}" Direction="Row" Wrap="Wrap">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="tabs:CubeLanMembershipViewModel">
+                                        <HorizontalStackLayout Margin="0,0,12,4">
+                                            <CheckBox IsChecked="{Binding IsMember}" />
+                                            <Label Text="{Binding Label}" VerticalOptions="Center" />
+                                        </HorizontalStackLayout>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </FlexLayout>
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <Label Text="{Binding IsDirty, StringFormat='Pending local changes: {0}'}" VerticalOptions="Center" />
+            <HorizontalStackLayout Grid.Column="1">
+                <Button Text="Export" Command="{Binding ExportCommand}" />
+                <Button Text="Revert" Command="{Binding RevertCommand}" IsEnabled="{Binding CanEdit}" />
+                <Button Text="Apply and verify" Command="{Binding ApplyCommand}" IsEnabled="{Binding CanEdit}" />
+            </HorizontalStackLayout>
+        </Grid>
+    </Grid>
 </ContentPage>

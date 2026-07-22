@@ -37,6 +37,7 @@ public static class MavLinkConfigurator
         services.TryAddTransient<IMavLinkParameterEncoder, MavLinkParameterEncoder>();
         services.TryAddTransient<IMavLinkMessageDecodeHandler, MavLinkMessageDecoderHandler>();
         services.TryAddTransient<IMavLinkMissionEncoder, MavLinkMissionEncoder>();
+        services.TryAddSingleton<IMavLinkWireMessageEncoder, MavLinkWireMessageEncoder>();
         services.TryAddSingleton<IMavFtpPacketCodec, MavFtpPacketCodec>();
         services.TryAddSingleton<IMavFtpMessageEncoder, MavFtpMessageEncoder>();
         services.TryAddSingleton<IMavFtpResponseDispatcher, MavFtpResponseDispatcher>();

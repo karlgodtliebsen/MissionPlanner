@@ -52,3 +52,21 @@ First inspect what protocol and discovery support actually exists in the current
 - No undocumented commands are sent.
 - Eight-port state can be read and confirmed after apply.
 - Vendor-specific code remains isolated.
+
+## Completion
+
+Completed 2026-07-22. CubeLAN now uses the repository-documented MAVLink `DEVICE_OP` I²C
+mechanism at bus 0/address `0x50`, with generated-message MAVLink 2 wire encoding and
+request, vehicle, component, and endpoint reply correlation. The page reads before editing,
+shows exactly eight ports, exposes only the verified COS, priority, EEE, VLAN tagging, and
+8-by-8 membership bits, tracks dirty state, validates, confirms each changed byte and the
+full readback, attempts confirmed rollback, and exports a non-secret verified subset.
+
+A generic typed vendor-device contract keeps identity, transport, capabilities,
+configuration, validation, apply/rollback, authentication redaction, and reboot/reconnect
+state independent of CubeLAN. Unsupported, not-discovered, authentication-required, and
+disconnected states are explicit. PoE, enablement, modes, VLAN IDs, editable labels,
+authentication, and reboot/reconnect commands remain intentionally absent because the
+repository contains no verified definitions. Deterministic fake-device and UI tests cover
+the implemented workflow; [CUBELAN.md](../../CUBELAN.md) records the separate physical
+hardware verification checklist.

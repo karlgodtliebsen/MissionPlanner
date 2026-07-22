@@ -1030,6 +1030,17 @@ transfers never replace the editor's current plan. A connection-scoped operation
 serializes the parameter and geometry phases, and an acknowledgement is required before a
 revision is marked synchronized.
 
+Vendor peripherals use a typed `IVendorDeviceAdapter<TConfiguration>` boundary in Core.
+The generic contract carries identity, transport, declared capabilities, confirmed
+snapshots, validation, apply/rollback results, and reboot/reconnect state without knowing
+vendor register fields. Transport-specific request/reply correlation remains below it. For
+CubeLAN, `DeviceOperationClient` correlates generated MAVLink `DEVICE_OP` replies by request
+ID, vehicle, component, and endpoint, while `CubeLanDeviceAdapter` alone owns the verified
+I²C address and register layout. The MAUI view model receives only this adapter, reads before
+enabling edits, and never sends transport packets. Unknown registers are preserved for
+round-trip safety; exports deliberately contain only the verified public model. Unsupported
+features remain absent rather than being inferred from product behavior.
+
 # Setup workflow shell
 
 Initial Setup is an orchestration surface over existing domain and Config capabilities.

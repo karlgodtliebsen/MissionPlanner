@@ -489,8 +489,8 @@ MAVLink command sequences that the domain does not implement yet.
 The Config screen replaces v1.38's Config/Tuning (`SoftwareConfig.cs`). New UI:
 `Views/ConfigTuning` — tab views exist for GeoFence, Basic Tuning, Extended Tuning,
 Onboard OSD, MAVFtp, Full Parameters List, Planner and CubeLan8PortSwitch. Full Parameters
-List, MAVFTP, GeoFence, Basic Tuning, Extended Tuning, Onboard OSD, and Planner are
-implemented; CubeLAN is covered by the final sequential Config task.
+List, MAVFTP, GeoFence, Basic Tuning, Extended Tuning, Onboard OSD, Planner, and the
+repository-verified CubeLAN subset are implemented.
 
 All parameter-editing Config pages share a vehicle-and-firmware-scoped editing session.
 It separates original, live, and pending values; validates metadata ranges, increments,
@@ -636,9 +636,34 @@ contract.
   application policy; individual feature consumers may adopt them incrementally
 * Map source/style changes are intentionally applied when map views are recreated
 
-## Other Config tabs (Missing)
+## CubeLAN 8-port switch
 
-v1.38 feature inventory per tab; the new tab views are placeholders:
+### Status
+
+* Discovers and reads the switch through the repository-documented MAVLink `DEVICE_OP`
+  I²C path (bus 0, address `0x50`) and reports disconnected, not discovered, unsupported,
+  and available states explicitly
+* Presents exactly eight ports and the verified class-of-service enable/priority, Energy
+  Efficient Ethernet, tagged VLAN, and 8-by-8 VLAN membership bits
+* Requires a confirmed read before editing, tracks local changes, writes only changed
+  bytes, reads every write back, and performs a full post-apply confirmation
+* Attempts and confirms rollback to the original snapshot after a failed apply
+* Exports only verified settings; authentication secrets and preserved unknown registers
+  are excluded
+* Uses a generic typed vendor-device boundary for identity, transport, capabilities,
+  validation, snapshots, apply/rollback results, and reboot/reconnect state
+
+### Limitations
+
+* PoE, port enablement, modes, VLAN IDs, authentication, editable labels, and reboot or
+  reconnect commands are not exposed because no verified protocol definition exists in
+  the repository
+* Physical CubeLAN and ArduPilot validation is still required; the protocol evidence and
+  real-hardware checklist are documented in [CUBELAN.md](CUBELAN.md)
+
+## Other Config capabilities (Missing)
+
+Remaining v1.38 feature inventory:
 
 * **Flight Modes**: assign flight modes to RC switch positions (not present as a tab yet)
 * **Standard / Advanced Params**: "friendly" curated parameter lists with combos/sliders

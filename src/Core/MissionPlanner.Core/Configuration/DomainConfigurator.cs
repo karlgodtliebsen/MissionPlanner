@@ -5,6 +5,8 @@ using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Configuration.Fences;
 using MissionPlanner.Core.Configuration.Osd;
 using MissionPlanner.Core.Configuration.Tuning;
+using MissionPlanner.Core.Configuration.VendorDevices;
+using MissionPlanner.Core.Configuration.VendorDevices.CubeLan;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Missions;
 using MissionPlanner.Core.Missions.Abstractions;
@@ -54,6 +56,9 @@ public static class DomainConfigurator
         services.TryAddTransient<IExtendedTuningService, ExtendedTuningService>();
         services.TryAddSingleton<IControlResponseMetricsService, ControlResponseMetricsService>();
         services.TryAddTransient<IOsdConfigurationService, OsdConfigurationService>();
+        services.TryAddSingleton<IDeviceOperationClient, DeviceOperationClient>();
+        services.TryAddSingleton<ICubeLanConfigurationCodec, CubeLanConfigurationCodec>();
+        services.TryAddSingleton<IVendorDeviceAdapter<CubeLanConfiguration>, CubeLanDeviceAdapter>();
 
 
         services.TryAddTransient<IVehicleMessagePump, VehicleMessagePump>();

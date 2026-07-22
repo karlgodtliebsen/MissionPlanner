@@ -156,6 +156,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<ExtendedTuningTabViewModel>();
         services.TryAddSingleton<OnboardOsdTabViewModel>();
         services.TryAddSingleton<PlannerTabViewModel>();
+        services.TryAddSingleton<CubeLan8PortSwitchTabViewModel>();
         services.TryAddSingleton<MavFtpTabViewModel>();
         return services;
     }

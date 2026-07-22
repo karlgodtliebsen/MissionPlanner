@@ -15,6 +15,9 @@ using MissionPlanner.Core.Configuration.Fences;
 using MissionPlanner.Core.Configuration.Tuning;
 using MissionPlanner.Core.Configuration.Osd;
 using MissionPlanner.Core.Configuration.Planner;
+using MissionPlanner.Core.Configuration.VendorDevices;
+using MissionPlanner.Core.Configuration.VendorDevices.CubeLan;
+using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -213,6 +216,11 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<IPlannerSecretStore>().Should().NotBeNull();
         provider.GetRequiredService<IPlannerSettingsService>().Should().NotBeNull();
         provider.GetRequiredService<PlannerTabViewModel>().Should().NotBeNull();
+        provider.GetRequiredService<IMavLinkWireMessageEncoder>().Should().NotBeNull();
+        provider.GetRequiredService<IDeviceOperationClient>().Should().NotBeNull();
+        provider.GetRequiredService<ICubeLanConfigurationCodec>().Should().NotBeNull();
+        provider.GetRequiredService<IVendorDeviceAdapter<CubeLanConfiguration>>().Should().NotBeNull();
+        provider.GetRequiredService<CubeLan8PortSwitchTabViewModel>().Should().NotBeNull();
         provider.GetRequiredService<GeoFenceTabViewModel>().Should().NotBeNull();
     }
 
