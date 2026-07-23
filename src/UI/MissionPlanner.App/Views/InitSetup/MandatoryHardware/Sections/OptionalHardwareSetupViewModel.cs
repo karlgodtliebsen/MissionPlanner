@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
@@ -34,7 +35,6 @@ public sealed partial class OptionalHardwareSetupViewModel : SetupWorkflowDetail
         this.hardwareService = hardwareService;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        _ = LoadAsync();
     }
 
     /// <summary>Gets the discovered optional-hardware modules.</summary>
@@ -83,6 +83,20 @@ public sealed partial class OptionalHardwareSetupViewModel : SetupWorkflowDetail
         operationCancellation?.Cancel();
         operationCancellation?.Dispose();
         operationCancellation = null;
+    }
+
+    /// <inheritdoc />
+    protected override void OnActivated()
+    {
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        _ = LoadAsync();
+    }
+
+    /// <inheritdoc />
+    protected override void OnDeactivated()
+    {
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        base.OnDeactivated();
     }
 
     /// <summary>Writes one peripheral setting and reloads on success.</summary>
@@ -155,6 +169,20 @@ public sealed partial class OptionalHardwareSetupViewModel : SetupWorkflowDetail
         operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
         Error = null;
         return operationCancellation.Token;
+    }
+
+    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    {
+        if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
+        {
+            dispatcher.Dispatch(() =>
+            {
+                if (IsActive)
+                {
+                    _ = LoadAsync();
+                }
+            });
+        }
     }
 
     private void Show(IReadOnlyList<OptionalHardwareModuleView> modules, bool preserveStatus = false)

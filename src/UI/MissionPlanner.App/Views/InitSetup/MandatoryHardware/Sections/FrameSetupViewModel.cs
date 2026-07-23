@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 
@@ -116,6 +117,20 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
         operationCancellation = null;
     }
 
+    /// <inheritdoc />
+    protected override void OnActivated()
+    {
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        _ = LoadAsync();
+    }
+
+    /// <inheritdoc />
+    protected override void OnDeactivated()
+    {
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        base.OnDeactivated();
+    }
+
     [RelayCommand]
     private Task LoadCommandAsync()
     {
@@ -220,6 +235,20 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
         Error = null;
         Progress = 0;
         return operationCancellation.Token;
+    }
+
+    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    {
+        if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
+        {
+            dispatcher.Dispatch(() =>
+            {
+                if (IsActive)
+                {
+                    _ = LoadAsync();
+                }
+            });
+        }
     }
 
     private void ShowConfiguration(FrameConfigurationSnapshot configuration, bool preserveStatus = false)

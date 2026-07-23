@@ -47,8 +47,6 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         this.confirmation = confirmation;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        coordinator.StateChanged += OnStateChanged;
-        UpdateVehicle(activeVehicle.State);
     }
 
     /// <summary>Gets the available release channels.</summary>
@@ -185,11 +183,42 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
     }
 
     /// <inheritdoc />
+    protected override void OnActivated()
+    {
+        coordinator.StateChanged += OnStateChanged;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        UpdateVehicle(activeVehicle.State);
+    }
+
+    /// <inheritdoc />
+    protected override void OnDeactivated()
+    {
+        coordinator.StateChanged -= OnStateChanged;
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        base.OnDeactivated();
+    }
+
+    /// <inheritdoc />
     public override void Dispose()
     {
         coordinator.StateChanged -= OnStateChanged;
-        coordinator.Dispose();
+        activeVehicle.Changed -= OnActiveVehicleChanged;
         base.Dispose();
+        coordinator.Dispose();
+    }
+
+    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    {
+        if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
+        {
+            dispatcher.Dispatch(() =>
+            {
+                if (IsActive)
+                {
+                    UpdateVehicle(args.Current.State);
+                }
+            });
+        }
     }
 
     [RelayCommand]

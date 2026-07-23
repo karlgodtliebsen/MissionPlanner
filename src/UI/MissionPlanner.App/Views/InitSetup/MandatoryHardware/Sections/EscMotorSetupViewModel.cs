@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
@@ -40,9 +41,6 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
         this.logger = logger;
         MaximumDuration = actuatorService.MaximumDurationSeconds;
         MaximumThrottle = actuatorService.MaximumThrottlePercent;
-        actuatorService.StateChanged += OnStateChanged;
-        Load();
-        Show(actuatorService.Current);
     }
 
     /// <summary>Gets the audit log of actuator operations.</summary>
@@ -99,11 +97,28 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
     }
 
     /// <inheritdoc />
+    protected override void OnActivated()
+    {
+        actuatorService.StateChanged += OnStateChanged;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        Load();
+        Show(actuatorService.Current);
+    }
+
+    /// <inheritdoc />
+    protected override void OnDeactivated()
+    {
+        actuatorService.StateChanged -= OnStateChanged;
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        base.OnDeactivated();
+    }
+
+    /// <inheritdoc />
     public override void Dispose()
     {
         actuatorService.StateChanged -= OnStateChanged;
-        actuatorService.Dispose();
         base.Dispose();
+        actuatorService.Dispose();
     }
 
     private bool CanTest()
@@ -216,6 +231,20 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
     private void OnStateChanged(object? sender, MotorTestStateChangedEventArgs args)
     {
         dispatcher.Dispatch(() => Show(args.Snapshot));
+    }
+
+    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    {
+        if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
+        {
+            dispatcher.Dispatch(() =>
+            {
+                if (IsActive)
+                {
+                    Load();
+                }
+            });
+        }
     }
 
     private void Show(MotorTestSnapshot snapshot)

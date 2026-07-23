@@ -197,6 +197,7 @@ public sealed class CompassSetupTests
             clock,
             ImmediateDispatcher(),
             Substitute.For<ILogger<CompassSetupViewModel>>());
+        viewModel.Activate();
 
         var running = new CompassCalibrationSnapshot(vehicleId, CompassCalibrationWorkflowState.Running,
             [new CompassCalibrationProgress(0, CompassCalibrationStatus.Running, 50, 1)], [], 0.5, "Rotating", false);

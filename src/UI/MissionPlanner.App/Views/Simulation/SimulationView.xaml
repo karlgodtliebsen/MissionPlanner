@@ -13,7 +13,7 @@
                 <Label Text="Simulation workspace" FontSize="24" FontAttributes="Bold" />
                 <Label Text="Persisted profiles and an owned, observable simulator session. Launch adapters are capability-driven; unavailable runtimes fail explicitly." />
             </VerticalStackLayout>
-            <Button  BackgroundColor="Transparent" FontSize="14" Grid.Column="1" Text="Export diagnostics" Command="{Binding ExportDiagnosticsCommand}" VerticalOptions="Center" />
+            <Button Grid.Column="1" Text="Export diagnostics" Command="{Binding ExportDiagnosticsCommand}" VerticalOptions="Center" />
         </Grid>
 
         <Grid Grid.Row="1" ColumnDefinitions="0.85*,1.15*" ColumnSpacing="14">
@@ -45,8 +45,8 @@
                                 <Entry Grid.Column="3" Text="{Binding FleetMaximumConcurrency}" Keyboard="Numeric" Placeholder="Concurrency" />
                             </Grid>
                             <HorizontalStackLayout Spacing="8">
-                                <Button  BackgroundColor="Transparent" FontSize="14" Text="Start all" Command="{Binding StartAllCommand}" />
-                                <Button  BackgroundColor="Transparent" FontSize="14" Text="Stop all" Command="{Binding StopAllCommand}" />
+                                <Button Text="Start all" Command="{Binding StartAllCommand}" />
+                                <Button Text="Stop all" Command="{Binding StopAllCommand}" />
                             </HorizontalStackLayout>
                             <Label Text="{Binding FleetStatus}" />
                             <CollectionView ItemsSource="{Binding FleetSessions}"
@@ -97,11 +97,11 @@
                                         SelectedItem="{Binding SelectedRelease}" />
                             </Grid>
                             <HorizontalStackLayout Spacing="8">
-                                <Button  BackgroundColor="Transparent" FontSize="14"  Text="Download, verify, and install"
-                                         Command="{Binding InstallReleaseCommand}"
-                                         IsEnabled="{Binding CanInstallRelease}" />
-                                <Button  BackgroundColor="Transparent" FontSize="14"  Text="Cancel"
-                                         Command="{Binding CancelOperationCommand}" />
+                                <Button Text="Download, verify, and install"
+                                        Command="{Binding InstallReleaseCommand}"
+                                        IsEnabled="{Binding CanInstallRelease}" />
+                                <Button Text="Cancel"
+                                        Command="{Binding CancelOperationCommand}" />
                             </HorizontalStackLayout>
                             <ProgressBar Progress="{Binding InstallProgress}" />
                             <Label Text="{Binding InstallationStatus}" />
@@ -141,7 +141,7 @@
                                         ItemsSource="{Binding LocationPresets}"
                                         ItemDisplayBinding="{Binding Name}"
                                         SelectedItem="{Binding SelectedLocationPreset}" />
-                                <Button  BackgroundColor="Transparent" FontSize="14" Grid.Column="1" Text="Apply preset" Command="{Binding ApplyLocationPresetCommand}" />
+                                <Button Grid.Column="1" Text="Apply preset" Command="{Binding ApplyLocationPresetCommand}" />
                             </Grid>
                             <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
                                 <Entry Text="{Binding Latitude}" Keyboard="Numeric" Placeholder="Latitude" />
@@ -237,7 +237,7 @@
                     <VerticalStackLayout Spacing="7">
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                             <Label Text="Environment, sensors, and bounded faults" FontSize="18" FontAttributes="Bold" />
-                            <Button  BackgroundColor="Transparent" FontSize="14" Grid.Column="1" Text="Refresh" Command="{Binding RefreshControlsCommand}" />
+                            <Button Grid.Column="1" Text="Refresh" Command="{Binding RefreshControlsCommand}" />
                         </Grid>
                         <Picker Title="Documented control"
                                 ItemsSource="{Binding ControlCapabilities}"
@@ -254,8 +254,8 @@
                             <Label Text="I confirm this bounded hazardous injection" VerticalOptions="Center" />
                         </HorizontalStackLayout>
                         <HorizontalStackLayout Spacing="8">
-                            <Button  BackgroundColor="Transparent" FontSize="14" Text="Apply" Command="{Binding ApplyControlCommand}" IsEnabled="{Binding SelectedControl.IsAvailable}" />
-                            <Button  BackgroundColor="Transparent" FontSize="14" Text="Reset" Command="{Binding ResetControlCommand}" />
+                            <Button Text="Apply" Command="{Binding ApplyControlCommand}" IsEnabled="{Binding SelectedControl.IsAvailable}" />
+                            <Button Text="Reset" Command="{Binding ResetControlCommand}" />
                         </HorizontalStackLayout>
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                             <Entry Text="{Binding ScenarioPresetName}" Placeholder="Scenario preset name" />

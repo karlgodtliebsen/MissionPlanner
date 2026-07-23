@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<sections:SetupSectionView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:setup="clr-namespace:MissionPlanner.Core.Setup;assembly=MissionPlanner.Core"
+             xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
+             x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SetupSummaryView"
+             x:DataType="sections:SetupSummaryViewModel">
+    <VerticalStackLayout Spacing="10">
+        <ProgressBar Progress="{Binding Progress}" />
+        <Label Text="{Binding Error}" TextColor="Red" />
+        <Label Text="Setup summary" FontSize="18" FontAttributes="Bold" />
+        <Label Text="{Binding Heading}" FontAttributes="Bold" LineBreakMode="WordWrap" />
+        <Label Text="This report describes configuration evidence only and is not a safe-to-fly certification."
+               Opacity="0.75"
+               LineBreakMode="WordWrap" />
+        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Sections}" Spacing="8">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate x:DataType="sections:SetupSummarySectionViewModel">
+                    <Border Padding="10" StrokeThickness="1">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="15" />
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Entries}">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="setup:SetupSummaryEntry">
+                                        <Grid ColumnDefinitions="200,*,120" ColumnSpacing="8">
+                                            <Label Text="{Binding Label}" />
+                                            <Label Grid.Column="1" Text="{Binding Value}" LineBreakMode="WordWrap" Opacity="0.8" />
+                                            <Label Grid.Column="2" Text="{Binding Status}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </VerticalStackLayout>
+        <VerticalStackLayout IsVisible="{Binding HasWarnings}" BindableLayout.ItemsSource="{Binding Warnings}">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                    <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </VerticalStackLayout>
+        <HorizontalStackLayout Spacing="10">
+            <Button BackgroundColor="Transparent" FontSize="14" Text="Rebuild summary" Command="{Binding RefreshCommand}" />
+            <Button BackgroundColor="Transparent" FontSize="14" Text="Export JSON" Command="{Binding ExportJsonCommand}" />
+            <Button BackgroundColor="Transparent" FontSize="14" Text="Export Markdown" Command="{Binding ExportMarkdownCommand}" />
+        </HorizontalStackLayout>
+        <Editor Text="{Binding ExportedText}"
+                IsReadOnly="True"
+                HeightRequest="180"
+                IsVisible="{Binding HasExport}" />
+    </VerticalStackLayout>
+</sections:SetupSectionView>

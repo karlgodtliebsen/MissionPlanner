@@ -36,8 +36,6 @@ public sealed partial class BatterySetupViewModel : SetupWorkflowDetailViewModel
         this.batteryService = batteryService;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        _ = LoadAsync();
     }
 
     /// <summary>Gets the discovered battery instances.</summary>
@@ -88,6 +86,20 @@ public sealed partial class BatterySetupViewModel : SetupWorkflowDetailViewModel
         operationCancellation?.Cancel();
         operationCancellation?.Dispose();
         operationCancellation = null;
+    }
+
+    /// <inheritdoc />
+    protected override void OnActivated()
+    {
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        _ = LoadAsync();
+    }
+
+    /// <inheritdoc />
+    protected override void OnDeactivated()
+    {
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        base.OnDeactivated();
     }
 
     /// <inheritdoc />
@@ -213,12 +225,24 @@ public sealed partial class BatterySetupViewModel : SetupWorkflowDetailViewModel
 
     private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
     {
+        if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
+        {
+            dispatcher.Dispatch(() =>
+            {
+                if (IsActive)
+                {
+                    _ = LoadAsync();
+                }
+            });
+            return;
+        }
+
         dispatcher.Dispatch(RefreshLiveReadings);
     }
 
     private void RefreshLiveReadings()
     {
-        if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline || Instances.Count == 0)
+        if (!IsActive || activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline || Instances.Count == 0)
         {
             return;
         }

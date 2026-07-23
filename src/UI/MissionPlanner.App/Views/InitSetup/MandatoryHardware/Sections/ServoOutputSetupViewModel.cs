@@ -36,8 +36,6 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
         this.servoService = servoService;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        _ = LoadAsync();
     }
 
     /// <summary>Gets the discovered servo outputs.</summary>
@@ -82,6 +80,20 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
         operationCancellation?.Cancel();
         operationCancellation?.Dispose();
         operationCancellation = null;
+    }
+
+    /// <inheritdoc />
+    protected override void OnActivated()
+    {
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        _ = LoadAsync();
+    }
+
+    /// <inheritdoc />
+    protected override void OnDeactivated()
+    {
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        base.OnDeactivated();
     }
 
     /// <inheritdoc />
@@ -139,12 +151,24 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
 
     private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
     {
+        if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
+        {
+            dispatcher.Dispatch(() =>
+            {
+                if (IsActive)
+                {
+                    _ = LoadAsync();
+                }
+            });
+            return;
+        }
+
         dispatcher.Dispatch(RefreshLive);
     }
 
     private void RefreshLive()
     {
-        if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline || Outputs.Count == 0)
+        if (!IsActive || activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline || Outputs.Count == 0)
         {
             return;
         }

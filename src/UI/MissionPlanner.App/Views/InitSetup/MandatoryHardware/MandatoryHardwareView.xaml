@@ -2,11 +2,11 @@
 <uranium:UraniumContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                             xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
-                            xmlns:setup="clr-namespace:MissionPlanner.Core.Setup;assembly=MissionPlanner.Core"
                             xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                             xmlns:mandatoryHardware="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware"
                             x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.MandatoryHardwareView"
                             x:DataType="mandatoryHardware:MandatoryHardwareViewModel"
+                            x:Name="RootPage"
                             Title="Initial Setup">
     <Grid Padding="20" RowDefinitions="Auto,Auto,190,*" RowSpacing="14">
         <VerticalStackLayout Spacing="4">
@@ -17,558 +17,81 @@
         </VerticalStackLayout>
 
         <Button Grid.Row="1"
-                BackgroundColor="Transparent" FontSize="14" 
+                BackgroundColor="Transparent"
+                FontSize="14"
                 Text="Re-evaluate vehicle"
                 Command="{Binding RefreshCommand}"
                 HorizontalOptions="Start" />
 
         <CollectionView Grid.Row="2"
                         ItemsSource="{Binding Workflows}"
-                            SelectedItem="{Binding SelectedWorkflow, Mode=TwoWay}"
-                            SelectionMode="Single">
+                        SelectedItem="{Binding SelectedWorkflow, Mode=TwoWay}"
+                        SelectionMode="Single">
             <CollectionView.ItemsLayout>
                 <LinearItemsLayout Orientation="Horizontal" ItemSpacing="10" />
             </CollectionView.ItemsLayout>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="sections:SetupWorkflowItemViewModel">
-                        <Border WidthRequest="290" Padding="14" StrokeThickness="1">
-                            <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="5">
-                                <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="16" />
-                                <Label Grid.Column="1" Text="{Binding StateDisplay}" FontAttributes="Bold" />
-                                <Label Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding Description}" LineBreakMode="WordWrap" />
-                                <Label Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding StatusText}" Opacity="0.72" LineBreakMode="WordWrap" />
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-
-            <ScrollView Grid.Row="3">
-                <VerticalStackLayout Spacing="14" BindableLayout.EmptyView="Select a setup workflow.">
-                    <Label Text="{Binding SelectedWorkflowViewModel.Title}" FontSize="24" FontAttributes="Bold" />
-                    <Label Text="{Binding SelectedWorkflowViewModel.Description}" FontSize="16" LineBreakMode="WordWrap" />
-                    <Label Text="{Binding SelectedWorkflow.StatusText}" FontAttributes="Italic" />
-                    <ProgressBar Progress="{Binding SelectedWorkflowViewModel.Progress}" />
-                    <Label Text="{Binding SelectedWorkflowViewModel.Error}" TextColor="Red" />
-
-                    <VerticalStackLayout IsVisible="{Binding IsFirmwareSelected}" Spacing="10">
-                        <Label Text="Connected identity" FontSize="18" FontAttributes="Bold" />
-                        <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="5">
-                            <Label Text="Vehicle" FontAttributes="Bold" />
-                            <Label Grid.Column="1" Text="{Binding SelectedFirmwareViewModel.VehicleLabel}" />
-                            <Label Grid.Row="1" Text="Firmware" FontAttributes="Bold" />
-                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding SelectedFirmwareViewModel.FirmwareVersion}" />
-                            <Label Grid.Row="2" Text="Release type / Git" FontAttributes="Bold" />
-                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding SelectedFirmwareViewModel.ReleaseType, StringFormat='{0}'}" />
-                            <Label Grid.Row="3" Text="Git hash" FontAttributes="Bold" />
-                            <Label Grid.Row="3" Grid.Column="1" Text="{Binding SelectedFirmwareViewModel.GitHash}" />
-                            <Label Grid.Row="4" Text="Board version" FontAttributes="Bold" />
-                            <Label Grid.Row="4" Grid.Column="1" Text="{Binding SelectedFirmwareViewModel.BoardVersion}" />
-                            <Label Grid.Row="5" Text="Vendor / product" FontAttributes="Bold" />
-                            <Label Grid.Row="5" Grid.Column="1" Text="{Binding SelectedFirmwareViewModel.VendorProduct}" />
-                            <Label Grid.Row="6" Text="UID / UID2" FontAttributes="Bold" />
-                            <VerticalStackLayout Grid.Row="6" Grid.Column="1">
-                                <Label Text="{Binding SelectedFirmwareViewModel.HardwareUid}" />
-                                <Label Text="{Binding SelectedFirmwareViewModel.HardwareUid2}" />
-                            </VerticalStackLayout>
-                            <Label Grid.Row="7" Text="MAVLink version" FontAttributes="Bold" />
-                            <Label Grid.Row="7" Grid.Column="1" Text="{Binding SelectedFirmwareViewModel.MavLinkVersion}" />
-                            <Label Grid.Row="8" Text="Capabilities" FontAttributes="Bold" />
-                            <Label Grid.Row="8" Grid.Column="1" Text="{Binding SelectedFirmwareViewModel.Capabilities}" LineBreakMode="WordWrap" />
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="sections:SetupWorkflowItemViewModel">
+                    <Border WidthRequest="290" Padding="14" StrokeThickness="1">
+                        <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="5">
+                            <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="16" />
+                            <Label Grid.Column="1" Text="{Binding StateDisplay}" FontAttributes="Bold" />
+                            <Label Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding Description}" LineBreakMode="WordWrap" />
+                            <Label Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding StatusText}" Opacity="0.72" LineBreakMode="WordWrap" />
                         </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
 
-                        <Label Text="Firmware discovery" FontSize="18" FontAttributes="Bold" />
-                        <HorizontalStackLayout Spacing="10">
-                            <Picker Title="Channel"
-                                    ItemsSource="{Binding SelectedFirmwareViewModel.Channels}"
-                                    SelectedItem="{Binding SelectedFirmwareViewModel.SelectedChannel}" />
-                        <Button BackgroundColor="Transparent" FontSize="14" Text="Discover compatible releases"
-                                Command="{Binding SelectedFirmwareViewModel.DiscoverCommand}" />
-                        </HorizontalStackLayout>
-                        <Picker Title="Compatible release (exact board IDs)"
-                                ItemsSource="{Binding SelectedFirmwareViewModel.Releases}"
-                                SelectedItem="{Binding SelectedFirmwareViewModel.SelectedRelease}"
-                                ItemDisplayBinding="{Binding Version}" />
-                        <Label Text="{Binding SelectedFirmwareViewModel.SelectedBoardTarget, StringFormat='Technical board target: {0}'}" FontAttributes="Bold" />
-                        <Label Text="{Binding SelectedFirmwareViewModel.SelectedReleaseNotes}" LineBreakMode="WordWrap" />
-                        <HorizontalStackLayout Spacing="10">
-                        <Button BackgroundColor="Transparent" FontSize="14" Text="Download and verify"
-                                Command="{Binding SelectedFirmwareViewModel.DownloadCommand}" />
-                            <Button BackgroundColor="Transparent" FontSize="14" Text="Flash verified package"
-                                    Command="{Binding SelectedFirmwareViewModel.FlashCommand}" />
-                        </HorizontalStackLayout>
-                        <Label Text="{Binding SelectedFirmwareViewModel.Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
-                        <Label Text="{Binding SelectedFirmwareViewModel.FlashingAvailability}" LineBreakMode="WordWrap" />
-                        <Label Text="After flashing: reconnect, confirm the reported firmware identity, then restore only reviewed parameters from your backup." LineBreakMode="WordWrap" FontAttributes="Bold" />
-                    </VerticalStackLayout>
+        <ScrollView Grid.Row="3">
+            <VerticalStackLayout Spacing="14" BindableLayout.EmptyView="Select a setup workflow.">
+                <Label Text="{Binding SelectedWorkflow.Title}" FontSize="24" FontAttributes="Bold" />
+                <Label Text="{Binding SelectedWorkflow.Description}" FontSize="16" LineBreakMode="WordWrap" />
+                <Label Text="{Binding SelectedWorkflow.StatusText}" FontAttributes="Italic" />
 
-                    <VerticalStackLayout IsVisible="{Binding IsFrameSelected}" Spacing="10">
-                        <Label Text="Supported frame configuration" FontSize="18" FontAttributes="Bold" />
-                        <Label Text="{Binding SelectedFrameViewModel.FirmwareFamily, StringFormat='Firmware family: {0}'}" />
-                        <Label Text="Only values advertised by the connected firmware metadata are shown. Current values remain unchanged until Write and verify is confirmed."
-                               LineBreakMode="WordWrap" />
-                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedFrameViewModel.Settings}" Spacing="8">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="sections:FrameParameterSettingViewModel">
-                                    <Border Padding="10" StrokeThickness="1">
-                                        <Grid ColumnDefinitions="180,*,*" RowDefinitions="Auto,Auto" RowSpacing="4" ColumnSpacing="8">
-                                            <Label Text="{Binding DisplayName}" FontAttributes="Bold" />
-                                            <Label Grid.Column="1" Text="{Binding CurrentDisplay, StringFormat='Current: {0}'}" />
-                                            <Picker Grid.Column="2"
-                                                    Title="Pending value"
-                                                    ItemsSource="{Binding Options}"
-                                                    SelectedItem="{Binding SelectedOption}"
-                                                    ItemDisplayBinding="{Binding Label}" />
-                                            <Label Grid.Row="1" Grid.ColumnSpan="3"
-                                                   Text="{Binding PendingDisplay, StringFormat='Pending: {0}'}" />
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </VerticalStackLayout>
-                        <Label IsVisible="{Binding SelectedFrameViewModel.HasRecommendations}"
-                               Text="Optional initial recommendations" FontSize="18" FontAttributes="Bold" />
-                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedFrameViewModel.Recommendations}" Spacing="6">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="sections:FrameRecommendationViewModel">
-                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-                                        <CheckBox IsChecked="{Binding IsSelected}" />
-                                        <Label Grid.Column="1" Text="{Binding Description}" LineBreakMode="WordWrap" VerticalOptions="Center" />
-                                    </Grid>
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </VerticalStackLayout>
-                        <HorizontalStackLayout Spacing="10">
-                            <Button BackgroundColor="Transparent" FontSize="14" Text="Refresh vehicle values" Command="{Binding SelectedFrameViewModel.RefreshCommand}" />
-                            <Button BackgroundColor="Transparent" FontSize="14" Text="Write and verify" Command="{Binding SelectedFrameViewModel.ApplyCommand}" />
-                        </HorizontalStackLayout>
-                        <Label Text="{Binding SelectedFrameViewModel.Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
-                        <Label IsVisible="{Binding SelectedFrameViewModel.RebootRequired}"
-                               Text="Reboot required. Reconnect, then use Refresh vehicle values to confirm the persisted configuration."
-                               TextColor="OrangeRed" FontAttributes="Bold" LineBreakMode="WordWrap" />
-                    </VerticalStackLayout>
+                <sections:FirmwareSetupView x:Name="FirmwareSectionView"
+                                            IsVisible="{Binding BindingContext.IsFirmwareSelected, Source={x:Reference RootPage}}" />
+                <sections:FrameSetupView x:Name="FrameSectionView"
+                                         IsVisible="{Binding BindingContext.IsFrameSelected, Source={x:Reference RootPage}}" />
+                <sections:AccelerometerSetupView x:Name="AccelerometerSectionView"
+                                                 IsVisible="{Binding BindingContext.IsAccelerometerSelected, Source={x:Reference RootPage}}" />
+                <sections:CompassSetupView x:Name="CompassSectionView"
+                                           IsVisible="{Binding BindingContext.IsCompassSelected, Source={x:Reference RootPage}}" />
+                <sections:RadioSetupView x:Name="RadioSectionView"
+                                         IsVisible="{Binding BindingContext.IsRadioSelected, Source={x:Reference RootPage}}" />
+                <sections:FlightModesSetupView x:Name="FlightModesSectionView"
+                                               IsVisible="{Binding BindingContext.IsFlightModesSelected, Source={x:Reference RootPage}}" />
+                <sections:BatterySetupView x:Name="BatterySectionView"
+                                           IsVisible="{Binding BindingContext.IsBatterySelected, Source={x:Reference RootPage}}" />
+                <sections:EscMotorSetupView x:Name="EscMotorSectionView"
+                                            IsVisible="{Binding BindingContext.IsEscSelected, Source={x:Reference RootPage}}" />
+                <sections:ServoOutputSetupView x:Name="ServoOutputSectionView"
+                                               IsVisible="{Binding BindingContext.IsServoOutputSelected, Source={x:Reference RootPage}}" />
+                <sections:OptionalHardwareSetupView x:Name="OptionalHardwareSectionView"
+                                                    IsVisible="{Binding BindingContext.IsOptionalHardwareSelected, Source={x:Reference RootPage}}" />
+                <sections:SafetySetupView x:Name="SafetySectionView"
+                                          IsVisible="{Binding BindingContext.IsSafetySelected, Source={x:Reference RootPage}}" />
+                <sections:SetupSummaryView x:Name="SummarySectionView"
+                                           IsVisible="{Binding BindingContext.IsSummarySelected, Source={x:Reference RootPage}}" />
 
-                    <VerticalStackLayout IsVisible="{Binding IsAccelerometerSelected}" Spacing="10">
-                        <Label Text="Accelerometer and level calibration" FontSize="18" FontAttributes="Bold" />
-                        <Label Text="Remove propellers. Keep the vehicle disarmed and clear of people before calibration."
-                               TextColor="OrangeRed" FontAttributes="Bold" LineBreakMode="WordWrap" />
-                        <HorizontalStackLayout Spacing="10">
-                        <Button  BackgroundColor="Transparent" FontSize="14" Text="Start six-position calibration"
-                                 Command="{Binding SelectedAccelerometerViewModel.StartSixPositionCommand}" />
-                        <Button  BackgroundColor="Transparent" FontSize="14" Text="Calibrate level"
-                                 Command="{Binding SelectedAccelerometerViewModel.StartLevelCommand}" />
-                        </HorizontalStackLayout>
-                        <Label Text="{Binding SelectedAccelerometerViewModel.CalibrationState, StringFormat='State: {0}'}" FontAttributes="Bold" />
-                        <Label Text="{Binding SelectedAccelerometerViewModel.Instruction}" FontSize="17" FontAttributes="Bold" LineBreakMode="WordWrap" />
-                        <Image Source="{Binding SelectedAccelerometerViewModel.OrientationImage}"
-                               HeightRequest="260" Aspect="AspectFit" />
-                        <Label Text="{Binding SelectedAccelerometerViewModel.Orientation, StringFormat='Requested orientation: {0}'}" />
-                        <Label Text="{Binding SelectedAccelerometerViewModel.CompletedOrientations}" />
-                        <Button BackgroundColor="Transparent" FontSize="14" Text="Confirm orientation"
-                                IsEnabled="{Binding SelectedAccelerometerViewModel.CanConfirmOrientation}"
-                                Command="{Binding SelectedAccelerometerViewModel.ConfirmOrientationCommand}"
-                                HorizontalOptions="Start" />
-                        <Label Text="{Binding SelectedAccelerometerViewModel.SupplementalStatus, StringFormat='Vehicle status: {0}'}"
-                               FontAttributes="Italic" LineBreakMode="WordWrap" />
-                        <HorizontalStackLayout Spacing="10">
-                            <Button BackgroundColor="Transparent" FontSize="14" Text="Cancel calibration"
-                                    IsEnabled="{Binding SelectedAccelerometerViewModel.CanCancel}"
-                                    Command="{Binding SelectedAccelerometerViewModel.CancelCalibrationCommand}" />
-                            <Button BackgroundColor="Transparent" FontSize="14" Text="Reset / retry"
-                                    IsEnabled="{Binding SelectedAccelerometerViewModel.CanStart}"
-                                    Command="{Binding SelectedAccelerometerViewModel.ResetCommand}" />
-                        </HorizontalStackLayout>
-                    </VerticalStackLayout>
-
-                    <VerticalStackLayout IsVisible="{Binding IsCompassSelected}" Spacing="10">
-                        <Label Text="Compass discovery and calibration" FontSize="18" FontAttributes="Bold" />
-                        <Label Text="{Binding SelectedCompassViewModel.Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
-                        <VerticalStackLayout IsVisible="{Binding SelectedCompassViewModel.HasIssues}" Spacing="4">
-                            <Label Text="Configuration warnings" FontAttributes="Bold" TextColor="OrangeRed" />
-                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedCompassViewModel.Issues}">
-                                <BindableLayout.ItemTemplate>
-                                    <DataTemplate x:DataType="x:String">
-                                        <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
-                                    </DataTemplate>
-                                </BindableLayout.ItemTemplate>
-                            </VerticalStackLayout>
-                        </VerticalStackLayout>
-                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedCompassViewModel.Compasses}" Spacing="8">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="sections:CompassInstanceViewModel">
-                                    <Border Padding="10" StrokeThickness="1">
-                                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="8">
-                                            <Label Text="{Binding Header}" FontAttributes="Bold" />
-                                            <Label Grid.Column="1" Text="{Binding HealthLabel}" />
-                                            <Label Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding DeviceLabel}" />
-                                            <Label Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding OffsetsLabel}" Opacity="0.75" />
-                                            <Label Grid.Row="3" Grid.ColumnSpan="2" Text="{Binding MotorCompensationLabel}" Opacity="0.75" />
-                                            <HorizontalStackLayout Grid.Row="4" Grid.ColumnSpan="2" Spacing="10">
-                                                <Label Text="Use" VerticalOptions="Center" />
-                                                <Switch IsToggled="{Binding IsUsed}" />
-                                                <Label Text="External" VerticalOptions="Center" IsVisible="{Binding SupportsExternal}" />
-                                                <Switch IsToggled="{Binding IsExternal}" IsVisible="{Binding SupportsExternal}" />
-                                                <Picker Title="Orientation"
-                                                        ItemsSource="{Binding Orientations}"
-                                                        SelectedItem="{Binding SelectedOrientation}"
-                                                        ItemDisplayBinding="{Binding Name}" />
-                                                <Button BackgroundColor="Transparent" FontSize="14" Text="Write and verify"
-                                                        Command="{Binding ApplyCommand}" />
-                                            </HorizontalStackLayout>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </VerticalStackLayout>
-                        <Button BackgroundColor="Transparent" FontSize="14" Text="Refresh compass values"
-                                Command="{Binding SelectedCompassViewModel.RefreshInventoryCommand}"
-                                HorizontalOptions="Start" />
-
-                        <Label Text="Onboard calibration" FontSize="18" FontAttributes="Bold" />
-                        <Label Text="Move away from metal, vehicles, and magnetic interference before starting calibration."
-                               TextColor="OrangeRed" FontAttributes="Bold" LineBreakMode="WordWrap" />
-                        <Label Text="{Binding SelectedCompassViewModel.CalibrationState, StringFormat='State: {0}'}" FontAttributes="Bold" />
-                        <Label Text="{Binding SelectedCompassViewModel.Instruction}" FontSize="17" FontAttributes="Bold" LineBreakMode="WordWrap" />
-                        <Label Text="{Binding SelectedCompassViewModel.ProgressSummary}" LineBreakMode="WordWrap" />
-                        <Label Text="{Binding SelectedCompassViewModel.QualitySummary}" FontAttributes="Italic" LineBreakMode="WordWrap" />
-                        <HorizontalStackLayout Spacing="10">
-                            <Button BackgroundColor="Transparent" FontSize="14" Text="Start calibration"
-                                    IsEnabled="{Binding SelectedCompassViewModel.CanStart}"
-                                    Command="{Binding SelectedCompassViewModel.StartCalibrationCommand}" />
-                            <Button BackgroundColor="Transparent" FontSize="14" Text="Accept results"
-                                    IsEnabled="{Binding SelectedCompassViewModel.CanAccept}"
-                                    Command="{Binding SelectedCompassViewModel.AcceptCalibrationCommand}" />
-                            <Button BackgroundColor="Transparent" FontSize="14" Text="Cancel calibration"
-                                    IsEnabled="{Binding SelectedCompassViewModel.CanCancel}"
-                                    Command="{Binding SelectedCompassViewModel.CancelCalibrationCommand}" />
-                            <Button BackgroundColor="Transparent" FontSize="14" Text="Reset / retry"
-                                    IsEnabled="{Binding SelectedCompassViewModel.CanStart}"
-                                    Command="{Binding SelectedCompassViewModel.ResetCommand}" />
-                        </HorizontalStackLayout>
-                    </VerticalStackLayout>
-
-                    <VerticalStackLayout IsVisible="{Binding IsRadioSelected}" Spacing="10">
-                        <Label Text="Radio calibration" FontSize="18" FontAttributes="Bold" />
-                        <Label Text="Remove propellers and keep the vehicle disarmed. Turn on the transmitter before calibrating."
-                               TextColor="OrangeRed" FontAttributes="Bold" LineBreakMode="WordWrap" />
-                        <Label IsVisible="{Binding SelectedRadioViewModel.IsStale}"
-                               Text="RC telemetry is stale — values shown may not reflect live stick positions."
-                               TextColor="OrangeRed" LineBreakMode="WordWrap" />
-                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedRadioViewModel.Channels}" Spacing="4">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="sections:RadioChannelDisplayViewModel">
-                                    <Grid ColumnDefinitions="150,90,*" ColumnSpacing="8">
-                                        <Label Text="{Binding Title}" FontAttributes="Bold" />
-                                        <Label Grid.Column="1" Text="{Binding Pwm, StringFormat='{0} us'}" />
-                                        <Label Grid.Column="2" Text="{Binding Range}" Opacity="0.75" />
-                                    </Grid>
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </VerticalStackLayout>
-                        <Label Text="{Binding SelectedRadioViewModel.CalibrationState, StringFormat='State: {0}'}" FontAttributes="Bold" />
-                        <Label Text="{Binding SelectedRadioViewModel.Instruction}" FontSize="16" LineBreakMode="WordWrap" />
-                        <Label Text="{Binding SelectedRadioViewModel.CaptureSummary}" LineBreakMode="WordWrap" />
-                        <VerticalStackLayout IsVisible="{Binding SelectedRadioViewModel.HasIssues}" BindableLayout.ItemsSource="{Binding SelectedRadioViewModel.Issues}">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="x:String">
-                                    <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </VerticalStackLayout>
-                        <HorizontalStackLayout Spacing="10">
-                            <Button BackgroundColor="Transparent" FontSize="14" Text="Start calibration"
-                                    IsEnabled="{Binding SelectedRadioViewModel.CanStart}"
-                                    Command="{Binding SelectedRadioViewModel.StartCommand}" />
-                            <Button BackgroundColor="Transparent" FontSize="14" Text="Finish and write"
-                                    IsEnabled="{Binding SelectedRadioViewModel.CanFinish}"
-                                    Command="{Binding SelectedRadioViewModel.FinishCommand}" />
-                            <Button BackgroundColor="Transparent" FontSize="14" Text="Cancel"
-                                    IsEnabled="{Binding SelectedRadioViewModel.CanFinish}"
-                                    Command="{Binding SelectedRadioViewModel.CancelCalibrationCommand}" />
-                            <Button BackgroundColor="Transparent" FontSize="14" Text="Reset / retry"
-                                    IsEnabled="{Binding SelectedRadioViewModel.CanStart}"
-                                    Command="{Binding SelectedRadioViewModel.ResetCommand}" />
-                        </HorizontalStackLayout>
-                    </VerticalStackLayout>
-
-                    <VerticalStackLayout IsVisible="{Binding IsFlightModesSelected}" Spacing="10">
-                        <Label Text="Flight-mode assignment" FontSize="18" FontAttributes="Bold" />
-                        <Label Text="{Binding SelectedFlightModesViewModel.ModeChannelDescription}" FontAttributes="Bold" />
-                        <Label Text="{Binding SelectedFlightModesViewModel.Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
-                        <VerticalStackLayout IsVisible="{Binding SelectedFlightModesViewModel.IsSupported}"
-                                             BindableLayout.ItemsSource="{Binding SelectedFlightModesViewModel.Slots}" Spacing="6">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="sections:FlightModeSlotViewModel">
-                                    <Border Padding="10" StrokeThickness="1">
-                                        <Grid ColumnDefinitions="Auto,*,*" ColumnSpacing="8">
-                                            <Label Text="●" TextColor="LimeGreen" IsVisible="{Binding IsActive}" VerticalOptions="Center" />
-                                            <Label Grid.Column="1" Text="{Binding BandDescription}" VerticalOptions="Center" />
-                                            <Picker Grid.Column="2" Title="Mode"
-                                                    ItemsSource="{Binding Options}"
-                                                    SelectedItem="{Binding SelectedMode}"
-                                                    ItemDisplayBinding="{Binding Name}" />
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </VerticalStackLayout>
-                        <Button BackgroundColor="Transparent" FontSize="14" Text="Refresh flight modes"
-                                Command="{Binding SelectedFlightModesViewModel.RefreshCommand}"
-                                HorizontalOptions="Start" />
-                    </VerticalStackLayout>
-
-                    <VerticalStackLayout IsVisible="{Binding IsBatterySelected}" Spacing="10">
-                        <Label Text="Battery monitors and failsafe" FontSize="18" FontAttributes="Bold" />
-                        <Label Text="{Binding SelectedBatteryViewModel.Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
-                        <VerticalStackLayout IsVisible="{Binding SelectedBatteryViewModel.HasIssues}" BindableLayout.ItemsSource="{Binding SelectedBatteryViewModel.Issues}">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="x:String">
-                                    <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </VerticalStackLayout>
-                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedBatteryViewModel.Instances}" Spacing="10">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="sections:BatteryInstanceViewModel">
-                                    <Border Padding="12" StrokeThickness="1">
-                                        <VerticalStackLayout Spacing="6">
-                                            <Label Text="{Binding Header}" FontAttributes="Bold" FontSize="16" />
-                                            <Label Text="{Binding LiveReadings}" />
-                                            <Label Text="Remaining percentage is an estimate, not a measured capacity truth." Opacity="0.7" FontSize="12" />
-                                            <Grid ColumnDefinitions="140,*,Auto" RowSpacing="6" ColumnSpacing="8"
-                                                  IsVisible="{Binding SupportsCapacity}">
-                                                <Label Text="Capacity (mAh)" VerticalOptions="Center" />
-                                                <Entry Grid.Column="1" Text="{Binding Capacity}" Keyboard="Numeric" />
-                                                <Button Grid.Column="2" BackgroundColor="Transparent" FontSize="14" Text="Write" Command="{Binding ApplyCapacityCommand}" />
-                                            </Grid>
-                                            <VerticalStackLayout IsVisible="{Binding SupportsVoltageFailsafe}" Spacing="4">
-                                                <Label Text="Voltage failsafe (V)" FontAttributes="Bold" />
-                                                <Grid ColumnDefinitions="140,*,140,*,Auto" ColumnSpacing="8">
-                                                    <Label Text="Low" VerticalOptions="Center" />
-                                                    <Entry Grid.Column="1" Text="{Binding LowVoltage}" Keyboard="Numeric" />
-                                                    <Label Grid.Column="2" Text="Critical" VerticalOptions="Center" />
-                                                    <Entry Grid.Column="3" Text="{Binding CriticalVoltage}" Keyboard="Numeric" />
-                                                    <Button Grid.Column="4" BackgroundColor="Transparent" FontSize="14" Text="Write" Command="{Binding ApplyVoltageFailsafeCommand}" />
-                                                </Grid>
-                                            </VerticalStackLayout>
-                                            <VerticalStackLayout IsVisible="{Binding SupportsCapacityFailsafe}" Spacing="4">
-                                                <Label Text="Capacity failsafe (mAh)" FontAttributes="Bold" />
-                                                <Grid ColumnDefinitions="140,*,140,*,Auto" ColumnSpacing="8">
-                                                    <Label Text="Low" VerticalOptions="Center" />
-                                                    <Entry Grid.Column="1" Text="{Binding LowCapacity}" Keyboard="Numeric" />
-                                                    <Label Grid.Column="2" Text="Critical" VerticalOptions="Center" />
-                                                    <Entry Grid.Column="3" Text="{Binding CriticalCapacity}" Keyboard="Numeric" />
-                                                    <Button Grid.Column="4" BackgroundColor="Transparent" FontSize="14" Text="Write" Command="{Binding ApplyCapacityFailsafeCommand}" />
-                                                </Grid>
-                                            </VerticalStackLayout>
-                                            <Grid ColumnDefinitions="180,*,Auto" ColumnSpacing="8" IsVisible="{Binding SupportsVoltageCalibration}">
-                                                <Label Text="Measured voltage (V)" VerticalOptions="Center" />
-                                                <Entry Grid.Column="1" Text="{Binding ReferenceVoltage}" Keyboard="Numeric" />
-                                                <Button Grid.Column="2" BackgroundColor="Transparent" FontSize="14" Text="Calibrate voltage" Command="{Binding CalibrateVoltageCommand}" />
-                                            </Grid>
-                                            <Grid ColumnDefinitions="180,*,Auto" ColumnSpacing="8" IsVisible="{Binding SupportsCurrentCalibration}">
-                                                <Label Text="Measured current (A)" VerticalOptions="Center" />
-                                                <Entry Grid.Column="1" Text="{Binding ReferenceCurrent}" Keyboard="Numeric" />
-                                                <Button Grid.Column="2" BackgroundColor="Transparent" FontSize="14" Text="Calibrate current" Command="{Binding CalibrateCurrentCommand}" />
-                                            </Grid>
-                                        </VerticalStackLayout>
-                                    </Border>
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </VerticalStackLayout>
-                        <Button BackgroundColor="Transparent" FontSize="14" Text="Refresh battery values"
-                                Command="{Binding SelectedBatteryViewModel.RefreshCommand}" HorizontalOptions="Start" />
-                    </VerticalStackLayout>
-
-                    <VerticalStackLayout IsVisible="{Binding IsEscSelected}" Spacing="10">
-                        <Label Text="ESC calibration and motor test" FontSize="18" FontAttributes="Bold" />
-                        <Label Text="Remove ALL propellers before any actuator test. Motors will spin."
-                               TextColor="OrangeRed" FontAttributes="Bold" LineBreakMode="WordWrap" />
-                        <Label Text="{Binding SelectedEscViewModel.EscExplanation}" LineBreakMode="WordWrap" />
-                        <VerticalStackLayout IsVisible="{Binding SelectedEscViewModel.EscCalibrationApplicable}"
-                                             BindableLayout.ItemsSource="{Binding SelectedEscViewModel.EscSteps}">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="x:String">
-                                    <Label Text="{Binding .}" LineBreakMode="WordWrap" />
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </VerticalStackLayout>
-                        <VerticalStackLayout IsVisible="{Binding SelectedEscViewModel.SupportsMotorTest}" Spacing="6">
-                            <Label Text="Motor test" FontSize="16" FontAttributes="Bold" />
-                            <Grid ColumnDefinitions="120,*,120,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="6">
-                                <Label Text="Motor / count" VerticalOptions="Center" />
-                                <Entry Grid.Column="1" Text="{Binding SelectedEscViewModel.MotorIndex}" Keyboard="Numeric" />
-                                <Label Grid.Column="2" Text="Throttle %" VerticalOptions="Center" />
-                                <Entry Grid.Column="3" Text="{Binding SelectedEscViewModel.ThrottlePercent}" Keyboard="Numeric" />
-                                <Label Grid.Row="1" Text="Duration (s)" VerticalOptions="Center" />
-                                <Entry Grid.Row="1" Grid.Column="1" Text="{Binding SelectedEscViewModel.DurationSeconds}" Keyboard="Numeric" />
-                            </Grid>
-                            <Label Text="{Binding SelectedEscViewModel.Instruction}" FontAttributes="Bold" LineBreakMode="WordWrap" />
-                            <HorizontalStackLayout Spacing="10">
-                                <Button BackgroundColor="Transparent" FontSize="14" Text="Test motor" Command="{Binding SelectedEscViewModel.TestMotorCommand}" />
-                                <Button BackgroundColor="Transparent" FontSize="14" Text="Test sequence" Command="{Binding SelectedEscViewModel.TestSequenceCommand}" />
-                                <Button BackgroundColor="OrangeRed" TextColor="White" Text="STOP" Command="{Binding SelectedEscViewModel.StopCommand}" />
-                            </HorizontalStackLayout>
-                            <Label Text="Operation log" FontAttributes="Bold" />
-                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedEscViewModel.Log}">
-                                <BindableLayout.ItemTemplate>       
-                                    <DataTemplate x:DataType="x:String">
-                                        <Label Text="{Binding .}" FontSize="12" Opacity="0.8" />
-                                    </DataTemplate>
-                                </BindableLayout.ItemTemplate>
-                            </VerticalStackLayout>
-                        </VerticalStackLayout>
-                    </VerticalStackLayout>
-
-                    <VerticalStackLayout IsVisible="{Binding IsServoOutputSelected}" Spacing="10">
-                        <Label Text="Servo output functions" FontSize="18" FontAttributes="Bold" />
-                        <Label Text="{Binding SelectedServoOutputViewModel.Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
-                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedServoOutputViewModel.Outputs}" Spacing="6">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="sections:ServoOutputItemViewModel">
-                                    <Border Padding="10" StrokeThickness="1">
-                                        <Grid ColumnDefinitions="100,*,120" ColumnSpacing="8">
-                                            <Label Text="{Binding Header}" FontAttributes="Bold" VerticalOptions="Center" />
-                                            <Picker Grid.Column="1" Title="Function"
-                                                    ItemsSource="{Binding Functions}"
-                                                    SelectedItem="{Binding SelectedFunction}"
-                                                    ItemDisplayBinding="{Binding Name}" />
-                                            <Label Grid.Column="2" Text="{Binding LiveDescription}" VerticalOptions="Center" />
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </VerticalStackLayout>
-                        <Button BackgroundColor="Transparent" FontSize="14" Text="Refresh servo outputs"
-                                Command="{Binding SelectedServoOutputViewModel.RefreshCommand}" HorizontalOptions="Start" />
-                    </VerticalStackLayout>
-
-                    <VerticalStackLayout IsVisible="{Binding IsOptionalHardwareSelected}" Spacing="10">
-                        <Label Text="Optional hardware" FontSize="18" FontAttributes="Bold" />
-                        <Label Text="{Binding SelectedOptionalHardwareViewModel.Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
-                        <Label IsVisible="{Binding SelectedOptionalHardwareViewModel.RebootRequired}"
-                               Text="Reboot required. Reconnect, then refresh to confirm the persisted configuration."
-                               TextColor="OrangeRed" FontAttributes="Bold" LineBreakMode="WordWrap" />
-                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedOptionalHardwareViewModel.Modules}" Spacing="10">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="sections:OptionalHardwareModuleViewModel">
-                                    <Border Padding="12" StrokeThickness="1">
-                                        <VerticalStackLayout Spacing="6">
-                                            <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="16" />
-                                            <Label Text="{Binding Description}" Opacity="0.75" LineBreakMode="WordWrap" />
-                                            <VerticalStackLayout IsVisible="{Binding HasIssues}" BindableLayout.ItemsSource="{Binding Issues}">
-                                                <BindableLayout.ItemTemplate>
-                                                    <DataTemplate x:DataType="x:String">
-                                                        <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
-                                                    </DataTemplate>
-                                                </BindableLayout.ItemTemplate>
-                                            </VerticalStackLayout>
-                                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}" Spacing="4">
-                                                <BindableLayout.ItemTemplate>
-                                                    <DataTemplate x:DataType="sections:PeripheralSettingViewModel">
-                                                        <Grid ColumnDefinitions="200,*,Auto" ColumnSpacing="8">
-                                                            <Label Text="{Binding DisplayName}" VerticalOptions="Center" />
-                                                            <Picker Grid.Column="1" Title="Value"
-                                                                    IsVisible="{Binding HasOptions}"
-                                                                    ItemsSource="{Binding Options}"
-                                                                    SelectedItem="{Binding SelectedOption}"
-                                                                    ItemDisplayBinding="{Binding Name}" />
-                                                            <Entry Grid.Column="1" Text="{Binding NumericValue}"
-                                                                   IsVisible="{Binding IsNumeric}" Keyboard="Numeric" />
-                                                            <Button Grid.Column="2" BackgroundColor="Transparent" FontSize="14" Text="Write"
-                                                                    Command="{Binding ApplyCommand}" />
-                                                        </Grid>
-                                                    </DataTemplate>
-                                                </BindableLayout.ItemTemplate>
-                                            </VerticalStackLayout>
-                                        </VerticalStackLayout>
-                                    </Border>
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </VerticalStackLayout>
-                        <Button BackgroundColor="Transparent" FontSize="14" Text="Refresh optional hardware"
-                                Command="{Binding SelectedOptionalHardwareViewModel.RefreshCommand}" HorizontalOptions="Start" />
-                    </VerticalStackLayout>
-
-                    <VerticalStackLayout IsVisible="{Binding IsSafetySelected}" Spacing="10">
-                        <Label Text="Safety and arming" FontSize="18" FontAttributes="Bold" />
-                        <Label Text="{Binding SelectedSafetyViewModel.Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
-                        <VerticalStackLayout IsVisible="{Binding SelectedSafetyViewModel.HasWarnings}" BindableLayout.ItemsSource="{Binding SelectedSafetyViewModel.Warnings}">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="x:String">
-                                    <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </VerticalStackLayout>
-                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedSafetyViewModel.Items}" Spacing="4">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="setup:SafetyCheckItem">
-                                    <Grid ColumnDefinitions="220,120,*" ColumnSpacing="8">
-                                        <Label Text="{Binding Name}" FontAttributes="Bold" />
-                                        <Label Grid.Column="1" Text="{Binding Status}" />
-                                        <Label Grid.Column="2" Text="{Binding Detail}" LineBreakMode="WordWrap" Opacity="0.8" />
-                                    </Grid>
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </VerticalStackLayout>
-                        <Button BackgroundColor="Transparent" FontSize="14" Text="Re-assess safety"
-                                Command="{Binding SelectedSafetyViewModel.RefreshCommand}" HorizontalOptions="Start" />
-                    </VerticalStackLayout>
-
-                    <VerticalStackLayout IsVisible="{Binding IsSummarySelected}" Spacing="10">
-                        <Label Text="Setup summary" FontSize="18" FontAttributes="Bold" />
-                        <Label Text="{Binding SelectedSummaryViewModel.Heading}" FontAttributes="Bold" LineBreakMode="WordWrap" />
-                        <Label Text="This report describes configuration evidence only and is not a safe-to-fly certification."
-                               Opacity="0.75" LineBreakMode="WordWrap" />
-                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedSummaryViewModel.Sections}" Spacing="8">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="sections:SetupSummarySectionViewModel">
-                                    <Border Padding="10" StrokeThickness="1">
-                                        <VerticalStackLayout Spacing="4">
-                                            <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="15" />
-                                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Entries}">
-                                                <BindableLayout.ItemTemplate>
-                                                    <DataTemplate x:DataType="setup:SetupSummaryEntry">
-                                                        <Grid ColumnDefinitions="200,*,120" ColumnSpacing="8">
-                                                            <Label Text="{Binding Label}" />
-                                                            <Label Grid.Column="1" Text="{Binding Value}" LineBreakMode="WordWrap" Opacity="0.8" />
-                                                            <Label Grid.Column="2" Text="{Binding Status}" />
-                                                        </Grid>
-                                                    </DataTemplate>
-                                                </BindableLayout.ItemTemplate>
-                                            </VerticalStackLayout>
-                                        </VerticalStackLayout>
-                                    </Border>
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </VerticalStackLayout>
-                        <VerticalStackLayout IsVisible="{Binding SelectedSummaryViewModel.HasWarnings}" BindableLayout.ItemsSource="{Binding SelectedSummaryViewModel.Warnings}">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate x:DataType="x:String">
-                                    <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </VerticalStackLayout>
-                        <HorizontalStackLayout Spacing="10">
-                            <Button BackgroundColor="Transparent" FontSize="14" Text="Rebuild summary" Command="{Binding SelectedSummaryViewModel.RefreshCommand}" />
-                            <Button BackgroundColor="Transparent" FontSize="14" Text="Export JSON" Command="{Binding SelectedSummaryViewModel.ExportJsonCommand}" />
-                            <Button BackgroundColor="Transparent" FontSize="14" Text="Export Markdown" Command="{Binding SelectedSummaryViewModel.ExportMarkdownCommand}" />
-                        </HorizontalStackLayout>
-                        <Editor Text="{Binding SelectedSummaryViewModel.ExportedText}" IsReadOnly="True" HeightRequest="180"
-                                IsVisible="{Binding SelectedSummaryViewModel.HasExport}" />
-                    </VerticalStackLayout>
-
-                    <HorizontalStackLayout Spacing="10">
-                        <Button BackgroundColor="Transparent" FontSize="14" Text="Record reviewed"
-                                IsEnabled="{Binding SelectedWorkflow.CanOpen}"
-                                IsVisible="{Binding CanRecordSelectedWorkflowManually}"
-                                Command="{Binding MarkCompleteCommand}" />
-                        <Button BackgroundColor="Transparent" FontSize="14" Text="Open related Config page"
-                                IsVisible="{Binding SelectedWorkflowViewModel.HasConfigDestination}"
-                                Command="{Binding OpenConfigCommand}" />
-                    </HorizontalStackLayout>
-                    <Label Text="Completion is stored locally and automatically requires review when firmware or parameters change. Prerequisites are guidance, not a rigid wizard." LineBreakMode="WordWrap" Opacity="0.7" />
-                </VerticalStackLayout>
-            </ScrollView>
+                <HorizontalStackLayout Spacing="10">
+                    <Button BackgroundColor="Transparent"
+                            FontSize="14"
+                            Text="Record reviewed"
+                            IsEnabled="{Binding SelectedWorkflow.CanOpen}"
+                            IsVisible="{Binding CanRecordSelectedWorkflowManually}"
+                            Command="{Binding MarkCompleteCommand}" />
+                    <Button BackgroundColor="Transparent"
+                            FontSize="14"
+                            Text="Open related Config page"
+                            IsVisible="{Binding HasConfigDestination}"
+                            Command="{Binding OpenConfigCommand}" />
+                </HorizontalStackLayout>
+                <Label Text="Completion is stored locally and automatically requires review when firmware or parameters change. Prerequisites are guidance, not a rigid wizard."
+                       LineBreakMode="WordWrap"
+                       Opacity="0.7" />
+            </VerticalStackLayout>
+        </ScrollView>
     </Grid>
 </uranium:UraniumContentPage>

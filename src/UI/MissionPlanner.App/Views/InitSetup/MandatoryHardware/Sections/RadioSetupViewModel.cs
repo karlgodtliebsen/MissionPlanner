@@ -57,10 +57,6 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
         this.clock = clock;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        radioService.StateChanged += OnCalibrationStateChanged;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        Show(radioService.Current);
-        RefreshLiveChannels();
     }
 
     /// <summary>Gets the live RC channels.</summary>
@@ -112,12 +108,29 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
     }
 
     /// <inheritdoc />
+    protected override void OnActivated()
+    {
+        radioService.StateChanged += OnCalibrationStateChanged;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        Show(radioService.Current);
+        RefreshLiveChannels();
+    }
+
+    /// <inheritdoc />
+    protected override void OnDeactivated()
+    {
+        radioService.StateChanged -= OnCalibrationStateChanged;
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        base.OnDeactivated();
+    }
+
+    /// <inheritdoc />
     public override void Dispose()
     {
         radioService.StateChanged -= OnCalibrationStateChanged;
         activeVehicle.Changed -= OnActiveVehicleChanged;
-        radioService.Dispose();
         base.Dispose();
+        radioService.Dispose();
     }
 
     private bool CanStartCommand()
@@ -211,7 +224,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
 
     private void RefreshLiveChannels()
     {
-        if (activeVehicle.VehicleId is not { } vehicleId)
+        if (!IsActive || activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
             Channels.Clear();
             OnPropertyChanged(nameof(HasChannels));

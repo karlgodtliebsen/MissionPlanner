@@ -135,12 +135,12 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
 
     private async Task OnVehicleConnected(VehicleConnected evt, CancellationToken ct)
     {
-        await dispatcher.DispatchAsync(async () => ConnectionStatus = $"Connected: {evt.VehicleId}");
+        await dispatcher.DispatchAsync(() => ConnectionStatus = $"Connected: {evt.VehicleId}");
     }
 
     private async Task OnVehicleDisconnected(VehicleDisconnected evt, CancellationToken ct)
     {
-        await dispatcher.DispatchAsync(async () =>
+        await dispatcher.DispatchAsync(() =>
         {
             ConnectionStatus = $"Disconnected: {evt.VehicleId}";
             FirmwareIdentity = null;
@@ -150,7 +150,7 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
     private async Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken ct)
     {
         var display = VehicleFirmwareDisplayFormatter.Format(evt.VehicleState.Identity.Firmware);
-        await dispatcher.DispatchAsync(async () => FirmwareIdentity = display);
+        await dispatcher.DispatchAsync(() => FirmwareIdentity = display);
     }
 
     [RelayCommand(CanExecute = nameof(CanOpenConnection))]
@@ -171,8 +171,10 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
         }
     }
 
-    private void OnReplayChanged(object? sender, ReplaySessionChangedEventArgs args) =>
+    private void OnReplayChanged(object? sender, ReplaySessionChangedEventArgs args)
+    {
         dispatcher.Dispatch(() => ApplyReplayState(args.Snapshot));
+    }
 
     private void ApplyReplayState(ReplaySessionSnapshot snapshot)
     {

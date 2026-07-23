@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
@@ -56,8 +57,6 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
         this.clock = clock;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        calibration.StateChanged += OnCalibrationStateChanged;
-        Show(calibration.Current);
     }
 
     /// <summary>Gets the current calibration workflow stage.</summary>
@@ -109,11 +108,27 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
     }
 
     /// <inheritdoc />
+    protected override void OnActivated()
+    {
+        calibration.StateChanged += OnCalibrationStateChanged;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        Show(calibration.Current);
+    }
+
+    /// <inheritdoc />
+    protected override void OnDeactivated()
+    {
+        calibration.StateChanged -= OnCalibrationStateChanged;
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        base.OnDeactivated();
+    }
+
+    /// <inheritdoc />
     public override void Dispose()
     {
         calibration.StateChanged -= OnCalibrationStateChanged;
-        calibration.Dispose();
         base.Dispose();
+        calibration.Dispose();
     }
 
     private bool CanStartCommand()
@@ -223,6 +238,22 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
     private void OnCalibrationStateChanged(object? sender, CalibrationStateChangedEventArgs args)
     {
         dispatcher.Dispatch(() => Show(args.Snapshot));
+    }
+
+    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    {
+        if (!SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
+        {
+            return;
+        }
+
+        dispatcher.Dispatch(() =>
+        {
+            if (IsActive)
+            {
+                Show(calibration.Current);
+            }
+        });
     }
 
     private void Show(CalibrationSnapshot snapshot)

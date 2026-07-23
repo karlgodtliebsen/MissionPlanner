@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 
@@ -61,8 +62,6 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
         this.clock = clock;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        calibration.StateChanged += OnCalibrationStateChanged;
-        Show(calibration.Current);
     }
 
     /// <summary>Gets the discovered compass instances.</summary>
@@ -148,11 +147,28 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
     }
 
     /// <inheritdoc />
+    protected override void OnActivated()
+    {
+        calibration.StateChanged += OnCalibrationStateChanged;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        Show(calibration.Current);
+        _ = LoadAsync();
+    }
+
+    /// <inheritdoc />
+    protected override void OnDeactivated()
+    {
+        calibration.StateChanged -= OnCalibrationStateChanged;
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        base.OnDeactivated();
+    }
+
+    /// <inheritdoc />
     public override void Dispose()
     {
         calibration.StateChanged -= OnCalibrationStateChanged;
-        calibration.Dispose();
         base.Dispose();
+        calibration.Dispose();
     }
 
     /// <summary>Applies the reviewed edits for one compass with readback confirmation.</summary>
@@ -375,6 +391,20 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
     private void OnCalibrationStateChanged(object? sender, CompassCalibrationStateChangedEventArgs args)
     {
         dispatcher.Dispatch(() => Show(args.Snapshot));
+    }
+
+    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    {
+        if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
+        {
+            dispatcher.Dispatch(() =>
+            {
+                if (IsActive)
+                {
+                    _ = LoadAsync();
+                }
+            });
+        }
     }
 
     private void Show(CompassCalibrationSnapshot snapshot)
