@@ -1118,6 +1118,16 @@ simulation-time audit events. An automatic reset is skipped rather than retarget
 session identity changes. Scenario presets are separately versioned staging data and never
 execute a hazardous write merely by loading.
 
+Scenario automation is a closed interpreter, not a scripting host. Versioned documents
+deserialize with unknown-member rejection into a fixed step enum and safe Boolean/number/
+text values. Conditions can inspect only an allow-list of immutable vehicle-state fields.
+The runner captures the session ID and `VehicleId`, revalidates both before every step, and
+routes actions through existing acknowledged command, mission, parameter-control, and
+registry services. Every step owns an explicit timeout. Pause is observed only between
+steps, while cancellation resets run-owned faults and attempts a safe land or ground disarm only if the
+original exact target is still connected. Dry runs and execution share validation, and
+reports preserve capability evidence, step timing/results, and telemetry snapshots.
+
 
 
 

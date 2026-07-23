@@ -22,6 +22,9 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     private readonly ISimulationControlCatalog controlCatalog;
     private readonly ISimulationControlService controlService;
     private readonly ISimulationScenarioPresetService scenarioPresetService;
+    private readonly ISimulationScenarioParser scenarioParser;
+    private readonly ISimulationScenarioRunner scenarioRunner;
+    private readonly ISimulationScenarioReportExporter scenarioReportExporter;
     private readonly ParametersFileHandler fileHandler;
     private readonly IDispatcher dispatcher;
     private readonly ILogger<SimulationViewModel> logger;
@@ -43,6 +46,9 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     /// <param name="controlCatalog">The documented runtime-control and location catalog.</param>
     /// <param name="controlService">The instance-scoped runtime-control service.</param>
     /// <param name="scenarioPresetService">The separate scenario-preset service.</param>
+    /// <param name="scenarioParser">The closed declarative scenario parser.</param>
+    /// <param name="scenarioRunner">The exact-target scenario runner.</param>
+    /// <param name="scenarioReportExporter">The machine/readable report exporter.</param>
     /// <param name="fileHandler">The platform file helper.</param>
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="logger">The logger.</param>
@@ -56,6 +62,9 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         ISimulationControlCatalog controlCatalog,
         ISimulationControlService controlService,
         ISimulationScenarioPresetService scenarioPresetService,
+        ISimulationScenarioParser scenarioParser,
+        ISimulationScenarioRunner scenarioRunner,
+        ISimulationScenarioReportExporter scenarioReportExporter,
         ParametersFileHandler fileHandler,
         IDispatcher dispatcher,
         ILogger<SimulationViewModel> logger)
@@ -69,11 +78,16 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         this.controlCatalog = controlCatalog;
         this.controlService = controlService;
         this.scenarioPresetService = scenarioPresetService;
+        this.scenarioParser = scenarioParser;
+        this.scenarioRunner = scenarioRunner;
+        this.scenarioReportExporter = scenarioReportExporter;
         this.fileHandler = fileHandler;
         this.dispatcher = dispatcher;
         this.logger = logger;
         ApplySnapshot(sessionManager.Current);
         PlatformCapability = platformService.Current.Message;
+        ScenarioRunnerStatus = scenarioRunner.Current?.Message ?? "No scenario is running.";
+        scenarioRunner.Changed += OnScenarioRunnerChanged;
         foreach (var location in controlCatalog.Locations)
         {
             LocationPresets.Add(location);
@@ -174,6 +188,22 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     /// <summary>Gets or sets the scenario preset editor name.</summary>
     [ObservableProperty]
     public partial string ScenarioPresetName { get; set; } = "Simulation scenario";
+
+    /// <summary>Gets or sets the closed-schema scenario JSON editor.</summary>
+    [ObservableProperty]
+    public partial string ScenarioDocumentText { get; set; } = ExampleScenarioJson;
+
+    /// <summary>Gets or sets explicit confirmation for hazardous scenario actions.</summary>
+    [ObservableProperty]
+    public partial bool ScenarioHazardsConfirmed { get; set; }
+
+    /// <summary>Gets the current scenario runner status.</summary>
+    [ObservableProperty]
+    public partial string ScenarioRunnerStatus { get; private set; } = "No scenario is running.";
+
+    /// <summary>Gets the last dry-run or execution report.</summary>
+    [ObservableProperty]
+    public partial SimulationScenarioRunReport? LastScenarioReport { get; private set; }
 
     /// <summary>Gets or sets the selected persisted profile.</summary>
     [ObservableProperty]
@@ -593,6 +623,51 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         StatusMessage = "Scenario preset deleted.";
     });
 
+    /// <summary>Loads a declarative scenario JSON file into the editor without executing it.</summary>
+    /// <returns>A task representing file selection.</returns>
+    [RelayCommand]
+    public Task LoadScenarioDocumentAsync() => RunAsync(async cancellationToken =>
+    {
+        var document = await fileHandler.LoadTextFileAsync("Select a simulation scenario JSON file", cancellationToken);
+        if (document is not null)
+        {
+            ScenarioDocumentText = document;
+            ScenarioRunnerStatus = "Scenario document loaded; use Dry run before execution.";
+        }
+    });
+
+    /// <summary>Validates the scenario and exact target without changing the vehicle.</summary>
+    /// <returns>A task representing dry-run capability validation.</returns>
+    [RelayCommand]
+    public Task DryRunScenarioAsync() => ExecuteScenarioAsync(dryRun: true);
+
+    /// <summary>Executes the scenario against the exact running simulator vehicle.</summary>
+    /// <returns>A task representing bounded execution.</returns>
+    [RelayCommand]
+    public Task RunScenarioAsync() => ExecuteScenarioAsync(dryRun: false);
+
+    /// <summary>Requests a pause after the active scenario step reaches a safe boundary.</summary>
+    [RelayCommand]
+    public void PauseScenario() => ScenarioRunnerStatus = scenarioRunner.Pause()
+        ? "Pause requested at the next safe step boundary."
+        : "The scenario is not currently in a pausable step.";
+
+    /// <summary>Resumes a scenario paused between steps.</summary>
+    [RelayCommand]
+    public void ResumeScenario() => ScenarioRunnerStatus = scenarioRunner.Resume()
+        ? "Scenario resumed."
+        : "The scenario is not paused.";
+
+    /// <summary>Exports the last run as versioned machine-readable JSON.</summary>
+    /// <returns>A task representing file export.</returns>
+    [RelayCommand]
+    public Task ExportScenarioJsonAsync() => ExportScenarioReportAsync(machineReadable: true);
+
+    /// <summary>Exports the last run as a human-readable text report.</summary>
+    /// <returns>A task representing file export.</returns>
+    [RelayCommand]
+    public Task ExportScenarioTextAsync() => ExportScenarioReportAsync(machineReadable: false);
+
     /// <summary>Deletes the selected profile.</summary>
     /// <returns>A task representing persistence.</returns>
     [RelayCommand]
@@ -670,6 +745,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
 
         disposed = true;
         Deactivate();
+        scenarioRunner.Changed -= OnScenarioRunnerChanged;
         operationCancellation?.Cancel();
     }
 
@@ -952,6 +1028,51 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         }
     }
 
+    private Task ExecuteScenarioAsync(bool dryRun) => RunAsync(async cancellationToken =>
+    {
+        var snapshot = sessionManager.Current;
+        if (snapshot.State != SimulationSessionState.Running || snapshot.VehicleId is null)
+        {
+            throw new InvalidOperationException("Start and connect an exact simulator vehicle before running a scenario.");
+        }
+
+        var document = scenarioParser.Parse(ScenarioDocumentText);
+        LastScenarioReport = await scenarioRunner.RunAsync(
+            new SimulationScenarioRunRequest(
+                document,
+                snapshot.SessionId,
+                snapshot.VehicleId.Value,
+                dryRun,
+                ScenarioHazardsConfirmed),
+            cancellationToken);
+        ScenarioHazardsConfirmed = false;
+        ScenarioRunnerStatus = LastScenarioReport.Summary;
+        StatusMessage = LastScenarioReport.Summary;
+    });
+
+    private Task ExportScenarioReportAsync(bool machineReadable) => RunAsync(async cancellationToken =>
+    {
+        if (LastScenarioReport is null)
+        {
+            throw new InvalidOperationException("Run or dry-run a scenario before exporting its report.");
+        }
+
+        var extension = machineReadable ? "json" : "txt";
+        var content = machineReadable
+            ? scenarioReportExporter.ToJson(LastScenarioReport)
+            : scenarioReportExporter.ToText(LastScenarioReport);
+        var path = await fileHandler.SaveTextFileAsync(
+            $"simulation-scenario-{LastScenarioReport.RunId:N}.{extension}",
+            content,
+            cancellationToken);
+        StatusMessage = path is null ? "Scenario report export cancelled." : $"Scenario report exported to {path}.";
+    });
+
+    private void OnScenarioRunnerChanged(object? sender, SimulationScenarioRunnerChangedEventArgs args)
+    {
+        dispatcher.Dispatch(() => ScenarioRunnerStatus = args.Snapshot.Message);
+    }
+
     private void RefreshFrames()
     {
         var current = FrameModel;
@@ -1043,4 +1164,33 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
             ? ScenarioPresets.FirstOrDefault()
             : ScenarioPresets.FirstOrDefault(item => item.Id == selectedId) ?? ScenarioPresets.FirstOrDefault();
     }
+
+    private const string ExampleScenarioJson = """
+        {
+          "schemaVersion": 1,
+          "id": "6d9f5f05-2906-4c36-af7c-0a8d6abf4d40",
+          "name": "Connected simulator check",
+          "variables": {},
+          "steps": [
+            {
+              "id": "online",
+              "kind": "waitForState",
+              "name": "Wait for exact simulator",
+              "timeoutSeconds": 10,
+              "state": "online"
+            },
+            {
+              "id": "disarmed",
+              "kind": "assertTelemetry",
+              "name": "Confirm safe disarmed state",
+              "timeoutSeconds": 5,
+              "condition": {
+                "metric": "armed",
+                "operator": "equal",
+                "expected": { "kind": "boolean", "booleanValue": false }
+              }
+            }
+          ]
+        }
+        """;
 }

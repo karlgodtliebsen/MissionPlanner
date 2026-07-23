@@ -121,6 +121,60 @@ and result. Scenario presets store optional location plus requested control valu
 durations in their own versioned document; loading stages values and does not silently
 perform hazardous writes.
 
+## Declarative scenario runner
+
+`ISimulationScenarioRunner` executes schema-version 1 JSON documents. The schema is closed:
+unknown JSON members are rejected and there is no shell command, script text, expression
+engine, reflection hook, or arbitrary MAVLink command field. Variables are exact-name
+Boolean, finite-number, or bounded-text values; they cannot refer to other variables or
+contain executable expressions. Embedded missions contain only typed MAVLink mission-item
+fields. Mission start is an internal typed `MAV_CMD_MISSION_START` operation and is not a
+user-selectable command ID.
+
+Supported steps are `waitForState`, `setMode`, `arm`, `takeoff`, `uploadMission`,
+`startMission`, `waitCondition`, `injectFault`, `clearFault`, `land`, and
+`assertTelemetry`. Every step requires an explicit 1–3600 second timeout. Conditions can
+read only the allow-listed online, armed, mode, landed state, GPS fix, position, altitude,
+ground speed, and battery fields with typed comparisons and optional numeric tolerance.
+Fault steps must resolve to a live, documented, confirmation-required control and fit that
+control's catalog safety duration.
+
+A run request captures the exact running simulation session ID and verified `VehicleId`.
+The runner checks that pair before every step, then reuses the acknowledged command,
+mission-transfer, mode-catalog, registry, and simulation-control services. A dry run
+performs schema, target, mode, mission, and live-control capability checks and emits planned
+step evidence without changing the vehicle. Arm, takeoff, mission start, and fault
+injection additionally require one explicit run confirmation.
+
+Pause is cooperative only at step boundaries: an active command or wait is never suspended
+mid-protocol. Cancellation interrupts the current bounded operation, resets controls
+injected by the run, and attempts a land command in flight or a confirmed disarm on the
+ground when the scenario previously armed/took off and the exact target remains connected. Cleanup never crosses to a
+replacement session. Each report records version, run/scenario/target identities, step
+start/end/result, acknowledgement or condition evidence, boundary telemetry, validation
+capabilities, and final telemetry. The workspace exports both indented JSON and readable
+text reports.
+
+Example safe document:
+
+```json
+{
+  "schemaVersion": 1,
+  "id": "6d9f5f05-2906-4c36-af7c-0a8d6abf4d40",
+  "name": "Connected simulator check",
+  "variables": {},
+  "steps": [
+    {
+      "id": "online",
+      "kind": "waitForState",
+      "name": "Wait for exact simulator",
+      "timeoutSeconds": 10,
+      "state": "online"
+    }
+  ]
+}
+```
+
 ## SITL installations and releases
 
 `ISitlInstallationService` combines two explicitly different sources:
@@ -176,7 +230,7 @@ Lifecycle limits are configured by the `Simulation` application section. Default
 
 ## Current verification boundary
 
-Tasks 01–04 are covered with fake-runtime tests for successful state transitions, explicit stop,
+Tasks 01–05 are covered with fake-runtime tests for successful state transitions, explicit stop,
 unexpected exit, heartbeat timeout cleanup, shutdown cleanup, profile persistence and
 corrupt recovery, port/path validation, diagnostics redaction, and navigation lifecycle.
 Manifest filtering, checksum verification, atomic failure, archive traversal, cache
@@ -186,12 +240,19 @@ timeout/wrong-identity, early stderr, and ownership-order tests cover direct lau
 Control tests cover location/range/unit validation, current-versus-legacy parameter
 discovery, firmware reporting, unavailable-control explanations, confirmation, automatic
 and explicit reset, cancellation, preset persistence, and replacement-instance isolation.
+Scenario tests cover closed-schema/version parsing, typed variables, required timeouts,
+dry-run capabilities, success/failure/timeout/cancellation, safe-boundary pause/resume,
+wrong targets, missing controls, report exports, and view-model exact-target projection.
 
 Real SITL smoke cases for all four families are opt-in and have 30-second total and
 10-second cleanup bounds. Set `MISSIONPLANNER_SITL_ARDUCOPTER`,
 `MISSIONPLANNER_SITL_ARDUPLANE`, `MISSIONPLANNER_SITL_ROVER`, or
 `MISSIONPLANNER_SITL_ARDUSUB` to an installed verified executable; absent families are
 reported as environmental skips rather than waiting or downloading. Run them with:
+
+When the Copter binary is supplied, its smoke case additionally runs the bounded
+wait-for-GPS, arm, Guided-mode, takeoff, altitude, land, and landed-state scenario through
+the production runner inside the same total timeout.
 
 ```powershell
 dotnet test .\src\Tests\MissionPlanner.Core.Tests\MissionPlanner.Core.Tests.csproj --filter FullyQualifiedName~ArduPilotSitlSmokeTests

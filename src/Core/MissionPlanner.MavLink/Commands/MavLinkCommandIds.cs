@@ -20,6 +20,9 @@ public static class MavLinkCommandIds
     /// <summary>Starts a vehicle takeoff.</summary>
     public const ushort NavTakeoff = (ushort)Generated.MavCmd.NavTakeoff;
 
+    /// <summary>Starts execution of an uploaded mission.</summary>
+    public const ushort MissionStart = (ushort)Generated.MavCmd.MissionStart;
+
     /// <summary>Sets the vehicle home position.</summary>
     public const ushort DoSetHome = (ushort)Generated.MavCmd.DoSetHome;
 

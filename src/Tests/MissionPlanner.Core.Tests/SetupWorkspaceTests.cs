@@ -234,6 +234,9 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<ISimulationControlService>().Should().NotBeNull();
         provider.GetRequiredService<ISimulationScenarioPresetStore>().Should().NotBeNull();
         provider.GetRequiredService<ISimulationScenarioPresetService>().Should().NotBeNull();
+        provider.GetRequiredService<ISimulationScenarioParser>().Should().NotBeNull();
+        provider.GetRequiredService<ISimulationScenarioRunner>().Should().NotBeNull();
+        provider.GetRequiredService<ISimulationScenarioReportExporter>().Should().NotBeNull();
         provider.GetRequiredService<IArduPilotFrameCatalog>().Should().NotBeNull();
         provider.GetRequiredService<IArduPilotLaunchPlanBuilder>().Should().NotBeNull();
         provider.GetRequiredService<ISimulationPortAllocator>().Should().NotBeNull();

@@ -205,6 +205,9 @@ public sealed class SimulationWorkspaceTests
             Substitute.For<ISimulationControlCatalog>(),
             Substitute.For<ISimulationControlService>(),
             Substitute.For<ISimulationScenarioPresetService>(),
+            Substitute.For<ISimulationScenarioParser>(),
+            Substitute.For<ISimulationScenarioRunner>(),
+            Substitute.For<ISimulationScenarioReportExporter>(),
             new ParametersFileHandler(Substitute.For<IFileSaver>()),
             dispatcher,
             Substitute.For<ILogger<SimulationViewModel>>());
@@ -216,6 +219,87 @@ public sealed class SimulationWorkspaceTests
         await manager.DidNotReceive().StopAsync(Arg.Any<CancellationToken>());
         viewModel.Profiles.Should().ContainSingle();
         viewModel.SelectedProfile.Should().Be(profile);
+    }
+
+    /// <summary>Verifies the workspace dry run binds the parsed document to the exact running snapshot.</summary>
+    [Fact]
+    public async Task ViewModelDryRunUsesExactSimulationTarget()
+    {
+        var vehicleId = new VehicleId(9, 1);
+        var sessionId = Guid.NewGuid();
+        var profile = Profile() with { LaunchSettings = ArduPilotLaunchSettings.Default with { SystemId = 9 } };
+        var snapshot = new SimulationSessionSnapshot(
+            sessionId,
+            profile,
+            SimulationSessionState.Running,
+            new SimulatorRuntimeIdentity("dry-run", "test", null),
+            [],
+            DateTimeOffset.UtcNow,
+            null,
+            "Running",
+            null,
+            [],
+            vehicleId);
+        var manager = Substitute.For<ISimulationSessionManager>();
+        manager.Current.Returns(snapshot);
+        var parser = new SimulationScenarioParser(Options.Create(new SimulationScenarioOptions()));
+        var runner = Substitute.For<ISimulationScenarioRunner>();
+        var parsed = parser.Parse("""
+            {"schemaVersion":1,"id":"f5444dc2-cbb6-47a2-b033-e860bed41d3c","name":"dry","variables":{},"steps":[{"id":"online","kind":"waitForState","name":"online","timeoutSeconds":2,"state":"online"}]}
+            """);
+        var report = new SimulationScenarioRunReport(
+            1,
+            Guid.NewGuid(),
+            parsed.Id,
+            parsed.Name,
+            sessionId,
+            vehicleId,
+            DateTimeOffset.UtcNow,
+            DateTimeOffset.UtcNow,
+            SimulationScenarioRunResult.DryRun,
+            true,
+            "Dry run completed.",
+            new SimulationScenarioValidationReport([], []),
+            [],
+            null);
+        runner.RunAsync(Arg.Any<SimulationScenarioRunRequest>(), Arg.Any<CancellationToken>()).Returns(report);
+        var dispatcher = Substitute.For<IDispatcher>();
+        dispatcher.Dispatch(Arg.Any<Action>()).Returns(call =>
+        {
+            call.Arg<Action>()?.Invoke();
+            return true;
+        });
+        var platform = Substitute.For<ISitlPlatformService>();
+        platform.Current.Returns(new SitlPlatformCapability(SitlPlatform.Windows, SitlArchitecture.X64, true, "Test"));
+        var profileService = Substitute.For<ISimulatorProfileService>();
+        profileService.Profiles.Returns([profile]);
+        using var viewModel = new SimulationViewModel(
+            profileService,
+            manager,
+            new SimulationDiagnosticsService(),
+            Substitute.For<ISitlInstallationService>(),
+            platform,
+            new ArduPilotFrameCatalog(),
+            Substitute.For<ISimulationControlCatalog>(),
+            Substitute.For<ISimulationControlService>(),
+            Substitute.For<ISimulationScenarioPresetService>(),
+            parser,
+            runner,
+            new SimulationScenarioReportExporter(),
+            new ParametersFileHandler(Substitute.For<IFileSaver>()),
+            dispatcher,
+            Substitute.For<ILogger<SimulationViewModel>>())
+        {
+            ScenarioDocumentText = parser.Serialize(parsed)
+        };
+
+        await viewModel.DryRunScenarioAsync();
+
+        viewModel.LastScenarioReport.Should().Be(report);
+        await runner.Received(1).RunAsync(
+            Arg.Is<SimulationScenarioRunRequest>(request =>
+                request != null && request.SessionId == sessionId && request.VehicleId == vehicleId && request.DryRun),
+            Arg.Any<CancellationToken>());
     }
 
     private static SimulationSessionManager Manager(FakeRuntime runtime)

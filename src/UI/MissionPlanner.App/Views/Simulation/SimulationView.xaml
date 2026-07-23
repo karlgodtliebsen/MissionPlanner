@@ -141,6 +141,34 @@
                             <Editor Text="{Binding EnvironmentText}" AutoSize="TextChanges" MinimumHeightRequest="70" />
                         </VerticalStackLayout>
                     </Border>
+
+                    <Border Padding="12">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Declarative scenario runner" FontSize="18" FontAttributes="Bold" />
+                            <Label Text="Closed schema only. Every step has a timeout; dry-run checks the exact vehicle and required capabilities." />
+                            <HorizontalStackLayout Spacing="8">
+                                <Button Text="Load JSON" Command="{Binding LoadScenarioDocumentCommand}" />
+                                <Button Text="Dry run" Command="{Binding DryRunScenarioCommand}" />
+                                <Button Text="Run" Command="{Binding RunScenarioCommand}" />
+                                <Button Text="Cancel" Command="{Binding CancelOperationCommand}" />
+                            </HorizontalStackLayout>
+                            <Editor Text="{Binding ScenarioDocumentText}"
+                                    AutoSize="TextChanges"
+                                    FontFamily="Consolas"
+                                    MinimumHeightRequest="220" />
+                            <HorizontalStackLayout Spacing="8">
+                                <CheckBox IsChecked="{Binding ScenarioHazardsConfirmed}" />
+                                <Label Text="I confirm arm, takeoff, mission start, and fault steps" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                            <HorizontalStackLayout Spacing="8">
+                                <Button Text="Pause at boundary" Command="{Binding PauseScenarioCommand}" />
+                                <Button Text="Resume" Command="{Binding ResumeScenarioCommand}" />
+                                <Button Text="Export JSON report" Command="{Binding ExportScenarioJsonCommand}" />
+                                <Button Text="Export text report" Command="{Binding ExportScenarioTextCommand}" />
+                            </HorizontalStackLayout>
+                            <Label Text="{Binding ScenarioRunnerStatus}" />
+                        </VerticalStackLayout>
+                    </Border>
                 </VerticalStackLayout>
             </ScrollView>
 

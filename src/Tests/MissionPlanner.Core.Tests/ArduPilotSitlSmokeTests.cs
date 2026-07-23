@@ -78,6 +78,21 @@ public sealed class ArduPilotSitlSmokeTests
         {
             var started = await manager.StartAsync(profile, totalTimeout.Token);
             started.State.Should().Be(SimulationSessionState.Running, started.Failure);
+            if (family == FirmwareFamily.ArduCopter)
+            {
+                var runner = provider.GetRequiredService<ISimulationScenarioRunner>();
+                var scenario = CopterFlightScenario();
+                var report = await runner.RunAsync(
+                    new SimulationScenarioRunRequest(
+                        scenario,
+                        started.SessionId,
+                        started.VehicleId!.Value,
+                        DryRun: false,
+                        HazardousActionsConfirmed: true),
+                    totalTimeout.Token);
+                report.Result.Should().Be(SimulationScenarioRunResult.Succeeded, report.Summary);
+            }
+
             succeeded = true;
         }
         finally
@@ -110,4 +125,44 @@ public sealed class ArduPilotSitlSmokeTests
             listener.Stop();
         }
     }
+
+    private static SimulationScenarioDocument CopterFlightScenario() => new(
+        1,
+        Guid.Parse("ec406fd6-65bb-4fd8-920b-09d7f3284d32"),
+        "Opt-in Copter arm, takeoff, and land",
+        new Dictionary<string, SimulationScenarioValue>(),
+        [
+            new SimulationScenarioStep(
+                "online", SimulationScenarioStepKind.WaitForState, "Wait online", 5,
+                State: SimulationVehicleStateRequirement.Online),
+            new SimulationScenarioStep(
+                "gps", SimulationScenarioStepKind.WaitCondition, "Wait for 3D GPS", 10,
+                Condition: TextCondition(SimulationTelemetryMetric.GpsFixType, GpsFixType.Fix3D.ToString())),
+            new SimulationScenarioStep(
+                "ground", SimulationScenarioStepKind.WaitForState, "Confirm on ground", 10,
+                State: SimulationVehicleStateRequirement.OnGround),
+            new SimulationScenarioStep("arm", SimulationScenarioStepKind.Arm, "Arm", 5),
+            new SimulationScenarioStep(
+                "guided", SimulationScenarioStepKind.SetMode, "Enter Guided", 5,
+                Mode: "Guided"),
+            new SimulationScenarioStep(
+                "takeoff", SimulationScenarioStepKind.Takeoff, "Take off", 5,
+                Value: new SimulationScenarioValue(SimulationScenarioValueKind.Number, NumberValue: 3)),
+            new SimulationScenarioStep(
+                "altitude", SimulationScenarioStepKind.WaitCondition, "Reach altitude", 10,
+                Condition: new SimulationTelemetryCondition(
+                    SimulationTelemetryMetric.RelativeAltitudeMeters,
+                    SimulationComparisonOperator.GreaterThanOrEqual,
+                    new SimulationScenarioValue(SimulationScenarioValueKind.Number, NumberValue: 2))),
+            new SimulationScenarioStep("land", SimulationScenarioStepKind.Land, "Land", 5),
+            new SimulationScenarioStep(
+                "landed", SimulationScenarioStepKind.WaitForState, "Confirm landed", 15,
+                State: SimulationVehicleStateRequirement.OnGround)
+        ]);
+
+    private static SimulationTelemetryCondition TextCondition(SimulationTelemetryMetric metric, string expected) =>
+        new(
+            metric,
+            SimulationComparisonOperator.Equal,
+            new SimulationScenarioValue(SimulationScenarioValueKind.Text, TextValue: expected));
 }

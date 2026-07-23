@@ -52,3 +52,32 @@ Define a declarative scenario format and executor in Core. Reuse vehicle command
 - Every wait/assert has an explicit timeout.
 - Cancellation leaves vehicle/simulator in a defined state where possible.
 - No arbitrary code execution is introduced.
+
+## Completion
+
+Completed 2026-07-23. Core now defines a closed schema-version 1 JSON scenario format with
+safe typed Boolean/finite-number/bounded-text variables, explicit per-step timeouts, typed
+telemetry conditions, and embedded mission-item data. Unknown members and unsupported
+versions fail parsing. No shell, script, expression engine, reflection hook, or arbitrary
+command-ID field is available.
+
+The executor supports wait-for-state, set mode, arm, takeoff, mission upload/start,
+wait/assert telemetry, bounded documented fault injection/reset, and land. Each run binds
+to an exact running session and verified `VehicleId`, checks that identity before every
+step, and reuses the existing acknowledged vehicle command, mode catalog, mission transfer,
+vehicle registry, and simulation-control services. Dry run reports required modes,
+mission services, target identity, and live control capabilities without changing the
+vehicle. Arm, takeoff, mission start, and fault steps require explicit run confirmation.
+
+Pause/resume occurs only at safe step boundaries. Timeout and cancellation are distinct;
+cancellation resets run-owned faults and attempts landing or a ground disarm after arm/takeoff only when the
+original target remains connected. Versioned reports include step timing/result/evidence,
+telemetry snapshots, validation evidence, and final state, with JSON and readable-text
+exports in the Simulation workspace.
+
+Deterministic tests cover schema/version/unknown fields, timeout requirements, typed
+variables, dry run, success across every action family, command failure, wait timeout,
+cancellation, safe pause/resume, wrong vehicle, missing capability, report formats,
+view-model target binding, and DI. The existing opt-in Copter SITL smoke path additionally
+runs a bounded GPS/arm/Guided/takeoff/altitude/land scenario when its binary is configured.
+See [SIMULATION.md](../../SIMULATION.md) for schema and safety details.

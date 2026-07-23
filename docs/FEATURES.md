@@ -715,6 +715,11 @@ Replaces v1.38's Simulation screen (SITL). New UI: `SimulationView`.
   parameter readback, automatically restore a safe value, target the exact session and
   `VehicleId`, and retain simulation-time audit events. Versioned scenario presets remain
   separate from launch profiles
+* Closed, versioned JSON scenario runner supports bounded state/telemetry waits, mode, arm,
+  takeoff, embedded mission upload/start, documented fault injection/reset, land, and
+  telemetry assertions. It provides exact-target dry runs, safe-boundary pause/resume,
+  cancellation cleanup, and machine-readable/readable evidence reports without arbitrary
+  script execution
 * Four opt-in real-SITL family smoke tests use strict total and cleanup timeouts and skip
   explicitly when their configured binaries are absent
 * Asset: `src/Tests/MissionPlanner.Simulator` already hosts a simulator used by the smoke
@@ -729,7 +734,6 @@ current verification boundary.
 * Ship/configure the production official ArduPilot artifact manifest (the acquisition
   pipeline exists but the repository intentionally does not invent an endpoint)
 * Multi-vehicle / swarm launch options
-* Declarative scenario execution and reporting
 
 
 
