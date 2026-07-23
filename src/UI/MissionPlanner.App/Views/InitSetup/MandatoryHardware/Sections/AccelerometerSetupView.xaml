@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<sections:SetupSectionView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
              x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.AccelerometerSetupView"
              x:DataType="sections:AccelerometerSetupViewModel">
     <VerticalStackLayout Spacing="10">
+        <ProgressBar Progress="{Binding Progress}" />
+        <Label Text="{Binding Error}" TextColor="Red" />
         <Label Text="Accelerometer and level calibration" FontSize="18" FontAttributes="Bold" />
         <Label Text="Remove propellers. Keep the vehicle disarmed and clear of people before calibration."
                TextColor="OrangeRed"
@@ -47,4 +49,4 @@
                     Command="{Binding ResetCommand}" />
         </HorizontalStackLayout>
     </VerticalStackLayout>
-</ContentView>
+</sections:SetupSectionView>

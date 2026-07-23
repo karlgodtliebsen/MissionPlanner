@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -35,8 +35,6 @@ public sealed partial class SetupSummaryViewModel : SetupWorkflowDetailViewModel
         this.summaryService = summaryService;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        Refresh();
     }
 
     /// <summary>Gets the summary sections.</summary>
@@ -59,6 +57,20 @@ public sealed partial class SetupSummaryViewModel : SetupWorkflowDetailViewModel
 
     /// <summary>Gets whether any warnings were raised.</summary>
     public bool HasWarnings => Warnings.Count > 0;
+
+    /// <inheritdoc />
+    protected override void OnActivated()
+    {
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        Refresh();
+    }
+
+    /// <inheritdoc />
+    protected override void OnDeactivated()
+    {
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        base.OnDeactivated();
+    }
 
     /// <inheritdoc />
     public override void Dispose()
@@ -127,7 +139,16 @@ public sealed partial class SetupSummaryViewModel : SetupWorkflowDetailViewModel
 
     private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
     {
-        dispatcher.Dispatch(Refresh);
+        if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
+        {
+            dispatcher.Dispatch(() =>
+            {
+                if (IsActive)
+                {
+                    Refresh();
+                }
+            });
+        }
     }
 }
 

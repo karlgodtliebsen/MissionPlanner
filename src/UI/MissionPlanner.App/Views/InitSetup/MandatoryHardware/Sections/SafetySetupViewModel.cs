@@ -38,9 +38,6 @@ public sealed partial class SafetySetupViewModel : SetupWorkflowDetailViewModel
         this.parameterRegistry = parameterRegistry;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        parameterRegistry.Changed += OnParameterChanged;
-        Refresh();
     }
 
     /// <summary>Gets the assessed safety checks.</summary>
@@ -55,6 +52,22 @@ public sealed partial class SafetySetupViewModel : SetupWorkflowDetailViewModel
 
     /// <summary>Gets whether any warnings were raised.</summary>
     public bool HasWarnings => Warnings.Count > 0;
+
+    /// <inheritdoc />
+    protected override void OnActivated()
+    {
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        parameterRegistry.Changed += OnParameterChanged;
+        Refresh();
+    }
+
+    /// <inheritdoc />
+    protected override void OnDeactivated()
+    {
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        parameterRegistry.Changed -= OnParameterChanged;
+        base.OnDeactivated();
+    }
 
     /// <inheritdoc />
     public override void Dispose()
@@ -105,7 +118,16 @@ public sealed partial class SafetySetupViewModel : SetupWorkflowDetailViewModel
 
     private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
     {
-        dispatcher.Dispatch(Refresh);
+        if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
+        {
+            dispatcher.Dispatch(() =>
+            {
+                if (IsActive)
+                {
+                    Refresh();
+                }
+            });
+        }
     }
 
     private void OnParameterChanged(object? sender, VehicleParameterChangedEventArgs args)

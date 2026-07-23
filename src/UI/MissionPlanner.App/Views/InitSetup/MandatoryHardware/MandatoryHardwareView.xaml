@@ -46,35 +46,33 @@
 
         <ScrollView Grid.Row="3">
             <VerticalStackLayout Spacing="14" BindableLayout.EmptyView="Select a setup workflow.">
-                <Label Text="{Binding SelectedWorkflowViewModel.Title}" FontSize="24" FontAttributes="Bold" />
-                <Label Text="{Binding SelectedWorkflowViewModel.Description}" FontSize="16" LineBreakMode="WordWrap" />
+                <Label Text="{Binding SelectedWorkflow.Title}" FontSize="24" FontAttributes="Bold" />
+                <Label Text="{Binding SelectedWorkflow.Description}" FontSize="16" LineBreakMode="WordWrap" />
                 <Label Text="{Binding SelectedWorkflow.StatusText}" FontAttributes="Italic" />
-                <ProgressBar Progress="{Binding SelectedWorkflowViewModel.Progress}" />
-                <Label Text="{Binding SelectedWorkflowViewModel.Error}" TextColor="Red" />
 
-                <sections:FirmwareSetupView BindingContext="{Binding SelectedFirmwareViewModel}"
+                <sections:FirmwareSetupView x:Name="FirmwareSectionView"
                                             IsVisible="{Binding BindingContext.IsFirmwareSelected, Source={x:Reference RootPage}}" />
-                <sections:FrameSetupView BindingContext="{Binding SelectedFrameViewModel}"
+                <sections:FrameSetupView x:Name="FrameSectionView"
                                          IsVisible="{Binding BindingContext.IsFrameSelected, Source={x:Reference RootPage}}" />
-                <sections:AccelerometerSetupView BindingContext="{Binding SelectedAccelerometerViewModel}"
+                <sections:AccelerometerSetupView x:Name="AccelerometerSectionView"
                                                  IsVisible="{Binding BindingContext.IsAccelerometerSelected, Source={x:Reference RootPage}}" />
-                <sections:CompassSetupView BindingContext="{Binding SelectedCompassViewModel}"
+                <sections:CompassSetupView x:Name="CompassSectionView"
                                            IsVisible="{Binding BindingContext.IsCompassSelected, Source={x:Reference RootPage}}" />
-                <sections:RadioSetupView BindingContext="{Binding SelectedRadioViewModel}"
+                <sections:RadioSetupView x:Name="RadioSectionView"
                                          IsVisible="{Binding BindingContext.IsRadioSelected, Source={x:Reference RootPage}}" />
-                <sections:FlightModesSetupView BindingContext="{Binding SelectedFlightModesViewModel}"
+                <sections:FlightModesSetupView x:Name="FlightModesSectionView"
                                                IsVisible="{Binding BindingContext.IsFlightModesSelected, Source={x:Reference RootPage}}" />
-                <sections:BatterySetupView BindingContext="{Binding SelectedBatteryViewModel}"
+                <sections:BatterySetupView x:Name="BatterySectionView"
                                            IsVisible="{Binding BindingContext.IsBatterySelected, Source={x:Reference RootPage}}" />
-                <sections:EscMotorSetupView BindingContext="{Binding SelectedEscViewModel}"
+                <sections:EscMotorSetupView x:Name="EscMotorSectionView"
                                             IsVisible="{Binding BindingContext.IsEscSelected, Source={x:Reference RootPage}}" />
-                <sections:ServoOutputSetupView BindingContext="{Binding SelectedServoOutputViewModel}"
+                <sections:ServoOutputSetupView x:Name="ServoOutputSectionView"
                                                IsVisible="{Binding BindingContext.IsServoOutputSelected, Source={x:Reference RootPage}}" />
-                <sections:OptionalHardwareSetupView BindingContext="{Binding SelectedOptionalHardwareViewModel}"
+                <sections:OptionalHardwareSetupView x:Name="OptionalHardwareSectionView"
                                                     IsVisible="{Binding BindingContext.IsOptionalHardwareSelected, Source={x:Reference RootPage}}" />
-                <sections:SafetySetupView BindingContext="{Binding SelectedSafetyViewModel}"
+                <sections:SafetySetupView x:Name="SafetySectionView"
                                           IsVisible="{Binding BindingContext.IsSafetySelected, Source={x:Reference RootPage}}" />
-                <sections:SetupSummaryView BindingContext="{Binding SelectedSummaryViewModel}"
+                <sections:SetupSummaryView x:Name="SummarySectionView"
                                            IsVisible="{Binding BindingContext.IsSummarySelected, Source={x:Reference RootPage}}" />
 
                 <HorizontalStackLayout Spacing="10">
@@ -87,7 +85,7 @@
                     <Button BackgroundColor="Transparent"
                             FontSize="14"
                             Text="Open related Config page"
-                            IsVisible="{Binding SelectedWorkflowViewModel.HasConfigDestination}"
+                            IsVisible="{Binding HasConfigDestination}"
                             Command="{Binding OpenConfigCommand}" />
                 </HorizontalStackLayout>
                 <Label Text="Completion is stored locally and automatically requires review when firmware or parameters change. Prerequisites are guidance, not a rigid wizard."

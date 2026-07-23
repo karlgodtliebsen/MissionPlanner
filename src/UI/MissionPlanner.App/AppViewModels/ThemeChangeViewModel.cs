@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.Core.Configuration.Planner;
@@ -33,7 +33,7 @@ public sealed partial class ThemeChangeViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>Gets the system, light, and dark theme choices.</summary>
-    public AppTheme[] AppThemeList { get; } = [AppTheme.Unspecified, AppTheme.Light, AppTheme.Dark];
+    public AppTheme[] AppThemeList { get; } = [AppTheme.Light, AppTheme.Dark];
 
     /// <summary>Gets the selected MAUI application theme.</summary>
     [ObservableProperty]
@@ -83,10 +83,7 @@ public sealed partial class ThemeChangeViewModel : ObservableObject, IDisposable
     {
         try
         {
-            await settingsService.SaveAsync(settingsService.Current with
-            {
-                Appearance = new PlannerAppearanceSettings { Theme = theme }
-            });
+            await settingsService.SaveAsync(settingsService.Current with { Appearance = new PlannerAppearanceSettings { Theme = theme } });
         }
         catch (Exception exception)
         {
@@ -94,17 +91,23 @@ public sealed partial class ThemeChangeViewModel : ObservableObject, IDisposable
         }
     }
 
-    private static AppTheme ToAppTheme(PlannerTheme theme) => theme switch
+    private static AppTheme ToAppTheme(PlannerTheme theme)
     {
-        PlannerTheme.Light => AppTheme.Light,
-        PlannerTheme.Dark => AppTheme.Dark,
-        _ => AppTheme.Unspecified
-    };
+        return theme switch
+        {
+            PlannerTheme.Light => AppTheme.Light,
+            PlannerTheme.Dark => AppTheme.Dark,
+            var _ => AppTheme.Unspecified
+        };
+    }
 
-    private static PlannerTheme ToPlannerTheme(AppTheme theme) => theme switch
+    private static PlannerTheme ToPlannerTheme(AppTheme theme)
     {
-        AppTheme.Light => PlannerTheme.Light,
-        AppTheme.Dark => PlannerTheme.Dark,
-        _ => PlannerTheme.System
-    };
+        return theme switch
+        {
+            AppTheme.Light => PlannerTheme.Light,
+            AppTheme.Dark => PlannerTheme.Dark,
+            var _ => PlannerTheme.System
+        };
+    }
 }

@@ -81,14 +81,12 @@ public sealed class SetupWorkspaceTests
         Evaluation(catalog, State(FirmwareFamily.ArduCopter, versionMajor: 5), parameters, evidence).State.Should().Be(SetupWorkflowState.Warning);
     }
 
-    /// <summary>Verifies lazy workflow creation and cancellation on a disconnect boundary.</summary>
+    /// <summary>Verifies the shell owns selection and visibility without owning section ViewModels.</summary>
     [Fact]
-    public async Task ViewModelCreatesWorkflowsLazilyAndCancelsOnDisconnect()
+    public void ViewModelTracksSelectionAndConnectionWithoutOwningSectionViewModels()
     {
         var context = new TestActiveVehicleContext(State(FirmwareFamily.ArduCopter, (ulong)MavProtocolCapability.Ftp));
         var parameters = new VehicleParameterRegistry();
-        var factory = Substitute.For<ISetupWorkflowViewModelFactory>();
-        factory.Create(Arg.Any<SetupWorkflowDescriptor>()).Returns(call => new SetupWorkflowDetailViewModel(call.Arg<SetupWorkflowDescriptor>()!));
         var dispatcher = ImmediateDispatcher();
         var confirmation = Substitute.For<IUserConfirmationService>();
         confirmation.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(true);
@@ -99,26 +97,17 @@ public sealed class SetupWorkspaceTests
             parameters,
             new SetupWorkflowCatalog(),
             new MemoryCompletionStore(),
-            factory,
             Substitute.For<ISetupNavigationService>(),
             confirmation,
             clock,
             dispatcher,
             Substitute.For<ILogger<MandatoryHardwareViewModel>>());
         viewModel.Activate();
-        factory.Received(1).Create(Arg.Any<SetupWorkflowDescriptor>());
         viewModel.SelectedWorkflow = viewModel.Workflows.Single(item => item.Descriptor.Key == SetupWorkflowKey.Frame);
-        factory.Received(2).Create(Arg.Any<SetupWorkflowDescriptor>());
-        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var operation = viewModel.RunOperationAsync(async (_, token) =>
-        {
-            started.SetResult();
-            await Task.Delay(Timeout.InfiniteTimeSpan, token);
-        });
-        await started.Task;
+        viewModel.IsFrameSelected.Should().BeTrue();
+        viewModel.IsFirmwareSelected.Should().BeFalse();
 
         context.Set(context.Current.State! with { Connection = context.Current.State!.Connection with { State = VehicleConnectionState.Offline } });
-        await operation;
 
         viewModel.VehicleHeading.Should().Contain("disconnected");
         viewModel.Workflows.Should().OnlyContain(item => item.State == SetupWorkflowState.NotConnected);
@@ -140,15 +129,12 @@ public sealed class SetupWorkspaceTests
     public void ViewModelIgnoresTelemetryOnlyActiveVehicleChanges()
     {
         var context = new TestActiveVehicleContext(State(FirmwareFamily.ArduCopter));
-        var factory = Substitute.For<ISetupWorkflowViewModelFactory>();
-        factory.Create(Arg.Any<SetupWorkflowDescriptor>()).Returns(call => new SetupWorkflowDetailViewModel(call.Arg<SetupWorkflowDescriptor>()!));
         var dispatcher = ImmediateDispatcher();
         using var viewModel = new MandatoryHardwareViewModel(
             context,
             new VehicleParameterRegistry(),
             new SetupWorkflowCatalog(),
             new MemoryCompletionStore(),
-            factory,
             Substitute.For<ISetupNavigationService>(),
             Substitute.For<IUserConfirmationService>(),
             Substitute.For<IDateTimeProvider>(),
@@ -202,9 +188,22 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<IOptionalHardwareCatalog>().Modules.Should().NotBeEmpty();
         provider.GetRequiredService<ISafetyAssessmentService>().Should().NotBeNull();
         provider.GetRequiredService<ISetupSummaryService>().Should().NotBeNull();
-        provider.GetRequiredService<ISetupWorkflowViewModelFactory>().Should().NotBeNull();
         provider.GetRequiredService<ISetupNavigationService>().Should().NotBeNull();
         provider.GetRequiredService<MandatoryHardwareViewModel>().Should().NotBeNull();
+        var firmwareViewModel = provider.GetRequiredService<FirmwareSetupViewModel>();
+        firmwareViewModel.Descriptor.Key.Should().Be(SetupWorkflowKey.Firmware);
+        provider.GetRequiredService<FirmwareSetupViewModel>().Should().NotBeSameAs(firmwareViewModel);
+        provider.GetRequiredService<FrameSetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Frame);
+        provider.GetRequiredService<AccelerometerSetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Accelerometer);
+        provider.GetRequiredService<CompassSetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Compass);
+        provider.GetRequiredService<RadioSetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Radio);
+        provider.GetRequiredService<FlightModesSetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.FlightModes);
+        provider.GetRequiredService<BatterySetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Battery);
+        provider.GetRequiredService<EscMotorSetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Esc);
+        provider.GetRequiredService<ServoOutputSetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.ServoOutput);
+        provider.GetRequiredService<OptionalHardwareSetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.OptionalHardware);
+        provider.GetRequiredService<SafetySetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Safety);
+        provider.GetRequiredService<SetupSummaryViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Summary);
         provider.GetRequiredService<IParameterEditSessionFactory>().Should().NotBeNull();
         provider.GetRequiredService<IConfigNavigationGuard>().Should().NotBeNull();
         provider.GetRequiredService<IFenceProtocolMapper>().Should().NotBeNull();

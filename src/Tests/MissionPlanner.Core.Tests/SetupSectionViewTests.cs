@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.Maui.Controls;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
+using MissionPlanner.Core.Setup;
 
 namespace MissionPlanner.Core.Tests;
 
@@ -35,5 +36,52 @@ public sealed class SetupSectionViewTests
         typeof(SetupWorkflowDetailViewModel).IsAssignableFrom(viewModelType).Should().BeTrue();
         viewType.Name.Should().Be(viewModelType.Name.Replace("ViewModel", "View", StringComparison.Ordinal));
         viewType.GetConstructor(Type.EmptyTypes).Should().NotBeNull();
+    }
+
+    /// <summary>Verifies child activation and deactivation are idempotent and owned by the section.</summary>
+    [Fact]
+    public void SectionLifecycleActivatesAndDeactivatesOwnedViewModelOnce()
+    {
+        var descriptor = new SetupWorkflowCatalog().Workflows[0];
+        using var viewModel = new TrackingSetupWorkflowViewModel(descriptor);
+
+        viewModel.Activate();
+        viewModel.Activate();
+
+        viewModel.IsActive.Should().BeTrue();
+        viewModel.ActivationCount.Should().Be(1);
+
+        viewModel.Deactivate();
+        viewModel.Deactivate();
+
+        viewModel.IsActive.Should().BeFalse();
+        viewModel.DeactivationCount.Should().Be(1);
+        viewModel.CancelCount.Should().Be(1);
+    }
+
+    private sealed class TrackingSetupWorkflowViewModel(SetupWorkflowDescriptor descriptor)
+        : SetupWorkflowDetailViewModel(descriptor)
+    {
+        public int ActivationCount { get; private set; }
+
+        public int DeactivationCount { get; private set; }
+
+        public int CancelCount { get; private set; }
+
+        public override void Cancel()
+        {
+            CancelCount++;
+        }
+
+        protected override void OnActivated()
+        {
+            ActivationCount++;
+        }
+
+        protected override void OnDeactivated()
+        {
+            DeactivationCount++;
+            base.OnDeactivated();
+        }
     }
 }

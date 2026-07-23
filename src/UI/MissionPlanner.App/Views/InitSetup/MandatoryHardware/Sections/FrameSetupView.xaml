@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<sections:SetupSectionView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
              x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.FrameSetupView"
              x:DataType="sections:FrameSetupViewModel">
     <VerticalStackLayout Spacing="10">
+        <ProgressBar Progress="{Binding Progress}" />
+        <Label Text="{Binding Error}" TextColor="Red" />
         <Label Text="Supported frame configuration" FontSize="18" FontAttributes="Bold" />
         <Label Text="{Binding FirmwareFamily, StringFormat='Firmware family: {0}'}" />
         <Label Text="Only values advertised by the connected firmware metadata are shown. Current values remain unchanged until Write and verify is confirmed."
@@ -53,4 +55,4 @@
                FontAttributes="Bold"
                LineBreakMode="WordWrap" />
     </VerticalStackLayout>
-</ContentView>
+</sections:SetupSectionView>

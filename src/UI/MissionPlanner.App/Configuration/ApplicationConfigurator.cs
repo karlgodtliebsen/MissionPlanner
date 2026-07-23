@@ -16,6 +16,7 @@ using MissionPlanner.App.Views.FlightPlanner;
 using MissionPlanner.App.Views.Help;
 using MissionPlanner.App.Views.InitSetup.Advanced;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
 using MissionPlanner.App.Views.InitSetup.OptionalHardware;
 using MissionPlanner.App.Views.Missions;
@@ -82,9 +83,6 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<ISetupCompletionStore, PreferencesSetupCompletionStore>();
         services.TryAddSingleton<IFirmwarePackageCache, FirmwarePackageCache>();
         services.TryAddSingleton<ISetupNavigationService, ShellSetupNavigationService>();
-        services.TryAddSingleton<ISetupWorkflowViewModelFactory, SetupWorkflowViewModelFactory>();
-
-
         services
             .AddLibraryServices()
             .AddEventHubServices()
@@ -157,6 +155,18 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<TransponderTabViewModel>();
         services.TryAddSingleton<FlightPlannerViewModel>();
         services.TryAddSingleton<MandatoryHardwareViewModel>();
+        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<FirmwareSetupViewModel>(serviceProvider, SetupWorkflowKey.Firmware));
+        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<FrameSetupViewModel>(serviceProvider, SetupWorkflowKey.Frame));
+        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<AccelerometerSetupViewModel>(serviceProvider, SetupWorkflowKey.Accelerometer));
+        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<CompassSetupViewModel>(serviceProvider, SetupWorkflowKey.Compass));
+        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<RadioSetupViewModel>(serviceProvider, SetupWorkflowKey.Radio));
+        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<FlightModesSetupViewModel>(serviceProvider, SetupWorkflowKey.FlightModes));
+        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<BatterySetupViewModel>(serviceProvider, SetupWorkflowKey.Battery));
+        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<EscMotorSetupViewModel>(serviceProvider, SetupWorkflowKey.Esc));
+        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<ServoOutputSetupViewModel>(serviceProvider, SetupWorkflowKey.ServoOutput));
+        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<OptionalHardwareSetupViewModel>(serviceProvider, SetupWorkflowKey.OptionalHardware));
+        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<SafetySetupViewModel>(serviceProvider, SetupWorkflowKey.Safety));
+        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<SetupSummaryViewModel>(serviceProvider, SetupWorkflowKey.Summary));
         services.TryAddSingleton<SimulationViewModel>();
         services.TryAddSingleton<ExitViewModel>();
         services.TryAddSingleton<FullParametersListTabViewModel>();
@@ -168,6 +178,13 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<CubeLan8PortSwitchTabViewModel>();
         services.TryAddSingleton<MavFtpTabViewModel>();
         return services;
+    }
+
+    private static TViewModel CreateSetupSectionViewModel<TViewModel>(IServiceProvider serviceProvider, SetupWorkflowKey key)
+        where TViewModel : SetupWorkflowDetailViewModel
+    {
+        var descriptor = serviceProvider.GetRequiredService<ISetupWorkflowCatalog>().Workflows.Single(workflow => workflow.Key == key);
+        return ActivatorUtilities.CreateInstance<TViewModel>(serviceProvider, descriptor);
     }
 
 

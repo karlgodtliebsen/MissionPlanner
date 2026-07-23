@@ -1051,11 +1051,15 @@ identity, firmware, and the known parameter set; it is advisory and becomes a wa
 those inputs change. Later Setup workflows should plug into this shell and call domain
 services rather than adding transport access or duplicate parameter editors to the UI.
 
-`MandatoryHardwareView` is only the workflow selector and lifecycle shell. Each concrete
-workflow is rendered by a dedicated, strongly typed MAUI `ContentView` whose binding context
-is the corresponding lazily created section ViewModel. Section views contain presentation
-markup only; selection, cancellation, connection boundaries, and ViewModel disposal remain
-owned by `MandatoryHardwareViewModel`.
+`MandatoryHardwareView` is only the workflow selector and page-lifecycle shell. Each
+concrete workflow is rendered by a dedicated, strongly typed MAUI `ContentView` that
+resolves, binds, and owns its transient section ViewModel. `MandatoryHardwareViewModel`
+owns selection, child visibility, and shared page concerns, but never creates or retains
+child ViewModels. `SetupSectionView` bridges loaded/visible state to child activation and
+deactivation, so cancellation and section-specific connection handling stay with the
+section ViewModel. Active sections reload themselves across vehicle, connection, and
+firmware-identity boundaries, while hidden sections detach their subscriptions and do no
+background work.
 
 Firmware management follows a fail-closed pipeline. Manifest selection matches the
 protocol-reported firmware family and exact vendor/product/board identifiers; display or

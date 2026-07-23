@@ -9,7 +9,6 @@
     xmlns:appViewModels="clr-namespace:MissionPlanner.App.AppViewModels"
     xmlns:flightData="clr-namespace:MissionPlanner.App.Views.FlightData"
     xmlns:flightPlanner="clr-namespace:MissionPlanner.App.Views.FlightPlanner"
-    xmlns:initSetup="clr-namespace:MissionPlanner.App.Views.InitSetup"
     xmlns:simulation="clr-namespace:MissionPlanner.App.Views.Simulation"
     xmlns:help="clr-namespace:MissionPlanner.App.Views.Help"
     xmlns:exit="clr-namespace:MissionPlanner.App.Views.Exit"
