@@ -12,6 +12,12 @@
           BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
           HeightRequest="50">
 
+        <Label Grid.Column="0"
+               Text="{Binding DataSourceMode}"
+               FontAttributes="Bold"
+               TextColor="{AppThemeBinding Light=#9A6700, Dark=#F0B429}"
+               VerticalOptions="Center" />
+
         <!-- App Title/Logo -->
 
 
@@ -45,6 +51,7 @@
                 Padding="5"
                 VerticalOptions="Center"
                 BackgroundColor="Transparent"
+                IsEnabled="{Binding CanOpenConnection}"
                 Command="{Binding ConnectCommand}" />
 
         <!-- Settings/Options -->

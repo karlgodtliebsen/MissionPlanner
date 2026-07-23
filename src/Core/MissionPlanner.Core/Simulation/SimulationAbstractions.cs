@@ -111,6 +111,9 @@ public interface ISimulatorRuntimeSession : IAsyncDisposable
     /// <summary>Gets the runtime-confirmed connection endpoints.</summary>
     IReadOnlyList<SimulationEndpoint> ConnectionEndpoints { get; }
 
+    /// <summary>Gets adapter-provided command, version, process, and heartbeat diagnostics when available.</summary>
+    SimulationRuntimeDiagnostics? Diagnostics => null;
+
     /// <summary>Gets runtime termination.</summary>
     Task<SimulatorRuntimeExit> Completion { get; }
 

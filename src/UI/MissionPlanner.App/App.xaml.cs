@@ -1,6 +1,7 @@
 ﻿using MissionPlanner.App.Views.Exit;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.Core.Services.Abstractions;
+using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library;
@@ -63,6 +64,18 @@ public partial class App : Application
         {
             Log.Logger.Error(ex, "Error stopping the simulation workspace");
             System.Diagnostics.Debug.WriteLine($"Error stopping the simulation workspace: {ex.Message}");
+        }
+
+        try
+        {
+            var replayManager = serviceProvider.GetRequiredService<IReplaySessionManager>();
+            using var replayShutdown = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            await replayManager.CloseAsync(replayShutdown.Token).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Log.Logger.Error(ex, "Error closing telemetry-log replay");
+            System.Diagnostics.Debug.WriteLine($"Error closing telemetry-log replay: {ex.Message}");
         }
 
         try

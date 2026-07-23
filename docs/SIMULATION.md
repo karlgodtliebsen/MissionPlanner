@@ -243,20 +243,83 @@ availability depends on the trusted manifest containing the exact platform/archi
 artifact. Task 03 supplies the runtime launch adapter; task 02 only acquires and selects the
 binary safely.
 
+## Telemetry-log playback and the read-only boundary
+
+The Flight Data Telemetry Logs tab loads Mission Planner `.tlog` streams. Each record is an
+eight-byte big-endian Unix-microsecond timestamp followed by one complete MAVLink 1 or MAVLink
+2 frame. `ITelemetryLogReader` validates packet structure, accounts for MAVLink 2 signatures,
+and builds a byte-offset index without retaining packet payloads. Backward wall-clock samples
+are counted and clamped to the previous timestamp so binary search and replay timing remain
+deterministic.
+
+`IReplaySessionManager` owns the seekable stream, play/pause state, indexed position, 0.1–50×
+speed, and recorded-time `IReplayClock`. Seeking resets the replay pipeline and rapidly applies
+all earlier frames without wall-clock delays, producing the same immutable vehicle state as
+linear playback at that position. Normal playback delays only between indexed timestamps and
+is cancellation-aware.
+
+Replay never publishes into `IVehicleRegistry`. `ReplayTelemetryPipeline` uses a dedicated
+parser, the generated decoder catalog, the cohesive flight/navigation/power/radio/health/sensor
+handlers, a replay-only registry, and a private domain-event boundary. Command ACK, parameter,
+mission, and file-transfer handlers are deliberately absent. Replay vehicle state is presented
+only by the Telemetry Logs view and is labelled `REPLAY`.
+
+Loading a log changes the persistent top-bar source label to `REPLAY · READ ONLY`; Vehicle
+Actions and connection controls are disabled. This UI state is not the security boundary:
+`ReplayTransmissionPolicy` is checked by `MavLinkConnection.SendRawAsync`, so commands,
+missions, parameters, MAVFTP, or another accidental caller cannot emit any frame while replay
+is loaded. Closing replay disposes the owned stream, clears replay state, and explicitly
+re-enables live/simulation transmission.
+
 ## Diagnostics and privacy
 
-The workspace can export a JSON diagnostic bundle containing lifecycle state, exact runtime
-identity, endpoints, profile, and bounded recent output. Environment names that look like
-passwords, secrets, tokens, or API keys are redacted, as are matching `name=value` argument
-tokens. A later Simulation diagnostics task extends this bundle with connection and playback
-statistics.
+The workspace exports JSON diagnostic schema v2. The bundle contains lifecycle and process
+state, exact runtime identity, tokenized runtime command line, selected/probed version,
+application/Core/MAVLink/transport/.NET versions, ports, isolated artifact paths, heartbeat
+readiness identity/count/latency, bounded recent stdout/stderr, and loaded replay clock/frame/
+vehicle statistics.
+
+Environment names and command options that look like passwords, secrets, tokens, or API keys
+are redacted in both `name=value` and `--name value` forms. Known secret values are also removed
+from recent output and status/failure text. The unredacted token list remains runtime-owned
+memory and is never serialized by the diagnostic service.
 
 Lifecycle limits are configured by the `Simulation` application section. Defaults are a
 20-second heartbeat wait, a 10-second graceful stop, and 500 retained output lines.
 
+## Automated regression tiers
+
+Simulation tests carry an explicit `TestTier` where environment requirements differ:
+
+- `Unit` covers profile/control/scenario/acquisition logic plus `.tlog` indexing, seek,
+  replay timing, decoder-state projection, diagnostics redaction, and repeated-run cleanup.
+- `FakeRuntime` covers lifecycle, direct-launch, multi-instance, routing, failure, and orphan
+  behavior without a process or network dependency.
+- `RealSITL` is opt-in and skips with the missing environment-variable name when no verified
+  local binary is configured.
+
+The ordinary deterministic Simulation CI command selects the environment-free tiers only:
+
+```powershell
+dotnet test .\src\Tests\MissionPlanner.Core.Tests\MissionPlanner.Core.Tests.csproj --filter "TestTier=Unit|TestTier=FakeRuntime"
+```
+
+Focused tiers can be run independently:
+
+```powershell
+dotnet test .\src\Tests\MissionPlanner.Core.Tests\MissionPlanner.Core.Tests.csproj --filter "TestTier=Unit"
+dotnet test .\src\Tests\MissionPlanner.Core.Tests\MissionPlanner.Core.Tests.csproj --filter "TestTier=FakeRuntime"
+dotnet test .\src\Tests\MissionPlanner.Core.Tests\MissionPlanner.Core.Tests.csproj --filter "TestTier=RealSITL"
+```
+
+Real-SITL cases have a 20-second outer startup bound, bounded scenario waits (the idle/step
+bound), a 30-second total bound, and a 10-second cleanup bound. On failure they always write
+the redacted diagnostic bundle, including recent process logs, to test output before cleanup.
+Unavailable binaries are explicit environmental skips; tests never download or wait for one.
+
 ## Current verification boundary
 
-Tasks 01–06 are covered with fake-runtime tests for successful state transitions, explicit stop,
+Tasks 01–07 are covered with fake-runtime tests for successful state transitions, explicit stop,
 unexpected exit, heartbeat timeout cleanup, shutdown cleanup, profile persistence and
 corrupt recovery, port/path validation, diagnostics redaction, and navigation lifecycle.
 Manifest filtering, checksum verification, atomic failure, archive traversal, cache
@@ -272,6 +335,10 @@ wrong targets, missing controls, report exports, and view-model exact-target pro
 Fleet tests cover deterministic allocation, identity/endpoint collisions, exact command
 routing, bounded concurrency, partial start/stop failures, per-session output/events,
 crash isolation, selection stability, and persisted orphan recovery.
+
+Playback tests cover v1/v2 structural indexing, random reads, non-monotonic timestamp
+normalization, indexed seek with replay-state reconstruction, speed-adjusted timing, the
+connection-boundary send prohibition, diagnostic redaction, and ten-run stream/safety cleanup.
 
 Real SITL smoke cases for all four families are opt-in and have 30-second total and
 10-second cleanup bounds. Set `MISSIONPLANNER_SITL_ARDUCOPTER`,

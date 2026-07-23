@@ -17,6 +17,7 @@ using NSubstitute;
 namespace MissionPlanner.Core.Tests;
 
 /// <summary>Verifies the closed scenario schema, exact-target executor, and audit reports.</summary>
+[Trait("TestTier", "Unit")]
 public sealed class SimulationScenarioTests
 {
     /// <summary>Verifies current schema round-trip, typed variables, version rejection, and unknown-field rejection.</summary>

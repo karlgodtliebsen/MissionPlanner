@@ -130,6 +130,7 @@ public sealed class SimulationSessionManager : ISimulationSessionManager
                 RuntimeIdentity = createdSession.Identity,
                 ConnectionEndpoints = createdSession.ConnectionEndpoints,
                 StartedAt = clock.UtcNow,
+                RuntimeDiagnostics = createdSession.Diagnostics,
                 Message = "Runtime started; waiting for the expected vehicle heartbeat."
             });
 
@@ -139,7 +140,8 @@ public sealed class SimulationSessionManager : ISimulationSessionManager
             {
                 State = SimulationSessionState.Running,
                 Message = "Simulator is running and the expected heartbeat was observed.",
-                VehicleId = createdSession.ConnectedVehicleId
+                VehicleId = createdSession.ConnectedVehicleId,
+                RuntimeDiagnostics = createdSession.Diagnostics
             });
             logger.LogInformation(
                 "Simulation session {SessionId} is running with runtime {RuntimeId} for profile {ProfileId}.",

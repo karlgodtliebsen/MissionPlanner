@@ -209,6 +209,32 @@ public sealed record SimulatorOutputLine(
 /// <param name="Message">Optional termination detail.</param>
 public sealed record SimulatorRuntimeExit(int? ExitCode, bool WasExpected, string? Message);
 
+/// <summary>Contains bounded heartbeat readiness statistics for one simulator runtime.</summary>
+/// <param name="ExpectedSystemId">SystemId allocated before launch.</param>
+/// <param name="ConnectedVehicleId">Verified vehicle identity observed from replay-independent live telemetry.</param>
+/// <param name="ObservedAt">Wall-clock time at successful readiness.</param>
+/// <param name="ReadinessDuration">Elapsed process time before the verified heartbeat.</param>
+/// <param name="VerifiedHeartbeatCount">Minimum number of identity-verified heartbeats observed during readiness.</param>
+public sealed record SimulationHeartbeatStatistics(
+    byte ExpectedSystemId,
+    VehicleId? ConnectedVehicleId,
+    DateTimeOffset? ObservedAt,
+    TimeSpan? ReadinessDuration,
+    long VerifiedHeartbeatCount);
+
+/// <summary>Contains process and launch diagnostics supplied by a simulator runtime adapter.</summary>
+/// <param name="ExecutablePath">Exact executable path.</param>
+/// <param name="Arguments">Tokenized, unredacted launch arguments redacted only during export.</param>
+/// <param name="RuntimeVersion">Selected or probed runtime version.</param>
+/// <param name="ProcessStartedAt">Operating-system process start timestamp.</param>
+/// <param name="Heartbeat">Bounded readiness statistics.</param>
+public sealed record SimulationRuntimeDiagnostics(
+    string ExecutablePath,
+    IReadOnlyList<string> Arguments,
+    string RuntimeVersion,
+    DateTimeOffset? ProcessStartedAt,
+    SimulationHeartbeatStatistics Heartbeat);
+
 /// <summary>Contains isolated artifact locations for one deterministic SITL instance.</summary>
 /// <param name="InstanceRootDirectory">Root directory uniquely assigned to the instance and SystemId.</param>
 /// <param name="RuntimeLogDirectory">Working directory for runtime output and DataFlash files.</param>
@@ -264,6 +290,7 @@ public sealed record SimulationInstanceArtifacts(
 /// <param name="RecentOutput">Bounded recent output.</param>
 /// <param name="VehicleId">Verified connected simulator vehicle identity.</param>
 /// <param name="Artifacts">Isolated artifact paths assigned to the instance.</param>
+/// <param name="RuntimeDiagnostics">Runtime command, version, process, and heartbeat diagnostics.</param>
 public sealed record SimulationSessionSnapshot(
     Guid SessionId,
     SimulatorProfile? Profile,
@@ -276,7 +303,8 @@ public sealed record SimulationSessionSnapshot(
     string? Failure,
     IReadOnlyList<SimulatorOutputLine> RecentOutput,
     VehicleId? VehicleId = null,
-    SimulationInstanceArtifacts? Artifacts = null)
+    SimulationInstanceArtifacts? Artifacts = null,
+    SimulationRuntimeDiagnostics? RuntimeDiagnostics = null)
 {
     /// <summary>Creates the initial stopped workspace state.</summary>
     public static SimulationSessionSnapshot Stopped { get; } = new(

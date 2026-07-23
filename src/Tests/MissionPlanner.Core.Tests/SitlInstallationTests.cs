@@ -12,6 +12,7 @@ using NSubstitute;
 namespace MissionPlanner.Core.Tests;
 
 /// <summary>Verifies safe SITL manifest selection, installation, and cache ownership.</summary>
+[Trait("TestTier", "Unit")]
 public sealed class SitlInstallationTests
 {
     /// <summary>Verifies selection requires an exact family, channel, platform, and architecture match.</summary>

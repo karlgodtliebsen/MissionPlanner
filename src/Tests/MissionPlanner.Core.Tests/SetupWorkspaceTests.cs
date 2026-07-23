@@ -20,12 +20,14 @@ using MissionPlanner.Core.Configuration.VendorDevices;
 using MissionPlanner.Core.Configuration.VendorDevices.CubeLan;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.MavLink.Services.Abstractions;
 using NSubstitute;
 
 namespace MissionPlanner.Core.Tests;
@@ -237,6 +239,11 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<ISimulationOwnershipStore>().Should().NotBeNull();
         provider.GetRequiredService<ISimulatorOwnedProcessRecovery>().Should().BeOfType<LocalSimulatorOwnedProcessRecovery>();
         provider.GetRequiredService<ISimulationDiagnosticsService>().Should().NotBeNull();
+        provider.GetRequiredService<ITelemetryLogReader>().Should().NotBeNull();
+        provider.GetRequiredService<IReplayTelemetryPipeline>().Should().NotBeNull();
+        provider.GetRequiredService<IReplaySessionManager>().Should().NotBeNull();
+        provider.GetRequiredService<IReplayClock>().Should().BeSameAs(provider.GetRequiredService<IReplaySessionManager>());
+        provider.GetRequiredService<IMavLinkTransmissionPolicy>().Should().BeOfType<ReplayTransmissionPolicy>();
         provider.GetRequiredService<ISimulationControlCatalog>().Should().NotBeNull();
         provider.GetRequiredService<ISimulationControlService>().Should().NotBeNull();
         provider.GetRequiredService<ISimulationScenarioPresetStore>().Should().NotBeNull();

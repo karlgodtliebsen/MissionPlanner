@@ -542,6 +542,17 @@ public sealed class ArduPilotSitlRuntime(
                 $"sitl-{sessionId:N}-{process.ProcessId}",
                 "ArduPilot direct SITL",
                 process.ProcessId);
+            Diagnostics = new SimulationRuntimeDiagnostics(
+                plan.ExecutablePath,
+                plan.Arguments,
+                profile.Binary.Version,
+                process.StartedAt,
+                new SimulationHeartbeatStatistics(
+                    plan.ExpectedSystemId,
+                    null,
+                    null,
+                    null,
+                    0));
             foreach (var line in process.RecentOutput.Where(line => line.Stream == SimulatorOutputStream.StandardError))
             {
                 recentErrors.Enqueue(line.Text);
@@ -556,6 +567,8 @@ public sealed class ArduPilotSitlRuntime(
         public VehicleId? ConnectedVehicleId { get; private set; }
 
         public IReadOnlyList<SimulationEndpoint> ConnectionEndpoints => portLease.Endpoints;
+
+        public SimulationRuntimeDiagnostics? Diagnostics { get; private set; }
 
         public Task<SimulatorRuntimeExit> Completion => completion;
 
@@ -589,6 +602,16 @@ public sealed class ArduPilotSitlRuntime(
             try
             {
                 ConnectedVehicleId = await connectTask.ConfigureAwait(false);
+                var observedAt = DateTimeOffset.UtcNow;
+                Diagnostics = Diagnostics! with
+                {
+                    Heartbeat = new SimulationHeartbeatStatistics(
+                        plan.ExpectedSystemId,
+                        ConnectedVehicleId,
+                        observedAt,
+                        observedAt >= process.StartedAt ? observedAt - process.StartedAt : TimeSpan.Zero,
+                        1)
+                };
             }
             catch (Exception exception) when (exception is SimulationConnectionException or OperationCanceledException)
             {

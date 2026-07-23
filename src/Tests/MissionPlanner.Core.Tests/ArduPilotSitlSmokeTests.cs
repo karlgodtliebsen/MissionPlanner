@@ -14,7 +14,8 @@ using NSubstitute;
 namespace MissionPlanner.Core.Tests;
 
 /// <summary>Provides opt-in real-ArduPilot smoke coverage with strict startup and cleanup bounds.</summary>
-public sealed class ArduPilotSitlSmokeTests
+[Trait("TestTier", "RealSITL")]
+public sealed class ArduPilotSitlSmokeTests(ITestOutputHelper output)
 {
     /// <summary>Launches, connects, verifies, and stops an available family-specific SITL binary.</summary>
     /// <param name="family">Expected firmware family.</param>
@@ -73,10 +74,12 @@ public sealed class ArduPilotSitlSmokeTests
         using var totalTimeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
         totalTimeout.CancelAfter(TimeSpan.FromSeconds(30));
         var succeeded = false;
+        Exception? testFailure = null;
 
         try
         {
-            var started = await manager.StartAsync(profile, totalTimeout.Token);
+            var started = await manager.StartAsync(profile, totalTimeout.Token)
+                .WaitAsync(TimeSpan.FromSeconds(20), totalTimeout.Token);
             started.State.Should().Be(SimulationSessionState.Running, started.Failure);
             if (family == FirmwareFamily.ArduCopter)
             {
@@ -95,10 +98,30 @@ public sealed class ArduPilotSitlSmokeTests
 
             succeeded = true;
         }
+        catch (Exception exception)
+        {
+            testFailure = exception;
+            output.WriteLine("Real-SITL failure diagnostics:");
+            output.WriteLine(provider.GetRequiredService<ISimulationDiagnosticsService>().CreateBundle(manager.Current));
+            throw;
+        }
         finally
         {
             using var cleanupTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-            await manager.StopAsync(cleanupTimeout.Token);
+            try
+            {
+                await manager.StopAsync(cleanupTimeout.Token).WaitAsync(TimeSpan.FromSeconds(10), cleanupTimeout.Token);
+            }
+            catch (Exception cleanupException)
+            {
+                output.WriteLine($"Real-SITL cleanup failure: {cleanupException}");
+                output.WriteLine(provider.GetRequiredService<ISimulationDiagnosticsService>().CreateBundle(manager.Current));
+                if (testFailure is null)
+                {
+                    throw;
+                }
+            }
+
             if (succeeded && Directory.Exists(logRoot))
             {
                 Directory.Delete(logRoot, recursive: true);

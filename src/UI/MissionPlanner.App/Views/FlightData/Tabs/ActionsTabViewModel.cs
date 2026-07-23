@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Notifications;
+using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -26,6 +27,7 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
     private readonly AsyncOperationRunner operationRunner;
     private readonly ILogger<ActionsTabViewModel> logger;
     private readonly FlightDataTabLifecycle lifecycle;
+    private readonly IReplaySessionManager? replaySessionManager;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ActionsTabViewModel"/> class.
@@ -38,6 +40,7 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
     /// <param name="notificationService">The separate application-notification stream.</param>
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="replaySessionManager">Optional application-wide replay safety state.</param>
     public ActionsTabViewModel(
         IActiveVehicleContext activeVehicle,
         IVehicleCommandService commandService,
@@ -46,7 +49,8 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
         IUserConfirmationService confirmationService,
         IUserNotificationService notificationService,
         IDispatcher dispatcher,
-        ILogger<ActionsTabViewModel> logger)
+        ILogger<ActionsTabViewModel> logger,
+        IReplaySessionManager? replaySessionManager = null)
     {
         this.activeVehicle = activeVehicle;
         this.commandService = commandService;
@@ -56,6 +60,7 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
         this.notificationService = notificationService;
         this.dispatcher = dispatcher;
         this.logger = logger;
+        this.replaySessionManager = replaySessionManager;
         operationRunner = new AsyncOperationRunner(activeVehicle);
         lifecycle = new FlightDataTabLifecycle("Actions", activeVehicle, startAsync: _ =>
         {
@@ -64,6 +69,11 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
             return Task.FromResult<IDisposable?>(new CallbackDisposable(() => activeVehicle.Changed -= OnActiveVehicleChanged));
         });
         ApplySnapshot(activeVehicle.Current);
+        if (replaySessionManager is not null)
+        {
+            replaySessionManager.Changed += OnReplayChanged;
+            ApplyReplayState(replaySessionManager.Snapshot);
+        }
     }
 
     /// <inheritdoc />
@@ -139,6 +149,14 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
     [ObservableProperty]
     public partial bool CanSetHome { get; private set; }
 
+    /// <summary>Gets whether vehicle-changing controls may transmit in the current data-source mode.</summary>
+    [ObservableProperty]
+    public partial bool CanTransmit { get; private set; } = true;
+
+    /// <summary>Gets the explicit live, simulation, or replay safety label.</summary>
+    [ObservableProperty]
+    public partial string DataSourceMode { get; private set; } = "LIVE / SIMULATION";
+
     /// <inheritdoc />
     public Task ActivateAsync(CancellationToken cancellationToken = default) => lifecycle.ActivateAsync(cancellationToken);
 
@@ -148,6 +166,11 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
     /// <inheritdoc />
     public void Dispose()
     {
+        if (replaySessionManager is not null)
+        {
+            replaySessionManager.Changed -= OnReplayChanged;
+        }
+
         lifecycle.DisposeAsync().AsTask().GetAwaiter().GetResult();
     }
 
@@ -233,6 +256,13 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
         Func<VehicleState, bool>? observedPredicate,
         CancellationToken cancellationToken)
     {
+        if (!CanTransmit)
+        {
+            OperationState = AsyncOperationState.Warning(
+                "Vehicle commands are disabled while telemetry-log replay is loaded. Close the replay first.");
+            return;
+        }
+
         var state = activeVehicle.State;
         if (state is null)
         {
@@ -412,12 +442,22 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
         ObservedState = state is null
             ? "No active vehicle"
             : $"{state.DisplayName}: {(state.IsArmed ? "Armed" : "Disarmed")}, {state.Flight.LandedState}, mode {state.CustomMode}";
-        CanArm = IsAllowed(state, VehicleAction.Arm);
-        CanDisarm = IsAllowed(state, VehicleAction.Disarm);
-        CanTakeoff = IsAllowed(state, VehicleAction.Takeoff);
-        CanInFlightAction = IsAllowed(state, VehicleAction.Land);
-        CanReboot = IsAllowed(state, VehicleAction.RebootAutopilot);
-        CanSetHome = IsAllowed(state, VehicleAction.SetHomeHere);
+        CanArm = CanTransmit && IsAllowed(state, VehicleAction.Arm);
+        CanDisarm = CanTransmit && IsAllowed(state, VehicleAction.Disarm);
+        CanTakeoff = CanTransmit && IsAllowed(state, VehicleAction.Takeoff);
+        CanInFlightAction = CanTransmit && IsAllowed(state, VehicleAction.Land);
+        CanReboot = CanTransmit && IsAllowed(state, VehicleAction.RebootAutopilot);
+        CanSetHome = CanTransmit && IsAllowed(state, VehicleAction.SetHomeHere);
+    }
+
+    private void OnReplayChanged(object? sender, ReplaySessionChangedEventArgs args) =>
+        dispatcher.Dispatch(() => ApplyReplayState(args.Snapshot));
+
+    private void ApplyReplayState(ReplaySessionSnapshot snapshot)
+    {
+        CanTransmit = !snapshot.IsTransmissionProhibited;
+        DataSourceMode = CanTransmit ? "LIVE / SIMULATION" : "REPLAY · READ ONLY · ALL SENDS DISABLED";
+        ApplySnapshot(activeVehicle.Current);
     }
 
     private bool IsAllowed(VehicleState? state, VehicleAction action) => state is not null && commandPolicy.Evaluate(state, action).IsAllowed;

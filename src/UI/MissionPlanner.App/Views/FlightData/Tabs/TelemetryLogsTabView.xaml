@@ -1,16 +1,58 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-              xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
-              xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
-              x:Class="MissionPlanner.App.Views.FlightData.Tabs.TelemetryLogsTabView"
-             
-              x:DataType="tabs:TelemetryLogsTabViewModel">
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
+             xmlns:vehicles="clr-namespace:MissionPlanner.Core.Vehicles.Models;assembly=MissionPlanner.Core"
+             x:Class="MissionPlanner.App.Views.FlightData.Tabs.TelemetryLogsTabView"
+             x:DataType="tabs:TelemetryLogsTabViewModel">
+    <Grid Padding="12" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="10">
+        <Border Grid.Row="0" Padding="12" StrokeThickness="2"
+                Stroke="{AppThemeBinding Light=#9A6700, Dark=#F0B429}"
+                BackgroundColor="{AppThemeBinding Light=#FFF8C5, Dark=#3D2E00}">
+            <VerticalStackLayout Spacing="3">
+                <Label Text="{Binding SourceModeLabel}" FontSize="16" FontAttributes="Bold" />
+                <Label Text="Replay uses a separate vehicle-state pipeline. No replay vehicle can receive commands, parameter writes, missions, or file-transfer requests."
+                       FontSize="12" />
+            </VerticalStackLayout>
+        </Border>
 
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,Auto,Auto,*,Auto" ColumnSpacing="8">
+            <Button Grid.Column="0" Text="Load .tlog" Command="{Binding LoadCommand}" />
+            <Button Grid.Column="1" Text="{Binding PlayPauseText}" Command="{Binding PlayPauseCommand}" />
+            <Button Grid.Column="2" Text="Close replay / enable sends" Command="{Binding CloseReplayCommand}" />
+            <VerticalStackLayout Grid.Column="3" Spacing="1" VerticalOptions="Center">
+                <Label Text="{Binding SourceName}" FontAttributes="Bold" LineBreakMode="TailTruncation" />
+                <Label Text="{Binding StatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
+            </VerticalStackLayout>
+            <ActivityIndicator Grid.Column="4" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+        </Grid>
 
-    <Label Text="Telemetry Logs"
-           FontSize="16"
-           HorizontalOptions="Center"
-           VerticalOptions="Center" />
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto,90,Auto" ColumnSpacing="8">
+            <Slider Grid.Column="0" Minimum="0" Maximum="{Binding DurationSeconds}" Value="{Binding SeekSeconds}" />
+            <Button Grid.Column="1" Text="Seek" Command="{Binding SeekCommand}" />
+            <Entry Grid.Column="2" Text="{Binding PlaybackSpeed}" Keyboard="Numeric" HorizontalTextAlignment="End" />
+            <Button Grid.Column="3" Text="Apply speed ×" Command="{Binding ApplySpeedCommand}" />
+        </Grid>
 
+        <Grid Grid.Row="3" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
+            <ProgressBar Grid.Column="0" Progress="{Binding Progress}" VerticalOptions="Center" />
+            <Label Grid.Column="1" Text="{Binding ReplayTimeText}" VerticalOptions="Center" />
+            <Label Grid.Column="2" Text="{Binding FrameStatistics}" VerticalOptions="Center" />
+        </Grid>
+
+        <Grid Grid.Row="4" RowDefinitions="Auto,*" RowSpacing="6">
+            <Label Grid.Row="0" Text="Replay vehicles" FontAttributes="Bold" />
+            <CollectionView Grid.Row="1" ItemsSource="{Binding ReplayVehicles}" EmptyView="No vehicle heartbeat has been decoded at this replay position.">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vehicles:VehicleState">
+                        <Grid Padding="8,5" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                            <Label Grid.Column="0" Text="REPLAY" FontAttributes="Bold" TextColor="#D97706" />
+                            <Label Grid.Column="1" Text="{Binding DisplayName}" />
+                            <Label Grid.Column="2" Text="{Binding VehicleId}" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Grid>
+    </Grid>
 </ContentView>

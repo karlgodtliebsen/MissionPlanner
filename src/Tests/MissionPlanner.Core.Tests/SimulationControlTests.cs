@@ -13,6 +13,7 @@ using NSubstitute;
 namespace MissionPlanner.Core.Tests;
 
 /// <summary>Verifies documented, bounded, and instance-specific simulation controls.</summary>
+[Trait("TestTier", "Unit")]
 public sealed class SimulationControlTests
 {
     /// <summary>Verifies built-in locations, units, and runtime value bounds are explicit and enforced.</summary>

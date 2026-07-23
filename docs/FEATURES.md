@@ -175,9 +175,24 @@ Feature description per tab comes from v1.38 (`FlightData.Designer.cs` tab pages
 
 * Gimbal pan/tilt/zoom control, camera trigger, payload actions
 
-### Telemetry Logs (Missing)
+### Telemetry Logs
 
-* Tlog playback: load, play/pause, speed control, scrubbing; export KML/graph data
+#### Status
+
+* Implemented (2026-07-23): Mission Planner `.tlog` indexing and read-only playback with
+  play/pause, indexed seek, 0.1–50× speed, a recorded-time replay clock, decoded/rejected
+  frame statistics, and replay-only vehicle state.
+* Replay frames use the generated MAVLink parser/decoder and cohesive telemetry handlers,
+  but own a separate registry and event boundary. Replay vehicles cannot enter the live
+  command, mission, parameter, or MAVFTP routes.
+* A global `REPLAY · READ ONLY` label appears in persistent chrome and action surfaces.
+  While a log is loaded, the MAVLink connection boundary prohibits every outbound frame;
+  closing replay explicitly restores live/simulation sends.
+
+#### Remaining
+
+* Start/stop recording of live raw MAVLink frames with retention policy
+* Export KML and graph-ready data
 
 ### DataFlash Logs (Missing)
 
@@ -730,6 +745,13 @@ Replaces v1.38's Simulation screen (SITL). New UI: `SimulationView`.
 * Owned-process markers include PID, executable path, and operating-system start time.
   Unclean-exit recovery terminates only an exact identity match and leaves PID-reuse or
   uninspectable processes untouched for operator review
+* Indexed `.tlog` playback with pause, seek, speed, deterministic replay clock, and state
+  reconstruction through an isolated read-only decoder/vehicle pipeline. A connection-level
+  transmission policy blocks all outbound MAVLink while replay is loaded
+* Diagnostic schema v2 exports redacted tokenized command lines, component/runtime versions,
+  ports, process/session state, heartbeat readiness, bounded recent output, artifact paths,
+  and replay statistics. Simulation tests are split into deterministic unit, fake-runtime,
+  and explicit opt-in real-SITL tiers with hard startup/step/total/cleanup bounds
 * Four opt-in real-SITL family smoke tests use strict total and cleanup timeouts and skip
   explicitly when their configured binaries are absent
 * Asset: `src/Tests/MissionPlanner.Simulator` already hosts a simulator used by the smoke
@@ -744,6 +766,7 @@ current verification boundary.
 * Ship/configure the production official ArduPilot artifact manifest (the acquisition
   pipeline exists but the repository intentionally does not invent an endpoint)
 * Autonomous swarm control (multi-vehicle launch offsets are data only by design)
+* Telemetry-log KML/graph export and live `.tlog` recording remain Flight Data work
 
 
 

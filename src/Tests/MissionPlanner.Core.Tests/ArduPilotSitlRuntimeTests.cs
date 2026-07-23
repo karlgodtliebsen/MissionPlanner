@@ -11,6 +11,7 @@ using NSubstitute;
 namespace MissionPlanner.Core.Tests;
 
 /// <summary>Verifies typed ArduPilot SITL launch, allocation, connection, and cleanup behavior.</summary>
+[Trait("TestTier", "FakeRuntime")]
 public sealed class ArduPilotSitlRuntimeTests
 {
     /// <summary>Verifies typed arguments preserve spaces as tokens and format values invariantly.</summary>

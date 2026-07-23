@@ -8,6 +8,9 @@
     <ScrollView>
         <VerticalStackLayout Padding="12" Spacing="10">
             <Label Text="Vehicle Actions" FontSize="18" FontAttributes="Bold" />
+            <Border Padding="8" Stroke="#D97706">
+                <Label Text="{Binding DataSourceMode}" FontAttributes="Bold" TextColor="#D97706" />
+            </Border>
             <Label Text="{Binding ObservedState}" FontSize="11" LineBreakMode="WordWrap" />
 
             <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
@@ -24,7 +27,7 @@
                         ItemsSource="{Binding Modes}"
                         SelectedItem="{Binding SelectedMode}"
                         ItemDisplayBinding="{Binding Name}" />
-                <Button BackgroundColor="Transparent" FontSize="14" Grid.Column="1" Text="Set Mode" Command="{Binding SetModeCommand}" />
+                <Button BackgroundColor="Transparent" FontSize="14" Grid.Column="1" Text="Set Mode" Command="{Binding SetModeCommand}" IsEnabled="{Binding CanTransmit}" />
             </Grid>
 
             <Label Text="Takeoff altitude (m)" FontAttributes="Bold" />
@@ -57,7 +60,7 @@
                 <Label Text="Advanced commands can be hazardous. Verify the command ID and all seven parameters." TextColor="OrangeRed" />
                 <Entry Placeholder="Command ID" Keyboard="Numeric" Text="{Binding ExpertCommandId}" />
                 <Entry Placeholder="Seven invariant parameters, separated by spaces" Text="{Binding ExpertParameters}" />
-                <Button BackgroundColor="Transparent" FontSize="14" Text="Validate, Confirm, and Send" Command="{Binding ExecuteExpertCommand}" />
+                <Button BackgroundColor="Transparent" FontSize="14" Text="Validate, Confirm, and Send" Command="{Binding ExecuteExpertCommand}" IsEnabled="{Binding CanTransmit}" />
             </VerticalStackLayout>
         </VerticalStackLayout>
     </ScrollView>

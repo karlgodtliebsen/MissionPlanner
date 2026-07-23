@@ -12,6 +12,7 @@ using NSubstitute;
 namespace MissionPlanner.Core.Tests;
 
 /// <summary>Verifies the Simulation workspace profile and owned-session lifecycle.</summary>
+[Trait("TestTier", "FakeRuntime")]
 public sealed class SimulationWorkspaceTests
 {
     /// <summary>Verifies successful startup traverses explicit states and stops only the owned session.</summary>
@@ -145,7 +146,7 @@ public sealed class SimulationWorkspaceTests
     {
         var profile = Profile() with
         {
-            AdditionalArguments = ["--model", "quad", "--api-key=sensitive-key"],
+            AdditionalArguments = ["--model", "quad", "--api-key=sensitive-key", "--token", "split-secret"],
             Environment = new Dictionary<string, string>
             {
                 ["NORMAL_VALUE"] = "visible",
@@ -161,15 +162,26 @@ public sealed class SimulationWorkspaceTests
                     DateTimeOffset.UtcNow,
                     SimulatorOutputStream.StandardError,
                     "runtime echoed sensitive-token")
-            ]
+            ],
+            RuntimeDiagnostics = new SimulationRuntimeDiagnostics(
+                "arducopter",
+                ["--model", "quad", "--token", "split-secret", "--password=runtime-password"],
+                "4.6.0",
+                DateTimeOffset.UtcNow,
+                new SimulationHeartbeatStatistics(1, new VehicleId(1, 1), DateTimeOffset.UtcNow, TimeSpan.FromSeconds(1), 1))
         };
 
         var document = new SimulationDiagnosticsService().CreateBundle(snapshot);
 
         document.Should().Contain("visible");
         document.Should().Contain("--api-key=***");
+        document.Should().Contain("missionplanner-simulation-diagnostics-v2");
+        document.Should().Contain("--password=***");
+        document.Should().Contain("verifiedHeartbeatCount");
         document.Should().NotContain("sensitive-key");
         document.Should().NotContain("sensitive-token");
+        document.Should().NotContain("split-secret");
+        document.Should().NotContain("runtime-password");
     }
 
     /// <summary>Verifies navigation deactivation does not stop an owned session.</summary>

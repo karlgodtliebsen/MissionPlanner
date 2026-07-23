@@ -19,6 +19,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
     private readonly IMavLinkClient client;
     private readonly IMavLinkFrameParser frameParser;
     private readonly IMavLinkMessageDecodeHandler messageDecoder;
+    private readonly IMavLinkTransmissionPolicy? transmissionPolicy;
     private readonly IEventHub eventHub;
     private readonly ILogger<MavLinkConnection> logger;
     private readonly MavLinkConnectionPipelineOptions options;
@@ -39,6 +40,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
     /// <param name="eventHub">The event hub.</param>
     /// <param name="options">The MAVLink connection pipeline options.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="transmissionPolicy">Optional application safety policy for outbound frames.</param>
     /// <exception cref="ArgumentNullException"></exception>
     public MavLinkConnection(
         IMavLinkClient client,
@@ -46,13 +48,15 @@ public sealed class MavLinkConnection : IMavLinkConnection
         IMavLinkMessageDecodeHandler messageDecoder,
         IEventHub eventHub,
         IOptions<MavLinkConnectionPipelineOptions> options,
-        ILogger<MavLinkConnection> logger)
+        ILogger<MavLinkConnection> logger,
+        IMavLinkTransmissionPolicy? transmissionPolicy = null)
     {
         this.client = client ?? throw new ArgumentNullException(nameof(client));
         this.frameParser = frameParser ?? throw new ArgumentNullException(nameof(frameParser));
         this.messageDecoder = messageDecoder ?? throw new ArgumentNullException(nameof(messageDecoder));
         this.eventHub = eventHub ?? throw new ArgumentNullException(nameof(eventHub));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.transmissionPolicy = transmissionPolicy;
         this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         this.options.Validate();
     }
@@ -95,6 +99,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
     public async ValueTask SendRawAsync(ReadOnlyMemory<byte> data, TransportEndPoint endPoint, CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
+        transmissionPolicy?.ThrowIfTransmissionProhibited();
         await client.SendAsync(data, endPoint, cancellationToken).ConfigureAwait(false);
     }
 

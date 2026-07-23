@@ -21,6 +21,7 @@ using NSubstitute;
 namespace MissionPlanner.Core.Tests;
 
 /// <summary>Verifies deterministic multi-instance allocation, routing, lifecycle isolation, and recovery.</summary>
+[Trait("TestTier", "FakeRuntime")]
 public sealed class SimulationFleetTests
 {
     /// <summary>Verifies identities, ports, offsets, and artifact paths are deterministic and isolated.</summary>

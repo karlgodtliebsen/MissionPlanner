@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.App.Views.Connect;
 using MissionPlanner.Core.DomainEvents;
+using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -23,6 +24,7 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
     private const string? ConnectImage = "Resources/Images/x_light_disconnect_icon_x.png";
     private const string? DisConnectImage = "Resources/Images/x_light_connect_icon_x.png";
     private readonly IList<IDisposable> disposables = [];
+    private readonly IReplaySessionManager replaySessionManager;
 
     [ObservableProperty] public partial bool IsConnected { get; set; }
     [ObservableProperty] public partial string? Host { get; set; }
@@ -38,6 +40,11 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
     [ObservableProperty] public partial bool ShowHost { get; set; }
     [ObservableProperty] public partial bool ShowCom { get; set; } = true;
     [ObservableProperty] public partial bool ShowVehicleName { get; set; } = true;
+    [ObservableProperty] public partial string DataSourceMode { get; private set; } = "LIVE / SIMULATION";
+    [ObservableProperty] public partial bool IsReplayReadOnly { get; private set; }
+
+    /// <summary>Gets whether the connection dialog may be opened in the current data-source mode.</summary>
+    public bool CanOpenConnection => !IsReplayReadOnly;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TopBarViewModel"/> class.
@@ -47,16 +54,26 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
     /// <param name="dispatcher">The dispatcher.</param>
     /// <param name="domainEventHub">The domain event hub.</param>
     /// <param name="logger">The logger instance.</param>
-    public TopBarViewModel(ApplicationStateService stateService, IServiceFactory serviceFactory, IDispatcher dispatcher, IDomainEventHub domainEventHub, ILogger<TopBarViewModel> logger)
+    /// <param name="replaySessionManager">Application-wide replay safety state.</param>
+    public TopBarViewModel(
+        ApplicationStateService stateService,
+        IServiceFactory serviceFactory,
+        IDispatcher dispatcher,
+        IDomainEventHub domainEventHub,
+        ILogger<TopBarViewModel> logger,
+        IReplaySessionManager replaySessionManager)
     {
         this.logger = logger;
         this.stateService = stateService;
         this.serviceFactory = serviceFactory;
         this.dispatcher = dispatcher;
+        this.replaySessionManager = replaySessionManager;
         // Subscribe to connection events
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected));
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated));
+        replaySessionManager.Changed += OnReplayChanged;
+        ApplyReplayState(replaySessionManager.Snapshot);
 
         // Initial state
         UpdateConnectionStatus();
@@ -136,7 +153,7 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
         await dispatcher.DispatchAsync(async () => FirmwareIdentity = display);
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanOpenConnection))]
     private async Task Connect()
     {
         var view = serviceFactory.Create<ConnectPopupView>();
@@ -147,9 +164,21 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
+        replaySessionManager.Changed -= OnReplayChanged;
         foreach (var disposable in disposables)
         {
             disposable.Dispose();
         }
+    }
+
+    private void OnReplayChanged(object? sender, ReplaySessionChangedEventArgs args) =>
+        dispatcher.Dispatch(() => ApplyReplayState(args.Snapshot));
+
+    private void ApplyReplayState(ReplaySessionSnapshot snapshot)
+    {
+        IsReplayReadOnly = snapshot.IsTransmissionProhibited;
+        DataSourceMode = IsReplayReadOnly ? "REPLAY · READ ONLY" : "LIVE / SIMULATION";
+        OnPropertyChanged(nameof(CanOpenConnection));
+        ConnectCommand.NotifyCanExecuteChanged();
     }
 }

@@ -3,6 +3,7 @@ using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Library.DateTime.Domain;
+using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Transport;
 using MissionPlanner.Transport.Abstractions;
 
@@ -19,6 +20,7 @@ public sealed class MavLinkClient : IMavLinkClient
     private readonly ILogger<MavLinkClient> logger;
     private readonly MavLinkClientPipelineOptions options;
     private readonly MemoryPool<byte> memoryPool;
+    private readonly IMavLinkTransmissionPolicy? transmissionPolicy;
     private readonly SemaphoreSlim lifecycleLock = new(1, 1);
     private Channel<PooledMavLinkDataReceived> receivedBytes;
 
@@ -33,16 +35,19 @@ public sealed class MavLinkClient : IMavLinkClient
     /// <param name="options">The MAVLink client pipeline options.</param>
     /// <param name="dateTimeProvider">The date time provider.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="transmissionPolicy">Optional application safety policy for outbound frames.</param>
     /// <exception cref="ArgumentNullException"></exception>
     public MavLinkClient(
         IMavLinkTransport transport,
         IOptions<MavLinkClientPipelineOptions> options,
         IDateTimeProvider dateTimeProvider,
-        ILogger<MavLinkClient> logger)
+        ILogger<MavLinkClient> logger,
+        IMavLinkTransmissionPolicy? transmissionPolicy = null)
     {
         this.transport = transport ?? throw new ArgumentNullException(nameof(transport));
         this.dateTimeProvider = dateTimeProvider ?? throw new ArgumentNullException(nameof(dateTimeProvider));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.transmissionPolicy = transmissionPolicy;
         this.options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         this.options.Validate();
         memoryPool = MemoryPool<byte>.Shared;
@@ -167,6 +172,7 @@ public sealed class MavLinkClient : IMavLinkClient
     public async ValueTask SendAsync(ReadOnlyMemory<byte> data, TransportEndPoint endPoint, CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
+        transmissionPolicy?.ThrowIfTransmissionProhibited();
 
         if (cancellationToken.IsCancellationRequested)
         {
