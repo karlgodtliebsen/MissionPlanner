@@ -4,33 +4,81 @@ using MissionPlanner.MavLink.MavFtp.Abstractions;
 namespace MissionPlanner.MavLink.MavFtp;
 
 /// <summary>
-/// Keeps the next request sequence per remote MAVFTP endpoint for the application lifetime.
-/// This allows a newly-created client to continue after a transport reconnect.
+/// Keeps and serializes MAVFTP conversation state per remote endpoint for the application lifetime.
+/// This allows newly-created clients to continue safely after navigation or a transport reconnect.
 /// </summary>
 public sealed class MavFtpSequenceStore : IMavFtpSequenceStore
 {
     private readonly ConcurrentDictionary<MavFtpTarget, SequenceState> states = new();
 
     /// <summary>
-    /// Provides the public API for GetNextRequest.
+    /// Enters the shared operation gate for the target.
     /// </summary>
-    public ushort GetNextRequest(MavFtpTarget target)
+    public async ValueTask<IDisposable> EnterOperationAsync(
+        MavFtpTarget target,
+        CancellationToken cancellationToken = default)
     {
-        return states.GetOrAdd(target, static _ => new SequenceState()).Read();
+        var state = states.GetOrAdd(target, static _ => new SequenceState());
+        await state.Gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        return new OperationLease(state.Gate);
     }
 
     /// <summary>
-    /// Provides the public API for ObserveResponse.
+    /// Reserves and returns the next request sequence for the target.
+    /// </summary>
+    public ushort GetNextRequest(MavFtpTarget target)
+    {
+        return states.GetOrAdd(target, static _ => new SequenceState()).Reserve();
+    }
+
+    /// <summary>
+    /// Advances the target sequence after observing a response.
     /// </summary>
     public void ObserveResponse(MavFtpTarget target, ushort responseSequence)
     {
-        states.GetOrAdd(target, static _ => new SequenceState()).Write(MavFtpSequence.Next(responseSequence));
+        states.GetOrAdd(target, static _ => new SequenceState()).Observe(responseSequence);
     }
 
     private sealed class SequenceState
     {
-        private int nextRequest;
-        public ushort Read() => unchecked((ushort)Volatile.Read(ref nextRequest));
-        public void Write(ushort value) => Volatile.Write(ref nextRequest, value);
+        private readonly Lock syncRoot = new();
+        private ushort nextRequest;
+
+        public SemaphoreSlim Gate { get; } = new(1, 1);
+
+        public ushort Reserve()
+        {
+            lock (syncRoot)
+            {
+                var reserved = nextRequest;
+
+                // A normal server reply consumes the following sequence value. Reserve
+                // both slots immediately so cancellation after send cannot cause a new
+                // client to reuse a request sequence cached by ArduPilot.
+                nextRequest = MavFtpSequence.Next(MavFtpSequence.Next(reserved));
+                return reserved;
+            }
+        }
+
+        public void Observe(ushort responseSequence)
+        {
+            lock (syncRoot)
+            {
+                nextRequest = MavFtpSequence.Next(responseSequence);
+            }
+        }
+    }
+
+    private sealed class OperationLease(SemaphoreSlim gate) : IDisposable
+    {
+        private int disposed;
+
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref disposed, 1) == 0)
+            {
+                gate.Release();
+            }
+        }
     }
 }

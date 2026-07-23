@@ -151,4 +151,53 @@ public sealed class MavFtpCompletionTests
         store.ObserveResponse(target, ushort.MaxValue);
         store.GetNextRequest(target).Should().Be(0);
     }
+
+    /// <summary>
+    /// Verifies that an abandoned request sequence is not reused by a recreated client.
+    /// </summary>
+    [Fact]
+    public void SequenceStore_ReservesPastAnAbandonedRequest()
+    {
+        var store = new MavFtpSequenceStore();
+        var target = new MavFtpTarget(1, 1, new TransportEndPoint("udp", "127.0.0.1", 14550));
+
+        store.GetNextRequest(target).Should().Be(0);
+        store.GetNextRequest(target).Should().Be(2);
+    }
+
+    /// <summary>
+    /// Verifies that independently created clients cannot overlap MAVFTP conversations with the same target.
+    /// </summary>
+    [Fact]
+    public async Task SequenceStore_SerializesOperationsAcrossClientLifetimes()
+    {
+        var store = new MavFtpSequenceStore();
+        var target = new MavFtpTarget(1, 1, new TransportEndPoint("udp", "127.0.0.1", 14550));
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var firstLease = await store.EnterOperationAsync(target, cancellationToken);
+        var waiting = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var secondOperation = EnterSecondOperationAsync();
+
+        try
+        {
+            await waiting.Task;
+            entered.Task.IsCompleted.Should().BeFalse();
+        }
+        finally
+        {
+            firstLease.Dispose();
+        }
+
+        await entered.Task.WaitAsync(TimeSpan.FromSeconds(1), cancellationToken);
+        await secondOperation;
+
+        async Task EnterSecondOperationAsync()
+        {
+            waiting.SetResult();
+            using var secondLease = await store.EnterOperationAsync(target, cancellationToken);
+            entered.SetResult();
+        }
+    }
 }

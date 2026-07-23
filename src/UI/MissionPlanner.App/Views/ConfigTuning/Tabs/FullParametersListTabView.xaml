@@ -5,7 +5,6 @@
                       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                       xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                       xmlns:m="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
-                      xmlns:controls="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
                       xmlns:configTuning="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
                       x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.FullParametersListTabView"
                       x:DataType="tabs:FullParametersListTabViewModel">

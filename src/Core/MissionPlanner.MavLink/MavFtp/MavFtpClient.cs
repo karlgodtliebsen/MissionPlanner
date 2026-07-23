@@ -1,5 +1,4 @@
 ﻿using System.Buffers.Binary;
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -19,7 +18,6 @@ public sealed class MavFtpClient : IMavFtpClient
     private readonly IMavFtpSequenceStore sequenceStore;
     private readonly ILogger<MavFtpClient> logger;
     private readonly MavFtpOptions options;
-    private readonly ConcurrentDictionary<MavFtpTarget, TargetOperationState> targetStates = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MavFtpClient"/> class.
@@ -378,16 +376,8 @@ public sealed class MavFtpClient : IMavFtpClient
 
     private async Task<T> InOperationLockAsync<T>(MavFtpTarget target, Func<CancellationToken, Task<T>> action, CancellationToken ct)
     {
-        var state = targetStates.GetOrAdd(target, static _ => new TargetOperationState());
-        await state.Gate.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            return await action(ct).ConfigureAwait(false);
-        }
-        finally
-        {
-            state.Gate.Release();
-        }
+        using var lease = await sequenceStore.EnterOperationAsync(target, ct).ConfigureAwait(false);
+        return await action(ct).ConfigureAwait(false);
     }
 
     private static byte[] PathBytes(string path)
@@ -404,11 +394,6 @@ public sealed class MavFtpClient : IMavFtpClient
             : bytes;
     }
 
-    private sealed class TargetOperationState
-    {
-        public SemaphoreSlim Gate { get; } = new(1, 1);
-    }
-
     /// <inheritdoc />
     public ValueTask DisposeAsync()
     {
@@ -417,12 +402,6 @@ public sealed class MavFtpClient : IMavFtpClient
         // - the MAVLink connection is owned by VehicleConnectionSession.
         // Disposing either dependency here permanently breaks MAVFTP after a reconnect and
         // can also cause the vehicle connection to be disposed more than once.
-        foreach (var state in targetStates.Values)
-        {
-            state.Gate.Dispose();
-        }
-
-        targetStates.Clear();
         return ValueTask.CompletedTask;
     }
 }

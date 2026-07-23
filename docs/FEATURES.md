@@ -691,7 +691,7 @@ Remaining v1.38 feature inventory:
 * **Flight Modes**: assign flight modes to RC switch positions (not present as a tab yet)
 * **Standard / Advanced Params**: "friendly" curated parameter lists with combos/sliders
 * **Full Parameter Tree**: tree-grouped variant of the raw parameter editor
-* **MAVFTP**: remote filesystem browser, navigation, session reset, streaming download, progress, cancellation, burst recovery; SITL re-validation pending after endpoint/sequence interoperability fixes
+* **MAVFTP**: remote filesystem browser, navigation, session reset, streaming download, progress, cancellation, burst recovery, and navigation-safe transient client recreation with application-wide per-vehicle operation/sequence coordination; SITL re-validation pending after endpoint/sequence interoperability fixes
 * v1.38 extras to consider later: FFT analysis, REPL/Terminal, DroneCAN tooling
 
 

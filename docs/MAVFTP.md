@@ -6,7 +6,7 @@ or buffered download for an explicit system/component/transport target.
 
 Incoming `FILE_TRANSFER_PROTOCOL` messages use the normal decoder and EventHub pipeline.
 Responses correlate by endpoint, system, component, sequence, requested opcode, and session.
-Operations serialize per target. 
+Operations serialize per target across all client instances.
 Timeouts use bounded same-sequence retries; cancellation retains `OperationCanceledException`. 
 Sessions terminate in `finally` and cleanup errors do not hide the
 original failure. 
@@ -56,3 +56,17 @@ The frame parser now validates MAVLink 2 payloads against the one-byte-to-maximu
 retaining the exact base-field length rule for MAVLink 1. Typed generated decoders zero-fill the
 omitted bytes. This prevents valid MAVFTP responses from being discarded before response
 registration and correlation.
+
+## Navigation lifecycle resilience (2026-07-23)
+
+The Config/Tuning MAVFTP tab owns a transient filesystem client. Navigating away stops and detaches
+its delayed-refresh timer, cancels its lifetime and any active command, and waits for that command
+to exit before disposing the client. Page disposal does not reset the vehicle's remote FTP
+sessions, because packed-parameter loading can be using the same vehicle concurrently.
+
+MAVFTP coordination is application-wide per target rather than local to one client. The shared
+sequence store now provides the operation gate used by the file browser, recreated tab clients,
+and packed-parameter clients. Reserving a request advances past both the request and its expected
+response before the packet is sent; an observed response then reconciles the next sequence. A
+cancelled request therefore cannot leave a recreated client reusing a request sequence that
+ArduPilot may still hold in its duplicate cache.
