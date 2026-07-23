@@ -1,9 +1,25 @@
 # Setup Extra. Move embedded VerticalStackLayout sections in MandatoryHardwareView.xaml to dedicated Views
 
-**Implementation status:** 
+**Implementation status:** Completed 2026-07-23.
 
 ## Objective
 
+Replace the workflow-specific layout blocks embedded in `MandatoryHardwareView.xaml` with
+dedicated, strongly typed MAUI `ContentView` components. Keep the workflow shell responsible
+for selection and ViewModel lifetime while each section view binds directly to its existing
+section ViewModel.
+
+## Implementation notes
+
+- Firmware, Frame, Accelerometer, Compass, Radio, Flight Modes, Battery, ESC/Motor, Servo
+  Output, Optional Hardware, Safety, and Setup Summary now each have a dedicated
+  `ContentView` in the Mandatory Hardware `Sections` namespace.
+- `MandatoryHardwareViewModel` remains the orchestration owner. It creates section ViewModels
+  lazily and supplies the selected instance as the matching child view's binding context.
+- Section status, commands, and observable presentation state remain owned by the existing
+  section ViewModels; the child views contain no domain or transport behavior.
+- Every button in the refactored MAUI XAML explicitly uses
+  `BackgroundColor="Transparent"` and `FontSize="14"`.
 
 
 ## Repository constraints

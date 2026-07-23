@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
+             x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.OptionalHardwareSetupView"
+             x:DataType="sections:OptionalHardwareSetupViewModel">
+    <VerticalStackLayout Spacing="10">
+        <Label Text="Optional hardware" FontSize="18" FontAttributes="Bold" />
+        <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
+        <Label IsVisible="{Binding RebootRequired}"
+               Text="Reboot required. Reconnect, then refresh to confirm the persisted configuration."
+               TextColor="OrangeRed"
+               FontAttributes="Bold"
+               LineBreakMode="WordWrap" />
+        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Modules}" Spacing="10">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate x:DataType="sections:OptionalHardwareModuleViewModel">
+                    <Border Padding="12" StrokeThickness="1">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="16" />
+                            <Label Text="{Binding Description}" Opacity="0.75" LineBreakMode="WordWrap" />
+                            <VerticalStackLayout IsVisible="{Binding HasIssues}" BindableLayout.ItemsSource="{Binding Issues}">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="x:String">
+                                        <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}" Spacing="4">
+                                <BindableLayout.ItemTemplate>
+                                    <DataTemplate x:DataType="sections:PeripheralSettingViewModel">
+                                        <Grid ColumnDefinitions="200,*,Auto" ColumnSpacing="8">
+                                            <Label Text="{Binding DisplayName}" VerticalOptions="Center" />
+                                            <Picker Grid.Column="1"
+                                                    Title="Value"
+                                                    IsVisible="{Binding HasOptions}"
+                                                    ItemsSource="{Binding Options}"
+                                                    SelectedItem="{Binding SelectedOption}"
+                                                    ItemDisplayBinding="{Binding Name}" />
+                                            <Entry Grid.Column="1"
+                                                   Text="{Binding NumericValue}"
+                                                   IsVisible="{Binding IsNumeric}"
+                                                   Keyboard="Numeric" />
+                                            <Button Grid.Column="2"
+                                                    BackgroundColor="Transparent"
+                                                    FontSize="14"
+                                                    Text="Write"
+                                                    Command="{Binding ApplyCommand}" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </BindableLayout.ItemTemplate>
+                            </VerticalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </VerticalStackLayout>
+        <Button BackgroundColor="Transparent"
+                FontSize="14"
+                Text="Refresh optional hardware"
+                Command="{Binding RefreshCommand}"
+                HorizontalOptions="Start" />
+    </VerticalStackLayout>
+</ContentView>

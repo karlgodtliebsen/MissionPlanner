@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
+             x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.ServoOutputSetupView"
+             x:DataType="sections:ServoOutputSetupViewModel">
+    <VerticalStackLayout Spacing="10">
+        <Label Text="Servo output functions" FontSize="18" FontAttributes="Bold" />
+        <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
+        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Outputs}" Spacing="6">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate x:DataType="sections:ServoOutputItemViewModel">
+                    <Border Padding="10" StrokeThickness="1">
+                        <Grid ColumnDefinitions="100,*,120" ColumnSpacing="8">
+                            <Label Text="{Binding Header}" FontAttributes="Bold" VerticalOptions="Center" />
+                            <Picker Grid.Column="1"
+                                    Title="Function"
+                                    ItemsSource="{Binding Functions}"
+                                    SelectedItem="{Binding SelectedFunction}"
+                                    ItemDisplayBinding="{Binding Name}" />
+                            <Label Grid.Column="2" Text="{Binding LiveDescription}" VerticalOptions="Center" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </VerticalStackLayout>
+        <Button BackgroundColor="Transparent"
+                FontSize="14"
+                Text="Refresh servo outputs"
+                Command="{Binding RefreshCommand}"
+                HorizontalOptions="Start" />
+    </VerticalStackLayout>
+</ContentView>

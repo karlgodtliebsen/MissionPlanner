@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
+             x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.AccelerometerSetupView"
+             x:DataType="sections:AccelerometerSetupViewModel">
+    <VerticalStackLayout Spacing="10">
+        <Label Text="Accelerometer and level calibration" FontSize="18" FontAttributes="Bold" />
+        <Label Text="Remove propellers. Keep the vehicle disarmed and clear of people before calibration."
+               TextColor="OrangeRed"
+               FontAttributes="Bold"
+               LineBreakMode="WordWrap" />
+        <HorizontalStackLayout Spacing="10">
+            <Button BackgroundColor="Transparent"
+                    FontSize="14"
+                    Text="Start six-position calibration"
+                    Command="{Binding StartSixPositionCommand}" />
+            <Button BackgroundColor="Transparent"
+                    FontSize="14"
+                    Text="Calibrate level"
+                    Command="{Binding StartLevelCommand}" />
+        </HorizontalStackLayout>
+        <Label Text="{Binding CalibrationState, StringFormat='State: {0}'}" FontAttributes="Bold" />
+        <Label Text="{Binding Instruction}" FontSize="17" FontAttributes="Bold" LineBreakMode="WordWrap" />
+        <Image Source="{Binding OrientationImage}" HeightRequest="260" Aspect="AspectFit" />
+        <Label Text="{Binding Orientation, StringFormat='Requested orientation: {0}'}" />
+        <Label Text="{Binding CompletedOrientations}" />
+        <Button BackgroundColor="Transparent"
+                FontSize="14"
+                Text="Confirm orientation"
+                IsEnabled="{Binding CanConfirmOrientation}"
+                Command="{Binding ConfirmOrientationCommand}"
+                HorizontalOptions="Start" />
+        <Label Text="{Binding SupplementalStatus, StringFormat='Vehicle status: {0}'}"
+               FontAttributes="Italic"
+               LineBreakMode="WordWrap" />
+        <HorizontalStackLayout Spacing="10">
+            <Button BackgroundColor="Transparent"
+                    FontSize="14"
+                    Text="Cancel calibration"
+                    IsEnabled="{Binding CanCancel}"
+                    Command="{Binding CancelCalibrationCommand}" />
+            <Button BackgroundColor="Transparent"
+                    FontSize="14"
+                    Text="Reset / retry"
+                    IsEnabled="{Binding CanStart}"
+                    Command="{Binding ResetCommand}" />
+        </HorizontalStackLayout>
+    </VerticalStackLayout>
+</ContentView>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:setup="clr-namespace:MissionPlanner.Core.Setup;assembly=MissionPlanner.Core"
+             xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
+             x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SafetySetupView"
+             x:DataType="sections:SafetySetupViewModel">
+    <VerticalStackLayout Spacing="10">
+        <Label Text="Safety and arming" FontSize="18" FontAttributes="Bold" />
+        <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
+        <VerticalStackLayout IsVisible="{Binding HasWarnings}" BindableLayout.ItemsSource="{Binding Warnings}">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                    <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </VerticalStackLayout>
+        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Items}" Spacing="4">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate x:DataType="setup:SafetyCheckItem">
+                    <Grid ColumnDefinitions="220,120,*" ColumnSpacing="8">
+                        <Label Text="{Binding Name}" FontAttributes="Bold" />
+                        <Label Grid.Column="1" Text="{Binding Status}" />
+                        <Label Grid.Column="2" Text="{Binding Detail}" LineBreakMode="WordWrap" Opacity="0.8" />
+                    </Grid>
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </VerticalStackLayout>
+        <Button BackgroundColor="Transparent"
+                FontSize="14"
+                Text="Re-assess safety"
+                Command="{Binding RefreshCommand}"
+                HorizontalOptions="Start" />
+    </VerticalStackLayout>
+</ContentView>

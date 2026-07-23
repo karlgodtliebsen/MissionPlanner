@@ -404,6 +404,10 @@ The Setup screen replaces v1.38's Initial Setup (`src-v.1.38/GCSViews/InitialSet
   configuration editors.
 * Workflow hosts are created lazily and discarded across vehicle changes; page lifecycle
   detaches parameter/vehicle subscriptions and cancels active work.
+* The Mandatory Hardware shell composes twelve dedicated, strongly typed workflow
+  `ContentView` components. The shell retains selection and lifecycle ownership while each
+  component binds directly to its existing section ViewModel, keeping workflow markup and
+  presentation state isolated without duplicating domain services.
 * Firmware workflow implemented (2026-07-22): displays the complete protocol-reported
   vehicle/firmware/board identity, including semantic version and release type, Git hash,
   board/vendor/product identifiers, UID/UID2, MAVLink version, and named/raw capabilities.

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
+             x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.FrameSetupView"
+             x:DataType="sections:FrameSetupViewModel">
+    <VerticalStackLayout Spacing="10">
+        <Label Text="Supported frame configuration" FontSize="18" FontAttributes="Bold" />
+        <Label Text="{Binding FirmwareFamily, StringFormat='Firmware family: {0}'}" />
+        <Label Text="Only values advertised by the connected firmware metadata are shown. Current values remain unchanged until Write and verify is confirmed."
+               LineBreakMode="WordWrap" />
+        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}" Spacing="8">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate x:DataType="sections:FrameParameterSettingViewModel">
+                    <Border Padding="10" StrokeThickness="1">
+                        <Grid ColumnDefinitions="180,*,*" RowDefinitions="Auto,Auto" RowSpacing="4" ColumnSpacing="8">
+                            <Label Text="{Binding DisplayName}" FontAttributes="Bold" />
+                            <Label Grid.Column="1" Text="{Binding CurrentDisplay, StringFormat='Current: {0}'}" />
+                            <Picker Grid.Column="2"
+                                    Title="Pending value"
+                                    ItemsSource="{Binding Options}"
+                                    SelectedItem="{Binding SelectedOption}"
+                                    ItemDisplayBinding="{Binding Label}" />
+                            <Label Grid.Row="1" Grid.ColumnSpan="3"
+                                   Text="{Binding PendingDisplay, StringFormat='Pending: {0}'}" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </VerticalStackLayout>
+        <Label IsVisible="{Binding HasRecommendations}"
+               Text="Optional initial recommendations"
+               FontSize="18"
+               FontAttributes="Bold" />
+        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Recommendations}" Spacing="6">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate x:DataType="sections:FrameRecommendationViewModel">
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                        <CheckBox IsChecked="{Binding IsSelected}" />
+                        <Label Grid.Column="1" Text="{Binding Description}" LineBreakMode="WordWrap" VerticalOptions="Center" />
+                    </Grid>
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </VerticalStackLayout>
+        <HorizontalStackLayout Spacing="10">
+            <Button BackgroundColor="Transparent" FontSize="14" Text="Refresh vehicle values" Command="{Binding RefreshCommand}" />
+            <Button BackgroundColor="Transparent" FontSize="14" Text="Write and verify" Command="{Binding ApplyCommand}" />
+        </HorizontalStackLayout>
+        <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
+        <Label IsVisible="{Binding RebootRequired}"
+               Text="Reboot required. Reconnect, then use Refresh vehicle values to confirm the persisted configuration."
+               TextColor="OrangeRed"
+               FontAttributes="Bold"
+               LineBreakMode="WordWrap" />
+    </VerticalStackLayout>
+</ContentView>

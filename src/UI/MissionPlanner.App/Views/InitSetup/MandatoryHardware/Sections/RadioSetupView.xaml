@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
+             x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.RadioSetupView"
+             x:DataType="sections:RadioSetupViewModel">
+    <VerticalStackLayout Spacing="10">
+        <Label Text="Radio calibration" FontSize="18" FontAttributes="Bold" />
+        <Label Text="Remove propellers and keep the vehicle disarmed. Turn on the transmitter before calibrating."
+               TextColor="OrangeRed"
+               FontAttributes="Bold"
+               LineBreakMode="WordWrap" />
+        <Label IsVisible="{Binding IsStale}"
+               Text="RC telemetry is stale — values shown may not reflect live stick positions."
+               TextColor="OrangeRed"
+               LineBreakMode="WordWrap" />
+        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Channels}" Spacing="4">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate x:DataType="sections:RadioChannelDisplayViewModel">
+                    <Grid ColumnDefinitions="150,90,*" ColumnSpacing="8">
+                        <Label Text="{Binding Title}" FontAttributes="Bold" />
+                        <Label Grid.Column="1" Text="{Binding Pwm, StringFormat='{0} us'}" />
+                        <Label Grid.Column="2" Text="{Binding Range}" Opacity="0.75" />
+                    </Grid>
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </VerticalStackLayout>
+        <Label Text="{Binding CalibrationState, StringFormat='State: {0}'}" FontAttributes="Bold" />
+        <Label Text="{Binding Instruction}" FontSize="16" LineBreakMode="WordWrap" />
+        <Label Text="{Binding CaptureSummary}" LineBreakMode="WordWrap" />
+        <VerticalStackLayout IsVisible="{Binding HasIssues}" BindableLayout.ItemsSource="{Binding Issues}">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                    <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
+                </DataTemplate>
+            </BindableLayout.ItemTemplate>
+        </VerticalStackLayout>
+        <HorizontalStackLayout Spacing="10">
+            <Button BackgroundColor="Transparent" FontSize="14" Text="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCommand}" />
+            <Button BackgroundColor="Transparent" FontSize="14" Text="Finish and write" IsEnabled="{Binding CanFinish}" Command="{Binding FinishCommand}" />
+            <Button BackgroundColor="Transparent" FontSize="14" Text="Cancel" IsEnabled="{Binding CanFinish}" Command="{Binding CancelCalibrationCommand}" />
+            <Button BackgroundColor="Transparent" FontSize="14" Text="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" />
+        </HorizontalStackLayout>
+    </VerticalStackLayout>
+</ContentView>

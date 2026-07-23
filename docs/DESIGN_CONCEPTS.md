@@ -1051,6 +1051,12 @@ identity, firmware, and the known parameter set; it is advisory and becomes a wa
 those inputs change. Later Setup workflows should plug into this shell and call domain
 services rather than adding transport access or duplicate parameter editors to the UI.
 
+`MandatoryHardwareView` is only the workflow selector and lifecycle shell. Each concrete
+workflow is rendered by a dedicated, strongly typed MAUI `ContentView` whose binding context
+is the corresponding lazily created section ViewModel. Section views contain presentation
+markup only; selection, cancellation, connection boundaries, and ViewModel disposal remain
+owned by `MandatoryHardwareViewModel`.
+
 Firmware management follows a fail-closed pipeline. Manifest selection matches the
 protocol-reported firmware family and exact vendor/product/board identifiers; display or
 marketing names are not selectors. `FirmwarePackageManager` accepts only HTTPS packages
