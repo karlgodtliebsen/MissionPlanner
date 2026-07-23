@@ -692,6 +692,12 @@ Replaces v1.38's Simulation screen (SITL). New UI: `SimulationView`.
   permission, and runtime-specific incompatibility
 * Navigation preserves an owned session; app shutdown performs bounded cleanup of that
   exact session and never kills by process name
+* Verified SITL installation management for configured external binaries and versioned
+  application-owned caches: exact family/channel/platform/architecture selection, progress
+  and cancellation, SHA-256 verification, traversal-safe atomic extraction, exact profile
+  pins, and retention that cannot delete external installations
+* Host capability and version probing are behind platform services for Windows, Linux,
+  WSL-hosted applications, and macOS; unsupported application platforms fail explicitly
 * Runtime availability is explicit. The initial adapter reports unsupported until the
   verified ArduPilot SITL runtime is implemented by sequential task 03
 * Asset: `src/Tests/MissionPlanner.Simulator` already hosts a simulator used by the smoke
@@ -703,7 +709,8 @@ current verification boundary.
 ### Missing (v1.38 feature inventory)
 
 * Select vehicle model (multirotor, heli, plane, quadplane, rover, sub)
-* Download prebuilt SITL binary (stable/dev) from the ArduPilot build server
+* Ship/configure the production official ArduPilot artifact manifest (the acquisition
+  pipeline exists but the repository intentionally does not invent an endpoint)
 * Launch SITL with home location/speedup parameters and auto-connect over TCP
 * Multi-vehicle / swarm launch options
 

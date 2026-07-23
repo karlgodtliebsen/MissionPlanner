@@ -64,6 +64,8 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<PlannerSettingsRuntime>();
         services.TryAddSingleton<ISimulatorProfileStore, PreferencesSimulatorProfileStore>();
         services.TryAddSingleton<ISimulatorProfileService, SimulatorProfileService>();
+        services.TryAddSingleton<ISitlCachePathProvider, MauiSitlCachePathProvider>();
+        services.TryAddSingleton<ISitlPlatformService, LocalSitlPlatformService>();
 
         //services.TryAddSingleton<Views.Vehicles.Views.ModelMapper>();
         services.TryAddSingleton<ThemeChangeViewModel>();

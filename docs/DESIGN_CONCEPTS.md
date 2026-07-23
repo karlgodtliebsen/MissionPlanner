@@ -1091,6 +1091,14 @@ store argument tokens rather than shell command strings, allowing a later local 
 use safe argument-list APIs. Platform persistence and file export stay in MAUI adapters;
 profile validation, lifecycle, and diagnostic redaction stay in Core.
 
+SITL acquisition is a separate trust and ownership boundary. Core selects only exact
+family/channel/platform/architecture manifest entries, requires HTTPS plus SHA-256, bounds
+download and extraction sizes, rejects traversal and link entries, and publishes a cache
+entry only by moving a complete staging tree. Platform detection, external binary probing,
+and cache-root selection are injected adapters. External paths are never cache-owned and
+therefore cannot be removed by package cleanup. Profiles pin a stable installation identity;
+an unresolved identity fails closed instead of falling back by display version.
+
 
 
 

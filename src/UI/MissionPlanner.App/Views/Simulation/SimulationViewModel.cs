@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Views.ConfigTuning;
+using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles.Models;
 
@@ -15,10 +16,13 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     private readonly ISimulatorProfileService profileService;
     private readonly ISimulationSessionManager sessionManager;
     private readonly ISimulationDiagnosticsService diagnosticsService;
+    private readonly ISitlInstallationService installationService;
+    private readonly ISitlPlatformService platformService;
     private readonly ParametersFileHandler fileHandler;
     private readonly IDispatcher dispatcher;
     private readonly ILogger<SimulationViewModel> logger;
     private readonly SemaphoreSlim operationGate = new(1, 1);
+    private CancellationTokenSource? operationCancellation;
     private CancellationTokenSource? timerCancellation;
     private bool initialized;
     private bool active;
@@ -28,6 +32,8 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     /// <param name="profileService">The persisted profile service.</param>
     /// <param name="sessionManager">The process-neutral session manager.</param>
     /// <param name="diagnosticsService">The redacted diagnostics service.</param>
+    /// <param name="installationService">The verified SITL installation service.</param>
+    /// <param name="platformService">The host SITL capability service.</param>
     /// <param name="fileHandler">The platform file helper.</param>
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="logger">The logger.</param>
@@ -35,6 +41,8 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         ISimulatorProfileService profileService,
         ISimulationSessionManager sessionManager,
         ISimulationDiagnosticsService diagnosticsService,
+        ISitlInstallationService installationService,
+        ISitlPlatformService platformService,
         ParametersFileHandler fileHandler,
         IDispatcher dispatcher,
         ILogger<SimulationViewModel> logger)
@@ -42,14 +50,26 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         this.profileService = profileService;
         this.sessionManager = sessionManager;
         this.diagnosticsService = diagnosticsService;
+        this.installationService = installationService;
+        this.platformService = platformService;
         this.fileHandler = fileHandler;
         this.dispatcher = dispatcher;
         this.logger = logger;
         ApplySnapshot(sessionManager.Current);
+        PlatformCapability = platformService.Current.Message;
     }
 
     /// <summary>Gets persisted profiles.</summary>
     public ObservableCollection<SimulatorProfile> Profiles { get; } = [];
+
+    /// <summary>Gets discovered external and verified cached SITL installations.</summary>
+    public ObservableCollection<SitlInstallation> Installations { get; } = [];
+
+    /// <summary>Gets compatible verified releases from the configured manifest.</summary>
+    public ObservableCollection<SitlManifestEntry> AvailableReleases { get; } = [];
+
+    /// <summary>Gets available release channels.</summary>
+    public IReadOnlyList<FirmwareReleaseChannel> ReleaseChannels { get; } = Enum.GetValues<FirmwareReleaseChannel>();
 
     /// <summary>Gets the firmware families supported by the Simulation workspace.</summary>
     public IReadOnlyList<FirmwareFamily> FirmwareFamilies { get; } =
@@ -62,6 +82,32 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
 
     /// <summary>Gets the bounded recent runtime output.</summary>
     public ObservableCollection<SimulatorOutputLine> RecentOutput { get; } = [];
+
+    /// <summary>Gets or sets the selected discovered installation.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanRemoveInstallation))]
+    public partial SitlInstallation? SelectedInstallation { get; set; }
+
+    /// <summary>Gets or sets the selected manifest release.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanInstallRelease))]
+    public partial SitlManifestEntry? SelectedRelease { get; set; }
+
+    /// <summary>Gets or sets the requested manifest channel.</summary>
+    [ObservableProperty]
+    public partial FirmwareReleaseChannel SelectedReleaseChannel { get; set; } = FirmwareReleaseChannel.Stable;
+
+    /// <summary>Gets the detected platform capability.</summary>
+    [ObservableProperty]
+    public partial string PlatformCapability { get; private set; } = string.Empty;
+
+    /// <summary>Gets install/download progress from zero to one.</summary>
+    [ObservableProperty]
+    public partial double InstallProgress { get; private set; }
+
+    /// <summary>Gets installation discovery or download status.</summary>
+    [ObservableProperty]
+    public partial string InstallationStatus { get; private set; } = "SITL installations have not been scanned.";
 
     /// <summary>Gets or sets the selected persisted profile.</summary>
     [ObservableProperty]
@@ -155,6 +201,9 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     [NotifyPropertyChangedFor(nameof(CanStart))]
     [NotifyPropertyChangedFor(nameof(CanStop))]
     [NotifyPropertyChangedFor(nameof(CanRestart))]
+    [NotifyPropertyChangedFor(nameof(CanInstallRelease))]
+    [NotifyPropertyChangedFor(nameof(CanRemoveInstallation))]
+    [NotifyCanExecuteChangedFor(nameof(CancelOperationCommand))]
     public partial bool IsBusy { get; private set; }
 
     /// <summary>Gets whether a new simulation may be started.</summary>
@@ -171,6 +220,16 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         not SimulationSessionState.Starting and
         not SimulationSessionState.WaitingForHeartbeat and
         not SimulationSessionState.Stopping;
+
+    /// <summary>Gets whether a verified manifest release can be installed.</summary>
+    public bool CanInstallRelease => !IsBusy && SelectedRelease is not null;
+
+    /// <summary>Gets whether the selected installation is owned and removable.</summary>
+    public bool CanRemoveInstallation => !IsBusy && SelectedInstallation?.Source == SitlInstallationSource.VerifiedCache;
+
+    /// <summary>Cancels the active profile, discovery, download, or start operation.</summary>
+    [RelayCommand(CanExecute = nameof(CanCancelOperation))]
+    public void CancelOperation() => operationCancellation?.Cancel();
 
     /// <summary>Activates workspace observation without changing simulator ownership.</summary>
     public void Activate()
@@ -223,6 +282,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         }
 
         SelectedProfile = Profiles.FirstOrDefault();
+        await RefreshInstallationsCoreAsync(cancellationToken);
         initialized = true;
     });
 
@@ -242,6 +302,63 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         await profileService.SaveAsync(profile, cancellationToken);
         ReplaceProfiles(profileService.Profiles, profile.Id);
         StatusMessage = $"Profile '{profile.Name}' saved.";
+    });
+
+    /// <summary>Refreshes configured, cached, and manifest SITL choices.</summary>
+    /// <returns>A task representing discovery.</returns>
+    [RelayCommand]
+    public Task RefreshInstallationsAsync() => RunAsync(RefreshInstallationsCoreAsync);
+
+    /// <summary>Downloads, verifies, and atomically installs the selected release.</summary>
+    /// <returns>A task representing installation.</returns>
+    [RelayCommand]
+    public Task InstallReleaseAsync() => RunAsync(async cancellationToken =>
+    {
+        if (SelectedRelease is null)
+        {
+            InstallationStatus = "Select a compatible verified SITL release first.";
+            return;
+        }
+
+        InstallProgress = 0;
+        InstallationStatus = $"Downloading and verifying SITL {SelectedRelease.Version}.";
+        var progress = new Progress<double>(value => dispatcher.Dispatch(() => InstallProgress = value));
+        var installed = await installationService.InstallAsync(SelectedRelease, progress, cancellationToken);
+        await RefreshInstallationsCoreAsync(cancellationToken);
+        SelectedInstallation = Installations.FirstOrDefault(item => item.InstallationId == installed.InstallationId);
+        UseSelectedInstallation();
+        InstallationStatus = $"Verified SITL {installed.Version} is installed and selected.";
+    });
+
+    /// <summary>Pins the profile editor to the selected available installation.</summary>
+    [RelayCommand]
+    public void UseSelectedInstallation()
+    {
+        if (SelectedInstallation is not { State: SitlInstallationState.Available } installation)
+        {
+            InstallationStatus = "Select an available SITL installation.";
+            return;
+        }
+
+        SelectedFirmwareFamily = installation.Family;
+        BinaryVersion = installation.Version;
+        BinaryPath = installation.ExecutablePath;
+        InstallationStatus = $"Profile is pinned to {installation.DisplayName}. Save the profile to persist the pin.";
+    }
+
+    /// <summary>Removes only the selected MissionPlanner-owned cached installation.</summary>
+    /// <returns>A task representing cache removal.</returns>
+    [RelayCommand]
+    public Task RemoveInstallationAsync() => RunAsync(async cancellationToken =>
+    {
+        if (SelectedInstallation is null)
+        {
+            return;
+        }
+
+        await installationService.RemoveAsync(SelectedInstallation, cancellationToken);
+        await RefreshInstallationsCoreAsync(cancellationToken);
+        InstallationStatus = "MissionPlanner-owned SITL cache entry removed. External installations were not touched.";
     });
 
     /// <summary>Deletes the selected profile.</summary>
@@ -317,7 +434,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
 
         disposed = true;
         Deactivate();
-        operationGate.Dispose();
+        operationCancellation?.Cancel();
     }
 
     partial void OnSelectedProfileChanged(SimulatorProfile? value)
@@ -330,6 +447,34 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(CanRestart));
     }
 
+    partial void OnSelectedFirmwareFamilyChanged(FirmwareFamily value)
+    {
+        if (initialized && active)
+        {
+            _ = RefreshReleasesAsync();
+        }
+    }
+
+    partial void OnSelectedReleaseChannelChanged(FirmwareReleaseChannel value)
+    {
+        if (initialized && active)
+        {
+            _ = RefreshReleasesAsync();
+        }
+    }
+
+    partial void OnBinaryPathChanged(string value)
+    {
+        if (SelectedInstallation is { } installation &&
+            !string.Equals(
+                installation.ExecutablePath,
+                value,
+                OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal))
+        {
+            SelectedInstallation = null;
+        }
+    }
+
     private async Task RunAsync(Func<CancellationToken, Task> operation)
     {
         if (!await operationGate.WaitAsync(0))
@@ -338,9 +483,11 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         }
 
         IsBusy = true;
+        using var cancellation = new CancellationTokenSource();
+        operationCancellation = cancellation;
         try
         {
-            await operation(CancellationToken.None);
+            await operation(cancellation.Token);
         }
         catch (OperationCanceledException)
         {
@@ -354,6 +501,11 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         }
         finally
         {
+            if (ReferenceEquals(operationCancellation, cancellation))
+            {
+                operationCancellation = null;
+            }
+
             IsBusy = false;
             operationGate.Release();
         }
@@ -429,7 +581,11 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
                 new SimulationEndpoint("MAVLink", SimulationEndpointTransport.Udp, "127.0.0.1", MavLinkPort),
                 new SimulationEndpoint("Console", SimulationEndpointTransport.Tcp, "127.0.0.1", ConsolePort)
             ],
-            new SimulatorBinaryReference(BinaryVersion.Trim(), BinaryPath.Trim(), SelectedProfile?.Binary.Source ?? "external"),
+            new SimulatorBinaryReference(
+                BinaryVersion.Trim(),
+                BinaryPath.Trim(),
+                SelectedInstallation?.Source.ToString() ?? "external",
+                SelectedInstallation?.InstallationId),
             arguments,
             environment);
     }
@@ -453,6 +609,8 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
             Environment.NewLine,
             profile.Environment.OrderBy(item => item.Key, StringComparer.OrdinalIgnoreCase)
                 .Select(item => $"{item.Key}={item.Value}"));
+        SelectedInstallation = Installations.FirstOrDefault(item =>
+            item.InstallationId.Equals(profile.Binary.InstallationId, StringComparison.Ordinal));
     }
 
     private void ReplaceProfiles(IReadOnlyList<SimulatorProfile> profiles, Guid selectedId)
@@ -464,5 +622,45 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         }
 
         SelectedProfile = Profiles.FirstOrDefault(item => item.Id == selectedId) ?? Profiles.FirstOrDefault();
+    }
+
+    private async Task RefreshInstallationsCoreAsync(CancellationToken cancellationToken)
+    {
+        var installations = await installationService.DiscoverAsync(cancellationToken);
+        Installations.Clear();
+        foreach (var installation in installations)
+        {
+            Installations.Add(installation);
+        }
+
+        SelectedInstallation = SelectedProfile?.Binary.InstallationId is { } id
+            ? Installations.FirstOrDefault(item => item.InstallationId == id)
+            : Installations.FirstOrDefault(item =>
+                SelectedProfile is not null &&
+                item.Family == SelectedProfile.FirmwareFamily &&
+                item.Version.Equals(SelectedProfile.Binary.Version, StringComparison.OrdinalIgnoreCase));
+        await RefreshReleasesCoreAsync(cancellationToken);
+        InstallationStatus = Installations.Count == 0
+            ? "No configured or verified cached SITL installation was found. Configure an official manifest or external installation."
+            : $"Found {Installations.Count} SITL installation(s).";
+    }
+
+    private Task RefreshReleasesAsync() => RunAsync(RefreshReleasesCoreAsync);
+
+    private bool CanCancelOperation() => IsBusy;
+
+    private async Task RefreshReleasesCoreAsync(CancellationToken cancellationToken)
+    {
+        var releases = await installationService.GetReleasesAsync(
+            SelectedFirmwareFamily,
+            SelectedReleaseChannel,
+            cancellationToken);
+        AvailableReleases.Clear();
+        foreach (var release in releases)
+        {
+            AvailableReleases.Add(release);
+        }
+
+        SelectedRelease = AvailableReleases.FirstOrDefault();
     }
 }

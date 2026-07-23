@@ -52,3 +52,22 @@ Use official artifact manifests/endpoints through an injectable provider. Suppor
 - Downloads are integrity checked.
 - External installations remain untouched.
 - Profiles remain reproducible by pinned version.
+
+## Completion
+
+Completed 2026-07-23. Core now models verified releases and discovered installations by
+firmware family, channel, platform, architecture, version, checksum, source, ownership, and
+state. An injectable manifest pipeline selects exact host-compatible artifacts. The package
+manager streams absolute-HTTPS downloads into a versioned cache with progress,
+cancellation, SHA-256 verification, bounded size, traversal/link defense, staging cleanup,
+and atomic publication. Cache retention preserves exact profile pins and refuses to remove
+external installations.
+
+The Simulation UI discovers external and cached binaries, displays platform capability,
+filters release channels, installs/removes owned versions, and pins the editor to the exact
+installation identity. Windows, Linux, WSL-hosted, and macOS behavior is behind platform
+services; unsupported hosts fail explicitly. The repository ships no fabricated artifact
+URL, so deployments configure a trusted official manifest or static signed-off entries.
+Manifest/checksum, atomic/traversal, cache lifecycle, platform, exact-pin, view-model, and DI
+tests cover the boundary. See [SIMULATION.md](../../SIMULATION.md) for the support matrix and
+trust model.

@@ -230,6 +230,12 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<ISimulatorRuntime>().Should().NotBeNull();
         provider.GetRequiredService<ISimulationSessionManager>().Should().NotBeNull();
         provider.GetRequiredService<ISimulationDiagnosticsService>().Should().NotBeNull();
+        provider.GetRequiredService<ISitlManifestProvider>().Should().NotBeNull();
+        provider.GetRequiredService<ISitlReleaseSelector>().Should().NotBeNull();
+        provider.GetRequiredService<ISitlCachePathProvider>().Should().NotBeNull();
+        provider.GetRequiredService<ISitlPlatformService>().Should().NotBeNull();
+        provider.GetRequiredService<ISitlPackageManager>().Should().NotBeNull();
+        provider.GetRequiredService<ISitlInstallationService>().Should().NotBeNull();
         provider.GetRequiredService<SimulationViewModel>().Should().NotBeNull();
     }
 

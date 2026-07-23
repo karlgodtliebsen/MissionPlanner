@@ -41,8 +41,52 @@ existence, Unix execute permission where applicable, and runtime-specific compat
 Port availability validation is an early diagnostic; step 03 adds reservation for the
 launch handoff.
 
-Corrupt or unsupported profile persistence fails closed to a safe editable default.
-Simulator acquisition and verified cached versions are added in step 02.
+Corrupt or unsupported profile persistence fails closed to a safe editable default. A
+profile may pin the stable identity of a configured external installation or a verified
+cache entry. Resolution of an identity pin is exact: if that installation is absent or
+incompatible, the workspace reports it instead of substituting a similarly named binary.
+
+## SITL installations and releases
+
+`ISitlInstallationService` combines two explicitly different sources:
+
+- external binaries listed in the `Sitl:ExternalInstallations` configuration section;
+- application-owned packages selected from the static `Sitl:Releases` list or an injected
+  official HTTPS manifest at `Sitl:ManifestUrl`.
+
+External paths are probed with an argument-list process API and a short `--version` timeout
+when the current host supports native execution. They remain user-owned: cache removal and
+retention APIs reject them. MissionPlanner does not crawl the machine for executables and
+does not delete or replace a configured external path.
+
+Manifest selection requires an exact firmware family, release channel, platform, and CPU
+architecture match. Downloads accept only absolute HTTPS URLs and a 64-character SHA-256
+digest. The archive is streamed into a bounded temporary file, checked before extraction,
+and then extracted into a unique staging directory. Rooted paths, parent traversal,
+symbolic links, non-file tar entries, excessive downloads, and excessive expanded content
+are rejected. Only a complete staging tree containing the declared executable is moved to
+its versioned installation directory. Cancellation and failure remove temporary staging
+content and never publish a partial installation.
+
+The repository intentionally contains no invented artifact endpoint. Deployments must
+configure a trusted official manifest or signed-off static release metadata. An HTTPS
+transport plus checksum protects the selected bytes; operators remain responsible for the
+manifest trust source.
+
+### Runtime combinations
+
+| Application host | Artifact selector | Architectures | Current boundary |
+| --- | --- | --- | --- |
+| Windows desktop | Windows | x64, Arm64 | Discovery, version probe, install, and selection |
+| Linux desktop | Linux | x64, Arm64 | Discovery, version probe, install, and selection |
+| App hosted inside WSL | WSL | x64, Arm64 | Supported when MissionPlanner itself runs in that WSL environment |
+| macOS desktop | macOS | x64, Arm64 | Discovery, version probe, install, and selection |
+| Android/iOS/other | None | None | Explicitly unavailable for local SITL execution |
+
+Native Windows does not currently bridge into a separate WSL distribution. Actual release
+availability depends on the trusted manifest containing the exact platform/architecture
+artifact. Task 03 supplies the runtime launch adapter; task 02 only acquires and selects the
+binary safely.
 
 ## Diagnostics and privacy
 
@@ -57,8 +101,10 @@ Lifecycle limits are configured by the `Simulation` application section. Default
 
 ## Current verification boundary
 
-Task 01 is covered with fake-runtime tests for successful state transitions, explicit stop,
+Tasks 01–02 are covered with fake-runtime tests for successful state transitions, explicit stop,
 unexpected exit, heartbeat timeout cleanup, shutdown cleanup, profile persistence and
 corrupt recovery, port/path validation, diagnostics redaction, and navigation lifecycle.
-It does not claim that an ArduPilot binary can launch yet; installation and launch are the
-next two sequential tasks.
+Manifest filtering, checksum verification, atomic failure, archive traversal, cache
+retention/ownership, platform capability, and exact profile-pin behavior have deterministic
+tests. These steps do not yet claim that an ArduPilot binary can launch; launch is the next
+sequential task.

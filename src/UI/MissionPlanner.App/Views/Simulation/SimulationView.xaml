@@ -36,6 +36,42 @@
 
                     <Border Padding="12">
                         <VerticalStackLayout Spacing="8">
+                            <Label Text="SITL installations" FontSize="18" FontAttributes="Bold" />
+                            <Label Text="{Binding PlatformCapability}" />
+                            <Picker Title="Installed / configured"
+                                    ItemsSource="{Binding Installations}"
+                                    ItemDisplayBinding="{Binding DisplayName}"
+                                    SelectedItem="{Binding SelectedInstallation}" />
+                            <HorizontalStackLayout Spacing="8">
+                                <Button Text="Refresh" Command="{Binding RefreshInstallationsCommand}" />
+                                <Button Text="Use selected" Command="{Binding UseSelectedInstallationCommand}" />
+                                <Button Text="Remove cached"
+                                        Command="{Binding RemoveInstallationCommand}"
+                                        IsEnabled="{Binding CanRemoveInstallation}" />
+                            </HorizontalStackLayout>
+                            <Grid ColumnDefinitions="0.7*,1.3*" ColumnSpacing="8">
+                                <Picker ItemsSource="{Binding ReleaseChannels}"
+                                        SelectedItem="{Binding SelectedReleaseChannel}" />
+                                <Picker Grid.Column="1"
+                                        Title="Compatible verified release"
+                                        ItemsSource="{Binding AvailableReleases}"
+                                        ItemDisplayBinding="{Binding DisplayName}"
+                                        SelectedItem="{Binding SelectedRelease}" />
+                            </Grid>
+                            <HorizontalStackLayout Spacing="8">
+                                <Button Text="Download, verify, and install"
+                                        Command="{Binding InstallReleaseCommand}"
+                                        IsEnabled="{Binding CanInstallRelease}" />
+                                <Button Text="Cancel"
+                                        Command="{Binding CancelOperationCommand}" />
+                            </HorizontalStackLayout>
+                            <ProgressBar Progress="{Binding InstallProgress}" />
+                            <Label Text="{Binding InstallationStatus}" />
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Padding="12">
+                        <VerticalStackLayout Spacing="8">
                             <Label Text="Launch profile" FontSize="18" FontAttributes="Bold" />
                             <Label Text="Name" />
                             <Entry Text="{Binding ProfileName}" />

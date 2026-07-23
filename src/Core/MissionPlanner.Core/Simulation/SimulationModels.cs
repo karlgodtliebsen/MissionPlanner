@@ -83,7 +83,11 @@ public sealed record SimulationEndpoint(
 /// <param name="Version">Version or user-provided version label.</param>
 /// <param name="ExecutablePath">Absolute executable path.</param>
 /// <param name="Source">Source identifier, such as external or verified cache.</param>
-public sealed record SimulatorBinaryReference(string Version, string ExecutablePath, string Source);
+public sealed record SimulatorBinaryReference(
+    string Version,
+    string ExecutablePath,
+    string Source,
+    string? InstallationId = null);
 
 /// <summary>Defines a reproducible simulator launch profile.</summary>
 /// <param name="Id">Stable profile identifier.</param>

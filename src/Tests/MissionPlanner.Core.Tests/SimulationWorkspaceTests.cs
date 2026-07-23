@@ -189,10 +189,18 @@ public sealed class SimulationWorkspaceTests
             call.Arg<Action>()!();
             return true;
         });
+        var platformService = Substitute.For<ISitlPlatformService>();
+        platformService.Current.Returns(new SitlPlatformCapability(
+            SitlPlatform.Windows,
+            SitlArchitecture.X64,
+            true,
+            "Test platform."));
         using var viewModel = new SimulationViewModel(
             profileService,
             manager,
             new SimulationDiagnosticsService(),
+            Substitute.For<ISitlInstallationService>(),
+            platformService,
             new ParametersFileHandler(Substitute.For<IFileSaver>()),
             dispatcher,
             Substitute.For<ILogger<SimulationViewModel>>());
