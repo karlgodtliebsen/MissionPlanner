@@ -86,6 +86,41 @@ profile may pin the stable identity of a configured external installation or a v
 cache entry. Resolution of an identity pin is exact: if that installation is absent or
 incompatible, the workspace reports it instead of substituting a similarly named binary.
 
+## Location and runtime simulation controls
+
+The profile editor provides typed latitude, longitude, altitude, and heading fields,
+built-in location presets, and map-click selection. These values remain launch-profile
+data and pass through the normal profile validator before SITL is started. Runtime weather,
+sensor, and fault values are a separate control surface and reusable scenario presets are
+persisted separately from launch profiles.
+
+`ISimulationControlCatalog` contains only controls backed by documented ArduPilot SITL
+parameters. Wind speed, direction, and turbulence use `SIM_WIND_SPD`, `SIM_WIND_DIR`, and
+`SIM_WIND_TURB`. GPS loss resolves the current `SIM_GPS1_ENABLE` name or the legacy
+`SIM_GPS_DISABLE` alias by live parameter presence. Compass and RC failures use
+`SIM_MAG1_FAIL` and `SIM_RC_FAIL`; temporary battery voltage uses `SIM_BATT_VOLTAGE`.
+The catalog deliberately exposes rangefinder failure as unavailable because ArduPilot
+documents simulated rangefinders but no general bounded runtime failure parameter. See the
+[SITL simulation parameter guide](https://ardupilot.org/dev/docs/SITL_simulation_parameters.html),
+[simulated-device guide](https://ardupilot.org/dev/docs/adding_simulated_devices.html), and
+[SITL parameter source](https://github.com/ArduPilot/ardupilot/blob/master/libraries/SITL/SITL.cpp).
+
+Capabilities are discovered from the exact connected simulator vehicle's live parameter
+registry and include the observed firmware version, selected parameter alias, current
+value, unit, bounds, and an explanation when unavailable. Every write retains both the
+simulation session ID and verified `VehicleId`, uses the existing MAVLink parameter service,
+and must receive matching registry readback. A session/vehicle change prevents a delayed
+operation from crossing into another SITL instance.
+
+Hazardous controls require explicit confirmation and a positive duration no greater than
+the catalog limit. Their safe or captured original value is reset automatically, by an
+explicit Reset action, on service disposal, or by best effort after a partially failed
+apply. Each confirmed apply, reset, automatic reset, or failure is retained as a bounded
+event with wall time, elapsed simulation time, exact session, vehicle, parameter, value,
+and result. Scenario presets store optional location plus requested control values and
+durations in their own versioned document; loading stages values and does not silently
+perform hazardous writes.
+
 ## SITL installations and releases
 
 `ISitlInstallationService` combines two explicitly different sources:
@@ -141,13 +176,16 @@ Lifecycle limits are configured by the `Simulation` application section. Default
 
 ## Current verification boundary
 
-Tasks 01–03 are covered with fake-runtime tests for successful state transitions, explicit stop,
+Tasks 01–04 are covered with fake-runtime tests for successful state transitions, explicit stop,
 unexpected exit, heartbeat timeout cleanup, shutdown cleanup, profile persistence and
 corrupt recovery, port/path validation, diagnostics redaction, and navigation lifecycle.
 Manifest filtering, checksum verification, atomic failure, archive traversal, cache
 retention/ownership, platform capability, and exact profile-pin behavior have deterministic
 tests. Typed argument/override, frame catalog, port collision/release, heartbeat
 timeout/wrong-identity, early stderr, and ownership-order tests cover direct launch.
+Control tests cover location/range/unit validation, current-versus-legacy parameter
+discovery, firmware reporting, unavailable-control explanations, confirmation, automatic
+and explicit reset, cancellation, preset persistence, and replacement-instance isolation.
 
 Real SITL smoke cases for all four families are opt-in and have 30-second total and
 10-second cleanup bounds. Set `MISSIONPLANNER_SITL_ARDUCOPTER`,

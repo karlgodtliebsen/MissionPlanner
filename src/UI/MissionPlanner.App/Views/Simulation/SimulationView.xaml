@@ -27,9 +27,9 @@
                                     ItemDisplayBinding="{Binding Name}"
                                     SelectedItem="{Binding SelectedProfile}" />
                             <HorizontalStackLayout Spacing="8">
-                                <Button Text="New" Command="{Binding NewProfileCommand}" />
-                                <Button Text="Save" Command="{Binding SaveProfileCommand}" />
-                                <Button Text="Delete" Command="{Binding DeleteProfileCommand}" />
+                                <Button BackgroundColor="Transparent" FontSize="14" Text="New" Command="{Binding NewProfileCommand}" />
+                                <Button BackgroundColor="Transparent" FontSize="14" Text="Save" Command="{Binding SaveProfileCommand}" />
+                                <Button BackgroundColor="Transparent" FontSize="14" Text="Delete" Command="{Binding DeleteProfileCommand}" />
                             </HorizontalStackLayout>
                         </VerticalStackLayout>
                     </Border>
@@ -43,9 +43,9 @@
                                     ItemDisplayBinding="{Binding DisplayName}"
                                     SelectedItem="{Binding SelectedInstallation}" />
                             <HorizontalStackLayout Spacing="8">
-                                <Button Text="Refresh" Command="{Binding RefreshInstallationsCommand}" />
-                                <Button Text="Use selected" Command="{Binding UseSelectedInstallationCommand}" />
-                                <Button Text="Remove cached"
+                                <Button BackgroundColor="Transparent" FontSize="14" Text="Refresh" Command="{Binding RefreshInstallationsCommand}" />
+                                <Button BackgroundColor="Transparent" FontSize="14" Text="Use selected" Command="{Binding UseSelectedInstallationCommand}" />
+                                <Button BackgroundColor="Transparent" FontSize="14" Text="Remove cached"
                                         Command="{Binding RemoveInstallationCommand}"
                                         IsEnabled="{Binding CanRemoveInstallation}" />
                             </HorizontalStackLayout>
@@ -98,12 +98,21 @@
                             <Label Text="Absolute executable path" />
                             <Entry Text="{Binding BinaryPath}" Placeholder="Select an installed SITL binary in step 02" />
                             <Label Text="Start location (latitude, longitude, altitude, heading)" />
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <Picker Title="Location preset"
+                                        ItemsSource="{Binding LocationPresets}"
+                                        ItemDisplayBinding="{Binding Name}"
+                                        SelectedItem="{Binding SelectedLocationPreset}" />
+                                <Button Grid.Column="1" Text="Apply preset" Command="{Binding ApplyLocationPresetCommand}" />
+                            </Grid>
                             <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
                                 <Entry Text="{Binding Latitude}" Keyboard="Numeric" Placeholder="Latitude" />
                                 <Entry Grid.Column="1" Text="{Binding Longitude}" Keyboard="Numeric" Placeholder="Longitude" />
                                 <Entry Grid.Row="1" Text="{Binding Altitude}" Keyboard="Numeric" Placeholder="Altitude m" />
                                 <Entry Grid.Row="1" Grid.Column="1" Text="{Binding Heading}" Keyboard="Numeric" Placeholder="Heading °" />
                             </Grid>
+                            <Label Text="Click the map to select latitude/longitude" />
+                            <vm:SimulationLocationMapView HeightRequest="220" />
                             <Label Text="Ports" />
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                                 <Entry Text="{Binding MavLinkPort}" Keyboard="Numeric" Placeholder="MAVLink UDP" />
@@ -135,7 +144,7 @@
                 </VerticalStackLayout>
             </ScrollView>
 
-            <Grid Grid.Column="1" RowDefinitions="Auto,Auto,*" RowSpacing="12">
+            <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="12">
                 <Border Padding="12">
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                         <VerticalStackLayout Spacing="4">
@@ -158,13 +167,60 @@
                     </Grid>
                 </Border>
 
-                <Grid Grid.Row="2" RowDefinitions="Auto,*" RowSpacing="8">
+                <Border Grid.Row="2" Padding="12">
+                    <VerticalStackLayout Spacing="7">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <Label Text="Environment, sensors, and bounded faults" FontSize="18" FontAttributes="Bold" />
+                            <Button Grid.Column="1" Text="Refresh" Command="{Binding RefreshControlsCommand}" />
+                        </Grid>
+                        <Picker Title="Documented control"
+                                ItemsSource="{Binding ControlCapabilities}"
+                                ItemDisplayBinding="{Binding DisplayName}"
+                                SelectedItem="{Binding SelectedControl}" />
+                        <Label Text="{Binding SelectedControl.Reason}" />
+                        <Label Text="{Binding SelectedControl.Descriptor.Description}" />
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                            <Entry Text="{Binding ControlRequestedValue}" Keyboard="Numeric" Placeholder="Requested value" />
+                            <Entry Grid.Column="1" Text="{Binding FaultDurationSeconds}" Keyboard="Numeric" Placeholder="Fault duration seconds" />
+                        </Grid>
+                        <HorizontalStackLayout Spacing="8">
+                            <CheckBox IsChecked="{Binding HazardConfirmed}" />
+                            <Label Text="I confirm this bounded hazardous injection" VerticalOptions="Center" />
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout Spacing="8">
+                            <Button Text="Apply" Command="{Binding ApplyControlCommand}" IsEnabled="{Binding SelectedControl.IsAvailable}" />
+                            <Button Text="Reset" Command="{Binding ResetControlCommand}" />
+                        </HorizontalStackLayout>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                            <Entry Text="{Binding ScenarioPresetName}" Placeholder="Scenario preset name" />
+                            <Picker Grid.Column="1"
+                                    Title="Saved scenario preset"
+                                    ItemsSource="{Binding ScenarioPresets}"
+                                    ItemDisplayBinding="{Binding Name}"
+                                    SelectedItem="{Binding SelectedScenarioPreset}" />
+                        </Grid>
+                        <HorizontalStackLayout Spacing="8">
+                            <Button Text="Save preset" Command="{Binding SaveScenarioPresetCommand}" />
+                            <Button Text="Load preset" Command="{Binding LoadScenarioPresetCommand}" />
+                            <Button Text="Delete preset" Command="{Binding DeleteScenarioPresetCommand}" />
+                        </HorizontalStackLayout>
+                        <CollectionView ItemsSource="{Binding ScenarioEvents}" HeightRequest="85">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="simulation:SimulationScenarioEvent">
+                                    <Label Text="{Binding Message}" LineBreakMode="TailTruncation" />
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+
+                <Grid Grid.Row="3" RowDefinitions="Auto,*" RowSpacing="8">
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                         <Label Text="Live stdout / stderr" FontSize="18" FontAttributes="Bold" />
                         <HorizontalStackLayout Grid.Column="1" Spacing="8">
-                            <Button Text="Start" Command="{Binding StartCommand}" IsEnabled="{Binding CanStart}" />
-                            <Button Text="Stop" Command="{Binding StopCommand}" IsEnabled="{Binding CanStop}" />
-                            <Button Text="Restart" Command="{Binding RestartCommand}" IsEnabled="{Binding CanRestart}" />
+                            <Button BackgroundColor="Transparent" FontSize="14" Text="Start" Command="{Binding StartCommand}" IsEnabled="{Binding CanStart}" />
+                            <Button BackgroundColor="Transparent" FontSize="14" Text="Stop" Command="{Binding StopCommand}" IsEnabled="{Binding CanStop}" />
+                            <Button BackgroundColor="Transparent" FontSize="14" Text="Restart" Command="{Binding RestartCommand}" IsEnabled="{Binding CanRestart}" />
                         </HorizontalStackLayout>
                     </Grid>
                     <CollectionView Grid.Row="1" ItemsSource="{Binding RecentOutput}">

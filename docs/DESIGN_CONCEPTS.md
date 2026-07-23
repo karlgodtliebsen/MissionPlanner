@@ -1108,6 +1108,16 @@ normal hardware. A successful connection has an opaque generation identity. Simu
 cleanup may disconnect only that generation, preventing a late process cleanup from
 tearing down a newer user connection with the same `VehicleId`.
 
+Runtime simulation controls follow a capability-and-confirmation boundary. A catalog maps
+logical controls only to documented SITL parameters; live parameter presence selects a
+firmware alias and explains absence. Core captures the exact simulation session and
+`VehicleId`, routes writes through the existing parameter service, and treats matching
+registry readback as the acknowledgement. Hazardous injections require an explicit user
+confirmation and bounded duration, retain their safe/original reset value, and produce
+simulation-time audit events. An automatic reset is skipped rather than retargeted if the
+session identity changes. Scenario presets are separately versioned staging data and never
+execute a hazardous write merely by loading.
+
 
 
 

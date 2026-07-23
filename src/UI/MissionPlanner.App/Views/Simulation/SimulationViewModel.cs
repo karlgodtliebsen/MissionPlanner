@@ -19,6 +19,9 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     private readonly ISitlInstallationService installationService;
     private readonly ISitlPlatformService platformService;
     private readonly IArduPilotFrameCatalog frameCatalog;
+    private readonly ISimulationControlCatalog controlCatalog;
+    private readonly ISimulationControlService controlService;
+    private readonly ISimulationScenarioPresetService scenarioPresetService;
     private readonly ParametersFileHandler fileHandler;
     private readonly IDispatcher dispatcher;
     private readonly ILogger<SimulationViewModel> logger;
@@ -28,6 +31,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     private bool initialized;
     private bool active;
     private bool disposed;
+    private readonly Dictionary<string, SimulationPresetControlValue> stagedControls = new(StringComparer.Ordinal);
 
     /// <summary>Initializes the Simulation workspace view model.</summary>
     /// <param name="profileService">The persisted profile service.</param>
@@ -36,6 +40,9 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     /// <param name="installationService">The verified SITL installation service.</param>
     /// <param name="platformService">The host SITL capability service.</param>
     /// <param name="frameCatalog">The supported ArduPilot frame/model catalog.</param>
+    /// <param name="controlCatalog">The documented runtime-control and location catalog.</param>
+    /// <param name="controlService">The instance-scoped runtime-control service.</param>
+    /// <param name="scenarioPresetService">The separate scenario-preset service.</param>
     /// <param name="fileHandler">The platform file helper.</param>
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="logger">The logger.</param>
@@ -46,6 +53,9 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         ISitlInstallationService installationService,
         ISitlPlatformService platformService,
         IArduPilotFrameCatalog frameCatalog,
+        ISimulationControlCatalog controlCatalog,
+        ISimulationControlService controlService,
+        ISimulationScenarioPresetService scenarioPresetService,
         ParametersFileHandler fileHandler,
         IDispatcher dispatcher,
         ILogger<SimulationViewModel> logger)
@@ -56,11 +66,19 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         this.installationService = installationService;
         this.platformService = platformService;
         this.frameCatalog = frameCatalog;
+        this.controlCatalog = controlCatalog;
+        this.controlService = controlService;
+        this.scenarioPresetService = scenarioPresetService;
         this.fileHandler = fileHandler;
         this.dispatcher = dispatcher;
         this.logger = logger;
         ApplySnapshot(sessionManager.Current);
         PlatformCapability = platformService.Current.Message;
+        foreach (var location in controlCatalog.Locations)
+        {
+            LocationPresets.Add(location);
+        }
+
         RefreshFrames();
     }
 
@@ -72,6 +90,18 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
 
     /// <summary>Gets compatible verified releases from the configured manifest.</summary>
     public ObservableCollection<SitlManifestEntry> AvailableReleases { get; } = [];
+
+    /// <summary>Gets documented runtime control capabilities for the connected simulator.</summary>
+    public ObservableCollection<SimulationControlCapability> ControlCapabilities { get; } = [];
+
+    /// <summary>Gets built-in typed start-location presets.</summary>
+    public ObservableCollection<SimulationLocationPreset> LocationPresets { get; } = [];
+
+    /// <summary>Gets persisted scenario presets separate from launch profiles.</summary>
+    public ObservableCollection<SimulationScenarioPreset> ScenarioPresets { get; } = [];
+
+    /// <summary>Gets auditable runtime control events.</summary>
+    public ObservableCollection<SimulationScenarioEvent> ScenarioEvents { get; } = [];
 
     /// <summary>Gets available release channels.</summary>
     public IReadOnlyList<FirmwareReleaseChannel> ReleaseChannels { get; } = Enum.GetValues<FirmwareReleaseChannel>();
@@ -116,6 +146,34 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     /// <summary>Gets installation discovery or download status.</summary>
     [ObservableProperty]
     public partial string InstallationStatus { get; private set; } = "SITL installations have not been scanned.";
+
+    /// <summary>Gets or sets the selected runtime control capability.</summary>
+    [ObservableProperty]
+    public partial SimulationControlCapability? SelectedControl { get; set; }
+
+    /// <summary>Gets or sets the requested value for the selected control.</summary>
+    [ObservableProperty]
+    public partial double ControlRequestedValue { get; set; }
+
+    /// <summary>Gets or sets the bounded hazardous-control duration in seconds.</summary>
+    [ObservableProperty]
+    public partial double FaultDurationSeconds { get; set; } = 10;
+
+    /// <summary>Gets or sets explicit hazardous-action confirmation.</summary>
+    [ObservableProperty]
+    public partial bool HazardConfirmed { get; set; }
+
+    /// <summary>Gets or sets the selected launch-location preset.</summary>
+    [ObservableProperty]
+    public partial SimulationLocationPreset? SelectedLocationPreset { get; set; }
+
+    /// <summary>Gets or sets the selected persisted scenario preset.</summary>
+    [ObservableProperty]
+    public partial SimulationScenarioPreset? SelectedScenarioPreset { get; set; }
+
+    /// <summary>Gets or sets the scenario preset editor name.</summary>
+    [ObservableProperty]
+    public partial string ScenarioPresetName { get; set; } = "Simulation scenario";
 
     /// <summary>Gets or sets the selected persisted profile.</summary>
     [ObservableProperty]
@@ -318,7 +376,14 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         }
 
         SelectedProfile = Profiles.FirstOrDefault();
+        await scenarioPresetService.InitializeAsync(cancellationToken);
+        ReplaceScenarioPresets();
         await RefreshInstallationsCoreAsync(cancellationToken);
+        if (sessionManager.Current.State == SimulationSessionState.Running)
+        {
+            await RefreshControlsCoreAsync(cancellationToken);
+        }
+
         initialized = true;
     });
 
@@ -397,6 +462,137 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         InstallationStatus = "MissionPlanner-owned SITL cache entry removed. External installations were not touched.";
     });
 
+    /// <summary>Applies the selected typed location preset to the launch-profile editor.</summary>
+    [RelayCommand]
+    public void ApplyLocationPreset()
+    {
+        if (SelectedLocationPreset is null)
+        {
+            return;
+        }
+
+        ApplyLocation(SelectedLocationPreset.Location);
+        StatusMessage = $"Applied location preset '{SelectedLocationPreset.Name}' to the profile editor.";
+    }
+
+    /// <summary>Handles an unavoidable map integration click for launch-location selection.</summary>
+    /// <param name="latitude">Selected latitude.</param>
+    /// <param name="longitude">Selected longitude.</param>
+    public void HandleMapLocationClick(double latitude, double longitude)
+    {
+        if (latitude is < -90 or > 90 || longitude is < -180 or > 180)
+        {
+            return;
+        }
+
+        Latitude = latitude;
+        Longitude = longitude;
+        StatusMessage = "Map location applied to the launch-profile editor.";
+    }
+
+    /// <summary>Refreshes documented controls against the exact connected simulator.</summary>
+    /// <returns>A task representing capability discovery.</returns>
+    [RelayCommand]
+    public Task RefreshControlsAsync() => RunAsync(RefreshControlsCoreAsync);
+
+    /// <summary>Applies the selected environment value or bounded hazardous control.</summary>
+    /// <returns>A task representing confirmed parameter write/readback.</returns>
+    [RelayCommand]
+    public Task ApplyControlAsync() => RunAsync(async cancellationToken =>
+    {
+        if (SelectedControl is null)
+        {
+            return;
+        }
+
+        TimeSpan? duration = SelectedControl.Descriptor.MaximumDuration is null
+            ? null
+            : TimeSpan.FromSeconds(FaultDurationSeconds);
+        await controlService.ApplyAsync(
+            SelectedControl.Descriptor.Key,
+            ControlRequestedValue,
+            duration,
+            HazardConfirmed,
+            cancellationToken);
+        HazardConfirmed = false;
+        await RefreshControlsCoreAsync(cancellationToken);
+        StatusMessage = $"Simulation control '{SelectedControl.Descriptor.DisplayName}' applied and confirmed.";
+    });
+
+    /// <summary>Resets the selected active hazardous control.</summary>
+    /// <returns>A task representing confirmed reset readback.</returns>
+    [RelayCommand]
+    public Task ResetControlAsync() => RunAsync(async cancellationToken =>
+    {
+        if (SelectedControl is null)
+        {
+            return;
+        }
+
+        await controlService.ResetAsync(SelectedControl.Descriptor.Key, cancellationToken);
+        HazardConfirmed = false;
+        await RefreshControlsCoreAsync(cancellationToken);
+        StatusMessage = $"Simulation control '{SelectedControl.Descriptor.DisplayName}' reset.";
+    });
+
+    /// <summary>Saves staged location/control values as a scenario preset separate from launch profiles.</summary>
+    /// <returns>A task representing preset persistence.</returns>
+    [RelayCommand]
+    public Task SaveScenarioPresetAsync() => RunAsync(async cancellationToken =>
+    {
+        StoreControlEdit(SelectedControl);
+        var preset = new SimulationScenarioPreset(
+            SelectedScenarioPreset?.Id ?? Guid.NewGuid(),
+            ScenarioPresetName.Trim(),
+            new SimulationLocation(Latitude, Longitude, Altitude, Heading),
+            stagedControls.Values.OrderBy(item => item.ControlKey, StringComparer.Ordinal).ToArray());
+        await scenarioPresetService.SaveAsync(preset, cancellationToken);
+        ReplaceScenarioPresets(preset.Id);
+        StatusMessage = $"Scenario preset '{preset.Name}' saved separately from launch profiles.";
+    });
+
+    /// <summary>Loads the selected scenario preset into the staged editor without executing faults.</summary>
+    [RelayCommand]
+    public void LoadScenarioPreset()
+    {
+        if (SelectedScenarioPreset is null)
+        {
+            return;
+        }
+
+        ScenarioPresetName = SelectedScenarioPreset.Name;
+        if (SelectedScenarioPreset.Location is { } location)
+        {
+            ApplyLocation(location);
+        }
+
+        stagedControls.Clear();
+        foreach (var control in SelectedScenarioPreset.Controls)
+        {
+            stagedControls[control.ControlKey] = control;
+        }
+
+        SelectedControl = ControlCapabilities.FirstOrDefault(item =>
+            stagedControls.ContainsKey(item.Descriptor.Key)) ?? ControlCapabilities.FirstOrDefault();
+        LoadControlEdit(SelectedControl);
+        StatusMessage = "Scenario preset loaded into the editor; no runtime fault was executed.";
+    }
+
+    /// <summary>Deletes the selected scenario preset.</summary>
+    /// <returns>A task representing preset persistence.</returns>
+    [RelayCommand]
+    public Task DeleteScenarioPresetAsync() => RunAsync(async cancellationToken =>
+    {
+        if (SelectedScenarioPreset is null)
+        {
+            return;
+        }
+
+        await scenarioPresetService.DeleteAsync(SelectedScenarioPreset.Id, cancellationToken);
+        ReplaceScenarioPresets();
+        StatusMessage = "Scenario preset deleted.";
+    });
+
     /// <summary>Deletes the selected profile.</summary>
     /// <returns>A task representing persistence.</returns>
     [RelayCommand]
@@ -420,7 +616,11 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         var profile = CreateProfile();
         await profileService.SaveAsync(profile, cancellationToken);
         ReplaceProfiles(profileService.Profiles, profile.Id);
-        await sessionManager.StartAsync(profile, cancellationToken);
+        var started = await sessionManager.StartAsync(profile, cancellationToken);
+        if (started.State == SimulationSessionState.Running)
+        {
+            await RefreshControlsCoreAsync(cancellationToken);
+        }
     });
 
     /// <summary>Stops only the exact runtime session owned by the workspace.</summary>
@@ -499,6 +699,16 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
             _ = RefreshReleasesAsync();
         }
     }
+
+    partial void OnSelectedControlChanging(
+        SimulationControlCapability? oldValue,
+        SimulationControlCapability? newValue) => StoreControlEdit(oldValue);
+
+    partial void OnSelectedControlChanged(SimulationControlCapability? value) => LoadControlEdit(value);
+
+    partial void OnControlRequestedValueChanged(double value) => StoreControlEdit(SelectedControl);
+
+    partial void OnFaultDurationSecondsChanged(double value) => StoreControlEdit(SelectedControl);
 
     partial void OnBinaryPathChanged(string value)
     {
@@ -722,6 +932,26 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         SelectedRelease = AvailableReleases.FirstOrDefault();
     }
 
+    private async Task RefreshControlsCoreAsync(CancellationToken cancellationToken)
+    {
+        var selectedKey = SelectedControl?.Descriptor.Key;
+        var capabilities = await controlService.DiscoverAsync(cancellationToken);
+        ControlCapabilities.Clear();
+        foreach (var capability in capabilities)
+        {
+            ControlCapabilities.Add(capability);
+        }
+
+        SelectedControl = ControlCapabilities.FirstOrDefault(item => item.Descriptor.Key == selectedKey) ??
+            ControlCapabilities.FirstOrDefault(item => item.IsAvailable) ??
+            ControlCapabilities.FirstOrDefault();
+        ScenarioEvents.Clear();
+        foreach (var item in controlService.Events)
+        {
+            ScenarioEvents.Add(item);
+        }
+    }
+
     private void RefreshFrames()
     {
         var current = FrameModel;
@@ -758,5 +988,59 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         }
 
         return result;
+    }
+
+    private void ApplyLocation(SimulationLocation location)
+    {
+        Latitude = location.LatitudeDegrees;
+        Longitude = location.LongitudeDegrees;
+        Altitude = location.AltitudeMeters;
+        Heading = location.HeadingDegrees;
+    }
+
+    private void StoreControlEdit(SimulationControlCapability? capability)
+    {
+        if (capability is null || !double.IsFinite(ControlRequestedValue))
+        {
+            return;
+        }
+
+        stagedControls[capability.Descriptor.Key] = new SimulationPresetControlValue(
+            capability.Descriptor.Key,
+            ControlRequestedValue,
+            capability.Descriptor.MaximumDuration is null || !double.IsFinite(FaultDurationSeconds) || FaultDurationSeconds <= 0
+                ? null
+                : TimeSpan.FromSeconds(FaultDurationSeconds));
+    }
+
+    private void LoadControlEdit(SimulationControlCapability? capability)
+    {
+        if (capability is null)
+        {
+            return;
+        }
+
+        if (stagedControls.TryGetValue(capability.Descriptor.Key, out var staged))
+        {
+            ControlRequestedValue = staged.Value;
+            FaultDurationSeconds = staged.Duration?.TotalSeconds ?? 10;
+            return;
+        }
+
+        ControlRequestedValue = capability.CurrentValue ?? capability.Descriptor.Minimum;
+        FaultDurationSeconds = Math.Min(10, capability.Descriptor.MaximumDuration?.TotalSeconds ?? 10);
+    }
+
+    private void ReplaceScenarioPresets(Guid? selectedId = null)
+    {
+        ScenarioPresets.Clear();
+        foreach (var preset in scenarioPresetService.Presets)
+        {
+            ScenarioPresets.Add(preset);
+        }
+
+        SelectedScenarioPreset = selectedId is null
+            ? ScenarioPresets.FirstOrDefault()
+            : ScenarioPresets.FirstOrDefault(item => item.Id == selectedId) ?? ScenarioPresets.FirstOrDefault();
     }
 }

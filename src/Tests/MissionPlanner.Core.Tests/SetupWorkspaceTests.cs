@@ -230,6 +230,10 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<ISimulatorRuntime>().Should().BeOfType<ArduPilotSitlRuntime>();
         provider.GetRequiredService<ISimulationSessionManager>().Should().NotBeNull();
         provider.GetRequiredService<ISimulationDiagnosticsService>().Should().NotBeNull();
+        provider.GetRequiredService<ISimulationControlCatalog>().Should().NotBeNull();
+        provider.GetRequiredService<ISimulationControlService>().Should().NotBeNull();
+        provider.GetRequiredService<ISimulationScenarioPresetStore>().Should().NotBeNull();
+        provider.GetRequiredService<ISimulationScenarioPresetService>().Should().NotBeNull();
         provider.GetRequiredService<IArduPilotFrameCatalog>().Should().NotBeNull();
         provider.GetRequiredService<IArduPilotLaunchPlanBuilder>().Should().NotBeNull();
         provider.GetRequiredService<ISimulationPortAllocator>().Should().NotBeNull();

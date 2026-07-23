@@ -70,6 +70,10 @@ public static class DomainConfigurator
         services.TryAddSingleton<ISimulatorRuntime, UnavailableSimulatorRuntime>();
         services.TryAddSingleton<ISimulationSessionManager, SimulationSessionManager>();
         services.TryAddSingleton<ISimulationDiagnosticsService, SimulationDiagnosticsService>();
+        services.Configure<SimulationControlOptions>(configuration.GetSection(SimulationControlOptions.SectionName));
+        services.TryAddSingleton<ISimulationControlCatalog, SimulationControlCatalog>();
+        services.TryAddSingleton<ISimulationControlService, SimulationControlService>();
+        services.TryAddSingleton<ISimulationScenarioPresetService, SimulationScenarioPresetService>();
         services.Configure<SitlManifestOptions>(configuration.GetSection(SitlManifestOptions.SectionName));
         services.AddHttpClient("SITL");
         services.TryAddSingleton<ISitlManifestProvider, JsonSitlManifestProvider>();

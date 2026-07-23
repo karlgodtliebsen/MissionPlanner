@@ -521,6 +521,8 @@ public sealed class ArduPilotSitlRuntime(
 
         public SimulatorRuntimeIdentity Identity { get; }
 
+        public VehicleId? ConnectedVehicleId { get; private set; }
+
         public IReadOnlyList<SimulationEndpoint> ConnectionEndpoints => portLease.Endpoints;
 
         public Task<SimulatorRuntimeExit> Completion => completion;
@@ -554,7 +556,7 @@ public sealed class ArduPilotSitlRuntime(
 
             try
             {
-                await connectTask.ConfigureAwait(false);
+                ConnectedVehicleId = await connectTask.ConfigureAwait(false);
             }
             catch (Exception exception) when (exception is SimulationConnectionException or OperationCanceledException)
             {

@@ -220,6 +220,7 @@ public sealed record SimulatorRuntimeExit(int? ExitCode, bool WasExpected, strin
 /// <param name="Message">Current user-facing status.</param>
 /// <param name="Failure">Failure detail, when applicable.</param>
 /// <param name="RecentOutput">Bounded recent output.</param>
+/// <param name="VehicleId">Verified connected simulator vehicle identity.</param>
 public sealed record SimulationSessionSnapshot(
     Guid SessionId,
     SimulatorProfile? Profile,
@@ -230,7 +231,8 @@ public sealed record SimulationSessionSnapshot(
     DateTimeOffset? EndedAt,
     string Message,
     string? Failure,
-    IReadOnlyList<SimulatorOutputLine> RecentOutput)
+    IReadOnlyList<SimulatorOutputLine> RecentOutput,
+    VehicleId? VehicleId = null)
 {
     /// <summary>Creates the initial stopped workspace state.</summary>
     public static SimulationSessionSnapshot Stopped { get; } = new(

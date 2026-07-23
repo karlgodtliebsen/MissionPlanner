@@ -52,3 +52,26 @@ Use documented SITL parameters/commands and runtime adapters. Separate profile-t
 - Unsupported controls are hidden/explained.
 - Failure injection is bounded and resettable.
 - Scenarios are reproducible and instance-specific.
+
+## Completion
+
+Completed 2026-07-23. The Simulation profile editor now includes built-in typed location
+presets and map-click latitude/longitude selection while retaining altitude and heading.
+Core exposes a documented ArduPilot control catalog for wind, GPS, compass, RC, and
+temporary battery behavior. Capability discovery uses live parameter presence to select
+current or legacy firmware aliases, includes observed firmware version/current value/unit,
+and explains unsupported controls such as the intentionally unavailable general
+rangefinder-failure injection.
+
+All runtime writes target the verified `VehicleId` attached to the exact running simulation
+session, use the existing MAVLink parameter service, and require matching parameter
+readback. Hazardous controls require confirmation plus a bounded duration, capture their
+safe/original value, reset automatically or explicitly, and refuse to cross into a
+replacement instance. Bounded audit events include simulation time and exact target.
+Versioned scenario presets are persisted separately from launch profiles and only stage
+values when loaded.
+
+Deterministic tests cover location/range/unit validation, firmware aliases and unavailable
+capabilities, confirmation, automatic/explicit reset, cancellation, preset corrupt
+recovery, exact multi-instance targeting, and DI registration. See
+[SIMULATION.md](../../SIMULATION.md) for the documented parameter and safety boundaries.

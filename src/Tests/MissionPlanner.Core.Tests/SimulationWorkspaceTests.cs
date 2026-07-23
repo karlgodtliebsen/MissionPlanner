@@ -202,6 +202,9 @@ public sealed class SimulationWorkspaceTests
             Substitute.For<ISitlInstallationService>(),
             platformService,
             new ArduPilotFrameCatalog(),
+            Substitute.For<ISimulationControlCatalog>(),
+            Substitute.For<ISimulationControlService>(),
+            Substitute.For<ISimulationScenarioPresetService>(),
             new ParametersFileHandler(Substitute.For<IFileSaver>()),
             dispatcher,
             Substitute.For<ILogger<SimulationViewModel>>());
@@ -323,6 +326,8 @@ public sealed class SimulationWorkspaceTests
             new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public SimulatorRuntimeIdentity Identity { get; } = new("owned-runtime-1", "Fake", 1234);
+
+        public VehicleId? ConnectedVehicleId => new(1, 1);
 
         public IReadOnlyList<SimulationEndpoint> ConnectionEndpoints { get; } =
         [new SimulationEndpoint("MAVLink", SimulationEndpointTransport.Udp, "127.0.0.1", 14550)];

@@ -707,6 +707,14 @@ Replaces v1.38's Simulation screen (SITL). New UI: `SimulationView`.
 * Connection generations make simulator cleanup ownership-safe: disconnect the exact
   connection first, then the exact process tree and endpoint lease; never replace an
   existing hardware connection silently
+* Typed start location supports built-in presets, latitude/longitude/altitude/heading, and
+  map-click selection. Documented runtime wind, GPS, compass, RC, and temporary battery
+  controls are discovered by live firmware parameter presence and expose unavailable
+  controls with an explanation
+* Hazardous simulation controls require confirmation and bounded duration, confirm MAVLink
+  parameter readback, automatically restore a safe value, target the exact session and
+  `VehicleId`, and retain simulation-time audit events. Versioned scenario presets remain
+  separate from launch profiles
 * Four opt-in real-SITL family smoke tests use strict total and cleanup timeouts and skip
   explicitly when their configured binaries are absent
 * Asset: `src/Tests/MissionPlanner.Simulator` already hosts a simulator used by the smoke
@@ -721,6 +729,7 @@ current verification boundary.
 * Ship/configure the production official ArduPilot artifact manifest (the acquisition
   pipeline exists but the repository intentionally does not invent an endpoint)
 * Multi-vehicle / swarm launch options
+* Declarative scenario execution and reporting
 
 
 

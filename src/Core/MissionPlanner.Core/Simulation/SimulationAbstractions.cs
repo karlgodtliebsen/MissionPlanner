@@ -1,3 +1,5 @@
+using MissionPlanner.Core.Vehicles.Models;
+
 namespace MissionPlanner.Core.Simulation;
 
 /// <summary>Persists an opaque, non-secret simulator-profile document.</summary>
@@ -102,6 +104,9 @@ public interface ISimulatorRuntimeSession : IAsyncDisposable
 {
     /// <summary>Gets the exact runtime identity used for safe cleanup.</summary>
     SimulatorRuntimeIdentity Identity { get; }
+
+    /// <summary>Gets the verified connected vehicle identity after heartbeat readiness.</summary>
+    VehicleId? ConnectedVehicleId { get; }
 
     /// <summary>Gets the runtime-confirmed connection endpoints.</summary>
     IReadOnlyList<SimulationEndpoint> ConnectionEndpoints { get; }

@@ -138,7 +138,8 @@ public sealed class SimulationSessionManager : ISimulationSessionManager
             Publish(current with
             {
                 State = SimulationSessionState.Running,
-                Message = "Simulator is running and the expected heartbeat was observed."
+                Message = "Simulator is running and the expected heartbeat was observed.",
+                VehicleId = createdSession.ConnectedVehicleId
             });
             logger.LogInformation(
                 "Simulation session {SessionId} is running with runtime {RuntimeId} for profile {ProfileId}.",
