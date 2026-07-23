@@ -63,6 +63,10 @@ public static class DomainConfigurator
         services.Configure<SimulationWorkspaceOptions>(configuration.GetSection(SimulationWorkspaceOptions.SectionName));
         services.TryAddSingleton<ISimulatorHostEnvironment, LocalSimulatorHostEnvironment>();
         services.TryAddSingleton<ISimulatorProfileValidator, SimulatorProfileValidator>();
+        services.TryAddSingleton<IArduPilotFrameCatalog, ArduPilotFrameCatalog>();
+        services.TryAddSingleton<IArduPilotLaunchPlanBuilder, ArduPilotLaunchPlanBuilder>();
+        services.TryAddSingleton<ISimulationPortAllocator, SimulationPortAllocator>();
+        services.TryAddSingleton<ISimulatorVehicleConnection, SimulatorVehicleConnection>();
         services.TryAddSingleton<ISimulatorRuntime, UnavailableSimulatorRuntime>();
         services.TryAddSingleton<ISimulationSessionManager, SimulationSessionManager>();
         services.TryAddSingleton<ISimulationDiagnosticsService, SimulationDiagnosticsService>();

@@ -201,6 +201,7 @@ public sealed class SimulationWorkspaceTests
             new SimulationDiagnosticsService(),
             Substitute.For<ISitlInstallationService>(),
             platformService,
+            new ArduPilotFrameCatalog(),
             new ParametersFileHandler(Substitute.For<IFileSaver>()),
             dispatcher,
             Substitute.For<ILogger<SimulationViewModel>>());

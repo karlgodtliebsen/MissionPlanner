@@ -66,6 +66,8 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<ISimulatorProfileService, SimulatorProfileService>();
         services.TryAddSingleton<ISitlCachePathProvider, MauiSitlCachePathProvider>();
         services.TryAddSingleton<ISitlPlatformService, LocalSitlPlatformService>();
+        services.TryAddSingleton<ISimulatorProcessHost, LocalSimulatorProcessHost>();
+        services.Replace(ServiceDescriptor.Singleton<ISimulatorRuntime, ArduPilotSitlRuntime>());
 
         //services.TryAddSingleton<Views.Vehicles.Views.ModelMapper>();
         services.TryAddSingleton<ThemeChangeViewModel>();

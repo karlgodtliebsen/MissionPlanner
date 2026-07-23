@@ -1099,6 +1099,15 @@ and cache-root selection are injected adapters. External paths are never cache-o
 therefore cannot be removed by package cleanup. Profiles pin a stable installation identity;
 an unresolved identity fails closed instead of falling back by display version.
 
+The local ArduPilot runtime preserves the process-neutral Core boundary through an injected
+process host. Core builds argument tokens, reserves endpoint identities, verifies the
+heartbeat, and owns cleanup sequencing; the MAUI adapter alone uses operating-system
+process APIs. Simulator connection goes through `IVehicleConnectionService`, so it shares
+the generated decoder, dispatchers, registry, parameter services, and domain events with
+normal hardware. A successful connection has an opaque generation identity. Simulator
+cleanup may disconnect only that generation, preventing a late process cleanup from
+tearing down a newer user connection with the same `VehicleId`.
+
 
 
 

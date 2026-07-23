@@ -18,6 +18,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     private readonly ISimulationDiagnosticsService diagnosticsService;
     private readonly ISitlInstallationService installationService;
     private readonly ISitlPlatformService platformService;
+    private readonly IArduPilotFrameCatalog frameCatalog;
     private readonly ParametersFileHandler fileHandler;
     private readonly IDispatcher dispatcher;
     private readonly ILogger<SimulationViewModel> logger;
@@ -34,6 +35,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     /// <param name="diagnosticsService">The redacted diagnostics service.</param>
     /// <param name="installationService">The verified SITL installation service.</param>
     /// <param name="platformService">The host SITL capability service.</param>
+    /// <param name="frameCatalog">The supported ArduPilot frame/model catalog.</param>
     /// <param name="fileHandler">The platform file helper.</param>
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="logger">The logger.</param>
@@ -43,6 +45,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         ISimulationDiagnosticsService diagnosticsService,
         ISitlInstallationService installationService,
         ISitlPlatformService platformService,
+        IArduPilotFrameCatalog frameCatalog,
         ParametersFileHandler fileHandler,
         IDispatcher dispatcher,
         ILogger<SimulationViewModel> logger)
@@ -52,11 +55,13 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         this.diagnosticsService = diagnosticsService;
         this.installationService = installationService;
         this.platformService = platformService;
+        this.frameCatalog = frameCatalog;
         this.fileHandler = fileHandler;
         this.dispatcher = dispatcher;
         this.logger = logger;
         ApplySnapshot(sessionManager.Current);
         PlatformCapability = platformService.Current.Message;
+        RefreshFrames();
     }
 
     /// <summary>Gets persisted profiles.</summary>
@@ -79,6 +84,9 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         FirmwareFamily.Rover,
         FirmwareFamily.ArduSub
     ];
+
+    /// <summary>Gets supported direct-SITL frames for the selected firmware family.</summary>
+    public ObservableCollection<string> AvailableFrames { get; } = [];
 
     /// <summary>Gets the bounded recent runtime output.</summary>
     public ObservableCollection<SimulatorOutputLine> RecentOutput { get; } = [];
@@ -168,6 +176,34 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     /// <summary>Gets or sets environment entries as one NAME=VALUE pair per line.</summary>
     [ObservableProperty]
     public partial string EnvironmentText { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets the zero-based SITL instance number.</summary>
+    [ObservableProperty]
+    public partial int InstanceNumber { get; set; }
+
+    /// <summary>Gets or sets the expected MAVLink system ID.</summary>
+    [ObservableProperty]
+    public partial byte SystemId { get; set; } = 1;
+
+    /// <summary>Gets or sets absolute defaults/parameter file paths, one per line.</summary>
+    [ObservableProperty]
+    public partial string DefaultsFilesText { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets additional typed serial endpoints, one index,transport,host,port entry per line.</summary>
+    [ObservableProperty]
+    public partial string SerialEndpointsText { get; set; } = string.Empty;
+
+    /// <summary>Gets or sets whether SITL persistent state is wiped at launch.</summary>
+    [ObservableProperty]
+    public partial bool WipeState { get; set; }
+
+    /// <summary>Gets or sets whether the local process may display its console window.</summary>
+    [ObservableProperty]
+    public partial bool ShowConsoleWindow { get; set; }
+
+    /// <summary>Gets or sets whether live MissionPlanner map integration is enabled.</summary>
+    [ObservableProperty]
+    public partial bool EnableMapIntegration { get; set; } = true;
 
     /// <summary>Gets the current session state.</summary>
     [ObservableProperty]
@@ -449,6 +485,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
 
     partial void OnSelectedFirmwareFamilyChanged(FirmwareFamily value)
     {
+        RefreshFrames();
         if (initialized && active)
         {
             _ = RefreshReleasesAsync();
@@ -587,7 +624,17 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
                 SelectedInstallation?.Source.ToString() ?? "external",
                 SelectedInstallation?.InstallationId),
             arguments,
-            environment);
+            environment,
+            new ArduPilotLaunchSettings(
+                InstanceNumber,
+                SystemId,
+                DefaultsFilesText.Split(
+                    ['\r', '\n'],
+                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+                WipeState,
+                ShowConsoleWindow,
+                EnableMapIntegration,
+                ParseSerialEndpoints()));
     }
 
     private void LoadProfile(SimulatorProfile profile)
@@ -609,6 +656,17 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
             Environment.NewLine,
             profile.Environment.OrderBy(item => item.Key, StringComparer.OrdinalIgnoreCase)
                 .Select(item => $"{item.Key}={item.Value}"));
+        var launchSettings = profile.EffectiveLaunchSettings;
+        InstanceNumber = launchSettings.Instance;
+        SystemId = launchSettings.SystemId;
+        DefaultsFilesText = string.Join(Environment.NewLine, launchSettings.DefaultsFiles);
+        SerialEndpointsText = string.Join(
+            Environment.NewLine,
+            launchSettings.EffectiveSerialEndpoints.Select(item =>
+                $"{item.Index},{item.Transport},{item.Host},{item.Port.ToString(CultureInfo.InvariantCulture)}"));
+        WipeState = launchSettings.WipeState;
+        ShowConsoleWindow = launchSettings.ShowConsoleWindow;
+        EnableMapIntegration = launchSettings.EnableMapIntegration;
         SelectedInstallation = Installations.FirstOrDefault(item =>
             item.InstallationId.Equals(profile.Binary.InstallationId, StringComparison.Ordinal));
     }
@@ -662,5 +720,43 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         }
 
         SelectedRelease = AvailableReleases.FirstOrDefault();
+    }
+
+    private void RefreshFrames()
+    {
+        var current = FrameModel;
+        AvailableFrames.Clear();
+        foreach (var frame in frameCatalog.GetFrames(SelectedFirmwareFamily))
+        {
+            AvailableFrames.Add(frame);
+        }
+
+        if (!AvailableFrames.Contains(current, StringComparer.OrdinalIgnoreCase))
+        {
+            FrameModel = AvailableFrames.FirstOrDefault() ?? string.Empty;
+        }
+    }
+
+    private IReadOnlyList<ArduPilotSerialEndpoint> ParseSerialEndpoints()
+    {
+        var result = new List<ArduPilotSerialEndpoint>();
+        foreach (var line in SerialEndpointsText.Split(
+                     ['\r', '\n'],
+                     StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var fields = line.Split(',', StringSplitOptions.TrimEntries);
+            if (fields.Length != 4 ||
+                !int.TryParse(fields[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var index) ||
+                !Enum.TryParse<ArduPilotSerialTransport>(fields[1], ignoreCase: true, out var transport) ||
+                !int.TryParse(fields[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out var port))
+            {
+                throw new InvalidOperationException(
+                    $"Serial endpoint '{line}' must use index,UdpClient|TcpClient,host,port format.");
+            }
+
+            result.Add(new ArduPilotSerialEndpoint(index, transport, fields[2], port));
+        }
+
+        return result;
     }
 }

@@ -75,13 +75,14 @@ public class VehicleConnectionService(
             await RequestTelemetryStreamsAsync(client, vehicleId.Value, linkedCts.Token);
 
             // Store active connection
-            activeConnection = new ActiveConnection(vehicleId.Value, transport, client, "Serial", portName);
+            var connectionId = Guid.NewGuid();
+            activeConnection = new ActiveConnection(connectionId, vehicleId.Value, transport, client, "Serial", portName);
 
             // Publish success event
             await domainEventHub.PublishDomainEventAsync(new VehicleConnected(vehicleId.Value, "Serial", portName, dateTimeProvider.UtcNow), linkedCts.Token);
 
             logger.LogInformation("Successfully connected to vehicle {VehicleId} via serial port {PortName}", vehicleId, portName);
-            return new VehicleConnectionResult(true, vehicleId.Value, connectionSession);
+            return new VehicleConnectionResult(true, vehicleId.Value, connectionSession, ConnectionId: connectionId);
         }
         catch (Exception ex) //"A connection is already established."
         {
@@ -140,13 +141,14 @@ public class VehicleConnectionService(
             await RequestTelemetryStreamsAsync(client, vehicleId.Value, linkedCts.Token);
 
             // Store active connection
-            activeConnection = new ActiveConnection(vehicleId.Value, transport, client, "TCP", endpoint);
+            var connectionId = Guid.NewGuid();
+            activeConnection = new ActiveConnection(connectionId, vehicleId.Value, transport, client, "TCP", endpoint);
 
             // Publish success event
             await domainEventHub.PublishDomainEventAsync(new VehicleConnected(vehicleId.Value, "TCP", endpoint, dateTimeProvider.UtcNow), linkedCts.Token);
 
             logger.LogInformation("Successfully connected to vehicle {VehicleId} via TCP {Endpoint}", vehicleId, endpoint);
-            return new VehicleConnectionResult(true, vehicleId.Value, connectionSession);
+            return new VehicleConnectionResult(true, vehicleId.Value, connectionSession, ConnectionId: connectionId);
         }
         catch (Exception ex)
         {
@@ -161,7 +163,27 @@ public class VehicleConnectionService(
     }
 
     /// <inheritdoc/>
-    public async Task<VehicleConnectionResult> ConnectUdpAsync(int localPort, string? remoteHost = null, int? remotePort = null, CancellationToken cancellationToken = default)
+    public Task<VehicleConnectionResult> ConnectUdpAsync(
+        int localPort,
+        string? remoteHost = null,
+        int? remotePort = null,
+        CancellationToken cancellationToken = default) =>
+        ConnectUdpCoreAsync(localPort, remoteHost, remotePort, replaceExisting: true, cancellationToken: cancellationToken);
+
+    /// <inheritdoc />
+    public Task<VehicleConnectionResult> ConnectUdpExclusiveAsync(
+        int localPort,
+        string? remoteHost = null,
+        int? remotePort = null,
+        CancellationToken cancellationToken = default) =>
+        ConnectUdpCoreAsync(localPort, remoteHost, remotePort, replaceExisting: false, cancellationToken: cancellationToken);
+
+    private async Task<VehicleConnectionResult> ConnectUdpCoreAsync(
+        int localPort,
+        string? remoteHost,
+        int? remotePort,
+        bool replaceExisting,
+        CancellationToken cancellationToken)
     {
         await connectionLock.WaitAsync(cancellationToken);
         try
@@ -169,6 +191,15 @@ public class VehicleConnectionService(
             // Disconnect existing connection if any
             if (activeConnection != null)
             {
+                if (!replaceExisting)
+                {
+                    return new VehicleConnectionResult(
+                        false,
+                        null,
+                        null,
+                        "A vehicle connection is already active and was left unchanged.");
+                }
+
                 logger.LogInformation("Disconnecting existing connection before establishing new one");
                 await DisconnectInternalAsync(cancellationToken);
             }
@@ -189,7 +220,7 @@ public class VehicleConnectionService(
 
             if (vehicleId == null)
             {
-                await connectionSession.DisconnectAsync(vehicleId, linkedCts.Token);
+                await connectionSession.DisconnectAsync(vehicleId, CancellationToken.None);
                 await PublishConnectionFailed("UDP", endpoint, "No heartbeat received from vehicle");
                 return new VehicleConnectionResult(false, null, null, "Timeout waiting for vehicle heartbeat");
             }
@@ -200,15 +231,26 @@ public class VehicleConnectionService(
             await RequestTelemetryStreamsAsync(client, vehicleId.Value, linkedCts.Token);
 
             // Store active connection
-            activeConnection = new ActiveConnection(vehicleId.Value, transport, client, "UDP", endpoint);
+            var connectionId = Guid.NewGuid();
+            activeConnection = new ActiveConnection(connectionId, vehicleId.Value, transport, client, "UDP", endpoint);
             await domainEventHub.PublishDomainEventAsync(new VehicleConnected(vehicleId.Value, "UDP", endpoint, dateTimeProvider.UtcNow), linkedCts.Token);
 
             logger.LogInformation("Successfully connected to vehicle {VehicleId} via UDP {Endpoint}", vehicleId, endpoint);
-            return new VehicleConnectionResult(true, vehicleId.Value, connectionSession);
+            return new VehicleConnectionResult(true, vehicleId.Value, connectionSession, ConnectionId: connectionId);
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to connect to vehicle via UDP local port {LocalPort}", localPort);
+            try
+            {
+                await connectionSession.DisconnectAsync(activeConnection?.VehicleId, CancellationToken.None);
+            }
+            catch (Exception cleanupException)
+            {
+                logger.LogWarning(cleanupException, "Failed to clean up unsuccessful UDP connection attempt on port {LocalPort}", localPort);
+            }
+
+            activeConnection = null;
             await PublishConnectionFailed("UDP", $"UDP:{localPort}", ex.Message);
             return new VehicleConnectionResult(false, null, null, ex.Message);
         }
@@ -346,6 +388,29 @@ public class VehicleConnectionService(
         }
     }
 
+    /// <inheritdoc />
+    public async Task<bool> DisconnectOwnedAsync(Guid connectionId, CancellationToken cancellationToken = default)
+    {
+        await connectionLock.WaitAsync(cancellationToken);
+        try
+        {
+            if (activeConnection?.ConnectionId != connectionId)
+            {
+                logger.LogInformation(
+                    "Ignored owned disconnect for stale connection generation {ConnectionId}.",
+                    connectionId);
+                return false;
+            }
+
+            await DisconnectInternalAsync(cancellationToken);
+            return true;
+        }
+        finally
+        {
+            connectionLock.Release();
+        }
+    }
+
     /// <summary>
     /// Internal disconnect method - must be called with connectionLock held or from single-threaded context
     /// </summary>
@@ -394,5 +459,11 @@ public class VehicleConnectionService(
     /// <summary>
     /// Represents an active vehicle connection.
     /// </summary>
-    private record ActiveConnection(VehicleId VehicleId, IMavLinkTransport Transport, IMavLinkClient Client, string ConnectionType, string Endpoint);
+    private record ActiveConnection(
+        Guid ConnectionId,
+        VehicleId VehicleId,
+        IMavLinkTransport Transport,
+        IMavLinkClient Client,
+        string ConnectionType,
+        string Endpoint);
 }

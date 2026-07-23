@@ -52,3 +52,27 @@ Create an ArduPilot SITL runtime adapter. Use typed argument construction; never
 - Multiple instances use distinct ports/SystemIds.
 - Failure messages identify launch vs connection problems.
 - Disconnect/restart does not leak dispatchers/transports.
+
+## Completion
+
+Completed 2026-07-23. Desktop composition now uses a direct ArduPilot SITL runtime for
+Copter, Plane, Rover, and Sub. A conservative family/frame catalog and typed launch settings
+cover model, invariant home, speedup, instance, SystemId, defaults files, wipe, visible
+console, MissionPlanner map integration, MAVLink serial zero, and validated additional
+serial client endpoints. Free-form tokens cannot override typed identity or endpoints, and
+the platform process host uses argument-list APIs without a shell in an isolated session
+directory.
+
+Endpoint identities are atomically leased and checked against the host. The runtime starts
+the exact process, then connects through the existing UDP vehicle connection service and
+verifies both SystemId and firmware family. An existing live connection fails explicitly
+instead of being replaced. Opaque connection-generation identities make cleanup safe when
+disconnect/reconnect races occur. Stop order is exact owned connection, exact process tree,
+then endpoint lease, with cleanup attempts continuing after individual failures. Early
+process exit includes bounded stderr; heartbeat timeouts are reported separately.
+
+Deterministic tests cover token preservation and protected overrides, required-family frame
+catalogs, multi-lease collisions/release, heartbeat success/timeout/wrong family, early
+stderr, ownership order, view-model persistence, and DI. Opt-in real-SITL smoke cases cover
+all available families with hard startup/total/cleanup bounds and explicit environmental
+skips. See [SIMULATION.md](../../SIMULATION.md) for runtime details and commands.

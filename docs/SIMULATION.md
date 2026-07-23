@@ -19,9 +19,9 @@ detaches UI observation and does not implicitly terminate a running simulator.
 
 Runtime adapters report stdout/stderr lines, runtime identity/PID when applicable,
 connection endpoints, heartbeat readiness, and completion. The manager retains a bounded
-recent-output window and emits structured lifecycle logs. The default adapter reports an
-explicit unavailable capability until the ArduPilot SITL launch adapter is added by
-Simulation step 03.
+recent-output window and emits structured lifecycle logs. Desktop composition now selects
+the direct ArduPilot SITL adapter; unsupported application platforms still fail through an
+explicit platform capability.
 
 ## Profiles
 
@@ -33,13 +33,53 @@ Versioned profiles are persisted through a platform store and contain:
 - named UDP/TCP endpoints;
 - binary version, absolute path, and source;
 - additional argument tokens and environment values.
+- instance number, expected SystemId, ordered defaults files, wipe/console/map choices, and
+  typed additional serial endpoints.
 
 Arguments are stored as individual tokens, not as a shell command. A runtime adapter must
 use an argument-list API. Before start, Core validates location and numeric ranges,
 supported firmware families, duplicate and occupied ports, absolute binary path and file
 existence, Unix execute permission where applicable, and runtime-specific compatibility.
-Port availability validation is an early diagnostic; step 03 adds reservation for the
-launch handoff.
+Port availability validation is an early diagnostic; the runtime also holds an in-process
+reservation for the complete owned-session lifetime.
+
+## Direct SITL launch and MAVLink ownership
+
+`ArduPilotSitlRuntime` supports the direct Copter, Plane, Rover, and Sub binaries. Its
+conservative frame catalog exposes Copter `quad`, `hexa`, `octa`, `octa-quad`, `tri`, `y6`,
+and `heli`; Plane `plane` and `quadplane`; Rover `rover` and `balancebot`; and Sub `vectored`
+and `vectored_6dof`. A family/frame outside that catalog fails before process creation. The
+catalog is intentionally narrower than arbitrary free-form model text and must be updated
+only against supported SITL help/defaults.
+
+The launch-plan builder produces individual process tokens for model, home, speedup,
+instance, SystemId, serial zero, defaults files, wipe, and typed serial 1–9 UDP/TCP client
+endpoints. Paths and values containing spaces remain one argument-list item. Free-form
+tokens cannot override model, home, speedup, instance, SystemId, serial endpoints,
+defaults, or wipe. The platform host uses `ProcessStartInfo.ArgumentList` with no shell,
+an isolated per-session working/log directory, and redirected stdout/stderr. A visible
+console is created only when the profile explicitly requests it. Map integration means the
+verified simulated vehicle enters the same registry-backed MissionPlanner map/telemetry
+pipeline; it is not an unsupported SITL `--map` shell flag.
+
+`SimulationPortAllocator` atomically leases the endpoint identities against other owned
+sessions and rechecks operating-system availability before launch. Separate profiles can
+therefore use distinct instance/SystemId/port sets without an in-process collision; task 06
+adds multi-session orchestration and automatic deterministic allocation.
+
+After the exact process starts, the state remains `WaitingForHeartbeat` while
+`SimulatorVehicleConnection` calls the existing `IVehicleConnectionService` UDP path. It
+does not construct another MAVLink client, decoder, dispatcher, registry, or parameter
+stack. The connected heartbeat must match both the profile SystemId and firmware family.
+An existing live connection is never silently replaced: the simulator reports that the
+user must disconnect it first. Every successful vehicle connection now carries an opaque
+connection-generation ID, so runtime cleanup can disconnect only the generation it owns.
+Shutdown order is connection, exact process tree, then port lease; a stale owned-disconnect
+request cannot tear down a newer hardware connection.
+
+Early process exit and connection timeout are distinct failures. The former includes a
+bounded tail of startup stderr, while the latter states that the process is alive but no
+verified MAVLink heartbeat arrived.
 
 Corrupt or unsupported profile persistence fails closed to a safe editable default. A
 profile may pin the stable identity of a configured external installation or a verified
@@ -101,10 +141,20 @@ Lifecycle limits are configured by the `Simulation` application section. Default
 
 ## Current verification boundary
 
-Tasks 01–02 are covered with fake-runtime tests for successful state transitions, explicit stop,
+Tasks 01–03 are covered with fake-runtime tests for successful state transitions, explicit stop,
 unexpected exit, heartbeat timeout cleanup, shutdown cleanup, profile persistence and
 corrupt recovery, port/path validation, diagnostics redaction, and navigation lifecycle.
 Manifest filtering, checksum verification, atomic failure, archive traversal, cache
 retention/ownership, platform capability, and exact profile-pin behavior have deterministic
-tests. These steps do not yet claim that an ArduPilot binary can launch; launch is the next
-sequential task.
+tests. Typed argument/override, frame catalog, port collision/release, heartbeat
+timeout/wrong-identity, early stderr, and ownership-order tests cover direct launch.
+
+Real SITL smoke cases for all four families are opt-in and have 30-second total and
+10-second cleanup bounds. Set `MISSIONPLANNER_SITL_ARDUCOPTER`,
+`MISSIONPLANNER_SITL_ARDUPLANE`, `MISSIONPLANNER_SITL_ROVER`, or
+`MISSIONPLANNER_SITL_ARDUSUB` to an installed verified executable; absent families are
+reported as environmental skips rather than waiting or downloading. Run them with:
+
+```powershell
+dotnet test .\src\Tests\MissionPlanner.Core.Tests\MissionPlanner.Core.Tests.csproj --filter FullyQualifiedName~ArduPilotSitlSmokeTests
+```

@@ -45,9 +45,27 @@ public interface IVehicleConnectionService : IAsyncDisposable
     /// <returns>Connection result with vehicle ID if successful</returns>
     Task<VehicleConnectionResult> ConnectUdpAsync(int localPort, string? remoteHost = null, int? remotePort = null, CancellationToken cancellationToken = default);
 
+    /// <summary>Connects through UDP only when no connection is already active.</summary>
+    /// <param name="localPort">Local UDP port to listen on.</param>
+    /// <param name="remoteHost">Optional remote host for outbound messages.</param>
+    /// <param name="remotePort">Optional remote port for outbound messages.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Connection result; an existing connection produces an explicit failure.</returns>
+    Task<VehicleConnectionResult> ConnectUdpExclusiveAsync(
+        int localPort,
+        string? remoteHost = null,
+        int? remotePort = null,
+        CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Disconnects the transport.
     /// </summary>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     Task DisconnectAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Disconnects only when the exact active connection generation is still owned by the caller.</summary>
+    /// <param name="connectionId">Connection identity returned by a successful connect operation.</param>
+    /// <param name="cancellationToken">A token to cancel the operation.</param>
+    /// <returns><see langword="true"/> when the matching connection was disconnected.</returns>
+    Task<bool> DisconnectOwnedAsync(Guid connectionId, CancellationToken cancellationToken = default);
 }

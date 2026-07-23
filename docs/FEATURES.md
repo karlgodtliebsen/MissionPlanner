@@ -698,8 +698,17 @@ Replaces v1.38's Simulation screen (SITL). New UI: `SimulationView`.
   pins, and retention that cannot delete external installations
 * Host capability and version probing are behind platform services for Windows, Linux,
   WSL-hosted applications, and macOS; unsupported application platforms fail explicitly
-* Runtime availability is explicit. The initial adapter reports unsupported until the
-  verified ArduPilot SITL runtime is implemented by sequential task 03
+* Direct ArduPilot SITL launch for Copter, Plane, Rover, and Sub with conservative frame
+  catalogs; typed model/home/speedup/instance/SystemId/defaults/serial arguments; exact
+  endpoint leases; isolated working/log directories; and optional visible console
+* Automatic connection reuses the existing UDP vehicle stack and verifies heartbeat
+  SystemId plus firmware family. Process-running and vehicle-connected remain distinct;
+  startup stderr and heartbeat failures are actionable
+* Connection generations make simulator cleanup ownership-safe: disconnect the exact
+  connection first, then the exact process tree and endpoint lease; never replace an
+  existing hardware connection silently
+* Four opt-in real-SITL family smoke tests use strict total and cleanup timeouts and skip
+  explicitly when their configured binaries are absent
 * Asset: `src/Tests/MissionPlanner.Simulator` already hosts a simulator used by the smoke
   tests — a candidate backend for an in-app SITL experience
 
@@ -711,7 +720,6 @@ current verification boundary.
 * Select vehicle model (multirotor, heli, plane, quadplane, rover, sub)
 * Ship/configure the production official ArduPilot artifact manifest (the acquisition
   pipeline exists but the repository intentionally does not invent an endpoint)
-* Launch SITL with home location/speedup parameters and auto-connect over TCP
 * Multi-vehicle / swarm launch options
 
 

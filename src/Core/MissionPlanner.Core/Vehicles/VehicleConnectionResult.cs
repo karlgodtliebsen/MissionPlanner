@@ -10,4 +10,10 @@ namespace MissionPlanner.Core.Vehicles;
 /// <param name="VehicleId">The connected vehicle's ID (null if failed)</param>
 /// <param name="ConnectionSession">The vehicle connection session (null if failed)</param>
 /// <param name="ErrorMessage">Error message if connection failed</param>
-public record VehicleConnectionResult(bool Success, VehicleId? VehicleId, IVehicleConnectionSession? ConnectionSession, string? ErrorMessage = null);
+/// <param name="ConnectionId">Exact connection-generation identity used for owned cleanup.</param>
+public record VehicleConnectionResult(
+    bool Success,
+    VehicleId? VehicleId,
+    IVehicleConnectionSession? ConnectionSession,
+    string? ErrorMessage = null,
+    Guid? ConnectionId = null);

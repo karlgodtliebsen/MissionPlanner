@@ -82,7 +82,7 @@
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Grid.Column="1">
                                     <Label Text="Frame / model" />
-                                    <Entry Text="{Binding FrameModel}" />
+                                    <Picker ItemsSource="{Binding AvailableFrames}" SelectedItem="{Binding FrameModel}" />
                                 </VerticalStackLayout>
                             </Grid>
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
@@ -109,6 +109,23 @@
                                 <Entry Text="{Binding MavLinkPort}" Keyboard="Numeric" Placeholder="MAVLink UDP" />
                                 <Entry Grid.Column="1" Text="{Binding ConsolePort}" Keyboard="Numeric" Placeholder="Console TCP" />
                             </Grid>
+                            <Label Text="Instance identity" />
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                <Entry Text="{Binding InstanceNumber}" Keyboard="Numeric" Placeholder="Instance (0-254)" />
+                                <Entry Grid.Column="1" Text="{Binding SystemId}" Keyboard="Numeric" Placeholder="SystemId (1-255)" />
+                            </Grid>
+                            <Label Text="Defaults / parameter files (one absolute path per line)" />
+                            <Editor Text="{Binding DefaultsFilesText}" AutoSize="TextChanges" MinimumHeightRequest="60" />
+                            <Label Text="Additional serial endpoints (index,UdpClient|TcpClient,host,port)" />
+                            <Editor Text="{Binding SerialEndpointsText}" AutoSize="TextChanges" MinimumHeightRequest="60" />
+                            <HorizontalStackLayout Spacing="12">
+                                <CheckBox IsChecked="{Binding WipeState}" />
+                                <Label Text="Wipe state" VerticalOptions="Center" />
+                                <CheckBox IsChecked="{Binding ShowConsoleWindow}" />
+                                <Label Text="Show console" VerticalOptions="Center" />
+                                <CheckBox IsChecked="{Binding EnableMapIntegration}" />
+                                <Label Text="Map integration" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
                             <Label Text="Additional argument tokens (one token per line)" />
                             <Editor Text="{Binding AdditionalArgumentsText}" AutoSize="TextChanges" MinimumHeightRequest="70" />
                             <Label Text="Environment (one NAME=VALUE per line)" />

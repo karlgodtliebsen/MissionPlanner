@@ -83,11 +83,57 @@ public sealed record SimulationEndpoint(
 /// <param name="Version">Version or user-provided version label.</param>
 /// <param name="ExecutablePath">Absolute executable path.</param>
 /// <param name="Source">Source identifier, such as external or verified cache.</param>
+/// <param name="InstallationId">Stable discovered installation identity, when pinned.</param>
 public sealed record SimulatorBinaryReference(
     string Version,
     string ExecutablePath,
     string Source,
     string? InstallationId = null);
+
+/// <summary>Identifies a supported direct-SITL serial endpoint transport.</summary>
+public enum ArduPilotSerialTransport
+{
+    /// <summary>SITL sends UDP datagrams to the configured endpoint.</summary>
+    UdpClient,
+
+    /// <summary>SITL establishes a TCP client connection to the configured endpoint.</summary>
+    TcpClient
+}
+
+/// <summary>Describes one additional typed ArduPilot serial endpoint.</summary>
+/// <param name="Index">ArduPilot serial index from 1 through 9; serial zero is reserved for MissionPlanner MAVLink.</param>
+/// <param name="Transport">Endpoint transport.</param>
+/// <param name="Host">Destination IP address or DNS host.</param>
+/// <param name="Port">Destination port.</param>
+public sealed record ArduPilotSerialEndpoint(
+    int Index,
+    ArduPilotSerialTransport Transport,
+    string Host,
+    int Port);
+
+/// <summary>Configures typed ArduPilot SITL launch behavior.</summary>
+/// <param name="Instance">Zero-based SITL instance number.</param>
+/// <param name="SystemId">Expected MAVLink system ID.</param>
+/// <param name="DefaultsFiles">Ordered default/parameter files passed as one typed value.</param>
+/// <param name="WipeState">Whether the instance starts with wiped persistent state.</param>
+/// <param name="ShowConsoleWindow">Whether a desktop process console may be shown.</param>
+/// <param name="EnableMapIntegration">Whether MissionPlanner should present live map integration.</param>
+/// <param name="AdditionalSerialEndpoints">Typed serial endpoints beyond MissionPlanner MAVLink on serial zero.</param>
+public sealed record ArduPilotLaunchSettings(
+    int Instance,
+    byte SystemId,
+    IReadOnlyList<string> DefaultsFiles,
+    bool WipeState,
+    bool ShowConsoleWindow,
+    bool EnableMapIntegration,
+    IReadOnlyList<ArduPilotSerialEndpoint>? AdditionalSerialEndpoints = null)
+{
+    /// <summary>Gets additional serial endpoints, including an empty fallback for older profiles.</summary>
+    public IReadOnlyList<ArduPilotSerialEndpoint> EffectiveSerialEndpoints => AdditionalSerialEndpoints ?? [];
+
+    /// <summary>Gets safe launch defaults for the first SITL instance.</summary>
+    public static ArduPilotLaunchSettings Default { get; } = new(0, 1, [], false, false, true);
+}
 
 /// <summary>Defines a reproducible simulator launch profile.</summary>
 /// <param name="Id">Stable profile identifier.</param>
@@ -100,6 +146,7 @@ public sealed record SimulatorBinaryReference(
 /// <param name="Binary">Selected simulator binary.</param>
 /// <param name="AdditionalArguments">Additional argument tokens; never a shell command string.</param>
 /// <param name="Environment">Runtime environment values.</param>
+/// <param name="LaunchSettings">Typed ArduPilot-specific launch settings.</param>
 public sealed record SimulatorProfile(
     Guid Id,
     string Name,
@@ -110,8 +157,12 @@ public sealed record SimulatorProfile(
     IReadOnlyList<SimulationEndpoint> Endpoints,
     SimulatorBinaryReference Binary,
     IReadOnlyList<string> AdditionalArguments,
-    IReadOnlyDictionary<string, string> Environment)
+    IReadOnlyDictionary<string, string> Environment,
+    ArduPilotLaunchSettings? LaunchSettings = null)
 {
+    /// <summary>Gets typed launch settings, including defaults for older persisted profiles.</summary>
+    public ArduPilotLaunchSettings EffectiveLaunchSettings => LaunchSettings ?? ArduPilotLaunchSettings.Default;
+
     /// <summary>Creates a default local ArduCopter profile.</summary>
     /// <returns>A new profile with a unique identity.</returns>
     public static SimulatorProfile CreateDefault() => new(
@@ -127,7 +178,8 @@ public sealed record SimulatorProfile(
         ],
         new SimulatorBinaryReference("unselected", string.Empty, "external"),
         [],
-        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+        ArduPilotLaunchSettings.Default);
 }
 
 /// <summary>Describes one profile or runtime validation problem.</summary>
