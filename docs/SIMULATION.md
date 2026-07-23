@@ -64,22 +64,48 @@ pipeline; it is not an unsupported SITL `--map` shell flag.
 
 `SimulationPortAllocator` atomically leases the endpoint identities against other owned
 sessions and rechecks operating-system availability before launch. Separate profiles can
-therefore use distinct instance/SystemId/port sets without an in-process collision; task 06
-adds multi-session orchestration and automatic deterministic allocation.
+therefore use distinct instance/SystemId/port sets without an in-process collision.
 
-After the exact process starts, the state remains `WaitingForHeartbeat` while
-`SimulatorVehicleConnection` calls the existing `IVehicleConnectionService` UDP path. It
-does not construct another MAVLink client, decoder, dispatcher, registry, or parameter
-stack. The connected heartbeat must match both the profile SystemId and firmware family.
-An existing live connection is never silently replaced: the simulator reports that the
-user must disconnect it first. Every successful vehicle connection now carries an opaque
-connection-generation ID, so runtime cleanup can disconnect only the generation it owns.
-Shutdown order is connection, exact process tree, then port lease; a stale owned-disconnect
-request cannot tear down a newer hardware connection.
+After the exact process starts, the state remains `WaitingForHeartbeat` while an isolated
+simulator connection session binds the allocated UDP endpoint. Each SITL owns its transport,
+MAVLink client, connection, parameter service, and parameter state; all transports share one
+reference-counted inbound message dispatcher and the existing multi-vehicle registry. The
+connected heartbeat must match both the allocated SystemId and firmware family. Hardware
+connections and other simulator connections are never replaced. Exact channel routes bind
+session ID plus `VehicleId` to the correct outbound connection, so commands, mission
+transfers, parameter-backed controls, and scenarios cannot fall through to another active
+transport. Shutdown order is exact connection, exact process tree, then port lease, and
+registry cleanup removes only the disconnected vehicle.
 
 Early process exit and connection timeout are distinct failures. The former includes a
 bounded tail of startup stderr, while the latter states that the process is alive but no
 verified MAVLink heartbeat arrived.
+
+## Multi-instance orchestration
+
+`ISimulationFleetAllocator` derives every member from one base profile. Allocation is
+deterministic: member index increments SITL instance and MAVLink SystemId, applies one fixed
+port stride to all primary and additional serial endpoints, applies an ordered north/east/
+altitude/heading launch offset, and assigns
+`instance-NNN-sysid-NNN/{runtime,telemetry,dataflash,cache}` artifact directories. Allocation
+checks connected vehicles plus occupied instances/endpoints atomically and fails before any
+process starts on a collision or range overflow. Line and grid helpers only produce launch
+offset data; they do not command a formation or implement swarm flight behavior.
+
+`ISimulationFleetManager` creates an independent `ISimulationSessionManager` per allocation.
+Start-all and stop-all use caller-bounded concurrency, return an ordered result for every
+member, and continue unrelated operations after a per-member failure. The workspace lists
+all members with process state, exact vehicle, connection state, endpoints, failure, and an
+explicit active selection. A runtime completion event changes only its owning member; peer
+processes and the selection remain intact. Scenario run requests continue to carry an exact
+runtime session ID and `VehicleId`, including when launched from a selected fleet member.
+
+Local process ownership is persisted separately from runtime artifacts with a random marker
+token, session ID, PID, normalized executable path, and operating-system process start time.
+On the next application lifetime, recovery attempts only inactive markers. The desktop
+recovery service kills a process tree only when PID, path, and start time all match; a reused
+PID, access-denied inspection, or any other ambiguity is left untouched and blocks a
+potentially colliding fleet launch for operator review.
 
 Corrupt or unsupported profile persistence fails closed to a safe editable default. A
 profile may pin the stable identity of a configured external installation or a verified
@@ -230,7 +256,7 @@ Lifecycle limits are configured by the `Simulation` application section. Default
 
 ## Current verification boundary
 
-Tasks 01–05 are covered with fake-runtime tests for successful state transitions, explicit stop,
+Tasks 01–06 are covered with fake-runtime tests for successful state transitions, explicit stop,
 unexpected exit, heartbeat timeout cleanup, shutdown cleanup, profile persistence and
 corrupt recovery, port/path validation, diagnostics redaction, and navigation lifecycle.
 Manifest filtering, checksum verification, atomic failure, archive traversal, cache
@@ -243,6 +269,9 @@ and explicit reset, cancellation, preset persistence, and replacement-instance i
 Scenario tests cover closed-schema/version parsing, typed variables, required timeouts,
 dry-run capabilities, success/failure/timeout/cancellation, safe-boundary pause/resume,
 wrong targets, missing controls, report exports, and view-model exact-target projection.
+Fleet tests cover deterministic allocation, identity/endpoint collisions, exact command
+routing, bounded concurrency, partial start/stop failures, per-session output/events,
+crash isolation, selection stability, and persisted orphan recovery.
 
 Real SITL smoke cases for all four families are opt-in and have 30-second total and
 10-second cleanup bounds. Set `MISSIONPLANNER_SITL_ARDUCOPTER`,

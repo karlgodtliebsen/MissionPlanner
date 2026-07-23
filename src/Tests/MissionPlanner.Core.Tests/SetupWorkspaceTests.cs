@@ -229,6 +229,13 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<ISimulatorProfileValidator>().Should().NotBeNull();
         provider.GetRequiredService<ISimulatorRuntime>().Should().BeOfType<ArduPilotSitlRuntime>();
         provider.GetRequiredService<ISimulationSessionManager>().Should().NotBeNull();
+        provider.GetRequiredService<ISimulationSessionManagerFactory>().Should().NotBeNull();
+        provider.GetRequiredService<ISimulationFleetAllocator>().Should().NotBeNull();
+        provider.GetRequiredService<ISimulationFleetManager>().Should().NotBeNull();
+        provider.GetRequiredService<ISimulationVehicleChannelRegistry>().Should().NotBeNull();
+        provider.GetRequiredService<ISimulatorVehicleConnectionFactory>().Should().NotBeNull();
+        provider.GetRequiredService<ISimulationOwnershipStore>().Should().NotBeNull();
+        provider.GetRequiredService<ISimulatorOwnedProcessRecovery>().Should().BeOfType<LocalSimulatorOwnedProcessRecovery>();
         provider.GetRequiredService<ISimulationDiagnosticsService>().Should().NotBeNull();
         provider.GetRequiredService<ISimulationControlCatalog>().Should().NotBeNull();
         provider.GetRequiredService<ISimulationControlService>().Should().NotBeNull();

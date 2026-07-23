@@ -134,6 +134,7 @@ public sealed class SimulationControlService : ISimulationControlService
     private readonly IDateTimeProvider clock;
     private readonly SimulationControlOptions options;
     private readonly ILogger<SimulationControlService> logger;
+    private readonly ISimulationVehicleChannelRegistry? simulationChannels;
     private readonly SemaphoreSlim gate = new(1, 1);
     private readonly object eventLock = new();
     private readonly Queue<SimulationScenarioEvent> events = new();
@@ -149,6 +150,7 @@ public sealed class SimulationControlService : ISimulationControlService
     /// <param name="clock">Application clock.</param>
     /// <param name="options">Bounded operation options.</param>
     /// <param name="logger">Logger.</param>
+    /// <param name="simulationChannels">Optional exact simulator vehicle-channel routes.</param>
     public SimulationControlService(
         ISimulationControlCatalog catalog,
         ISimulationSessionManager sessionManager,
@@ -157,7 +159,8 @@ public sealed class SimulationControlService : ISimulationControlService
         IVehicleRegistry vehicleRegistry,
         IDateTimeProvider clock,
         IOptions<SimulationControlOptions> options,
-        ILogger<SimulationControlService> logger)
+        ILogger<SimulationControlService> logger,
+        ISimulationVehicleChannelRegistry? simulationChannels = null)
     {
         this.catalog = catalog;
         this.sessionManager = sessionManager;
@@ -167,6 +170,7 @@ public sealed class SimulationControlService : ISimulationControlService
         this.clock = clock;
         this.options = options.Value;
         this.logger = logger;
+        this.simulationChannels = simulationChannels;
     }
 
     /// <inheritdoc />
@@ -184,10 +188,21 @@ public sealed class SimulationControlService : ISimulationControlService
     /// <inheritdoc />
     public async Task<IReadOnlyList<SimulationControlCapability>> DiscoverAsync(
         CancellationToken cancellationToken = default)
+        => await DiscoverCoreAsync(GetTarget(), cancellationToken).ConfigureAwait(false);
+
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<SimulationControlCapability>> DiscoverAsync(
+        Guid sessionId,
+        VehicleId vehicleId,
+        CancellationToken cancellationToken = default)
+        => await DiscoverCoreAsync(GetTarget(sessionId, vehicleId), cancellationToken).ConfigureAwait(false);
+
+    private async Task<IReadOnlyList<SimulationControlCapability>> DiscoverCoreAsync(
+        SimulationTarget target,
+        CancellationToken cancellationToken)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
-        var target = GetTarget();
-        var parameterService = connectionSession.ParameterService;
+        var parameterService = GetParameterService(target.VehicleId);
         var requested = false;
         foreach (var name in catalog.Controls.SelectMany(item => item.ParameterBindings).Select(item => item.Name).Distinct())
         {
@@ -218,12 +233,43 @@ public sealed class SimulationControlService : ISimulationControlService
         TimeSpan? duration,
         bool confirmed,
         CancellationToken cancellationToken = default)
+        => await ApplyCoreAsync(
+            GetTarget(),
+            controlKey,
+            requestedValue,
+            duration,
+            confirmed,
+            cancellationToken).ConfigureAwait(false);
+
+    /// <inheritdoc />
+    public async Task ApplyAsync(
+        Guid sessionId,
+        VehicleId vehicleId,
+        string controlKey,
+        double requestedValue,
+        TimeSpan? duration,
+        bool confirmed,
+        CancellationToken cancellationToken = default)
+        => await ApplyCoreAsync(
+            GetTarget(sessionId, vehicleId),
+            controlKey,
+            requestedValue,
+            duration,
+            confirmed,
+            cancellationToken).ConfigureAwait(false);
+
+    private async Task ApplyCoreAsync(
+        SimulationTarget target,
+        string controlKey,
+        double requestedValue,
+        TimeSpan? duration,
+        bool confirmed,
+        CancellationToken cancellationToken)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            var target = GetTarget();
             var descriptor = GetDescriptor(controlKey);
             ValidateRequest(descriptor, requestedValue, duration, confirmed);
             var capability = ResolveCapability(
@@ -236,7 +282,8 @@ public sealed class SimulationControlService : ISimulationControlService
                 throw new InvalidOperationException(capability.Reason);
             }
 
-            if (activeResets.TryGetValue(controlKey, out var previous))
+            var resetKey = ResetKey(target, controlKey);
+            if (activeResets.TryGetValue(resetKey, out var previous))
             {
                 await ResetCoreAsync(previous, SimulationScenarioEventResult.Reset, cancellationToken).ConfigureAwait(false);
             }
@@ -286,7 +333,7 @@ public sealed class SimulationControlService : ISimulationControlService
                     (MavParamType)capability.ParameterType,
                     reset,
                     resetCancellation);
-                activeResets[controlKey] = active;
+                activeResets[resetKey] = active;
                 _ = AutoResetAsync(active, duration!.Value, maximumDuration);
             }
         }
@@ -298,12 +345,26 @@ public sealed class SimulationControlService : ISimulationControlService
 
     /// <inheritdoc />
     public async Task ResetAsync(string controlKey, CancellationToken cancellationToken = default)
+        => await ResetTargetAsync(GetTarget(), controlKey, cancellationToken).ConfigureAwait(false);
+
+    /// <inheritdoc />
+    public async Task ResetAsync(
+        Guid sessionId,
+        VehicleId vehicleId,
+        string controlKey,
+        CancellationToken cancellationToken = default)
+        => await ResetTargetAsync(GetTarget(sessionId, vehicleId), controlKey, cancellationToken).ConfigureAwait(false);
+
+    private async Task ResetTargetAsync(
+        SimulationTarget target,
+        string controlKey,
+        CancellationToken cancellationToken)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            if (activeResets.TryGetValue(controlKey, out var active))
+            if (activeResets.TryGetValue(ResetKey(target, controlKey), out var active))
             {
                 await ResetCoreAsync(active, SimulationScenarioEventResult.Reset, cancellationToken).ConfigureAwait(false);
             }
@@ -369,7 +430,7 @@ public sealed class SimulationControlService : ISimulationControlService
             await gate.WaitAsync(active.Cancellation.Token).ConfigureAwait(false);
             try
             {
-                if (activeResets.TryGetValue(active.ControlKey, out var current) && ReferenceEquals(current, active))
+                if (activeResets.TryGetValue(ResetKey(active.Target, active.ControlKey), out var current) && ReferenceEquals(current, active))
                 {
                     await ResetCoreAsync(active, SimulationScenarioEventResult.AutoReset, CancellationToken.None)
                         .ConfigureAwait(false);
@@ -402,9 +463,7 @@ public sealed class SimulationControlService : ISimulationControlService
         CancellationToken cancellationToken)
     {
         active.Cancellation.Cancel();
-        var snapshot = sessionManager.Current;
-        if (snapshot.SessionId != active.Target.SessionId || snapshot.VehicleId != active.Target.VehicleId ||
-            snapshot.State != SimulationSessionState.Running)
+        if (!IsSameTarget(active.Target))
         {
             AddEvent(
                 active.Target,
@@ -413,7 +472,7 @@ public sealed class SimulationControlService : ISimulationControlService
                 active.ResetValue,
                 SimulationScenarioEventResult.Failed,
                 "Reset skipped because the exact simulation session is no longer connected.");
-            activeResets.Remove(active.ControlKey);
+            activeResets.Remove(ResetKey(active.Target, active.ControlKey));
             active.Cancellation.Dispose();
             return;
         }
@@ -434,7 +493,7 @@ public sealed class SimulationControlService : ISimulationControlService
             result == SimulationScenarioEventResult.AutoReset
                 ? "Hazard duration elapsed; safe value confirmed."
                 : "Safe value confirmed by parameter readback.");
-        activeResets.Remove(active.ControlKey);
+        activeResets.Remove(ResetKey(active.Target, active.ControlKey));
         active.Cancellation.Dispose();
     }
 
@@ -461,7 +520,7 @@ public sealed class SimulationControlService : ISimulationControlService
         parameterRegistry.Changed += OnChanged;
         try
         {
-            var sent = await connectionSession.ParameterService.SetParameterAsync(
+            var sent = await GetParameterService(target.VehicleId).SetParameterAsync(
                 target.VehicleId,
                 parameterName,
                 (float)value,
@@ -510,10 +569,9 @@ public sealed class SimulationControlService : ISimulationControlService
     {
         try
         {
-            if (sessionManager.Current.SessionId == target.SessionId &&
-                sessionManager.Current.VehicleId == target.VehicleId)
+            if (IsSameTarget(target))
             {
-                await connectionSession.ParameterService.SetParameterAsync(
+                await GetParameterService(target.VehicleId).SetParameterAsync(
                     target.VehicleId,
                     parameterName,
                     (float)value,
@@ -586,15 +644,51 @@ public sealed class SimulationControlService : ISimulationControlService
             snapshot.StartedAt ?? clock.UtcNow);
     }
 
-    private void EnsureSameTarget(SimulationTarget target)
+    private SimulationTarget GetTarget(Guid sessionId, VehicleId vehicleId)
     {
         var snapshot = sessionManager.Current;
-        if (snapshot.State != SimulationSessionState.Running ||
-            snapshot.SessionId != target.SessionId ||
-            snapshot.VehicleId != target.VehicleId)
+        if (snapshot.State == SimulationSessionState.Running &&
+            snapshot.SessionId == sessionId &&
+            snapshot.VehicleId == vehicleId &&
+            snapshot.Profile is not null)
+        {
+            return new SimulationTarget(
+                sessionId,
+                vehicleId,
+                snapshot.Profile,
+                snapshot.StartedAt ?? clock.UtcNow);
+        }
+
+        var channel = simulationChannels?.Find(vehicleId);
+        if (channel?.SessionId != sessionId)
+        {
+            throw new InvalidOperationException("The simulation session and VehicleId do not identify the same running target.");
+        }
+
+        var vehicle = vehicleRegistry.GetRequired(vehicleId);
+        if (vehicle is null || vehicle.State.Connection.State != VehicleConnectionState.Online)
+        {
+            throw new InvalidOperationException("The simulator vehicle is not online.");
+        }
+
+        return new SimulationTarget(sessionId, vehicleId, channel.Profile, channel.StartedAt);
+    }
+
+    private void EnsureSameTarget(SimulationTarget target)
+    {
+        if (!IsSameTarget(target))
         {
             throw new InvalidOperationException("The simulation session or target vehicle changed before the control write.");
         }
+    }
+
+    private bool IsSameTarget(SimulationTarget target)
+    {
+        var snapshot = sessionManager.Current;
+        var singleSessionMatches = snapshot.State == SimulationSessionState.Running &&
+            snapshot.SessionId == target.SessionId && snapshot.VehicleId == target.VehicleId;
+        var fleetChannelMatches = simulationChannels?.Find(target.VehicleId)?.SessionId == target.SessionId;
+        return singleSessionMatches || fleetChannelMatches;
     }
 
     private SimulationControlDescriptor GetDescriptor(string controlKey) =>
@@ -660,6 +754,12 @@ public sealed class SimulationControlService : ISimulationControlService
 
     private static bool NearlyEqual(double first, double second) =>
         Math.Abs(first - second) <= Math.Max(0.0001, Math.Abs(second) * 0.00001);
+
+    private static string ResetKey(SimulationTarget target, string controlKey) =>
+        $"{target.SessionId:N}:{target.VehicleId.SystemId}:{target.VehicleId.ComponentId}:{controlKey}";
+
+    private IVehicleParameterService GetParameterService(VehicleId vehicleId) =>
+        simulationChannels?.Find(vehicleId)?.ConnectionSession.ParameterService ?? connectionSession.ParameterService;
 
     private sealed record SimulationTarget(
         Guid SessionId,

@@ -1,4 +1,5 @@
 using MissionPlanner.Core.DomainEvents;
+using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
@@ -21,7 +22,8 @@ public sealed class VehicleCommandService(
     IDateTimeProvider clock,
     IVehicleCommandPolicy commandPolicy,
     IArduPilotModeCatalog modeCatalog,
-    IVehicleOperationGate? operationGate = null)
+    IVehicleOperationGate? operationGate = null,
+    ISimulationVehicleChannelRegistry? simulationChannels = null)
     : IVehicleCommandService
 {
     private static readonly TimeSpan commandAckTimeout = TimeSpan.FromSeconds(5);
@@ -199,7 +201,8 @@ public sealed class VehicleCommandService(
 
             try
             {
-                await connection.SendRawAsync(packet, session.EndPoint, cancellationToken).ConfigureAwait(false);
+                var targetConnection = simulationChannels?.Find(vehicleId)?.ConnectionSession.Connection ?? connection;
+                await targetConnection.SendRawAsync(packet, session.EndPoint, cancellationToken).ConfigureAwait(false);
                 var ack = await waitForAck.ConfigureAwait(false);
                 var response = new VehicleCommandResponse(vehicleId, MapResult(ack.Result), ack.ReceivedAt,
                     $"MAVLink ACK result {ack.Result}.");

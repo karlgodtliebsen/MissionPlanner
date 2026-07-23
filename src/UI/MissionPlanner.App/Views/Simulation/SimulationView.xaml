@@ -36,6 +36,44 @@
 
                     <Border Padding="12">
                         <VerticalStackLayout Spacing="8">
+                            <Label Text="Multi-vehicle fleet" FontSize="18" FontAttributes="Bold" />
+                            <Label Text="Each member receives an isolated process, MAVLink channel, SystemId, port set, home offset, and artifact directory." />
+                            <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
+                                <Entry Text="{Binding FleetCount}" Keyboard="Numeric" Placeholder="Count" />
+                                <Entry Grid.Column="1" Text="{Binding FleetSpacingMeters}" Keyboard="Numeric" Placeholder="Spacing m" />
+                                <Entry Grid.Column="2" Text="{Binding FleetPortStride}" Keyboard="Numeric" Placeholder="Port stride" />
+                                <Entry Grid.Column="3" Text="{Binding FleetMaximumConcurrency}" Keyboard="Numeric" Placeholder="Concurrency" />
+                            </Grid>
+                            <HorizontalStackLayout Spacing="8">
+                                <Button Text="Start all" Command="{Binding StartAllCommand}" />
+                                <Button Text="Stop all" Command="{Binding StopAllCommand}" />
+                            </HorizontalStackLayout>
+                            <Label Text="{Binding FleetStatus}" />
+                            <CollectionView ItemsSource="{Binding FleetSessions}"
+                                            SelectedItem="{Binding SelectedFleetSession}"
+                                            SelectionMode="Single"
+                                            HeightRequest="150">
+                                <CollectionView.EmptyView>
+                                    <Label Text="No fleet sessions are allocated." Padding="8" />
+                                </CollectionView.EmptyView>
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate x:DataType="simulation:SimulationFleetSessionSnapshot">
+                                        <Grid Padding="5" ColumnDefinitions="1.2*,Auto,Auto" ColumnSpacing="8">
+                                            <VerticalStackLayout>
+                                                <Label Text="{Binding Allocation.Profile.Name}" FontAttributes="Bold" />
+                                                <Label Text="{Binding VehicleId, StringFormat='Vehicle {0}'}" FontSize="12" />
+                                            </VerticalStackLayout>
+                                            <Label Grid.Column="1" Text="{Binding Session.State}" VerticalOptions="Center" />
+                                            <Label Grid.Column="2" Text="{Binding Allocation.Profile.EffectiveLaunchSettings.SystemId, StringFormat='SysId {0}'}" VerticalOptions="Center" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </VerticalStackLayout>
+                    </Border>
+
+                    <Border Padding="12">
+                        <VerticalStackLayout Spacing="8">
                             <Label Text="SITL installations" FontSize="18" FontAttributes="Bold" />
                             <Label Text="{Binding PlatformCapability}" />
                             <Picker Title="Installed / configured"

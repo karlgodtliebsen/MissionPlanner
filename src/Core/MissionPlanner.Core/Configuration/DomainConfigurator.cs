@@ -66,9 +66,17 @@ public static class DomainConfigurator
         services.TryAddSingleton<IArduPilotFrameCatalog, ArduPilotFrameCatalog>();
         services.TryAddSingleton<IArduPilotLaunchPlanBuilder, ArduPilotLaunchPlanBuilder>();
         services.TryAddSingleton<ISimulationPortAllocator, SimulationPortAllocator>();
+        services.TryAddSingleton<ISimulatorOwnedProcessRecovery, UnavailableSimulatorOwnedProcessRecovery>();
+        services.TryAddSingleton<ISimulationOwnershipStore, SimulationOwnershipStore>();
+        services.TryAddSingleton<IVehicleMessagePumpCoordinator, VehicleMessagePumpCoordinator>();
+        services.TryAddSingleton<ISimulationVehicleChannelRegistry, SimulationVehicleChannelRegistry>();
         services.TryAddSingleton<ISimulatorVehicleConnection, SimulatorVehicleConnection>();
+        services.TryAddSingleton<ISimulatorVehicleConnectionFactory, SimulatorVehicleConnectionFactory>();
         services.TryAddSingleton<ISimulatorRuntime, UnavailableSimulatorRuntime>();
         services.TryAddSingleton<ISimulationSessionManager, SimulationSessionManager>();
+        services.TryAddSingleton<ISimulationSessionManagerFactory, SimulationSessionManagerFactory>();
+        services.TryAddSingleton<ISimulationFleetAllocator, SimulationFleetAllocator>();
+        services.TryAddSingleton<ISimulationFleetManager, SimulationFleetManager>();
         services.TryAddSingleton<ISimulationDiagnosticsService, SimulationDiagnosticsService>();
         services.Configure<SimulationControlOptions>(configuration.GetSection(SimulationControlOptions.SectionName));
         services.TryAddSingleton<ISimulationControlCatalog, SimulationControlCatalog>();

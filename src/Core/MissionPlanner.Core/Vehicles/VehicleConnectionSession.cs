@@ -23,24 +23,28 @@ namespace MissionPlanner.Core.Vehicles;
 /// <param name="domainEventHub"></param>
 /// <param name="dateTimeProvider"></param>
 /// <param name="logger"></param>
+/// <param name="messagePumpCoordinator">Shared inbound MAVLink dispatch coordinator.</param>
+/// <param name="resetRegistryOnLifecycle">Whether this session owns the complete vehicle registry lifecycle.</param>
 public sealed class VehicleConnectionSession(
     IVehicleParameterRegistry parameterRegistry,
     IDomainFactory domainFactory,
     IServiceFactory serviceFactory,
     IDomainEventHub domainEventHub,
     IDateTimeProvider dateTimeProvider,
-    ILogger<VehicleConnectionSession> logger)
+    ILogger<VehicleConnectionSession> logger,
+    IVehicleMessagePumpCoordinator messagePumpCoordinator,
+    bool resetRegistryOnLifecycle = true)
     : IVehicleConnectionSession
 {
     private IMavLinkConnection? connection;
     private IVehicleMessagePump? messagePump;
+    private IVehicleMessagePumpLease? messagePumpLease;
     private IVehicleParameterService? parameterService;
     private IVehicleParameterStreamService? parameterStreamService;
 
     private CancellationTokenSource serviceCts = new();
 
     // Background tasks that must live as long as this service instance
-    private Task? messagePumpTask;
     private Task? connectionTask;
     private IMavLinkTransport? transport;
     private IMavLinkClient? client;
@@ -105,22 +109,24 @@ public sealed class VehicleConnectionSession(
 
         var registry = serviceFactory.Create<IVehicleRegistry>();
 
-        // Publish Reset event
-        await registry.Reset(cancellationToken);
+        if (resetRegistryOnLifecycle)
+        {
+            await registry.Reset(cancellationToken);
+        }
 
         // Create serial transport
         transport = domainFactory.Create<ISerialMavLinkTransport, string, int>(portName, baudRate);
         // Create MAVLink client
         client = domainFactory.Create<IMavLinkClient, ISerialMavLinkTransport>((ISerialMavLinkTransport)transport);
 
-        messagePump = serviceFactory.Create<IVehicleMessagePump>();
+        messagePumpLease = await messagePumpCoordinator.AcquireAsync(cancellationToken).ConfigureAwait(false);
+        messagePump = messagePumpLease.Pump;
         connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
         parameterService = domainFactory.Create<IVehicleParameterService, IMavLinkClient>(client);
 
         parameterStreamService = CreateParameterStreamService();
         var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
 
-        messagePumpTask = Task.Run(() => messagePump.StartAsync(linkedCts.Token), linkedCts.Token);
         connectionTask = Task.Run(() => connection.StartAsync(linkedCts.Token), linkedCts.Token);
         return linkedCts;
     }
@@ -137,15 +143,18 @@ public sealed class VehicleConnectionSession(
         configure?.Invoke(transportOptions.Value);
         var registry = serviceFactory.Create<IVehicleRegistry>();
 
-        // Publish Reset event
-        await registry.Reset(cancellationToken);
+        if (resetRegistryOnLifecycle)
+        {
+            await registry.Reset(cancellationToken);
+        }
 
         // Create TCP transport
         transport = domainFactory.Create<ITcpMavLinkTransport, IOptions<TransportEndpoint>>(transportOptions);
         // Create MAVLink client
         client = domainFactory.Create<IMavLinkClient, ITcpMavLinkTransport>((ITcpMavLinkTransport)transport);
 
-        messagePump = serviceFactory.Create<IVehicleMessagePump>();
+        messagePumpLease = await messagePumpCoordinator.AcquireAsync(cancellationToken).ConfigureAwait(false);
+        messagePump = messagePumpLease.Pump;
         connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
 
         parameterService = domainFactory.Create<IVehicleParameterService, IMavLinkClient>(client);
@@ -153,7 +162,6 @@ public sealed class VehicleConnectionSession(
 
         var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
 
-        messagePumpTask = Task.Run(() => messagePump.StartAsync(linkedCts.Token), linkedCts.Token);
         connectionTask = Task.Run(() => connection.StartAsync(linkedCts.Token), linkedCts.Token);
         return linkedCts;
     }
@@ -171,15 +179,18 @@ public sealed class VehicleConnectionSession(
         configure?.Invoke(transportOptions.Value);
         var registry = serviceFactory.Create<IVehicleRegistry>();
 
-        // Publish Reset event
-        await registry.Reset(cancellationToken);
+        if (resetRegistryOnLifecycle)
+        {
+            await registry.Reset(cancellationToken);
+        }
 
         // Create UDP transport
         transport = domainFactory.Create<IUdpMavLinkTransport, IOptions<TransportEndpoint>>(transportOptions);
         // Create MAVLink client
         client = domainFactory.Create<IMavLinkClient, IUdpMavLinkTransport>((IUdpMavLinkTransport)transport);
 
-        messagePump = serviceFactory.Create<IVehicleMessagePump>();
+        messagePumpLease = await messagePumpCoordinator.AcquireAsync(cancellationToken).ConfigureAwait(false);
+        messagePump = messagePumpLease.Pump;
         connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
 
         parameterService = domainFactory.Create<IVehicleParameterService, IMavLinkClient>(client);
@@ -187,7 +198,6 @@ public sealed class VehicleConnectionSession(
 
         var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
 
-        messagePumpTask = Task.Run(() => messagePump.StartAsync(linkedCts.Token), linkedCts.Token);
         connectionTask = Task.Run(() => connection.StartAsync(linkedCts.Token), linkedCts.Token);
         return linkedCts;
     }
@@ -214,21 +224,10 @@ public sealed class VehicleConnectionSession(
                 }
             }
 
-            var registry = serviceFactory.Create<IVehicleRegistry>();
-
-            // Invoke Reset event
-            await registry.Reset(cancellationToken);
-            registry = null;
-
             // Stop background tasks gracefully. Cancel first; otherwise the wait below just waits for the timeout.
             await serviceCts.CancelAsync().ConfigureAwait(false);
 
             var tasksToWait = new List<Task>();
-            if (messagePumpTask is not null && !messagePumpTask.IsCompleted)
-            {
-                tasksToWait.Add(messagePumpTask);
-            }
-
             if (connectionTask is not null && !connectionTask.IsCompleted)
             {
                 tasksToWait.Add(connectionTask);
@@ -252,21 +251,21 @@ public sealed class VehicleConnectionSession(
             }
 
             // Clean up task references
-            messagePumpTask = null;
             connectionTask = null;
 
             // Stop and dispose services
-            if (messagePump is not null)
+            if (messagePumpLease is not null)
             {
                 try
                 {
-                    await messagePump.DisposeAsync();
+                    await messagePumpLease.DisposeAsync();
                 }
                 catch (Exception ex)
                 {
-                    logger.LogDebug(ex, "Non Critical Failure Disposing messagePump ");
+                    logger.LogDebug(ex, "Non Critical Failure releasing shared message pump");
                 }
 
+                messagePumpLease = null;
                 messagePump = null;
             }
 
@@ -317,6 +316,19 @@ public sealed class VehicleConnectionSession(
 
                 client = null;
             }
+
+            // Remove registry/parameter state only after inbound processing has stopped, so a final
+            // datagram cannot recreate a vehicle that this exact connection no longer owns.
+            var registry = serviceFactory.Create<IVehicleRegistry>();
+            if (resetRegistryOnLifecycle)
+            {
+                await registry.Reset(CancellationToken.None).ConfigureAwait(false);
+            }
+            else if (vehicleId is { } exactVehicleId)
+            {
+                await registry.RemoveAsync(exactVehicleId, CancellationToken.None).ConfigureAwait(false);
+                parameterRegistry.ClearParameters(exactVehicleId);
+            }
         }
         catch (Exception ex)
         {
@@ -330,6 +342,7 @@ public sealed class VehicleConnectionSession(
             transport = null;
             client = null;
             messagePump = null;
+            messagePumpLease = null;
             parameterStreamService = null;
             parameterService = null;
         }

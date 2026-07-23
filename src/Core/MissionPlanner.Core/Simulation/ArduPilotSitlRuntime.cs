@@ -357,7 +357,8 @@ public sealed class ArduPilotSitlRuntime(
     IArduPilotFrameCatalog frameCatalog,
     ISimulationPortAllocator portAllocator,
     ISimulatorProcessHost processHost,
-    ISimulatorVehicleConnection vehicleConnection,
+    ISimulationOwnershipStore ownershipStore,
+    ISimulatorVehicleConnectionFactory vehicleConnectionFactory,
     ISitlPlatformService platformService,
     ILogger<ArduPilotSitlRuntime> logger) : ISimulatorRuntime
 {
@@ -446,18 +447,28 @@ public sealed class ArduPilotSitlRuntime(
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        var vehicleConnection = vehicleConnectionFactory.Create(request.SessionId);
         var plan = launchPlanBuilder.Build(request.Profile, request.LogDirectory);
         var lease = await portAllocator.ReserveAsync(request.Profile.Endpoints, cancellationToken).ConfigureAwait(false);
+        ISimulatorProcessSession? process = null;
         try
         {
             Directory.CreateDirectory(plan.WorkingDirectory);
-            var process = await processHost.StartAsync(
+            process = await processHost.StartAsync(
                 new SimulatorProcessStartInfo(
                     plan.ExecutablePath,
                     plan.WorkingDirectory,
                     plan.Arguments,
                     plan.Environment,
                     plan.ShowConsoleWindow),
+                cancellationToken).ConfigureAwait(false);
+            await ownershipStore.MarkAsync(
+                new SimulationOwnedProcess(
+                    request.SessionId,
+                    Guid.NewGuid(),
+                    process.ProcessId,
+                    process.ExecutablePath,
+                    process.StartedAt),
                 cancellationToken).ConfigureAwait(false);
             logger.LogInformation(
                 "Started ArduPilot SITL process {ProcessId} for session {SessionId}, instance {Instance}, SystemId {SystemId}.",
@@ -471,10 +482,26 @@ public sealed class ArduPilotSitlRuntime(
                 plan,
                 process,
                 lease,
-                vehicleConnection);
+                vehicleConnection,
+                ownershipStore);
         }
         catch
         {
+            if (process is not null)
+            {
+                try
+                {
+                    await process.StopAsync(CancellationToken.None).ConfigureAwait(false);
+                    await process.DisposeAsync().ConfigureAwait(false);
+                }
+                catch (Exception cleanupException)
+                {
+                    logger.LogWarning(cleanupException, "Failed to clean up SITL after startup coordination failed.");
+                }
+
+                await ownershipStore.ReleaseAsync(request.SessionId, CancellationToken.None).ConfigureAwait(false);
+            }
+
             await lease.DisposeAsync().ConfigureAwait(false);
             throw;
         }
@@ -487,6 +514,8 @@ public sealed class ArduPilotSitlRuntime(
         private readonly ISimulatorProcessSession process;
         private readonly ISimulationPortLease portLease;
         private readonly ISimulatorVehicleConnection vehicleConnection;
+        private readonly ISimulationOwnershipStore ownershipStore;
+        private readonly Guid sessionId;
         private readonly ConcurrentQueue<string> recentErrors = new();
         private readonly SemaphoreSlim cleanupGate = new(1, 1);
         private readonly Task<SimulatorRuntimeExit> completion;
@@ -499,13 +528,16 @@ public sealed class ArduPilotSitlRuntime(
             ArduPilotLaunchPlan plan,
             ISimulatorProcessSession process,
             ISimulationPortLease portLease,
-            ISimulatorVehicleConnection vehicleConnection)
+            ISimulatorVehicleConnection vehicleConnection,
+            ISimulationOwnershipStore ownershipStore)
         {
+            this.sessionId = sessionId;
             this.profile = profile;
             this.plan = plan;
             this.process = process;
             this.portLease = portLease;
             this.vehicleConnection = vehicleConnection;
+            this.ownershipStore = ownershipStore;
             Identity = new SimulatorRuntimeIdentity(
                 $"sitl-{sessionId:N}-{process.ProcessId}",
                 "ArduPilot direct SITL",
@@ -597,6 +629,15 @@ public sealed class ArduPilotSitlRuntime(
                 try
                 {
                     await portLease.DisposeAsync().ConfigureAwait(false);
+                }
+                catch (Exception exception)
+                {
+                    failures.Add(exception);
+                }
+
+                try
+                {
+                    await ownershipStore.ReleaseAsync(sessionId, cancellationToken).ConfigureAwait(false);
                 }
                 catch (Exception exception)
                 {

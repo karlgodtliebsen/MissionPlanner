@@ -75,6 +75,10 @@ public sealed class SimulationSessionManager : ISimulationSessionManager
             }
 
             var sessionId = Guid.NewGuid();
+            var artifacts = SimulationInstanceArtifacts.Create(
+                options.LogRootDirectory,
+                profile.EffectiveLaunchSettings.Instance,
+                profile.EffectiveLaunchSettings.SystemId);
             lastProfile = profile;
             recentOutput.Clear();
             Publish(new SimulationSessionSnapshot(
@@ -87,7 +91,8 @@ public sealed class SimulationSessionManager : ISimulationSessionManager
                 null,
                 $"Validating profile '{profile.Name}'.",
                 null,
-                []));
+                [],
+                Artifacts: artifacts));
 
             var issues = (await profileValidator.ValidateAsync(profile, cancellationToken).ConfigureAwait(false)).ToList();
             issues.AddRange(await runtime.ValidateAsync(profile, cancellationToken).ConfigureAwait(false));
@@ -113,14 +118,9 @@ public sealed class SimulationSessionManager : ISimulationSessionManager
                 Message = $"Starting with runtime adapter '{runtime.Name}'."
             });
             lifecycleCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            var logDirectory = Path.Combine(
-                string.IsNullOrWhiteSpace(options.LogRootDirectory)
-                    ? Path.Combine(Path.GetTempPath(), "MissionPlanner", "Simulation")
-                    : options.LogRootDirectory,
-                sessionId.ToString("N"));
-            Directory.CreateDirectory(logDirectory);
+            artifacts.CreateDirectories();
             var createdSession = await runtime.StartAsync(
-                new SimulatorStartRequest(sessionId, profile, logDirectory),
+                new SimulatorStartRequest(sessionId, profile, artifacts.RuntimeLogDirectory),
                 lifecycleCancellation.Token).ConfigureAwait(false);
             runtimeSession = createdSession;
             createdSession.OutputReceived += OnOutputReceived;

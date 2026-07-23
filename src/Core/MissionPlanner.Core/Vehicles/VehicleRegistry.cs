@@ -11,7 +11,7 @@ namespace MissionPlanner.Core.Vehicles;
 /// <inheritdoc />
 public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider dateTimeProvider, ILogger<VehicleRegistry> logger) : IVehicleRegistry
 {
-    private readonly Dictionary<VehicleId, VehicleSession> vehicles = [];
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<VehicleId, VehicleSession> vehicles = [];
 
     /// <inheritdoc />
     public VehicleSession? GetRequired(VehicleId vehicleId)
@@ -33,25 +33,43 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider 
     /// </summary>
     public async Task Reset(CancellationToken cancellationToken)
     {
-        foreach (var vehicle in vehicles.Values)
+        foreach (var vehicleId in vehicles.Keys)
         {
-            var offlineState = vehicle.State with { Connection = vehicle.State.Connection with { State = VehicleConnectionState.Offline } };
-
-            await eventHub.PublishDomainEventAsync(new VehicleStateUpdated(offlineState), cancellationToken);
+            await RemoveAsync(vehicleId, cancellationToken).ConfigureAwait(false);
         }
 
-        vehicles.Clear();
         await eventHub.PublishDomainEventAsync(new VehicleRegistryReset(), cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> RemoveAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
+    {
+        if (!vehicles.TryRemove(vehicleId, out var vehicle))
+        {
+            return false;
+        }
+
+        var offlineState = vehicle.State with
+        {
+            Connection = vehicle.State.Connection with { State = VehicleConnectionState.Offline }
+        };
+        await eventHub.PublishDomainEventAsync(new VehicleStateUpdated(offlineState), cancellationToken).ConfigureAwait(false);
+        logger.LogInformation("Removed exact vehicle {VehicleId} from the registry.", vehicleId);
+        return true;
     }
 
     /// <inheritdoc />
     public async Task<VehicleUpdateConnectionStateResult> UpdateConnectionStates(DateTimeOffset now, TimeSpan staleAfter, TimeSpan degradedAfter, TimeSpan offlineAfter, CancellationToken cancellationToken)
     {
         var result = new List<VehicleSession>();
-        foreach (var vehicle in vehicles.Values)
+        foreach (var vehicle in vehicles.Values.ToArray())
         {
             result.Add(vehicle);
-            var stateChanged = vehicle.UpdateConnectionState(now, staleAfter, degradedAfter, offlineAfter);
+            VehicleConnectionStateChanged? stateChanged;
+            lock (vehicle)
+            {
+                stateChanged = vehicle.UpdateConnectionState(now, staleAfter, degradedAfter, offlineAfter);
+            }
             await eventHub.PublishDomainEventAsync(new VehicleStateUpdated(vehicle.State), cancellationToken);
             if (stateChanged is not null)
             {
@@ -92,7 +110,6 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider 
         var identityWasNew = false;
         if (!vehicles.TryGetValue(vehicleId, out var session))
         {
-            identityWasNew = true;
             var state = new VehicleState(
                 vehicleId,
                 new VehicleIdentityState(vehicleType, autopilot, mavLinkVersion, VehicleFirmwareIdentityFactory.FromHeartbeat(vehicleType, autopilot)),
@@ -106,21 +123,29 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider 
                 VehicleNavigationState.Empty,
                 VehicleHealthState.Empty);
 
-            session = new VehicleSession(state, endPoint, dateTimeProvider);
-            vehicles.Add(vehicleId, session);
-            logger.LogTrace("Registered new vehicle: {VehicleId}", vehicleId);
-            await eventHub.PublishDomainEventAsync(new VehicleRegistered(vehicleId), cancellationToken);
+            var candidate = new VehicleSession(state, endPoint, dateTimeProvider);
+            identityWasNew = vehicles.TryAdd(vehicleId, candidate);
+            session = identityWasNew ? candidate : vehicles[vehicleId];
+            if (identityWasNew)
+            {
+                logger.LogTrace("Registered new vehicle: {VehicleId}", vehicleId);
+                await eventHub.PublishDomainEventAsync(new VehicleRegistered(vehicleId), cancellationToken);
+            }
         }
 
-        var previousDisplayName = session.State.DisplayName;
-        session.ApplyHeartbeat(
-            customMode,
-            vehicleType,
-            autopilot,
-            baseMode,
-            systemStatus,
-            mavLinkVersion,
-            receivedAt);
+        string previousDisplayName;
+        lock (session)
+        {
+            previousDisplayName = session.State.DisplayName;
+            session.ApplyHeartbeat(
+                customMode,
+                vehicleType,
+                autopilot,
+                baseMode,
+                systemStatus,
+                mavLinkVersion,
+                receivedAt);
+        }
 
         if (identityWasNew || !string.Equals(previousDisplayName, session.State.DisplayName, StringComparison.Ordinal))
         {

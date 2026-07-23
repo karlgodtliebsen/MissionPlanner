@@ -1,6 +1,7 @@
 ﻿using System.Threading.Channels;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Models;
+using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
@@ -18,7 +19,8 @@ public sealed class MissionTransferService(
     IMavLinkConnection connection,
     IMavLinkMissionEncoder encoder,
     IMissionProtocolMapper mapper,
-    IEventHub eventHub) : IMissionTransferService
+    IEventHub eventHub,
+    ISimulationVehicleChannelRegistry? simulationChannels = null) : IMissionTransferService
 {
     private static readonly TimeSpan StepTimeout = TimeSpan.FromSeconds(3);
     private const int MaxAttempts = 4;
@@ -66,7 +68,7 @@ public sealed class MissionTransferService(
 
         for (var attempt = 0; attempt < MaxAttempts; attempt++)
         {
-            await connection.SendRawAsync(encoder.EncodeMissionCount(vehicleId.SystemId, vehicleId.ComponentId, checked((ushort)items.Count), (MavMissionType)(byte)missionType), session.EndPoint, cancellationToken);
+            await GetConnection(vehicleId).SendRawAsync(encoder.EncodeMissionCount(vehicleId.SystemId, vehicleId.ComponentId, checked((ushort)items.Count), (MavMissionType)(byte)missionType), session.EndPoint, cancellationToken);
             var sent = new HashSet<ushort>();
             while (true)
             {
@@ -88,7 +90,7 @@ public sealed class MissionTransferService(
                     return new MissionUploadResult(false, null, $"Vehicle requested invalid mission sequence {request.Sequence}.");
                 }
 
-                await connection.SendRawAsync(encoder.EncodeMissionItemInt(vehicleId.SystemId, vehicleId.ComponentId, items[request.Sequence]), session.EndPoint, cancellationToken);
+                await GetConnection(vehicleId).SendRawAsync(encoder.EncodeMissionItemInt(vehicleId.SystemId, vehicleId.ComponentId, items[request.Sequence]), session.EndPoint, cancellationToken);
                 sent.Add(request.Sequence);
                 progress?.Report(new MissionUploadProgress(sent.Count, items.Count, request.Sequence));
             }
@@ -119,7 +121,7 @@ public sealed class MissionTransferService(
 
             return Task.CompletedTask;
         });
-        await connection.SendRawAsync(encoder.EncodeMissionRequestList(vehicleId.SystemId, vehicleId.ComponentId,
+        await GetConnection(vehicleId).SendRawAsync(encoder.EncodeMissionRequestList(vehicleId.SystemId, vehicleId.ComponentId,
             (MavMissionType)(byte)missionType), session.EndPoint, cancellationToken);
         MissionCountMessage count;
         var pendingItems = new Dictionary<ushort, MissionItemIntMessage>();
@@ -148,7 +150,7 @@ public sealed class MissionTransferService(
             pendingItems.Remove(seq, out var item);
             for (var attempt = 0; attempt < MaxAttempts && item is null; attempt++)
             {
-                await connection.SendRawAsync(encoder.EncodeMissionRequestInt(vehicleId.SystemId, vehicleId.ComponentId, seq,
+                await GetConnection(vehicleId).SendRawAsync(encoder.EncodeMissionRequestInt(vehicleId.SystemId, vehicleId.ComponentId, seq,
                     (MavMissionType)(byte)missionType), session.EndPoint, cancellationToken);
                 try
                 {
@@ -183,7 +185,7 @@ public sealed class MissionTransferService(
             progress?.Report(new MissionDownloadProgress(seq + 1, count.Count, seq));
         }
 
-        await connection.SendRawAsync(encoder.EncodeMissionAck(vehicleId.SystemId, vehicleId.ComponentId, 0,
+        await GetConnection(vehicleId).SendRawAsync(encoder.EncodeMissionAck(vehicleId.SystemId, vehicleId.ComponentId, 0,
             (MavMissionType)(byte)missionType), session.EndPoint, cancellationToken);
         return new MissionDownloadResult(true, result, null);
     }
@@ -206,7 +208,7 @@ public sealed class MissionTransferService(
 
         for (var attempt = 0; attempt < MaxAttempts; attempt++)
         {
-            await connection.SendRawAsync(
+            await GetConnection(vehicleId).SendRawAsync(
                 encoder.EncodeMissionClearAll(vehicleId.SystemId, vehicleId.ComponentId, (MavMissionType)(byte)missionType),
                 session.EndPoint,
                 cancellationToken);
@@ -240,4 +242,7 @@ public sealed class MissionTransferService(
             throw new TimeoutException();
         }
     }
+
+    private IMavLinkConnection GetConnection(VehicleId vehicleId) =>
+        simulationChannels?.Find(vehicleId)?.ConnectionSession.Connection ?? connection;
 }

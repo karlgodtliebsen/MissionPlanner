@@ -720,6 +720,16 @@ Replaces v1.38's Simulation screen (SITL). New UI: `SimulationView`.
   telemetry assertions. It provides exact-target dry runs, safe-boundary pause/resume,
   cancellation cleanup, and machine-readable/readable evidence reports without arbitrary
   script execution
+* Multi-instance orchestration deterministically allocates instance numbers, SystemIds,
+  primary and component ports, home offsets, and per-instance runtime/telemetry/DataFlash/
+  cache directories. Start-all and stop-all use bounded concurrency and retain per-session
+  failures, process state, exact vehicle identity, connection state, and active selection
+* Concurrent SITL connections own independent UDP/client/parameter sessions while sharing
+  one inbound dispatcher. Commands, mission transfers, runtime controls, and scenarios route
+  by the exact session/`VehicleId`; disconnect and crash cleanup remove only that vehicle
+* Owned-process markers include PID, executable path, and operating-system start time.
+  Unclean-exit recovery terminates only an exact identity match and leaves PID-reuse or
+  uninspectable processes untouched for operator review
 * Four opt-in real-SITL family smoke tests use strict total and cleanup timeouts and skip
   explicitly when their configured binaries are absent
 * Asset: `src/Tests/MissionPlanner.Simulator` already hosts a simulator used by the smoke
@@ -733,7 +743,7 @@ current verification boundary.
 * Select vehicle model (multirotor, heli, plane, quadplane, rover, sub)
 * Ship/configure the production official ArduPilot artifact manifest (the acquisition
   pipeline exists but the repository intentionally does not invent an endpoint)
-* Multi-vehicle / swarm launch options
+* Autonomous swarm control (multi-vehicle launch offsets are data only by design)
 
 
 

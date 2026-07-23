@@ -38,6 +38,7 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
     private readonly IDateTimeProvider clock;
     private readonly SimulationScenarioOptions options;
     private readonly ILogger<SimulationScenarioRunner> logger;
+    private readonly ISimulationVehicleChannelRegistry? simulationChannels;
     private readonly SemaphoreSlim runGate = new(1, 1);
     private readonly object stateLock = new();
     private SimulationScenarioRunnerSnapshot current = SimulationScenarioRunnerSnapshot.Idle;
@@ -56,6 +57,7 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
     /// <param name="clock">Application clock.</param>
     /// <param name="options">Execution bounds.</param>
     /// <param name="logger">Logger.</param>
+    /// <param name="simulationChannels">Optional exact routes for independently owned fleet transports.</param>
     public SimulationScenarioRunner(
         ISimulationScenarioParser parser,
         ISimulationSessionManager sessionManager,
@@ -67,7 +69,8 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
         ISimulationScenarioDelay delay,
         IDateTimeProvider clock,
         IOptions<SimulationScenarioOptions> options,
-        ILogger<SimulationScenarioRunner> logger)
+        ILogger<SimulationScenarioRunner> logger,
+        ISimulationVehicleChannelRegistry? simulationChannels = null)
     {
         this.parser = parser;
         this.sessionManager = sessionManager;
@@ -80,6 +83,7 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
         this.clock = clock;
         this.options = options.Value;
         this.logger = logger;
+        this.simulationChannels = simulationChannels;
     }
 
     /// <inheritdoc />
@@ -195,7 +199,9 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
             .ToArray();
         if (vehicle is not null && controlKeys.Length > 0)
         {
-            var discovered = await controlService.DiscoverAsync(cancellationToken).ConfigureAwait(false);
+            var discovered = IsPrimaryTarget(sessionId, vehicleId)
+                ? await controlService.DiscoverAsync(cancellationToken).ConfigureAwait(false)
+                : await controlService.DiscoverAsync(sessionId, vehicleId, cancellationToken).ConfigureAwait(false);
             foreach (var key in controlKeys)
             {
                 var capability = discovered.FirstOrDefault(item => item.Descriptor.Key == key);
@@ -562,18 +568,40 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
             case SimulationScenarioStepKind.InjectFault:
             {
                 var duration = TimeSpan.FromSeconds(step.DurationSeconds!.Value);
-                await controlService.ApplyAsync(
-                    step.ControlKey!,
-                    ResolveNumber(step.Value!, request.Document.Variables),
-                    duration,
-                    request.HazardousActionsConfirmed,
-                    cancellationToken).ConfigureAwait(false);
+                var value = ResolveNumber(step.Value!, request.Document.Variables);
+                if (IsPrimaryTarget(request.SessionId, request.VehicleId))
+                {
+                    await controlService.ApplyAsync(
+                        step.ControlKey!, value, duration, request.HazardousActionsConfirmed, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    await controlService.ApplyAsync(
+                        request.SessionId,
+                        request.VehicleId,
+                        step.ControlKey!,
+                        value,
+                        duration,
+                        request.HazardousActionsConfirmed,
+                        cancellationToken).ConfigureAwait(false);
+                }
                 activeControls.Add(step.ControlKey!);
                 return $"Documented control '{step.ControlKey}' applied and confirmed for at most {duration.TotalSeconds:0} seconds.";
             }
 
             case SimulationScenarioStepKind.ClearFault:
-                await controlService.ResetAsync(step.ControlKey!, cancellationToken).ConfigureAwait(false);
+                if (IsPrimaryTarget(request.SessionId, request.VehicleId))
+                {
+                    await controlService.ResetAsync(step.ControlKey!, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    await controlService.ResetAsync(
+                        request.SessionId,
+                        request.VehicleId,
+                        step.ControlKey!,
+                        cancellationToken).ConfigureAwait(false);
+                }
                 activeControls.Remove(step.ControlKey!);
                 return $"Documented control '{step.ControlKey}' reset and confirmed.";
 
@@ -637,7 +665,18 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
             try
             {
                 GetExactVehicle(request.SessionId, request.VehicleId);
-                await controlService.ResetAsync(control, CancellationToken.None).ConfigureAwait(false);
+                if (IsPrimaryTarget(request.SessionId, request.VehicleId))
+                {
+                    await controlService.ResetAsync(control, CancellationToken.None).ConfigureAwait(false);
+                }
+                else
+                {
+                    await controlService.ResetAsync(
+                        request.SessionId,
+                        request.VehicleId,
+                        control,
+                        CancellationToken.None).ConfigureAwait(false);
+                }
             }
             catch (Exception exception)
             {
@@ -695,7 +734,10 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
     private VehicleSession GetExactVehicle(Guid sessionId, VehicleId vehicleId)
     {
         var snapshot = sessionManager.Current;
-        if (snapshot.State != SimulationSessionState.Running || snapshot.SessionId != sessionId || snapshot.VehicleId != vehicleId)
+        var singleSessionMatches = snapshot.State == SimulationSessionState.Running &&
+            snapshot.SessionId == sessionId && snapshot.VehicleId == vehicleId;
+        var fleetChannelMatches = simulationChannels?.Find(vehicleId)?.SessionId == sessionId;
+        if (!singleSessionMatches && !fleetChannelMatches)
         {
             throw new InvalidOperationException("The selected simulation session or VehicleId is no longer the exact running target.");
         }
@@ -707,6 +749,13 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
         }
 
         return vehicle;
+    }
+
+    private bool IsPrimaryTarget(Guid sessionId, VehicleId vehicleId)
+    {
+        var snapshot = sessionManager.Current;
+        return snapshot.State == SimulationSessionState.Running &&
+            snapshot.SessionId == sessionId && snapshot.VehicleId == vehicleId;
     }
 
     private SimulationTelemetrySnapshot? CaptureTelemetry(VehicleId vehicleId)

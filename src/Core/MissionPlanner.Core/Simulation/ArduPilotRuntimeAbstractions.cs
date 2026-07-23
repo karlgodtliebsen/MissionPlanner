@@ -64,6 +64,12 @@ public interface ISimulatorProcessSession : IAsyncDisposable
     /// <summary>Gets the operating-system process identifier.</summary>
     int ProcessId { get; }
 
+    /// <summary>Gets the normalized executable path used to start the process.</summary>
+    string ExecutablePath { get; }
+
+    /// <summary>Gets the operating-system process start time used to prevent PID-reuse mistakes.</summary>
+    DateTimeOffset StartedAt { get; }
+
     /// <summary>Gets process termination.</summary>
     Task<SimulatorRuntimeExit> Completion { get; }
 
@@ -96,6 +102,15 @@ public interface ISimulatorVehicleConnection
     /// <summary>Disconnects only the exact connection owned by this coordinator.</summary>
     /// <param name="cancellationToken">The cancellation token.</param>
     Task DisconnectAsync(CancellationToken cancellationToken = default);
+}
+
+/// <summary>Creates an independently owned vehicle connection for one simulator session.</summary>
+public interface ISimulatorVehicleConnectionFactory
+{
+    /// <summary>Creates a connection that cannot replace or disconnect another session's transport.</summary>
+    /// <param name="sessionId">The owning simulation session identity.</param>
+    /// <returns>The isolated simulator vehicle connection.</returns>
+    ISimulatorVehicleConnection Create(Guid sessionId);
 }
 
 /// <summary>Contains a tokenized ArduPilot process launch plan.</summary>

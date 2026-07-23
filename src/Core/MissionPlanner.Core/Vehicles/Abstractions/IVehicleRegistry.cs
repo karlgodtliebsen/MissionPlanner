@@ -27,6 +27,14 @@ public interface IVehicleRegistry
     Task Reset(CancellationToken cancellationToken);
 
     /// <summary>
+    /// Removes one exact vehicle without disturbing other registered vehicle sessions.
+    /// </summary>
+    /// <param name="vehicleId">The exact vehicle identity to remove.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns><see langword="true"/> when the vehicle was registered and removed.</returns>
+    Task<bool> RemoveAsync(VehicleId vehicleId, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Updates the connection states of all registered vehicle sessions based on the elapsed time since their last heartbeat.
     /// </summary>
     /// <param name="now">The current date and time.</param>
@@ -48,7 +56,7 @@ public interface IVehicleRegistry
     /// <param name="systemStatus">The system status of the vehicle.</param>
     /// <param name="mavLinkVersion">The MAVLink version of the vehicle.</param>
     /// <param name="receivedAt">The timestamp when the heartbeat was received.</param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The updated or newly registered vehicle session.</returns>
     Task<VehicleRegistryResult> RegisterOrUpdateHeartbeatAsync(
         VehicleId vehicleId,

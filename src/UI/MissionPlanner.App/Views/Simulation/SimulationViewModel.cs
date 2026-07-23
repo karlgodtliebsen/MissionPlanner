@@ -25,6 +25,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     private readonly ISimulationScenarioParser scenarioParser;
     private readonly ISimulationScenarioRunner scenarioRunner;
     private readonly ISimulationScenarioReportExporter scenarioReportExporter;
+    private readonly ISimulationFleetManager? fleetManager;
     private readonly ParametersFileHandler fileHandler;
     private readonly IDispatcher dispatcher;
     private readonly ILogger<SimulationViewModel> logger;
@@ -35,6 +36,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     private bool active;
     private bool disposed;
     private readonly Dictionary<string, SimulationPresetControlValue> stagedControls = new(StringComparer.Ordinal);
+    private bool refreshingFleetSelection;
 
     /// <summary>Initializes the Simulation workspace view model.</summary>
     /// <param name="profileService">The persisted profile service.</param>
@@ -52,6 +54,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     /// <param name="fileHandler">The platform file helper.</param>
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="fleetManager">Optional multi-instance fleet coordinator.</param>
     public SimulationViewModel(
         ISimulatorProfileService profileService,
         ISimulationSessionManager sessionManager,
@@ -67,7 +70,8 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         ISimulationScenarioReportExporter scenarioReportExporter,
         ParametersFileHandler fileHandler,
         IDispatcher dispatcher,
-        ILogger<SimulationViewModel> logger)
+        ILogger<SimulationViewModel> logger,
+        ISimulationFleetManager? fleetManager = null)
     {
         this.profileService = profileService;
         this.sessionManager = sessionManager;
@@ -84,6 +88,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         this.fileHandler = fileHandler;
         this.dispatcher = dispatcher;
         this.logger = logger;
+        this.fleetManager = fleetManager;
         ApplySnapshot(sessionManager.Current);
         PlatformCapability = platformService.Current.Message;
         ScenarioRunnerStatus = scenarioRunner.Current?.Message ?? "No scenario is running.";
@@ -134,6 +139,33 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
 
     /// <summary>Gets the bounded recent runtime output.</summary>
     public ObservableCollection<SimulatorOutputLine> RecentOutput { get; } = [];
+
+    /// <summary>Gets every independently owned simulator fleet member.</summary>
+    public ObservableCollection<SimulationFleetSessionSnapshot> FleetSessions { get; } = [];
+
+    /// <summary>Gets or sets the explicitly selected simulator fleet member.</summary>
+    [ObservableProperty]
+    public partial SimulationFleetSessionSnapshot? SelectedFleetSession { get; set; }
+
+    /// <summary>Gets or sets the requested fleet size.</summary>
+    [ObservableProperty]
+    public partial int FleetCount { get; set; } = 2;
+
+    /// <summary>Gets or sets north/south launch spacing in metres.</summary>
+    [ObservableProperty]
+    public partial double FleetSpacingMeters { get; set; } = 10;
+
+    /// <summary>Gets or sets the deterministic port increment per fleet member.</summary>
+    [ObservableProperty]
+    public partial int FleetPortStride { get; set; } = 10;
+
+    /// <summary>Gets or sets the bounded number of concurrent fleet lifecycle operations.</summary>
+    [ObservableProperty]
+    public partial int FleetMaximumConcurrency { get; set; } = 3;
+
+    /// <summary>Gets the latest fleet-level operation summary.</summary>
+    [ObservableProperty]
+    public partial string FleetStatus { get; private set; } = "No simulator fleet is allocated.";
 
     /// <summary>Gets or sets the selected discovered installation.</summary>
     [ObservableProperty]
@@ -366,6 +398,11 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
 
         active = true;
         sessionManager.Changed += OnSessionChanged;
+        if (fleetManager is not null)
+        {
+            fleetManager.Changed += OnFleetChanged;
+            RefreshFleetSessions();
+        }
         timerCancellation = new CancellationTokenSource();
         _ = UpdateElapsedAsync(timerCancellation.Token);
         if (!initialized)
@@ -388,6 +425,10 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
 
         active = false;
         sessionManager.Changed -= OnSessionChanged;
+        if (fleetManager is not null)
+        {
+            fleetManager.Changed -= OnFleetChanged;
+        }
         timerCancellation?.Cancel();
         timerCancellation?.Dispose();
         timerCancellation = null;
@@ -698,6 +739,47 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         }
     });
 
+    /// <summary>Allocates and starts all requested fleet members with bounded concurrency.</summary>
+    /// <returns>A task representing the fleet start operation.</returns>
+    [RelayCommand]
+    public Task StartAllAsync() => RunAsync(async cancellationToken =>
+    {
+        if (fleetManager is null)
+        {
+            throw new InvalidOperationException("Multi-instance simulation is unavailable.");
+        }
+
+        var profile = CreateProfile();
+        var request = new SimulationFleetLaunchRequest(
+            profile,
+            FleetCount,
+            SimulationFormationProfile.CreateLine(FleetCount, FleetSpacingMeters),
+            FleetPortStride,
+            FleetMaximumConcurrency);
+        var report = await fleetManager.StartAllAsync(request, cancellationToken);
+        RefreshFleetSessions();
+        FleetStatus = report.Succeeded
+            ? $"All {report.Results.Count} simulator sessions are running."
+            : $"{report.Results.Count(result => result.Succeeded)} of {report.Results.Count} simulator sessions started; inspect per-session failures.";
+    });
+
+    /// <summary>Stops all exact fleet members with bounded concurrency.</summary>
+    /// <returns>A task representing the fleet stop operation.</returns>
+    [RelayCommand]
+    public Task StopAllAsync() => RunAsync(async cancellationToken =>
+    {
+        if (fleetManager is null)
+        {
+            return;
+        }
+
+        var report = await fleetManager.StopAllAsync(FleetMaximumConcurrency, cancellationToken);
+        RefreshFleetSessions();
+        FleetStatus = report.Succeeded
+            ? "All simulator fleet sessions stopped."
+            : $"{report.Results.Count(result => !result.Succeeded)} simulator session(s) did not stop cleanly.";
+    });
+
     /// <summary>Stops only the exact runtime session owned by the workspace.</summary>
     /// <returns>A task representing shutdown.</returns>
     [RelayCommand]
@@ -746,6 +828,10 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         disposed = true;
         Deactivate();
         scenarioRunner.Changed -= OnScenarioRunnerChanged;
+        if (fleetManager is not null)
+        {
+            fleetManager.Changed -= OnFleetChanged;
+        }
         operationCancellation?.Cancel();
     }
 
@@ -781,6 +867,17 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         SimulationControlCapability? newValue) => StoreControlEdit(oldValue);
 
     partial void OnSelectedControlChanged(SimulationControlCapability? value) => LoadControlEdit(value);
+
+    partial void OnSelectedFleetSessionChanged(SimulationFleetSessionSnapshot? value)
+    {
+        if (refreshingFleetSelection || value is null || fleetManager is null)
+        {
+            return;
+        }
+
+        fleetManager.Select(value.Allocation.FleetSessionId);
+        ApplySnapshot(value.Session);
+    }
 
     partial void OnControlRequestedValueChanged(double value) => StoreControlEdit(SelectedControl);
 
@@ -836,6 +933,40 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
 
     private void OnSessionChanged(object? sender, SimulationSessionChangedEventArgs e) =>
         dispatcher.Dispatch(() => ApplySnapshot(e.Snapshot));
+
+    private void OnFleetChanged(object? sender, SimulationFleetChangedEventArgs e) =>
+        dispatcher.Dispatch(() =>
+        {
+            RefreshFleetSessions();
+            if (e.Session.IsSelected)
+            {
+                ApplySnapshot(e.Session.Session);
+            }
+        });
+
+    private void RefreshFleetSessions()
+    {
+        if (fleetManager is null)
+        {
+            return;
+        }
+
+        refreshingFleetSelection = true;
+        try
+        {
+            FleetSessions.Clear();
+            foreach (var session in fleetManager.Sessions)
+            {
+                FleetSessions.Add(session);
+            }
+
+            SelectedFleetSession = FleetSessions.FirstOrDefault(session => session.IsSelected);
+        }
+        finally
+        {
+            refreshingFleetSelection = false;
+        }
+    }
 
     private void ApplySnapshot(SimulationSessionSnapshot snapshot)
     {
@@ -1030,7 +1161,9 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
 
     private Task ExecuteScenarioAsync(bool dryRun) => RunAsync(async cancellationToken =>
     {
-        var snapshot = sessionManager.Current;
+        var snapshot = SelectedFleetSession is { Session.State: SimulationSessionState.Running, Session.VehicleId: not null }
+            ? SelectedFleetSession.Session
+            : sessionManager.Current;
         if (snapshot.State != SimulationSessionState.Running || snapshot.VehicleId is null)
         {
             throw new InvalidOperationException("Start and connect an exact simulator vehicle before running a scenario.");

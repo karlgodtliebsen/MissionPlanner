@@ -271,12 +271,15 @@ public sealed class ArduPilotSitlRuntimeTests
             true,
             "Supported."));
         var catalog = new ArduPilotFrameCatalog();
+        var connectionFactory = Substitute.For<ISimulatorVehicleConnectionFactory>();
+        connectionFactory.Create(Arg.Any<Guid>()).Returns(vehicleConnection);
         return new ArduPilotSitlRuntime(
             new ArduPilotLaunchPlanBuilder(catalog),
             catalog,
             allocator,
             processHost,
-            vehicleConnection,
+            Substitute.For<ISimulationOwnershipStore>(),
+            connectionFactory,
             platform,
             Substitute.For<ILogger<ArduPilotSitlRuntime>>());
     }
@@ -346,6 +349,10 @@ public sealed class ArduPilotSitlRuntimeTests
             new(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public int ProcessId => 4242;
+
+        public string ExecutablePath => Path.GetFullPath("arducopter-test.exe");
+
+        public DateTimeOffset StartedAt { get; } = DateTimeOffset.UtcNow;
 
         public Task<SimulatorRuntimeExit> Completion => completion.Task;
 

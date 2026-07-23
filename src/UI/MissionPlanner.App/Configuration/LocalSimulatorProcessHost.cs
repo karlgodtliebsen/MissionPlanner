@@ -55,7 +55,10 @@ public sealed class LocalSimulatorProcessHost : ISimulatorProcessHost
                 throw new InvalidOperationException("The operating system did not start the selected SITL executable.");
             }
 
-            return Task.FromResult<ISimulatorProcessSession>(new LocalSimulatorProcessSession(process));
+            return Task.FromResult<ISimulatorProcessSession>(new LocalSimulatorProcessSession(
+                process,
+                Path.GetFullPath(startInfo.ExecutablePath),
+                new DateTimeOffset(process.StartTime.ToUniversalTime())));
         }
         catch
         {
@@ -67,6 +70,8 @@ public sealed class LocalSimulatorProcessHost : ISimulatorProcessHost
     private sealed class LocalSimulatorProcessSession : ISimulatorProcessSession
     {
         private readonly Process process;
+        private readonly string executablePath;
+        private readonly DateTimeOffset startedAt;
         private readonly System.Collections.Concurrent.ConcurrentQueue<SimulatorOutputLine> recentOutput = new();
         private readonly CancellationTokenSource outputCancellation = new();
         private readonly Task standardOutputTask;
@@ -75,15 +80,21 @@ public sealed class LocalSimulatorProcessHost : ISimulatorProcessHost
         private int stopRequested;
         private int disposed;
 
-        public LocalSimulatorProcessSession(Process process)
+        public LocalSimulatorProcessSession(Process process, string executablePath, DateTimeOffset startedAt)
         {
             this.process = process;
+            this.executablePath = executablePath;
+            this.startedAt = startedAt;
             standardOutputTask = PumpAsync(process.StandardOutput, SimulatorOutputStream.StandardOutput, outputCancellation.Token);
             standardErrorTask = PumpAsync(process.StandardError, SimulatorOutputStream.StandardError, outputCancellation.Token);
             completion = ObserveCompletionAsync();
         }
 
         public int ProcessId => process.Id;
+
+        public string ExecutablePath => executablePath;
+
+        public DateTimeOffset StartedAt => startedAt;
 
         public Task<SimulatorRuntimeExit> Completion => completion;
 
