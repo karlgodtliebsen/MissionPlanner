@@ -7,7 +7,7 @@ using Mapsui.Projections;
 using Mapsui.Tiling;
 using Mapsui.Tiling.Layers;
 using Mapsui.UI.Maui;
-using MissionPlanner.App.Configuration;
+using MissionPlanner.App.Helpers;
 using MissionPlanner.Core.ConfigTuning.Planner;
 
 namespace MissionPlanner.App.Views.Missions;

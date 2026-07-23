@@ -85,11 +85,13 @@
             </CollectionView>
         </Grid>
     </Shell.FlyoutContent>
+
     <FlyoutItem Title="Flight Data"  Icon="Resources/Images/x_light_flightdata_icon_x.png">
         <ShellContent
             Title=""
             ContentTemplate="{DataTemplate flightData:FlightDataView}" Route="FlightData" />
     </FlyoutItem>
+
     <FlyoutItem Title="Flight Plan" Icon="Resources/Images/x_light_flightplan_icon_x.png">
         <ShellContent
             Title=""
@@ -98,18 +100,18 @@
     <FlyoutItem Title="Setup" Icon="Resources/Images/x_light_initialsetup_icon_x.png">
         <ShellContent
             Title="Install Firmware"
-            ContentTemplate="{DataTemplate installFirmware:InstallFirmwareView}" Route="InstallFirmware" />
+            ContentTemplate="{DataTemplate installFirmware:InstallFirmwareView}" Route="SetupInstallFirmware" />
 
         <ShellContent
             Title="Mandatory Hardware"
-            ContentTemplate="{DataTemplate mandatoryHardware:MandatoryHardwareView}" Route="MandatoryHardware" />
+            ContentTemplate="{DataTemplate mandatoryHardware:MandatoryHardwareView}" Route="SetupMandatoryHardware" />
         <ShellContent
             Title="Optional Hardware"
-            ContentTemplate="{DataTemplate optionalHardware:OptionalHardwareView}" Route="OptionalHardware" />
+            ContentTemplate="{DataTemplate optionalHardware:OptionalHardwareView}" Route="SetupOptionalHardware" />
 
         <ShellContent
             Title="Advanced"
-            ContentTemplate="{DataTemplate advanced:AdvancedView}" Route="Advanced" />
+            ContentTemplate="{DataTemplate advanced:AdvancedView}" Route="SetupAdvanced" />
 
     </FlyoutItem>
     <FlyoutItem Title="Config"  

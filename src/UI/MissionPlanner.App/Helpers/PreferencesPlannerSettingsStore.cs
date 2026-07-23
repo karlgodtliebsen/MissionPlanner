@@ -1,6 +1,6 @@
 ﻿using MissionPlanner.Core.ConfigTuning.Planner;
 
-namespace MissionPlanner.App.Configuration;
+namespace MissionPlanner.App.Helpers;
 
 /// <summary>Persists the non-secret Planner settings document through MAUI Preferences.</summary>
 public sealed class PreferencesPlannerSettingsStore : IPlannerSettingsStore

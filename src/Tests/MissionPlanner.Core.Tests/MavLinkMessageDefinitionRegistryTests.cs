@@ -2,8 +2,14 @@ using System.Buffers.Binary;
 using System.Diagnostics.CodeAnalysis;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
+using MissionPlanner.Library.EventHub;
 using MissionPlanner.MavLink;
+using MissionPlanner.MavLink.Configuration;
+using MissionPlanner.MavLink.Decoding;
 using MissionPlanner.MavLink.Generator;
+using MissionPlanner.MavLink.MavFtp;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.MavLink.Services.Abstractions;
@@ -90,47 +96,98 @@ public sealed class MavLinkMessageDefinitionRegistryTests
         frames.Should().ContainSingle().Which.MessageId.Should().Be(messageId);
     }
 
-    /// <summary>Verifies MAVLink 2 extension bytes may be omitted or partially truncated.</summary>
+    /// <summary>Verifies MAVLink 2 may truncate trailing zero bytes below the base-field length.</summary>
     [Fact]
-    public void ExtensionPayloadLengthsBetweenMinimumAndMaximumAreAccepted()
+    public void MavLink2PayloadLengthsFromOneToMaximumAreAccepted()
     {
         var registry = new MavLinkMessageDefinitionRegistry();
         registry.TryGet(24, out var gpsRawInt).Should().BeTrue();
+        var definition = gpsRawInt!;
         var lengths = new[]
         {
-            gpsRawInt!.MinimumPayloadLength,
-            checked((byte)(gpsRawInt.MinimumPayloadLength + 1)),
-            gpsRawInt.MaximumPayloadLength
-        };
+            1,
+            definition.MinimumPayloadLength - 1,
+            definition.MinimumPayloadLength,
+            checked((byte)(definition.MinimumPayloadLength + 1)),
+            definition.MaximumPayloadLength
+        }.Distinct();
 
         foreach (var length in lengths)
         {
-            var packet = BuildFrame(gpsRawInt, new byte[length]);
+            var packet = BuildFrame(definition, new byte[length]);
             var frames = new MavLinkV2FrameParser(registry).Parse(packet, TestEndPoint, DateTimeOffset.UtcNow);
             frames.Should().ContainSingle().Which.Payload.Length.Should().Be(length);
         }
     }
 
-    /// <summary>Verifies payloads outside the official wire-length window are rejected.</summary>
+    /// <summary>Verifies version-specific payload bounds reject malformed frames.</summary>
     [Fact]
-    public void PayloadLengthsOutsideDefinitionWindowAreRejected()
+    public void PayloadLengthsOutsideVersionSpecificBoundsAreRejected()
     {
         var registry = new MavLinkMessageDefinitionRegistry();
         registry.TryGet(24, out var gpsRawInt).Should().BeTrue();
-        var belowMinimum = BuildFrame(gpsRawInt!, new byte[gpsRawInt!.MinimumPayloadLength - 1]);
-        var aboveMaximum = BuildFrame(gpsRawInt, new byte[gpsRawInt.MaximumPayloadLength + 1]);
+        var definition = gpsRawInt!;
+        var emptyMavLink2Payload = BuildFrame(definition, []);
+        var aboveMaximum = BuildFrame(definition, new byte[definition.MaximumPayloadLength + 1]);
+        var shortMavLink1Payload = BuildFrame(definition, new byte[definition.MinimumPayloadLength - 1], mavLink2: false);
         var logger = new RecordingLogger<MavLinkV2FrameParser>();
 
         new MavLinkV2FrameParser(registry, logger)
-            .Parse(belowMinimum, TestEndPoint, DateTimeOffset.UtcNow)
+            .Parse(emptyMavLink2Payload, TestEndPoint, DateTimeOffset.UtcNow)
             .Should().BeEmpty();
         new MavLinkV2FrameParser(registry, logger)
             .Parse(aboveMaximum, TestEndPoint, DateTimeOffset.UtcNow)
             .Should().BeEmpty();
+        new MavLinkV2FrameParser(registry, logger)
+            .Parse(shortMavLink1Payload, TestEndPoint, DateTimeOffset.UtcNow)
+            .Should().BeEmpty();
         logger.Messages.Should().Contain(message =>
             message.Contains("GPS_RAW_INT", StringComparison.Ordinal)
-            && message.Contains("MinimumPayloadLength=30", StringComparison.Ordinal)
+            && message.Contains("BasePayloadLength=30", StringComparison.Ordinal)
             && message.Contains("MaximumPayloadLength=52", StringComparison.Ordinal));
+    }
+
+    /// <summary>Verifies a short ArduPilot MAVFTP ACK survives frame validation and is zero-padded by its decoder.</summary>
+    [Fact]
+    public async Task TruncatedMavFtpResponseReachesResponseRegistration()
+    {
+        var registry = new MavLinkMessageDefinitionRegistry();
+        registry.TryGet(MessageIds.FileTransferProtocol, out var definition).Should().BeTrue();
+        var payload = new byte[9];
+        payload[1] = 255;
+        payload[2] = 190;
+        payload[3] = 1;
+        payload[6] = (byte)MavFtpOpcode.Ack;
+        payload[8] = (byte)MavFtpOpcode.ListDirectory;
+        var packet = BuildFrame(definition!, payload);
+
+        var frame = new MavLinkV2FrameParser(registry)
+            .Parse(packet, TestEndPoint, DateTimeOffset.UtcNow)
+            .Should().ContainSingle().Which;
+        var decoder = new FileTransferProtocolMessageDecoder();
+
+        decoder.TryDecode(frame, out var decoded).Should().BeTrue();
+        var message = decoded.Should().BeOfType<FileTransferProtocolMessage>().Subject;
+        var eventHub = new EventHub(NullLogger<EventHub>.Instance);
+        using var dispatcher = new MavFtpResponseDispatcher(
+            eventHub,
+            new MavFtpPacketCodec(),
+            Options.Create(new MavFtpOptions()),
+            NullLogger<MavFtpResponseDispatcher>.Instance);
+        var target = new MavFtpTarget(1, 1, TestEndPoint);
+        using var responseRegistration = dispatcher.Register(target, 0, MavFtpOpcode.ListDirectory, 0);
+
+        await eventHub.PublishAsync<MavLinkMessage>(
+            MavLinkEventTopics.ReceivedMessage,
+            message,
+            TestContext.Current.CancellationToken);
+        var response = await responseRegistration.ReadAsync(
+            TimeSpan.FromSeconds(1),
+            TestContext.Current.CancellationToken);
+
+        response.Sequence.Should().Be(1);
+        response.Opcode.Should().Be(MavFtpOpcode.Ack);
+        response.RequestedOpcode.Should().Be(MavFtpOpcode.ListDirectory);
     }
 
     /// <summary>Verifies a defined zero-payload message is accepted.</summary>
@@ -182,21 +239,34 @@ public sealed class MavLinkMessageDefinitionRegistryTests
     private static byte[] BuildFrame(
         MavLinkMessageDefinition definition,
         ReadOnlySpan<byte> payload,
-        bool signed = false)
+        bool signed = false,
+        bool mavLink2 = true)
     {
-        var packet = new byte[10 + payload.Length + 2 + (signed ? 13 : 0)];
-        packet[0] = 0xfd;
+        var headerLength = mavLink2 ? 10 : 6;
+        var packet = new byte[headerLength + payload.Length + 2 + (signed ? 13 : 0)];
+        packet[0] = mavLink2 ? (byte)0xfd : (byte)0xfe;
         packet[1] = checked((byte)payload.Length);
-        packet[2] = signed ? (byte)1 : (byte)0;
-        packet[4] = 7;
-        packet[5] = 1;
-        packet[6] = 1;
-        packet[7] = (byte)definition.MessageId;
-        packet[8] = (byte)(definition.MessageId >> 8);
-        packet[9] = (byte)(definition.MessageId >> 16);
-        payload.CopyTo(packet.AsSpan(10));
-        var crc = MavLinkCrc.Calculate(packet.AsSpan(1, 9 + payload.Length), definition.CrcExtra);
-        BinaryPrimitives.WriteUInt16LittleEndian(packet.AsSpan(10 + payload.Length), crc);
+        if (mavLink2)
+        {
+            packet[2] = signed ? (byte)1 : (byte)0;
+            packet[4] = 7;
+            packet[5] = 1;
+            packet[6] = 1;
+            packet[7] = (byte)definition.MessageId;
+            packet[8] = (byte)(definition.MessageId >> 8);
+            packet[9] = (byte)(definition.MessageId >> 16);
+        }
+        else
+        {
+            packet[2] = 7;
+            packet[3] = 1;
+            packet[4] = 1;
+            packet[5] = checked((byte)definition.MessageId);
+        }
+
+        payload.CopyTo(packet.AsSpan(headerLength));
+        var crc = MavLinkCrc.Calculate(packet.AsSpan(1, headerLength - 1 + payload.Length), definition.CrcExtra);
+        BinaryPrimitives.WriteUInt16LittleEndian(packet.AsSpan(headerLength + payload.Length), crc);
         return packet;
     }
 

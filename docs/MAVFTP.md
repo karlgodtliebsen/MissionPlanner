@@ -46,3 +46,13 @@ instead of being silently treated as packet loss.
 Automated SITL tests are not yet available. Manual validation requires connecting to ArduPilot
 SITL, listing `/`, downloading and byte-comparing a known multi-packet file twice, and cancelling
 one transfer. Upload, mutations, capability-state decoding, and packed parameters remain excluded.
+
+## MAVLink 2 frame-validation fix (2026-07-23)
+
+MAVLink 2 trailing-zero truncation applies to the complete payload, including base fields, and
+retains only one byte for a non-empty message. ArduPilot commonly emits MAVFTP ACK/NAK frames with
+a 9-byte wire payload even though `FILE_TRANSFER_PROTOCOL` has a 254-byte untruncated payload.
+The frame parser now validates MAVLink 2 payloads against the one-byte-to-maximum wire range while
+retaining the exact base-field length rule for MAVLink 1. Typed generated decoders zero-fill the
+omitted bytes. This prevents valid MAVFTP responses from being discarded before response
+registration and correlation.

@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
+using MissionPlanner.App.Helpers;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.ConfigTuning.Planner;
 
@@ -183,12 +184,15 @@ public sealed partial class PlannerTabViewModel : ObservableObject
     public bool RestartRequired => !string.IsNullOrWhiteSpace(RestartRequiredMessage);
 
     /// <summary>Loads persisted settings and performs safe recovery when necessary.</summary>
-    public Task ActivateAsync() => RunAsync(async cancellationToken =>
+    public Task ActivateAsync()
     {
-        var result = await settingsService.InitializeAsync(cancellationToken);
-        Load(result.Settings);
-        StatusMessage = result.Message ?? "Planner preferences loaded. These settings are local and do not change the flight controller.";
-    });
+        return RunAsync(async cancellationToken =>
+        {
+            var result = await settingsService.InitializeAsync(cancellationToken);
+            Load(result.Settings);
+            StatusMessage = result.Message ?? "Planner preferences loaded. These settings are local and do not change the flight controller.";
+        });
+    }
 
     partial void OnSelectedThemeChanged(PlannerTheme value)
     {
@@ -199,76 +203,91 @@ public sealed partial class PlannerTabViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private Task SaveAsync() => RunAsync(async cancellationToken =>
+    private Task SaveAsync()
     {
-        var result = await settingsService.SaveAsync(CreateSettings(), cancellationToken);
-        ShowSaveResult(result, "Planner preferences saved.");
-    });
+        return RunAsync(async cancellationToken =>
+        {
+            var result = await settingsService.SaveAsync(CreateSettings(), cancellationToken);
+            ShowSaveResult(result, "Planner preferences saved.");
+        });
+    }
 
     [RelayCommand]
-    private Task ResetSectionAsync(string sectionName) => RunAsync(async cancellationToken =>
+    private Task ResetSectionAsync(string sectionName)
     {
-        if (!Enum.TryParse<PlannerSettingsSection>(sectionName, true, out var section))
+        return RunAsync(async cancellationToken =>
         {
-            StatusMessage = $"Unknown settings section: {sectionName}.";
-            return;
-        }
+            if (!Enum.TryParse<PlannerSettingsSection>(sectionName, true, out var section))
+            {
+                StatusMessage = $"Unknown settings section: {sectionName}.";
+                return;
+            }
 
-        var result = await settingsService.ResetSectionAsync(section, cancellationToken);
-        Load(settingsService.Current);
-        ShowSaveResult(result, $"{section} settings reset to defaults.");
-    });
+            var result = await settingsService.ResetSectionAsync(section, cancellationToken);
+            Load(settingsService.Current);
+            ShowSaveResult(result, $"{section} settings reset to defaults.");
+        });
+    }
 
     [RelayCommand]
-    private Task ResetAllAsync() => RunAsync(async cancellationToken =>
+    private Task ResetAllAsync()
     {
-        if (!await confirmation.ConfirmAsync(
-                "Reset Planner preferences?",
-                "All local application preferences will return to safe defaults. Vehicle parameters are not affected.",
-                "Reset all",
-                cancellationToken))
+        return RunAsync(async cancellationToken =>
         {
-            return;
-        }
+            if (!await confirmation.ConfirmAsync(
+                    "Reset Planner preferences?",
+                    "All local application preferences will return to safe defaults. Vehicle parameters are not affected.",
+                    "Reset all",
+                    cancellationToken))
+            {
+                return;
+            }
 
-        var result = await settingsService.ResetAllAsync(cancellationToken);
-        Load(settingsService.Current);
-        ShowSaveResult(result, "All Planner preferences reset to defaults.");
-    });
+            var result = await settingsService.ResetAllAsync(cancellationToken);
+            Load(settingsService.Current);
+            ShowSaveResult(result, "All Planner preferences reset to defaults.");
+        });
+    }
 
     [RelayCommand]
-    private Task ExportAsync() => RunAsync(async cancellationToken =>
+    private Task ExportAsync()
     {
-        var path = await fileHandler.SaveTextFileAsync(
-            "missionplanner-settings.json",
-            settingsService.Export(),
-            cancellationToken);
-        StatusMessage = path is null ? "Settings export cancelled." : $"Settings exported to {path}. Secrets are never included.";
-    });
+        return RunAsync(async cancellationToken =>
+        {
+            var path = await fileHandler.SaveTextFileAsync(
+                "missionplanner-settings.json",
+                settingsService.Export(),
+                cancellationToken);
+            StatusMessage = path is null ? "Settings export cancelled." : $"Settings exported to {path}. Secrets are never included.";
+        });
+    }
 
     [RelayCommand]
-    private Task ImportAsync() => RunAsync(async cancellationToken =>
+    private Task ImportAsync()
     {
-        var document = await fileHandler.LoadTextFileAsync("Select MissionPlanner settings", cancellationToken);
-        if (document is null)
+        return RunAsync(async cancellationToken =>
         {
-            StatusMessage = "Settings import cancelled.";
-            return;
-        }
+            var document = await fileHandler.LoadTextFileAsync("Select MissionPlanner settings", cancellationToken);
+            if (document is null)
+            {
+                StatusMessage = "Settings import cancelled.";
+                return;
+            }
 
-        var result = await settingsService.ImportAsync(document, cancellationToken);
-        if (!result.Success)
-        {
-            StatusMessage = string.Join(" ", result.Errors.Select(error => error.Message));
-            return;
-        }
+            var result = await settingsService.ImportAsync(document, cancellationToken);
+            if (!result.Success)
+            {
+                StatusMessage = string.Join(" ", result.Errors.Select(error => error.Message));
+                return;
+            }
 
-        Load(settingsService.Current);
-        RestartRequiredMessage = FormatRestart(result.RestartRequiredSections);
-        StatusMessage = result.WasMigrated
-            ? $"Settings imported and migrated to schema {PlannerSettings.CurrentSchemaVersion}."
-            : "Settings imported. Secrets were ignored and remain in secure storage.";
-    });
+            Load(settingsService.Current);
+            RestartRequiredMessage = FormatRestart(result.RestartRequiredSections);
+            StatusMessage = result.WasMigrated
+                ? $"Settings imported and migrated to schema {PlannerSettings.CurrentSchemaVersion}."
+                : "Settings imported. Secrets were ignored and remain in secure storage.";
+        });
+    }
 
     private async Task RunAsync(Func<CancellationToken, Task> operation)
     {
@@ -337,54 +356,22 @@ public sealed partial class PlannerTabViewModel : ObservableObject
         runtime.PreviewTheme(settings.Appearance.Theme);
     }
 
-    private PlannerSettings CreateSettings() => new()
+    private PlannerSettings CreateSettings()
     {
-        Units = new PlannerUnitSettings { System = SelectedUnitSystem },
-        Map = new PlannerMapSettings
+        return new PlannerSettings
         {
-            Provider = SelectedMapProvider,
-            Style = SelectedMapStyle,
-            DefaultZoom = DefaultMapZoom
-        },
-        Telemetry = new PlannerTelemetrySettings
-        {
-            DisplayRateHz = TelemetryDisplayRateHz,
-            ChartHistorySeconds = ChartHistorySeconds
-        },
-        Appearance = new PlannerAppearanceSettings { Theme = SelectedTheme },
-        Logging = new PlannerLoggingSettings { Level = SelectedLoggingLevel, RetentionDays = LogRetentionDays },
-        Connection = new PlannerConnectionSettings
-        {
-            Channel = ConnectionChannel,
-            Host = ConnectionHost,
-            Port = ConnectionPort,
-            BaudRate = ConnectionBaudRate
-        },
-        ParameterCache = new PlannerParameterCacheSettings
-        {
-            Policy = SelectedParameterCachePolicy,
-            MaximumAgeMinutes = ParameterCacheMaximumAgeMinutes
-        },
-        Confirmations = new PlannerConfirmationSettings
-        {
-            ConfirmParameterWrites = ConfirmParameterWrites,
-            ConfirmArmDisarm = ConfirmArmDisarm,
-            ConfirmFirmwareChanges = ConfirmFirmwareChanges
-        },
-        Updates = new PlannerUpdateSettings
-        {
-            CheckAutomatically = CheckUpdatesAutomatically,
-            CheckIntervalDays = UpdateCheckIntervalDays,
-            Channel = UpdateChannel
-        },
-        Accessibility = new PlannerAccessibilitySettings
-        {
-            HighContrastTelemetry = HighContrastTelemetry,
-            ReduceMotion = ReduceMotion,
-            TextScale = TextScale,
-            AnnounceTelemetryWarnings = AnnounceTelemetryWarnings
-        }
-    };
+            Units = new PlannerUnitSettings { System = SelectedUnitSystem },
+            Map = new PlannerMapSettings { Provider = SelectedMapProvider, Style = SelectedMapStyle, DefaultZoom = DefaultMapZoom },
+            Telemetry = new PlannerTelemetrySettings { DisplayRateHz = TelemetryDisplayRateHz, ChartHistorySeconds = ChartHistorySeconds },
+            Appearance = new PlannerAppearanceSettings { Theme = SelectedTheme },
+            Logging = new PlannerLoggingSettings { Level = SelectedLoggingLevel, RetentionDays = LogRetentionDays },
+            Connection = new PlannerConnectionSettings { Channel = ConnectionChannel, Host = ConnectionHost, Port = ConnectionPort, BaudRate = ConnectionBaudRate },
+            ParameterCache = new PlannerParameterCacheSettings { Policy = SelectedParameterCachePolicy, MaximumAgeMinutes = ParameterCacheMaximumAgeMinutes },
+            Confirmations = new PlannerConfirmationSettings { ConfirmParameterWrites = ConfirmParameterWrites, ConfirmArmDisarm = ConfirmArmDisarm, ConfirmFirmwareChanges = ConfirmFirmwareChanges },
+            Updates = new PlannerUpdateSettings { CheckAutomatically = CheckUpdatesAutomatically, CheckIntervalDays = UpdateCheckIntervalDays, Channel = UpdateChannel },
+            Accessibility = new PlannerAccessibilitySettings { HighContrastTelemetry = HighContrastTelemetry, ReduceMotion = ReduceMotion, TextScale = TextScale, AnnounceTelemetryWarnings = AnnounceTelemetryWarnings }
+        };
+    }
 
     private void ShowSaveResult(PlannerSettingsSaveResult result, string successMessage)
     {
@@ -394,7 +381,10 @@ public sealed partial class PlannerTabViewModel : ObservableObject
             : string.Join(" ", result.Errors.Select(error => error.Message));
     }
 
-    private static string? FormatRestart(IReadOnlyList<PlannerSettingsSection> sections) => sections.Count == 0
-        ? null
-        : $"Restart required for: {string.Join(", ", sections)}.";
+    private static string? FormatRestart(IReadOnlyList<PlannerSettingsSection> sections)
+    {
+        return sections.Count == 0
+            ? null
+            : $"Restart required for: {string.Join(", ", sections)}.";
+    }
 }

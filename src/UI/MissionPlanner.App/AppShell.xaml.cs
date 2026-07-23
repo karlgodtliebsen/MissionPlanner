@@ -1,25 +1,27 @@
-using MissionPlanner.App.Configuration;
-using MissionPlanner.App.Views.ConfigTuning;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.App.Configuration;
+using MissionPlanner.App.Helpers;
+using MissionPlanner.App.Views.ConfigTuning;
 
 namespace MissionPlanner.App;
 
 /// <summary>The main application Shell and guarded workspace navigation host.</summary>
 public partial class AppShell : Shell
 {
-    private static readonly HashSet<string> configRoutes =
-    [
-        "ConfigGeoFence",
-        "ConfigBasicTuning",
-        "ConfigExtendedTuning",
-        "ConfigOnboardOSD",
-        "ConfigMavFtp",
-        "ConfigFullParameters",
-        "ConfigPlanner",
-        "ConfigCubeLan8PortSwitch"
-    ];
+    //private static readonly HashSet<string> configRoutes =
+    //[
+    //    "ConfigGeoFence",
+    //    "ConfigBasicTuning",
+    //    "ConfigExtendedTuning",
+    //    "ConfigOnboardOSD",
+    //    "ConfigMavFtp",
+    //    "ConfigFullParameters",
+    //    "ConfigPlanner",
+    //    "ConfigCubeLan8PortSwitch"
+    //];
     private readonly IConfigNavigationGuard navigationGuard;
     private readonly ILogger<AppShell> logger;
+    private readonly INavigationEventHub navigationEventHub;
 
     /// <summary>Initializes the main application Shell.</summary>
     public AppShell()
@@ -27,41 +29,52 @@ public partial class AppShell : Shell
         InitializeComponent();
         navigationGuard = ServiceHelper.GetRequiredService<IConfigNavigationGuard>();
         logger = ServiceHelper.GetRequiredService<ILogger<AppShell>>();
-        Navigating += OnNavigating;
+
+        navigationEventHub = ServiceHelper.GetRequiredService<INavigationEventHub>();
+
+        //Navigating += OnNavigating;
+        Navigated += OnShellNavigated;
     }
 
-    private async void OnNavigating(object? sender, ShellNavigatingEventArgs args)
+    private void OnShellNavigated(object? sender, ShellNavigatedEventArgs e)
     {
-        if (!args.CanCancel || !IsConfigLocation(args.Current?.Location))
-        {
-            return;
-        }
-
-        var deferral = args.GetDeferral();
-        try
-        {
-            if (!await navigationGuard.CanNavigateAsync(IsConfigLocation(args.Target.Location)))
-            {
-                args.Cancel();
-            }
-        }
-        catch (OperationCanceledException)
-        {
-            args.Cancel();
-        }
-        catch (Exception exception)
-        {
-            logger.LogError(exception, "Config navigation validation failed; navigation was cancelled.");
-            args.Cancel();
-        }
-        finally
-        {
-            deferral.Complete();
-        }
+        var previous = e.Previous?.Location.ToString();
+        var current = e.Current?.Location.ToString();
+        navigationEventHub.Publish(new NavigationEvent(previous, current));
     }
 
-    private static bool IsConfigLocation(Uri? location) =>
-        location is not null && location.OriginalString
-            .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Any(configRoutes.Contains);
+    //private async void OnNavigating(object? sender, ShellNavigatingEventArgs args)
+    //{
+    //    if (!args.CanCancel || !IsConfigLocation(args.Current?.Location))
+    //    {
+    //        return;
+    //    }
+
+    //    var deferral = args.GetDeferral();
+    //    try
+    //    {
+    //        if (!await navigationGuard.CanNavigateAsync(IsConfigLocation(args.Target.Location)))
+    //        {
+    //            args.Cancel();
+    //        }
+    //    }
+    //    catch (OperationCanceledException)
+    //    {
+    //        args.Cancel();
+    //    }
+    //    catch (Exception exception)
+    //    {
+    //        logger.LogError(exception, "Config navigation validation failed; navigation was cancelled.");
+    //        args.Cancel();
+    //    }
+    //    finally
+    //    {
+    //        deferral.Complete();
+    //    }
+    //}
+
+    //private static bool IsConfigLocation(Uri? location) =>
+    //    location is not null && location.OriginalString
+    //        .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+    //        .Any(configRoutes.Contains);
 }

@@ -51,7 +51,7 @@ public sealed class MavLinkGeneratedWireModelTests
     }
 
     /// <summary>
-    /// Verifies every generated decoder handles minimum, maximum, and every extension-truncation length losslessly.
+    /// Verifies every generated decoder handles all MAVLink 2 trailing-zero truncation lengths losslessly.
     /// </summary>
     [Fact]
     public void GeneratedDecodersHandleAllValidPayloadLengths()
@@ -62,7 +62,8 @@ public sealed class MavLinkGeneratedWireModelTests
         foreach (var schema in LoadSchemas().Where(IsGenerated))
         {
             var decoder = decoders[schema.MessageId];
-            for (var length = (int)schema.MinimumPayloadLength; length <= schema.MaximumPayloadLength; length++)
+            var minimumWirePayloadLength = schema.MaximumPayloadLength == 0 ? 0 : 1;
+            for (var length = minimumWirePayloadLength; length <= schema.MaximumPayloadLength; length++)
             {
                 var payload = Enumerable.Repeat((byte)0x41, length).ToArray();
                 decoder.TryDecode(CreateFrame(schema.MessageId, payload), out var decoded)
@@ -90,10 +91,10 @@ public sealed class MavLinkGeneratedWireModelTests
         foreach (var schema in LoadSchemas().Where(IsGenerated))
         {
             var decoder = decoders[schema.MessageId];
-            if (schema.MinimumPayloadLength > 0)
+            if (schema.MaximumPayloadLength > 0)
             {
-                decoder.TryDecode(CreateFrame(schema.MessageId, new byte[schema.MinimumPayloadLength - 1]), out _)
-                    .Should().BeFalse($"{schema.Name} is shorter than its registry minimum");
+                decoder.TryDecode(CreateFrame(schema.MessageId, []), out _)
+                    .Should().BeFalse($"{schema.Name} cannot encode a zero-length MAVLink 2 payload");
             }
 
             decoder.TryDecode(CreateFrame(schema.MessageId, new byte[schema.MaximumPayloadLength + 1]), out _)

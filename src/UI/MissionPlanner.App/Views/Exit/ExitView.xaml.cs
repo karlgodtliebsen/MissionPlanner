@@ -1,4 +1,4 @@
-﻿using MissionPlanner.App.Configuration;
+﻿using MissionPlanner.App.Helpers;
 using MissionPlanner.Library.EventHub.Abstractions;
 using UraniumUI.Dialogs;
 using UraniumUI.Extensions;

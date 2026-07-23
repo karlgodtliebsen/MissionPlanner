@@ -24,8 +24,9 @@ internal abstract class GeneratedMavLinkMessageDecoder : IMavLinkMessageDecoder
     public bool TryDecode(MavLinkFrame frame, out MavLinkMessage? message)
     {
         message = null;
+        var minimumWirePayloadLength = definition.MaximumPayloadLength == 0 ? 0 : 1;
         if (frame.MessageId != MessageId ||
-            frame.Payload.Length < definition.MinimumPayloadLength ||
+            frame.Payload.Length < minimumWirePayloadLength ||
             frame.Payload.Length > definition.MaximumPayloadLength)
         {
             return false;

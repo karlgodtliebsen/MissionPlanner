@@ -109,7 +109,7 @@ public partial class FlightPlannerView : UraniumContentPage
 	
 	       InitializeComponent();
 	
-	       var viewModel = ServiceHelper.GetRequiredService<FlightPlannerViewModel>();
+	       var viewModel = MissionPlanner.App.Configuration.ServiceHelper.GetRequiredService<FlightPlannerViewModel>();
 	
 	       BindingContext = viewModel;
 	

@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.App.Configuration;
+﻿namespace MissionPlanner.App.Helpers;
 
 /// <summary>
 /// Helper class for retrieving services from the MAUI application's service provider.

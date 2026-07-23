@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Configuration;
+using MissionPlanner.App.Helpers;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Simulation;
@@ -29,19 +30,13 @@ public sealed class SimulationFleetTests
     public void AllocatorProducesDeterministicIsolatedResources()
     {
         var allocator = Allocator();
-        var profile = Profile() with
-        {
-            LaunchSettings = ArduPilotLaunchSettings.Default with
-            {
-                AdditionalSerialEndpoints = [new ArduPilotSerialEndpoint(1, ArduPilotSerialTransport.UdpClient, "127.0.0.1", 14600)]
-            }
-        };
+        var profile = Profile() with { LaunchSettings = ArduPilotLaunchSettings.Default with { AdditionalSerialEndpoints = [new ArduPilotSerialEndpoint(1, ArduPilotSerialTransport.UdpClient, "127.0.0.1", 14600)] } };
         var request = new SimulationFleetLaunchRequest(
             profile,
             3,
             SimulationFormationProfile.CreateLine(3, 12.5),
-            PortStride: 20,
-            MaximumConcurrency: 2);
+            20,
+            2);
 
         var first = allocator.Allocate(request, []);
         var second = allocator.Allocate(request, []);
@@ -291,12 +286,12 @@ public sealed class SimulationFleetTests
         current.HasExited.Should().BeFalse();
     }
 
-    private static SimulationFleetAllocator Allocator(IVehicleRegistry? registry = null) => new(
-        registry ?? EmptyRegistry(),
-        Options.Create(new SimulationWorkspaceOptions
-        {
-            LogRootDirectory = Path.Combine(Path.GetTempPath(), "MissionPlanner-tests", "fleet")
-        }));
+    private static SimulationFleetAllocator Allocator(IVehicleRegistry? registry = null)
+    {
+        return new SimulationFleetAllocator(
+            registry ?? EmptyRegistry(),
+            Options.Create(new SimulationWorkspaceOptions { LogRootDirectory = Path.Combine(Path.GetTempPath(), "MissionPlanner-tests", "fleet") }));
+    }
 
     private static IVehicleRegistry EmptyRegistry()
     {
@@ -320,11 +315,10 @@ public sealed class SimulationFleetTests
             Substitute.For<ILogger<SimulationFleetManager>>());
     }
 
-    private static SimulatorProfile Profile() => SimulatorProfile.CreateDefault() with
+    private static SimulatorProfile Profile()
     {
-        Id = Guid.Parse("ef17e00a-d6d2-4ff1-b2d0-15cb13397819"),
-        Binary = new SimulatorBinaryReference("test", Path.GetFullPath("arducopter-test.exe"), "test")
-    };
+        return SimulatorProfile.CreateDefault() with { Id = Guid.Parse("ef17e00a-d6d2-4ff1-b2d0-15cb13397819"), Binary = new SimulatorBinaryReference("test", Path.GetFullPath("arducopter-test.exe"), "test") };
+    }
 
     private static VehicleSession Vehicle(VehicleId id, IDateTimeProvider? suppliedClock = null)
     {
@@ -426,44 +420,37 @@ public sealed class SimulationFleetTests
                 throw new InvalidOperationException(StopFailure);
             }
 
-            Current = Current with
-            {
-                State = SimulationSessionState.Stopped,
-                EndedAt = DateTimeOffset.UtcNow,
-                Message = "Stopped.",
-                Failure = null
-            };
+            Current = Current with { State = SimulationSessionState.Stopped, EndedAt = DateTimeOffset.UtcNow, Message = "Stopped.", Failure = null };
             Changed?.Invoke(this, new SimulationSessionChangedEventArgs(Current));
             return Task.FromResult(Current);
         }
 
-        public Task<SimulationSessionSnapshot> RestartAsync(CancellationToken cancellationToken = default) =>
-            Current.Profile is { } profile
+        public Task<SimulationSessionSnapshot> RestartAsync(CancellationToken cancellationToken = default)
+        {
+            return Current.Profile is { } profile
                 ? StartAsync(profile, cancellationToken)
                 : Task.FromResult(Current);
+        }
 
-        public Task ShutdownAsync(CancellationToken cancellationToken = default) => StopAsync(cancellationToken);
+        public Task ShutdownAsync(CancellationToken cancellationToken = default)
+        {
+            return StopAsync(cancellationToken);
+        }
 
-        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+        public ValueTask DisposeAsync()
+        {
+            return ValueTask.CompletedTask;
+        }
 
         public void Crash(string message)
         {
-            Current = Current with
-            {
-                State = SimulationSessionState.Failed,
-                EndedAt = DateTimeOffset.UtcNow,
-                Message = "Runtime exited unexpectedly.",
-                Failure = message
-            };
+            Current = Current with { State = SimulationSessionState.Failed, EndedAt = DateTimeOffset.UtcNow, Message = "Runtime exited unexpectedly.", Failure = message };
             Changed?.Invoke(this, new SimulationSessionChangedEventArgs(Current));
         }
 
         public void WriteOutput(string text)
         {
-            Current = Current with
-            {
-                RecentOutput = [new SimulatorOutputLine(DateTimeOffset.UtcNow, SimulatorOutputStream.StandardOutput, text)]
-            };
+            Current = Current with { RecentOutput = [new SimulatorOutputLine(DateTimeOffset.UtcNow, SimulatorOutputStream.StandardOutput, text)] };
             Changed?.Invoke(this, new SimulationSessionChangedEventArgs(Current));
         }
     }

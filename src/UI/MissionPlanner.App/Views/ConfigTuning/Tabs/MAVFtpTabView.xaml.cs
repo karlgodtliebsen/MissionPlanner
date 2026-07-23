@@ -1,30 +1,15 @@
-﻿using MissionPlanner.App.Configuration;
-
-namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
+﻿namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
 /// <summary>
 /// Provides the public API for MAVFtpTabView.
 /// </summary>
-public partial class MAVFtpTabView : ContentPage
+public partial class MAVFtpTabView : ContentPageView<MavFtpTabViewModel>
 {
-    private readonly MavFtpTabViewModel viewModel;
-
-    /// <summary>
+    ///// <summary>
     /// Provides the public API for MAVFtpTabView.
     /// </summary>
-    public MAVFtpTabView()
+    public MAVFtpTabView() : base("//ConfigMavFtp")
     {
         InitializeComponent();
-        viewModel = ServiceHelper.GetRequiredService<MavFtpTabViewModel>();
-        BindingContext = viewModel;
     }
-
-    ///// <summary>
-    ///// Provides the public API for OnAppearing.
-    ///// </summary>
-    //protected override void OnAppearing()
-    //{
-    //    base.OnAppearing();
-    //    _ = viewModel.RefreshCommand.ExecuteAsync(null);
-    //}
 }

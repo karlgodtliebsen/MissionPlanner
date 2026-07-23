@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Name="RootPage"
-             x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.MAVFtpTabView"
-             Title="Vehicle Files">
+<tabs:ContentPageView x:TypeArguments="tabs:MavFtpTabViewModel"
+                      xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                      xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                      xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
+                      x:Name="RootPage"
+                      x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.MAVFtpTabView"
+                      Title="Vehicle Files">
     <Grid Padding="16" RowDefinitions="Auto,*,Auto" RowSpacing="12">
         <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
             <Button BackgroundColor="Transparent" Text="↑" Command="{Binding NavigateUpCommand}" IsEnabled="{Binding CanNavigateUp}" />
@@ -44,4 +46,4 @@
             </HorizontalStackLayout>
         </VerticalStackLayout>
     </Grid>
-</ContentPage>
+</tabs:ContentPageView>

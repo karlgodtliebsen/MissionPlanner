@@ -153,18 +153,26 @@ public sealed class MavLinkV2FrameParser : IMavLinkFrameParser
             return true;
         }
 
+        // MAVLink 2 removes every trailing zero byte from the encoded payload,
+        // including zeroes in base fields, while retaining at least one byte for
+        // a non-empty message. The dialect minimum is the MAVLink 1/base-field
+        // length, not a lower bound for the MAVLink 2 wire payload.
+        var minimumWirePayloadLength = isV2
+            ? definition.MaximumPayloadLength == 0 ? 0 : 1
+            : definition.MinimumPayloadLength;
         var validPayloadLength = isV2
-            ? payloadLength >= definition.MinimumPayloadLength && payloadLength <= definition.MaximumPayloadLength
+            ? payloadLength >= minimumWirePayloadLength && payloadLength <= definition.MaximumPayloadLength
             : payloadLength == definition.MinimumPayloadLength;
         if (!validPayloadLength)
         {
             if (logger?.IsEnabled(LogLevel.Debug) == true)
             {
                 logger.LogDebug(
-                    "Skipping MAVLink frame with invalid payload length. MessageId={MessageId}, MessageName={MessageName}, PayloadLength={PayloadLength}, MinimumPayloadLength={MinimumPayloadLength}, MaximumPayloadLength={MaximumPayloadLength}",
+                    "Skipping MAVLink frame with invalid payload length. MessageId={MessageId}, MessageName={MessageName}, PayloadLength={PayloadLength}, MinimumWirePayloadLength={MinimumWirePayloadLength}, BasePayloadLength={BasePayloadLength}, MaximumPayloadLength={MaximumPayloadLength}",
                     messageId,
                     definition.Name,
                     payloadLength,
+                    minimumWirePayloadLength,
                     definition.MinimumPayloadLength,
                     definition.MaximumPayloadLength);
             }

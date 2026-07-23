@@ -1,8 +1,8 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Runtime.InteropServices;
 using MissionPlanner.Core.Simulation;
 
-namespace MissionPlanner.App.Configuration;
+namespace MissionPlanner.App.Helpers;
 
 /// <summary>Supplies a dedicated SITL directory beneath the platform cache.</summary>
 public sealed class MauiSitlCachePathProvider : ISitlCachePathProvider
@@ -57,7 +57,7 @@ public sealed class LocalSitlPlatformService : ISitlPlatformService
             var firstLine = output.Split(
                 ['\r', '\n'],
                 StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).FirstOrDefault();
-            return firstLine is null ? null : firstLine[..Math.Min(256, firstLine.Length)];
+            return firstLine?[..Math.Min(256, firstLine.Length)];
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
@@ -77,7 +77,7 @@ public sealed class LocalSitlPlatformService : ISitlPlatformService
         {
             Architecture.X64 => SitlArchitecture.X64,
             Architecture.Arm64 => SitlArchitecture.Arm64,
-            _ => SitlArchitecture.X64
+            var _ => SitlArchitecture.X64
         };
         var architectureSupported = RuntimeInformation.ProcessArchitecture is Architecture.X64 or Architecture.Arm64;
         if (OperatingSystem.IsWindows())
@@ -101,20 +101,17 @@ public sealed class LocalSitlPlatformService : ISitlPlatformService
                     : "This Linux CPU architecture is unsupported.");
         }
 
-        if (OperatingSystem.IsMacOS())
-        {
-            return new SitlPlatformCapability(
+        return OperatingSystem.IsMacOS()
+            ? new SitlPlatformCapability(
                 SitlPlatform.MacOS,
                 architecture,
                 architectureSupported,
-                architectureSupported ? "Native macOS SITL is supported." : "This macOS CPU architecture is unsupported.");
-        }
-
-        return new SitlPlatformCapability(
-            SitlPlatform.Linux,
-            architecture,
-            false,
-            "Local SITL execution is unavailable on this application platform.");
+                architectureSupported ? "Native macOS SITL is supported." : "This macOS CPU architecture is unsupported.")
+            : new SitlPlatformCapability(
+                SitlPlatform.Linux,
+                architecture,
+                false,
+                "Local SITL execution is unavailable on this application platform.");
     }
 
     private static void TryTerminateProbe(Process process)
@@ -123,7 +120,7 @@ public sealed class LocalSitlPlatformService : ISitlPlatformService
         {
             if (!process.HasExited)
             {
-                process.Kill(entireProcessTree: true);
+                process.Kill(true);
             }
         }
         catch (Exception exception) when (exception is InvalidOperationException or System.ComponentModel.Win32Exception)

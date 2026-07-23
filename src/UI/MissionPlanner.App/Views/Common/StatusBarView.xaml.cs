@@ -1,4 +1,4 @@
-﻿using MissionPlanner.App.Configuration;
+﻿using MissionPlanner.App.Helpers;
 
 namespace MissionPlanner.App.Views.Common;
 

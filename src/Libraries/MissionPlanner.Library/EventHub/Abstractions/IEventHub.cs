@@ -33,28 +33,6 @@ public interface IEventHub
 
 
     /// <summary>
-    /// Publishes an event without any data.
-    /// </summary>
-    /// <param name="event">The name of the event to publish.</param>
-    void Publish(string @event);
-
-    /// <summary>
-    /// Publishes an event with data.
-    /// </summary>
-    /// <param name="event">The name of the event to publish.</param>
-    /// <param name="data">The data to publish with the event.</param>
-    void Publish<T>(string @event, T data);
-
-
-    /// <summary>
-    /// Publish
-    /// </summary>
-    /// <param name="data"></param>
-    /// <typeparam name="T"></typeparam>
-    void Publish<T>(T data);
-
-
-    /// <summary>
     /// Subscribes to a specific event with an asynchronous action.
     /// </summary>
     /// <param name="event">The name of the event to subscribe to.</param>
@@ -83,6 +61,28 @@ public interface IEventHub
     /// <param name="action"></param>
     /// <returns></returns>
     IDisposable SubscribeAll(Action<string> action);
+
+    /// <summary>
+    /// Publishes an event without any data.
+    /// </summary>
+    /// <param name="event">The name of the event to publish.</param>
+    void Publish(string @event);
+
+    /// <summary>
+    /// Publishes an event with data.
+    /// </summary>
+    /// <param name="event">The name of the event to publish.</param>
+    /// <param name="data">The data to publish with the event.</param>
+    void Publish<T>(string @event, T data);
+
+
+    /// <summary>
+    /// Publish
+    /// </summary>
+    /// <param name="data"></param>
+    /// <typeparam name="T"></typeparam>
+    void Publish<T>(T data);
+
 
     /// <summary>
     /// Subscribes to all events with an asynchronous action that accepts the event name.

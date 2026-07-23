@@ -1,4 +1,4 @@
-using MissionPlanner.App.Configuration;
+﻿using MissionPlanner.App.Helpers;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
@@ -7,29 +7,29 @@ namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 /// </summary>
 public partial class GeoFenceTabView : ContentPage
 {
-	private readonly GeoFenceTabViewModel viewModel;
+    private readonly GeoFenceTabViewModel viewModel;
 
-	/// <summary>
-	/// Provides the public API for GeoFenceTabView.
-	/// </summary>
-	public GeoFenceTabView()
-	{
-		InitializeComponent();
-		viewModel = ServiceHelper.GetRequiredService<GeoFenceTabViewModel>();
-		BindingContext = viewModel;
-	}
+    /// <summary>
+    /// Provides the public API for GeoFenceTabView.
+    /// </summary>
+    public GeoFenceTabView()
+    {
+        InitializeComponent();
+        viewModel = ServiceHelper.GetRequiredService<GeoFenceTabViewModel>();
+        BindingContext = viewModel;
+    }
 
-	/// <inheritdoc />
-	protected override void OnAppearing()
-	{
-		base.OnAppearing();
-		viewModel.Activate();
-	}
+    /// <inheritdoc />
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        viewModel.Activate();
+    }
 
-	/// <inheritdoc />
-	protected override void OnDisappearing()
-	{
-		viewModel.Deactivate();
-		base.OnDisappearing();
-	}
+    /// <inheritdoc />
+    protected override void OnDisappearing()
+    {
+        viewModel.Deactivate();
+        base.OnDisappearing();
+    }
 }

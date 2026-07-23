@@ -1,7 +1,7 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using MissionPlanner.Core.Simulation;
 
-namespace MissionPlanner.App.Configuration;
+namespace MissionPlanner.App.Helpers;
 
 /// <summary>Starts and owns local simulator processes using tokenized argument APIs.</summary>
 public sealed class LocalSimulatorProcessHost : ISimulatorProcessHost
@@ -43,11 +43,7 @@ public sealed class LocalSimulatorProcessHost : ISimulatorProcessHost
             processStartInfo.Environment[variable.Key] = variable.Value;
         }
 
-        var process = new Process
-        {
-            StartInfo = processStartInfo,
-            EnableRaisingEvents = true
-        };
+        var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = true };
         try
         {
             if (!process.Start())

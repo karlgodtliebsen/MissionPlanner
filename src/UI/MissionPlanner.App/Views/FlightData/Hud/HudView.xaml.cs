@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel;
-using MissionPlanner.App.Configuration;
+using MissionPlanner.App.Helpers;
 using SkiaSharp.Views.Maui;
 
 namespace MissionPlanner.App.Views.FlightData.Hud;

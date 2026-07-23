@@ -815,8 +815,9 @@ Completed
   semantics and wire-field-derived storage widths; undefined future values remain round-trippable.
 * Protocol-to-domain mappings keep generated identity and capability enums separate from
   `FirmwareFamily` and the vehicle domain capability subset.
-* Frame validation uses the registry, including MAVLink 2 extension truncation bounds and
-  signed-frame sizing; it no longer depends on a typed decoder or hand-maintained CRC switch.
+* Frame validation uses the registry, including full MAVLink 2 trailing-zero truncation down to
+  one byte, MAVLink 1 base-field lengths, maximum payload bounds, and signed-frame sizing; it no
+  longer depends on a typed decoder or hand-maintained CRC switch.
 * The coverage report includes registry, CRC, typed wire,
   decoder, domain-handler, and observation coverage in `artifacts/mavlink-coverage.json`.
 * The vendored dialect revision, baseline counts, known legacy constant mismatch, and report

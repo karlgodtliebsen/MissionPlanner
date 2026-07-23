@@ -1,4 +1,4 @@
-﻿using MissionPlanner.App.Configuration;
+﻿using MissionPlanner.App.Helpers;
 using UraniumUI.Pages;
 
 namespace MissionPlanner.App.Views.Help;

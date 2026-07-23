@@ -1,6 +1,7 @@
-﻿using MissionPlanner.Core.ConfigTuning.Planner;
+﻿using MissionPlanner.App.Configuration;
+using MissionPlanner.Core.ConfigTuning.Planner;
 
-namespace MissionPlanner.App.Configuration;
+namespace MissionPlanner.App.Helpers;
 
 /// <summary>Applies safe live Planner settings to application runtime state.</summary>
 public sealed class PlannerSettingsRuntime : IDisposable
@@ -33,7 +34,10 @@ public sealed class PlannerSettingsRuntime : IDisposable
     }
 
     /// <summary>Reapplies the current safe live settings after MAUI application creation.</summary>
-    public void ApplyCurrent() => Apply(settingsService.Current);
+    public void ApplyCurrent()
+    {
+        Apply(settingsService.Current);
+    }
 
     /// <inheritdoc />
     public void Dispose()
@@ -47,7 +51,10 @@ public sealed class PlannerSettingsRuntime : IDisposable
         settingsService.SettingsChanged -= OnSettingsChanged;
     }
 
-    private void OnSettingsChanged(object? sender, PlannerSettingsChangedEventArgs e) => Apply(e.Current);
+    private void OnSettingsChanged(object? sender, PlannerSettingsChangedEventArgs e)
+    {
+        Apply(e.Current);
+    }
 
     private void Apply(PlannerSettings settings)
     {
@@ -61,10 +68,13 @@ public sealed class PlannerSettingsRuntime : IDisposable
         }
     }
 
-    private static AppTheme ToAppTheme(PlannerTheme theme) => theme switch
+    private static AppTheme ToAppTheme(PlannerTheme theme)
     {
-        PlannerTheme.Light => AppTheme.Light,
-        PlannerTheme.Dark => AppTheme.Dark,
-        _ => AppTheme.Unspecified
-    };
+        return theme switch
+        {
+            PlannerTheme.Light => AppTheme.Light,
+            PlannerTheme.Dark => AppTheme.Dark,
+            var _ => AppTheme.Unspecified
+        };
+    }
 }
