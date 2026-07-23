@@ -11,13 +11,6 @@ using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
 using MissionPlanner.App.Views.Simulation;
 using MissionPlanner.Core.Firmware;
-using MissionPlanner.Core.Configuration;
-using MissionPlanner.Core.Configuration.Fences;
-using MissionPlanner.Core.Configuration.Tuning;
-using MissionPlanner.Core.Configuration.Osd;
-using MissionPlanner.Core.Configuration.Planner;
-using MissionPlanner.Core.Configuration.VendorDevices;
-using MissionPlanner.Core.Configuration.VendorDevices.CubeLan;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Replay;
@@ -29,6 +22,13 @@ using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.MavLink.Services.Abstractions;
 using NSubstitute;
+using MissionPlanner.Core.ConfigTuning;
+using MissionPlanner.Core.ConfigTuning.Osd;
+using MissionPlanner.Core.ConfigTuning.Fences;
+using MissionPlanner.Core.ConfigTuning.VendorDevices;
+using MissionPlanner.Core.ConfigTuning.Tuning;
+using MissionPlanner.Core.ConfigTuning.Planner;
+using MissionPlanner.Core.ConfigTuning.VendorDevices.CubeLan;
 
 namespace MissionPlanner.Core.Tests;
 
@@ -147,11 +147,7 @@ public sealed class SetupWorkspaceTests
         dispatcher.ClearReceivedCalls();
 
         var current = context.Current.State!;
-        context.Set(current with
-        {
-            Connection = current.Connection with { LastHeartbeatAt = current.LastHeartbeatAt.AddSeconds(1) },
-            Flight = current.Flight with { IsArmed = true }
-        });
+        context.Set(current with { Connection = current.Connection with { LastHeartbeatAt = current.LastHeartbeatAt.AddSeconds(1) }, Flight = current.Flight with { IsArmed = true } });
 
         dispatcher.DidNotReceive().Dispatch(Arg.Any<Action>());
         viewModel.SelectedWorkflow.Should().BeSameAs(selectedWorkflow);

@@ -4,11 +4,13 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Commands;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
@@ -24,6 +26,7 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
     private readonly IUserConfirmationService confirmationService;
     private readonly IUserNotificationService notificationService;
     private readonly IDispatcher dispatcher;
+    private readonly IDomainEventHub domainEventHub;
     private readonly AsyncOperationRunner operationRunner;
     private readonly ILogger<ActionsTabViewModel> logger;
     private readonly FlightDataTabLifecycle lifecycle;
@@ -39,6 +42,7 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
     /// <param name="confirmationService">The hazardous-action confirmation service.</param>
     /// <param name="notificationService">The separate application-notification stream.</param>
     /// <param name="dispatcher">The UI dispatcher.</param>
+    /// <param name="domainEventHub">The domain event hub used for active-vehicle state updates.</param>
     /// <param name="logger">The logger.</param>
     /// <param name="replaySessionManager">Optional application-wide replay safety state.</param>
     public ActionsTabViewModel(
@@ -49,6 +53,7 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
         IUserConfirmationService confirmationService,
         IUserNotificationService notificationService,
         IDispatcher dispatcher,
+        IDomainEventHub domainEventHub,
         ILogger<ActionsTabViewModel> logger,
         IReplaySessionManager? replaySessionManager = null)
     {
@@ -59,14 +64,20 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
         this.confirmationService = confirmationService;
         this.notificationService = notificationService;
         this.dispatcher = dispatcher;
+        this.domainEventHub = domainEventHub;
         this.logger = logger;
         this.replaySessionManager = replaySessionManager;
         operationRunner = new AsyncOperationRunner(activeVehicle);
         lifecycle = new FlightDataTabLifecycle("Actions", activeVehicle, startAsync: _ =>
         {
             activeVehicle.Changed += OnActiveVehicleChanged;
+            var stateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
             ApplySnapshot(activeVehicle.Current);
-            return Task.FromResult<IDisposable?>(new CallbackDisposable(() => activeVehicle.Changed -= OnActiveVehicleChanged));
+            return Task.FromResult<IDisposable?>(new CallbackDisposable(() =>
+            {
+                activeVehicle.Changed -= OnActiveVehicleChanged;
+                stateSubscription.Dispose();
+            }));
         });
         ApplySnapshot(activeVehicle.Current);
         if (replaySessionManager is not null)
@@ -362,31 +373,31 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
         }
 
         var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-        void Handler(object? sender, ActiveVehicleChangedEventArgs args)
+        Task Handler(VehicleStateUpdated evt, CancellationToken eventCancellationToken)
         {
-            if (args.Current.State is { } updated && predicate(updated))
+            if (evt.VehicleId == activeVehicle.VehicleId && predicate(evt.VehicleState))
             {
                 completion.TrySetResult(true);
             }
+
+            return Task.CompletedTask;
         }
 
-        activeVehicle.Changed += Handler;
+        using var subscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(Handler);
+        if (activeVehicle.State is { } latest && predicate(latest))
+        {
+            return true;
+        }
+
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
         try
         {
-            using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-            using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
-            try
-            {
-                return await completion.Task.WaitAsync(linked.Token).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException) when (timeout.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
-            {
-                return false;
-            }
+            return await completion.Task.WaitAsync(linked.Token).ConfigureAwait(false);
         }
-        finally
+        catch (OperationCanceledException) when (timeout.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
         {
-            activeVehicle.Changed -= Handler;
+            return false;
         }
     }
 
@@ -433,6 +444,22 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
 
     private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args) =>
         dispatcher.Dispatch(() => ApplySnapshot(args.Current));
+
+    private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
+    {
+        if (evt.VehicleId == activeVehicle.VehicleId)
+        {
+            dispatcher.Dispatch(() =>
+            {
+                if (lifecycle.IsActive && evt.VehicleId == activeVehicle.VehicleId)
+                {
+                    ApplySnapshot(new ActiveVehicleSnapshot(evt.VehicleId, evt.VehicleState));
+                }
+            });
+        }
+
+        return Task.CompletedTask;
+    }
 
     private void ApplySnapshot(ActiveVehicleSnapshot snapshot)
     {

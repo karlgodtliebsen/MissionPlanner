@@ -59,12 +59,6 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
     public bool CanNavigateUp => CurrentPath != "/" && !IsBusy;
 
     /// <summary>
-    /// Gets a value indicating whether there is a connected vehicle.
-    /// </summary>
-    public bool HasVehicle => vehicleRegistry.Vehicles.Count > 0;
-
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="MavFtpTabViewModel"/> class.
     /// </summary>
     /// <param name="vehicleRegistry">The vehicle registry.</param>
@@ -87,17 +81,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
         fileSystem = connectionSession.CreateMavFtpConnection();
         SetConnectionStatus();
-    }
-
-    private async Task OnVehicleDisconnected(VehicleDisconnected evt, CancellationToken ct)
-    {
-        activeVehicleId = null;
-        HasConnection = false;
-        HasEntries = false;
-        Entries.Clear();
-        await ResetFilesystemService(evt.VehicleId, ct);
-
-        SetConnectionStatus();
+        StartDelayedRefresh(1);
     }
 
     private async Task ResetFilesystemService(VehicleId vehicleId, CancellationToken ct)
@@ -116,6 +100,17 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
 
             fileSystem = null;
         }
+    }
+
+    private async Task OnVehicleDisconnected(VehicleDisconnected evt, CancellationToken ct)
+    {
+        activeVehicleId = null;
+        HasConnection = false;
+        HasEntries = false;
+        Entries.Clear();
+        await ResetFilesystemService(evt.VehicleId, ct);
+
+        SetConnectionStatus();
     }
 
     private async Task OnVehicleConnected(VehicleConnected evt, CancellationToken ct)

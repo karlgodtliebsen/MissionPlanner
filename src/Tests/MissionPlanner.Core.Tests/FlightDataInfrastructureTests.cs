@@ -44,6 +44,72 @@ public sealed class FlightDataInfrastructureTests
     }
 
     /// <summary>
+    /// Verifies heartbeat-only state updates refresh the snapshot without publishing a connection change.
+    /// </summary>
+    [Fact]
+    public async Task HeartbeatStateUpdateDoesNotRaiseActiveVehicleChanged()
+    {
+        var fixture = CreateContextFixture();
+        using var context = fixture.Context;
+        var changes = new List<ActiveVehicleChangedEventArgs>();
+        context.Changed += (_, args) => changes.Add(args);
+        await fixture.Connected!(
+            new VehicleConnected(fixture.Session.Id, "UDP", "14550", DateTimeOffset.UtcNow),
+            TestContext.Current.CancellationToken);
+        var connectionToken = context.ConnectionCancellationToken;
+        var heartbeatState = fixture.Session.State with
+        {
+            Connection = fixture.Session.State.Connection with
+            {
+                LastHeartbeatAt = fixture.Session.State.LastHeartbeatAt + TimeSpan.FromSeconds(1)
+            }
+        };
+
+        await fixture.Updated!(
+            new VehicleStateUpdated(heartbeatState),
+            TestContext.Current.CancellationToken);
+
+        context.State.Should().Be(heartbeatState);
+        context.ConnectionCancellationToken.Should().Be(connectionToken);
+        connectionToken.IsCancellationRequested.Should().BeFalse();
+        changes.Should().ContainSingle();
+        changes[0].Previous.Should().Be(ActiveVehicleSnapshot.Empty);
+        changes[0].Current.State.Should().Be(fixture.Session.State);
+    }
+
+    /// <summary>
+    /// Verifies state updates still notify and rotate cancellation when the online boundary changes.
+    /// </summary>
+    [Fact]
+    public async Task ConnectionStateUpdateRaisesActiveVehicleChanged()
+    {
+        var fixture = CreateContextFixture();
+        using var context = fixture.Context;
+        await fixture.Connected!(
+            new VehicleConnected(fixture.Session.Id, "UDP", "14550", DateTimeOffset.UtcNow),
+            TestContext.Current.CancellationToken);
+        var onlineToken = context.ConnectionCancellationToken;
+        var changes = new List<ActiveVehicleChangedEventArgs>();
+        context.Changed += (_, args) => changes.Add(args);
+        var offlineState = fixture.Session.State with
+        {
+            Connection = fixture.Session.State.Connection with { State = VehicleConnectionState.Offline }
+        };
+
+        await fixture.Updated!(
+            new VehicleStateUpdated(offlineState),
+            TestContext.Current.CancellationToken);
+
+        context.State.Should().Be(offlineState);
+        context.IsOnline.Should().BeFalse();
+        onlineToken.IsCancellationRequested.Should().BeTrue();
+        context.ConnectionCancellationToken.IsCancellationRequested.Should().BeTrue();
+        changes.Should().ContainSingle();
+        changes[0].Previous.IsOnline.Should().BeTrue();
+        changes[0].Current.IsOnline.Should().BeFalse();
+    }
+
+    /// <summary>
     /// Verifies that disconnecting cancels a running operation and retains an immutable offline snapshot.
     /// </summary>
     [Fact]

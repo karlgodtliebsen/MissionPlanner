@@ -1,10 +1,10 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.Core.Commands;
-using MissionPlanner.Core.Configuration;
-using MissionPlanner.Core.Configuration.Fences;
+using MissionPlanner.Core.ConfigTuning;
+using MissionPlanner.Core.ConfigTuning.Fences;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Missions.Transfer;

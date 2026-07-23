@@ -1,9 +1,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
+using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.App.Views.FlightData;
 
@@ -19,12 +21,14 @@ public partial class FlightDataViewModel : ObservableObject, IDisposable
     ];
 
     private readonly IActiveVehicleContext activeVehicle;
+    private readonly IDomainEventHub domainEventHub;
     private readonly IDateTimeProvider clock;
     private readonly IDispatcher dispatcher;
     private readonly ILogger<FlightDataViewModel> logger;
     private readonly IReadOnlyDictionary<string, IFlightDataTabLifecycle> tabLifecycles;
     private readonly SemaphoreSlim tabTransitionLock = new(1, 1);
     private IFlightDataTabLifecycle? activeTab;
+    private IDisposable? stateSubscription;
     private bool isViewActive;
     private bool disposed;
 
@@ -32,18 +36,21 @@ public partial class FlightDataViewModel : ObservableObject, IDisposable
     /// Initializes a new instance of the <see cref="FlightDataViewModel"/> class.
     /// </summary>
     /// <param name="activeVehicle">The shared active-vehicle context.</param>
+    /// <param name="domainEventHub">The domain event hub used for live vehicle state.</param>
     /// <param name="clock">The application clock.</param>
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="tabLifecycles">The registered lifecycle-aware Flight Data tabs.</param>
     /// <param name="logger">The logger.</param>
     public FlightDataViewModel(
         IActiveVehicleContext activeVehicle,
+        IDomainEventHub domainEventHub,
         IDateTimeProvider clock,
         IDispatcher dispatcher,
         IEnumerable<IFlightDataTabLifecycle> tabLifecycles,
         ILogger<FlightDataViewModel> logger)
     {
         this.activeVehicle = activeVehicle;
+        this.domainEventHub = domainEventHub;
         this.clock = clock;
         this.dispatcher = dispatcher;
         this.logger = logger;
@@ -99,6 +106,7 @@ public partial class FlightDataViewModel : ObservableObject, IDisposable
         {
             isViewActive = true;
             activeVehicle.Changed += OnActiveVehicleChanged;
+            stateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
             UpdateVehicleStatus(activeVehicle.Current);
         }
 
@@ -159,6 +167,8 @@ public partial class FlightDataViewModel : ObservableObject, IDisposable
 
         isViewActive = false;
         activeVehicle.Changed -= OnActiveVehicleChanged;
+        stateSubscription?.Dispose();
+        stateSubscription = null;
         if (activeTab is not null)
         {
             await activeTab.DeactivateAsync().ConfigureAwait(false);
@@ -182,6 +192,22 @@ public partial class FlightDataViewModel : ObservableObject, IDisposable
     private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs e)
     {
         dispatcher.Dispatch(() => UpdateVehicleStatus(e.Current));
+    }
+
+    private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
+    {
+        if (evt.VehicleId == activeVehicle.VehicleId)
+        {
+            dispatcher.Dispatch(() =>
+            {
+                if (isViewActive && evt.VehicleId == activeVehicle.VehicleId)
+                {
+                    UpdateVehicleStatus(new ActiveVehicleSnapshot(evt.VehicleId, evt.VehicleState));
+                }
+            });
+        }
+
+        return Task.CompletedTask;
     }
 
     private void UpdateVehicleStatus(ActiveVehicleSnapshot snapshot)

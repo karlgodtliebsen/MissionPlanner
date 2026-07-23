@@ -1,8 +1,8 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Views.ConfigTuning;
-using MissionPlanner.Core.Configuration;
+using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -19,7 +19,7 @@ public sealed class ParameterEditSessionTests
     public async Task SessionTracksAndValidatesPendingValues()
     {
         var fixture = CreateFixture(
-            [(Parameter("GAIN", 1), Metadata("GAIN", range: "0 10", increment: "0.5"))]);
+            [(Parameter("GAIN", 1), Metadata("GAIN", "0 10", "0.5"))]);
         using var factory = fixture.Factory;
         var session = factory.Create(fixture.VehicleId);
         await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
@@ -41,18 +41,18 @@ public sealed class ParameterEditSessionTests
     public async Task ApplyReportsDuplicateAndPartialWriteResults()
     {
         var fixture = CreateFixture(
-            [
-                (Parameter("FIRST", 1), Metadata("FIRST", rebootRequired: true)),
-                (Parameter("SECOND", 2), Metadata("SECOND")),
-                (Parameter("THIRD", 3), Metadata("THIRD"))
-            ]);
+        [
+            (Parameter("FIRST", 1), Metadata("FIRST", rebootRequired: true)),
+            (Parameter("SECOND", 2), Metadata("SECOND")),
+            (Parameter("THIRD", 3), Metadata("THIRD"))
+        ]);
         fixture.ParameterService.FailingWrites.Add("SECOND");
         using var factory = fixture.Factory;
         var session = factory.Create(fixture.VehicleId);
         await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
-        session.TrySetPending("FIRST", 10, out _).Should().BeTrue();
-        session.TrySetPending("SECOND", 20, out _).Should().BeTrue();
-        session.TrySetPending("THIRD", 30, out _).Should().BeTrue();
+        session.TrySetPending("FIRST", 10, out var _).Should().BeTrue();
+        session.TrySetPending("SECOND", 20, out var _).Should().BeTrue();
+        session.TrySetPending("THIRD", 30, out var _).Should().BeTrue();
 
         var report = await session.ApplyAsync(
             ["FIRST", "FIRST", "SECOND", "THIRD"],
@@ -79,7 +79,7 @@ public sealed class ParameterEditSessionTests
         using var factory = fixture.Factory;
         var session = factory.Create(fixture.VehicleId);
         await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
-        session.TrySetPending("NO_ACK", 4, out _).Should().BeTrue();
+        session.TrySetPending("NO_ACK", 4, out var _).Should().BeTrue();
 
         var report = await session.ApplyAsync(cancellationToken: TestContext.Current.CancellationToken);
 
@@ -98,12 +98,9 @@ public sealed class ParameterEditSessionTests
         using var factory = fixture.Factory;
         var session = factory.Create(fixture.VehicleId);
         await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
-        session.TrySetPending("GAIN", 2, out _).Should().BeTrue();
+        session.TrySetPending("GAIN", 2, out var _).Should().BeTrue();
 
-        fixture.ActiveVehicle.Set(fixture.ActiveVehicle.State! with
-        {
-            Connection = fixture.ActiveVehicle.State!.Connection with { State = VehicleConnectionState.Offline }
-        });
+        fixture.ActiveVehicle.Set(fixture.ActiveVehicle.State! with { Connection = fixture.ActiveVehicle.State!.Connection with { State = VehicleConnectionState.Offline } });
         var report = await session.ApplyAsync(cancellationToken: TestContext.Current.CancellationToken);
 
         session.IsValid.Should().BeFalse();
@@ -121,7 +118,7 @@ public sealed class ParameterEditSessionTests
         using var factory = fixture.Factory;
         var session = factory.Create(fixture.VehicleId);
         await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
-        session.TrySetPending("GAIN", 2, out _).Should().BeTrue();
+        session.TrySetPending("GAIN", 2, out var _).Should().BeTrue();
 
         fixture.ActiveVehicle.Set(fixture.ActiveVehicle.State! with { VehicleId = new VehicleId(2, 1) });
         var report = await session.ApplyAsync(cancellationToken: TestContext.Current.CancellationToken);
@@ -138,10 +135,10 @@ public sealed class ParameterEditSessionTests
     public async Task AliasDefinitionsUsePresentParametersWithoutGuessing()
     {
         var fixture = CreateFixture(
-            [
-                (Parameter("RATE_OLD", 1), Metadata("RATE_OLD")),
-                (Parameter("FEATURE_ENABLE", 1), Metadata("FEATURE_ENABLE"))
-            ]);
+        [
+            (Parameter("RATE_OLD", 1), Metadata("RATE_OLD")),
+            (Parameter("FEATURE_ENABLE", 1), Metadata("FEATURE_ENABLE"))
+        ]);
         using var factory = fixture.Factory;
         var session = factory.Create(fixture.VehicleId);
         var supported = new ParameterFieldDefinition(
@@ -176,13 +173,14 @@ public sealed class ParameterEditSessionTests
     [Fact]
     public async Task ParameterItemProjectsPendingSessionState()
     {
-        var fixture = CreateFixture([(Parameter("GAIN", 1), Metadata("GAIN", range: "0 5"))]);
+        var fixture = CreateFixture([(Parameter("GAIN", 1), Metadata("GAIN", "0 5"))]);
         using var factory = fixture.Factory;
         var session = factory.Create(fixture.VehicleId);
         await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
-        var item = new ParameterItemViewModel(session, session.GetField("GAIN")!);
-
-        item.Value = 3;
+        var item = new ParameterItemViewModel(session, session.GetField("GAIN")!)
+        {
+            Value = 3
+        };
 
         item.IsModified.Should().BeTrue();
         session.GetField("GAIN")!.PendingValue.Should().Be(3);
@@ -194,7 +192,7 @@ public sealed class ParameterEditSessionTests
     {
         var sessions = Substitute.For<IParameterEditSessionFactory>();
         sessions.HasUnappliedChanges.Returns(true);
-        var confirmation = Substitute.For<MissionPlanner.App.Presentation.IUserConfirmationService>();
+        var confirmation = Substitute.For<App.Presentation.IUserConfirmationService>();
         confirmation.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(false, true);
         var guard = new ConfigNavigationGuard(sessions, confirmation);
 
@@ -236,14 +234,19 @@ public sealed class ParameterEditSessionTests
         return new Fixture(state.VehicleId, activeVehicle, parameterService, factory);
     }
 
-    private static VehicleParameter Parameter(string name, float value) => new(name, value, MavParamType.Real32, 0, 1);
+    private static VehicleParameter Parameter(string name, float value)
+    {
+        return new VehicleParameter(name, value, MavParamType.Real32, 0, 1);
+    }
 
     private static ParameterMetadata Metadata(
         string name,
         string? range = null,
         string? increment = null,
-        bool rebootRequired = false) =>
-        new(name, name, $"Description for {name}", null, null, range, null, null, increment, "Standard", rebootRequired, false);
+        bool rebootRequired = false)
+    {
+        return new ParameterMetadata(name, name, $"Description for {name}", null, null, range, null, null, increment, "Standard", rebootRequired, false);
+    }
 
     private static VehicleState State()
     {
@@ -298,7 +301,10 @@ public sealed class ParameterEditSessionTests
 
         public List<string> Requests { get; } = [];
 
-        public Task<bool> RequestParameterListAsync(VehicleId vehicleId, CancellationToken cancellationToken = default) => Task.FromResult(true);
+        public Task<bool> RequestParameterListAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(true);
+        }
 
         public Task<bool> RequestParameterAsync(VehicleId vehicleId, string parameterName, CancellationToken cancellationToken = default)
         {
@@ -306,7 +312,10 @@ public sealed class ParameterEditSessionTests
             return Task.FromResult(true);
         }
 
-        public Task<bool> RequestParameterByIndexAsync(VehicleId vehicleId, ushort parameterIndex, CancellationToken cancellationToken = default) => Task.FromResult(true);
+        public Task<bool> RequestParameterByIndexAsync(VehicleId vehicleId, ushort parameterIndex, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(true);
+        }
 
         public Task<bool> SetParameterAsync(
             VehicleId vehicleId,

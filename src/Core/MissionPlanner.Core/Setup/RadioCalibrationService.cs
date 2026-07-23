@@ -1,9 +1,11 @@
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Commands;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
+using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Parameters;
 using MavParamType = MissionPlanner.MavLink.Parameters.MavParamType;
 
@@ -29,10 +31,12 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
     private readonly IVehicleParameterRegistry parameterRegistry;
     private readonly IVehicleParameterService parameterService;
     private readonly IVehicleOperationGate operationGate;
+    private readonly IDomainEventHub domainEventHub;
     private readonly IDateTimeProvider clock;
     private readonly ILogger<RadioCalibrationService> logger;
     private readonly Dictionary<int, RadioChannelCapture> captures = [];
     private IDisposable? operationLease;
+    private IDisposable? stateSubscription;
     private bool capturing;
     private bool disposed;
 
@@ -41,6 +45,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
     /// <param name="parameterRegistry">The live parameter registry.</param>
     /// <param name="parameterService">The parameter protocol service.</param>
     /// <param name="operationGate">The shared vehicle operation gate.</param>
+    /// <param name="domainEventHub">The domain event hub used for live vehicle state.</param>
     /// <param name="clock">The application clock.</param>
     /// <param name="logger">The logger.</param>
     public RadioCalibrationService(
@@ -48,6 +53,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
         IVehicleParameterRegistry parameterRegistry,
         IVehicleParameterService parameterService,
         IVehicleOperationGate operationGate,
+        IDomainEventHub domainEventHub,
         IDateTimeProvider clock,
         ILogger<RadioCalibrationService> logger)
     {
@@ -55,6 +61,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
         this.parameterRegistry = parameterRegistry;
         this.parameterService = parameterService;
         this.operationGate = operationGate;
+        this.domainEventHub = domainEventHub;
         this.clock = clock;
         this.logger = logger;
     }
@@ -131,7 +138,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
             capturing = true;
         }
 
-        activeVehicle.Changed += OnActiveVehicleChanged;
+        StartObservingVehicle();
         Transition(new RadioCalibrationSnapshot(
             vehicleId,
             RadioCalibrationState.Capturing,
@@ -159,7 +166,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
             capturing = false;
         }
 
-        activeVehicle.Changed -= OnActiveVehicleChanged;
+        StopObservingVehicle();
         var parameters = parameterRegistry.GetAllParameters(vehicleId);
         var functions = ResolveFunctions(parameters);
         var issues = ValidateCaptures(snapshot, functions);
@@ -221,7 +228,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
             capturing = false;
         }
 
-        activeVehicle.Changed -= OnActiveVehicleChanged;
+        StopObservingVehicle();
         ReleaseLease();
         Transition(new RadioCalibrationSnapshot(Current.VehicleId, RadioCalibrationState.Cancelled, SnapshotCaptures(),
             "Calibration cancelled. No endpoints were changed.", []));
@@ -253,7 +260,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
         }
 
         disposed = true;
-        activeVehicle.Changed -= OnActiveVehicleChanged;
+        StopObservingVehicle();
         ReleaseLease();
     }
 
@@ -271,7 +278,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
                 capturing = false;
             }
 
-            activeVehicle.Changed -= OnActiveVehicleChanged;
+            StopObservingVehicle();
             ReleaseLease();
             Transition(new RadioCalibrationSnapshot(vehicleId, RadioCalibrationState.Disconnected, SnapshotCaptures(),
                 "Vehicle disconnected during calibration. Reconnect and restart the workflow.", [],
@@ -279,17 +286,38 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
             return;
         }
 
-        if (args.Current.State is not { } state)
-        {
-            return;
-        }
+    }
 
+    private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
+    {
+        RadioCalibrationSnapshot next;
         lock (sync)
         {
-            UpdateCaptures(state);
+            if (!capturing || Current.VehicleId != evt.VehicleId)
+            {
+                return Task.CompletedTask;
+            }
+
+            UpdateCaptures(evt.VehicleState);
+            next = Current with { Captures = SnapshotCaptures() };
         }
 
-        Transition(Current with { Captures = SnapshotCaptures() });
+        Transition(next);
+        return Task.CompletedTask;
+    }
+
+    private void StartObservingVehicle()
+    {
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        stateSubscription?.Dispose();
+        stateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
+    }
+
+    private void StopObservingVehicle()
+    {
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        stateSubscription?.Dispose();
+        stateSubscription = null;
     }
 
     private void SeedCaptures(VehicleState state)

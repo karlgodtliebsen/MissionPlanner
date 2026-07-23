@@ -1,9 +1,9 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.Core.Configuration.Planner;
+using MissionPlanner.Core.ConfigTuning.Planner;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 

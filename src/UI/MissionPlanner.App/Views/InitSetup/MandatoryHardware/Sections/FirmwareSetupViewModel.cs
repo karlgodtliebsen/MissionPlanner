@@ -4,11 +4,13 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -16,16 +18,20 @@ namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
+    private readonly IDomainEventHub domainEventHub;
     private readonly IFirmwareUpdateCoordinator coordinator;
     private readonly IFirmwareFlashingService flashingService;
     private readonly IUserConfirmationService confirmation;
     private readonly IDispatcher dispatcher;
     private readonly ILogger<FirmwareSetupViewModel> logger;
     private CancellationTokenSource? operationCancellation;
+    private IDisposable? vehicleStateSubscription;
+    private VehicleIdentityState? projectedIdentity;
 
     /// <summary>Initializes the firmware setup workflow.</summary>
     /// <param name="descriptor">The firmware workflow descriptor.</param>
     /// <param name="activeVehicle">The active-vehicle context.</param>
+    /// <param name="domainEventHub">The domain event hub used for firmware identity updates.</param>
     /// <param name="coordinator">The guarded update coordinator.</param>
     /// <param name="flashingService">The platform flashing adapter.</param>
     /// <param name="confirmation">The shared confirmation service.</param>
@@ -34,6 +40,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
     public FirmwareSetupViewModel(
         SetupWorkflowDescriptor descriptor,
         IActiveVehicleContext activeVehicle,
+        IDomainEventHub domainEventHub,
         IFirmwareUpdateCoordinator coordinator,
         IFirmwareFlashingService flashingService,
         IUserConfirmationService confirmation,
@@ -42,6 +49,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         : base(descriptor)
     {
         this.activeVehicle = activeVehicle;
+        this.domainEventHub = domainEventHub;
         this.coordinator = coordinator;
         this.flashingService = flashingService;
         this.confirmation = confirmation;
@@ -147,6 +155,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
     /// <param name="state">The current vehicle state, or <see langword="null"/>.</param>
     public void UpdateVehicle(VehicleState? state)
     {
+        projectedIdentity = state?.Identity;
         if (state is null)
         {
             VehicleLabel = "No vehicle";
@@ -187,6 +196,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
     {
         coordinator.StateChanged += OnStateChanged;
         activeVehicle.Changed += OnActiveVehicleChanged;
+        vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
         UpdateVehicle(activeVehicle.State);
     }
 
@@ -195,6 +205,8 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
     {
         coordinator.StateChanged -= OnStateChanged;
         activeVehicle.Changed -= OnActiveVehicleChanged;
+        vehicleStateSubscription?.Dispose();
+        vehicleStateSubscription = null;
         base.OnDeactivated();
     }
 
@@ -203,22 +215,39 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
     {
         coordinator.StateChanged -= OnStateChanged;
         activeVehicle.Changed -= OnActiveVehicleChanged;
+        vehicleStateSubscription?.Dispose();
+        vehicleStateSubscription = null;
         base.Dispose();
         coordinator.Dispose();
     }
 
     private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
     {
-        if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
+        dispatcher.Dispatch(() =>
+        {
+            if (IsActive)
+            {
+                UpdateVehicle(args.Current.State);
+            }
+        });
+    }
+
+    private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
+    {
+        if (evt.VehicleId == activeVehicle.VehicleId && evt.VehicleState.Identity != projectedIdentity)
         {
             dispatcher.Dispatch(() =>
             {
-                if (IsActive)
+                if (IsActive &&
+                    evt.VehicleId == activeVehicle.VehicleId &&
+                    evt.VehicleState.Identity != projectedIdentity)
                 {
-                    UpdateVehicle(args.Current.State);
+                    UpdateVehicle(evt.VehicleState);
                 }
             });
         }
+
+        return Task.CompletedTask;
     }
 
     [RelayCommand]

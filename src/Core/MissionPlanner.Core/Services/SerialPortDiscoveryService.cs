@@ -22,7 +22,7 @@ public class SerialPortDiscoveryService(ILogger<SerialPortDiscoveryService> logg
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to enumerate serial ports");
-            return Array.Empty<string>();
+            return [];
         }
     }
 

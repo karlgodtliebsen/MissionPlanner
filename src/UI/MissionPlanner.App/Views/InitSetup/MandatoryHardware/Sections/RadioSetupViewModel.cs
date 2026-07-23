@@ -3,10 +3,13 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
+using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -15,6 +18,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IRadioCalibrationService radioService;
+    private readonly IDomainEventHub domainEventHub;
     private readonly IVehicleParameterRegistry parameterRegistry;
     private readonly ISetupCompletionStore completionStore;
     private readonly ISetupWorkflowCatalog workflowCatalog;
@@ -23,11 +27,14 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
     private readonly IDispatcher dispatcher;
     private readonly ILogger<RadioSetupViewModel> logger;
     private CancellationTokenSource? operationCancellation;
+    private IDisposable? vehicleStateSubscription;
+    private DateTimeOffset? observedRadioAt;
 
     /// <summary>Initializes the radio Setup workflow.</summary>
     /// <param name="descriptor">The radio workflow descriptor.</param>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="radioService">The radio calibration service.</param>
+    /// <param name="domainEventHub">The domain event hub used for live radio state.</param>
     /// <param name="parameterRegistry">The live parameter registry.</param>
     /// <param name="completionStore">The Setup evidence store.</param>
     /// <param name="workflowCatalog">The Setup workflow catalog.</param>
@@ -39,6 +46,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
         SetupWorkflowDescriptor descriptor,
         IActiveVehicleContext activeVehicle,
         IRadioCalibrationService radioService,
+        IDomainEventHub domainEventHub,
         IVehicleParameterRegistry parameterRegistry,
         ISetupCompletionStore completionStore,
         ISetupWorkflowCatalog workflowCatalog,
@@ -50,6 +58,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
     {
         this.activeVehicle = activeVehicle;
         this.radioService = radioService;
+        this.domainEventHub = domainEventHub;
         this.parameterRegistry = parameterRegistry;
         this.completionStore = completionStore;
         this.workflowCatalog = workflowCatalog;
@@ -112,6 +121,8 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
     {
         radioService.StateChanged += OnCalibrationStateChanged;
         activeVehicle.Changed += OnActiveVehicleChanged;
+        observedRadioAt = activeVehicle.State?.Radio.ObservedAt;
+        vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
         Show(radioService.Current);
         RefreshLiveChannels();
     }
@@ -121,6 +132,9 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
     {
         radioService.StateChanged -= OnCalibrationStateChanged;
         activeVehicle.Changed -= OnActiveVehicleChanged;
+        vehicleStateSubscription?.Dispose();
+        vehicleStateSubscription = null;
+        observedRadioAt = null;
         base.OnDeactivated();
     }
 
@@ -214,7 +228,27 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
 
     private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
     {
+        observedRadioAt = args.Current.State?.Radio.ObservedAt;
         dispatcher.Dispatch(RefreshLiveChannels);
+    }
+
+    private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
+    {
+        if (evt.VehicleId == activeVehicle.VehicleId && evt.VehicleState.Radio.ObservedAt != observedRadioAt)
+        {
+            dispatcher.Dispatch(() =>
+            {
+                if (IsActive &&
+                    evt.VehicleId == activeVehicle.VehicleId &&
+                    evt.VehicleState.Radio.ObservedAt != observedRadioAt)
+                {
+                    observedRadioAt = evt.VehicleState.Radio.ObservedAt;
+                    RefreshLiveChannels();
+                }
+            });
+        }
+
+        return Task.CompletedTask;
     }
 
     private void OnCalibrationStateChanged(object? sender, RadioCalibrationStateChangedEventArgs args)

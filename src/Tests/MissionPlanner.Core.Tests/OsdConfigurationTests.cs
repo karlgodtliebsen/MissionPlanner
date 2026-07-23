@@ -1,4 +1,4 @@
-using System.Text.Json.Nodes;
+﻿using System.Text.Json.Nodes;
 using CommunityToolkit.Maui.Storage;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -6,8 +6,8 @@ using Microsoft.Extensions.Options;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
-using MissionPlanner.Core.Configuration;
-using MissionPlanner.Core.Configuration.Osd;
+using MissionPlanner.Core.ConfigTuning;
+using MissionPlanner.Core.ConfigTuning.Osd;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -59,9 +59,9 @@ public sealed class OsdConfigurationTests
             P("OSD1_FIRST_EN", 1), P("OSD1_FIRST_X", 5, "0 29"), P("OSD1_FIRST_Y", 5, "0 15"),
             P("OSD1_SECOND_EN", 1), P("OSD1_SECOND_X", 5, "0 29"), P("OSD1_SECOND_Y", 5, "0 15"));
         var workspace = (await fixture.Service.OpenAsync(fixture.VehicleId, TestContext.Current.CancellationToken))!;
-        workspace.Session.TrySetPending("OSD1_FIRST_X", 30, out _).Should().BeFalse();
+        workspace.Session.TrySetPending("OSD1_FIRST_X", 30, out var _).Should().BeFalse();
         fixture.Service.ValidateScreen(workspace, 1).Should().Contain(issue => issue.Message.Contains("outside", StringComparison.Ordinal));
-        workspace.Session.TrySetPending("OSD1_FIRST_X", 5, out _).Should().BeTrue();
+        workspace.Session.TrySetPending("OSD1_FIRST_X", 5, out var _).Should().BeTrue();
 
         var overlap = fixture.Service.ValidateScreen(workspace, 1);
 
@@ -109,7 +109,7 @@ public sealed class OsdConfigurationTests
             P("OSD1_ALT_EN", 1), P("OSD1_ALT_X", 4, "0 29"), P("OSD1_ALT_Y", 3, "0 15"),
             P("NOT_OSD", 10));
         var workspace = (await fixture.Service.OpenAsync(fixture.VehicleId, TestContext.Current.CancellationToken))!;
-        workspace.Session.TrySetPending("OSD1_ALT_X", 6, out _).Should().BeTrue();
+        workspace.Session.TrySetPending("OSD1_ALT_X", 6, out var _).Should().BeTrue();
         var exported = fixture.Service.Export(workspace);
         var document = JsonNode.Parse(exported)!.AsObject();
         var values = document["values"]!.AsObject();
@@ -139,7 +139,7 @@ public sealed class OsdConfigurationTests
             P("OSD2_ALT_EN", 1), P("OSD2_ALT_X", 8, "0 29"), P("OSD2_ALT_Y", 6, "0 15"));
         var workspace = (await fixture.Service.OpenAsync(fixture.VehicleId, TestContext.Current.CancellationToken))!;
         fixture.Service.MoveItem(workspace, 1, "ALT", 9, 7).Should().BeNull();
-        workspace.Session.TrySetPending("OSD2_ALT_X", 10, out _).Should().BeTrue();
+        workspace.Session.TrySetPending("OSD2_ALT_X", 10, out var _).Should().BeTrue();
 
         var result = await fixture.Service.ApplyScreenAsync(workspace, 1, false, TestContext.Current.CancellationToken);
 
@@ -234,7 +234,10 @@ public sealed class OsdConfigurationTests
         float value,
         string? range = null,
         string? description = null,
-        string? bitmask = null) => new(name, value, range, description, bitmask);
+        string? bitmask = null)
+    {
+        return new TestParameter(name, value, range, description, bitmask);
+    }
 
     private static async Task WaitUntilAsync(Func<bool> condition)
     {
@@ -273,18 +276,30 @@ public sealed class OsdConfigurationTests
         OsdConfigurationService Service) : IDisposable
     {
         /// <inheritdoc />
-        public void Dispose() => Factory.Dispose();
+        public void Dispose()
+        {
+            Factory.Dispose();
+        }
     }
 
     private sealed class TestParameterService(IVehicleParameterRegistry registry) : IVehicleParameterService
     {
         public List<string> Writes { get; } = [];
 
-        public Task<bool> RequestParameterListAsync(VehicleId vehicleId, CancellationToken cancellationToken = default) => Task.FromResult(true);
+        public Task<bool> RequestParameterListAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(true);
+        }
 
-        public Task<bool> RequestParameterAsync(VehicleId vehicleId, string parameterName, CancellationToken cancellationToken = default) => Task.FromResult(true);
+        public Task<bool> RequestParameterAsync(VehicleId vehicleId, string parameterName, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(true);
+        }
 
-        public Task<bool> RequestParameterByIndexAsync(VehicleId vehicleId, ushort parameterIndex, CancellationToken cancellationToken = default) => Task.FromResult(true);
+        public Task<bool> RequestParameterByIndexAsync(VehicleId vehicleId, ushort parameterIndex, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(true);
+        }
 
         public Task<bool> SetParameterAsync(
             VehicleId vehicleId,

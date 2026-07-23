@@ -2,10 +2,12 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -14,26 +16,32 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IServoOutputConfigurationService servoService;
+    private readonly IDomainEventHub domainEventHub;
     private readonly IDispatcher dispatcher;
     private readonly ILogger<ServoOutputSetupViewModel> logger;
     private CancellationTokenSource? operationCancellation;
+    private IDisposable? vehicleStateSubscription;
+    private DateTimeOffset? observedServoAt;
 
     /// <summary>Initializes the servo output Setup workflow.</summary>
     /// <param name="descriptor">The servo output workflow descriptor.</param>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="servoService">The servo output configuration service.</param>
+    /// <param name="domainEventHub">The domain event hub used for live servo output state.</param>
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public ServoOutputSetupViewModel(
         SetupWorkflowDescriptor descriptor,
         IActiveVehicleContext activeVehicle,
         IServoOutputConfigurationService servoService,
+        IDomainEventHub domainEventHub,
         IDispatcher dispatcher,
         ILogger<ServoOutputSetupViewModel> logger)
         : base(descriptor)
     {
         this.activeVehicle = activeVehicle;
         this.servoService = servoService;
+        this.domainEventHub = domainEventHub;
         this.dispatcher = dispatcher;
         this.logger = logger;
     }
@@ -86,6 +94,8 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
     protected override void OnActivated()
     {
         activeVehicle.Changed += OnActiveVehicleChanged;
+        observedServoAt = activeVehicle.State?.Radio.ServoObservedAt;
+        vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
         _ = LoadAsync();
     }
 
@@ -93,6 +103,9 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
     protected override void OnDeactivated()
     {
         activeVehicle.Changed -= OnActiveVehicleChanged;
+        vehicleStateSubscription?.Dispose();
+        vehicleStateSubscription = null;
+        observedServoAt = null;
         base.OnDeactivated();
     }
 
@@ -151,19 +164,33 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
 
     private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
     {
-        if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
+        dispatcher.Dispatch(() =>
+        {
+            if (IsActive)
+            {
+                observedServoAt = args.Current.State?.Radio.ServoObservedAt;
+                _ = LoadAsync();
+            }
+        });
+    }
+
+    private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
+    {
+        if (evt.VehicleId == activeVehicle.VehicleId && evt.VehicleState.Radio.ServoObservedAt != observedServoAt)
         {
             dispatcher.Dispatch(() =>
             {
-                if (IsActive)
+                if (IsActive &&
+                    evt.VehicleId == activeVehicle.VehicleId &&
+                    evt.VehicleState.Radio.ServoObservedAt != observedServoAt)
                 {
-                    _ = LoadAsync();
+                    observedServoAt = evt.VehicleState.Radio.ServoObservedAt;
+                    RefreshLive();
                 }
             });
-            return;
         }
 
-        dispatcher.Dispatch(RefreshLive);
+        return Task.CompletedTask;
     }
 
     private void RefreshLive()

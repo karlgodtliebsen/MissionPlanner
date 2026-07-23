@@ -10,6 +10,7 @@ using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Library.EventHub.Abstractions;
 using NSubstitute;
 
 namespace MissionPlanner.Core.Tests;
@@ -29,6 +30,7 @@ public sealed class FirmwareManagementTests
         using var viewModel = new FirmwareSetupViewModel(
             new SetupWorkflowCatalog().Workflows[0],
             active,
+            Substitute.For<IDomainEventHub>(),
             coordinator,
             flashing,
             Substitute.For<IUserConfirmationService>(),

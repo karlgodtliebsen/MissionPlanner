@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MissionPlanner.Core.Configuration;
+using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.MavLink.Parameters;
 using UraniumUI.Material.Controls;
 
@@ -17,7 +17,7 @@ public partial class ParameterItemViewModel : ObservableObject
 {
     private VehicleParameter? originalParameter;
     private ParameterMetadata? originalMetadata;
-    private IParameterEditSession? editSession;
+    private readonly IParameterEditSession? editSession;
 
     private bool loadingData;
 
@@ -233,13 +233,13 @@ public partial class ParameterItemViewModel : ObservableObject
 
         BitmaskOptions = field.Metadata.Bitmask
             .Where(option => option.Bit is >= 0 and < 64)
-            .Select(option => new SelectItem(option.Label, (float)(1UL << option.Bit)))
+            .Select(option => new SelectItem(option.Label, 1UL << option.Bit))
             .ToArray();
         SelectedBitmaskItems.Clear();
         var selectedMask = (ulong)Math.Max(0, Math.Round(field.PendingValue));
         foreach (var option in field.Metadata.Bitmask.Where(option => option.Bit is >= 0 and < 64))
         {
-            if ((selectedMask & 1UL << option.Bit) != 0 && BitmaskOptions.FirstOrDefault(item => item.Name == option.Label) is { } selected)
+            if ((selectedMask & (1UL << option.Bit)) != 0 && BitmaskOptions.FirstOrDefault(item => item.Name == option.Label) is { } selected)
             {
                 SelectedBitmaskItems.Add(selected);
             }
@@ -247,7 +247,7 @@ public partial class ParameterItemViewModel : ObservableObject
 
         HasBitmask = BitmaskOptions.Length > 0;
         HasNumericRangeData = !HasValuesData && !HasBitmask &&
-            (field.Metadata.Minimum is not null || field.Metadata.Maximum is not null);
+                              (field.Metadata.Minimum is not null || field.Metadata.Maximum is not null);
         Range = field.Metadata.Minimum is null && field.Metadata.Maximum is null
             ? null
             : $"{field.Metadata.Minimum?.ToString(System.Globalization.CultureInfo.InvariantCulture)} {field.Metadata.Maximum?.ToString(System.Globalization.CultureInfo.InvariantCulture)}";

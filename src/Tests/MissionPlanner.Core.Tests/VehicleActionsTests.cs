@@ -351,6 +351,7 @@ public sealed class VehicleActionsTests
             confirmation,
             Substitute.For<IUserNotificationService>(),
             dispatcher,
+            Substitute.For<IDomainEventHub>(),
             Substitute.For<ILogger<ActionsTabViewModel>>());
         return new ViewModelFixture(viewModel, commands, confirmation, active.State!);
     }

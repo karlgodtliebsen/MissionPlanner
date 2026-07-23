@@ -1,12 +1,11 @@
-using MissionPlanner.App.Presentation;
-using MissionPlanner.Core.Configuration;
+﻿using MissionPlanner.App.Presentation;
+using MissionPlanner.Core.ConfigTuning;
 
 namespace MissionPlanner.App.Views.ConfigTuning;
 
 /// <summary>Prompts before leaving Config with unapplied vehicle parameter changes.</summary>
-public sealed class ConfigNavigationGuard(
-    IParameterEditSessionFactory editSessions,
-    IUserConfirmationService confirmation) : IConfigNavigationGuard
+public sealed class ConfigNavigationGuard(IParameterEditSessionFactory editSessions, IUserConfirmationService confirmation)
+    : IConfigNavigationGuard
 {
     /// <inheritdoc />
     public async Task<bool> CanNavigateAsync(bool staysWithinConfig, CancellationToken cancellationToken = default)

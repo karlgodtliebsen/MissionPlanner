@@ -7,4 +7,5 @@
 /// <param name="TotalCount">Total number of parameters (0 if not yet known).</param>
 /// <param name="PercentComplete">Percentage complete (0-100).</param>
 /// <param name="IsComplete">Whether all parameters have been received.</param>
-public sealed record ParameterStreamProgress(int ReceivedCount, int TotalCount, int PercentComplete, bool IsComplete);
+/// <param name="Message">Optional message associated with the progress.</param>
+public sealed record ParameterStreamProgress(int ReceivedCount = 0, int TotalCount = 0, int PercentComplete = 0, bool IsComplete = false, string? Message = null);

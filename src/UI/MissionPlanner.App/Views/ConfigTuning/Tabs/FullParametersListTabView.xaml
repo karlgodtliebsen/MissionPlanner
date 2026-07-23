@@ -103,7 +103,7 @@
             </HorizontalStackLayout>
 
             <!-- Search and Status Bar -->
-            <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" Padding="8,8" ColumnSpacing="12" IsVisible="{Binding ShowLoadingCompleted}">
+            <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" Padding="8,8" ColumnSpacing="12" >
                 <Label Grid.Column="0" Text="Search:" VerticalOptions="Center" FontSize="14" />
                 <Entry Grid.Column="1"
                    Text="{Binding SearchText}"
@@ -131,6 +131,7 @@
             </Grid>
 
             <HorizontalStackLayout Grid.Row="2" Padding="8,4" Spacing="12">
+                <Label TextColor="OrangeRed" Text="{Binding ErrorMessage}" LineBreakMode="WordWrap" VerticalOptions="Center" />
                 <Label Text="{Binding StatusMessage}" LineBreakMode="WordWrap" VerticalOptions="Center" />
                 <Label Text="Reboot required after confirmed changes"
                        IsVisible="{Binding RebootRequired}"
@@ -139,63 +140,34 @@
                        VerticalOptions="Center" />
             </HorizontalStackLayout>
 
-
-
-            <!--<VerticalStackLayout Grid.Row="2" Padding="20" Spacing="12" VerticalOptions="Center" HorizontalOptions="Center"
-                             IsVisible="{Binding ShowLoadingPanel}"
-                             
-        >
-                <VerticalStackLayout  Spacing="12" VerticalOptions="Center" HorizontalOptions="Center" 
-                                  IsVisible="{Binding ShowLoadingProgress}">
-                    <material:Chip 
-                                   HorizontalOptions="Center"
-                                   VerticalOptions="Center" IsDestroyVisible="False"
-                                   Text="{Binding ProgressMessage}"
-                    />
-
-                    <ProgressBar Progress="{Binding Progress}" />
-                </VerticalStackLayout>
-
-                <material:Chip IsVisible="{Binding ShowLoadingCompletedWithError}"
-                               HorizontalOptions="Center"
-                               VerticalOptions="Center"
-                               
-                               Text="An Error Occurred loading params"
-                               />
-
-
-                <material:Chip IsVisible="{Binding ShowLoadingCancelled}"
-                               HorizontalOptions="Center"
-                               VerticalOptions="Center" 
-                               Text="Loading cancelled"
-                               />
-
-            </VerticalStackLayout>-->
-
             <Grid Grid.Row="3" VerticalOptions="Fill" HorizontalOptions="Fill" Padding="10">
 
                 <ScrollView HorizontalScrollBarVisibility="Default" VerticalScrollBarVisibility="Always" HorizontalOptions="Fill"
                             VerticalOptions="Fill"
                              Padding="10"
                     >
+                    <!--IsVisible="{Binding ShowDataGrid}"-->
+
 
                     <material:DataGrid 
-                        IsVisible="{Binding ShowDataGrid}"
                     ItemsSource="{Binding Parameters}"
                     UseAutoColumns="False"
                     VerticalOptions="Fill"
                     HorizontalOptions="Fill"
+                    
                     Margin="8" >
 
+                        <!--IsVisible="{Binding ShowEmptyView}"-->
 
-                        <material:DataGrid.EmptyView>
-                            <VerticalStackLayout  VerticalOptions="Center" HorizontalOptions="Center" IsVisible="{Binding ShowEmptyView}">
+                        <material:DataGrid.EmptyView > 
+                            <VerticalStackLayout  VerticalOptions="Center" HorizontalOptions="Center" >
                                 <Image
                         WidthRequest="40"
                         HeightRequest="40"
                         HorizontalOptions="Center"
                         VerticalOptions="Center"
-                        Source="{FontImageSource FontFamily=MaterialOutlined, Glyph={x:Static m:MaterialOutlined.Backup_table}, Color={AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}}"/>
+                        Source="{FontImageSource FontFamily=MaterialOutlined, Glyph={x:Static m:MaterialOutlined.Backup_table}, 
+                                    Color={AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}}"/>
                                 <Label Text="No data available..." VerticalOptions="Center" HorizontalOptions="Center"/>
                             </VerticalStackLayout>
                         </material:DataGrid.EmptyView>
@@ -291,7 +263,9 @@
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
                             </material:DataGridColumn>
-                            <material:DataGridColumn Width="130" Title="Write status">
+                           
+                            
+                            <!--<material:DataGridColumn Width="130" Title="Write status">
                                 <material:DataGridColumn.CellItemTemplate>
                                     <DataTemplate x:DataType="configTuning:ParameterItemViewModel">
                                         <VerticalStackLayout Margin="10,4" VerticalOptions="Center">
@@ -300,7 +274,9 @@
                                         </VerticalStackLayout>
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
-                            </material:DataGridColumn>
+                            </material:DataGridColumn>-->
+
+
                             <!--<material:DataGridColumn Title="Options" Width="125" >
                                 <material:DataGridColumn.CellItemTemplate>
                                     <DataTemplate  x:DataType="configTuning:ParameterItemViewModel">

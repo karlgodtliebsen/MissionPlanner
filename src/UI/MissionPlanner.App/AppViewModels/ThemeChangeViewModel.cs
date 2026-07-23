@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
-using MissionPlanner.Core.Configuration.Planner;
+using MissionPlanner.Core.ConfigTuning.Planner;
 
 namespace MissionPlanner.App.AppViewModels;
 

@@ -33,7 +33,8 @@ public interface IActiveVehicleContext
     CancellationToken ConnectionCancellationToken { get; }
 
     /// <summary>
-    /// Occurs once whenever the effective active-vehicle snapshot changes.
+    /// Occurs when the selected vehicle changes or crosses its online connection boundary.
+    /// Telemetry-only state updates refresh <see cref="Current"/> without raising this event.
     /// </summary>
     event EventHandler<ActiveVehicleChangedEventArgs>? Changed;
 }

@@ -1,10 +1,10 @@
-using BruTile.Predefined;
+﻿using BruTile.Predefined;
 using Mapsui;
 using Mapsui.Extensions;
 using Mapsui.Projections;
 using Mapsui.Tiling;
 using Mapsui.UI.Maui;
-using MissionPlanner.Core.Configuration.Fences;
+using MissionPlanner.Core.ConfigTuning.Fences;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 

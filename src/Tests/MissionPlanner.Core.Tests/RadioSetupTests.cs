@@ -1,11 +1,13 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Commands;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
+using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Parameters;
 using NSubstitute;
 using MavParamType = MissionPlanner.MavLink.Parameters.MavParamType;
@@ -122,7 +124,12 @@ public sealed class RadioSetupTests
                 registry.StoreParameter(vehicleId, new VehicleParameter(name, value, MavParamType.Int16, 0, 1), CancellationToken.None);
                 return Task.FromResult(true);
             });
-        return new RadioCalibrationService(context, registry, parameterService, new VehicleOperationGate(), clock,
+        var eventHub = Substitute.For<IDomainEventHub>();
+        eventHub.SubscribeDomainEventAsync(
+                Arg.Do<Func<VehicleStateUpdated, CancellationToken, Task>>(handler =>
+                    context.StateUpdated = state => handler(new VehicleStateUpdated(state), CancellationToken.None).GetAwaiter().GetResult()))
+            .Returns(Substitute.For<IDisposable>());
+        return new RadioCalibrationService(context, registry, parameterService, new VehicleOperationGate(), eventHub, clock,
             Substitute.For<ILogger<RadioCalibrationService>>());
     }
 
@@ -157,11 +164,12 @@ public sealed class RadioSetupTests
 
         public event EventHandler<ActiveVehicleChangedEventArgs>? Changed;
 
+        public Action<VehicleState>? StateUpdated { get; set; }
+
         public void SetState(VehicleState next)
         {
-            var previous = Current;
             Current = new ActiveVehicleSnapshot(next.VehicleId, next);
-            Changed?.Invoke(this, new ActiveVehicleChangedEventArgs(previous, Current));
+            StateUpdated?.Invoke(next);
         }
 
         public void SetOnline(bool online)

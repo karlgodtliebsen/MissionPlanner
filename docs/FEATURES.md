@@ -77,7 +77,9 @@ Feature description per tab comes from v1.38 (`FlightData.Designer.cs` tab pages
 #### Status
 
 * Implemented (2026-07-22): `IActiveVehicleContext` exposes one immutable active-vehicle snapshot,
-  online state, change notification, and a cancellation token scoped to the current connection.
+  online state, connection-boundary notification, and a cancellation token scoped to the current
+  connection. Telemetry-only `VehicleStateUpdated` events refresh the snapshot without raising
+  the compatibility `Changed` event.
 * Implemented: lifecycle-aware Flight Data tabs lazy-initialize on their first online activation,
   dispose vehicle subscriptions when hidden or reconnected, and stop in-flight work on disconnect.
 * Implemented: reusable async-operation/command-result states cover busy, success, warning, error,

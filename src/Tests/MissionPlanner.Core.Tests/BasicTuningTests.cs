@@ -1,4 +1,4 @@
-using System.Text.Json.Nodes;
+﻿using System.Text.Json.Nodes;
 using CommunityToolkit.Maui.Storage;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -6,8 +6,8 @@ using Microsoft.Extensions.Options;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
-using MissionPlanner.Core.Configuration;
-using MissionPlanner.Core.Configuration.Tuning;
+using MissionPlanner.Core.ConfigTuning;
+using MissionPlanner.Core.ConfigTuning.Tuning;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -288,21 +288,30 @@ public sealed class BasicTuningTests
         BasicTuningService Service) : IDisposable
     {
         /// <inheritdoc />
-        public void Dispose() => Factory.Dispose();
+        public void Dispose()
+        {
+            Factory.Dispose();
+        }
     }
 
     private sealed class TestParameterService(IVehicleParameterRegistry registry) : IVehicleParameterService
     {
         public List<string> Writes { get; } = [];
 
-        public Task<bool> RequestParameterListAsync(VehicleId vehicleId, CancellationToken cancellationToken = default) =>
-            Task.FromResult(true);
+        public Task<bool> RequestParameterListAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(true);
+        }
 
-        public Task<bool> RequestParameterAsync(VehicleId vehicleId, string parameterName, CancellationToken cancellationToken = default) =>
-            Task.FromResult(true);
+        public Task<bool> RequestParameterAsync(VehicleId vehicleId, string parameterName, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(true);
+        }
 
-        public Task<bool> RequestParameterByIndexAsync(VehicleId vehicleId, ushort parameterIndex, CancellationToken cancellationToken = default) =>
-            Task.FromResult(true);
+        public Task<bool> RequestParameterByIndexAsync(VehicleId vehicleId, ushort parameterIndex, CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(true);
+        }
 
         public Task<bool> SetParameterAsync(
             VehicleId vehicleId,

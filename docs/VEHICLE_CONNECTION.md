@@ -51,9 +51,13 @@ service-level `CancellationTokenSource`, so they live for the duration of the co
 ### Consumer connection lifetime
 
 `ActiveVehicleContext` follows `VehicleConnected`, `VehicleStateUpdated`, `VehicleDisconnected`,
-and registry-reset events. Its `ConnectionCancellationToken` is replaced and the old token is
-cancelled whenever the active vehicle changes or crosses the online boundary. This gives UI workflows
-a common cancellation boundary without retaining a `VehicleSession` or transport reference.
+and registry-reset events. `VehicleStateUpdated` refreshes its latest immutable snapshot, but
+heartbeat and telemetry updates do not raise the context's compatibility `Changed` event.
+`Changed` is raised, and `ConnectionCancellationToken` is replaced, only when the active
+vehicle changes or crosses the online boundary. This gives UI workflows a common cancellation
+boundary without turning high-rate domain state into presentation lifecycle notifications.
+Views and services that need live telemetry subscribe to `VehicleStateUpdated` directly for their
+active lifetime; they do not use `IActiveVehicleContext.Changed` as a telemetry stream.
 
 Flight Data tabs compose `FlightDataTabLifecycle`: expensive initialization runs once on the first
 online activation, connection-bound subscriptions are recreated after reconnect, and all background

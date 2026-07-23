@@ -108,10 +108,7 @@ public sealed class ActiveVehicleContext : IActiveVehicleContext, IDisposable
 
         var offlineState = snapshot.State is null
             ? null
-            : snapshot.State with
-            {
-                Connection = snapshot.State.Connection with { State = VehicleConnectionState.Offline }
-            };
+            : snapshot.State with { Connection = snapshot.State.Connection with { State = VehicleConnectionState.Offline } };
         SetCurrent(new ActiveVehicleSnapshot(evt.VehicleId, offlineState));
         return Task.CompletedTask;
     }
@@ -137,10 +134,7 @@ public sealed class ActiveVehicleContext : IActiveVehicleContext, IDisposable
 
         var offlineState = snapshot.State is null
             ? null
-            : snapshot.State with
-            {
-                Connection = snapshot.State.Connection with { State = VehicleConnectionState.Offline }
-            };
+            : snapshot.State with { Connection = snapshot.State.Connection with { State = VehicleConnectionState.Offline } };
         SetCurrent(new ActiveVehicleSnapshot(snapshot.VehicleId, offlineState));
         return Task.CompletedTask;
     }
@@ -149,19 +143,21 @@ public sealed class ActiveVehicleContext : IActiveVehicleContext, IDisposable
     {
         ActiveVehicleSnapshot previous;
         CancellationTokenSource? lifetimeToCancel = null;
+        var connectionBoundaryChanged = false;
         lock (sync)
         {
             if (disposed)
             {
                 return;
             }
+
             if (current == next)
             {
                 return;
             }
 
             previous = current;
-            var connectionBoundaryChanged = previous.VehicleId != next.VehicleId || previous.IsOnline != next.IsOnline;
+            connectionBoundaryChanged = previous.VehicleId != next.VehicleId || previous.IsOnline != next.IsOnline;
             current = next;
             if (connectionBoundaryChanged)
             {
@@ -176,6 +172,9 @@ public sealed class ActiveVehicleContext : IActiveVehicleContext, IDisposable
 
         lifetimeToCancel?.Cancel();
         lifetimeToCancel?.Dispose();
-        Changed?.Invoke(this, new ActiveVehicleChangedEventArgs(previous, next));
+        if (connectionBoundaryChanged)
+        {
+            Changed?.Invoke(this, new ActiveVehicleChangedEventArgs(previous, next));
+        }
     }
 }

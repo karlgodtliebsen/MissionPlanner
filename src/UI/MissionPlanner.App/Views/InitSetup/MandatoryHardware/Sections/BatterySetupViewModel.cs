@@ -2,10 +2,12 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -14,26 +16,32 @@ public sealed partial class BatterySetupViewModel : SetupWorkflowDetailViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IBatteryConfigurationService batteryService;
+    private readonly IDomainEventHub domainEventHub;
     private readonly IDispatcher dispatcher;
     private readonly ILogger<BatterySetupViewModel> logger;
     private CancellationTokenSource? operationCancellation;
+    private IDisposable? vehicleStateSubscription;
+    private VehiclePowerState? observedPower;
 
     /// <summary>Initializes the battery Setup workflow.</summary>
     /// <param name="descriptor">The battery workflow descriptor.</param>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="batteryService">The battery configuration service.</param>
+    /// <param name="domainEventHub">The domain event hub used for live battery state.</param>
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public BatterySetupViewModel(
         SetupWorkflowDescriptor descriptor,
         IActiveVehicleContext activeVehicle,
         IBatteryConfigurationService batteryService,
+        IDomainEventHub domainEventHub,
         IDispatcher dispatcher,
         ILogger<BatterySetupViewModel> logger)
         : base(descriptor)
     {
         this.activeVehicle = activeVehicle;
         this.batteryService = batteryService;
+        this.domainEventHub = domainEventHub;
         this.dispatcher = dispatcher;
         this.logger = logger;
     }
@@ -92,6 +100,8 @@ public sealed partial class BatterySetupViewModel : SetupWorkflowDetailViewModel
     protected override void OnActivated()
     {
         activeVehicle.Changed += OnActiveVehicleChanged;
+        observedPower = activeVehicle.State?.Power;
+        vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
         _ = LoadAsync();
     }
 
@@ -99,6 +109,9 @@ public sealed partial class BatterySetupViewModel : SetupWorkflowDetailViewModel
     protected override void OnDeactivated()
     {
         activeVehicle.Changed -= OnActiveVehicleChanged;
+        vehicleStateSubscription?.Dispose();
+        vehicleStateSubscription = null;
+        observedPower = null;
         base.OnDeactivated();
     }
 
@@ -225,19 +238,33 @@ public sealed partial class BatterySetupViewModel : SetupWorkflowDetailViewModel
 
     private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
     {
-        if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
+        dispatcher.Dispatch(() =>
+        {
+            if (IsActive)
+            {
+                observedPower = args.Current.State?.Power;
+                _ = LoadAsync();
+            }
+        });
+    }
+
+    private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
+    {
+        if (evt.VehicleId == activeVehicle.VehicleId && evt.VehicleState.Power != observedPower)
         {
             dispatcher.Dispatch(() =>
             {
-                if (IsActive)
+                if (IsActive &&
+                    evt.VehicleId == activeVehicle.VehicleId &&
+                    evt.VehicleState.Power != observedPower)
                 {
-                    _ = LoadAsync();
+                    observedPower = evt.VehicleState.Power;
+                    RefreshLiveReadings();
                 }
             });
-            return;
         }
 
-        dispatcher.Dispatch(RefreshLiveReadings);
+        return Task.CompletedTask;
     }
 
     private void RefreshLiveReadings()

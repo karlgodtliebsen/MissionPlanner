@@ -141,8 +141,7 @@ public sealed class VehicleParameterStreamService : IVehicleParameterStreamServi
                 // Check for stall (no new params for 4 seconds)
                 if (totalCount > 0 && (dateTimeProvider.UtcNow - lastReceivedTime).TotalSeconds >= 4)
                 {
-                    logger.LogWarning("No new parameters for 4 seconds. Received {Received}/{Total} unique indices",
-                        receivedIndices.Count, totalCount);
+                    logger.LogWarning("No new parameters for 4 seconds. Received {Received}/{Total} unique indices", receivedIndices.Count, totalCount);
                     break;
                 }
             }
@@ -174,16 +173,19 @@ public sealed class VehicleParameterStreamService : IVehicleParameterStreamServi
     }
 
     /// <inheritdoc/>
-    public async Task<ParameterStreamResult> StreamAllParametersWithRetryAsync(VehicleId vehicleId, IProgress<ParameterStreamProgress>? progress = null, int maxRetries = 3,
-        TimeSpan? timeout = null, CancellationToken cancellationToken = default)
+    public async Task<ParameterStreamResult> StreamAllParametersWithRetryAsync(VehicleId vehicleId, IProgress<ParameterStreamProgress>? progress = null, int maxRetries = 3, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
     {
         var overallStopwatch = Stopwatch.StartNew();
-        progress?.Report(new ParameterStreamProgress(0, 0, 0, false));
+
+        progress?.Report(new ParameterStreamProgress(Message: "Reading parameters using MAVFTP..."));
+
         var ftpResult = await TryDownloadPackedParametersAsync(vehicleId, progress, overallStopwatch, cancellationToken).ConfigureAwait(false);
         if (ftpResult is not null)
         {
             return ftpResult;
         }
+
+        progress?.Report(new ParameterStreamProgress(Message: "Reading parameters using MAVLink stream..."));
 
         for (var attempt = 0; attempt <= maxRetries; attempt++)
         {
@@ -204,6 +206,7 @@ public sealed class VehicleParameterStreamService : IVehicleParameterStreamServi
 
             if (result.Success)
             {
+                progress?.Report(new ParameterStreamProgress(result.Parameters.Count, result.TotalCount, 100, true));
                 return result;
             }
 
@@ -217,6 +220,8 @@ public sealed class VehicleParameterStreamService : IVehicleParameterStreamServi
         var finalCount = parameterRegistry.GetParameterCount(vehicleId) ?? 0;
 
         logger.LogError("Failed after {Retries} retries. Stored: {Stored}, Expected: {Total}", maxRetries + 1, finalParams.Count, finalCount);
+
+        progress?.Report(new ParameterStreamProgress(finalParams.Count, finalCount, finalParams.Count * 100 / finalCount, true, "Parameter loading failed."));
 
         return ParameterStreamResult.CreateFailure($"Failed after {maxRetries + 1} attempts. Stored {finalParams.Count}/{finalCount} parameters.", overallStopwatch.Elapsed);
     }

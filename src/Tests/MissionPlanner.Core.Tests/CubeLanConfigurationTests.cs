@@ -1,12 +1,11 @@
-using CommunityToolkit.Maui.Storage;
+﻿using CommunityToolkit.Maui.Storage;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
-using MissionPlanner.Core.Configuration.VendorDevices;
-using MissionPlanner.Core.Configuration.VendorDevices.CubeLan;
+using MissionPlanner.Core.ConfigTuning.VendorDevices;
+using MissionPlanner.Core.ConfigTuning.VendorDevices.CubeLan;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -210,8 +209,10 @@ public sealed class CubeLanConfigurationTests
 
     private static CubeLanDeviceAdapter Adapter(
         IDeviceOperationClient client,
-        ICubeLanConfigurationCodec codec) =>
-        new(client, codec, NullLogger<CubeLanDeviceAdapter>.Instance);
+        ICubeLanConfigurationCodec codec)
+    {
+        return new CubeLanDeviceAdapter(client, codec, NullLogger<CubeLanDeviceAdapter>.Instance);
+    }
 
     private static byte[] DefaultDocument(ICubeLanConfigurationCodec codec)
     {

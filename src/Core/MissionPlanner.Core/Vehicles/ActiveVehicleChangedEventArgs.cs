@@ -3,7 +3,7 @@ using MissionPlanner.Core.Vehicles.Models;
 namespace MissionPlanner.Core.Vehicles;
 
 /// <summary>
-/// Provides the previous and current active-vehicle snapshots for a context change.
+/// Provides the previous and current active-vehicle snapshots for a vehicle or online-boundary change.
 /// </summary>
 public sealed class ActiveVehicleChangedEventArgs : EventArgs
 {

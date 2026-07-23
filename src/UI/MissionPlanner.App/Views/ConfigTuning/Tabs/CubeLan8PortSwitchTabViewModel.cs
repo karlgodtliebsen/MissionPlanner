@@ -1,11 +1,11 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.Core.Configuration.VendorDevices;
-using MissionPlanner.Core.Configuration.VendorDevices.CubeLan;
+using MissionPlanner.Core.ConfigTuning.VendorDevices;
+using MissionPlanner.Core.ConfigTuning.VendorDevices.CubeLan;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -167,7 +167,7 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ObservableObject, I
 
         active = true;
         activeVehicle.Changed += OnActiveVehicleChanged;
-        RefreshForActiveVehicle(force: true);
+        RefreshForActiveVehicle(true);
     }
 
     /// <summary>Stops page observation and cancels its current operation.</summary>
@@ -186,75 +186,81 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ObservableObject, I
     /// <summary>Discovers and reads CubeLAN for the current active vehicle.</summary>
     /// <returns>A task representing discovery.</returns>
     [RelayCommand]
-    public Task RefreshAsync() => RunAsync(async cancellationToken =>
+    public Task RefreshAsync()
     {
-        var snapshot = activeVehicle.Current;
-        if (!snapshot.IsOnline || snapshot.VehicleId is null)
+        return RunAsync(async cancellationToken =>
         {
-            Clear(VendorDeviceStatus.NotConnected, "Connect a vehicle before discovering CubeLAN.");
-            return;
-        }
+            var snapshot = activeVehicle.Current;
+            if (!snapshot.IsOnline || snapshot.VehicleId is null)
+            {
+                Clear(VendorDeviceStatus.NotConnected, "Connect a vehicle before discovering CubeLAN.");
+                return;
+            }
 
-        Status = VendorDeviceStatus.Discovering;
-        StatusMessage = "Reading the documented CubeLAN configuration at I²C address 0x50…";
-        var result = await adapter.DiscoverAsync(snapshot.VehicleId.Value, null, cancellationToken);
-        if (result.Status != VendorDeviceStatus.Available || result.Snapshot is null)
-        {
-            Clear(result.Status, result.Message);
-            return;
-        }
+            Status = VendorDeviceStatus.Discovering;
+            StatusMessage = "Reading the documented CubeLAN configuration at I²C address 0x50…";
+            var result = await adapter.DiscoverAsync(snapshot.VehicleId.Value, null, cancellationToken);
+            if (result.Status != VendorDeviceStatus.Available || result.Snapshot is null)
+            {
+                Clear(result.Status, result.Message);
+                return;
+            }
 
-        original = result.Snapshot;
-        Load(result.Snapshot.Configuration);
-        Status = VendorDeviceStatus.Available;
-        StatusMessage = result.Message;
-    });
+            original = result.Snapshot;
+            Load(result.Snapshot.Configuration);
+            Status = VendorDeviceStatus.Available;
+            StatusMessage = result.Message;
+        });
+    }
 
     /// <summary>Applies the edited settings and requires confirmed readback.</summary>
     /// <returns>A task representing the apply operation.</returns>
     [RelayCommand]
-    public Task ApplyAsync() => RunAsync(async cancellationToken =>
+    public Task ApplyAsync()
     {
-        if (original is null || activeVehicle.VehicleId != original.VehicleId || !activeVehicle.IsOnline)
+        return RunAsync(async cancellationToken =>
         {
-            Clear(VendorDeviceStatus.NotConnected, "The read-before-edit CubeLAN snapshot is no longer current. Discover again.");
-            return;
-        }
+            if (original is null || activeVehicle.VehicleId != original.VehicleId || !activeVehicle.IsOnline)
+            {
+                Clear(VendorDeviceStatus.NotConnected, "The read-before-edit CubeLAN snapshot is no longer current. Discover again.");
+                return;
+            }
 
-        var desired = CreateConfiguration();
-        var issues = adapter.Validate(desired);
-        if (issues.Count != 0)
-        {
-            StatusMessage = string.Join(" ", issues.Select(issue => issue.Message));
-            return;
-        }
+            var desired = CreateConfiguration();
+            var issues = adapter.Validate(desired);
+            if (issues.Count != 0)
+            {
+                StatusMessage = string.Join(" ", issues.Select(issue => issue.Message));
+                return;
+            }
 
-        if (!await confirmation.ConfirmAsync(
-                "Apply CubeLAN configuration?",
-                "Only the verified COS, EEE, VLAN tagging, and VLAN membership bits will be written. Every byte is read back; failure triggers rollback.",
-                "Apply and verify",
-                cancellationToken))
-        {
-            StatusMessage = "CubeLAN apply cancelled.";
-            return;
-        }
+            if (!await confirmation.ConfirmAsync(
+                    "Apply CubeLAN configuration?",
+                    "Only the verified COS, EEE, VLAN tagging, and VLAN membership bits will be written. Every byte is read back; failure triggers rollback.",
+                    "Apply and verify",
+                    cancellationToken))
+            {
+                StatusMessage = "CubeLAN apply cancelled.";
+                return;
+            }
 
-        Status = VendorDeviceStatus.Busy;
-        var result = await adapter.ApplyAsync(original.VehicleId, original, desired, null, cancellationToken);
-        if (!result.Success || result.ConfirmedSnapshot is null)
-        {
-            Status = VendorDeviceStatus.Error;
+            Status = VendorDeviceStatus.Busy;
+            var result = await adapter.ApplyAsync(original.VehicleId, original, desired, null, cancellationToken);
+            if (!result.Success || result.ConfirmedSnapshot is null)
+            {
+                Status = VendorDeviceStatus.Error;
+                StatusMessage = result.Message;
+                return;
+            }
+
+            original = result.ConfirmedSnapshot;
+            Load(result.ConfirmedSnapshot.Configuration);
+            Status = result.ConfirmedSnapshot.RequiresReconnect
+                ? VendorDeviceStatus.ReconnectRequired
+                : VendorDeviceStatus.Available;
             StatusMessage = result.Message;
-            return;
-        }
-
-        original = result.ConfirmedSnapshot;
-        Load(result.ConfirmedSnapshot.Configuration);
-        Status = result.ConfirmedSnapshot.RequiresReconnect
-            ? VendorDeviceStatus.ReconnectRequired
-            : VendorDeviceStatus.Available;
-        StatusMessage = result.Message;
-    });
+        });
+    }
 
     /// <summary>Reverts local edits to the last confirmed device snapshot.</summary>
     [RelayCommand]
@@ -272,22 +278,25 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ObservableObject, I
     /// <summary>Exports the current verified subset without credentials or raw registers.</summary>
     /// <returns>A task representing the file export.</returns>
     [RelayCommand]
-    public Task ExportAsync() => RunAsync(async cancellationToken =>
+    public Task ExportAsync()
     {
-        if (original is null)
+        return RunAsync(async cancellationToken =>
         {
-            StatusMessage = "Discover CubeLAN before exporting configuration.";
-            return;
-        }
+            if (original is null)
+            {
+                StatusMessage = "Discover CubeLAN before exporting configuration.";
+                return;
+            }
 
-        var path = await fileHandler.SaveTextFileAsync(
-            "cubelan-switch-config.json",
-            adapter.Export(CreateConfiguration()),
-            cancellationToken);
-        StatusMessage = path is null
-            ? "CubeLAN export cancelled."
-            : $"CubeLAN configuration exported to {path}. Authentication secrets and raw registers are excluded.";
-    });
+            var path = await fileHandler.SaveTextFileAsync(
+                "cubelan-switch-config.json",
+                adapter.Export(CreateConfiguration()),
+                cancellationToken);
+            StatusMessage = path is null
+                ? "CubeLAN export cancelled."
+                : $"CubeLAN configuration exported to {path}. Authentication secrets and raw registers are excluded.";
+        });
+    }
 
     /// <inheritdoc />
     public void Dispose()
@@ -302,8 +311,10 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ObservableObject, I
         operationGate.Dispose();
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs e) =>
-        dispatcher.Dispatch(() => RefreshForActiveVehicle(force: false));
+    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs e)
+    {
+        dispatcher.Dispatch(() => RefreshForActiveVehicle(false));
+    }
 
     private void RefreshForActiveVehicle(bool force)
     {
@@ -402,21 +413,26 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ObservableObject, I
         }
     }
 
-    private CubeLanConfiguration CreateConfiguration() => new(
-        Ports.Select(port => new CubeLanPortConfiguration(
-            port.PortIndex,
-            port.ClassOfServiceEnabled,
-            port.ClassOfServiceHighPriority,
-            port.EnergyEfficientEthernetEnabled,
-            port.VlanTagged)).ToArray(),
-        Ports.SelectMany(port => port.Memberships.Select(membership => new CubeLanVlanMembership(
-            membership.SourcePort,
-            membership.DestinationPort,
-            membership.IsMember))).ToArray(),
-        original?.Configuration.Registers ?? []);
+    private CubeLanConfiguration CreateConfiguration()
+    {
+        return new CubeLanConfiguration(
+            Ports.Select(port => new CubeLanPortConfiguration(
+                port.PortIndex,
+                port.ClassOfServiceEnabled,
+                port.ClassOfServiceHighPriority,
+                port.EnergyEfficientEthernetEnabled,
+                port.VlanTagged)).ToArray(),
+            Ports.SelectMany(port => port.Memberships.Select(membership => new CubeLanVlanMembership(
+                membership.SourcePort,
+                membership.DestinationPort,
+                membership.IsMember))).ToArray(),
+            original?.Configuration.Registers ?? []);
+    }
 
-    private static bool Equivalent(CubeLanConfiguration first, CubeLanConfiguration second) =>
-        first.Ports.SequenceEqual(second.Ports) && first.VlanMembership.SequenceEqual(second.VlanMembership);
+    private static bool Equivalent(CubeLanConfiguration first, CubeLanConfiguration second)
+    {
+        return first.Ports.SequenceEqual(second.Ports) && first.VlanMembership.SequenceEqual(second.VlanMembership);
+    }
 
     private void Clear(VendorDeviceStatus status, string message)
     {

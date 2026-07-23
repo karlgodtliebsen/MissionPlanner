@@ -5,7 +5,7 @@ namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 /// <summary>
 /// Interaction logic for FullParametersListTabView.xaml
 /// </summary>
-public partial class FullParametersListTabView : ContentPage
+public partial class FullParametersListTabView : ContentPage, IDisposable
 {
     private readonly FullParametersListTabViewModel viewModel;
 
@@ -19,17 +19,27 @@ public partial class FullParametersListTabView : ContentPage
         BindingContext = viewModel;
     }
 
-    /// <inheritdoc />
-    protected override void OnAppearing()
-    {
-        base.OnAppearing();
-        viewModel.Activate();
-    }
+    ///// <inheritdoc />
+    //protected override void OnAppearing()
+    //{
+    //    base.OnAppearing();
+    //    viewModel.Activate();
+    //}
 
+    ///// <inheritdoc />
+    //protected override void OnDisappearing()
+    //{
+    //    // Pushing the owned progress dialog also makes the underlying MAUI page disappear.
+    //    // Keep its lifecycle active until the actual Config page is navigated away from.
+    //    if (!viewModel.IsShowingProgressDialog)
+    //    {
+    //        viewModel.Deactivate();
+    //    }
+
+    //    base.OnDisappearing();
+    //}
     /// <inheritdoc />
-    protected override void OnDisappearing()
+    public void Dispose()
     {
-        viewModel.Deactivate();
-        base.OnDisappearing();
     }
 }

@@ -2,11 +2,12 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MissionPlanner.Core.Commands;
-using MissionPlanner.Core.Configuration.Fences;
-using MissionPlanner.Core.Configuration.Osd;
-using MissionPlanner.Core.Configuration.Tuning;
-using MissionPlanner.Core.Configuration.VendorDevices;
-using MissionPlanner.Core.Configuration.VendorDevices.CubeLan;
+using MissionPlanner.Core.ConfigTuning;
+using MissionPlanner.Core.ConfigTuning.Fences;
+using MissionPlanner.Core.ConfigTuning.Osd;
+using MissionPlanner.Core.ConfigTuning.Tuning;
+using MissionPlanner.Core.ConfigTuning.VendorDevices;
+using MissionPlanner.Core.ConfigTuning.VendorDevices.CubeLan;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Missions;
 using MissionPlanner.Core.Missions.Abstractions;
@@ -29,6 +30,7 @@ using MissionPlanner.MavLink.Services;
 using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Transport;
 using MissionPlanner.Transport.Abstractions;
+using OsdConfigurationService = MissionPlanner.Core.ConfigTuning.Osd.OsdConfigurationService;
 
 namespace MissionPlanner.Core.Configuration;
 

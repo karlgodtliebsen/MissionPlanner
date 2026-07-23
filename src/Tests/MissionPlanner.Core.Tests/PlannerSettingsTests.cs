@@ -1,12 +1,11 @@
-using CommunityToolkit.Maui.Storage;
+﻿using CommunityToolkit.Maui.Storage;
 using FluentAssertions;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
-using MissionPlanner.Core.Configuration.Planner;
+using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using NSubstitute;
@@ -56,11 +55,7 @@ public sealed class PlannerSettingsTests
         var service = CreateService(store);
         var cancellationToken = TestContext.Current.CancellationToken;
         await service.InitializeAsync(cancellationToken);
-        var invalid = service.Current with
-        {
-            Map = service.Current.Map with { DefaultZoom = 40, Style = PlannerMapStyle.Physical },
-            Connection = service.Current.Connection with { Port = 0 }
-        };
+        var invalid = service.Current with { Map = service.Current.Map with { DefaultZoom = 40, Style = PlannerMapStyle.Physical }, Connection = service.Current.Connection with { Port = 0 } };
 
         var result = await service.SaveAsync(invalid, cancellationToken);
 
@@ -101,11 +96,7 @@ public sealed class PlannerSettingsTests
         await service.InitializeAsync(cancellationToken);
         PlannerSettingsChangedEventArgs? changed = null;
         service.SettingsChanged += (_, args) => changed = args;
-        var updated = service.Current with
-        {
-            Appearance = new PlannerAppearanceSettings { Theme = PlannerTheme.Dark },
-            Logging = new PlannerLoggingSettings { Level = PlannerLogLevel.Warning, RetentionDays = 14 }
-        };
+        var updated = service.Current with { Appearance = new PlannerAppearanceSettings { Theme = PlannerTheme.Dark }, Logging = new PlannerLoggingSettings { Level = PlannerLogLevel.Warning, RetentionDays = 14 } };
 
         var result = await service.SaveAsync(updated, cancellationToken);
 
@@ -138,11 +129,7 @@ public sealed class PlannerSettingsTests
         var service = CreateService(new MemoryStore());
         var cancellationToken = TestContext.Current.CancellationToken;
         await service.InitializeAsync(cancellationToken);
-        await service.SaveAsync(service.Current with
-        {
-            Units = new PlannerUnitSettings { System = UnitSystem.Aviation },
-            Map = service.Current.Map with { DefaultZoom = 8 }
-        }, cancellationToken);
+        await service.SaveAsync(service.Current with { Units = new PlannerUnitSettings { System = UnitSystem.Aviation }, Map = service.Current.Map with { DefaultZoom = 8 } }, cancellationToken);
 
         await service.ResetSectionAsync(PlannerSettingsSection.Units, cancellationToken);
         service.Current.Units.Should().Be(new PlannerUnitSettings());
@@ -184,8 +171,10 @@ public sealed class PlannerSettingsTests
         viewModel.StatusMessage.Should().Contain("saved");
     }
 
-    private static PlannerSettingsService CreateService(IPlannerSettingsStore store) =>
-        new(store, NullLogger<PlannerSettingsService>.Instance);
+    private static PlannerSettingsService CreateService(IPlannerSettingsStore store)
+    {
+        return new PlannerSettingsService(store, NullLogger<PlannerSettingsService>.Instance);
+    }
 
     private sealed class MemoryStore(string? document = null) : IPlannerSettingsStore
     {

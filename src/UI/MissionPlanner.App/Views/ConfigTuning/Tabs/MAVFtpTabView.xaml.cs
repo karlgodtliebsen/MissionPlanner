@@ -19,12 +19,12 @@ public partial class MAVFtpTabView : ContentPage
         BindingContext = viewModel;
     }
 
-    /// <summary>
-    /// Provides the public API for OnAppearing.
-    /// </summary>
-    protected override void OnAppearing()
-    {
-        base.OnAppearing();
-        _ = viewModel.RefreshCommand.ExecuteAsync(null);
-    }
+    ///// <summary>
+    ///// Provides the public API for OnAppearing.
+    ///// </summary>
+    //protected override void OnAppearing()
+    //{
+    //    base.OnAppearing();
+    //    _ = viewModel.RefreshCommand.ExecuteAsync(null);
+    //}
 }

@@ -1,4 +1,4 @@
-using MissionPlanner.Core.Configuration.Planner;
+﻿using MissionPlanner.Core.ConfigTuning.Planner;
 
 namespace MissionPlanner.App.Configuration;
 
