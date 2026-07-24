@@ -17,10 +17,7 @@
                FontAttributes="Bold"
                TextColor="{AppThemeBinding Light=#9A6700, Dark=#F0B429}"
                VerticalOptions="Center" />
-
         <!-- App Title/Logo -->
-
-
         <Image Grid.Column="1" 
                    Source="Resources/Images/x_ardupilot_x.png" 
                    WidthRequest="120" 
@@ -29,18 +26,18 @@
                    HorizontalOptions="Center"/>
 
         <HorizontalStackLayout Grid.Column="2" IsVisible="{Binding IsConnected}" VerticalOptions="Center" Spacing="5" Margin="0,0,10,0">
-            <Label Text="Channel:"  FontSize="16"  VerticalOptions="Center"/>
             <Label Text="{Binding Channel}" FontSize="12"  VerticalOptions="Center"/>
-            <Label Text="Host:"  FontSize="16" IsVisible="{Binding ShowHost}" VerticalOptions="Center"/>
+            <Label Text="•"  FontSize="16" IsVisible="{Binding ShowHost}" VerticalOptions="Center"/>
             <Label Text="{Binding Host}" FontSize="12" IsVisible="{Binding ShowHost}" VerticalOptions="Center"/>
-            <Label Text="Port:" FontSize="16" IsVisible="{Binding ShowHost}" VerticalOptions="Center"/>
+            <Label Text="•" FontSize="16" IsVisible="{Binding ShowHost}" VerticalOptions="Center"/>
             <Label Text="{Binding Port}" FontSize="12" IsVisible="{Binding ShowHost}" VerticalOptions="Center"/>
-            <Label Text="BaudRate:" FontSize="16" IsVisible="{Binding ShowCom}" VerticalOptions="Center"/>
+            <Label Text="•" FontSize="16" IsVisible="{Binding ShowCom}" VerticalOptions="Center"/>
             <Label Text="{Binding BaudRate}" FontSize="12" IsVisible="{Binding ShowCom}" VerticalOptions="Center"/>
-            <Label Text="Name:" FontSize="16" IsVisible="{Binding ShowVehicleName}" VerticalOptions="Center"/>
+            <Label Text="•" FontSize="16" IsVisible="{Binding ShowVehicleName}" VerticalOptions="Center"/>
             <Label Text="{Binding VehicleName}" FontSize="12" IsVisible="{Binding ShowVehicleName}" VerticalOptions="Center"/>
-            <Label Text="Id:" FontSize="16"  VerticalOptions="Center"/>
+            <Label Text="•" FontSize="16"  VerticalOptions="Center"/>
             <Label Text="{Binding VehicleId}" FontSize="12"  VerticalOptions="Center"/>
+            <Label Text="•" FontSize="16"  VerticalOptions="Center"/>
             <Label Text="{Binding FirmwareIdentity}" FontSize="12" VerticalOptions="Center"/>
         </HorizontalStackLayout>
 

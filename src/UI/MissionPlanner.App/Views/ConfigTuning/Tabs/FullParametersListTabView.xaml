@@ -6,12 +6,17 @@
                       xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                       xmlns:m="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                       xmlns:configTuning="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
+                      xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                       x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.FullParametersListTabView"
                       x:DataType="tabs:FullParametersListTabViewModel">
 
+
+    <tabs:ContentPageView.Resources>
+        <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+    </tabs:ContentPageView.Resources>
     <tabs:ContentPageView.Content>
 
-        <Grid RowDefinitions="Auto,Auto,Auto,*"
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto,*"
           HorizontalOptions="Fill"
           VerticalOptions="Fill"
           Padding="8,0"
@@ -102,8 +107,18 @@
 
             </HorizontalStackLayout>
 
+            <HorizontalStackLayout Grid.Row="1" Padding="18,4" Spacing="12" Margin="0,10,0,10">
+                <Label TextColor="OrangeRed" Text="{Binding ErrorMessage}" LineBreakMode="WordWrap" VerticalOptions="Center" />
+                <Label Text="{Binding StatusMessage}" LineBreakMode="WordWrap" VerticalOptions="Center" />
+                <Label Text="Reboot required after confirmed changes"
+                       IsVisible="{Binding RebootRequired}"
+                       TextColor="OrangeRed"
+                       FontAttributes="Bold"
+                       VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
             <!-- Search and Status Bar -->
-            <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" Padding="8,8" ColumnSpacing="12" >
+            <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" Padding="18,4"  Margin="0,10,0,10" ColumnSpacing="12" IsVisible="{Binding HasRows}">
                 <Label Grid.Column="0" Text="Search:" VerticalOptions="Center" FontSize="14" />
                 <Entry Grid.Column="1"
                    Text="{Binding SearchText}"
@@ -130,37 +145,87 @@
                 </HorizontalStackLayout>
             </Grid>
 
-            <HorizontalStackLayout Grid.Row="2" Padding="8,4" Spacing="12">
-                <Label TextColor="OrangeRed" Text="{Binding ErrorMessage}" LineBreakMode="WordWrap" VerticalOptions="Center" />
-                <Label Text="{Binding StatusMessage}" LineBreakMode="WordWrap" VerticalOptions="Center" />
-                <Label Text="Reboot required after confirmed changes"
-                       IsVisible="{Binding RebootRequired}"
-                       TextColor="OrangeRed"
-                       FontAttributes="Bold"
-                       VerticalOptions="Center" />
-            </HorizontalStackLayout>
 
-            <Grid Grid.Row="3" VerticalOptions="Fill" HorizontalOptions="Fill" Padding="10">
+
+            <Grid Grid.Row="3" IsVisible="{Binding  HasRows}" ColumnDefinitions="*,Auto" Padding="18,4" Margin="0,10,0,10" ColumnSpacing="24">
+                <HorizontalStackLayout Grid.Column="0"
+                                       Spacing="8"
+                                       VerticalOptions="Center">
+                    <Button Text="First"
+                            BackgroundColor="Transparent"
+                            FontSize="14"
+                            Command="{Binding FirstPageCommand}" />
+                    <Button Text="Previous"
+                            BackgroundColor="Transparent"
+                            FontSize="14"
+                            Command="{Binding PreviousPageCommand}" />
+                    <Label Text="Page"
+                           FontSize="14"
+                           VerticalOptions="Center" />
+                    <Entry Text="{Binding CurrentPage, Mode=TwoWay}"
+                           Keyboard="Numeric"
+                           FontSize="14"
+                           WidthRequest="64"
+                           HorizontalTextAlignment="Center"
+                           VerticalOptions="Center" />
+                    <Label FontSize="14"
+                           VerticalOptions="Center">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="of " />
+                                <Span Text="{Binding TotalPageCount}" FontAttributes="Bold" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                    <Button Text="Next"
+                            BackgroundColor="Transparent"
+                            FontSize="14"
+                            Command="{Binding NextPageCommand}" />
+                    <Button Text="Last"
+                            BackgroundColor="Transparent"
+                            FontSize="14"
+                            Command="{Binding LastPageCommand}" />
+                </HorizontalStackLayout>
+
+                <HorizontalStackLayout Grid.Column="1"
+                                       Spacing="8"
+                                       HorizontalOptions="End"
+                                       VerticalOptions="Center">
+                    <Label Text="Rows per page:"
+                           FontSize="14"
+                           VerticalOptions="Center" />
+                    <Entry Text="{Binding PageSize, Mode=TwoWay}"
+                           Keyboard="Numeric"
+                           FontSize="14"
+                           WidthRequest="64"
+                           HorizontalTextAlignment="Center"
+                           VerticalOptions="Center" />
+                    <Label FontSize="14"
+                           VerticalOptions="Center">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="Matching: " />
+                                <Span Text="{Binding FilteredParameterCount}" FontAttributes="Bold" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                </HorizontalStackLayout>
+            </Grid>
+
+            <Grid Grid.Row="4" VerticalOptions="Fill" HorizontalOptions="Fill" Padding="18,4"  Margin="0,10,0,10">
 
                 <ScrollView HorizontalScrollBarVisibility="Default" VerticalScrollBarVisibility="Always" HorizontalOptions="Fill"
                             VerticalOptions="Fill"
-                             Padding="10"
+                            
                     >
-                    <!--IsVisible="{Binding ShowDataGrid}"-->
-
-
                     <material:DataGrid 
                     ItemsSource="{Binding Parameters}"
                     UseAutoColumns="False"
                     VerticalOptions="Fill"
                     HorizontalOptions="Fill"
-                    
-                    Margin="8" >
-
-                        <!--IsVisible="{Binding ShowEmptyView}"-->
-
-                        <material:DataGrid.EmptyView > 
-                            <VerticalStackLayout  VerticalOptions="Center" HorizontalOptions="Center" >
+                     >
+                        <material:DataGrid.EmptyView >
+                            <VerticalStackLayout  VerticalOptions="Center" HorizontalOptions="Center" IsVisible="{Binding HasRows, Converter={StaticResource InvertedBoolConverter}}">
                                 <Image
                         WidthRequest="40"
                         HeightRequest="40"
@@ -189,14 +254,17 @@
                             <material:DataGridColumn Title="Value" >
                                 <material:DataGridColumn.CellItemTemplate >
                                     <DataTemplate  x:DataType="configTuning:ParameterItemViewModel" >
-                                        <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="10,0,10,0">
-                                            <material:EditorField FontSize="16" WidthRequest="100"  IsReadOnly="{Binding IsReadOnly}"
+                                        <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="10,0,10,0" >
+                                            <!--<Grid RowDefinitions="*,Auto" HorizontalOptions="Fill" VerticalOptions="Fill">-->
+                                            <material:EditorField FontSize="16"  WidthRequest="90"  IsReadOnly="{Binding IsReadOnly}"
                                                                   Keyboard="Numeric"
-                                                                  HorizontalOptions="End" VerticalOptions="Center"  
+                                                                  BorderColor="Aqua"
+                                                                  HorizontalOptions="End" VerticalOptions="Fill"  
                                                                   Text="{Binding Value, Mode=TwoWay}"
-                                            />
-                                            <Label Text="{Binding ValidationError}" TextColor="OrangeRed" FontSize="11"
-                                                   IsVisible="{Binding IsModified}" LineBreakMode="WordWrap" />
+                                                    />
+                                            <!--<Label Grid.Row="1" Text="{Binding ValidationError}" TextColor="OrangeRed" FontSize="11"
+                                                   IsVisible="{Binding IsModified}" LineBreakMode="TailTruncation" />
+                                            </Grid>-->
                                         </VerticalStackLayout>
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
@@ -205,7 +273,7 @@
                             <material:DataGridColumn  Width="225"  Title="Selections">
                                 <material:DataGridColumn.CellItemTemplate>
                                     <DataTemplate  x:DataType="configTuning:ParameterItemViewModel">
-                                        <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="10,5,10,5">
+                                        <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="10,0,10,0" >
                                             <material:PickerField IsVisible="{Binding HasValuesData}"
                                                                   FontSize="16" 
                                                                   Title="Pick an option"
@@ -235,19 +303,17 @@
                                                                       Text="{Binding Value, Mode=TwoWay}"
                                                 />
 
-                                                <Button Background="LightGray"
+                                                <Button BackgroundColor="Transparent"
                                                         BorderColor="Transparent"
-                                                        TextColor="Black"
                                                         Text="-"
                                                         FontSize="22"
-                                                        Margin="0,3,0,0" Grid.Column="1"  HorizontalOptions="Fill" VerticalOptions="Fill"  
+                                                        Margin="0,0,-5,0" Grid.Column="1"  HorizontalOptions="Center" VerticalOptions="Center"  
                                                         Command="{Binding DecrementNumberCommand}" />
-                                                <Button Background="LightGray" 
+                                                <Button BackgroundColor="Transparent"
                                                         BorderColor="Transparent"
-                                                        TextColor="Black"
                                                         FontSize="22"
                                                         Text="+"
-                                                        Margin="0,4,0,0"  Grid.Column="2"  HorizontalOptions="Fill" VerticalOptions="Fill"  
+                                                        Margin="-5,0,0,0"  Grid.Column="2"  HorizontalOptions="Center" VerticalOptions="Center"  
                                                         Command="{Binding IncrementNumberCommand}" />
                                             </Grid>
                                         </VerticalStackLayout>
@@ -255,44 +321,46 @@
                                 </material:DataGridColumn.CellItemTemplate>
                             </material:DataGridColumn>
 
-                            <material:DataGridColumn  Width="125"  ValueBinding="{Binding Range}" Title="Range"  />
-                            <material:DataGridColumn  Width="125"  ValueBinding="{Binding OriginalValue}" Title="Default"  />
+                            <material:DataGridColumn Width="100"  ValueBinding="{Binding Range}" Title="Range"  />
+                            <!--<material:DataGridColumn Width="100"  ValueBinding="{Binding StepSize}" Title="Step Size"  />-->
+                            <material:DataGridColumn Width="100"  ValueBinding="{Binding OriginalValue}" Title="Default"  />
                             <material:DataGridColumn Width="125" Title="Units">
                                 <material:DataGridColumn.CellItemTemplate>
                                     <DataTemplate x:DataType="configTuning:ParameterItemViewModel">
-                                        <Label Text="{Binding Units}" Margin="10,0" VerticalOptions="Center" />
+                                        <Label Text="{Binding Units}" Margin="10,0" VerticalOptions="Center" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
                             </material:DataGridColumn>
-                           
-                            
+
+
                             <material:DataGridColumn Width="130" Title="Write status">
                                 <material:DataGridColumn.CellItemTemplate>
                                     <DataTemplate x:DataType="configTuning:ParameterItemViewModel">
-                                        <VerticalStackLayout Margin="10,4" VerticalOptions="Center">
-                                            <Label Text="{Binding WriteStatus}" />
-                                            <Label Text="{Binding WriteMessage}" FontSize="10" LineBreakMode="WordWrap" />
+                                        <VerticalStackLayout Margin="10,0" VerticalOptions="Center" HorizontalOptions="Fill">
+                                            <Label Text="{Binding WriteStatus}" HorizontalOptions="Center" HorizontalTextAlignment="Center"/>
+                                            <Label Text="{Binding WriteMessage}" FontSize="10" LineBreakMode="WordWrap" HorizontalOptions="Center" HorizontalTextAlignment="Center"/>
                                         </VerticalStackLayout>
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
                             </material:DataGridColumn>
 
 
-                            <material:DataGridColumn Title="Options" Width="125" >
+                            <!--<material:DataGridColumn Title="Options" Width="125" >
                                 <material:DataGridColumn.CellItemTemplate>
                                     <DataTemplate  x:DataType="configTuning:ParameterItemViewModel">
-                                        <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Fill" Margin="0,0,0,0">
+                                        <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="0,0,0,0">
                                             <Label FontSize="12" VerticalOptions="Center" VerticalTextAlignment="Center" LineBreakMode="MiddleTruncation"  
                                                    HorizontalOptions="Start" HorizontalTextAlignment="Start" Text="{Binding Options}"/>
                                         </VerticalStackLayout>
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
-                            </material:DataGridColumn>
+                            </material:DataGridColumn>-->
+
                             <material:DataGridColumn Title="Description" Width="*">
                                 <material:DataGridColumn.CellItemTemplate>
                                     <DataTemplate  x:DataType="configTuning:ParameterItemViewModel">
 
-                                        <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Fill" Margin="10,10,0,10">
+                                        <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="10,10,0,10">
                                             <Label FontSize="12" VerticalOptions="Center" VerticalTextAlignment="Center" LineBreakMode="WordWrap"  
                                                    HorizontalOptions="Start" HorizontalTextAlignment="Start" Text="{Binding DisplayName}"/>
                                             <Label FontSize="12" VerticalOptions="Fill" 

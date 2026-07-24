@@ -27,13 +27,12 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     private readonly ParametersFileHandler parametersFileHandler;
     private readonly ILogger<FullParametersListTabViewModel> logger;
     private readonly List<ParameterItemViewModel> allParameterItems = [];
+    private readonly List<ParameterItemViewModel> filteredParameterItems = [];
     private CancellationTokenSource? loadCancellation;
     private IParameterEditSession? editSession;
     private IDisposable? progressDialog;
     private bool active;
     private bool disposed;
-    private readonly int pageSize = 10;
-    private readonly int? currentPage = 0;
 
     /// <summary>Gets whether the page is temporarily covered by its owned progress dialog.</summary>
     public bool IsShowingProgressDialog { get; private set; }
@@ -102,6 +101,22 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     [ObservableProperty]
     public partial int TotalParameterCount { get; set; }
 
+    /// <summary>Gets the number of parameters matching the current search.</summary>
+    [ObservableProperty]
+    public partial int FilteredParameterCount { get; set; }
+
+    /// <summary>Gets or sets the number of parameter rows shown on one page.</summary>
+    [ObservableProperty]
+    public partial int PageSize { get; set; } = 10;
+
+    /// <summary>Gets or sets the one-based page currently shown.</summary>
+    [ObservableProperty]
+    public partial int CurrentPage { get; set; } = 1;
+
+    /// <summary>Gets the number of pages available for the current search.</summary>
+    [ObservableProperty]
+    public partial int TotalPageCount { get; set; } = 1;
+
     /// <summary>Gets or sets the parameter name and description filter.</summary>
     [ObservableProperty]
     public partial string SearchText { get; set; } = string.Empty;
@@ -109,6 +124,12 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     /// <summary>Gets whether a load or apply operation is active.</summary>
     [ObservableProperty]
     public partial bool IsBusy { get; set; }
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CancelLoadCommand))]
+    [NotifyCanExecuteChangedFor(nameof(WriteParametersCommand))]
+    public partial bool HasRows { get; set; }
 
     /// <summary>Gets whether an active vehicle connection is available.</summary>
     [ObservableProperty]
@@ -143,6 +164,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         ShowVehicleDisconnected = !HasConnection;
         StatusMessage = HasConnection ? null : DefaultStatusMessage;
         ErrorMessage = null;
+        HasRows = allParameterItems.Any();
     }
 
     /// <summary>Deactivates lifecycle tracking and cancels the visible loading operation.</summary>
@@ -160,11 +182,35 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         CompleteBusyState();
         StatusMessage = null;
         ErrorMessage = null;
+        HasRows = allParameterItems.Any();
     }
 
     partial void OnSearchTextChanged(string value)
     {
-        FilterParameters();
+        FilterParameters(true);
+    }
+
+    partial void OnPageSizeChanged(int value)
+    {
+        if (value < 1)
+        {
+            PageSize = 1;
+            return;
+        }
+
+        FilterParameters(true);
+    }
+
+    partial void OnCurrentPageChanged(int value)
+    {
+        var validPage = Math.Clamp(value, 1, TotalPageCount);
+        if (value != validPage)
+        {
+            CurrentPage = validPage;
+            return;
+        }
+
+        ShowCurrentPage();
     }
 
     private void SetMessages(string? statusMessage = null, string? errorMessage = null)
@@ -205,7 +251,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         {
             await SetLoadStateAsync();
             IsShowingProgressDialog = true;
-            progressDialog = await extendedDialogService.DisplayProgressCancellableAsync("Handling parameters", () => ProgressMessage, tokenSource: loadCancellation);
+            progressDialog = await extendedDialogService.DisplayProgressCancellableAsync("Loading parameters", () => ProgressMessage, tokenSource: loadCancellation);
             var progress = CreateProgress();
             cancellationToken.ThrowIfCancellationRequested();
             logger.LogInformation("Loading the Full Parameters List for {VehicleId}.", vehicleId);
@@ -267,6 +313,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             CloseOperationDialog();
             loadCancellation?.Dispose();
             loadCancellation = null;
+            HasRows = allParameterItems.Any();
         }
     }
 
@@ -280,6 +327,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             SetMessages(errorMessage: result.ErrorMessage ?? "Parameter loading failed.");
         });
         logger.LogError("Full Parameters List load failed for {VehicleId}: {Error}", vehicleId, result.ErrorMessage);
+        HasRows = allParameterItems.Any();
     }
 
     private IProgress<ParameterStreamProgress> CreateProgress()
@@ -293,11 +341,16 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     [RelayCommand(CanExecute = nameof(CanCancelLoad))]
     private void CancelLoad()
     {
+        SetMessages();
+        var isBusy = IsBusy;
         CancelLoadOperation();
         CloseProgressDialog();
         CompleteBusyState();
-        ShowLoadingCancelled = true;
-        SetMessages(errorMessage: "Parameter loading was cancelled.");
+        if (isBusy)
+        {
+            ShowLoadingCancelled = true;
+            SetMessages(errorMessage: "Parameter loading was cancelled.");
+        }
     }
 
     [RelayCommand]
@@ -325,6 +378,8 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         {
             await dialogService.ConfirmAsync("Load failed", exception.Message, "OK");
         }
+
+        HasRows = allParameterItems.Any();
     }
 
     [RelayCommand]
@@ -350,6 +405,8 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         {
             await dialogService.ConfirmAsync("Load failed", exception.Message, "OK");
         }
+
+        HasRows = allParameterItems.Any();
     }
 
     [RelayCommand]
@@ -446,6 +503,30 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         SetMessages(m);
     }
 
+    [RelayCommand(CanExecute = nameof(CanMoveToPreviousPage))]
+    private void FirstPage()
+    {
+        CurrentPage = 1;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanMoveToPreviousPage))]
+    private void PreviousPage()
+    {
+        CurrentPage--;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanMoveToNextPage))]
+    private void NextPage()
+    {
+        CurrentPage++;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanMoveToNextPage))]
+    private void LastPage()
+    {
+        CurrentPage = TotalPageCount;
+    }
+
     /// <inheritdoc />
     public void Dispose()
     {
@@ -459,7 +540,9 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         editSession?.Changed -= OnEditSessionChanged;
 
         Parameters.Clear();
+        filteredParameterItems.Clear();
         allParameterItems.Clear();
+        HasRows = false;
     }
 
     private bool CanRefreshParameters()
@@ -475,6 +558,16 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     private bool CanWriteParameters()
     {
         return HasConnection && !IsBusy && editSession is { IsDirty: true, IsValid: true };
+    }
+
+    private bool CanMoveToPreviousPage()
+    {
+        return FilteredParameterCount > 0 && CurrentPage > 1;
+    }
+
+    private bool CanMoveToNextPage()
+    {
+        return FilteredParameterCount > 0 && CurrentPage < TotalPageCount;
     }
 
     private void AttachSession(IParameterEditSession session)
@@ -553,9 +646,10 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         }
 
         WriteParametersCommand.NotifyCanExecuteChanged();
+        HasRows = allParameterItems.Any();
     }
 
-    private void FilterParameters()
+    private void FilterParameters(bool resetPage = false)
     {
         var filtered = string.IsNullOrWhiteSpace(SearchText)
             ? allParameterItems
@@ -563,8 +657,34 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
                 item.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
                 item.Description?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true ||
                 item.DisplayName?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) == true).ToList();
+
+        filteredParameterItems.Clear();
+        filteredParameterItems.AddRange(filtered);
+        FilteredParameterCount = filteredParameterItems.Count;
+        TotalPageCount = (int)Math.Max(
+            1L,
+            (FilteredParameterCount + (long)PageSize - 1) / PageSize);
+
+        var targetPage = resetPage ? 1 : Math.Clamp(CurrentPage, 1, TotalPageCount);
+        if (CurrentPage != targetPage)
+        {
+            CurrentPage = targetPage;
+            return;
+        }
+
+        ShowCurrentPage();
+    }
+
+    private void ShowCurrentPage()
+    {
         Parameters.Clear();
-        Parameters.AddRange(filtered.Skip((pageSize * currentPage) ?? 0).Take(pageSize));
+        Parameters.AddRange(filteredParameterItems
+            .Skip((CurrentPage - 1) * PageSize)
+            .Take(PageSize));
+        FirstPageCommand.NotifyCanExecuteChanged();
+        PreviousPageCommand.NotifyCanExecuteChanged();
+        NextPageCommand.NotifyCanExecuteChanged();
+        LastPageCommand.NotifyCanExecuteChanged();
     }
 
 

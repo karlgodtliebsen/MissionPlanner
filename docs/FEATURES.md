@@ -531,6 +531,8 @@ while leaving Config warns before discarding them.
   apply/revert, per-field write status, confirmed readback, and reboot warnings
 * Keeps table rows and option collections stable while numeric, enum, and bitmask edits
   synchronize with the shared session
+* Pages the searched table projection with first/previous/next/last navigation and an
+  editable page size, limiting the number of MAUI editor rows rendered at once
 * Loads and saves `.param`/JSON files using invariant numeric formatting
 * Retains the packed MAVFTP download with automatic classic-stream fallback
 

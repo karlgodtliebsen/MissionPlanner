@@ -41,6 +41,7 @@ public partial class ParameterItemViewModel : ObservableObject
     [ObservableProperty] public partial string? DisplayName { get; set; }
     [ObservableProperty] public partial float Value { get; set; }
     [ObservableProperty] public partial float LiveValue { get; set; }
+    [ObservableProperty] public partial float StepSize { get; set; }
     [ObservableProperty] public partial string? SelectedValue { get; set; }
 
     [ObservableProperty] public partial float Max { get; set; }
@@ -190,7 +191,7 @@ public partial class ParameterItemViewModel : ObservableObject
         Max = metadata.Maximum ?? float.MaxValue;
         Increment = metadata.Increment;
         stepSize = ResolveStepSize(metadata);
-
+        StepSize = stepSize;
         ValuesItems = metadata.ValueOptions;
         ValuesData = ValuesItems.Select(option => option.Name).ToArray();
         HasValuesData = ValuesItems.Length > 0;
@@ -226,19 +227,14 @@ public partial class ParameterItemViewModel : ObservableObject
 
     private static float ResolveStepSize(EditorMetadataProjection metadata)
     {
-        if (metadata.IncrementValue is not null)
-        {
-            return metadata.IncrementValue.Value;
-        }
-
-        if (metadata.Increment is not null)
-        {
-            return 0.1f;
-        }
-
-        return metadata.Minimum is not null && metadata.Maximum is not null
-            ? (float)Math.Round((metadata.Maximum.Value - metadata.Minimum.Value) / 10.0)
-            : 0.1f;
+        var resolved = metadata.IncrementValue is not null
+            ? metadata.IncrementValue.Value
+            : metadata.Increment is not null
+                ? 0.1f
+                : metadata.Minimum is not null && metadata.Maximum is not null
+                    ? (float)Math.Round((metadata.Maximum.Value - metadata.Minimum.Value) / 10.0)
+                    : 0.1f;
+        return float.IsFinite(resolved) && resolved > 0 ? resolved : 0.1f;
     }
 
     private static EditorMetadataProjection CreateEditorMetadata(ParameterMetadata metadata)
@@ -333,77 +329,49 @@ public partial class ParameterItemViewModel : ObservableObject
 
     private static string? CreateRangeText(double? minimum, double? maximum)
     {
-        if (minimum is null && maximum is null)
-        {
-            return null;
-        }
-
-        return $"{minimum?.ToString(System.Globalization.CultureInfo.InvariantCulture)} {maximum?.ToString(System.Globalization.CultureInfo.InvariantCulture)}";
+        return minimum is null && maximum is null
+            ? null
+            : $"{minimum?.ToString(System.Globalization.CultureInfo.InvariantCulture)}-{maximum?.ToString(System.Globalization.CultureInfo.InvariantCulture)}";
     }
 
-    /// <summary>
-    /// Sets the data for this parameter from a VehicleParameter instance.
-    /// </summary>
-    /// <param name="parameter">The VehicleParameter instance containing the data.</param>
-    public void SetData(VehicleParameter parameter)
-    {
-        editMetadata = null;
-        editType = null;
-        loadingData = true;
-        originalParameter = parameter;
-        OriginalValue = parameter.Value;
-        LiveValue = parameter.Value;
-        if (!string.IsNullOrEmpty(parameter.Name))
-        {
-            Name = parameter.Name;
-        }
-
-        Value = parameter.Value;
-        if (ValuesItems is not null)
-        {
-            var item = ValuesItems.FirstOrDefault(i => Math.Abs(i.Value - Value) < 0.0001f);
-            if (item is not null && SelectedValue != item.Name)
-            {
-                SelectedValue = item.Name;
-            }
-        }
-
-        if (BitmaskOptions is not null)
-        {
-            SelectedBitmaskItems.Clear();
-            foreach (var item in BitmaskOptions.Where(item => ((int)Value & (int)item.Value) != 0))
-            {
-                SelectedBitmaskItems.Add(item);
-            }
-        }
-
-
-        loadingData = false;
-    }
 
     [RelayCommand]
     private void IncrementNumber()
     {
-        var v = Value;
-        if (v + stepSize <= Max)
-        {
-            v += stepSize;
-            Value = v;
-        }
+        StepNumber(1);
     }
 
     [RelayCommand]
     private void DecrementNumber()
     {
-        var v = Value;
-
-        if (v - stepSize >= Min)
-        {
-            v -= stepSize;
-            Value = v;
-        }
+        StepNumber(-1);
     }
 
+    private void StepNumber(int direction)
+    {
+        if (!float.IsFinite(Value) ||
+            !float.IsFinite(stepSize) ||
+            stepSize <= 0 ||
+            !float.IsFinite(Min) ||
+            !float.IsFinite(Max))
+        {
+            return;
+        }
+
+        double steppedValue;
+        try
+        {
+            var decimalValue = Convert.ToDecimal(Value);
+            var decimalStep = Convert.ToDecimal(stepSize);
+            steppedValue = Convert.ToDouble(decimalValue + (direction * decimalStep));
+        }
+        catch (OverflowException)
+        {
+            steppedValue = Value + (direction * (double)stepSize);
+        }
+
+        Value = (float)Math.Clamp(steppedValue, Min, Max);
+    }
 
     partial void OnSelectedValueChanged(string? oldValue, string? newValue)
     {
@@ -447,23 +415,6 @@ public partial class ParameterItemViewModel : ObservableObject
         }
     }
 
-    /// <summary>
-    /// Resets the value to the original vehicle value.
-    /// </summary>
-    public void ResetToOriginal()
-    {
-        if (editSession is null)
-        {
-            Value = OriginalValue;
-            return;
-        }
-
-        editSession.Revert(Name);
-        if (editSession.GetField(Name) is { } current)
-        {
-            SetField(current);
-        }
-    }
 
     private sealed record EditorMetadataProjection(
         string Name,

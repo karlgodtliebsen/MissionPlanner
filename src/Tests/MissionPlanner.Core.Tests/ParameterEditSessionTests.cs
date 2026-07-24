@@ -203,6 +203,54 @@ public sealed class ParameterEditSessionTests
         }
     }
 
+    /// <summary>Verifies repeated decimal increments do not accumulate binary floating-point drift.</summary>
+    [Fact]
+    public async Task NumericEditorUsesPrecisionSafeDecimalSteps()
+    {
+        using var fixture = CreateFixture(
+            [(Parameter("GAIN", 0), Metadata("GAIN", "0 2", "0.1"))]);
+        var session = fixture.Factory.Create(fixture.VehicleId);
+        await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
+        var item = new ParameterItemViewModel(session, session.GetField("GAIN")!);
+        session.Changed += SynchronizeItem;
+
+        for (var index = 0; index < 7; index++)
+        {
+            item.IncrementNumberCommand.Execute(null);
+        }
+
+        item.Value.Should().Be(0.7f);
+        Convert.ToDecimal(item.Value).Should().Be(0.7m);
+
+        void SynchronizeItem(object? sender, EventArgs args)
+        {
+            item.SetField(session.GetField("GAIN")!);
+        }
+    }
+
+    /// <summary>Verifies a large derived step clamps an overshooting change to the nearest range boundary.</summary>
+    [Fact]
+    public async Task NumericEditorClampsLargeStepsToRangeBoundaries()
+    {
+        using var fixture = CreateFixture(
+            [(Parameter("RATE", 90), Metadata("RATE", "0 95"))]);
+        var session = fixture.Factory.Create(fixture.VehicleId);
+        await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
+        var item = new ParameterItemViewModel(session, session.GetField("RATE")!);
+
+        item.StepSize.Should().Be(10);
+        item.IncrementNumberCommand.Execute(null);
+
+        item.Value.Should().Be(95);
+        session.GetField("RATE")!.PendingValue.Should().Be(95);
+
+        item.Value = 5;
+        item.DecrementNumberCommand.Execute(null);
+
+        item.Value.Should().Be(0);
+        session.GetField("RATE")!.PendingValue.Should().Be(0);
+    }
+
     /// <summary>Verifies range metadata supplies a useful editor step when firmware metadata omits an increment.</summary>
     [Fact]
     public async Task NumericEditorDerivesStepFromRangeAndPreservesMetadata()

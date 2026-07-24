@@ -183,10 +183,14 @@ bulk service continues to prefer packed MAVFTP parameters and automatically fall
 the classic parameter stream. File imports populate pending values, while Apply performs
 confirmed session writes. Session change notifications update existing table rows in
 place; they do not rebuild the filtered collection or recreate enum and bitmask choices
-while an editor is handling input. Multi-option changes are committed as one pending value.
+while an editor is handling input. The table pages its searched projection and renders only
+the selected page; changing the search or page size returns to the first page. Multi-option
+changes are committed as one pending value.
 The session projection retains the source unit text, user level, range, value, bitmask, and
 increment metadata used by the raw editor. When numeric metadata provides both range bounds
 but no increment, the increment/decrement controls use the rounded range divided by ten.
+Numeric stepping uses decimal arithmetic to avoid accumulated binary floating-point drift;
+an overshooting step lands on the advertised minimum or maximum instead of being ignored.
 
 `GeoFenceTabViewModel` opens the same session with an explicit fence field catalog. It
 resolves only parameters present for the connected firmware and commits parameter changes
