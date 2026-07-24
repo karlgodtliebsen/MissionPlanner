@@ -158,6 +158,9 @@ factory creates one session for the active `VehicleId` and reported firmware ide
 session retains the value first loaded, the latest confirmed live value, and the pending
 editor value separately. It also projects ranges, increments, enum values, bitmask flags,
 units, descriptions, read-only state, and reboot requirements from firmware metadata.
+Because `ParameterEditScope` is local to the selected vehicle and firmware, the factory
+creates `IParameterEditSession` through `IDomainFactory`, which supplies the remaining
+constructor dependencies from DI.
 
 Pending edits are validated immediately. Grouped apply operations deduplicate parameter
 names, write each value through `IVehicleParameterService`, and require matching registry

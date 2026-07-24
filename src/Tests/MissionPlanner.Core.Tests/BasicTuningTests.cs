@@ -37,9 +37,14 @@ public sealed class BasicTuningTests
             .AddTestConfiguration(output);
 
         services.AddTransient<IVehicleParameterService, TestParameterService>();
+        services.AddTransient<IVehicleParameterMetadataService, TestVehicleParameterMetadataService>();
+        services.AddTransient<IActiveVehicleContext, TestActiveVehicleContext>();
+
 
         serviceProvider = services.BuildServiceProvider();
         serviceProvider.UseTestConfiguration();
+
+
         logger = serviceProvider.GetRequiredService<ILogger<BasicTuningTests>>();
     }
 
@@ -47,7 +52,10 @@ public sealed class BasicTuningTests
     private Fixture CreateFixture(FirmwareFamily family, params (string Name, float Value)[] parameters)
     {
         var state = State(family);
-        var activeVehicle = new TestActiveVehicleContext(state);
+        var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
+        //var activeVehicle = new TestActiveVehicleContext(state);
+        var activeVehicle = domainFactory.Create<IActiveVehicleContext, VehicleState>(state);
+
         var registry = serviceProvider.GetRequiredService<IVehicleParameterRegistry>();
 
         foreach (var parameter in parameters)
@@ -76,33 +84,36 @@ public sealed class BasicTuningTests
             StringComparer.Ordinal);
 
         var metadataService = serviceProvider.GetRequiredService<IVehicleParameterMetadataService>();
-
+        (metadataService as TestVehicleParameterMetadataService)!.SetMetadata(metadata);
         // var metadataService =Substitute.For<IVehicleParameterMetadataService>();
         // metadataService.GetAllMetadataAsync(state.VehicleId, Arg.Any<CancellationToken>()).Returns(metadata);
 
-
         //serviceProvider
-        var parameterService = new TestParameterService(registry);
+        var parameterService = serviceProvider.GetRequiredService<IVehicleParameterService>();
+        //new TestParameterService(registry);
 
-        //TODO: this test needs be updated to use Domain Configurator to create a DI
+        //TODO: this test need be updated to use Domain Configurator to create a DI
 
         //registry,
         //parameterService,
         //metadataService,
-        throw new NotImplementedException("This test must be updated");
+        //throw new NotImplementedException("This test must be updated");
 
-        var domainFactory = Substitute.For<IDomainFactory>();
+        //var domainFactory = Substitute.For<IDomainFactory>();
         //Options.Create(new ParameterEditSessionOptions { ReadbackTimeout = TimeSpan.FromSeconds(1) });
         //var logger = NSubstitute.Substitute.For<ILogger<ParameterEditSessionFactory>>();
 
-        var factory = new ParameterEditSessionFactory(activeVehicle, domainFactory, NullLogger<ParameterEditSessionFactory>.Instance);
+        var factory = serviceProvider.GetRequiredService<IParameterEditSessionFactory>() as ParameterEditSessionFactory;
 
-        var service = new BasicTuningService(
-            new BasicTuningProfileCatalog(),
-            factory,
-            registry,
-            NullLogger<BasicTuningService>.Instance);
-        return new Fixture(state.VehicleId, activeVehicle, parameterService, factory, service);
+        //new ParameterEditSessionFactory(activeVehicle, domainFactory, NullLogger<ParameterEditSessionFactory>.Instance);
+        var service = domainFactory.Create<IBasicTuningService, IParameterEditSessionFactory, IVehicleParameterRegistry>(factory, registry);
+        //var service = new BasicTuningService(
+        //    new BasicTuningProfileCatalog(),
+        //    factory,
+        //    registry,
+        //    NullLogger<BasicTuningService>.Instance);
+
+        return new Fixture(state.VehicleId, activeVehicle as TestActiveVehicleContext, parameterService as TestParameterService, factory, service as BasicTuningService);
     }
 
 
@@ -167,6 +178,7 @@ public sealed class BasicTuningTests
         result.Success.Should().BeFalse();
         result.ParameterReport.Should().BeNull();
         result.ValidationIssues.Should().HaveCount(2);
+
         fixture.ParameterService.Writes.Should().BeEmpty();
     }
 
@@ -326,73 +338,67 @@ public sealed class BasicTuningTests
             Factory.Dispose();
         }
     }
+}
 
+public sealed class TestParameterService(IVehicleParameterRegistry registry) : IVehicleParameterService
+{
+    public List<string> Writes { get; } = [];
 
-    public sealed class TestParameterService(IVehicleParameterRegistry registry) : IVehicleParameterService
+    public Task<bool> RequestParameterListAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
     {
-        public List<string> Writes { get; } = [];
-
-        public Task<bool> RequestParameterListAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(true);
-        }
-
-        public Task<bool> RequestParameterAsync(VehicleId vehicleId, string parameterName, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(true);
-        }
-
-        public Task<bool> RequestParameterByIndexAsync(VehicleId vehicleId, ushort parameterIndex, CancellationToken cancellationToken = default)
-        {
-            return Task.FromResult(true);
-        }
-
-        public Task<bool> SetParameterAsync(
-            VehicleId vehicleId,
-            string parameterName,
-            float value,
-            MavParamType paramType,
-            CancellationToken cancellationToken = default)
-        {
-            Writes.Add(parameterName);
-            registry.StoreParameter(vehicleId, new VehicleParameter(parameterName, value, paramType, 0, 1), cancellationToken);
-            return Task.FromResult(true);
-        }
+        return Task.FromResult(true);
     }
 
-    private sealed class TestActiveVehicleContext(VehicleState state) : IActiveVehicleContext
+    public Task<bool> RequestParameterAsync(VehicleId vehicleId, string parameterName, CancellationToken cancellationToken = default)
     {
-        private CancellationTokenSource lifetime = new();
+        return Task.FromResult(true);
+    }
 
-        public ActiveVehicleSnapshot Current { get; private set; } = new(state.VehicleId, state);
+    public Task<bool> RequestParameterByIndexAsync(VehicleId vehicleId, ushort parameterIndex, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(true);
+    }
 
-        public VehicleId? VehicleId => Current.VehicleId;
+    public Task<bool> SetParameterAsync(VehicleId vehicleId, string parameterName, float value, MavParamType paramType, CancellationToken cancellationToken = default)
+    {
+        Writes.Add(parameterName);
+        registry.StoreParameter(vehicleId, new VehicleParameter(parameterName, value, paramType, 0, 1), cancellationToken);
+        return Task.FromResult(true);
+    }
+}
 
-        public VehicleState? State => Current.State;
+public sealed class TestActiveVehicleContext(VehicleState state) : IActiveVehicleContext
+{
+    private CancellationTokenSource lifetime = new();
 
-        public bool IsOnline => Current.IsOnline;
+    public ActiveVehicleSnapshot Current { get; private set; } = new(state.VehicleId, state);
 
-        public CancellationToken ConnectionCancellationToken => lifetime.Token;
+    public VehicleId? VehicleId => Current.VehicleId;
 
-        public event EventHandler<ActiveVehicleChangedEventArgs>? Changed;
+    public VehicleState? State => Current.State;
 
-        public void Set(VehicleState next)
+    public bool IsOnline => Current.IsOnline;
+
+    public CancellationToken ConnectionCancellationToken => lifetime.Token;
+
+    public event EventHandler<ActiveVehicleChangedEventArgs>? Changed;
+
+    public void Set(VehicleState next)
+    {
+        var previous = Current;
+        Current = new ActiveVehicleSnapshot(next.VehicleId, next);
+        if (previous.VehicleId != Current.VehicleId || previous.IsOnline != Current.IsOnline)
         {
-            var previous = Current;
-            Current = new ActiveVehicleSnapshot(next.VehicleId, next);
-            if (previous.VehicleId != Current.VehicleId || previous.IsOnline != Current.IsOnline)
+            lifetime.Cancel();
+            lifetime.Dispose();
+            lifetime = new CancellationTokenSource();
+            if (!Current.IsOnline)
             {
                 lifetime.Cancel();
-                lifetime.Dispose();
-                lifetime = new CancellationTokenSource();
-                if (!Current.IsOnline)
-                {
-                    lifetime.Cancel();
-                }
             }
-
-            Changed?.Invoke(this, new ActiveVehicleChangedEventArgs(previous, Current));
         }
+
+        Changed?.Invoke(this, new ActiveVehicleChangedEventArgs(previous, Current));
     }
 }
 

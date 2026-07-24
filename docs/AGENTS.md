@@ -33,8 +33,15 @@ Do not duplicate those documents here.
 - Do not introduce a framework, package, or parallel architecture without explicit justification.
 - Keep MAVLink structures out of UI code and domain rules out of transport/protocol code.
 - Keep `VehicleState` immutable; state transitions belong to `VehicleSession`.
+- Prefer constructor injection. When a domain object needs local context values in addition
+  to DI-resolvable dependencies, register it with `IDomainFactory` in `UseDomainServices`
+  and pass only those local values to `Create<...>()`; do not manually construct the service.
+- Use ordinary .NET events only within a narrow, clearly owned scope where direct coupling
+  and optimized synchronous delivery are intentional.
 - Use Channels for bounded communication pipelines, not as the domain event bus.
-- Use EventHub for application and domain events.
+- Use the EventHub for application-wide publish/subscribe communication, preferring
+  `IDomainEventHub` for domain events and `INavigationEventHub` for shell navigation.
+- Retain and dispose every EventHub subscription according to the subscriber's lifetime.
 - Avoid blocking, per-message allocations, and verbose logging in telemetry hot paths.
 - Follow `src/.editorconfig`; do not restate or override its formatting and naming rules.
 - Write comments and developer documentation in English.

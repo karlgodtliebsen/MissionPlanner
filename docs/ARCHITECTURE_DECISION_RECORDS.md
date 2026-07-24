@@ -78,10 +78,21 @@ Status: Accepted
 
 - Channels are used only for communication pipelines.
 - They are NOT used as the application's event bus.
+- Ordinary .NET events are limited to narrow, directly owned relationships where their
+  synchronous coupling is intentional.
+- Cross-component application communication uses EventHub.
+- Domain events use `IDomainEventHub`; application-shell navigation uses
+  `INavigationEventHub`.
 
 Reason:
 - The project already has an EventHub that models domain events.
 - Channels solve buffering and throughput problems, not domain communication.
+- Purpose-specific EventHub abstractions avoid coupling consumers to the full general hub.
+
+Consequences:
+- EventHub subscription handles are owned and disposed by the subscriber.
+- A broad event must not require consumers to obtain a specific publisher instance merely
+  to attach a .NET event handler.
 
 
 ## ADR-0003 - MAVLink dialect generation is an offline protocol boundary
@@ -101,6 +112,31 @@ Consequences:
 - Independent conformance vectors are committed data, not a Python runtime dependency.
 - Generating a typed packet does not promote it into immutable domain state; promotion stays
   an explicit architectural decision governed by `MAVLINK_DOMAIN_PROMOTION.md`.
+
+
+## ADR-0004 - Context-aware domain objects use IDomainFactory
+
+Status: Accepted
+
+Decision:
+- Constructor dependencies available from DI remain constructor-injected.
+- When construction also requires values produced in the local calling context, register
+  the service-to-implementation mapping with `IDomainFactory` in `UseDomainServices`.
+- The caller passes only the local values through the matching `Create<...>()` overload.
+- Callers do not manually construct the implementation or forward its DI services, options,
+  and logger.
+
+Reason:
+- Context values such as `ParameterEditScope` cannot be registered as global services.
+- Manual construction duplicates the composition root and makes constructor changes leak
+  into unrelated factories.
+- `IDomainFactory` combines explicit local context with normal DI resolution while
+  preserving the service abstraction.
+
+Consequences:
+- New context-aware domain services require an explicit factory mapping.
+- `IDomainFactory` is not used where ordinary constructor injection is sufficient.
+- Tests configure the same mapping and service provider behavior as production.
 
 
 ## Naming Conventions

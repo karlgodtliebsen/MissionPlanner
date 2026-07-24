@@ -342,11 +342,34 @@ They are **not** used as the application's event system.
 
 
 
-The project contains its own EventHub.
+MissionPlanner uses three event mechanisms with deliberately different scopes:
 
 
 
-Domain events are published through EventHub.
+1. Ordinary C# events are for narrow, directly owned relationships. They are appropriate
+   when optimized synchronous delivery is useful and both sides already share a clear
+   lifetime. They should not be used to create cross-application object coupling.
+
+2. Channels are for bounded communication pipelines that need buffering, back-pressure,
+   or worker isolation. They are not an application event bus.
+
+3. The Library project EventHub is the general publish/subscribe implementation for
+   communication across application components.
+
+
+
+Prefer a purpose-specific abstraction over the general `IEventHub` surface:
+
+
+
+* `IDomainEventHub` provides asynchronous subscription and publication for `IDomainEvent`
+  types.
+
+* `INavigationEventHub` provides the application-shell navigation event contract.
+
+
+
+Domain events are published through `IDomainEventHub`.
 
 
 
@@ -365,6 +388,11 @@ Examples
 
 
 The EventHub is intentionally independent of MAVLink.
+
+
+
+EventHub subscriptions return `IDisposable`. The subscriber owns that handle and disposes
+it with the subscriber's service, ViewModel, or active-view lifetime.
 
 
 
@@ -855,6 +883,45 @@ IMissionTransferService
 
 
 Avoid using `new` directly inside domain code.
+
+
+
+Some domain objects also need a value that exists only in the calling context. For example,
+`ParameterEditSession` needs a `ParameterEditScope`, while its active-vehicle context,
+parameter services, options, and logger are ordinary DI dependencies. These objects are
+created through `IDomainFactory`; callers must not manually assemble their constructors.
+
+
+
+Register the interface-to-implementation mapping once when the built service provider is
+configured:
+
+
+
+```csharp
+public static IServiceProvider UseDomainServices(this IServiceProvider services)
+{
+    var domainFactory = services.GetRequiredService<IDomainFactory>();
+    domainFactory.Add<IParameterEditSession, ParameterEditSession>();
+    return services;
+}
+```
+
+
+
+At the call site, provide only the local context:
+
+
+
+```csharp
+var session = factory.Create<IParameterEditSession, ParameterEditScope>(scope);
+```
+
+
+
+`IDomainFactory` uses DI to supply the remaining constructor dependencies. It is reserved
+for context-aware domain construction and is not a replacement for normal constructor
+injection. New mappings belong in the relevant `UseDomainServices` configuration path.
 
 
 

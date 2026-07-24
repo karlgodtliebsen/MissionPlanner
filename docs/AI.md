@@ -198,6 +198,47 @@ Avoid service locators outside approved UI construction patterns.
 
 Prefer constructor injection.
 
+When a domain service constructor combines one or more values created in the local runtime
+context with dependencies already registered in DI, use `IDomainFactory`. Register the
+service-to-implementation mapping once in `UseDomainServices`:
+
+```csharp
+domainFactory.Add<IParameterEditSession, ParameterEditSession>();
+```
+
+Then pass only the local context value when creating the object:
+
+```csharp
+var session = factory.Create<IParameterEditSession, ParameterEditScope>(scope);
+```
+
+Do not manually call the implementation constructor and resolve or forward its remaining
+services, options, or logger. `IDomainFactory` is for context-aware domain construction; it
+does not replace ordinary constructor injection for objects whose dependencies are all
+DI-resolvable.
+
+---
+
+# Event Selection
+
+Choose the event mechanism according to its scope and semantics:
+
+- Use the C# `event` keyword and `EventHandler` only for narrow, directly owned
+  relationships where synchronous delivery and the coupling are intentional.
+- Use Channels only inside bounded communication pipelines that need buffering,
+  back-pressure, or worker isolation.
+- Use the library EventHub for application-wide publish/subscribe communication.
+
+Prefer the narrow abstraction built for the event category instead of depending on the
+general `IEventHub` API:
+
+- `IDomainEventHub` publishes and subscribes to asynchronous `IDomainEvent` messages.
+- `INavigationEventHub` publishes and subscribes to application-shell navigation events.
+
+Every subscription returns `IDisposable`. The subscriber must retain and dispose that
+handle when its owning service, ViewModel, or active view lifetime ends. Do not introduce a
+direct object reference merely to subscribe to a broad cross-component event.
+
 ---
 
 # Code Comments
