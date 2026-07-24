@@ -95,7 +95,27 @@ public sealed class FakeMavLinkVehicle2 : IAsyncDisposable
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            var result = await udpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+            UdpReceiveResult result;
+            try
+            {
+                result = await udpClient.ReceiveAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch (SocketException exception) when (
+                exception.SocketErrorCode == SocketError.ConnectionReset &&
+                !cancellationToken.IsCancellationRequested)
+            {
+                // Windows reports an ICMP "port unreachable" response as a UDP
+                // connection reset. The next datagram can still be received.
+                continue;
+            }
+            catch (SocketException) when (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
+            catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
 
             var frames = frameParser.Parse(result.Buffer, new TransportEndPoint("udp", result.RemoteEndPoint), DateTimeOffset.UtcNow);
 

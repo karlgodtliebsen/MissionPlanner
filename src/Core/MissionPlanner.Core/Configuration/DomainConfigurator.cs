@@ -30,7 +30,6 @@ using MissionPlanner.MavLink.Services;
 using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Transport;
 using MissionPlanner.Transport.Abstractions;
-using OsdConfigurationService = MissionPlanner.Core.ConfigTuning.Osd.OsdConfigurationService;
 
 namespace MissionPlanner.Core.Configuration;
 
@@ -47,6 +46,11 @@ public static class DomainConfigurator
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddDomainServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.Configure<SimulationWorkspaceOptions>(configuration.GetSection(SimulationWorkspaceOptions.SectionName));
+        services.Configure<SimulationControlOptions>(configuration.GetSection(SimulationControlOptions.SectionName));
+        services.Configure<SimulationScenarioOptions>(configuration.GetSection(SimulationScenarioOptions.SectionName));
+        services.Configure<SitlManifestOptions>(configuration.GetSection(SitlManifestOptions.SectionName));
+
         services.TryAddTransient<IMissionTransferService, MissionTransferService>();
         services.TryAddTransient<IMissionProtocolMapper, MissionProtocolMapper>();
         services.TryAddTransient<IMissionValidator, MissionValidator>();
@@ -63,7 +67,6 @@ public static class DomainConfigurator
         services.TryAddSingleton<IDeviceOperationClient, DeviceOperationClient>();
         services.TryAddSingleton<ICubeLanConfigurationCodec, CubeLanConfigurationCodec>();
         services.TryAddSingleton<IVendorDeviceAdapter<CubeLanConfiguration>, CubeLanDeviceAdapter>();
-        services.Configure<SimulationWorkspaceOptions>(configuration.GetSection(SimulationWorkspaceOptions.SectionName));
         services.TryAddSingleton<ISimulatorHostEnvironment, LocalSimulatorHostEnvironment>();
         services.TryAddSingleton<ISimulatorProfileValidator, SimulatorProfileValidator>();
         services.TryAddSingleton<IArduPilotFrameCatalog, ArduPilotFrameCatalog>();
@@ -87,16 +90,13 @@ public static class DomainConfigurator
         services.TryAddSingleton<IReplaySessionManager, ReplaySessionManager>();
         services.TryAddSingleton<IReplayClock>(provider => provider.GetRequiredService<IReplaySessionManager>());
         services.TryAddSingleton<IMavLinkTransmissionPolicy, ReplayTransmissionPolicy>();
-        services.Configure<SimulationControlOptions>(configuration.GetSection(SimulationControlOptions.SectionName));
         services.TryAddSingleton<ISimulationControlCatalog, SimulationControlCatalog>();
         services.TryAddSingleton<ISimulationControlService, SimulationControlService>();
         services.TryAddSingleton<ISimulationScenarioPresetService, SimulationScenarioPresetService>();
-        services.Configure<SimulationScenarioOptions>(configuration.GetSection(SimulationScenarioOptions.SectionName));
         services.TryAddSingleton<ISimulationScenarioParser, SimulationScenarioParser>();
         services.TryAddSingleton<ISimulationScenarioDelay, SimulationScenarioDelay>();
         services.TryAddSingleton<ISimulationScenarioRunner, SimulationScenarioRunner>();
         services.TryAddSingleton<ISimulationScenarioReportExporter, SimulationScenarioReportExporter>();
-        services.Configure<SitlManifestOptions>(configuration.GetSection(SitlManifestOptions.SectionName));
         services.AddHttpClient("SITL");
         services.TryAddSingleton<ISitlManifestProvider, JsonSitlManifestProvider>();
         services.TryAddSingleton<ISitlReleaseSelector, SitlReleaseSelector>();

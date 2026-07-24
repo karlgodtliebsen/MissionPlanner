@@ -69,7 +69,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         this.parametersFileHandler = parametersFileHandler;
         this.logger = logger;
         HasConnection = activeVehicle.IsOnline;
-        Activate();
     }
 
     /// <summary>Gets the currently visible parameter rows.</summary>

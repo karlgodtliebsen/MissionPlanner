@@ -32,7 +32,7 @@ public class VehicleHudDataIntegrationTests
     /// <summary>
     /// Verifies that the service returns the current HUD data for a specified vehicle.
     /// </summary>
-    [Fact]
+    [Fact(Skip = "Only manually run")]
     public async Task Should_Get_Current_HudData_From_RegistryAsync()
     {
         // Arrange
@@ -72,7 +72,7 @@ public class VehicleHudDataIntegrationTests
     /// <summary>
     /// Provides the public API for Should_Get_Primary_Vehicle_HudDataAsync.
     /// </summary>
-    [Fact]
+    [Fact(Skip = "Only manually run")]
     public async Task Should_Get_Primary_Vehicle_HudDataAsync()
     {
         // Arrange

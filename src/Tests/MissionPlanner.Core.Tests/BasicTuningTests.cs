@@ -3,6 +3,7 @@ using CommunityToolkit.Maui.Storage;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
@@ -11,11 +12,10 @@ using MissionPlanner.Core.ConfigTuning.Tuning;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
-using MissionPlanner.Library.Factory.Domain.Abstractions;
+using MissionPlanner.Library;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.Test.Support.Configuration;
 using NSubstitute;
-using ServiceProvider = Microsoft.Extensions.DependencyInjection.ServiceProvider;
 
 namespace MissionPlanner.Core.Tests;
 
@@ -23,8 +23,10 @@ namespace MissionPlanner.Core.Tests;
 public sealed class BasicTuningTests
 {
     private readonly ITestOutputHelper output;
-    private readonly ServiceProvider serviceProvider;
-    private readonly ILogger<BasicTuningTests> logger;
+
+    //private readonly ServiceProvider serviceProvider;
+    private ILogger<BasicTuningTests>? logger;
+    private readonly IServiceCollection services;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="BasicTuningTests"/> class.
@@ -33,31 +35,25 @@ public sealed class BasicTuningTests
     public BasicTuningTests(ITestOutputHelper output)
     {
         this.output = output;
-        var services = TestConfigurator
+        services = TestConfigurator
             .AddTestConfiguration(output);
 
-        services.AddTransient<IVehicleParameterService, TestParameterService>();
-        services.AddTransient<IVehicleParameterMetadataService, TestVehicleParameterMetadataService>();
-        services.AddTransient<IActiveVehicleContext, TestActiveVehicleContext>();
-
-
-        serviceProvider = services.BuildServiceProvider();
-        serviceProvider.UseTestConfiguration();
-
-
-        logger = serviceProvider.GetRequiredService<ILogger<BasicTuningTests>>();
+        services.AddSingleton<IVehicleParameterService, TestParameterService>();
+        services.AddSingleton<IVehicleParameterMetadataService, TestVehicleParameterMetadataService>();
+        services.AddSingleton<IActiveVehicleContext, TestActiveVehicleContext>();
+        services.AddSingleton(Options.Create(new ParameterEditSessionOptions { ReadbackTimeout = TimeSpan.FromSeconds(1) }));
     }
-
 
     private Fixture CreateFixture(FirmwareFamily family, params (string Name, float Value)[] parameters)
     {
         var state = State(family);
-        var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
-        //var activeVehicle = new TestActiveVehicleContext(state);
-        var activeVehicle = domainFactory.Create<IActiveVehicleContext, VehicleState>(state);
+        services.AddSingleton<VehicleState>(provider => state);
 
+        var serviceProvider = services.BuildServiceProvider();
+        serviceProvider.UseTestConfiguration();
+
+        logger = serviceProvider.GetRequiredService<ILogger<BasicTuningTests>>();
         var registry = serviceProvider.GetRequiredService<IVehicleParameterRegistry>();
-
         foreach (var parameter in parameters)
         {
             registry.StoreParameter(
@@ -83,39 +79,26 @@ public sealed class BasicTuningTests
                 false),
             StringComparer.Ordinal);
 
-        var metadataService = serviceProvider.GetRequiredService<IVehicleParameterMetadataService>();
-        (metadataService as TestVehicleParameterMetadataService)!.SetMetadata(metadata);
-        // var metadataService =Substitute.For<IVehicleParameterMetadataService>();
-        // metadataService.GetAllMetadataAsync(state.VehicleId, Arg.Any<CancellationToken>()).Returns(metadata);
+        var metadataService = serviceProvider.GetRequiredService<IVehicleParameterMetadataService>() as TestVehicleParameterMetadataService;
+        DomainException.ThrowIfNull(metadataService);
+        metadataService.SetMetadata(metadata);
 
-        //serviceProvider
-        var parameterService = serviceProvider.GetRequiredService<IVehicleParameterService>();
-        //new TestParameterService(registry);
+        var parameterService = serviceProvider.GetRequiredService<IVehicleParameterService>() as TestParameterService;
+        DomainException.ThrowIfNull(parameterService);
 
-        //TODO: this test need be updated to use Domain Configurator to create a DI
+        var activeVehicle = serviceProvider.GetRequiredService<IActiveVehicleContext>() as TestActiveVehicleContext;
+        DomainException.ThrowIfNull(activeVehicle);
 
-        //registry,
-        //parameterService,
-        //metadataService,
-        //throw new NotImplementedException("This test must be updated");
-
-        //var domainFactory = Substitute.For<IDomainFactory>();
-        //Options.Create(new ParameterEditSessionOptions { ReadbackTimeout = TimeSpan.FromSeconds(1) });
-        //var logger = NSubstitute.Substitute.For<ILogger<ParameterEditSessionFactory>>();
 
         var factory = serviceProvider.GetRequiredService<IParameterEditSessionFactory>() as ParameterEditSessionFactory;
+        DomainException.ThrowIfNull(factory);
 
-        //new ParameterEditSessionFactory(activeVehicle, domainFactory, NullLogger<ParameterEditSessionFactory>.Instance);
-        var service = domainFactory.Create<IBasicTuningService, IParameterEditSessionFactory, IVehicleParameterRegistry>(factory, registry);
-        //var service = new BasicTuningService(
-        //    new BasicTuningProfileCatalog(),
-        //    factory,
-        //    registry,
-        //    NullLogger<BasicTuningService>.Instance);
 
-        return new Fixture(state.VehicleId, activeVehicle as TestActiveVehicleContext, parameterService as TestParameterService, factory, service as BasicTuningService);
+        var service = serviceProvider.GetRequiredService<IBasicTuningService>() as BasicTuningService;
+        DomainException.ThrowIfNull(service);
+
+        return new Fixture(state.VehicleId, activeVehicle, parameterService, factory, service, serviceProvider);
     }
-
 
     /// <summary>Verifies all supported firmware families have useful, explained, unit-bearing catalogs.</summary>
     /// <param name="family">The supported family.</param>
@@ -330,35 +313,48 @@ public sealed class BasicTuningTests
         return state with { Identity = state.Identity with { Firmware = firmware } };
     }
 
-    private sealed record Fixture(VehicleId VehicleId, TestActiveVehicleContext ActiveVehicle, TestParameterService ParameterService, ParameterEditSessionFactory Factory, BasicTuningService Service) : IDisposable
+    private sealed record Fixture(
+        VehicleId VehicleId,
+        TestActiveVehicleContext ActiveVehicle,
+        TestParameterService ParameterService,
+        ParameterEditSessionFactory Factory,
+        BasicTuningService Service,
+        ServiceProvider ServiceProvider) : IDisposable
     {
         /// <inheritdoc />
         public void Dispose()
         {
-            Factory.Dispose();
+            ServiceProvider.Dispose();
         }
     }
 }
 
+/// <summary>Provides an in-memory parameter service for configuration tests.</summary>
+/// <param name="registry">The registry updated when a test writes a parameter.</param>
 public sealed class TestParameterService(IVehicleParameterRegistry registry) : IVehicleParameterService
 {
+    /// <summary>Gets the parameter names written by the test subject.</summary>
     public List<string> Writes { get; } = [];
 
+    /// <inheritdoc />
     public Task<bool> RequestParameterListAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(true);
     }
 
+    /// <inheritdoc />
     public Task<bool> RequestParameterAsync(VehicleId vehicleId, string parameterName, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(true);
     }
 
+    /// <inheritdoc />
     public Task<bool> RequestParameterByIndexAsync(VehicleId vehicleId, ushort parameterIndex, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(true);
     }
 
+    /// <inheritdoc />
     public Task<bool> SetParameterAsync(VehicleId vehicleId, string parameterName, float value, MavParamType paramType, CancellationToken cancellationToken = default)
     {
         Writes.Add(parameterName);
@@ -367,22 +363,32 @@ public sealed class TestParameterService(IVehicleParameterRegistry registry) : I
     }
 }
 
+/// <summary>Provides mutable active-vehicle state for configuration tests.</summary>
+/// <param name="state">The initial active vehicle state.</param>
 public sealed class TestActiveVehicleContext(VehicleState state) : IActiveVehicleContext
 {
     private CancellationTokenSource lifetime = new();
 
+    /// <inheritdoc />
     public ActiveVehicleSnapshot Current { get; private set; } = new(state.VehicleId, state);
 
+    /// <inheritdoc />
     public VehicleId? VehicleId => Current.VehicleId;
 
+    /// <inheritdoc />
     public VehicleState? State => Current.State;
 
+    /// <inheritdoc />
     public bool IsOnline => Current.IsOnline;
 
+    /// <inheritdoc />
     public CancellationToken ConnectionCancellationToken => lifetime.Token;
 
+    /// <inheritdoc />
     public event EventHandler<ActiveVehicleChangedEventArgs>? Changed;
 
+    /// <summary>Replaces the active state and publishes the corresponding context change.</summary>
+    /// <param name="next">The replacement vehicle state.</param>
     public void Set(VehicleState next)
     {
         var previous = Current;
@@ -402,10 +408,13 @@ public sealed class TestActiveVehicleContext(VehicleState state) : IActiveVehicl
     }
 }
 
+/// <summary>Provides mutable in-memory firmware parameter metadata for configuration tests.</summary>
 public sealed class TestVehicleParameterMetadataService : IVehicleParameterMetadataService
 {
     private Dictionary<string, ParameterMetadata> metadate = [];
 
+    /// <summary>Replaces the metadata returned to the test subject.</summary>
+    /// <param name="metadata">The metadata indexed by parameter name.</param>
     public void SetMetadata(IReadOnlyDictionary<string, ParameterMetadata> metadata)
 
     {

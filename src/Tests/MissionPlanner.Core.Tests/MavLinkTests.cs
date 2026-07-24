@@ -20,6 +20,7 @@ public class MavLinkTests
     private readonly ITestOutputHelper output;
 
     private readonly ServiceProvider serviceProvider;
+    private readonly TransportEndpoint transportEndpoint;
     //UDP transport
     //Receive loop
     //Events
@@ -35,6 +36,7 @@ public class MavLinkTests
         this.output = output;
         var services = TestConfigurator
             .AddTestConfiguration(output);
+        transportEndpoint = services.ConfigureIsolatedUdpTransport();
 
         serviceProvider = services.BuildServiceProvider();
         serviceProvider.UseTestConfiguration();
@@ -88,7 +90,11 @@ public class MavLinkTests
 
         await using FakeMavLinkVehicle2 simulator = new(
             serviceProvider.GetRequiredService<IMavLinkFrameParser>(),
-            serviceProvider.GetRequiredService<IMavLinkCrcExtraProvider>(), "127.0.0.1", 14550, 14551, TimeSpan.FromMilliseconds(100));
+            serviceProvider.GetRequiredService<IMavLinkCrcExtraProvider>(),
+            transportEndpoint.LocalHost,
+            transportEndpoint.LocalPort,
+            transportEndpoint.RemotePort,
+            TimeSpan.FromMilliseconds(100));
 
         await simulator.StartAsync(TestContext.Current.CancellationToken);
 
@@ -153,6 +159,21 @@ public class MavLinkTests
         await using var connection = serviceProvider.GetRequiredService<IMavLinkConnection>();
         var eventHub = serviceProvider.GetRequiredService<IEventHub>();
 
+        TaskCompletionSource ts = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        HeartbeatMessage? messageResult = null;
+        using var subscription = eventHub.SubscribeAsync<MavLinkMessage>(
+            MavLinkEventTopics.ReceivedMessage,
+            (message, _) =>
+            {
+                if (message is HeartbeatMessage heartbeat && messageResult is null)
+                {
+                    messageResult = heartbeat;
+                    ts.TrySetResult();
+                }
+
+                return Task.CompletedTask;
+            });
+
         await connection.StartAsync(TestContext.Current.CancellationToken);
 
         // Add debug output
@@ -161,36 +182,23 @@ public class MavLinkTests
 
         await using FakeMavLinkVehicle2 simulator = new(
             serviceProvider.GetRequiredService<IMavLinkFrameParser>(),
-            serviceProvider.GetRequiredService<IMavLinkCrcExtraProvider>(), "127.0.0.1", 14550, 14551, TimeSpan.FromMilliseconds(100));
+            serviceProvider.GetRequiredService<IMavLinkCrcExtraProvider>(),
+            transportEndpoint.LocalHost,
+            transportEndpoint.LocalPort,
+            transportEndpoint.RemotePort,
+            TimeSpan.FromMilliseconds(100));
 
         await simulator.StartAsync(TestContext.Current.CancellationToken);
 
-        await Task.Delay(500, TestContext.Current.CancellationToken);
-
-        output.WriteLine($"Client still running: {client.IsRunning}");
-
-        TaskCompletionSource ts = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        MavLinkFrame? messageResult = null;
-        using var subscription = eventHub.SubscribeAsync<MavLinkFrame>(MavLinkEventTopics.ReceivedFrame, (frame, cts) =>
-        {
-            if (frame.MessageId == MessageIds.Heartbeat == messageResult is null)
-            {
-                messageResult = frame;
-                ts.SetResult();
-            }
-
-            return Task.CompletedTask;
-        });
-
         await ts.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
         messageResult.Should().NotBeNull();
-        var frame = messageResult!;
+        var heartbeat = messageResult!;
 
-        Assert.Equal(1, frame.SystemId);
-        Assert.Equal(1, frame.ComponentId);
-        Assert.Equal(0u, frame.MessageId);
-        // Assert.Equal(0, frame.Sequence);
-        Assert.Equal(0xFD, frame.RawBytes.Span[0]);
+        Assert.Equal(1, heartbeat.SystemId);
+        Assert.Equal(1, heartbeat.ComponentId);
+        Assert.Equal(MessageIds.Heartbeat, heartbeat.MessageId);
+        Assert.Equal(2, heartbeat.VehicleType);
+        Assert.Equal(3, heartbeat.Autopilot);
     }
 
     /// <summary>

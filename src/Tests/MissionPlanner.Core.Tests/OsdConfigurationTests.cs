@@ -2,6 +2,7 @@
 using CommunityToolkit.Maui.Storage;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
@@ -10,7 +11,9 @@ using MissionPlanner.Core.ConfigTuning.Osd;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Library;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Test.Support.Configuration;
 using NSubstitute;
 
 namespace MissionPlanner.Core.Tests;
@@ -18,6 +21,19 @@ namespace MissionPlanner.Core.Tests;
 /// <summary>Verifies OSD parameter discovery, layout safety, files, and confirmed writes.</summary>
 public sealed class OsdConfigurationTests
 {
+    private readonly IServiceCollection services;
+
+    /// <summary>Initializes an OSD configuration test with the shared test DI configuration.</summary>
+    /// <param name="output">The test output helper.</param>
+    public OsdConfigurationTests(ITestOutputHelper output)
+    {
+        services = TestConfigurator.AddTestConfiguration(output);
+        services.AddSingleton<IVehicleParameterService, TestParameterService>();
+        services.AddSingleton<IVehicleParameterMetadataService, TestVehicleParameterMetadataService>();
+        services.AddSingleton<IActiveVehicleContext, TestActiveVehicleContext>();
+        services.AddSingleton(Options.Create(new ParameterEditSessionOptions { ReadbackTimeout = TimeSpan.FromSeconds(1) }));
+    }
+
     /// <summary>Verifies screen and custom-item discovery uses firmware parameter patterns and metadata bounds.</summary>
     [Fact]
     public async Task DiscoveryFindsScreensItemsAndCustomOptions()
@@ -185,17 +201,21 @@ public sealed class OsdConfigurationTests
         viewModel.SelectedItem.ValidationError.Should().Contain("outside");
     }
 
-    private static Fixture CreateFixture(params TestParameter[] parameters)
+    private Fixture CreateFixture(params TestParameter[] parameters)
     {
         var state = State();
-        var activeVehicle = new TestActiveVehicleContext(state);
-        var registry = new VehicleParameterRegistry();
+        services.AddSingleton(state);
+
+        var serviceProvider = services.BuildServiceProvider();
+        serviceProvider.UseTestConfiguration();
+
+        var registry = serviceProvider.GetRequiredService<IVehicleParameterRegistry>();
         foreach (var parameter in parameters)
         {
             registry.StoreParameter(
                 state.VehicleId,
                 new VehicleParameter(parameter.Name, parameter.Value, MavParamType.Real32, 0, (ushort)parameters.Length),
-                CancellationToken.None);
+                TestContext.Current.CancellationToken);
         }
 
         var metadata = parameters.ToDictionary(
@@ -214,21 +234,34 @@ public sealed class OsdConfigurationTests
                 false,
                 false),
             StringComparer.Ordinal);
-        var metadataService = Substitute.For<IVehicleParameterMetadataService>();
-        metadataService.GetAllMetadataAsync(state.VehicleId, Arg.Any<CancellationToken>()).Returns(metadata);
-        var parameterService = new TestParameterService(registry);
+        var metadataService = serviceProvider.GetRequiredService<IVehicleParameterMetadataService>()
+            as TestVehicleParameterMetadataService;
+        DomainException.ThrowIfNull(metadataService);
+        metadataService.SetMetadata(metadata);
 
-        throw new NotImplementedException("This test must be updated");
+        var parameterService = serviceProvider.GetRequiredService<IVehicleParameterService>()
+            as TestParameterService;
+        DomainException.ThrowIfNull(parameterService);
 
-        //var factory = new ParameterEditSessionFactory(
-        //    activeVehicle,
-        //    registry,
-        //    parameterService,
-        //    metadataService,
-        //    Options.Create(new ParameterEditSessionOptions { ReadbackTimeout = TimeSpan.FromSeconds(1) }),
-        //    NullLoggerFactory.Instance);
-        //var service = new OsdConfigurationService(factory, registry, NullLogger<OsdConfigurationService>.Instance);
-        //return new Fixture(state.VehicleId, activeVehicle, parameterService, factory, service);
+        var activeVehicle = serviceProvider.GetRequiredService<IActiveVehicleContext>()
+            as TestActiveVehicleContext;
+        DomainException.ThrowIfNull(activeVehicle);
+
+        var factory = serviceProvider.GetRequiredService<IParameterEditSessionFactory>()
+            as ParameterEditSessionFactory;
+        DomainException.ThrowIfNull(factory);
+
+        var service = serviceProvider.GetRequiredService<IOsdConfigurationService>()
+            as OsdConfigurationService;
+        DomainException.ThrowIfNull(service);
+
+        return new Fixture(
+            state.VehicleId,
+            activeVehicle,
+            parameterService,
+            factory,
+            service,
+            serviceProvider);
     }
 
     private static TestParameter P(
@@ -275,12 +308,13 @@ public sealed class OsdConfigurationTests
         TestActiveVehicleContext ActiveVehicle,
         TestParameterService ParameterService,
         ParameterEditSessionFactory Factory,
-        OsdConfigurationService Service) : IDisposable
+        OsdConfigurationService Service,
+        ServiceProvider ServiceProvider) : IDisposable
     {
         /// <inheritdoc />
         public void Dispose()
         {
-            Factory.Dispose();
+            ServiceProvider.Dispose();
         }
     }
 

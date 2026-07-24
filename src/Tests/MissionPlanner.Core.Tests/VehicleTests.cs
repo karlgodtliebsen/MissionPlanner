@@ -46,6 +46,7 @@ public class VehicleTests
         this.output = output;
         var services = TestConfigurator
             .AddTestConfiguration(output);
+        services.ConfigureIsolatedUdpTransport();
 
         serviceProvider = services.BuildServiceProvider();
         serviceProvider.UseTestConfiguration();
@@ -110,11 +111,12 @@ public class VehicleTests
     public async Task Should_Register_Vehicle_From_Received_Heartbeat_MessageAsync()
     {
         var eventHub = serviceProvider.GetRequiredService<IEventHub>();
+        var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
-        var handler = serviceProvider.GetRequiredService<IHeartbeatVehicleHandler>();
+        var handler = domainFactory.Create<IHeartbeatVehicleHandler, IVehicleRegistry>(registry);
         await using var client = serviceProvider.GetRequiredService<IMavLinkClient>();
         await using var connection = serviceProvider.GetRequiredService<IMavLinkConnection>();
-        var messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
+        await using var messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
 
         output.WriteLine($"Client IsRunning: {client.IsRunning}");
         output.WriteLine($"Transport IsConnected: {client.IsConnected}");
@@ -130,13 +132,18 @@ public class VehicleTests
 
         TaskCompletionSource ts = new(TaskCreationOptions.RunContinuationsAsynchronously);
         HeartbeatMessage? messageResult = null;
-        using var subscription = eventHub.SubscribeAsync<HeartbeatMessage>(MavLinkEventTopics.NewMessage, (heartbeatMessage, ct) =>
-        {
-            messageResult = heartbeatMessage;
-            ts.TrySetResult();
-            return Task.CompletedTask;
-        });
+        using var subscription = eventHub.SubscribeAsync<MavLinkMessage>(
+            MavLinkEventTopics.ReceivedMessage,
+            (message, _) =>
+            {
+                if (message is HeartbeatMessage heartbeat)
+                {
+                    messageResult = heartbeat;
+                    ts.TrySetResult();
+                }
 
+                return Task.CompletedTask;
+            });
 
         _ = Task.Run(() => messagePump.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
         _ = Task.Run(() => connection.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
@@ -200,7 +207,7 @@ public class VehicleTests
         DomainException.ThrowIfNull(client);
         DomainException.ThrowIfNull(connection);
 
-        var messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
+        await using var messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
 
         await using var simulator = new FakeMavLinkVehicle2(
             serviceProvider.GetRequiredService<IMavLinkFrameParser>(),
@@ -585,7 +592,7 @@ public class VehicleTests
 
         await using var client = serviceProvider.GetRequiredService<IMavLinkClient>();
         await using var connection = serviceProvider.GetRequiredService<IMavLinkConnection>();
-        var messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
+        await using var messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
 
         await using var simulator =
             new FakeMavLinkVehicle2(
@@ -599,13 +606,18 @@ public class VehicleTests
 
         TaskCompletionSource ts = new(TaskCreationOptions.RunContinuationsAsynchronously);
         CommandAckMessage? messageResult = null;
-        using var subscription = eventHub.SubscribeAsync<CommandAckMessage>(MavLinkEventTopics.NewMessage, (commandAckMessage, ct) =>
-        {
-            messageResult = commandAckMessage;
-            ts.TrySetResult();
-            return Task.CompletedTask;
-        });
+        using var subscription = eventHub.SubscribeAsync<MavLinkMessage>(
+            MavLinkEventTopics.ReceivedMessage,
+            (message, _) =>
+            {
+                if (message is CommandAckMessage commandAck)
+                {
+                    messageResult = commandAck;
+                    ts.TrySetResult();
+                }
 
+                return Task.CompletedTask;
+            });
         _ = Task.Run(() => connection.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
         _ = Task.Run(() => messagePump.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
         _ = Task.Run(() => simulator.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
@@ -631,8 +643,9 @@ public class VehicleTests
     [Fact]
     public async Task Should_Update_Armed_State_From_Heartbeat_BaseModeAsync()
     {
+        var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
         var registry = serviceProvider.GetRequiredService<IVehicleRegistry>();
-        var handler = serviceProvider.GetRequiredService<IHeartbeatVehicleHandler>();
+        var handler = domainFactory.Create<IHeartbeatVehicleHandler, IVehicleRegistry>(registry);
         var heartbeat = new HeartbeatMessage(
             1, 1, simulatorIPEndPoint.ToTransportEndPoint("udp"),
             0,

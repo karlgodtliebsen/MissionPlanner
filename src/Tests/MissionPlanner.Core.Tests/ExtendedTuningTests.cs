@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.Core.ConfigTuning;
@@ -8,10 +9,12 @@ using MissionPlanner.Core.ConfigTuning.Tuning;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Library;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.MavLink.Services;
+using MissionPlanner.Test.Support.Configuration;
 using MissionPlanner.Transport;
 using NSubstitute;
 using ParameterWireType = MissionPlanner.MavLink.Parameters.MavParamType;
@@ -21,6 +24,19 @@ namespace MissionPlanner.Core.Tests;
 /// <summary>Verifies advanced descriptor expansion, validation, comparisons, copies, and response context.</summary>
 public sealed class ExtendedTuningTests
 {
+    private readonly IServiceCollection services;
+
+    /// <summary>Initializes an Extended Tuning test with the shared test DI configuration.</summary>
+    /// <param name="output">The test output helper.</param>
+    public ExtendedTuningTests(ITestOutputHelper output)
+    {
+        services = TestConfigurator.AddTestConfiguration(output);
+        services.AddSingleton<IVehicleParameterService, TestParameterService>();
+        services.AddSingleton<IVehicleParameterMetadataService, TestVehicleParameterMetadataService>();
+        services.AddSingleton<IActiveVehicleContext, TestActiveVehicleContext>();
+        services.AddSingleton(Options.Create(new ParameterEditSessionOptions { ReadbackTimeout = TimeSpan.FromSeconds(1) }));
+    }
+
     /// <summary>Verifies each supported family exposes structured advanced categories.</summary>
     /// <param name="family">The firmware family.</param>
     [Theory]
@@ -222,17 +238,21 @@ public sealed class ExtendedTuningTests
         viewModel.ResponseMetrics.Should().ContainSingle();
     }
 
-    private static Fixture CreateFixture(FirmwareFamily family, params (string Name, float Value)[] parameters)
+    private Fixture CreateFixture(FirmwareFamily family, params (string Name, float Value)[] parameters)
     {
         var state = State(family);
-        var activeVehicle = new TestActiveVehicleContext(state);
-        var registry = new VehicleParameterRegistry();
+        services.AddSingleton(state);
+
+        var serviceProvider = services.BuildServiceProvider();
+        serviceProvider.UseTestConfiguration();
+
+        var registry = serviceProvider.GetRequiredService<IVehicleParameterRegistry>();
         foreach (var parameter in parameters)
         {
             registry.StoreParameter(
                 state.VehicleId,
                 new VehicleParameter(parameter.Name, parameter.Value, ParameterWireType.Real32, 0, (ushort)parameters.Length),
-                CancellationToken.None);
+                TestContext.Current.CancellationToken);
         }
 
         var metadata = parameters.ToDictionary(
@@ -251,25 +271,29 @@ public sealed class ExtendedTuningTests
                 false,
                 false),
             StringComparer.Ordinal);
-        var metadataService = Substitute.For<IVehicleParameterMetadataService>();
-        metadataService.GetAllMetadataAsync(state.VehicleId, Arg.Any<CancellationToken>()).Returns(metadata);
-        var parameterService = new TestParameterService(registry);
-        throw new NotImplementedException("This test must be updated");
+        var metadataService = serviceProvider.GetRequiredService<IVehicleParameterMetadataService>()
+            as TestVehicleParameterMetadataService;
+        DomainException.ThrowIfNull(metadataService);
+        metadataService.SetMetadata(metadata);
 
+        var activeVehicle = serviceProvider.GetRequiredService<IActiveVehicleContext>()
+            as TestActiveVehicleContext;
+        DomainException.ThrowIfNull(activeVehicle);
 
-        //var factory = new ParameterEditSessionFactory(
-        //    activeVehicle,
-        //    registry,
-        //    parameterService,
-        //    metadataService,
-        //    Options.Create(new ParameterEditSessionOptions { ReadbackTimeout = TimeSpan.FromSeconds(1) }),
-        //    NullLoggerFactory.Instance);
-        //var service = new ExtendedTuningService(
-        //    new ExtendedTuningProfileCatalog(),
-        //    factory,
-        //    registry,
-        //    NullLogger<ExtendedTuningService>.Instance);
-        //return new Fixture(state.VehicleId, activeVehicle, factory, service);
+        var factory = serviceProvider.GetRequiredService<IParameterEditSessionFactory>()
+            as ParameterEditSessionFactory;
+        DomainException.ThrowIfNull(factory);
+
+        var service = serviceProvider.GetRequiredService<IExtendedTuningService>()
+            as ExtendedTuningService;
+        DomainException.ThrowIfNull(service);
+
+        return new Fixture(
+            state.VehicleId,
+            activeVehicle,
+            factory,
+            service,
+            serviceProvider);
     }
 
     private static async Task WaitUntilAsync(Func<bool> condition)
@@ -297,12 +321,13 @@ public sealed class ExtendedTuningTests
         VehicleId VehicleId,
         TestActiveVehicleContext ActiveVehicle,
         ParameterEditSessionFactory Factory,
-        ExtendedTuningService Service) : IDisposable
+        ExtendedTuningService Service,
+        ServiceProvider ServiceProvider) : IDisposable
     {
         /// <inheritdoc />
         public void Dispose()
         {
-            Factory.Dispose();
+            ServiceProvider.Dispose();
         }
     }
 

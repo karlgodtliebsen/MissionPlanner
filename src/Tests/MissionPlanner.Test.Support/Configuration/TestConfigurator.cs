@@ -3,6 +3,8 @@ using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Net;
+using System.Net.Sockets;
 using MissionPlanner.Core.Configuration;
 using MissionPlanner.Library.Configuration;
 using MissionPlanner.MavLink.Configuration;
@@ -18,6 +20,9 @@ namespace MissionPlanner.Test.Support.Configuration;
 /// </summary>
 public static class TestConfigurator
 {
+    private static readonly object UdpPortReservationGate = new();
+    private static readonly HashSet<int> ReservedUdpPorts = [];
+
     /// <summary>
     /// Adds test configuration services to the service collection.
     /// </summary>
@@ -35,6 +40,41 @@ public static class TestConfigurator
         IConfiguration configuration = builder.Build();
         services.AddTestConfiguration(configuration, output);
         return services;
+    }
+
+    /// <summary>
+    /// Replaces the default UDP transport endpoint with loopback ports reserved for one test instance.
+    /// </summary>
+    /// <param name="services">The test service collection to configure.</param>
+    /// <returns>The isolated transport endpoint registered with the service collection.</returns>
+    public static TransportEndpoint ConfigureIsolatedUdpTransport(this IServiceCollection services)
+    {
+        var endpoint = new TransportEndpoint(
+            remotePort: ReserveAvailableUdpPort(),
+            remoteHost: IPAddress.Loopback.ToString(),
+            localPort: ReserveAvailableUdpPort(),
+            localHost: IPAddress.Loopback.ToString());
+
+        services.RemoveAll<IOptions<TransportEndpoint>>();
+        services.AddSingleton(Options.Create(endpoint));
+        return endpoint;
+    }
+
+    private static int ReserveAvailableUdpPort()
+    {
+        lock (UdpPortReservationGate)
+        {
+            while (true)
+            {
+                using Socket socket = new(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+                socket.Bind(new IPEndPoint(IPAddress.Loopback, 0));
+                var port = ((IPEndPoint)socket.LocalEndPoint!).Port;
+                if (ReservedUdpPorts.Add(port))
+                {
+                    return port;
+                }
+            }
+        }
     }
 
 

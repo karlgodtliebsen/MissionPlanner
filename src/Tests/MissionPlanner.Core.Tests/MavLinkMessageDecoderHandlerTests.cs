@@ -1,6 +1,4 @@
 ﻿using FluentAssertions;
-using MissionPlanner.Core.Services.Abstractions;
-using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Decoding.Utils;
@@ -9,6 +7,7 @@ using MissionPlanner.MavLink.Services;
 using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Simulator;
 using MissionPlanner.Test.Support.Configuration;
+using MissionPlanner.Transport;
 
 namespace MissionPlanner.Core.Tests;
 
@@ -19,6 +18,7 @@ public sealed class MavLinkMessageDecoderHandlerTests
 {
     private readonly ITestOutputHelper output;
     private readonly IServiceProvider serviceProvider;
+    private readonly TransportEndpoint transportEndpoint;
 
     /// <summary>
     /// Provides the public API for MavLinkMessageDecoderHandlerTests.
@@ -28,6 +28,7 @@ public sealed class MavLinkMessageDecoderHandlerTests
         this.output = output;
         var services = TestConfigurator
             .AddTestConfiguration(output);
+        transportEndpoint = services.ConfigureIsolatedUdpTransport();
 
         serviceProvider = services.BuildServiceProvider();
         serviceProvider.UseTestConfiguration();
@@ -42,24 +43,29 @@ public sealed class MavLinkMessageDecoderHandlerTests
         await using var client = serviceProvider.GetRequiredService<IMavLinkClient>();
         await using var connection = serviceProvider.GetRequiredService<IMavLinkConnection>();
         var eventHub = serviceProvider.GetRequiredService<IEventHub>();
-        var messagePump = serviceProvider.GetRequiredService<IVehicleMessagePump>();
-
         await using FakeMavLinkVehicle2 simulator = new(
             serviceProvider.GetRequiredService<IMavLinkFrameParser>(),
             serviceProvider.GetRequiredService<IMavLinkCrcExtraProvider>(),
-            "127.0.0.1", 14550, 14551, TimeSpan.FromMilliseconds(100));
+            transportEndpoint.LocalHost,
+            transportEndpoint.LocalPort,
+            transportEndpoint.RemotePort,
+            TimeSpan.FromMilliseconds(100));
 
         TaskCompletionSource ts = new(TaskCreationOptions.RunContinuationsAsynchronously);
         HeartbeatMessage? messageResult = null;
 
-        using var subscription = eventHub.SubscribeAsync<HeartbeatMessage>(MavLinkEventTopics.NewMessage, (heartbeatMessage, ct) =>
-        {
-            messageResult = heartbeatMessage;
-            ts.TrySetResult();
-            return Task.CompletedTask;
-        });
+        using var subscription = eventHub.SubscribeAsync<MavLinkMessage>(
+            MavLinkEventTopics.ReceivedMessage,
+            (message, _) =>
+            {
+                if (message is HeartbeatMessage heartbeat)
+                {
+                    messageResult = heartbeat;
+                    ts.TrySetResult();
+                }
 
-        _ = Task.Run(() => messagePump.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
+                return Task.CompletedTask;
+            });
         _ = Task.Run(() => connection.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
         _ = Task.Run(() => simulator.StartAsync(TestContext.Current.CancellationToken), TestContext.Current.CancellationToken);
 
