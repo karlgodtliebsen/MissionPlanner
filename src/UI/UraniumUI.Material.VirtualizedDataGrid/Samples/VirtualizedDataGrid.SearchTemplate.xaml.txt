@@ -1,0 +1,116 @@
+﻿<!--
+SearchTemplate has the VirtualizedDataGrid itself as BindingContext.
+
+Grid-owned values:
+  FilterText
+  FilteredItemCount
+  TotalItemCount
+  HasSearchText
+  ClearSearchCommand
+
+The page ViewModel is still reachable through BindingContext, for example:
+  BindingContext.ModifiedParameterCount
+-->
+<virtualized:VirtualizedDataGrid
+    x:Name="ParameterGrid"
+    ItemsSource="{Binding Parameters}"
+    FilterMemberPaths="Name,DisplayName,Description"
+    ShowSearchBar="True"
+    EnablePaging="True"
+    ShowPager="True"
+    PageSize="100">
+
+    <virtualized:VirtualizedDataGrid.SearchTemplate>
+        <DataTemplate x:DataType="virtualized:VirtualizedDataGrid">
+            <Grid
+                ColumnDefinitions="Auto,*,Auto,Auto"
+                Padding="18,4"
+                Margin="0,10"
+                ColumnSpacing="12">
+
+                <Label
+                    Grid.Column="0"
+                    Text="Search:"
+                    VerticalOptions="Center"
+                    FontSize="14" />
+
+                <Entry
+                    Grid.Column="1"
+                    Text="{Binding FilterText, Mode=TwoWay}"
+                    Placeholder="{Binding SearchPlaceholder}"
+                    ClearButtonVisibility="WhileEditing"
+                    VerticalOptions="Center"
+                    FontSize="14" />
+
+                <Button
+                    Grid.Column="2"
+                    Text="Clear"
+                    Command="{Binding ClearSearchCommand}"
+                    IsVisible="{Binding HasSearchText}"
+                    BackgroundColor="Transparent"
+                    Padding="8,4"
+                    FontSize="14"
+                    VerticalOptions="Center" />
+
+                <HorizontalStackLayout
+                    Grid.Column="3"
+                    Spacing="16"
+                    VerticalOptions="Center">
+
+                    <!-- This value comes from the page ViewModel. -->
+                    <Label VerticalOptions="Center" FontSize="14">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="Modified: " />
+                                <Span
+                                    Text="{Binding BindingContext.ModifiedParameterCount}"
+                                    FontAttributes="Bold" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+
+                    <!-- These values come from VirtualizedDataGrid. -->
+                    <Label VerticalOptions="Center" FontSize="14">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="Matching: " />
+                                <Span
+                                    Text="{Binding FilteredItemCount}"
+                                    FontAttributes="Bold" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+
+                    <Label VerticalOptions="Center" FontSize="14">
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="Total: " />
+                                <Span
+                                    Text="{Binding TotalItemCount}"
+                                    FontAttributes="Bold" />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+                </HorizontalStackLayout>
+            </Grid>
+        </DataTemplate>
+    </virtualized:VirtualizedDataGrid.SearchTemplate>
+
+    <virtualized:VirtualizedDataGrid.EmptyView>
+        <VerticalStackLayout
+            Padding="40"
+            HorizontalOptions="Center"
+            VerticalOptions="Center">
+            <Label
+                Text="No parameters match the current filter."
+                FontAttributes="Bold" />
+            <Button
+                Text="Clear search"
+                Command="{Binding Source={x:Reference ParameterGrid}, Path=ClearSearchCommand}" />
+        </VerticalStackLayout>
+    </virtualized:VirtualizedDataGrid.EmptyView>
+
+    <virtualized:VirtualizedDataGrid.Columns>
+        <!-- Existing DataGridColumn definitions -->
+    </virtualized:VirtualizedDataGrid.Columns>
+</virtualized:VirtualizedDataGrid>

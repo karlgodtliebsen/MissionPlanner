@@ -43,7 +43,7 @@
     <PackageVersion Include="DynamicData" Version="9.4.31" />
     <PackageVersion Include="Riok.Mapperly" Version="4.3.1" />
     <PackageVersion Include="Ulid" Version="1.4.1" />
-    <!--<PackageVersion Include="ReactiveUI.SourceGenerators" Version="19.5.1" />-->
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="10.0.300" PrivateAssets="All"/>
     <!--MAUI-->
     <PackageVersion Include="Mapsui" Version="5.1.0" />
     <PackageVersion Include="Mapsui.Maui" Version="5.1.0" />

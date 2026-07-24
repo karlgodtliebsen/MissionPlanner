@@ -105,13 +105,13 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     [ObservableProperty]
     public partial int FilteredParameterCount { get; set; }
 
-    /// <summary>Gets or sets the number of parameter rows shown on one page.</summary>
-    [ObservableProperty]
-    public partial int PageSize { get; set; } = 10;
+    ///// <summary>Gets or sets the number of parameter rows shown on one page.</summary>
+    //[ObservableProperty]
+    //public partial int PageSize { get; set; } = 10;
 
-    /// <summary>Gets or sets the one-based page currently shown.</summary>
-    [ObservableProperty]
-    public partial int CurrentPage { get; set; } = 1;
+    ///// <summary>Gets or sets the one-based page currently shown.</summary>
+    //[ObservableProperty]
+    //public partial int CurrentPage { get; set; } = 1;
 
     /// <summary>Gets the number of pages available for the current search.</summary>
     [ObservableProperty]
@@ -188,29 +188,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     partial void OnSearchTextChanged(string value)
     {
         FilterParameters(true);
-    }
-
-    partial void OnPageSizeChanged(int value)
-    {
-        if (value < 1)
-        {
-            PageSize = 1;
-            return;
-        }
-
-        FilterParameters(true);
-    }
-
-    partial void OnCurrentPageChanged(int value)
-    {
-        var validPage = Math.Clamp(value, 1, TotalPageCount);
-        if (value != validPage)
-        {
-            CurrentPage = validPage;
-            return;
-        }
-
-        ShowCurrentPage();
     }
 
     private void SetMessages(string? statusMessage = null, string? errorMessage = null)
@@ -503,30 +480,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         SetMessages(m);
     }
 
-    [RelayCommand(CanExecute = nameof(CanMoveToPreviousPage))]
-    private void FirstPage()
-    {
-        CurrentPage = 1;
-    }
-
-    [RelayCommand(CanExecute = nameof(CanMoveToPreviousPage))]
-    private void PreviousPage()
-    {
-        CurrentPage--;
-    }
-
-    [RelayCommand(CanExecute = nameof(CanMoveToNextPage))]
-    private void NextPage()
-    {
-        CurrentPage++;
-    }
-
-    [RelayCommand(CanExecute = nameof(CanMoveToNextPage))]
-    private void LastPage()
-    {
-        CurrentPage = TotalPageCount;
-    }
-
     /// <inheritdoc />
     public void Dispose()
     {
@@ -560,16 +513,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         return HasConnection && !IsBusy && editSession is { IsDirty: true, IsValid: true };
     }
 
-    private bool CanMoveToPreviousPage()
-    {
-        return FilteredParameterCount > 0 && CurrentPage > 1;
-    }
-
-    private bool CanMoveToNextPage()
-    {
-        return FilteredParameterCount > 0 && CurrentPage < TotalPageCount;
-    }
-
     private void AttachSession(IParameterEditSession session)
     {
         if (ReferenceEquals(editSession, session))
@@ -578,7 +521,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         }
 
         editSession?.Changed -= OnEditSessionChanged;
-
         editSession = session;
         editSession.Changed += OnEditSessionChanged;
     }
@@ -661,32 +603,15 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         filteredParameterItems.Clear();
         filteredParameterItems.AddRange(filtered);
         FilteredParameterCount = filteredParameterItems.Count;
-        TotalPageCount = (int)Math.Max(
-            1L,
-            (FilteredParameterCount + (long)PageSize - 1) / PageSize);
-
-        var targetPage = resetPage ? 1 : Math.Clamp(CurrentPage, 1, TotalPageCount);
-        if (CurrentPage != targetPage)
-        {
-            CurrentPage = targetPage;
-            return;
-        }
-
+        TotalPageCount = FilteredParameterCount;
         ShowCurrentPage();
     }
 
     private void ShowCurrentPage()
     {
         Parameters.Clear();
-        Parameters.AddRange(filteredParameterItems
-            .Skip((CurrentPage - 1) * PageSize)
-            .Take(PageSize));
-        FirstPageCommand.NotifyCanExecuteChanged();
-        PreviousPageCommand.NotifyCanExecuteChanged();
-        NextPageCommand.NotifyCanExecuteChanged();
-        LastPageCommand.NotifyCanExecuteChanged();
+        Parameters.AddRange(filteredParameterItems);
     }
-
 
     private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
     {

@@ -1,0 +1,650 @@
+﻿using System.Collections;
+using System.Collections.Concurrent;
+using System.Reflection;
+using UraniumUI.Material.Controls;
+
+namespace UraniumUI.Material.VirtualizedDataGrid.Controls;
+
+/// <summary>
+/// Internal filtered/paged view and pager implementation for <see cref="VirtualizedDataGrid"/>.
+/// </summary>
+public partial class VirtualizedDataGrid
+{
+    private static readonly ConcurrentDictionary<(Type ItemType, string Path), Func<object, object?>> FilterAccessorCache = new();
+
+    private Command clearSearchCommand = null!;
+    private Command firstPageCommand = null!;
+    private Command previousPageCommand = null!;
+    private Command nextPageCommand = null!;
+    private Command lastPageCommand = null!;
+
+    private bool updatingDataView;
+    private bool dataViewRefreshPending;
+    private bool updatingPagingProperties;
+
+    private void InitializeDataView()
+    {
+        clearSearchCommand = new Command(
+            () => FilterText = string.Empty,
+            () => HasSearchText);
+
+        ClearSearchCommand = clearSearchCommand;
+
+        firstPageCommand = new Command(
+            () => GoToPage(1),
+            () => HasPreviousPage);
+
+        previousPageCommand = new Command(
+            () => GoToPage(CurrentPage - 1),
+            () => HasPreviousPage);
+
+        nextPageCommand = new Command(
+            () => GoToPage(CurrentPage + 1),
+            () => HasNextPage);
+
+        lastPageCommand = new Command(
+            () => GoToPage(TotalPageCount),
+            () => HasNextPage);
+
+        FirstPageCommand = firstPageCommand;
+        PreviousPageCommand = previousPageCommand;
+        NextPageCommand = nextPageCommand;
+        LastPageCommand = lastPageCommand;
+    }
+
+    /// <summary>
+    /// Re-evaluates filtering and paging. Call this when a filter depends on row properties
+    /// that changed without changing <see cref="FilterText"/> or <see cref="ItemsSource"/>.
+    /// </summary>
+    public void RefreshView()
+    {
+        RefreshDataView(resetCurrentPage: false);
+    }
+
+    /// <summary>
+    /// Navigates to a one-based page number. Values outside the valid range are clamped.
+    /// </summary>
+    public void GoToPage(int page)
+    {
+        var maximumPage = Math.Max(1, TotalPageCount);
+        CurrentPage = Math.Clamp(page, 1, maximumPage);
+    }
+
+    internal void OnFilterSettingsChanged()
+    {
+        RefreshDataView(resetCurrentPage: ResetPageOnFilterChange);
+    }
+
+    internal void OnPagingSettingsChanged(bool resetCurrentPage)
+    {
+        if (updatingPagingProperties)
+        {
+            return;
+        }
+
+        RefreshDataView(resetCurrentPage);
+    }
+
+    internal void OnCurrentPageChanged()
+    {
+        if (updatingPagingProperties)
+        {
+            return;
+        }
+
+        RefreshDataView(resetCurrentPage: false);
+
+        if (ScrollToTopOnPageChange)
+        {
+            ScrollCurrentPageToTop();
+        }
+    }
+
+    internal void RefreshDataView(bool resetCurrentPage)
+    {
+        if (visualResourcesReleased)
+        {
+            return;
+        }
+
+        if (updatingDataView)
+        {
+            dataViewRefreshPending = true;
+            return;
+        }
+
+        updatingDataView = true;
+
+        try
+        {
+            var source = deferRefreshCount > 0
+                ? deferredSnapshot
+                : ItemsSource;
+
+            var totalItemCount = source?.Count ?? 0;
+            var filteringActive = IsFilteringActive();
+
+            List<object>? filteredItems = null;
+            var filteredItemCount = totalItemCount;
+
+            if (filteringActive)
+            {
+                filteredItems = source?
+                    .Cast<object?>()
+                    .Where(item => item is not null)
+                    .Cast<object>()
+                    .Where(MatchesCurrentFilter)
+                    .ToList()
+                    ?? [];
+
+                filteredItemCount = filteredItems.Count;
+            }
+
+            var pageSize = Math.Max(1, PageSize);
+            var totalPageCount = EnablePaging && filteredItemCount > 0
+                ? (int)Math.Ceiling(filteredItemCount / (double)pageSize)
+                : filteredItemCount > 0
+                    ? 1
+                    : 0;
+
+            var requestedPage = resetCurrentPage
+                ? 1
+                : CurrentPage;
+
+            var currentPage = totalPageCount == 0
+                ? 1
+                : Math.Clamp(requestedPage, 1, totalPageCount);
+
+            SetCurrentPageFromView(currentPage);
+
+            IList? displayedItems;
+
+            if (source is null)
+            {
+                displayedItems = null;
+            }
+            else if (EnablePaging)
+            {
+                var pageSource = filteredItems
+                    ?? source
+                        .Cast<object?>()
+                        .Where(item => item is not null)
+                        .Cast<object>()
+                        .ToList();
+
+                displayedItems = pageSource
+                    .Skip((currentPage - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+            }
+            else if (filteringActive)
+            {
+                displayedItems = filteredItems;
+            }
+            else
+            {
+                // Keep the original observable source when no view transformation is active.
+                // This preserves incremental CollectionView updates without rebuilding a list.
+                displayedItems = source;
+            }
+
+            var pageItemCount = displayedItems?.Count ?? 0;
+            var isEmpty = pageItemCount == 0;
+
+            SetValue(HasSearchTextPropertyKey, !string.IsNullOrWhiteSpace(FilterText));
+            SetValue(TotalItemCountPropertyKey, totalItemCount);
+            SetValue(FilteredItemCountPropertyKey, filteredItemCount);
+            SetValue(PageItemCountPropertyKey, pageItemCount);
+            SetValue(TotalPageCountPropertyKey, totalPageCount);
+            SetValue(HasPreviousPagePropertyKey, EnablePaging && totalPageCount > 0 && currentPage > 1);
+            SetValue(HasNextPagePropertyKey, EnablePaging && totalPageCount > 0 && currentPage < totalPageCount);
+            SetValue(IsEmptyPropertyKey, isEmpty);
+            SetValue(HasItemsPropertyKey, !isEmpty);
+
+            SetRowsItemsSource(ReadyToRender ? displayedItems : null);
+            UpdateSearchBarVisibility();
+            UpdateEmptyViewVisibility();
+            UpdatePagerVisibility();
+            RaiseSearchCanExecuteChanged();
+            RaisePagingCanExecuteChanged();
+        }
+        finally
+        {
+            updatingDataView = false;
+        }
+
+        if (dataViewRefreshPending)
+        {
+            dataViewRefreshPending = false;
+            RefreshDataView(resetCurrentPage: false);
+        }
+    }
+
+    private void SetCurrentPageFromView(int page)
+    {
+        if (CurrentPage == page)
+        {
+            return;
+        }
+
+        updatingPagingProperties = true;
+
+        try
+        {
+            SetValue(CurrentPageProperty, page);
+        }
+        finally
+        {
+            updatingPagingProperties = false;
+        }
+    }
+
+    private bool IsFilteringActive()
+    {
+        return FilterPredicate is not null || !string.IsNullOrWhiteSpace(FilterText);
+    }
+
+    private bool MatchesCurrentFilter(object item)
+    {
+        if (FilterPredicate is not null && !FilterPredicate(item))
+        {
+            return false;
+        }
+
+        var filterText = FilterText?.Trim();
+
+        if (string.IsNullOrEmpty(filterText))
+        {
+            return true;
+        }
+
+        var paths = ParseFilterMemberPaths();
+
+        if (paths.Count == 0)
+        {
+            return item.ToString()?.Contains(filterText, FilterStringComparison) == true;
+        }
+
+        foreach (var path in paths)
+        {
+            var accessor = FilterAccessorCache.GetOrAdd(
+                (item.GetType(), path),
+                static key => CreatePropertyPathAccessor(key.ItemType, key.Path));
+
+            var value = accessor(item);
+
+            if (value?.ToString()?.Contains(filterText, FilterStringComparison) == true)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private IReadOnlyList<string> ParseFilterMemberPaths()
+    {
+        if (string.IsNullOrWhiteSpace(FilterMemberPaths))
+        {
+            return Array.Empty<string>();
+        }
+
+        return FilterMemberPaths
+            .Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static Func<object, object?> CreatePropertyPathAccessor(Type itemType, string path)
+    {
+        var parts = path.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var properties = new List<PropertyInfo>();
+        var currentType = itemType;
+
+        foreach (var part in parts)
+        {
+            var property = currentType.GetProperty(
+                part,
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+
+            if (property is null)
+            {
+                return _ => null;
+            }
+
+            properties.Add(property);
+            currentType = Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType;
+        }
+
+        return item =>
+        {
+            object? current = item;
+
+            foreach (var property in properties)
+            {
+                if (current is null)
+                {
+                    return null;
+                }
+
+                current = property.GetValue(current);
+            }
+
+            return current;
+        };
+    }
+
+
+    /// <summary>
+    /// Applies the configured search view or search template.
+    /// </summary>
+    internal void ApplySearchBar()
+    {
+        if (visualResourcesReleased)
+        {
+            return;
+        }
+
+        View searchContent;
+
+        if (SearchView is not null)
+        {
+            // A directly supplied view retains/inherits the page BindingContext.
+            searchContent = SearchView;
+        }
+        else if (SearchTemplate?.CreateContent() is View templateContent)
+        {
+            // Match PagerTemplate: the template binds directly to grid properties.
+            // Application-specific values are available through BindingContext.
+            templateContent.BindingContext = this;
+            searchContent = templateContent;
+        }
+        else
+        {
+            searchContent = CreateDefaultSearchView();
+        }
+
+        if (!ReferenceEquals(searchHost.Content, searchContent))
+        {
+            searchHost.Content = searchContent;
+        }
+
+        UpdateSearchBarVisibility();
+    }
+
+    /// <summary>
+    /// Updates search visibility independently of row count. In particular, filtering
+    /// to zero rows must not hide the search UI that is needed to clear the filter.
+    /// </summary>
+    internal void UpdateSearchBarVisibility()
+    {
+        if (visualResourcesReleased)
+        {
+            return;
+        }
+
+        searchHost.IsVisible = ShowSearchBar;
+    }
+
+    private View CreateDefaultSearchView()
+    {
+        var label = new Label
+        {
+            Text = "Search:",
+            FontSize = 14,
+            VerticalOptions = LayoutOptions.Center
+        };
+
+        var entry = new Entry
+        {
+            FontSize = 14,
+            VerticalOptions = LayoutOptions.Center,
+            ClearButtonVisibility = ClearButtonVisibility.WhileEditing
+        };
+        entry.SetBinding(
+            Entry.TextProperty,
+            new Binding(nameof(FilterText), source: this, mode: BindingMode.TwoWay));
+        entry.SetBinding(
+            Entry.PlaceholderProperty,
+            new Binding(nameof(SearchPlaceholder), source: this));
+
+        var clearButton = new Button
+        {
+            Text = "Clear",
+            FontSize = 14,
+            Padding = new Thickness(8, 4),
+            BackgroundColor = Colors.Transparent,
+            VerticalOptions = LayoutOptions.Center,
+            Command = ClearSearchCommand
+        };
+        clearButton.SetBinding(
+            IsVisibleProperty,
+            new Binding(nameof(HasSearchText), source: this));
+
+        var matchingLabel = new Label
+        {
+            FontSize = 14,
+            VerticalOptions = LayoutOptions.Center
+        };
+        matchingLabel.SetBinding(
+            Label.TextProperty,
+            new Binding(
+                nameof(FilteredItemCount),
+                source: this,
+                stringFormat: "Matching: {0}"));
+
+        var totalLabel = new Label
+        {
+            FontSize = 14,
+            VerticalOptions = LayoutOptions.Center
+        };
+        totalLabel.SetBinding(
+            Label.TextProperty,
+            new Binding(
+                nameof(TotalItemCount),
+                source: this,
+                stringFormat: "Total: {0}"));
+
+        var searchGrid = new Grid
+        {
+            Padding = new Thickness(18, 4),
+            Margin = new Thickness(0, 10),
+            ColumnSpacing = 12,
+            ColumnDefinitions =
+            {
+                new ColumnDefinition(GridLength.Auto),
+                new ColumnDefinition(GridLength.Star),
+                new ColumnDefinition(GridLength.Auto),
+                new ColumnDefinition(GridLength.Auto),
+                new ColumnDefinition(GridLength.Auto)
+            }
+        };
+
+        searchGrid.Add(label, 0, 0);
+        searchGrid.Add(entry, 1, 0);
+        searchGrid.Add(clearButton, 2, 0);
+        searchGrid.Add(matchingLabel, 3, 0);
+        searchGrid.Add(totalLabel, 4, 0);
+
+        return searchGrid;
+    }
+
+    internal void ApplyPager()
+    {
+        if (visualResourcesReleased)
+        {
+            return;
+        }
+
+        View pagerContent;
+
+        if (PagerView is not null)
+        {
+            pagerContent = PagerView;
+        }
+        else if (PagerTemplate?.CreateContent() is View templateContent)
+        {
+            templateContent.BindingContext = this;
+            pagerContent = templateContent;
+        }
+        else
+        {
+            pagerContent = CreateDefaultPagerView();
+        }
+
+        if (!ReferenceEquals(pagerHost.Content, pagerContent))
+        {
+            pagerHost.Content = pagerContent;
+        }
+
+        UpdatePagerVisibility();
+    }
+
+    internal void UpdatePagerVisibility()
+    {
+        if (visualResourcesReleased)
+        {
+            return;
+        }
+
+        pagerHost.IsVisible =
+            ShowPager &&
+            EnablePaging &&
+            TotalItemCount > 0 &&
+            (ShowPagerWhenSinglePage || TotalPageCount > 1);
+    }
+
+    private View CreateDefaultPagerView()
+    {
+        var navigation = new HorizontalStackLayout
+        {
+            Spacing = 8,
+            VerticalOptions = LayoutOptions.Center
+        };
+
+        navigation.Add(CreatePagerButton("First", FirstPageCommand));
+        navigation.Add(CreatePagerButton("Previous", PreviousPageCommand));
+
+        var pageLabel = new Label
+        {
+            VerticalOptions = LayoutOptions.Center,
+            FontSize = 14
+        };
+        pageLabel.SetBinding(
+            Label.TextProperty,
+            new Binding(nameof(CurrentPage), source: this, stringFormat: "Page {0}"));
+        navigation.Add(pageLabel);
+
+        var totalPagesLabel = new Label
+        {
+            VerticalOptions = LayoutOptions.Center,
+            FontSize = 14
+        };
+        totalPagesLabel.SetBinding(
+            Label.TextProperty,
+            new Binding(nameof(TotalPageCount), source: this, stringFormat: "of {0}"));
+        navigation.Add(totalPagesLabel);
+
+        navigation.Add(CreatePagerButton("Next", NextPageCommand));
+        navigation.Add(CreatePagerButton("Last", LastPageCommand));
+
+        var pageSizeArea = new HorizontalStackLayout
+        {
+            Spacing = 8,
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Center
+        };
+        pageSizeArea.Add(new Label
+        {
+            Text = "Rows per page:",
+            FontSize = 14,
+            VerticalOptions = LayoutOptions.Center
+        });
+
+        var pageSizePicker = new Picker
+        {
+            WidthRequest = 92,
+            FontSize = 14,
+            VerticalOptions = LayoutOptions.Center
+        };
+        pageSizePicker.SetBinding(
+            Picker.ItemsSourceProperty,
+            new Binding(nameof(PageSizeOptions), source: this));
+        pageSizePicker.SetBinding(
+            Picker.SelectedItemProperty,
+            new Binding(nameof(PageSize), source: this, mode: BindingMode.TwoWay));
+        pageSizeArea.Add(pageSizePicker);
+
+        var matchingLabel = new Label
+        {
+            FontSize = 14,
+            VerticalOptions = LayoutOptions.Center
+        };
+        matchingLabel.SetBinding(
+            Label.TextProperty,
+            new Binding(nameof(FilteredItemCount), source: this, stringFormat: "Matching: {0}"));
+        pageSizeArea.Add(matchingLabel);
+
+        var pagerGrid = new Grid
+        {
+            Padding = new Thickness(8, 6),
+            ColumnSpacing = 24,
+            ColumnDefinitions =
+            {
+                new ColumnDefinition(GridLength.Star),
+                new ColumnDefinition(GridLength.Auto)
+            }
+        };
+        pagerGrid.Add(navigation, 0, 0);
+        pagerGrid.Add(pageSizeArea, 1, 0);
+
+        return new ScrollView
+        {
+            Orientation = ScrollOrientation.Horizontal,
+            HorizontalScrollBarVisibility = ScrollBarVisibility.Never,
+            Content = pagerGrid
+        };
+    }
+
+    private static Button CreatePagerButton(string text, System.Windows.Input.ICommand command)
+    {
+        return new Button
+        {
+            Text = text,
+            FontSize = 14,
+            Padding = new Thickness(8, 4),
+            BackgroundColor = Colors.Transparent,
+            Command = command,
+            VerticalOptions = LayoutOptions.Center
+        };
+    }
+
+    private void RaiseSearchCanExecuteChanged()
+    {
+        clearSearchCommand.ChangeCanExecute();
+    }
+
+    private void RaisePagingCanExecuteChanged()
+    {
+        firstPageCommand.ChangeCanExecute();
+        previousPageCommand.ChangeCanExecute();
+        nextPageCommand.ChangeCanExecute();
+        lastPageCommand.ChangeCanExecute();
+    }
+
+    private void ScrollCurrentPageToTop()
+    {
+        if (PageItemCount == 0)
+        {
+            return;
+        }
+
+        Dispatcher.Dispatch(() =>
+        {
+            if (PageItemCount > 0)
+            {
+                rowsView.ScrollTo(0, position: ScrollToPosition.Start, animate: false);
+            }
+        });
+    }
+}

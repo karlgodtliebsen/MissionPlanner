@@ -8,7 +8,6 @@ using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
-using MissionPlanner.MavLink.Parameters;
 using NSubstitute;
 
 namespace MissionPlanner.Core.Tests;
@@ -121,97 +120,6 @@ public sealed class FullParametersListLifecycleTests
         progressDialog.Received(1).Dispose();
     }
 
-    /// <summary>Verifies paging, page-size changes, and search project only the requested rows.</summary>
-    [Fact]
-    public async Task PagingProjectsOnlyTheRequestedFilteredRows()
-    {
-        var vehicleId = new VehicleId(1, 1);
-        var fields = Enumerable.Range(1, 25)
-            .Select(index => new ParameterEditField(
-                $"PARAM_{index:D3}",
-                MavParamType.Real32,
-                index,
-                index,
-                index,
-                ParameterFieldMetadata.Empty,
-                null))
-            .ToArray();
-        var session = Substitute.For<IParameterEditSession>();
-        session.Fields.Returns(fields);
-        session.IsValid.Returns(true);
-        session.Scope.Returns(new ParameterEditScope(
-            vehicleId,
-            new VehicleFirmwareIdentity(
-                FirmwareFamily.ArduCopter,
-                2,
-                3,
-                null,
-                null,
-                0,
-                0,
-                0,
-                0,
-                null,
-                null)));
-        session.LoadAsync(Arg.Any<IReadOnlyList<string>?>(), Arg.Any<CancellationToken>())
-            .Returns(Task.CompletedTask);
-
-        var editSessionFactory = Substitute.For<IParameterEditSessionFactory>();
-        editSessionFactory.Create(vehicleId).Returns(session);
-        var streamService = Substitute.For<IVehicleParameterStreamService>();
-        streamService.StreamAllParametersWithRetryAsync(
-                vehicleId,
-                Arg.Any<IProgress<ParameterStreamProgress>?>(),
-                Arg.Any<int>(),
-                Arg.Any<TimeSpan?>(),
-                Arg.Any<CancellationToken>())
-            .Returns(ParameterStreamResult.CreateSuccess(
-                new Dictionary<string, VehicleParameter>(),
-                fields.Length,
-                TimeSpan.Zero));
-
-        using var fixture = CreateFixture(
-            true,
-            streamService,
-            editSessionFactory: editSessionFactory);
-        fixture.ViewModel.Activate();
-        await fixture.ViewModel.RefreshParametersCommand.ExecuteAsync(null);
-
-        fixture.ViewModel.CurrentPage.Should().Be(1);
-        fixture.ViewModel.PageSize.Should().Be(10);
-        fixture.ViewModel.TotalPageCount.Should().Be(3);
-        fixture.ViewModel.FilteredParameterCount.Should().Be(25);
-        fixture.ViewModel.Parameters.Select(item => item.Name)
-            .Should().Equal(Enumerable.Range(1, 10).Select(index => $"PARAM_{index:D3}"));
-
-        fixture.ViewModel.NextPageCommand.Execute(null);
-        fixture.ViewModel.CurrentPage.Should().Be(2);
-        fixture.ViewModel.Parameters.Select(item => item.Name)
-            .Should().Equal(Enumerable.Range(11, 10).Select(index => $"PARAM_{index:D3}"));
-
-        fixture.ViewModel.LastPageCommand.Execute(null);
-        fixture.ViewModel.CurrentPage.Should().Be(3);
-        fixture.ViewModel.Parameters.Select(item => item.Name)
-            .Should().Equal(Enumerable.Range(21, 5).Select(index => $"PARAM_{index:D3}"));
-        fixture.ViewModel.NextPageCommand.CanExecute(null).Should().BeFalse();
-
-        fixture.ViewModel.PageSize = 7;
-        fixture.ViewModel.CurrentPage.Should().Be(1);
-        fixture.ViewModel.TotalPageCount.Should().Be(4);
-        fixture.ViewModel.Parameters.Should().HaveCount(7);
-
-        fixture.ViewModel.CurrentPage = 99;
-        fixture.ViewModel.CurrentPage.Should().Be(4);
-        fixture.ViewModel.Parameters.Select(item => item.Name)
-            .Should().Equal(Enumerable.Range(22, 4).Select(index => $"PARAM_{index:D3}"));
-
-        fixture.ViewModel.SearchText = "PARAM_02";
-        fixture.ViewModel.CurrentPage.Should().Be(1);
-        fixture.ViewModel.TotalPageCount.Should().Be(1);
-        fixture.ViewModel.FilteredParameterCount.Should().Be(6);
-        fixture.ViewModel.Parameters.Select(item => item.Name)
-            .Should().Equal(Enumerable.Range(20, 6).Select(index => $"PARAM_{index:D3}"));
-    }
 
     private static Fixture CreateFixture(
         bool online,

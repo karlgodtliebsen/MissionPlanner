@@ -47,5 +47,6 @@
     <Project Path="UI/MissionPlanner.WinUI/MissionPlanner.WinUI.csproj" Id="1004b0a3-a412-4c8b-bc07-11f327aafe6a">
       <Platform Project="x64" />
     </Project>
+    <Project Path="UI/UraniumUI.Material.VirtualizedDataGrid/UraniumUI.Material.VirtualizedDataGrid.csproj" />
   </Folder>
 </Solution>

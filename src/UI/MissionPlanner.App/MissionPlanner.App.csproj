@@ -7,7 +7,6 @@
 		<RootNamespace>MissionPlanner.App</RootNamespace>
 		<UseMaui>true</UseMaui>
 		<Nullable>enable</Nullable>
-
 		<!-- Enable XAML source generation for faster build times and improved performance.
 		     This generates C# code from XAML at compile time instead of runtime inflation.
 		     To disable, remove this line.
@@ -37,20 +36,12 @@
 		<!-- NOTE: MauiIcon has no effect in a class library; each platform head project declares it. -->
 	</ItemGroup>
 
-
-	<ItemGroup>
-	  <None Remove="appsettings.json" />
-	</ItemGroup>
-
 	<ItemGroup>
 	  <Content Include="appsettings.json">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	</ItemGroup>
-
 	<ItemGroup>
-        <PackageReference Include="CommunityToolkit.Maui" />
-        <PackageReference Include="CommunityToolkit.Mvvm" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
         <PackageReference Include="Riok.Mapperly" />
         <PackageReference Include="Serilog" />
@@ -59,7 +50,13 @@
         <PackageReference Include="Serilog.Settings.AppSettings" />
         <PackageReference Include="Serilog.Sinks.Debug" />
         <PackageReference Include="Serilog.Sinks.File" />
+        
+        
         <PackageReference Include="SkiaSharp.Views.Maui.Controls" />
+
+        <PackageReference Include="CommunityToolkit.Maui" />
+        <PackageReference Include="CommunityToolkit.Mvvm" />
+        
         <PackageReference Include="Mapsui" />
         <PackageReference Include="Mapsui.Maui" />
 
@@ -92,6 +89,7 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\..\Libraries\MissionPlanner.Library\MissionPlanner.Library.csproj" />
 	  <ProjectReference Include="..\..\Core\MissionPlanner.Core\MissionPlanner.Core.csproj" />
+	  <ProjectReference Include="..\UraniumUI.Material.VirtualizedDataGrid\UraniumUI.Material.VirtualizedDataGrid.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
