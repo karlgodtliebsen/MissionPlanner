@@ -1,8 +1,8 @@
 ﻿using System.Text.Json.Nodes;
 using CommunityToolkit.Maui.Storage;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
@@ -11,14 +11,101 @@ using MissionPlanner.Core.ConfigTuning.Tuning;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Test.Support.Configuration;
 using NSubstitute;
+using ServiceProvider = Microsoft.Extensions.DependencyInjection.ServiceProvider;
 
 namespace MissionPlanner.Core.Tests;
 
 /// <summary>Verifies firmware-curated Basic Tuning selection, validation, files, and safe writes.</summary>
 public sealed class BasicTuningTests
 {
+    private readonly ITestOutputHelper output;
+    private readonly ServiceProvider serviceProvider;
+    private readonly ILogger<BasicTuningTests> logger;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="BasicTuningTests"/> class.
+    /// </summary>
+    /// <param name="output">The test output helper.</param>
+    public BasicTuningTests(ITestOutputHelper output)
+    {
+        this.output = output;
+        var services = TestConfigurator
+            .AddTestConfiguration(output);
+
+        services.AddTransient<IVehicleParameterService, TestParameterService>();
+
+        serviceProvider = services.BuildServiceProvider();
+        serviceProvider.UseTestConfiguration();
+        logger = serviceProvider.GetRequiredService<ILogger<BasicTuningTests>>();
+    }
+
+
+    private Fixture CreateFixture(FirmwareFamily family, params (string Name, float Value)[] parameters)
+    {
+        var state = State(family);
+        var activeVehicle = new TestActiveVehicleContext(state);
+        var registry = serviceProvider.GetRequiredService<IVehicleParameterRegistry>();
+
+        foreach (var parameter in parameters)
+        {
+            registry.StoreParameter(
+                state.VehicleId,
+                new VehicleParameter(parameter.Name, parameter.Value, MavParamType.Real32, 0, (ushort)parameters.Length),
+                TestContext.Current.CancellationToken);
+        }
+
+        var metadata = parameters.ToDictionary(
+            parameter => parameter.Name,
+            parameter => new ParameterMetadata(
+                parameter.Name,
+                parameter.Name,
+                $"Description for {parameter.Name}",
+                null,
+                null,
+                "0 1000",
+                null,
+                null,
+                "1",
+                "Standard",
+                false,
+                false),
+            StringComparer.Ordinal);
+
+        var metadataService = serviceProvider.GetRequiredService<IVehicleParameterMetadataService>();
+
+        // var metadataService =Substitute.For<IVehicleParameterMetadataService>();
+        // metadataService.GetAllMetadataAsync(state.VehicleId, Arg.Any<CancellationToken>()).Returns(metadata);
+
+
+        //serviceProvider
+        var parameterService = new TestParameterService(registry);
+
+        //TODO: this test needs be updated to use Domain Configurator to create a DI
+
+        //registry,
+        //parameterService,
+        //metadataService,
+        throw new NotImplementedException("This test must be updated");
+
+        var domainFactory = Substitute.For<IDomainFactory>();
+        //Options.Create(new ParameterEditSessionOptions { ReadbackTimeout = TimeSpan.FromSeconds(1) });
+        //var logger = NSubstitute.Substitute.For<ILogger<ParameterEditSessionFactory>>();
+
+        var factory = new ParameterEditSessionFactory(activeVehicle, domainFactory, NullLogger<ParameterEditSessionFactory>.Instance);
+
+        var service = new BasicTuningService(
+            new BasicTuningProfileCatalog(),
+            factory,
+            registry,
+            NullLogger<BasicTuningService>.Instance);
+        return new Fixture(state.VehicleId, activeVehicle, parameterService, factory, service);
+    }
+
+
     /// <summary>Verifies all supported firmware families have useful, explained, unit-bearing catalogs.</summary>
     /// <param name="family">The supported family.</param>
     [Theory]
@@ -69,8 +156,8 @@ public sealed class BasicTuningTests
             ("PILOT_SPEED_DN", 100),
             ("PILOT_ACCEL_Z", 100));
         var workspace = (await fixture.Service.OpenAsync(fixture.VehicleId, TestContext.Current.CancellationToken))!;
-        workspace.Session.TrySetPending("PILOT_SPEED_DN", 250, out _).Should().BeTrue();
-        workspace.Session.TrySetPending("PILOT_ACCEL_Z", 0, out _).Should().BeTrue();
+        workspace.Session.TrySetPending("PILOT_SPEED_DN", 250, out var _).Should().BeTrue();
+        workspace.Session.TrySetPending("PILOT_ACCEL_Z", 0, out var _).Should().BeTrue();
 
         var result = await fixture.Service.ApplyGroupAsync(
             workspace,
@@ -94,7 +181,7 @@ public sealed class BasicTuningTests
             ("THR_MAX", 100),
             ("EXPERT_RAW", 7));
         var workspace = (await fixture.Service.OpenAsync(fixture.VehicleId, TestContext.Current.CancellationToken))!;
-        workspace.Session.TrySetPending("TRIM_THROTTLE", 50, out _).Should().BeTrue();
+        workspace.Session.TrySetPending("TRIM_THROTTLE", 50, out var _).Should().BeTrue();
 
         var exported = fixture.Service.Export(workspace);
         var document = JsonNode.Parse(exported)!.AsObject();
@@ -131,8 +218,8 @@ public sealed class BasicTuningTests
             ("LOIT_ACC_MAX", 250),
             ("WPNAV_SPEED", 600));
         var workspace = (await fixture.Service.OpenAsync(fixture.VehicleId, TestContext.Current.CancellationToken))!;
-        workspace.Session.TrySetPending("LOIT_SPEED", 550, out _).Should().BeTrue();
-        workspace.Session.TrySetPending("WPNAV_SPEED", 650, out _).Should().BeTrue();
+        workspace.Session.TrySetPending("LOIT_SPEED", 550, out var _).Should().BeTrue();
+        workspace.Session.TrySetPending("WPNAV_SPEED", 650, out var _).Should().BeTrue();
 
         var result = await fixture.Service.ApplyGroupAsync(workspace, "loiter", TestContext.Current.CancellationToken);
 
@@ -177,62 +264,13 @@ public sealed class BasicTuningTests
 
         viewModel.Groups[0].Should().BeSameAs(firstGroup);
 
-        fixture.ActiveVehicle.Set(online with
-        {
-            Connection = online.Connection with { State = VehicleConnectionState.Offline }
-        });
+        fixture.ActiveVehicle.Set(online with { Connection = online.Connection with { State = VehicleConnectionState.Offline } });
         await WaitUntilAsync(() => viewModel.Groups.Count == 0);
 
         viewModel.IsConnected.Should().BeFalse();
         viewModel.StatusMessage.Should().Contain("Connect a vehicle");
     }
 
-    private static Fixture CreateFixture(FirmwareFamily family, params (string Name, float Value)[] parameters)
-    {
-        var state = State(family);
-        var activeVehicle = new TestActiveVehicleContext(state);
-        var registry = new VehicleParameterRegistry();
-        foreach (var parameter in parameters)
-        {
-            registry.StoreParameter(
-                state.VehicleId,
-                new VehicleParameter(parameter.Name, parameter.Value, MavParamType.Real32, 0, (ushort)parameters.Length),
-                CancellationToken.None);
-        }
-
-        var metadata = parameters.ToDictionary(
-            parameter => parameter.Name,
-            parameter => new ParameterMetadata(
-                parameter.Name,
-                parameter.Name,
-                $"Description for {parameter.Name}",
-                null,
-                null,
-                "0 1000",
-                null,
-                null,
-                "1",
-                "Standard",
-                false,
-                false),
-            StringComparer.Ordinal);
-        var metadataService = Substitute.For<IVehicleParameterMetadataService>();
-        metadataService.GetAllMetadataAsync(state.VehicleId, Arg.Any<CancellationToken>()).Returns(metadata);
-        var parameterService = new TestParameterService(registry);
-        var factory = new ParameterEditSessionFactory(
-            activeVehicle,
-            registry,
-            parameterService,
-            metadataService,
-            Options.Create(new ParameterEditSessionOptions { ReadbackTimeout = TimeSpan.FromSeconds(1) }),
-            NullLoggerFactory.Instance);
-        var service = new BasicTuningService(
-            new BasicTuningProfileCatalog(),
-            factory,
-            registry,
-            NullLogger<BasicTuningService>.Instance);
-        return new Fixture(state.VehicleId, activeVehicle, parameterService, factory, service);
-    }
 
     private static async Task WaitUntilAsync(Func<bool> condition)
     {
@@ -280,12 +318,7 @@ public sealed class BasicTuningTests
         return state with { Identity = state.Identity with { Firmware = firmware } };
     }
 
-    private sealed record Fixture(
-        VehicleId VehicleId,
-        TestActiveVehicleContext ActiveVehicle,
-        TestParameterService ParameterService,
-        ParameterEditSessionFactory Factory,
-        BasicTuningService Service) : IDisposable
+    private sealed record Fixture(VehicleId VehicleId, TestActiveVehicleContext ActiveVehicle, TestParameterService ParameterService, ParameterEditSessionFactory Factory, BasicTuningService Service) : IDisposable
     {
         /// <inheritdoc />
         public void Dispose()
@@ -294,7 +327,8 @@ public sealed class BasicTuningTests
         }
     }
 
-    private sealed class TestParameterService(IVehicleParameterRegistry registry) : IVehicleParameterService
+
+    public sealed class TestParameterService(IVehicleParameterRegistry registry) : IVehicleParameterService
     {
         public List<string> Writes { get; } = [];
 
@@ -359,5 +393,50 @@ public sealed class BasicTuningTests
 
             Changed?.Invoke(this, new ActiveVehicleChangedEventArgs(previous, Current));
         }
+    }
+}
+
+public sealed class TestVehicleParameterMetadataService : IVehicleParameterMetadataService
+{
+    private Dictionary<string, ParameterMetadata> metadate = [];
+
+    public void SetMetadata(IReadOnlyDictionary<string, ParameterMetadata> metadata)
+
+    {
+        metadate = new Dictionary<string, ParameterMetadata>(metadata);
+    }
+
+    /// <inheritdoc />
+    public Task<ParameterMetadata?> GetMetadataAsync(VehicleId vehicleId, string parameterName, CancellationToken cancellationToken = default)
+    {
+        metadate.TryGetValue(parameterName, out var metadata);
+        return Task.FromResult(metadata);
+    }
+
+    /// <inheritdoc />
+    public Task<ParameterMetadata?> GetMetadataAsync(VehicleType vehicleType, string parameterName, CancellationToken cancellationToken = default)
+    {
+        metadate.TryGetValue(parameterName, out var metadata);
+        return Task.FromResult(metadata);
+    }
+
+    /// <inheritdoc />
+    public Task<IReadOnlyDictionary<string, ParameterMetadata>> GetAllMetadataAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
+    {
+        IReadOnlyDictionary<string, ParameterMetadata> md = metadate;
+        return Task.FromResult(md);
+    }
+
+    /// <inheritdoc />
+    public Task<IReadOnlyDictionary<string, ParameterMetadata>> GetAllMetadataAsync(VehicleType vehicleType, CancellationToken cancellationToken = default)
+    {
+        IReadOnlyDictionary<string, ParameterMetadata> md = metadate;
+        return Task.FromResult(md);
+    }
+
+    /// <inheritdoc />
+    public Task RefreshMetadataAsync(VehicleType vehicleType, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -161,6 +161,7 @@ public static class DomainConfigurator
         services.TryAddTransient<IParamValueVehicleHandler, ParamValueVehicleHandler>();
 
         services.TryAddTransient<IVehicleMessageDispatcher, VehicleMessageDispatcher>();
+
         services.TryAddEnumerable(ServiceDescriptor.Transient<IVehicleMessageHandler, FlightTelemetryHandler>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IVehicleMessageHandler, NavigationTelemetryHandler>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IVehicleMessageHandler, PowerTelemetryHandler>());
@@ -180,6 +181,8 @@ public static class DomainConfigurator
         services.TryAddSingleton<IVehicleParameterMetadataService, VehicleParameterMetadataService>();
         services.TryAddSingleton<IArduPilotPackedParameterDecoder, ArduPilotPackedParameterDecoder>();
         services.TryAddTransient<IVehicleParameterStreamService, VehicleParameterStreamService>();
+
+
         services.Configure<ParameterEditSessionOptions>(configuration.GetSection(ParameterEditSessionOptions.SectionName));
         services.TryAddSingleton<IParameterEditSessionFactory, ParameterEditSessionFactory>();
 
@@ -211,6 +214,9 @@ public static class DomainConfigurator
         domainFactory.Add<IMavLinkCommandService, MavLinkCommandService>();
         domainFactory.Add<IVehicleParameterService, VehicleParameterService>();
         domainFactory.Add<IVehicleParameterStreamService, VehicleParameterStreamService>();
+        domainFactory.Add<IParameterEditSession, ParameterEditSession>();
+
+
         return services;
     }
 }

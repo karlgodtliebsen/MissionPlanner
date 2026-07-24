@@ -7,162 +7,7 @@ using MissionPlanner.MavLink.Parameters;
 
 namespace MissionPlanner.Core.ConfigTuning;
 
-/// <summary>Creates and tracks the shared active-vehicle parameter editing session.</summary>
-public sealed class ParameterEditSessionFactory : IParameterEditSessionFactory, IDisposable
-{
-    private readonly object sync = new();
-    private readonly IActiveVehicleContext activeVehicle;
-    private readonly IVehicleParameterRegistry parameterRegistry;
-    private readonly IVehicleParameterService parameterService;
-    private readonly IVehicleParameterMetadataService metadataService;
-    private readonly ParameterEditSessionOptions options;
-    private readonly ILoggerFactory loggerFactory;
-    private ParameterEditSession? current;
-    private bool disposed;
-
-    /// <summary>Initializes a shared parameter-editing session factory.</summary>
-    /// <param name="activeVehicle">The application active-vehicle context.</param>
-    /// <param name="parameterRegistry">The live parameter registry.</param>
-    /// <param name="parameterService">The parameter request and write service.</param>
-    /// <param name="metadataService">The firmware parameter metadata service.</param>
-    /// <param name="options">The editing-session options.</param>
-    /// <param name="loggerFactory">The logger factory.</param>
-    public ParameterEditSessionFactory(
-        IActiveVehicleContext activeVehicle,
-        IVehicleParameterRegistry parameterRegistry,
-        IVehicleParameterService parameterService,
-        IVehicleParameterMetadataService metadataService,
-        IOptions<ParameterEditSessionOptions> options,
-        ILoggerFactory loggerFactory)
-    {
-        this.activeVehicle = activeVehicle;
-        this.parameterRegistry = parameterRegistry;
-        this.parameterService = parameterService;
-        this.metadataService = metadataService;
-        this.options = options.Value;
-        this.loggerFactory = loggerFactory;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-    }
-
-    /// <inheritdoc />
-    public bool HasUnappliedChanges
-    {
-        get
-        {
-            lock (sync)
-            {
-                return current?.IsDirty == true;
-            }
-        }
-    }
-
-    /// <inheritdoc />
-    public event EventHandler? Changed;
-
-    /// <inheritdoc />
-    public IParameterEditSession Create(VehicleId vehicleId)
-    {
-        ParameterEditSession? replaced = null;
-        ParameterEditSession result;
-        lock (sync)
-        {
-            ObjectDisposedException.ThrowIf(disposed, this);
-            var snapshot = activeVehicle.Current;
-            if (!snapshot.IsOnline || snapshot.VehicleId != vehicleId || snapshot.State is null)
-            {
-                throw new InvalidOperationException("A parameter editing session requires the target vehicle to be active and online.");
-            }
-
-            var scope = new ParameterEditScope(vehicleId, snapshot.State.Identity.Firmware);
-            if (current is { IsValid: true } && current.Scope == scope)
-            {
-                return current;
-            }
-
-            if (current?.IsDirty == true)
-            {
-                throw new InvalidOperationException("The previous parameter session has unapplied changes. Revert them before opening a different vehicle or firmware session.");
-            }
-
-            replaced = current;
-            replaced?.Changed -= OnSessionChanged;
-
-            result = new ParameterEditSession(
-                scope,
-                activeVehicle,
-                parameterRegistry,
-                parameterService,
-                metadataService,
-                options,
-                loggerFactory.CreateLogger<ParameterEditSession>());
-            result.Changed += OnSessionChanged;
-            current = result;
-        }
-
-        replaced?.Dispose();
-        Changed?.Invoke(this, EventArgs.Empty);
-        return result;
-    }
-
-    /// <inheritdoc />
-    public void DiscardPendingChanges()
-    {
-        ParameterEditSession? session;
-        lock (sync)
-        {
-            session = current;
-        }
-
-        session?.RevertAll();
-    }
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        ParameterEditSession? session;
-        lock (sync)
-        {
-            if (disposed)
-            {
-                return;
-            }
-
-            disposed = true;
-            session = current;
-            current = null;
-            session?.Changed -= OnSessionChanged;
-        }
-
-        activeVehicle.Changed -= OnActiveVehicleChanged;
-        session?.Dispose();
-    }
-
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
-    {
-        ParameterEditSession? session;
-        lock (sync)
-        {
-            session = current;
-        }
-
-        if (session is null ||
-            (args.Current.IsOnline &&
-             args.Current.VehicleId == session.VehicleId &&
-             args.Current.State?.Identity.Firmware == session.Scope.FirmwareIdentity))
-        {
-            return;
-        }
-
-        session.Invalidate("The active vehicle connection or firmware identity changed. Revert these stale edits and reload before writing.");
-    }
-
-    private void OnSessionChanged(object? sender, EventArgs args)
-    {
-        Changed?.Invoke(this, EventArgs.Empty);
-    }
-}
-
-internal sealed class ParameterEditSession : IParameterEditSession, IDisposable
+internal sealed class ParameterEditSession : IParameterEditSession
 {
     private const double EqualityTolerance = 0.0001;
     private readonly object sync = new();
@@ -184,7 +29,7 @@ internal sealed class ParameterEditSession : IParameterEditSession, IDisposable
         IVehicleParameterRegistry parameterRegistry,
         IVehicleParameterService parameterService,
         IVehicleParameterMetadataService metadataService,
-        ParameterEditSessionOptions options,
+        IOptions<ParameterEditSessionOptions> options,
         ILogger<ParameterEditSession> logger)
     {
         Scope = scope;
@@ -192,7 +37,7 @@ internal sealed class ParameterEditSession : IParameterEditSession, IDisposable
         this.parameterRegistry = parameterRegistry;
         this.parameterService = parameterService;
         this.metadataService = metadataService;
-        readbackTimeout = options.ReadbackTimeout > TimeSpan.Zero ? options.ReadbackTimeout : TimeSpan.FromSeconds(3);
+        readbackTimeout = options.Value.ReadbackTimeout > TimeSpan.Zero ? options.Value.ReadbackTimeout : TimeSpan.FromSeconds(3);
         this.logger = logger;
         parameterRegistry.Changed += OnParameterChanged;
     }
@@ -354,9 +199,7 @@ internal sealed class ParameterEditSession : IParameterEditSession, IDisposable
             logger.LogInformation("Applying {Count} parameter edits to {VehicleId}.", targets.Count, VehicleId);
             var results = new List<ParameterWriteResult>(targets.Count);
             var rebootRequired = false;
-            using var connectionCancellation = CancellationTokenSource.CreateLinkedTokenSource(
-                cancellationToken,
-                activeVehicle.ConnectionCancellationToken);
+            using var connectionCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, activeVehicle.ConnectionCancellationToken);
 
             for (var index = 0; index < targets.Count; index++)
             {
@@ -574,9 +417,7 @@ internal sealed class ParameterEditSession : IParameterEditSession, IDisposable
         }
     }
 
-    private async Task<(bool Sent, VehicleParameter? Readback)> WriteAndConfirmAsync(
-        ParameterEditField field,
-        CancellationToken cancellationToken)
+    private async Task<(bool Sent, VehicleParameter? Readback)> WriteAndConfirmAsync(ParameterEditField field, CancellationToken cancellationToken)
     {
         var expected = (float)field.PendingValue;
         var readback = new TaskCompletionSource<VehicleParameter>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -593,13 +434,7 @@ internal sealed class ParameterEditSession : IParameterEditSession, IDisposable
         parameterRegistry.Changed += OnChanged;
         try
         {
-            if (!await parameterService.SetParameterAsync(
-                        VehicleId,
-                        field.Name,
-                        expected,
-                        field.Type,
-                        cancellationToken)
-                    .ConfigureAwait(false))
+            if (!await parameterService.SetParameterAsync(VehicleId, field.Name, expected, field.Type, cancellationToken).ConfigureAwait(false))
             {
                 return (false, null);
             }
@@ -860,7 +695,15 @@ internal sealed class ParameterEditSession : IParameterEditSession, IDisposable
                 metadata.GetBitmaskOptions()
                     .OrderBy(option => option.Key)
                     .Select(option => new ParameterBitOption(option.Key, option.Value))
-                    .ToArray());
+                    .ToArray())
+            {
+                UnitText = metadata.UnitText,
+                RangeText = metadata.Range,
+                ValuesText = metadata.Values,
+                BitmaskText = metadata.Bitmask,
+                IncrementText = metadata.Increment,
+                UserLevel = metadata.UserLevel
+            };
     }
 
     private static void AppendSkipped(

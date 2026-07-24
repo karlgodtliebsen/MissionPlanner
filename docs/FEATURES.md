@@ -529,6 +529,8 @@ while leaving Config warns before discarding them.
 * Loads metadata and parameters and merges these (see PARAMETERS.md)
 * Uses the shared Config editing session for search, validation, pending values, grouped
   apply/revert, per-field write status, confirmed readback, and reboot warnings
+* Keeps table rows and option collections stable while numeric, enum, and bitmask edits
+  synchronize with the shared session
 * Loads and saves `.param`/JSON files using invariant numeric formatting
 * Retains the packed MAVFTP download with automatic classic-stream fallback
 

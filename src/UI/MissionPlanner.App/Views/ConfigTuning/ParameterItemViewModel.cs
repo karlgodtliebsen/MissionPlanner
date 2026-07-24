@@ -18,6 +18,8 @@ public partial class ParameterItemViewModel : ObservableObject
     private VehicleParameter? originalParameter;
     private ParameterMetadata? originalMetadata;
     private readonly IParameterEditSession? editSession;
+    private ParameterFieldMetadata? editMetadata;
+    private MavParamType? editType;
 
     private bool loadingData;
 
@@ -71,34 +73,6 @@ public partial class ParameterItemViewModel : ObservableObject
     [DataGridIgnore][ObservableProperty] public partial ParameterEditWriteStatus WriteStatus { get; set; }
     [DataGridIgnore][ObservableProperty] public partial string? WriteMessage { get; set; }
 
-    /// <summary>
-    /// Initializes an empty parameter item for serializers and design-time tooling.
-    /// </summary>
-    public ParameterItemViewModel()
-    {
-        SelectedValuesChanged = new Command<object>(OnSelectedValuesChanged);
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ParameterItemViewModel"/> class.
-    /// </summary>
-    /// <param name="parameter">The vehicle parameter to wrap.</param>
-    public ParameterItemViewModel(VehicleParameter parameter)
-    {
-        SelectedValuesChanged = new Command<object>(OnSelectedValuesChanged);
-        SetData(parameter);
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ParameterItemViewModel"/> class with metadata.
-    /// </summary>
-    /// <param name="metadata">The parameter metadata to wrap.</param>
-    public ParameterItemViewModel(ParameterMetadata metadata)
-    {
-        SelectedValuesChanged = new Command<object>(OnSelectedValuesChanged);
-        SetMetadata(metadata);
-    }
-
     /// <summary>Initializes an item backed by the shared parameter editing session.</summary>
     /// <param name="editSession">The shared vehicle parameter editing session.</param>
     /// <param name="field">The initial field projection.</param>
@@ -111,15 +85,18 @@ public partial class ParameterItemViewModel : ObservableObject
 
     private void OnSelectedValuesChanged(object value)
     {
-        Value = 0.0f;
-        if (value is ObservableCollection<object> items)
+        if (loadingData || value is not IEnumerable<object> items)
         {
-            foreach (var item in items)
-            {
-                var x = item as SelectItem;
-                Value += x?.Value ?? 0.0f;
-            }
+            return;
         }
+
+        var selectedValue = 0.0f;
+        foreach (var item in items.OfType<SelectItem>())
+        {
+            selectedValue += item.Value;
+        }
+
+        Value = selectedValue;
     }
 
     /// <inheritdoc />
@@ -137,127 +114,231 @@ public partial class ParameterItemViewModel : ObservableObject
     /// </summary>
     public void SetMetadata(ParameterMetadata metadata)
     {
-        originalMetadata = metadata;
-        Value = 0f;
+        ArgumentNullException.ThrowIfNull(metadata);
         loadingData = true;
-        ValuesData = [];
-        RangeData = [];
-        ValuesItems ??= [];
-
-        Name = metadata.Name;
-        DisplayName = metadata.DisplayName;
-        Description = metadata.Description ?? "";
-        Units = metadata.Units ?? "";
-        UnitText = metadata.UnitText ?? "";
-        Range = metadata.Range;
-        Values = metadata.Values;
-        Bitmask = metadata.Bitmask; //0:Air-mode,1:Rate Loop Only
-        UserLevel = metadata.UserLevel;
-        RebootRequired = metadata.RebootRequired;
-        IsReadOnly = metadata.ReadOnly;
-        Max = metadata.MaxValue ?? float.MaxValue;
-        Min = metadata.MinValue ?? float.MinValue;
-        Increment = metadata.Increment;
-        if (Increment is not null)
+        try
         {
-            stepSize = metadata.IncrementValue ?? 0.1f;
-        }
-        else if (metadata.MaxValue is not null && metadata.MinValue is not null)
-        {
-            stepSize = (float)Math.Round((Max - Min) / 10.0);
-        }
-
-        if (Range is not null)
-        {
-            RangeData = Range.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            HasNumericRangeData = RangeData.Length == 2;
-        }
-
-        if (Values is not null)
-        {
-            var vals = metadata.GetValueOptions();
-            ValuesItems = vals.Keys.Select(k => new SelectItem(vals[k], k)).ToArray();
-            ValuesData = vals.Values.ToArray();
-            HasValuesData = true;
-            HasNumericRangeData = false;
-            SelectedValue = ValuesItems.FirstOrDefault()?.Name;
-            Options = string.Join(Environment.NewLine, vals.Select(v => $"{v.Key}:{v.Value}"));
-            //IsReadOnly = ValuesItems.Length > 0;
-        }
-
-        if (Bitmask is not null)
-        {
-            HasBitmask = true;
-            var bitmaskOptions = metadata.GetBitmaskOptions();
-            BitmaskOptions = bitmaskOptions.Keys.Select(k => new SelectItem(bitmaskOptions[k], k)).ToArray();
+            originalMetadata = metadata;
+            editMetadata = null;
+            editType = null;
+            Value = 0f;
+            ApplyEditorMetadata(CreateEditorMetadata(metadata));
+            SelectedValue = ValuesItems?.FirstOrDefault()?.Name;
             SelectedBitmaskItems.Clear();
-            Options = string.Join(Environment.NewLine, bitmaskOptions.Select(b => $"{b.Key}:{b.Value}"));
-            IsReadOnly = true;
         }
-
-        loadingData = false;
+        finally
+        {
+            loadingData = false;
+        }
     }
 
     /// <summary>Updates this item from the shared editing-session field.</summary>
     /// <param name="field">The latest field projection.</param>
     public void SetField(ParameterEditField field)
     {
+        var pendingValue = (float)field.PendingValue;
+        var pendingValueChanged = Math.Abs(Value - pendingValue) > 0.0001f;
+        var editorDefinitionChanged =
+            editType != field.Type ||
+            editMetadata != field.Metadata ||
+            !string.Equals(Name, field.Name, StringComparison.Ordinal);
+
         loadingData = true;
-        originalParameter = new VehicleParameter(field.Name, (float)field.OriginalValue, field.Type, 0, 0);
-        originalMetadata = null;
-        Name = field.Name;
-        DisplayName = field.Metadata.DisplayName ?? field.Name;
-        Description = field.Metadata.Description ?? string.Empty;
-        Units = field.Metadata.Units ?? string.Empty;
-        UnitText = field.Metadata.Units ?? string.Empty;
-        OriginalValue = (float)field.OriginalValue;
-        LiveValue = (float)field.LiveValue;
-        Value = (float)field.PendingValue;
-        Min = field.Metadata.Minimum is { } minimum ? (float)minimum : float.MinValue;
-        Max = field.Metadata.Maximum is { } maximum ? (float)maximum : float.MaxValue;
-        Increment = field.Metadata.Increment?.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        stepSize = field.Metadata.Increment is > 0 ? (float)field.Metadata.Increment.Value : 0.1f;
-        IsReadOnly = field.Metadata.ReadOnly;
-        RebootRequired = field.Metadata.RebootRequired;
-        ValidationError = field.ValidationError;
-        WriteStatus = field.WriteStatus;
-        WriteMessage = field.WriteMessage;
-        IsModified = field.IsModified;
-
-        ValuesItems = field.Metadata.Options
-            .Select(option => new SelectItem(option.Label, (float)option.Value))
-            .ToArray();
-        ValuesData = ValuesItems.Select(option => option.Name).ToArray();
-        HasValuesData = ValuesItems.Length > 0;
-        SelectedValue = ValuesItems.FirstOrDefault(option => Math.Abs(option.Value - Value) < 0.0001f)?.Name;
-
-        BitmaskOptions = field.Metadata.Bitmask
-            .Where(option => option.Bit is >= 0 and < 64)
-            .Select(option => new SelectItem(option.Label, 1UL << option.Bit))
-            .ToArray();
-        SelectedBitmaskItems.Clear();
-        var selectedMask = (ulong)Math.Max(0, Math.Round(field.PendingValue));
-        foreach (var option in field.Metadata.Bitmask.Where(option => option.Bit is >= 0 and < 64))
+        try
         {
-            if ((selectedMask & (1UL << option.Bit)) != 0 && BitmaskOptions.FirstOrDefault(item => item.Name == option.Label) is { } selected)
+            originalParameter = new VehicleParameter(field.Name, (float)field.OriginalValue, field.Type, 0, 0);
+            originalMetadata = null;
+            OriginalValue = (float)field.OriginalValue;
+            LiveValue = (float)field.LiveValue;
+            Value = pendingValue;
+            ValidationError = field.ValidationError;
+            WriteStatus = field.WriteStatus;
+            WriteMessage = field.WriteMessage;
+            IsModified = field.IsModified;
+
+            if (editorDefinitionChanged)
             {
-                SelectedBitmaskItems.Add(selected);
+                ApplyEditorMetadata(CreateEditorMetadata(field));
+                editMetadata = field.Metadata;
+                editType = field.Type;
+            }
+
+            if (editorDefinitionChanged || pendingValueChanged)
+            {
+                SynchronizeSelections(field.PendingValue);
             }
         }
+        finally
+        {
+            loadingData = false;
+        }
+    }
 
+    private void ApplyEditorMetadata(EditorMetadataProjection metadata)
+    {
+        Name = metadata.Name;
+        DisplayName = metadata.DisplayName;
+        Description = metadata.Description ?? string.Empty;
+        Units = metadata.Units ?? string.Empty;
+        UnitText = metadata.UnitText ?? string.Empty;
+        Range = metadata.Range;
+        Values = metadata.Values;
+        Bitmask = metadata.Bitmask;
+        UserLevel = metadata.UserLevel;
+        RebootRequired = metadata.RebootRequired;
+        Min = metadata.Minimum ?? float.MinValue;
+        Max = metadata.Maximum ?? float.MaxValue;
+        Increment = metadata.Increment;
+        stepSize = ResolveStepSize(metadata);
+
+        ValuesItems = metadata.ValueOptions;
+        ValuesData = ValuesItems.Select(option => option.Name).ToArray();
+        HasValuesData = ValuesItems.Length > 0;
+
+        BitmaskOptions = metadata.BitmaskOptions;
         HasBitmask = BitmaskOptions.Length > 0;
-        HasNumericRangeData = !HasValuesData && !HasBitmask &&
-                              (field.Metadata.Minimum is not null || field.Metadata.Maximum is not null);
-        Range = field.Metadata.Minimum is null && field.Metadata.Maximum is null
-            ? null
-            : $"{field.Metadata.Minimum?.ToString(System.Globalization.CultureInfo.InvariantCulture)} {field.Metadata.Maximum?.ToString(System.Globalization.CultureInfo.InvariantCulture)}";
-        RangeData = Range?.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        Options = HasValuesData
-            ? string.Join(Environment.NewLine, field.Metadata.Options.Select(option => $"{option.Value}:{option.Label}"))
-            : HasBitmask
-                ? string.Join(Environment.NewLine, field.Metadata.Bitmask.Select(option => $"{option.Bit}:{option.Label}"))
+        RangeData = Range?.Split(
+            (char[]?)null,
+            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
+        HasNumericRangeData = !HasValuesData && !HasBitmask && RangeData.Length == 2;
+        Options = metadata.Options;
+
+        // Bitmask values are edited through the multi-option control, not by entering a raw mask.
+        IsReadOnly = metadata.ReadOnly || HasBitmask;
+    }
+
+    private void SynchronizeSelections(double pendingValue)
+    {
+        SelectedValue = ValuesItems?
+            .FirstOrDefault(option => Math.Abs(option.Value - pendingValue) < 0.0001f)?
+            .Name;
+
+        SelectedBitmaskItems.Clear();
+        var selectedMask = (ulong)Math.Max(0, Math.Round(pendingValue));
+        foreach (var option in BitmaskOptions ?? [])
+        {
+            if ((selectedMask & (ulong)option.Value) != 0)
+            {
+                SelectedBitmaskItems.Add(option);
+            }
+        }
+    }
+
+    private static float ResolveStepSize(EditorMetadataProjection metadata)
+    {
+        if (metadata.IncrementValue is not null)
+        {
+            return metadata.IncrementValue.Value;
+        }
+
+        if (metadata.Increment is not null)
+        {
+            return 0.1f;
+        }
+
+        return metadata.Minimum is not null && metadata.Maximum is not null
+            ? (float)Math.Round((metadata.Maximum.Value - metadata.Minimum.Value) / 10.0)
+            : 0.1f;
+    }
+
+    private static EditorMetadataProjection CreateEditorMetadata(ParameterMetadata metadata)
+    {
+        var valueDefinitions = metadata.GetValueOptions()
+            .OrderBy(option => option.Key)
+            .ToArray();
+        var valueOptions = valueDefinitions
+            .Select(option => new SelectItem(option.Value, option.Key))
+            .ToArray();
+        var bitmaskDefinitions = metadata.GetBitmaskOptions()
+            .Where(option => option.Key is >= 0 and < 64)
+            .OrderBy(option => option.Key)
+            .ToArray();
+        var bitmaskOptions = bitmaskDefinitions
+            .Select(option => new SelectItem(option.Value, 1UL << option.Key))
+            .ToArray();
+        var options = valueOptions.Length > 0
+            ? string.Join(Environment.NewLine, valueDefinitions.Select(option => $"{option.Key}:{option.Value}"))
+            : bitmaskOptions.Length > 0
+                ? string.Join(Environment.NewLine, bitmaskDefinitions.Select(option => $"{option.Key}:{option.Value}"))
                 : null;
-        loadingData = false;
+
+        return new EditorMetadataProjection(
+            metadata.Name,
+            metadata.DisplayName,
+            metadata.Description,
+            metadata.Units,
+            metadata.UnitText,
+            metadata.Range,
+            metadata.Values,
+            metadata.Bitmask,
+            metadata.Increment,
+            metadata.UserLevel,
+            metadata.MinValue,
+            metadata.MaxValue,
+            metadata.IncrementValue,
+            metadata.ReadOnly,
+            metadata.RebootRequired,
+            valueOptions,
+            bitmaskOptions,
+            options);
+    }
+
+    private static EditorMetadataProjection CreateEditorMetadata(ParameterEditField field)
+    {
+        var metadata = field.Metadata;
+        var valueOptions = metadata.Options
+            .Select(option => new SelectItem(option.Label, (float)option.Value))
+            .ToArray();
+        var bitmaskDefinitions = metadata.Bitmask
+            .Where(option => option.Bit is >= 0 and < 64)
+            .ToArray();
+        var bitmaskOptions = bitmaskDefinitions
+            .Select(option => new SelectItem(option.Label, 1UL << option.Bit))
+            .ToArray();
+        var range = metadata.RangeText ?? CreateRangeText(metadata.Minimum, metadata.Maximum);
+        var values = metadata.ValuesText ?? (valueOptions.Length > 0
+            ? string.Join(",", metadata.Options.Select(option => $"{option.Value}:{option.Label}"))
+            : null);
+        var bitmask = metadata.BitmaskText ?? (bitmaskOptions.Length > 0
+            ? string.Join(",", bitmaskDefinitions.Select(option => $"{option.Bit}:{option.Label}"))
+            : null);
+        var increment = metadata.IncrementText ??
+                        metadata.Increment?.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        var options = valueOptions.Length > 0
+            ? string.Join(Environment.NewLine, metadata.Options.Select(option => $"{option.Value}:{option.Label}"))
+            : bitmaskOptions.Length > 0
+                ? string.Join(Environment.NewLine, bitmaskDefinitions.Select(option => $"{option.Bit}:{option.Label}"))
+                : null;
+
+        return new EditorMetadataProjection(
+            field.Name,
+            metadata.DisplayName ?? field.Name,
+            metadata.Description,
+            metadata.Units,
+            metadata.UnitText,
+            range,
+            values,
+            bitmask,
+            increment,
+            metadata.UserLevel,
+            metadata.Minimum is { } minimum ? (float)minimum : null,
+            metadata.Maximum is { } maximum ? (float)maximum : null,
+            metadata.Increment is { } incrementValue ? (float)incrementValue : null,
+            metadata.ReadOnly,
+            metadata.RebootRequired,
+            valueOptions,
+            bitmaskOptions,
+            options);
+    }
+
+    private static string? CreateRangeText(double? minimum, double? maximum)
+    {
+        if (minimum is null && maximum is null)
+        {
+            return null;
+        }
+
+        return $"{minimum?.ToString(System.Globalization.CultureInfo.InvariantCulture)} {maximum?.ToString(System.Globalization.CultureInfo.InvariantCulture)}";
     }
 
     /// <summary>
@@ -266,6 +347,8 @@ public partial class ParameterItemViewModel : ObservableObject
     /// <param name="parameter">The VehicleParameter instance containing the data.</param>
     public void SetData(VehicleParameter parameter)
     {
+        editMetadata = null;
+        editType = null;
         loadingData = true;
         originalParameter = parameter;
         OriginalValue = parameter.Value;
@@ -381,6 +464,26 @@ public partial class ParameterItemViewModel : ObservableObject
             SetField(current);
         }
     }
+
+    private sealed record EditorMetadataProjection(
+        string Name,
+        string? DisplayName,
+        string? Description,
+        string? Units,
+        string? UnitText,
+        string? Range,
+        string? Values,
+        string? Bitmask,
+        string? Increment,
+        string? UserLevel,
+        float? Minimum,
+        float? Maximum,
+        float? IncrementValue,
+        bool ReadOnly,
+        bool RebootRequired,
+        SelectItem[] ValueOptions,
+        SelectItem[] BitmaskOptions,
+        string? Options);
 }
 
 /// <summary>

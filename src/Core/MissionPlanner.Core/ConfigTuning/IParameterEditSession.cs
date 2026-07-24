@@ -1,4 +1,4 @@
-using MissionPlanner.Core.Vehicles.Models;
+﻿using MissionPlanner.Core.Vehicles.Models;
 
 namespace MissionPlanner.Core.ConfigTuning;
 
@@ -6,7 +6,7 @@ namespace MissionPlanner.Core.ConfigTuning;
 /// A shared, vehicle-scoped parameter editing session that tracks original, live, and pending
 /// values with validation, grouped apply, revert, refresh, confirmed readback, and reboot aggregation.
 /// </summary>
-public interface IParameterEditSession
+public interface IParameterEditSession : IDisposable
 {
     /// <summary>Gets the vehicle and firmware identity captured by this session.</summary>
     ParameterEditScope Scope { get; }
@@ -19,6 +19,12 @@ public interface IParameterEditSession
 
     /// <summary>Gets whether any field has an unwritten modification.</summary>
     bool IsDirty { get; }
+
+    /// <summary>
+    /// Invalidates the session, preventing further edits and marking it as no longer valid.
+    /// </summary>
+    /// <param name="reason">The reason for invalidation.</param>
+    void Invalidate(string reason);
 
     /// <summary>Gets whether the session still targets the active online vehicle and captured firmware.</summary>
     bool IsValid { get; }

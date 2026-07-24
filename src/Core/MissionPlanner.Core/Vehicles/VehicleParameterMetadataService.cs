@@ -16,10 +16,7 @@ public sealed class VehicleParameterMetadataService(
     : IVehicleParameterMetadataService
 {
     /// <inheritdoc/>
-    public async Task<ParameterMetadata?> GetMetadataAsync(
-        VehicleId vehicleId,
-        string parameterName,
-        CancellationToken cancellationToken = default)
+    public async Task<ParameterMetadata?> GetMetadataAsync(VehicleId vehicleId, string parameterName, CancellationToken cancellationToken = default)
     {
         var vehicleType = GetVehicleType(vehicleId);
         if (!vehicleType.HasValue)
@@ -35,18 +32,13 @@ public sealed class VehicleParameterMetadataService(
     }
 
     /// <inheritdoc/>
-    public Task<ParameterMetadata?> GetMetadataAsync(
-        VehicleType vehicleType,
-        string parameterName,
-        CancellationToken cancellationToken = default)
+    public Task<ParameterMetadata?> GetMetadataAsync(VehicleType vehicleType, string parameterName, CancellationToken cancellationToken = default)
     {
         return metadataRepository.GetMetadataAsync(vehicleType, parameterName, cancellationToken);
     }
 
     /// <inheritdoc/>
-    public async Task<IReadOnlyDictionary<string, ParameterMetadata>> GetAllMetadataAsync(
-        VehicleId vehicleId,
-        CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyDictionary<string, ParameterMetadata>> GetAllMetadataAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
     {
         var vehicleType = GetVehicleType(vehicleId);
         if (!vehicleType.HasValue)
@@ -59,9 +51,7 @@ public sealed class VehicleParameterMetadataService(
     }
 
     /// <inheritdoc/>
-    public Task<IReadOnlyDictionary<string, ParameterMetadata>> GetAllMetadataAsync(
-        VehicleType vehicleType,
-        CancellationToken cancellationToken = default)
+    public Task<IReadOnlyDictionary<string, ParameterMetadata>> GetAllMetadataAsync(VehicleType vehicleType, CancellationToken cancellationToken = default)
     {
         return metadataRepository.GetAllMetadataAsync(vehicleType, cancellationToken);
     }

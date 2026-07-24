@@ -178,7 +178,12 @@ silently guesses a parameter name.
 `FullParametersListTabViewModel` uses this session after its existing bulk download. The
 bulk service continues to prefer packed MAVFTP parameters and automatically falls back to
 the classic parameter stream. File imports populate pending values, while Apply performs
-confirmed session writes.
+confirmed session writes. Session change notifications update existing table rows in
+place; they do not rebuild the filtered collection or recreate enum and bitmask choices
+while an editor is handling input. Multi-option changes are committed as one pending value.
+The session projection retains the source unit text, user level, range, value, bitmask, and
+increment metadata used by the raw editor. When numeric metadata provides both range bounds
+but no increment, the increment/decrement controls use the rounded range divided by ten.
 
 `GeoFenceTabViewModel` opens the same session with an explicit fence field catalog. It
 resolves only parameters present for the connected firmware and commits parameter changes

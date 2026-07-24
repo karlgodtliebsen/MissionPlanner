@@ -1,44 +1,5 @@
 ﻿namespace MissionPlanner.Core.ConfigTuning.Planner;
 
-/// <summary>Persists the opaque non-secret Planner settings document.</summary>
-public interface IPlannerSettingsStore
-{
-    /// <summary>Reads the persisted document.</summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The document, or <see langword="null"/> when none exists.</returns>
-    ValueTask<string?> ReadAsync(CancellationToken cancellationToken = default);
-
-    /// <summary>Writes the persisted document.</summary>
-    /// <param name="document">The settings document.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    ValueTask WriteAsync(string document, CancellationToken cancellationToken = default);
-
-    /// <summary>Clears the persisted document.</summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    ValueTask ClearAsync(CancellationToken cancellationToken = default);
-}
-
-/// <summary>Stores sensitive Planner values outside ordinary preferences and exports.</summary>
-public interface IPlannerSecretStore
-{
-    /// <summary>Reads a secret by key.</summary>
-    /// <param name="key">The secret key.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The secret, or <see langword="null"/> when absent.</returns>
-    ValueTask<string?> GetAsync(string key, CancellationToken cancellationToken = default);
-
-    /// <summary>Writes a secret by key.</summary>
-    /// <param name="key">The secret key.</param>
-    /// <param name="value">The secret value.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    ValueTask SetAsync(string key, string value, CancellationToken cancellationToken = default);
-
-    /// <summary>Removes a secret by key.</summary>
-    /// <param name="key">The secret key.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    ValueTask RemoveAsync(string key, CancellationToken cancellationToken = default);
-}
-
 /// <summary>Loads, validates, migrates, persists, and observes local Planner settings.</summary>
 public interface IPlannerSettingsService
 {

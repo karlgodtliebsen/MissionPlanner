@@ -17,7 +17,7 @@ public class ContentPageView<TViewModel> : ContentPage, IDisposable
     /// <summary>
     /// Initializes a new instance of the <see cref="ContentPageView{TViewModel}"/> class.
     /// </summary>
-    public ContentPageView(string route)
+    protected ContentPageView(string route)
     {
         this.route = route;
         var navigationEventHub = ServiceHelper.GetRequiredService<INavigationEventHub>();
@@ -31,8 +31,6 @@ public class ContentPageView<TViewModel> : ContentPage, IDisposable
     /// <param name="navigationEvent">The navigation event.</param>
     protected virtual void OnNavigationEvent(NavigationEvent navigationEvent)
     {
-        //var isSubNavigation = navigationEvent.Current == route || navigationEvent.Current.StartsWith(route + "/");
-
         var isSubNavigation =
             (navigationEvent.Previous == route && navigationEvent.Current?.StartsWith(route + "/") == true)
             || (navigationEvent.Current == route && navigationEvent.Previous?.StartsWith(route + "/") == true);

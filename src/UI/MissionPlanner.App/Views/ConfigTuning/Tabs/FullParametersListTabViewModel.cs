@@ -32,8 +32,8 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     private IDisposable? progressDialog;
     private bool active;
     private bool disposed;
-    private readonly int pageSize = 100;
-    private readonly int? currentPage;
+    private readonly int pageSize = 10;
+    private readonly int? currentPage = 0;
 
     /// <summary>Gets whether the page is temporarily covered by its owned progress dialog.</summary>
     public bool IsShowingProgressDialog { get; private set; }
@@ -215,14 +215,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             cancellationToken.ThrowIfCancellationRequested();
             if (!result.Success)
             {
-                CloseOperationDialog();
-                await dispatcher.DispatchAsync(() =>
-                {
-                    CompleteBusyState();
-                    ShowLoadingCompletedWithError = true;
-                    SetMessages(errorMessage: result.ErrorMessage ?? "Parameter loading failed.");
-                });
-                logger.LogError("Full Parameters List load failed for {VehicleId}: {Error}", vehicleId, result.ErrorMessage);
+                await HandleLoadError(result, vehicleId);
                 return;
             }
 
@@ -276,6 +269,18 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             loadCancellation?.Dispose();
             loadCancellation = null;
         }
+    }
+
+    private async Task HandleLoadError(ParameterStreamResult result, VehicleId vehicleId)
+    {
+        CloseOperationDialog();
+        await dispatcher.DispatchAsync(() =>
+        {
+            CompleteBusyState();
+            ShowLoadingCompletedWithError = true;
+            SetMessages(errorMessage: result.ErrorMessage ?? "Parameter loading failed.");
+        });
+        logger.LogError("Full Parameters List load failed for {VehicleId}: {Error}", vehicleId, result.ErrorMessage);
     }
 
     private IProgress<ParameterStreamProgress> CreateProgress()
@@ -391,9 +396,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
         try
         {
-            using var connectionCancellation = CancellationTokenSource.CreateLinkedTokenSource(
-                cancellationToken,
-                activeVehicle.ConnectionCancellationToken);
+            using var connectionCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, activeVehicle.ConnectionCancellationToken);
             var report = await editSession.ApplyAsync(cancellationToken: connectionCancellation.Token);
             RebootRequired |= report.RebootRequired;
             var statusMessage = report.Success
@@ -427,15 +430,13 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     [RelayCommand]
     private void CompareParameters()
     {
-        var m = "Parameter comparison is not implemented yet.";
-        SetMessages(m);
+        SetMessages("Parameter comparison is not implemented yet.");
     }
 
     [RelayCommand]
     private void LoadPreSaved()
     {
-        var m = "Presaved parameter profiles are not implemented yet.";
-        SetMessages(m);
+        SetMessages("Pre saved parameter profiles are not implemented yet.");
     }
 
     [RelayCommand]
@@ -515,12 +516,15 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             return;
         }
 
-        progress?.Report(new ParameterStreamProgress(Message: $"Creating data grid for {editSession.Fields.Count} parameters"));
-        Task.Delay(1000);
+        var fields = editSession.Fields;
+        progress?.Report(new ParameterStreamProgress(Message: $"Creating data grid for {fields.Count} parameters"));
 
         var itemsByName = allParameterItems.ToDictionary(item => item.Name, StringComparer.Ordinal);
-        foreach (var field in editSession.Fields)
+        var fieldNames = new HashSet<string>(StringComparer.Ordinal);
+        var structureChanged = false;
+        foreach (var field in fields)
         {
+            fieldNames.Add(field.Name);
             if (itemsByName.TryGetValue(field.Name, out var item))
             {
                 item.SetField(field);
@@ -528,13 +532,27 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             else
             {
                 allParameterItems.Add(new ParameterItemViewModel(editSession, field));
+                structureChanged = true;
             }
         }
 
-        allParameterItems.Sort((left, right) => StringComparer.Ordinal.Compare(left.Name, right.Name));
+        if (allParameterItems.RemoveAll(item => !fieldNames.Contains(item.Name)) > 0)
+        {
+            structureChanged = true;
+        }
+
+        if (structureChanged)
+        {
+            allParameterItems.Sort((left, right) => StringComparer.Ordinal.Compare(left.Name, right.Name));
+        }
+
         TotalParameterCount = allParameterItems.Count;
-        ModifiedParameterCount = editSession.Fields.Count(field => field.IsModified);
-        FilterParameters();
+        ModifiedParameterCount = fields.Count(field => field.IsModified);
+        if (structureChanged || progress is not null)
+        {
+            FilterParameters();
+        }
+
         WriteParametersCommand.NotifyCanExecuteChanged();
     }
 

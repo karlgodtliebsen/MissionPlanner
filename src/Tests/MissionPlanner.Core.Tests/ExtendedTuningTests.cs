@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.Core.ConfigTuning;
@@ -255,19 +254,22 @@ public sealed class ExtendedTuningTests
         var metadataService = Substitute.For<IVehicleParameterMetadataService>();
         metadataService.GetAllMetadataAsync(state.VehicleId, Arg.Any<CancellationToken>()).Returns(metadata);
         var parameterService = new TestParameterService(registry);
-        var factory = new ParameterEditSessionFactory(
-            activeVehicle,
-            registry,
-            parameterService,
-            metadataService,
-            Options.Create(new ParameterEditSessionOptions { ReadbackTimeout = TimeSpan.FromSeconds(1) }),
-            NullLoggerFactory.Instance);
-        var service = new ExtendedTuningService(
-            new ExtendedTuningProfileCatalog(),
-            factory,
-            registry,
-            NullLogger<ExtendedTuningService>.Instance);
-        return new Fixture(state.VehicleId, activeVehicle, factory, service);
+        throw new NotImplementedException("This test must be updated");
+
+
+        //var factory = new ParameterEditSessionFactory(
+        //    activeVehicle,
+        //    registry,
+        //    parameterService,
+        //    metadataService,
+        //    Options.Create(new ParameterEditSessionOptions { ReadbackTimeout = TimeSpan.FromSeconds(1) }),
+        //    NullLoggerFactory.Instance);
+        //var service = new ExtendedTuningService(
+        //    new ExtendedTuningProfileCatalog(),
+        //    factory,
+        //    registry,
+        //    NullLogger<ExtendedTuningService>.Instance);
+        //return new Fixture(state.VehicleId, activeVehicle, factory, service);
     }
 
     private static async Task WaitUntilAsync(Func<bool> condition)

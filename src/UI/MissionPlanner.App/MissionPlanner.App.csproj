@@ -184,4 +184,8 @@
 	  </MauiXaml>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Views\ConfigTuning\Tabs\Fence\" />
+	</ItemGroup>
+
 </Project>

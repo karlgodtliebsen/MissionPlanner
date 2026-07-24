@@ -1,11 +1,12 @@
-﻿using FluentAssertions;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
+﻿using System.Collections.ObjectModel;
+using FluentAssertions;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning;
+using MissionPlanner.Core.Configuration;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Library.Configuration;
 using MissionPlanner.MavLink.Parameters;
 using NSubstitute;
 
@@ -18,10 +19,9 @@ public sealed class ParameterEditSessionTests
     [Fact]
     public async Task SessionTracksAndValidatesPendingValues()
     {
-        var fixture = CreateFixture(
+        using var fixture = CreateFixture(
             [(Parameter("GAIN", 1), Metadata("GAIN", "0 10", "0.5"))]);
-        using var factory = fixture.Factory;
-        var session = factory.Create(fixture.VehicleId);
+        var session = fixture.Factory.Create(fixture.VehicleId);
         await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
 
         session.TrySetPending("GAIN", 1.3, out var validationError).Should().BeFalse();
@@ -40,15 +40,14 @@ public sealed class ParameterEditSessionTests
     [Fact]
     public async Task ApplyReportsDuplicateAndPartialWriteResults()
     {
-        var fixture = CreateFixture(
+        using var fixture = CreateFixture(
         [
             (Parameter("FIRST", 1), Metadata("FIRST", rebootRequired: true)),
             (Parameter("SECOND", 2), Metadata("SECOND")),
             (Parameter("THIRD", 3), Metadata("THIRD"))
         ]);
         fixture.ParameterService.FailingWrites.Add("SECOND");
-        using var factory = fixture.Factory;
-        var session = factory.Create(fixture.VehicleId);
+        var session = fixture.Factory.Create(fixture.VehicleId);
         await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
         session.TrySetPending("FIRST", 10, out var _).Should().BeTrue();
         session.TrySetPending("SECOND", 20, out var _).Should().BeTrue();
@@ -67,17 +66,16 @@ public sealed class ParameterEditSessionTests
         session.GetField("SECOND")!.WriteStatus.Should().Be(ParameterEditWriteStatus.Failed);
         session.GetField("SECOND")!.IsModified.Should().BeTrue();
         session.GetField("THIRD")!.IsModified.Should().BeFalse();
-        factory.HasUnappliedChanges.Should().BeTrue();
+        fixture.Factory.HasUnappliedChanges.Should().BeTrue();
     }
 
     /// <summary>Verifies an unconfirmed write remains visible and retryable.</summary>
     [Fact]
     public async Task ApplyRetainsPendingValueWhenReadbackTimesOut()
     {
-        var fixture = CreateFixture([(Parameter("NO_ACK", 1), Metadata("NO_ACK"))], TimeSpan.FromMilliseconds(20));
+        using var fixture = CreateFixture([(Parameter("NO_ACK", 1), Metadata("NO_ACK"))], TimeSpan.FromMilliseconds(20));
         fixture.ParameterService.WritesWithoutReadback.Add("NO_ACK");
-        using var factory = fixture.Factory;
-        var session = factory.Create(fixture.VehicleId);
+        var session = fixture.Factory.Create(fixture.VehicleId);
         await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
         session.TrySetPending("NO_ACK", 4, out var _).Should().BeTrue();
 
@@ -94,9 +92,8 @@ public sealed class ParameterEditSessionTests
     [Fact]
     public async Task DisconnectPreventsWritesFromStaleSession()
     {
-        var fixture = CreateFixture([(Parameter("GAIN", 1), Metadata("GAIN"))]);
-        using var factory = fixture.Factory;
-        var session = factory.Create(fixture.VehicleId);
+        using var fixture = CreateFixture([(Parameter("GAIN", 1), Metadata("GAIN"))]);
+        var session = fixture.Factory.Create(fixture.VehicleId);
         await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
         session.TrySetPending("GAIN", 2, out var _).Should().BeTrue();
 
@@ -114,9 +111,8 @@ public sealed class ParameterEditSessionTests
     [Fact]
     public async Task VehicleSwitchPreventsWritesFromStaleSession()
     {
-        var fixture = CreateFixture([(Parameter("GAIN", 1), Metadata("GAIN"))]);
-        using var factory = fixture.Factory;
-        var session = factory.Create(fixture.VehicleId);
+        using var fixture = CreateFixture([(Parameter("GAIN", 1), Metadata("GAIN"))]);
+        var session = fixture.Factory.Create(fixture.VehicleId);
         await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
         session.TrySetPending("GAIN", 2, out var _).Should().BeTrue();
 
@@ -134,13 +130,12 @@ public sealed class ParameterEditSessionTests
     [Fact]
     public async Task AliasDefinitionsUsePresentParametersWithoutGuessing()
     {
-        var fixture = CreateFixture(
+        using var fixture = CreateFixture(
         [
             (Parameter("RATE_OLD", 1), Metadata("RATE_OLD")),
             (Parameter("FEATURE_ENABLE", 1), Metadata("FEATURE_ENABLE"))
         ]);
-        using var factory = fixture.Factory;
-        var session = factory.Create(fixture.VehicleId);
+        var session = fixture.Factory.Create(fixture.VehicleId);
         var supported = new ParameterFieldDefinition(
             "Rate",
             ["RATE_NEW", "RATE_OLD"],
@@ -159,9 +154,8 @@ public sealed class ParameterEditSessionTests
     [Fact]
     public async Task RefreshRequestsEachLoadedParameterOnce()
     {
-        var fixture = CreateFixture([(Parameter("GAIN", 1), Metadata("GAIN"))]);
-        using var factory = fixture.Factory;
-        var session = factory.Create(fixture.VehicleId);
+        using var fixture = CreateFixture([(Parameter("GAIN", 1), Metadata("GAIN"))]);
+        var session = fixture.Factory.Create(fixture.VehicleId);
         await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
 
         await session.RefreshAsync(["GAIN", "GAIN", "MISSING"], TestContext.Current.CancellationToken);
@@ -173,17 +167,126 @@ public sealed class ParameterEditSessionTests
     [Fact]
     public async Task ParameterItemProjectsPendingSessionState()
     {
-        var fixture = CreateFixture([(Parameter("GAIN", 1), Metadata("GAIN", "0 5"))]);
-        using var factory = fixture.Factory;
-        var session = factory.Create(fixture.VehicleId);
+        using var fixture = CreateFixture([(Parameter("GAIN", 1), Metadata("GAIN", "0 5"))]);
+        var session = fixture.Factory.Create(fixture.VehicleId);
         await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
-        var item = new ParameterItemViewModel(session, session.GetField("GAIN")!)
-        {
-            Value = 3
-        };
+        var item = new ParameterItemViewModel(session, session.GetField("GAIN")!) { Value = 3 };
 
         item.IsModified.Should().BeTrue();
         session.GetField("GAIN")!.PendingValue.Should().Be(3);
+    }
+
+    /// <summary>Verifies increment and decrement remain effective during synchronous session projection.</summary>
+    [Fact]
+    public async Task NumericEditorPreservesValueDuringSessionSynchronization()
+    {
+        using var fixture = CreateFixture(
+            [(Parameter("GAIN", 1), Metadata("GAIN", "0 5", "0.5"))]);
+        var session = fixture.Factory.Create(fixture.VehicleId);
+        await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
+        var item = new ParameterItemViewModel(session, session.GetField("GAIN")!);
+        session.Changed += SynchronizeItem;
+
+        item.IncrementNumberCommand.Execute(null);
+
+        item.Value.Should().Be(1.5f);
+        session.GetField("GAIN")!.PendingValue.Should().Be(1.5);
+
+        item.DecrementNumberCommand.Execute(null);
+
+        item.Value.Should().Be(1);
+        session.GetField("GAIN")!.PendingValue.Should().Be(1);
+
+        void SynchronizeItem(object? sender, EventArgs args)
+        {
+            item.SetField(session.GetField("GAIN")!);
+        }
+    }
+
+    /// <summary>Verifies range metadata supplies a useful editor step when firmware metadata omits an increment.</summary>
+    [Fact]
+    public async Task NumericEditorDerivesStepFromRangeAndPreservesMetadata()
+    {
+        var metadata = new ParameterMetadata(
+            "ACRO_RP_RATE",
+            "Acro Roll/Pitch Rate",
+            "Maximum roll and pitch rate in Acro mode.",
+            "deg/s",
+            "degrees per second",
+            "0 1080",
+            null,
+            null,
+            null,
+            "Advanced",
+            true,
+            false);
+        using var fixture = CreateFixture([(Parameter("ACRO_RP_RATE", 360), metadata)]);
+        var session = fixture.Factory.Create(fixture.VehicleId);
+        await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
+        var item = new ParameterItemViewModel(session, session.GetField("ACRO_RP_RATE")!);
+
+        item.DisplayName.Should().Be("Acro Roll/Pitch Rate");
+        item.Description.Should().Be("Maximum roll and pitch rate in Acro mode.");
+        item.Units.Should().Be("deg/s");
+        item.UnitText.Should().Be("degrees per second");
+        item.Range.Should().Be("0 1080");
+        item.RangeData.Should().Equal("0", "1080");
+        item.Increment.Should().BeNull();
+        item.UserLevel.Should().Be("Advanced");
+        item.HasNumericRangeData.Should().BeTrue();
+        item.RebootRequired.Should().BeTrue();
+
+        item.IncrementNumberCommand.Execute(null);
+
+        item.Value.Should().Be(468);
+        session.GetField("ACRO_RP_RATE")!.PendingValue.Should().Be(468);
+    }
+
+    /// <summary>Verifies enum and bitmask editors publish one stable value during synchronous session projection.</summary>
+    [Fact]
+    public async Task OptionEditorsPreserveSelectionsDuringSessionSynchronization()
+    {
+        var enumMetadata = new ParameterMetadata(
+            "MODE", "Mode", "Mode", null, "mode selection", null,
+            "0:Disabled,2:Automatic", null, null, "Standard", false, false);
+        var bitmaskMetadata = new ParameterMetadata(
+            "FLAGS", "Flags", "Flags", null, "feature flags", null,
+            null, "0:First,2:Third", null, "Advanced", false, false);
+        using var fixture = CreateFixture(
+        [
+            (Parameter("MODE", 0), enumMetadata),
+            (Parameter("FLAGS", 0), bitmaskMetadata)
+        ]);
+        var session = fixture.Factory.Create(fixture.VehicleId);
+        await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
+        var mode = new ParameterItemViewModel(session, session.GetField("MODE")!);
+        var flags = new ParameterItemViewModel(session, session.GetField("FLAGS")!);
+        var originalModeOptions = mode.ValuesData;
+        var originalFlagOptions = flags.BitmaskOptions;
+        session.Changed += SynchronizeItems;
+
+        mode.SelectedValue = "Automatic";
+        var selectedFlags = new ObservableCollection<object> { flags.BitmaskOptions![0], flags.BitmaskOptions[1] };
+        flags.SelectedValuesChanged.Execute(selectedFlags);
+
+        mode.Value.Should().Be(2);
+        session.GetField("MODE")!.PendingValue.Should().Be(2);
+        flags.Value.Should().Be(5);
+        session.GetField("FLAGS")!.PendingValue.Should().Be(5);
+        mode.ValuesData.Should().BeSameAs(originalModeOptions);
+        flags.BitmaskOptions.Should().BeSameAs(originalFlagOptions);
+        mode.Values.Should().Be("0:Disabled,2:Automatic");
+        mode.UnitText.Should().Be("mode selection");
+        flags.Bitmask.Should().Be("0:First,2:Third");
+        flags.UnitText.Should().Be("feature flags");
+        flags.UserLevel.Should().Be("Advanced");
+        flags.IsReadOnly.Should().BeTrue();
+
+        void SynchronizeItems(object? sender, EventArgs args)
+        {
+            mode.SetField(session.GetField("MODE")!);
+            flags.SetField(session.GetField("FLAGS")!);
+        }
     }
 
     /// <summary>Verifies navigation within Config is silent and leaving requires explicit discard confirmation.</summary>
@@ -208,9 +311,7 @@ public sealed class ParameterEditSessionTests
         sessions.Received(1).DiscardPendingChanges();
     }
 
-    private static Fixture CreateFixture(
-        IReadOnlyList<(VehicleParameter Parameter, ParameterMetadata Metadata)> definitions,
-        TimeSpan? readbackTimeout = null)
+    private static Fixture CreateFixture(IReadOnlyList<(VehicleParameter Parameter, ParameterMetadata Metadata)> definitions, TimeSpan? readbackTimeout = null)
     {
         var state = State();
         var activeVehicle = new TestActiveVehicleContext(state);
@@ -224,14 +325,21 @@ public sealed class ParameterEditSessionTests
         var metadataService = Substitute.For<IVehicleParameterMetadataService>();
         metadataService.GetAllMetadataAsync(state.VehicleId, Arg.Any<CancellationToken>()).Returns(metadata);
         var parameterService = new TestParameterService(registry);
-        var factory = new ParameterEditSessionFactory(
-            activeVehicle,
-            registry,
-            parameterService,
-            metadataService,
-            Options.Create(new ParameterEditSessionOptions { ReadbackTimeout = readbackTimeout ?? TimeSpan.FromSeconds(1) }),
-            NullLoggerFactory.Instance);
-        return new Fixture(state.VehicleId, activeVehicle, parameterService, factory);
+        var services = new ServiceCollection();
+        services.AddLibraryServices();
+        services.AddLogging();
+        services.AddSingleton<IActiveVehicleContext>(activeVehicle);
+        services.AddSingleton<IVehicleParameterRegistry>(registry);
+        services.AddSingleton<IVehicleParameterService>(parameterService);
+        services.AddSingleton(metadataService);
+        services.Configure<ParameterEditSessionOptions>(options =>
+            options.ReadbackTimeout = readbackTimeout ?? TimeSpan.FromSeconds(1));
+        services.AddSingleton<ParameterEditSessionFactory>();
+
+        var serviceProvider = services.BuildServiceProvider();
+        serviceProvider.UseDomainServices();
+        var factory = serviceProvider.GetRequiredService<ParameterEditSessionFactory>();
+        return new Fixture(state.VehicleId, activeVehicle, parameterService, factory, serviceProvider);
     }
 
     private static VehicleParameter Parameter(string name, float value)
@@ -239,11 +347,7 @@ public sealed class ParameterEditSessionTests
         return new VehicleParameter(name, value, MavParamType.Real32, 0, 1);
     }
 
-    private static ParameterMetadata Metadata(
-        string name,
-        string? range = null,
-        string? increment = null,
-        bool rebootRequired = false)
+    private static ParameterMetadata Metadata(string name, string? range = null, string? increment = null, bool rebootRequired = false)
     {
         return new ParameterMetadata(name, name, $"Description for {name}", null, null, range, null, null, increment, "Standard", rebootRequired, false);
     }
@@ -289,7 +393,14 @@ public sealed class ParameterEditSessionTests
         VehicleId VehicleId,
         TestActiveVehicleContext ActiveVehicle,
         TestParameterService ParameterService,
-        ParameterEditSessionFactory Factory);
+        ParameterEditSessionFactory Factory,
+        ServiceProvider ServiceProvider) : IDisposable
+    {
+        public void Dispose()
+        {
+            ServiceProvider.Dispose();
+        }
+    }
 
     private sealed class TestParameterService(IVehicleParameterRegistry registry) : IVehicleParameterService
     {
