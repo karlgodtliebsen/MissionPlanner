@@ -275,3 +275,4 @@ testem.log
 Thumbs.db
 *.xml
 /src/.vs/MissionPlanner.slnx/v18/.suo
+/src/UI/UraniumUI.Material.Control.Extensions/.xml
