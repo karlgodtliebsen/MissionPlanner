@@ -598,7 +598,6 @@ public partial class NumericUpDownField : TextField
         var grid = ButtonOrientation switch
         {
             NumericUpDownButtonOrientation.Vertical => BuildVerticalStepper(),
-
             var _ => BuildHorizontalStepper()
         };
 
@@ -610,15 +609,11 @@ public partial class NumericUpDownField : TextField
 
     private Grid BuildHorizontalStepper()
     {
-        incrementButton = CreateStepButton(
-            IncrementText,
-            IncrementCommand,
-            "Increase value");
+        incrementButton = CreateStepButton(IncrementText, IncrementCommand, "Increase value");
+        decrementButton = CreateStepButton(DecrementText, DecrementCommand, "Decrease value");
 
-        decrementButton = CreateStepButton(
-            DecrementText,
-            DecrementCommand,
-            "Decrease value");
+        incrementButton.BorderColor = new Color(255, 0, 0, 0.5f);
+        decrementButton.BorderColor = new Color(255, 255, 0, 0.5f);
 
         var grid = new Grid
         {
@@ -627,24 +622,17 @@ public partial class NumericUpDownField : TextField
             ColumnSpacing = 0,
             RowSpacing = 0,
             HeightRequest = StepButtonHeight,
-            ColumnDefinitions = { new ColumnDefinition(1), new ColumnDefinition(StepButtonWidth), new ColumnDefinition(1), new ColumnDefinition(StepButtonWidth) }
+            ColumnDefinitions = { new ColumnDefinition(StepButtonWidth), new ColumnDefinition(StepButtonWidth) }
         };
 
-        var leadingDivider = CreateVerticalDivider();
-        var middleDivider = CreateVerticalDivider();
-
-        grid.Add(leadingDivider, 0, 0);
-        grid.Add(decrementButton, 1, 0);
-        grid.Add(middleDivider, 2, 0);
-        grid.Add(incrementButton, 3, 0);
-
+        grid.Add(decrementButton, 0, 0);
+        grid.Add(incrementButton, 1, 0);
         return grid;
     }
 
     private Grid BuildVerticalStepper()
     {
         incrementButton = CreateStepButton(IncrementText, IncrementCommand, "Increase value");
-
         decrementButton = CreateStepButton(DecrementText, DecrementCommand, "Decrease value");
 
         var grid = new Grid
@@ -655,25 +643,16 @@ public partial class NumericUpDownField : TextField
             RowSpacing = 0,
             WidthRequest = StepButtonWidth + 1,
             HeightRequest = (StepButtonHeight * 2) + 1,
-            ColumnDefinitions = { new ColumnDefinition(1), new ColumnDefinition(StepButtonWidth) },
-            RowDefinitions = { new RowDefinition(StepButtonHeight), new RowDefinition(1), new RowDefinition(StepButtonHeight) }
+            ColumnDefinitions = { new ColumnDefinition(StepButtonWidth) },
+            RowDefinitions = { new RowDefinition(StepButtonHeight), new RowDefinition(StepButtonHeight) }
         };
 
-        var leadingDivider = CreateVerticalDivider();
-        Grid.SetRowSpan(leadingDivider, 3);
-
-        var middleDivider = CreateHorizontalDivider();
-
-        grid.Add(leadingDivider, 0, 0);
-        grid.Add(incrementButton, 1, 0);
-        grid.Add(middleDivider, 1, 1);
-        grid.Add(decrementButton, 1, 2);
-
+        grid.Add(incrementButton, 0, 0);
+        grid.Add(decrementButton, 0, 1);
         return grid;
     }
 
-    private Button CreateStepButton(string text, ICommand command,
-        string semanticDescription)
+    private Button CreateStepButton(string text, ICommand command, string semanticDescription)
     {
         var button = new Button
         {
@@ -691,13 +670,9 @@ public partial class NumericUpDownField : TextField
             VerticalOptions = LayoutOptions.Fill
         };
 
-        button.SetBinding(
-            Button.TextColorProperty,
-            new Binding(nameof(TextColor), source: this));
+        button.SetBinding(Button.TextColorProperty, new Binding(nameof(TextColor), source: this));
 
-        SemanticProperties.SetDescription(
-            button,
-            semanticDescription);
+        SemanticProperties.SetDescription(button, semanticDescription);
 
         return button;
     }

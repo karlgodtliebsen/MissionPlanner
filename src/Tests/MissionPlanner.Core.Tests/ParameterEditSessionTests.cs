@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Globalization;
 using FluentAssertions;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning;
@@ -176,6 +177,46 @@ public sealed class ParameterEditSessionTests
         session.GetField("GAIN")!.PendingValue.Should().Be(3);
     }
 
+    /// <summary>Verifies UI text hides float32 expansion without changing the double-backed editing model.</summary>
+    [Fact]
+    public async Task ParameterItemFormatsFloat32ValuesForDisplay()
+    {
+        using var fixture = CreateFixture(
+            [(Parameter("GAIN", 0.3f), Metadata("GAIN", "0 1", "0.1"))]);
+        var session = fixture.Factory.Create(fixture.VehicleId);
+        await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
+        var item = new ParameterItemViewModel(session, session.GetField("GAIN")!);
+        var expected = 0.3f.ToString(CultureInfo.CurrentCulture);
+
+        item.Value.Should().Be((double)0.3f);
+        item.OriginalValue.Should().Be((double)0.3f);
+        item.ValueText.Should().Be(expected);
+        item.OriginalValueText.Should().Be(expected);
+
+        item.ValueText = expected;
+
+        item.Value.Should().Be((double)0.3f);
+        session.GetField("GAIN")!.IsModified.Should().BeFalse();
+    }
+
+    /// <summary>Verifies editing display text still updates the double value and shared session.</summary>
+    [Fact]
+    public async Task ParameterItemValueTextUpdatesPendingValue()
+    {
+        using var fixture = CreateFixture(
+            [(Parameter("GAIN", 0.3f), Metadata("GAIN", "0 1", "0.1"))]);
+        var session = fixture.Factory.Create(fixture.VehicleId);
+        await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
+        var item = new ParameterItemViewModel(session, session.GetField("GAIN")!);
+        var editedText = 0.4f.ToString(CultureInfo.CurrentCulture);
+
+        item.ValueText = editedText;
+
+        item.Value.Should().Be(0.4);
+        item.ValueText.Should().Be(editedText);
+        session.GetField("GAIN")!.PendingValue.Should().Be(0.4);
+    }
+
     /// <summary>Verifies increment and decrement remain effective during synchronous session projection.</summary>
     [Fact]
     public async Task NumericEditorPreservesValueDuringSessionSynchronization()
@@ -219,7 +260,8 @@ public sealed class ParameterEditSessionTests
             item.IncrementNumberCommand.Execute(null);
         }
 
-        item.Value.Should().Be(0.7f);
+        item.StepSize.Should().Be(0.1);
+        item.Value.Should().Be(0.7);
         Convert.ToDecimal(item.Value).Should().Be(0.7m);
 
         void SynchronizeItem(object? sender, EventArgs args)

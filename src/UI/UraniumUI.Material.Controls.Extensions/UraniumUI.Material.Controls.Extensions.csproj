@@ -16,6 +16,8 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Microsoft.Maui.Controls" />
+        <PackageReference Include="UraniumUI.Icons.FontAwesome" />
+        <PackageReference Include="UraniumUI.Icons.MaterialSymbols" />
         <PackageReference Include="UraniumUI.Material" />
     </ItemGroup>
 </Project>

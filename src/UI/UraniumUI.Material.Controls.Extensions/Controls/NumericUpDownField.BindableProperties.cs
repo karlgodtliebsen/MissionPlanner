@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 
 using System.Windows.Input;
 
@@ -59,12 +59,18 @@ public partial class NumericUpDownField
         propertyChanged: static (bindable, _, _) =>
             ((NumericUpDownField)bindable).OnRangeChanged());
 
+    /// <summary>
+    /// Gets or sets the positive amount applied by each increment or decrement operation.
+    /// </summary>
     public double StepSize
     {
         get => (double)GetValue(StepSizeProperty);
         set => SetValue(StepSizeProperty, value);
     }
 
+    /// <summary>
+    /// Identifies the <see cref="StepSize"/> bindable property.
+    /// </summary>
     public static readonly BindableProperty StepSizeProperty = BindableProperty.Create(
         nameof(StepSize),
         typeof(double),
@@ -76,7 +82,7 @@ public partial class NumericUpDownField
             return double.IsFinite(step) && step > 0 ? step : 1d;
         },
         propertyChanged: static (bindable, _, _) =>
-            ((NumericUpDownField)bindable).UpdateCommandStates());
+            ((NumericUpDownField)bindable).OnStepPrecisionChanged());
 
 
     /// <summary>
@@ -248,7 +254,7 @@ public partial class NumericUpDownField
             nameof(IncrementText),
             typeof(string),
             typeof(NumericUpDownField),
-            "＋",
+            "\u002B", //"＋",
             propertyChanged: static (bindable, _, _) =>
                 ((NumericUpDownField)bindable).UpdateStepperAppearance());
 
@@ -263,7 +269,7 @@ public partial class NumericUpDownField
             nameof(DecrementText),
             typeof(string),
             typeof(NumericUpDownField),
-            "−",
+            "\u2212", //"−",
             propertyChanged: static (bindable, _, _) =>
                 ((NumericUpDownField)bindable).UpdateStepperAppearance());
 
@@ -278,8 +284,8 @@ public partial class NumericUpDownField
             nameof(StepButtonWidth),
             typeof(double),
             typeof(NumericUpDownField),
-            40d,
-            coerceValue: static (_, value) => Math.Max(24d, (double)value),
+            20d,
+            coerceValue: static (_, value) => Math.Max(20d, (double)value),
             propertyChanged: static (bindable, _, _) =>
                 ((NumericUpDownField)bindable).RebuildStepper());
 
@@ -294,8 +300,8 @@ public partial class NumericUpDownField
             nameof(StepButtonHeight),
             typeof(double),
             typeof(NumericUpDownField),
-            38d,
-            coerceValue: static (_, value) => Math.Max(24d, (double)value),
+            18d,
+            coerceValue: static (_, value) => Math.Max(18d, (double)value),
             propertyChanged: static (bindable, _, _) =>
                 ((NumericUpDownField)bindable).RebuildStepper());
 

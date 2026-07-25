@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -44,6 +45,34 @@ public partial class ParameterItemViewModel : ObservableObject
     [ObservableProperty] public partial double LiveValue { get; set; }
     [ObservableProperty] public partial double StepSize { get; set; }
     [ObservableProperty] public partial string? SelectedValue { get; set; }
+
+    /// <summary>
+    /// Gets or sets the culture-aware text displayed by the unrestricted value editor.
+    /// </summary>
+    /// <remarks>
+    /// Parameter values are transported as MAVLink single-precision values. This property
+    /// keeps the UI model as <see cref="double"/> while hiding the binary expansion caused
+    /// when a single-precision value is projected into that type.
+    /// </remarks>
+    [DataGridIgnore]
+    public string ValueText
+    {
+        get => FormatParameterValue(Value);
+        set
+        {
+            if (TryParseParameterValue(value, out var parsed) &&
+                !RepresentSameParameterValue(Value, parsed))
+            {
+                Value = parsed;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the culture-aware text displayed for the original parameter value.
+    /// </summary>
+    [DataGridIgnore]
+    public string OriginalValueText => FormatParameterValue(OriginalValue);
 
     [ObservableProperty] public partial double Max { get; set; }
     [ObservableProperty] public partial double Min { get; set; }
@@ -101,39 +130,6 @@ public partial class ParameterItemViewModel : ObservableObject
         Value = selectedValue;
     }
 
-    ///// <inheritdoc />
-    //protected override void OnPropertyChanged(PropertyChangedEventArgs e)
-    //{
-    //    base.OnPropertyChanged(e);
-    //    if (e.PropertyName == nameof(Value))
-    //    {
-    //    }
-    //}
-
-
-    ///// <summary>
-    ///// Sets metadata for this parameter.
-    ///// </summary>
-    //public void SetMetadata(ParameterMetadata metadata)
-    //{
-    //    ArgumentNullException.ThrowIfNull(metadata);
-    //    loadingData = true;
-    //    try
-    //    {
-    //        originalMetadata = metadata;
-    //        editMetadata = null;
-    //        editType = null;
-    //        Value = 0f;
-    //        ApplyEditorMetadata(CreateEditorMetadata(metadata));
-    //        SelectedValue = ValuesItems?.FirstOrDefault()?.Name;
-    //        SelectedBitmaskItems.Clear();
-    //    }
-    //    finally
-    //    {
-    //        loadingData = false;
-    //    }
-    //}
-
     /// <summary>Updates this item from the shared editing-session field.</summary>
     /// <param name="field">The latest field projection.</param>
     public void SetField(ParameterEditField field)
@@ -188,11 +184,7 @@ public partial class ParameterItemViewModel : ObservableObject
         Bitmask = metadata.Bitmask;
         UserLevel = metadata.UserLevel;
         RebootRequired = metadata.RebootRequired;
-        Min = metadata.Minimum ?? double.MinValue;
-        Max = metadata.Maximum ?? double.MaxValue;
         Increment = metadata.Increment;
-        stepSize = ResolveStepSize(metadata);
-        StepSize = stepSize;
         ValuesItems = metadata.ValueOptions;
         ValuesData = ValuesItems.Select(option => option.Name).ToArray();
         HasValuesData = ValuesItems.Length > 0;
@@ -200,6 +192,12 @@ public partial class ParameterItemViewModel : ObservableObject
         BitmaskOptions = metadata.BitmaskOptions;
         HasBitmask = BitmaskOptions.Length > 0;
         RangeData = Range?.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
+        var minimum = ResolveMetadataNumber(RangeData, 0, metadata.Minimum);
+        var maximum = ResolveMetadataNumber(RangeData, 1, metadata.Maximum);
+        Min = minimum ?? double.MinValue;
+        Max = maximum ?? double.MaxValue;
+        stepSize = ResolveStepSize(metadata, minimum, maximum);
+        StepSize = stepSize;
         HasNumericRangeData = !HasValuesData && !HasBitmask && RangeData.Length == 2;
         Options = metadata.Options;
 
@@ -224,16 +222,42 @@ public partial class ParameterItemViewModel : ObservableObject
         }
     }
 
-    private static double ResolveStepSize(EditorMetadataProjection metadata)
+    private static double ResolveStepSize(
+        EditorMetadataProjection metadata,
+        double? minimum,
+        double? maximum)
     {
-        var resolved = metadata.IncrementValue is not null
-            ? metadata.IncrementValue.Value
-            : metadata.Increment is not null
-                ? 0.1f
-                : metadata.Minimum is not null && metadata.Maximum is not null
-                    ? (double)Math.Round((metadata.Maximum.Value - metadata.Minimum.Value) / 10.0)
-                    : 0.1;
+        var resolved = TryParseInvariant(metadata.Increment, out var parsedIncrement)
+            ? parsedIncrement
+            : metadata.IncrementValue is not null
+                ? metadata.IncrementValue.Value
+                : metadata.Increment is not null
+                    ? 0.1
+                    : minimum is not null && maximum is not null
+                        ? Math.Round((maximum.Value - minimum.Value) / 10.0)
+                        : 0.1;
+
         return double.IsFinite(resolved) && resolved > 0 ? resolved : 0.1;
+    }
+
+    private static double? ResolveMetadataNumber(
+        IReadOnlyList<string> values,
+        int index,
+        double? fallback)
+    {
+        return index < values.Count &&
+               TryParseInvariant(values[index], out var parsed)
+            ? parsed
+            : fallback;
+    }
+
+    private static bool TryParseInvariant(string? text, out double value)
+    {
+        return double.TryParse(
+            text,
+            NumberStyles.Float,
+            CultureInfo.InvariantCulture,
+            out value);
     }
 
     private static EditorMetadataProjection CreateEditorMetadata(ParameterMetadata metadata)
@@ -298,7 +322,7 @@ public partial class ParameterItemViewModel : ObservableObject
             ? string.Join(",", bitmaskDefinitions.Select(option => $"{option.Bit}:{option.Label}"))
             : null);
         var increment = metadata.IncrementText ??
-                        metadata.Increment?.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                        metadata.Increment?.ToString(CultureInfo.InvariantCulture);
         var options = valueOptions.Length > 0
             ? string.Join(Environment.NewLine, metadata.Options.Select(option => $"{option.Value}:{option.Label}"))
             : bitmaskOptions.Length > 0
@@ -330,7 +354,7 @@ public partial class ParameterItemViewModel : ObservableObject
     {
         return minimum is null && maximum is null
             ? null
-            : $"{minimum?.ToString(System.Globalization.CultureInfo.InvariantCulture)}-{maximum?.ToString(System.Globalization.CultureInfo.InvariantCulture)}";
+            : $"{minimum?.ToString(CultureInfo.InvariantCulture)}-{maximum?.ToString(CultureInfo.InvariantCulture)}";
     }
 
 
@@ -348,7 +372,13 @@ public partial class ParameterItemViewModel : ObservableObject
 
     private void StepNumber(int direction)
     {
-        if (!double.IsFinite(Value) || !double.IsFinite(stepSize) || stepSize <= 0d || !double.IsFinite(Min) || !double.IsFinite(Max))
+        if (direction is not (-1 or 1) ||
+            !double.IsFinite(Value) ||
+            !double.IsFinite(stepSize) ||
+            stepSize <= 0d ||
+            !double.IsFinite(Min) ||
+            !double.IsFinite(Max) ||
+            Min > Max)
         {
             return;
         }
@@ -360,7 +390,8 @@ public partial class ParameterItemViewModel : ObservableObject
             var decimalValue = Convert.ToDecimal(Value);
             var decimalStep = Convert.ToDecimal(stepSize);
 
-            steppedValue = Convert.ToDouble(decimalValue + (direction * decimalStep));
+            steppedValue = Convert.ToDouble(
+                decimalValue + (direction * decimalStep));
         }
         catch (OverflowException)
         {
@@ -392,10 +423,20 @@ public partial class ParameterItemViewModel : ObservableObject
 
 
     /// <summary>
+    /// Updates the formatted original-value projection.
+    /// </summary>
+    partial void OnOriginalValueChanged(double value)
+    {
+        OnPropertyChanged(nameof(OriginalValueText));
+    }
+
+    /// <summary>
     /// Checks if the value has been modified from the original.
     /// </summary>
     partial void OnValueChanged(double value)
     {
+        OnPropertyChanged(nameof(ValueText));
+
         if (loadingData)
         {
             return;
@@ -413,6 +454,49 @@ public partial class ParameterItemViewModel : ObservableObject
                 WriteMessage = current.WriteMessage;
             }
         }
+    }
+
+    private static string FormatParameterValue(double value)
+    {
+        var culture = CultureInfo.CurrentCulture;
+
+        if (!double.IsFinite(value) ||
+            value > float.MaxValue ||
+            value < -float.MaxValue)
+        {
+            return value.ToString("G15", culture);
+        }
+
+        // MAVLink PARAM_VALUE is a float32. Formatting its single-precision projection
+        // restores the concise representation used before the UI properties became double,
+        // while the bound numeric value itself remains a double.
+        return ((float)value).ToString(culture);
+    }
+
+    private static bool TryParseParameterValue(string? text, out double value)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            value = default;
+            return false;
+        }
+
+        const NumberStyles styles = NumberStyles.Float;
+        var culture = CultureInfo.CurrentCulture;
+
+        return double.TryParse(text, styles, culture, out value) ||
+               (!Equals(culture, CultureInfo.InvariantCulture) &&
+                double.TryParse(text, styles, CultureInfo.InvariantCulture, out value));
+    }
+
+    private static bool RepresentSameParameterValue(double left, double right)
+    {
+        return double.IsFinite(left) &&
+               double.IsFinite(right) &&
+               left is >= -float.MaxValue and <= float.MaxValue &&
+               right is >= -float.MaxValue and <= float.MaxValue
+            ? ((float)left).Equals((float)right)
+            : left.Equals(right);
     }
 
 

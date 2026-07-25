@@ -170,32 +170,14 @@
                         <material:DataGridColumn Title="Value" >
                             <material:DataGridColumn.CellItemTemplate >
                                 <DataTemplate  x:DataType="configTuning:ParameterItemViewModel" >
-                                    <!--<VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0,5,0" >-->
-                                    <!--<Grid RowDefinitions="*,Auto" HorizontalOptions="Fill" VerticalOptions="Fill">-->
-                                   
-                                    
-                                    <!--<material:EditorField 
-                                                FontSize="12"  IsReadOnly="{Binding IsReadOnly}"
-                                                Keyboard="Numeric"
-                                                BorderColor="Aqua"
-                                                HorizontalOptions="Fill" VerticalOptions="Center"  
-                                                Text="{Binding Value, Mode=TwoWay}"
-                                            />-->
-
                                     <controls:AlignedEditorField
                                         FontSize="12"  IsReadOnly="{Binding IsReadOnly}"
                                         Keyboard="Numeric"
                                         BorderColor="Aqua"
                                         HorizontalOptions="Fill" VerticalOptions="Center"  
-                                        Text="{Binding Value, Mode=TwoWay}"
+                                        Text="{Binding ValueText, Mode=TwoWay}"
                                         HorizontalTextAlignment="End"
                                         VerticalTextAlignment="Center" />
-
-
-                                    <!--<Label Grid.Row="1" Text="{Binding ValidationError}" TextColor="OrangeRed" FontSize="11"
-                                            IsVisible="{Binding IsModified}" LineBreakMode="TailTruncation" />
-                                            </Grid>-->
-                                    <!--</VerticalStackLayout>-->
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
                         </material:DataGridColumn>
@@ -218,7 +200,7 @@
                                                        Title="Multiple options"
                                                        BorderColor="Aqua"
                                                        TitleFontSize="10"
-                                                       FontSize="12" 
+                                                       FontSize="14" 
                                                        WidthRequest="225" VerticalOptions="Center" HorizontalOptions="Fill"
                                                        ItemsSource="{Binding BitmaskOptions}" 
                                                        SelectedValuesChangedCommand="{Binding SelectedValuesChanged}"
@@ -228,7 +210,7 @@
                                                                        Title="Number" 
                                                                        BorderColor="Aqua"
                                                                        TitleFontSize="10"
-                                                                       FontSize="12" 
+                                                                       FontSize="14" 
                                                                        WidthRequest="225" VerticalOptions="Center" HorizontalOptions="Fill"
                                                                        Value="{Binding Value, Mode=TwoWay}"
                                                                        Min="{Binding Min}"
@@ -236,38 +218,6 @@
                                                                        StepSize="{Binding StepSize}"
                                                                        HorizontalTextAlignment="End"
                                                                        VerticalTextAlignment="Center" />
-
-                                        
-                                        <!--<Grid ColumnDefinitions="*,Auto,Auto" WidthRequest="225" IsVisible="{Binding HasNumericRangeData}" 
-                                                  VerticalOptions="Fill" HorizontalOptions="Fill">
-                                            <material:EditorField 
-                                                FontSize="12"  
-                                                BorderColor="Aqua"
-                                                Grid.Column="0" 
-                                                Keyboard="Numeric"
-                                                Title="Number"
-                                                TitleFontSize="10"
-                                                HorizontalOptions="Fill" 
-                                                VerticalOptions="Center"  
-                                                Text="{Binding Value, Mode=TwoWay}"
-                                            />
-
-                                            <Button BackgroundColor="Transparent"
-                                                BorderColor="Transparent"
-                                                Text="-"
-                                                FontSize="22"
-                                                Margin="0,0,0,0" Grid.Column="1"  
-                                                HorizontalOptions="Center" VerticalOptions="Center"  
-                                                Command="{Binding DecrementNumberCommand}" />
-                                            <Button BackgroundColor="Transparent"
-                                                BorderColor="Transparent"
-                                                FontSize="22"
-                                                Text="+"
-                                                Margin="0,0,0,0"  Grid.Column="2"  HorizontalOptions="Center" VerticalOptions="Center"  
-                                                Command="{Binding IncrementNumberCommand}" />
-                                        </Grid>-->
-                                        
-
                                     </VerticalStackLayout>
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
@@ -275,7 +225,7 @@
 
                         <material:DataGridColumn Width="100"  ValueBinding="{Binding Range}" Title="Range"  />
                         <!--<material:DataGridColumn Width="100"  ValueBinding="{Binding StepSize}" Title="Step Size"  />-->
-                        <material:DataGridColumn Width="100"  ValueBinding="{Binding OriginalValue}" Title="Default"  />
+                        <material:DataGridColumn Width="100"  ValueBinding="{Binding OriginalValueText}" Title="Default"  />
                         <material:DataGridColumn Width="125" Title="Units">
                             <material:DataGridColumn.CellItemTemplate>
                                 <DataTemplate x:DataType="configTuning:ParameterItemViewModel">

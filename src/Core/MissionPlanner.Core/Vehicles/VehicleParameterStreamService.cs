@@ -177,13 +177,13 @@ public sealed class VehicleParameterStreamService : IVehicleParameterStreamServi
     {
         var overallStopwatch = Stopwatch.StartNew();
 
-        progress?.Report(new ParameterStreamProgress(Message: "Reading parameters using MAVFTP..."));
+        //progress?.Report(new ParameterStreamProgress(Message: "Reading parameters using MAVFTP..."));
 
-        var ftpResult = await TryDownloadPackedParametersAsync(vehicleId, progress, overallStopwatch, cancellationToken).ConfigureAwait(false);
-        if (ftpResult is not null)
-        {
-            return ftpResult;
-        }
+        //var ftpResult = await TryDownloadPackedParametersAsync(vehicleId, progress, overallStopwatch, cancellationToken).ConfigureAwait(false);
+        //if (ftpResult is not null)
+        //{
+        //    return ftpResult;
+        //}
 
         progress?.Report(new ParameterStreamProgress(Message: "Reading parameters using MAVLink stream..."));
 

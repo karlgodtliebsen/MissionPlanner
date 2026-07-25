@@ -21,6 +21,22 @@ public class NumericUpDownField_StepPrecision_Test
         control.Text.ShouldBe("1,3");
     }
 
+    /// <summary>
+    /// Verifies that a late-bound step size reformats an already-bound value.
+    /// </summary>
+    [Fact]
+    public void StepSizeAppliedAfterValue_ShouldReformatUsingNewPrecision()
+    {
+        var control = AnimationReadyHandler.Prepare(
+            new NumericUpDownField { CultureName = "da-DK" });
+
+        // Bindable properties are not guaranteed to arrive in source declaration order.
+        control.Value = 1.1000000149;
+        control.StepSize = 0.1;
+
+        control.Text.ShouldBe("1,1");
+    }
+
     [Fact]
     public void Increment_ShouldSnapNoisyCurrentValueBeforeAddingStep()
     {
