@@ -89,6 +89,7 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\..\Libraries\MissionPlanner.Library\MissionPlanner.Library.csproj" />
 	  <ProjectReference Include="..\..\Core\MissionPlanner.Core\MissionPlanner.Core.csproj" />
+	  <ProjectReference Include="..\UraniumUI.Material.Controls.Extensions\UraniumUI.Material.Controls.Extensions.csproj" />
 	  <ProjectReference Include="..\UraniumUI.Material.VirtualizedDataGrid\UraniumUI.Material.VirtualizedDataGrid.csproj" />
 	</ItemGroup>
 

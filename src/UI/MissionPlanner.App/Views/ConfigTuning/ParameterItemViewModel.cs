@@ -4,6 +4,7 @@ using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MissionPlanner.Core.ConfigTuning;
+using MissionPlanner.Library.Math;
 using MissionPlanner.MavLink.Parameters;
 using UraniumUI.Material.Controls;
 
@@ -23,7 +24,7 @@ public partial class ParameterItemViewModel : ObservableObject
 
     private bool loadingData;
 
-    private float stepSize = 0.1f;
+    private double stepSize = 0.1;
 
     /// <summary>
     /// Provides the public API for OriginalParameter.
@@ -35,17 +36,17 @@ public partial class ParameterItemViewModel : ObservableObject
     /// </summary>
     public ICommand SelectedValuesChanged { get; }
 
-    [DisplayName("Default")][ObservableProperty] public partial float OriginalValue { get; set; }
+    [DisplayName("Default")][ObservableProperty] public partial double OriginalValue { get; set; }
 
     [ObservableProperty] public partial string Name { get; set; } = null!;
     [ObservableProperty] public partial string? DisplayName { get; set; }
-    [ObservableProperty] public partial float Value { get; set; }
-    [ObservableProperty] public partial float LiveValue { get; set; }
-    [ObservableProperty] public partial float StepSize { get; set; }
+    [ObservableProperty] public partial double Value { get; set; }
+    [ObservableProperty] public partial double LiveValue { get; set; }
+    [ObservableProperty] public partial double StepSize { get; set; }
     [ObservableProperty] public partial string? SelectedValue { get; set; }
 
-    [ObservableProperty] public partial float Max { get; set; }
-    [ObservableProperty] public partial float Min { get; set; }
+    [ObservableProperty] public partial double Max { get; set; }
+    [ObservableProperty] public partial double Min { get; set; }
 
     [ObservableProperty] public partial string? Units { get; set; }
     [ObservableProperty] public partial string? UnitText { get; set; }
@@ -91,7 +92,7 @@ public partial class ParameterItemViewModel : ObservableObject
             return;
         }
 
-        var selectedValue = 0.0f;
+        var selectedValue = 0.0;
         foreach (var item in items.OfType<SelectItem>())
         {
             selectedValue += item.Value;
@@ -100,44 +101,44 @@ public partial class ParameterItemViewModel : ObservableObject
         Value = selectedValue;
     }
 
-    /// <inheritdoc />
-    protected override void OnPropertyChanged(PropertyChangedEventArgs e)
-    {
-        base.OnPropertyChanged(e);
-        if (e.PropertyName == nameof(Value))
-        {
-        }
-    }
+    ///// <inheritdoc />
+    //protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+    //{
+    //    base.OnPropertyChanged(e);
+    //    if (e.PropertyName == nameof(Value))
+    //    {
+    //    }
+    //}
 
 
-    /// <summary>
-    /// Sets metadata for this parameter.
-    /// </summary>
-    public void SetMetadata(ParameterMetadata metadata)
-    {
-        ArgumentNullException.ThrowIfNull(metadata);
-        loadingData = true;
-        try
-        {
-            originalMetadata = metadata;
-            editMetadata = null;
-            editType = null;
-            Value = 0f;
-            ApplyEditorMetadata(CreateEditorMetadata(metadata));
-            SelectedValue = ValuesItems?.FirstOrDefault()?.Name;
-            SelectedBitmaskItems.Clear();
-        }
-        finally
-        {
-            loadingData = false;
-        }
-    }
+    ///// <summary>
+    ///// Sets metadata for this parameter.
+    ///// </summary>
+    //public void SetMetadata(ParameterMetadata metadata)
+    //{
+    //    ArgumentNullException.ThrowIfNull(metadata);
+    //    loadingData = true;
+    //    try
+    //    {
+    //        originalMetadata = metadata;
+    //        editMetadata = null;
+    //        editType = null;
+    //        Value = 0f;
+    //        ApplyEditorMetadata(CreateEditorMetadata(metadata));
+    //        SelectedValue = ValuesItems?.FirstOrDefault()?.Name;
+    //        SelectedBitmaskItems.Clear();
+    //    }
+    //    finally
+    //    {
+    //        loadingData = false;
+    //    }
+    //}
 
     /// <summary>Updates this item from the shared editing-session field.</summary>
     /// <param name="field">The latest field projection.</param>
     public void SetField(ParameterEditField field)
     {
-        var pendingValue = (float)field.PendingValue;
+        var pendingValue = field.PendingValue;
         var pendingValueChanged = Math.Abs(Value - pendingValue) > 0.0001f;
         var editorDefinitionChanged =
             editType != field.Type ||
@@ -149,8 +150,8 @@ public partial class ParameterItemViewModel : ObservableObject
         {
             originalParameter = new VehicleParameter(field.Name, (float)field.OriginalValue, field.Type, 0, 0);
             originalMetadata = null;
-            OriginalValue = (float)field.OriginalValue;
-            LiveValue = (float)field.LiveValue;
+            OriginalValue = field.OriginalValue;
+            LiveValue = field.LiveValue;
             Value = pendingValue;
             ValidationError = field.ValidationError;
             WriteStatus = field.WriteStatus;
@@ -187,8 +188,8 @@ public partial class ParameterItemViewModel : ObservableObject
         Bitmask = metadata.Bitmask;
         UserLevel = metadata.UserLevel;
         RebootRequired = metadata.RebootRequired;
-        Min = metadata.Minimum ?? float.MinValue;
-        Max = metadata.Maximum ?? float.MaxValue;
+        Min = metadata.Minimum ?? double.MinValue;
+        Max = metadata.Maximum ?? double.MaxValue;
         Increment = metadata.Increment;
         stepSize = ResolveStepSize(metadata);
         StepSize = stepSize;
@@ -198,9 +199,7 @@ public partial class ParameterItemViewModel : ObservableObject
 
         BitmaskOptions = metadata.BitmaskOptions;
         HasBitmask = BitmaskOptions.Length > 0;
-        RangeData = Range?.Split(
-            (char[]?)null,
-            StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
+        RangeData = Range?.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
         HasNumericRangeData = !HasValuesData && !HasBitmask && RangeData.Length == 2;
         Options = metadata.Options;
 
@@ -225,16 +224,16 @@ public partial class ParameterItemViewModel : ObservableObject
         }
     }
 
-    private static float ResolveStepSize(EditorMetadataProjection metadata)
+    private static double ResolveStepSize(EditorMetadataProjection metadata)
     {
         var resolved = metadata.IncrementValue is not null
             ? metadata.IncrementValue.Value
             : metadata.Increment is not null
                 ? 0.1f
                 : metadata.Minimum is not null && metadata.Maximum is not null
-                    ? (float)Math.Round((metadata.Maximum.Value - metadata.Minimum.Value) / 10.0)
-                    : 0.1f;
-        return float.IsFinite(resolved) && resolved > 0 ? resolved : 0.1f;
+                    ? (double)Math.Round((metadata.Maximum.Value - metadata.Minimum.Value) / 10.0)
+                    : 0.1;
+        return double.IsFinite(resolved) && resolved > 0 ? resolved : 0.1;
     }
 
     private static EditorMetadataProjection CreateEditorMetadata(ParameterMetadata metadata)
@@ -283,7 +282,7 @@ public partial class ParameterItemViewModel : ObservableObject
     {
         var metadata = field.Metadata;
         var valueOptions = metadata.Options
-            .Select(option => new SelectItem(option.Label, (float)option.Value))
+            .Select(option => new SelectItem(option.Label, option.Value))
             .ToArray();
         var bitmaskDefinitions = metadata.Bitmask
             .Where(option => option.Bit is >= 0 and < 64)
@@ -317,9 +316,9 @@ public partial class ParameterItemViewModel : ObservableObject
             bitmask,
             increment,
             metadata.UserLevel,
-            metadata.Minimum is { } minimum ? (float)minimum : null,
-            metadata.Maximum is { } maximum ? (float)maximum : null,
-            metadata.Increment is { } incrementValue ? (float)incrementValue : null,
+            metadata.Minimum,
+            metadata.Maximum,
+            metadata.Increment,
             metadata.ReadOnly,
             metadata.RebootRequired,
             valueOptions,
@@ -349,28 +348,26 @@ public partial class ParameterItemViewModel : ObservableObject
 
     private void StepNumber(int direction)
     {
-        if (!float.IsFinite(Value) ||
-            !float.IsFinite(stepSize) ||
-            stepSize <= 0 ||
-            !float.IsFinite(Min) ||
-            !float.IsFinite(Max))
+        if (!double.IsFinite(Value) || !double.IsFinite(stepSize) || stepSize <= 0d || !double.IsFinite(Min) || !double.IsFinite(Max))
         {
             return;
         }
 
         double steppedValue;
+
         try
         {
             var decimalValue = Convert.ToDecimal(Value);
             var decimalStep = Convert.ToDecimal(stepSize);
+
             steppedValue = Convert.ToDouble(decimalValue + (direction * decimalStep));
         }
         catch (OverflowException)
         {
-            steppedValue = Value + (direction * (double)stepSize);
+            steppedValue = Value + (direction * stepSize);
         }
 
-        Value = (float)Math.Clamp(steppedValue, Min, Max);
+        Value = Math.Clamp(steppedValue, Min, Max);
     }
 
     partial void OnSelectedValueChanged(string? oldValue, string? newValue)
@@ -383,7 +380,10 @@ public partial class ParameterItemViewModel : ObservableObject
         if (ValuesItems is not null)
         {
             var item = ValuesItems.FirstOrDefault(i => i.Name == newValue);
-            if (item is not null && Math.Abs(item.Value - Value) > 0.0001f)
+            if (item is not null &&
+
+                // Math.Abs(item.Value - Value) > 0.0001f)
+                MathUtils.AreNearlyEqual(item.Value, Value) == false)
             {
                 Value = item.Value;
             }
@@ -394,14 +394,14 @@ public partial class ParameterItemViewModel : ObservableObject
     /// <summary>
     /// Checks if the value has been modified from the original.
     /// </summary>
-    partial void OnValueChanged(float value)
+    partial void OnValueChanged(double value)
     {
         if (loadingData)
         {
             return;
         }
 
-        IsModified = Math.Abs(value - OriginalValue) > 0.0001f;
+        IsModified = MathUtils.AreNearlyEqual(value, OriginalValue) == false;
         if (editSession is not null)
         {
             editSession.TrySetPending(Name, value, out var error);
@@ -427,9 +427,9 @@ public partial class ParameterItemViewModel : ObservableObject
         string? Bitmask,
         string? Increment,
         string? UserLevel,
-        float? Minimum,
-        float? Maximum,
-        float? IncrementValue,
+        double? Minimum,
+        double? Maximum,
+        double? IncrementValue,
         bool ReadOnly,
         bool RebootRequired,
         SelectItem[] ValueOptions,
@@ -440,7 +440,7 @@ public partial class ParameterItemViewModel : ObservableObject
 /// <summary>
 /// Provides the public API for SelectItem.
 /// </summary>
-public sealed record SelectItem(string Name, float Value)
+public sealed record SelectItem(string Name, double Value)
 {
     /// <inheritdoc />
     public override string ToString()

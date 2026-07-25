@@ -3,13 +3,17 @@ using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Library.Math;
 using MissionPlanner.MavLink.Parameters;
 
 namespace MissionPlanner.Core.ConfigTuning;
 
-internal sealed class ParameterEditSession : IParameterEditSession
+/// <summary>
+/// Represents a session for editing vehicle parameters, allowing for loading, modifying, validating, and applying parameter changes in a controlled manner. 
+/// </summary>
+public sealed class ParameterEditSession : IParameterEditSession
 {
-    private const double EqualityTolerance = 0.0001;
+    //private const double EqualityTolerance = 0.0001;
     private readonly object sync = new();
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleParameterRegistry parameterRegistry;
@@ -23,6 +27,16 @@ internal sealed class ParameterEditSession : IParameterEditSession
     private string? invalidReason;
     private bool disposed;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ParameterEditSession"/> class.
+    /// </summary>
+    /// <param name="scope">The scope of the parameter edit session.</param>
+    /// <param name="activeVehicle">The active vehicle context.</param>
+    /// <param name="parameterRegistry">The vehicle parameter registry.</param>
+    /// <param name="parameterService">The vehicle parameter service.</param>
+    /// <param name="metadataService">The vehicle parameter metadata service.</param>
+    /// <param name="options">The options for the parameter edit session.</param>
+    /// <param name="logger">The logger for the parameter edit session.</param>
     public ParameterEditSession(
         ParameterEditScope scope,
         IActiveVehicleContext activeVehicle,
@@ -147,7 +161,7 @@ internal sealed class ParameterEditSession : IParameterEditSession
             }
 
             error = Validate(field, value);
-            updated = field with { PendingValue = value, ValidationError = error, WriteStatus = NearlyEqual(value, field.LiveValue) ? ParameterEditWriteStatus.Unchanged : ParameterEditWriteStatus.Pending, WriteMessage = null };
+            updated = field with { PendingValue = value, ValidationError = error, WriteStatus = MathUtils.AreNearlyEqual(value, field.LiveValue) ? ParameterEditWriteStatus.Unchanged : ParameterEditWriteStatus.Pending, WriteMessage = null };
             fields[name] = updated;
         }
 
@@ -308,6 +322,7 @@ internal sealed class ParameterEditSession : IParameterEditSession
         }
     }
 
+    /// <inheritdoc/>
     public void Invalidate(string reason)
     {
         lock (sync)
@@ -327,6 +342,7 @@ internal sealed class ParameterEditSession : IParameterEditSession
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <inheritdoc/>
     public void Dispose()
     {
         lock (sync)
@@ -381,7 +397,7 @@ internal sealed class ParameterEditSession : IParameterEditSession
                         PendingValue = pending,
                         Metadata = projectedMetadata,
                         ValidationError = validation,
-                        WriteStatus = NearlyEqual(pending, parameter.Value) ? ParameterEditWriteStatus.Unchanged : ParameterEditWriteStatus.Pending,
+                        WriteStatus = MathUtils.AreNearlyEqual(pending, parameter.Value) ? ParameterEditWriteStatus.Unchanged : ParameterEditWriteStatus.Pending,
                         WriteMessage = null
                     };
                 }
@@ -425,7 +441,7 @@ internal sealed class ParameterEditSession : IParameterEditSession
         void OnChanged(object? sender, VehicleParameterChangedEventArgs args)
         {
             if (args.VehicleId == VehicleId && args.Parameter is { } parameter &&
-                parameter.Name == field.Name && NearlyEqual(parameter.Value, expected))
+                parameter.Name == field.Name && MathUtils.AreNearlyEqual(parameter.Value, expected))
             {
                 readback.TrySetResult(parameter);
             }
@@ -439,7 +455,7 @@ internal sealed class ParameterEditSession : IParameterEditSession
                 return (false, null);
             }
 
-            if (parameterRegistry.GetParameter(VehicleId, field.Name) is { } current && NearlyEqual(current.Value, expected))
+            if (parameterRegistry.GetParameter(VehicleId, field.Name) is { } current && MathUtils.AreNearlyEqual(current.Value, expected))
             {
                 return (true, current);
             }
@@ -515,7 +531,7 @@ internal sealed class ParameterEditSession : IParameterEditSession
 
             var preservePending = field.IsModified;
             var pending = preservePending ? field.PendingValue : parameter.Value;
-            var remainsModified = !NearlyEqual(pending, parameter.Value);
+            var remainsModified = !MathUtils.AreNearlyEqual(pending, parameter.Value);
             fields[parameter.Name] = field with
             {
                 Type = parameter.Type,
@@ -600,22 +616,22 @@ internal sealed class ParameterEditSession : IParameterEditSession
             return "Value must be a finite MAVLink 32-bit parameter value.";
         }
 
-        if (field.Metadata.ReadOnly && !NearlyEqual(value, field.LiveValue))
+        if (field.Metadata.ReadOnly && !MathUtils.AreNearlyEqual(value, field.LiveValue))
         {
             return "This parameter is read-only and cannot be modified.";
         }
 
-        if (field.Metadata.Minimum is { } minimum && value < minimum - EqualityTolerance)
+        if (field.Metadata.Minimum is { } minimum && value < minimum)
         {
             return $"Value must be at least {minimum}.";
         }
 
-        if (field.Metadata.Maximum is { } maximum && value > maximum + EqualityTolerance)
+        if (field.Metadata.Maximum is { } maximum && value > maximum)
         {
             return $"Value must be at most {maximum}.";
         }
 
-        if (field.Type != MavParamType.Real32 && !NearlyEqual(value, Math.Round(value)))
+        if (field.Type != MavParamType.Real32 && !MathUtils.AreNearlyEqual(value, Math.Round(value)))
         {
             return "This parameter requires a whole-number value.";
         }
@@ -626,14 +642,14 @@ internal sealed class ParameterEditSession : IParameterEditSession
             return typeError;
         }
 
-        if (field.Metadata.Options.Count > 0 && !field.Metadata.Options.Any(option => NearlyEqual(option.Value, value)))
+        if (field.Metadata.Options.Count > 0 && !field.Metadata.Options.Any(option => MathUtils.AreNearlyEqual(option.Value, value)))
         {
             return "Select one of the values advertised by the vehicle firmware metadata.";
         }
 
         if (field.Metadata.Bitmask.Count > 0)
         {
-            if (value < 0 || !NearlyEqual(value, Math.Round(value)))
+            if (value < 0 || !MathUtils.AreNearlyEqual(value, Math.Round(value)))
             {
                 return "A bitmask value must be a non-negative whole number.";
             }
@@ -652,7 +668,7 @@ internal sealed class ParameterEditSession : IParameterEditSession
         {
             var origin = field.Metadata.Minimum ?? 0;
             var steps = (value - origin) / increment;
-            if (!NearlyEqual(steps, Math.Round(steps)))
+            if (!MathUtils.AreNearlyEqual(steps, Math.Round(steps)))
             {
                 return $"Value must use increments of {increment}.";
             }
@@ -718,9 +734,9 @@ internal sealed class ParameterEditSession : IParameterEditSession
         }
     }
 
-    private static bool NearlyEqual(double first, double second)
-    {
-        var scale = Math.Max(1, Math.Max(Math.Abs(first), Math.Abs(second)));
-        return Math.Abs(first - second) <= EqualityTolerance * scale;
-    }
+    //private static bool NearlyEqual(double first, double second)
+    //{
+    //    var scale = Math.Max(1, Math.Max(Math.Abs(first), Math.Abs(second)));
+    //    return Math.Abs(first - second) <= EqualityTolerance * scale;
+    //}
 }

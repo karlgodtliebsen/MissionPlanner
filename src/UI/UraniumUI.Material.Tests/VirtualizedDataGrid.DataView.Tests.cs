@@ -1,10 +1,8 @@
-using System.Collections.ObjectModel;
-using Shouldly;
+﻿using System.Collections.ObjectModel;
 using UraniumUI.Material.Controls;
-using UraniumUI.Material.VirtualizedDataGrid.Controls;
-using UraniumUI.Tests.Core;
+using Xunit;
 
-namespace UraniumUI.Material.Tests.Controls;
+namespace UraniumUI.Material.Tests;
 
 public class VirtualizedDataGridDataViewTests
 {
@@ -33,11 +31,7 @@ public class VirtualizedDataGridDataViewTests
     [Fact]
     public void TextFilter_ShouldFilterConfiguredProperties()
     {
-        var rows = new ObservableCollection<Row>
-        {
-            new("WP_SPEED", "Waypoint speed"),
-            new("BATT_MONITOR", "Battery monitor")
-        };
+        var rows = new ObservableCollection<Row> { new("WP_SPEED", "Waypoint speed"), new("BATT_MONITOR", "Battery monitor") };
 
         var control = AnimationReadyHandler.Prepare(CreateGrid(rows));
         control.FilterMemberPaths = "Name,Description";

@@ -3,10 +3,9 @@
 using System.Collections.ObjectModel;
 using Shouldly;
 using UraniumUI.Material.Controls;
-using UraniumUI.Material.VirtualizedDataGrid.Controls;
-using UraniumUI.Tests.Core;
+using Xunit;
 
-namespace UraniumUI.Material.Tests.Controls;
+namespace UraniumUI.Material.Tests;
 
 public class VirtualizedDataGrid_SearchTemplate_Tests
 {
@@ -47,10 +46,7 @@ public class VirtualizedDataGrid_SearchTemplate_Tests
     public void SearchBar_ShouldRemainVisibleWhenFilterHasNoMatches()
     {
         var control = AnimationReadyHandler.Prepare(CreateGrid());
-        control.ItemsSource = new ObservableCollection<Row>
-        {
-            new("ARMING_CHECK"),
-        };
+        control.ItemsSource = new ObservableCollection<Row> { new("ARMING_CHECK") };
 
         control.FilterMemberPaths = nameof(Row.Name);
         control.FilterText = "NO_MATCH";
@@ -76,21 +72,18 @@ public class VirtualizedDataGrid_SearchTemplate_Tests
         control.ClearSearchCommand.CanExecute(null).ShouldBeFalse();
     }
 
-    private static TestableGrid CreateGrid(DataTemplate? searchTemplate = null) =>
-        new()
+    private static TestableGrid CreateGrid(DataTemplate? searchTemplate = null)
+    {
+        return new TestableGrid
         {
             ShowSearchBar = true,
             SearchTemplate = searchTemplate,
             Columns =
             [
-                new DataGridColumn
-                {
-                    Title = "Name",
-                    Width = GridLength.Star,
-                    ValueBinding = new Binding(nameof(Row.Name)),
-                },
-            ],
+                new DataGridColumn { Title = "Name", Width = GridLength.Star, ValueBinding = new Binding(nameof(Row.Name)) }
+            ]
         };
+    }
 
     private sealed class TestableGrid : VirtualizedDataGrid
     {

@@ -1,4 +1,5 @@
-﻿using MissionPlanner.MavLink.Parameters;
+﻿using MissionPlanner.Library.Math;
+using MissionPlanner.MavLink.Parameters;
 
 namespace MissionPlanner.Core.ConfigTuning;
 
@@ -30,7 +31,7 @@ public sealed record ParameterEditField(
         {
             const double tolerance = 0.0001;
             var scale = Math.Max(1, Math.Max(Math.Abs(PendingValue), Math.Abs(LiveValue)));
-            return Math.Abs(PendingValue - LiveValue) > tolerance * scale;
+            return MathUtils.AreEquivalent(PendingValue, LiveValue, tolerance * scale);
         }
     }
 
