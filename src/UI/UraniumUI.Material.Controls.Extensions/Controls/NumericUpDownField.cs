@@ -562,9 +562,7 @@ public partial class NumericUpDownField : TextField
             return false;
         }
 
-        const NumberStyles styles =
-            NumberStyles.Float |
-            NumberStyles.AllowThousands;
+        const NumberStyles styles = NumberStyles.Number | NumberStyles.AllowThousands;
 
         var culture = ResolveCulture();
 
@@ -575,12 +573,7 @@ public partial class NumericUpDownField : TextField
 
         // ArduPilot parameter files commonly use invariant decimal points even when
         // the UI culture uses a decimal comma.
-        return !Equals(culture, CultureInfo.InvariantCulture) &&
-               double.TryParse(
-                   text,
-                   styles,
-                   CultureInfo.InvariantCulture,
-                   out value);
+        return !Equals(culture, CultureInfo.InvariantCulture) && double.TryParse(text, styles, CultureInfo.InvariantCulture, out value);
     }
 
     private CultureInfo ResolveCulture()
@@ -604,11 +597,9 @@ public partial class NumericUpDownField : TextField
     {
         var grid = ButtonOrientation switch
         {
-            NumericUpDownButtonOrientation.Vertical =>
-                BuildVerticalStepper(),
+            NumericUpDownButtonOrientation.Vertical => BuildVerticalStepper(),
 
-            var _ =>
-                BuildHorizontalStepper()
+            var _ => BuildHorizontalStepper()
         };
 
         stepperAttachment.Content = grid;
@@ -652,15 +643,9 @@ public partial class NumericUpDownField : TextField
 
     private Grid BuildVerticalStepper()
     {
-        incrementButton = CreateStepButton(
-            IncrementText,
-            IncrementCommand,
-            "Increase value");
+        incrementButton = CreateStepButton(IncrementText, IncrementCommand, "Increase value");
 
-        decrementButton = CreateStepButton(
-            DecrementText,
-            DecrementCommand,
-            "Decrease value");
+        decrementButton = CreateStepButton(DecrementText, DecrementCommand, "Decrease value");
 
         var grid = new Grid
         {
