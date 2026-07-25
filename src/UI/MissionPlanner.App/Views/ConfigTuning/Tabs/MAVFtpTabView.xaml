@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<tabs:ContentPageView x:TypeArguments="tabs:MavFtpTabViewModel"
+<navigation:ContentPageView x:TypeArguments="tabs:MavFtpTabViewModel"
                       xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                       xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
+                      xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                       x:Name="RootPage"
                       x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.MAVFtpTabView"
                       Title="Vehicle Files">
@@ -46,4 +47,4 @@
             </HorizontalStackLayout>
         </VerticalStackLayout>
     </Grid>
-</tabs:ContentPageView>
+</navigation:ContentPageView>

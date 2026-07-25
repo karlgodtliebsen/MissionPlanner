@@ -396,7 +396,7 @@ public class VehicleTests
             3,
             receivedAt, TestContext.Current.CancellationToken);
 
-        registry.UpdateConnectionStates(receivedAt.AddSeconds(6), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+        await registry.UpdateConnectionStates(receivedAt.AddSeconds(6), TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
 
         Assert.Equal(VehicleConnectionState.Degraded, vehicleRegistryResult.Vehicle.State.ConnectionState);
     }

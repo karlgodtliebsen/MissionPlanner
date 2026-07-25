@@ -1,6 +1,6 @@
 ﻿using MissionPlanner.Core.ConfigTuning.Planner;
 
-namespace MissionPlanner.App.Helpers;
+namespace MissionPlanner.App.Services;
 
 /// <summary>Stores Planner credentials and tokens through the platform secure store.</summary>
 public sealed class SecurePlannerSecretStore : IPlannerSecretStore

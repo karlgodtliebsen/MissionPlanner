@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<tabs:ContentPageView x:TypeArguments="tabs:FullParametersListTabViewModel"
+<navigation:ContentPageView x:TypeArguments="tabs:FullParametersListTabViewModel"
                       xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
                       xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -8,11 +8,12 @@
                       xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
                       xmlns:m="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                       xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                      xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                       x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.FullParametersListTabView"
                       x:DataType="tabs:FullParametersListTabViewModel">
 
 
-    <tabs:ContentPageView.Content>
+    <navigation:ContentPageView.Content>
 
         <Grid RowDefinitions="Auto,Auto,*"
           HorizontalOptions="Fill"
@@ -62,7 +63,7 @@
                 Command="{Binding WriteParametersCommand}" />
 
                 <Button 
-                    Text="Refresh Params"
+                    Text="Refresh"
                     FontSize="14"
                     Padding="8,4"
                     VerticalOptions="Center"
@@ -70,7 +71,15 @@
                     Command="{Binding RefreshParametersCommand}" />
 
                 <Button 
-                    Text="Compare Params"
+                    Text="Clear"
+                    FontSize="14"
+                    Padding="8,4"
+                    VerticalOptions="Center"
+                    BackgroundColor="Transparent"
+                    Command="{Binding ClearParametersCommand}" />
+
+                <Button 
+                    Text="Compare"
                     FontSize="14"
                     Padding="8,4"
                     VerticalOptions="Center"
@@ -264,5 +273,5 @@
 
             </Grid>
         </Grid>
-    </tabs:ContentPageView.Content>
-</tabs:ContentPageView>      
+    </navigation:ContentPageView.Content>
+</navigation:ContentPageView>      

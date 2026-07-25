@@ -14,6 +14,16 @@
         <MauiXamlInflator>SourceGen</MauiXamlInflator>
     </PropertyGroup>
     <ItemGroup>
+      <Compile Include="..\..\..\..\UraniumUI\test\UraniumUI.Tests.Core\AnimationReadyHandler.cs" Link="UraniumUI.Core.Tests\AnimationReadyHandler.cs" />
+      <Compile Include="..\..\..\..\UraniumUI\test\UraniumUI.Tests.Core\ApplicationExtensions.cs" Link="UraniumUI.Core.Tests\ApplicationExtensions.cs" />
+      <Compile Include="..\..\..\..\UraniumUI\test\UraniumUI.Tests.Core\ApplicationHandlerStub.cs" Link="UraniumUI.Core.Tests\ApplicationHandlerStub.cs" />
+      <Compile Include="..\..\..\..\UraniumUI\test\UraniumUI.Tests.Core\AsyncTicker.cs" Link="UraniumUI.Core.Tests\AsyncTicker.cs" />
+      <Compile Include="..\..\..\..\UraniumUI\test\UraniumUI.Tests.Core\BlockingTicker.cs" Link="UraniumUI.Core.Tests\BlockingTicker.cs" />
+      <Compile Include="..\..\..\..\UraniumUI\test\UraniumUI.Tests.Core\HandlersContextStub.cs" Link="UraniumUI.Core.Tests\HandlersContextStub.cs" />
+      <Compile Include="..\..\..\..\UraniumUI\test\UraniumUI.Tests.Core\MockApplication.cs" Link="UraniumUI.Core.Tests\MockApplication.cs" />
+      <Compile Include="..\..\..\..\UraniumUI\test\UraniumUI.Tests.Core\TestAnimationManager.cs" Link="UraniumUI.Core.Tests\TestAnimationManager.cs" />
+    </ItemGroup>
+    <ItemGroup>
         <PackageReference Include="Microsoft.Maui.Controls" />
         <PackageReference Include="Shouldly" />
         <PackageReference Include="UraniumUI.Material" />
@@ -28,5 +38,8 @@
     <ItemGroup>
       <ProjectReference Include="..\UraniumUI.Material.Controls.Extensions\UraniumUI.Material.Controls.Extensions.csproj" />
       <ProjectReference Include="..\UraniumUI.Material.VirtualizedDataGrid\UraniumUI.Material.VirtualizedDataGrid.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="UraniumUI.Core.Tests\" />
     </ItemGroup>
 </Project>

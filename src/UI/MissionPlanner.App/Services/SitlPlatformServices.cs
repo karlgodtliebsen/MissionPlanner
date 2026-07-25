@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using MissionPlanner.Core.Simulation;
 
-namespace MissionPlanner.App.Helpers;
+namespace MissionPlanner.App.Services;
 
 /// <summary>Supplies a dedicated SITL directory beneath the platform cache.</summary>
 public sealed class MauiSitlCachePathProvider : ISitlCachePathProvider

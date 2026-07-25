@@ -1,7 +1,8 @@
 ﻿using MissionPlanner.App.Helpers;
+using MissionPlanner.App.Helpers.Navigation;
 using MissionPlanner.Library.EventHub;
 
-namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
+namespace MissionPlanner.App.Navigation;
 
 /// <summary>
 /// Interaction logic for FullParametersListTabView.xaml
@@ -21,35 +22,44 @@ public class ContentPageView<TViewModel> : ContentPage, IDisposable
     {
         this.route = route;
         var navigationEventHub = ServiceHelper.GetRequiredService<INavigationEventHub>();
-        var disposable = navigationEventHub.Subscribe(OnNavigationEvent);
-        disposables.Add(disposable);
+        disposables.Add(navigationEventHub.Subscribe(OnNavigatedEvent));
+        disposables.Add(navigationEventHub.Subscribe(OnNavigatingEvent));
+    }
+
+    /// <summary>
+    /// Handles navigation events that are occurring and updates the view model accordingly.
+    /// </summary>
+    /// <param name="navigatingEvent">The navigation event that is occurring.</param>
+    protected virtual void OnNavigatingEvent(NavigatingEvent navigatingEvent)
+    {
     }
 
     /// <summary>
     /// Handles navigation events and updates the view model accordingly.
     /// </summary>
-    /// <param name="navigationEvent">The navigation event.</param>
-    protected virtual void OnNavigationEvent(NavigationEvent navigationEvent)
+    /// <param name="navigatedEvent">The navigation event.</param>
+    protected virtual void OnNavigatedEvent(NavigatedEvent navigatedEvent)
     {
         var isSubNavigation =
-            (navigationEvent.Previous == route && navigationEvent.Current?.StartsWith(route + "/") == true)
-            || (navigationEvent.Current == route && navigationEvent.Previous?.StartsWith(route + "/") == true);
+            (navigatedEvent.Previous == route && navigatedEvent.Current?.StartsWith(route + "/") == true)
+            || (navigatedEvent.Current == route && navigatedEvent.Previous?.StartsWith(route + "/") == true);
         if (isSubNavigation)
         {
             return;
         }
 
-        if (navigationEvent.Current == route)
+        if (navigatedEvent.Previous == route)
         {
-            viewModel?.Dispose();
-            viewModel = ServiceHelper.GetRequiredService<TViewModel>();
-            BindingContext = viewModel;
-        }
-
-        if (navigationEvent.Previous == route)
-        {
+            BindingContext = null;
             viewModel?.Dispose();
             viewModel = null;
+        }
+
+        if (navigatedEvent.Current == route)
+        {
+            BindingContext = null;
+            viewModel?.Dispose();
+            viewModel = ServiceHelper.GetRequiredService<TViewModel>();
             BindingContext = viewModel;
         }
     }

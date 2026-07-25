@@ -3,6 +3,7 @@
 using System.Collections.ObjectModel;
 using Shouldly;
 using UraniumUI.Material.Controls;
+using UraniumUI.Tests.Core;
 using Xunit;
 
 namespace UraniumUI.Material.Tests;
@@ -19,8 +20,7 @@ public class VirtualizedDataGrid_SearchTemplate_Tests
     {
         var templateContent = new Label();
 
-        var control = AnimationReadyHandler.Prepare(
-            CreateGrid(
+        var control = AnimationReadyHandler.Prepare(CreateGrid(
                 new DataTemplate(() => templateContent)));
 
         control.ExposedSearchHost.Content.ShouldBeSameAs(templateContent);

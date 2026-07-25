@@ -41,7 +41,7 @@ public sealed class ParameterMetadataXmlParserTests
         await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(xml));
         var parser = new ParameterMetadataXmlParser(NullLogger<ParameterMetadataXmlParser>.Instance);
 
-        var result = await parser.ParseAsync(stream, VehicleType.ArduCopter);
+        var result = await parser.ParseAsync(stream, VehicleType.ArduCopter, TestContext.Current.CancellationToken);
 
         result.Keys.Should().BeEquivalentTo("FRAME_TYPE", "BATT_MONITOR", "GPS_TYPE");
         result.Should().NotContainKey("PLANE_ONLY");
@@ -73,7 +73,7 @@ public sealed class ParameterMetadataXmlParserTests
         await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(xml));
         var parser = new ParameterMetadataXmlParser(NullLogger<ParameterMetadataXmlParser>.Instance);
 
-        var result = await parser.ParseAsync(stream, VehicleType.ArduCopter);
+        var result = await parser.ParseAsync(stream, VehicleType.ArduCopter, TestContext.Current.CancellationToken);
 
         result.Should().ContainSingle();
         result["SHARED_PARAM"].DisplayName.Should().Be("Vehicle Definition");
@@ -99,7 +99,7 @@ public sealed class ParameterMetadataXmlParserTests
         await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(xml));
         var parser = new ParameterMetadataXmlParser(NullLogger<ParameterMetadataXmlParser>.Instance);
 
-        var result = await parser.ParseAsync(stream, VehicleType.ArduCopter);
+        var result = await parser.ParseAsync(stream, VehicleType.ArduCopter, TestContext.Current.CancellationToken);
 
         result.Should().ContainKey("SERIAL1_PROTOCOL");
     }

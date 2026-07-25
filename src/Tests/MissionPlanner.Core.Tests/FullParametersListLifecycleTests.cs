@@ -28,7 +28,6 @@ public sealed class FullParametersListLifecycleTests
         fixture.ViewModel.ShowVehicleDisconnected.Should().BeFalse();
         fixture.ViewModel.StatusMessage.Should().BeNull();
 
-        fixture.ViewModel.Deactivate();
         fixture.ViewModel.StatusMessage.Should().BeNull();
     }
 
@@ -45,7 +44,6 @@ public sealed class FullParametersListLifecycleTests
         fixture.ViewModel.ShowVehicleDisconnected.Should().BeTrue();
         fixture.ViewModel.StatusMessage.Should().Be("Connect a vehicle, then refresh parameters.");
 
-        fixture.ViewModel.Deactivate();
         fixture.ViewModel.StatusMessage.Should().BeNull();
     }
 
@@ -104,7 +102,6 @@ public sealed class FullParametersListLifecycleTests
         progressCancellation!.Token.IsCancellationRequested.Should().BeFalse();
         fixture.ViewModel.IsShowingProgressDialog.Should().BeTrue();
 
-        fixture.ViewModel.Deactivate();
         await cancellationObserved.Task.WaitAsync(TestContext.Current.CancellationToken);
 
         var readCancelledToken = () => progressCancellation.Token.IsCancellationRequested;

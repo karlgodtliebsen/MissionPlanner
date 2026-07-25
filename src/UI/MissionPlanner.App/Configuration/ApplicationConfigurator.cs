@@ -4,7 +4,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.AppViewModels;
 using MissionPlanner.App.Helpers;
+using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Presentation;
+using MissionPlanner.App.Services;
 using MissionPlanner.App.Views.Common;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
@@ -203,7 +205,7 @@ public static class ApplicationConfigurator
 
 
     /// <summary>
-    /// 
+    /// Post ServiceProvider Build Setup - This method is called after the ServiceProvider has been built and is used to perform any additional setup or initialization that requires access to the fully constructed service provider. 
     /// </summary>
     /// <param name="serviceProvider"></param>
     /// <returns></returns>
@@ -215,11 +217,12 @@ public static class ApplicationConfigurator
             .UseMavLinkServices()
             .UseDomainServices()
             ;
-
+        serviceProvider.GetRequiredService<PlannerSettingsRuntime>().ApplyCurrent();
         var plannerSettingsService = serviceProvider.GetRequiredService<IPlannerSettingsService>();
         var loadResult = plannerSettingsService.InitializeAsync().AsTask().GetAwaiter().GetResult();
         var connection = loadResult.Settings.Connection;
         ApplicationState state = new() { SelectedChannel = connection.Channel, SelectedHost = connection.Host, SelectedPort = connection.Port.ToString(System.Globalization.CultureInfo.InvariantCulture), SelectedBaudRate = connection.BaudRate.ToString(System.Globalization.CultureInfo.InvariantCulture) };
+
         // Register shared state service as singleton for runtime state management
         var stateService = serviceProvider.GetRequiredService<ApplicationStateService>();
         stateService.Initialize(state);

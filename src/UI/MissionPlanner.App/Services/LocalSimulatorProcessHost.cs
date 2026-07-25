@@ -103,7 +103,7 @@ public sealed class LocalSimulatorProcessHost : ISimulatorProcessHost
             Interlocked.Exchange(ref stopRequested, 1);
             if (!process.HasExited)
             {
-                process.Kill(entireProcessTree: true);
+                process.Kill(true);
             }
 
             await completion.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -158,7 +158,7 @@ public sealed class LocalSimulatorProcessHost : ISimulatorProcessHost
                     recentOutput.Enqueue(output);
                     while (recentOutput.Count > 100)
                     {
-                        recentOutput.TryDequeue(out _);
+                        recentOutput.TryDequeue(out var _);
                     }
 
                     OutputReceived?.Invoke(this, output);

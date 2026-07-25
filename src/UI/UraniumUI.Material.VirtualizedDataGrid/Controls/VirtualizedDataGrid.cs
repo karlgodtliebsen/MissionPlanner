@@ -77,68 +77,26 @@ public partial class VirtualizedDataGrid : Border
             ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical) { ItemSpacing = 0 }
         };
 
-        emptyViewHost = new ContentView
-        {
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-            IsVisible = false
-        };
+        AttachRowsViewLifecycle();
 
-        rowsHost = new Grid
-        {
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill
-        };
+        emptyViewHost = new ContentView { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill, IsVisible = false };
+
+        rowsHost = new Grid { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill };
         rowsHost.Children.Add(rowsView);
         rowsHost.Children.Add(emptyViewHost);
 
-        tableLayout = new Grid
-        {
-            HorizontalOptions = LayoutOptions.Start,
-            VerticalOptions = LayoutOptions.Fill,
-            RowDefinitions =
-            {
-                new RowDefinition(GridLength.Auto),
-                new RowDefinition(GridLength.Star)
-            }
-        };
+        tableLayout = new Grid { HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Fill, RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star) } };
 
         tableLayout.Add(headerSection, 0, 0);
         tableLayout.Add(rowsHost, 0, 1);
 
-        horizontalScrollView = new ScrollView
-        {
-            Orientation = ScrollOrientation.Horizontal,
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-            Content = tableLayout
-        };
+        horizontalScrollView = new ScrollView { Orientation = ScrollOrientation.Horizontal, HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill, Content = tableLayout };
 
-        searchHost = new ContentView
-        {
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Center,
-            IsVisible = false
-        };
+        searchHost = new ContentView { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Center, IsVisible = false };
 
-        pagerHost = new ContentView
-        {
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Center,
-            IsVisible = false
-        };
+        pagerHost = new ContentView { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Center, IsVisible = false };
 
-        rootLayout = new Grid
-        {
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-            RowDefinitions =
-            {
-                new RowDefinition(GridLength.Auto),
-                new RowDefinition(GridLength.Star),
-                new RowDefinition(GridLength.Auto)
-            }
-        };
+        rootLayout = new Grid { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill, RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star), new RowDefinition(GridLength.Auto) } };
         rootLayout.Add(searchHost, 0, 0);
         rootLayout.Add(horizontalScrollView, 0, 1);
         rootLayout.Add(pagerHost, 0, 2);
@@ -200,7 +158,11 @@ public partial class VirtualizedDataGrid : Border
         if (args.NewHandler is null)
         {
             DeactivateSubscriptions();
-            ReleaseVisualResources();
+
+            // A MAUI handler can be removed temporarily while the managed page and
+            // control remain reusable. Do not assign CollectionView.ItemsSource or
+            // tear down templates here.
+            SuspendRowsPresentation();
         }
 
         base.OnHandlerChanging(args);
@@ -215,6 +177,7 @@ public partial class VirtualizedDataGrid : Border
         {
             ActivateSubscriptions();
             RestoreVisualResources();
+            ResumeRowsPresentation();
             RebuildAll();
         }
     }
@@ -236,7 +199,7 @@ public partial class VirtualizedDataGrid : Border
 
             if (!visualResourcesReleased)
             {
-                RefreshDataView(resetCurrentPage: false);
+                RefreshDataView(false);
             }
         }
 
@@ -260,8 +223,8 @@ public partial class VirtualizedDataGrid : Border
             return;
         }
 
-        rowsView.ItemsSource = null;
-        RefreshDataView(resetCurrentPage: false);
+        InvalidateAppliedRowsSource();
+        RefreshDataView(false);
         RefreshRealizedRows();
     }
 
@@ -392,7 +355,11 @@ public partial class VirtualizedDataGrid : Border
     private void ReleaseVisualResources()
     {
         visualResourcesReleased = true;
-        rowsView.ItemsSource = null;
+        SuspendRowsPresentation();
+
+        // This method is reserved for an explicit final-release path. Ordinary
+        // Shell/routed-page handler changes use SuspendRowsPresentation and retain
+        // the reusable templates and logical row source.
         rowsView.ItemTemplate = null;
         rowsView.EmptyView = null;
         rowsView.EmptyViewTemplate = null;
@@ -628,24 +595,18 @@ public partial class VirtualizedDataGrid : Border
             return;
         }
 
-        rowsView.ItemSizingStrategy = ItemSizingStrategy;
-        rowsView.VerticalScrollBarVisibility = VerticalScrollBarVisibility;
+        ApplyRowsViewConfiguration();
         horizontalScrollView.HorizontalScrollBarVisibility = HorizontalScrollBarVisibility;
 
         ApplySearchBar();
         ApplyEmptyView();
         ApplyPager();
-        RefreshDataView(resetCurrentPage: false);
+        RefreshDataView(false);
     }
 
     private void SetRowsItemsSource(IList? source)
     {
-        if (ReferenceEquals(rowsView.ItemsSource, source))
-        {
-            return;
-        }
-
-        rowsView.ItemsSource = source;
+        SetDesiredRowsSource(source);
     }
 
     /// <summary>
@@ -659,30 +620,13 @@ public partial class VirtualizedDataGrid : Border
         }
 
         // Do not use CollectionView.EmptyView here. Keeping the empty state in an
-        // explicit overlay makes visibility deterministic and prevents a platform or
-        // handler bug from showing empty content at the same time as realized rows.
-        rowsView.EmptyView = null;
-        rowsView.EmptyViewTemplate = null;
-
-        View content;
-
-        if (EmptyView is not null)
-        {
-            content = EmptyView;
-        }
-        else if (EmptyViewTemplate?.CreateContent() is View templateContent)
-        {
-            content = templateContent;
-        }
-        else
-        {
-            content = new BoxView
-            {
-                HorizontalOptions = LayoutOptions.Fill,
-                VerticalOptions = LayoutOptions.Fill,
-                Margin = 40
-            };
-        }
+        // explicit overlay makes visibility deterministic and avoids writing to the
+        // child CollectionView while its native handler is detached.
+        var content = EmptyView is not null
+            ? EmptyView
+            : EmptyViewTemplate?.CreateContent() is View templateContent
+                ? templateContent
+                : new BoxView { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill, Margin = 40 };
 
         if (!ReferenceEquals(emptyViewHost.Content, content))
         {
@@ -701,15 +645,16 @@ public partial class VirtualizedDataGrid : Border
 
         var showEmptyView = ReadyToRender && IsEmpty;
         emptyViewHost.IsVisible = showEmptyView;
-        rowsView.IsVisible = ReadyToRender && !showEmptyView;
+
+        if (CanUseRowsPlatformHost)
+        {
+            rowsView.IsVisible = ReadyToRender && !showEmptyView;
+        }
     }
 
     private void SetItemSizingStrategy(ItemSizingStrategy strategy)
     {
-        if (!visualResourcesReleased)
-        {
-            rowsView.ItemSizingStrategy = strategy;
-        }
+        ApplyRowsViewConfiguration();
     }
 
     private void SetHorizontalScrollBarVisibility(ScrollBarVisibility visibility)
@@ -722,10 +667,7 @@ public partial class VirtualizedDataGrid : Border
 
     private void SetVerticalScrollBarVisibility(ScrollBarVisibility visibility)
     {
-        if (!visualResourcesReleased)
-        {
-            rowsView.VerticalScrollBarVisibility = visibility;
-        }
+        ApplyRowsViewConfiguration();
     }
 
     private void OnItemsSourceSet(IList? oldSource, IList? newSource)
@@ -750,7 +692,7 @@ public partial class VirtualizedDataGrid : Border
             deferredSnapshot = null;
         }
 
-        RefreshDataView(resetCurrentPage: false);
+        RefreshDataView(false);
         PruneSelectionAgainstItemsSource();
     }
 
@@ -921,7 +863,7 @@ public partial class VirtualizedDataGrid : Border
             PruneSelectionAgainstItemsSource();
         }
 
-        RefreshDataView(resetCurrentPage: false);
+        RefreshDataView(false);
     }
 
     private void Columns_CollectionChanged(
@@ -1167,7 +1109,7 @@ public partial class VirtualizedDataGrid : Border
 
         if (!visualResourcesReleased)
         {
-            RefreshDataView(resetCurrentPage: false);
+            RefreshDataView(false);
         }
 
         if (refreshPending)
@@ -1203,5 +1145,4 @@ public partial class VirtualizedDataGrid : Border
             currentOwner?.EndDeferRefresh();
         }
     }
-
 }

@@ -8,6 +8,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library;
 using MissionPlanner.Library.EventHub.Abstractions;
 using Serilog;
+using MissionPlanner.App.Services;
 
 namespace MissionPlanner.App;
 
@@ -31,7 +32,6 @@ public partial class App : Application
         {
             // Store connection service reference for cleanup
             serviceProvider = activationState.Context.Services;
-            serviceProvider.GetRequiredService<PlannerSettingsRuntime>().ApplyCurrent();
             var domainEventHub = activationState.Context.Services.GetRequiredService<IDomainEventHub>();
             domainEventHub.SubscribeDomainEventAsync<ExitApplicationRequested>(Func);
             window = new Window(new AppShell());

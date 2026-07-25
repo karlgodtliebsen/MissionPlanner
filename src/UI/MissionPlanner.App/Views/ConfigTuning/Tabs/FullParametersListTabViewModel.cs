@@ -167,23 +167,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         HasRows = allParameterItems.Any();
     }
 
-    /// <summary>Deactivates lifecycle tracking and cancels the visible loading operation.</summary>
-    public void Deactivate()
-    {
-        if (!active)
-        {
-            return;
-        }
-
-        active = false;
-        activeVehicle.Changed -= OnActiveVehicleChanged;
-        CancelLoadOperation();
-        CloseProgressDialog();
-        CompleteBusyState();
-        StatusMessage = null;
-        ErrorMessage = null;
-        HasRows = allParameterItems.Any();
-    }
 
     partial void OnSearchTextChanged(string value)
     {
@@ -207,6 +190,12 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         IsShowingProgressDialog = false;
         progressDialog?.Dispose();
         progressDialog = null;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanRefreshParameters))]
+    private async Task ClearParametersAsync()
+    {
+        await dispatcher.DispatchAsync(() => Parameters.Clear());
     }
 
     [RelayCommand(CanExecute = nameof(CanRefreshParameters))]
@@ -476,8 +465,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     private void ResetToDefault()
     {
         editSession?.RevertAll();
-        var m = "All unapplied values were reverted to current live values.";
-        SetMessages(m);
+        SetMessages("All unapplied values were reverted to current live values.");
     }
 
     /// <inheritdoc />
@@ -489,13 +477,9 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         }
 
         disposed = true;
-        Deactivate();
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        CancelLoadOperation();
         editSession?.Changed -= OnEditSessionChanged;
-
-        Parameters.Clear();
-        filteredParameterItems.Clear();
-        allParameterItems.Clear();
-        HasRows = false;
     }
 
     private bool CanRefreshParameters()

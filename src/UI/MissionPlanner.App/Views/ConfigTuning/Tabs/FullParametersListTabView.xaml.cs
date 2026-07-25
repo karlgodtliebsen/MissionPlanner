@@ -1,4 +1,6 @@
-﻿namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
+﻿using MissionPlanner.App.Navigation;
+
+namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
 /// <summary>
 /// Interaction logic for FullParametersListTabView.xaml

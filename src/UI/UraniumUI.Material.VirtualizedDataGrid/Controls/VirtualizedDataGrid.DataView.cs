@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Concurrent;
 using System.Reflection;
-using UraniumUI.Material.Controls;
 
 namespace UraniumUI.Material.VirtualizedDataGrid.Controls;
 
@@ -58,7 +57,7 @@ public partial class VirtualizedDataGrid
     /// </summary>
     public void RefreshView()
     {
-        RefreshDataView(resetCurrentPage: false);
+        RefreshDataView(false);
     }
 
     /// <summary>
@@ -72,7 +71,7 @@ public partial class VirtualizedDataGrid
 
     internal void OnFilterSettingsChanged()
     {
-        RefreshDataView(resetCurrentPage: ResetPageOnFilterChange);
+        RefreshDataView(ResetPageOnFilterChange);
     }
 
     internal void OnPagingSettingsChanged(bool resetCurrentPage)
@@ -92,7 +91,7 @@ public partial class VirtualizedDataGrid
             return;
         }
 
-        RefreshDataView(resetCurrentPage: false);
+        RefreshDataView(false);
 
         if (ScrollToTopOnPageChange)
         {
@@ -130,12 +129,12 @@ public partial class VirtualizedDataGrid
             if (filteringActive)
             {
                 filteredItems = source?
-                    .Cast<object?>()
-                    .Where(item => item is not null)
-                    .Cast<object>()
-                    .Where(MatchesCurrentFilter)
-                    .ToList()
-                    ?? [];
+                                    .Cast<object?>()
+                                    .Where(item => item is not null)
+                                    .Cast<object>()
+                                    .Where(MatchesCurrentFilter)
+                                    .ToList()
+                                ?? [];
 
                 filteredItemCount = filteredItems.Count;
             }
@@ -166,11 +165,11 @@ public partial class VirtualizedDataGrid
             else if (EnablePaging)
             {
                 var pageSource = filteredItems
-                    ?? source
-                        .Cast<object?>()
-                        .Where(item => item is not null)
-                        .Cast<object>()
-                        .ToList();
+                                 ?? source
+                                     .Cast<object?>()
+                                     .Where(item => item is not null)
+                                     .Cast<object>()
+                                     .ToList();
 
                 displayedItems = pageSource
                     .Skip((currentPage - 1) * pageSize)
@@ -202,8 +201,8 @@ public partial class VirtualizedDataGrid
             SetValue(HasItemsPropertyKey, !isEmpty);
 
             SetRowsItemsSource(ReadyToRender ? displayedItems : null);
-            UpdateSearchBarVisibility();
             UpdateEmptyViewVisibility();
+            UpdateSearchBarVisibility();
             UpdatePagerVisibility();
             RaiseSearchCanExecuteChanged();
             RaisePagingCanExecuteChanged();
@@ -216,7 +215,7 @@ public partial class VirtualizedDataGrid
         if (dataViewRefreshPending)
         {
             dataViewRefreshPending = false;
-            RefreshDataView(resetCurrentPage: false);
+            RefreshDataView(false);
         }
     }
 
@@ -284,15 +283,12 @@ public partial class VirtualizedDataGrid
 
     private IReadOnlyList<string> ParseFilterMemberPaths()
     {
-        if (string.IsNullOrWhiteSpace(FilterMemberPaths))
-        {
-            return Array.Empty<string>();
-        }
-
-        return FilterMemberPaths
-            .Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Distinct(StringComparer.Ordinal)
-            .ToArray();
+        return string.IsNullOrWhiteSpace(FilterMemberPaths)
+            ? Array.Empty<string>()
+            : FilterMemberPaths
+                .Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
     }
 
     private static Func<object, object?> CreatePropertyPathAccessor(Type itemType, string path)
@@ -318,7 +314,7 @@ public partial class VirtualizedDataGrid
 
         return item =>
         {
-            object? current = item;
+            var current = item;
 
             foreach (var property in properties)
             {
@@ -383,24 +379,33 @@ public partial class VirtualizedDataGrid
             return;
         }
 
-        searchHost.IsVisible = ShowSearchBar;
+        if (!ShowSearchBar)
+        {
+            searchHost.IsVisible = false;
+            return;
+        }
+
+        if (ReadyToRender && HasItems)
+        {
+            searchHost.IsVisible = true;
+            return;
+        }
+
+        if (ReadyToRender && HasSearchText)
+        {
+            searchHost.IsVisible = true;
+            return;
+        }
+
+        searchHost.IsVisible = false;
     }
+
 
     private View CreateDefaultSearchView()
     {
-        var label = new Label
-        {
-            Text = "Search:",
-            FontSize = 14,
-            VerticalOptions = LayoutOptions.Center
-        };
+        var label = new Label { Text = "Search:", FontSize = 14, VerticalOptions = LayoutOptions.Center };
 
-        var entry = new Entry
-        {
-            FontSize = 14,
-            VerticalOptions = LayoutOptions.Center,
-            ClearButtonVisibility = ClearButtonVisibility.WhileEditing
-        };
+        var entry = new Entry { FontSize = 14, VerticalOptions = LayoutOptions.Center, ClearButtonVisibility = ClearButtonVisibility.WhileEditing };
         entry.SetBinding(
             Entry.TextProperty,
             new Binding(nameof(FilterText), source: this, mode: BindingMode.TwoWay));
@@ -421,11 +426,7 @@ public partial class VirtualizedDataGrid
             IsVisibleProperty,
             new Binding(nameof(HasSearchText), source: this));
 
-        var matchingLabel = new Label
-        {
-            FontSize = 14,
-            VerticalOptions = LayoutOptions.Center
-        };
+        var matchingLabel = new Label { FontSize = 14, VerticalOptions = LayoutOptions.Center };
         matchingLabel.SetBinding(
             Label.TextProperty,
             new Binding(
@@ -433,11 +434,7 @@ public partial class VirtualizedDataGrid
                 source: this,
                 stringFormat: "Matching: {0}"));
 
-        var totalLabel = new Label
-        {
-            FontSize = 14,
-            VerticalOptions = LayoutOptions.Center
-        };
+        var totalLabel = new Label { FontSize = 14, VerticalOptions = LayoutOptions.Center };
         totalLabel.SetBinding(
             Label.TextProperty,
             new Binding(
@@ -516,30 +513,18 @@ public partial class VirtualizedDataGrid
 
     private View CreateDefaultPagerView()
     {
-        var navigation = new HorizontalStackLayout
-        {
-            Spacing = 8,
-            VerticalOptions = LayoutOptions.Center
-        };
+        var navigation = new HorizontalStackLayout { Spacing = 8, VerticalOptions = LayoutOptions.Center };
 
         navigation.Add(CreatePagerButton("First", FirstPageCommand));
         navigation.Add(CreatePagerButton("Previous", PreviousPageCommand));
 
-        var pageLabel = new Label
-        {
-            VerticalOptions = LayoutOptions.Center,
-            FontSize = 14
-        };
+        var pageLabel = new Label { VerticalOptions = LayoutOptions.Center, FontSize = 14 };
         pageLabel.SetBinding(
             Label.TextProperty,
             new Binding(nameof(CurrentPage), source: this, stringFormat: "Page {0}"));
         navigation.Add(pageLabel);
 
-        var totalPagesLabel = new Label
-        {
-            VerticalOptions = LayoutOptions.Center,
-            FontSize = 14
-        };
+        var totalPagesLabel = new Label { VerticalOptions = LayoutOptions.Center, FontSize = 14 };
         totalPagesLabel.SetBinding(
             Label.TextProperty,
             new Binding(nameof(TotalPageCount), source: this, stringFormat: "of {0}"));
@@ -548,25 +533,10 @@ public partial class VirtualizedDataGrid
         navigation.Add(CreatePagerButton("Next", NextPageCommand));
         navigation.Add(CreatePagerButton("Last", LastPageCommand));
 
-        var pageSizeArea = new HorizontalStackLayout
-        {
-            Spacing = 8,
-            HorizontalOptions = LayoutOptions.End,
-            VerticalOptions = LayoutOptions.Center
-        };
-        pageSizeArea.Add(new Label
-        {
-            Text = "Rows per page:",
-            FontSize = 14,
-            VerticalOptions = LayoutOptions.Center
-        });
+        var pageSizeArea = new HorizontalStackLayout { Spacing = 8, HorizontalOptions = LayoutOptions.End, VerticalOptions = LayoutOptions.Center };
+        pageSizeArea.Add(new Label { Text = "Rows per page:", FontSize = 14, VerticalOptions = LayoutOptions.Center });
 
-        var pageSizePicker = new Picker
-        {
-            WidthRequest = 92,
-            FontSize = 14,
-            VerticalOptions = LayoutOptions.Center
-        };
+        var pageSizePicker = new Picker { WidthRequest = 92, FontSize = 14, VerticalOptions = LayoutOptions.Center };
         pageSizePicker.SetBinding(
             Picker.ItemsSourceProperty,
             new Binding(nameof(PageSizeOptions), source: this));
@@ -575,35 +545,17 @@ public partial class VirtualizedDataGrid
             new Binding(nameof(PageSize), source: this, mode: BindingMode.TwoWay));
         pageSizeArea.Add(pageSizePicker);
 
-        var matchingLabel = new Label
-        {
-            FontSize = 14,
-            VerticalOptions = LayoutOptions.Center
-        };
+        var matchingLabel = new Label { FontSize = 14, VerticalOptions = LayoutOptions.Center };
         matchingLabel.SetBinding(
             Label.TextProperty,
             new Binding(nameof(FilteredItemCount), source: this, stringFormat: "Matching: {0}"));
         pageSizeArea.Add(matchingLabel);
 
-        var pagerGrid = new Grid
-        {
-            Padding = new Thickness(8, 6),
-            ColumnSpacing = 24,
-            ColumnDefinitions =
-            {
-                new ColumnDefinition(GridLength.Star),
-                new ColumnDefinition(GridLength.Auto)
-            }
-        };
+        var pagerGrid = new Grid { Padding = new Thickness(8, 6), ColumnSpacing = 24, ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) } };
         pagerGrid.Add(navigation, 0, 0);
         pagerGrid.Add(pageSizeArea, 1, 0);
 
-        return new ScrollView
-        {
-            Orientation = ScrollOrientation.Horizontal,
-            HorizontalScrollBarVisibility = ScrollBarVisibility.Never,
-            Content = pagerGrid
-        };
+        return new ScrollView { Orientation = ScrollOrientation.Horizontal, HorizontalScrollBarVisibility = ScrollBarVisibility.Never, Content = pagerGrid };
     }
 
     private static Button CreatePagerButton(string text, System.Windows.Input.ICommand command)
@@ -634,16 +586,23 @@ public partial class VirtualizedDataGrid
 
     private void ScrollCurrentPageToTop()
     {
-        if (PageItemCount == 0)
+        if (PageItemCount == 0 || !CanUseRowsPlatformHost)
         {
             return;
         }
 
+        var generation = RowsHandlerGeneration;
+
         Dispatcher.Dispatch(() =>
         {
-            if (PageItemCount > 0)
+            if (PageItemCount > 0 &&
+                CanUseRowsPlatformHost &&
+                generation == RowsHandlerGeneration)
             {
-                rowsView.ScrollTo(0, position: ScrollToPosition.Start, animate: false);
+                rowsView.ScrollTo(
+                    0,
+                    position: ScrollToPosition.Start,
+                    animate: false);
             }
         });
     }

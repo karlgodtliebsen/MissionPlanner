@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Configuration;
 using MissionPlanner.App.Helpers;
 using MissionPlanner.Core.ConfigTuning.Planner;
 
