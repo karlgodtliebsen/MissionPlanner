@@ -40,7 +40,7 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
     private readonly ILogger<SimulationScenarioRunner> logger;
     private readonly ISimulationVehicleChannelRegistry? simulationChannels;
     private readonly SemaphoreSlim runGate = new(1, 1);
-    private readonly object stateLock = new();
+    private readonly Lock stateLock = new();
     private SimulationScenarioRunnerSnapshot current = SimulationScenarioRunnerSnapshot.Idle;
     private bool pauseRequested;
     private TaskCompletionSource resumeSignal = CompletedSignal();

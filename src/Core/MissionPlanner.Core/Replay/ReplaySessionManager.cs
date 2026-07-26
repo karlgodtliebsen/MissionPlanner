@@ -19,7 +19,7 @@ public sealed class ReplaySessionManager : IReplaySessionManager
     private readonly IReplayDelay delay;
     private readonly ILogger<ReplaySessionManager> logger;
     private readonly SemaphoreSlim operationGate = new(1, 1);
-    private readonly object stateLock = new();
+    private readonly Lock stateLock = new();
     private ReplaySessionSnapshot snapshot = ReplaySessionSnapshot.Unloaded;
     private Stream? stream;
     private CancellationTokenSource? playbackCancellation;

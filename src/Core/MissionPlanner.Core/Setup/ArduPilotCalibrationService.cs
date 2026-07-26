@@ -24,7 +24,7 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
         "INS_ACCSCAL_X", "INS_ACCSCAL_Y", "INS_ACCSCAL_Z",
         "AHRS_TRIM_X", "AHRS_TRIM_Y"
     ];
-    private readonly object sync = new();
+    private readonly Lock sync = new();
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleRegistry vehicleRegistry;
     private readonly IEventHub eventHub;

@@ -19,7 +19,7 @@ public sealed class ActuatorTestService : IActuatorTestService
     private const ushort MotorTestCommand = (ushort)MavCmd.DoMotorTest;
     private const int MaximumLogEntries = 50;
     private static readonly TimeSpan ackTimeout = TimeSpan.FromSeconds(3);
-    private readonly object sync = new();
+    private readonly Lock sync = new();
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleRegistry vehicleRegistry;
     private readonly IEventHub eventHub;

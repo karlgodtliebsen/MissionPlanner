@@ -19,7 +19,7 @@ public sealed class ArduPilotCompassCalibrationService : IArduPilotCompassCalibr
     private const ushort StartCommand = (ushort)MavCmd.DoStartMagCal;
     private const ushort AcceptCommand = (ushort)MavCmd.DoAcceptMagCal;
     private const ushort CancelCommand = (ushort)MavCmd.DoCancelMagCal;
-    private readonly object sync = new();
+    private readonly Lock sync = new();
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleRegistry vehicleRegistry;
     private readonly IEventHub eventHub;

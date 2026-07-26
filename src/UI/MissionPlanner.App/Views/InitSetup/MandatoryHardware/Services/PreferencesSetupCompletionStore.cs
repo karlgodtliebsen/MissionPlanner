@@ -7,7 +7,7 @@ namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
 public sealed class PreferencesSetupCompletionStore : ISetupCompletionStore
 {
     private const string PreferenceKey = "MissionPlanner.Setup.CompletionEvidence.v1";
-    private readonly object sync = new();
+    private readonly Lock sync = new();
 
     /// <inheritdoc />
     public IReadOnlyList<SetupCompletionEvidence> GetAll()

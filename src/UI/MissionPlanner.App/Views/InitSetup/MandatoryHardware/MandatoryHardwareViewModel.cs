@@ -25,7 +25,7 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
     private readonly IDateTimeProvider clock;
     private readonly IDispatcher dispatcher;
     private readonly ILogger<MandatoryHardwareViewModel> logger;
-    private readonly object parameterRefreshSync = new();
+    private readonly Lock parameterRefreshSync = new();
     private CancellationTokenSource? parameterRefreshCancellation;
     private bool active;
     private bool disposed;

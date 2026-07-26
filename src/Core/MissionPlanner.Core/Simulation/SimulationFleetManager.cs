@@ -29,7 +29,7 @@ public sealed class SimulationFleetManager(
     ILogger<SimulationFleetManager> logger) : ISimulationFleetManager
 {
     private readonly Dictionary<Guid, Member> members = [];
-    private readonly object stateLock = new();
+    private readonly Lock stateLock = new();
     private readonly SemaphoreSlim operationGate = new(1, 1);
     private Guid? selectedSessionId;
     private bool disposed;

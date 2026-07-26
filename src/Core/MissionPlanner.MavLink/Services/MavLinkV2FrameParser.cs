@@ -22,7 +22,7 @@ public sealed class MavLinkV2FrameParser : IMavLinkFrameParser
 
     private readonly IMavLinkMessageDefinitionRegistry messageDefinitions;
     private readonly ILogger<MavLinkV2FrameParser>? logger;
-    private readonly object syncRoot = new();
+    private readonly Lock syncRoot = new();
     private readonly List<byte> buffer = new(8192);
 
     private int readOffset;

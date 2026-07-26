@@ -9,7 +9,7 @@ namespace MissionPlanner.Core.ConfigTuning;
 /// <summary>Creates and tracks the shared active-vehicle parameter editing session.</summary>
 public sealed class ParameterEditSessionFactory : IParameterEditSessionFactory, IDisposable
 {
-    private readonly object sync = new();
+    private readonly Lock sync = new();
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IDomainFactory factory;
 

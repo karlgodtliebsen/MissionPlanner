@@ -9,7 +9,7 @@ namespace MissionPlanner.Core.Notifications;
 /// </summary>
 public sealed class ApplicationNotificationStore : IApplicationNotificationStore
 {
-    private readonly object sync = new();
+    private readonly Lock sync = new();
     private readonly List<ApplicationNotificationEntry> entries = [];
     private readonly int capacity;
     private long nextIdentity;

@@ -16,7 +16,7 @@ namespace MissionPlanner.Core.Vehicles.Handlers;
 /// </summary>
 public sealed class StatusTextHandler : IStatusTextHandler
 {
-    private readonly object sync = new();
+    private readonly Lock sync = new();
     private readonly Dictionary<ChunkKey, PendingMessage> pending = [];
     private readonly Dictionary<ChunkKey, CompletedChunk> recentCompletions = [];
     private readonly IVehicleRegistry vehicleRegistry;

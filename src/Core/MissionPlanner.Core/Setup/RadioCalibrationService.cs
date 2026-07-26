@@ -26,7 +26,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
         ("RCMAP_THROTTLE", 3, "Throttle"),
         ("RCMAP_YAW", 4, "Yaw")
     ];
-    private readonly object sync = new();
+    private readonly Lock sync = new();
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleParameterRegistry parameterRegistry;
     private readonly IVehicleParameterService parameterService;

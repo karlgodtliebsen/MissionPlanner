@@ -9,7 +9,7 @@ namespace MissionPlanner.Core.ConfigTuning.Tuning;
 /// <summary>Stores bounded latest-per-axis PID_TUNING response context without initiating autotune.</summary>
 public sealed class ControlResponseMetricsService : IControlResponseMetricsService, IDisposable
 {
-    private readonly object sync = new();
+    private readonly Lock sync = new();
     private readonly Dictionary<(VehicleId VehicleId, byte Axis), ControlResponseMetric> metrics = [];
     private readonly IDisposable subscription;
     private bool disposed;

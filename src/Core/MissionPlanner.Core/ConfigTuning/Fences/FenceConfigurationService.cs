@@ -34,7 +34,7 @@ public sealed class FenceConfigurationService(
         ParameterFieldDefinition.Exact("FENCE_OPTIONS")
     ];
 
-    private readonly object sync = new();
+    private readonly Lock sync = new();
     private readonly Dictionary<VehicleId, Workspace> workspaces = [];
 
     /// <inheritdoc />

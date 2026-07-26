@@ -10,7 +10,7 @@ namespace MissionPlanner.Core.Vehicles;
 /// </summary>
 public sealed class ActiveVehicleContext : IActiveVehicleContext, IDisposable
 {
-    private readonly object sync = new();
+    private readonly Lock sync = new();
     private readonly IVehicleRegistry vehicleRegistry;
     private readonly List<IDisposable> subscriptions = [];
     private ActiveVehicleSnapshot current = ActiveVehicleSnapshot.Empty;

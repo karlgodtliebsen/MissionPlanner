@@ -13,7 +13,7 @@ namespace MissionPlanner.Core.ConfigTuning;
 /// </summary>
 public sealed class ParameterEditSession : IParameterEditSession
 {
-    private readonly object sync = new();
+    private readonly Lock sync = new();
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleParameterRegistry parameterRegistry;
     private readonly IVehicleParameterService parameterService;

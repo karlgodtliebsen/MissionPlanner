@@ -1,4 +1,4 @@
-using MissionPlanner.Core.Vehicles;
+﻿using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 
 namespace MissionPlanner.App.Views.FlightData;
@@ -12,7 +12,7 @@ public sealed class FlightDataTabLifecycle : IFlightDataTabLifecycle, IAsyncDisp
     private readonly Func<CancellationToken, Task>? initializeAsync;
     private readonly Func<CancellationToken, Task<IDisposable?>>? startAsync;
     private readonly SemaphoreSlim transitionLock = new(1, 1);
-    private readonly object sync = new();
+    private readonly Lock sync = new();
     private CancellationTokenSource? workCancellation;
     private IDisposable? activeWork;
     private Task pendingTransition = Task.CompletedTask;

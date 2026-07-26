@@ -20,7 +20,7 @@ namespace MissionPlanner.Test.Support.Configuration;
 /// </summary>
 public static class TestConfigurator
 {
-    private static readonly object UdpPortReservationGate = new();
+    private static readonly Lock UdpPortReservationGate = new();
     private static readonly HashSet<int> ReservedUdpPorts = [];
 
     /// <summary>

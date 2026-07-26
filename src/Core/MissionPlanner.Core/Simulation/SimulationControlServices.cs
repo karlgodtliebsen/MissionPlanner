@@ -136,7 +136,7 @@ public sealed class SimulationControlService : ISimulationControlService
     private readonly ILogger<SimulationControlService> logger;
     private readonly ISimulationVehicleChannelRegistry? simulationChannels;
     private readonly SemaphoreSlim gate = new(1, 1);
-    private readonly object eventLock = new();
+    private readonly Lock eventLock = new();
     private readonly Queue<SimulationScenarioEvent> events = new();
     private readonly Dictionary<string, ActiveReset> activeResets = new(StringComparer.Ordinal);
     private bool disposed;

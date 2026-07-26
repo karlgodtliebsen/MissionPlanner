@@ -9,7 +9,7 @@ namespace MissionPlanner.Core.Vehicles;
 /// </summary>
 public sealed class VehicleMessageStore : IVehicleMessageStore
 {
-    private readonly object sync = new();
+    private readonly Lock sync = new();
     private readonly Dictionary<VehicleId, List<VehicleStatusText>> messages = [];
     private readonly int capacity;
     private long nextIdentity;

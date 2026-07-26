@@ -13,7 +13,7 @@ public sealed class SimulationSessionManager : ISimulationSessionManager
     private readonly ILogger<SimulationSessionManager> logger;
     private readonly SimulationWorkspaceOptions options;
     private readonly SemaphoreSlim operationGate = new(1, 1);
-    private readonly object stateLock = new();
+    private readonly Lock stateLock = new();
     private readonly Queue<SimulatorOutputLine> recentOutput = new();
     private SimulationSessionSnapshot current = SimulationSessionSnapshot.Stopped;
     private ISimulatorRuntimeSession? runtimeSession;
