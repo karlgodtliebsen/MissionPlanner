@@ -612,7 +612,7 @@ public partial class VirtualizedDataGrid : Border
     /// <summary>
     /// Applies the configured empty view or empty-view template to the rows host.
     /// </summary>
-    internal void ApplyEmptyView()
+    private void ApplyEmptyView()
     {
         if (visualResourcesReleased)
         {
@@ -636,7 +636,7 @@ public partial class VirtualizedDataGrid : Border
         UpdateEmptyViewVisibility();
     }
 
-    internal void UpdateEmptyViewVisibility()
+    private void UpdateEmptyViewVisibility()
     {
         if (visualResourcesReleased)
         {

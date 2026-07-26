@@ -63,7 +63,7 @@
                 Command="{Binding WriteParametersCommand}" />
 
                 <Button 
-                    Text="Refresh"
+                    Text="Refresh parameters"
                     FontSize="14"
                     Padding="8,4"
                     VerticalOptions="Center"
@@ -71,7 +71,7 @@
                     Command="{Binding RefreshParametersCommand}" />
 
                 <Button 
-                    Text="Clear"
+                    Text="Clear parameters"
                     FontSize="14"
                     Padding="8,4"
                     VerticalOptions="Center"
@@ -79,7 +79,7 @@
                     Command="{Binding ClearParametersCommand}" />
 
                 <Button 
-                    Text="Compare"
+                    Text="Compare parameters"
                     FontSize="14"
                     Padding="8,4"
                     VerticalOptions="Center"
@@ -156,7 +156,7 @@
                                 FontSize="16"
                                 HorizontalTextAlignment="Center" />
                             <Label
-                                Text="Refresh Params or clear the search text to display parameters."
+                                Text="Refresh parameters or clear the search text to display parameters."
                                 FontSize="13"
                                 Opacity="0.75"
                                 HorizontalTextAlignment="Center" />
