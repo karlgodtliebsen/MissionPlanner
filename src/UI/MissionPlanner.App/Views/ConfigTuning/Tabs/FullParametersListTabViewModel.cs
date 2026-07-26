@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Diagnostics;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -31,7 +32,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     private CancellationTokenSource? loadCancellation;
     private IParameterEditSession? editSession;
     private IDisposable? progressDialog;
-    private bool active;
     private bool disposed;
 
     /// <summary>Gets whether the page is temporarily covered by its owned progress dialog.</summary>
@@ -67,7 +67,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         this.domainFactory = domainFactory;
         this.parametersFileHandler = parametersFileHandler;
         this.logger = logger;
-        HasConnection = activeVehicle.IsOnline;
+        InitializeView();
     }
 
     /// <summary>Gets the currently visible parameter rows.</summary>
@@ -105,14 +105,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     [ObservableProperty]
     public partial int FilteredParameterCount { get; set; }
 
-    ///// <summary>Gets or sets the number of parameter rows shown on one page.</summary>
-    //[ObservableProperty]
-    //public partial int PageSize { get; set; } = 10;
-
-    ///// <summary>Gets or sets the one-based page currently shown.</summary>
-    //[ObservableProperty]
-    //public partial int CurrentPage { get; set; } = 1;
-
     /// <summary>Gets the number of pages available for the current search.</summary>
     [ObservableProperty]
     public partial int TotalPageCount { get; set; } = 1;
@@ -123,12 +115,21 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
     /// <summary>Gets whether a load or apply operation is active.</summary>
     [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CancelLoadCommand))]
+    [NotifyCanExecuteChangedFor(nameof(WriteParametersCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CompareParametersCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RevertChangesCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ClearParametersCommand))]
     public partial bool IsBusy { get; set; }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
     [NotifyCanExecuteChangedFor(nameof(CancelLoadCommand))]
     [NotifyCanExecuteChangedFor(nameof(WriteParametersCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CompareParametersCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RevertChangesCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ClearParametersCommand))]
     public partial bool HasRows { get; set; }
 
     /// <summary>Gets whether an active vehicle connection is available.</summary>
@@ -136,6 +137,9 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
     [NotifyCanExecuteChangedFor(nameof(CancelLoadCommand))]
     [NotifyCanExecuteChangedFor(nameof(WriteParametersCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CompareParametersCommand))]
+    [NotifyCanExecuteChangedFor(nameof(RevertChangesCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ClearParametersCommand))]
     public partial bool HasConnection { get; set; }
 
     /// <summary>Gets the latest editing or apply status.</summary>
@@ -151,22 +155,50 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     public partial bool RebootRequired { get; set; }
 
     /// <summary>Activates vehicle lifecycle tracking while the tab is visible.</summary>
-    public void Activate()
+    private void InitializeView()
     {
-        if (active || disposed)
+        if (disposed)
         {
             return;
         }
 
-        active = true;
+        ErrorMessage = null;
+        IsBusy = false;
+        HasRows = allParameterItems.Any();
         activeVehicle.Changed += OnActiveVehicleChanged;
         HasConnection = activeVehicle.IsOnline;
         ShowVehicleDisconnected = !HasConnection;
         StatusMessage = HasConnection ? null : DefaultStatusMessage;
-        ErrorMessage = null;
-        HasRows = allParameterItems.Any();
     }
 
+    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs vehicleChangedEventArgs)
+    {
+        var scopeChanged =
+            vehicleChangedEventArgs.Previous.VehicleId != vehicleChangedEventArgs.Current.VehicleId ||
+            vehicleChangedEventArgs.Previous.IsOnline != vehicleChangedEventArgs.Current.IsOnline ||
+            vehicleChangedEventArgs.Previous.State?.Identity.Firmware != vehicleChangedEventArgs.Current.State?.Identity.Firmware;
+        if (!scopeChanged)
+        {
+            return;
+        }
+
+        var changed = vehicleChangedEventArgs.Current.IsOnline;
+
+        dispatcher.Dispatch(() =>
+        {
+            editSessionFactory?.DiscardPendingChanges();
+            HasConnection = changed;
+            ShowVehicleDisconnected = !changed;
+            CancelLoadOperation();
+            CloseProgressDialog();
+            CompleteBusyState();
+
+            var statusMessage = changed ? "Vehicle changed. Refresh parameters." : null;
+            var errorMessage = changed ? null : "The vehicle is disconnected.";
+            Debug.Assert(statusMessage is null || errorMessage is null);
+            SetMessages(statusMessage, errorMessage);
+        });
+    }
 
     partial void OnSearchTextChanged(string value)
     {
@@ -192,6 +224,28 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         progressDialog = null;
     }
 
+    private async Task HandleLoadError(ParameterStreamResult result, VehicleId vehicleId)
+    {
+        CloseOperationDialog();
+        await dispatcher.DispatchAsync(() =>
+        {
+            CompleteBusyState();
+            ShowLoadingCompletedWithError = true;
+            SetMessages(errorMessage: result.ErrorMessage ?? "Parameter loading failed.");
+        });
+        logger.LogError("Full Parameters List load failed for {VehicleId}: {Error}", vehicleId, result.ErrorMessage);
+        HasRows = allParameterItems.Any();
+    }
+
+    private IProgress<ParameterStreamProgress> CreateProgress()
+    {
+        var progress = new Progress<ParameterStreamProgress>(value => dispatcher.Dispatch(() => ProgressMessage = value.Message ?? (value.TotalCount > 0
+            ? $"Processing parameters... {value.ReceivedCount}/{value.TotalCount}"
+            : "Processing parameters...")));
+        return progress;
+    }
+
+
     [RelayCommand(CanExecute = nameof(CanRefreshParameters))]
     private async Task ClearParametersAsync()
     {
@@ -204,7 +258,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         SetMessages();
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
-            SetDisconnectedState();
             return;
         }
 
@@ -283,42 +336,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         }
     }
 
-    private async Task HandleLoadError(ParameterStreamResult result, VehicleId vehicleId)
-    {
-        CloseOperationDialog();
-        await dispatcher.DispatchAsync(() =>
-        {
-            CompleteBusyState();
-            ShowLoadingCompletedWithError = true;
-            SetMessages(errorMessage: result.ErrorMessage ?? "Parameter loading failed.");
-        });
-        logger.LogError("Full Parameters List load failed for {VehicleId}: {Error}", vehicleId, result.ErrorMessage);
-        HasRows = allParameterItems.Any();
-    }
-
-    private IProgress<ParameterStreamProgress> CreateProgress()
-    {
-        var progress = new Progress<ParameterStreamProgress>(value => dispatcher.Dispatch(() => ProgressMessage = value.Message ?? (value.TotalCount > 0
-            ? $"Processing parameters... {value.ReceivedCount}/{value.TotalCount}"
-            : "Processing parameters...")));
-        return progress;
-    }
-
-    [RelayCommand(CanExecute = nameof(CanCancelLoad))]
-    private void CancelLoad()
-    {
-        SetMessages();
-        var isBusy = IsBusy;
-        CancelLoadOperation();
-        CloseProgressDialog();
-        CompleteBusyState();
-        if (isBusy)
-        {
-            ShowLoadingCancelled = true;
-            SetMessages(errorMessage: "Parameter loading was cancelled.");
-        }
-    }
-
     [RelayCommand]
     private async Task LoadFromFileAsync()
     {
@@ -375,7 +392,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         HasRows = allParameterItems.Any();
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanSave))]
     private async Task SaveToFileAsync()
     {
         try
@@ -390,7 +407,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanSave))]
     private async Task SaveToJsonFileAsync()
     {
         try
@@ -449,7 +466,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         }
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanCompareParameters))]
     private void CompareParameters()
     {
         SetMessages("Parameter comparison is not implemented yet.");
@@ -461,30 +478,46 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         SetMessages("Pre saved parameter profiles are not implemented yet.");
     }
 
-    [RelayCommand]
-    private void ResetToDefault()
+    [RelayCommand(CanExecute = nameof(CanRevertChanges))]
+    private void RevertChanges()
     {
         editSession?.RevertAll();
         SetMessages("All unapplied values were reverted to current live values.");
     }
 
-    /// <inheritdoc />
-    public void Dispose()
+    [RelayCommand(CanExecute = nameof(CanCancelLoad))]
+    private void CancelLoad()
     {
-        if (disposed)
-        {
-            return;
-        }
-
-        disposed = true;
-        activeVehicle.Changed -= OnActiveVehicleChanged;
+        SetMessages();
+        var isBusy = IsBusy;
         CancelLoadOperation();
-        editSession?.Changed -= OnEditSessionChanged;
+        CloseProgressDialog();
+        CompleteBusyState();
+        if (isBusy)
+        {
+            ShowLoadingCancelled = true;
+            SetMessages(errorMessage: "Parameter loading was cancelled.");
+        }
     }
 
     private bool CanRefreshParameters()
     {
         return HasConnection && !IsBusy;
+    }
+
+    private bool CanRevertChanges()
+    {
+        return HasConnection && HasRows && editSession is { IsDirty: true, IsValid: true };
+    }
+
+    private bool CanCompareParameters()
+    {
+        return HasConnection && HasRows;
+    }
+
+    private bool CanSave()
+    {
+        return HasConnection && !IsBusy && HasRows;
     }
 
     private bool CanCancelLoad()
@@ -496,6 +529,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     {
         return HasConnection && !IsBusy && editSession is { IsDirty: true, IsValid: true };
     }
+
 
     private void AttachSession(IParameterEditSession session)
     {
@@ -597,35 +631,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         Parameters.AddRange(filteredParameterItems);
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
-    {
-        var scopeChanged =
-            args.Previous.VehicleId != args.Current.VehicleId ||
-            args.Previous.IsOnline != args.Current.IsOnline ||
-            args.Previous.State?.Identity.Firmware != args.Current.State?.Identity.Firmware;
-        if (!scopeChanged)
-        {
-            return;
-        }
-
-        dispatcher.Dispatch(() =>
-        {
-            if (!active)
-            {
-                return;
-            }
-
-            HasConnection = args.Current.IsOnline;
-            ShowVehicleDisconnected = !HasConnection;
-            CancelLoadOperation();
-            CloseProgressDialog();
-            CompleteBusyState();
-            var statusMessage = HasConnection ? "Vehicle scope changed. Refresh parameters before editing." : null;
-            var errorMessage = !HasConnection ? null : editSession?.InvalidReason ?? "The vehicle is disconnected.";
-            SetMessages(statusMessage, errorMessage);
-        });
-    }
-
     private async Task SetLoadStateAsync()
     {
         await dispatcher.DispatchAsync(() =>
@@ -648,15 +653,14 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         ShowLoadingCancelled = false;
     }
 
-    private void SetDisconnectedState()
-    {
-        HasConnection = false;
-        ShowVehicleDisconnected = true;
-        var m = DefaultStatusMessage;
-        SetMessages(null, m);
-        CloseProgressDialog();
-        CompleteBusyState();
-    }
+    //private void SetDisconnectedState()
+    //{
+    //    HasConnection = false;
+    //    ShowVehicleDisconnected = true;
+    //    SetMessages(null, DefaultStatusMessage);
+    //    CloseProgressDialog();
+    //    CompleteBusyState();
+    //}
 
     private void CancelLoadOperation()
     {
@@ -674,6 +678,20 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         {
             // The owning load completed between observing and cancelling the source.
         }
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        CancelLoadOperation();
+        editSession?.Changed -= OnEditSessionChanged;
     }
 
     private void CloseProgressDialog()

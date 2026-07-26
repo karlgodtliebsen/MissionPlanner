@@ -1,4 +1,4 @@
-using MissionPlanner.Core.DomainEvents;
+﻿using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
@@ -27,9 +27,9 @@ public sealed class ActiveVehicleContext : IActiveVehicleContext, IDisposable
         this.vehicleRegistry = vehicleRegistry;
         connectionLifetime.Cancel();
         subscriptions.Add(eventHub.SubscribeDomainEventAsync<VehicleConnected>(OnConnectedAsync));
-        subscriptions.Add(eventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnDisconnectedAsync));
         subscriptions.Add(eventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnStateUpdatedAsync));
         subscriptions.Add(eventHub.SubscribeDomainEventAsync<VehicleRegistryReset>(OnRegistryResetAsync));
+        subscriptions.Add(eventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnDisconnectedAsync));
     }
 
     /// <inheritdoc />
@@ -98,23 +98,38 @@ public sealed class ActiveVehicleContext : IActiveVehicleContext, IDisposable
         return Task.CompletedTask;
     }
 
+    private bool disconnecting = false;
+
     private Task OnDisconnectedAsync(VehicleDisconnected evt, CancellationToken cancellationToken)
     {
-        var snapshot = Current;
-        if (snapshot.VehicleId != evt.VehicleId)
+        disconnecting = true;
+        try
         {
+            var snapshot = Current;
+            if (snapshot.VehicleId != evt.VehicleId)
+            {
+                return Task.CompletedTask;
+            }
+
+            var offlineState = snapshot.State is null
+                ? null
+                : snapshot.State with { Connection = snapshot.State.Connection with { State = VehicleConnectionState.Offline } };
+            SetCurrent(new ActiveVehicleSnapshot(evt.VehicleId, offlineState));
             return Task.CompletedTask;
         }
-
-        var offlineState = snapshot.State is null
-            ? null
-            : snapshot.State with { Connection = snapshot.State.Connection with { State = VehicleConnectionState.Offline } };
-        SetCurrent(new ActiveVehicleSnapshot(evt.VehicleId, offlineState));
-        return Task.CompletedTask;
+        finally
+        {
+            disconnecting = false;
+        }
     }
 
     private Task OnStateUpdatedAsync(VehicleStateUpdated evt, CancellationToken cancellationToken)
     {
+        if (disconnecting)
+        {
+            // return Task.CompletedTask;
+        }
+
         var snapshot = Current;
         if (snapshot.VehicleId == evt.VehicleId)
         {

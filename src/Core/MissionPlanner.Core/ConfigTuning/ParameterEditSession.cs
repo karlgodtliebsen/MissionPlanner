@@ -13,7 +13,6 @@ namespace MissionPlanner.Core.ConfigTuning;
 /// </summary>
 public sealed class ParameterEditSession : IParameterEditSession
 {
-    //private const double EqualityTolerance = 0.0001;
     private readonly object sync = new();
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleParameterRegistry parameterRegistry;
@@ -733,10 +732,4 @@ public sealed class ParameterEditSession : IParameterEditSession
             results.Add(new ParameterWriteResult(targets[index], ParameterWriteOutcome.Skipped, message));
         }
     }
-
-    //private static bool NearlyEqual(double first, double second)
-    //{
-    //    var scale = Math.Max(1, Math.Max(Math.Abs(first), Math.Abs(second)));
-    //    return Math.Abs(first - second) <= EqualityTolerance * scale;
-    //}
 }

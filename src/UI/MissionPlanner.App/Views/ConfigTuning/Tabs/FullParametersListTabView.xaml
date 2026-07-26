@@ -109,7 +109,7 @@
                 Padding="8,4"
                 VerticalOptions="Center"
                 BackgroundColor="Transparent"
-                Command="{Binding ResetToDefaultCommand}" />
+                Command="{Binding RevertChangesCommand}" />
 
 
             </HorizontalStackLayout>

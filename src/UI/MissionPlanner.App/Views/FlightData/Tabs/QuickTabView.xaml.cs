@@ -18,7 +18,7 @@ public partial class QuickTabView : ContentView
     //protected override void OnAppearing()
     //{
     //    base.OnAppearing();
-    //    viewModel.Activate();
+    //    viewModel.InitializeView();
     //}
 
     ///// <inheritdoc />

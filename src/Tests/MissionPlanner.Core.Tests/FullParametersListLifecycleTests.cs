@@ -22,7 +22,7 @@ public sealed class FullParametersListLifecycleTests
         using var fixture = CreateFixture(true);
 
         fixture.ViewModel.StatusMessage.Should().BeNull();
-        fixture.ViewModel.Activate();
+        //fixture.ViewModel.InitializeView();
 
         fixture.ViewModel.HasConnection.Should().BeTrue();
         fixture.ViewModel.ShowVehicleDisconnected.Should().BeFalse();
@@ -38,7 +38,7 @@ public sealed class FullParametersListLifecycleTests
         using var fixture = CreateFixture(false);
 
         fixture.ViewModel.StatusMessage.Should().BeNull();
-        fixture.ViewModel.Activate();
+        //fixture.ViewModel.InitializeView();
 
         fixture.ViewModel.HasConnection.Should().BeFalse();
         fixture.ViewModel.ShowVehicleDisconnected.Should().BeTrue();
@@ -93,7 +93,7 @@ public sealed class FullParametersListLifecycleTests
                 return Task.FromResult(progressDialog);
             });
         using var fixture = CreateFixture(true, streamService, extendedDialogService);
-        fixture.ViewModel.Activate();
+        //   fixture.ViewModel.InitializeView();
 
         var load = fixture.ViewModel.RefreshParametersCommand.ExecuteAsync(null);
         var streamToken = await streamStarted.Task.WaitAsync(TestContext.Current.CancellationToken);
