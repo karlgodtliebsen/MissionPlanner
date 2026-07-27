@@ -1,21 +1,31 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
-using UraniumUI;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Mapsui.Utilities;
+using UraniumUI.Material.Extensions.Samples.DataGrids.Models;
 
 namespace UraniumUI.Material.Extensions.Samples;
 
-public class MainPageViewModel : BindableObject
+public partial class MainPageViewModel : ObservableObject
 {
-    public ObservableCollection<TodoItem> Items { get; protected set; } = new ObservableCollection<TodoItem>();
-
-    public ObservableCollection<TodoItem> SelectedItems { get; set; } = new ObservableCollection<TodoItem>();
+    public ObservableRangeCollection<TodoItem> Items { get; } = [];
+    public ObservableCollection<TodoItem> SelectedItems { get; set; } = [];
 
     private TodoItem newItem = new();
-    public TodoItem NewItem { get => newItem; set { newItem = value; OnPropertyChanged(); } }
 
-    public ICommand AddNewItemCommand { get; protected set; }
+    public TodoItem NewItem
+    {
+        get => newItem;
+        set
+        {
+            newItem = value;
+            OnPropertyChanged();
+        }
+    }
 
-    public ICommand RemoveSelectedItemsCommand { get; protected set; }
+    public ICommand AddNewItemCommand { get; private set; }
+
+    public ICommand RemoveSelectedItemsCommand { get; private set; }
 
     public MainPageViewModel()
     {
@@ -32,7 +42,7 @@ public class MainPageViewModel : BindableObject
         AddNewItemCommand = new Command(() =>
         {
             Items.Insert(0, NewItem);
-            NewItem = new();
+            NewItem = new TodoItem();
         });
 
         RemoveSelectedItemsCommand = new Command(() =>
@@ -42,25 +52,5 @@ public class MainPageViewModel : BindableObject
                 Items.Remove(item);
             }
         });
-    }
-}
-
-public class TodoItem : UraniumBindableObject
-{
-    public string Content { get; set; }
-
-    private bool isDone;
-    public bool IsDone { get => isDone; set => SetProperty(ref isDone, value); }
-
-    public TodoItemType Type { get; set; }
-
-    public static TodoItemType[] AvailableTypes => Enum.GetValues(typeof(TodoItemType)) as TodoItemType[];
-
-    public enum TodoItemType
-    {
-        Personal,
-        Work,
-        Hobby,
-        Family
     }
 }

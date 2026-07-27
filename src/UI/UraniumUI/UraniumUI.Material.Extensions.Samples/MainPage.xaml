@@ -1,5 +1,4 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-
 <uranium:UraniumContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
@@ -8,7 +7,11 @@
              xmlns:validation="clr-namespace:InputKit.Shared.Validations;assembly=InputKit.Maui"
              x:Class="UraniumUI.Material.Extensions.Samples.MainPage"
              xmlns:local="clr-namespace:UraniumUI.Material.Extensions.Samples"
+             xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+             xmlns:models="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids.Models"
+             xmlns:controls="clr-namespace:Plainer.Maui.Controls;assembly=Plainer.Maui"
              x:Name="page">
+
     <uranium:UraniumContentPage.BindingContext>
         <local:MainPageViewModel />
     </uranium:UraniumContentPage.BindingContext>
@@ -19,27 +22,65 @@
         </Style>
     </uranium:UraniumContentPage.Resources>
 
-    <ScrollView>
+    <Grid  HorizontalOptions="Fill">
 
-        <VerticalStackLayout Spacing="10">
+        <HorizontalStackLayout Spacing="10" HorizontalOptions="Center"  >
+            <ScrollView>
+                <VerticalStackLayout Spacing="30">
+                    <Button Text="Delete" StyleClass="FilledTonalButton"  Command="{Binding RemoveSelectedItemsCommand}" HorizontalOptions="Center" />
+                    <material:DataGrid ItemsSource="{Binding Items}" 
+                               SelectedItems="{Binding SelectedItems}" 
+                               HorizontalOptions="Center" VerticalOptions="Center">
+                        <material:DataGrid.Columns>
+                            <material:DataGridSelectionColumn/>
+                            <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding Content}" Title="Todo" />
+                            <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding Type}" Title="Type"/>
+                            <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding IsDone}" Title="Done"/>
+                        </material:DataGrid.Columns>
+                    </material:DataGrid>
+                </VerticalStackLayout>
+            </ScrollView>
 
-            <Button Text="Delete" StyleClass="FilledTonalButton"  Command="{Binding RemoveSelectedItemsCommand}" HorizontalOptions="Center" />
-            <material:DataGrid ItemsSource="{Binding Items}" SelectedItems="{Binding SelectedItems}" HorizontalOptions="Center" VerticalOptions="Center">
-                <material:DataGrid.Columns>
+
+            <virtualized:VirtualizedDataGrid     ItemsSource="{Binding Items}" 
+                                                 HorizontalOptions="Center" Margin="30,20,30,0"
+                                                 UseAutoColumns="False"
+                                                 AutoColumnWidth= "180"
+                                                 MaximumWidthRequest="500"
+                                                 MinimumStarColumnWidth= "120"
+                                                 ItemSizingStrategy= "MeasureFirstItem"
+                                                 FilterMemberPaths="Name,Age,Id"
+                                                 ShowSearchBar="False"
+                                                 >
+
+                <virtualized:VirtualizedDataGrid.EmptyView>
+                    <VerticalStackLayout Margin="80,20">
+                        <Image
+                              WidthRequest="40"
+                              HeightRequest="40"
+                              HorizontalOptions="Center"
+                              VerticalOptions="Center"
+                              Source="{FontImageSource FontFamily=MaterialOutlined, Glyph={x:Static uranium:MaterialOutlined.Backup_table}, Color={AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}}"/>
+                        <Label Text="No data available..." HorizontalOptions="Center"/>
+                    </VerticalStackLayout>
+                </virtualized:VirtualizedDataGrid.EmptyView>
+
+                <virtualized:VirtualizedDataGrid.Columns>
+
                     <material:DataGridSelectionColumn/>
+                    <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding Content}" Title="Todo" />
+                    <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding Type}" Title="Type"/>
+                    <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding IsDone}" Title="Done"/>
 
-                    <material:DataGridColumn ValueBinding="{Binding Content}" Title="Todo" />
+                </virtualized:VirtualizedDataGrid.Columns>
+            </virtualized:VirtualizedDataGrid>
 
-                    <material:DataGridColumn ValueBinding="{Binding Type}" Title="Type"/>
 
-                    <material:DataGridColumn ValueBinding="{Binding IsDone}" Title="Done"/>
+        </HorizontalStackLayout>
 
-                </material:DataGrid.Columns>
-            </material:DataGrid>
-        </VerticalStackLayout>
 
-    </ScrollView>
 
+    </Grid>
     <uranium:UraniumContentPage.Attachments>
         <material:BackdropView
                 Title="Add" 
@@ -63,7 +104,7 @@
                     TextColor="{StaticResource OnPrimary}" />
                 <input:SelectionView 
                     Color="{StaticResource Secondary}" 
-                    ItemsSource="{x:Static local:TodoItem.AvailableTypes}" 
+                    ItemsSource="{x:Static models:TodoItem.AvailableTypes}" 
                     SelectedItem="{Binding NewItem.Type}" 
                     ColumnSpacing="-2" 
                     ColumnNumber="4"/>
@@ -88,6 +129,8 @@
             </TableView>
         </material:BottomSheetView>
     </uranium:UraniumContentPage.Attachments>
+
+
 </uranium:UraniumContentPage>
 
 

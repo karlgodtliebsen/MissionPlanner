@@ -75,6 +75,7 @@
         <PackageReference Include="CommunityToolkit.Mvvm" />
         <PackageReference Include="UraniumUI.Dialogs.CommunityToolkit" />
         <PackageReference Include="Ulid" />
+        <PackageReference Include="Bogus" />
 
     </ItemGroup>
 
@@ -91,6 +92,24 @@
 
 	<ItemGroup>
 	  <MauiXaml Update="ArduPilotSample\VirtualizedDataGridView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="DataGrids\CustomDataGridPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="DataGrids\EditorDataGridPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="DataGrids\PaginationSamplePage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="DataGrids\SelectableDataGridPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="DataGrids\SimpleCustomTitleDataGridPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="DataGrids\SimpleDataGridPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>

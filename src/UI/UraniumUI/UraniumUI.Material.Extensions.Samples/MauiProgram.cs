@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Mopups.Hosting;
 using UraniumUI.Material.Extensions.Samples.AppViewModels;
 using UraniumUI.Material.Extensions.Samples.ArduPilotSample;
+using UraniumUI.Material.Extensions.Samples.DataGrids;
 using UraniumUI.Material.Extensions.Samples.VirtualizedDataGridSample;
 
 namespace UraniumUI.Material.Extensions.Samples;
@@ -38,8 +39,15 @@ public static class MauiProgram
         builder.Services.AddSingleton<ThemeChangeViewModel>();
         builder.Services.AddSingleton<ParametersFileHandler>();
         builder.Services.AddSingleton<IFileSaver>(FileSaver.Default);
+
         builder.Services.AddSingleton<VirtualizedDataGridViewModel>();
         builder.Services.AddSingleton<VirtualizedDataGridSampleViewModel>();
+        builder.Services.AddSingleton<EditorDataGridPageViewModel>();
+        builder.Services.AddSingleton<SelectableDataGridPageViewModel>();
+        builder.Services.AddSingleton<SimpleDataGridPageViewModel>();
+        builder.Services.AddSingleton<CustomDataGridPageViewModel>();
+        builder.Services.AddSingleton<PaginationSampleViewModel>();
+        builder.Services.AddSingleton<MainPageViewModel>();
 
         return builder.Build();
     }

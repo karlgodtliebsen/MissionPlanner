@@ -8,6 +8,9 @@ public partial class VirtualizedDataGridSampleViewModel : ObservableObject
 {
     private readonly List<ItemViewModel> allParameterItems = [];
 
+    ///// <summary>Gets the currently visible parameter rows.</summary>
+    public ObservableRangeCollection<ItemViewModel> Parameters { get; } = [];
+
     /// <summary>Initializes the Full Parameters List tab.</summary>
     public VirtualizedDataGridSampleViewModel()
     {
@@ -27,9 +30,6 @@ public partial class VirtualizedDataGridSampleViewModel : ObservableObject
 
         Parameters.AddRange(allParameterItems);
     }
-
-    ///// <summary>Gets the currently visible parameter rows.</summary>
-    public ObservableRangeCollection<ItemViewModel> Parameters { get; } = [];
 }
 
 public partial class ItemViewModel : ObservableObject

@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<uranium:UraniumContentPage x:Class="UraniumUI.Material.Extensions.Samples.DataGrids.SimpleCustomTitleDataGridPage"
+                    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:m="clr-namespace:UraniumUI.Icons.MaterialSymbols;assembly=UraniumUI.Icons.MaterialSymbols"
+                    xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                    xmlns:dataGrids="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids"
+                    xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid">
+    <uranium:UraniumContentPage.BindingContext>
+        <dataGrids:SimpleDataGridPageViewModel />
+    </uranium:UraniumContentPage.BindingContext>
+    <uranium:UraniumContentPage.Content>
+        <ScrollView>
+            <StackLayout>
+                <virtualized:VirtualizedDataGrid ItemsSource="{Binding Items}" 
+                                                 UseAutoColumns="False"
+                                                 AutoColumnWidth= "180"
+                                                 MinimumStarColumnWidth= "120"
+                                                 MaximumWidthRequest="400"
+                                                 ItemSizingStrategy= "MeasureFirstItem"
+                                                 FilterMemberPaths="Name,Id,Age"
+                                                 ShowSearchBar="True"
+                                                 HorizontalOptions="Center" Margin="30">
+                    <virtualized:VirtualizedDataGrid.Columns>
+                        <material:DataGridColumn ValueBinding="{Binding Id}">
+                            <material:DataGridColumn.TitleView>
+                                <Image Source="{FontImageSource FontFamily=MaterialSharp, Glyph={x:Static m:MaterialSharp.Fingerprint}, Color={AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}}" />
+                            </material:DataGridColumn.TitleView>
+                        </material:DataGridColumn>
+
+                        <material:DataGridColumn ValueBinding="{Binding Name}">
+                            <material:DataGridColumn.TitleView>
+                                <Image Source="{FontImageSource FontFamily=MaterialSharp, Glyph={x:Static m:MaterialSharp.Badge}, Color={AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}}" />
+                            </material:DataGridColumn.TitleView>
+                        </material:DataGridColumn>
+
+                        <material:DataGridColumn ValueBinding="{Binding Age}">
+                            <material:DataGridColumn.TitleView>
+                                <Image Source="{FontImageSource FontFamily=MaterialSharp, Glyph={x:Static m:MaterialSharp.Calendar_today}, Color={AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}}" />
+                            </material:DataGridColumn.TitleView>
+                        </material:DataGridColumn>
+                    </virtualized:VirtualizedDataGrid.Columns>
+               </virtualized:VirtualizedDataGrid>
+            </StackLayout>
+        </ScrollView>
+    </uranium:UraniumContentPage.Content>
+</uranium:UraniumContentPage>
