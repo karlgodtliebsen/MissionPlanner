@@ -338,8 +338,10 @@ public partial class VirtualizedDataGrid
     }
 
     /// <summary>
-    /// Initial width used for DataGrid columns declared as Auto. Once rows are realized,
-    /// the width is refined from the header and currently realized cell content.
+    /// Initial width used for DataGrid columns declared as Auto. For generated label
+    /// cells, the width is refined from realized content. Custom templates retain this
+    /// stable width because Fill-sized template content cannot be measured intrinsically
+    /// without creating a width feedback loop.
     /// </summary>
     public static readonly BindableProperty AutoColumnWidthProperty = BindableProperty.Create(
         nameof(AutoColumnWidth),

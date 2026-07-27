@@ -118,12 +118,18 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
         }
 
         var widths = new double[cellsGrid.ColumnDefinitions.Count];
+        var columns = owner.GetColumnsSnapshot();
 
         foreach (var child in cellsGrid.Children.OfType<View>())
         {
             var column = Grid.GetColumn(child);
 
-            if (column >= 0 && column < widths.Length && child.IsVisible)
+            if (column >= 0 &&
+                column < widths.Length &&
+                column < columns.Count &&
+                child.IsVisible &&
+                columns[column].CellItemTemplate is null &&
+                owner.CellItemTemplate is null)
             {
                 var desiredWidth = child is ContentView { Content: View contentView } cell
                     ? contentView.Measure(

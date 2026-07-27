@@ -81,8 +81,27 @@ public class VirtualizedDataGrid_Layout_Tests
             .Margin.ShouldBe(new Thickness(20));
     }
 
+    [Fact]
+    public void RowsViewport_ShouldRemainBoundedForVirtualization()
+    {
+        var grid = new TestableVirtualizedDataGrid();
+
+        grid.ExposedRowsView.VerticalOptions.ShouldBe(LayoutOptions.Fill);
+        grid.ExposedRowsHost.VerticalOptions.ShouldBe(LayoutOptions.Fill);
+        grid.ExposedTableLayout.RowDefinitions[1].Height.ShouldBe(GridLength.Star);
+        grid.ExposedRootLayout.RowDefinitions[1].Height.ShouldBe(GridLength.Star);
+    }
+
     private sealed class TestableVirtualizedDataGrid : VirtualizedDataGrid.Controls.VirtualizedDataGrid
     {
+        public CollectionView ExposedRowsView => RowsView;
+
+        public Grid ExposedRowsHost => ExposedTableLayout.Children
+            .OfType<Grid>()
+            .Single(child => child.Children.Contains(RowsView));
+
+        public Grid ExposedRootLayout => Content.ShouldBeOfType<Grid>();
+
         public Grid CreateRow()
         {
             return RowsView.ItemTemplate.CreateContent().ShouldBeAssignableTo<Grid>();

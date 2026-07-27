@@ -71,7 +71,7 @@ public partial class VirtualizedDataGrid : Border
         rowsView = new CollectionView
         {
             HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Start,
+            VerticalOptions = LayoutOptions.Fill,
             SelectionMode = SelectionMode.None,
             ItemSizingStrategy = ItemSizingStrategy.MeasureFirstItem,
             ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset,
@@ -82,22 +82,22 @@ public partial class VirtualizedDataGrid : Border
 
         emptyViewHost = new ContentView { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill, IsVisible = false };
 
-        rowsHost = new Grid { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Start };
+        rowsHost = new Grid { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill };
         rowsHost.Children.Add(rowsView);
         rowsHost.Children.Add(emptyViewHost);
 
-        tableLayout = new Grid { HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Start, RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto) } };
+        tableLayout = new Grid { HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Fill, RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star) } };
 
         tableLayout.Add(headerSection, 0, 0);
         tableLayout.Add(rowsHost, 0, 1);
 
-        horizontalScrollView = new ScrollView { Orientation = ScrollOrientation.Horizontal, HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Start, Content = tableLayout };
+        horizontalScrollView = new ScrollView { Orientation = ScrollOrientation.Horizontal, HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill, Content = tableLayout };
 
         searchHost = new ContentView { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Center, IsVisible = false };
 
         pagerHost = new ContentView { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Center, IsVisible = false };
 
-        rootLayout = new Grid { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Start, RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto) } };
+        rootLayout = new Grid { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill, RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star), new RowDefinition(GridLength.Auto) } };
         rootLayout.Add(searchHost, 0, 0);
         rootLayout.Add(horizontalScrollView, 0, 1);
         rootLayout.Add(pagerHost, 0, 2);
@@ -319,13 +319,42 @@ public partial class VirtualizedDataGrid : Border
         var columns = GetColumnsSnapshot();
         var measured = new double[columns.Count];
 
+        // Keep widths already learned for this column set. Recycled CollectionView
+        // presenters continuously receive new BindingContexts while scrolling and
+        // filtering. Recomputing from only the currently realized rows makes columns
+        // alternately shrink and grow, which triggers another layout/recycle pass and
+        // produces a long-running visual "crawl".
+        for (var index = 0;
+             index < Math.Min(measured.Length, measuredAutoColumnWidths.Count);
+             index++)
+        {
+            measured[index] = measuredAutoColumnWidths[index];
+        }
+
+        // A custom template may contain Fill-sized controls whose desired width is
+        // derived from the column width they were previously assigned. Feeding that
+        // value back into an Auto column creates unbounded horizontal growth. Custom
+        // templates therefore use the documented stable AutoColumnWidth fallback;
+        // content-based refinement is reserved for the grid's generated labels.
+        for (var index = 0; index < columns.Count; index++)
+        {
+            if (columns[index].Width.IsAuto &&
+                (columns[index].CellItemTemplate is not null ||
+                 CellItemTemplate is not null))
+            {
+                measured[index] = Math.Max(
+                    measured[index],
+                    Math.Max(0, AutoColumnWidth));
+            }
+        }
+
         for (var index = 0; index < Math.Min(columns.Count, headerGrid.Children.Count); index++)
         {
             if (columns[index].IsVisible &&
                 columns[index].Width.IsAuto &&
                 headerGrid.Children[index] is View header)
             {
-                measured[index] = header is ContentView { Content: View headerContent } headerCell
+                var headerWidth = header is ContentView { Content: View headerContent } headerCell
                     ? headerContent.Measure(
                         double.PositiveInfinity,
                         double.PositiveInfinity).Width +
@@ -334,6 +363,10 @@ public partial class VirtualizedDataGrid : Border
                     : header.Measure(
                         double.PositiveInfinity,
                         double.PositiveInfinity).Width;
+
+                measured[index] = Math.Max(
+                    measured[index],
+                    NormalizeMeasuredAutoWidth(headerWidth));
             }
         }
 
@@ -343,24 +376,14 @@ public partial class VirtualizedDataGrid : Border
 
             for (var index = 0; index < Math.Min(measured.Length, rowWidths.Count); index++)
             {
-                if (columns[index].Width.IsAuto)
+                if (columns[index].Width.IsAuto &&
+                    columns[index].CellItemTemplate is null &&
+                    CellItemTemplate is null)
                 {
-                    measured[index] = Math.Max(measured[index], rowWidths[index]);
+                    measured[index] = Math.Max(
+                        measured[index],
+                        NormalizeMeasuredAutoWidth(rowWidths[index]));
                 }
-            }
-        }
-
-        // Separate header/row Grids must share absolute widths. WinUI can round the
-        // measured label and its surrounding ContentView in opposite directions at
-        // the device-pixel boundary, leaving the arranged content fractionally
-        // narrower than its desired width (for example, wrapping "Personal" after
-        // the final character). Ceiling plus one DIP preserves Auto semantics while
-        // providing the same rounding tolerance as a single native Grid's Auto track.
-        for (var index = 0; index < measured.Length; index++)
-        {
-            if (columns[index].Width.IsAuto && measured[index] > 0)
-            {
-                measured[index] = Math.Ceiling(measured[index]) + 1;
             }
         }
 
@@ -376,6 +399,20 @@ public partial class VirtualizedDataGrid : Border
         measuredAutoColumnWidths = measured;
         RecalculateColumnLayout();
         InvalidateMeasure();
+    }
+
+    private static double NormalizeMeasuredAutoWidth(double width)
+    {
+        if (width <= 0)
+        {
+            return 0;
+        }
+
+        // Separate header/row Grids must share absolute widths. WinUI can round the
+        // measured content and its Grid track in opposite directions at a device-pixel
+        // boundary. Apply this allowance to each new candidate—not to an already
+        // normalized stored width—so repeated measurements cannot grow by one DIP.
+        return Math.Ceiling(width) + 1;
     }
 
     /// <summary>
