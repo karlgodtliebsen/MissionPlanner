@@ -54,7 +54,6 @@ public partial class VirtualizedDataGrid : Border
     {
         InitializeFactoryMethods();
         InitializeDataView();
-
         Padding = new Thickness(0, 10);
 
         headerGrid = new Grid { HorizontalOptions = LayoutOptions.Fill };

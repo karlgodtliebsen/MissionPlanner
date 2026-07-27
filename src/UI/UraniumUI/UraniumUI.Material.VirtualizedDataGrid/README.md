@@ -1,4 +1,4 @@
-﻿# UraniumUI.Material.VirtualizedDataGrid v3
+﻿# UraniumUI.Material.VirtualizedDataGrid
 
 This revision builds on the virtualized grid and adds four data-view features:
 
@@ -293,3 +293,43 @@ During the scope, the visible rows stay on a snapshot. Filtering and paging are 
 ## Optional upstream tests
 
 `Tests/VirtualizedDataGrid.DataView.Tests.cs.txt` contains starter xUnit/Shouldly tests designed for the UraniumUI test project. Rename it to `.cs` after copying it into the test project.
+# Material styling
+
+The library includes a ResourceDictionary that gives
+`VirtualizedDataGrid` the same default surface, outline, rounded border,
+separator, and selection colors as UraniumUI Material's original `DataGrid`.
+
+Merge it after UraniumUI's Material `StyleResource` in the consuming
+application's `App.xaml`:
+
+```xml
+<Application
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:material="clr-namespace:UraniumUI.Material.Resources;assembly=UraniumUI.Material"
+    xmlns:virtualizedResources="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Resources;assembly=UraniumUI.Material.VirtualizedDataGrid">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Merge application colors and the UraniumUI Material
+                     StyleResource first. -->
+                <material:StyleResource ColorsOverride="{x:Reference appColors}" />
+                <virtualizedResources:StyleResource ColorsOverride="{x:Reference appColors}" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
+```
+
+The dictionary contains an implicit style, so no `Style` attribute is
+required on individual grids. To base an application-specific style on the
+library style, use its public resource key:
+
+```xml
+<Style
+    x:Key="CompactVirtualizedDataGrid"
+    TargetType="virtualized:VirtualizedDataGrid"
+    BasedOn="{StaticResource UraniumUI.Styles.VirtualizedDataGrid}">
+    <Setter Property="CellPadding" Value="8,4" />
+</Style>
+```

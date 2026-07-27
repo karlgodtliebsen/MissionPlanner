@@ -9,7 +9,6 @@
              xmlns:local="clr-namespace:UraniumUI.Material.Extensions.Samples"
              xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
              xmlns:models="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids.Models"
-             xmlns:controls="clr-namespace:Plainer.Maui.Controls;assembly=Plainer.Maui"
              x:Name="page">
 
     <uranium:UraniumContentPage.BindingContext>
@@ -52,19 +51,6 @@
                                                  FilterMemberPaths="Name,Age,Id"
                                                  ShowSearchBar="False"
                                                  >
-
-                <virtualized:VirtualizedDataGrid.EmptyView>
-                    <VerticalStackLayout Margin="80,20">
-                        <Image
-                              WidthRequest="40"
-                              HeightRequest="40"
-                              HorizontalOptions="Center"
-                              VerticalOptions="Center"
-                              Source="{FontImageSource FontFamily=MaterialOutlined, Glyph={x:Static uranium:MaterialOutlined.Backup_table}, Color={AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}}"/>
-                        <Label Text="No data available..." HorizontalOptions="Center"/>
-                    </VerticalStackLayout>
-                </virtualized:VirtualizedDataGrid.EmptyView>
-
                 <virtualized:VirtualizedDataGrid.Columns>
 
                     <material:DataGridSelectionColumn/>
