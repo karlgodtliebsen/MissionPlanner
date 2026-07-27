@@ -21,7 +21,7 @@ public partial class EditorDataGridPageViewModel : ObservableObject
         .RuleFor(x => x.Name, f => f.Person.FullName)
         .RuleFor(x => x.Age, f => f.Random.Number(14, 85));
 
-    public static Models.EditorStudent GenerateStudent()
+    private static Models.EditorStudent GenerateStudent()
     {
         return studentFaker.Generate();
     }

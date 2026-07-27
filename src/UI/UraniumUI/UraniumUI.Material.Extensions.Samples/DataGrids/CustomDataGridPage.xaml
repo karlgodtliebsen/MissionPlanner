@@ -23,7 +23,7 @@
                 <Button StyleClass="FilledButton" Text="Add data" Command="{Binding AddNewCommand}" />
             </HorizontalStackLayout>
 
-            <!--<ActivityIndicator IsRunning="{Binding IsBusy}" Margin="40" />-->
+            <ActivityIndicator IsRunning="{Binding IsBusy}" Margin="40" />
 
             <virtualized:VirtualizedDataGrid Grid.Row="3" ItemsSource="{Binding Items}" 
                                                   HorizontalOptions="Center" Margin="30,20,30,0"
@@ -75,19 +75,19 @@
 
                     <material:DataGridColumn  x:DataType="models: CustomDataGridStudent" ValueBinding="{Binding Id}" Title="Identity" />
 
-                    <!--<material:DataGridColumn Title="Actions" Width="40" >
-                            <material:DataGridColumn.CellItemTemplate>
-                                <DataTemplate  x:DataType="models: CustomDataGridStudent">
-                                    <Button Text="Remove" 
+                    <material:DataGridColumn Title="Actions" Width="40" >
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate  x:DataType="models: CustomDataGridStudent">
+                                <Button Text="Remove" 
                                             Width="40"
                                             BackgroundColor="{AppThemeBinding Light={StaticResource Secondary},Dark={StaticResource SecondaryDark}}" 
                                             TextColor="{AppThemeBinding Light={StaticResource OnSecondary},Dark={StaticResource OnSecondaryDark}}"
                                             Command="{Binding Source={x:Reference page}, Path=BindingContext.RemoveItemCommand}"
                                             CommandParameter="{Binding .}"
                                             />
-                                </DataTemplate>
-                            </material:DataGridColumn.CellItemTemplate>
-                        </material:DataGridColumn-->
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
 
                 </virtualized:VirtualizedDataGrid.Columns>
             </virtualized:VirtualizedDataGrid>
