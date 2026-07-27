@@ -15,6 +15,10 @@
                 <virtualizedResources:StyleResource ColorsOverride="{x:Reference AppColors}" />
             </ResourceDictionary.MergedDictionaries>
             <toolkit:MultiConverter x:Key="NullToBoolConverter" />
+            <toolkit:BoolToObjectConverter
+                x:Key="BoolToYesNoConverter"
+                TrueObject="Yes"
+                FalseObject="No" />
         </ResourceDictionary>
     </Application.Resources>
 </Application>
