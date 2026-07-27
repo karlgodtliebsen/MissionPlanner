@@ -8,6 +8,8 @@
     xmlns:appViewModels="clr-namespace:UraniumUI.Material.Extensions.Samples.AppViewModels"
     xmlns:controls1="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+    xmlns:arduPilotSample="clr-namespace:UraniumUI.Material.Extensions.Samples.ArduPilotSample"
+    xmlns:virtualizedDataGridSample="clr-namespace:UraniumUI.Material.Extensions.Samples.VirtualizedDataGridSample"
     x:Name="thisShell"
     FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
     Shell.FlyoutBehavior="Flyout"
@@ -89,9 +91,13 @@
     <FlyoutItem Title="Virtualized Data Grid View" >
         <ShellContent
             Title="Virtualized Data Grid View"
-            ContentTemplate="{DataTemplate local:VirtualizedDataGridView}" Route="VirtualizedDataGridView" />
+            ContentTemplate="{DataTemplate virtualizedDataGridSample:VirtualizedDataGridSampleView}" Route="VirtualizedDataGridView" />
     </FlyoutItem>
 
-
+    <FlyoutItem Title="ArduPilot Virtualized Data Grid View" >
+        <ShellContent
+            Title="ArduPilot Virtualized Data Grid View"
+            ContentTemplate="{DataTemplate arduPilotSample:VirtualizedDataGridView}" Route="VirtualizedDataGridView" />
+    </FlyoutItem>
 
 </Shell>

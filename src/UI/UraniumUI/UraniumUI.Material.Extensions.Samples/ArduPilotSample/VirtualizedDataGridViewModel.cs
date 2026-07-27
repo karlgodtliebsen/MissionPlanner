@@ -2,9 +2,8 @@
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using UraniumUI.Dialogs;
-using UraniumUI.Material.Extensions.Samples.Models;
 
-namespace UraniumUI.Material.Extensions.Samples;
+namespace UraniumUI.Material.Extensions.Samples.ArduPilotSample;
 
 /// <summary>Provides the searchable full parameter list through the shared safe editing session.</summary>
 public partial class VirtualizedDataGridViewModel : ObservableObject

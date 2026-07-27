@@ -74,6 +74,7 @@
         <PackageReference Include="CommunityToolkit.Maui" />
         <PackageReference Include="CommunityToolkit.Mvvm" />
         <PackageReference Include="UraniumUI.Dialogs.CommunityToolkit" />
+        <PackageReference Include="Ulid" />
 
     </ItemGroup>
 
@@ -83,13 +84,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Update="VirtualizedDataGridView.xaml.cs">
+	  <Compile Update="ArduPilotSample\VirtualizedDataGridView.xaml.cs">
 	    <DependentUpon>VirtualizedDataGridView.xaml</DependentUpon>
 	  </Compile>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="VirtualizedDataGridView.xaml">
+	  <MauiXaml Update="ArduPilotSample\VirtualizedDataGridView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>

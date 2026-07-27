@@ -1,4 +1,4 @@
-﻿namespace UraniumUI.Material.Extensions.Samples.Models;
+﻿namespace UraniumUI.Material.Extensions.Samples.ArduPilotSample;
 
 /// <summary>Projects the firmware metadata relevant to editing one parameter.</summary>
 /// <param name="DisplayName">The user-facing name.</param>

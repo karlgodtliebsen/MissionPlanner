@@ -1,20 +1,27 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<uranium:UraniumContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<pages:UraniumContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                     xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
                     xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
-                    xmlns:samples="clr-namespace:UraniumUI.Material.Extensions.Samples"
-                    xmlns:models="clr-namespace:UraniumUI.Material.Extensions.Samples.Models"
-                    x:Class="UraniumUI.Material.Extensions.Samples.VirtualizedDataGridView"
-                    x:DataType="samples:VirtualizedDataGridViewModel"
+                    xmlns:pages="clr-namespace:UraniumUI.Pages;assembly=UraniumUI"
+                    xmlns:arduPilotSample="clr-namespace:UraniumUI.Material.Extensions.Samples.ArduPilotSample"
+                    x:Class="UraniumUI.Material.Extensions.Samples.ArduPilotSample.VirtualizedDataGridView"
+                    x:DataType="arduPilotSample:VirtualizedDataGridViewModel"
                     Title="Virtualized Data Grid View"
                     
                     >
     <!--<uranium:UraniumContentPage.BindingContext>
         <samples:VirtualizedDataGridViewModel />
     </uranium:UraniumContentPage.BindingContext>-->
+
+    <uranium:UraniumContentPage.Resources>
+        <Style TargetType="Button">
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="FontSize" Value="14" />
+        </Style>
+    </uranium:UraniumContentPage.Resources>
 
     <Grid RowDefinitions="Auto,*"
           HorizontalOptions="Fill"
@@ -29,7 +36,7 @@
                     FontSize="14"
                     Padding="10,4"
                     VerticalOptions="Center"
-                    BackgroundColor="Transparent"
+                   
                     Command="{Binding LoadFromJsonFileCommand}" >
             </Button>
 
@@ -75,7 +82,7 @@
             <virtualized:VirtualizedDataGrid.Columns>
                 <material:DataGridColumn Title="Param" Width="160">
                     <material:DataGridColumn.CellItemTemplate >
-                        <DataTemplate x:DataType="models:ParameterItemViewModel" >
+                        <DataTemplate x:DataType="arduPilotSample:ParameterItemViewModel" >
 
                             <Label FontSize="12" VerticalOptions="Center" VerticalTextAlignment="Center" 
                                              HorizontalOptions="Start" HorizontalTextAlignment="Start" 
@@ -85,9 +92,9 @@
                     </material:DataGridColumn.CellItemTemplate>
                 </material:DataGridColumn>
 
-                <material:DataGridColumn Title="Value" >
+             <material:DataGridColumn Title="Value" >
                     <material:DataGridColumn.CellItemTemplate >
-                        <DataTemplate  x:DataType="models:ParameterItemViewModel" >
+                        <DataTemplate  x:DataType="arduPilotSample:ParameterItemViewModel" >
                             <controls:AlignedEditorField
                                       FontSize="12"  IsReadOnly="{Binding IsReadOnly}"
                                       Keyboard="Numeric"
@@ -100,9 +107,9 @@
                     </material:DataGridColumn.CellItemTemplate>
                 </material:DataGridColumn>
 
-                <material:DataGridColumn  Width="200"  Title="Selections">
+                <material:DataGridColumn  Width="200" >
                     <material:DataGridColumn.CellItemTemplate>
-                        <DataTemplate  x:DataType="models:ParameterItemViewModel">
+                        <DataTemplate  x:DataType="arduPilotSample:ParameterItemViewModel">
                             <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0,5,0" >
                                 <material:PickerField IsVisible="{Binding HasValuesData}"
                                             FontSize="12" 
@@ -148,7 +155,7 @@
                 <material:DataGridColumn Width="100"  ValueBinding="{Binding OriginalValueText}" Title="Default"  />
                 <material:DataGridColumn Width="125" Title="Units">
                     <material:DataGridColumn.CellItemTemplate>
-                        <DataTemplate x:DataType="models:ParameterItemViewModel">
+                        <DataTemplate x:DataType="arduPilotSample:ParameterItemViewModel">
                             <Label FontSize="14" Text="{Binding Units}" Margin="10,0" VerticalOptions="Center" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
                         </DataTemplate>
                     </material:DataGridColumn.CellItemTemplate>
@@ -157,7 +164,7 @@
 
                 <material:DataGridColumn Width="150" Title="Write status">
                     <material:DataGridColumn.CellItemTemplate>
-                        <DataTemplate x:DataType="models:ParameterItemViewModel">
+                        <DataTemplate x:DataType="arduPilotSample:ParameterItemViewModel">
                             <VerticalStackLayout Margin="10,0" VerticalOptions="Center" HorizontalOptions="Fill">
                                 <Label FontSize="12" Text="{Binding WriteStatus}" HorizontalOptions="Center" HorizontalTextAlignment="Center"/>
                                 <Label FontSize="10" Text="{Binding WriteMessage}"  LineBreakMode="WordWrap" HorizontalOptions="Center" HorizontalTextAlignment="Center"/>
@@ -168,7 +175,7 @@
 
                 <material:DataGridColumn Title="Description" Width="*">
                     <material:DataGridColumn.CellItemTemplate>
-                        <DataTemplate  x:DataType="models:ParameterItemViewModel">
+                        <DataTemplate x:DataType="arduPilotSample:ParameterItemViewModel">
 
                             <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="10,10,0,10">
                                 <Label FontSize="12" VerticalOptions="Center" VerticalTextAlignment="Center" LineBreakMode="WordWrap"  HorizontalOptions="Start" HorizontalTextAlignment="Start" Text="{Binding DisplayName}"/>
@@ -184,5 +191,5 @@
     </Grid>
 
 
-</uranium:UraniumContentPage>
+</pages:UraniumContentPage>
     

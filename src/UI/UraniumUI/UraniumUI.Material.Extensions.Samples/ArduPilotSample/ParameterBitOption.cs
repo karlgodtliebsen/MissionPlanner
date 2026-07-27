@@ -1,4 +1,4 @@
-﻿namespace UraniumUI.Material.Extensions.Samples.Models;
+﻿namespace UraniumUI.Material.Extensions.Samples.ArduPilotSample;
 
 /// <summary>Represents one bit of a bitmask parameter.</summary>
 /// <param name="Bit">The zero-based bit index.</param>
