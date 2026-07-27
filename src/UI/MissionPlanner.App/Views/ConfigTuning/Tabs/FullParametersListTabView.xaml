@@ -191,7 +191,7 @@
                             </material:DataGridColumn.CellItemTemplate>
                         </material:DataGridColumn>
 
-                        <material:DataGridColumn  Width="225"  Title="Selections">
+                        <material:DataGridColumn  Width="200"  Title="Selections">
                             <material:DataGridColumn.CellItemTemplate>
                                 <DataTemplate  x:DataType="configTuning:ParameterItemViewModel">
                                     <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0,5,0" >
@@ -200,7 +200,7 @@
                                               BorderColor="Aqua"
                                               Title="Pick an option"
                                               TitleFontSize="10"
-                                              WidthRequest="225" VerticalOptions="Center" HorizontalOptions="Fill"
+                                              WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
                                               ItemsSource="{Binding ValuesData}"
                                               SelectedItem="{Binding SelectedValue}" />
 
@@ -210,7 +210,7 @@
                                                        BorderColor="Aqua"
                                                        TitleFontSize="10"
                                                        FontSize="14" 
-                                                       WidthRequest="225" VerticalOptions="Center" HorizontalOptions="Fill"
+                                                       WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
                                                        ItemsSource="{Binding BitmaskOptions}" 
                                                        SelectedValuesChangedCommand="{Binding SelectedValuesChanged}"
                                                        SelectedItems="{Binding SelectedBitmaskItems}" />
@@ -220,11 +220,13 @@
                                                                        BorderColor="Aqua"
                                                                        TitleFontSize="10"
                                                                        FontSize="14" 
-                                                                       WidthRequest="225" VerticalOptions="Center" HorizontalOptions="Fill"
+                                                                       WidthRequest="200" 
+                                                                       ButtonOrientation="Vertical"
                                                                        Value="{Binding Value, Mode=TwoWay}"
                                                                        Min="{Binding Min}"
                                                                        Max="{Binding Max}"
                                                                        StepSize="{Binding StepSize}"
+                                                                       VerticalOptions="Center" HorizontalOptions="Fill"
                                                                        HorizontalTextAlignment="End"
                                                                        VerticalTextAlignment="Center" />
                                     </VerticalStackLayout>

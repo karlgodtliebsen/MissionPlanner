@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MissionPlanner.App.AppViewModels;
 using MissionPlanner.App.Helpers;
 using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Presentation;
@@ -36,6 +35,7 @@ using MissionPlanner.Library.Configuration;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Configuration;
 using MissionPlanner.Transport.Configuration;
+using UraniumUI.Material.Dialogs;
 
 namespace MissionPlanner.App.Configuration;
 
@@ -80,7 +80,6 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<ApplicationStateService>();
         services.TryAddSingleton<ParametersFileHandler>();
         services.TryAddSingleton<PlannerSettingsRuntime>();
-        services.TryAddSingleton<ThemeChangeViewModel>();
         services.TryAddSingleton(new CancellationTokenSource());
 
         services.TryAddTransient<IExtendedDialogService, ExtendedDialogService>();

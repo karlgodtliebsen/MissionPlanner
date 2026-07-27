@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Maui.Storage;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
-using MissionPlanner.App.Views.Common;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.Core.ConfigTuning;
@@ -9,6 +8,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using NSubstitute;
+using UraniumUI.Material.Dialogs;
 
 namespace MissionPlanner.Core.Tests;
 

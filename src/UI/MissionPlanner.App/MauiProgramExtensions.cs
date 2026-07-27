@@ -3,6 +3,7 @@ using CommunityToolkit.Maui.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.App.AppViewModels;
 using MissionPlanner.App.Configuration;
 using Mopups.Hosting;
 using Serilog;
@@ -50,8 +51,6 @@ public static class MauiProgramExtensions
 
         builder.Logging.AddFilter("Microsoft", LogLevel.Warning);
         builder.Logging.AddFilter("System", LogLevel.Warning);
-        //builder.Logging.AddConsole();
-        //builder.Logging.Services.AddSingleton<ILoggerProvider, BufferedLoggerProvider>();
 
 #if DEBUG
         builder.Logging.AddDebug();
@@ -73,6 +72,8 @@ public static class MauiProgramExtensions
                 //fonts.AddFluentIconFonts();
             });
         builder.Services.AddSingleton<IFileSaver>(FileSaver.Default);
+        builder.Services.AddSingleton<ThemeChangeViewModel>();
+        builder.Services.AddSingleton<AppShellContentViewModel>();
 
         builder.Services
             .AddApplicationConfiguration(builder.Configuration)

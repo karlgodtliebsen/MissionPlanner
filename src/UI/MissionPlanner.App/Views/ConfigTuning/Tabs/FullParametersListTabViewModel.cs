@@ -11,6 +11,7 @@ using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Parameters;
 using UraniumUI.Dialogs;
+using UraniumUI.Material.Dialogs;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
@@ -121,6 +122,8 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     [NotifyCanExecuteChangedFor(nameof(CompareParametersCommand))]
     [NotifyCanExecuteChangedFor(nameof(RevertChangesCommand))]
     [NotifyCanExecuteChangedFor(nameof(ClearParametersCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SaveToFileCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SaveToJsonFileCommand))]
     public partial bool IsBusy { get; set; }
 
     [ObservableProperty]
@@ -130,6 +133,8 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     [NotifyCanExecuteChangedFor(nameof(CompareParametersCommand))]
     [NotifyCanExecuteChangedFor(nameof(RevertChangesCommand))]
     [NotifyCanExecuteChangedFor(nameof(ClearParametersCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SaveToFileCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SaveToJsonFileCommand))]
     public partial bool HasRows { get; set; }
 
     /// <summary>Gets whether an active vehicle connection is available.</summary>
@@ -140,6 +145,8 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     [NotifyCanExecuteChangedFor(nameof(CompareParametersCommand))]
     [NotifyCanExecuteChangedFor(nameof(RevertChangesCommand))]
     [NotifyCanExecuteChangedFor(nameof(ClearParametersCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SaveToFileCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SaveToJsonFileCommand))]
     public partial bool HasConnection { get; set; }
 
     /// <summary>Gets the latest editing or apply status.</summary>

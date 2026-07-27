@@ -222,10 +222,7 @@ public partial class ParameterItemViewModel : ObservableObject
         }
     }
 
-    private static double ResolveStepSize(
-        EditorMetadataProjection metadata,
-        double? minimum,
-        double? maximum)
+    private static double ResolveStepSize(EditorMetadataProjection metadata, double? minimum, double? maximum)
     {
         var resolved = TryParseInvariant(metadata.Increment, out var parsedIncrement)
             ? parsedIncrement
@@ -240,10 +237,7 @@ public partial class ParameterItemViewModel : ObservableObject
         return double.IsFinite(resolved) && resolved > 0 ? resolved : 0.1;
     }
 
-    private static double? ResolveMetadataNumber(
-        IReadOnlyList<string> values,
-        int index,
-        double? fallback)
+    private static double? ResolveMetadataNumber(IReadOnlyList<string> values, int index, double? fallback)
     {
         return index < values.Count &&
                TryParseInvariant(values[index], out var parsed)
@@ -258,48 +252,6 @@ public partial class ParameterItemViewModel : ObservableObject
             NumberStyles.Float,
             CultureInfo.InvariantCulture,
             out value);
-    }
-
-    private static EditorMetadataProjection CreateEditorMetadata(ParameterMetadata metadata)
-    {
-        var valueDefinitions = metadata.GetValueOptions()
-            .OrderBy(option => option.Key)
-            .ToArray();
-        var valueOptions = valueDefinitions
-            .Select(option => new SelectItem(option.Value, option.Key))
-            .ToArray();
-        var bitmaskDefinitions = metadata.GetBitmaskOptions()
-            .Where(option => option.Key is >= 0 and < 64)
-            .OrderBy(option => option.Key)
-            .ToArray();
-        var bitmaskOptions = bitmaskDefinitions
-            .Select(option => new SelectItem(option.Value, 1UL << option.Key))
-            .ToArray();
-        var options = valueOptions.Length > 0
-            ? string.Join(Environment.NewLine, valueDefinitions.Select(option => $"{option.Key}:{option.Value}"))
-            : bitmaskOptions.Length > 0
-                ? string.Join(Environment.NewLine, bitmaskDefinitions.Select(option => $"{option.Key}:{option.Value}"))
-                : null;
-
-        return new EditorMetadataProjection(
-            metadata.Name,
-            metadata.DisplayName,
-            metadata.Description,
-            metadata.Units,
-            metadata.UnitText,
-            metadata.Range,
-            metadata.Values,
-            metadata.Bitmask,
-            metadata.Increment,
-            metadata.UserLevel,
-            metadata.MinValue,
-            metadata.MaxValue,
-            metadata.IncrementValue,
-            metadata.ReadOnly,
-            metadata.RebootRequired,
-            valueOptions,
-            bitmaskOptions,
-            options);
     }
 
     private static EditorMetadataProjection CreateEditorMetadata(ParameterEditField field)
