@@ -341,6 +341,13 @@ public partial class VirtualizedDataGrid
             return;
         }
 
+        if (!ShowSearchBar)
+        {
+            searchHost.IsVisible = false;
+            searchHost.Content = null;
+            return;
+        }
+
         View searchContent;
 
         if (SearchView is not null)

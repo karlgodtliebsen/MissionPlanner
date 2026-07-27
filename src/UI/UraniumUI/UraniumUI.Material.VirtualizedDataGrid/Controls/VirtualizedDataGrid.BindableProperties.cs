@@ -263,7 +263,7 @@ public partial class VirtualizedDataGrid
         nameof(CellPadding),
         typeof(Thickness),
         typeof(VirtualizedDataGrid),
-        new Thickness(20, 10),
+        new Thickness(0),
         propertyChanged: static (bindable, _, _) =>
             ((VirtualizedDataGrid)bindable).RefreshRealizedRows());
 
@@ -283,7 +283,7 @@ public partial class VirtualizedDataGrid
         nameof(HeaderPadding),
         typeof(Thickness),
         typeof(VirtualizedDataGrid),
-        new Thickness(20, 10),
+        new Thickness(0),
         propertyChanged: static (bindable, _, _) =>
             ((VirtualizedDataGrid)bindable).RenderHeader());
 
@@ -329,7 +329,7 @@ public partial class VirtualizedDataGrid
             ((VirtualizedDataGrid)bindable).RecalculateColumnLayout());
 
     /// <summary>
-    /// Gets or sets the stable width assigned to columns whose width is automatic.
+    /// Gets or sets the fallback width used by automatic columns before content is realized.
     /// </summary>
     public double AutoColumnWidth
     {
@@ -338,8 +338,8 @@ public partial class VirtualizedDataGrid
     }
 
     /// <summary>
-    /// Width used for DataGrid columns declared as Auto. Cross-row Auto measurement would
-    /// defeat virtualization, so Auto is resolved to this stable width.
+    /// Initial width used for DataGrid columns declared as Auto. Once rows are realized,
+    /// the width is refined from the header and currently realized cell content.
     /// </summary>
     public static readonly BindableProperty AutoColumnWidthProperty = BindableProperty.Create(
         nameof(AutoColumnWidth),
@@ -385,7 +385,7 @@ public partial class VirtualizedDataGrid
         nameof(FillAvailableWidth),
         typeof(bool),
         typeof(VirtualizedDataGrid),
-        true,
+        false,
         propertyChanged: static (bindable, _, _) =>
             ((VirtualizedDataGrid)bindable).RecalculateColumnLayout());
 

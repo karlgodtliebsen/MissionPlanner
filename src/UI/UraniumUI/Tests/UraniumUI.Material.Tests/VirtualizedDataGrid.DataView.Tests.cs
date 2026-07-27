@@ -104,7 +104,7 @@ public class VirtualizedDataGridDataViewTests
         };
     }
 
-    private sealed class TestableVirtualizedDataGrid : VirtualizedDataGrid
+    private sealed class TestableVirtualizedDataGrid : VirtualizedDataGrid.Controls.VirtualizedDataGrid
     {
         public CollectionView ExposedRowsView => RowsView;
         public ContentView ExposedEmptyViewHost => EmptyViewHost;

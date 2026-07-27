@@ -55,5 +55,7 @@
     </Project>
     <Project Path="UI/UraniumUI/UraniumUI.Material.VirtualizedDataGrid/UraniumUI.Material.VirtualizedDataGrid.csproj" />
   </Folder>
-  <Folder Name="/UI/UraniumUI/Tests/" />
+  <Folder Name="/UI/UraniumUI/Tests/">
+    <Project Path="UI/UraniumUI/Tests/UraniumUI.Material.Tests/UraniumUI.Material.Tests.csproj" />
+  </Folder>
 </Solution>

@@ -1,10 +1,9 @@
 ﻿using System.Text.Json;
-using CommunityToolkit.Maui.Storage;
 
 namespace UraniumUI.Material.Extensions.Samples.ArduPilotSample;
 
 /// <summary>Imports and exports vehicle parameter files for the Config editing session.</summary>
-public sealed class ParametersFileHandler(IFileSaver fileSaver)
+public sealed class ParametersFileHandler()
 {
     private static readonly JsonSerializerOptions options = new();
 

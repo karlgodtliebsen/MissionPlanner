@@ -22,43 +22,43 @@
         </Style>
     </uranium:UraniumContentPage.Resources>
 
-    <Grid  HorizontalOptions="Fill">
 
-        <HorizontalStackLayout Spacing="10" HorizontalOptions="Center"  >
-            <ScrollView>
-                <VerticalStackLayout Spacing="30">
-                    <Button Text="Delete" StyleClass="FilledTonalButton"  Command="{Binding RemoveSelectedItemsCommand}" HorizontalOptions="Center" />
-                    <material:DataGrid ItemsSource="{Binding Items}" 
+    <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="10" HorizontalOptions="Center">
+
+        
+        <material:DataGrid ItemsSource="{Binding Items}" 
                                SelectedItems="{Binding SelectedItems}" 
-                               HorizontalOptions="Center" VerticalOptions="Center">
-                        <material:DataGrid.Columns>
-                            <material:DataGridSelectionColumn/>
-                            <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding Content}" Title="Todo" />
-                            <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding Type}" Title="Type"/>
-                            <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding IsDone, Converter={StaticResource BoolToYesNoConverter}}" Title="Done"/>
-                        </material:DataGrid.Columns>
-                    </material:DataGrid>
-                </VerticalStackLayout>
-            </ScrollView>
+                               HorizontalOptions="Center" VerticalOptions="Center"
+                               
+                               >
+            <material:DataGrid.Columns>
+                <material:DataGridSelectionColumn/>
+                <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding Content}" Title="Todo" />
+                <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding Type}" Title="Type"/>
+                <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding IsDone, Converter={StaticResource BoolToYesNoConverter}}" Title="Done"/>
+            </material:DataGrid.Columns>
+        </material:DataGrid>
+        
 
-            <virtualized:VirtualizedDataGrid     ItemsSource="{Binding Items}" 
-                                                 HorizontalOptions="Center" Margin="30,20,30,0"
-                                                 MaximumWidthRequest="500"
-                                                 ItemSizingStrategy= "MeasureFirstItem"
-                                                 FilterMemberPaths="Name,Age,Id"
-                                                 ShowSearchBar="False"
-                                                 >
-                <virtualized:VirtualizedDataGrid.Columns>
-                    <material:DataGridSelectionColumn/>
-                    <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding Content}" Title="Todo" />
-                    <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding Type}" Title="Type"/>
-                    <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding IsDone, Converter={StaticResource BoolToYesNoConverter}}" Title="Done"/>
-                </virtualized:VirtualizedDataGrid.Columns>
-            </virtualized:VirtualizedDataGrid>
+        <virtualized:VirtualizedDataGrid Grid.Column="1"
+                                             ItemsSource="{Binding Items}" 
+                                             ItemSizingStrategy="MeasureFirstItem"
+                                             HorizontalOptions="Center"
+                                             VerticalOptions="Center"
+                                                 
+            >
+            <virtualized:VirtualizedDataGrid.Columns>
+                <material:DataGridSelectionColumn />
+                <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding Content}" Title="Todo"/>
+                <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding Type}" Title="Type" />
+                <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding IsDone, Converter={StaticResource BoolToYesNoConverter}}" Title="Done" />
+            </virtualized:VirtualizedDataGrid.Columns>
+        </virtualized:VirtualizedDataGrid>
 
-        </HorizontalStackLayout>
 
     </Grid>
+
+
     <uranium:UraniumContentPage.Attachments>
         <material:BackdropView
                 Title="Add" 

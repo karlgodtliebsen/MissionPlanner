@@ -85,7 +85,7 @@ public class VirtualizedDataGrid_SearchTemplate_Tests
         };
     }
 
-    private sealed class TestableGrid : VirtualizedDataGrid
+    private sealed class TestableGrid : VirtualizedDataGrid.Controls.VirtualizedDataGrid
     {
         public ContentView ExposedSearchHost => SearchHost;
         public ContentView ExposedEmptyViewHost => EmptyViewHost;

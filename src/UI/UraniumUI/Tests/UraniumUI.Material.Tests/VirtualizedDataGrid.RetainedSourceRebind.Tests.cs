@@ -69,13 +69,13 @@ public class VirtualizedDataGrid_RetainedSourceRebind_Tests
         {
             get
             {
-                var field = typeof(VirtualizedDataGrid.Controls.VirtualizedDataGrid)
+                var fieldInfo = typeof(VirtualizedDataGrid.Controls.VirtualizedDataGrid)
                     .GetField(
                         "desiredRowsSource",
                         System.Reflection.BindingFlags.Instance |
                         System.Reflection.BindingFlags.NonPublic);
 
-                return field?.GetValue(this) as IList;
+                return fieldInfo?.GetValue(this) as IList;
             }
         }
 

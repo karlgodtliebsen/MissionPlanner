@@ -46,6 +46,8 @@ public partial class VirtualizedDataGrid : Border
     private bool refreshPending;
     private IList? deferredSnapshot;
     private double lastViewportWidth = -1;
+    private IReadOnlyList<double> measuredAutoColumnWidths = Array.Empty<double>();
+    private bool autoColumnMeasurementScheduled;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VirtualizedDataGrid"/> class.
@@ -69,7 +71,7 @@ public partial class VirtualizedDataGrid : Border
         rowsView = new CollectionView
         {
             HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Start,
             SelectionMode = SelectionMode.None,
             ItemSizingStrategy = ItemSizingStrategy.MeasureFirstItem,
             ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset,
@@ -80,22 +82,22 @@ public partial class VirtualizedDataGrid : Border
 
         emptyViewHost = new ContentView { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill, IsVisible = false };
 
-        rowsHost = new Grid { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill };
+        rowsHost = new Grid { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Start };
         rowsHost.Children.Add(rowsView);
         rowsHost.Children.Add(emptyViewHost);
 
-        tableLayout = new Grid { HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Fill, RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star) } };
+        tableLayout = new Grid { HorizontalOptions = LayoutOptions.Start, VerticalOptions = LayoutOptions.Start, RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto) } };
 
         tableLayout.Add(headerSection, 0, 0);
         tableLayout.Add(rowsHost, 0, 1);
 
-        horizontalScrollView = new ScrollView { Orientation = ScrollOrientation.Horizontal, HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill, Content = tableLayout };
+        horizontalScrollView = new ScrollView { Orientation = ScrollOrientation.Horizontal, HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Start, Content = tableLayout };
 
         searchHost = new ContentView { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Center, IsVisible = false };
 
         pagerHost = new ContentView { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Center, IsVisible = false };
 
-        rootLayout = new Grid { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill, RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Star), new RowDefinition(GridLength.Auto) } };
+        rootLayout = new Grid { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Start, RowDefinitions = { new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto), new RowDefinition(GridLength.Auto) } };
         rootLayout.Add(searchHost, 0, 0);
         rootLayout.Add(horizontalScrollView, 0, 1);
         rootLayout.Add(pagerHost, 0, 2);
@@ -178,6 +180,7 @@ public partial class VirtualizedDataGrid : Border
             RestoreVisualResources();
             ResumeRowsPresentation();
             RebuildAll();
+            RequestAutoColumnMeasurement();
         }
     }
 
@@ -262,6 +265,117 @@ public partial class VirtualizedDataGrid : Border
     {
         presenters.Add(new WeakReference<VirtualizedDataGridRowPresenter>(presenter));
         ApplySelectionState(presenter);
+        RequestAutoColumnMeasurement();
+    }
+
+    /// <summary>
+    /// Returns cell padding compatible with UraniumUI's selection column. The
+    /// checkbox template already supplies its own horizontal margin.
+    /// </summary>
+    internal Thickness GetCellPadding(DataGridColumn column)
+    {
+        return column is IDataGridSelectionColumn
+            ? new Thickness(0, CellPadding.Top, 0, CellPadding.Bottom)
+            : CellPadding;
+    }
+
+    private Thickness GetHeaderPadding(DataGridColumn column)
+    {
+        return column is IDataGridSelectionColumn
+            ? new Thickness(0, HeaderPadding.Top, 0, HeaderPadding.Bottom)
+            : HeaderPadding;
+    }
+
+    /// <summary>
+    /// Schedules an Auto-column measurement after bindings for newly realized rows
+    /// have been applied.
+    /// </summary>
+    internal void RequestAutoColumnMeasurement()
+    {
+        if (autoColumnMeasurementScheduled ||
+            visualResourcesReleased ||
+            Handler is null)
+        {
+            return;
+        }
+
+        autoColumnMeasurementScheduled = true;
+
+        if (!Dispatcher.Dispatch(UpdateMeasuredAutoColumnWidths))
+        {
+            autoColumnMeasurementScheduled = false;
+        }
+    }
+
+    private void UpdateMeasuredAutoColumnWidths()
+    {
+        autoColumnMeasurementScheduled = false;
+
+        if (visualResourcesReleased)
+        {
+            return;
+        }
+
+        var columns = GetColumnsSnapshot();
+        var measured = new double[columns.Count];
+
+        for (var index = 0; index < Math.Min(columns.Count, headerGrid.Children.Count); index++)
+        {
+            if (columns[index].IsVisible &&
+                columns[index].Width.IsAuto &&
+                headerGrid.Children[index] is View header)
+            {
+                measured[index] = header is ContentView { Content: View headerContent } headerCell
+                    ? headerContent.Measure(
+                        double.PositiveInfinity,
+                        double.PositiveInfinity).Width +
+                      headerCell.Padding.Left +
+                      headerCell.Padding.Right
+                    : header.Measure(
+                        double.PositiveInfinity,
+                        double.PositiveInfinity).Width;
+            }
+        }
+
+        foreach (var presenter in GetLivePresenters())
+        {
+            var rowWidths = presenter.MeasureNaturalColumnWidths();
+
+            for (var index = 0; index < Math.Min(measured.Length, rowWidths.Count); index++)
+            {
+                if (columns[index].Width.IsAuto)
+                {
+                    measured[index] = Math.Max(measured[index], rowWidths[index]);
+                }
+            }
+        }
+
+        // Separate header/row Grids must share absolute widths. WinUI can round the
+        // measured label and its surrounding ContentView in opposite directions at
+        // the device-pixel boundary, leaving the arranged content fractionally
+        // narrower than its desired width (for example, wrapping "Personal" after
+        // the final character). Ceiling plus one DIP preserves Auto semantics while
+        // providing the same rounding tolerance as a single native Grid's Auto track.
+        for (var index = 0; index < measured.Length; index++)
+        {
+            if (columns[index].Width.IsAuto && measured[index] > 0)
+            {
+                measured[index] = Math.Ceiling(measured[index]) + 1;
+            }
+        }
+
+        var changed =
+            measuredAutoColumnWidths.Count != measured.Length ||
+            measuredAutoColumnWidths.Where((width, index) => Math.Abs(width - measured[index]) > 0.5).Any();
+
+        if (!changed)
+        {
+            return;
+        }
+
+        measuredAutoColumnWidths = measured;
+        RecalculateColumnLayout();
+        InvalidateMeasure();
     }
 
     /// <summary>
@@ -440,7 +554,13 @@ public partial class VirtualizedDataGrid : Border
 
             ApplyStyleClassToView(titleView, column.HeaderStyleClass);
 
-            var headerCell = new ContentView { Content = titleView, Padding = HeaderPadding, BindingContext = column, IsVisible = column.IsVisible };
+            var headerCell = new ContentView
+            {
+                Content = titleView,
+                Padding = GetHeaderPadding(column),
+                BindingContext = column,
+                IsVisible = column.IsVisible
+            };
 
             Grid.SetColumn(headerCell, index);
             headerGrid.Children.Add(headerCell);
@@ -502,7 +622,14 @@ public partial class VirtualizedDataGrid : Border
             }
             else if (column.Width.IsAuto)
             {
-                widths[index] = Math.Max(0, AutoColumnWidth);
+                var measuredWidth =
+                    index < measuredAutoColumnWidths.Count
+                        ? measuredAutoColumnWidths[index]
+                        : 0;
+
+                widths[index] = measuredWidth > 0
+                    ? measuredWidth
+                    : Math.Max(0, AutoColumnWidth);
                 fixedWidth += widths[index];
             }
             else
@@ -539,8 +666,6 @@ public partial class VirtualizedDataGrid : Border
         }
 
         resolvedColumnWidths = widths;
-        tableLayout.WidthRequest = Math.Max(1, Math.Max(viewportWidth, totalWidth));
-
         RenderHeader();
 
         foreach (var presenter in GetLivePresenters())
@@ -705,7 +830,9 @@ public partial class VirtualizedDataGrid : Border
             AttachColumns(newColumns);
         }
 
+        measuredAutoColumnWidths = Array.Empty<double>();
         RebuildAll();
+        RequestAutoColumnMeasurement();
     }
 
     private void OnSelectedItemsSet(IList? oldValue, IList? newValue)

@@ -72,13 +72,13 @@ public class VirtualizedDataGrid_RowsLifecycle_Tests
         {
             get
             {
-                var field = typeof(VirtualizedDataGrid.Controls.VirtualizedDataGrid)
+                var fieldInfo = typeof(VirtualizedDataGrid.Controls.VirtualizedDataGrid)
                     .GetField(
                         "desiredRowsSource",
                         System.Reflection.BindingFlags.Instance |
                         System.Reflection.BindingFlags.NonPublic);
 
-                return (IList?)field?.GetValue(this);
+                return (IList?)fieldInfo?.GetValue(this);
             }
         }
     }

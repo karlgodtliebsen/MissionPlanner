@@ -38,6 +38,7 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
 
         UpdateTemplateValueBindings();
         owner.ApplySelectionState(this);
+        owner.RequestAutoColumnMeasurement();
     }
 
     /// <summary>
@@ -105,6 +106,45 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
     }
 
     /// <summary>
+    /// Measures each realized cell without the shared column constraint. This lets
+    /// the owner resolve Auto columns from visible content while retaining separate
+    /// grids for the virtualized rows.
+    /// </summary>
+    internal IReadOnlyList<double> MeasureNaturalColumnWidths()
+    {
+        if (cellsGrid is null)
+        {
+            return [];
+        }
+
+        var widths = new double[cellsGrid.ColumnDefinitions.Count];
+
+        foreach (var child in cellsGrid.Children.OfType<View>())
+        {
+            var column = Grid.GetColumn(child);
+
+            if (column >= 0 && column < widths.Length && child.IsVisible)
+            {
+                var desiredWidth = child is ContentView { Content: View contentView } cell
+                    ? contentView.Measure(
+                        double.PositiveInfinity,
+                        double.PositiveInfinity).Width +
+                      cell.Padding.Left +
+                      cell.Padding.Right
+                    : child.Measure(
+                        double.PositiveInfinity,
+                        double.PositiveInfinity).Width;
+
+                widths[column] = Math.Max(
+                    widths[column],
+                    desiredWidth);
+            }
+        }
+
+        return widths;
+    }
+
+    /// <summary>
     /// Updates the row and its selection cells to reflect the selection state.
     /// </summary>
     /// <param name="isSelected"><see langword="true"/> when the row is selected; otherwise, <see langword="false"/>.</param>
@@ -167,7 +207,12 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
                     : null)
                 ?? new Label();
 
-            var cell = new ContentView { Content = created, Padding = owner.CellPadding, IsVisible = column.IsVisible };
+            var cell = new ContentView
+            {
+                Content = created,
+                Padding = owner.GetCellPadding(column),
+                IsVisible = column.IsVisible
+            };
 
             cell.SetBinding(
                 IsVisibleProperty,

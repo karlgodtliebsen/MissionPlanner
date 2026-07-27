@@ -28,7 +28,15 @@ public partial class VirtualizedDataGrid
     /// <returns>The configured cell label.</returns>
     protected virtual Label CreateLabel(BindingBase binding)
     {
-        var label = new Label { HorizontalOptions = LayoutOptions.Center, VerticalOptions = LayoutOptions.Center };
+        // Match UraniumUI.Material.Controls.DataGrid exactly. Margin participates in
+        // Auto measurement without constraining the label's text first; applying the
+        // same space as parent padding can make values such as "Personal" wrap.
+        var label = new Label
+        {
+            Margin = 20,
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center
+        };
 
         label.SetBinding(Label.TextProperty, binding);
         return label;
@@ -40,7 +48,13 @@ public partial class VirtualizedDataGrid
     /// <returns>The configured separator view.</returns>
     protected virtual View CreateHorizontalLine()
     {
-        var line = new BoxView { HorizontalOptions = LayoutOptions.Fill, HeightRequest = 1, Opacity = 0.4 };
+        var line = new BoxView
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            HeightRequest = 2,
+            CornerRadius = 1,
+            Opacity = 0.4
+        };
 
         line.SetBinding(
             BoxView.ColorProperty,
