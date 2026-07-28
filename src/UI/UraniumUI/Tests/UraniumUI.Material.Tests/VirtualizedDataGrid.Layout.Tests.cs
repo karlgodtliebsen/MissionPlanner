@@ -92,6 +92,25 @@ public class VirtualizedDataGrid_Layout_Tests
         grid.ExposedRootLayout.RowDefinitions[1].Height.ShouldBe(GridLength.Star);
     }
 
+    [Fact]
+    public void FixedRowHeight_ShouldBeAppliedToVirtualizedPresenters()
+    {
+        var grid = new TestableVirtualizedDataGrid
+        {
+            RowHeight = 100,
+            Columns =
+            [
+                new DataGridColumn
+                {
+                    Title = "Name",
+                    ValueBinding = new Binding(nameof(Row.Name))
+                }
+            ]
+        };
+
+        grid.CreateRow().HeightRequest.ShouldBe(100);
+    }
+
     private sealed class TestableVirtualizedDataGrid : VirtualizedDataGrid.Controls.VirtualizedDataGrid
     {
         public CollectionView ExposedRowsView => RowsView;

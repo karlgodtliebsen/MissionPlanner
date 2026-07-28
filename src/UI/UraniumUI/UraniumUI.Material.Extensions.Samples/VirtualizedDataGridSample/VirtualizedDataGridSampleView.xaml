@@ -20,14 +20,17 @@
         </Style>
     </uranium:UraniumContentPage.Resources>
 
-    <Grid RowDefinitions="*,Auto,*"
-          HorizontalOptions="Fill"
-          VerticalOptions="Fill"
-          Padding="8,0"
-          Margin="50"
-    >
+    <ScrollView HorizontalOptions="Fill"
+                VerticalOptions="Fill">
 
-        <Border BackgroundColor="Transparent" StrokeShape="RoundRectangle 6">
+        <Grid RowDefinitions="400,Auto,400,Auto,400"
+              HorizontalOptions="Fill"
+              VerticalOptions="Fill"
+              Padding="8,0"
+              Margin="50"
+             
+        >
+
 
             <virtualized:VirtualizedDataGrid Grid.Row="0" 
                                          Margin="10"
@@ -37,24 +40,47 @@
                                          MinimumStarColumnWidth= "120"
                                          ItemSizingStrategy= "MeasureFirstItem"
                                          ShowRowSeparators="True"
-                                         FilterMemberPaths="Name,DisplayName,Description"
+                                         FilterMemberPaths="Name,DisplayName"
                                          ShowSearchBar="True"
         >
                 <virtualized:VirtualizedDataGrid.Columns>
                     <material:DataGridSelectionColumn/>
-                    <material:DataGridColumn Width="100"  ValueBinding="{Binding AValue}" Title="A Value"  />
-                    <material:DataGridColumn Width="*"  ValueBinding="{Binding Name}" Title="Name"  />
-                    <material:DataGridColumn Width="*"  ValueBinding="{Binding DisplayName}" Title="Display Name"  />
-                    <material:DataGridColumn Width="150"  ValueBinding="{Binding Value}" Title="Value"  />
-                    <material:DataGridColumn Width="150"  ValueBinding="{Binding LiveValue}" Title="Live Value"  />
-                    <material:DataGridColumn Width="150"  ValueBinding="{Binding StepSize}" Title="Step Size"  />
-                    <material:DataGridColumn Width="150"  ValueBinding="{Binding SelectedValue}" Title="Selected Value"  />
-                </virtualized:VirtualizedDataGrid.Columns> 
+                    <material:DataGridColumn Width="100" x:DataType="virtualizedDataGridSample:ItemViewModel"  ValueBinding="{Binding AValue}" Title="A Value"  />
+                    <material:DataGridColumn Width="*"   x:DataType="virtualizedDataGridSample:ItemViewModel"  ValueBinding="{Binding Name}" Title="Name"  />
+                    <material:DataGridColumn Width="*"   x:DataType="virtualizedDataGridSample:ItemViewModel"  ValueBinding="{Binding DisplayName}" Title="Display Name"  />
+                    <material:DataGridColumn Width="150" x:DataType="virtualizedDataGridSample:ItemViewModel"  ValueBinding="{Binding Value}" Title="Value"  />
+                    <material:DataGridColumn Width="150" x:DataType="virtualizedDataGridSample:ItemViewModel"  ValueBinding="{Binding LiveValue}" Title="Live Value"  />
+                    <material:DataGridColumn Width="150" x:DataType="virtualizedDataGridSample:ItemViewModel"  ValueBinding="{Binding StepSize}" Title="Step Size"  />
+                    <material:DataGridColumn Width="150" x:DataType="virtualizedDataGridSample:ItemViewModel"  ValueBinding="{Binding SelectedValue}" Title="Selected Value"  />
+                </virtualized:VirtualizedDataGrid.Columns>
             </virtualized:VirtualizedDataGrid>
-        </Border>
-        <BoxView Grid.Row="1"  StyleClass="Divider" />
-        <Border Grid.Row="2" BackgroundColor="Transparent" StrokeShape="RoundRectangle 6">
-            <virtualized:VirtualizedDataGrid Grid.Row="2"  
+            <BoxView Grid.Row="1"  StyleClass="Divider" />
+
+            <virtualized:VirtualizedDataGrid Grid.Row="2" 
+                                             Margin="10"
+                                             ItemsSource="{Binding Parameters}"
+                                             UseAutoColumns="False"
+                                             AutoColumnWidth= "180"
+                                             MinimumStarColumnWidth= "120"
+                                             ItemSizingStrategy= "MeasureFirstItem"
+                                             ShowRowSeparators="True"
+                                             FilterMemberPaths="Name,DisplayName"
+                                             ShowSearchBar="True"
+            >
+                <virtualized:VirtualizedDataGrid.Columns>
+                    <material:DataGridSelectionColumn/>
+                    <material:DataGridColumn  x:DataType="virtualizedDataGridSample:ItemViewModel" ValueBinding="{Binding AValue}" Title="A Value"  />
+                    <material:DataGridColumn  x:DataType="virtualizedDataGridSample:ItemViewModel" ValueBinding="{Binding Name}" Title="Name"  />
+                    <material:DataGridColumn  x:DataType="virtualizedDataGridSample:ItemViewModel" ValueBinding="{Binding DisplayName}" Title="Display Name"  />
+                    <material:DataGridColumn  x:DataType="virtualizedDataGridSample:ItemViewModel" ValueBinding="{Binding Value}" Title="Value"  />
+                    <material:DataGridColumn  x:DataType="virtualizedDataGridSample:ItemViewModel" ValueBinding="{Binding LiveValue}" Title="Live Value"  />
+                    <material:DataGridColumn  x:DataType="virtualizedDataGridSample:ItemViewModel" ValueBinding="{Binding StepSize}" Title="Step Size"  />
+                    <material:DataGridColumn  x:DataType="virtualizedDataGridSample:ItemViewModel" ValueBinding="{Binding SelectedValue}" Title="Selected Value"  />
+                </virtualized:VirtualizedDataGrid.Columns>
+            </virtualized:VirtualizedDataGrid>
+
+            <BoxView Grid.Row="31"  StyleClass="Divider" />
+            <virtualized:VirtualizedDataGrid Grid.Row="4"  
                                          Margin="10"
                                          ItemsSource="{Binding Parameters}"
                                          UseAutoColumns="True"
@@ -62,15 +88,15 @@
                                          MinimumStarColumnWidth= "120"
                                          ItemSizingStrategy= "MeasureFirstItem"
                                          ShowRowSeparators="True"
-                                         FilterMemberPaths="Name,DisplayName,Description"
+                                         FilterMemberPaths="Name,DisplayName"
                                          ShowSearchBar="True"
         >
             </virtualized:VirtualizedDataGrid>
 
-        </Border>
-    </Grid>
+        </Grid>
 
 
+    </ScrollView>
 </pages:UraniumContentPage>
 
 

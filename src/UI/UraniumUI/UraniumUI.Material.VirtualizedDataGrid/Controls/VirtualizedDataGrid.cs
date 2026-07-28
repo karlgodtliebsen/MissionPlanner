@@ -56,7 +56,7 @@ public partial class VirtualizedDataGrid : Border
     {
         InitializeFactoryMethods();
         InitializeDataView();
-        Padding = new Thickness(0, 10);
+        Padding = new Thickness(5, 10);
 
         headerGrid = new Grid { HorizontalOptions = LayoutOptions.Fill };
 
@@ -356,8 +356,8 @@ public partial class VirtualizedDataGrid : Border
             {
                 var headerWidth = header is ContentView { Content: View headerContent } headerCell
                     ? headerContent.Measure(
-                        double.PositiveInfinity,
-                        double.PositiveInfinity).Width +
+                          double.PositiveInfinity,
+                          double.PositiveInfinity).Width +
                       headerCell.Padding.Left +
                       headerCell.Padding.Right
                     : header.Measure(
@@ -591,13 +591,7 @@ public partial class VirtualizedDataGrid : Border
 
             ApplyStyleClassToView(titleView, column.HeaderStyleClass);
 
-            var headerCell = new ContentView
-            {
-                Content = titleView,
-                Padding = GetHeaderPadding(column),
-                BindingContext = column,
-                IsVisible = column.IsVisible
-            };
+            var headerCell = new ContentView { Content = titleView, Padding = GetHeaderPadding(column), BindingContext = column, IsVisible = column.IsVisible };
 
             Grid.SetColumn(headerCell, index);
             headerGrid.Children.Add(headerCell);

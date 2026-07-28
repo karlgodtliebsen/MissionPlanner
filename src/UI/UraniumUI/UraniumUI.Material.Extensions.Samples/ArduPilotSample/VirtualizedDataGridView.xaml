@@ -43,9 +43,8 @@
         </HorizontalStackLayout>
 
         <virtualized:VirtualizedDataGrid Grid.Row="1" 
+                                         
                                          ItemsSource="{Binding Parameters}"
-                                         UseAutoColumns="False"
-                                         AutoColumnWidth= "180"
                                          MinimumStarColumnWidth= "120"
                                          ItemSizingStrategy= "MeasureFirstItem"
                                          ShowRowSeparators="True"
