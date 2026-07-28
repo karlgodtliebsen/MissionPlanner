@@ -6,43 +6,44 @@
                     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                     xmlns:dataGrids="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids"
-                    xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid">
+                    xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+                    xmlns:models="using:UraniumUI.Material.Extensions.Samples.DataGrids.Models">
     <uranium:UraniumContentPage.BindingContext>
         <dataGrids:SimpleDataGridPageViewModel />
     </uranium:UraniumContentPage.BindingContext>
     <uranium:UraniumContentPage.Content>
-        <ScrollView>
-            <StackLayout>
+      
+            <Grid HorizontalOptions="Fill" VerticalOptions="Center" Margin="50">
                 <virtualized:VirtualizedDataGrid ItemsSource="{Binding Items}" 
                                                  UseAutoColumns="False"
                                                  AutoColumnWidth= "180"
                                                  MinimumStarColumnWidth= "120"
-                                                 MaximumWidthRequest="400"
+                                                 MaximumWidthRequest="700"
                                                  ItemSizingStrategy= "MeasureFirstItem"
                                                  FilterMemberPaths="Name,Id,Age"
                                                  ShowSearchBar="True"
                                                  HorizontalOptions="Center" Margin="30">
                     <virtualized:VirtualizedDataGrid.Columns>
-                        <material:DataGridColumn ValueBinding="{Binding Id}">
+                    <material:DataGridColumn x:DataType="models:SimpleStudent" ValueBinding="{Binding Id}">
                             <material:DataGridColumn.TitleView>
-                                <Image Source="{FontImageSource FontFamily=MaterialSharp, Glyph={x:Static m:MaterialSharp.Fingerprint}, Color={AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}}" />
+                            <Image MaximumWidthRequest="250" Source="{FontImageSource FontFamily=MaterialSharp, Glyph={x:Static m:MaterialSharp.Fingerprint}, Color={AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}}" />
                             </material:DataGridColumn.TitleView>
                         </material:DataGridColumn>
 
-                        <material:DataGridColumn ValueBinding="{Binding Name}">
+                    <material:DataGridColumn x:DataType="models:SimpleStudent" ValueBinding="{Binding Name}">
                             <material:DataGridColumn.TitleView>
-                                <Image Source="{FontImageSource FontFamily=MaterialSharp, Glyph={x:Static m:MaterialSharp.Badge}, Color={AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}}" />
+                                <Image MaximumWidthRequest="250" Source="{FontImageSource FontFamily=MaterialSharp, Glyph={x:Static m:MaterialSharp.Badge}, Color={AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}}" />
                             </material:DataGridColumn.TitleView>
                         </material:DataGridColumn>
 
-                        <material:DataGridColumn ValueBinding="{Binding Age}">
+                    <material:DataGridColumn x:DataType="models:SimpleStudent" ValueBinding="{Binding Age}">
                             <material:DataGridColumn.TitleView>
-                                <Image Source="{FontImageSource FontFamily=MaterialSharp, Glyph={x:Static m:MaterialSharp.Calendar_today}, Color={AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}}" />
+                            <Image MaximumWidthRequest="250" Source="{FontImageSource FontFamily=MaterialSharp, Glyph={x:Static m:MaterialSharp.Calendar_today}, Color={AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}}" />
                             </material:DataGridColumn.TitleView>
                         </material:DataGridColumn>
                     </virtualized:VirtualizedDataGrid.Columns>
                </virtualized:VirtualizedDataGrid>
-            </StackLayout>
-        </ScrollView>
+            </Grid>
+   
     </uranium:UraniumContentPage.Content>
 </uranium:UraniumContentPage>

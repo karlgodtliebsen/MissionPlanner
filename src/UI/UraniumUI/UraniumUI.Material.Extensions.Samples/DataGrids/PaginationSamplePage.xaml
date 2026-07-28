@@ -4,19 +4,26 @@
                     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                     xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+                    xmlns:dataGrids="using:UraniumUI.Material.Extensions.Samples.DataGrids"
                     x:Class="UraniumUI.Material.Extensions.Samples.DataGrids.PaginationSamplePage"
                     Title="PaginationSamplePage">
-    <!--<uranium:UraniumContentPage.BindingContext>
-        <PaginationSampleViewModel />
-    </uranium:UraniumContentPage.BindingContext>-->
+    <uranium:UraniumContentPage.BindingContext>
+        <dataGrids:PaginationSampleViewModel />
+    </uranium:UraniumContentPage.BindingContext>
 
-    <VerticalStackLayout>
-        <Grid>
-            <virtualized:VirtualizedDataGrid  HorizontalOptions="Center" ItemsSource="{Binding Products}"
-                                              UseAutoColumns="False"
-                                              AutoColumnWidth= "180"
+    <VerticalStackLayout Margin="100">
+        <!--
+        <material:Paginator 
+            ChangePageCommand="{Binding SetPageCommand}"
+            CurrentPage="{Binding CurrentPage}"
+            TotalPageCount="{Binding TotalPages}"
+            HorizontalOptions="Center"/>
+        -->
+
+        <Grid MaximumHeightRequest="600">
+            <virtualized:VirtualizedDataGrid  HorizontalOptions="Center" 
+                                              ItemsSource="{Binding Products}"
                                               MinimumStarColumnWidth= "120"
-                                              MaximumWidthRequest="400"
                                               ItemSizingStrategy= "MeasureFirstItem"
                                               FilterMemberPaths="title,brand,price,rating,stock,category"
                                               ShowSearchBar="True"
@@ -44,11 +51,6 @@
 
         </Grid>
 
-        <material:Paginator 
-            ChangePageCommand="{Binding SetPageCommand}"
-            CurrentPage="{Binding CurrentPage}"
-            TotalPageCount="{Binding TotalPages}"
-            HorizontalOptions="Center"/>
 
 
     </VerticalStackLayout>

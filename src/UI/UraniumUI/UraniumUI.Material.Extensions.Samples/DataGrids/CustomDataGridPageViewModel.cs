@@ -45,7 +45,7 @@ public partial class CustomDataGridPageViewModel : ObservableObject
     protected virtual async void Initialize()
     {
         IsBusy = true;
-        Items.AddRange(await DataStore.GetListAsync(100));
+        Items.AddRange(await DataStore.GetListAsync(1000));
         IsBusy = false;
     }
 }

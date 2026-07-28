@@ -8,45 +8,44 @@
                     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                     xmlns:local="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids"
                     xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
-                    BindingContext="{uranium:Inject {Type local:SelectableDataGridPageViewModel}}"
+                    xmlns:models="using:UraniumUI.Material.Extensions.Samples.DataGrids.Models"
                     Title="DataGrid Selection">
-    <uranium:UraniumContentPage.Content>
-        <ScrollView>
-            <StackLayout>
-                <Button Text="Delete Selected" StyleClass="FilledTonalButton" Command="{Binding RemoveSelectedCommand}" Margin="30" HorizontalOptions="Center" />
 
-                <virtualized:VirtualizedDataGrid  
+    <uranium:UraniumContentPage.BindingContext>
+        <local:SelectableDataGridPageViewModel />
+    </uranium:UraniumContentPage.BindingContext>
+
+    <uranium:UraniumContentPage.Content>
+        <Grid RowDefinitions="Auto,*" Margin="50">
+            <Button Text="Delete Selected" StyleClass="FilledTonalButton" Command="{Binding RemoveSelectedCommand}" 
+                    Margin="30" HorizontalOptions="Center" />
+
+            <virtualized:VirtualizedDataGrid  
+                    Grid.Row="1"
                     ItemsSource="{Binding Items}" SelectedItems="{Binding SelectedItems}" 
-                    UseAutoColumns="False"
-                    AutoColumnWidth= "180"
-                    MinimumStarColumnWidth= "120"
-                    MaximumWidthRequest="400"
                     ItemSizingStrategy= "MeasureFirstItem"
                     FilterMemberPaths="Name,Id,Age"
                     ShowSearchBar="True"
                     HorizontalOptions="Center" Margin="30">
-                    <virtualized:VirtualizedDataGrid.EmptyView>
-                        <VerticalStackLayout Margin="80,20">
-                            <Image
+                <virtualized:VirtualizedDataGrid.EmptyView>
+                    <VerticalStackLayout Margin="80,20">
+                        <Image
                                WidthRequest="40"
                                HeightRequest="40"
                                HorizontalOptions="Center"
                                VerticalOptions="Center"
                                Source="{FontImageSource FontFamily=MaterialOutlined, Glyph={x:Static m:MaterialOutlined.Backup_table}, Color={AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}}"/>
-                            <Label Text="No data available..." HorizontalOptions="Center"/>
-                        </VerticalStackLayout>
-                    </virtualized:VirtualizedDataGrid.EmptyView>
+                        <Label Text="No data available..." HorizontalOptions="Center"/>
+                    </VerticalStackLayout>
+                </virtualized:VirtualizedDataGrid.EmptyView>
 
-                    <virtualized:VirtualizedDataGrid.Columns>
-                        <material:DataGridSelectionColumn />
-                        <material:DataGridColumn ValueBinding="{Binding Id}" Title="Id" />
-                        <material:DataGridColumn ValueBinding="{Binding Name}" Title="Name" />
-                        <material:DataGridColumn ValueBinding="{Binding Age}" Title="Age" />
-                    </virtualized:VirtualizedDataGrid.Columns>
-          
-                  </virtualized:VirtualizedDataGrid>
-
-            </StackLayout>
-        </ScrollView>
+                <virtualized:VirtualizedDataGrid.Columns>
+                    <material:DataGridSelectionColumn />
+                    <material:DataGridColumn x:DataType="models:CustomDataGridStudent" ValueBinding="{Binding Id}" Title="Id" />
+                    <material:DataGridColumn x:DataType="models:CustomDataGridStudent" ValueBinding="{Binding Name}" Title="Name" />
+                    <material:DataGridColumn x:DataType="models:CustomDataGridStudent" ValueBinding="{Binding Age}" Title="Age" />
+                </virtualized:VirtualizedDataGrid.Columns>
+            </virtualized:VirtualizedDataGrid>
+        </Grid>
     </uranium:UraniumContentPage.Content>
 </uranium:UraniumContentPage>

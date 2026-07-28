@@ -413,17 +413,13 @@ public partial class VirtualizedDataGrid
         var label = new Label { Text = "Search:", FontSize = 14, VerticalOptions = LayoutOptions.Center };
 
         var entry = new Entry { FontSize = 14, VerticalOptions = LayoutOptions.Center, ClearButtonVisibility = ClearButtonVisibility.WhileEditing };
-        entry.SetBinding(
-            Entry.TextProperty,
-            new Binding(nameof(FilterText), source: this, mode: BindingMode.TwoWay));
-        entry.SetBinding(
-            Entry.PlaceholderProperty,
-            new Binding(nameof(SearchPlaceholder), source: this));
+        entry.SetBinding(Entry.TextProperty, new Binding(nameof(FilterText), source: this, mode: BindingMode.TwoWay));
+        entry.SetBinding(Entry.PlaceholderProperty, new Binding(nameof(SearchPlaceholder), source: this));
 
         var clearButton = new Button
         {
             Text = "Clear",
-            FontSize = 14,
+            FontSize = 12,
             Padding = new Thickness(8, 4),
             BackgroundColor = Colors.Transparent,
             VerticalOptions = LayoutOptions.Center,
@@ -456,19 +452,16 @@ public partial class VirtualizedDataGrid
             ColumnSpacing = 12,
             ColumnDefinitions =
             {
-                new ColumnDefinition(GridLength.Auto),
-                new ColumnDefinition(GridLength.Star),
-                new ColumnDefinition(GridLength.Auto),
-                new ColumnDefinition(GridLength.Auto),
-                new ColumnDefinition(GridLength.Auto)
+                new ColumnDefinition(GridLength.Auto), new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto), new ColumnDefinition(GridLength.Auto)
+                //new ColumnDefinition(GridLength.Auto)
             }
         };
 
         searchGrid.Add(label, 0, 0);
         searchGrid.Add(entry, 1, 0);
-        searchGrid.Add(clearButton, 2, 0);
-        searchGrid.Add(matchingLabel, 3, 0);
-        searchGrid.Add(totalLabel, 4, 0);
+        //  searchGrid.Add(clearButton, 2, 0);
+        searchGrid.Add(matchingLabel, 2, 0);
+        searchGrid.Add(totalLabel, 3, 0);
 
         return searchGrid;
     }

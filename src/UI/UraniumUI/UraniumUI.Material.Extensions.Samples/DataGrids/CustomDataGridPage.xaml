@@ -15,9 +15,10 @@
                     x:Name="page">
     <uranium:UraniumContentPage.Content>
 
-        <Grid RowDefinitions="Auto,Auto,Auto,*">
+        <Grid RowDefinitions="Auto,Auto,Auto,*" >
 
-            <Label Grid.Row="0" Text="Custom CellItemTemplate for each column" FontSize="Title"  Margin="8,20"  HorizontalOptions="Center" />
+            <Label Grid.Row="0" Text="Custom CellItemTemplate for each column - 1000 Rows" FontSize="Title"  
+                   Margin="8,20"  HorizontalOptions="Center" />
             <BoxView Grid.Row="1" StyleClass="Divider" Margin="8,20" />
             <HorizontalStackLayout Grid.Row="2" HorizontalOptions="Center" Margin="8,20" >
                 <Button StyleClass="FilledButton" Text="Add data" Command="{Binding AddNewCommand}" />
@@ -25,16 +26,15 @@
 
             <ActivityIndicator IsRunning="{Binding IsBusy}" Margin="40" />
 
-            <virtualized:VirtualizedDataGrid Grid.Row="3" ItemsSource="{Binding Items}" 
-                                                  HorizontalOptions="Center" Margin="30,20,30,0"
-                                                  UseAutoColumns="False"
-                                                  AutoColumnWidth= "180"
-                                                  MaximumWidthRequest="500"
-                                                  MinimumStarColumnWidth= "120"
-                                                  ItemSizingStrategy= "MeasureFirstItem"
-                                                  FilterMemberPaths="Name,Age,Id"
-                                                  ShowSearchBar="False"
-                                                  >
+            <virtualized:VirtualizedDataGrid 
+                                            Grid.Row="3" 
+                                            ItemsSource="{Binding Items}" 
+                                            HorizontalOptions="Center" 
+                                            Margin="30,20,30,50"
+                                            ItemSizingStrategy= "MeasureFirstItem"
+                                            ShowSearchBar="False"
+                                           
+                                            >
 
                 <virtualized:VirtualizedDataGrid.EmptyView>
                     <VerticalStackLayout Margin="80,20">
@@ -75,11 +75,11 @@
 
                     <material:DataGridColumn  x:DataType="models: CustomDataGridStudent" ValueBinding="{Binding Id}" Title="Identity" />
 
-                    <material:DataGridColumn Title="Actions" Width="40" >
+                    <material:DataGridColumn Title="Actions"  >
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate  x:DataType="models: CustomDataGridStudent">
                                 <Button Text="Remove" 
-                                            Width="40"
+                                            
                                             BackgroundColor="{AppThemeBinding Light={StaticResource Secondary},Dark={StaticResource SecondaryDark}}" 
                                             TextColor="{AppThemeBinding Light={StaticResource OnSecondary},Dark={StaticResource OnSecondaryDark}}"
                                             Command="{Binding Source={x:Reference page}, Path=BindingContext.RemoveItemCommand}"

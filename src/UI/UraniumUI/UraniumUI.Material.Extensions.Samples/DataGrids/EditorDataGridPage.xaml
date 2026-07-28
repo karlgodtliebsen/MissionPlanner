@@ -12,46 +12,32 @@
     <uranium:UraniumContentPage.BindingContext>
         <dataGrids:EditorDataGridPageViewModel />
     </uranium:UraniumContentPage.BindingContext>
-    <ScrollView>
 
-        <VerticalStackLayout>
-            <virtualized:VirtualizedDataGrid 
-                ItemsSource="{Binding Items}" 
-                HorizontalOptions="Center"
-                UseAutoColumns="False"
-                AutoColumnWidth= "180"
-                MinimumStarColumnWidth= "120"
-                MinimumWidthRequest="400"
-                MinimumHeightRequest="400"
-                ItemSizingStrategy= "MeasureFirstItem"
-                FilterMemberPaths="Name,Id,Age"
-                ShowSearchBar="False"
-                >
-                <virtualized:VirtualizedDataGrid.Columns>
-                    <material:DataGridColumn ValueBinding="{Binding Id}" Title="Id" />
-                    <material:DataGridColumn ValueBinding="{Binding Name}" Title="Name" />
-                    <material:DataGridColumn ValueBinding="{Binding Age}" Title="Age" >
-                        <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate x:DataType="models:EditorStudent">
-                                <Border Padding="3" HorizontalOptions="Center" VerticalOptions="Center"
-                                        StrokeShape="RoundRectangle 6">
-                                    <plain:EntryView HorizontalTextAlignment="End" Text="{Binding Age}" HorizontalOptions="Center"/>
-                                </Border>
-                            </DataTemplate>
-                        </material:DataGridColumn.CellItemTemplate>
-                    </material:DataGridColumn>
-                </virtualized:VirtualizedDataGrid.Columns>
+    <Grid RowDefinitions="*" Margin="100" MaximumHeightRequest="700">
+        <virtualized:VirtualizedDataGrid 
+            ItemsSource="{Binding Items}" 
+            HorizontalOptions="Center"
+            MinimumStarColumnWidth= "120"
+            ItemSizingStrategy= "MeasureFirstItem"
+            FilterMemberPaths="Name,Id,Age"
+            ShowSearchBar="True"
+        >
+            <virtualized:VirtualizedDataGrid.Columns>
+                <material:DataGridColumn Width="200" x:DataType="models:EditorStudent" ValueBinding="{Binding Id}" Title="Id" />
+                <material:DataGridColumn Width="200" x:DataType="models:EditorStudent" ValueBinding="{Binding Name}" Title="Name" />
+                <material:DataGridColumn Width="200" Title="Age">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="models:EditorStudent">
+                            <Border Padding="3" HorizontalOptions="Center" VerticalOptions="Center" StrokeShape="RoundRectangle 6">
+                                <plain:EntryView HorizontalTextAlignment="End" Text="{Binding Age}" HorizontalOptions="Center"/>
+                            </Border>
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+            </virtualized:VirtualizedDataGrid.Columns>
+        </virtualized:VirtualizedDataGrid>
 
-                <!--
-                <virtualized:VirtualizedDataGrid.CellItemTemplate>
-                    <DataTemplate>
-                        <plain:EntryView Text="{material:DataGridValueBinding Mode=TwoWay}" BackgroundColor="Transparent"/>
-                    </DataTemplate>
-                </virtualized:VirtualizedDataGrid.CellItemTemplate>
-                -->
-           </virtualized:VirtualizedDataGrid>
- 
-            <!--<BoxView StyleClass="Divider" />
+        <!--<BoxView StyleClass="Divider" />
             <Label Text="Actual data in the ViewModel:" HorizontalOptions="Center" FontAttributes="Bold" FontSize="Title"/>
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Items}">
                 <BindableLayout.ItemTemplate>
@@ -64,6 +50,6 @@
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>
             </VerticalStackLayout>-->
-        </VerticalStackLayout>
-    </ScrollView>
+    </Grid>
+
 </uranium:UraniumContentPage>

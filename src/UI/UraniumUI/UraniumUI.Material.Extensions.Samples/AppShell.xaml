@@ -93,7 +93,7 @@
         <ShellContent Title="Editor Data Grid" ContentTemplate="{DataTemplate dataGrids:EditorDataGridPage}" Route="EditorDataGridPage" />
         <ShellContent Title="Pagination Data Grids" ContentTemplate="{DataTemplate dataGrids:PaginationSamplePage}" Route="PaginationSamplePage" />
         <ShellContent Title="Selectable Data Grid" ContentTemplate="{DataTemplate dataGrids:SelectableDataGridPage}" Route="SelectableDataGridPage" />
-        <ShellContent Title="Simple Custom Data Grid" ContentTemplate="{DataTemplate dataGrids:SimpleCustomTitleDataGridPage}" Route="SimpleCustomTitleDataGridPage" />
+        <ShellContent Title="Simple Custom Title Data Grid" ContentTemplate="{DataTemplate dataGrids:SimpleCustomTitleDataGridPage}" Route="SimpleCustomTitleDataGridPage" />
         <ShellContent Title="Simple Data Grid" ContentTemplate="{DataTemplate dataGrids:SimpleDataGridPage}" Route="SimpleDataGridPage" />
     </FlyoutItem>
     <FlyoutItem Title="Virtualized Data Grid" >

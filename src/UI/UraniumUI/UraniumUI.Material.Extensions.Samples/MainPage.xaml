@@ -29,7 +29,7 @@
         <material:DataGrid ItemsSource="{Binding Items}" 
                                SelectedItems="{Binding SelectedItems}" 
                                HorizontalOptions="Center" VerticalOptions="Center"
-                               
+                               x:Name="DG"
                                >
             <material:DataGrid.Columns>
                 <material:DataGridSelectionColumn/>
@@ -45,7 +45,7 @@
                                              ItemSizingStrategy="MeasureFirstItem"
                                              HorizontalOptions="Center"
                                              VerticalOptions="Center"
-                                                 
+                                             HeightRequest="{Binding Source={x:Reference DG}, Path=Height}"
             >
             <virtualized:VirtualizedDataGrid.Columns>
                 <material:DataGridSelectionColumn />
