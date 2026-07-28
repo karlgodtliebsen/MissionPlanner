@@ -7,23 +7,22 @@
                     xmlns:dataGrids="using:UraniumUI.Material.Extensions.Samples.DataGrids"
                     xmlns:models="using:UraniumUI.Material.Extensions.Samples.DataGrids.Models"
                     x:Class="UraniumUI.Material.Extensions.Samples.DataGrids.PaginationSamplePage"
-                    Title="PaginationSamplePage">
+                    >
     <uranium:UraniumContentPage.BindingContext>
         <dataGrids:PaginationSampleViewModel />
     </uranium:UraniumContentPage.BindingContext>
 
     <VerticalStackLayout Margin="25">
-        <!--
-        <material:Paginator 
-            ChangePageCommand="{Binding SetPageCommand}"
-            CurrentPage="{Binding CurrentPage}"
-            TotalPageCount="{Binding TotalPages}"
-            HorizontalOptions="Center"/>
-        -->
+
+
         <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}" VerticalOptions="Center" HorizontalOptions="Center" />
 
-        <Grid MaximumHeightRequest="600" ColumnDefinitions="*,*" ColumnSpacing="20">
-            <virtualized:VirtualizedDataGrid  HorizontalOptions="Center" 
+        <Grid MaximumHeightRequest="600" ColumnDefinitions="*,*" ColumnSpacing="20" RowDefinitions="Auto,*">
+
+            <Label Text="Virtual Data Grid With Paging" FontSize="22" Grid.Row="0" Grid.Column="0" Margin="0,10"></Label>
+
+            <virtualized:VirtualizedDataGrid  Grid.Row="1" Grid.Column="0"
+                                              HorizontalOptions="Fill" 
                                               ItemsSource="{Binding Products}"
                                               MinimumStarColumnWidth= "120"
                                               ItemSizingStrategy= "MeasureFirstItem"
@@ -36,7 +35,7 @@
                                               ShowPager="True"
                                               RowHeight="80"
 
-                                              >
+            >
                 <virtualized:VirtualizedDataGrid.Columns>
                     <material:DataGridColumn x:DataType="models:Product" Title="Image" Width="100" ValueBinding="{Binding thumbnail}">
                         <material:DataGridColumn.CellItemTemplate>
@@ -55,16 +54,19 @@
 
                 </virtualized:VirtualizedDataGrid.Columns>
             </virtualized:VirtualizedDataGrid>
-            <virtualized:VirtualizedDataGrid  HorizontalOptions="Center" 
-                                              ItemsSource="{Binding Products}"
-                                              MinimumStarColumnWidth= "120"
-                                              ItemSizingStrategy= "MeasureFirstItem"
-                                              FilterMemberPaths="title,brand,price,rating,stock,category"
-                                              ShowSearchBar="True"
-                                              Grid.Column="1"
-                                              RowHeight="80"
 
-                                              >
+            <Label Text="Virtual Data Grid No Paging" FontSize="22" Grid.Row="0" Grid.Column="1" Margin="0,10"></Label>
+
+            <virtualized:VirtualizedDataGrid   Grid.Row="1" Grid.Column="1"
+                                               HorizontalOptions="Fill" 
+                                               ItemsSource="{Binding Products}"
+                                               MinimumStarColumnWidth= "120"
+                                               ItemSizingStrategy= "MeasureFirstItem"
+                                               FilterMemberPaths="title,brand,price,rating,stock,category"
+                                               ShowSearchBar="True"
+                                               RowHeight="80"
+
+            >
                 <virtualized:VirtualizedDataGrid.Columns>
                     <material:DataGridColumn x:DataType="models:Product" Title="Image" Width="100" ValueBinding="{Binding thumbnail}">
                         <material:DataGridColumn.CellItemTemplate>

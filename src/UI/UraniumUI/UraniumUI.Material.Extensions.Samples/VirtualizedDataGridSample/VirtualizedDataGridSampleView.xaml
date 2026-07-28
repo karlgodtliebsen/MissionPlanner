@@ -8,8 +8,7 @@
                     xmlns:virtualizedDataGridSample="clr-namespace:UraniumUI.Material.Extensions.Samples.VirtualizedDataGridSample"
                     x:Class="UraniumUI.Material.Extensions.Samples.VirtualizedDataGridSample.VirtualizedDataGridSampleView"
                     x:DataType="virtualizedDataGridSample:VirtualizedDataGridSampleViewModel"
-                    Title="Virtualized Data Grid View Sample"
-                    
+                   
                     >
 
 
@@ -30,7 +29,7 @@
               Margin="50"
              >
 
-            <Label Grid.Row ="0" Text="Large VirtualizedData Grid With Column Sizes"></Label>
+            <Label Grid.Row ="0" FontSize="22" Text="Large VirtualizedData Grid With Column Sizes"></Label>
             <virtualized:VirtualizedDataGrid Grid.Row="1" 
                                          Margin="10"
                                          ItemsSource="{Binding Parameters}"
@@ -55,7 +54,7 @@
             </virtualized:VirtualizedDataGrid>
 
             <BoxView Grid.Row="2"  StyleClass="Divider" />
-            <Label Grid.Row ="3" Text="Large VirtualizedData Grid With Simple Template"></Label>
+            <Label Grid.Row ="3" FontSize="22" Text="Large VirtualizedData Grid With Simple Template"></Label>
             <virtualized:VirtualizedDataGrid Grid.Row="4" 
                                              Margin="10"
                                              ItemsSource="{Binding Parameters}"
@@ -80,7 +79,7 @@
             </virtualized:VirtualizedDataGrid>
 
             <BoxView Grid.Row="5"  StyleClass="Divider" />
-            <Label Grid.Row ="6" Text="Large VirtualizedData Grid With AutoColumns"></Label>
+            <Label Grid.Row ="6" FontSize="22" Text="Large VirtualizedData Grid With AutoColumns"></Label>
             <virtualized:VirtualizedDataGrid Grid.Row="7"  
                                          Margin="10"
                                          ItemsSource="{Binding Parameters}"
@@ -95,7 +94,7 @@
             </virtualized:VirtualizedDataGrid>
 
             <BoxView Grid.Row="8"  StyleClass="Divider" />
-            <Label Grid.Row ="9" Text="Large VirtualizedData Grid With AutoColumns and Fixed RowHeight"></Label>
+            <Label Grid.Row ="9" FontSize="22" Text="Large VirtualizedData Grid With AutoColumns and Fixed RowHeight"></Label>
             <virtualized:VirtualizedDataGrid Grid.Row="10"  
                                          Margin="10"
                                          ItemsSource="{Binding Parameters}"
@@ -109,11 +108,7 @@
                                          ShowSearchBar="True"
         >
             </virtualized:VirtualizedDataGrid>
-
-
         </Grid>
-
-
     </ScrollView>
 </pages:UraniumContentPage>
 

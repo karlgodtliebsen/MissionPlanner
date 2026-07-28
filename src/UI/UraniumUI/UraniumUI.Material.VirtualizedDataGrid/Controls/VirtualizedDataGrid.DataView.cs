@@ -16,6 +16,7 @@ public partial class VirtualizedDataGrid
     private Command previousPageCommand = null!;
     private Command nextPageCommand = null!;
     private Command lastPageCommand = null!;
+    private Command<int> goToPageCommand = null!;
 
     private bool updatingDataView;
     private bool dataViewRefreshPending;
@@ -45,10 +46,13 @@ public partial class VirtualizedDataGrid
             () => GoToPage(TotalPageCount),
             () => HasNextPage);
 
+        goToPageCommand = new Command<int>(GoToPage);
+
         FirstPageCommand = firstPageCommand;
         PreviousPageCommand = previousPageCommand;
         NextPageCommand = nextPageCommand;
         LastPageCommand = lastPageCommand;
+        GoToPageCommand = goToPageCommand;
     }
 
     /// <summary>
@@ -473,6 +477,16 @@ public partial class VirtualizedDataGrid
             return;
         }
 
+        // UraniumUI's Paginator is an interactive control and expects a MAUI dispatcher.
+        // Do not construct a hidden paginator during grid initialization (or in headless
+        // consumers); create it only when the pager has actually been requested.
+        if (!ShowPager)
+        {
+            pagerHost.IsVisible = false;
+            pagerHost.Content = null;
+            return;
+        }
+
         View pagerContent;
 
         if (PagerView is not null)
@@ -513,25 +527,17 @@ public partial class VirtualizedDataGrid
 
     private View CreateDefaultPagerView()
     {
-        var navigation = new HorizontalStackLayout { Spacing = 8, VerticalOptions = LayoutOptions.Center };
-
-        navigation.Add(CreatePagerButton("First", FirstPageCommand));
-        navigation.Add(CreatePagerButton("Previous", PreviousPageCommand));
-
-        var pageLabel = new Label { VerticalOptions = LayoutOptions.Center, FontSize = 14 };
-        pageLabel.SetBinding(
-            Label.TextProperty,
-            new Binding(nameof(CurrentPage), source: this, stringFormat: "Page {0}"));
-        navigation.Add(pageLabel);
-
-        var totalPagesLabel = new Label { VerticalOptions = LayoutOptions.Center, FontSize = 14 };
-        totalPagesLabel.SetBinding(
-            Label.TextProperty,
-            new Binding(nameof(TotalPageCount), source: this, stringFormat: "of {0}"));
-        navigation.Add(totalPagesLabel);
-
-        navigation.Add(CreatePagerButton("Next", NextPageCommand));
-        navigation.Add(CreatePagerButton("Last", LastPageCommand));
+        var paginator = new UraniumUI.Material.Controls.Paginator
+        {
+            ChangePageCommand = GoToPageCommand,
+            VerticalOptions = LayoutOptions.Center
+        };
+        paginator.SetBinding(
+            UraniumUI.Material.Controls.Paginator.CurrentPageProperty,
+            new Binding(nameof(CurrentPage), source: this));
+        paginator.SetBinding(
+            UraniumUI.Material.Controls.Paginator.TotalPageCountProperty,
+            new Binding(nameof(TotalPageCount), source: this));
 
         var pageSizeArea = new HorizontalStackLayout { Spacing = 8, HorizontalOptions = LayoutOptions.End, VerticalOptions = LayoutOptions.Center };
         pageSizeArea.Add(new Label { Text = "Rows per page:", FontSize = 14, VerticalOptions = LayoutOptions.Center });
@@ -552,23 +558,10 @@ public partial class VirtualizedDataGrid
         pageSizeArea.Add(matchingLabel);
 
         var pagerGrid = new Grid { Padding = new Thickness(8, 6), ColumnSpacing = 24, ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) } };
-        pagerGrid.Add(navigation, 0, 0);
+        pagerGrid.Add(paginator, 0, 0);
         pagerGrid.Add(pageSizeArea, 1, 0);
 
         return new ScrollView { Orientation = ScrollOrientation.Horizontal, HorizontalScrollBarVisibility = ScrollBarVisibility.Never, Content = pagerGrid };
-    }
-
-    private static Button CreatePagerButton(string text, System.Windows.Input.ICommand command)
-    {
-        return new Button
-        {
-            Text = text,
-            FontSize = 14,
-            Padding = new Thickness(8, 4),
-            BackgroundColor = Colors.Transparent,
-            Command = command,
-            VerticalOptions = LayoutOptions.Center
-        };
     }
 
     private void RaiseSearchCanExecuteChanged()

@@ -8,7 +8,7 @@
                     xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
                     xmlns:models="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids.Models"
                     x:Class="UraniumUI.Material.Extensions.Samples.DataGrids.EditorDataGridPage"
-                    Title="EditorDataGridPage">
+                    >
     <uranium:UraniumContentPage.BindingContext>
         <dataGrids:EditorDataGridPageViewModel />
     </uranium:UraniumContentPage.BindingContext>

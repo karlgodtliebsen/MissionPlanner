@@ -28,6 +28,7 @@
             MaximumWidthRequest="200"
             HorizontalTextAlignment="Start"
             VerticalTextAlignment="Center" />
+        <BoxView  StyleClass="Divider" />
 
 
         <!-- Recommended parameter usage:
@@ -70,6 +71,8 @@
             VerticalTextAlignment="Center"
             ButtonOrientation="Vertical"
             BorderColor="Aqua" />
+
+        <BoxView  StyleClass="Divider" />
 
         <!-- Bind Value instead when the ViewModel exposes a double. -->
         <controls:NumericUpDownField

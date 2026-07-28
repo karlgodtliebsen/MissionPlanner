@@ -10,7 +10,7 @@
              xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
              xmlns:models="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids.Models"
              x:Class="UraniumUI.Material.Extensions.Samples.MainPage"
-             x:Name="page">
+             >
 
     <uranium:UraniumContentPage.BindingContext>
         <local:MainPageViewModel />
@@ -23,37 +23,44 @@
     </uranium:UraniumContentPage.Resources>
 
 
-    <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="10" HorizontalOptions="Center">
+    <Grid ColumnDefinitions="Auto,Auto" ColumnSpacing="10" HorizontalOptions="Center" RowDefinitions="*">
 
-        
-        <material:DataGrid ItemsSource="{Binding Items}" 
-                               SelectedItems="{Binding SelectedItems}" 
-                               HorizontalOptions="Center" VerticalOptions="Center"
-                               x:Name="DG"
-                               >
-            <material:DataGrid.Columns>
-                <material:DataGridSelectionColumn/>
-                <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding Content}" Title="Todo" />
-                <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding Type}" Title="Type"/>
-                <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding IsDone, Converter={StaticResource BoolToYesNoConverter}}" Title="Done"/>
-            </material:DataGrid.Columns>
-        </material:DataGrid>
-        
+        <VerticalStackLayout>
+            <Label Text="Data Grid" FontSize="22" Margin="0,10" VerticalOptions="End"></Label>
+            <material:DataGrid   
+                              ItemsSource="{Binding Items}" 
+                              SelectedItems="{Binding SelectedItems}" 
+                              HorizontalOptions="Center" 
+                              VerticalOptions="Center"
+                              x:Name="DG"
+        >
+                <material:DataGrid.Columns>
+                    <material:DataGridSelectionColumn/>
+                    <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding Content}" Title="Todo" />
+                    <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding Type}" Title="Type"/>
+                    <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding IsDone, Converter={StaticResource BoolToYesNoConverter}}" Title="Done"/>
+                </material:DataGrid.Columns>
+            </material:DataGrid>
 
-        <virtualized:VirtualizedDataGrid Grid.Column="1"
-                                             ItemsSource="{Binding Items}" 
-                                             ItemSizingStrategy="MeasureFirstItem"
-                                             HorizontalOptions="Center"
-                                             VerticalOptions="Center"
-                                             HeightRequest="{Binding Source={x:Reference DG}, Path=Height}"
-            >
-            <virtualized:VirtualizedDataGrid.Columns>
-                <material:DataGridSelectionColumn />
-                <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding Content}" Title="Todo"/>
-                <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding Type}" Title="Type" />
-                <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding IsDone, Converter={StaticResource BoolToYesNoConverter}}" Title="Done" />
-            </virtualized:VirtualizedDataGrid.Columns>
-        </virtualized:VirtualizedDataGrid>
+        </VerticalStackLayout>
+        <VerticalStackLayout  Grid.Column="1">
+            <Label Text="Virtual Data Grid" FontSize="22"  Margin="0,10" VerticalOptions="End"></Label>
+
+            <virtualized:VirtualizedDataGrid 
+                                         ItemsSource="{Binding Items}" 
+                                         ItemSizingStrategy="MeasureFirstItem"
+                                         HorizontalOptions="Center"
+                                         VerticalOptions="Center"
+                                         HeightRequest="{Binding Source={x:Reference DG}, Path=Height}"
+        >
+                <virtualized:VirtualizedDataGrid.Columns>
+                    <material:DataGridSelectionColumn />
+                    <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding Content}" Title="Todo"/>
+                    <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding Type}" Title="Type" />
+                    <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding IsDone, Converter={StaticResource BoolToYesNoConverter}}" Title="Done" />
+                </virtualized:VirtualizedDataGrid.Columns>
+            </virtualized:VirtualizedDataGrid>
+        </VerticalStackLayout>
 
 
     </Grid>

@@ -12,7 +12,7 @@
                     BindingContext="{uranium:Inject {Type dataGrids:CustomDataGridPageViewModel}}"
                     x:Class="UraniumUI.Material.Extensions.Samples.DataGrids.CustomDataGridPage"
                    x:DataType="dataGrids:CustomDataGridPageViewModel"
-                    x:Name="page">
+                   x:Name="page">
     <uranium:UraniumContentPage.Content>
 
         <Grid RowDefinitions="Auto,Auto,Auto,*" >

@@ -36,6 +36,7 @@ public partial class VirtualizedDataGridViewModel : ObservableObject
 
         try
         {
+            Environment.CurrentDirectory = ".";
             allParameterItems.AddRange(await parametersFileHandler.LoadParametersFromJsonFileAsync(CancellationToken.None));
             dispatcher.Dispatch(() => Parameters.AddRange(allParameterItems));
         }

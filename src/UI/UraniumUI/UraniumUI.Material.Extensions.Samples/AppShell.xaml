@@ -14,7 +14,7 @@
     x:Name="thisShell"
     FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
     Shell.FlyoutBehavior="Flyout"
-    FlyoutIsPresented="False"
+    FlyoutIsPresented="True"
     >
 
     <Shell.Resources>
@@ -39,7 +39,7 @@
     <Shell.FlyoutHeader>
         <VerticalStackLayout StyleClass="PrimaryContainer" Padding="20">
             <Label Text="UraniumUI Control Extension" FontSize="Large" HorizontalTextAlignment="Center" Margin="10" />
-            
+
             <VerticalStackLayout BindingContext="{uranium:Inject Type={Type appViewModels:ThemeChangeViewModel}}" x:DataType="appViewModels:ThemeChangeViewModel">
                 <Label Text="App Theme" HorizontalOptions="Center"/>
                 <controls1:SelectionView HorizontalOptions="Center"
@@ -74,38 +74,35 @@
             </CollectionView>
         </Grid>
     </Shell.FlyoutContent>
-
-
-    <FlyoutItem Title="Compare Data Grids" >
-    <ShellContent
-        Title="Compare Data Grids"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
-    </FlyoutItem>
-
     <FlyoutItem Title="Extended Controls" >
-        <ShellContent
-            Title="Extended Controls"
-            ContentTemplate="{DataTemplate local:ControlsView}" Route="Controls" />
+        <ShellContent Title="Extended Controls" ContentTemplate="{DataTemplate local:ControlsView}" Route="Controls" />
     </FlyoutItem>
-    <FlyoutItem Title="UraniumUI Data Grids" >
+    <FlyoutItem Title="Compare Data Grids" >
+        <ShellContent Title="Compare Data Grids" ContentTemplate="{DataTemplate local:MainPage}" Route="MainPage" />
+    </FlyoutItem>
+    <FlyoutItem Title="Simple Data Grid" >
+        <ShellContent Title="Simple Data Grid with AutoColumns" ContentTemplate="{DataTemplate dataGrids:SimpleDataGridPage}" Route="SimpleDataGridPage" />
+    </FlyoutItem>    
+    <FlyoutItem Title="Custom Data Grid" >
         <ShellContent Title="Custom Data Grid" ContentTemplate="{DataTemplate dataGrids:CustomDataGridPage}" Route="CustomDataGridPage" />
+    </FlyoutItem>
+    <FlyoutItem Title="Editor Data Grid" >
         <ShellContent Title="Editor Data Grid" ContentTemplate="{DataTemplate dataGrids:EditorDataGridPage}" Route="EditorDataGridPage" />
-        <ShellContent Title="Pagination Data Grids" ContentTemplate="{DataTemplate dataGrids:PaginationSamplePage}" Route="PaginationSamplePage" />
+    </FlyoutItem>
+    <FlyoutItem Title="Pagination Data Grid" >
+        <ShellContent Title="Pagination Data Grid" ContentTemplate="{DataTemplate dataGrids:PaginationSamplePage}" Route="PaginationSamplePage" />
+    </FlyoutItem>
+    <FlyoutItem Title="Selectable Data Grid" >
         <ShellContent Title="Selectable Data Grid" ContentTemplate="{DataTemplate dataGrids:SelectableDataGridPage}" Route="SelectableDataGridPage" />
+    </FlyoutItem>
+    <FlyoutItem Title="Simple Custom Title Data Grid" >
         <ShellContent Title="Simple Custom Title Data Grid" ContentTemplate="{DataTemplate dataGrids:SimpleCustomTitleDataGridPage}" Route="SimpleCustomTitleDataGridPage" />
-        <ShellContent Title="Simple Data Grid" ContentTemplate="{DataTemplate dataGrids:SimpleDataGridPage}" Route="SimpleDataGridPage" />
     </FlyoutItem>
-    <FlyoutItem Title="Virtualized Data Grid" >
-        <ShellContent
-            Title="Virtualized Data Grid"
-            ContentTemplate="{DataTemplate virtualizedDataGridSample:VirtualizedDataGridSampleView}" Route="VirtualizedDataGridView" />
+    <FlyoutItem Title="Data Grid Samples" >
+        <ShellContent Title="Virtualized Large Data Grid Samples" ContentTemplate="{DataTemplate virtualizedDataGridSample:VirtualizedDataGridSampleView}" Route="VirtualizedDataGridView" />
     </FlyoutItem>
-
-    <FlyoutItem Title="Virtualized with Complex Data" >
-        <ShellContent
-            Title="Virtualized Data Grid with Complex Data"
-            ContentTemplate="{DataTemplate arduPilotSample:VirtualizedDataGridView}" Route="VirtualizedDataGridView" />
+    <FlyoutItem Title="Data Grid with Complex Data" >
+        <ShellContent Title="Virtualized Data Grid with Complex Data" ContentTemplate="{DataTemplate arduPilotSample:VirtualizedDataGridView}" Route="VirtualizedDataGridView" />
     </FlyoutItem>
 
 </Shell>

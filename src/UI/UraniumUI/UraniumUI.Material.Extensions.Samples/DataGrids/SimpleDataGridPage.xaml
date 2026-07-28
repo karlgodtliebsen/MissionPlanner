@@ -5,7 +5,7 @@
                     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                     xmlns:dataGrids="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids"
                     xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
-                    Title="DataGrid AutoColumns">
+                    >
     <uranium:UraniumContentPage.BindingContext>
         <dataGrids:SimpleDataGridPageViewModel />
     </uranium:UraniumContentPage.BindingContext>
@@ -18,7 +18,7 @@
                                                  HorizontalOptions="Center" 
                                                  AutoColumnWidth= "180"
                                                  MinimumStarColumnWidth= "120"
-                                                 MaximumWidthRequest="400"
+                                                 MaximumWidthRequest="600"
                                                  ItemSizingStrategy= "MeasureFirstItem"
                                                  FilterMemberPaths="Name,Id,Age"
                                                  ShowSearchBar="True"

@@ -430,4 +430,10 @@ public partial class VirtualizedDataGrid
 
     /// <summary>Moves to the last page.</summary>
     public ICommand LastPageCommand { get; private set; } = null!;
+
+    /// <summary>
+    /// Moves to the one-based page number supplied as the command parameter.
+    /// This command is compatible with <c>UraniumUI.Material.Controls.Paginator</c>.
+    /// </summary>
+    public ICommand GoToPageCommand { get; private set; } = null!;
 }

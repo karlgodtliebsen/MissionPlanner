@@ -9,12 +9,12 @@
                     xmlns:arduPilotSample="clr-namespace:UraniumUI.Material.Extensions.Samples.ArduPilotSample"
                     x:Class="UraniumUI.Material.Extensions.Samples.ArduPilotSample.VirtualizedDataGridView"
                     x:DataType="arduPilotSample:VirtualizedDataGridViewModel"
-                    Title="Virtualized Data Grid View"
-                    
                     >
-    <!--<uranium:UraniumContentPage.BindingContext>
+    <!--
+    <uranium:UraniumContentPage.BindingContext>
         <samples:VirtualizedDataGridViewModel />
-    </uranium:UraniumContentPage.BindingContext>-->
+    </uranium:UraniumContentPage.BindingContext>
+    -->
 
     <uranium:UraniumContentPage.Resources>
         <Style TargetType="Button">
@@ -36,7 +36,6 @@
                     FontSize="14"
                     Padding="10,4"
                     VerticalOptions="Center"
-                   
                     Command="{Binding LoadFromJsonFileCommand}" >
             </Button>
 

@@ -167,13 +167,11 @@ Enable paging and the default pager:
     PageSize="100" />
 ```
 
-The pager provides:
+The default pager uses `UraniumUI.Material.Controls.Paginator` and provides:
 
-- First
-- Previous
-- page number and total pages
-- Next
-- Last
+- first and previous navigation
+- nearby page-number buttons
+- next and last navigation
 - selectable rows per page
 - matching-row count
 
@@ -190,6 +188,7 @@ ICommand FirstPageCommand
 ICommand PreviousPageCommand
 ICommand NextPageCommand
 ICommand LastPageCommand
+ICommand GoToPageCommand
 ```
 
 `CurrentPage` and `PageSize` are two-way bindable. Invalid page values are clamped. Filter changes return to page one by default; set `ResetPageOnFilterChange="False"` to retain/clamp the current page instead.

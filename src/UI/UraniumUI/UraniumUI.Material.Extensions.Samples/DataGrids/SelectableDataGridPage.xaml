@@ -9,7 +9,7 @@
                     xmlns:local="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids"
                     xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
                     xmlns:models="using:UraniumUI.Material.Extensions.Samples.DataGrids.Models"
-                    Title="DataGrid Selection">
+                    >
 
     <uranium:UraniumContentPage.BindingContext>
         <local:SelectableDataGridPageViewModel />
