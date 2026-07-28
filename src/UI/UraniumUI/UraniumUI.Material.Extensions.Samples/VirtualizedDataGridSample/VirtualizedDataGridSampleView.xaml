@@ -23,16 +23,15 @@
     <ScrollView HorizontalOptions="Fill"
                 VerticalOptions="Fill">
 
-        <Grid RowDefinitions="400,Auto,400,Auto,400"
+        <Grid RowDefinitions="Auto,400,Auto,Auto,400,Auto,Auto,400,Auto,Auto,400"
               HorizontalOptions="Fill"
               VerticalOptions="Fill"
               Padding="8,0"
               Margin="50"
-             
-        >
+             >
 
-
-            <virtualized:VirtualizedDataGrid Grid.Row="0" 
+            <Label Grid.Row ="0" Text="Large VirtualizedData Grid With Column Sizes"></Label>
+            <virtualized:VirtualizedDataGrid Grid.Row="1" 
                                          Margin="10"
                                          ItemsSource="{Binding Parameters}"
                                          UseAutoColumns="False"
@@ -54,9 +53,10 @@
                     <material:DataGridColumn Width="150" x:DataType="virtualizedDataGridSample:ItemViewModel"  ValueBinding="{Binding SelectedValue}" Title="Selected Value"  />
                 </virtualized:VirtualizedDataGrid.Columns>
             </virtualized:VirtualizedDataGrid>
-            <BoxView Grid.Row="1"  StyleClass="Divider" />
 
-            <virtualized:VirtualizedDataGrid Grid.Row="2" 
+            <BoxView Grid.Row="2"  StyleClass="Divider" />
+            <Label Grid.Row ="3" Text="Large VirtualizedData Grid With Simple Template"></Label>
+            <virtualized:VirtualizedDataGrid Grid.Row="4" 
                                              Margin="10"
                                              ItemsSource="{Binding Parameters}"
                                              UseAutoColumns="False"
@@ -79,8 +79,9 @@
                 </virtualized:VirtualizedDataGrid.Columns>
             </virtualized:VirtualizedDataGrid>
 
-            <BoxView Grid.Row="31"  StyleClass="Divider" />
-            <virtualized:VirtualizedDataGrid Grid.Row="4"  
+            <BoxView Grid.Row="5"  StyleClass="Divider" />
+            <Label Grid.Row ="6" Text="Large VirtualizedData Grid With AutoColumns"></Label>
+            <virtualized:VirtualizedDataGrid Grid.Row="7"  
                                          Margin="10"
                                          ItemsSource="{Binding Parameters}"
                                          UseAutoColumns="True"
@@ -92,6 +93,23 @@
                                          ShowSearchBar="True"
         >
             </virtualized:VirtualizedDataGrid>
+
+            <BoxView Grid.Row="8"  StyleClass="Divider" />
+            <Label Grid.Row ="9" Text="Large VirtualizedData Grid With AutoColumns and Fixed RowHeight"></Label>
+            <virtualized:VirtualizedDataGrid Grid.Row="10"  
+                                         Margin="10"
+                                         ItemsSource="{Binding Parameters}"
+                                         UseAutoColumns="True"
+                                         AutoColumnWidth= "180"
+                                         MinimumStarColumnWidth= "120"
+                                         RowHeight="80"
+                                         ItemSizingStrategy= "MeasureFirstItem"
+                                         ShowRowSeparators="True"
+                                         FilterMemberPaths="Name,DisplayName"
+                                         ShowSearchBar="True"
+        >
+            </virtualized:VirtualizedDataGrid>
+
 
         </Grid>
 
