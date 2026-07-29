@@ -74,9 +74,11 @@ Post-removal validation on 2026-07-29:
 - Post-removal vulnerability report: no vulnerable packages.
 - Post-removal deprecation report: no deprecated packages.
 
-The targeted suite initially exposed the packed-parameter preference path as
-disabled. MAVFTP packed loading was restored with classic `PARAM_REQUEST_LIST`
-fallback and a zero-total progress guard; its coverage now passes.
+Packed MAVFTP parameter probing remains deliberately disabled because detecting
+unsupported MAVFTP vehicles can delay Full Parameters loading substantially.
+Coverage verifies that loading starts directly with classic
+`PARAM_REQUEST_LIST`. A zero-total progress guard prevents failure when the
+classic request cannot be sent.
 
 Opt-in SITL was not run because no bounded SITL environment was configured for
 this validation. A real-flight-controller serial smoke test also remains

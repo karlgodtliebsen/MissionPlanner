@@ -203,7 +203,22 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
         for (var columnIndex = 0; columnIndex < columns.Count; columnIndex++)
         {
             var column = columns[columnIndex];
-            var valueBinding = column.ValueBinding?.CopyAsClone();
+            BindingBase? valueBinding = null;
+            if (column.ValueBinding is { } configuredBinding)
+            {
+                try
+                {
+                    valueBinding = configuredBinding.CopyAsClone();
+                }
+                catch (NotSupportedException)
+                {
+                    // Compiled x:DataType bindings are TypedBinding instances. UraniumUI's
+                    // clone helper intentionally cannot clone BindingBase subclasses, but
+                    // MAUI can still create a target-specific binding expression from the
+                    // configured binding.
+                    valueBinding = configuredBinding;
+                }
+            }
 
             var created =
                 column.CellItemTemplate?.CreateContent() as View

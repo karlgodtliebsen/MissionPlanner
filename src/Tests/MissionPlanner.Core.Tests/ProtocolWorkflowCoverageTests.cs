@@ -105,9 +105,9 @@ public sealed class ProtocolWorkflowCoverageTests
         Assert.Equal(3, sends);
     }
 
-    /// <summary>Verifies packed MAVFTP parameters are preferred and classic streaming remains the fallback.</summary>
+    /// <summary>Verifies full parameter loading starts with the classic stream without waiting for MAVFTP detection.</summary>
     [Fact]
-    public async Task PackedParametersArePreferredWithClassicFallback()
+    public async Task ParameterLoadingDoesNotProbeMavFtp()
     {
         var parameterService = Substitute.For<IVehicleParameterService>();
         var registry = new VehicleParameterRegistry();
@@ -123,18 +123,18 @@ public sealed class ProtocolWorkflowCoverageTests
             });
         var decoder = new StubPackedDecoder([new VehicleParameter("TEST", 42, MavParamType.Real32, 0, 1)]);
         var service = new VehicleParameterStreamService(parameterService, registry, eventHub, clock, Microsoft.Extensions.Logging.Abstractions.NullLogger<VehicleParameterStreamService>.Instance, decoder, fileSystem);
+        parameterService.RequestParameterListAsync(Arg.Any<VehicleId>(), Arg.Any<CancellationToken>()).Returns(false);
 
         var result = await service.StreamAllParametersWithRetryAsync(new VehicleId(1, 1), maxRetries: 0, cancellationToken: TestContext.Current.CancellationToken);
 
-        Assert.True(result.Success);
-        Assert.Equal(42, result.Parameters["TEST"].Value);
-        await parameterService.DidNotReceive().RequestParameterListAsync(Arg.Any<VehicleId>(), Arg.Any<CancellationToken>());
-
-        var failingService = new VehicleParameterStreamService(parameterService, registry, eventHub, clock, Microsoft.Extensions.Logging.Abstractions.NullLogger<VehicleParameterStreamService>.Instance, new StubPackedDecoder([], true), fileSystem);
-        parameterService.RequestParameterListAsync(Arg.Any<VehicleId>(), Arg.Any<CancellationToken>()).Returns(false);
-        var fallback = await failingService.StreamAllParametersWithRetryAsync(new VehicleId(1, 1), maxRetries: 0, cancellationToken: TestContext.Current.CancellationToken);
-        Assert.False(fallback.Success);
+        Assert.False(result.Success);
         await parameterService.Received(1).RequestParameterListAsync(new VehicleId(1, 1), Arg.Any<CancellationToken>());
+        await fileSystem.DidNotReceiveWithAnyArgs().DownloadFileAsync(
+            default,
+            default!,
+            default!,
+            default,
+            TestContext.Current.CancellationToken);
     }
 
     /// <summary>Verifies product and peripheral protocol families all have effective typed decoders.</summary>

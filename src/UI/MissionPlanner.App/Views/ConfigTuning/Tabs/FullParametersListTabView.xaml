@@ -242,9 +242,21 @@
                             </material:DataGridColumn.CellItemTemplate>
                         </material:DataGridColumn>
 
-                        <material:DataGridColumn x:DataType="configTuning:ParameterItemViewModel" Width="100"  ValueBinding="{Binding Range}" Title="Range"  />
+                        <material:DataGridColumn Width="100" Title="Range">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="configTuning:ParameterItemViewModel">
+                                    <Label Text="{Binding Range}" VerticalOptions="Center" HorizontalOptions="Center" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
                         <!--<material:DataGridColumn Width="100"  ValueBinding="{Binding StepSize}" Title="Step Size"  />-->
-                        <material:DataGridColumn x:DataType="configTuning:ParameterItemViewModel" Width="100"  ValueBinding="{Binding OriginalValueText}" Title="Default"  />
+                        <material:DataGridColumn Width="100" Title="Default">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="configTuning:ParameterItemViewModel">
+                                    <Label Text="{Binding OriginalValueText}" VerticalOptions="Center" HorizontalOptions="Center" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
                         <material:DataGridColumn Width="125" Title="Units">
                             <material:DataGridColumn.CellItemTemplate>
                                 <DataTemplate x:DataType="configTuning:ParameterItemViewModel">
@@ -319,12 +331,36 @@
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
                             </material:DataGridColumn>
-                            <material:DataGridColumn x:DataType="configTuning:ParameterComparisonItemViewModel" Width="180" ValueBinding="{Binding Name}" Title="Parameter" />
-                            <material:DataGridColumn x:DataType="configTuning:ParameterComparisonItemViewModel" Width="180" ValueBinding="{Binding LeftValue}" Title="Live" />
-                            <material:DataGridColumn x:DataType="configTuning:ParameterComparisonItemViewModel" Width="180" ValueBinding="{Binding RightValue}" Title="Right" />
-                            <material:DataGridColumn x:DataType="configTuning:ParameterComparisonItemViewModel" Width="140" ValueBinding="{Binding Difference}" Title="Difference" />
-                            <material:DataGridColumn x:DataType="configTuning:ParameterComparisonItemViewModel" Width="160" ValueBinding="{Binding Status}" Title="Status" />
-                            <material:DataGridColumn x:DataType="configTuning:ParameterComparisonItemViewModel" Width="*" ValueBinding="{Binding Message}" Title="Message" />
+                            <material:DataGridColumn Width="180" Title="Parameter">
+                                <material:DataGridColumn.CellItemTemplate>
+                                    <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding Name}" VerticalOptions="Center" /></DataTemplate>
+                                </material:DataGridColumn.CellItemTemplate>
+                            </material:DataGridColumn>
+                            <material:DataGridColumn Width="180" Title="Live">
+                                <material:DataGridColumn.CellItemTemplate>
+                                    <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding LeftValue}" VerticalOptions="Center" /></DataTemplate>
+                                </material:DataGridColumn.CellItemTemplate>
+                            </material:DataGridColumn>
+                            <material:DataGridColumn Width="180" Title="Right">
+                                <material:DataGridColumn.CellItemTemplate>
+                                    <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding RightValue}" VerticalOptions="Center" /></DataTemplate>
+                                </material:DataGridColumn.CellItemTemplate>
+                            </material:DataGridColumn>
+                            <material:DataGridColumn Width="140" Title="Difference">
+                                <material:DataGridColumn.CellItemTemplate>
+                                    <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding Difference}" VerticalOptions="Center" /></DataTemplate>
+                                </material:DataGridColumn.CellItemTemplate>
+                            </material:DataGridColumn>
+                            <material:DataGridColumn Width="160" Title="Status">
+                                <material:DataGridColumn.CellItemTemplate>
+                                    <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding Status}" VerticalOptions="Center" /></DataTemplate>
+                                </material:DataGridColumn.CellItemTemplate>
+                            </material:DataGridColumn>
+                            <material:DataGridColumn Width="*" Title="Message">
+                                <material:DataGridColumn.CellItemTemplate>
+                                    <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding Message}" VerticalOptions="Center" /></DataTemplate>
+                                </material:DataGridColumn.CellItemTemplate>
+                            </material:DataGridColumn>
                         </virtualized:VirtualizedDataGrid.Columns>
                     </virtualized:VirtualizedDataGrid>
                 </Grid>

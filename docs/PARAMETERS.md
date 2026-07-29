@@ -187,8 +187,9 @@ in the live registry and whose explicit presence rule is satisfied; it never inv
 silently guesses a parameter name.
 
 `FullParametersListTabViewModel` uses this session after its existing bulk download. The
-bulk service continues to prefer packed MAVFTP parameters and automatically falls back to
-the classic parameter stream. File imports populate pending values, while Apply performs
+bulk service starts directly with the classic parameter stream; it does not probe packed
+MAVFTP first because capability detection can impose a long delay on unsupported vehicles.
+File imports populate pending values, while Apply performs
 confirmed session writes. Session change notifications update existing table rows in place
 and preserve row identity; they do not recreate enum and bitmask choices while an editor is
 handling input. The ViewModel exposes one stable all-row collection.
