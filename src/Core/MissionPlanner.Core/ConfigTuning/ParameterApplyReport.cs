@@ -14,4 +14,14 @@ public sealed record ParameterApplyReport(bool Success, IReadOnlyList<ParameterW
         .Where(result => result.Outcome is ParameterWriteOutcome.WriteFailed or ParameterWriteOutcome.ReadbackFailed or ParameterWriteOutcome.ValidationFailed)
         .Select(result => result.Name)
         .ToArray();
+
+    /// <summary>
+    /// Gets failed names that can safely be attempted again without rewriting
+    /// confirmed or unchanged values.
+    /// </summary>
+    public IReadOnlyList<string> Retryable => Results
+        .Where(result => result.Outcome is ParameterWriteOutcome.WriteFailed or ParameterWriteOutcome.ReadbackFailed)
+        .Select(result => result.Name)
+        .Distinct(StringComparer.Ordinal)
+        .ToArray();
 }

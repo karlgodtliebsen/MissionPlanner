@@ -54,13 +54,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Remove="testdata\ardupilot.params.json" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Content Include="testdata\ardupilot.params.json">
+	  <None Update="testdata\ardupilot.params.json">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
+	  </None>
 	</ItemGroup>
 
 	<ItemGroup>

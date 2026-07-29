@@ -62,6 +62,14 @@
                 BackgroundColor="Transparent"
                 Command="{Binding WriteParametersCommand}" />
 
+                <Button
+                    Text="Retry failed"
+                    FontSize="14"
+                    Padding="8,4"
+                    VerticalOptions="Center"
+                    BackgroundColor="Transparent"
+                    Command="{Binding RetryFailedCommand}" />
+
                 <Button 
                     Text="Refresh parameters"
                     FontSize="14"
@@ -95,7 +103,7 @@
                 Command="{Binding CancelLoadCommand}" />
 
                 <Button 
-                Text="Load Pre saved"
+                Text="Parameter profiles"
                 FontSize="14"
                 Padding="8,4"
                 VerticalOptions="Center"
@@ -234,9 +242,9 @@
                             </material:DataGridColumn.CellItemTemplate>
                         </material:DataGridColumn>
 
-                        <material:DataGridColumn Width="100"  ValueBinding="{Binding Range}" Title="Range"  />
+                        <material:DataGridColumn x:DataType="configTuning:ParameterItemViewModel" Width="100"  ValueBinding="{Binding Range}" Title="Range"  />
                         <!--<material:DataGridColumn Width="100"  ValueBinding="{Binding StepSize}" Title="Step Size"  />-->
-                        <material:DataGridColumn Width="100"  ValueBinding="{Binding OriginalValueText}" Title="Default"  />
+                        <material:DataGridColumn x:DataType="configTuning:ParameterItemViewModel" Width="100"  ValueBinding="{Binding OriginalValueText}" Title="Default"  />
                         <material:DataGridColumn Width="125" Title="Units">
                             <material:DataGridColumn.CellItemTemplate>
                                 <DataTemplate x:DataType="configTuning:ParameterItemViewModel">
@@ -272,6 +280,54 @@
 
                     </virtualized:VirtualizedDataGrid.Columns>
                 </virtualized:VirtualizedDataGrid>
+
+                <Grid
+                    IsVisible="{Binding ShowComparison}"
+                    BackgroundColor="{AppThemeBinding Light=White, Dark=#1B1B1F}"
+                    RowDefinitions="Auto,*"
+                    Padding="12">
+                    <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto" ColumnSpacing="8">
+                        <Button Grid.Column="0" Text="Select all safe differences" Command="{Binding SelectAllSafeDifferencesCommand}" />
+                        <Button Grid.Column="1" Text="Stage selected" Command="{Binding StageSelectedDifferencesCommand}" />
+                        <Button Grid.Column="2" Text="Export JSON" Command="{Binding ExportComparisonJsonCommand}" />
+                        <Button Grid.Column="3" Text="Export CSV" Command="{Binding ExportComparisonCsvCommand}" />
+                        <Picker
+                            Grid.Column="4"
+                            WidthRequest="140"
+                            ItemsSource="{Binding ComparisonFilters}"
+                            SelectedItem="{Binding ComparisonFilter}" />
+                        <Button Grid.Column="6" Text="Close" Command="{Binding CloseComparisonCommand}" />
+                    </Grid>
+
+                    <virtualized:VirtualizedDataGrid
+                        Grid.Row="1"
+                        ItemsSource="{Binding ComparisonRows}"
+                        UseAutoColumns="False"
+                        ItemSizingStrategy="MeasureFirstItem"
+                        ShowRowSeparators="True"
+                        ShowSearchBar="True"
+                        FilterMemberPaths="Name,DisplayName,Status,Message">
+                        <virtualized:VirtualizedDataGrid.Columns>
+                            <material:DataGridColumn Title="Stage" Width="70">
+                                <material:DataGridColumn.CellItemTemplate>
+                                    <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel">
+                                        <CheckBox
+                                            IsChecked="{Binding IsSelected}"
+                                            IsEnabled="{Binding CanStage}"
+                                            HorizontalOptions="Center"
+                                            VerticalOptions="Center" />
+                                    </DataTemplate>
+                                </material:DataGridColumn.CellItemTemplate>
+                            </material:DataGridColumn>
+                            <material:DataGridColumn x:DataType="configTuning:ParameterComparisonItemViewModel" Width="180" ValueBinding="{Binding Name}" Title="Parameter" />
+                            <material:DataGridColumn x:DataType="configTuning:ParameterComparisonItemViewModel" Width="180" ValueBinding="{Binding LeftValue}" Title="Live" />
+                            <material:DataGridColumn x:DataType="configTuning:ParameterComparisonItemViewModel" Width="180" ValueBinding="{Binding RightValue}" Title="Right" />
+                            <material:DataGridColumn x:DataType="configTuning:ParameterComparisonItemViewModel" Width="140" ValueBinding="{Binding Difference}" Title="Difference" />
+                            <material:DataGridColumn x:DataType="configTuning:ParameterComparisonItemViewModel" Width="160" ValueBinding="{Binding Status}" Title="Status" />
+                            <material:DataGridColumn x:DataType="configTuning:ParameterComparisonItemViewModel" Width="*" ValueBinding="{Binding Message}" Title="Message" />
+                        </virtualized:VirtualizedDataGrid.Columns>
+                    </virtualized:VirtualizedDataGrid>
+                </Grid>
 
             </Grid>
         </Grid>

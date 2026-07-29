@@ -162,11 +162,19 @@ Because `ParameterEditScope` is local to the selected vehicle and firmware, the 
 creates `IParameterEditSession` through `IDomainFactory`, which supplies the remaining
 constructor dependencies from DI.
 
-Pending edits are validated immediately. Grouped apply operations deduplicate parameter
-names, write each value through `IVehicleParameterService`, and require matching registry
-readback before reporting success. A partial failure does not erase other pending values,
-so failed writes remain visible and retryable. Refresh and revert are likewise session
-operations rather than view-side transport calls.
+Pending edits are validated immediately. Apply first creates an immutable write plan with
+the exact live and pending values, units, difference, read-only/validation state, and reboot
+flag. The UI displays that snapshot and requires explicit `Write N parameters`
+confirmation. The session rechecks vehicle/firmware scope and every planned value after
+confirmation, so a stale preview cannot send anything.
+
+Confirmed plans are written sequentially through `IVehicleParameterService`. Progress
+reports validation, write, readback confirmation, completion, and skipped phases for each
+name. A value succeeds only after equivalent registry readback. Reports retain every
+outcome (`Confirmed`, `Unchanged`, `ValidationFailed`, `WriteFailed`, `ReadbackFailed`, or
+`Skipped`). Failed writes remain pending; retry selects only write/readback failures that
+are still valid and modified and never rewrites confirmed values. Reboot-required state is
+aggregated across a partial apply and later retry.
 
 The factory invalidates the session when the vehicle disconnects, the active vehicle
 changes, or the firmware identity changes. Invalid sessions retain pending edits for user
@@ -181,16 +189,55 @@ silently guesses a parameter name.
 `FullParametersListTabViewModel` uses this session after its existing bulk download. The
 bulk service continues to prefer packed MAVFTP parameters and automatically falls back to
 the classic parameter stream. File imports populate pending values, while Apply performs
-confirmed session writes. Session change notifications update existing table rows in
-place; they do not rebuild the filtered collection or recreate enum and bitmask choices
-while an editor is handling input. The table pages its searched projection and renders only
-the selected page; changing the search or page size returns to the first page. Multi-option
-changes are committed as one pending value.
+confirmed session writes. Session change notifications update existing table rows in place
+and preserve row identity; they do not recreate enum and bitmask choices while an editor is
+handling input. The ViewModel exposes one stable all-row collection.
+`VirtualizedDataGrid` owns UI filtering, paging, counts, and visible-row realization,
+avoiding a second filtered collection and clear/add churn. Disposal only detaches/cancels
+ownership; it never clears a bound collection. Multi-option changes are committed as one
+pending value.
 The session projection retains the source unit text, user level, range, value, bitmask, and
 increment metadata used by the raw editor. When numeric metadata provides both range bounds
 but no increment, the increment/decrement controls use the rounded range divided by ten.
 Numeric stepping uses decimal arithmetic to avoid accumulated binary floating-point drift;
 an overshooting step lands on the advertised minimum or maximum instead of being ignored.
+
+### Comparison and profiles
+
+`IParameterValueEquivalence` is the single numeric policy used by modified detection,
+comparison, imports, and matching readback. Metadata increment supplies precision when
+present; otherwise comparisons use absolute `1e-6` and relative `1e-5` tolerances. NaN and
+infinity are handled explicitly and are never accepted as staged parameter values.
+
+`IParameterComparisonService` compares live, pending, original, file, or profile sources
+using the union of names, so source-only entries are retained. Rows distinguish equal,
+different, left/right-only, invalid, read-only, and missing-metadata values. Only finite,
+writable differences already present in the target session are stageable. Staging calls
+`TrySetPending`; it never sends `PARAM_SET`. JSON and CSV exports retain source identity,
+firmware identity, timestamp, status, values, metadata, and messages.
+
+Named profiles are schema-versioned JSON documents containing source identity, timestamps,
+firmware family/version and frame scope, tags, and values. `IParameterProfileRepository`
+keeps persistence replaceable; its local implementation writes a temporary document and
+atomically replaces the target. Loading a profile must go through comparison and staging,
+then the normal preview/confirmation/write path.
+
+### Troubleshooting writes and imports
+
+- **Write rejected:** the value remains modified with `WriteFailed`; correct the value or
+  connection issue and retry failed entries.
+- **Readback timeout:** the write was sent but not proven. Refresh that field before retry
+  if the vehicle state is ambiguous.
+- **Stale session/preview:** reconnect or refresh after a vehicle, connection, firmware, or
+  pending-value change, then create a new preview.
+- **Firmware mismatch:** inspect comparison warnings and stage only entries known to be
+  compatible with the connected firmware.
+- **Missing metadata:** the value remains visible, but automatic safety/staging is disabled
+  until metadata is available.
+- **Absent parameter:** file/profile-only entries remain in comparison as unsupported and
+  are not staged.
+- **Disconnect/cancellation:** no new write starts after cancellation; already confirmed
+  results remain recorded and all remaining targets are skipped.
 
 `GeoFenceTabViewModel` opens the same session with an explicit fence field catalog. It
 resolves only parameters present for the connected firmware and commits parameter changes
@@ -269,4 +316,5 @@ the registry. Calibration completion is not inferred from a parameter write or U
 - Parameter loading into the Full Parameters List UI is slow (see FEATURES.md) — the
   merge of ~1000 values with metadata needs profiling.
 - Delete the unused `VehicleParameterStreamService` V1–V3 classes.
-- Parameter file compare (diff two `.param` files) is not yet implemented.
+- The comparison engine and exports are implemented; the MAUI workflow currently exposes
+  live-versus-pending review while richer file/profile source selection is being expanded.

@@ -4,7 +4,8 @@ using Microsoft.Extensions.Logging;
 namespace UraniumUI.Material.Extensions.Samples.AppViewModels;
 
 /// <summary>
-/// Synchronizes the Shell theme selector
+/// Synchronizes the Shell theme selector.
+/// </summary>
 public sealed partial class ThemeChangeViewModel : ObservableObject, IDisposable
 {
     private readonly ILogger<ThemeChangeViewModel> logger;

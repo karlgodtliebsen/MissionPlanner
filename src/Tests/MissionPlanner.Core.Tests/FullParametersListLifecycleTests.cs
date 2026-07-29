@@ -3,7 +3,10 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
+using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.ConfigTuning;
+using MissionPlanner.Core.ConfigTuning.Comparison;
+using MissionPlanner.Core.ConfigTuning.Profiles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -37,14 +40,9 @@ public sealed class FullParametersListLifecycleTests
     {
         using var fixture = CreateFixture(false);
 
-        fixture.ViewModel.StatusMessage.Should().BeNull();
-        //fixture.ViewModel.InitializeView();
-
         fixture.ViewModel.HasConnection.Should().BeFalse();
         fixture.ViewModel.ShowVehicleDisconnected.Should().BeTrue();
         fixture.ViewModel.StatusMessage.Should().Be("Connect a vehicle, then refresh parameters.");
-
-        fixture.ViewModel.StatusMessage.Should().BeNull();
     }
 
     /// <summary>Verifies deactivation cancels a load without disposing its source before the load exits.</summary>
@@ -102,11 +100,12 @@ public sealed class FullParametersListLifecycleTests
         progressCancellation!.Token.IsCancellationRequested.Should().BeFalse();
         fixture.ViewModel.IsShowingProgressDialog.Should().BeTrue();
 
+        fixture.ViewModel.CancelLoadCommand.Execute(null);
         await cancellationObserved.Task.WaitAsync(TestContext.Current.CancellationToken);
 
         var readCancelledToken = () => progressCancellation.Token.IsCancellationRequested;
         //readCancelledToken.Should().NotThrow().Which.Should().BeTrue();
-        fixture.ViewModel.StatusMessage.Should().BeNull();
+        fixture.ViewModel.ErrorMessage.Should().Be("Parameter loading was cancelled.");
         fixture.ViewModel.IsBusy.Should().BeFalse();
         fixture.ViewModel.IsShowingProgressDialog.Should().BeFalse();
 
@@ -188,6 +187,10 @@ public sealed class FullParametersListLifecycleTests
             extendedDialogService,
             Substitute.For<IDomainFactory>(),
             new ParametersFileHandler(Substitute.For<IFileSaver>()),
+            Substitute.For<IUserConfirmationService>(),
+            Substitute.For<IParameterComparisonService>(),
+            Substitute.For<IParameterProfileRepository>(),
+            Substitute.For<IParameterProfileService>(),
             NullLogger<FullParametersListTabViewModel>.Instance);
         return new Fixture(viewModel, connectionLifetime);
     }

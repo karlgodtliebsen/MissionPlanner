@@ -177,13 +177,13 @@ public sealed class VehicleParameterStreamService : IVehicleParameterStreamServi
     {
         var overallStopwatch = Stopwatch.StartNew();
 
-        //progress?.Report(new ParameterStreamProgress(Message: "Reading parameters using MAVFTP..."));
+        progress?.Report(new ParameterStreamProgress(Message: "Reading parameters using MAVFTP..."));
 
-        //var ftpResult = await TryDownloadPackedParametersAsync(vehicleId, progress, overallStopwatch, cancellationToken).ConfigureAwait(false);
-        //if (ftpResult is not null)
-        //{
-        //    return ftpResult;
-        //}
+        var ftpResult = await TryDownloadPackedParametersAsync(vehicleId, progress, overallStopwatch, cancellationToken).ConfigureAwait(false);
+        if (ftpResult is not null)
+        {
+            return ftpResult;
+        }
 
         progress?.Report(new ParameterStreamProgress(Message: "Reading parameters using MAVLink stream..."));
 
@@ -221,7 +221,8 @@ public sealed class VehicleParameterStreamService : IVehicleParameterStreamServi
 
         logger.LogError("Failed after {Retries} retries. Stored: {Stored}, Expected: {Total}", maxRetries + 1, finalParams.Count, finalCount);
 
-        progress?.Report(new ParameterStreamProgress(finalParams.Count, finalCount, finalParams.Count * 100 / finalCount, true, "Parameter loading failed."));
+        var finalPercent = finalCount > 0 ? finalParams.Count * 100 / finalCount : 0;
+        progress?.Report(new ParameterStreamProgress(finalParams.Count, finalCount, finalPercent, true, "Parameter loading failed."));
 
         return ParameterStreamResult.CreateFailure($"Failed after {maxRetries + 1} attempts. Stored {finalParams.Count}/{finalCount} parameters.", overallStopwatch.Elapsed);
     }

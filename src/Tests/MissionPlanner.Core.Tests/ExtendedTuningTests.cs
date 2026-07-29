@@ -114,7 +114,7 @@ public sealed class ExtendedTuningTests
 
         var applied = fixture.Service.ApplyCopyAxisPreview(workspace, preview);
 
-        applied.Success.Should().BeTrue();
+        applied.Success.Should().BeTrue(string.Join("; ", applied.Errors));
         workspace.Session.GetField("ATC_RAT_PIT_P")!.PendingValue.Should().Be(1);
         workspace.Session.GetField("ATC_RAT_PIT_I")!.PendingValue.Should().BeApproximately(0.2, 0.0001);
         workspace.Session.GetField("ATC_RAT_PIT_IMAX")!.PendingValue.Should().BeApproximately(0.5, 0.0001);

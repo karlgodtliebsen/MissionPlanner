@@ -59,6 +59,9 @@ public interface IParameterEditSession : IDisposable
     /// <returns><see langword="true"/> when the value is valid.</returns>
     bool TrySetPending(string name, double value, out string? error);
 
+    /// <summary>Creates an immutable preview of the current valid modifications.</summary>
+    ParameterWritePlan CreateWritePlan(IReadOnlyList<string>? names = null);
+
     /// <summary>Reverts one field's pending value to its live value.</summary>
     /// <param name="name">The parameter name.</param>
     void Revert(string name);
@@ -71,6 +74,20 @@ public interface IParameterEditSession : IDisposable
     /// <param name="cancellationToken">A connection-scoped cancellation token.</param>
     /// <returns>The aggregate apply report.</returns>
     Task<ParameterApplyReport> ApplyAsync(IReadOnlyList<string>? names = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Revalidates and applies an explicitly confirmed write-plan snapshot.
+    /// </summary>
+    Task<ParameterApplyReport> ApplyAsync(
+        ParameterWritePlan plan,
+        IProgress<ParameterApplyProgress>? progress = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Retries only retryable failures from an earlier report.</summary>
+    Task<ParameterApplyReport> RetryFailedAsync(
+        ParameterApplyReport previousReport,
+        IProgress<ParameterApplyProgress>? progress = null,
+        CancellationToken cancellationToken = default);
 
     /// <summary>Requests refreshed live values for the given names, or all loaded fields.</summary>
     /// <param name="names">The names to refresh, or null for all loaded fields.</param>

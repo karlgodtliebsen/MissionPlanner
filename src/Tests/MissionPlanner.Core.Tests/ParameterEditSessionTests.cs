@@ -70,6 +70,88 @@ public sealed class ParameterEditSessionTests
         fixture.Factory.HasUnappliedChanges.Should().BeTrue();
     }
 
+    /// <summary>A write plan snapshots only modified values and aggregates reboot requirements.</summary>
+    [Fact]
+    public async Task WritePlanCapturesStableModifiedSnapshot()
+    {
+        using var fixture = CreateFixture(
+        [
+            (Parameter("FIRST", 1), Metadata("FIRST", rebootRequired: true)),
+            (Parameter("SECOND", 2), Metadata("SECOND"))
+        ]);
+        var session = fixture.Factory.Create(fixture.VehicleId);
+        await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
+        session.TrySetPending("FIRST", 3, out _).Should().BeTrue();
+
+        var plan = session.CreateWritePlan();
+
+        plan.Entries.Should().ContainSingle().Which.Should().Match<ParameterWritePlanEntry>(
+            entry => entry.Name == "FIRST" && entry.LiveValue == 1 && entry.PendingValue == 3 && entry.RebootRequired);
+    }
+
+    /// <summary>A preview cannot execute after its pending values change.</summary>
+    [Fact]
+    public async Task StaleWritePlanSendsNoValues()
+    {
+        using var fixture = CreateFixture([(Parameter("GAIN", 1), Metadata("GAIN"))]);
+        var session = fixture.Factory.Create(fixture.VehicleId);
+        await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
+        session.TrySetPending("GAIN", 2, out _).Should().BeTrue();
+        var plan = session.CreateWritePlan();
+        session.TrySetPending("GAIN", 3, out _).Should().BeTrue();
+
+        var act = () => session.ApplyAsync(plan, cancellationToken: TestContext.Current.CancellationToken);
+
+        await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*stale*");
+        fixture.ParameterService.Writes.Should().BeEmpty();
+    }
+
+    /// <summary>Pre-cancellation returns a coherent skipped report and sends nothing.</summary>
+    [Fact]
+    public async Task CancelledWritePlanSendsNoValues()
+    {
+        using var fixture = CreateFixture([(Parameter("GAIN", 1), Metadata("GAIN"))]);
+        var session = fixture.Factory.Create(fixture.VehicleId);
+        await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
+        session.TrySetPending("GAIN", 2, out _).Should().BeTrue();
+        var plan = session.CreateWritePlan();
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
+
+        var report = await session.ApplyAsync(plan, cancellationToken: cancellation.Token);
+
+        report.Success.Should().BeFalse();
+        report.Results.Should().ContainSingle().Which.Outcome.Should().Be(ParameterWriteOutcome.Skipped);
+        fixture.ParameterService.Writes.Should().BeEmpty();
+    }
+
+    /// <summary>Progress follows target order and retry excludes already confirmed values.</summary>
+    [Fact]
+    public async Task RetryWritesOnlyRetryableFailures()
+    {
+        using var fixture = CreateFixture(
+        [
+            (Parameter("FIRST", 1), Metadata("FIRST", rebootRequired: true)),
+            (Parameter("SECOND", 2), Metadata("SECOND"))
+        ]);
+        fixture.ParameterService.FailingWrites.Add("SECOND");
+        var session = fixture.Factory.Create(fixture.VehicleId);
+        await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
+        session.TrySetPending("FIRST", 10, out _).Should().BeTrue();
+        session.TrySetPending("SECOND", 20, out _).Should().BeTrue();
+        var progress = new RecordingProgress();
+
+        var initial = await session.ApplyAsync(session.CreateWritePlan(), progress, TestContext.Current.CancellationToken);
+        fixture.ParameterService.FailingWrites.Clear();
+        var retry = await session.RetryFailedAsync(initial, cancellationToken: TestContext.Current.CancellationToken);
+
+        progress.Values.Where(value => value.Phase == ParameterApplyPhase.Writing)
+            .Select(value => value.Name).Should().Equal("FIRST", "SECOND");
+        fixture.ParameterService.Writes.Should().Equal("FIRST", "SECOND", "SECOND");
+        retry.Success.Should().BeTrue();
+        retry.RebootRequired.Should().BeTrue();
+    }
+
     /// <summary>Verifies an unconfirmed write remains visible and retryable.</summary>
     [Fact]
     public async Task ApplyRetainsPendingValueWhenReadbackTimesOut()
@@ -573,5 +655,12 @@ public sealed class ParameterEditSessionTests
 
             Changed?.Invoke(this, new ActiveVehicleChangedEventArgs(previous, Current));
         }
+    }
+
+    private sealed class RecordingProgress : IProgress<ParameterApplyProgress>
+    {
+        public List<ParameterApplyProgress> Values { get; } = [];
+
+        public void Report(ParameterApplyProgress value) => Values.Add(value);
     }
 }

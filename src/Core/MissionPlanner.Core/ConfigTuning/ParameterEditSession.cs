@@ -160,12 +160,61 @@ public sealed class ParameterEditSession : IParameterEditSession
             }
 
             error = Validate(field, value);
-            updated = field with { PendingValue = value, ValidationError = error, WriteStatus = MathUtils.AreNearlyEqual(value, field.LiveValue) ? ParameterEditWriteStatus.Unchanged : ParameterEditWriteStatus.Pending, WriteMessage = null };
+            updated = field with { PendingValue = value, ValidationError = error, WriteStatus = Equivalent(value, field.LiveValue, field.Metadata) ? ParameterEditWriteStatus.Unchanged : ParameterEditWriteStatus.Pending, WriteMessage = null };
             fields[name] = updated;
         }
 
         Changed?.Invoke(this, EventArgs.Empty);
         return error is null;
+    }
+
+    /// <inheritdoc />
+    public ParameterWritePlan CreateWritePlan(IReadOnlyList<string>? names = null)
+    {
+        EnsureValid();
+
+        var requestedNames = names?.Distinct(StringComparer.Ordinal).ToHashSet(StringComparer.Ordinal);
+        ParameterEditField[] snapshot;
+        lock (sync)
+        {
+            snapshot = fieldOrder
+                .Where(name => requestedNames is null || requestedNames.Contains(name))
+                .Select(name => fields[name])
+                .Where(field => field.IsModified)
+                .ToArray();
+        }
+
+        if (snapshot.Length == 0)
+        {
+            throw new InvalidOperationException("There are no modified parameters to write.");
+        }
+
+        var blocked = snapshot.FirstOrDefault(field =>
+            field.Metadata.ReadOnly || field.ValidationError is not null || Validate(field, field.PendingValue) is not null);
+        if (blocked is not null)
+        {
+            var reason = blocked.Metadata.ReadOnly
+                ? "The parameter is read-only."
+                : blocked.ValidationError ?? Validate(blocked, blocked.PendingValue);
+            throw new InvalidOperationException($"Parameter {blocked.Name} cannot be written: {reason}");
+        }
+
+        var entries = snapshot.Select(field => new ParameterWritePlanEntry(
+            field.Name,
+            field.Metadata.DisplayName ?? field.Name,
+            field.LiveValue,
+            field.PendingValue,
+            field.Metadata.Units,
+            field.PendingValue - field.LiveValue,
+            field.Metadata.RebootRequired,
+            field.Metadata.ReadOnly,
+            field.ValidationError)).ToArray();
+
+        logger.LogInformation(
+            "Created parameter write plan with {Count} entries for {VehicleId}.",
+            entries.Length,
+            VehicleId);
+        return new ParameterWritePlan(Scope, DateTimeOffset.UtcNow, entries);
     }
 
     /// <inheritdoc />
@@ -205,10 +254,65 @@ public sealed class ParameterEditSession : IParameterEditSession
     /// <inheritdoc />
     public async Task<ParameterApplyReport> ApplyAsync(IReadOnlyList<string>? names = null, CancellationToken cancellationToken = default)
     {
-        await applyGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        return await ApplyCoreAsync(names, null, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<ParameterApplyReport> ApplyAsync(
+        ParameterWritePlan plan,
+        IProgress<ParameterApplyProgress>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(plan);
+        EnsurePlanCurrent(plan);
+        logger.LogInformation(
+            "Confirmed parameter write plan with {Count} entries for {VehicleId}.",
+            plan.Entries.Count,
+            VehicleId);
+        return await ApplyCoreAsync(plan.Names, progress, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <inheritdoc />
+    public async Task<ParameterApplyReport> RetryFailedAsync(
+        ParameterApplyReport previousReport,
+        IProgress<ParameterApplyProgress>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(previousReport);
+        var retryable = previousReport.Retryable
+            .Where(name => GetField(name) is { IsModified: true, IsValid: true })
+            .ToArray();
+        if (retryable.Length == 0)
+        {
+            return new ParameterApplyReport(true, [], previousReport.RebootRequired);
+        }
+
+        var retry = await ApplyCoreAsync(retryable, progress, cancellationToken).ConfigureAwait(false);
+        return retry with { RebootRequired = previousReport.RebootRequired || retry.RebootRequired };
+    }
+
+    private async Task<ParameterApplyReport> ApplyCoreAsync(
+        IReadOnlyList<string>? names,
+        IProgress<ParameterApplyProgress>? progress,
+        CancellationToken cancellationToken)
+    {
+        var targets = GetApplyTargets(names);
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return CancelledReport(targets);
+        }
+
         try
         {
-            var targets = GetApplyTargets(names);
+            await applyGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            return CancelledReport(targets);
+        }
+
+        try
+        {
             logger.LogInformation("Applying {Count} parameter edits to {VehicleId}.", targets.Count, VehicleId);
             var results = new List<ParameterWriteResult>(targets.Count);
             var rebootRequired = false;
@@ -217,23 +321,29 @@ public sealed class ParameterEditSession : IParameterEditSession
             for (var index = 0; index < targets.Count; index++)
             {
                 var name = targets[index];
+                ReportProgress(progress, index, targets.Count, name, ParameterApplyPhase.Validating, "Validating pending value.");
                 if (!TryEnsureValid(out var scopeError))
                 {
                     Invalidate(scopeError);
                     AppendSkipped(targets, index, results, scopeError);
+                    ReportProgress(progress, index, targets.Count, name, ParameterApplyPhase.Skipped, scopeError);
                     break;
                 }
 
                 var field = GetField(name);
                 if (field is null)
                 {
-                    results.Add(new ParameterWriteResult(name, ParameterWriteOutcome.Skipped, "The parameter is not loaded in this session."));
+                    const string message = "The parameter is not loaded in this session.";
+                    results.Add(new ParameterWriteResult(name, ParameterWriteOutcome.Skipped, message));
+                    ReportProgress(progress, index, targets.Count, name, ParameterApplyPhase.Skipped, message);
                     continue;
                 }
 
                 if (!field.IsModified)
                 {
-                    results.Add(new ParameterWriteResult(name, ParameterWriteOutcome.Unchanged, "The live value already matches the pending value."));
+                    const string message = "The live value already matches the pending value.";
+                    results.Add(new ParameterWriteResult(name, ParameterWriteOutcome.Unchanged, message));
+                    ReportProgress(progress, index, targets.Count, name, ParameterApplyPhase.Completed, message);
                     continue;
                 }
 
@@ -242,32 +352,39 @@ public sealed class ParameterEditSession : IParameterEditSession
                 {
                     SetWriteState(name, ParameterEditWriteStatus.Failed, validationError, validationError);
                     results.Add(new ParameterWriteResult(name, ParameterWriteOutcome.ValidationFailed, validationError));
+                    ReportProgress(progress, index, targets.Count, name, ParameterApplyPhase.Completed, validationError);
                     continue;
                 }
 
                 SetWriteState(name, ParameterEditWriteStatus.Applying, "Waiting for vehicle readback.", null);
                 try
                 {
+                    ReportProgress(progress, index, targets.Count, name, ParameterApplyPhase.Writing, "Sending parameter write.");
                     var write = await WriteAndConfirmAsync(field, connectionCancellation.Token).ConfigureAwait(false);
                     if (!write.Sent)
                     {
                         const string message = "The vehicle rejected or could not send the parameter write.";
                         SetWriteState(name, ParameterEditWriteStatus.Failed, message, null);
                         results.Add(new ParameterWriteResult(name, ParameterWriteOutcome.WriteFailed, message));
+                        ReportProgress(progress, index, targets.Count, name, ParameterApplyPhase.Completed, message);
                         continue;
                     }
 
+                    ReportProgress(progress, index, targets.Count, name, ParameterApplyPhase.Confirming, "Waiting for matching vehicle readback.");
                     if (write.Readback is null)
                     {
                         const string message = "The write was sent but matching live readback was not received before the timeout.";
                         SetWriteState(name, ParameterEditWriteStatus.Failed, message, null);
                         results.Add(new ParameterWriteResult(name, ParameterWriteOutcome.ReadbackFailed, message));
+                        ReportProgress(progress, index, targets.Count, name, ParameterApplyPhase.Completed, message);
                         continue;
                     }
 
                     ConfirmWrite(name, write.Readback);
                     rebootRequired |= field.Metadata.RebootRequired;
-                    results.Add(new ParameterWriteResult(name, ParameterWriteOutcome.Confirmed, "Confirmed by live vehicle readback."));
+                    const string confirmedMessage = "Confirmed by live vehicle readback.";
+                    results.Add(new ParameterWriteResult(name, ParameterWriteOutcome.Confirmed, confirmedMessage));
+                    ReportProgress(progress, index, targets.Count, name, ParameterApplyPhase.Completed, confirmedMessage);
                 }
                 catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
                 {
@@ -276,6 +393,15 @@ public sealed class ParameterEditSession : IParameterEditSession
                     SetWriteState(name, ParameterEditWriteStatus.Failed, message, null);
                     results.Add(new ParameterWriteResult(name, ParameterWriteOutcome.ReadbackFailed, message));
                     AppendSkipped(targets, index + 1, results, message);
+                    ReportProgress(progress, index, targets.Count, name, ParameterApplyPhase.Completed, message);
+                    break;
+                }
+                catch (OperationCanceledException)
+                {
+                    const string message = "Parameter apply was cancelled.";
+                    results.Add(new ParameterWriteResult(name, ParameterWriteOutcome.Skipped, message));
+                    AppendSkipped(targets, index + 1, results, message);
+                    ReportProgress(progress, index, targets.Count, name, ParameterApplyPhase.Skipped, message);
                     break;
                 }
             }
@@ -293,6 +419,52 @@ public sealed class ParameterEditSession : IParameterEditSession
         {
             applyGate.Release();
         }
+    }
+
+    private static ParameterApplyReport CancelledReport(IReadOnlyList<string> targets)
+    {
+        const string message = "Parameter apply was cancelled.";
+        return new ParameterApplyReport(
+            false,
+            targets.Select(name => new ParameterWriteResult(name, ParameterWriteOutcome.Skipped, message)).ToArray(),
+            false);
+    }
+
+    private void EnsurePlanCurrent(ParameterWritePlan plan)
+    {
+        EnsureValid();
+        if (plan.Scope != Scope)
+        {
+            throw new InvalidOperationException("The parameter write preview targets a different vehicle or firmware.");
+        }
+
+        foreach (var entry in plan.Entries)
+        {
+            var field = GetField(entry.Name)
+                ?? throw new InvalidOperationException($"Parameter {entry.Name} is no longer loaded.");
+            if (!Equivalent(field.LiveValue, entry.LiveValue, field.Metadata) ||
+                !Equivalent(field.PendingValue, entry.PendingValue, field.Metadata) ||
+                !field.IsModified ||
+                Validate(field, field.PendingValue) is not null)
+            {
+                throw new InvalidOperationException(
+                    $"The parameter write preview is stale because {entry.Name} changed after it was created.");
+            }
+        }
+    }
+
+    private static bool Equivalent(double left, double right, ParameterFieldMetadata? metadata) =>
+        ParameterValueEquivalence.Default.AreEquivalent(left, right, metadata);
+
+    private static void ReportProgress(
+        IProgress<ParameterApplyProgress>? progress,
+        int zeroBasedIndex,
+        int total,
+        string name,
+        ParameterApplyPhase phase,
+        string message)
+    {
+        progress?.Report(new ParameterApplyProgress(zeroBasedIndex + 1, total, name, phase, message));
     }
 
     /// <inheritdoc />
@@ -396,7 +568,7 @@ public sealed class ParameterEditSession : IParameterEditSession
                         PendingValue = pending,
                         Metadata = projectedMetadata,
                         ValidationError = validation,
-                        WriteStatus = MathUtils.AreNearlyEqual(pending, parameter.Value) ? ParameterEditWriteStatus.Unchanged : ParameterEditWriteStatus.Pending,
+                        WriteStatus = Equivalent(pending, parameter.Value, projectedMetadata) ? ParameterEditWriteStatus.Unchanged : ParameterEditWriteStatus.Pending,
                         WriteMessage = null
                     };
                 }
@@ -440,7 +612,7 @@ public sealed class ParameterEditSession : IParameterEditSession
         void OnChanged(object? sender, VehicleParameterChangedEventArgs args)
         {
             if (args.VehicleId == VehicleId && args.Parameter is { } parameter &&
-                parameter.Name == field.Name && MathUtils.AreNearlyEqual(parameter.Value, expected))
+                parameter.Name == field.Name && Equivalent(parameter.Value, expected, field.Metadata))
             {
                 readback.TrySetResult(parameter);
             }
@@ -454,7 +626,7 @@ public sealed class ParameterEditSession : IParameterEditSession
                 return (false, null);
             }
 
-            if (parameterRegistry.GetParameter(VehicleId, field.Name) is { } current && MathUtils.AreNearlyEqual(current.Value, expected))
+            if (parameterRegistry.GetParameter(VehicleId, field.Name) is { } current && Equivalent(current.Value, expected, field.Metadata))
             {
                 return (true, current);
             }
@@ -530,7 +702,7 @@ public sealed class ParameterEditSession : IParameterEditSession
 
             var preservePending = field.IsModified;
             var pending = preservePending ? field.PendingValue : parameter.Value;
-            var remainsModified = !MathUtils.AreNearlyEqual(pending, parameter.Value);
+            var remainsModified = !Equivalent(pending, parameter.Value, field.Metadata);
             fields[parameter.Name] = field with
             {
                 Type = parameter.Type,
@@ -667,7 +839,7 @@ public sealed class ParameterEditSession : IParameterEditSession
         {
             var origin = field.Metadata.Minimum ?? 0;
             var steps = (value - origin) / increment;
-            if (!MathUtils.AreNearlyEqual(steps, Math.Round(steps)))
+            if (!Equivalent(steps, Math.Round(steps), null))
             {
                 return $"Value must use increments of {increment}.";
             }

@@ -3,8 +3,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.ConfigTuning;
+using MissionPlanner.Core.ConfigTuning.Comparison;
 using MissionPlanner.Core.ConfigTuning.Fences;
 using MissionPlanner.Core.ConfigTuning.Osd;
+using MissionPlanner.Core.ConfigTuning.Profiles;
 using MissionPlanner.Core.ConfigTuning.Tuning;
 using MissionPlanner.Core.ConfigTuning.VendorDevices;
 using MissionPlanner.Core.ConfigTuning.VendorDevices.CubeLan;
@@ -184,6 +186,11 @@ public static class DomainConfigurator
 
 
         services.Configure<ParameterEditSessionOptions>(configuration.GetSection(ParameterEditSessionOptions.SectionName));
+        services.Configure<ParameterProfileRepositoryOptions>(configuration.GetSection(ParameterProfileRepositoryOptions.SectionName));
+        services.TryAddSingleton<IParameterValueEquivalence, ParameterValueEquivalence>();
+        services.TryAddSingleton<IParameterComparisonService, ParameterComparisonService>();
+        services.TryAddSingleton<IParameterProfileRepository, JsonParameterProfileRepository>();
+        services.TryAddSingleton<IParameterProfileService, ParameterProfileService>();
         services.TryAddSingleton<IParameterEditSessionFactory, ParameterEditSessionFactory>();
 
         return services;

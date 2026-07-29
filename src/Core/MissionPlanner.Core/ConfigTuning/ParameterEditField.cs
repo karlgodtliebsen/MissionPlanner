@@ -29,9 +29,7 @@ public sealed record ParameterEditField(
     {
         get
         {
-            const double tolerance = 0.0001;
-            var scale = Math.Max(1, Math.Max(Math.Abs(PendingValue), Math.Abs(LiveValue)));
-            return !MathUtils.AreEquivalent(PendingValue, LiveValue, tolerance * scale);
+            return !ParameterValueEquivalence.Default.AreEquivalent(PendingValue, LiveValue, Metadata);
         }
     }
 
