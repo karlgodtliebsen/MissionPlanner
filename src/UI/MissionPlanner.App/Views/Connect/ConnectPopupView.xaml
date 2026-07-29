@@ -51,7 +51,6 @@
                     FontSize="20"
                     Padding="5"
                     VerticalOptions="Center"
-                    BackgroundColor="Transparent"
                     Command="{Binding RefreshCommand}" />
 
                 <Button Grid.Column="1"
@@ -59,7 +58,6 @@
                     FontSize="20"
                     Padding="5"
                     VerticalOptions="Center"
-                    BackgroundColor="Transparent"
                     Command="{Binding ConnectCommand}" />
 
             </Grid>
@@ -78,7 +76,6 @@
                     FontSize="20"
                     Padding="5"
                     VerticalOptions="Center"
-                    BackgroundColor="Transparent"
                     Command="{Binding ConnectCommand}" />
 
             </HorizontalStackLayout>

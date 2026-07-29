@@ -17,8 +17,6 @@
         </VerticalStackLayout>
 
         <Button Grid.Row="1"
-                BackgroundColor="Transparent"
-                FontSize="14"
                 Text="Re-evaluate vehicle"
                 Command="{Binding RefreshCommand}"
                 HorizontalOptions="Start" />
@@ -76,14 +74,12 @@
                                            IsVisible="{Binding BindingContext.IsSummarySelected, Source={x:Reference RootPage}}" />
 
                 <HorizontalStackLayout Spacing="10">
-                    <Button BackgroundColor="Transparent"
-                            FontSize="14"
+                    <Button
                             Text="Record reviewed"
                             IsEnabled="{Binding SelectedWorkflow.CanOpen}"
                             IsVisible="{Binding CanRecordSelectedWorkflowManually}"
                             Command="{Binding MarkCompleteCommand}" />
-                    <Button BackgroundColor="Transparent"
-                            FontSize="14"
+                    <Button
                             Text="Open related Config page"
                             IsVisible="{Binding HasConfigDestination}"
                             Command="{Binding OpenConfigCommand}" />

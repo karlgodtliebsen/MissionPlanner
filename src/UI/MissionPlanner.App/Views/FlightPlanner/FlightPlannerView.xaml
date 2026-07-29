@@ -18,13 +18,13 @@
         <!-- Toolbar -->
         <FlexLayout Grid.Row="0" Wrap="Wrap" AlignItems="Center" JustifyContent="Start">
 
-            <Button Text="Load File" BackgroundColor="Transparent" Command="{Binding Map.LoadWpFileCommand}" Margin="0,0,4,4" />
-            <Button Text="Save File" BackgroundColor="Transparent" Command="{Binding Map.SaveWpFileCommand}" Margin="0,0,12,4" />
-            <Button Text="Clear Mission" BackgroundColor="Transparent" Command="{Binding Map.ClearMissionCommand}" Margin="0,0,12,4" />
+            <Button Text="Load File" Command="{Binding Map.LoadWpFileCommand}" Margin="0,0,4,4" />
+            <Button Text="Save File"  Command="{Binding Map.SaveWpFileCommand}" Margin="0,0,12,4" />
+            <Button Text="Clear Mission" Command="{Binding Map.ClearMissionCommand}" Margin="0,0,12,4" />
 
-            <Button Text="Read" BackgroundColor="Transparent" Command="{Binding ReadFromVehicleCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
-            <Button Text="Write" BackgroundColor="Transparent" Command="{Binding WriteToVehicleCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
-            <Button Text="Write Fast" BackgroundColor="Transparent" Command="{Binding WriteToVehicleFastCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,12,4" />
+            <Button Text="Read" Command="{Binding ReadFromVehicleCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
+            <Button Text="Write" Command="{Binding WriteToVehicleCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
+            <Button Text="Write Fast" Command="{Binding WriteToVehicleFastCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,12,4" />
 
             <Label Text="Map:" VerticalOptions="Center" Margin="0,0,4,4" />
             <Picker ItemsSource="{Binding Map.AvailableMapTypes}"

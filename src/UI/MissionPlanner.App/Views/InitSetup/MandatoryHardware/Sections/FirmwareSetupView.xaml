@@ -37,8 +37,7 @@
             <Picker Title="Channel"
                     ItemsSource="{Binding Channels}"
                     SelectedItem="{Binding SelectedChannel}" />
-            <Button BackgroundColor="Transparent"
-                    FontSize="14"
+            <Button 
                     Text="Discover compatible releases"
                     Command="{Binding DiscoverCommand}" />
         </HorizontalStackLayout>
@@ -49,12 +48,10 @@
         <Label Text="{Binding SelectedBoardTarget, StringFormat='Technical board target: {0}'}" FontAttributes="Bold" />
         <Label Text="{Binding SelectedReleaseNotes}" LineBreakMode="WordWrap" />
         <HorizontalStackLayout Spacing="10">
-            <Button BackgroundColor="Transparent"
-                    FontSize="14"
+            <Button 
                     Text="Download and verify"
                     Command="{Binding DownloadCommand}" />
-            <Button BackgroundColor="Transparent"
-                    FontSize="14"
+            <Button 
                     Text="Flash verified package"
                     Command="{Binding FlashCommand}" />
         </HorizontalStackLayout>

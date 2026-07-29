@@ -64,13 +64,13 @@
                             <Label Grid.Column="3" Text="{Binding Longitude, StringFormat='{0:F7}'}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
                             <Label Grid.Column="4" Text="{Binding Altitude, StringFormat='{0:F1}'}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
                             <HorizontalStackLayout Grid.Column="5" Spacing="2">
-                                <Button Text="▲" BackgroundColor="Transparent" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
+                                <Button Text="▲" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
                                         Command="{Binding MoveItemUpCommand, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
                                         CommandParameter="{Binding .}" />
-                                <Button Text="▼" BackgroundColor="Transparent" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
+                                <Button Text="▼" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
                                         Command="{Binding MoveItemDownCommand, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
                                         CommandParameter="{Binding .}" />
-                                <Button Text="✕" BackgroundColor="Transparent" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
+                                <Button Text="✕" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
                                         Command="{Binding RemoveItemCommand, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
                                         CommandParameter="{Binding .}" />
                             </HorizontalStackLayout>
@@ -135,13 +135,13 @@
                             <Label Grid.Column="11" Text="{Binding Azimuth, StringFormat='{0:F0}'}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
                             <Label Grid.Column="12" Text="{Binding Gradient, StringFormat='{0:F1}'}" FontSize="11" VerticalOptions="Center" HorizontalOptions="Center" />
                             <HorizontalStackLayout Grid.Column="13" Spacing="2">
-                                <Button Text="▲" BackgroundColor="Transparent" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
+                                <Button Text="▲" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
                                         Command="{Binding MoveItemUpCommand, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
                                         CommandParameter="{Binding .}" />
-                                <Button Text="▼" BackgroundColor="Transparent" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
+                                <Button Text="▼" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
                                         Command="{Binding MoveItemDownCommand, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
                                         CommandParameter="{Binding .}" />
-                                <Button Text="✕" BackgroundColor="Transparent" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
+                                <Button Text="✕" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
                                         Command="{Binding RemoveItemCommand, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
                                         CommandParameter="{Binding .}" />
                             </HorizontalStackLayout>

@@ -25,98 +25,62 @@
             <HorizontalStackLayout Grid.Row="0" HeightRequest="50" HorizontalOptions="Fill" VerticalOptions="Center" Padding="8,0" Spacing="12" >
                 <Button 
                 Text="Load from file"
-                    FontSize="14"
-                    Padding="8,4"
                     VerticalOptions="Center"
-                    BackgroundColor="Transparent"
                     Command="{Binding LoadFromFileCommand}" />
 
                 <Button 
                 Text="Save to file"
-                FontSize="14"
-                Padding="8,4"
                 VerticalOptions="Center"
-                BackgroundColor="Transparent"
                 Command="{Binding SaveToFileCommand}" />
                 <Button 
                     Text="Load from json file"
-                    FontSize="14"
-                    Padding="8,4"
                     VerticalOptions="Center"
-                    BackgroundColor="Transparent"
                     Command="{Binding LoadFromJsonFileCommand}" />
 
                 <Button 
                     Text="Save to json file"
-                    FontSize="14"
-                    Padding="8,4"
                     VerticalOptions="Center"
-                    BackgroundColor="Transparent"
                     Command="{Binding SaveToJsonFileCommand}" />
 
                 <Button 
                 Text="Apply modified"
-                FontSize="14"
-                Padding="8,4"
                 VerticalOptions="Center"
-                BackgroundColor="Transparent"
                 Command="{Binding WriteParametersCommand}" />
 
                 <Button
                     Text="Retry failed"
-                    FontSize="14"
-                    Padding="8,4"
                     VerticalOptions="Center"
-                    BackgroundColor="Transparent"
                     Command="{Binding RetryFailedCommand}" />
 
                 <Button 
                     Text="Refresh parameters"
-                    FontSize="14"
-                    Padding="8,4"
                     VerticalOptions="Center"
-                    BackgroundColor="Transparent"
                     Command="{Binding RefreshParametersCommand}" />
 
                 <Button 
                     Text="Clear parameters"
-                    FontSize="14"
-                    Padding="8,4"
                     VerticalOptions="Center"
-                    BackgroundColor="Transparent"
                     Command="{Binding ClearParametersCommand}" />
 
                 <Button 
                     Text="Compare parameters"
-                    FontSize="14"
-                    Padding="8,4"
                     VerticalOptions="Center"
-                    BackgroundColor="Transparent"
                     Command="{Binding CompareParametersCommand}" />
 
                 <Button 
                 Text="Cancel"
-                FontSize="14"
-                Padding="8,4"
                 VerticalOptions="Center"
-                BackgroundColor="Transparent"
                 Command="{Binding CancelLoadCommand}" />
 
                 <Button 
                 Text="Parameter profiles"
-                FontSize="14"
-                Padding="8,4"
                 VerticalOptions="Center"
-                BackgroundColor="Transparent"
                 Command="{Binding LoadPreSavedCommand}" />
 
 
                 <Button 
-                Text="Revert changes"
-                FontSize="14"
                 Padding="8,4"
                 VerticalOptions="Center"
-                BackgroundColor="Transparent"
                 Command="{Binding RevertChangesCommand}" />
 
 

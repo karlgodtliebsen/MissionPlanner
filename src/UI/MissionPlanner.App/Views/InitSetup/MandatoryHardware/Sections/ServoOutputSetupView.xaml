@@ -26,9 +26,7 @@
                 </DataTemplate>
             </BindableLayout.ItemTemplate>
         </VerticalStackLayout>
-        <Button BackgroundColor="Transparent"
-                FontSize="14"
-                Text="Refresh servo outputs"
+        <Button Text="Refresh servo outputs"
                 Command="{Binding RefreshCommand}"
                 HorizontalOptions="Start" />
     </VerticalStackLayout>

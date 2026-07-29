@@ -29,9 +29,7 @@
                 </DataTemplate>
             </BindableLayout.ItemTemplate>
         </VerticalStackLayout>
-        <Button BackgroundColor="Transparent"
-                FontSize="14"
-                Text="Refresh flight modes"
+        <Button Text="Refresh flight modes"
                 Command="{Binding RefreshCommand}"
                 HorizontalOptions="Start" />
     </VerticalStackLayout>

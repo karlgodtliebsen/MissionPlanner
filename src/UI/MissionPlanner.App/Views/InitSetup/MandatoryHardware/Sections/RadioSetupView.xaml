@@ -38,10 +38,10 @@
             </BindableLayout.ItemTemplate>
         </VerticalStackLayout>
         <HorizontalStackLayout Spacing="10">
-            <Button BackgroundColor="Transparent" FontSize="14" Text="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCommand}" />
-            <Button BackgroundColor="Transparent" FontSize="14" Text="Finish and write" IsEnabled="{Binding CanFinish}" Command="{Binding FinishCommand}" />
-            <Button BackgroundColor="Transparent" FontSize="14" Text="Cancel" IsEnabled="{Binding CanFinish}" Command="{Binding CancelCalibrationCommand}" />
-            <Button BackgroundColor="Transparent" FontSize="14" Text="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" />
+            <Button Text="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCommand}" />
+            <Button Text="Finish and write" IsEnabled="{Binding CanFinish}" Command="{Binding FinishCommand}" />
+            <Button Text="Cancel" IsEnabled="{Binding CanFinish}" Command="{Binding CancelCalibrationCommand}" />
+            <Button Text="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" />
         </HorizontalStackLayout>
     </VerticalStackLayout>
 </sections:SetupSectionView>

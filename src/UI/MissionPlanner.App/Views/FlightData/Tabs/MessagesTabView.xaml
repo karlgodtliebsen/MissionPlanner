@@ -17,12 +17,12 @@
 
         <ScrollView Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
             <HorizontalStackLayout Spacing="6">
-                <Button BackgroundColor="Transparent" FontSize="14" Text="{Binding PauseButtonText}" Command="{Binding TogglePauseCommand}" />
-                <Button BackgroundColor="Transparent" FontSize="14" Text="Clear View" Command="{Binding ClearCurrentViewCommand}" />
-                <Button BackgroundColor="Transparent" FontSize="14" Text="Copy Selected" Command="{Binding CopySelectedCommand}" />
-                <Button BackgroundColor="Transparent" FontSize="14" Text="Copy All" Command="{Binding CopyAllCommand}" />
-                <Button BackgroundColor="Transparent" FontSize="14" Text="Export Text" Command="{Binding ExportTextCommand}" />
-                <Button BackgroundColor="Transparent" Text="Export JSON" Command="{Binding ExportJsonCommand}" />
+                <Button Text="{Binding PauseButtonText}" Command="{Binding TogglePauseCommand}" />
+                <Button Text="Clear View" Command="{Binding ClearCurrentViewCommand}" />
+                <Button Text="Copy Selected" Command="{Binding CopySelectedCommand}" />
+                <Button Text="Copy All" Command="{Binding CopyAllCommand}" />
+                <Button Text="Export Text" Command="{Binding ExportTextCommand}" />
+                <Button Text="Export JSON" Command="{Binding ExportJsonCommand}" />
             </HorizontalStackLayout>
         </ScrollView>
 

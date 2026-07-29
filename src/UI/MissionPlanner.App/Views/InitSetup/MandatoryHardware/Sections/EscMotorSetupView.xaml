@@ -33,9 +33,9 @@
             </Grid>
             <Label Text="{Binding Instruction}" FontAttributes="Bold" LineBreakMode="WordWrap" />
             <HorizontalStackLayout Spacing="10">
-                <Button BackgroundColor="Transparent" FontSize="14" Text="Test motor" Command="{Binding TestMotorCommand}" />
-                <Button BackgroundColor="Transparent" FontSize="14" Text="Test sequence" Command="{Binding TestSequenceCommand}" />
-                <Button BackgroundColor="Transparent" FontSize="14" TextColor="OrangeRed" FontAttributes="Bold" Text="STOP" Command="{Binding StopCommand}" />
+                <Button Text="Test motor" Command="{Binding TestMotorCommand}" />
+                <Button Text="Test sequence" Command="{Binding TestSequenceCommand}" />
+                <Button TextColor="OrangeRed" FontAttributes="Bold" Text="STOP" Command="{Binding StopCommand}" />
             </HorizontalStackLayout>
             <Label Text="Operation log" FontAttributes="Bold" />
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Log}">

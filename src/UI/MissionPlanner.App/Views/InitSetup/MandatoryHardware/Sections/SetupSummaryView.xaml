@@ -43,9 +43,9 @@
             </BindableLayout.ItemTemplate>
         </VerticalStackLayout>
         <HorizontalStackLayout Spacing="10">
-            <Button BackgroundColor="Transparent" FontSize="14" Text="Rebuild summary" Command="{Binding RefreshCommand}" />
-            <Button BackgroundColor="Transparent" FontSize="14" Text="Export JSON" Command="{Binding ExportJsonCommand}" />
-            <Button BackgroundColor="Transparent" FontSize="14" Text="Export Markdown" Command="{Binding ExportMarkdownCommand}" />
+            <Button Text="Rebuild summary" Command="{Binding RefreshCommand}" />
+            <Button Text="Export JSON" Command="{Binding ExportJsonCommand}" />
+            <Button Text="Export Markdown" Command="{Binding ExportMarkdownCommand}" />
         </HorizontalStackLayout>
         <Editor Text="{Binding ExportedText}"
                 IsReadOnly="True"

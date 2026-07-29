@@ -44,8 +44,6 @@
                                                    IsVisible="{Binding IsNumeric}"
                                                    Keyboard="Numeric" />
                                             <Button Grid.Column="2"
-                                                    BackgroundColor="Transparent"
-                                                    FontSize="14"
                                                     Text="Write"
                                                     Command="{Binding ApplyCommand}" />
                                         </Grid>
@@ -57,9 +55,7 @@
                 </DataTemplate>
             </BindableLayout.ItemTemplate>
         </VerticalStackLayout>
-        <Button BackgroundColor="Transparent"
-                FontSize="14"
-                Text="Refresh optional hardware"
+        <Button Text="Refresh optional hardware"
                 Command="{Binding RefreshCommand}"
                 HorizontalOptions="Start" />
     </VerticalStackLayout>

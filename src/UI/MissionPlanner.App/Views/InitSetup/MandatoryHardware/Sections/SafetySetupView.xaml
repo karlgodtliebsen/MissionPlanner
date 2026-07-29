@@ -28,9 +28,7 @@
                 </DataTemplate>
             </BindableLayout.ItemTemplate>
         </VerticalStackLayout>
-        <Button BackgroundColor="Transparent"
-                FontSize="14"
-                Text="Re-assess safety"
+        <Button Text="Re-assess safety"
                 Command="{Binding RefreshCommand}"
                 HorizontalOptions="Start" />
     </VerticalStackLayout>

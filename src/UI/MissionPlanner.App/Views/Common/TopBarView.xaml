@@ -47,7 +47,6 @@
                 FontSize="20"
                 Padding="5"
                 VerticalOptions="Center"
-                BackgroundColor="Transparent"
                 IsEnabled="{Binding CanOpenConnection}"
                 Command="{Binding ConnectCommand}" />
 
@@ -57,6 +56,6 @@
                     FontSize="20"
                     Padding="5"
                     VerticalOptions="Center"
-                    BackgroundColor="Transparent"></Button>
+                    ></Button>
     </Grid>
 </ContentView>

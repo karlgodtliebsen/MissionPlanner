@@ -38,9 +38,7 @@
                                         ItemsSource="{Binding Orientations}"
                                         SelectedItem="{Binding SelectedOrientation}"
                                         ItemDisplayBinding="{Binding Name}" />
-                                <Button BackgroundColor="Transparent"
-                                        FontSize="14"
-                                        Text="Write and verify"
+                                <Button Text="Write and verify"
                                         Command="{Binding ApplyCommand}" />
                             </HorizontalStackLayout>
                         </Grid>
@@ -48,8 +46,7 @@
                 </DataTemplate>
             </BindableLayout.ItemTemplate>
         </VerticalStackLayout>
-        <Button BackgroundColor="Transparent"
-                FontSize="14"
+        <Button 
                 Text="Refresh compass values"
                 Command="{Binding RefreshInventoryCommand}"
                 HorizontalOptions="Start" />
@@ -64,10 +61,10 @@
         <Label Text="{Binding ProgressSummary}" LineBreakMode="WordWrap" />
         <Label Text="{Binding QualitySummary}" FontAttributes="Italic" LineBreakMode="WordWrap" />
         <HorizontalStackLayout Spacing="10">
-            <Button BackgroundColor="Transparent" FontSize="14" Text="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCalibrationCommand}" />
-            <Button BackgroundColor="Transparent" FontSize="14" Text="Accept results" IsEnabled="{Binding CanAccept}" Command="{Binding AcceptCalibrationCommand}" />
-            <Button BackgroundColor="Transparent" FontSize="14" Text="Cancel calibration" IsEnabled="{Binding CanCancel}" Command="{Binding CancelCalibrationCommand}" />
-            <Button BackgroundColor="Transparent" FontSize="14" Text="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" />
+            <Button Text="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCalibrationCommand}" />
+            <Button Text="Accept results" IsEnabled="{Binding CanAccept}" Command="{Binding AcceptCalibrationCommand}" />
+            <Button Text="Cancel calibration" IsEnabled="{Binding CanCancel}" Command="{Binding CancelCalibrationCommand}" />
+            <Button Text="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" />
         </HorizontalStackLayout>
     </VerticalStackLayout>
 </sections:SetupSectionView>

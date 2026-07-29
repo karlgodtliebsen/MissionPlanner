@@ -13,12 +13,10 @@
                FontAttributes="Bold"
                LineBreakMode="WordWrap" />
         <HorizontalStackLayout Spacing="10">
-            <Button BackgroundColor="Transparent"
-                    FontSize="14"
+            <Button
                     Text="Start six-position calibration"
                     Command="{Binding StartSixPositionCommand}" />
-            <Button BackgroundColor="Transparent"
-                    FontSize="14"
+            <Button
                     Text="Calibrate level"
                     Command="{Binding StartLevelCommand}" />
         </HorizontalStackLayout>
@@ -27,8 +25,7 @@
         <Image Source="{Binding OrientationImage}" HeightRequest="260" Aspect="AspectFit" />
         <Label Text="{Binding Orientation, StringFormat='Requested orientation: {0}'}" />
         <Label Text="{Binding CompletedOrientations}" />
-        <Button BackgroundColor="Transparent"
-                FontSize="14"
+        <Button
                 Text="Confirm orientation"
                 IsEnabled="{Binding CanConfirmOrientation}"
                 Command="{Binding ConfirmOrientationCommand}"
@@ -37,13 +34,11 @@
                FontAttributes="Italic"
                LineBreakMode="WordWrap" />
         <HorizontalStackLayout Spacing="10">
-            <Button BackgroundColor="Transparent"
-                    FontSize="14"
+            <Button
                     Text="Cancel calibration"
                     IsEnabled="{Binding CanCancel}"
                     Command="{Binding CancelCalibrationCommand}" />
-            <Button BackgroundColor="Transparent"
-                    FontSize="14"
+            <Button
                     Text="Reset / retry"
                     IsEnabled="{Binding CanStart}"
                     Command="{Binding ResetCommand}" />

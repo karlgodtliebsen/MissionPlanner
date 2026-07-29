@@ -45,8 +45,8 @@
             </BindableLayout.ItemTemplate>
         </VerticalStackLayout>
         <HorizontalStackLayout Spacing="10">
-            <Button BackgroundColor="Transparent" FontSize="14" Text="Refresh vehicle values" Command="{Binding RefreshCommand}" />
-            <Button BackgroundColor="Transparent" FontSize="14" Text="Write and verify" Command="{Binding ApplyCommand}" />
+            <Button Text="Refresh vehicle values" Command="{Binding RefreshCommand}" />
+            <Button Text="Write and verify" Command="{Binding ApplyCommand}" />
         </HorizontalStackLayout>
         <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
         <Label IsVisible="{Binding RebootRequired}"
