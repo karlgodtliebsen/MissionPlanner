@@ -7,13 +7,13 @@
              x:Class="UraniumUI.Material.Extensions.Samples.App">
     <Application.Resources>
         <ResourceDictionary>
+
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary x:Name="AppColors" Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary x:Name="AppStyles" Source="Resources/Styles/Styles.xaml" />
-                <material:StyleResource BasedOn="{x:Reference AppStyles}" />
-                <ResourceDictionary Source="Resources/Styles/Override.xaml" />
-                <virtualizedResources:StyleResource ColorsOverride="{x:Reference AppColors}" />
                 <material:StyleResource ColorsOverride="{x:Reference AppColors}" />
+                <virtualizedResources:StyleResource ColorsOverride="{x:Reference AppStyles}" />
+                <ResourceDictionary Source="Resources/Styles/Override.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <toolkit:MultiConverter x:Key="NullToBoolConverter" />
             <toolkit:BoolToObjectConverter
