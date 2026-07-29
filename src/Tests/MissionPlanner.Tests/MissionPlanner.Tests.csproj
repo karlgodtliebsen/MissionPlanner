@@ -8,14 +8,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Remove="Configuration\**" />
-      <EmbeddedResource Remove="Configuration\**" />
-      <MauiCss Remove="Configuration\**" />
-      <MauiXaml Remove="Configuration\**" />
-      <None Remove="Configuration\**" />
-    </ItemGroup>
-
-    <ItemGroup>
         <PackageReference Include="coverlet.collector" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" />
         <PackageReference Include="Serilog" />

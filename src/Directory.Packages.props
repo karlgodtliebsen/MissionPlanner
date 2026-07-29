@@ -37,8 +37,8 @@
     <PackageVersion Include="Spectre.Console.Cli" Version="0.55.0" />
     <PackageVersion Include="System.IO.Ports" Version="10.0.10" />
     <PackageVersion Include="System.Reactive" Version="7.0.0" />
+
     <!--Other-->
-    <PackageVersion Include="Asv.Mavlink" Version="4.2.0" />
     <PackageVersion Include="Polly" Version="8.7.0" />
     <PackageVersion Include="DynamicData" Version="9.4.31" />
     <PackageVersion Include="Riok.Mapperly" Version="4.3.1" />
