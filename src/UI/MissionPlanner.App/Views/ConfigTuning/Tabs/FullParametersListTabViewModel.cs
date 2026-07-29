@@ -499,7 +499,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         var view = domainFactory.Create<ParameterComparisonView, ParameterComparisonViewModel>(viewModel);
         await dialogService.DisplayViewAsync("Compare", view, "OK");
 
-
         //var result = Comparison.Show(editSession);
         //SetMessages($"Comparing {result.Left.Name} with {result.Right.Name} from {result.Right.Timestamp:g}.", result.Warning);
     }

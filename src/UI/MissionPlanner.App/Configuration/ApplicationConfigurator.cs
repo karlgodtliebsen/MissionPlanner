@@ -115,6 +115,7 @@ public static class ApplicationConfigurator
         domainFactory.Add<ErrorViewModel, ErrorViewModel>();
         domainFactory.Add<ErrorView, ErrorView>();
         domainFactory.Add<ParameterComparisonViewModel, ParameterComparisonViewModel>();
+        domainFactory.Add<ParameterComparisonView, ParameterComparisonView>();
         return services;
     }
 

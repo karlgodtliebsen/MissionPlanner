@@ -11,10 +11,12 @@
     x:DataType="tabs:ParameterComparisonViewModel">
     <Grid
         BackgroundColor="{AppThemeBinding Light=White, Dark=#1B1B1F}"
+        HorizontalOptions="Fill"
+        VerticalOptions="Fill"
         RowDefinitions="Auto,*"
         RowSpacing="10"
         Padding="12">
-        <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto" ColumnSpacing="8">
+        <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*" ColumnSpacing="8">
             <Button Grid.Column="0" Text="Select all safe differences" Command="{Binding SelectAllSafeDifferencesCommand}" />
             <Button Grid.Column="1" Text="Stage selected" Command="{Binding StageSelectedDifferencesCommand}" />
             <Button Grid.Column="2" Text="Export JSON" Command="{Binding ExportJsonCommand}" />
@@ -24,7 +26,6 @@
                 WidthRequest="140"
                 ItemsSource="{Binding Filters}"
                 SelectedItem="{Binding Filter}" />
-            <Button Grid.Column="6" Text="Close" Command="{Binding CloseCommand}" />
         </Grid>
 
         <virtualized:VirtualizedDataGrid
@@ -68,32 +69,44 @@
                 </material:DataGridColumn>
                 <material:DataGridColumn Width="180" Title="Parameter">
                     <material:DataGridColumn.CellItemTemplate>
-                        <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding Name}" VerticalOptions="Center" /></DataTemplate>
+                        <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel">
+                            <Label Text="{Binding Name}" VerticalOptions="Center" />
+                        </DataTemplate>
                     </material:DataGridColumn.CellItemTemplate>
                 </material:DataGridColumn>
                 <material:DataGridColumn Width="180" Title="Live">
                     <material:DataGridColumn.CellItemTemplate>
-                        <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding LeftValueText}" VerticalOptions="Center" /></DataTemplate>
+                        <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel">
+                            <Label Text="{Binding LeftValueText}" VerticalOptions="Center" />
+                        </DataTemplate>
                     </material:DataGridColumn.CellItemTemplate>
                 </material:DataGridColumn>
                 <material:DataGridColumn Width="180" Title="Right">
                     <material:DataGridColumn.CellItemTemplate>
-                        <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding RightValueText}" VerticalOptions="Center" /></DataTemplate>
+                        <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel">
+                            <Label Text="{Binding RightValueText}" VerticalOptions="Center" />
+                        </DataTemplate>
                     </material:DataGridColumn.CellItemTemplate>
                 </material:DataGridColumn>
                 <material:DataGridColumn Width="140" Title="Difference">
                     <material:DataGridColumn.CellItemTemplate>
-                        <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding DifferenceText}" VerticalOptions="Center" /></DataTemplate>
+                        <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel">
+                            <Label Text="{Binding DifferenceText}" VerticalOptions="Center" />
+                        </DataTemplate>
                     </material:DataGridColumn.CellItemTemplate>
                 </material:DataGridColumn>
                 <material:DataGridColumn Width="160" Title="Status">
                     <material:DataGridColumn.CellItemTemplate>
-                        <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding Status}" VerticalOptions="Center" /></DataTemplate>
+                        <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel">
+                            <Label Text="{Binding Status}" VerticalOptions="Center" />
+                        </DataTemplate>
                     </material:DataGridColumn.CellItemTemplate>
                 </material:DataGridColumn>
                 <material:DataGridColumn Width="*" Title="Message">
                     <material:DataGridColumn.CellItemTemplate>
-                        <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding Message}" VerticalOptions="Center" /></DataTemplate>
+                        <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel">
+                            <Label Text="{Binding Message}" VerticalOptions="Center" />
+                        </DataTemplate>
                     </material:DataGridColumn.CellItemTemplate>
                 </material:DataGridColumn>
             </virtualized:VirtualizedDataGrid.Columns>
