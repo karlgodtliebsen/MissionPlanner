@@ -24,6 +24,8 @@ using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
 using MissionPlanner.App.Views.InitSetup.OptionalHardware;
 using MissionPlanner.App.Views.Missions;
 using MissionPlanner.App.Views.Simulation;
+using MissionPlanner.Core.ConfigTuning;
+using MissionPlanner.Core.ConfigTuning.Comparison;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Configuration;
 using MissionPlanner.Core.Firmware;
@@ -90,6 +92,8 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<IFirmwarePackageCache, FirmwarePackageCache>();
         services.TryAddSingleton<ISetupNavigationService, ShellSetupNavigationService>();
         services.TryAddSingleton<INavigationEventHub, NavigationEventHub>();
+        services.TryAddSingleton<IParameterComparisonService, ParameterComparisonService>();
+        services.TryAddSingleton<IParameterValueEquivalence, ParameterValueEquivalence>();
 
         services
             .AddLibraryServices()
@@ -110,6 +114,7 @@ public static class ApplicationConfigurator
         var domainFactory = services.GetRequiredService<IDomainFactory>();
         domainFactory.Add<ErrorViewModel, ErrorViewModel>();
         domainFactory.Add<ErrorView, ErrorView>();
+        domainFactory.Add<ParameterComparisonViewModel, ParameterComparisonViewModel>();
         return services;
     }
 
@@ -164,6 +169,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<ExitViewModel>();
 
         services.TryAddTransient<FullParametersListTabViewModel>();
+        services.TryAddSingleton<ParameterComparisonViewModel>();
         services.TryAddTransient<MavFtpTabViewModel>();
 
         services.TryAddSingleton<MandatoryHardwareViewModel>();

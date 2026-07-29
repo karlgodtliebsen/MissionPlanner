@@ -3,10 +3,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Views.Common;
 using MissionPlanner.App.Presentation;
+using MissionPlanner.App.Views.Common;
 using MissionPlanner.Core.ConfigTuning;
-using MissionPlanner.Core.ConfigTuning.Comparison;
 using MissionPlanner.Core.ConfigTuning.Profiles;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -31,15 +30,12 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     private readonly IDomainFactory domainFactory;
     private readonly ParametersFileHandler parametersFileHandler;
     private readonly IUserConfirmationService confirmation;
-    private readonly IParameterComparisonService comparisons;
     private readonly IParameterProfileRepository profiles;
     private readonly IParameterProfileService profileWorkflow;
     private readonly ILogger<FullParametersListTabViewModel> logger;
     private CancellationTokenSource? loadCancellation;
     private IParameterEditSession? editSession;
     private ParameterApplyReport? lastApplyReport;
-    private ParameterComparisonResult? comparisonResult;
-    private readonly List<ParameterComparisonItemViewModel> allComparisonRows = [];
     private IDisposable? progressDialog;
     private bool disposed;
 
@@ -56,7 +52,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     /// <param name="domainFactory">The domain view factory.</param>
     /// <param name="parametersFileHandler">The parameter import/export adapter.</param>
     /// <param name="confirmation">The hazardous-action confirmation service.</param>
-    /// <param name="comparisons">The parameter comparison engine.</param>
     /// <param name="profiles">The named profile repository.</param>
     /// <param name="profileWorkflow">The profile compatibility and staging workflow.</param>
     /// <param name="logger">The logger.</param>
@@ -70,7 +65,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         IDomainFactory domainFactory,
         ParametersFileHandler parametersFileHandler,
         IUserConfirmationService confirmation,
-        IParameterComparisonService comparisons,
         IParameterProfileRepository profiles,
         IParameterProfileService profileWorkflow,
         ILogger<FullParametersListTabViewModel> logger)
@@ -84,7 +78,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         this.domainFactory = domainFactory;
         this.parametersFileHandler = parametersFileHandler;
         this.confirmation = confirmation;
-        this.comparisons = comparisons;
         this.profiles = profiles;
         this.profileWorkflow = profileWorkflow;
         this.logger = logger;
@@ -93,22 +86,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
     /// <summary>Gets the currently visible parameter rows.</summary>
     public ObservableRangeCollection<ParameterItemViewModel> Parameters { get; } = [];
-
-    /// <summary>Gets the currently filtered comparison rows.</summary>
-    public ObservableRangeCollection<ParameterComparisonItemViewModel> ComparisonRows { get; } = [];
-
-    /// <summary>Gets the available comparison status filters.</summary>
-    public IReadOnlyList<string> ComparisonFilters { get; } = ["Differences", "Missing", "Invalid", "Modified", "All"];
-
-    /// <summary>Gets whether the comparison workspace is visible.</summary>
-    [ObservableProperty]
-    public partial bool ShowComparison { get; set; }
-
-    /// <summary>Gets or sets the comparison status filter.</summary>
-    [ObservableProperty]
-    public partial string ComparisonFilter { get; set; } = "Differences";
-
-    partial void OnComparisonFilterChanged(string value) => FilterComparisonRows();
 
     /// <summary>Gets the current loading-progress message.</summary>
     [ObservableProperty]
@@ -511,83 +488,25 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     }
 
     [RelayCommand(CanExecute = nameof(CanCompareParameters))]
-    private void CompareParameters()
+    private async Task CompareParametersAsync()
     {
         if (editSession is null)
         {
             return;
         }
 
-        var now = DateTimeOffset.UtcNow;
-        var firmware = editSession.Scope.FirmwareIdentity;
-        var live = editSession.Fields.ToDictionary(
-            field => field.Name,
-            field => new ParameterComparisonInput(field.Name, field.LiveValue.ToString("R", System.Globalization.CultureInfo.InvariantCulture)),
-            StringComparer.Ordinal);
-        var pending = editSession.Fields.ToDictionary(
-            field => field.Name,
-            field => new ParameterComparisonInput(field.Name, field.PendingValue.ToString("R", System.Globalization.CultureInfo.InvariantCulture)),
-            StringComparer.Ordinal);
-        var metadata = editSession.Fields.ToDictionary(field => field.Name, field => field.Metadata, StringComparer.Ordinal);
-        var result = comparisons.Compare(
-            new ParameterComparisonSource("Live", editSession.VehicleId.ToString(), now, firmware),
-            live,
-            new ParameterComparisonSource("Pending", editSession.VehicleId.ToString(), now, firmware),
-            pending,
-            metadata);
-        comparisonResult = result;
-        allComparisonRows.Clear();
-        allComparisonRows.AddRange(result.Rows.Select(row => new ParameterComparisonItemViewModel(row)));
-        FilterComparisonRows();
-        ShowComparison = true;
-        SetMessages($"Comparing {result.Left.Name} with {result.Right.Name} from {result.Right.Timestamp:g}.", result.Warning);
+        var viewModel = domainFactory.Create<ParameterComparisonViewModel, IParameterEditSession>(editSession);
+        var view = domainFactory.Create<ParameterComparisonView, ParameterComparisonViewModel>(viewModel);
+        await dialogService.DisplayViewAsync("Compare", view, "OK");
+
+
+        //var result = Comparison.Show(editSession);
+        //SetMessages($"Comparing {result.Left.Name} with {result.Right.Name} from {result.Right.Timestamp:g}.", result.Warning);
     }
 
-    [RelayCommand]
-    private void CloseComparison()
+    private void OnComparisonStaged(object? sender, int count)
     {
-        ShowComparison = false;
-    }
-
-    [RelayCommand]
-    private void SelectAllSafeDifferences()
-    {
-        foreach (var row in allComparisonRows)
-        {
-            row.IsSelected = row.CanStage;
-        }
-    }
-
-    [RelayCommand]
-    private void StageSelectedDifferences()
-    {
-        if (comparisonResult is null || editSession is null)
-        {
-            return;
-        }
-
-        var selected = allComparisonRows.Where(row => row.IsSelected).Select(row => row.Name).ToArray();
-        var staged = comparisons.Stage(comparisonResult, editSession, selected);
-        ShowComparison = false;
-        SetMessages($"Staged {staged.Count} safe differences as pending edits. No values were written.");
-    }
-
-    [RelayCommand]
-    private async Task ExportComparisonJsonAsync(CancellationToken cancellationToken)
-    {
-        if (comparisonResult is not null)
-        {
-            await parametersFileHandler.SaveTextFileAsync("parameter-comparison.json", comparisons.ExportJson(comparisonResult), cancellationToken);
-        }
-    }
-
-    [RelayCommand]
-    private async Task ExportComparisonCsvAsync(CancellationToken cancellationToken)
-    {
-        if (comparisonResult is not null)
-        {
-            await parametersFileHandler.SaveTextFileAsync("parameter-comparison.csv", comparisons.ExportCsv(comparisonResult), cancellationToken);
-        }
+        SetMessages($"Staged {count} safe differences as pending edits. No values were written.");
     }
 
     [RelayCommand]
@@ -697,31 +616,20 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         return HasConnection && !IsBusy && editSession is { IsDirty: true, IsValid: true };
     }
 
-    private bool CanRetryFailed() =>
-        HasConnection && !IsBusy && editSession is { IsValid: true } && lastApplyReport?.Retryable.Count > 0;
+    private bool CanRetryFailed()
+    {
+        return HasConnection && !IsBusy && editSession is { IsValid: true } && lastApplyReport?.Retryable.Count > 0;
+    }
 
-    private static string BuildResultSummary(ParameterApplyReport report) =>
-        string.Join(
+    private static string BuildResultSummary(ParameterApplyReport report)
+    {
+        return string.Join(
             "; ",
             report.Results
                 .GroupBy(result => result.Outcome)
                 .OrderBy(group => group.Key)
                 .Select(group => $"{group.Key}: {group.Count()}"));
-
-    private void FilterComparisonRows()
-    {
-        IEnumerable<ParameterComparisonItemViewModel> rows = allComparisonRows;
-        rows = ComparisonFilter switch
-        {
-            "Differences" => rows.Where(row => row.Status is not ParameterComparisonStatus.Equal),
-            "Missing" => rows.Where(row => row.Status is ParameterComparisonStatus.OnlyOnLeft or ParameterComparisonStatus.OnlyOnRight or ParameterComparisonStatus.MetadataMissing),
-            "Invalid" => rows.Where(row => row.Status is ParameterComparisonStatus.InvalidRightValue or ParameterComparisonStatus.ReadOnly),
-            "Modified" => rows.Where(row => row.CanStage),
-            _ => rows
-        };
-        ComparisonRows.ReplaceRange(rows);
     }
-
 
     private void AttachSession(IParameterEditSession session)
     {

@@ -8,10 +8,12 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary x:Name="appColors" Source="Resources/Styles/Colors.xaml" />
-                <ResourceDictionary x:Name="appStyles" Source="Resources/Styles/Styles.xaml" />
-                <material:StyleResource ColorsOverride="{x:Reference appColors}" />
-                <virtualizedResources:StyleResource ColorsOverride="{x:Reference appColors}" />
+                <ResourceDictionary x:Name="AppColors" Source="Resources/Styles/Colors.xaml" />
+                <ResourceDictionary x:Name="AppStyles" Source="Resources/Styles/Styles.xaml" />
+                <material:StyleResource BasedOn="{x:Reference AppStyles}" />
+                <ResourceDictionary Source="Resources/Styles/Override.xaml" />
+                <virtualizedResources:StyleResource ColorsOverride="{x:Reference AppColors}" />
+                <material:StyleResource ColorsOverride="{x:Reference AppColors}" />
             </ResourceDictionary.MergedDictionaries>
             <toolkit:MultiConverter x:Key="NullToBoolConverter" />
             <toolkit:BoolToObjectConverter

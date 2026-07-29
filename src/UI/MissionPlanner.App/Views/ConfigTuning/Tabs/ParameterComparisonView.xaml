@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+    xmlns:configTuning="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
+    xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
+    xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+    xmlns:m="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+    x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.ParameterComparisonView"
+    x:DataType="tabs:ParameterComparisonViewModel">
+    <Grid
+        BackgroundColor="{AppThemeBinding Light=White, Dark=#1B1B1F}"
+        RowDefinitions="Auto,*"
+        RowSpacing="10"
+        Padding="12">
+        <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto" ColumnSpacing="8">
+            <Button Grid.Column="0" Text="Select all safe differences" Command="{Binding SelectAllSafeDifferencesCommand}" />
+            <Button Grid.Column="1" Text="Stage selected" Command="{Binding StageSelectedDifferencesCommand}" />
+            <Button Grid.Column="2" Text="Export JSON" Command="{Binding ExportJsonCommand}" />
+            <Button Grid.Column="3" Text="Export CSV" Command="{Binding ExportCsvCommand}" />
+            <Picker
+                Grid.Column="4"
+                WidthRequest="140"
+                ItemsSource="{Binding Filters}"
+                SelectedItem="{Binding Filter}" />
+            <Button Grid.Column="6" Text="Close" Command="{Binding CloseCommand}" />
+        </Grid>
+
+        <virtualized:VirtualizedDataGrid
+            Grid.Row="1"
+            ItemsSource="{Binding Rows}"
+            UseAutoColumns="False"
+            ItemSizingStrategy="MeasureFirstItem"
+            ShowRowSeparators="True"
+            ShowSearchBar="True"
+            FilterMemberPaths="Name,DisplayName,Status,Message">
+
+            <virtualized:VirtualizedDataGrid.EmptyView>
+                <VerticalStackLayout
+                    Padding="40"
+                    Spacing="8"
+                    HorizontalOptions="Center"
+                    VerticalOptions="Center">
+                    <Image
+                        WidthRequest="40"
+                        HeightRequest="40"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                        Source="{FontImageSource FontFamily=MaterialOutlined, Glyph={x:Static m:MaterialOutlined.Backup_table}, 
+                                    Color={AppThemeBinding Light={StaticResource OnSurface}, 
+                                    Dark={StaticResource OnSurfaceDark}}}"/>
+                    <Label
+                        Text="No parameters found."
+                        FontAttributes="Bold"
+                        FontSize="16"
+                        HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </virtualized:VirtualizedDataGrid.EmptyView>
+
+            <virtualized:VirtualizedDataGrid.Columns>
+                <material:DataGridColumn Title="Stage" Width="80">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel">
+                            <CheckBox IsChecked="{Binding IsSelected}" IsEnabled="{Binding CanStage}" HorizontalOptions="Center" VerticalOptions="Center" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+                <material:DataGridColumn Width="180" Title="Parameter">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding Name}" VerticalOptions="Center" /></DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+                <material:DataGridColumn Width="180" Title="Live">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding LeftValueText}" VerticalOptions="Center" /></DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+                <material:DataGridColumn Width="180" Title="Right">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding RightValueText}" VerticalOptions="Center" /></DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+                <material:DataGridColumn Width="140" Title="Difference">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding DifferenceText}" VerticalOptions="Center" /></DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+                <material:DataGridColumn Width="160" Title="Status">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding Status}" VerticalOptions="Center" /></DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+                <material:DataGridColumn Width="*" Title="Message">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding Message}" VerticalOptions="Center" /></DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+            </virtualized:VirtualizedDataGrid.Columns>
+        </virtualized:VirtualizedDataGrid>
+    </Grid>
+</ContentView>

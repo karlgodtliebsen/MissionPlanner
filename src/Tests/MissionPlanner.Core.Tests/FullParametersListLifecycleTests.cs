@@ -1,11 +1,10 @@
 ﻿using CommunityToolkit.Maui.Storage;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
+using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
-using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.ConfigTuning;
-using MissionPlanner.Core.ConfigTuning.Comparison;
 using MissionPlanner.Core.ConfigTuning.Profiles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -188,7 +187,6 @@ public sealed class FullParametersListLifecycleTests
             Substitute.For<IDomainFactory>(),
             new ParametersFileHandler(Substitute.For<IFileSaver>()),
             Substitute.For<IUserConfirmationService>(),
-            Substitute.For<IParameterComparisonService>(),
             Substitute.For<IParameterProfileRepository>(),
             Substitute.For<IParameterProfileService>(),
             NullLogger<FullParametersListTabViewModel>.Instance);

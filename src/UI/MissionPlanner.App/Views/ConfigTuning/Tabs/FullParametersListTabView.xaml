@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <navigation:ContentPageView x:TypeArguments="tabs:FullParametersListTabViewModel"
-                      xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
                       xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                      xmlns:m="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                      xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
                       xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                       xmlns:configTuning="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
                       xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
-                      xmlns:m="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                       xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                       xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                       x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.FullParametersListTabView"
@@ -96,7 +96,7 @@
                        VerticalOptions="Center" />
             </HorizontalStackLayout>
 
-            <Grid Grid.Row="2" VerticalOptions="Fill" HorizontalOptions="Fill" Padding="18,4"  Margin="0,10,0,10">
+            <Grid Grid.Row="1" VerticalOptions="Fill" HorizontalOptions="Fill" Padding="18,4"  Margin="0,10,0,10">
 
                 <virtualized:VirtualizedDataGrid
                     ItemsSource="{Binding Parameters}"
@@ -257,78 +257,8 @@
                     </virtualized:VirtualizedDataGrid.Columns>
                 </virtualized:VirtualizedDataGrid>
 
-                <Grid
-                    IsVisible="{Binding ShowComparison}"
-                    BackgroundColor="{AppThemeBinding Light=White, Dark=#1B1B1F}"
-                    RowDefinitions="Auto,*"
-                    RowSpacing="10"
-                    Padding="12">
-                    <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto" ColumnSpacing="8">
-                        <Button Grid.Column="0" Text="Select all safe differences" Command="{Binding SelectAllSafeDifferencesCommand}" />
-                        <Button Grid.Column="1" Text="Stage selected" Command="{Binding StageSelectedDifferencesCommand}" />
-                        <Button Grid.Column="2" Text="Export JSON" Command="{Binding ExportComparisonJsonCommand}" />
-                        <Button Grid.Column="3" Text="Export CSV" Command="{Binding ExportComparisonCsvCommand}" />
-                        <Picker
-                            Grid.Column="4"
-                            WidthRequest="140"
-                            ItemsSource="{Binding ComparisonFilters}"
-                            SelectedItem="{Binding ComparisonFilter}" />
-                        <Button Grid.Column="6" Text="Close" Command="{Binding CloseComparisonCommand}" />
-                    </Grid>
-
-                    <virtualized:VirtualizedDataGrid
-                        Grid.Row="1"
-                        ItemsSource="{Binding ComparisonRows}"
-                        UseAutoColumns="False"
-                        ItemSizingStrategy="MeasureFirstItem"
-                        ShowRowSeparators="True"
-                        ShowSearchBar="True"
-                        FilterMemberPaths="Name,DisplayName,Status,Message">
-                        <virtualized:VirtualizedDataGrid.Columns>
-                            <material:DataGridColumn Title="Stage" Width="80">
-                                <material:DataGridColumn.CellItemTemplate>
-                                    <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel">
-                                        <CheckBox
-                                            IsChecked="{Binding IsSelected}"
-                                            IsEnabled="{Binding CanStage}"
-                                            HorizontalOptions="Center"
-                                            VerticalOptions="Center" />
-                                    </DataTemplate>
-                                </material:DataGridColumn.CellItemTemplate>
-                            </material:DataGridColumn>
-                            <material:DataGridColumn Width="180" Title="Parameter">
-                                <material:DataGridColumn.CellItemTemplate>
-                                    <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding Name}" VerticalOptions="Center" /></DataTemplate>
-                                </material:DataGridColumn.CellItemTemplate>
-                            </material:DataGridColumn>
-                            <material:DataGridColumn Width="180" Title="Live">
-                                <material:DataGridColumn.CellItemTemplate>
-                                    <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding LeftValueText}" VerticalOptions="Center" /></DataTemplate>
-                                </material:DataGridColumn.CellItemTemplate>
-                            </material:DataGridColumn>
-                            <material:DataGridColumn Width="180" Title="Right">
-                                <material:DataGridColumn.CellItemTemplate>
-                                    <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding RightValueText}" VerticalOptions="Center" /></DataTemplate>
-                                </material:DataGridColumn.CellItemTemplate>
-                            </material:DataGridColumn>
-                            <material:DataGridColumn Width="140" Title="Difference">
-                                <material:DataGridColumn.CellItemTemplate>
-                                    <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding DifferenceText}" VerticalOptions="Center" /></DataTemplate>
-                                </material:DataGridColumn.CellItemTemplate>
-                            </material:DataGridColumn>
-                            <material:DataGridColumn Width="160" Title="Status">
-                                <material:DataGridColumn.CellItemTemplate>
-                                    <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding Status}" VerticalOptions="Center" /></DataTemplate>
-                                </material:DataGridColumn.CellItemTemplate>
-                            </material:DataGridColumn>
-                            <material:DataGridColumn Width="*" Title="Message">
-                                <material:DataGridColumn.CellItemTemplate>
-                                    <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding Message}" VerticalOptions="Center" /></DataTemplate>
-                                </material:DataGridColumn.CellItemTemplate>
-                            </material:DataGridColumn>
-                        </virtualized:VirtualizedDataGrid.Columns>
-                    </virtualized:VirtualizedDataGrid>
-                </Grid>
+                <!--<tabs:ParameterComparisonView
+                    IsVisible="{Binding IsComparisonVisible}" />-->
 
             </Grid>
         </Grid>
