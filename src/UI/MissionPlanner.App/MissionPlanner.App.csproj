@@ -35,7 +35,6 @@
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 		<!-- NOTE: MauiIcon has no effect in a class library; each platform head project declares it. -->
 	</ItemGroup>
-
 	<ItemGroup>
 	  <Content Include="appsettings.json">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -181,10 +180,6 @@
 	  <MauiXaml Update="Views\InitSetup\OptionalHardware\OptionalHardwareView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Views\ConfigTuning\Tabs\Fence\" />
 	</ItemGroup>
 
 </Project>
