@@ -18,5 +18,5 @@ public class ApplicationHandlerStub : ElementHandler<IApplication, object>
     }
 
 
-    protected override object CreatePlatformElement() => default;
+    protected override object CreatePlatformElement() => new();
 }

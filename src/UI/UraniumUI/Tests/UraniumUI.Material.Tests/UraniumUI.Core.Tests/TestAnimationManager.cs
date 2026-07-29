@@ -11,7 +11,7 @@ public class TestAnimationManager : IAnimationManager
 {
     readonly List<Microsoft.Maui.Animations.Animation> _animations = new();
 
-    public TestAnimationManager(ITicker ticker = null)
+    public TestAnimationManager(ITicker? ticker = null)
     {
         Ticker = ticker ?? new BlockingTicker();
         Ticker.Fire = OnFire;

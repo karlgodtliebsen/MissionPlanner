@@ -1,18 +1,22 @@
 ﻿namespace UraniumUI.Tests.Core;
 public static class ApplicationExtensions
 {
-    public static Window LoadPage(this Application app, Page page)
+    public static void CreateAndSetMockApplication(Action<MauiAppBuilder>? builder = null)
     {
-        app.MainPage = page;
+        // The upstream UraniumUI tests use xUnit v2, whose test context allows MAUI
+        // to resolve a dispatcher. This project uses xUnit v3 and targets neutral
+        // net10.0, so install an explicit dispatcher for headless BindableObjects.
+        Microsoft.Maui.Dispatching.DispatcherProvider.SetCurrent(
+            TestDispatcherProvider.Instance);
 
-        return ((IApplication)app).CreateWindow(null) as Window;
-    }
-
-    public static void CreateAndSetMockApplication(Action<MauiAppBuilder> builder = null)
-    {
         var appBuilder = MauiApp.CreateBuilder()
                                 .UseMauiApp<MockApplication>()
                                 .UseUraniumUI();
+
+        appBuilder.Services.AddSingleton<Microsoft.Maui.Dispatching.IDispatcherProvider>(
+            TestDispatcherProvider.Instance);
+        appBuilder.Services.AddSingleton<Microsoft.Maui.Dispatching.IDispatcher>(
+            TestDispatcherProvider.Instance.Dispatcher);
 
         builder?.Invoke(appBuilder);
         appBuilder.ConfigureDispatching();

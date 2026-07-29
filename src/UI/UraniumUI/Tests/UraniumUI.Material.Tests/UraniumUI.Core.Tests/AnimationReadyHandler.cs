@@ -26,8 +26,20 @@ public class AnimationReadyHandlerAsync : AnimationReadyHandler<AsyncTicker>
 public class AnimationReadyHandler<TTicker> : ViewHandler<IView, object>
     where TTicker : ITicker, new()
 {
+    private static readonly CommandMapper<IView, IViewHandler> CommandMapper =
+        new(ViewCommandMapper)
+        {
+            ["Focus"] = static (_, _, args) =>
+            {
+                if (args is RetrievePlatformValueRequest<bool> request)
+                {
+                    request.SetResult(true);
+                }
+            }
+        };
+
     public AnimationReadyHandler(IAnimationManager animationManager)
-        : base(new PropertyMapper<IView>())
+        : base(new PropertyMapper<IView>(), CommandMapper)
     {
         SetMauiContext(new AnimationReadyMauiContext(animationManager));
     }
@@ -63,13 +75,13 @@ public class AnimationReadyHandler<TTicker> : ViewHandler<IView, object>
 
     protected override object CreatePlatformView() => new();
 
-    public IAnimationManager AnimationManager => ((AnimationReadyMauiContext)MauiContext).AnimationManager;
+    public IAnimationManager AnimationManager => ((AnimationReadyMauiContext)MauiContext!).AnimationManager;
 
     public class AnimationReadyMauiContext : IMauiContext, IServiceProvider
     {
         readonly IAnimationManager _animationManager;
 
-        public AnimationReadyMauiContext(IAnimationManager manager = null)
+        public AnimationReadyMauiContext(IAnimationManager? manager = null)
         {
             _animationManager = manager ?? new TestAnimationManager();
         }
@@ -80,7 +92,7 @@ public class AnimationReadyHandler<TTicker> : ViewHandler<IView, object>
 
         public IAnimationManager AnimationManager => _animationManager;
 
-        public object GetService(Type serviceType)
+        public object? GetService(Type serviceType)
         {
             if (serviceType == typeof(IAnimationManager))
                 return _animationManager;

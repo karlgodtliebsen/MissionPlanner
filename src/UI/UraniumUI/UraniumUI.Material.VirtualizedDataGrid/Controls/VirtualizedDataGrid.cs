@@ -127,6 +127,13 @@ public partial class VirtualizedDataGrid : Border
     protected CollectionView RowsView => rowsView;
 
     /// <summary>
+    /// Gets the latest logical row source selected by filtering and paging.
+    /// The native CollectionView ItemsSource may be assigned later when
+    /// its platform handler is loaded.
+    /// </summary>
+    protected IList? DisplayedItemsSource => desiredRowsSource;
+
+    /// <summary>
     /// Exposes the explicit empty-state host to subclasses and tests.
     /// </summary>
     protected ContentView EmptyViewHost => emptyViewHost;
@@ -801,10 +808,7 @@ public partial class VirtualizedDataGrid : Border
         var showEmptyView = ReadyToRender && IsEmpty;
         emptyViewHost.IsVisible = showEmptyView;
 
-        if (CanUseRowsPlatformHost)
-        {
-            rowsView.IsVisible = ReadyToRender && !showEmptyView;
-        }
+        rowsView.IsVisible = ReadyToRender && !showEmptyView;
     }
 
     private void SetItemSizingStrategy(ItemSizingStrategy strategy)

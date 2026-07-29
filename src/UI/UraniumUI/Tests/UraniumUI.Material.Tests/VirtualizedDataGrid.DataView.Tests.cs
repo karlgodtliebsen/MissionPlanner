@@ -42,7 +42,7 @@ public class VirtualizedDataGridDataViewTests
         control.TotalItemCount.ShouldBe(2);
         control.FilteredItemCount.ShouldBe(1);
         control.PageItemCount.ShouldBe(1);
-        control.ExposedRowsView.ItemsSource.Cast<Row>().Single().Name.ShouldBe("BATT_MONITOR");
+        control.ExposedDisplayedItemsSource!.Cast<Row>().Single().Name.ShouldBe("BATT_MONITOR");
     }
 
     [Fact]
@@ -108,6 +108,7 @@ public class VirtualizedDataGridDataViewTests
     {
         public CollectionView ExposedRowsView => RowsView;
         public ContentView ExposedEmptyViewHost => EmptyViewHost;
+        public System.Collections.IList? ExposedDisplayedItemsSource => DisplayedItemsSource;
     }
 
     private sealed record Row(string Name, string Description);
