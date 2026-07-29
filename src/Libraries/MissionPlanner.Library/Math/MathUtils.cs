@@ -87,4 +87,42 @@ public static class MathUtils
 
         return normalizedLeft == normalizedRight;
     }
+
+    /// <summary>
+    /// Formats a numeric value at the precision represented by its smallest meaningful step.
+    /// </summary>
+    public static string FormatAtStepPrecision(
+        double value,
+        double? stepSize,
+        IFormatProvider? formatProvider = null)
+    {
+        formatProvider ??= System.Globalization.CultureInfo.CurrentCulture;
+
+        if (!double.IsFinite(value))
+        {
+            return value.ToString(formatProvider);
+        }
+
+        if (stepSize is not > 0 || !double.IsFinite(stepSize.Value))
+        {
+            return value.ToString("G15", formatProvider);
+        }
+
+        decimal decimalStep;
+        try
+        {
+            decimalStep = decimal.Abs((decimal)stepSize.Value);
+        }
+        catch (OverflowException)
+        {
+            return value.ToString("G15", formatProvider);
+        }
+
+        var scale = (decimal.GetBits(decimalStep)[3] >> 16) & 0x7f;
+        var format = scale == 0
+            ? "0"
+            : $"0.{new string('#', scale)}";
+
+        return value.ToString(format, formatProvider);
+    }
 }

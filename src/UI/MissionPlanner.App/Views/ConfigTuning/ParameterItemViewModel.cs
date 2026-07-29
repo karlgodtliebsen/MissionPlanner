@@ -161,6 +161,8 @@ public partial class ParameterItemViewModel : ObservableObject
                 editType = field.Type;
             }
 
+            PreserveCurrentValueInEditorBounds(pendingValue);
+
             if (editorDefinitionChanged || pendingValueChanged)
             {
                 SynchronizeSelections(field.PendingValue);
@@ -203,6 +205,20 @@ public partial class ParameterItemViewModel : ObservableObject
 
         // Bitmask values are edited through the multi-option control, not by entering a raw mask.
         IsReadOnly = metadata.ReadOnly || HasBitmask;
+    }
+
+    private void PreserveCurrentValueInEditorBounds(double value)
+    {
+        if (!HasNumericRangeData || !double.IsFinite(value))
+        {
+            return;
+        }
+
+        // Some ArduPilot parameters use an out-of-range value such as zero as a
+        // firmware-defined sentinel. Keep it representable so control coercion
+        // cannot turn row realization into a user edit.
+        Min = Math.Min(Min, value);
+        Max = Math.Max(Max, value);
     }
 
     private void SynchronizeSelections(double pendingValue)

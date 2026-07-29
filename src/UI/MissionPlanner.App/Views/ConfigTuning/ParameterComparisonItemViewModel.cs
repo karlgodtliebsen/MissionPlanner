@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using MissionPlanner.Core.ConfigTuning.Comparison;
+using MissionPlanner.Library.Math;
 
 namespace MissionPlanner.App.Views.ConfigTuning;
 
@@ -19,10 +20,16 @@ public sealed partial class ParameterComparisonItemViewModel(ParameterComparison
     public string DisplayName => Row.DisplayName;
     /// <summary>Gets the left value.</summary>
     public double? LeftValue => Row.LeftValue;
+    /// <summary>Gets the left value formatted at the parameter's declared precision.</summary>
+    public string? LeftValueText => FormatValue(Row.LeftValue);
     /// <summary>Gets the right value.</summary>
     public double? RightValue => Row.RightValue;
+    /// <summary>Gets the right value formatted at the parameter's declared precision.</summary>
+    public string? RightValueText => FormatValue(Row.RightValue);
     /// <summary>Gets the numeric difference.</summary>
     public double? Difference => Row.Difference;
+    /// <summary>Gets the difference formatted at the parameter's declared precision.</summary>
+    public string? DifferenceText => FormatValue(Row.Difference);
     /// <summary>Gets the classification.</summary>
     public ParameterComparisonStatus Status => Row.Status;
     /// <summary>Gets the unit symbol.</summary>
@@ -31,4 +38,9 @@ public sealed partial class ParameterComparisonItemViewModel(ParameterComparison
     public bool CanStage => Row.CanStage;
     /// <summary>Gets the classification explanation.</summary>
     public string? Message => Row.Message;
+
+    private string? FormatValue(double? value) =>
+        value is null
+            ? null
+            : MathUtils.FormatAtStepPrecision(value.Value, Row.Metadata?.Increment);
 }

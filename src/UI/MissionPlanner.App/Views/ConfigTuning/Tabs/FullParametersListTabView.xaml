@@ -261,6 +261,7 @@
                     IsVisible="{Binding ShowComparison}"
                     BackgroundColor="{AppThemeBinding Light=White, Dark=#1B1B1F}"
                     RowDefinitions="Auto,*"
+                    RowSpacing="10"
                     Padding="12">
                     <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto" ColumnSpacing="8">
                         <Button Grid.Column="0" Text="Select all safe differences" Command="{Binding SelectAllSafeDifferencesCommand}" />
@@ -284,7 +285,7 @@
                         ShowSearchBar="True"
                         FilterMemberPaths="Name,DisplayName,Status,Message">
                         <virtualized:VirtualizedDataGrid.Columns>
-                            <material:DataGridColumn Title="Stage" Width="70">
+                            <material:DataGridColumn Title="Stage" Width="80">
                                 <material:DataGridColumn.CellItemTemplate>
                                     <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel">
                                         <CheckBox
@@ -302,17 +303,17 @@
                             </material:DataGridColumn>
                             <material:DataGridColumn Width="180" Title="Live">
                                 <material:DataGridColumn.CellItemTemplate>
-                                    <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding LeftValue}" VerticalOptions="Center" /></DataTemplate>
+                                    <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding LeftValueText}" VerticalOptions="Center" /></DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
                             </material:DataGridColumn>
                             <material:DataGridColumn Width="180" Title="Right">
                                 <material:DataGridColumn.CellItemTemplate>
-                                    <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding RightValue}" VerticalOptions="Center" /></DataTemplate>
+                                    <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding RightValueText}" VerticalOptions="Center" /></DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
                             </material:DataGridColumn>
                             <material:DataGridColumn Width="140" Title="Difference">
                                 <material:DataGridColumn.CellItemTemplate>
-                                    <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding Difference}" VerticalOptions="Center" /></DataTemplate>
+                                    <DataTemplate x:DataType="configTuning:ParameterComparisonItemViewModel"><Label Text="{Binding DifferenceText}" VerticalOptions="Center" /></DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
                             </material:DataGridColumn>
                             <material:DataGridColumn Width="160" Title="Status">

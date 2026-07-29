@@ -1,7 +1,9 @@
 using FluentAssertions;
+using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Comparison;
 using NSubstitute;
+using System.Globalization;
 
 namespace MissionPlanner.Core.Tests;
 
@@ -21,6 +23,32 @@ public sealed class ParameterComparisonTests
         comparer.AreEquivalent(0.3, 0.4, Writable).Should().BeFalse();
         comparer.AreEquivalent(double.NaN, double.NaN).Should().BeTrue();
         comparer.AreEquivalent(double.PositiveInfinity, double.NegativeInfinity).Should().BeFalse();
+    }
+
+    /// <summary>Comparison values use metadata precision instead of exposing floating-point expansion.</summary>
+    [Fact]
+    public void ComparisonPresentationRoundsDifferenceToMetadataPrecision()
+    {
+        var row = new ParameterComparisonRow(
+            "ACRO_BAL_PITCH",
+            "Acro Balance Pitch",
+            "Live",
+            1d,
+            "Pending",
+            1.1d,
+            1.1d - 1d,
+            ParameterComparisonStatus.Different,
+            null,
+            Writable,
+            true,
+            null);
+
+        var item = new ParameterComparisonItemViewModel(row);
+        var separator = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+
+        item.LeftValueText.Should().Be("1");
+        item.RightValueText.Should().Be($"1{separator}1");
+        item.DifferenceText.Should().Be($"0{separator}1");
     }
 
     /// <summary>Missing, invalid, read-only and differing values remain explicitly classified.</summary>

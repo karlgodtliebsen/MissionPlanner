@@ -326,6 +326,23 @@ public sealed class ParameterEditSessionTests
         }
     }
 
+    /// <summary>Firmware sentinel values outside metadata bounds are not coerced while the row is realized.</summary>
+    [Fact]
+    public async Task NumericEditorPreservesLoadedSentinelOutsideMetadataRange()
+    {
+        using var fixture = CreateFixture(
+            [(Parameter("ATC_RAT_PIT_NEF", 0), Metadata("ATC_RAT_PIT_NEF", "1 20", "1"))]);
+        var session = fixture.Factory.Create(fixture.VehicleId);
+        await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
+
+        var item = new ParameterItemViewModel(session, session.GetField("ATC_RAT_PIT_NEF")!);
+
+        item.Value.Should().Be(0);
+        item.Min.Should().Be(0);
+        item.Max.Should().Be(20);
+        session.GetField("ATC_RAT_PIT_NEF")!.IsModified.Should().BeFalse();
+    }
+
     /// <summary>Verifies repeated decimal increments do not accumulate binary floating-point drift.</summary>
     [Fact]
     public async Task NumericEditorUsesPrecisionSafeDecimalSteps()
