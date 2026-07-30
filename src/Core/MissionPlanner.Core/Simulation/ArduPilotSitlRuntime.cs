@@ -1,355 +1,8 @@
-using System.Collections.Concurrent;
-using System.Globalization;
-using System.Net;
+﻿using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.Core.Vehicles;
-using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 
 namespace MissionPlanner.Core.Simulation;
-
-/// <summary>Provides conservative direct-SITL model identifiers for supported ArduPilot families.</summary>
-public sealed class ArduPilotFrameCatalog : IArduPilotFrameCatalog
-{
-    private static readonly IReadOnlyDictionary<FirmwareFamily, IReadOnlyList<string>> frames =
-        new Dictionary<FirmwareFamily, IReadOnlyList<string>>
-        {
-            [FirmwareFamily.ArduCopter] = ["quad", "hexa", "octa", "octa-quad", "tri", "y6", "heli"],
-            [FirmwareFamily.ArduPlane] = ["plane", "quadplane"],
-            [FirmwareFamily.Rover] = ["rover", "balancebot"],
-            [FirmwareFamily.ArduSub] = ["vectored", "vectored_6dof"]
-        };
-
-    /// <inheritdoc />
-    public IReadOnlyList<string> GetFrames(FirmwareFamily family) =>
-        frames.TryGetValue(family, out var result) ? result : [];
-
-    /// <inheritdoc />
-    public bool IsSupported(FirmwareFamily family, string frameModel) =>
-        !string.IsNullOrWhiteSpace(frameModel) &&
-        GetFrames(family).Contains(frameModel.Trim(), StringComparer.OrdinalIgnoreCase);
-}
-
-/// <summary>Builds typed argument tokens for an ArduPilot direct SITL executable.</summary>
-public sealed class ArduPilotLaunchPlanBuilder(IArduPilotFrameCatalog frameCatalog) : IArduPilotLaunchPlanBuilder
-{
-    private static readonly string[] protectedArguments =
-    [
-        "--model", "-M", "--home", "-O", "--speedup", "-s", "--instance", "-I",
-        "--sysid", "--serial", "--defaults", "--wipe"
-    ];
-
-    /// <inheritdoc />
-    public ArduPilotLaunchPlan Build(SimulatorProfile profile, string workingDirectory)
-    {
-        ArgumentNullException.ThrowIfNull(profile);
-        if (!frameCatalog.IsSupported(profile.FirmwareFamily, profile.FrameModel))
-        {
-            throw new InvalidOperationException(
-                $"Frame/model '{profile.FrameModel}' is not supported for {profile.FirmwareFamily} by the direct SITL adapter.");
-        }
-
-        var mavLink = profile.Endpoints.SingleOrDefault(endpoint =>
-            endpoint.Name.Equals("MAVLink", StringComparison.OrdinalIgnoreCase));
-        if (mavLink is null || mavLink.Transport != SimulationEndpointTransport.Udp)
-        {
-            throw new InvalidOperationException("A single UDP endpoint named 'MAVLink' is required.");
-        }
-
-        var settings = profile.EffectiveLaunchSettings;
-        var invariant = CultureInfo.InvariantCulture;
-        var home = string.Join(",",
-            profile.Location.LatitudeDegrees.ToString("0.#######", invariant),
-            profile.Location.LongitudeDegrees.ToString("0.#######", invariant),
-            profile.Location.AltitudeMeters.ToString("0.###", invariant),
-            profile.Location.HeadingDegrees.ToString("0.###", invariant));
-        var arguments = new List<string>
-        {
-            "--model", profile.FrameModel.Trim(),
-            "--home", home,
-            "--speedup", profile.Speedup.ToString("0.###", invariant),
-            "--instance", settings.Instance.ToString(invariant),
-            "--sysid", settings.SystemId.ToString(invariant),
-            "--serial0", $"udpclient:{mavLink.Host}:{mavLink.Port}"
-        };
-        var serialIndices = new HashSet<int>();
-        foreach (var serial in settings.EffectiveSerialEndpoints.OrderBy(item => item.Index))
-        {
-            if (serial.Index is < 1 or > 9 || !serialIndices.Add(serial.Index))
-            {
-                throw new InvalidOperationException("Additional serial endpoint indices must be unique values from 1 through 9.");
-            }
-
-            if (serial.Port is <= 0 or > 65535 || !IsValidEndpointHost(serial.Host))
-            {
-                throw new InvalidOperationException($"Serial{serial.Index} must have a valid host and port.");
-            }
-
-            var transport = serial.Transport switch
-            {
-                ArduPilotSerialTransport.UdpClient => "udpclient",
-                ArduPilotSerialTransport.TcpClient => "tcpclient",
-                _ => throw new InvalidOperationException($"Serial{serial.Index} transport is unsupported.")
-            };
-            arguments.Add($"--serial{serial.Index}");
-            arguments.Add($"{transport}:{serial.Host}:{serial.Port}");
-        }
-
-        if (settings.DefaultsFiles.Count != 0)
-        {
-            arguments.Add("--defaults");
-            arguments.Add(string.Join(',', settings.DefaultsFiles.Select(Path.GetFullPath)));
-        }
-
-        if (settings.WipeState)
-        {
-            arguments.Add("--wipe");
-        }
-
-        foreach (var argument in profile.AdditionalArguments)
-        {
-            if (string.IsNullOrWhiteSpace(argument))
-            {
-                throw new InvalidOperationException("Additional SITL argument tokens cannot be empty.");
-            }
-
-            if (protectedArguments.Any(item => IsProtectedOverride(item, argument)))
-            {
-                throw new InvalidOperationException(
-                    $"Additional argument '{argument}' attempts to override a typed launch setting.");
-            }
-
-            arguments.Add(argument);
-        }
-
-        return new ArduPilotLaunchPlan(
-            Path.GetFullPath(profile.Binary.ExecutablePath),
-            Path.GetFullPath(workingDirectory),
-            arguments,
-            new Dictionary<string, string>(profile.Environment, StringComparer.OrdinalIgnoreCase),
-            mavLink,
-            settings.SystemId,
-            settings.ShowConsoleWindow);
-    }
-
-    private static bool IsProtectedOverride(string protectedArgument, string argument) =>
-        argument.Equals(protectedArgument, StringComparison.OrdinalIgnoreCase) ||
-        argument.StartsWith(protectedArgument + "=", StringComparison.OrdinalIgnoreCase) ||
-        protectedArgument.Equals("--serial", StringComparison.Ordinal) &&
-        argument.StartsWith("--serial", StringComparison.OrdinalIgnoreCase) ||
-        protectedArgument is "-M" or "-O" or "-s" or "-I" &&
-        argument.StartsWith(protectedArgument, StringComparison.OrdinalIgnoreCase);
-
-    private static bool IsValidEndpointHost(string host) =>
-        !string.IsNullOrWhiteSpace(host) &&
-        !host.Contains(':') &&
-        (IPAddress.TryParse(host, out _) || Uri.CheckHostName(host) == UriHostNameType.Dns);
-}
-
-/// <summary>Reserves endpoint identities across concurrently owned simulator sessions.</summary>
-public sealed class SimulationPortAllocator(ISimulatorHostEnvironment hostEnvironment) : ISimulationPortAllocator
-{
-    private readonly SemaphoreSlim gate = new(1, 1);
-    private readonly HashSet<PortIdentity> claimed = [];
-
-    /// <inheritdoc />
-    public async ValueTask<ISimulationPortLease> ReserveAsync(
-        IReadOnlyList<SimulationEndpoint> endpoints,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(endpoints);
-        if (endpoints.Count == 0)
-        {
-            throw new InvalidOperationException("At least one simulator endpoint must be reserved.");
-        }
-
-        var identities = endpoints.Select(PortIdentity.From).ToArray();
-        if (identities.Distinct().Count() != identities.Length)
-        {
-            throw new InvalidOperationException("The simulator profile contains duplicate endpoint reservations.");
-        }
-
-        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            var collision = identities.FirstOrDefault(claimed.Contains);
-            if (collision is not null)
-            {
-                throw new InvalidOperationException(
-                    $"Simulator port {collision.Transport.ToString().ToUpperInvariant()} {collision.Host}:{collision.Port} is already reserved.");
-            }
-
-            foreach (var endpoint in endpoints)
-            {
-                if (!await hostEnvironment.IsPortAvailableAsync(endpoint, cancellationToken).ConfigureAwait(false))
-                {
-                    throw new InvalidOperationException(
-                        $"Simulator endpoint {endpoint.DisplayText} is already in use by another application.");
-                }
-            }
-
-            claimed.UnionWith(identities);
-            return new PortLease(this, endpoints.ToArray(), identities);
-        }
-        finally
-        {
-            gate.Release();
-        }
-    }
-
-    private async ValueTask ReleaseAsync(IReadOnlyList<PortIdentity> identities)
-    {
-        await gate.WaitAsync().ConfigureAwait(false);
-        try
-        {
-            claimed.ExceptWith(identities);
-        }
-        finally
-        {
-            gate.Release();
-        }
-    }
-
-    private sealed record PortIdentity(SimulationEndpointTransport Transport, string Host, int Port)
-    {
-        public static PortIdentity From(SimulationEndpoint endpoint) =>
-            new(endpoint.Transport, endpoint.Host.Trim().ToUpperInvariant(), endpoint.Port);
-    }
-
-    private sealed class PortLease(
-        SimulationPortAllocator owner,
-        IReadOnlyList<SimulationEndpoint> endpoints,
-        IReadOnlyList<PortIdentity> identities) : ISimulationPortLease
-    {
-        private int disposed;
-
-        public IReadOnlyList<SimulationEndpoint> Endpoints { get; } = endpoints;
-
-        public async ValueTask DisposeAsync()
-        {
-            if (Interlocked.Exchange(ref disposed, 1) == 0)
-            {
-                await owner.ReleaseAsync(identities).ConfigureAwait(false);
-            }
-        }
-    }
-}
-
-/// <summary>Connects SITL through the existing vehicle connection service and verifies its identity.</summary>
-public sealed class SimulatorVehicleConnection(
-    IVehicleConnectionService connectionService,
-    IVehicleRegistry vehicleRegistry,
-    ILogger<SimulatorVehicleConnection> logger) : ISimulatorVehicleConnection
-{
-    private readonly SemaphoreSlim gate = new(1, 1);
-    private Guid? ownedConnectionId;
-
-    /// <inheritdoc />
-    public async Task<VehicleId> ConnectAsync(
-        SimulatorProfile profile,
-        SimulationEndpoint endpoint,
-        TimeSpan timeout,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(profile);
-        ArgumentNullException.ThrowIfNull(endpoint);
-        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            if (ownedConnectionId is not null)
-            {
-                throw new SimulationConnectionException("This simulator runtime already owns a vehicle connection.");
-            }
-
-            if (connectionService.IsConnected)
-            {
-                throw new SimulationConnectionException(
-                    "MissionPlanner is already connected to a vehicle. Disconnect it before connecting this simulator.");
-            }
-
-            using var timeoutCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            timeoutCancellation.CancelAfter(timeout);
-            VehicleConnectionResult result;
-            try
-            {
-                result = await connectionService.ConnectUdpExclusiveAsync(
-                    endpoint.Port,
-                    endpoint.Host,
-                    endpoint.Port,
-                    timeoutCancellation.Token).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
-            {
-                throw new SimulationConnectionException(
-                    $"The simulator process started, but no MAVLink heartbeat was received within {FormatTimeout(timeout)}.");
-            }
-            if (!result.Success || result.VehicleId is null || result.ConnectionId is null)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                if (timeoutCancellation.IsCancellationRequested)
-                {
-                    throw new SimulationConnectionException(
-                        $"The simulator process started, but no MAVLink heartbeat was received within {FormatTimeout(timeout)}.");
-                }
-
-                throw new SimulationConnectionException(
-                    $"The simulator process started, but MAVLink connection failed: {result.ErrorMessage ?? "no heartbeat was received"}.");
-            }
-
-            ownedConnectionId = result.ConnectionId;
-            var vehicleId = result.VehicleId.Value;
-            var expectedSystemId = profile.EffectiveLaunchSettings.SystemId;
-            var state = vehicleRegistry.GetRequired(vehicleId)?.State;
-            if (vehicleId.SystemId != expectedSystemId || state?.Identity.Firmware.Family != profile.FirmwareFamily)
-            {
-                await DisconnectCoreAsync(CancellationToken.None).ConfigureAwait(false);
-                throw new SimulationConnectionException(
-                    $"Received heartbeat {vehicleId} for {state?.Identity.Firmware.Family.ToString() ?? "unknown firmware"}; " +
-                    $"expected system {expectedSystemId} and {profile.FirmwareFamily}.");
-            }
-
-            logger.LogInformation(
-                "Connected simulator profile {ProfileId} to verified vehicle {VehicleId} using connection {ConnectionId}.",
-                profile.Id,
-                vehicleId,
-                ownedConnectionId);
-            return vehicleId;
-        }
-        finally
-        {
-            gate.Release();
-        }
-    }
-
-    /// <inheritdoc />
-    public async Task DisconnectAsync(CancellationToken cancellationToken = default)
-    {
-        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            await DisconnectCoreAsync(cancellationToken).ConfigureAwait(false);
-        }
-        finally
-        {
-            gate.Release();
-        }
-    }
-
-    private async Task DisconnectCoreAsync(CancellationToken cancellationToken)
-    {
-        if (ownedConnectionId is not { } connectionId)
-        {
-            return;
-        }
-
-        await connectionService.DisconnectOwnedAsync(connectionId, cancellationToken).ConfigureAwait(false);
-        ownedConnectionId = null;
-    }
-
-    private static string FormatTimeout(TimeSpan timeout) => timeout.TotalSeconds < 1
-        ? $"{timeout.TotalMilliseconds:0} milliseconds"
-        : $"{timeout.TotalSeconds:0.#} seconds";
-}
 
 /// <summary>Launches one direct ArduPilot SITL process and connects it to MissionPlanner.</summary>
 public sealed class ArduPilotSitlRuntime(
@@ -366,19 +19,14 @@ public sealed class ArduPilotSitlRuntime(
     public string Name => "ArduPilot direct SITL";
 
     /// <inheritdoc />
-    public ValueTask<IReadOnlyList<SimulationValidationIssue>> ValidateAsync(
-        SimulatorProfile profile,
-        CancellationToken cancellationToken = default)
+    public ValueTask<IReadOnlyList<SimulationValidationIssue>> ValidateAsync(SimulatorProfile profile, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(profile);
         cancellationToken.ThrowIfCancellationRequested();
         var issues = new List<SimulationValidationIssue>();
         if (!platformService.Current.CanExecuteNative)
         {
-            issues.Add(new SimulationValidationIssue(
-                "runtime.platform",
-                nameof(profile.Binary),
-                platformService.Current.Message));
+            issues.Add(new SimulationValidationIssue("runtime.platform", nameof(profile.Binary), platformService.Current.Message));
         }
 
         if (!frameCatalog.IsSupported(profile.FirmwareFamily, profile.FrameModel))
@@ -442,9 +90,7 @@ public sealed class ArduPilotSitlRuntime(
     }
 
     /// <inheritdoc />
-    public async Task<ISimulatorRuntimeSession> StartAsync(
-        SimulatorStartRequest request,
-        CancellationToken cancellationToken = default)
+    public async Task<ISimulatorRuntimeSession> StartAsync(SimulatorStartRequest request, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         var vehicleConnection = vehicleConnectionFactory.Create(request.SessionId);
@@ -705,7 +351,7 @@ public sealed class ArduPilotSitlRuntime(
                 recentErrors.Enqueue(line.Text);
                 while (recentErrors.Count > 12)
                 {
-                    recentErrors.TryDequeue(out _);
+                    recentErrors.TryDequeue(out var _);
                 }
             }
 

@@ -9,7 +9,7 @@ namespace MissionPlanner.Core.Vehicles.Abstractions;
 /// <summary>
 /// Represents a session for a vehicle connection, managing its state and handling updates.
 /// </summary>
-public interface IVehicleConnectionSession
+public interface IVehicleConnectionSession : IAsyncDisposable
 {
     /// <summary>
     /// Creates a MAVFTP connection for the vehicle.

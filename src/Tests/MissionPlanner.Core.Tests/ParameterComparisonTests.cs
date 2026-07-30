@@ -4,6 +4,7 @@ using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Comparison;
 using NSubstitute;
 using System.Globalization;
+using MissionPlanner.App.Views.ConfigTuning.Tabs;
 
 namespace MissionPlanner.Core.Tests;
 
@@ -59,12 +60,7 @@ public sealed class ParameterComparisonTests
         var readOnly = Writable with { ReadOnly = true };
         var left = Values(("DIFF", "1"), ("LEFT", "2"), ("BAD", "3"), ("LOCKED", "4"));
         var right = Values(("DIFF", "1.5"), ("RIGHT", "8"), ("BAD", "nope"), ("LOCKED", "5"));
-        var metadata = new Dictionary<string, ParameterFieldMetadata>(StringComparer.Ordinal)
-        {
-            ["DIFF"] = Writable,
-            ["BAD"] = Writable,
-            ["LOCKED"] = readOnly
-        };
+        var metadata = new Dictionary<string, ParameterFieldMetadata>(StringComparer.Ordinal) { ["DIFF"] = Writable, ["BAD"] = Writable, ["LOCKED"] = readOnly };
 
         var result = service.Compare(Source("Live"), left, Source("File"), right, metadata);
 
@@ -95,13 +91,17 @@ public sealed class ParameterComparisonTests
 
         session.Received(1).TrySetPending("GAIN", 2, out Arg.Any<string?>());
         session.DidNotReceiveWithAnyArgs().ApplyAsync(
-            default(IReadOnlyList<string>),
+            default,
             TestContext.Current.CancellationToken);
     }
 
-    private static ParameterComparisonSource Source(string name) =>
-        new(name, name, DateTimeOffset.UnixEpoch, null);
+    private static ParameterComparisonSource Source(string name)
+    {
+        return new ParameterComparisonSource(name, name, DateTimeOffset.UnixEpoch, null);
+    }
 
-    private static IReadOnlyDictionary<string, ParameterComparisonInput> Values(params (string Name, string Value)[] values) =>
-        values.ToDictionary(value => value.Name, value => new ParameterComparisonInput(value.Name, value.Value), StringComparer.Ordinal);
+    private static IReadOnlyDictionary<string, ParameterComparisonInput> Values(params (string Name, string Value)[] values)
+    {
+        return values.ToDictionary(value => value.Name, value => new ParameterComparisonInput(value.Name, value.Value), StringComparer.Ordinal);
+    }
 }

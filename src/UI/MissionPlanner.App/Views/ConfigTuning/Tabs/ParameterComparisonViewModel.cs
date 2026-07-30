@@ -33,9 +33,9 @@ public partial class ParameterComparisonViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task CloseAsync(CancellationToken cancellationToken)
+    private Task CloseAsync(CancellationToken cancellationToken)
     {
-        await modalNavigationService.CloseAsync(true, cancellationToken);
+        return modalNavigationService.CloseAsync(true, cancellationToken);
     }
 
     /// <summary>Gets the currently filtered comparison rows.</summary>
@@ -54,7 +54,7 @@ public partial class ParameterComparisonViewModel : ObservableObject
     }
 
     /// <summary>Compares the live and pending values in the supplied editing session.</summary>
-    private ParameterComparisonResult Show()
+    private void Show()
     {
         DomainException.ThrowIfNull(editSession);
         var now = dateTimeProvider.UtcNow;
@@ -79,8 +79,6 @@ public partial class ParameterComparisonViewModel : ObservableObject
         allRows.Clear();
         allRows.AddRange(comparisonResult.Rows.Select(row => new ParameterComparisonItemViewModel(row)));
         FilterRows();
-        //IsVisible = true;
-        return comparisonResult;
     }
 
     [RelayCommand]
@@ -111,10 +109,7 @@ public partial class ParameterComparisonViewModel : ObservableObject
     {
         if (comparisonResult is not null)
         {
-            await parametersFileHandler.SaveTextFileAsync(
-                "parameter-comparison.json",
-                comparisons.ExportJson(comparisonResult),
-                cancellationToken);
+            await parametersFileHandler.SaveTextFileAsync("parameter-comparison.json", comparisons.ExportJson(comparisonResult), cancellationToken);
         }
     }
 
@@ -123,20 +118,12 @@ public partial class ParameterComparisonViewModel : ObservableObject
     {
         if (comparisonResult is not null)
         {
-            await parametersFileHandler.SaveTextFileAsync(
-                "parameter-comparison.csv",
-                comparisons.ExportCsv(comparisonResult),
-                cancellationToken);
+            await parametersFileHandler.SaveTextFileAsync("parameter-comparison.csv", comparisons.ExportCsv(comparisonResult), cancellationToken);
         }
     }
 
     /// <summary>Occurs after selected differences have been staged.</summary>
     public event EventHandler<int>? Staged;
-
-    ///// <summary>
-    ///// Occurs when the visibility of the comparison view changes.
-    ///// </summary>
-    //public event EventHandler<bool>? Visibility;
 
     private void FilterRows()
     {

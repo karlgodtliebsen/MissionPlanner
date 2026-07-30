@@ -1,7 +1,4 @@
 using System.Globalization;
-using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Commands;
@@ -15,14 +12,6 @@ using MissionPlanner.MavLink.Commands;
 using MissionPlanner.MavLink.Missions;
 
 namespace MissionPlanner.Core.Simulation;
-
-/// <summary>Provides real cancellable delays for scenario telemetry polling.</summary>
-public sealed class SimulationScenarioDelay : ISimulationScenarioDelay
-{
-    /// <inheritdoc />
-    public Task DelayAsync(TimeSpan delay, CancellationToken cancellationToken) =>
-        Task.Delay(delay, cancellationToken);
-}
 
 /// <summary>Executes the closed declarative scenario schema against one exact SITL vehicle.</summary>
 public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
@@ -210,7 +199,7 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
                 var isBoundedFault = injectionSteps.Length == 0 || capability?.Descriptor is
                     { RequiresConfirmation: true, MaximumDuration: not null };
                 var durationsFit = capability?.Descriptor.MaximumDuration is not { } maximum ||
-                    injectionSteps.All(item => item.DurationSeconds <= maximum.TotalSeconds);
+                                   injectionSteps.All(item => item.DurationSeconds <= maximum.TotalSeconds);
                 var available = capability?.IsAvailable == true && isBoundedFault && durationsFit;
                 var reason = capability?.Reason ?? $"Unknown documented simulation control '{key}'.";
                 if (capability?.IsAvailable == true && !isBoundedFault)
@@ -458,11 +447,7 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
 
             pauseRequested = true;
             resumeSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            snapshot = current with
-            {
-                State = SimulationScenarioRunnerState.PauseRequested,
-                Message = "Pause requested; the current step will finish before pausing."
-            };
+            snapshot = current with { State = SimulationScenarioRunnerState.PauseRequested, Message = "Pause requested; the current step will finish before pausing." };
         }
 
         Publish(snapshot);
@@ -585,6 +570,7 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
                         request.HazardousActionsConfirmed,
                         cancellationToken).ConfigureAwait(false);
                 }
+
                 activeControls.Add(step.ControlKey!);
                 return $"Documented control '{step.ControlKey}' applied and confirmed for at most {duration.TotalSeconds:0} seconds.";
             }
@@ -602,6 +588,7 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
                         step.ControlKey!,
                         cancellationToken).ConfigureAwait(false);
                 }
+
                 activeControls.Remove(step.ControlKey!);
                 return $"Documented control '{step.ControlKey}' reset and confirmed.";
 
@@ -698,7 +685,7 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
             }
             else if (vehicle.State.IsArmed && vehicle.State.Flight.LandedState == VehicleLandedState.OnGround)
             {
-                await commandService.DisarmAsync(request.VehicleId, safetyConfirmed: true, CancellationToken.None).ConfigureAwait(false);
+                await commandService.DisarmAsync(request.VehicleId, true, CancellationToken.None).ConfigureAwait(false);
             }
         }
         catch (Exception exception)
@@ -735,7 +722,7 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
     {
         var snapshot = sessionManager.Current;
         var singleSessionMatches = snapshot.State == SimulationSessionState.Running &&
-            snapshot.SessionId == sessionId && snapshot.VehicleId == vehicleId;
+                                   snapshot.SessionId == sessionId && snapshot.VehicleId == vehicleId;
         var fleetChannelMatches = simulationChannels?.Find(vehicleId)?.SessionId == sessionId;
         if (!singleSessionMatches && !fleetChannelMatches)
         {
@@ -755,7 +742,7 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
     {
         var snapshot = sessionManager.Current;
         return snapshot.State == SimulationSessionState.Running &&
-            snapshot.SessionId == sessionId && snapshot.VehicleId == vehicleId;
+               snapshot.SessionId == sessionId && snapshot.VehicleId == vehicleId;
     }
 
     private SimulationTelemetrySnapshot? CaptureTelemetry(VehicleId vehicleId)
@@ -785,7 +772,7 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
         SimulationVehicleStateRequirement.Disarmed => !state.Flight.IsArmed,
         SimulationVehicleStateRequirement.OnGround => state.Flight.LandedState == VehicleLandedState.OnGround,
         SimulationVehicleStateRequirement.InAir => state.Flight.LandedState == VehicleLandedState.InAir,
-        _ => false
+        var _ => false
     };
 
     private static bool EvaluateCondition(
@@ -806,7 +793,7 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
             SimulationTelemetryMetric.BatteryRemainingPercent => state.Power.BatteryRemainingPercent is { } percent ? (double)percent : null,
             SimulationTelemetryMetric.LatitudeDegrees => state.Position.LatitudeDegrees,
             SimulationTelemetryMetric.LongitudeDegrees => state.Position.LongitudeDegrees,
-            _ => null
+            var _ => null
         };
         var expected = ResolveValue(condition.Expected, variables);
         if (observed is null || expected is null)
@@ -837,7 +824,7 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
                 SimulationComparisonOperator.GreaterThanOrEqual => observedNumber >= expectedNumber,
                 SimulationComparisonOperator.LessThan => observedNumber < expectedNumber,
                 SimulationComparisonOperator.LessThanOrEqual => observedNumber <= expectedNumber,
-                _ => false
+                var _ => false
             };
         }
 
@@ -858,7 +845,7 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
             SimulationScenarioValueKind.Boolean => value.BooleanValue,
             SimulationScenarioValueKind.Number => value.NumberValue,
             SimulationScenarioValueKind.Text => value.TextValue,
-            _ => null
+            var _ => null
         };
     }
 
@@ -919,54 +906,5 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
         }
 
         public SimulationScenarioStep Step { get; }
-    }
-}
-
-/// <summary>Exports complete scenario evidence as versioned JSON or readable text.</summary>
-public sealed class SimulationScenarioReportExporter : ISimulationScenarioReportExporter
-{
-    private static readonly JsonSerializerOptions jsonOptions = CreateOptions();
-
-    /// <inheritdoc />
-    public string ToJson(SimulationScenarioRunReport report)
-    {
-        ArgumentNullException.ThrowIfNull(report);
-        return JsonSerializer.Serialize(report, jsonOptions);
-    }
-
-    /// <inheritdoc />
-    public string ToText(SimulationScenarioRunReport report)
-    {
-        ArgumentNullException.ThrowIfNull(report);
-        var builder = new StringBuilder();
-        builder.AppendLine($"Simulation scenario: {report.ScenarioName}");
-        builder.AppendLine($"Result: {report.Result} — {report.Summary}");
-        builder.AppendLine($"Run: {report.RunId:N}");
-        builder.AppendLine($"Target: session {report.SessionId:N}, vehicle {report.VehicleId}");
-        builder.AppendLine($"Started: {report.StartedAt:O}");
-        builder.AppendLine($"Ended: {report.EndedAt:O}");
-        builder.AppendLine("Steps:");
-        foreach (var step in report.Steps)
-        {
-            builder.AppendLine($"- [{step.Result}] {step.StepId} {step.Name}: {step.Evidence}");
-        }
-
-        if (report.Validation.Capabilities.Count > 0)
-        {
-            builder.AppendLine("Capabilities:");
-            foreach (var capability in report.Validation.Capabilities)
-            {
-                builder.AppendLine($"- [{(capability.Available ? "available" : "unavailable")}] {capability.Name}: {capability.Reason}");
-            }
-        }
-
-        return builder.ToString();
-    }
-
-    private static JsonSerializerOptions CreateOptions()
-    {
-        var result = new JsonSerializerOptions(JsonSerializerDefaults.Web) { WriteIndented = true };
-        result.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
-        return result;
     }
 }

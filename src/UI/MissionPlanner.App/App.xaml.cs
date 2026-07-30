@@ -1,29 +1,24 @@
 ﻿using MissionPlanner.App.Views.Exit;
-using MissionPlanner.App.Configuration;
-using MissionPlanner.App.Helpers;
-using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library;
 using MissionPlanner.Library.EventHub.Abstractions;
 using Serilog;
-using MissionPlanner.App.Services;
 
 namespace MissionPlanner.App;
 
 /// <inheritdoc />
 public partial class App : Application
 {
-    private IServiceProvider serviceProvider;
+    private IServiceProvider serviceProvider = null!;
+    private Window? window;
 
     /// <inheritdoc />
     public App()
     {
         InitializeComponent();
     }
-
-    private Window? window;
 
     /// <inheritdoc />
     protected override Window CreateWindow(IActivationState? activationState)
@@ -54,10 +49,11 @@ public partial class App : Application
     private async void OnWindowDestroying(object? sender, EventArgs e)
     {
         // Ensure the connection is properly closed when the app is closing
-
+        var replayManager = serviceProvider.GetRequiredService<IReplaySessionManager>();
+        var simulationManager = serviceProvider.GetRequiredService<ISimulationSessionManager>();
+        var connectionService = serviceProvider.GetRequiredService<IVehicleConnectionService>();
         try
         {
-            var simulationManager = serviceProvider.GetRequiredService<ISimulationSessionManager>();
             using var simulationShutdown = new CancellationTokenSource(TimeSpan.FromSeconds(12));
             await simulationManager.ShutdownAsync(simulationShutdown.Token).ConfigureAwait(false);
         }
@@ -69,7 +65,6 @@ public partial class App : Application
 
         try
         {
-            var replayManager = serviceProvider.GetRequiredService<IReplaySessionManager>();
             using var replayShutdown = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             await replayManager.CloseAsync(replayShutdown.Token).ConfigureAwait(false);
         }
@@ -81,7 +76,6 @@ public partial class App : Application
 
         try
         {
-            var connectionService = serviceProvider.GetRequiredService<IVehicleConnectionService>();
             await connectionService.DisposeAsync().ConfigureAwait(false);
         }
         catch (Exception ex)

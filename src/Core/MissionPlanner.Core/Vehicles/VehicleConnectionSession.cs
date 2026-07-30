@@ -202,6 +202,75 @@ public sealed class VehicleConnectionSession(
         return linkedCts;
     }
 
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        // Clean up task references
+        connectionTask = null;
+
+        // Stop and dispose services
+        if (messagePumpLease is not null)
+        {
+            try
+            {
+                await messagePumpLease.DisposeAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogDebug(ex, "Non Critical Failure releasing shared message pump");
+            }
+
+            messagePumpLease = null;
+            messagePump = null;
+        }
+
+        if (connection is not null)
+        {
+            try
+            {
+                await connection.DisposeAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogDebug(ex, "Non Critical Failure Disposing connection ");
+            }
+
+            connection = null;
+        }
+
+        parameterStreamService = null;
+        parameterService = null;
+
+        // Stop and disconnect transport
+        if (transport is not null)
+        {
+            try
+            {
+                await transport.DisposeAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogDebug(ex, "Non Critical Failure Disposing transport ");
+            }
+
+            transport = null;
+        }
+
+        // Stop and disconnect client
+        if (client is not null)
+        {
+            try
+            {
+                await client.StopAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogDebug(ex, "Non Critical Failure Disposing client ");
+            }
+
+            client = null;
+        }
+    }
 
     /// <summary>
     /// Internal disconnect method - must be called with connectionLock held or from single-threaded context
@@ -250,72 +319,7 @@ public sealed class VehicleConnectionSession(
                 }
             }
 
-            // Clean up task references
-            connectionTask = null;
-
-            // Stop and dispose services
-            if (messagePumpLease is not null)
-            {
-                try
-                {
-                    await messagePumpLease.DisposeAsync();
-                }
-                catch (Exception ex)
-                {
-                    logger.LogDebug(ex, "Non Critical Failure releasing shared message pump");
-                }
-
-                messagePumpLease = null;
-                messagePump = null;
-            }
-
-            if (connection is not null)
-            {
-                try
-                {
-                    await connection.DisposeAsync();
-                }
-                catch (Exception ex)
-                {
-                    logger.LogDebug(ex, "Non Critical Failure Disposing connection ");
-                }
-
-                connection = null;
-            }
-
-            parameterStreamService = null;
-            parameterService = null;
-
-            // Stop and disconnect transport
-            if (transport is not null)
-            {
-                try
-                {
-                    await transport.DisconnectAsync(cancellationToken);
-                    await transport.DisposeAsync();
-                }
-                catch (Exception ex)
-                {
-                    logger.LogDebug(ex, "Non Critical Failure Disposing transport ");
-                }
-
-                transport = null;
-            }
-
-            // Stop and disconnect client
-            if (client is not null)
-            {
-                try
-                {
-                    await client.StopAsync();
-                }
-                catch (Exception ex)
-                {
-                    logger.LogDebug(ex, "Non Critical Failure Disposing client ");
-                }
-
-                client = null;
-            }
+            await DisposeAsync();
 
             // Remove registry/parameter state only after inbound processing has stopped, so a final
             // datagram cannot recreate a vehicle that this exact connection no longer owns.
@@ -336,17 +340,16 @@ public sealed class VehicleConnectionSession(
             {
                 logger.LogError(ex, "Error while disconnecting Session {VehicleId}", vehicleId);
             }
-
-            // Still null the fields  even if there were errors
-            connection = null;
-            transport = null;
-            client = null;
-            messagePump = null;
-            messagePumpLease = null;
-            parameterStreamService = null;
-            parameterService = null;
         }
 
+        // Always null the fields  even if there were errors
+        connection = null;
+        transport = null;
+        client = null;
+        messagePump = null;
+        messagePumpLease = null;
+        parameterStreamService = null;
+        parameterService = null;
         logger.LogInformation("Successfully disconnected vehicle {VehicleId}", vehicleId);
     }
 
@@ -356,4 +359,6 @@ public sealed class VehicleConnectionSession(
         var fileSystemService = domainFactory.Create<IVehicleFileSystemService, IMavFtpClient>(mavFtpClient);
         return domainFactory.Create<IVehicleParameterStreamService, IVehicleParameterService, IVehicleFileSystemService>(ParameterService, fileSystemService);
     }
+
+    /// <inheritdoc />
 }

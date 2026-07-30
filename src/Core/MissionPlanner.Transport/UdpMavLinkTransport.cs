@@ -159,18 +159,9 @@ public sealed class UdpMavLinkTransport : IUdpMavLinkTransport
     }
 
     /// <inheritdoc />
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
-        isConnected = false;
-        if (udpClient is not null)
-        {
-            udpClient.Close();
-            udpClient.Dispose();
-            udpClient = null!;
-        }
-
+        await DisconnectAsync().ConfigureAwait(false);
         logger.LogTrace("UdpMavLinkTransport - UDP transport disposed");
-
-        return ValueTask.CompletedTask;
     }
 }

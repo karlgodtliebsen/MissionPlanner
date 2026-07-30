@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -69,10 +69,7 @@ public sealed class FirmwareUpdateCoordinator : IFirmwareUpdateCoordinator
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<FirmwareManifestEntry>> DiscoverAsync(
-        VehicleFirmwareIdentity identity,
-        FirmwareReleaseChannel channel,
-        CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FirmwareManifestEntry>> DiscoverAsync(VehicleFirmwareIdentity identity, FirmwareReleaseChannel channel, CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
         Package = null;
@@ -131,11 +128,7 @@ public sealed class FirmwareUpdateCoordinator : IFirmwareUpdateCoordinator
     }
 
     /// <inheritdoc />
-    public async Task<FirmwareFlashResult> FlashAsync(
-        VehicleId vehicleId,
-        VehicleFirmwareIdentity identity,
-        bool parameterBackupConfirmed,
-        CancellationToken cancellationToken = default)
+    public async Task<FirmwareFlashResult> FlashAsync(VehicleId vehicleId, VehicleFirmwareIdentity identity, bool parameterBackupConfirmed, CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
         try
@@ -234,13 +227,20 @@ public sealed class FirmwareUpdateCoordinator : IFirmwareUpdateCoordinator
         {
             logger.LogInformation("Firmware update state changed to {State}: {Status}", state, status);
         }
+
         StateChanged?.Invoke(this, new FirmwareUpdateStateChangedEventArgs(state, status, Math.Clamp(progress, 0, 1)));
     }
 
-    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(disposed, this);
+    private void ThrowIfDisposed()
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+    }
 
     private sealed class InlineProgress<T>(Action<T> callback) : IProgress<T>
     {
-        public void Report(T value) => callback(value);
+        public void Report(T value)
+        {
+            callback(value);
+        }
     }
 }

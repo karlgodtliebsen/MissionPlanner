@@ -33,24 +33,39 @@ public sealed class ModalNavigationService(IServiceProvider serviceProvider, IDi
         });
     }
 
+    private readonly SemaphoreSlim navigationGate = new(1, 1);
+
     /// <inheritdoc />
-    public Task CloseAsync(bool animated = true, CancellationToken cancellationToken = default)
+    public async Task CloseAsync(bool animated = true, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        Task.Run(() => Close(animated, cancellationToken));
+    }
 
-        return dispatcher.DispatchAsync(async () =>
+    private async Task Close(bool animated = true, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        await navigationGate.WaitAsync(cancellationToken);
+        try
         {
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var navigation = GetNavigation();
-
-            if (navigation.ModalStack.Count == 0)
+            await dispatcher.DispatchAsync(async () =>
             {
-                return;
-            }
+                cancellationToken.ThrowIfCancellationRequested();
 
-            await navigation.PopModalAsync(animated);
-        });
+                var navigation = GetNavigation();
+
+                if (navigation.ModalStack.Count == 0)
+                {
+                    return;
+                }
+
+                await navigation.PopModalAsync(animated);
+            });
+        }
+        finally
+        {
+            navigationGate.Release();
+        }
     }
 
     private static INavigation GetNavigation()

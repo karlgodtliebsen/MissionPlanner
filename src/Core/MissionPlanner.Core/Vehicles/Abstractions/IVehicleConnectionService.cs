@@ -51,11 +51,7 @@ public interface IVehicleConnectionService : IAsyncDisposable
     /// <param name="remotePort">Optional remote port for outbound messages.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Connection result; an existing connection produces an explicit failure.</returns>
-    Task<VehicleConnectionResult> ConnectUdpExclusiveAsync(
-        int localPort,
-        string? remoteHost = null,
-        int? remotePort = null,
-        CancellationToken cancellationToken = default);
+    Task<VehicleConnectionResult> ConnectUdpExclusiveAsync(int localPort, string? remoteHost = null, int? remotePort = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Disconnects the transport.

@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Maui;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Options;
@@ -123,6 +124,8 @@ public class ExtendedDialogService : DefaultDialogService, IExtendedDialogServic
         throw new InvalidOperationException("No valid dialog dimension could be resolved.");
     }
 
+    private readonly SemaphoreSlim navigationGate = new(1, 1);
+
 
     /// <inheritdoc />
     public async Task<bool> DisplayViewAsync(
@@ -223,10 +226,7 @@ public class ExtendedDialogService : DefaultDialogService, IExtendedDialogServic
          * cancels waiting for the result; it does not close the popup.
          * The service handles cancellation explicitly below.
          */
-        var popupTask = page.ShowPopupAsync<bool>(
-            popup,
-            popupOptions,
-            CancellationToken.None);
+        var popupTask = page.ShowPopupAsync<bool>(popup, popupOptions, CancellationToken.None);
 
         using var cancellationRegistration = cancellationToken.Register(() => closeRequest.TrySetResult(ViewDialogCloseReason.Cancelled));
 
@@ -255,6 +255,44 @@ public class ExtendedDialogService : DefaultDialogService, IExtendedDialogServic
          */
         var closeReason = await closeRequest.Task;
 
+        await navigationGate.WaitAsync(cancellationToken);
+
+        try
+        {
+            /*
+             * This ThreadPool hop is intentional.
+             *
+             * It allows the current native Windows input event to return before
+             * PopModalAsync starts removing and disconnecting the page's handlers.
+             *
+             * Task.Run(Func<Task>) returns a proxy task for the complete operation,
+             * so exceptions and completion are propagated to the caller.
+             */
+            //Separate the OS Close native event call stack from this close functionality
+            Task.Run(() => CloseDialog(popupTask, popup, popupOptions, contentScrollView, contentHost, closeReason), CancellationToken.None);
+        }
+        finally
+        {
+            navigationGate.Release();
+        }
+
+        /*
+         * Wait until CommunityToolkit has completely removed the PopupPage and
+         * raised PopupClosed. Only then is it safe to show another popup.
+         */
+        var result = await popupTask;
+
+        return closeReason == ViewDialogCloseReason.Cancelled
+            ? throw new OperationCanceledException(cancellationToken)
+            : result is
+            {
+                WasDismissedByTappingOutsideOfPopup: false,
+                Result: true
+            };
+    }
+
+    private async Task CloseDialog(Task<IPopupResult<bool>> popupTask, Popup<bool> popup, PopupOptions popupOptions, ScrollView? contentScrollView, ContentView contentHost, ViewDialogCloseReason closeReason)
+    {
         await dispatcher.DispatchAsync(async () =>
         {
             /*
@@ -295,20 +333,6 @@ public class ExtendedDialogService : DefaultDialogService, IExtendedDialogServic
              */
             await popup.CloseAsync(closeReason == ViewDialogCloseReason.Accepted, CancellationToken.None);
         });
-
-        /*
-         * Wait until CommunityToolkit has completely removed the PopupPage and
-         * raised PopupClosed. Only then is it safe to show another popup.
-         */
-        var result = await popupTask;
-
-        return closeReason == ViewDialogCloseReason.Cancelled
-            ? throw new OperationCanceledException(cancellationToken)
-            : result is
-            {
-                WasDismissedByTappingOutsideOfPopup: false,
-                Result: true
-            };
     }
 }
 

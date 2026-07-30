@@ -167,24 +167,24 @@ public class VehicleConnectionService(
         int localPort,
         string? remoteHost = null,
         int? remotePort = null,
-        CancellationToken cancellationToken = default) =>
-        ConnectUdpCoreAsync(localPort, remoteHost, remotePort, replaceExisting: true, cancellationToken: cancellationToken);
+        CancellationToken cancellationToken = default)
+    {
+        return ConnectUdpCoreAsync(localPort, remoteHost, remotePort, true, cancellationToken);
+    }
 
     /// <inheritdoc />
     public Task<VehicleConnectionResult> ConnectUdpExclusiveAsync(
         int localPort,
         string? remoteHost = null,
         int? remotePort = null,
-        CancellationToken cancellationToken = default) =>
-        ConnectUdpCoreAsync(localPort, remoteHost, remotePort, replaceExisting: false, cancellationToken: cancellationToken);
-
-    private async Task<VehicleConnectionResult> ConnectUdpCoreAsync(
-        int localPort,
-        string? remoteHost,
-        int? remotePort,
-        bool replaceExisting,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken = default)
     {
+        return ConnectUdpCoreAsync(localPort, remoteHost, remotePort, false, cancellationToken);
+    }
+
+    private async Task<VehicleConnectionResult> ConnectUdpCoreAsync(int localPort, string? remoteHost, int? remotePort, bool replaceExisting, CancellationToken cancellationToken)
+    {
+        var token = cancellationToken;
         await connectionLock.WaitAsync(cancellationToken);
         try
         {
@@ -209,7 +209,7 @@ public class VehicleConnectionService(
             var endpoint = $"UDP:{localPort}";
 
 
-            var linkedCts = await connectionSession.CreateUdpConnection(localPort, remoteHost ?? "127.0.0.1", remotePort ?? 14550, null, cancellationToken);
+            var linkedCts = await connectionSession.CreateUdpConnection(localPort, remoteHost ?? "127.0.0.1", remotePort ?? 14550, null, token);
             var connection = connectionSession.Connection;
             var messagePump = connectionSession.MessagePump;
             var parameterService = connectionSession.ParameterService;
@@ -220,7 +220,7 @@ public class VehicleConnectionService(
 
             if (vehicleId == null)
             {
-                await connectionSession.DisconnectAsync(vehicleId, CancellationToken.None);
+                await connectionSession.DisconnectAsync(vehicleId, linkedCts.Token);
                 await PublishConnectionFailed("UDP", endpoint, "No heartbeat received from vehicle");
                 return new VehicleConnectionResult(false, null, null, "Timeout waiting for vehicle heartbeat");
             }
@@ -243,7 +243,7 @@ public class VehicleConnectionService(
             logger.LogError(ex, "Failed to connect to vehicle via UDP local port {LocalPort}", localPort);
             try
             {
-                await connectionSession.DisconnectAsync(activeConnection?.VehicleId, CancellationToken.None);
+                await connectionSession.DisconnectAsync(activeConnection?.VehicleId, token);
             }
             catch (Exception cleanupException)
             {
@@ -367,6 +367,8 @@ public class VehicleConnectionService(
         await domainEventHub.PublishDomainEventAsync(new ConnectionFailed(connectionType, endpoint, error, dateTimeProvider.UtcNow));
     }
 
+    // private bool isDisposing = false;
+
     /// <inheritdoc />
     public async Task DisconnectAsync(CancellationToken cancellationToken = default)
     {
@@ -375,8 +377,6 @@ public class VehicleConnectionService(
             return;
         }
 
-        //  VehicleId? vehicleId = activeConnection.VehicleId;
-        // DomainException.ThrowIfNull(vehicleId);
         await connectionLock.WaitAsync(cancellationToken);
         try
         {
@@ -396,9 +396,7 @@ public class VehicleConnectionService(
         {
             if (activeConnection?.ConnectionId != connectionId)
             {
-                logger.LogInformation(
-                    "Ignored owned disconnect for stale connection generation {ConnectionId}.",
-                    connectionId);
+                logger.LogInformation("Ignored owned disconnect for stale connection generation {ConnectionId}.", connectionId);
                 return false;
             }
 
@@ -446,7 +444,7 @@ public class VehicleConnectionService(
         // Disconnect the active connection (if any)
         if (activeConnection != null)
         {
-            await DisconnectAsync();
+            await connectionSession.DisposeAsync();
         }
 
         activeConnection = null;
