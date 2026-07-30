@@ -100,7 +100,6 @@ public partial class ParameterComparisonViewModel : ObservableObject
 
         var selected = allRows.Where(row => row.IsSelected).Select(row => row.Name).ToArray();
         var staged = comparisons.Stage(comparisonResult, editSession, selected);
-        //IsVisible = false;
         Staged?.Invoke(this, staged.Count);
     }
 

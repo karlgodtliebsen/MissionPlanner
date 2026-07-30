@@ -1,7 +1,9 @@
-﻿namespace MissionPlanner.App.Helpers;
+﻿using Microsoft.Extensions.Logging;
+
+namespace MissionPlanner.App.Helpers;
 
 /// <inheritdoc />
-public sealed class ModalNavigationService(IServiceProvider serviceProvider, IDispatcher dispatcher) : IModalNavigationService
+public sealed class ModalNavigationService(IServiceProvider serviceProvider, IDispatcher dispatcher, ILogger<ModalNavigationService> logger) : IModalNavigationService
 {
     /// <inheritdoc />
     public Task ShowAsync<TPage>(bool animated = true, CancellationToken cancellationToken = default)
@@ -34,18 +36,69 @@ public sealed class ModalNavigationService(IServiceProvider serviceProvider, IDi
     }
 
     private readonly SemaphoreSlim navigationGate = new(1, 1);
+    private int closeRequested;
 
-    /// <inheritdoc />
-    public async Task CloseAsync(bool animated = true, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Requests closure of the current modal page.
+    ///
+    /// The returned task represents acceptance of the close request, not
+    /// completion of the modal navigation operation.
+    /// </summary>
+    public Task CloseAsync(bool animated = true, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        Task.Run(() => Close(animated, cancellationToken));
+
+        /*
+         * Ignore duplicate requests. A semaphore alone would serialize them,
+         * potentially allowing a second request to pop another modal page.
+         */
+        if (Interlocked.CompareExchange(ref closeRequested, 1, 0) != 0)
+        {
+            return Task.CompletedTask;
+        }
+
+        /*
+         * Deliberately do not return this task.
+         *
+         * The bound command must complete before the modal page is removed,
+         * otherwise AsyncRelayCommand completion notifications can overlap
+         * native handler teardown on Windows.
+         */
+        _ = Task.Run(() => CloseSafelyAsync(animated, cancellationToken), CancellationToken.None);
+
+        return Task.CompletedTask;
     }
 
-    private async Task Close(bool animated = true, CancellationToken cancellationToken = default)
+    private async Task CloseSafelyAsync(bool animated, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await CloseCoreAsync(animated, cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+            when (cancellationToken.IsCancellationRequested)
+        {
+            logger.LogDebug(
+                "Modal close request was cancelled before navigation completed.");
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(
+                exception,
+                "An unexpected error occurred while closing the modal page.");
+        }
+        finally
+        {
+            Volatile.Write(ref closeRequested, 0);
+        }
+    }
+
+    private async Task CloseCoreAsync(bool animated, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        await navigationGate.WaitAsync(cancellationToken);
+
+        await navigationGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+
         try
         {
             await dispatcher.DispatchAsync(async () =>
@@ -60,13 +113,47 @@ public sealed class ModalNavigationService(IServiceProvider serviceProvider, IDi
                 }
 
                 await navigation.PopModalAsync(animated);
-            });
+            }).ConfigureAwait(false);
         }
         finally
         {
             navigationGate.Release();
         }
     }
+
+
+    //public async Task CloseAsync(bool animated = true, CancellationToken cancellationToken = default)
+    //{
+    //    cancellationToken.ThrowIfCancellationRequested();
+    //    Task.Run(() => Close(animated, cancellationToken));
+    //}
+
+    //private async Task Close(bool animated = true, CancellationToken cancellationToken = default)
+    //{
+    //    cancellationToken.ThrowIfCancellationRequested();
+    //    await navigationGate.WaitAsync(cancellationToken);
+    //    try
+    //    {
+    //        await dispatcher.DispatchAsync(async () =>
+    //        {
+    //            cancellationToken.ThrowIfCancellationRequested();
+
+    //            var navigation = GetNavigation();
+
+    //            if (navigation.ModalStack.Count == 0)
+    //            {
+    //                return;
+    //            }
+
+    //            await navigation.PopModalAsync(animated);
+    //        });
+    //    }
+    //    finally
+    //    {
+    //        navigationGate.Release();
+    //    }
+    //}
+
 
     private static INavigation GetNavigation()
     {
