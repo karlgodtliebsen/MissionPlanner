@@ -38,7 +38,7 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
 
         UpdateTemplateValueBindings();
         owner.ApplySelectionState(this);
-        owner.RequestAutoColumnMeasurement();
+        owner.RequestRowAutoColumnMeasurement();
     }
 
     /// <summary>

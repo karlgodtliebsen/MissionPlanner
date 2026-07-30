@@ -272,7 +272,7 @@ public partial class VirtualizedDataGrid : Border
     {
         presenters.Add(new WeakReference<VirtualizedDataGridRowPresenter>(presenter));
         ApplySelectionState(presenter);
-        RequestAutoColumnMeasurement();
+        RequestRowAutoColumnMeasurement();
     }
 
     /// <summary>
@@ -312,6 +312,40 @@ public partial class VirtualizedDataGrid : Border
         {
             autoColumnMeasurementScheduled = false;
         }
+    }
+
+    /// <summary>
+    /// Schedules content measurement only when a realized row can contribute to
+    /// an Auto column's width. Templated Auto columns deliberately use the stable
+    /// <see cref="AutoColumnWidth"/> fallback, so recycling those rows must not
+    /// trigger a redundant header/presenter measurement pass.
+    /// </summary>
+    internal void RequestRowAutoColumnMeasurement()
+    {
+        if (!HasContentMeasuredAutoColumn())
+        {
+            return;
+        }
+
+        RequestAutoColumnMeasurement();
+    }
+
+    /// <summary>
+    /// Gets whether any visible Auto column uses the generated cell whose natural
+    /// width can be measured safely.
+    /// </summary>
+    protected internal bool HasContentMeasuredAutoColumn()
+    {
+        if (CellItemTemplate is not null)
+        {
+            return false;
+        }
+
+        return Columns is not null &&
+               Columns.Any(column =>
+                   column.IsVisible &&
+                   column.Width.IsAuto &&
+                   column.CellItemTemplate is null);
     }
 
     private void UpdateMeasuredAutoColumnWidths()

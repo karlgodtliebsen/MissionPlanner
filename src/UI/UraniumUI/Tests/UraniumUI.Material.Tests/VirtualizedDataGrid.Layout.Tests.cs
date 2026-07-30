@@ -111,6 +111,42 @@ public class VirtualizedDataGrid_Layout_Tests
         grid.CreateRow().HeightRequest.ShouldBe(100);
     }
 
+    [Fact]
+    public void TemplatedAutoColumns_ShouldNotBeMeasuredWhenRowsAreRecycled()
+    {
+        var grid = new TestableVirtualizedDataGrid
+        {
+            Columns =
+            [
+                new DataGridColumn
+                {
+                    Title = "Name",
+                    CellItemTemplate = new DataTemplate(() => new Label())
+                }
+            ]
+        };
+
+        grid.ExposedHasContentMeasuredAutoColumn.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void GeneratedAutoColumns_ShouldBeMeasuredFromRealizedRows()
+    {
+        var grid = new TestableVirtualizedDataGrid
+        {
+            Columns =
+            [
+                new DataGridColumn
+                {
+                    Title = "Name",
+                    ValueBinding = new Binding(nameof(Row.Name))
+                }
+            ]
+        };
+
+        grid.ExposedHasContentMeasuredAutoColumn.ShouldBeTrue();
+    }
+
     private sealed class TestableVirtualizedDataGrid : VirtualizedDataGrid.Controls.VirtualizedDataGrid
     {
         public CollectionView ExposedRowsView => RowsView;
@@ -118,6 +154,9 @@ public class VirtualizedDataGrid_Layout_Tests
         public Grid ExposedRowsHost => ExposedTableLayout.Children
             .OfType<Grid>()
             .Single(child => child.Children.Contains(RowsView));
+
+        public bool ExposedHasContentMeasuredAutoColumn =>
+            HasContentMeasuredAutoColumn();
 
         public Grid ExposedRootLayout => Content.ShouldBeOfType<Grid>();
 
