@@ -45,6 +45,51 @@ public sealed class FullParametersListLifecycleTests
         fixture.ViewModel.StatusMessage.Should().Be("Connect a vehicle, then refresh parameters.");
     }
 
+    /// <summary>Verifies page deactivation releases its large parameter projection.</summary>
+    [Fact]
+    public void DisposeClearsProjectedParameterRows()
+    {
+        using var fixture = CreateFixture(true);
+        var session = Substitute.For<IParameterEditSession>();
+        var field = new ParameterEditField(
+            "TEST_PARAM",
+            MavLink.Parameters.MavParamType.Real32,
+            1,
+            1,
+            1,
+            ParameterFieldMetadata.Empty,
+            null);
+        fixture.ViewModel.Parameters.Add(new ParameterItemViewModel(session, field));
+
+        fixture.ViewModel.Dispose();
+
+        fixture.ViewModel.Parameters.Should().BeEmpty();
+        fixture.ViewModel.HasRows.Should().BeFalse();
+        fixture.ViewModel.TotalParameterCount.Should().Be(0);
+    }
+
+    /// <summary>Verifies session-wide notifications do not rewrite unchanged rows.</summary>
+    [Fact]
+    public void ReapplyingUnchangedFieldDoesNotRaiseRowNotifications()
+    {
+        var session = Substitute.For<IParameterEditSession>();
+        var field = new ParameterEditField(
+            "TEST_PARAM",
+            MavLink.Parameters.MavParamType.Real32,
+            1,
+            1,
+            1,
+            ParameterFieldMetadata.Empty,
+            null);
+        var item = new ParameterItemViewModel(session, field);
+        var notifications = 0;
+        item.PropertyChanged += (_, _) => notifications++;
+
+        item.SetField(field);
+
+        notifications.Should().Be(0);
+    }
+
     /// <summary>Verifies deactivation cancels a load without disposing its source before the load exits.</summary>
     [Fact]
     public async Task DeactivationCancelsLoadBeforeOwningOperationDisposesSource()

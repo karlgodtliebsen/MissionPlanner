@@ -38,6 +38,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     private ParameterApplyReport? lastApplyReport;
     private IDisposable? progressDialog;
     private bool disposed;
+    private int sessionRefreshScheduled;
 
     /// <summary>Gets whether the page is temporarily covered by its owned progress dialog.</summary>
     public bool IsShowingProgressDialog { get; private set; }
@@ -645,20 +646,31 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
     private void OnEditSessionChanged(object? sender, EventArgs args)
     {
-        dispatcher.Dispatch(() =>
+        if (disposed ||
+            Interlocked.Exchange(ref sessionRefreshScheduled, 1) != 0)
         {
-            if (disposed || editSession is null)
-            {
-                return;
-            }
+            return;
+        }
 
-            SynchronizeParameterItems();
-            if (!editSession.IsValid)
+        if (!dispatcher.Dispatch(() =>
             {
-                var m = editSession.InvalidReason ?? "This parameter session is stale.";
-                SetMessages(m);
-            }
-        });
+                Interlocked.Exchange(ref sessionRefreshScheduled, 0);
+
+                if (disposed || editSession is null)
+                {
+                    return;
+                }
+
+                SynchronizeParameterItems();
+                if (!editSession.IsValid)
+                {
+                    var m = editSession.InvalidReason ?? "This parameter session is stale.";
+                    SetMessages(m);
+                }
+            }))
+        {
+            Interlocked.Exchange(ref sessionRefreshScheduled, 0);
+        }
     }
 
     private void SynchronizeParameterItems(IProgress<ParameterStreamProgress>? progress = null)
@@ -767,9 +779,25 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         }
 
         disposed = true;
+        Interlocked.Exchange(ref sessionRefreshScheduled, 0);
         activeVehicle.Changed -= OnActiveVehicleChanged;
         CancelLoadOperation();
-        editSession?.Changed -= OnEditSessionChanged;
+        CloseProgressDialog();
+
+        if (editSession is not null)
+        {
+            editSession.Changed -= OnEditSessionChanged;
+            editSession = null;
+        }
+
+        // The page is retained by Shell even though this view model is transient.
+        // Release the large row graph immediately so recycled editor controls and
+        // parameter metadata do not remain rooted while another page is active.
+        Parameters.Clear();
+        lastApplyReport = null;
+        HasRows = false;
+        TotalParameterCount = 0;
+        ModifiedParameterCount = 0;
     }
 
     private void CloseProgressDialog()

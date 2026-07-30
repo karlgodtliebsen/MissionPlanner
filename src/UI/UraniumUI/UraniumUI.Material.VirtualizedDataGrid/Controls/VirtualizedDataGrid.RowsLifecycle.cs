@@ -206,6 +206,18 @@ public partial class VirtualizedDataGrid
             !ReferenceEquals(appliedRowsSource, source);
 
         ResetRowsRetry();
+
+        // A null source is a release operation, not ordinary data loading. Apply
+        // it synchronously while the native host is still usable; otherwise Shell
+        // can detach the handler before the queued callback runs and the retained
+        // CollectionView continues to root the previous rows until navigation back.
+        RefreshRowsHostState();
+        if (source is null && CanUseRowsPlatformHost)
+        {
+            ApplyPendingRowsSource(rowsHandlerGeneration);
+            return;
+        }
+
         QueueRowsSourceApplication();
     }
 

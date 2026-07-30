@@ -22,6 +22,7 @@ public partial class ParameterItemViewModel : ObservableObject
     private readonly IParameterEditSession? editSession;
     private ParameterFieldMetadata? editMetadata;
     private MavParamType? editType;
+    private ParameterEditField? projectedField;
 
     private bool loadingData;
 
@@ -134,6 +135,11 @@ public partial class ParameterItemViewModel : ObservableObject
     /// <param name="field">The latest field projection.</param>
     public void SetField(ParameterEditField field)
     {
+        if (field == projectedField)
+        {
+            return;
+        }
+
         var pendingValue = field.PendingValue;
         var pendingValueChanged = Math.Abs(Value - pendingValue) > 0.0001f;
         var editorDefinitionChanged =
@@ -171,6 +177,7 @@ public partial class ParameterItemViewModel : ObservableObject
         finally
         {
             loadingData = false;
+            projectedField = field;
         }
     }
 

@@ -28,8 +28,9 @@ public partial class AppShell : Shell
 
     private void OnNavigating(object? sender, ShellNavigatingEventArgs e)
     {
-        var current = e.Current?.Location.ToString();
-        navigationEventHub.Publish(new NavigatingEvent(null, current, e));
+        var previous = e.Current?.Location.ToString();
+        var current = e.Target?.Location.ToString();
+        navigationEventHub.Publish(new NavigatingEvent(previous, current, e));
     }
 
     private void OnNavigated(object? sender, ShellNavigatedEventArgs e)
