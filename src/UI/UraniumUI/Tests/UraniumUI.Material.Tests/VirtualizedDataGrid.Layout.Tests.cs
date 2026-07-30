@@ -1,9 +1,9 @@
-#nullable enable
+﻿#nullable enable
 
 using Shouldly;
 using UraniumUI.Material.Controls;
+using UraniumUI.Material.Tests.UraniumUI.Core.Tests;
 using UraniumUI.Material.VirtualizedDataGrid.Controls;
-using UraniumUI.Tests.Core;
 using Xunit;
 
 namespace UraniumUI.Material.Tests;

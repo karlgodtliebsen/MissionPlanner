@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Storage;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
+using MissionPlanner.App.Helpers;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
@@ -183,8 +184,8 @@ public sealed class FullParametersListLifecycleTests
             editSessionFactory ?? Substitute.For<IParameterEditSessionFactory>(),
             dispatcher,
             extendedDialogService,
-            extendedDialogService,
             Substitute.For<IDomainFactory>(),
+            Substitute.For<IModalNavigationService>(),
             new ParametersFileHandler(Substitute.For<IFileSaver>()),
             Substitute.For<IUserConfirmationService>(),
             Substitute.For<IParameterProfileRepository>(),

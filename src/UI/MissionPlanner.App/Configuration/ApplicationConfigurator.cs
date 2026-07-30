@@ -94,6 +94,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<INavigationEventHub, NavigationEventHub>();
         services.TryAddSingleton<IParameterComparisonService, ParameterComparisonService>();
         services.TryAddSingleton<IParameterValueEquivalence, ParameterValueEquivalence>();
+        services.TryAddSingleton<IModalNavigationService, ModalNavigationService>();
 
         services
             .AddLibraryServices()

@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.ObjectModel;
 using Shouldly;
 using UraniumUI.Material.Controls;
+using UraniumUI.Material.Tests.UraniumUI.Core.Tests;
 using UraniumUI.Tests.Core;
 using Xunit;
 

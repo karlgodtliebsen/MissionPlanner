@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.App.Helpers;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.Common;
 using MissionPlanner.Core.ConfigTuning;
@@ -26,6 +27,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     private readonly IDispatcher dispatcher;
     private readonly IExtendedDialogService dialogService;
     private readonly IDomainFactory domainFactory;
+    private readonly IModalNavigationService modalNavigationService;
     private readonly ParametersFileHandler parametersFileHandler;
     private readonly IUserConfirmationService confirmation;
     private readonly IParameterProfileRepository profiles;
@@ -47,6 +49,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="dialogService">The extended dialog service.</param>
     /// <param name="domainFactory">The domain view factory.</param>
+    /// <param name="modalNavigationService">The modal navigation service.</param>
     /// <param name="parametersFileHandler">The parameter import/export adapter.</param>
     /// <param name="confirmation">The hazardous-action confirmation service.</param>
     /// <param name="profiles">The named profile repository.</param>
@@ -59,6 +62,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         IDispatcher dispatcher,
         IExtendedDialogService dialogService,
         IDomainFactory domainFactory,
+        IModalNavigationService modalNavigationService,
         ParametersFileHandler parametersFileHandler,
         IUserConfirmationService confirmation,
         IParameterProfileRepository profiles,
@@ -71,6 +75,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         this.dispatcher = dispatcher;
         this.dialogService = dialogService;
         this.domainFactory = domainFactory;
+        this.modalNavigationService = modalNavigationService;
         this.parametersFileHandler = parametersFileHandler;
         this.confirmation = confirmation;
         this.profiles = profiles;
@@ -248,7 +253,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
 
     [RelayCommand(CanExecute = nameof(CanRefreshParameters))]
-    private async Task ClearParametersAsync()
+    private async Task ClearParametersAsync(CancellationToken cancellationToken)
     {
         await dispatcher.DispatchAsync(() => Parameters.Clear());
     }
@@ -483,7 +488,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     }
 
     [RelayCommand(CanExecute = nameof(CanCompareParameters))]
-    private async Task CompareParametersAsync()
+    private async Task CompareParametersAsync(CancellationToken cancellationToken)
     {
         if (editSession is null)
         {
@@ -492,8 +497,9 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
         var viewModel = domainFactory.Create<ParameterComparisonViewModel, IParameterEditSession>(editSession);
         var view = domainFactory.Create<ParameterComparisonView, ParameterComparisonViewModel>(viewModel);
-        await dialogService.DisplayViewAsync("Compare", view, new Size(1024, 768), "OK");
+        await modalNavigationService.ShowAsync(view, true, cancellationToken);
 
+        //await dialogService.DisplayViewAsync("Compare", view, new Size(1024, 768), "OK");
         //var result = Comparison.Show(editSession);
         //SetMessages($"Comparing {result.Left.Name} with {result.Right.Name} from {result.Right.Timestamp:g}.", result.Warning);
     }

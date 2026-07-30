@@ -78,11 +78,9 @@
                 Command="{Binding LoadPreSavedCommand}" />
 
 
-                <Button 
-                Padding="8,4"
+                <Button Text="Revert Changes"
                 VerticalOptions="Center"
                 Command="{Binding RevertChangesCommand}" />
-
 
             </HorizontalStackLayout>
 

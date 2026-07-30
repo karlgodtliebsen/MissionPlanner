@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
+using MissionPlanner.App.Helpers;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Comparison;
 using MissionPlanner.Library;
@@ -17,15 +18,24 @@ public partial class ParameterComparisonViewModel : ObservableObject
     private readonly IParameterComparisonService comparisons;
     private readonly ParametersFileHandler parametersFileHandler;
     private readonly IDateTimeProvider dateTimeProvider;
+    private readonly IModalNavigationService modalNavigationService;
+
 
     /// <summary>Provides the parameter comparison workspace.</summary>
-    public ParameterComparisonViewModel(IParameterComparisonService comparisons, ParametersFileHandler parametersFileHandler, IDateTimeProvider dateTimeProvider, IParameterEditSession session)
+    public ParameterComparisonViewModel(IParameterComparisonService comparisons, IModalNavigationService modalNavigationService, ParametersFileHandler parametersFileHandler, IDateTimeProvider dateTimeProvider, IParameterEditSession session)
     {
         this.comparisons = comparisons;
+        this.modalNavigationService = modalNavigationService;
         this.parametersFileHandler = parametersFileHandler;
         this.dateTimeProvider = dateTimeProvider;
         editSession = session;
         Show();
+    }
+
+    [RelayCommand]
+    private async Task CloseAsync(CancellationToken cancellationToken)
+    {
+        await modalNavigationService.CloseAsync(true, cancellationToken);
     }
 
     /// <summary>Gets the currently filtered comparison rows.</summary>
@@ -34,24 +44,9 @@ public partial class ParameterComparisonViewModel : ObservableObject
     /// <summary>Gets the available comparison status filters.</summary>
     public IReadOnlyList<string> Filters { get; } = ["Differences", "Missing", "Invalid", "Modified", "All"];
 
-    ///// <summary>Gets whether the comparison workspace is visible.</summary>
-    //[ObservableProperty]
-    //public partial bool IsVisible { get; set; }
-
     /// <summary>Gets or sets the comparison status filter.</summary>
     [ObservableProperty]
     public partial string Filter { get; set; } = "Differences";
-
-
-    //partial void OnIsVisibleChanged(bool oldValue, bool newValue)
-    //{
-    //    if (oldValue == newValue)
-    //    {
-    //        return;
-    //    }
-
-    //    Visibility?.Invoke(this, newValue);
-    //}
 
     partial void OnFilterChanged(string value)
     {
@@ -86,12 +81,6 @@ public partial class ParameterComparisonViewModel : ObservableObject
         FilterRows();
         //IsVisible = true;
         return comparisonResult;
-    }
-
-    [RelayCommand]
-    private void Close()
-    {
-        //   IsVisible = false;
     }
 
     [RelayCommand]
