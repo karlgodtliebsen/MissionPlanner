@@ -12,7 +12,6 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Parameters;
-using UraniumUI.Dialogs;
 using UraniumUI.Material.Dialogs;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
@@ -25,8 +24,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IParameterEditSessionFactory editSessionFactory;
     private readonly IDispatcher dispatcher;
-    private readonly IDialogService dialogService;
-    private readonly IExtendedDialogService extendedDialogService;
+    private readonly IExtendedDialogService dialogService;
     private readonly IDomainFactory domainFactory;
     private readonly ParametersFileHandler parametersFileHandler;
     private readonly IUserConfirmationService confirmation;
@@ -47,8 +45,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     /// <param name="activeVehicle">The application active-vehicle context.</param>
     /// <param name="editSessionFactory">The shared parameter editing-session factory.</param>
     /// <param name="dispatcher">The UI dispatcher.</param>
-    /// <param name="dialogService">The dialog service.</param>
-    /// <param name="extendedDialogService">The extended dialog service.</param>
+    /// <param name="dialogService">The extended dialog service.</param>
     /// <param name="domainFactory">The domain view factory.</param>
     /// <param name="parametersFileHandler">The parameter import/export adapter.</param>
     /// <param name="confirmation">The hazardous-action confirmation service.</param>
@@ -60,8 +57,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         IActiveVehicleContext activeVehicle,
         IParameterEditSessionFactory editSessionFactory,
         IDispatcher dispatcher,
-        IDialogService dialogService,
-        IExtendedDialogService extendedDialogService,
+        IExtendedDialogService dialogService,
         IDomainFactory domainFactory,
         ParametersFileHandler parametersFileHandler,
         IUserConfirmationService confirmation,
@@ -74,7 +70,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         this.editSessionFactory = editSessionFactory;
         this.dispatcher = dispatcher;
         this.dialogService = dialogService;
-        this.extendedDialogService = extendedDialogService;
         this.domainFactory = domainFactory;
         this.parametersFileHandler = parametersFileHandler;
         this.confirmation = confirmation;
@@ -276,7 +271,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         {
             await SetLoadStateAsync();
             IsShowingProgressDialog = true;
-            progressDialog = await extendedDialogService.DisplayProgressCancellableAsync("Loading parameters", () => ProgressMessage, tokenSource: loadCancellation);
+            progressDialog = await dialogService.DisplayProgressCancellableAsync("Loading parameters", () => ProgressMessage, tokenSource: loadCancellation);
             var progress = CreateProgress();
             cancellationToken.ThrowIfCancellationRequested();
             logger.LogInformation("Loading the Full Parameters List for {VehicleId}.", vehicleId);
@@ -497,7 +492,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
         var viewModel = domainFactory.Create<ParameterComparisonViewModel, IParameterEditSession>(editSession);
         var view = domainFactory.Create<ParameterComparisonView, ParameterComparisonViewModel>(viewModel);
-        await dialogService.DisplayViewAsync("Compare", view, "OK");
+        await dialogService.DisplayViewAsync("Compare", view, new Size(1024, 768), "OK");
 
         //var result = Comparison.Show(editSession);
         //SetMessages($"Comparing {result.Left.Name} with {result.Right.Name} from {result.Right.Timestamp:g}.", result.Warning);

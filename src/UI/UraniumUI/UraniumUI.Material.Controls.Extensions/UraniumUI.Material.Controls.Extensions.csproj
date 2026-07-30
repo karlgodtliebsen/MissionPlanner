@@ -17,6 +17,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.Maui.Controls" />
         <PackageReference Include="Plainer.Maui" />
+        <PackageReference Include="UraniumUI.Dialogs.CommunityToolkit" />
         <PackageReference Include="UraniumUI.Icons.FontAwesome" />
         <PackageReference Include="UraniumUI.Icons.MaterialSymbols" />
         <PackageReference Include="UraniumUI.Material" />

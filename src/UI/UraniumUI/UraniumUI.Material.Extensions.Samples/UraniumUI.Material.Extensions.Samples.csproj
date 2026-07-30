@@ -113,6 +113,12 @@
 	  <MauiXaml Update="DataGrids\SimpleDataGridPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="DialogSamples\DialogContentView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="DialogSamples\DialogSampleView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Resources\Styles\Override.xaml">
 	    <Inflator>XamlC</Inflator>
 	    <Generator></Generator>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<uranium:UraniumContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                    x:Class="UraniumUI.Material.Extensions.Samples.DialogSamples.DialogSampleView"
+                    Title="DialogSampleView">
+
+    <Border StrokeShape="Rectangle,10"  Margin="100">
+        <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Fill" Margin="100" Spacing="50">
+            <Label 
+            Text="Welcome to UraniumUI Extensions!"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center" />
+            <Button 
+            Text="Show Extended View Dialog"
+            Padding="10,4"
+            VerticalOptions="Center"
+            Command="{Binding ShowExtendedDialogCommand}" >
+            </Button>
+
+        </VerticalStackLayout>
+    </Border>
+</uranium:UraniumContentPage>

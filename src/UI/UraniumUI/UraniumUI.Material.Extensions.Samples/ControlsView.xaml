@@ -34,7 +34,7 @@
         <!-- Recommended parameter usage:
              Bind Text when the current ViewModel value is a string. -->
         <controls:NumericUpDownField
-            Title="Text - Numeric"
+            Title="Text - Numeric - Left Aligned"
             Text="{Binding Value, Mode=TwoWay}"
             Min="{Binding Minimum}"
             Max="{Binding Maximum}"
@@ -47,7 +47,7 @@
             BorderColor="Aqua" />
 
         <controls:NumericUpDownField
-            Title="Text - Numeric"
+            Title="Text - Numeric - Center Aligned"
             Text="{Binding Value, Mode=TwoWay}"
             Min="{Binding Minimum}"
             Max="{Binding Maximum}"
@@ -60,7 +60,7 @@
             BorderColor="Aqua" />
 
         <controls:NumericUpDownField
-            Title="Text - Numeric"
+            Title="Text - Numeric - Right Aligned"
             Text="{Binding Value, Mode=TwoWay}"
             Min="{Binding Minimum}"
             Max="{Binding Maximum}"
