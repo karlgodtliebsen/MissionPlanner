@@ -23,7 +23,7 @@ Do not duplicate those documents here.
 - `src/Core/MissionPlanner.Core`: domain models, observations, application/domain services.
 - `src/UI/MissionPlanner.App`: MAUI views and ViewModels.
 - `src/Tests`: unit, simulator, smoke, and hardware integration tests.
-- `src-v.1`: original Mission Planner source for behavioral reference only; do not modify it unless explicitly requested.
+- `src-v.1.38`: original Mission Planner source for behavioral reference only; do not modify it unless explicitly requested.
 
 ## Working rules
 

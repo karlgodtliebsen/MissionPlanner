@@ -216,10 +216,6 @@ Feature description per tab comes from v1.38 (`FlightData.Designer.cs` tab pages
 
 
 
-
-
-
-
 # PLAN (FlightPlan)
 
 The Plan screen is the dedicated mission editor, replacing `src-v.1.38/GCSViews/FlightPlanner.cs`.

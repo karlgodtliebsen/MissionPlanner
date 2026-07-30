@@ -310,11 +310,6 @@ Follow
 
 ## MAUI XAML
 
-Every `Button` declared in MAUI XAML must explicitly include both of these attributes:
-
-```xml
-BackgroundColor="Transparent" FontSize="14"
-```
 
 Use English for:
 
