@@ -2,6 +2,7 @@
 using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using UraniumUI.Dialogs;
 using UraniumUI.Infrastructure;
@@ -15,11 +16,111 @@ namespace UraniumUI.Material.Dialogs;
 public class ExtendedDialogService : DefaultDialogService, IExtendedDialogService
 {
     private readonly IDispatcher dispatcher;
+    private readonly ILogger<ExtendedDialogService> logger;
 
     /// <inheritdoc />
-    public ExtendedDialogService(IDispatcher dispatcher, IOptions<DialogOptions> options) : base(options)
+    public ExtendedDialogService(IDispatcher dispatcher, IOptions<DialogOptions> options, ILogger<ExtendedDialogService> logger)
+        : base(options)
     {
         this.dispatcher = dispatcher;
+        this.logger = logger;
+    }
+
+    /// <inheritdoc />
+    public new async Task DisplayViewAsync(string title, View content, string okText = "OK")
+    {
+        await DisplayLightweightViewAsync(title, content, okText, null);
+    }
+
+    /// <inheritdoc />
+    public new Task<bool> DisplayViewAsync(string title, View content, string okText, string cancelText)
+    {
+        return DisplayLightweightViewAsync(title, content, okText, cancelText);
+    }
+
+    private async Task<bool> DisplayLightweightViewAsync(
+        string title,
+        View content,
+        string okText,
+        string? cancelText)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+
+        if (content.Parent is not null)
+        {
+            throw new InvalidOperationException(
+                "The dialog content already has a parent. " +
+                "Create a new view for each dialog opening.");
+        }
+
+        var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var closeRequested = 0;
+
+        var popupPage = new DefaultDialogAnimatedContentPage { BackgroundColor = GetBackdropColor() };
+
+        void RequestClose(bool accepted)
+        {
+            if (Interlocked.CompareExchange(
+                    ref closeRequested,
+                    1,
+                    0) != 0)
+            {
+                return;
+            }
+
+            // Deliberately detached: the native button command and Windows
+            // input event must finish before modal handler teardown starts.
+            _ = Task.Run(() => CloseLightweightDialogSafelyAsync(popupPage, completion, accepted), CancellationToken.None);
+        }
+
+        var footerButtons = new Dictionary<string, Command> { [okText] = new(() => RequestClose(true)) };
+
+        if (!string.IsNullOrWhiteSpace(cancelText))
+        {
+            footerButtons[cancelText] =
+                new Command(() => RequestClose(false));
+        }
+
+        popupPage.Content = GetFrame(
+            Page.Width,
+            new VerticalStackLayout { Children = { GetHeader(title), content, GetDivider(), GetFooter(footerButtons) } });
+
+        await dispatcher.DispatchAsync(async () => await Page.Navigation.PushModalAsync(
+            ConfigurePopupPage(popupPage),
+            false));
+
+        return await completion.Task.ConfigureAwait(false);
+    }
+
+    private async Task CloseLightweightDialogSafelyAsync(DefaultDialogAnimatedContentPage popupPage, TaskCompletionSource<bool> completion, bool accepted)
+    {
+        await navigationGate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+
+        try
+        {
+            await dispatcher.DispatchAsync(async () =>
+            {
+                if (Page.Navigation.ModalStack.LastOrDefault() != popupPage)
+                {
+                    completion.TrySetResult(false);
+                    return;
+                }
+
+                await popupPage.CloseAsync();
+                completion.TrySetResult(accepted);
+            }).ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(
+                exception,
+                "Failed to close the lightweight UraniumUI dialog.");
+            completion.TrySetException(exception);
+        }
+        finally
+        {
+            navigationGate.Release();
+        }
     }
 
     /// <inheritdoc />
@@ -334,42 +435,4 @@ public class ExtendedDialogService : DefaultDialogService, IExtendedDialogServic
             await popup.CloseAsync(closeReason == ViewDialogCloseReason.Accepted, CancellationToken.None);
         });
     }
-}
-
-/// <summary>
-/// Options for configuring the appearance and behavior of a view dialog.
-/// </summary>
-public sealed record ViewDialogOptions
-{
-    /// <summary>
-    /// Requested size of the complete dialog, including header and footer.
-    /// It will always be clamped to the current page/window.
-    /// </summary>
-    public Size? RequestedSize { get; init; }
-
-    /// <summary>
-    /// Space retained between the dialog and the current window.
-    /// Phone dialogs use at most 12 DIPs regardless of this value.
-    /// </summary>
-    public double OuterMargin { get; init; } = 24;
-
-    public double DefaultDesktopWidth { get; init; } = 1024;
-
-    public double DefaultDesktopHeight { get; init; } = 768;
-
-    public double DefaultTabletWidthRatio { get; init; } = 0.90;
-
-    public double DefaultTabletHeightRatio { get; init; } = 0.90;
-
-    public bool CanDismissByTappingOutside { get; init; }
-
-    public double MinimumHeightRequest { get; set; }
-    public double MinimumWidthRequest { get; set; }
-
-
-    /// <summary>
-    /// Enable only when the supplied content does not already contain
-    /// a ScrollView, CollectionView, DataGrid, or another scrolling control.
-    /// </summary>
-    public bool WrapContentInScrollView { get; init; }
 }

@@ -2,9 +2,11 @@
 <uranium:UraniumContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="UraniumUI.Material.Extensions.Samples.ControlsView"
+    x:Class="UraniumUI.Material.Extensions.Samples.ControlsSamples.ControlsView"
+    x:DataType="controlsSamples:ControlsViewModel"
     xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
-    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui">
+    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+    xmlns:controlsSamples="using:UraniumUI.Material.Extensions.Samples.ControlsSamples">
 
     <VerticalStackLayout Padding="24" Spacing="20">
 
@@ -102,5 +104,37 @@
             HorizontalTextAlignment="End"
             VerticalTextAlignment="Center"
             WidthRequest="220" />
+
+        <BoxView  StyleClass="Divider" />
+
+        <controls:ExtendedMultiplePickerField 
+                                              Title="Multiple options"
+                                              BorderColor="Aqua"
+                                              TitleFontSize="10"
+                                              FontSize="14"
+                                              WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
+                                              ItemsSource="{Binding Items}"
+                                              SelectedItems="{Binding SelectedItems}" />
+        <controls:ExtendedMultiplePickerField 
+                                                
+                                                BorderColor="Aqua"
+                                                TitleFontSize="10"
+                                                FontSize="14"
+                                                WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
+                                                ItemsSource="{Binding Items}"
+                                                SelectedItems="{Binding SelectedItems}" />
+
+
+        <controls:ExtendedMultiplePickerField 
+                            Title="Multiple options"              
+                            EmptySelectionText=""
+                            BorderColor="Aqua"
+                            TitleFontSize="10"
+                            FontSize="14"
+                            WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
+                            ItemsSource="{Binding Items}"
+                            SelectedItems="{Binding SelectedItems}" />
+
+
     </VerticalStackLayout>
 </uranium:UraniumContentPage>

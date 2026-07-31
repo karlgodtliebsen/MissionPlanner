@@ -105,7 +105,7 @@
                                             SelectedItem="{Binding SelectedValue}" />
 
 
-                                <material:MultiplePickerField  IsVisible="{Binding HasBitmask}"
+                                <!--<material:MultiplePickerField  IsVisible="{Binding HasBitmask}"
                                                      Title="Multiple options"
                                                      BorderColor="Aqua"
                                                      TitleFontSize="10"
@@ -113,7 +113,17 @@
                                                      WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
                                                      ItemsSource="{Binding BitmaskOptions}" 
                                                      SelectedValuesChangedCommand="{Binding SelectedValuesChanged}"
-                                                     SelectedItems="{Binding SelectedBitmaskItems}" />
+                                                     SelectedItems="{Binding SelectedBitmaskItems}" />-->
+
+                                <controls:ExtendedMultiplePickerField IsVisible="{Binding HasBitmask}"
+                                                                      Title="Multiple options"
+                                                                      BorderColor="Aqua"
+                                                                      TitleFontSize="10"
+                                                                      FontSize="14"
+                                                                      WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
+                                                                      ItemsSource="{Binding BitmaskOptions}"
+                                                                      SelectedValuesChangedCommand="{Binding SelectedValuesChanged}"
+                                                                      SelectedItems="{Binding SelectedBitmaskItems}" />
 
                                 <controls:NumericUpDownField IsVisible="{Binding HasNumericRangeData}" 
                                                                      Title="Number" 

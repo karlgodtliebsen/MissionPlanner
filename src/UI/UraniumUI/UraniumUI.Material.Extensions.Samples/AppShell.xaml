@@ -12,6 +12,7 @@
     xmlns:virtualizedDataGridSample="clr-namespace:UraniumUI.Material.Extensions.Samples.VirtualizedDataGridSample"
     xmlns:dataGrids="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids"
     xmlns:dialogSamples="using:UraniumUI.Material.Extensions.Samples.DialogSamples"
+    xmlns:controlsSamples="using:UraniumUI.Material.Extensions.Samples.ControlsSamples"
     x:Name="thisShell"
     FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
     Shell.FlyoutBehavior="Flyout"
@@ -76,7 +77,7 @@
         </Grid>
     </Shell.FlyoutContent>
     <FlyoutItem Title="Extended Controls" >
-        <ShellContent Title="Extended Controls" ContentTemplate="{DataTemplate local:ControlsView}" Route="Controls" />
+        <ShellContent Title="Extended Controls" ContentTemplate="{DataTemplate controlsSamples:ControlsView}" Route="Controls" />
     </FlyoutItem>
     <FlyoutItem Title="Extended Dialogs" >
         <ShellContent Title="Extended Dialogs" ContentTemplate="{DataTemplate dialogSamples:DialogSampleView}" Route="Dialogs" />

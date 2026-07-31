@@ -121,40 +121,6 @@ public sealed class ModalNavigationService(IServiceProvider serviceProvider, IDi
         }
     }
 
-
-    //public async Task CloseAsync(bool animated = true, CancellationToken cancellationToken = default)
-    //{
-    //    cancellationToken.ThrowIfCancellationRequested();
-    //    Task.Run(() => Close(animated, cancellationToken));
-    //}
-
-    //private async Task Close(bool animated = true, CancellationToken cancellationToken = default)
-    //{
-    //    cancellationToken.ThrowIfCancellationRequested();
-    //    await navigationGate.WaitAsync(cancellationToken);
-    //    try
-    //    {
-    //        await dispatcher.DispatchAsync(async () =>
-    //        {
-    //            cancellationToken.ThrowIfCancellationRequested();
-
-    //            var navigation = GetNavigation();
-
-    //            if (navigation.ModalStack.Count == 0)
-    //            {
-    //                return;
-    //            }
-
-    //            await navigation.PopModalAsync(animated);
-    //        });
-    //    }
-    //    finally
-    //    {
-    //        navigationGate.Release();
-    //    }
-    //}
-
-
     private static INavigation GetNavigation()
     {
         var application = Application.Current

@@ -175,7 +175,7 @@
                                               SelectedItem="{Binding SelectedValue}" />
 
 
-                                        <material:MultiplePickerField  IsVisible="{Binding HasBitmask}"
+                                        <controls:ExtendedMultiplePickerField IsVisible="{Binding HasBitmask}"
                                                        Title="Multiple options"
                                                        BorderColor="Aqua"
                                                        TitleFontSize="10"

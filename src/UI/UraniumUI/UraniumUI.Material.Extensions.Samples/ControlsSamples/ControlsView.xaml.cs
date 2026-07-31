@@ -1,6 +1,6 @@
 ﻿using UraniumUI.Pages;
 
-namespace UraniumUI.Material.Extensions.Samples;
+namespace UraniumUI.Material.Extensions.Samples.ControlsSamples;
 
 /// <summary>
 /// Represents the controls view.
@@ -13,5 +13,6 @@ public partial class ControlsView : UraniumContentPage
     public ControlsView()
     {
         InitializeComponent();
+        BindingContext = new ControlsViewModel();
     }
 }

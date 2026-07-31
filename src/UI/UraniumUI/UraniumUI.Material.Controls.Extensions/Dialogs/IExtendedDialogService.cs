@@ -7,6 +7,20 @@ namespace UraniumUI.Material.Dialogs;
 /// </summary>
 public interface IExtendedDialogService : IDialogService
 {
+    new
+        /// <summary>
+        /// Displays a view in a lightweight modal dialog with a resilient,
+        /// command-detached close operation.
+        /// </summary>
+        Task DisplayViewAsync(string title, View content, string okText = "OK");
+
+    new
+        /// <summary>
+        /// Displays a view in a lightweight modal dialog and returns whether the
+        /// user accepted it. Closing is detached from the bound button command.
+        /// </summary>
+        Task<bool> DisplayViewAsync(string title, View content, string okText, string cancelText);
+
     /// <summary>
     /// Displays a cancellable progress dialog.
     /// </summary>

@@ -1,5 +1,4 @@
-﻿using MissionPlanner.Library.Math;
-using MissionPlanner.MavLink.Parameters;
+﻿using MissionPlanner.MavLink.Parameters;
 
 namespace MissionPlanner.Core.ConfigTuning;
 
@@ -25,13 +24,7 @@ public sealed record ParameterEditField(
     string? WriteMessage = null)
 {
     /// <summary>Gets whether the pending value differs from the live value.</summary>
-    public bool IsModified
-    {
-        get
-        {
-            return !ParameterValueEquivalence.Default.AreEquivalent(PendingValue, LiveValue, Metadata);
-        }
-    }
+    public bool IsModified => !ParameterValueEquivalence.Default.AreEquivalent(PendingValue, LiveValue, Metadata);
 
     /// <summary>Gets whether the pending value is valid.</summary>
     public bool IsValid => ValidationError is null;
