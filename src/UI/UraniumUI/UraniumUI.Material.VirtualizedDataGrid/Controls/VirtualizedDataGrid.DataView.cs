@@ -204,7 +204,18 @@ public partial class VirtualizedDataGrid
             SetValue(IsEmptyPropertyKey, isEmpty);
             SetValue(HasItemsPropertyKey, !isEmpty);
 
-            SetRowsItemsSource(ReadyToRender ? displayedItems : null);
+            // Empty/null is a release boundary. Drop the realized cell trees
+            // before detaching the native source so navigation and ViewModel
+            // disposal do not trigger another recycle/measurement pass.
+            if (!ReadyToRender || isEmpty)
+            {
+                ReleaseRealizedRows();
+                SetRowsItemsSource(null);
+            }
+            else
+            {
+                SetRowsItemsSource(displayedItems);
+            }
             UpdateEmptyViewVisibility();
             UpdateSearchBarVisibility();
             UpdatePagerVisibility();

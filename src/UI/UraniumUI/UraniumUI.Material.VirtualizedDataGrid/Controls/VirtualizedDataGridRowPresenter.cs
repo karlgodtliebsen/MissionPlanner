@@ -15,6 +15,9 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
     private readonly List<TemplateValueBindingCell> templateValueBindingCells = [];
 
     private Grid? cellsGrid;
+    private bool visualTreeReleased;
+
+    internal bool HasBoundItem => BindingContext is not null;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VirtualizedDataGridRowPresenter"/> class.
@@ -36,6 +39,12 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
     {
         base.OnBindingContextChanged();
 
+        if (visualTreeReleased && BindingContext is not null)
+        {
+            RefreshFromOwner();
+            return;
+        }
+
         UpdateTemplateValueBindings();
         owner.ApplySelectionState(this);
         owner.RequestRowAutoColumnMeasurement();
@@ -46,6 +55,7 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
     /// </summary>
     internal void RefreshFromOwner()
     {
+        visualTreeReleased = false;
         Children.Clear();
         RowDefinitions.Clear();
         selectionCells.Clear();
@@ -81,6 +91,16 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
 
         UpdateTemplateValueBindings();
         owner.ApplySelectionState(this);
+    }
+
+    internal void ReleaseVisualTree()
+    {
+        visualTreeReleased = true;
+        cellsGrid = null;
+        Children.Clear();
+        RowDefinitions.Clear();
+        selectionCells.Clear();
+        templateValueBindingCells.Clear();
     }
 
     /// <summary>

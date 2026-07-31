@@ -89,6 +89,18 @@
 	  <Compile Update="DataGridSamples\ArduPilotSample\VirtualizedDataGridView.xaml.cs">
 	    <DependentUpon>VirtualizedDataGridView.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="DataGridSamples\VirtualizedDataGridSample\VirtualizedDataGridSampleView4.xaml.cs">
+	    <DependentUpon>VirtualizedDataGridSampleView4.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="DataGridSamples\VirtualizedDataGridSample\VirtualizedDataGridSampleView3.xaml.cs">
+	    <DependentUpon>VirtualizedDataGridSampleView3.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="DataGridSamples\VirtualizedDataGridSample\VirtualizedDataGridSampleView2.xaml.cs">
+	    <DependentUpon>VirtualizedDataGridSampleView2.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="DataGridSamples\VirtualizedDataGridSample\VirtualizedDataGridSampleView1.xaml.cs">
+	    <DependentUpon>VirtualizedDataGridSampleView1.xaml</DependentUpon>
+	  </Compile>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -111,6 +123,15 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="DataGridSamples\SimpleDataGridPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="DataGridSamples\VirtualizedDataGridSample\VirtualizedDataGridSampleView3.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="DataGridSamples\VirtualizedDataGridSample\VirtualizedDataGridSampleView4.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="DataGridSamples\VirtualizedDataGridSample\VirtualizedDataGridSampleView2.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="DialogSamples\DialogContentView.xaml">

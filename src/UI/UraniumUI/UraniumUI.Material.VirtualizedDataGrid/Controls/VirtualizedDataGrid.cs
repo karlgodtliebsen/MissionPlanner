@@ -48,6 +48,8 @@ public partial class VirtualizedDataGrid : Border
     private double lastViewportWidth = -1;
     private IReadOnlyList<double> measuredAutoColumnWidths = Array.Empty<double>();
     private bool autoColumnMeasurementScheduled;
+    private bool autoColumnWidthsFrozen;
+    private int autoColumnMeasurementGeneration;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VirtualizedDataGrid"/> class.
@@ -243,7 +245,9 @@ public partial class VirtualizedDataGrid : Border
     /// </summary>
     public void RefreshColumns()
     {
+        ResetAutoColumnMeasurement();
         RebuildAll();
+        RequestAutoColumnMeasurement();
     }
 
     /// <summary>
@@ -300,6 +304,7 @@ public partial class VirtualizedDataGrid : Border
     internal void RequestAutoColumnMeasurement()
     {
         if (autoColumnMeasurementScheduled ||
+            autoColumnWidthsFrozen ||
             visualResourcesReleased ||
             Handler is null)
         {
@@ -307,8 +312,17 @@ public partial class VirtualizedDataGrid : Border
         }
 
         autoColumnMeasurementScheduled = true;
+        var generation = autoColumnMeasurementGeneration;
 
-        if (!Dispatcher.Dispatch(UpdateMeasuredAutoColumnWidths))
+        if (!Dispatcher.Dispatch(() =>
+            {
+                if (generation != autoColumnMeasurementGeneration)
+                {
+                    return;
+                }
+
+                UpdateMeasuredAutoColumnWidths();
+            }))
         {
             autoColumnMeasurementScheduled = false;
         }
@@ -352,12 +366,19 @@ public partial class VirtualizedDataGrid : Border
     {
         autoColumnMeasurementScheduled = false;
 
-        if (visualResourcesReleased)
+        if (visualResourcesReleased || autoColumnWidthsFrozen)
         {
             return;
         }
 
         var columns = GetColumnsSnapshot();
+        var livePresenters = GetLivePresenters().ToList();
+        if (HasContentMeasuredAutoColumn() &&
+            !livePresenters.Any(presenter => presenter.HasBoundItem))
+        {
+            return;
+        }
+
         var measured = new double[columns.Count];
 
         // Keep widths already learned for this column set. Recycled CollectionView
@@ -411,7 +432,7 @@ public partial class VirtualizedDataGrid : Border
             }
         }
 
-        foreach (var presenter in GetLivePresenters())
+        foreach (var presenter in livePresenters.Take(1))
         {
             var rowWidths = presenter.MeasureNaturalColumnWidths();
 
@@ -431,6 +452,8 @@ public partial class VirtualizedDataGrid : Border
         var changed =
             measuredAutoColumnWidths.Count != measured.Length ||
             measuredAutoColumnWidths.Where((width, index) => Math.Abs(width - measured[index]) > 0.5).Any();
+
+        autoColumnWidthsFrozen = true;
 
         if (!changed)
         {
@@ -570,6 +593,26 @@ public partial class VirtualizedDataGrid : Border
         deferredSnapshot = null;
         deferRefreshCount = 0;
         refreshPending = false;
+    }
+
+    private void ReleaseRealizedRows()
+    {
+        foreach (var presenter in GetLivePresenters())
+        {
+            presenter.ReleaseVisualTree();
+        }
+
+        presenters.Clear();
+        autoColumnMeasurementScheduled = false;
+        autoColumnMeasurementGeneration++;
+    }
+
+    private void ResetAutoColumnMeasurement()
+    {
+        measuredAutoColumnWidths = Array.Empty<double>();
+        autoColumnWidthsFrozen = false;
+        autoColumnMeasurementScheduled = false;
+        autoColumnMeasurementGeneration++;
     }
 
     private void RebuildAll()
@@ -872,6 +915,7 @@ public partial class VirtualizedDataGrid : Border
         }
 
         CurrentType = ResolveItemType(newSource);
+        ResetAutoColumnMeasurement();
 
         if (UseAutoColumns)
         {
@@ -887,6 +931,11 @@ public partial class VirtualizedDataGrid : Border
 
         RefreshDataView(false);
         PruneSelectionAgainstItemsSource();
+
+        if (!HasContentMeasuredAutoColumn())
+        {
+            RequestAutoColumnMeasurement();
+        }
     }
 
     private void OnColumnsSet(
@@ -899,7 +948,7 @@ public partial class VirtualizedDataGrid : Border
             AttachColumns(newColumns);
         }
 
-        measuredAutoColumnWidths = Array.Empty<double>();
+        ResetAutoColumnMeasurement();
         RebuildAll();
         RequestAutoColumnMeasurement();
     }
@@ -1069,19 +1118,25 @@ public partial class VirtualizedDataGrid : Border
         // No operation is proportional to ItemsSource.Count.
         DetachColumns();
         AttachColumns(Columns);
+        ResetAutoColumnMeasurement();
         RebuildAll();
+        RequestAutoColumnMeasurement();
     }
 
     private void Column_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        ResetAutoColumnMeasurement();
+
         if (e.PropertyName == nameof(DataGridColumn.Title))
         {
             RenderHeader();
+            RequestAutoColumnMeasurement();
             return;
         }
 
         RecalculateColumnLayout();
         RefreshRealizedRows();
+        RequestAutoColumnMeasurement();
     }
 
     private void SelectedItems_CollectionChanged(

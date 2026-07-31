@@ -1,5 +1,6 @@
 ﻿#nullable enable
 
+using System.Collections.ObjectModel;
 using Shouldly;
 using UraniumUI.Material.Controls;
 using UraniumUI.Material.Tests.UraniumUI.Core.Tests;
@@ -145,6 +146,53 @@ public class VirtualizedDataGrid_Layout_Tests
         };
 
         grid.ExposedHasContentMeasuredAutoColumn.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void EmptySource_ShouldReleaseRealizedCellTrees()
+    {
+        var grid = new TestableVirtualizedDataGrid
+        {
+            Columns =
+            [
+                new DataGridColumn
+                {
+                    Title = "Name",
+                    ValueBinding = new Binding(nameof(Row.Name))
+                }
+            ],
+            ItemsSource = new ObservableCollection<Row> { new("A", false) }
+        };
+        var row = grid.CreateRow();
+        row.BindingContext = grid.ItemsSource[0];
+
+        grid.ItemsSource = null;
+
+        row.Children.ShouldBeEmpty();
+        row.RowDefinitions.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void ReleasedPresenter_ShouldRebuildWhenReusedForAnItem()
+    {
+        var grid = new TestableVirtualizedDataGrid
+        {
+            Columns =
+            [
+                new DataGridColumn
+                {
+                    Title = "Name",
+                    ValueBinding = new Binding(nameof(Row.Name))
+                }
+            ]
+        };
+        var row = grid.CreateRow();
+
+        grid.ItemsSource = new ObservableCollection<Row> { new("First", false) };
+        grid.ItemsSource = null;
+        row.BindingContext = new Row("Reused", false);
+
+        row.Children.ShouldNotBeEmpty();
     }
 
     private sealed class TestableVirtualizedDataGrid : VirtualizedDataGrid.Controls.VirtualizedDataGrid
