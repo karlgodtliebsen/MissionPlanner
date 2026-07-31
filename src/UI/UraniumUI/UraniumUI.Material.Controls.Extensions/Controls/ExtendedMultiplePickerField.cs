@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Globalization;
 using UraniumUI.Material.Dialogs;
 using MaterialCheckBox = UraniumUI.Material.Controls.CheckBox;
 
@@ -60,40 +59,26 @@ public class ExtendedMultiplePickerField : MultiplePickerField
             propertyChanged: OnSummaryFormatChanged);
 
     /// <summary>
-    /// Gets or sets the composite format used for one selected option.
-    /// Placeholder <c>{0}</c> receives the selection count.
+    /// Gets or sets the maximum number of characters used by the selection
+    /// summary. Additional selections are represented by a <c>+N</c> suffix.
     /// </summary>
-    public string SingleSelectionTextFormat
+    public int MaximumSelectionTextLength
     {
-        get => (string)GetValue(SingleSelectionTextFormatProperty);
-        set => SetValue(SingleSelectionTextFormatProperty, value);
+        get => (int)GetValue(MaximumSelectionTextLengthProperty);
+        set => SetValue(MaximumSelectionTextLengthProperty, value);
     }
 
     /// <summary>
-    /// Identifies the <see cref="SingleSelectionTextFormat"/> bindable property.
+    /// Identifies the <see cref="MaximumSelectionTextLength"/> bindable
+    /// property.
     /// </summary>
-    public static readonly BindableProperty SingleSelectionTextFormatProperty =
-        BindableProperty.Create(nameof(SingleSelectionTextFormat), typeof(string), typeof(ExtendedMultiplePickerField), "{0} option selected", propertyChanged: OnSummaryFormatChanged);
-
-    /// <summary>
-    /// Gets or sets the composite format used for multiple selected options.
-    /// Placeholder <c>{0}</c> receives the selection count.
-    /// </summary>
-    public string MultipleSelectionTextFormat
-    {
-        get => (string)GetValue(MultipleSelectionTextFormatProperty);
-        set => SetValue(MultipleSelectionTextFormatProperty, value);
-    }
-
-    /// <summary>
-    /// Identifies the <see cref="MultipleSelectionTextFormat"/> bindable property.
-    /// </summary>
-    public static readonly BindableProperty MultipleSelectionTextFormatProperty =
+    public static readonly BindableProperty MaximumSelectionTextLengthProperty =
         BindableProperty.Create(
-            nameof(MultipleSelectionTextFormat),
-            typeof(string),
+            nameof(MaximumSelectionTextLength),
+            typeof(int),
             typeof(ExtendedMultiplePickerField),
-            "{0} options selected",
+            20,
+            validateValue: (_, value) => (int)value > 0,
             propertyChanged: OnSummaryFormatChanged);
 
     /// <summary>
@@ -211,37 +196,86 @@ public class ExtendedMultiplePickerField : MultiplePickerField
 
         BindableLayout.SetItemsSource(chipsHolderLayout, null);
         chipsHolderLayout.Children.Clear();
-        summaryLabel.Text = FormatSelectionSummary(
-            SelectedItems?.Count ?? 0);
+        summaryLabel.Text = FormatSelectionSummary();
         summaryRefreshPending = false;
 
         base.RefreshChipLayout();
     }
 
-    private string FormatSelectionSummary(int count)
+    private string FormatSelectionSummary()
     {
-        if (count == 0)
+        var selections = SelectedItems?
+            .Cast<object?>()
+            .Select(item => item?.ToString() ?? string.Empty)
+            .ToList();
+
+        if (selections is not { Count: > 0 })
         {
             return EmptySelectionText;
         }
 
-        var format = count == 1
-            ? SingleSelectionTextFormat
-            : MultipleSelectionTextFormat;
+        if (selections.Count == 1)
+        {
+            return Truncate(selections[0], MaximumSelectionTextLength);
+        }
 
-        try
+        var visibleItems = new List<string> { selections[0] };
+
+        for (var index = 1; index < selections.Count; index++)
         {
-            return string.Format(
-                CultureInfo.CurrentCulture,
-                format,
-                count);
+            var candidateItems = visibleItems
+                .Append(selections[index])
+                .ToList();
+            var remaining = selections.Count - candidateItems.Count;
+            var candidate = BuildSelectionSummary(candidateItems, remaining);
+
+            if (candidate.Length > MaximumSelectionTextLength)
+            {
+                break;
+            }
+
+            visibleItems.Add(selections[index]);
         }
-        catch (FormatException)
+
+        var hiddenCount = selections.Count - visibleItems.Count;
+        var summary = BuildSelectionSummary(visibleItems, hiddenCount);
+        if (summary.Length <= MaximumSelectionTextLength)
         {
-            return count == 1
-                ? "1 option selected"
-                : $"{count} options selected";
+            return summary;
         }
+
+        var suffix = $", +{hiddenCount}";
+        var firstItemLength =
+            Math.Max(1, MaximumSelectionTextLength - suffix.Length);
+
+        return $"{Truncate(visibleItems[0], firstItemLength)}{suffix}";
+    }
+
+    private static string BuildSelectionSummary(
+        IEnumerable<string> visibleItems,
+        int hiddenCount)
+    {
+        var summary = string.Join(", ", visibleItems);
+
+        return hiddenCount > 0
+            ? $"{summary}, +{hiddenCount}"
+            : summary;
+    }
+
+    private static string Truncate(string text, int maximumLength)
+    {
+        if (text.Length <= maximumLength)
+        {
+            return text;
+        }
+
+        const string ellipsis = "...";
+        if (maximumLength <= ellipsis.Length)
+        {
+            return ellipsis[..maximumLength];
+        }
+
+        return $"{text[..(maximumLength - ellipsis.Length)]}{ellipsis}";
     }
 
     private static bool IsHandlerUsable(IElementHandler? handler)

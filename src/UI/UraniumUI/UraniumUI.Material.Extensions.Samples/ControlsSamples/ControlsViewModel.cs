@@ -20,6 +20,6 @@ public partial class ControlsViewModel : ObservableObject
     public ControlsViewModel()
     {
         SelectedItems = [];
-        Items = ["Logging", "GPS"];
+        Items = ["Logging", "GPS", "A", "B", "Longlonglong", "extralonglonglongevenlonger"];
     }
 }

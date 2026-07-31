@@ -134,7 +134,16 @@
                             WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
                             ItemsSource="{Binding Items}"
                             SelectedItems="{Binding SelectedItems}" />
-
+        
+        <controls:ExtendedMultiplePickerField 
+            Title="Multiple options"
+            BorderColor="Aqua"
+            TitleFontSize="10"
+            FontSize="14"
+            MaximumSelectionTextLength ="10"
+            WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
+            ItemsSource="{Binding Items}"
+            SelectedItems="{Binding SelectedItems}" />
 
     </VerticalStackLayout>
 </uranium:UraniumContentPage>

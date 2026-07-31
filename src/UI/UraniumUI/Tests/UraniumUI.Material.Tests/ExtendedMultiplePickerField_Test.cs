@@ -21,16 +21,20 @@ public class ExtendedMultiplePickerField_Test
     }
 
     [Theory]
-    [InlineData(0, "No options selected")]
-    [InlineData(1, "1 option selected")]
-    [InlineData(3, "3 options selected")]
-    public void SelectedItems_ShouldRenderCompactCountSummary(int count, string expected)
+    [InlineData(new string[0], "No options selected")]
+    [InlineData(new[] { "Logging" }, "Logging")]
+    [InlineData(new[] { "Logging", "Gps" }, "Logging, Gps")]
+    [InlineData(new[] { "Logging", "Gps", "A", "B", "C" }, "Logging, Gps, A, +2")]
+    [InlineData(new[] { "Logging", "LongLongLong" }, "Logging, +1")]
+    [InlineData(new[] { "Logging", "LongLongLong", "Gps" }, "Logging, +2")]
+    public void SelectedItems_ShouldRenderCompactSelectionSummary(
+        string[] selections,
+        string expected)
     {
         var control = new ExtendedMultiplePickerField
         {
             SelectedItems = new ObservableCollection<object>(
-                Enumerable.Range(1, count)
-                    .Select(value => (object)$"Option {value}"))
+                selections.Cast<object>())
         };
 
         control.SelectionSummary.ShouldBe(expected);
@@ -50,7 +54,25 @@ public class ExtendedMultiplePickerField_Test
 
         selectedItems.Add("GPS");
 
-        control.SelectionSummary.ShouldBe("2 options selected");
+        control.SelectionSummary.ShouldBe("Logging, GPS");
+    }
+
+    [Theory]
+    [InlineData(new[] { "ExtremelyLongOption" }, "Extremely...")]
+    [InlineData(new[] { "ExtremelyLongOption", "GPS" }, "Extre..., +1")]
+    public void SelectionSummary_ShouldRespectConfiguredMaximumLength(
+        string[] selections,
+        string expected)
+    {
+        var control = new ExtendedMultiplePickerField
+        {
+            MaximumSelectionTextLength = 12,
+            SelectedItems = new ObservableCollection<object>(
+                selections.Cast<object>())
+        };
+
+        control.SelectionSummary.ShouldBe(expected);
+        control.SelectionSummary.Length.ShouldBeLessThanOrEqualTo(12);
     }
 
     [Theory]
@@ -97,7 +119,7 @@ public class ExtendedMultiplePickerField_Test
         };
 
         control.HasValue.ShouldBeTrue();
-        control.SelectionSummary.ShouldBe("1 option selected");
+        control.SelectionSummary.ShouldBe("Logging");
     }
 
     [Fact]
@@ -132,12 +154,12 @@ public class ExtendedMultiplePickerField_Test
         control.IsVisualTreeAvailable = false;
 
         Should.NotThrow(() => selectedItems.Add("GPS"));
-        control.SelectionSummary.ShouldBe("1 option selected");
+        control.SelectionSummary.ShouldBe("Logging");
 
         control.IsVisualTreeAvailable = true;
         control.ApplyPendingRefresh();
 
-        control.SelectionSummary.ShouldBe("2 options selected");
+        control.SelectionSummary.ShouldBe("Logging, GPS");
     }
 
     private sealed class TestableExtendedMultiplePickerField
