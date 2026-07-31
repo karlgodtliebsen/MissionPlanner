@@ -12,12 +12,25 @@
             VerticalOptions="Center" 
             HorizontalOptions="Center" />
             <Button 
-            Text="Show Extended View Dialog"
+            Text="Show Extended Dialog"
             Padding="10,4"
             VerticalOptions="Center"
             Command="{Binding ShowExtendedDialogCommand}" >
             </Button>
 
+
+            <Button 
+                Text="Show Extended Close Resilient View"
+                Padding="10,4"
+                VerticalOptions="Center"
+                Command="{Binding ShowExtendedCloseResilientViewCommand}" >
+            </Button>
+            <Button 
+                Text="Show Progress Bar"
+                Padding="10,4"
+                VerticalOptions="Center"
+                Command="{Binding ShowProgressBarCommand}" >
+            </Button>
         </VerticalStackLayout>
     </Border>
 </uranium:UraniumContentPage>

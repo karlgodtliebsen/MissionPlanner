@@ -86,31 +86,31 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Update="DataGrids\ArduPilotSample\VirtualizedDataGridView.xaml.cs">
+	  <Compile Update="DataGridSamples\ArduPilotSample\VirtualizedDataGridView.xaml.cs">
 	    <DependentUpon>VirtualizedDataGridView.xaml</DependentUpon>
 	  </Compile>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="DataGrids\ArduPilotSample\VirtualizedDataGridView.xaml">
+	  <MauiXaml Update="DataGridSamples\ArduPilotSample\VirtualizedDataGridView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="DataGrids\CustomDataGridPage.xaml">
+	  <MauiXaml Update="DataGridSamples\CustomDataGridPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="DataGrids\EditorDataGridPage.xaml">
+	  <MauiXaml Update="DataGridSamples\EditorDataGridPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="DataGrids\PaginationSamplePage.xaml">
+	  <MauiXaml Update="DataGridSamples\PaginationSamplePage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="DataGrids\SelectableDataGridPage.xaml">
+	  <MauiXaml Update="DataGridSamples\SelectableDataGridPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="DataGrids\SimpleCustomTitleDataGridPage.xaml">
+	  <MauiXaml Update="DataGridSamples\SimpleCustomTitleDataGridPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="DataGrids\SimpleDataGridPage.xaml">
+	  <MauiXaml Update="DataGridSamples\SimpleDataGridPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="DialogSamples\DialogContentView.xaml">

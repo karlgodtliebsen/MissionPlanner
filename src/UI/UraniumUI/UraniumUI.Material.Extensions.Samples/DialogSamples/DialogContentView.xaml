@@ -5,15 +5,13 @@
              Margin="0"
              Padding="0"
              >
-    <!--<Border StrokeShape="Rectangle,10" Width="2" >-->
         <VerticalStackLayout 
                              HorizontalOptions="Fill" 
                              VerticalOptions="Fill">
             <Label 
             Text="Welcome to Dialog Content View!"
-            FontSize="32"
+            FontSize="22"
             VerticalOptions="Center" 
             HorizontalOptions="Center" />
         </VerticalStackLayout>
-    <!--</Border>-->
 </ContentView>

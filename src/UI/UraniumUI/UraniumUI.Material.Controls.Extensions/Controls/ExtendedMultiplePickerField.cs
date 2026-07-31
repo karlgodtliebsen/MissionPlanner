@@ -103,7 +103,7 @@ public class ExtendedMultiplePickerField : MultiplePickerField
             selectionSource,
             selectedItems);
 
-        var accepted = await extendedDialogService.DisplayViewAsync(Title, CreateCheckBoxPromptView(checkBoxGroup), "OK", "Cancel");
+        var accepted = await extendedDialogService.DisplayViewExtendedAsync(Title, CreateCheckBoxPromptView(checkBoxGroup), "OK", "Cancel");
 
         return accepted
             ? checkBoxGroup.Children

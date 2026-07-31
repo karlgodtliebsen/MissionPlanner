@@ -84,11 +84,7 @@ public class ExtendedMultiplePickerField_Test
         string? title,
         bool shouldFloat)
     {
-        var control = new ExtendedMultiplePickerField
-        {
-            Title = title!,
-            SelectedItems = new ObservableCollection<object>()
-        };
+        var control = new ExtendedMultiplePickerField { Title = title!, SelectedItems = new ObservableCollection<object>() };
 
         control.HasValue.ShouldBe(shouldFloat);
         control.SelectionSummary.ShouldBe("No options selected");
@@ -97,12 +93,7 @@ public class ExtendedMultiplePickerField_Test
     [Fact]
     public void Title_ShouldRemainInsideField_WhenEmptySelectionTextIsEmpty()
     {
-        var control = new ExtendedMultiplePickerField
-        {
-            Title = "Multiple options",
-            EmptySelectionText = string.Empty,
-            SelectedItems = new ObservableCollection<object>()
-        };
+        var control = new ExtendedMultiplePickerField { Title = "Multiple options", EmptySelectionText = string.Empty, SelectedItems = new ObservableCollection<object>() };
 
         control.HasValue.ShouldBeFalse();
         control.SelectionSummary.ShouldBeEmpty();
@@ -111,12 +102,7 @@ public class ExtendedMultiplePickerField_Test
     [Fact]
     public void Title_ShouldFloat_WhenSelectionExistsAndEmptySelectionTextIsEmpty()
     {
-        var control = new ExtendedMultiplePickerField
-        {
-            Title = "Multiple options",
-            EmptySelectionText = string.Empty,
-            SelectedItems = new ObservableCollection<object> { "Logging" }
-        };
+        var control = new ExtendedMultiplePickerField { Title = "Multiple options", EmptySelectionText = string.Empty, SelectedItems = new ObservableCollection<object> { "Logging" } };
 
         control.HasValue.ShouldBeTrue();
         control.SelectionSummary.ShouldBe("Logging");
@@ -125,7 +111,7 @@ public class ExtendedMultiplePickerField_Test
     [Fact]
     public async Task Picker_ShouldUseExtendedDialogService()
     {
-        dialogService.DisplayViewAsync(
+        dialogService.DisplayViewExtendedAsync(
                 Arg.Any<string>(),
                 Arg.Any<View>(),
                 "OK",
@@ -138,7 +124,7 @@ public class ExtendedMultiplePickerField_Test
         var result = await control.ShowPickerAsync();
 
         result.ShouldBe(["Logging"]);
-        await dialogService.Received(1).DisplayViewAsync(
+        await dialogService.Received(1).DisplayViewExtendedAsync(
             "Flags",
             Arg.Any<View>(),
             "OK",

@@ -331,7 +331,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
                 SetMessages(null, m);
                 var errorModel = domainFactory.Create<ErrorViewModel, string>(exception.Message + "\nEnsure there is a connection and try again");
                 var view = domainFactory.Create<ErrorView, ErrorViewModel>(errorModel);
-                await dialogService.DisplayViewAsync("Load failed.", view, "OK");
+                await dialogService.DisplayViewExtendedAsync("Load failed.", view, "OK");
             });
         }
         finally
@@ -500,7 +500,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         var view = domainFactory.Create<ParameterComparisonView, ParameterComparisonViewModel>(viewModel);
         await modalNavigationService.ShowAsync(view, true, cancellationToken);
 
-        //await dialogService.DisplayViewAsync("Compare", view, new Size(1024, 768), "OK");
+        //await dialogService.DisplayViewExtendedAsync("Compare", view, new Size(1024, 768), "OK");
         //var result = Comparison.Show(editSession);
         //SetMessages($"Comparing {result.Left.Name} with {result.Right.Name} from {result.Right.Timestamp:g}.", result.Warning);
     }
