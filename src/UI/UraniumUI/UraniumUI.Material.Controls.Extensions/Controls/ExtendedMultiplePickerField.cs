@@ -26,7 +26,15 @@ public class ExtendedMultiplePickerField : MultiplePickerField
 
         summaryLabel = new Label { VerticalOptions = LayoutOptions.Center, VerticalTextAlignment = TextAlignment.Center, LineBreakMode = LineBreakMode.TailTruncation };
 
-        var chevron = new Label { Text = "▾", Margin = new Thickness(8, 0, 0, 0), VerticalOptions = LayoutOptions.Center, VerticalTextAlignment = TextAlignment.Center };
+        var chevron = new Label
+        {
+            FontSize = 26,
+            Text = "▾",
+            Margin = new Thickness(4, 0, 0, 0),
+            VerticalOptions = LayoutOptions.Center,
+            VerticalTextAlignment = TextAlignment.Center,
+            HorizontalTextAlignment = TextAlignment.End
+        };
 
         var summaryLayout = new Grid { ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) }, Padding = new Thickness(8, 4), MinimumHeightRequest = 32 };
 
@@ -270,12 +278,7 @@ public class ExtendedMultiplePickerField : MultiplePickerField
         }
 
         const string ellipsis = "...";
-        if (maximumLength <= ellipsis.Length)
-        {
-            return ellipsis[..maximumLength];
-        }
-
-        return $"{text[..(maximumLength - ellipsis.Length)]}{ellipsis}";
+        return maximumLength <= ellipsis.Length ? ellipsis[..maximumLength] : $"{text[..(maximumLength - ellipsis.Length)]}{ellipsis}";
     }
 
     private static bool IsHandlerUsable(IElementHandler? handler)
