@@ -6,7 +6,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using UraniumUI.Material.Controls;
 
-namespace UraniumUI.Material.Extensions.Samples.ArduPilotSample;
+namespace UraniumUI.Material.Extensions.Samples.DataGrids.ArduPilotSample;
 
 /// <summary>
 /// View model for a single parameter item in the grid.
@@ -24,7 +24,7 @@ public partial class ParameterItemViewModel : ObservableObject
     /// </summary>
     public ICommand SelectedValuesChanged { get; }
 
-    [DisplayName("Default")][ObservableProperty] public partial double OriginalValue { get; set; }
+    [DisplayName("Default")] [ObservableProperty] public partial double OriginalValue { get; set; }
 
     [ObservableProperty] public partial string Name { get; set; } = null!;
     [ObservableProperty] public partial string? DisplayName { get; set; }
@@ -78,19 +78,19 @@ public partial class ParameterItemViewModel : ObservableObject
     [ObservableProperty] public partial SelectItem[]? ValuesItems { get; set; }
     [ObservableProperty] public partial SelectItem[]? BitmaskOptions { get; set; }
     [ObservableProperty] public partial ObservableCollection<object> SelectedBitmaskItems { get; set; } = [];
-    [DataGridIgnore][ObservableProperty] public partial string? Increment { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial string? UserLevel { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial string? Bitmask { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial bool IsModified { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial bool IsReadOnly { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial bool RebootRequired { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial bool HasValuesData { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial bool HasNumericRangeData { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial bool HasBitmask { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial string? ValidationError { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial ParameterEditWriteStatus WriteStatus { get; set; } = ParameterEditWriteStatus.Unchanged;
+    [DataGridIgnore] [ObservableProperty] public partial string? Increment { get; set; }
+    [DataGridIgnore] [ObservableProperty] public partial string? UserLevel { get; set; }
+    [DataGridIgnore] [ObservableProperty] public partial string? Bitmask { get; set; }
+    [DataGridIgnore] [ObservableProperty] public partial bool IsModified { get; set; }
+    [DataGridIgnore] [ObservableProperty] public partial bool IsReadOnly { get; set; }
+    [DataGridIgnore] [ObservableProperty] public partial bool RebootRequired { get; set; }
+    [DataGridIgnore] [ObservableProperty] public partial bool HasValuesData { get; set; }
+    [DataGridIgnore] [ObservableProperty] public partial bool HasNumericRangeData { get; set; }
+    [DataGridIgnore] [ObservableProperty] public partial bool HasBitmask { get; set; }
+    [DataGridIgnore] [ObservableProperty] public partial string? ValidationError { get; set; }
+    [DataGridIgnore] [ObservableProperty] public partial ParameterEditWriteStatus WriteStatus { get; set; } = ParameterEditWriteStatus.Unchanged;
 
-    [DataGridIgnore][ObservableProperty] public partial string? WriteMessage { get; set; }
+    [DataGridIgnore] [ObservableProperty] public partial string? WriteMessage { get; set; }
 
     /// <summary>Initializes an item backed by the shared parameter editing session.</summary>
     public ParameterItemViewModel()
@@ -322,11 +322,11 @@ public partial class ParameterItemViewModel : ObservableObject
             var decimalStep = Convert.ToDecimal(stepSize);
 
             steppedValue = Convert.ToDouble(
-                decimalValue + (direction * decimalStep));
+                decimalValue + direction * decimalStep);
         }
         catch (OverflowException)
         {
-            steppedValue = Value + (direction * stepSize);
+            steppedValue = Value + direction * stepSize;
         }
 
         Value = Math.Clamp(steppedValue, Min, Max);

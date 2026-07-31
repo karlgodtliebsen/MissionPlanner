@@ -1,4 +1,4 @@
-﻿namespace UraniumUI.Material.Extensions.Samples.ArduPilotSample;
+﻿namespace UraniumUI.Material.Extensions.Samples.DataGrids.ArduPilotSample;
 
 /// <summary>Projects the editable state of one parameter within a session.</summary>
 /// <param name="Name">The parameter name.</param>

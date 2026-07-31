@@ -6,8 +6,8 @@
                     xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
                     xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                     xmlns:pages="clr-namespace:UraniumUI.Pages;assembly=UraniumUI"
-                    xmlns:arduPilotSample="clr-namespace:UraniumUI.Material.Extensions.Samples.ArduPilotSample"
-                    x:Class="UraniumUI.Material.Extensions.Samples.ArduPilotSample.VirtualizedDataGridView"
+                    xmlns:arduPilotSample="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids.ArduPilotSample"
+                    x:Class="UraniumUI.Material.Extensions.Samples.DataGrids.ArduPilotSample.VirtualizedDataGridView"
                     x:DataType="arduPilotSample:VirtualizedDataGridViewModel"
                     >
 

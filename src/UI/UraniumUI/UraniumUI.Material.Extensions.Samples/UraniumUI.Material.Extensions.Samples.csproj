@@ -86,13 +86,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Update="ArduPilotSample\VirtualizedDataGridView.xaml.cs">
+	  <Compile Update="DataGrids\ArduPilotSample\VirtualizedDataGridView.xaml.cs">
 	    <DependentUpon>VirtualizedDataGridView.xaml</DependentUpon>
 	  </Compile>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="ArduPilotSample\VirtualizedDataGridView.xaml">
+	  <MauiXaml Update="DataGrids\ArduPilotSample\VirtualizedDataGridView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="DataGrids\CustomDataGridPage.xaml">

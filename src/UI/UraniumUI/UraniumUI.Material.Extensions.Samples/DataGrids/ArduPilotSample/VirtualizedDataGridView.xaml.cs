@@ -1,6 +1,6 @@
 using UraniumUI.Pages;
 
-namespace UraniumUI.Material.Extensions.Samples.ArduPilotSample;
+namespace UraniumUI.Material.Extensions.Samples.DataGrids.ArduPilotSample;
 
 public partial class VirtualizedDataGridView : UraniumContentPage
 {

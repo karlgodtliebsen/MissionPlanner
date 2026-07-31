@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-namespace UraniumUI.Material.Extensions.Samples.ArduPilotSample;
+namespace UraniumUI.Material.Extensions.Samples.DataGrids.ArduPilotSample;
 
 /// <summary>Imports and exports vehicle parameter files for the Config editing session.</summary>
 public sealed class ParametersFileHandler()

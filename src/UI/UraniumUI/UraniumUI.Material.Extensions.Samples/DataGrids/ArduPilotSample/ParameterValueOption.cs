@@ -1,4 +1,4 @@
-﻿namespace UraniumUI.Material.Extensions.Samples.ArduPilotSample;
+﻿namespace UraniumUI.Material.Extensions.Samples.DataGrids.ArduPilotSample;
 
 /// <summary>Represents a selectable enumerated parameter value.</summary>
 /// <param name="Value">The stored numeric value.</param>

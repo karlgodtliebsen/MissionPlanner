@@ -1,4 +1,4 @@
-﻿namespace UraniumUI.Material.Extensions.Samples.ArduPilotSample;
+﻿namespace UraniumUI.Material.Extensions.Samples.DataGrids.ArduPilotSample;
 
 /// <summary>
 /// Provides the public API for SelectItem.

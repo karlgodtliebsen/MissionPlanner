@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace UraniumUI.Material.Extensions.Samples.VirtualizedDataGridSample;
+namespace UraniumUI.Material.Extensions.Samples.DataGrids.VirtualizedDataGridSample;
 
 public partial class ItemViewModel : ObservableObject
 {

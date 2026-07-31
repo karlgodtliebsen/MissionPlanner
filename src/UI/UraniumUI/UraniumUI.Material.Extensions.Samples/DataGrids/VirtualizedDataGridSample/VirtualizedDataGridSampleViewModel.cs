@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Mapsui.Utilities;
 
-namespace UraniumUI.Material.Extensions.Samples.VirtualizedDataGridSample;
+namespace UraniumUI.Material.Extensions.Samples.DataGrids.VirtualizedDataGridSample;
 
 /// <summary>Provides the searchable full parameter list through the shared safe editing session.</summary>
 public partial class VirtualizedDataGridSampleViewModel : ObservableObject

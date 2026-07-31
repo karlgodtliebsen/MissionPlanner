@@ -13,6 +13,8 @@
     xmlns:dataGrids="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids"
     xmlns:dialogSamples="using:UraniumUI.Material.Extensions.Samples.DialogSamples"
     xmlns:controlsSamples="using:UraniumUI.Material.Extensions.Samples.ControlsSamples"
+    xmlns:virtualizedDataGridSample1="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids.VirtualizedDataGridSample"
+    xmlns:arduPilotSample1="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids.ArduPilotSample"
     x:Name="thisShell"
     FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
     Shell.FlyoutBehavior="Flyout"
@@ -104,10 +106,10 @@
         <ShellContent Title="Simple Custom Title Data Grid" ContentTemplate="{DataTemplate dataGrids:SimpleCustomTitleDataGridPage}" Route="SimpleCustomTitleDataGridPage" />
     </FlyoutItem>
     <FlyoutItem Title="Data Grid Samples" >
-        <ShellContent Title="Virtualized Large Data Grid Samples" ContentTemplate="{DataTemplate virtualizedDataGridSample:VirtualizedDataGridSampleView}" Route="VirtualizedDataGridView" />
+        <ShellContent Title="Virtualized Large Data Grid Samples" ContentTemplate="{DataTemplate virtualizedDataGridSample1:VirtualizedDataGridSampleView}" Route="VirtualizedDataGridView" />
     </FlyoutItem>
     <FlyoutItem Title="Data Grid with Complex Data" >
-        <ShellContent Title="Virtualized Data Grid with Complex Data" ContentTemplate="{DataTemplate arduPilotSample:VirtualizedDataGridView}" Route="VirtualizedDataGridView" />
+        <ShellContent Title="Virtualized Data Grid with Complex Data" ContentTemplate="{DataTemplate arduPilotSample1:VirtualizedDataGridView}" Route="VirtualizedDataGridView" />
     </FlyoutItem>
 
 </Shell>

@@ -4,10 +4,10 @@ using Microsoft.Extensions.Logging;
 using Mopups.Hosting;
 using UraniumUI.Material.Dialogs;
 using UraniumUI.Material.Extensions.Samples.AppViewModels;
-using UraniumUI.Material.Extensions.Samples.ArduPilotSample;
 using UraniumUI.Material.Extensions.Samples.DataGrids;
+using UraniumUI.Material.Extensions.Samples.DataGrids.ArduPilotSample;
+using UraniumUI.Material.Extensions.Samples.DataGrids.VirtualizedDataGridSample;
 using UraniumUI.Material.Extensions.Samples.DialogSamples;
-using UraniumUI.Material.Extensions.Samples.VirtualizedDataGridSample;
 
 namespace UraniumUI.Material.Extensions.Samples;
 

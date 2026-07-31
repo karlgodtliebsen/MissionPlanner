@@ -5,8 +5,8 @@
                     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                     xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
                     xmlns:pages="clr-namespace:UraniumUI.Pages;assembly=UraniumUI"
-                    xmlns:virtualizedDataGridSample="clr-namespace:UraniumUI.Material.Extensions.Samples.VirtualizedDataGridSample"
-                    x:Class="UraniumUI.Material.Extensions.Samples.VirtualizedDataGridSample.VirtualizedDataGridSampleView"
+                    xmlns:virtualizedDataGridSample="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids.VirtualizedDataGridSample"
+                    x:Class="UraniumUI.Material.Extensions.Samples.DataGrids.VirtualizedDataGridSample.VirtualizedDataGridSampleView"
                     x:DataType="virtualizedDataGridSample:VirtualizedDataGridSampleViewModel"
                    
                     >
