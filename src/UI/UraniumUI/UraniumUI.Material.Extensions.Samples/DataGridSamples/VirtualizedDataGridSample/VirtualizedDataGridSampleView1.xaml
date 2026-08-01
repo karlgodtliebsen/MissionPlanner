@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<pages:UraniumContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<virtualizedDataGridSample:ContentPageView 
+                    x:TypeArguments="virtualizedDataGridSample:VirtualizedDataGridSampleViewModel"
+                    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                    xmlns:pages="clr-namespace:UraniumUI.Pages;assembly=UraniumUI"
                     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                     xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                     xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
@@ -55,7 +56,7 @@
             </virtualized:VirtualizedDataGrid.Columns>
         </virtualized:VirtualizedDataGrid>
     </Grid>
-</pages:UraniumContentPage>
+</virtualizedDataGridSample:ContentPageView>
 
 
     

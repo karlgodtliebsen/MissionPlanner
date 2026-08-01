@@ -14,7 +14,7 @@ public partial class VirtualizedDataGrid
 {
     private const int MaximumRowsApplyRetryCount = 20;
 
-    private static readonly TimeSpan rowsApplyRetryDelay = TimeSpan.FromMilliseconds(10);
+    private static readonly TimeSpan rowsApplyRetryDelay = TimeSpan.FromMilliseconds(1);
 
     private IList? desiredRowsSource;
     private IList? appliedRowsSource;
@@ -358,11 +358,10 @@ public partial class VirtualizedDataGrid
         }
     }
 
+
     private void ScheduleRowsSourceRetry()
     {
-        if (!rowsSourceUpdatePending ||
-            rowsRetryScheduled ||
-            rowsRetryAttempt >= MaximumRowsApplyRetryCount)
+        if (!rowsSourceUpdatePending || rowsRetryScheduled || rowsRetryAttempt >= MaximumRowsApplyRetryCount)
         {
             return;
         }
@@ -381,6 +380,7 @@ public partial class VirtualizedDataGrid
             rowsApplyRetryDelay,
             () =>
             {
+                Diagnostics.RowsApplyRetryCount++;
                 rowsRetryScheduled = false;
 
                 if (!rowsSourceUpdatePending)
@@ -444,8 +444,7 @@ public partial class VirtualizedDataGrid
         }
     }
 
-    private static bool IsPlatformViewUnavailable(
-        InvalidOperationException exception)
+    private static bool IsPlatformViewUnavailable(InvalidOperationException exception)
     {
         return exception.Message.Contains(
                    "PlatformView",

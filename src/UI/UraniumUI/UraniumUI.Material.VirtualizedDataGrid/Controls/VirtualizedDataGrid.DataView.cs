@@ -73,12 +73,12 @@ public partial class VirtualizedDataGrid
         CurrentPage = Math.Clamp(page, 1, maximumPage);
     }
 
-    internal void OnFilterSettingsChanged()
+    private void OnFilterSettingsChanged()
     {
         RefreshDataView(ResetPageOnFilterChange);
     }
 
-    internal void OnPagingSettingsChanged(bool resetCurrentPage)
+    private void OnPagingSettingsChanged(bool resetCurrentPage)
     {
         if (updatingPagingProperties)
         {
@@ -88,7 +88,7 @@ public partial class VirtualizedDataGrid
         RefreshDataView(resetCurrentPage);
     }
 
-    internal void OnCurrentPageChanged()
+    private void OnCurrentPageChanged()
     {
         if (updatingPagingProperties)
         {
@@ -103,7 +103,7 @@ public partial class VirtualizedDataGrid
         }
     }
 
-    internal void RefreshDataView(bool resetCurrentPage)
+    private void RefreshDataView(bool resetCurrentPage)
     {
         if (visualResourcesReleased)
         {
@@ -120,9 +120,7 @@ public partial class VirtualizedDataGrid
 
         try
         {
-            var source = deferRefreshCount > 0
-                ? deferredSnapshot
-                : ItemsSource;
+            var source = deferRefreshCount > 0 ? deferredSnapshot : ItemsSource;
 
             var totalItemCount = source?.Count ?? 0;
             var filteringActive = IsFilteringActive();

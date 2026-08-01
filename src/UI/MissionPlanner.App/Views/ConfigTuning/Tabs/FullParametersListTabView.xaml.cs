@@ -11,7 +11,7 @@ public partial class FullParametersListTabView : ContentPageView<FullParametersL
     /// <summary>
     /// Initializes a new instance of the <see cref="FullParametersListTabView"/> class.
     /// </summary>
-    public FullParametersListTabView() : base("//ConfigFullParameters")
+    public FullParametersListTabView()
     {
         InitializeComponent();
     }

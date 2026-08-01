@@ -114,7 +114,7 @@ public partial class VirtualizedDataGrid : Border
     /// <summary>
     /// Gets the element type inferred from the current <see cref="ItemsSource"/>.
     /// </summary>
-    public Type? CurrentType { get; protected set; }
+    public Type? CurrentType { get; private set; }
 
     /// <summary>
     /// Gets a value indicating whether the grid has at least one visible column and can render rows.
@@ -348,7 +348,7 @@ public partial class VirtualizedDataGrid : Border
     /// Gets whether any visible Auto column uses the generated cell whose natural
     /// width can be measured safely.
     /// </summary>
-    private bool HasContentMeasuredAutoColumn()
+    public bool HasContentMeasuredAutoColumn()
     {
         return CellItemTemplate is not null
             ? false
@@ -628,7 +628,7 @@ public partial class VirtualizedDataGrid : Border
     /// <summary>
     /// Rebuilds the header from the current columns.
     /// </summary>
-    internal void RenderHeader()
+    private void RenderHeader()
     {
         if (visualResourcesReleased)
         {
@@ -684,7 +684,7 @@ public partial class VirtualizedDataGrid : Border
     /// <summary>
     /// Rebuilds all currently realized row presenters.
     /// </summary>
-    internal void RefreshRealizedRows()
+    private void RefreshRealizedRows()
     {
         if (visualResourcesReleased)
         {
@@ -700,7 +700,7 @@ public partial class VirtualizedDataGrid : Border
     /// <summary>
     /// Resolves column widths for the current viewport and updates realized content.
     /// </summary>
-    internal void RecalculateColumnLayout()
+    private void RecalculateColumnLayout()
     {
         if (visualResourcesReleased)
         {

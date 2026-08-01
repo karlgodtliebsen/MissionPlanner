@@ -4,9 +4,9 @@ using Mapsui.Utilities;
 namespace UraniumUI.Material.Extensions.Samples.DataGridSamples.VirtualizedDataGridSample;
 
 /// <summary>Provides the searchable full parameter list through the shared safe editing session.</summary>
-public partial class VirtualizedDataGridSampleViewModel : ObservableObject
+public partial class VirtualizedDataGridSampleViewModel : ObservableObject, IDisposable
 {
-    [ObservableProperty] public partial int NumberOfRows { get; set; } = 100;
+    [ObservableProperty] public partial int NumberOfRows { get; set; } = 1000;
 
     ///// <summary>Gets the currently visible parameter rows.</summary>
     public ObservableRangeCollection<ItemViewModel> Parameters { get; } = [];
@@ -41,5 +41,11 @@ public partial class VirtualizedDataGridSampleViewModel : ObservableObject
         }
 
         Parameters.AddRange(allParameterItems);
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Parameters.Clear();
     }
 }

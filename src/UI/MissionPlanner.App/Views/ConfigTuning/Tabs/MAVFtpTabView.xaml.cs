@@ -10,7 +10,7 @@ public partial class MAVFtpTabView : ContentPageView<MavFtpTabViewModel>
     /// <summary>
     /// Provides the public API for MAVFtpTabView.
     /// </summary>
-    public MAVFtpTabView() : base("//ConfigMavFtp")
+    public MAVFtpTabView()
     {
         InitializeComponent();
     }

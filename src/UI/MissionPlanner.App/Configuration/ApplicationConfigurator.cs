@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MissionPlanner.App.Helpers;
 using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Services;
@@ -91,7 +90,6 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<ISetupCompletionStore, PreferencesSetupCompletionStore>();
         services.TryAddSingleton<IFirmwarePackageCache, FirmwarePackageCache>();
         services.TryAddSingleton<ISetupNavigationService, ShellSetupNavigationService>();
-        services.TryAddSingleton<INavigationEventHub, NavigationEventHub>();
         services.TryAddSingleton<IParameterComparisonService, ParameterComparisonService>();
         services.TryAddSingleton<IParameterValueEquivalence, ParameterValueEquivalence>();
         services.TryAddSingleton<IModalNavigationService, ModalNavigationService>();
