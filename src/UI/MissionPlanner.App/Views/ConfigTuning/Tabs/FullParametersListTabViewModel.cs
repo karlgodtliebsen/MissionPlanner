@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Helpers;
+using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.Common;
 using MissionPlanner.Core.ConfigTuning;

@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using MissionPlanner.App.Helpers;
+using MissionPlanner.App.Navigation;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Comparison;
 using MissionPlanner.Library;

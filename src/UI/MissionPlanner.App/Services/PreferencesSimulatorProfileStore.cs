@@ -1,6 +1,6 @@
 ﻿using MissionPlanner.Core.Simulation;
 
-namespace MissionPlanner.App.Helpers;
+namespace MissionPlanner.App.Services;
 
 /// <summary>Persists simulator profiles through platform Preferences.</summary>
 public sealed class PreferencesSimulatorProfileStore : ISimulatorProfileStore

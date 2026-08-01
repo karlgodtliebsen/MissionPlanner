@@ -74,7 +74,6 @@ public static class MauiProgramExtensions
         builder.Services.AddSingleton<IFileSaver>(FileSaver.Default);
         builder.Services.AddSingleton<ThemeChangeViewModel>();
         builder.Services.AddSingleton<AppShellContentViewModel>();
-
         builder.Services
             .AddApplicationConfiguration(builder.Configuration)
             .AddCommunityToolkitDialogs()

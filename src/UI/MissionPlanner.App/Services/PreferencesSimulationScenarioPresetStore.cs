@@ -1,6 +1,6 @@
 ﻿using MissionPlanner.Core.Simulation;
 
-namespace MissionPlanner.App.Helpers;
+namespace MissionPlanner.App.Services;
 
 /// <summary>Persists simulation scenario presets in platform application preferences.</summary>
 public sealed class PreferencesSimulationScenarioPresetStore : ISimulationScenarioPresetStore

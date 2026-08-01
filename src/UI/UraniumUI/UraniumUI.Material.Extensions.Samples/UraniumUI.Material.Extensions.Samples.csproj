@@ -66,15 +66,22 @@
 
 	<ItemGroup>
 		<PackageReference Include="Mapsui" />
-		<PackageReference Include="Microsoft.Maui.Controls" />
-		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" />
-		<PackageReference Include="UraniumUI.Material" />
-		<PackageReference Include="UraniumUI.Icons.MaterialSymbols" />
-		<PackageReference Include="UraniumUI.Dialogs.Mopups" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+
+        <PackageReference Include="Microsoft.Maui.Controls.Compatibility" />
+
         <PackageReference Include="CommunityToolkit.Maui" />
         <PackageReference Include="CommunityToolkit.Mvvm" />
+        <PackageReference Include="Microsoft.Maui.Controls" />
+        <PackageReference Include="UraniumUI.Blurs" />
         <PackageReference Include="UraniumUI.Dialogs.CommunityToolkit" />
+        <PackageReference Include="UraniumUI.Dialogs.Mopups" />
+        <PackageReference Include="UraniumUI.Icons.FontAwesome" />
+        <PackageReference Include="UraniumUI.Icons.MaterialSymbols" />
+        <PackageReference Include="UraniumUI.Material" />
+        <PackageReference Include="UraniumUI.Validations.DataAnnotations" />
+
+
         <PackageReference Include="Ulid" />
         <PackageReference Include="Bogus" />
 

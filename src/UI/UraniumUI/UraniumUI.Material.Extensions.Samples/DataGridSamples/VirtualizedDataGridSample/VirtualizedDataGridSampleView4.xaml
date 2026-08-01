@@ -1,38 +1,50 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <pages:UraniumContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
-                    xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
-                    xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
                     xmlns:pages="clr-namespace:UraniumUI.Pages;assembly=UraniumUI"
+                    xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                    xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                    xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
                     xmlns:virtualizedDataGridSample="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGridSamples.VirtualizedDataGridSample"
-                    x:Class="UraniumUI.Material.Extensions.Samples.DataGridSamples.VirtualizedDataGridSample.VirtualizedDataGridSampleView4"
                     x:DataType="virtualizedDataGridSample:VirtualizedDataGridSampleViewModel"
-                   
+                    x:Class="UraniumUI.Material.Extensions.Samples.DataGridSamples.VirtualizedDataGridSample.VirtualizedDataGridSampleView4"
                     >
-        <Grid RowDefinitions="Auto,600"
+    <Grid 
+              RowDefinitions="Auto,Auto,600"
+              RowSpacing="25"
               HorizontalOptions="Center"
               VerticalOptions="Fill"
               Padding="8,10"
               Margin="10"
              >
 
-            <Label Grid.Row ="0" FontSize="22" Text="Large VirtualizedData Grid With AutoColumns and Fixed RowHeight"></Label>
-            <virtualized:VirtualizedDataGrid Grid.Row="1"  
-                                         Margin="10"
-                                         ItemsSource="{Binding Parameters}"
-                                         UseAutoColumns="True"
-                                         AutoColumnWidth= "180"
-                                         MinimumStarColumnWidth= "120"
-                                         RowHeight="80"
-                                         ItemSizingStrategy= "MeasureFirstItem"
-                                         ShowRowSeparators="True"
-                                         FilterMemberPaths="Name,DisplayName"
-                                         ShowSearchBar="True"
+        <Label Grid.Row ="0" FontSize="22" Text="Large VirtualizedData Grid With AutoColumns and Fixed RowHeight"></Label>
+        <controls:NumericUpDownField  Grid.Row ="1"
+                                          Title="Number of Rows"
+                                          Value="{Binding NumberOfRows, Mode=TwoWay}"
+                                          Min="0"
+                                          Max="1000"
+                                          StepSize="10"
+                                          BorderColor="MediumPurple"
+                                          ButtonOrientation="Vertical"
+                                          HorizontalTextAlignment="End"
+                                          VerticalTextAlignment="Center"
+                                          WidthRequest="220" />
+        <virtualized:VirtualizedDataGrid  Grid.Row="2" 
+                                          Margin="10"
+                                          ItemsSource="{Binding Parameters}"
+                                          UseAutoColumns="True"
+                                          AutoColumnWidth= "180"
+                                          MinimumStarColumnWidth= "120"
+                                          RowHeight="80"
+                                          ItemSizingStrategy= "MeasureFirstItem"
+                                          ShowRowSeparators="True"
+                                          FilterMemberPaths="Name,DisplayName"
+                                          ShowSearchBar="True"
                                          
         >
-            </virtualized:VirtualizedDataGrid>
-        </Grid>
+        </virtualized:VirtualizedDataGrid>
+    </Grid>
 </pages:UraniumContentPage>
 
 

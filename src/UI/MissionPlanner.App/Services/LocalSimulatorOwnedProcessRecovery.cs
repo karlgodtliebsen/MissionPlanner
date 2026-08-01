@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using MissionPlanner.Core.Simulation;
 
-namespace MissionPlanner.App.Helpers;
+namespace MissionPlanner.App.Services;
 
 /// <summary>Recovers only local simulator processes whose complete persisted identity still matches.</summary>
 public sealed class LocalSimulatorOwnedProcessRecovery : ISimulatorOwnedProcessRecovery

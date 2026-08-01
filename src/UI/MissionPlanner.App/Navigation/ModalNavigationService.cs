@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 
-namespace MissionPlanner.App.Helpers;
+namespace MissionPlanner.App.Navigation;
 
 /// <inheritdoc />
 public sealed class ModalNavigationService(IServiceProvider serviceProvider, IDispatcher dispatcher, ILogger<ModalNavigationService> logger) : IModalNavigationService

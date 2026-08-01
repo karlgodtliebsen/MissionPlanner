@@ -1,18 +1,17 @@
 ﻿using MissionPlanner.App.Helpers;
-using MissionPlanner.App.Helpers.Navigation;
 using MissionPlanner.Library.EventHub;
 
 namespace MissionPlanner.App.Navigation;
 
 /// <summary>
-/// Interaction logic for FullParametersListTabView.xaml
+/// Represents a content page view that is associated with a specific view model type.
+/// Handles viewmodel allocation and cleanup for navigation events.
 /// </summary>
-public class ContentPageView<TViewModel> : ContentPage, IDisposable
+public class ContentPageView<TViewModel> : ContentPage //, IDisposable
     where TViewModel : class, IDisposable
 
 {
     private readonly string route;
-    private TViewModel? viewModel;
     private readonly Disposables disposables = [];
 
     /// <summary>
@@ -21,109 +20,93 @@ public class ContentPageView<TViewModel> : ContentPage, IDisposable
     protected ContentPageView(string route)
     {
         this.route = route;
-        var navigationEventHub = ServiceHelper.GetRequiredService<INavigationEventHub>();
-        disposables.Add(navigationEventHub.Subscribe(OnNavigatedEvent));
-        disposables.Add(navigationEventHub.Subscribe(OnNavigatingEvent));
+        //var navigationEventHub = ServiceHelper.GetRequiredService<INavigationEventHub>();
+        //disposables.Add(navigationEventHub.Subscribe(OnNavigatedEvent));
+        //disposables.Add(navigationEventHub.Subscribe(OnNavigatingEvent));
     }
 
-    /// <summary>
-    /// Handles navigation events that are occurring and updates the view model accordingly.
-    /// </summary>
-    /// <param name="navigatingEvent">The navigation event that is occurring.</param>
-    protected virtual void OnNavigatingEvent(NavigatingEvent navigatingEvent)
+    ///// <summary>
+    ///// Handles navigation events that are occurring and updates the view model accordingly.
+    ///// </summary>
+    ///// <param name="navigatingEvent">The navigation event that is occurring.</param>
+    //protected virtual void OnNavigatingEvent(NavigatingEvent navigatingEvent)
+    //{
+    //    var source = navigatingEvent.EventArgs.Source;
+    //    if (source is ShellNavigationSource.ShellContentChanged or ShellNavigationSource.ShellItemChanged or ShellNavigationSource.ShellSectionChanged)
+    //    {
+    //        DeactivateViewModel();
+    //    }
+    //}
+
+    ///// <summary>
+    ///// Handles navigation events and updates the view model accordingly.
+    ///// </summary>
+    ///// <param name="navigatedEvent">The navigation event.</param>
+    //protected virtual void OnNavigatedEvent(NavigatedEvent navigatedEvent)
+    //{
+    //    var source = navigatedEvent.EventArgs.Source;
+    //    if (source is ShellNavigationSource.ShellContentChanged or ShellNavigationSource.ShellItemChanged or ShellNavigationSource.ShellSectionChanged)
+    //    {
+    //        DeactivateViewModel();
+    //        if (navigatedEvent.Current == route)
+    //        {
+    //            var viewModel = ServiceHelper.GetRequiredService<TViewModel>();
+    //            BindingContext = viewModel;
+    //        }
+
+    //        return;
+    //    }
+    //}
+
+
+    /// <inheritdoc />
+    protected override void OnNavigatingFrom(NavigatingFromEventArgs args)
     {
-        if (IsModalTransition(
-                navigatingEvent.Previous,
-                navigatingEvent.Current))
-        {
-            return;
-        }
-
-        var isSubNavigation =
-            navigatingEvent.Previous == route &&
-            navigatingEvent.Current?.StartsWith(
-                route + "/",
-                StringComparison.Ordinal) == true;
-
-        if (navigatingEvent.Previous == route &&
-            navigatingEvent.Current != route &&
-            !isSubNavigation)
+        base.OnNavigatingFrom(args);
+        if (args.NavigationType is NavigationType.Replace or NavigationType.Remove)
         {
             DeactivateViewModel();
         }
-    }
-
-    /// <summary>
-    /// Handles navigation events and updates the view model accordingly.
-    /// </summary>
-    /// <param name="navigatedEvent">The navigation event.</param>
-    protected virtual void OnNavigatedEvent(NavigatedEvent navigatedEvent)
-    {
-        if (IsModalTransition(
-                navigatedEvent.Previous,
-                navigatedEvent.Current))
-        {
-            return;
-        }
-
-        var isSubNavigation =
-            (navigatedEvent.Previous == route && navigatedEvent.Current?.StartsWith(route + "/") == true)
-            || (navigatedEvent.Current == route && navigatedEvent.Previous?.StartsWith(route + "/") == true);
-        if (isSubNavigation)
-        {
-            return;
-        }
-
-        if (navigatedEvent.Previous == route)
-        {
-            DeactivateViewModel();
-        }
-
-        if (navigatedEvent.Current == route)
-        {
-            BindingContext = null;
-            viewModel?.Dispose();
-            viewModel = ServiceHelper.GetRequiredService<TViewModel>();
-            BindingContext = viewModel;
-        }
-    }
-
-    private static bool IsModalTransition(string? previous, string? current)
-    {
-        if (previous is null || current is null)
-        {
-            return false;
-        }
-
-        // ShellContent destinations in this application are absolute routes.
-        // Modal pages pushed through INavigation use generated relative routes
-        // such as D_FAULT_DefaultDialogAnimatedContentPage43. A transition
-        // between those route kinds is an overlay opening or closing, not a
-        // departure from or activation of the underlying Shell page.
-        return IsShellRoute(previous) != IsShellRoute(current);
-    }
-
-    private static bool IsShellRoute(string location)
-    {
-        return location.StartsWith("//", StringComparison.Ordinal);
-    }
-
-    private void DeactivateViewModel()
-    {
-        BindingContext = null;
-        viewModel?.Dispose();
-        viewModel = null;
     }
 
     /// <inheritdoc />
-    public virtual void Dispose()
+    protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
     {
-        foreach (var disposable in disposables)
+        base.OnNavigatedFrom(args);
+        if (args.NavigationType is NavigationType.Replace or NavigationType.Remove)
         {
-            disposable.Dispose();
+            DeactivateViewModel();
         }
-
-        disposables.Clear();
-        DeactivateViewModel();
     }
+
+    /// <inheritdoc />
+    protected override void OnNavigatedTo(NavigatedToEventArgs args)
+    {
+        base.OnNavigatedTo(args);
+        if (args.NavigationType is NavigationType.Replace or NavigationType.Remove)
+        {
+            var viewModel = ServiceHelper.GetRequiredService<TViewModel>();
+            BindingContext = viewModel;
+        }
+    }
+    //if (source is ShellNavigationSource.ShellContentChanged or ShellNavigationSource.ShellItemChanged or ShellNavigationSource.ShellSectionChanged)
+
+    private void DeactivateViewModel()
+    {
+        var viewModel = BindingContext as TViewModel;
+        BindingContext = null;
+        viewModel?.Dispose();
+    }
+
+    ///// <inheritdoc />
+    //public virtual void Dispose()
+    //{
+    //    //foreach (var disposable in disposables)
+    //    //{
+    //    //    disposable.Dispose();
+    //    //}
+
+    //    //disposables.Clear();
+    //    DeactivateViewModel();
+    //}
 }

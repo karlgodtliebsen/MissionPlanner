@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.App.Helpers;
+﻿namespace MissionPlanner.App.Navigation;
 
 /// <summary>
 /// Defines methods for navigating modally within the application.

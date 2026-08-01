@@ -81,7 +81,7 @@
         <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
 
             <!-- Recommended parameter usage:
-      Bind Text when the current ViewModel value is a string. -->
+                Bind Text when the current ViewModel value is a string. -->
             <controls:NumericUpDownField
                 Title="Text - Numeric - Left Aligned"
                 Text="{Binding Value, Mode=TwoWay}"
@@ -126,84 +126,83 @@
 
             <!-- Bind Value instead when the ViewModel exposes a double. -->
             <controls:NumericUpDownField
-            Title="Number"
-            Value="{Binding Altitude, Mode=TwoWay}"
-            Min="0"
-            Max="100"
-            StepSize="0.5"
-            DecimalPlaces="1"
-            CultureName="da-DK" 
-            BorderColor="MediumPurple"
-            ButtonOrientation="Horizontal"
-            HorizontalTextAlignment="End"
-            VerticalTextAlignment="Center"
-            WidthRequest="220" />
+                    Title="Number"
+                    Value="{Binding Altitude, Mode=TwoWay}"
+                    Min="0"
+                    Max="100"
+                    StepSize="0.5"
+                    DecimalPlaces="1"
+                    CultureName="da-DK" 
+                    BorderColor="MediumPurple"
+                    ButtonOrientation="Horizontal"
+                    HorizontalTextAlignment="End"
+                    VerticalTextAlignment="Center"
+                    WidthRequest="220" />
 
             <controls:NumericUpDownField
-            Title="Number"
-            Value="{Binding Altitude, Mode=TwoWay}"
-            Min="0"
-            Max="100"
-            StepSize="0.5"
-            DecimalPlaces="1"
-            CultureName="da-DK" 
-            BorderColor="MediumPurple"
-            ButtonOrientation="Horizontal"
-            HorizontalTextAlignment="End"
-            VerticalTextAlignment="Center"
-            WidthRequest="220" />
+                        Title="Number"
+                        Value="{Binding Altitude, Mode=TwoWay}"
+                        Min="0"
+                        Max="100"
+                        StepSize="0.5"
+                        DecimalPlaces="1"
+                        CultureName="da-DK" 
+                        BorderColor="MediumPurple"
+                        ButtonOrientation="Horizontal"
+                        HorizontalTextAlignment="End"
+                        VerticalTextAlignment="Center"
+                        WidthRequest="220" />
         </HorizontalStackLayout>
         <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
 
             <!-- Bind Value instead when the ViewModel exposes a double. -->
             <controls:NumericUpDownField
-                Title="Number"
-                Value="{Binding Altitude, Mode=TwoWay}"
-                Min="0"
-                Max="100"
-                StepSize="0.5"
-                DecimalPlaces="1"
-                CultureName="da-DK" 
-                BorderColor="MediumPurple"
-                ButtonOrientation="Vertical"
-                HorizontalTextAlignment="End"
-                VerticalTextAlignment="Center"
-                WidthRequest="220" />
+                        Title="Number"
+                        Value="{Binding Altitude, Mode=TwoWay}"
+                        Min="0"
+                        Max="100"
+                        StepSize="0.5"
+                        DecimalPlaces="1"
+                        CultureName="da-DK" 
+                        BorderColor="MediumPurple"
+                        ButtonOrientation="Vertical"
+                        HorizontalTextAlignment="End"
+                        VerticalTextAlignment="Center"
+                        WidthRequest="220" />
 
             <controls:NumericUpDownField
-                Title="Number"
-                Value="{Binding Altitude, Mode=TwoWay}"
-                Min="0"
-                Max="100"
-                StepSize="0.5"
-                DecimalPlaces="1"
-                CultureName="da-DK" 
-                BorderColor="MediumPurple"
-                ButtonOrientation="Vertical"
-                HorizontalTextAlignment="End"
-                VerticalTextAlignment="Center"
-                WidthRequest="220" />
+                        Title="Number"
+                        Value="{Binding Altitude, Mode=TwoWay}"
+                        Min="0"
+                        Max="100"
+                        StepSize="0.5"
+                        DecimalPlaces="1"
+                        CultureName="da-DK" 
+                        BorderColor="MediumPurple"
+                        ButtonOrientation="Vertical"
+                        HorizontalTextAlignment="End"
+                        VerticalTextAlignment="Center"
+                        WidthRequest="220" />
         </HorizontalStackLayout>
         <BoxView  StyleClass="Divider" />
 
         <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
 
             <controls:ExtendedMultiplePickerField 
-                                              Title="Multiple options"
-                                              BorderColor="Aqua"
-                                              TitleFontSize="10"
-                                              FontSize="14"
-                                              WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
-                                              ItemsSource="{Binding Items}"
-                                              SelectedItems="{Binding SelectedItems}" />
+                              Title="Multiple options"
+                              BorderColor="Aqua"
+                              TitleFontSize="10"
+                              FontSize="14"
+                              WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
+                              ItemsSource="{Binding Items}"
+                              SelectedItems="{Binding SelectedItems}" />
             <controls:ExtendedMultiplePickerField 
-                                                
-                                                BorderColor="Aqua"
-                                                TitleFontSize="10"
-                                                FontSize="14"
-                                                WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
-                                                ItemsSource="{Binding Items}"
-                                                SelectedItems="{Binding SelectedItems}" />
+                            BorderColor="Aqua"
+                            TitleFontSize="10"
+                            FontSize="14"
+                            WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
+                            ItemsSource="{Binding Items}"
+                            SelectedItems="{Binding SelectedItems}" />
 
 
             <controls:ExtendedMultiplePickerField 
@@ -217,14 +216,14 @@
                             SelectedItems="{Binding SelectedItems}" />
 
             <controls:ExtendedMultiplePickerField 
-            Title="Multiple options"
-            BorderColor="Aqua"
-            TitleFontSize="10"
-            FontSize="14"
-            MaximumSelectionTextLength ="10"
-            WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
-            ItemsSource="{Binding Items}"
-            SelectedItems="{Binding SelectedItems}" />
+                            Title="Multiple options"
+                            BorderColor="Aqua"
+                            TitleFontSize="10"
+                            FontSize="14"
+                            MaximumSelectionTextLength ="10"
+                            WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
+                            ItemsSource="{Binding Items}"
+                            SelectedItems="{Binding SelectedItems}" />
         </HorizontalStackLayout>
     </VerticalStackLayout>
 </uranium:UraniumContentPage>

@@ -37,7 +37,7 @@ public partial class VirtualizedDataGrid : Border
     private INotifyCollectionChanged? observedColumns;
     private INotifyCollectionChanged? observedSelectedItems;
 
-    private IReadOnlyList<double> resolvedColumnWidths = Array.Empty<double>();
+    private IReadOnlyList<double> resolvedColumnWidths = [];
     private bool subscriptionsActive;
     private bool visualResourcesReleased;
     private bool settingAutoColumns;
@@ -46,7 +46,7 @@ public partial class VirtualizedDataGrid : Border
     private bool refreshPending;
     private IList? deferredSnapshot;
     private double lastViewportWidth = -1;
-    private IReadOnlyList<double> measuredAutoColumnWidths = Array.Empty<double>();
+    private IReadOnlyList<double> measuredAutoColumnWidths = [];
     private bool autoColumnMeasurementScheduled;
     private bool autoColumnWidthsFrozen;
     private int autoColumnMeasurementGeneration;
@@ -256,7 +256,7 @@ public partial class VirtualizedDataGrid : Border
     /// <returns>The current columns.</returns>
     internal IReadOnlyList<DataGridColumn> GetColumnsSnapshot()
     {
-        return Columns?.ToArray() ?? Array.Empty<DataGridColumn>();
+        return Columns?.ToArray() ?? [];
     }
 
     /// <summary>
@@ -301,7 +301,7 @@ public partial class VirtualizedDataGrid : Border
     /// Schedules an Auto-column measurement after bindings for newly realized rows
     /// have been applied.
     /// </summary>
-    internal void RequestAutoColumnMeasurement()
+    private void RequestAutoColumnMeasurement()
     {
         if (autoColumnMeasurementScheduled ||
             autoColumnWidthsFrozen ||
@@ -348,18 +348,15 @@ public partial class VirtualizedDataGrid : Border
     /// Gets whether any visible Auto column uses the generated cell whose natural
     /// width can be measured safely.
     /// </summary>
-    protected internal bool HasContentMeasuredAutoColumn()
+    private bool HasContentMeasuredAutoColumn()
     {
-        if (CellItemTemplate is not null)
-        {
-            return false;
-        }
-
-        return Columns is not null &&
-               Columns.Any(column =>
-                   column.IsVisible &&
-                   column.Width.IsAuto &&
-                   column.CellItemTemplate is null);
+        return CellItemTemplate is not null
+            ? false
+            : Columns is not null &&
+              Columns.Any(column =>
+                  column.IsVisible &&
+                  column.Width.IsAuto &&
+                  column.CellItemTemplate is null);
     }
 
     private void UpdateMeasuredAutoColumnWidths()
@@ -484,7 +481,7 @@ public partial class VirtualizedDataGrid : Border
     /// </summary>
     /// <param name="item">The item to test.</param>
     /// <returns><see langword="true"/> when the item is selected; otherwise, <see langword="false"/>.</returns>
-    internal bool IsItemSelected(object? item)
+    private bool IsItemSelected(object? item)
     {
         return item is not null && selectedItemSet.Contains(item);
     }

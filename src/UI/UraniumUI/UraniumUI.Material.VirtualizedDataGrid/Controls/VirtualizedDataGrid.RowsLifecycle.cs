@@ -14,7 +14,7 @@ public partial class VirtualizedDataGrid
 {
     private const int MaximumRowsApplyRetryCount = 20;
 
-    private static readonly TimeSpan rowsApplyRetryDelay = TimeSpan.FromMilliseconds(50);
+    private static readonly TimeSpan rowsApplyRetryDelay = TimeSpan.FromMilliseconds(10);
 
     private IList? desiredRowsSource;
     private IList? appliedRowsSource;
@@ -53,12 +53,12 @@ public partial class VirtualizedDataGrid
     /// fallback handles the short MAUI state where Handler exists but its native
     /// view has already been cleared.
     /// </summary>
-    internal bool CanUseRowsPlatformHost =>
+    private bool CanUseRowsPlatformHost =>
         !visualResourcesReleased &&
         rowsView.Handler is not null &&
         (rowsView.IsLoaded || IsLoaded);
 
-    internal int RowsHandlerGeneration => rowsHandlerGeneration;
+    private int RowsHandlerGeneration => rowsHandlerGeneration;
 
     private void AttachRowsViewLifecycle()
     {
@@ -73,9 +73,7 @@ public partial class VirtualizedDataGrid
         Unloaded += VirtualizedDataGrid_Unloaded;
     }
 
-    private void VirtualizedDataGrid_Loaded(
-        object? sender,
-        EventArgs args)
+    private void VirtualizedDataGrid_Loaded(object? sender, EventArgs args)
     {
         RefreshRowsHostState();
 
@@ -88,23 +86,17 @@ public partial class VirtualizedDataGrid
         QueueRowsSourceApplication();
     }
 
-    private void VirtualizedDataGrid_Unloaded(
-        object? sender,
-        EventArgs args)
+    private void VirtualizedDataGrid_Unloaded(object? sender, EventArgs args)
     {
         MarkRowsHostUnavailable();
     }
 
-    private void RowsView_HandlerChanging(
-        object? sender,
-        HandlerChangingEventArgs args)
+    private void RowsView_HandlerChanging(object? sender, HandlerChangingEventArgs args)
     {
         MarkRowsHostUnavailable();
     }
 
-    private void RowsView_HandlerChanged(
-        object? sender,
-        EventArgs args)
+    private void RowsView_HandlerChanged(object? sender, EventArgs args)
     {
         rowsHandlerGeneration++;
         RefreshRowsHostState();
@@ -119,9 +111,7 @@ public partial class VirtualizedDataGrid
         QueueRowsSourceApplication();
     }
 
-    private void RowsView_Loaded(
-        object? sender,
-        EventArgs args)
+    private void RowsView_Loaded(object? sender, EventArgs args)
     {
         RefreshRowsHostState();
 
@@ -135,9 +125,7 @@ public partial class VirtualizedDataGrid
         QueueRowsSourceApplication();
     }
 
-    private void RowsView_Unloaded(
-        object? sender,
-        EventArgs args)
+    private void RowsView_Unloaded(object? sender, EventArgs args)
     {
         MarkRowsHostUnavailable();
     }

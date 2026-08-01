@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.App.Helpers;
+﻿namespace MissionPlanner.App.Navigation;
 
 /// <summary>
 /// Represents a navigation event that is occurring, with previous and current locations.

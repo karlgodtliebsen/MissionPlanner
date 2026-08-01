@@ -1,6 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Helpers;
-using MissionPlanner.App.Helpers.Navigation;
 using MissionPlanner.Library.EventHub;
 
 namespace MissionPlanner.App.Navigation;

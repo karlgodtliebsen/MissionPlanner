@@ -21,6 +21,7 @@ public static class MauiProgram
             .UseMauiCommunityToolkit()
             .UseUraniumUI()
             .UseUraniumUIMaterial()
+            .UseUraniumUIBlurs(false)
             .ConfigureMopups()
             .ConfigureFonts(fonts =>
             {
@@ -30,11 +31,10 @@ public static class MauiProgram
                 fonts.AddMaterialSymbolsFonts();
             });
 
-        builder.Services.AddMopupsDialogs();
-
         builder.Logging.AddDebug();
         builder.Services.AddLogging(configure => configure.AddDebug());
         builder.Services.AddCommunityToolkitDialogs();
+        builder.Services.AddMopupsDialogs();
 
 
         builder.Services.AddSingleton<AppShellContentViewModel>();
@@ -43,7 +43,7 @@ public static class MauiProgram
         builder.Services.AddSingleton<IFileSaver>(FileSaver.Default);
         builder.Services.AddSingleton<IExtendedDialogService, ExtendedDialogService>();
         builder.Services.AddSingleton<VirtualizedDataGridViewModel>();
-        builder.Services.AddSingleton<VirtualizedDataGridSampleViewModel>();
+        builder.Services.AddTransient<VirtualizedDataGridSampleViewModel>();
         builder.Services.AddTransient<EditorDataGridPageViewModel>();
         builder.Services.AddSingleton<SelectableDataGridPageViewModel>();
         builder.Services.AddSingleton<SimpleDataGridPageViewModel>();

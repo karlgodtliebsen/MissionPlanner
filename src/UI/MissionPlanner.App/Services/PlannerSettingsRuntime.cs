@@ -1,7 +1,7 @@
 ﻿using MissionPlanner.App.Configuration;
 using MissionPlanner.Core.ConfigTuning.Planner;
 
-namespace MissionPlanner.App.Helpers;
+namespace MissionPlanner.App.Services;
 
 /// <summary>Applies safe live Planner settings to application runtime state.</summary>
 public sealed class PlannerSettingsRuntime : IDisposable

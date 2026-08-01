@@ -9,7 +9,7 @@ namespace UraniumUI.Material.VirtualizedDataGrid.Controls;
 /// </summary>
 public partial class VirtualizedDataGrid
 {
-    private static readonly ConcurrentDictionary<(Type ItemType, string Path), Func<object, object?>> FilterAccessorCache = new();
+    private static readonly ConcurrentDictionary<(Type ItemType, string Path), Func<object, object?>> filterAccessorCache = new();
 
     private Command clearSearchCommand = null!;
     private Command firstPageCommand = null!;
@@ -216,6 +216,7 @@ public partial class VirtualizedDataGrid
             {
                 SetRowsItemsSource(displayedItems);
             }
+
             UpdateEmptyViewVisibility();
             UpdateSearchBarVisibility();
             UpdatePagerVisibility();
@@ -281,7 +282,7 @@ public partial class VirtualizedDataGrid
 
         foreach (var path in paths)
         {
-            var accessor = FilterAccessorCache.GetOrAdd(
+            var accessor = filterAccessorCache.GetOrAdd(
                 (item.GetType(), path),
                 static key => CreatePropertyPathAccessor(key.ItemType, key.Path));
 
@@ -538,11 +539,7 @@ public partial class VirtualizedDataGrid
 
     private View CreateDefaultPagerView()
     {
-        var paginator = new UraniumUI.Material.Controls.Paginator
-        {
-            ChangePageCommand = GoToPageCommand,
-            VerticalOptions = LayoutOptions.Center
-        };
+        var paginator = new UraniumUI.Material.Controls.Paginator { ChangePageCommand = GoToPageCommand, VerticalOptions = LayoutOptions.Center };
         paginator.SetBinding(
             UraniumUI.Material.Controls.Paginator.CurrentPageProperty,
             new Binding(nameof(CurrentPage), source: this));

@@ -1,27 +1,18 @@
-﻿using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Helpers;
-using MissionPlanner.App.Helpers.Navigation;
+﻿using MissionPlanner.App.Helpers;
 using MissionPlanner.App.Navigation;
-using MissionPlanner.App.Views.ConfigTuning;
 
 namespace MissionPlanner.App;
 
 /// <summary>The main application Shell and guarded workspace navigation host.</summary>
 public partial class AppShell : Shell
 {
-    private readonly IConfigNavigationGuard navigationGuard;
-    private readonly ILogger<AppShell> logger;
     private readonly INavigationEventHub navigationEventHub;
 
     /// <summary>Initializes the main application Shell.</summary>
     public AppShell()
     {
         InitializeComponent();
-        navigationGuard = ServiceHelper.GetRequiredService<IConfigNavigationGuard>();
-        logger = ServiceHelper.GetRequiredService<ILogger<AppShell>>();
-
         navigationEventHub = ServiceHelper.GetRequiredService<INavigationEventHub>();
-
         Navigating += OnNavigating;
         Navigated += OnNavigated;
     }

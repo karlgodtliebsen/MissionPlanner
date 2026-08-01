@@ -6,16 +6,27 @@ namespace UraniumUI.Material.Extensions.Samples.DataGridSamples.VirtualizedDataG
 /// <summary>Provides the searchable full parameter list through the shared safe editing session.</summary>
 public partial class VirtualizedDataGridSampleViewModel : ObservableObject
 {
-    private readonly List<ItemViewModel> allParameterItems = [];
     [ObservableProperty] public partial int NumberOfRows { get; set; } = 100;
 
     ///// <summary>Gets the currently visible parameter rows.</summary>
     public ObservableRangeCollection<ItemViewModel> Parameters { get; } = [];
 
-    /// <summary>Initializes the Full Parameters List tab.</summary>
     public VirtualizedDataGridSampleViewModel()
     {
-        for (var i = 0; i < NumberOfRows; i++)
+        PopulateRows(NumberOfRows);
+    }
+
+    /// <summary>Initializes the Full Parameters List tab.</summary>
+    partial void OnNumberOfRowsChanged(int value)
+    {
+        PopulateRows(value);
+    }
+
+    private void PopulateRows(int value)
+    {
+        Parameters.Clear();
+        List<ItemViewModel> allParameterItems = [];
+        for (var i = 0; i < value; i++)
         {
             allParameterItems.Add(new ItemViewModel
             {

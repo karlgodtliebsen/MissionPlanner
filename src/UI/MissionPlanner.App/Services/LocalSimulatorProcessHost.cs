@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using MissionPlanner.Core.Simulation;
 
-namespace MissionPlanner.App.Helpers;
+namespace MissionPlanner.App.Services;
 
 /// <summary>Starts and owns local simulator processes using tokenized argument APIs.</summary>
 public sealed class LocalSimulatorProcessHost : ISimulatorProcessHost

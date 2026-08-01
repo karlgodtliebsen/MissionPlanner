@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.App.Helpers;
 using MissionPlanner.App.Presentation;
+using MissionPlanner.App.Services;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware;

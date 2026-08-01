@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.App.Helpers;
+using MissionPlanner.App.Services;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Simulation;

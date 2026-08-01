@@ -1,7 +1,4 @@
-﻿using MissionPlanner.App.Helpers;
-using MissionPlanner.App.Helpers.Navigation;
-
-namespace MissionPlanner.App.Navigation;
+﻿namespace MissionPlanner.App.Navigation;
 
 /// <summary>
 /// Defines the contract for an event hub that allows subscribing to and publishing events. 
