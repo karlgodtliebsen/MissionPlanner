@@ -12,9 +12,10 @@ public interface IVehicleFileSystemService : IAsyncDisposable
     /// </summary>
     /// <param name="vehicleId">The ID of the vehicle.</param>
     /// <param name="remotePath">The path of the directory to list.</param>
+    /// <param name="progress">An optional progress reporter.</param>
     /// <param name="cancellationToken">A token to cancel the operation.</param>
     /// <returns>A list of file system entries.</returns>
-    Task<IReadOnlyList<VehicleFileSystemEntry>> ListDirectoryAsync(VehicleId vehicleId, string remotePath, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<VehicleFileSystemEntry>> ListDirectoryAsync(VehicleId vehicleId, string remotePath, IProgress<VehicleDirectoryProgress>? progress = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets information about a file on the vehicle's file system.

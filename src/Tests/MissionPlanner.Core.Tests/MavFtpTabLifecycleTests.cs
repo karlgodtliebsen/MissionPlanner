@@ -1,4 +1,4 @@
-using CommunityToolkit.Maui.Storage;
+﻿using CommunityToolkit.Maui.Storage;
 using Microsoft.Extensions.Logging.Abstractions;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
@@ -10,6 +10,7 @@ using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Transport;
 using NSubstitute;
+using UraniumUI.Material.Dialogs;
 
 namespace MissionPlanner.Core.Tests;
 
@@ -75,8 +76,7 @@ public sealed class MavFtpTabLifecycleTests
         fixture.ApplicationState.Dispose();
     }
 
-    private static Fixture CreateFixture(
-        Func<CancellationToken, Task<IReadOnlyList<VehicleFileSystemEntry>>>? listDirectory = null)
+    private static Fixture CreateFixture(Func<CancellationToken, Task<IReadOnlyList<VehicleFileSystemEntry>>>? listDirectory = null)
     {
         var vehicleId = new VehicleId(1, 1);
         var state = new VehicleState(
@@ -120,10 +120,11 @@ public sealed class MavFtpTabLifecycleTests
         fileSystem.ListDirectoryAsync(
                 vehicleId,
                 Arg.Any<string>(),
+                Arg.Any<IProgress<VehicleDirectoryProgress>>(),
                 Arg.Any<CancellationToken>())
             .Returns(call => listDirectory is null
                 ? Task.FromResult<IReadOnlyList<VehicleFileSystemEntry>>([])
-                : listDirectory(call.ArgAt<CancellationToken>(2)));
+                : listDirectory(call.ArgAt<CancellationToken>(3)));
 
         var connectionSession = Substitute.For<IVehicleConnectionSession>();
         connectionSession.CreateMavFtpConnection().Returns(fileSystem);
@@ -150,6 +151,7 @@ public sealed class MavFtpTabLifecycleTests
             connectionSession,
             applicationState,
             eventHub,
+            Substitute.For<IExtendedDialogService>(),
             Substitute.For<IFileSaver>(),
             dispatcher,
             NullLogger<MavFtpTabViewModel>.Instance);

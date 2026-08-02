@@ -27,9 +27,10 @@ public interface IMavFtpClient : IAsyncDisposable
     /// </summary>
     /// <param name="target">The MAVLink FTP target.</param>
     /// <param name="remotePath">The path to the remote directory.</param>
+    /// <param name="progress"></param>
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the list of directory entries.</returns>
-    Task<IReadOnlyList<MavFtpDirectoryEntry>> ListDirectoryAsync(MavFtpTarget target, string remotePath, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<MavFtpDirectoryEntry>> ListDirectoryAsync(MavFtpTarget target, string remotePath, IProgress<MavFtpProgress>? progress = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Downloads a file from the specified MAVLink FTP target.

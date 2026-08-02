@@ -11,6 +11,7 @@ using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.MavFtp;
 using UraniumUI.Extensions;
+using UraniumUI.Material.Dialogs;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
@@ -22,6 +23,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
     private readonly IVehicleRegistry vehicleRegistry;
     private readonly IVehicleConnectionSession connectionSession;
     private readonly ApplicationStateService stateService;
+    private readonly IExtendedDialogService dialogService;
     private readonly IFileSaver fileSaver;
     private readonly IDispatcher dispatcher;
     private readonly ILogger<MavFtpTabViewModel> logger;
@@ -52,6 +54,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
     [ObservableProperty] public partial bool HasEntries { get; set; }
     [ObservableProperty] public partial bool HasConnection { get; set; }
 
+    [ObservableProperty] public partial string Message { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets the collection of file system entries.
@@ -70,15 +73,20 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
     /// <param name="connectionSession">The vehicle connection session.</param>
     /// <param name="stateService"></param>
     /// <param name="domainEventHub">The domain event hub.</param>
+    /// <param name="dialogService">The dialog service.</param>
     /// <param name="fileSaver">The file saver.</param>
     /// <param name="dispatcher"></param>
     /// <param name="logger"></param>
-    public MavFtpTabViewModel(IVehicleRegistry vehicleRegistry, IVehicleConnectionSession connectionSession, ApplicationStateService stateService, IDomainEventHub domainEventHub, IFileSaver fileSaver,
+    public MavFtpTabViewModel(IVehicleRegistry vehicleRegistry, IVehicleConnectionSession connectionSession, ApplicationStateService stateService,
+        IDomainEventHub domainEventHub,
+        IExtendedDialogService dialogService,
+        IFileSaver fileSaver,
         IDispatcher dispatcher, ILogger<MavFtpTabViewModel> logger)
     {
         this.vehicleRegistry = vehicleRegistry;
         this.connectionSession = connectionSession;
         this.stateService = stateService;
+        this.dialogService = dialogService;
         this.fileSaver = fileSaver;
         this.dispatcher = dispatcher;
         this.logger = logger;
@@ -86,7 +94,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
         fileSystem = connectionSession.CreateMavFtpConnection();
         SetConnectionStatus();
-        StartDelayedRefresh(1);
+        StartDelayedRefresh(TimeSpan.FromMilliseconds(100));
     }
 
     private async Task ResetFilesystemService(VehicleId vehicleId, CancellationToken ct)
@@ -175,7 +183,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
 
                 await ResetSessionsAsync();
                 SetConnectionStatus();
-                StartDelayedRefresh(1);
+                StartDelayedRefresh(TimeSpan.FromMilliseconds(100));
             }
         }
         catch (OperationCanceledException) when (lifetimeCancellation.IsCancellationRequested)
@@ -184,7 +192,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
         }
     }
 
-    private void StartDelayedRefresh(int seconds)
+    private void StartDelayedRefresh(TimeSpan milliseconds)
     {
         if (disposed)
         {
@@ -193,12 +201,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
 
         StopDelayedRefresh();
         var newTimer = dispatcher.CreateTimer();
-        if (newTimer is null)
-        {
-            return;
-        }
-
-        newTimer.Interval = TimeSpan.FromSeconds(seconds);
+        newTimer.Interval = milliseconds;
         newTimer.Tick += OnRefreshTimerTick;
         var shouldStart = false;
         lock (lifecycleSync)
@@ -379,12 +382,19 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
             var temporary = Path.Combine(FileSystem.CacheDirectory, $"mavftp-{Guid.NewGuid():N}.tmp");
             try
             {
+                dispatcher.Dispatch(() => Message = string.Empty);
+                using var disposable = await dialogService.DisplayProgressCancellableAsync("Loading Remote File", () => Message);
+
                 await using var destination = new FileStream(temporary, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 65536, FileOptions.Asynchronous | FileOptions.SequentialScan);
                 var progress = new Progress<VehicleFileTransferProgress>(p =>
                 {
                     TransferProgress = p.TotalBytes > 0 ? (double)p.BytesTransferred / p.TotalBytes.Value : 0;
                     TransferDetails = $"{p.BytesTransferred:N0} / {p.TotalBytes?.ToString("N0") ?? "?"} bytes · {p.BytesPerSecond ?? 0:N0} B/s";
+
+                    Message = $"Downloading \n{TransferProgress} ({TransferDetails})";
                 });
+
+
                 var activeFileSystem = fileSystem;
                 if (activeFileSystem is null)
                 {
@@ -415,6 +425,10 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
 
     private async Task LoadDirectoryAsync(string path)
     {
+        dispatcher.Dispatch(() => Message = string.Empty);
+
+        using var disposable = await dialogService.DisplayProgressCancellableAsync("Loading Remote Information", () => Message);
+
         var vehicle = ResolveActiveVehicle();
         if (vehicle is null)
         {
@@ -432,9 +446,12 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
                 return;
             }
 
-            var entries = await activeFileSystem.ListDirectoryAsync(vehicle.Id, path, ct);
+            var progress = new Progress<VehicleDirectoryProgress>(p => Message = $"Loading Directory {p.RemotePath}");
+            var entries = await activeFileSystem.ListDirectoryAsync(vehicle.Id, path, progress, ct);
+
             dispatcher.Dispatch(() =>
             {
+                Message = $"Found {entries.Count} Remote Entries";
                 Entries.Clear();
                 foreach (var entry in entries.OrderBy(x => x.Type).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase))
                 {

@@ -80,7 +80,7 @@ public sealed class MavFtpClient : IMavFtpClient
     }
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<MavFtpDirectoryEntry>> ListDirectoryAsync(MavFtpTarget target, string remotePath, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<MavFtpDirectoryEntry>> ListDirectoryAsync(MavFtpTarget target, string remotePath, IProgress<MavFtpProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         return InOperationLockAsync(target, async ct =>
         {
@@ -91,6 +91,7 @@ public sealed class MavFtpClient : IMavFtpClient
                 MavFtpPacket response;
                 try
                 {
+                    progress?.Report(new MavFtpProgress(remotePath, offset, null, null));
                     response = await RequestAsync(target, 0, MavFtpOpcode.ListDirectory, offset, PathBytes(remotePath), remotePath, ct).ConfigureAwait(false);
                 }
                 catch (MavFtpRemoteException ex)

@@ -14,16 +14,17 @@ namespace MissionPlanner.Core.Vehicles;
 /// <param name="logger">The logger.</param>
 public sealed class VehicleFileSystemService(IMavFtpClient client, IVehicleRegistry vehicleRegistry, ILogger<VehicleFileSystemService> logger) : IVehicleFileSystemService
 {
-    /// <summary>
-    /// Lists the contents of a directory on the vehicle's file system.
-    /// </summary>
-    /// <param name="vehicleId">The ID of the vehicle.</param>
-    /// <param name="remotePath">The path of the directory to list.</param>
-    /// <param name="cancellationToken">A token to cancel the operation.</param>
-    /// <returns>A list of file system entries.</returns>
-    public async Task<IReadOnlyList<VehicleFileSystemEntry>> ListDirectoryAsync(VehicleId vehicleId, string remotePath, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<VehicleFileSystemEntry>> ListDirectoryAsync(VehicleId vehicleId, string remotePath, IProgress<VehicleDirectoryProgress>? progress = null, CancellationToken cancellationToken = default)
     {
-        var entries = await client.ListDirectoryAsync(Resolve(vehicleId), remotePath, cancellationToken).ConfigureAwait(false);
+        IProgress<MavFtpProgress>? mapped = progress is null
+            ? null
+            : new MappingProgress<MavFtpProgress, VehicleDirectoryProgress>(
+                progress,
+                static x => new VehicleDirectoryProgress(
+                    x.RemotePath));
+
+        var entries = await client.ListDirectoryAsync(Resolve(vehicleId), remotePath, mapped, cancellationToken).ConfigureAwait(false);
         return entries.Select(x => new VehicleFileSystemEntry(x.Name, x.Type == MavFtpDirectoryEntryType.Directory ? VehicleFileSystemEntryType.Directory : VehicleFileSystemEntryType.File, x.Size)).ToArray();
     }
 

@@ -43,7 +43,6 @@
             <HorizontalStackLayout Spacing="8">
                 <Button Text="Download selected" Command="{Binding DownloadSelectedCommand}"  IsVisible="{Binding HasEntries}"/>
                 <Button Text="Cancel" Command="{Binding CancelCommand}" IsEnabled="{Binding IsBusy}" />
-                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
             </HorizontalStackLayout>
         </VerticalStackLayout>
     </Grid>
