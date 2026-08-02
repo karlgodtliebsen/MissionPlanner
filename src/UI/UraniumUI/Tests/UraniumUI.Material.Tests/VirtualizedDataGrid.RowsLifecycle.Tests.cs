@@ -59,9 +59,43 @@ public class VirtualizedDataGrid_RowsLifecycle_Tests
         control.DesiredSource.ShouldBeSameAs(latest);
     }
 
+    [Fact]
+    public void SuspendedRowsHost_ShouldIgnoreLateViewportUpdates()
+    {
+        var control = new TestableVirtualizedDataGrid
+        {
+            RowHeight = 40,
+            Columns =
+            [
+                new DataGridColumn { Title = "Name", ValueBinding = new Binding(nameof(Row.Name)) }
+            ],
+            ItemsSource = new ObservableCollection<Row>(
+                Enumerable.Range(0, 100).Select(index => new Row($"Row {index}")))
+        };
+        control.CalculateViewport();
+
+        control.SuspendPresentation();
+        control.CalculateViewport();
+
+        control.RealizedRows.ShouldBe(0);
+    }
+
     private sealed class TestableVirtualizedDataGrid : VirtualizedDataGrid.Controls.VirtualizedDataGrid
     {
         public bool PendingRowsUpdate => HasPendingRowsSourceUpdate;
+        public int RealizedRows => RealizedRowCount;
+
+        public void CalculateViewport() => UpdateRowsViewport(0, 400);
+
+        public void SuspendPresentation()
+        {
+            typeof(VirtualizedDataGrid.Controls.VirtualizedDataGrid)
+                .GetMethod(
+                    "SuspendRowsPresentation",
+                    System.Reflection.BindingFlags.Instance |
+                    System.Reflection.BindingFlags.NonPublic)!
+                .Invoke(this, null);
+        }
 
         public IList? DesiredSource
         {

@@ -21,6 +21,8 @@ internal sealed class VirtualizedDataGridRowsHost : ScrollView
     private bool offsetsInvalid = true;
     private bool updateScheduled;
     private bool updating;
+    private bool updatesSuspended;
+    private int updateGeneration;
     private double uniformMeasuredHeight;
 
     internal VirtualizedDataGridRowsHost(VirtualizedDataGrid owner)
@@ -84,6 +86,20 @@ internal sealed class VirtualizedDataGridRowsHost : ScrollView
         QueueViewportUpdate();
     }
 
+    internal void SuspendUpdates()
+    {
+        updatesSuspended = true;
+        updateScheduled = false;
+        updateGeneration++;
+    }
+
+    internal void ResumeUpdates()
+    {
+        updatesSuspended = false;
+        updateScheduled = false;
+        updateGeneration++;
+    }
+
     internal void ApplyColumnWidth(double width)
     {
         var finiteWidth = double.IsFinite(width) && width > 0 ? width : 0;
@@ -123,7 +139,7 @@ internal sealed class VirtualizedDataGridRowsHost : ScrollView
     internal void UpdateViewportNow()
     {
         updateScheduled = false;
-        if (updating)
+        if (updatesSuspended || updating)
         {
             return;
         }
@@ -155,6 +171,11 @@ internal sealed class VirtualizedDataGridRowsHost : ScrollView
 
     internal void UpdateViewport(double scrollOffset, double viewportHeight)
     {
+        if (updatesSuspended)
+        {
+            return;
+        }
+
         UpdateOffsets();
         UpdateViewportCore(
             Math.Max(0, scrollOffset),
@@ -234,16 +255,39 @@ internal sealed class VirtualizedDataGridRowsHost : ScrollView
 
     private void QueueViewportUpdate()
     {
-        if (updateScheduled)
+        if (updatesSuspended || updateScheduled)
         {
             return;
         }
 
         updateScheduled = true;
-        if (!(Dispatcher?.Dispatch(UpdateViewportNow) ?? false))
+        var generation = updateGeneration;
+
+        try
         {
+            if (!(Dispatcher?.Dispatch(() =>
+                {
+                    if (updatesSuspended || generation != updateGeneration)
+                    {
+                        updateScheduled = false;
+                        return;
+                    }
+
+                    UpdateViewportNow();
+                }) ?? false))
+            {
+                updateScheduled = false;
+                if (!updatesSuspended && generation == updateGeneration)
+                {
+                    UpdateViewportNow();
+                }
+            }
+        }
+        catch (ObjectDisposedException)
+        {
+            // MAUI's dispatcher service can be disposed before the final size or
+            // scroll notification is delivered during application shutdown.
             updateScheduled = false;
-            UpdateViewportNow();
         }
     }
 

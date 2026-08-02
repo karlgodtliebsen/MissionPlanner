@@ -110,6 +110,8 @@ public partial class VirtualizedDataGrid
             Diagnostics.RowsHostUnavailableCount++;
         }
 
+        rowsView.SuspendUpdates();
+
         // Work is proportional to the bounded presenter pool, never the source.
         // Keep the managed source reference so a temporary unload can resume.
         ReleaseRealizedRows();
@@ -122,6 +124,7 @@ public partial class VirtualizedDataGrid
             return;
         }
 
+        rowsView.ResumeUpdates();
         rowsView.SetItemsSource(desiredRowsSource);
         rowsView.RefreshRows();
         UpdateEmptyViewVisibility();
