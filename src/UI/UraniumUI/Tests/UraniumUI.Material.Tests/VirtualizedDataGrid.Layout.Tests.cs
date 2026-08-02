@@ -61,6 +61,52 @@ public class VirtualizedDataGrid_Layout_Tests
     }
 
     [Fact]
+    public void GeneratedAutoColumns_ShouldNotShrinkBelowAutoColumnWidth()
+    {
+        var grid = new TestableVirtualizedDataGrid
+        {
+            UseAutoColumns = true,
+            AutoColumnWidth = 250,
+            ItemsSource = new ObservableCollection<Row>
+            {
+                new("A", false)
+            }
+        };
+
+        grid.Arrange(new Rect(0, 0, 1200, 400));
+
+        grid.ExposedResolvedColumnWidths.Count.ShouldBe(2);
+        grid.ExposedResolvedColumnWidths.ShouldAllBe(width => width >= 250);
+    }
+
+    [Fact]
+    public void MeasureAllItems_ShouldCorrectIndividualRowExtent()
+    {
+        var grid = new TestableVirtualizedDataGrid
+        {
+            ItemSizingStrategy = ItemSizingStrategy.MeasureAllItems,
+            EstimatedRowHeight = 80,
+            Columns =
+            [
+                new DataGridColumn
+                {
+                    Title = "Name",
+                    ValueBinding = new Binding(nameof(Row.Name))
+                }
+            ],
+            ItemsSource = new ObservableCollection<Row>(
+                Enumerable.Range(0, 10)
+                    .Select(index => new Row($"Row {index}", false)))
+        };
+        grid.CalculateViewport(0, 400);
+
+        grid.ReportHeight(2, 160);
+        grid.CalculateViewport(0, 400);
+
+        grid.ExposedRowsExtentHeight.ShouldBe(880);
+    }
+
+    [Fact]
     public void DefaultMaterialSpacing_ShouldRemainStable()
     {
         var grid = new TestableVirtualizedDataGrid();
@@ -275,6 +321,9 @@ public class VirtualizedDataGrid_Layout_Tests
 
         public void Allocate(double width, double height) =>
             OnSizeAllocated(width, height);
+
+        public void ReportHeight(int index, double height) =>
+            ReportRowHeight(index, height);
 
         public Grid ExposedTableLayout
         {

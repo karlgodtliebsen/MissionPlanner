@@ -291,7 +291,10 @@ public partial class VirtualizedDataGrid : Border
         RequestRowAutoColumnMeasurement();
     }
 
-    internal void ReportRowHeight(int index, double height) =>
+    /// <summary>Reports the measured height of a realized logical row.</summary>
+    /// <param name="index">The row index in the displayed source.</param>
+    /// <param name="height">The measured row height.</param>
+    protected internal void ReportRowHeight(int index, double height) =>
         rowsView.ReportMeasuredHeight(index, height);
 
     /// <summary>
@@ -447,7 +450,9 @@ public partial class VirtualizedDataGrid : Border
             }
         }
 
-        foreach (var presenter in livePresenters.Take(1))
+        // The presenter set is bounded by the viewport and overscan, so every
+        // visible row can contribute without making this source-size dependent.
+        foreach (var presenter in livePresenters.Where(presenter => presenter.HasBoundItem))
         {
             var rowWidths = presenter.MeasureNaturalColumnWidths();
 
@@ -773,6 +778,15 @@ public partial class VirtualizedDataGrid : Border
                 widths[index] = double.IsFinite(measuredWidth) && measuredWidth > 0
                     ? measuredWidth
                     : NormalizeWidth(AutoColumnWidth);
+
+                // For generated columns AutoColumnWidth is the requested base
+                // width. Content may expand it, but short values must not shrink it.
+                if (UseAutoColumns)
+                {
+                    widths[index] = Math.Max(
+                        widths[index],
+                        NormalizeWidth(AutoColumnWidth));
+                }
                 fixedWidth += widths[index];
             }
             else

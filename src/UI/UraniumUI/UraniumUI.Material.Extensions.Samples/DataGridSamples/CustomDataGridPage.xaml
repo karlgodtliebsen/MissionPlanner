@@ -11,6 +11,7 @@
                     xmlns:models="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids.Models"
                     BindingContext="{uranium:Inject {Type dataGrids:CustomDataGridPageViewModel}}"
                     x:Class="UraniumUI.Material.Extensions.Samples.DataGrids.CustomDataGridPage"
+                    x:Name="SamplePage"
                    x:DataType="dataGrids:CustomDataGridPageViewModel"
                    >
     <uranium:UraniumContentPage.Content>
@@ -53,9 +54,9 @@
 
                 <virtualized:VirtualizedDataGrid.Columns>
 
-                    <material:DataGridColumn Width="3*" Title="Student Name">
+                    <material:DataGridColumn Width="4*" Title="Student Name">
                         <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate x:DataType="models: CustomDataGridStudent">
+                            <DataTemplate x:DataType="models:CustomDataGridStudent">
                                 <Label Text="{Binding Name}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
                             </DataTemplate>
                         </material:DataGridColumn.CellItemTemplate>
@@ -76,16 +77,16 @@
                         </material:DataGridColumn.CellItemTemplate>
                     </material:DataGridColumn>
 
-                    <material:DataGridColumn Width="*" x:DataType="models: CustomDataGridStudent" ValueBinding="{Binding Id}" Title="Id" />
+                    <material:DataGridColumn Width="*" x:DataType="models:CustomDataGridStudent" ValueBinding="{Binding Id}" Title="Id" />
 
-                    <material:DataGridColumn Width="2*" Title="Actions"  >
+                    <material:DataGridColumn Width="*" Title="Actions"  >
                         <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate  x:DataType="models: CustomDataGridStudent">
+                            <DataTemplate  x:DataType="models:CustomDataGridStudent">
                                 <Button Text="Remove" 
                                             
                                             BackgroundColor="{AppThemeBinding Light={StaticResource Secondary},Dark={StaticResource SecondaryDark}}" 
                                             TextColor="{AppThemeBinding Light={StaticResource OnSecondary},Dark={StaticResource OnSecondaryDark}}"
-                                            Command="{Binding Source={x:Reference page}, Path=BindingContext.RemoveItemCommand}"
+                                            Command="{Binding Source={x:Reference SamplePage}, Path=BindingContext.RemoveItemCommand}"
                                             CommandParameter="{Binding .}"
                                             />
                             </DataTemplate>

@@ -20,7 +20,7 @@
                                                  ItemSizingStrategy= "MeasureFirstItem"
                                                  ShowSearchBar="False"
 
-                                                 HorizontalOptions="Fill"  
+                                                 HorizontalOptions="Center"  
                                                  VerticalOptions="Fill"
                                                  >
                 <virtualized:VirtualizedDataGrid.EmptyView>

@@ -31,7 +31,7 @@
         <virtualized:VirtualizedDataGrid Grid.Row="1" 
                                          ItemsSource="{Binding Parameters}"
                                          MinimumStarColumnWidth= "120"
-                                         ItemSizingStrategy= "MeasureFirstItem"
+                                         ItemSizingStrategy= "MeasureAllItems"
                                          ShowRowSeparators="True"
                                          FilterMemberPaths="Name,DisplayName,Description"
                                          ShowSearchBar="True"

@@ -22,9 +22,10 @@
                                                  FilterMemberPaths="Name,Id,Age"
                                                  ShowSearchBar="True"
 
-                                                 HorizontalOptions="Fill"  
+                                                 HorizontalOptions="Center"  
                                                  VerticalOptions="Fill"
-                                                 Margin="30">
+                                                 
+                                                 >
 
             </virtualized:VirtualizedDataGrid>
         </Grid>
