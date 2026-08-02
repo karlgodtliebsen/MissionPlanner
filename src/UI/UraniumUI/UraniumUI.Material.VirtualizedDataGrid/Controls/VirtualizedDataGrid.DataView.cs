@@ -117,6 +117,7 @@ public partial class VirtualizedDataGrid
         }
 
         updatingDataView = true;
+        var diagnosticsStarted = Diagnostics.StartTiming();
 
         try
         {
@@ -224,6 +225,7 @@ public partial class VirtualizedDataGrid
         finally
         {
             updatingDataView = false;
+            Diagnostics.RecordDataViewRefresh(diagnosticsStarted);
         }
 
         if (dataViewRefreshPending)

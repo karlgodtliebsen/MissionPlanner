@@ -36,9 +36,10 @@
         <WindowsPackageType>None</WindowsPackageType>
 	</PropertyGroup>
 
-    <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows' and '$(RuntimeIdentifierOverride)' != ''">
-        <RuntimeIdentifier>$(RuntimeIdentifierOverride)</RuntimeIdentifier>
+    <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
+        <UseWindowsCollectionView2Handler>false</UseWindowsCollectionView2Handler>
     </PropertyGroup>
+
 
     <ItemGroup>
 		<!-- App Icon -->

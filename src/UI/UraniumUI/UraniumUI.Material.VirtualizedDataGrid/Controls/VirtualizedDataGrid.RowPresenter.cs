@@ -38,6 +38,10 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
     protected override void OnBindingContextChanged()
     {
         base.OnBindingContextChanged();
+        if (owner.Diagnostics.IsEnabled)
+        {
+            owner.Diagnostics.PresenterBindingContextChangeCount++;
+        }
 
         if (visualTreeReleased && BindingContext is not null)
         {
@@ -55,6 +59,11 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
     /// </summary>
     internal void RefreshFromOwner()
     {
+        if (owner.Diagnostics.IsEnabled)
+        {
+            owner.Diagnostics.PresenterBuildCount++;
+        }
+
         visualTreeReleased = false;
         Children.Clear();
         RowDefinitions.Clear();
@@ -93,14 +102,21 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
         owner.ApplySelectionState(this);
     }
 
-    internal void ReleaseVisualTree()
+    internal int ReleaseVisualTree()
     {
+        if (visualTreeReleased)
+        {
+            return 0;
+        }
+
+        var releasedCellCount = cellsGrid?.Children.Count ?? 0;
         visualTreeReleased = true;
         cellsGrid = null;
         Children.Clear();
         RowDefinitions.Clear();
         selectionCells.Clear();
         templateValueBindingCells.Clear();
+        return releasedCellCount;
     }
 
     /// <summary>

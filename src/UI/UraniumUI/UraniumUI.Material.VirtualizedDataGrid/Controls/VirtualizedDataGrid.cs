@@ -275,6 +275,7 @@ public partial class VirtualizedDataGrid : Border
     internal void RegisterPresenter(VirtualizedDataGridRowPresenter presenter)
     {
         presenters.Add(new WeakReference<VirtualizedDataGridRowPresenter>(presenter));
+        Diagnostics.PresenterCreated();
         ApplySelectionState(presenter);
         RequestRowAutoColumnMeasurement();
     }
@@ -368,11 +369,14 @@ public partial class VirtualizedDataGrid : Border
             return;
         }
 
+        var diagnosticsStarted = Diagnostics.StartTiming();
+
         var columns = GetColumnsSnapshot();
         var livePresenters = GetLivePresenters().ToList();
         if (HasContentMeasuredAutoColumn() &&
             !livePresenters.Any(presenter => presenter.HasBoundItem))
         {
+            Diagnostics.RecordAutoColumnMeasurement(diagnosticsStarted);
             return;
         }
 
@@ -454,12 +458,14 @@ public partial class VirtualizedDataGrid : Border
 
         if (!changed)
         {
+            Diagnostics.RecordAutoColumnMeasurement(diagnosticsStarted);
             return;
         }
 
         measuredAutoColumnWidths = measured;
         RecalculateColumnLayout();
         InvalidateMeasure();
+        Diagnostics.RecordAutoColumnMeasurement(diagnosticsStarted);
     }
 
     private static double NormalizeMeasuredAutoWidth(double width)
@@ -594,14 +600,24 @@ public partial class VirtualizedDataGrid : Border
 
     private void ReleaseRealizedRows()
     {
+        var diagnosticsStarted = Diagnostics.StartTiming();
+        var releasedPresenters = 0;
+        var releasedCells = 0;
+
         foreach (var presenter in GetLivePresenters())
         {
-            presenter.ReleaseVisualTree();
+            var cells = presenter.ReleaseVisualTree();
+            releasedCells += cells;
+            releasedPresenters++;
         }
 
         presenters.Clear();
         autoColumnMeasurementScheduled = false;
         autoColumnMeasurementGeneration++;
+        Diagnostics.RecordRealizedRowsRelease(
+            diagnosticsStarted,
+            releasedPresenters,
+            releasedCells);
     }
 
     private void ResetAutoColumnMeasurement()
@@ -619,10 +635,19 @@ public partial class VirtualizedDataGrid : Border
             return;
         }
 
-        RecalculateColumnLayout();
-        RenderHeader();
-        UpdateRowsHost();
-        RefreshRealizedRows();
+        var diagnosticsStarted = Diagnostics.StartTiming();
+
+        try
+        {
+            RecalculateColumnLayout();
+            RenderHeader();
+            UpdateRowsHost();
+            RefreshRealizedRows();
+        }
+        finally
+        {
+            Diagnostics.RecordRebuild(diagnosticsStarted);
+        }
     }
 
     /// <summary>
@@ -691,9 +716,18 @@ public partial class VirtualizedDataGrid : Border
             return;
         }
 
-        foreach (var presenter in GetLivePresenters())
+        var diagnosticsStarted = Diagnostics.StartTiming();
+
+        try
         {
-            presenter.RefreshFromOwner();
+            foreach (var presenter in GetLivePresenters())
+            {
+                presenter.RefreshFromOwner();
+            }
+        }
+        finally
+        {
+            Diagnostics.RecordRealizedRowsRefresh(diagnosticsStarted);
         }
     }
 
@@ -706,6 +740,8 @@ public partial class VirtualizedDataGrid : Border
         {
             return;
         }
+
+        var diagnosticsStarted = Diagnostics.StartTiming();
 
         var columns = GetColumnsSnapshot();
         var widths = new double[columns.Count];
@@ -784,6 +820,8 @@ public partial class VirtualizedDataGrid : Border
         {
             presenter.ApplyColumnWidths(widths);
         }
+
+        Diagnostics.RecordColumnLayout(diagnosticsStarted);
     }
 
     private double GetViewportWidth()
@@ -905,6 +943,10 @@ public partial class VirtualizedDataGrid : Border
 
     private void OnItemsSourceSet(IList? oldSource, IList? newSource)
     {
+        if (Diagnostics.IsEnabled)
+        {
+            Diagnostics.ItemsSourceChangeCount++;
+        }
         if (subscriptionsActive)
         {
             DetachItemsSource();
@@ -1081,6 +1123,10 @@ public partial class VirtualizedDataGrid : Border
         object? sender,
         NotifyCollectionChangedEventArgs e)
     {
+        if (Diagnostics.IsEnabled)
+        {
+            Diagnostics.ItemsSourceCollectionChangeCount++;
+        }
         if (CurrentType is null && e.NewItems is { Count: > 0 })
         {
             CurrentType = e.NewItems

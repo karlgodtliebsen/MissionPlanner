@@ -75,6 +75,12 @@ public partial class VirtualizedDataGrid
 
     private void VirtualizedDataGrid_Loaded(object? sender, EventArgs args)
     {
+        if (Diagnostics.IsEnabled)
+        {
+            Diagnostics.GridLoadedCount++;
+            Diagnostics.LastGridLoadedAt = DateTimeOffset.UtcNow;
+        }
+
         RefreshRowsHostState();
 
         // Reapply even when the managed CollectionView still contains the same
@@ -88,16 +94,34 @@ public partial class VirtualizedDataGrid
 
     private void VirtualizedDataGrid_Unloaded(object? sender, EventArgs args)
     {
+        if (Diagnostics.IsEnabled)
+        {
+            Diagnostics.GridUnloadedCount++;
+            Diagnostics.LastGridUnloadedAt = DateTimeOffset.UtcNow;
+        }
+
         MarkRowsHostUnavailable();
     }
 
     private void RowsView_HandlerChanging(object? sender, HandlerChangingEventArgs args)
     {
+        if (Diagnostics.IsEnabled)
+        {
+            Diagnostics.RowsHandlerChangingCount++;
+            Diagnostics.LastRowsHandlerChangingAt = DateTimeOffset.UtcNow;
+        }
+
         MarkRowsHostUnavailable();
     }
 
     private void RowsView_HandlerChanged(object? sender, EventArgs args)
     {
+        if (Diagnostics.IsEnabled)
+        {
+            Diagnostics.RowsHandlerChangedCount++;
+            Diagnostics.LastRowsHandlerChangedAt = DateTimeOffset.UtcNow;
+        }
+
         rowsHandlerGeneration++;
         RefreshRowsHostState();
 
@@ -113,6 +137,12 @@ public partial class VirtualizedDataGrid
 
     private void RowsView_Loaded(object? sender, EventArgs args)
     {
+        if (Diagnostics.IsEnabled)
+        {
+            Diagnostics.RowsViewLoadedCount++;
+            Diagnostics.LastRowsViewLoadedAt = DateTimeOffset.UtcNow;
+        }
+
         RefreshRowsHostState();
 
         forceRowsSourceRebind = desiredRowsSource is not null;
@@ -127,6 +157,12 @@ public partial class VirtualizedDataGrid
 
     private void RowsView_Unloaded(object? sender, EventArgs args)
     {
+        if (Diagnostics.IsEnabled)
+        {
+            Diagnostics.RowsViewUnloadedCount++;
+            Diagnostics.LastRowsViewUnloadedAt = DateTimeOffset.UtcNow;
+        }
+
         MarkRowsHostUnavailable();
     }
 
@@ -166,6 +202,11 @@ public partial class VirtualizedDataGrid
 
     private void MarkRowsHostUnavailable()
     {
+        if (Diagnostics.IsEnabled)
+        {
+            Diagnostics.RowsHostUnavailableCount++;
+        }
+
         rowsHandlerGeneration++;
         rowsHandlerReady = false;
         rowsViewLoaded = false;
@@ -227,6 +268,11 @@ public partial class VirtualizedDataGrid
         if (!rowsSourceUpdatePending)
         {
             return;
+        }
+
+        if (Diagnostics.IsEnabled)
+        {
+            Diagnostics.RowsSourceApplyQueuedCount++;
         }
 
         RefreshRowsHostState();
@@ -302,6 +348,8 @@ public partial class VirtualizedDataGrid
             return;
         }
 
+        var diagnosticsStarted = Diagnostics.StartTiming();
+
         try
         {
             // A retained CollectionView can still contain the same managed source
@@ -314,13 +362,13 @@ public partial class VirtualizedDataGrid
                 source is not null &&
                 ReferenceEquals(rowsView.ItemsSource, source))
             {
-                rowsView.ItemsSource = null;
+                SetNativeRowsItemsSource(null);
             }
 
             if (!ReferenceEquals(rowsView.ItemsSource, source) ||
                 forceRowsSourceRebind)
             {
-                rowsView.ItemsSource = source;
+                SetNativeRowsItemsSource(source);
             }
 
             appliedRowsSource = source;
@@ -337,10 +385,18 @@ public partial class VirtualizedDataGrid
             rowsView.InvalidateMeasure();
             rowsHost.InvalidateMeasure();
             InvalidateMeasure();
+            Diagnostics.RecordRowsSourceApply(
+                diagnosticsStarted,
+                source is null);
         }
         catch (InvalidOperationException exception)
             when (IsPlatformViewUnavailable(exception))
         {
+            if (Diagnostics.IsEnabled)
+            {
+                Diagnostics.RowsSourceApplyFailureCount++;
+            }
+
             // A narrow fallback for the short MAUI transition where Handler exists
             // but its native PlatformView has already been cleared.
             rowsHandlerReady = false;
@@ -355,6 +411,21 @@ public partial class VirtualizedDataGrid
                 $"{exception.Message}");
 
             ScheduleRowsSourceRetry();
+        }
+    }
+
+    private void SetNativeRowsItemsSource(IList? source)
+    {
+        var diagnosticsStarted = Diagnostics.StartTiming();
+        try
+        {
+            rowsView.ItemsSource = source;
+        }
+        finally
+        {
+            Diagnostics.RecordNativeItemsSourceSet(
+                diagnosticsStarted,
+                source is null);
         }
     }
 
@@ -380,7 +451,10 @@ public partial class VirtualizedDataGrid
             rowsApplyRetryDelay,
             () =>
             {
-                Diagnostics.RowsApplyRetryCount++;
+                if (Diagnostics.IsEnabled)
+                {
+                    Diagnostics.RowsSourceApplyRetryCount++;
+                }
                 rowsRetryScheduled = false;
 
                 if (!rowsSourceUpdatePending)

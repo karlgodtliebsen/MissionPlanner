@@ -33,7 +33,9 @@
                                       VerticalTextAlignment="Center"
                                       WidthRequest="220" />
 
-        <virtualized:VirtualizedDataGrid Grid.Row="2" 
+        <virtualized:VirtualizedDataGrid 
+                                             x:Name="TheDataGrid"
+                                             Grid.Row="2" 
                                              Margin="10"
                                              ItemsSource="{Binding Parameters}"
                                              UseAutoColumns="False"
@@ -44,7 +46,7 @@
                                              FilterMemberPaths="Name,DisplayName"
                                              ShowSearchBar="True"
             >
-            <virtualized:VirtualizedDataGrid.Columns>
+            <virtualized:VirtualizedDataGrid.Columns >
                 <material:DataGridSelectionColumn/>
                 <material:DataGridColumn Width="100" x:DataType="virtualizedDataGridSample:ItemViewModel"  ValueBinding="{Binding AValue}" Title="A Value"  />
                 <material:DataGridColumn Width="*"   x:DataType="virtualizedDataGridSample:ItemViewModel"  ValueBinding="{Binding Name}" Title="Name"  />
