@@ -9,11 +9,11 @@ using UraniumUI.Material.Controls;
 namespace UraniumUI.Material.VirtualizedDataGrid.Controls;
 
 /// <summary>
-/// A DataGrid-compatible control that virtualizes rows through the platform CollectionView.
+/// A DataGrid-compatible control that virtualizes rows through a bounded pool
+/// of presenters inside a lightweight scrolling extent.
 ///
-/// The header is kept outside the CollectionView, while a horizontal-only ScrollView moves
-/// the header and realized rows together. Vertical scrolling is owned exclusively by the
-/// CollectionView so platform virtualization remains active.
+/// The header is kept outside the vertical rows viewport, while a horizontal-only
+/// ScrollView moves the header and realized rows together.
 /// </summary>
 public partial class VirtualizedDataGrid : Border
 {
@@ -24,7 +24,7 @@ public partial class VirtualizedDataGrid : Border
     private readonly Grid headerSection;
     private readonly Grid headerGrid;
     private readonly Grid rowsHost;
-    private readonly CollectionView rowsView;
+    private readonly VirtualizedDataGridRowsHost rowsView;
     private readonly ContentView emptyViewHost;
     private readonly ContentView pagerHost;
 
@@ -70,15 +70,7 @@ public partial class VirtualizedDataGrid : Border
         Grid.SetRow(headerSeparator, 1);
         headerSection.Children.Add(headerSeparator);
 
-        rowsView = new CollectionView
-        {
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill,
-            SelectionMode = SelectionMode.None,
-            ItemSizingStrategy = ItemSizingStrategy.MeasureFirstItem,
-            ItemsUpdatingScrollMode = ItemsUpdatingScrollMode.KeepScrollOffset,
-            ItemsLayout = new LinearItemsLayout(ItemsLayoutOrientation.Vertical) { ItemSpacing = 0 }
-        };
+        rowsView = new VirtualizedDataGridRowsHost(this);
 
         AttachRowsViewLifecycle();
 
@@ -123,15 +115,33 @@ public partial class VirtualizedDataGrid : Border
         Columns is { Count: > 0 } && Columns.Any(column => column.IsVisible);
 
     /// <summary>
-    /// Exposes the virtualizing host to subclasses and upstream tests.
-    /// Do not wrap this CollectionView in a vertical ScrollView.
+    /// Exposes the vertical scrolling viewport to subclasses and tests.
     /// </summary>
-    protected CollectionView RowsView => rowsView;
+    protected ScrollView RowsView => rowsView;
+
+    /// <summary>Creates an unhosted row presenter for derived controls and tests.</summary>
+    protected Grid CreateRowPresenter() =>
+        new VirtualizedDataGridRowPresenter(this);
+
+    /// <summary>Gets the number of rows currently realized in the viewport.</summary>
+    protected int RealizedRowCount => rowsView.RealizedCount;
+
+    /// <summary>Gets the calculated vertical scrolling extent.</summary>
+    protected double RowsExtentHeight => rowsView.ExtentHeight;
+
+    /// <summary>Forces an immediate viewport calculation.</summary>
+    protected void UpdateRowsViewport() => rowsView.UpdateViewportNow();
+
+    /// <summary>Calculates a viewport for an explicit vertical offset.</summary>
+    protected void UpdateRowsViewport(double offset, double viewportHeight) =>
+        rowsView.UpdateViewport(offset, viewportHeight);
+
+    /// <summary>Gets the logical row indices currently represented by the pool.</summary>
+    protected IReadOnlyCollection<int> RealizedRowIndices => rowsView.RealizedIndices;
 
     /// <summary>
     /// Gets the latest logical row source selected by filtering and paging.
-    /// The native CollectionView ItemsSource may be assigned later when
-    /// its platform handler is loaded.
+    /// The rows host only realizes the bounded viewport subset.
     /// </summary>
     protected IList? DisplayedItemsSource => desiredRowsSource;
 
@@ -170,8 +180,7 @@ public partial class VirtualizedDataGrid : Border
             DeactivateSubscriptions();
 
             // A MAUI handler can be removed temporarily while the managed page and
-            // control remain reusable. Do not assign CollectionView.ItemsSource or
-            // tear down templates here.
+            // control remain reusable. Detach only the bounded presenter pool.
             SuspendRowsPresentation();
         }
 
@@ -195,7 +204,7 @@ public partial class VirtualizedDataGrid : Border
 
     /// <summary>
     /// Temporarily freezes the visible ItemsSource to a snapshot. Mutate the underlying
-    /// collection inside the returned scope, and the CollectionView is rebound once when
+    /// collection inside the returned scope, and the rows host is rebound once when
     /// the scope is disposed.
     ///
     /// Call this method and mutate the source on the UI thread.
@@ -218,7 +227,7 @@ public partial class VirtualizedDataGrid : Border
     }
 
     /// <summary>
-    /// Forces CollectionView to re-read the current source. This is rarely required for
+    /// Forces the rows host to re-read the current source. This is rarely required for
     /// ObservableCollection sources, but is useful after changing a non-observable IList.
     /// </summary>
     public void Refresh()
@@ -279,6 +288,9 @@ public partial class VirtualizedDataGrid : Border
         ApplySelectionState(presenter);
         RequestRowAutoColumnMeasurement();
     }
+
+    internal void ReportRowHeight(int index, double height) =>
+        rowsView.ReportMeasuredHeight(index, height);
 
     /// <summary>
     /// Returns cell padding compatible with UraniumUI's selection column. The
@@ -382,7 +394,7 @@ public partial class VirtualizedDataGrid : Border
 
         var measured = new double[columns.Count];
 
-        // Keep widths already learned for this column set. Recycled CollectionView
+        // Keep widths already learned for this column set. Recycled row
         // presenters continuously receive new BindingContexts while scrolling and
         // filtering. Recomputing from only the currently realized rows makes columns
         // alternately shrink and grow, which triggers another layout/recycle pass and
@@ -550,20 +562,14 @@ public partial class VirtualizedDataGrid : Border
         view.StyleClass = classes;
     }
 
-    private DataTemplate CreateRowTemplate()
-    {
-        return new DataTemplate(() => new VirtualizedDataGridRowPresenter(this));
-    }
-
     private void RestoreVisualResources()
     {
-        if (!visualResourcesReleased && rowsView.ItemTemplate is not null)
+        if (!visualResourcesReleased)
         {
             return;
         }
 
         visualResourcesReleased = false;
-        rowsView.ItemTemplate = CreateRowTemplate();
         ApplySearchBar();
         ApplyEmptyView();
         ApplyPager();
@@ -574,12 +580,7 @@ public partial class VirtualizedDataGrid : Border
         visualResourcesReleased = true;
         SuspendRowsPresentation();
 
-        // This method is reserved for an explicit final-release path. Ordinary
-        // Shell/routed-page handler changes use SuspendRowsPresentation and retain
-        // the reusable templates and logical row source.
-        rowsView.ItemTemplate = null;
-        rowsView.EmptyView = null;
-        rowsView.EmptyViewTemplate = null;
+        rowsView.SetItemsSource(null);
 
         searchHost.Content = null;
         searchHost.IsVisible = false;
@@ -601,23 +602,15 @@ public partial class VirtualizedDataGrid : Border
     private void ReleaseRealizedRows()
     {
         var diagnosticsStarted = Diagnostics.StartTiming();
-        var releasedPresenters = 0;
-        var releasedCells = 0;
-
-        foreach (var presenter in GetLivePresenters())
-        {
-            var cells = presenter.ReleaseVisualTree();
-            releasedCells += cells;
-            releasedPresenters++;
-        }
+        var released = rowsView.ReleaseRows();
 
         presenters.Clear();
         autoColumnMeasurementScheduled = false;
         autoColumnMeasurementGeneration++;
         Diagnostics.RecordRealizedRowsRelease(
             diagnosticsStarted,
-            releasedPresenters,
-            releasedCells);
+            released.Presenters,
+            released.Cells);
     }
 
     private void ResetAutoColumnMeasurement()
@@ -815,6 +808,7 @@ public partial class VirtualizedDataGrid : Border
 
         resolvedColumnWidths = widths;
         RenderHeader();
+        rowsView.ApplyColumnWidth(totalWidth);
 
         foreach (var presenter in GetLivePresenters())
         {
@@ -926,6 +920,7 @@ public partial class VirtualizedDataGrid : Border
     private void SetItemSizingStrategy(ItemSizingStrategy strategy)
     {
         ApplyRowsViewConfiguration();
+        rowsView.RefreshRows();
     }
 
     private void SetHorizontalScrollBarVisibility(ScrollBarVisibility visibility)

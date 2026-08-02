@@ -309,6 +309,46 @@ public partial class VirtualizedDataGrid
             ((VirtualizedDataGrid)bindable).RefreshRealizedRows());
 
     /// <summary>
+    /// Gets or sets the estimated height used for rows that have not yet been
+    /// realized and measured.
+    /// </summary>
+    public double EstimatedRowHeight
+    {
+        get => (double)GetValue(EstimatedRowHeightProperty);
+        set => SetValue(EstimatedRowHeightProperty, value);
+    }
+
+    /// <summary>Identifies the <see cref="EstimatedRowHeight"/> property.</summary>
+    public static readonly BindableProperty EstimatedRowHeightProperty = BindableProperty.Create(
+        nameof(EstimatedRowHeight),
+        typeof(double),
+        typeof(VirtualizedDataGrid),
+        80d,
+        validateValue: static (_, value) => (double)value > 0,
+        propertyChanged: static (bindable, _, _) =>
+            ((VirtualizedDataGrid)bindable).RefreshRealizedRows());
+
+    /// <summary>
+    /// Gets or sets the number of rows retained above and below the visible
+    /// viewport to make fast scrolling seamless.
+    /// </summary>
+    public int OverscanRowCount
+    {
+        get => (int)GetValue(OverscanRowCountProperty);
+        set => SetValue(OverscanRowCountProperty, value);
+    }
+
+    /// <summary>Identifies the <see cref="OverscanRowCount"/> property.</summary>
+    public static readonly BindableProperty OverscanRowCountProperty = BindableProperty.Create(
+        nameof(OverscanRowCount),
+        typeof(int),
+        typeof(VirtualizedDataGrid),
+        2,
+        validateValue: static (_, value) => (int)value >= 0,
+        propertyChanged: static (bindable, _, _) =>
+            ((VirtualizedDataGrid)bindable).RefreshRealizedRows());
+
+    /// <summary>
     /// Gets or sets the spacing between columns.
     /// </summary>
     public double ColumnSpacing

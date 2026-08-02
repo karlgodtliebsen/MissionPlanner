@@ -107,7 +107,7 @@ public class VirtualizedDataGridDataViewTests
 
     private sealed class TestableVirtualizedDataGrid : VirtualizedDataGrid.Controls.VirtualizedDataGrid
     {
-        public CollectionView ExposedRowsView => RowsView;
+        public ScrollView ExposedRowsView => RowsView;
         public ContentView ExposedEmptyViewHost => EmptyViewHost;
         public System.Collections.IList? ExposedDisplayedItemsSource => DisplayedItemsSource;
     }

@@ -18,7 +18,7 @@ public class VirtualizedDataGrid_RetainedSourceRebind_Tests
     }
 
     [Fact]
-    public void SameSourceAfterPresentationResume_ShouldRemainPendingForRebind()
+    public void SameSourceAfterPresentationResume_ShouldRemainCurrent()
     {
         var source = new ObservableCollection<Row> { new(1), new(2) };
 
@@ -35,7 +35,8 @@ public class VirtualizedDataGrid_RetainedSourceRebind_Tests
         grid.SimulateSuspend();
         grid.ItemsSource = source;
 
-        grid.HasPending.ShouldBeTrue();
+        grid.HasPending.ShouldBeFalse();
+        grid.DesiredSource.ShouldBeSameAs(source);
     }
 
     [Fact]
@@ -59,7 +60,7 @@ public class VirtualizedDataGrid_RetainedSourceRebind_Tests
         grid.ItemsSource = second;
 
         grid.DesiredSource.ShouldBeSameAs(second);
-        grid.HasPending.ShouldBeTrue();
+        grid.HasPending.ShouldBeFalse();
     }
 
     private sealed class TestGrid : VirtualizedDataGrid.Controls.VirtualizedDataGrid

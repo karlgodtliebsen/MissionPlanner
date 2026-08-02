@@ -10,10 +10,7 @@ using Xunit;
 namespace UraniumUI.Material.Tests;
 
 /// <summary>
-/// Managed-state tests for the reversible CollectionView lifecycle.
-///
-/// Native PlatformView teardown/recreation still needs a Windows/Android handler
-/// integration test because the mock handler does not reproduce that MAUI race.
+/// Managed-state tests for the lightweight rows-host lifecycle.
 /// </summary>
 public class VirtualizedDataGrid_RowsLifecycle_Tests
 {
@@ -23,7 +20,7 @@ public class VirtualizedDataGrid_RowsLifecycle_Tests
     }
 
     [Fact]
-    public void SourceAssignedBeforeLoad_ShouldRemainPending()
+    public void SourceAssignedBeforeLoad_ShouldBeAvailableImmediately()
     {
         var rows = new ObservableCollection<Row> { new("A") };
 
@@ -36,8 +33,8 @@ public class VirtualizedDataGrid_RowsLifecycle_Tests
             ItemsSource = rows
         };
 
-        control.PendingRowsUpdate.ShouldBeTrue();
-        control.ExposedRowsView.ItemsSource.ShouldBeNull();
+        control.PendingRowsUpdate.ShouldBeFalse();
+        control.DesiredSource.ShouldBeSameAs(rows);
     }
 
     [Fact]
@@ -58,14 +55,12 @@ public class VirtualizedDataGrid_RowsLifecycle_Tests
         control.ItemsSource = null;
         control.ItemsSource = latest;
 
-        control.PendingRowsUpdate.ShouldBeTrue();
+        control.PendingRowsUpdate.ShouldBeFalse();
         control.DesiredSource.ShouldBeSameAs(latest);
     }
 
     private sealed class TestableVirtualizedDataGrid : VirtualizedDataGrid.Controls.VirtualizedDataGrid
     {
-        public CollectionView ExposedRowsView => RowsView;
-
         public bool PendingRowsUpdate => HasPendingRowsSourceUpdate;
 
         public IList? DesiredSource

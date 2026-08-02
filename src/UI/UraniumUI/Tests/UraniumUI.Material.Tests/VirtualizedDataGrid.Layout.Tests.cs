@@ -149,10 +149,11 @@ public class VirtualizedDataGrid_Layout_Tests
     }
 
     [Fact]
-    public void EmptySource_ShouldReleaseRealizedCellTrees()
+    public void LargeSource_ShouldRealizeOnlyViewportAndOverscanRows()
     {
         var grid = new TestableVirtualizedDataGrid
         {
+            RowHeight = 80,
             Columns =
             [
                 new DataGridColumn
@@ -161,22 +162,25 @@ public class VirtualizedDataGrid_Layout_Tests
                     ValueBinding = new Binding(nameof(Row.Name))
                 }
             ],
-            ItemsSource = new ObservableCollection<Row> { new("A", false) }
+            ItemsSource = new ObservableCollection<Row>(
+                Enumerable.Range(0, 1000)
+                    .Select(index => new Row($"Row {index}", false)))
         };
-        var row = grid.CreateRow();
-        row.BindingContext = grid.ItemsSource[0];
 
-        grid.ItemsSource = null;
+        grid.CalculateViewport(0, 600);
 
-        row.Children.ShouldBeEmpty();
-        row.RowDefinitions.ShouldBeEmpty();
+        grid.ExposedRowsExtentHeight.ShouldBe(80_000);
+        grid.ExposedRealizedRowCount.ShouldBeLessThanOrEqualTo(11);
+        grid.ExposedRealizedIndices.Min().ShouldBe(0);
+        grid.ExposedRealizedIndices.Max().ShouldBe(9);
     }
 
     [Fact]
-    public void ReleasedPresenter_ShouldRebuildWhenReusedForAnItem()
+    public void EmptySource_ShouldReleaseBoundedPresenterPool()
     {
         var grid = new TestableVirtualizedDataGrid
         {
+            RowHeight = 80,
             Columns =
             [
                 new DataGridColumn
@@ -186,18 +190,47 @@ public class VirtualizedDataGrid_Layout_Tests
                 }
             ]
         };
-        var row = grid.CreateRow();
-
-        grid.ItemsSource = new ObservableCollection<Row> { new("First", false) };
+        grid.ItemsSource = new ObservableCollection<Row>(
+            Enumerable.Range(0, 1000)
+                .Select(index => new Row($"Row {index}", false)));
+        grid.CalculateViewport(4000, 600);
         grid.ItemsSource = null;
-        row.BindingContext = new Row("Reused", false);
 
-        row.Children.ShouldNotBeEmpty();
+        grid.ExposedRealizedRowCount.ShouldBe(0);
+        grid.ExposedRowsExtentHeight.ShouldBe(0);
+        grid.Diagnostics.PresenterReleaseCount.ShouldBeLessThanOrEqualTo(12);
+    }
+
+    [Fact]
+    public void BottomViewport_ShouldRealizeFinalRowWithoutGrowingPool()
+    {
+        var grid = new TestableVirtualizedDataGrid
+        {
+            RowHeight = 80,
+            OverscanRowCount = 2,
+            Columns =
+            [
+                new DataGridColumn
+                {
+                    Title = "Name",
+                    ValueBinding = new Binding(nameof(Row.Name))
+                }
+            ],
+            ItemsSource = new ObservableCollection<Row>(
+                Enumerable.Range(0, 1000)
+                    .Select(index => new Row($"Row {index}", false)))
+        };
+
+        grid.CalculateViewport(double.MaxValue, 600);
+
+        grid.ExposedRealizedIndices.ShouldContain(999);
+        grid.ExposedRealizedRowCount.ShouldBeLessThanOrEqualTo(12);
+        grid.Diagnostics.PeakLivePresenterCount.ShouldBeLessThanOrEqualTo(12);
     }
 
     private sealed class TestableVirtualizedDataGrid : VirtualizedDataGrid.Controls.VirtualizedDataGrid
     {
-        public CollectionView ExposedRowsView => RowsView;
+        public ScrollView ExposedRowsView => RowsView;
 
         public Grid ExposedRowsHost => ExposedTableLayout.Children
             .OfType<Grid>()
@@ -210,8 +243,14 @@ public class VirtualizedDataGrid_Layout_Tests
 
         public Grid CreateRow()
         {
-            return RowsView.ItemTemplate.CreateContent().ShouldBeAssignableTo<Grid>();
+            return CreateRowPresenter();
         }
+
+        public int ExposedRealizedRowCount => RealizedRowCount;
+        public double ExposedRowsExtentHeight => RowsExtentHeight;
+        public IReadOnlyCollection<int> ExposedRealizedIndices => RealizedRowIndices;
+        public void CalculateViewport(double offset, double height) =>
+            UpdateRowsViewport(offset, height);
 
         public Grid ExposedTableLayout
         {

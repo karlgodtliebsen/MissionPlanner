@@ -80,7 +80,7 @@ public class VirtualizedDataGrid_ValueBinding_Tests
     {
         public View CreateRow()
         {
-            return (View)RowsView.ItemTemplate.CreateContent();
+            return CreateRowPresenter();
         }
     }
 

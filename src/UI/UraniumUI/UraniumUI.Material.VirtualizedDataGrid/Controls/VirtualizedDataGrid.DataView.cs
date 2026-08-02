@@ -587,7 +587,7 @@ public partial class VirtualizedDataGrid
 
     private void ScrollCurrentPageToTop()
     {
-        if (PageItemCount == 0 || !CanUseRowsPlatformHost)
+        if (PageItemCount == 0 || !IsRowsHostReady)
         {
             return;
         }
@@ -597,13 +597,10 @@ public partial class VirtualizedDataGrid
         Dispatcher.Dispatch(() =>
         {
             if (PageItemCount > 0 &&
-                CanUseRowsPlatformHost &&
+                IsRowsHostReady &&
                 generation == RowsHandlerGeneration)
             {
-                rowsView.ScrollTo(
-                    0,
-                    position: ScrollToPosition.Start,
-                    animate: false);
+                _ = rowsView.ScrollToTopAsync();
             }
         });
     }

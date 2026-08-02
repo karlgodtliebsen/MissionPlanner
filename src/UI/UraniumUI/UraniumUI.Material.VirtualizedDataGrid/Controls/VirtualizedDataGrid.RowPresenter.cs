@@ -5,8 +5,7 @@ using CheckBox = Microsoft.Maui.Controls.CheckBox;
 namespace UraniumUI.Material.VirtualizedDataGrid.Controls;
 
 /// <summary>
-/// Represents one realized CollectionView row. The number of these presenters is controlled
-/// by the platform CollectionView rather than by ItemsSource.Count.
+/// Represents one row in the bounded realized presenter pool.
 /// </summary>
 internal sealed class VirtualizedDataGridRowPresenter : Grid
 {
@@ -18,6 +17,7 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
     private bool visualTreeReleased;
 
     internal bool HasBoundItem => BindingContext is not null;
+    internal int RealizedIndex { get; set; } = -1;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VirtualizedDataGridRowPresenter"/> class.
@@ -31,6 +31,7 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
         VerticalOptions = LayoutOptions.Start;
 
         owner.RegisterPresenter(this);
+        SizeChanged += OnPresenterSizeChanged;
         RefreshFromOwner();
     }
 
@@ -117,6 +118,14 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
         selectionCells.Clear();
         templateValueBindingCells.Clear();
         return releasedCellCount;
+    }
+
+    private void OnPresenterSizeChanged(object? sender, EventArgs args)
+    {
+        if (RealizedIndex >= 0 && Height > 0)
+        {
+            owner.ReportRowHeight(RealizedIndex, Height);
+        }
     }
 
     /// <summary>

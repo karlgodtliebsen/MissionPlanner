@@ -16,8 +16,7 @@ public partial class VirtualizedDataGrid
 /// <summary>
 /// Allocation-light counters and timings collected by a
 /// <see cref="VirtualizedDataGrid"/> instance. Durations describe synchronous
-/// managed work. Native CollectionView work that continues after a property
-/// setter returns is represented by the lifecycle timestamps and event counts.
+/// managed work performed by the lightweight rows viewport.
 /// </summary>
 #pragma warning disable CS1591
 public sealed class VirtualizedDataGridDiagnostics
@@ -33,8 +32,10 @@ public sealed class VirtualizedDataGridDiagnostics
     public int RowsSourceApplyQueuedCount { get; internal set; }
     public int RowsSourceApplyRetryCount { get; internal set; }
     public int RowsSourceApplyFailureCount { get; internal set; }
-    public int NativeItemsSourceSetCount { get; internal set; }
-    public int NativeItemsSourceClearCount { get; internal set; }
+    public int RowsHostSourceSetCount { get; internal set; }
+    public int RowsHostSourceClearCount { get; internal set; }
+    public int ViewportUpdateCount { get; internal set; }
+    public int PeakRealizedRowCount { get; internal set; }
 
     public int PresenterCreatedCount { get; internal set; }
     public int PresenterBindingContextChangeCount { get; internal set; }
@@ -64,9 +65,12 @@ public sealed class VirtualizedDataGridDiagnostics
     public TimeSpan LastRowsSourceApplyDuration { get; internal set; }
     public TimeSpan TotalRowsSourceApplyDuration { get; internal set; }
     public TimeSpan MaximumRowsSourceApplyDuration { get; internal set; }
-    public TimeSpan LastNativeItemsSourceSetDuration { get; internal set; }
-    public TimeSpan TotalNativeItemsSourceSetDuration { get; internal set; }
-    public TimeSpan MaximumNativeItemsSourceSetDuration { get; internal set; }
+    public TimeSpan LastRowsHostSourceSetDuration { get; internal set; }
+    public TimeSpan TotalRowsHostSourceSetDuration { get; internal set; }
+    public TimeSpan MaximumRowsHostSourceSetDuration { get; internal set; }
+    public TimeSpan LastViewportUpdateDuration { get; internal set; }
+    public TimeSpan TotalViewportUpdateDuration { get; internal set; }
+    public TimeSpan MaximumViewportUpdateDuration { get; internal set; }
     public TimeSpan LastRealizedRowsReleaseDuration { get; internal set; }
     public TimeSpan TotalRealizedRowsReleaseDuration { get; internal set; }
     public TimeSpan MaximumRealizedRowsReleaseDuration { get; internal set; }
@@ -127,10 +131,10 @@ public sealed class VirtualizedDataGridDiagnostics
         AppendCount(report, "Application failures", RowsSourceApplyFailureCount);
         AppendDuration(report, "Rows source application", LastRowsSourceApplyDuration,
             TotalRowsSourceApplyDuration, MaximumRowsSourceApplyDuration);
-        AppendCount(report, "Native ItemsSource sets", NativeItemsSourceSetCount);
-        AppendCount(report, "Native ItemsSource clears", NativeItemsSourceClearCount);
-        AppendDuration(report, "Native ItemsSource setter", LastNativeItemsSourceSetDuration,
-            TotalNativeItemsSourceSetDuration, MaximumNativeItemsSourceSetDuration);
+        AppendCount(report, "Rows-host source sets", RowsHostSourceSetCount);
+        AppendCount(report, "Rows-host source clears", RowsHostSourceClearCount);
+        AppendDuration(report, "Rows-host source setter", LastRowsHostSourceSetDuration,
+            TotalRowsHostSourceSetDuration, MaximumRowsHostSourceSetDuration);
 
         AppendSection(report, "Presenters and cells");
         AppendCount(report, "Presenters created", PresenterCreatedCount);
@@ -141,6 +145,7 @@ public sealed class VirtualizedDataGridDiagnostics
         AppendCount(report, "Presenters currently tracked", LivePresenterCount);
         AppendCount(report, "Peak tracked presenters", PeakLivePresenterCount);
         AppendCount(report, "Realized-row releases", RealizedRowsReleaseCount);
+        AppendCount(report, "Peak realized rows", PeakRealizedRowCount);
         AppendDuration(report, "Realized-row release", LastRealizedRowsReleaseDuration,
             TotalRealizedRowsReleaseDuration, MaximumRealizedRowsReleaseDuration);
 
@@ -151,6 +156,9 @@ public sealed class VirtualizedDataGridDiagnostics
         AppendCount(report, "Realized-row refreshes", RealizedRowsRefreshCount);
         AppendDuration(report, "Realized-row refresh", LastRealizedRowsRefreshDuration,
             TotalRealizedRowsRefreshDuration);
+        AppendCount(report, "Viewport updates", ViewportUpdateCount);
+        AppendDuration(report, "Viewport update", LastViewportUpdateDuration,
+            TotalViewportUpdateDuration, MaximumViewportUpdateDuration);
         AppendCount(report, "Column layouts", ColumnLayoutCount);
         AppendDuration(report, "Column layout", LastColumnLayoutDuration,
             TotalColumnLayoutDuration);
@@ -207,20 +215,31 @@ public sealed class VirtualizedDataGridDiagnostics
             duration => MaximumRowsSourceApplyDuration = Max(MaximumRowsSourceApplyDuration, duration));
     }
 
-    internal void RecordNativeItemsSourceSet(long started, bool cleared)
+    internal void RecordRowsHostSourceSet(long started, bool cleared)
     {
         if (!IsEnabled) return;
-        NativeItemsSourceSetCount++;
+        RowsHostSourceSetCount++;
         if (cleared)
         {
-            NativeItemsSourceClearCount++;
+            RowsHostSourceClearCount++;
             LastRowsSourceClearedAt = DateTimeOffset.UtcNow;
         }
 
         RecordDuration(started,
-            duration => LastNativeItemsSourceSetDuration = duration,
-            duration => TotalNativeItemsSourceSetDuration += duration,
-            duration => MaximumNativeItemsSourceSetDuration = Max(MaximumNativeItemsSourceSetDuration, duration));
+            duration => LastRowsHostSourceSetDuration = duration,
+            duration => TotalRowsHostSourceSetDuration += duration,
+            duration => MaximumRowsHostSourceSetDuration = Max(MaximumRowsHostSourceSetDuration, duration));
+    }
+
+    internal void RecordViewportUpdate(long started, int realizedRows)
+    {
+        if (!IsEnabled) return;
+        ViewportUpdateCount++;
+        PeakRealizedRowCount = Math.Max(PeakRealizedRowCount, realizedRows);
+        RecordDuration(started,
+            duration => LastViewportUpdateDuration = duration,
+            duration => TotalViewportUpdateDuration += duration,
+            duration => MaximumViewportUpdateDuration = Max(MaximumViewportUpdateDuration, duration));
     }
 
     internal void RecordRealizedRowsRelease(long started, int presenters, int cells)
