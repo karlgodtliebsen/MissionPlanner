@@ -42,7 +42,7 @@ public partial class VirtualizedDataGrid
         typeof(string),
         typeof(VirtualizedDataGrid),
         null,
-        defaultBindingMode: BindingMode.TwoWay,
+        BindingMode.TwoWay,
         propertyChanged: static (bindable, _, _) =>
             ((VirtualizedDataGrid)bindable).OnFilterSettingsChanged());
 
@@ -200,7 +200,7 @@ public partial class VirtualizedDataGrid
         typeof(VirtualizedDataGrid),
         false,
         propertyChanged: static (bindable, _, _) =>
-            ((VirtualizedDataGrid)bindable).OnPagingSettingsChanged(resetCurrentPage: true));
+            ((VirtualizedDataGrid)bindable).OnPagingSettingsChanged(true));
 
     /// <summary>
     /// Gets or sets the maximum number of rows on each page. Values less than one are coerced to one.
@@ -216,11 +216,11 @@ public partial class VirtualizedDataGrid
         nameof(PageSize),
         typeof(int),
         typeof(VirtualizedDataGrid),
-        100,
-        defaultBindingMode: BindingMode.TwoWay,
+        25,
+        BindingMode.TwoWay,
         coerceValue: static (_, value) => Math.Max(1, (int)value),
         propertyChanged: static (bindable, _, _) =>
-            ((VirtualizedDataGrid)bindable).OnPagingSettingsChanged(resetCurrentPage: true));
+            ((VirtualizedDataGrid)bindable).OnPagingSettingsChanged(true));
 
     /// <summary>
     /// Gets or sets the one-based current page number.
@@ -237,7 +237,7 @@ public partial class VirtualizedDataGrid
         typeof(int),
         typeof(VirtualizedDataGrid),
         1,
-        defaultBindingMode: BindingMode.TwoWay,
+        BindingMode.TwoWay,
         coerceValue: static (_, value) => Math.Max(1, (int)value),
         propertyChanged: static (bindable, _, _) =>
             ((VirtualizedDataGrid)bindable).OnCurrentPageChanged());
@@ -328,7 +328,14 @@ public partial class VirtualizedDataGrid
         nameof(PageSizeOptions),
         typeof(IList),
         typeof(VirtualizedDataGrid),
-        defaultValueCreator: static _ => new ObservableCollection<int> { 25, 50, 100, 250, 500 },
+        defaultValueCreator: static _ => new ObservableCollection<int>
+        {
+            25,
+            50,
+            100,
+            250,
+            500
+        },
         propertyChanged: static (bindable, _, _) =>
             ((VirtualizedDataGrid)bindable).ApplyPager());
 
@@ -351,6 +358,7 @@ public partial class VirtualizedDataGrid
 
     private static readonly BindablePropertyKey HasSearchTextPropertyKey = BindableProperty.CreateReadOnly(
         nameof(HasSearchText), typeof(bool), typeof(VirtualizedDataGrid), false);
+
     /// <summary>Identifies the read-only <see cref="HasSearchText"/> bindable property.</summary>
     public static readonly BindableProperty HasSearchTextProperty = HasSearchTextPropertyKey.BindableProperty;
 
@@ -361,57 +369,73 @@ public partial class VirtualizedDataGrid
 
     private static readonly BindablePropertyKey TotalItemCountPropertyKey = BindableProperty.CreateReadOnly(
         nameof(TotalItemCount), typeof(int), typeof(VirtualizedDataGrid), 0);
+
     /// <summary>Identifies the read-only <see cref="TotalItemCount"/> bindable property.</summary>
     public static readonly BindableProperty TotalItemCountProperty = TotalItemCountPropertyKey.BindableProperty;
+
     /// <summary>Gets the number of items before filtering.</summary>
     public int TotalItemCount => (int)GetValue(TotalItemCountProperty);
 
     private static readonly BindablePropertyKey FilteredItemCountPropertyKey = BindableProperty.CreateReadOnly(
         nameof(FilteredItemCount), typeof(int), typeof(VirtualizedDataGrid), 0);
+
     /// <summary>Identifies the read-only <see cref="FilteredItemCount"/> bindable property.</summary>
     public static readonly BindableProperty FilteredItemCountProperty = FilteredItemCountPropertyKey.BindableProperty;
+
     /// <summary>Gets the number of items after filtering and before paging.</summary>
     public int FilteredItemCount => (int)GetValue(FilteredItemCountProperty);
 
     private static readonly BindablePropertyKey PageItemCountPropertyKey = BindableProperty.CreateReadOnly(
         nameof(PageItemCount), typeof(int), typeof(VirtualizedDataGrid), 0);
+
     /// <summary>Identifies the read-only <see cref="PageItemCount"/> bindable property.</summary>
     public static readonly BindableProperty PageItemCountProperty = PageItemCountPropertyKey.BindableProperty;
+
     /// <summary>Gets the number of items on the current page.</summary>
     public int PageItemCount => (int)GetValue(PageItemCountProperty);
 
     private static readonly BindablePropertyKey TotalPageCountPropertyKey = BindableProperty.CreateReadOnly(
         nameof(TotalPageCount), typeof(int), typeof(VirtualizedDataGrid), 0);
+
     /// <summary>Identifies the read-only <see cref="TotalPageCount"/> bindable property.</summary>
     public static readonly BindableProperty TotalPageCountProperty = TotalPageCountPropertyKey.BindableProperty;
+
     /// <summary>Gets the total number of filtered pages.</summary>
     public int TotalPageCount => (int)GetValue(TotalPageCountProperty);
 
     private static readonly BindablePropertyKey HasPreviousPagePropertyKey = BindableProperty.CreateReadOnly(
         nameof(HasPreviousPage), typeof(bool), typeof(VirtualizedDataGrid), false);
+
     /// <summary>Identifies the read-only <see cref="HasPreviousPage"/> bindable property.</summary>
     public static readonly BindableProperty HasPreviousPageProperty = HasPreviousPagePropertyKey.BindableProperty;
+
     /// <summary>Gets whether a page precedes the current page.</summary>
     public bool HasPreviousPage => (bool)GetValue(HasPreviousPageProperty);
 
     private static readonly BindablePropertyKey HasNextPagePropertyKey = BindableProperty.CreateReadOnly(
         nameof(HasNextPage), typeof(bool), typeof(VirtualizedDataGrid), false);
+
     /// <summary>Identifies the read-only <see cref="HasNextPage"/> bindable property.</summary>
     public static readonly BindableProperty HasNextPageProperty = HasNextPagePropertyKey.BindableProperty;
+
     /// <summary>Gets whether a page follows the current page.</summary>
     public bool HasNextPage => (bool)GetValue(HasNextPageProperty);
 
     private static readonly BindablePropertyKey IsEmptyPropertyKey = BindableProperty.CreateReadOnly(
         nameof(IsEmpty), typeof(bool), typeof(VirtualizedDataGrid), true);
+
     /// <summary>Identifies the read-only <see cref="IsEmpty"/> bindable property.</summary>
     public static readonly BindableProperty IsEmptyProperty = IsEmptyPropertyKey.BindableProperty;
+
     /// <summary>Gets whether the current filtered result contains no items.</summary>
     public bool IsEmpty => (bool)GetValue(IsEmptyProperty);
 
     private static readonly BindablePropertyKey HasItemsPropertyKey = BindableProperty.CreateReadOnly(
         nameof(HasItems), typeof(bool), typeof(VirtualizedDataGrid), false);
+
     /// <summary>Identifies the read-only <see cref="HasItems"/> bindable property.</summary>
     public static readonly BindableProperty HasItemsProperty = HasItemsPropertyKey.BindableProperty;
+
     /// <summary>Gets whether the current filtered result contains items.</summary>
     public bool HasItems => (bool)GetValue(HasItemsProperty);
 

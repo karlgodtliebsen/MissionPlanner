@@ -1,40 +1,58 @@
 ﻿using System.Net.Http.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Mapsui.Utilities;
-using UraniumUI.Extensions;
 using UraniumUI.Material.Extensions.Samples.DataGrids.Models;
 
 namespace UraniumUI.Material.Extensions.Samples.DataGrids;
 
 public partial class PaginationSampleViewModel : ObservableObject
 {
+    private readonly IDispatcher dispatcher;
     public ObservableRangeCollection<Product> Products { get; } = [];
 
-    [ObservableProperty] public partial bool IsBusy { get; set; }
+    [ObservableProperty] public partial bool IsBusy { get; set; } = true;
 
-    public PaginationSampleViewModel()
+    public PaginationSampleViewModel(IDispatcher dispatcher)
     {
-        LoadPagesAsync().FireAndForget();
+        this.dispatcher = dispatcher;
+        _ = Task.Run(LoadPagesAsync);
     }
 
+    //For the version with pagination coupled to http request, see the UraniumUI Pagination sample
     private async Task LoadPagesAsync()
     {
-        IsBusy = true;
-        var response = await GetProductsAsync();
-        Products.Clear();
-        if (response is not null)
+        var products = await GetAllProductsAsync();
+        if (products is not null)
         {
-            Products.AddRange(response.products);
+            await dispatcher.DispatchAsync(() => Products.AddRange(products.OrderBy(p => p.title)));
         }
 
-        IsBusy = false;
+        await dispatcher.DispatchAsync(() => IsBusy = false);
     }
 
-    private async Task<ApiResponse?> GetProductsAsync()
+    private async Task<List<Product>?> GetAllProductsAsync()
     {
+        var products = new List<Product>();
+
         using var client = new HttpClient();
-        var response = await client.GetFromJsonAsync<ApiResponse>($"https://dummyjson.com/products");
-        return response;
+        var skip = 0;
+
+        while (true)
+        {
+            var response = await client.GetFromJsonAsync<ApiResponse>($"https://dummyjson.com/products?skip={skip}");
+            if (response is null)
+            {
+                return products;
+            }
+
+            products.AddRange(response.products);
+            if (response.products.Length == 0 || products.Count >= response.total)
+            {
+                return products;
+            }
+
+            skip += response.products.Length;
+        }
     }
 }
 

@@ -7,19 +7,15 @@
                     xmlns:dataGrids="using:UraniumUI.Material.Extensions.Samples.DataGrids"
                     xmlns:models="using:UraniumUI.Material.Extensions.Samples.DataGrids.Models"
                     x:Class="UraniumUI.Material.Extensions.Samples.DataGrids.PaginationSamplePage"
+                    x:DataType="dataGrids:PaginationSampleViewModel"
                     >
-    <uranium:UraniumContentPage.BindingContext>
-        <dataGrids:PaginationSampleViewModel />
-    </uranium:UraniumContentPage.BindingContext>
-
     <VerticalStackLayout Margin="25">
-
 
         <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}" VerticalOptions="Center" HorizontalOptions="Center" />
 
         <Grid MaximumHeightRequest="600" ColumnDefinitions="*,*" ColumnSpacing="20" RowDefinitions="Auto,*">
 
-            <Label Text="Virtual Data Grid With Paging" FontSize="22" Grid.Row="0" Grid.Column="0" Margin="0,10"></Label>
+            <Label Text="Virtual Data Grid With Paging (preload all resources)" FontSize="22" Grid.Row="0" Grid.Column="0" Margin="0,10"></Label>
 
             <virtualized:VirtualizedDataGrid  Grid.Row="1" Grid.Column="0"
                                               ItemsSource="{Binding Products}"
@@ -57,7 +53,7 @@
                 </virtualized:VirtualizedDataGrid.Columns>
             </virtualized:VirtualizedDataGrid>
 
-            <Label Text="Virtual Data Grid No Paging" FontSize="22" Grid.Row="0" Grid.Column="1" Margin="0,10"></Label>
+            <Label Text="Virtual Data Grid No Paging (preload all resources)" FontSize="22" Grid.Row="0" Grid.Column="1" Margin="0,10"></Label>
 
             <virtualized:VirtualizedDataGrid   Grid.Row="1" Grid.Column="1"
                                                ItemsSource="{Binding Products}"
