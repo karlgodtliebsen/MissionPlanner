@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Windows.Input;
 
 namespace UraniumUI.Material.VirtualizedDataGrid.Controls;
 
@@ -122,6 +123,17 @@ public partial class VirtualizedDataGrid
     {
         RefreshDataView(false);
         RequestCurrentPage();
+    }
+
+    private void OnPageRequestedCommandChanged(ICommand? command)
+    {
+        // BindingContext is commonly assigned after XAML has already set
+        // IsRemotePaging. Request when the command becomes available as well,
+        // making the initial load independent of property initialization order.
+        if (command is not null)
+        {
+            RequestCurrentPage();
+        }
     }
 
     private void OnRemoteTotalItemCountChanged() => RefreshDataView(false);

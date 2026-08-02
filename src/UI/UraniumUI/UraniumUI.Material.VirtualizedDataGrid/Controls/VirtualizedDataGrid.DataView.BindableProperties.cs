@@ -254,7 +254,11 @@ public partial class VirtualizedDataGrid
     public static readonly BindableProperty PageRequestedCommandProperty = BindableProperty.Create(
         nameof(PageRequestedCommand),
         typeof(ICommand),
-        typeof(VirtualizedDataGrid));
+        typeof(VirtualizedDataGrid),
+        null,
+        propertyChanged: static (bindable, _, newValue) =>
+            ((VirtualizedDataGrid)bindable).OnPageRequestedCommandChanged(
+                (ICommand?)newValue));
 
     /// <summary>
     /// Gets or sets the maximum number of rows on each page. Values less than one are coerced to one.

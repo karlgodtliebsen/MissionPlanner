@@ -13,7 +13,7 @@
     <Grid VerticalOptions="Fill" HorizontalOptions="Center" RowDefinitions="Auto,*" Margin="50" RowSpacing="10">
 
         <Label Text="Virtual Data Grid With Remote Paging" FontSize="22"  />
-        <ActivityIndicator IsVisible="{Binding IsBusy}" IsRunning="{Binding IsBusy}" VerticalOptions="Center" HorizontalOptions="Center" />
+        <ActivityIndicator IsVisible="{Binding IsRemoteBusy}" IsRunning="{Binding IsRemoteBusy}" VerticalOptions="Center" HorizontalOptions="Center" />
 
         <virtualized:VirtualizedDataGrid  Grid.Row="1" Grid.Column="0"
                                               ItemsSource="{Binding Products}"

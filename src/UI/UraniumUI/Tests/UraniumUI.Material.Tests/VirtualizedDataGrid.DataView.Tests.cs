@@ -144,6 +144,27 @@ public class VirtualizedDataGridDataViewTests
     }
 
     [Fact]
+    public void RemotePaging_ShouldRequestInitialPageWhenCommandBindingArrivesLast()
+    {
+        var control = AnimationReadyHandler.Prepare(CreateGrid(
+            new ObservableCollection<Row>()));
+        VirtualizedDataGridPageRequestEventArgs? request = null;
+
+        control.EnablePaging = true;
+        control.PageSize = 25;
+        control.CurrentPage = 1;
+        control.IsRemotePaging = true;
+        control.PageRequestedCommand = new Command<VirtualizedDataGridPageRequestEventArgs>(
+            args => request = args);
+
+        request.ShouldNotBeNull();
+        request!.PageNumber.ShouldBe(1);
+        request.PageSize.ShouldBe(25);
+        request.Limit.ShouldBe(25);
+        request.Skip.ShouldBe(0);
+    }
+
+    [Fact]
     public void ReplacingRemotePageItems_ShouldNotRequestAnotherPage()
     {
         var rows = new ObservableCollection<Row> { new("P1", "Parameter 1") };
