@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<uranium:UraniumContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                    xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+                    xmlns:models="using:UraniumUI.Material.Extensions.Samples.DataGrids.Models"
+                    xmlns:paginationSamples="using:UraniumUI.Material.Extensions.Samples.DataGridSamples.PaginationSamples"
+                    x:Class="UraniumUI.Material.Extensions.Samples.DataGridSamples.PaginationSamples.PaginationSampleExtended2Page"
+                    x:DataType="paginationSamples:PaginationSampleExtendedViewModel"
+                    >
+
+    <Grid VerticalOptions="Fill" HorizontalOptions="Center"  RowDefinitions="Auto,*" Margin="50" RowSpacing="10">
+
+            <Label Text="Virtual Data Grid No Paging (preload all resources)" FontSize="22" Grid.Row="0"  ></Label>
+
+            <virtualized:VirtualizedDataGrid   Grid.Row="1" 
+                                               ItemsSource="{Binding Products}"
+
+                                               MinimumStarColumnWidth= "120"
+                                               ItemSizingStrategy= "MeasureFirstItem"
+                                               HorizontalOptions="Fill" 
+                                               
+                                               FilterMemberPaths="title,brand,price,rating,stock,category"
+                                               ShowSearchBar="True"
+                                               
+                                               RowHeight="80"
+
+            >
+                <virtualized:VirtualizedDataGrid.EmptyView>
+                    <VerticalStackLayout Margin="80,20">
+                        <Image
+                            WidthRequest="40"
+                            HeightRequest="40"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"
+                            Source="{FontImageSource FontFamily=MaterialOutlined, Glyph={x:Static uranium:MaterialOutlined.Backup_table}, Color={AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}}"/>
+                        <Label Text="No data available..." HorizontalOptions="Center"/>
+                    </VerticalStackLayout>
+                </virtualized:VirtualizedDataGrid.EmptyView>
+            <virtualized:VirtualizedDataGrid.Columns>
+                    <material:DataGridColumn x:DataType="models:Product" Title="Image" Width="100" ValueBinding="{Binding thumbnail}">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate>
+                                <Image x:DataType="models:Product"  Source="{Binding thumbnail}" WidthRequest="60" />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+
+                    <material:DataGridColumn x:DataType="models:Product"  Title="Title" ValueBinding="{Binding title}" />
+                    <material:DataGridColumn x:DataType="models:Product" Title="Price" ValueBinding="{Binding price}" />
+                    <material:DataGridColumn x:DataType="models:Product" Title="Rating" ValueBinding="{Binding rating}" />
+                    <material:DataGridColumn x:DataType="models:Product" Title="Stock" ValueBinding="{Binding stock}" />
+                    <material:DataGridColumn x:DataType="models:Product" Title="Brand" ValueBinding="{Binding brand}" />
+                    <material:DataGridColumn x:DataType="models:Product" Title="Category" ValueBinding="{Binding category}" />
+
+                </virtualized:VirtualizedDataGrid.Columns>
+            </virtualized:VirtualizedDataGrid>
+
+
+        </Grid>
+
+
+
+</uranium:UraniumContentPage>

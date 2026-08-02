@@ -22,6 +22,11 @@ public partial class VirtualizedDataGrid
     private bool dataViewRefreshPending;
     private bool updatingPagingProperties;
 
+    /// <summary>
+    /// Occurs when remote paging needs a page to be loaded.
+    /// </summary>
+    public event EventHandler<VirtualizedDataGridPageRequestEventArgs>? PageRequested;
+
     private void InitializeDataView()
     {
         clearSearchCommand = new Command(
@@ -73,6 +78,26 @@ public partial class VirtualizedDataGrid
         CurrentPage = Math.Clamp(page, 1, maximumPage);
     }
 
+    /// <summary>
+    /// Requests the current remote page again. This is useful for initial loading
+    /// and explicit retries.
+    /// </summary>
+    public void RequestCurrentPage()
+    {
+        if (!EnablePaging || !IsRemotePaging)
+        {
+            return;
+        }
+
+        var request = new VirtualizedDataGridPageRequestEventArgs(CurrentPage, PageSize);
+        PageRequested?.Invoke(this, request);
+
+        if (PageRequestedCommand?.CanExecute(request) == true)
+        {
+            PageRequestedCommand.Execute(request);
+        }
+    }
+
     private void OnFilterSettingsChanged()
     {
         RefreshDataView(ResetPageOnFilterChange);
@@ -86,7 +111,20 @@ public partial class VirtualizedDataGrid
         }
 
         RefreshDataView(resetCurrentPage);
+
+        if (IsRemotePaging)
+        {
+            RequestCurrentPage();
+        }
     }
+
+    private void OnRemotePagingModeChanged()
+    {
+        RefreshDataView(false);
+        RequestCurrentPage();
+    }
+
+    private void OnRemoteTotalItemCountChanged() => RefreshDataView(false);
 
     private void OnCurrentPageChanged()
     {
@@ -96,6 +134,8 @@ public partial class VirtualizedDataGrid
         }
 
         RefreshDataView(false);
+
+        RequestCurrentPage();
 
         if (ScrollToTopOnPageChange)
         {
@@ -123,8 +163,11 @@ public partial class VirtualizedDataGrid
         {
             var source = deferRefreshCount > 0 ? deferredSnapshot : ItemsSource;
 
-            var totalItemCount = source?.Count ?? 0;
-            var filteringActive = IsFilteringActive();
+            var remotePaging = EnablePaging && IsRemotePaging;
+            var totalItemCount = remotePaging
+                ? RemoteTotalItemCount
+                : source?.Count ?? 0;
+            var filteringActive = !remotePaging && IsFilteringActive();
 
             List<object>? filteredItems = null;
             var filteredItemCount = totalItemCount;
@@ -164,6 +207,11 @@ public partial class VirtualizedDataGrid
             if (source is null)
             {
                 displayedItems = null;
+            }
+            else if (remotePaging)
+            {
+                // The remote provider has already applied Skip/Limit.
+                displayedItems = source;
             }
             else if (EnablePaging)
             {

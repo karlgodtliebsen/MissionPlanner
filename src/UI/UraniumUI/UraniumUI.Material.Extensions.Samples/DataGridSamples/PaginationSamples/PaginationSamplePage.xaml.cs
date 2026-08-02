@@ -1,6 +1,6 @@
 ﻿using UraniumUI.Pages;
 
-namespace UraniumUI.Material.Extensions.Samples.DataGrids;
+namespace UraniumUI.Material.Extensions.Samples.DataGridSamples.PaginationSamples;
 
 public partial class PaginationSamplePage : UraniumContentPage
 {

@@ -203,6 +203,60 @@ public partial class VirtualizedDataGrid
             ((VirtualizedDataGrid)bindable).OnPagingSettingsChanged(true));
 
     /// <summary>
+    /// Gets or sets whether <see cref="ItemsSource"/> already represents the current
+    /// page and page navigation should request data from an external source.
+    /// </summary>
+    public bool IsRemotePaging
+    {
+        get => (bool)GetValue(IsRemotePagingProperty);
+        set => SetValue(IsRemotePagingProperty, value);
+    }
+
+    /// <summary>Identifies the <see cref="IsRemotePaging"/> bindable property.</summary>
+    public static readonly BindableProperty IsRemotePagingProperty = BindableProperty.Create(
+        nameof(IsRemotePaging),
+        typeof(bool),
+        typeof(VirtualizedDataGrid),
+        false,
+        propertyChanged: static (bindable, _, _) =>
+            ((VirtualizedDataGrid)bindable).OnRemotePagingModeChanged());
+
+    /// <summary>
+    /// Gets or sets the total number of rows available from the remote source.
+    /// </summary>
+    public int RemoteTotalItemCount
+    {
+        get => (int)GetValue(RemoteTotalItemCountProperty);
+        set => SetValue(RemoteTotalItemCountProperty, value);
+    }
+
+    /// <summary>Identifies the <see cref="RemoteTotalItemCount"/> bindable property.</summary>
+    public static readonly BindableProperty RemoteTotalItemCountProperty = BindableProperty.Create(
+        nameof(RemoteTotalItemCount),
+        typeof(int),
+        typeof(VirtualizedDataGrid),
+        0,
+        coerceValue: static (_, value) => Math.Max(0, (int)value),
+        propertyChanged: static (bindable, _, _) =>
+            ((VirtualizedDataGrid)bindable).OnRemoteTotalItemCountChanged());
+
+    /// <summary>
+    /// Gets or sets the command invoked with a
+    /// <see cref="VirtualizedDataGridPageRequestEventArgs"/> when remote page data is needed.
+    /// </summary>
+    public ICommand? PageRequestedCommand
+    {
+        get => (ICommand?)GetValue(PageRequestedCommandProperty);
+        set => SetValue(PageRequestedCommandProperty, value);
+    }
+
+    /// <summary>Identifies the <see cref="PageRequestedCommand"/> bindable property.</summary>
+    public static readonly BindableProperty PageRequestedCommandProperty = BindableProperty.Create(
+        nameof(PageRequestedCommand),
+        typeof(ICommand),
+        typeof(VirtualizedDataGrid));
+
+    /// <summary>
     /// Gets or sets the maximum number of rows on each page. Values less than one are coerced to one.
     /// </summary>
     public int PageSize
@@ -373,7 +427,10 @@ public partial class VirtualizedDataGrid
     /// <summary>Identifies the read-only <see cref="TotalItemCount"/> bindable property.</summary>
     public static readonly BindableProperty TotalItemCountProperty = TotalItemCountPropertyKey.BindableProperty;
 
-    /// <summary>Gets the number of items before filtering.</summary>
+    /// <summary>
+    /// Gets the number of items before filtering, or the remote total when
+    /// <see cref="IsRemotePaging"/> is enabled.
+    /// </summary>
     public int TotalItemCount => (int)GetValue(TotalItemCountProperty);
 
     private static readonly BindablePropertyKey FilteredItemCountPropertyKey = BindableProperty.CreateReadOnly(
