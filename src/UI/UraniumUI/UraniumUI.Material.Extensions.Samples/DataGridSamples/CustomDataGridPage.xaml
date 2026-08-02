@@ -15,25 +15,28 @@
                    >
     <uranium:UraniumContentPage.Content>
 
-        <Grid RowDefinitions="Auto,Auto,Auto,*" >
+        <Grid HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions="Auto,Auto,Auto,*" Margin="50"  RowSpacing="10">
 
             <Label Grid.Row="0" Text="Custom CellItemTemplate for each column - 1000 Rows" FontSize="Title"  
                    Margin="8,20"  HorizontalOptions="Center" />
+
             <BoxView Grid.Row="1" StyleClass="Divider" Margin="8,20" />
+            
             <HorizontalStackLayout Grid.Row="2" HorizontalOptions="Center" Margin="8,20" >
                 <Button StyleClass="FilledButton" Text="Add data" Command="{Binding AddNewCommand}" />
             </HorizontalStackLayout>
 
-            <ActivityIndicator IsRunning="{Binding IsBusy}" Margin="40" />
+            <ActivityIndicator Grid.Row="2" IsRunning="{Binding IsBusy}" Margin="40" />
 
             <virtualized:VirtualizedDataGrid 
                                             Grid.Row="3" 
                                             ItemsSource="{Binding Items}" 
-                                            HorizontalOptions="Center" 
-                                            Margin="30,20,30,50"
+                                            MinimumStarColumnWidth="200"
                                             ItemSizingStrategy= "MeasureFirstItem"
                                             ShowSearchBar="False"
-                                           
+
+                                            HorizontalOptions="Fill" 
+                                            VerticalOptions="Fill" 
                                             >
 
                 <virtualized:VirtualizedDataGrid.EmptyView>
@@ -50,7 +53,7 @@
 
                 <virtualized:VirtualizedDataGrid.Columns>
 
-                    <material:DataGridColumn Title="Student Name">
+                    <material:DataGridColumn Width="3*" Title="Student Name">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="models: CustomDataGridStudent">
                                 <Label Text="{Binding Name}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
@@ -58,7 +61,7 @@
                         </material:DataGridColumn.CellItemTemplate>
                     </material:DataGridColumn>
 
-                    <material:DataGridColumn Title="Age">
+                    <material:DataGridColumn Width="*" Title="Age">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="models:CustomDataGridStudent">
                                 <Border Padding="3" HorizontalOptions="Center" VerticalOptions="Center"
@@ -73,9 +76,9 @@
                         </material:DataGridColumn.CellItemTemplate>
                     </material:DataGridColumn>
 
-                    <material:DataGridColumn  x:DataType="models: CustomDataGridStudent" ValueBinding="{Binding Id}" Title="Identity" />
+                    <material:DataGridColumn Width="*" x:DataType="models: CustomDataGridStudent" ValueBinding="{Binding Id}" Title="Id" />
 
-                    <material:DataGridColumn Title="Actions"  >
+                    <material:DataGridColumn Width="2*" Title="Actions"  >
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate  x:DataType="models: CustomDataGridStudent">
                                 <Button Text="Remove" 

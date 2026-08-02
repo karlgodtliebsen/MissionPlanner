@@ -87,7 +87,13 @@
     </FlyoutItem>
     <FlyoutItem Title="Simple Data Grid" >
         <ShellContent Title="Simple Data Grid with AutoColumns" ContentTemplate="{DataTemplate dataGrids:SimpleDataGridPage}" Route="SimpleDataGridPage" />
-    </FlyoutItem>    
+    </FlyoutItem>
+    <FlyoutItem Title="Data Grid with Search" >
+        <ShellContent Title="Data Grid with Search" ContentTemplate="{DataTemplate dataGrids:SearchDataGridPage}" Route="SearchDataGridPage" />
+    </FlyoutItem>
+    <FlyoutItem Title="Data Grid with Custom Title" >
+        <ShellContent Title="Data Grid with Custom Title" ContentTemplate="{DataTemplate dataGrids:SimpleCustomTitleDataGridPage}" Route="SimpleCustomTitleDataGridPage" />
+    </FlyoutItem>
     <FlyoutItem Title="Custom Data Grid" >
         <ShellContent Title="Custom Data Grid" ContentTemplate="{DataTemplate dataGrids:CustomDataGridPage}" Route="CustomDataGridPage" />
     </FlyoutItem>
@@ -100,17 +106,14 @@
     <FlyoutItem Title="Selectable Data Grid" >
         <ShellContent Title="Selectable Data Grid" ContentTemplate="{DataTemplate dataGrids:SelectableDataGridPage}" Route="SelectableDataGridPage" />
     </FlyoutItem>
-    <FlyoutItem Title="Simple Custom Title Data Grid" >
-        <ShellContent Title="Simple Custom Title Data Grid" ContentTemplate="{DataTemplate dataGrids:SimpleCustomTitleDataGridPage}" Route="SimpleCustomTitleDataGridPage" />
-    </FlyoutItem>
-    <FlyoutItem Title="Data Grid Samples" >
+    <FlyoutItem Title="Extended Data Grid Samples" >
         <ShellContent Title="Sample 1" ContentTemplate="{DataTemplate virtualizedDataGridSample:VirtualizedDataGridSampleView1}" Route="VirtualizedDataGridView1" />
         <ShellContent Title="Sample 2" ContentTemplate="{DataTemplate virtualizedDataGridSample:VirtualizedDataGridSampleView2}" Route="VirtualizedDataGridView2" />
         <ShellContent Title="Sample 3" ContentTemplate="{DataTemplate virtualizedDataGridSample:VirtualizedDataGridSampleView3}" Route="VirtualizedDataGridView3" />
         <ShellContent Title="Sample 4" ContentTemplate="{DataTemplate virtualizedDataGridSample:VirtualizedDataGridSampleView4}" Route="VirtualizedDataGridView4" />
     </FlyoutItem>
     <FlyoutItem Title="Data Grid with Complex Data" >
-        <ShellContent Title="Virtualized Data Grid with Complex Data" ContentTemplate="{DataTemplate arduPilotSample:VirtualizedDataGridView}" Route="VirtualizedDataGridView" />
+        <ShellContent Title="Data Grid with Complex Data" ContentTemplate="{DataTemplate arduPilotSample:VirtualizedDataGridView}" Route="VirtualizedDataGridView" />
     </FlyoutItem>
 
 </Shell>

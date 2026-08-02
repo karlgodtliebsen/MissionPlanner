@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" ?>
-<uranium:UraniumContentPage x:Class="UraniumUI.Material.Extensions.Samples.DataGrids.SimpleDataGridPage"
+<uranium:UraniumContentPage x:Class="UraniumUI.Material.Extensions.Samples.DataGrids.SearchDataGridPage"
                     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
@@ -13,27 +13,19 @@
 
         <Grid HorizontalOptions="Fill" VerticalOptions="Fill" Margin="50">
 
-            <virtualized:VirtualizedDataGrid     ItemsSource="{Binding Items}" 
+            <virtualized:VirtualizedDataGrid ItemsSource="{Binding Items}" 
                                                  UseAutoColumns="True"
                                                  AutoColumnWidth= "250"
 
                                                  ItemSizingStrategy= "MeasureFirstItem"
-                                                 ShowSearchBar="False"
+                                                 
+                                                 FilterMemberPaths="Name,Id,Age"
+                                                 ShowSearchBar="True"
 
                                                  HorizontalOptions="Fill"  
                                                  VerticalOptions="Fill"
-                                                 >
-                <virtualized:VirtualizedDataGrid.EmptyView>
-                    <VerticalStackLayout Margin="80,20">
-                        <Image
-                            WidthRequest="40"
-                            HeightRequest="40"
-                            HorizontalOptions="Center"
-                            VerticalOptions="Center"
-                            Source="{FontImageSource FontFamily=MaterialOutlined, Glyph={x:Static uranium:MaterialOutlined.Backup_table}, Color={AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}}"/>
-                        <Label Text="No data available..." HorizontalOptions="Center"/>
-                    </VerticalStackLayout>
-                </virtualized:VirtualizedDataGrid.EmptyView>
+                                                 Margin="30">
+
             </virtualized:VirtualizedDataGrid>
         </Grid>
 

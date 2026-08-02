@@ -22,10 +22,12 @@
             <Label Text="Virtual Data Grid With Paging" FontSize="22" Grid.Row="0" Grid.Column="0" Margin="0,10"></Label>
 
             <virtualized:VirtualizedDataGrid  Grid.Row="1" Grid.Column="0"
-                                              HorizontalOptions="Fill" 
                                               ItemsSource="{Binding Products}"
+                                              
                                               MinimumStarColumnWidth= "120"
                                               ItemSizingStrategy= "MeasureFirstItem"
+                                              HorizontalOptions="Fill" 
+
                                               FilterMemberPaths="title,brand,price,rating,stock,category"
                                               ShowSearchBar="True"
 
@@ -58,12 +60,15 @@
             <Label Text="Virtual Data Grid No Paging" FontSize="22" Grid.Row="0" Grid.Column="1" Margin="0,10"></Label>
 
             <virtualized:VirtualizedDataGrid   Grid.Row="1" Grid.Column="1"
-                                               HorizontalOptions="Fill" 
                                                ItemsSource="{Binding Products}"
+
                                                MinimumStarColumnWidth= "120"
                                                ItemSizingStrategy= "MeasureFirstItem"
+                                               HorizontalOptions="Fill" 
+                                               
                                                FilterMemberPaths="title,brand,price,rating,stock,category"
                                                ShowSearchBar="True"
+                                               
                                                RowHeight="80"
 
             >

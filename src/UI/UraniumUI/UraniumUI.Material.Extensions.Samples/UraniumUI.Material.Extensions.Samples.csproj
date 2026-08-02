@@ -97,6 +97,9 @@
 	  <Compile Update="DataGridSamples\ArduPilotSample\VirtualizedDataGridView.xaml.cs">
 	    <DependentUpon>VirtualizedDataGridView.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="DataGridSamples\SearchDataGridPage.xaml.cs">
+	    <DependentUpon>SearchDataGridPage.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="DataGridSamples\VirtualizedDataGridSample\VirtualizedDataGridSampleView4.xaml.cs">
 	    <DependentUpon>VirtualizedDataGridSampleView4.xaml</DependentUpon>
 	  </Compile>
@@ -128,6 +131,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="DataGridSamples\SimpleCustomTitleDataGridPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="DataGridSamples\SearchDataGridPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="DataGridSamples\SimpleDataGridPage.xaml">

@@ -165,7 +165,9 @@ public partial class VirtualizedDataGrid : Border
     {
         base.OnSizeAllocated(width, height);
 
-        if (width > 0 && Math.Abs(lastViewportWidth - width) > 0.5)
+        if (double.IsFinite(width) &&
+            width > 0 &&
+            Math.Abs(lastViewportWidth - width) > 0.5)
         {
             lastViewportWidth = width;
             RecalculateColumnLayout();
@@ -272,7 +274,7 @@ public partial class VirtualizedDataGrid : Border
     /// Gets the resolved absolute width of each configured column.
     /// </summary>
     /// <returns>The resolved column widths.</returns>
-    internal IReadOnlyList<double> GetResolvedColumnWidths()
+    protected internal IReadOnlyList<double> GetResolvedColumnWidths()
     {
         return resolvedColumnWidths;
     }
@@ -758,7 +760,7 @@ public partial class VirtualizedDataGrid : Border
 
             if (column.Width.IsAbsolute)
             {
-                widths[index] = Math.Max(0, column.Width.Value);
+                widths[index] = NormalizeWidth(column.Width.Value);
                 fixedWidth += widths[index];
             }
             else if (column.Width.IsAuto)
@@ -768,21 +770,21 @@ public partial class VirtualizedDataGrid : Border
                         ? measuredAutoColumnWidths[index]
                         : 0;
 
-                widths[index] = measuredWidth > 0
+                widths[index] = double.IsFinite(measuredWidth) && measuredWidth > 0
                     ? measuredWidth
-                    : Math.Max(0, AutoColumnWidth);
+                    : NormalizeWidth(AutoColumnWidth);
                 fixedWidth += widths[index];
             }
             else
             {
-                starWeight += Math.Max(0.0001, column.Width.Value);
+                starWeight += GetStarWeight(column.Width.Value);
             }
         }
 
-        var spacing = Math.Max(0, ColumnSpacing) * Math.Max(0, visibleIndices.Count - 1);
+        var spacing = NormalizeWidth(ColumnSpacing) * Math.Max(0, visibleIndices.Count - 1);
         var availableForStars = Math.Max(0, viewportWidth - fixedWidth - spacing);
         var starUnit = starWeight > 0
-            ? Math.Max(Math.Max(0, MinimumStarColumnWidth), availableForStars / starWeight)
+            ? Math.Max(NormalizeWidth(MinimumStarColumnWidth), availableForStars / starWeight)
             : 0;
 
         for (var index = 0; index < columns.Count; index++)
@@ -791,7 +793,7 @@ public partial class VirtualizedDataGrid : Border
 
             if (column.IsVisible && column.Width.IsStar)
             {
-                widths[index] = starUnit * Math.Max(0.0001, column.Width.Value);
+                widths[index] = starUnit * GetStarWeight(column.Width.Value);
             }
         }
 
@@ -828,8 +830,19 @@ public partial class VirtualizedDataGrid : Border
                     ? WidthRequest
                     : 0;
 
-        return Math.Max(0, width - Padding.Left - Padding.Right);
+        if (!double.IsFinite(width) || width <= 0)
+        {
+            return 0;
+        }
+
+        return NormalizeWidth(width - Padding.Left - Padding.Right);
     }
+
+    private static double NormalizeWidth(double width) =>
+        double.IsFinite(width) && width > 0 ? width : 0;
+
+    private static double GetStarWeight(double weight) =>
+        double.IsFinite(weight) && weight > 0 ? weight : 0.0001;
 
     private void EnsureResolvedWidths(int expectedCount)
     {

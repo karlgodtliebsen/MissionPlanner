@@ -42,6 +42,25 @@ public class VirtualizedDataGrid_Layout_Tests
     }
 
     [Fact]
+    public void UnconstrainedWidth_ShouldUseFiniteStarColumnFallbacks()
+    {
+        var grid = new TestableVirtualizedDataGrid
+        {
+            Columns =
+            [
+                new DataGridColumn { Width = GridLength.Star },
+                new DataGridColumn { Width = new GridLength(2, GridUnitType.Star) },
+                new DataGridColumn { Width = GridLength.Star }
+            ]
+        };
+
+        grid.Allocate(double.PositiveInfinity, 400);
+
+        grid.ExposedResolvedColumnWidths.ShouldAllBe(width => double.IsFinite(width));
+        grid.ExposedResolvedColumnWidths.ShouldBe([100d, 200d, 100d]);
+    }
+
+    [Fact]
     public void DefaultMaterialSpacing_ShouldRemainStable()
     {
         var grid = new TestableVirtualizedDataGrid();
@@ -249,8 +268,13 @@ public class VirtualizedDataGrid_Layout_Tests
         public int ExposedRealizedRowCount => RealizedRowCount;
         public double ExposedRowsExtentHeight => RowsExtentHeight;
         public IReadOnlyCollection<int> ExposedRealizedIndices => RealizedRowIndices;
+        public IReadOnlyList<double> ExposedResolvedColumnWidths =>
+            GetResolvedColumnWidths();
         public void CalculateViewport(double offset, double height) =>
             UpdateRowsViewport(offset, height);
+
+        public void Allocate(double width, double height) =>
+            OnSizeAllocated(width, height);
 
         public Grid ExposedTableLayout
         {

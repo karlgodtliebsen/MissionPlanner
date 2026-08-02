@@ -86,8 +86,9 @@ internal sealed class VirtualizedDataGridRowsHost : ScrollView
 
     internal void ApplyColumnWidth(double width)
     {
-        extent.WidthRequest = Math.Max(0, width);
-        WidthRequest = width > 0 ? width : -1;
+        var finiteWidth = double.IsFinite(width) && width > 0 ? width : 0;
+        extent.WidthRequest = finiteWidth;
+        WidthRequest = finiteWidth > 0 ? finiteWidth : -1;
 
         foreach (var pair in realized)
         {
