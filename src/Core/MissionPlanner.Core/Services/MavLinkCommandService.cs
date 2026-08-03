@@ -4,7 +4,6 @@ using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library;
-using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Commands;
 using MissionPlanner.MavLink.Encoding;
 
@@ -14,7 +13,7 @@ namespace MissionPlanner.Core.Services;
 /// Service for sending MAVLink commands to vehicles.
 /// Wraps packet building and transmission via MAVLink client.
 /// </summary>
-public class MavLinkCommandService(IMavLinkClient client, IVehicleRegistry vehicleRegistry, ILogger<MavLinkCommandService> logger)
+public class MavLinkCommandService(IVehicleConnectionSession connectionSession, IVehicleRegistry vehicleRegistry, ILogger<MavLinkCommandService> logger)
     : IMavLinkCommandService
 {
     private byte sequenceNumber = 0;
@@ -27,6 +26,7 @@ public class MavLinkCommandService(IMavLinkClient client, IVehicleRegistry vehic
         bool start = true,
         CancellationToken cancellationToken = default)
     {
+        var client = connectionSession.Client;
         if (!client.IsConnected)
         {
             logger.LogWarning("Cannot send REQUEST_DATA_STREAM: MAVLink client is not connected");
@@ -78,6 +78,7 @@ public class MavLinkCommandService(IMavLinkClient client, IVehicleRegistry vehic
     /// <inheritdoc/>
     public async Task<bool> RequestHomePositionAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
     {
+        var client = connectionSession.Client;
         if (!client.IsConnected)
         {
             logger.LogWarning("Cannot send MAV_CMD_GET_HOME_POSITION: MAVLink client is not connected");
@@ -110,6 +111,7 @@ public class MavLinkCommandService(IMavLinkClient client, IVehicleRegistry vehic
     /// <inheritdoc/>
     public async Task<bool> RequestAutopilotVersionAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
     {
+        var client = connectionSession.Client;
         if (!client.IsConnected)
         {
             return false;

@@ -119,9 +119,9 @@ public sealed class VehicleConnectionSession(
 
         messagePumpLease = await messagePumpCoordinator.AcquireAsync(cancellationToken).ConfigureAwait(false);
         messagePump = messagePumpLease.Pump;
-        parameterService = domainFactory.Create<IVehicleParameterService, IMavLinkClient>(connectionSession.Client!);
 
-        parameterStreamService = CreateParameterStreamService(connectionSession.Connection!);
+        parameterService = domainFactory.Create<IVehicleParameterService, IVehicleConnectionSession>(this!);
+        parameterStreamService = CreateParameterStreamService();
         var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
 
         return linkedCts;
@@ -149,8 +149,8 @@ public sealed class VehicleConnectionSession(
         messagePumpLease = await messagePumpCoordinator.AcquireAsync(cancellationToken).ConfigureAwait(false);
         messagePump = messagePumpLease.Pump;
 
-        parameterService = domainFactory.Create<IVehicleParameterService, IMavLinkClient>(connectionSession.Client!);
-        parameterStreamService = CreateParameterStreamService(connectionSession.Connection!);
+        parameterService = domainFactory.Create<IVehicleParameterService, IVehicleConnectionSession>(this!);
+        parameterStreamService = CreateParameterStreamService();
 
         var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
 
@@ -176,12 +176,11 @@ public sealed class VehicleConnectionSession(
         }
 
         connectionSession = await connectionSessionFactory.CreateUdpConnection(transportOptions, cancellationToken);
-
         messagePumpLease = await messagePumpCoordinator.AcquireAsync(cancellationToken).ConfigureAwait(false);
         messagePump = messagePumpLease.Pump;
 
-        parameterService = domainFactory.Create<IVehicleParameterService, IMavLinkClient>(connectionSession.Client!);
-        parameterStreamService = CreateParameterStreamService(connectionSession.Connection!);
+        parameterService = domainFactory.Create<IVehicleParameterService, IVehicleConnectionSession>(this!);
+        parameterStreamService = CreateParameterStreamService();
 
         var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
 
@@ -293,9 +292,9 @@ public sealed class VehicleConnectionSession(
         logger.LogInformation("Successfully disconnected vehicle {VehicleId}", vehicleId);
     }
 
-    private IVehicleParameterStreamService CreateParameterStreamService(IMavLinkConnection conn)
+    private IVehicleParameterStreamService CreateParameterStreamService()
     {
-        var mavFtpClient = connectionSession.CreateMavFtpClient();
+        var mavFtpClient = connectionSession!.CreateMavFtpClient();
         var fileSystemService = domainFactory.Create<IVehicleFileSystemService, IMavFtpClient>(mavFtpClient!);
         return domainFactory.Create<IVehicleParameterStreamService, IVehicleParameterService, IVehicleFileSystemService>(ParameterService, fileSystemService);
     }

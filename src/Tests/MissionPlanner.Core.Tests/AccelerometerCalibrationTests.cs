@@ -148,7 +148,7 @@ public sealed class AccelerometerCalibrationTests
         var service = new VehicleCommandService(
             registry,
             Substitute.For<MissionPlanner.Library.EventHub.Abstractions.IDomainEventHub>(),
-            Substitute.For<IMavLinkConnection>(),
+            Substitute.For<IVehicleConnectionSession>(),
             Substitute.For<IMavLinkCommandEncoder>(),
             Substitute.For<ICommandAckTracker>(),
             clock,

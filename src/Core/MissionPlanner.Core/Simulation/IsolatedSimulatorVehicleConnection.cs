@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services.Abstractions;
@@ -16,9 +16,11 @@ public sealed class IsolatedSimulatorVehicleConnection : ISimulatorVehicleConnec
     private readonly Guid sessionId;
     private readonly IVehicleConnectionSession connectionSession;
     private readonly IVehicleRegistry vehicleRegistry;
+    private readonly IMavLinkCommandService commandService;
     private readonly IDomainEventHub domainEventHub;
+
     private readonly IDateTimeProvider clock;
-    private readonly IDomainFactory domainFactory;
+
     private readonly ISimulationVehicleChannelRegistry channelRegistry;
     private readonly ILogger<IsolatedSimulatorVehicleConnection> logger;
     private readonly SemaphoreSlim gate = new(1, 1);
@@ -28,27 +30,28 @@ public sealed class IsolatedSimulatorVehicleConnection : ISimulatorVehicleConnec
     /// <param name="sessionId">Owning simulation session identity.</param>
     /// <param name="connectionSession">Independent MAVLink connection session.</param>
     /// <param name="vehicleRegistry">Shared multi-vehicle registry.</param>
+    /// <param name="domainFactory"></param>
     /// <param name="domainEventHub">Domain event hub.</param>
     /// <param name="clock">Application clock.</param>
-    /// <param name="domainFactory">Domain service factory.</param>
     /// <param name="channelRegistry">Exact vehicle-channel registry.</param>
     /// <param name="logger">Logger.</param>
     public IsolatedSimulatorVehicleConnection(
         Guid sessionId,
         IVehicleConnectionSession connectionSession,
         IVehicleRegistry vehicleRegistry,
+        IDomainFactory domainFactory,
         IDomainEventHub domainEventHub,
         IDateTimeProvider clock,
-        IDomainFactory domainFactory,
         ISimulationVehicleChannelRegistry channelRegistry,
         ILogger<IsolatedSimulatorVehicleConnection> logger)
     {
+        commandService = domainFactory.Create<IMavLinkCommandService, IVehicleConnectionSession>(connectionSession);
         this.sessionId = sessionId;
         this.connectionSession = connectionSession;
         this.vehicleRegistry = vehicleRegistry;
+        commandService = commandService;
         this.domainEventHub = domainEventHub;
         this.clock = clock;
-        this.domainFactory = domainFactory;
         this.channelRegistry = channelRegistry;
         this.logger = logger;
     }
@@ -152,11 +155,10 @@ public sealed class IsolatedSimulatorVehicleConnection : ISimulatorVehicleConnec
     {
         try
         {
-            var commands = domainFactory.Create<IMavLinkCommandService, MavLink.Client.IMavLinkClient>(connectionSession.Client);
-            await commands.RequestAutopilotVersionAsync(connectedVehicle, cancellationToken).ConfigureAwait(false);
-            await commands.RequestDataStreamAsync(connectedVehicle, MavDataStream.Extra1, 10, true, cancellationToken).ConfigureAwait(false);
-            await commands.RequestDataStreamAsync(connectedVehicle, MavDataStream.Position, 5, true, cancellationToken).ConfigureAwait(false);
-            await commands.RequestDataStreamAsync(connectedVehicle, MavDataStream.ExtendedStatus, 2, true, cancellationToken).ConfigureAwait(false);
+            await commandService.RequestAutopilotVersionAsync(connectedVehicle, cancellationToken).ConfigureAwait(false);
+            await commandService.RequestDataStreamAsync(connectedVehicle, MavDataStream.Extra1, 10, true, cancellationToken).ConfigureAwait(false);
+            await commandService.RequestDataStreamAsync(connectedVehicle, MavDataStream.Position, 5, true, cancellationToken).ConfigureAwait(false);
+            await commandService.RequestDataStreamAsync(connectedVehicle, MavDataStream.ExtendedStatus, 2, true, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {

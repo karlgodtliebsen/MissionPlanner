@@ -2,7 +2,6 @@
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library;
-using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.Parameters;
 
@@ -14,7 +13,7 @@ namespace MissionPlanner.Core.Vehicles;
 /// </summary>
 public sealed class VehicleParameterService : IVehicleParameterService
 {
-    private readonly IMavLinkClient client;
+    private readonly IVehicleConnectionSession connectionSession;
     private readonly IMavLinkParameterEncoder encoder;
     private readonly IVehicleRegistry vehicleRegistry;
     private readonly ILogger<VehicleParameterService> logger;
@@ -23,9 +22,9 @@ public sealed class VehicleParameterService : IVehicleParameterService
     /// Service for managing vehicle parameters via MAVLink.
     /// Handles parameter requests and updates through the MAVLink protocol.
     /// </summary>
-    public VehicleParameterService(IMavLinkClient client, IMavLinkParameterEncoder encoder, IVehicleRegistry vehicleRegistry, ILogger<VehicleParameterService> logger)
+    public VehicleParameterService(IVehicleConnectionSession connectionSession, IMavLinkParameterEncoder encoder, IVehicleRegistry vehicleRegistry, ILogger<VehicleParameterService> logger)
     {
-        this.client = client;
+        this.connectionSession = connectionSession;
         this.encoder = encoder;
         this.vehicleRegistry = vehicleRegistry;
         this.logger = logger;
@@ -35,6 +34,7 @@ public sealed class VehicleParameterService : IVehicleParameterService
     /// <inheritdoc/>
     public async Task<bool> RequestParameterListAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
     {
+        var client = connectionSession.Client;
         if (!client.IsConnected)
         {
             logger.LogWarning("Cannot request parameter list: MAVLink client is not connected");
@@ -65,6 +65,7 @@ public sealed class VehicleParameterService : IVehicleParameterService
     /// <inheritdoc/>
     public async Task<bool> RequestParameterAsync(VehicleId vehicleId, string parameterName, CancellationToken cancellationToken = default)
     {
+        var client = connectionSession.Client;
         if (!client.IsConnected)
         {
             logger.LogWarning("Cannot request parameter: MAVLink client is not connected");
@@ -107,6 +108,7 @@ public sealed class VehicleParameterService : IVehicleParameterService
     /// <inheritdoc/>
     public async Task<bool> RequestParameterByIndexAsync(VehicleId vehicleId, ushort parameterIndex, CancellationToken cancellationToken = default)
     {
+        var client = connectionSession.Client;
         if (!client.IsConnected)
         {
             logger.LogWarning("Cannot request parameter: MAVLink client is not connected");
@@ -138,6 +140,7 @@ public sealed class VehicleParameterService : IVehicleParameterService
     /// <inheritdoc/>
     public async Task<bool> SetParameterAsync(VehicleId vehicleId, string parameterName, float value, MavParamType paramType, CancellationToken cancellationToken = default)
     {
+        var client = connectionSession.Client;
         if (!client.IsConnected)
         {
             logger.LogWarning("Cannot set parameter: MAVLink client is not connected");

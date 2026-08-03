@@ -1,9 +1,7 @@
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Configuration;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Configuration;
 using MissionPlanner.Core.Missions.Abstractions;
-using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Missions.Transfer;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -73,13 +71,19 @@ public sealed class ProtocolWorkflowCoverageTests
     {
         var (session, registry) = CreateSession();
         var connection = Substitute.For<IMavLinkConnection>();
+        var connectionSession = Substitute.For<IVehicleConnectionSession>();
+
         var encoder = Substitute.For<IMavLinkMissionEncoder>();
         encoder.EncodeMissionRequestList(1, 1, Arg.Any<MavMissionType>()).Returns([1]);
         encoder.EncodeMissionRequestInt(1, 1, Arg.Any<ushort>(), Arg.Any<MavMissionType>()).Returns([2]);
         encoder.EncodeMissionAck(1, 1, 0, Arg.Any<MavMissionType>()).Returns([3]);
         var eventHub = Substitute.For<IEventHub>();
         Func<MavLinkMessage, CancellationToken, Task>? callback = null;
-        eventHub.SubscribeAsync(MavLinkEventTopics.ReceivedMessage, Arg.Any<Func<MavLinkMessage, CancellationToken, Task>>()).Returns(call => { callback = call.Arg<Func<MavLinkMessage, CancellationToken, Task>>(); return Substitute.For<IDisposable>(); });
+        eventHub.SubscribeAsync(MavLinkEventTopics.ReceivedMessage, Arg.Any<Func<MavLinkMessage, CancellationToken, Task>>()).Returns(call =>
+        {
+            callback = call.Arg<Func<MavLinkMessage, CancellationToken, Task>>();
+            return Substitute.For<IDisposable>();
+        });
         var sends = 0;
         connection.SendRawAsync(Arg.Any<ReadOnlyMemory<byte>>(), session.EndPoint, Arg.Any<CancellationToken>()).Returns(call =>
         {
@@ -94,9 +98,10 @@ public sealed class ProtocolWorkflowCoverageTests
                 _ = callback!(CreateMissionItem(1), call.Arg<CancellationToken>());
                 _ = callback!(CreateMissionItem(0), call.Arg<CancellationToken>());
             }
+
             return ValueTask.CompletedTask;
         });
-        var service = new MissionTransferService(registry, connection, encoder, Substitute.For<IMissionProtocolMapper>(), eventHub);
+        var service = new MissionTransferService(registry, connectionSession, encoder, Substitute.For<IMissionProtocolMapper>(), eventHub);
 
         var result = await service.DownloadAsync(session.Id, cancellationToken: TestContext.Current.CancellationToken);
 
@@ -163,7 +168,10 @@ public sealed class ProtocolWorkflowCoverageTests
         }
     }
 
-    private static MissionItemIntMessage CreateMissionItem(ushort sequence) => new(1, 1, EndPoint, 0, 0, 0, 0, 0, 0, 10, sequence, 16, 255, 190, 6, 0, 1, 0, ObservedAt);
+    private static MissionItemIntMessage CreateMissionItem(ushort sequence)
+    {
+        return new MissionItemIntMessage(1, 1, EndPoint, 0, 0, 0, 0, 0, 0, 10, sequence, 16, 255, 190, 6, 0, 1, 0, ObservedAt);
+    }
 
     private static (VehicleSession Session, IVehicleRegistry Registry) CreateSession()
     {
@@ -178,6 +186,9 @@ public sealed class ProtocolWorkflowCoverageTests
 
     private sealed class StubPackedDecoder(IReadOnlyList<VehicleParameter> result, bool shouldThrow = false) : IArduPilotPackedParameterDecoder
     {
-        public IReadOnlyList<VehicleParameter> Decode(ReadOnlySpan<byte> data) => shouldThrow ? throw new InvalidDataException("Unsupported packed file.") : result;
+        public IReadOnlyList<VehicleParameter> Decode(ReadOnlySpan<byte> data)
+        {
+            return shouldThrow ? throw new InvalidDataException("Unsupported packed file.") : result;
+        }
     }
 }

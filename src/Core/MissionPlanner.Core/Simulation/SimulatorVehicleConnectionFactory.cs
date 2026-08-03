@@ -39,13 +39,14 @@ public sealed class SimulatorVehicleConnectionFactory(
             loggerFactory.CreateLogger<VehicleConnectionSession>(),
             messagePumpCoordinator,
             false);
+
         return new IsolatedSimulatorVehicleConnection(
             sessionId,
             session,
             vehicleRegistry,
+            domainFactory,
             domainEventHub,
             clock,
-            domainFactory,
             channelRegistry,
             loggerFactory.CreateLogger<IsolatedSimulatorVehicleConnection>());
     }

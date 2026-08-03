@@ -1,9 +1,9 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Services;
-using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles;
+using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Core.Vehicles.Observations;
 using MissionPlanner.Library.DateTime.Domain;
@@ -104,10 +104,7 @@ public sealed class VehicleFirmwareIdentityTests
     [Fact]
     public void FormatsFirmwareDisplayName()
     {
-        var identity = VehicleFirmwareIdentityFactory.FromHeartbeat(2, 3) with
-        {
-            FlightVersion = new FirmwareSemanticVersion(4, 6, 2, FirmwareReleaseType.Development)
-        };
+        var identity = VehicleFirmwareIdentityFactory.FromHeartbeat(2, 3) with { FlightVersion = new FirmwareSemanticVersion(4, 6, 2, FirmwareReleaseType.Development) };
         VehicleFirmwareDisplayFormatter.Format(identity).Should().Be("ArduCopter 4.6.2-dev");
     }
 
@@ -146,10 +143,12 @@ public sealed class VehicleFirmwareIdentityTests
     {
         var session = CreateSession();
         var client = Substitute.For<IMavLinkClient>();
+        var connectionSession = Substitute.For<IVehicleConnectionSession>();
+
         client.IsConnected.Returns(true);
         var registry = Substitute.For<IVehicleRegistry>();
         registry.GetRequired(session.Id).Returns(session);
-        var service = new MavLinkCommandService(client, registry, Substitute.For<ILogger<MavLinkCommandService>>());
+        var service = new MavLinkCommandService(connectionSession, registry, Substitute.For<ILogger<MavLinkCommandService>>());
 
         (await service.RequestAutopilotVersionAsync(session.Id, TestContext.Current.CancellationToken)).Should().BeTrue();
 
@@ -166,13 +165,16 @@ public sealed class VehicleFirmwareIdentityTests
         var session = CreateSession();
         var client = Substitute.For<IMavLinkClient>();
         client.IsConnected.Returns(true);
+        var connectionSession = Substitute.For<IVehicleConnectionSession>();
+        client.IsConnected.Returns(true);
+        connectionSession.Client.Returns(client);
         var registry = Substitute.For<IVehicleRegistry>();
         registry.GetRequired(session.Id).Returns(session);
         using var cancellation = new CancellationTokenSource();
         cancellation.Cancel();
         client.SendAsync(Arg.Any<ReadOnlyMemory<byte>>(), Arg.Any<TransportEndPoint>(), cancellation.Token)
             .Returns(ValueTask.FromCanceled(cancellation.Token));
-        var service = new MavLinkCommandService(client, registry, Substitute.For<ILogger<MavLinkCommandService>>());
+        var service = new MavLinkCommandService(connectionSession, registry, Substitute.For<ILogger<MavLinkCommandService>>());
 
         (await service.RequestAutopilotVersionAsync(session.Id, cancellation.Token)).Should().BeFalse();
     }
@@ -190,15 +192,22 @@ public sealed class VehicleFirmwareIdentityTests
         {
             payload[36 + index] = (byte)(index + 1);
         }
+
         if (length > 60)
         {
-            for (var index = 60; index < length; index++) payload[index] = (byte)(index - 59);
+            for (var index = 60; index < length; index++)
+            {
+                payload[index] = (byte)(index - 59);
+            }
         }
+
         return payload;
     }
 
-    private static MavLinkFrame CreateFrame(byte[] payload) =>
-        new(1, 1, new TransportEndPoint("test"), MessageIds.AutopilotVersion, 0, payload, ReadOnlyMemory<byte>.Empty, DateTimeOffset.UtcNow);
+    private static MavLinkFrame CreateFrame(byte[] payload)
+    {
+        return new MavLinkFrame(1, 1, new TransportEndPoint("test"), MessageIds.AutopilotVersion, 0, payload, ReadOnlyMemory<byte>.Empty, DateTimeOffset.UtcNow);
+    }
 
     private static VehicleSession CreateSession()
     {

@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Configuration;
@@ -109,7 +109,7 @@ public sealed class SimulationFleetTests
         var service = new VehicleCommandService(
             registry,
             Substitute.For<IDomainEventHub>(),
-            defaultConnection,
+            connectionSession,
             encoder,
             tracker,
             clock,

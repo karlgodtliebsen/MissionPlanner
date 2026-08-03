@@ -17,7 +17,6 @@ using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.Generated;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Missions;
-using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Transport;
@@ -99,7 +98,7 @@ public sealed class FenceConfigurationTests
     public async Task ApplyWritesParametersBeforeGeometryAndTracksRevision()
     {
         var fixture = CreateFixture();
-        var session = Session(fixture.VehicleId, success: true);
+        var session = Session(fixture.VehicleId, true);
         fixture.Service.SetLocalPlan(fixture.VehicleId, ValidPlan());
 
         var report = await fixture.Service.ApplyAsync(fixture.VehicleId, session, cancellationToken: TestContext.Current.CancellationToken);
@@ -117,7 +116,7 @@ public sealed class FenceConfigurationTests
     public async Task ParameterFailurePreventsGeometryUpload()
     {
         var fixture = CreateFixture();
-        var session = Session(fixture.VehicleId, success: false);
+        var session = Session(fixture.VehicleId, false);
         fixture.Service.SetLocalPlan(fixture.VehicleId, ValidPlan());
 
         var report = await fixture.Service.ApplyAsync(fixture.VehicleId, session, cancellationToken: TestContext.Current.CancellationToken);
@@ -165,13 +164,10 @@ public sealed class FenceConfigurationTests
             fixture.VehicleId,
             true,
             cancellationToken: TestContext.Current.CancellationToken);
-        fixture.ActiveVehicle.Set(fixture.ActiveVehicle.State! with
-        {
-            Connection = fixture.ActiveVehicle.State!.Connection with { State = VehicleConnectionState.Offline }
-        });
+        fixture.ActiveVehicle.Set(fixture.ActiveVehicle.State! with { Connection = fixture.ActiveVehicle.State!.Connection with { State = VehicleConnectionState.Offline } });
         var apply = await fixture.Service.ApplyAsync(
             fixture.VehicleId,
-            Session(fixture.VehicleId, success: true),
+            Session(fixture.VehicleId, true),
             cancellationToken: TestContext.Current.CancellationToken);
 
         download.Success.Should().BeFalse();
@@ -183,7 +179,7 @@ public sealed class FenceConfigurationTests
         fixture.ActiveVehicle.Set(State());
         var recovered = await fixture.Service.ApplyAsync(
             fixture.VehicleId,
-            Session(fixture.VehicleId, success: true),
+            Session(fixture.VehicleId, true),
             cancellationToken: TestContext.Current.CancellationToken);
 
         recovered.Success.Should().BeTrue();
@@ -203,12 +199,7 @@ public sealed class FenceConfigurationTests
         service.GetSnapshot(vehicleId).Returns(_ => current);
         service.SetLocalPlan(vehicleId, Arg.Any<FencePlan>()).Returns(call =>
         {
-            current = current with
-            {
-                LocalPlan = call.ArgAt<FencePlan>(1),
-                LocalRevision = current.LocalRevision + 1,
-                IsDirty = true
-            };
+            current = current with { LocalPlan = call.ArgAt<FencePlan>(1), LocalRevision = current.LocalRevision + 1, IsDirty = true };
             return current;
         });
         var viewModel = new GeoFenceTabViewModel(
@@ -247,6 +238,7 @@ public sealed class FenceConfigurationTests
         registry.GetRequired(vehicleId).Returns(new VehicleSession(State(), endpoint, Substitute.For<IDateTimeProvider>()));
         var connection = Substitute.For<IMavLinkConnection>();
         connection.SendRawAsync(Arg.Any<ReadOnlyMemory<byte>>(), endpoint, Arg.Any<CancellationToken>()).Returns(ValueTask.CompletedTask);
+        var connectionSession = Substitute.For<IVehicleConnectionSession>();
         var encoder = Substitute.For<IMavLinkMissionEncoder>();
         var eventHub = Substitute.For<IEventHub>();
         Func<MavLinkMessage, CancellationToken, Task>? receiver = null;
@@ -256,7 +248,7 @@ public sealed class FenceConfigurationTests
             .Returns(Substitute.For<IDisposable>());
         var service = new MissionTransferService(
             registry,
-            connection,
+            connectionSession,
             encoder,
             Substitute.For<IMissionProtocolMapper>(),
             eventHub);
@@ -298,7 +290,7 @@ public sealed class FenceConfigurationTests
         var download = await service.DownloadAsync(
             vehicleId,
             MissionPlanType.Geofence,
-            cancellationToken: TestContext.Current.CancellationToken);
+            TestContext.Current.CancellationToken);
 
         encoder.EncodeMissionClearAll(vehicleId.SystemId, vehicleId.ComponentId, MissionItemType.Fence).Returns(_ =>
         {
@@ -312,19 +304,29 @@ public sealed class FenceConfigurationTests
         download.Items.Should().ContainSingle().Which.Should().Be(item);
         clear.Success.Should().BeTrue();
 
-        void Publish(MavLinkMessage message) => receiver!(message, CancellationToken.None).GetAwaiter().GetResult();
-        MissionAckMessage Acknowledgement() => new(
-            1, 1, endpoint, 255, 0, 0, (byte)MissionItemType.Fence, DateTimeOffset.UtcNow);
+        void Publish(MavLinkMessage message)
+        {
+            receiver!(message, CancellationToken.None).GetAwaiter().GetResult();
+        }
+
+        MissionAckMessage Acknowledgement()
+        {
+            return new MissionAckMessage(
+                1, 1, endpoint, 255, 0, 0, (byte)MissionItemType.Fence, DateTimeOffset.UtcNow);
+        }
     }
 
-    private static ParameterEditField Field(string name, double value) => new(
-        name,
-        ParameterWireType.Real32,
-        value,
-        value,
-        value,
-        ParameterFieldMetadata.Empty,
-        null);
+    private static ParameterEditField Field(string name, double value)
+    {
+        return new ParameterEditField(
+            name,
+            ParameterWireType.Real32,
+            value,
+            value,
+            value,
+            ParameterFieldMetadata.Empty,
+            null);
+    }
 
     private static IParameterEditSession Session(VehicleId vehicleId, bool success)
     {
@@ -340,17 +342,23 @@ public sealed class FenceConfigurationTests
         return session;
     }
 
-    private static FencePlan ValidPlan() => new(
-        Position(0.5, 0.5),
-        [
-            FenceArea.Polygon(
-                FenceAreaKind.PolygonInclusion,
-                [Position(0, 0), Position(0, 1), Position(1, 1), Position(1, 0)],
-                true),
-            FenceArea.Circle(FenceAreaKind.CircleExclusion, Position(2, 2), 50)
-        ]);
+    private static FencePlan ValidPlan()
+    {
+        return new FencePlan(
+            Position(0.5, 0.5),
+            [
+                FenceArea.Polygon(
+                    FenceAreaKind.PolygonInclusion,
+                    [Position(0, 0), Position(0, 1), Position(1, 1), Position(1, 0)],
+                    true),
+                FenceArea.Circle(FenceAreaKind.CircleExclusion, Position(2, 2), 50)
+            ]);
+    }
 
-    private static GeoPosition Position(double latitude, double longitude) => new(latitude, longitude);
+    private static GeoPosition Position(double latitude, double longitude)
+    {
+        return new GeoPosition(latitude, longitude);
+    }
 
     private static Fixture CreateFixture()
     {
@@ -377,17 +385,7 @@ public sealed class FenceConfigurationTests
             new VehicleId(1, 1), 0, 2, 3, 0, 4, 3,
             VehicleConnectionState.Online, DateTimeOffset.UtcNow, VehicleMode.Stabilize, false,
             null, null, null, null, null, null, null, null);
-        return state with
-        {
-            Identity = state.Identity with
-            {
-                Firmware = state.Identity.Firmware with
-                {
-                    Family = FirmwareFamily.ArduCopter,
-                    Capabilities = (ulong)DomainProtocolCapability.MissionFence
-                }
-            }
-        };
+        return state with { Identity = state.Identity with { Firmware = state.Identity.Firmware with { Family = FirmwareFamily.ArduCopter, Capabilities = (ulong)DomainProtocolCapability.MissionFence } } };
     }
 
     private sealed record Fixture(
@@ -411,7 +409,10 @@ public sealed class FenceConfigurationTests
             VehicleId vehicleId,
             Mission mission,
             IProgress<MissionUploadProgress>? progress = null,
-            CancellationToken cancellationToken = default) => throw new NotSupportedException();
+            CancellationToken cancellationToken = default)
+        {
+            throw new NotSupportedException();
+        }
 
         public Task<MissionUploadResult> UploadItemsAsync(
             VehicleId vehicleId,
@@ -428,7 +429,10 @@ public sealed class FenceConfigurationTests
         public Task<MissionDownloadResult> DownloadAsync(
             VehicleId vehicleId,
             MissionPlanType missionType = MissionPlanType.FlightMission,
-            CancellationToken cancellationToken = default) => Task.FromResult(DownloadResult);
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(DownloadResult);
+        }
 
         public Task<MissionDownloadResult> DownloadAsync(
             VehicleId vehicleId,
@@ -443,7 +447,10 @@ public sealed class FenceConfigurationTests
         public Task<MissionUploadResult> ClearAsync(
             VehicleId vehicleId,
             MissionPlanType missionType = MissionPlanType.FlightMission,
-            CancellationToken cancellationToken = default) => Task.FromResult(ClearResult);
+            CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult(ClearResult);
+        }
     }
 
     private sealed class TestActiveVehicleContext(VehicleState state) : IActiveVehicleContext

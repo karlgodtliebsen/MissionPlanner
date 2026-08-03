@@ -17,12 +17,7 @@ public interface IMavLinkCommandService
     /// <param name="start">True to start streaming, false to stop</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>True if command was sent successfully</returns>
-    Task<bool> RequestDataStreamAsync(
-        VehicleId vehicleId,
-        MavDataStream streamId,
-        int rateHz,
-        bool start = true,
-        CancellationToken cancellationToken = default);
+    Task<bool> RequestDataStreamAsync(VehicleId vehicleId, MavDataStream streamId, int rateHz, bool start = true, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Asks the vehicle to send its home position (MAV_CMD_GET_HOME_POSITION).

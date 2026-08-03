@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -169,29 +169,36 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
     public partial string DataSourceMode { get; private set; } = "LIVE / SIMULATION";
 
     /// <inheritdoc />
-    public Task ActivateAsync(CancellationToken cancellationToken = default) => lifecycle.ActivateAsync(cancellationToken);
+    public Task ActivateAsync(CancellationToken cancellationToken = default)
+    {
+        return lifecycle.ActivateAsync(cancellationToken);
+    }
 
     /// <inheritdoc />
-    public Task DeactivateAsync() => lifecycle.DeactivateAsync();
+    public Task DeactivateAsync()
+    {
+        return lifecycle.DeactivateAsync();
+    }
 
     /// <inheritdoc />
     public void Dispose()
     {
-        if (replaySessionManager is not null)
-        {
-            replaySessionManager.Changed -= OnReplayChanged;
-        }
+        replaySessionManager?.Changed -= OnReplayChanged;
 
         lifecycle.DisposeAsync().AsTask().GetAwaiter().GetResult();
     }
 
     [RelayCommand]
-    private Task ArmAsync(CancellationToken cancellationToken) =>
-        ExecuteAsync("Arm", VehicleAction.Arm, (id, _, token) => commandService.ArmAsync(id, token), state => state.IsArmed, cancellationToken);
+    private Task ArmAsync(CancellationToken cancellationToken)
+    {
+        return ExecuteAsync("Arm", VehicleAction.Arm, (id, _, token) => commandService.ArmAsync(id, token), state => state.IsArmed, cancellationToken);
+    }
 
     [RelayCommand]
-    private Task DisarmAsync(CancellationToken cancellationToken) =>
-        ExecuteAsync("Disarm", VehicleAction.Disarm, (id, confirmed, token) => commandService.DisarmAsync(id, confirmed, token), state => !state.IsArmed, cancellationToken);
+    private Task DisarmAsync(CancellationToken cancellationToken)
+    {
+        return ExecuteAsync("Disarm", VehicleAction.Disarm, (id, confirmed, token) => commandService.DisarmAsync(id, confirmed, token), state => !state.IsArmed, cancellationToken);
+    }
 
     [RelayCommand]
     private Task SetModeAsync(CancellationToken cancellationToken)
@@ -210,42 +217,54 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
     }
 
     [RelayCommand]
-    private Task TakeoffAsync(CancellationToken cancellationToken) =>
-        ExecuteAsync($"Take off to {TakeoffAltitudeMeters:0.#} m", VehicleAction.Takeoff,
+    private Task TakeoffAsync(CancellationToken cancellationToken)
+    {
+        return ExecuteAsync($"Take off to {TakeoffAltitudeMeters:0.#} m", VehicleAction.Takeoff,
             (id, confirmed, token) => commandService.TakeoffAsync(id, TakeoffAltitudeMeters, confirmed, token),
             state => state.Flight.LandedState is VehicleLandedState.TakingOff or VehicleLandedState.InAir,
             cancellationToken);
+    }
 
     [RelayCommand]
-    private Task LandAsync(CancellationToken cancellationToken) =>
-        ExecuteAsync("Land", VehicleAction.Land,
+    private Task LandAsync(CancellationToken cancellationToken)
+    {
+        return ExecuteAsync("Land", VehicleAction.Land,
             (id, _, token) => commandService.LandAsync(id, token),
             state => state.Flight.LandedState is VehicleLandedState.Landing or VehicleLandedState.OnGround,
             cancellationToken);
+    }
 
     [RelayCommand]
-    private Task ReturnToLaunchAsync(CancellationToken cancellationToken) =>
-        ExecuteAsync("Return to launch", VehicleAction.ReturnToLaunch,
+    private Task ReturnToLaunchAsync(CancellationToken cancellationToken)
+    {
+        return ExecuteAsync("Return to launch", VehicleAction.ReturnToLaunch,
             (id, _, token) => commandService.ReturnToLaunchAsync(id, token),
             state => modeCatalog.Find(state.Identity.Firmware.Family, VehicleMode.Rtl)?.CustomMode == state.CustomMode,
             cancellationToken);
+    }
 
     [RelayCommand]
-    private Task HoldAsync(CancellationToken cancellationToken) =>
-        ExecuteAsync("Loiter / hold", VehicleAction.Hold,
+    private Task HoldAsync(CancellationToken cancellationToken)
+    {
+        return ExecuteAsync("Loiter / hold", VehicleAction.Hold,
             (id, _, token) => commandService.HoldAsync(id, token),
             state => modeCatalog.Find(state.Identity.Firmware.Family, VehicleMode.Loiter)?.CustomMode == state.CustomMode,
             cancellationToken);
+    }
 
     [RelayCommand]
-    private Task RebootAsync(CancellationToken cancellationToken) =>
-        ExecuteAsync("Reboot autopilot", VehicleAction.RebootAutopilot,
+    private Task RebootAsync(CancellationToken cancellationToken)
+    {
+        return ExecuteAsync("Reboot autopilot", VehicleAction.RebootAutopilot,
             (id, confirmed, token) => commandService.RebootAutopilotAsync(id, confirmed, token), null, cancellationToken);
+    }
 
     [RelayCommand]
-    private Task SetHomeHereAsync(CancellationToken cancellationToken) =>
-        ExecuteAsync("Set home here", VehicleAction.SetHomeHere,
+    private Task SetHomeHereAsync(CancellationToken cancellationToken)
+    {
+        return ExecuteAsync("Set home here", VehicleAction.SetHomeHere,
             (id, confirmed, token) => commandService.SetHomeHereAsync(id, confirmed, token), null, cancellationToken);
+    }
 
     [RelayCommand]
     private Task ExecuteExpertAsync(CancellationToken cancellationToken)
@@ -324,33 +343,33 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
         try
         {
             final = await operationRunner.RunAsync(async (vehicleId, token) =>
-            {
-                var response = await sendAsync(vehicleId, confirmed, token).ConfigureAwait(false);
-                dispatcher.Dispatch(() => AckResult = $"{response.Result}: {response.Message}");
-                if (response.Result != VehicleCommandResult.Accepted)
                 {
-                    await notificationService.NotifyAsync(
-                        new UserNotification(
-                            response.Message ?? $"{label} failed with {response.Result}.",
-                            label,
-                            response.Result is VehicleCommandResult.Timeout or VehicleCommandResult.Failed
-                                ? UserNotificationSeverity.Error
-                                : UserNotificationSeverity.Warning,
-                            VehicleId: vehicleId),
-                        token).ConfigureAwait(false);
-                    return MapResponse(response);
-                }
+                    var response = await sendAsync(vehicleId, confirmed, token).ConfigureAwait(false);
+                    dispatcher.Dispatch(() => AckResult = $"{response.Result}: {response.Message}");
+                    if (response.Result != VehicleCommandResult.Accepted)
+                    {
+                        await notificationService.NotifyAsync(
+                            new UserNotification(
+                                response.Message ?? $"{label} failed with {response.Result}.",
+                                label,
+                                response.Result is VehicleCommandResult.Timeout or VehicleCommandResult.Failed
+                                    ? UserNotificationSeverity.Error
+                                    : UserNotificationSeverity.Warning,
+                                VehicleId: vehicleId),
+                            token).ConfigureAwait(false);
+                        return MapResponse(response);
+                    }
 
-                if (observedPredicate is null)
-                {
-                    return AsyncOperationState.Success($"{label} acknowledged by the vehicle.");
-                }
+                    if (observedPredicate is null)
+                    {
+                        return AsyncOperationState.Success($"{label} acknowledged by the vehicle.");
+                    }
 
-                var observed = await WaitForObservedStateAsync(observedPredicate, token).ConfigureAwait(false);
-                return observed
-                    ? AsyncOperationState.Success($"{label} acknowledged and confirmed by telemetry.")
-                    : AsyncOperationState.Warning($"{label} was acknowledged, but telemetry has not confirmed the final state.");
-            }, $"{label}: awaiting acknowledgement", cancellationToken: cancellationToken).ConfigureAwait(false);
+                    var observed = await WaitForObservedStateAsync(observedPredicate, token).ConfigureAwait(false);
+                    return observed
+                        ? AsyncOperationState.Success($"{label} acknowledged and confirmed by telemetry.")
+                        : AsyncOperationState.Warning($"{label} was acknowledged, but telemetry has not confirmed the final state.");
+                }, $"{label}: awaiting acknowledgement", cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -373,6 +392,7 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
         }
 
         var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
         Task Handler(VehicleStateUpdated evt, CancellationToken eventCancellationToken)
         {
             if (evt.VehicleId == activeVehicle.VehicleId && predicate(evt.VehicleState))
@@ -432,18 +452,23 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
         return true;
     }
 
-    private static AsyncOperationState MapResponse(VehicleCommandResponse response) => response.Result switch
+    private static AsyncOperationState MapResponse(VehicleCommandResponse response)
     {
-        VehicleCommandResult.Timeout => AsyncOperationState.Timeout(response.Message ?? "Command acknowledgement timed out."),
-        VehicleCommandResult.Busy => AsyncOperationState.Warning(response.Message ?? "Another command is pending."),
-        VehicleCommandResult.TemporarilyRejected => AsyncOperationState.Warning(response.Message ?? "Command was temporarily rejected."),
-        VehicleCommandResult.Denied or VehicleCommandResult.Unsupported or VehicleCommandResult.VehicleNotFound or VehicleCommandResult.Failed =>
-            AsyncOperationState.Error(response.Message ?? $"Command failed with {response.Result}."),
-        _ => AsyncOperationState.Success(response.Message)
-    };
+        return response.Result switch
+        {
+            VehicleCommandResult.Timeout => AsyncOperationState.Timeout(response.Message ?? "Command acknowledgement timed out."),
+            VehicleCommandResult.Busy => AsyncOperationState.Warning(response.Message ?? "Another command is pending."),
+            VehicleCommandResult.TemporarilyRejected => AsyncOperationState.Warning(response.Message ?? "Command was temporarily rejected."),
+            VehicleCommandResult.Denied or VehicleCommandResult.Unsupported or VehicleCommandResult.VehicleNotFound or VehicleCommandResult.Failed =>
+                AsyncOperationState.Error(response.Message ?? $"Command failed with {response.Result}."),
+            var _ => AsyncOperationState.Success(response.Message)
+        };
+    }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args) =>
+    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    {
         dispatcher.Dispatch(() => ApplySnapshot(args.Current));
+    }
 
     private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
     {
@@ -477,8 +502,10 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
         CanSetHome = CanTransmit && IsAllowed(state, VehicleAction.SetHomeHere);
     }
 
-    private void OnReplayChanged(object? sender, ReplaySessionChangedEventArgs args) =>
+    private void OnReplayChanged(object? sender, ReplaySessionChangedEventArgs args)
+    {
         dispatcher.Dispatch(() => ApplyReplayState(args.Snapshot));
+    }
 
     private void ApplyReplayState(ReplaySessionSnapshot snapshot)
     {
@@ -487,7 +514,10 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
         ApplySnapshot(activeVehicle.Current);
     }
 
-    private bool IsAllowed(VehicleState? state, VehicleAction action) => state is not null && commandPolicy.Evaluate(state, action).IsAllowed;
+    private bool IsAllowed(VehicleState? state, VehicleAction action)
+    {
+        return state is not null && commandPolicy.Evaluate(state, action).IsAllowed;
+    }
 
     private sealed class CallbackDisposable(Action callback) : IDisposable
     {

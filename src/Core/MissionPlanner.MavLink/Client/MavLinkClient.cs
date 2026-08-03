@@ -37,12 +37,7 @@ public sealed class MavLinkClient : IMavLinkClient
     /// <param name="logger">The logger.</param>
     /// <param name="transmissionPolicy">Optional application safety policy for outbound frames.</param>
     /// <exception cref="ArgumentNullException"></exception>
-    public MavLinkClient(
-        IMavLinkTransport transport,
-        IOptions<MavLinkClientPipelineOptions> options,
-        IDateTimeProvider dateTimeProvider,
-        ILogger<MavLinkClient> logger,
-        IMavLinkTransmissionPolicy? transmissionPolicy = null)
+    public MavLinkClient(IMavLinkTransport transport, IOptions<MavLinkClientPipelineOptions> options, IDateTimeProvider dateTimeProvider, ILogger<MavLinkClient> logger, IMavLinkTransmissionPolicy? transmissionPolicy = null)
     {
         this.transport = transport ?? throw new ArgumentNullException(nameof(transport));
         this.dateTimeProvider = dateTimeProvider ?? throw new ArgumentNullException(nameof(dateTimeProvider));

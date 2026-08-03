@@ -16,7 +16,7 @@ namespace MissionPlanner.Core.Missions.Transfer;
 /// <summary>Coordinates the MAVLink mission upload/download handshake.</summary>
 public sealed class MissionTransferService(
     IVehicleRegistry vehicleRegistry,
-    IMavLinkConnection connection,
+    IVehicleConnectionSession connectionSession,
     IMavLinkMissionEncoder encoder,
     IMissionProtocolMapper mapper,
     IEventHub eventHub,
@@ -57,8 +57,8 @@ public sealed class MissionTransferService(
         using var subscription = eventHub.SubscribeAsync<MavLinkMessage>(MavLinkEventTopics.ReceivedMessage, (m, _) =>
         {
             if (m.SystemId == vehicleId.SystemId && m.ComponentId == vehicleId.ComponentId
-                && ((m is MissionRequestIntMessage request && request.MissionType == (byte)missionType)
-                    || (m is MissionAckMessage ack && ack.MissionType == (byte)missionType)))
+                                                 && ((m is MissionRequestIntMessage request && request.MissionType == (byte)missionType)
+                                                     || (m is MissionAckMessage ack && ack.MissionType == (byte)missionType)))
             {
                 requests.Writer.TryWrite(m);
             }
@@ -101,7 +101,9 @@ public sealed class MissionTransferService(
 
     /// <inheritdoc/>
     public async Task<MissionDownloadResult> DownloadAsync(VehicleId vehicleId, MissionPlanType missionType = MissionPlanType.FlightMission, CancellationToken cancellationToken = default)
-        => await DownloadAsync(vehicleId, missionType, null, cancellationToken).ConfigureAwait(false);
+    {
+        return await DownloadAsync(vehicleId, missionType, null, cancellationToken).ConfigureAwait(false);
+    }
 
     /// <inheritdoc/>
     public async Task<MissionDownloadResult> DownloadAsync(
@@ -243,6 +245,8 @@ public sealed class MissionTransferService(
         }
     }
 
-    private IMavLinkConnection GetConnection(VehicleId vehicleId) =>
-        simulationChannels?.Find(vehicleId)?.ConnectionSession.Connection ?? connection;
+    private IMavLinkConnection GetConnection(VehicleId vehicleId)
+    {
+        return simulationChannels?.Find(vehicleId)?.ConnectionSession.Connection ?? connectionSession.Connection;
+    }
 }

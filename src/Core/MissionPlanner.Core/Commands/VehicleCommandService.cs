@@ -1,4 +1,4 @@
-using MissionPlanner.Core.DomainEvents;
+﻿using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -6,7 +6,6 @@ using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Commands;
 using MissionPlanner.MavLink.Encoding;
-using MissionPlanner.MavLink.Services.Abstractions;
 
 namespace MissionPlanner.Core.Commands;
 
@@ -16,7 +15,7 @@ namespace MissionPlanner.Core.Commands;
 public sealed class VehicleCommandService(
     IVehicleRegistry registry,
     IDomainEventHub eventHub,
-    IMavLinkConnection connection,
+    IVehicleConnectionSession connectionSession,
     IMavLinkCommandEncoder encoder,
     ICommandAckTracker commandAckTracker,
     IDateTimeProvider clock,
@@ -30,26 +29,36 @@ public sealed class VehicleCommandService(
     private readonly IVehicleOperationGate operationGate = operationGate ?? new VehicleOperationGate();
 
     /// <inheritdoc />
-    public Task<VehicleCommandResponse> ArmAsync(VehicleId vehicleId, CancellationToken cancellationToken) =>
-        ExecuteAsync(vehicleId, VehicleAction.Arm, MavLinkCommandIds.ComponentArmDisarm, [1], false, cancellationToken,
+    public Task<VehicleCommandResponse> ArmAsync(VehicleId vehicleId, CancellationToken cancellationToken)
+    {
+        return ExecuteAsync(vehicleId, VehicleAction.Arm, MavLinkCommandIds.ComponentArmDisarm, [1], false, cancellationToken,
             async (response, token) => await eventHub.PublishDomainEventAsync(new VehicleArmed(response.VehicleId), token));
+    }
 
     /// <inheritdoc />
-    public Task<VehicleCommandResponse> DisarmAsync(VehicleId vehicleId, CancellationToken cancellationToken) =>
-        DisarmAsync(vehicleId, false, cancellationToken);
+    public Task<VehicleCommandResponse> DisarmAsync(VehicleId vehicleId, CancellationToken cancellationToken)
+    {
+        return DisarmAsync(vehicleId, false, cancellationToken);
+    }
 
     /// <inheritdoc />
-    public Task<VehicleCommandResponse> DisarmAsync(VehicleId vehicleId, bool safetyConfirmed, CancellationToken cancellationToken) =>
-        ExecuteAsync(vehicleId, VehicleAction.Disarm, MavLinkCommandIds.ComponentArmDisarm, [0], safetyConfirmed, cancellationToken,
+    public Task<VehicleCommandResponse> DisarmAsync(VehicleId vehicleId, bool safetyConfirmed, CancellationToken cancellationToken)
+    {
+        return ExecuteAsync(vehicleId, VehicleAction.Disarm, MavLinkCommandIds.ComponentArmDisarm, [0], safetyConfirmed, cancellationToken,
             async (response, token) => await eventHub.PublishDomainEventAsync(new VehicleDisarmed(response.VehicleId), token));
+    }
 
     /// <inheritdoc />
-    public Task<VehicleCommandResponse> LandAsync(VehicleState state, CancellationToken cancellationToken) =>
-        SetSemanticModeAsync(state.VehicleId, VehicleAction.Land, VehicleMode.Land, cancellationToken);
+    public Task<VehicleCommandResponse> LandAsync(VehicleState state, CancellationToken cancellationToken)
+    {
+        return SetSemanticModeAsync(state.VehicleId, VehicleAction.Land, VehicleMode.Land, cancellationToken);
+    }
 
     /// <inheritdoc />
-    public Task<VehicleCommandResponse> LandAsync(VehicleId vehicleId, CancellationToken cancellationToken) =>
-        SetSemanticModeAsync(vehicleId, VehicleAction.Land, VehicleMode.Land, cancellationToken);
+    public Task<VehicleCommandResponse> LandAsync(VehicleId vehicleId, CancellationToken cancellationToken)
+    {
+        return SetSemanticModeAsync(vehicleId, VehicleAction.Land, VehicleMode.Land, cancellationToken);
+    }
 
     /// <inheritdoc />
     public Task<VehicleCommandResponse> SetModeAsync(VehicleId vehicleId, VehicleMode mode, CancellationToken cancellationToken)
@@ -70,68 +79,64 @@ public sealed class VehicleCommandService(
     public Task<VehicleCommandResponse> SetModeAsync(VehicleId vehicleId, VehicleModeOption mode, CancellationToken cancellationToken)
     {
         var state = registry.GetRequired(vehicleId)?.State;
-        if (state is null)
-        {
-            return Task.FromResult(NotFound(vehicleId));
-        }
-
-        if (!modeCatalog.GetModes(state.Identity.Firmware.Family).Contains(mode))
-        {
-            return Task.FromResult(Denied(vehicleId, $"{mode.Name} is not valid for {state.Identity.Firmware.Family}."));
-        }
-
-        return ExecuteModeAsync(vehicleId, VehicleAction.SetMode, mode, cancellationToken);
+        return state is null
+            ? Task.FromResult(NotFound(vehicleId))
+            : !modeCatalog.GetModes(state.Identity.Firmware.Family).Contains(mode)
+                ? Task.FromResult(Denied(vehicleId, $"{mode.Name} is not valid for {state.Identity.Firmware.Family}."))
+                : ExecuteModeAsync(vehicleId, VehicleAction.SetMode, mode, cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<VehicleCommandResponse> TakeoffAsync(VehicleId vehicleId, double altitudeMeters, bool safetyConfirmed, CancellationToken cancellationToken)
     {
-        if (!double.IsFinite(altitudeMeters) || altitudeMeters is < 1 or > 1000)
-        {
-            return Task.FromResult(Denied(vehicleId, "Takeoff altitude must be between 1 and 1000 metres."));
-        }
-
-        return ExecuteAsync(vehicleId, VehicleAction.Takeoff, MavLinkCommandIds.NavTakeoff,
-            [0, 0, 0, 0, 0, 0, (float)altitudeMeters], safetyConfirmed, cancellationToken);
+        return !double.IsFinite(altitudeMeters) || altitudeMeters is < 1 or > 1000
+            ? Task.FromResult(Denied(vehicleId, "Takeoff altitude must be between 1 and 1000 metres."))
+            : ExecuteAsync(vehicleId, VehicleAction.Takeoff, MavLinkCommandIds.NavTakeoff,
+                [0, 0, 0, 0, 0, 0, (float)altitudeMeters], safetyConfirmed, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<VehicleCommandResponse> ReturnToLaunchAsync(VehicleId vehicleId, CancellationToken cancellationToken) =>
-        SetSemanticModeAsync(vehicleId, VehicleAction.ReturnToLaunch, VehicleMode.Rtl, cancellationToken);
+    public Task<VehicleCommandResponse> ReturnToLaunchAsync(VehicleId vehicleId, CancellationToken cancellationToken)
+    {
+        return SetSemanticModeAsync(vehicleId, VehicleAction.ReturnToLaunch, VehicleMode.Rtl, cancellationToken);
+    }
 
     /// <inheritdoc />
-    public Task<VehicleCommandResponse> HoldAsync(VehicleId vehicleId, CancellationToken cancellationToken) =>
-        SetSemanticModeAsync(vehicleId, VehicleAction.Hold, VehicleMode.Loiter, cancellationToken);
+    public Task<VehicleCommandResponse> HoldAsync(VehicleId vehicleId, CancellationToken cancellationToken)
+    {
+        return SetSemanticModeAsync(vehicleId, VehicleAction.Hold, VehicleMode.Loiter, cancellationToken);
+    }
 
     /// <inheritdoc />
-    public Task<VehicleCommandResponse> RebootAutopilotAsync(VehicleId vehicleId, bool safetyConfirmed, CancellationToken cancellationToken) =>
-        ExecuteAsync(vehicleId, VehicleAction.RebootAutopilot, MavLinkCommandIds.PreflightRebootShutdown,
+    public Task<VehicleCommandResponse> RebootAutopilotAsync(VehicleId vehicleId, bool safetyConfirmed, CancellationToken cancellationToken)
+    {
+        return ExecuteAsync(vehicleId, VehicleAction.RebootAutopilot, MavLinkCommandIds.PreflightRebootShutdown,
             [1, 0, 0, 0, 0, 0, 0], safetyConfirmed, cancellationToken);
+    }
 
     /// <inheritdoc />
-    public Task<VehicleCommandResponse> SetHomeHereAsync(VehicleId vehicleId, bool safetyConfirmed, CancellationToken cancellationToken) =>
-        ExecuteAsync(vehicleId, VehicleAction.SetHomeHere, MavLinkCommandIds.DoSetHome,
+    public Task<VehicleCommandResponse> SetHomeHereAsync(VehicleId vehicleId, bool safetyConfirmed, CancellationToken cancellationToken)
+    {
+        return ExecuteAsync(vehicleId, VehicleAction.SetHomeHere, MavLinkCommandIds.DoSetHome,
             [1, 0, 0, 0, 0, 0, 0], safetyConfirmed, cancellationToken);
+    }
 
     /// <inheritdoc />
     public Task<VehicleCommandResponse> ExecuteExpertAsync(ExpertVehicleCommand command, bool safetyConfirmed, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(command);
-        if (command.CommandId == 0 || command.Parameters.Count != 7 || command.Parameters.Any(value => !float.IsFinite(value)))
-        {
-            return Task.FromResult(Denied(command.VehicleId, "Expert command requires a non-zero ID and exactly seven finite parameters."));
-        }
-
-        if (command.CommandId is MavLinkCommandIds.ComponentArmDisarm or MavLinkCommandIds.DoSetMode or MavLinkCommandIds.PreflightRebootShutdown)
-        {
-            return Task.FromResult(Denied(command.VehicleId, "Use the typed safety-aware action for arm, mode, or reboot commands."));
-        }
-
-        return ExecuteAsync(command.VehicleId, VehicleAction.ExpertCommand, command.CommandId, command.Parameters, safetyConfirmed, cancellationToken);
+        return command.CommandId == 0 || command.Parameters.Count != 7 || command.Parameters.Any(value => !float.IsFinite(value))
+            ? Task.FromResult(Denied(command.VehicleId, "Expert command requires a non-zero ID and exactly seven finite parameters."))
+            : command.CommandId is MavLinkCommandIds.ComponentArmDisarm or MavLinkCommandIds.DoSetMode or MavLinkCommandIds.PreflightRebootShutdown
+                ? Task.FromResult(Denied(command.VehicleId, "Use the typed safety-aware action for arm, mode, or reboot commands."))
+                : ExecuteAsync(command.VehicleId, VehicleAction.ExpertCommand, command.CommandId, command.Parameters, safetyConfirmed, cancellationToken);
     }
 
     /// <inheritdoc />
-    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    public ValueTask DisposeAsync()
+    {
+        return ValueTask.CompletedTask;
+    }
 
     private Task<VehicleCommandResponse> SetSemanticModeAsync(
         VehicleId vehicleId,
@@ -155,11 +160,13 @@ public sealed class VehicleCommandService(
         VehicleId vehicleId,
         VehicleAction action,
         VehicleModeOption mode,
-        CancellationToken cancellationToken) =>
-        ExecuteAsync(vehicleId, action, MavLinkCommandIds.DoSetMode, [1, mode.CustomMode], false, cancellationToken,
+        CancellationToken cancellationToken)
+    {
+        return ExecuteAsync(vehicleId, action, MavLinkCommandIds.DoSetMode, [1, mode.CustomMode], false, cancellationToken,
             async (response, token) =>
                 await eventHub.PublishDomainEventAsync(
                     new VehicleModeChanged(new VehicleModeChange(response.VehicleId, mode.SemanticMode, clock.UtcNow)), token));
+    }
 
     private async Task<VehicleCommandResponse> ExecuteAsync(
         VehicleId vehicleId,
@@ -201,8 +208,9 @@ public sealed class VehicleCommandService(
 
             try
             {
+                var connection = connectionSession.Connection;
                 var targetConnection = simulationChannels?.Find(vehicleId)?.ConnectionSession.Connection ?? connection;
-                await targetConnection.SendRawAsync(packet, session.EndPoint, cancellationToken).ConfigureAwait(false);
+                await targetConnection.SendRawAsync(packet, session.EndPoint, ackLifetime.Token).ConfigureAwait(false);
                 var ack = await waitForAck.ConfigureAwait(false);
                 var response = new VehicleCommandResponse(vehicleId, MapResult(ack.Result), ack.ReceivedAt,
                     $"MAVLink ACK result {ack.Result}.");
@@ -225,19 +233,26 @@ public sealed class VehicleCommandService(
         }
     }
 
-    private VehicleCommandResponse NotFound(VehicleId vehicleId) =>
-        new(vehicleId, VehicleCommandResult.VehicleNotFound, clock.UtcNow, "Vehicle is not registered.");
-
-    private VehicleCommandResponse Denied(VehicleId vehicleId, string reason) =>
-        new(vehicleId, VehicleCommandResult.Denied, clock.UtcNow, reason);
-
-    private static VehicleCommandResult MapResult(byte mavResult) => mavResult switch
+    private VehicleCommandResponse NotFound(VehicleId vehicleId)
     {
-        0 => VehicleCommandResult.Accepted,
-        1 => VehicleCommandResult.TemporarilyRejected,
-        2 => VehicleCommandResult.Denied,
-        3 => VehicleCommandResult.Unsupported,
-        4 => VehicleCommandResult.Failed,
-        _ => VehicleCommandResult.Failed
-    };
+        return new VehicleCommandResponse(vehicleId, VehicleCommandResult.VehicleNotFound, clock.UtcNow, "Vehicle is not registered.");
+    }
+
+    private VehicleCommandResponse Denied(VehicleId vehicleId, string reason)
+    {
+        return new VehicleCommandResponse(vehicleId, VehicleCommandResult.Denied, clock.UtcNow, reason);
+    }
+
+    private static VehicleCommandResult MapResult(byte mavResult)
+    {
+        return mavResult switch
+        {
+            0 => VehicleCommandResult.Accepted,
+            1 => VehicleCommandResult.TemporarilyRejected,
+            2 => VehicleCommandResult.Denied,
+            3 => VehicleCommandResult.Unsupported,
+            4 => VehicleCommandResult.Failed,
+            var _ => VehicleCommandResult.Failed
+        };
+    }
 }

@@ -60,7 +60,7 @@ public class VehicleConnectionService(
             var client = connectionSession.Client;
             var transport = connectionSession.Transport;
             // Wait for heartbeat to identify vehicle
-            var vehicleId = await WaitForVehicleHeartbeatAsync(client, linkedCts.Token);
+            var vehicleId = await WaitForVehicleHeartbeatAsync(linkedCts.Token);
 
             if (vehicleId == null)
             {
@@ -69,10 +69,10 @@ public class VehicleConnectionService(
                 return new VehicleConnectionResult(false, null, null, "Timeout waiting for vehicle heartbeat");
             }
 
-            await RequestFirmwareIdentityAsync(client, vehicleId.Value, linkedCts.Token);
+            await RequestFirmwareIdentityAsync(vehicleId.Value, linkedCts.Token);
 
             // Request telemetry streams from vehicle
-            await RequestTelemetryStreamsAsync(client, vehicleId.Value, linkedCts.Token);
+            await RequestTelemetryStreamsAsync(vehicleId.Value, linkedCts.Token);
 
             // Store active connection
             var connectionId = Guid.NewGuid();
@@ -122,7 +122,7 @@ public class VehicleConnectionService(
             var client = connectionSession.Client;
             var transport = connectionSession.Transport;
             // Wait for heartbeat to identify vehicle
-            var vehicleId = await WaitForVehicleHeartbeatAsync(client, linkedCts.Token);
+            var vehicleId = await WaitForVehicleHeartbeatAsync(linkedCts.Token);
 
             if (vehicleId == null)
             {
@@ -132,10 +132,10 @@ public class VehicleConnectionService(
             }
 
 
-            await RequestFirmwareIdentityAsync(client, vehicleId.Value, linkedCts.Token);
+            await RequestFirmwareIdentityAsync(vehicleId.Value, linkedCts.Token);
 
             // Request telemetry streams from vehicle
-            await RequestTelemetryStreamsAsync(client, vehicleId.Value, linkedCts.Token);
+            await RequestTelemetryStreamsAsync(vehicleId.Value, linkedCts.Token);
 
             // Store active connection
             var connectionId = Guid.NewGuid();
@@ -201,7 +201,7 @@ public class VehicleConnectionService(
             var client = connectionSession.Client;
             var transport = connectionSession.Transport;
             // Wait for heartbeat to identify vehicle
-            var vehicleId = await WaitForVehicleHeartbeatAsync(client, linkedCts.Token);
+            var vehicleId = await WaitForVehicleHeartbeatAsync(linkedCts.Token);
 
             if (vehicleId == null)
             {
@@ -210,10 +210,10 @@ public class VehicleConnectionService(
                 return new VehicleConnectionResult(false, null, null, "Timeout waiting for vehicle heartbeat");
             }
 
-            await RequestFirmwareIdentityAsync(client, vehicleId.Value, linkedCts.Token);
+            await RequestFirmwareIdentityAsync(vehicleId.Value, linkedCts.Token);
 
             // Request telemetry streams from vehicle
-            await RequestTelemetryStreamsAsync(client, vehicleId.Value, linkedCts.Token);
+            await RequestTelemetryStreamsAsync(vehicleId.Value, linkedCts.Token);
 
             // Store active connection
             var connectionId = Guid.NewGuid();
@@ -245,7 +245,7 @@ public class VehicleConnectionService(
         }
     }
 
-    private async Task<VehicleId?> WaitForVehicleHeartbeatAsync(IMavLinkClient client, CancellationToken cancellationToken)
+    private async Task<VehicleId?> WaitForVehicleHeartbeatAsync(CancellationToken cancellationToken)
     {
         var timeout = TimeSpan.FromSeconds(10);
         var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -283,7 +283,6 @@ public class VehicleConnectionService(
         }
         finally
         {
-            subscription.Dispose();
             timeoutCts.Dispose();
         }
     }
@@ -291,11 +290,11 @@ public class VehicleConnectionService(
     /// <summary>
     /// Requests essential telemetry streams from the vehicle after connection.
     /// </summary>
-    private async Task RequestTelemetryStreamsAsync(IMavLinkClient client, VehicleId vehicleId, CancellationToken cancellationToken)
+    private async Task RequestTelemetryStreamsAsync(VehicleId vehicleId, CancellationToken cancellationToken)
     {
         try
         {
-            var commandService = domainFactory.Create<IMavLinkCommandService, IMavLinkClient>(client);
+            var commandService = domainFactory.Create<IMavLinkCommandService, IVehicleConnectionSession>(connectionSession);
 
             await commandService.RequestDataStreamAsync(vehicleId, MavDataStream.Extra1, 10, true, cancellationToken);
 
@@ -320,10 +319,10 @@ public class VehicleConnectionService(
         }
     }
 
-    private async Task RequestFirmwareIdentityAsync(IMavLinkClient client, VehicleId vehicleId, CancellationToken cancellationToken)
+    private async Task RequestFirmwareIdentityAsync(VehicleId vehicleId, CancellationToken cancellationToken)
     {
         const int maxAttempts = 2;
-        var commandService = domainFactory.Create<IMavLinkCommandService, IMavLinkClient>(client);
+        var commandService = domainFactory.Create<IMavLinkCommandService, IVehicleConnectionSession>(connectionSession);
 
         for (var attempt = 1; attempt <= maxAttempts && !cancellationToken.IsCancellationRequested; attempt++)
         {

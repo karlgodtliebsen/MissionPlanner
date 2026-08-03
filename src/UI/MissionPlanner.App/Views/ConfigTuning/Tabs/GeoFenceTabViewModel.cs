@@ -12,30 +12,6 @@ using MissionPlanner.Core.Vehicles.Models;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
-/// <summary>Identifies how clicks on the dedicated fence map modify geometry.</summary>
-public enum FenceMapEditMode
-{
-    /// <summary>Map clicks do not edit fence geometry.</summary>
-    None,
-    /// <summary>Map clicks append vertices to an inclusion polygon.</summary>
-    PolygonInclusion,
-    /// <summary>Map clicks append vertices to an exclusion polygon.</summary>
-    PolygonExclusion,
-    /// <summary>The next map click creates an inclusion circle.</summary>
-    CircleInclusion,
-    /// <summary>The next map click creates an exclusion circle.</summary>
-    CircleExclusion,
-    /// <summary>The next map click sets the legacy fence return point.</summary>
-    ReturnPoint
-}
-
-/// <summary>Projects one fence area into the geometry list.</summary>
-/// <param name="Id">The area identifier.</param>
-/// <param name="Kind">The area kind.</param>
-/// <param name="Summary">A short geometry summary.</param>
-/// <param name="IsClosed">Whether polygon editing is complete.</param>
-public sealed record FenceAreaListItem(Guid Id, FenceAreaKind Kind, string Summary, bool IsClosed);
-
 /// <summary>Coordinates the shared fence parameter session, local geometry editor, and confirmed transfers.</summary>
 public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
 {
@@ -251,19 +227,34 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private void BeginPolygonInclusion() => BeginPolygon(FenceMapEditMode.PolygonInclusion);
+    private void BeginPolygonInclusion()
+    {
+        BeginPolygon(FenceMapEditMode.PolygonInclusion);
+    }
 
     [RelayCommand]
-    private void BeginPolygonExclusion() => BeginPolygon(FenceMapEditMode.PolygonExclusion);
+    private void BeginPolygonExclusion()
+    {
+        BeginPolygon(FenceMapEditMode.PolygonExclusion);
+    }
 
     [RelayCommand]
-    private void BeginCircleInclusion() => EditMode = FenceMapEditMode.CircleInclusion;
+    private void BeginCircleInclusion()
+    {
+        EditMode = FenceMapEditMode.CircleInclusion;
+    }
 
     [RelayCommand]
-    private void BeginCircleExclusion() => EditMode = FenceMapEditMode.CircleExclusion;
+    private void BeginCircleExclusion()
+    {
+        EditMode = FenceMapEditMode.CircleExclusion;
+    }
 
     [RelayCommand]
-    private void BeginReturnPoint() => EditMode = FenceMapEditMode.ReturnPoint;
+    private void BeginReturnPoint()
+    {
+        EditMode = FenceMapEditMode.ReturnPoint;
+    }
 
     [RelayCommand]
     private void FinishPolygon()
@@ -417,9 +408,15 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
         });
     }
 
-    private bool CanOperate() => IsConnected && !IsBusy;
+    private bool CanOperate()
+    {
+        return IsConnected && !IsBusy;
+    }
 
-    private bool CanGeometryTransfer() => CanOperate() && SupportsTypedGeometry;
+    private bool CanGeometryTransfer()
+    {
+        return CanOperate() && SupportsTypedGeometry;
+    }
 
     private void BeginPolygon(FenceMapEditMode mode)
     {
@@ -467,12 +464,18 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
             StatusMessage = SupportsTypedGeometry
                 ? "Fence parameters loaded. Download geometry or begin local fence editing."
                 : "Fence parameters loaded, but this firmware does not advertise typed fence geometry.";
-        }, replaceRunning: true);
+        }, true);
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args) => _ = InitializeForActiveVehicleAsync();
+    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    {
+        _ = InitializeForActiveVehicleAsync();
+    }
 
-    private void OnParameterSessionChanged(object? sender, EventArgs args) => SyncParameterRows();
+    private void OnParameterSessionChanged(object? sender, EventArgs args)
+    {
+        SyncParameterRows();
+    }
 
     private void SyncParameterRows()
     {
@@ -503,7 +506,10 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
         }
     }
 
-    private void UpdateLocal(VehicleId target, FencePlan plan) => ApplySnapshot(fenceService.SetLocalPlan(target, plan));
+    private void UpdateLocal(VehicleId target, FencePlan plan)
+    {
+        ApplySnapshot(fenceService.SetLocalPlan(target, plan));
+    }
 
     private void ApplyReport(FenceOperationReport report)
     {
@@ -537,11 +543,14 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
         GeometryChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private IProgress<FenceTransferProgress> Progress() => new Progress<FenceTransferProgress>(value =>
+    private IProgress<FenceTransferProgress> Progress()
     {
-        TransferPercent = value.Total <= 0 ? 0 : value.Completed / (double)value.Total;
-        StatusMessage = $"{value.Stage}: {value.Completed}/{value.Total}";
-    });
+        return new Progress<FenceTransferProgress>(value =>
+        {
+            TransferPercent = value.Total <= 0 ? 0 : value.Completed / (double)value.Total;
+            StatusMessage = $"{value.Stage}: {value.Completed}/{value.Total}";
+        });
+    }
 
     private async Task RunAsync(Func<CancellationToken, Task> operation, bool replaceRunning = false)
     {
@@ -607,11 +616,8 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
 
     private void DetachParameterSession()
     {
-        if (parameterSession is not null)
-        {
-            parameterSession.Changed -= OnParameterSessionChanged;
-            parameterSession = null;
-        }
+        parameterSession?.Changed -= OnParameterSessionChanged;
+        parameterSession = null;
     }
 
     private void NotifyTransferCommands()

@@ -1,4 +1,4 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
@@ -188,7 +188,7 @@ public sealed class VehicleActionsTests
         var service = new VehicleCommandService(
             registry,
             Substitute.For<IDomainEventHub>(),
-            Substitute.For<IMavLinkConnection>(),
+            Substitute.For<IVehicleConnectionSession>(),
             encoder,
             tracker,
             clock,
@@ -304,10 +304,12 @@ public sealed class VehicleActionsTests
         tracker.WaitForAckAsync(state.VehicleId, expectedCommand, Arg.Any<TimeSpan>(), Arg.Any<CancellationToken>())
             .Returns(new CommandAckMessage(state.VehicleId.SystemId, state.VehicleId.ComponentId, new TransportEndPoint("test"), expectedCommand, 0, now));
         var connection = Substitute.For<IMavLinkConnection>();
+        var session = Substitute.For<IVehicleConnectionSession>();
+
         var service = new VehicleCommandService(
             registry,
             Substitute.For<IDomainEventHub>(),
-            connection,
+            session,
             encoder,
             tracker,
             clock,
@@ -363,26 +365,29 @@ public sealed class VehicleActionsTests
         return new VehicleCommandPolicy(clock);
     }
 
-    private static VehicleState CreateState(DateTimeOffset now) =>
-        new VehicleState(new VehicleId(1, 1), 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online, now, VehicleMode.Stabilize,
-            false, null, null, null, null, null, null, null, null) with
+    private static VehicleState CreateState(DateTimeOffset now)
+    {
+        return new VehicleState(new VehicleId(1, 1), 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online, now, VehicleMode.Stabilize,
+                false, null, null, null, null, null, null, null, null) with
         {
             Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false, LandedState: VehicleLandedState.OnGround, ObservedAt: now)
         };
+    }
 
-    private static VehicleState WithFlight(VehicleState state, bool armed, VehicleLandedState landedState, DateTimeOffset observedAt) =>
-        state with { Flight = state.Flight with { IsArmed = armed, LandedState = landedState, ObservedAt = observedAt } };
-
-    private static VehicleState WithFreshPosition(VehicleState state, DateTimeOffset now) => state with
+    private static VehicleState WithFlight(VehicleState state, bool armed, VehicleLandedState landedState, DateTimeOffset observedAt)
     {
-        Gps = VehicleGpsState.Empty with { FixType = GpsFixType.Fix3D, ObservedAt = now },
-        Position = VehiclePositionState.Empty with { LatitudeDegrees = 55, LongitudeDegrees = 12, ObservedAt = now }
-    };
+        return state with { Flight = state.Flight with { IsArmed = armed, LandedState = landedState, ObservedAt = observedAt } };
+    }
 
-    private static VehicleState WithFamily(VehicleState state, FirmwareFamily family) => state with
+    private static VehicleState WithFreshPosition(VehicleState state, DateTimeOffset now)
     {
-        Identity = state.Identity with { Firmware = state.Identity.Firmware with { Family = family } }
-    };
+        return state with { Gps = VehicleGpsState.Empty with { FixType = GpsFixType.Fix3D, ObservedAt = now }, Position = VehiclePositionState.Empty with { LatitudeDegrees = 55, LongitudeDegrees = 12, ObservedAt = now } };
+    }
+
+    private static VehicleState WithFamily(VehicleState state, FirmwareFamily family)
+    {
+        return state with { Identity = state.Identity with { Firmware = state.Identity.Firmware with { Family = family } } };
+    }
 
     private sealed record ViewModelFixture(
         ActionsTabViewModel ViewModel,
