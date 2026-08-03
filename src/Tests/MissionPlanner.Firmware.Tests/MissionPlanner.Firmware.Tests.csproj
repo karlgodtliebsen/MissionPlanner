@@ -25,4 +25,8 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Fixtures\manifest.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

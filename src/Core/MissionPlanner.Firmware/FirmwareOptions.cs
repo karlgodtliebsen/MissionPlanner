@@ -6,4 +6,12 @@ namespace MissionPlanner.Firmware;
 /// </summary>
 public sealed class FirmwareOptions
 {
+    /// <summary>Gets or sets the official manifest URI.</summary>
+    public Uri ManifestUri { get; set; } = new("https://firmware.ardupilot.org/manifest.json.gz");
+
+    /// <summary>Gets or sets how long a cached manifest is considered fresh.</summary>
+    public TimeSpan CatalogCacheDuration { get; set; } = TimeSpan.FromHours(6);
+
+    /// <summary>Gets or sets the maximum accepted decompressed manifest size.</summary>
+    public int MaximumManifestBytes { get; set; } = 32 * 1024 * 1024;
 }

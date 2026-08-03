@@ -1,0 +1,11 @@
+{
+  "format-version": "1.0.0",
+  "future-root": true,
+  "firmware": [
+    { "board_id": 50, "platform": "CubeOrange", "vehicletype": "Copter", "mav-type": "QUADROTOR", "format": "apj", "url": "https://firmware.example/CubeOrange/copter-4.6.1.apj", "mav-firmware-version": "4.6.1", "mav-firmware-version-type": "OFFICIAL", "image-size": 1000, "USBID": ["0x2DAE/0x1016", "bad"], "bootloader_str": ["CubeOrange-BL"], "git-sha": "abcdef012345", "future-field": { "value": 1 } },
+    { "board_id": 50, "platform": "CubeOrange", "vehicletype": "Copter", "format": "apj", "url": "https://firmware.example/CubeOrange/copter-4.6.1.apj", "mav-firmware-version": "4.6.1", "mav-firmware-version-type": "OFFICIAL", "image-size": 1000 },
+    { "board_id": 50, "platform": "CubeOrange", "vehicletype": "Copter", "format": "apj", "url": "https://firmware.example/CubeOrange/copter-beta.apj", "mav-firmware-version": "4.7.0", "mav-firmware-version-type": "BETA", "image-size": 1100 },
+    { "board_id": 50, "platform": "CubeOrange", "vehicletype": "Copter", "format": "apj", "url": "https://firmware.example/CubeOrange/copter-latest.apj", "mav-firmware-version": "4.8.0-dev", "mav-firmware-version-type": "DEV", "image-size": 1200 },
+    { "board_id": 9, "platform": "fmuv3", "vehicletype": "Plane", "format": "px4", "url": "https://firmware.example/fmuv3/plane-4.5.7.px4", "mav-firmware-version": "4.5.7", "mav-firmware-version-type": "OFFICIAL", "image-size": 900 }
+  ]
+}
