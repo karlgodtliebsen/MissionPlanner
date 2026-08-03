@@ -161,6 +161,13 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
         }
 
         ValidateRange(settings.Accessibility.TextScale, 0.8, 2, PlannerSettingsSection.Accessibility, nameof(settings.Accessibility.TextScale), errors);
+        ValidateRange(settings.Legacy.AttitudeRateHz, 0, 50, PlannerSettingsSection.Legacy, nameof(settings.Legacy.AttitudeRateHz), errors);
+        ValidateRange(settings.Legacy.PositionRateHz, 0, 50, PlannerSettingsSection.Legacy, nameof(settings.Legacy.PositionRateHz), errors);
+        ValidateRange(settings.Legacy.StatusRateHz, 0, 50, PlannerSettingsSection.Legacy, nameof(settings.Legacy.StatusRateHz), errors);
+        ValidateRange(settings.Legacy.RcRateHz, 0, 50, PlannerSettingsSection.Legacy, nameof(settings.Legacy.RcRateHz), errors);
+        ValidateRange(settings.Legacy.SensorRateHz, 0, 50, PlannerSettingsSection.Legacy, nameof(settings.Legacy.SensorRateHz), errors);
+        ValidateRange(settings.Legacy.TrackLength, 1, 10000, PlannerSettingsSection.Legacy, nameof(settings.Legacy.TrackLength), errors);
+        ValidateRange(settings.Legacy.AircraftLineLength, 0, 10000, PlannerSettingsSection.Legacy, nameof(settings.Legacy.AircraftLineLength), errors);
         return errors;
     }
 
@@ -205,6 +212,7 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
             PlannerSettingsSection.Confirmations => Current with { Confirmations = defaults.Confirmations },
             PlannerSettingsSection.Updates => Current with { Updates = defaults.Updates },
             PlannerSettingsSection.Accessibility => Current with { Accessibility = defaults.Accessibility },
+            PlannerSettingsSection.Legacy => Current with { Legacy = defaults.Legacy },
             var _ => throw new ArgumentOutOfRangeException(nameof(section), section, null)
         };
         return SaveAsync(reset, cancellationToken);

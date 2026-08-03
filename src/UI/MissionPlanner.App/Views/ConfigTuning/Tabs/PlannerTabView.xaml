@@ -19,11 +19,13 @@
                             <Button Text="Reset appearance" Command="{Binding ResetSectionCommand}" CommandParameter="Appearance" />
                         </HorizontalStackLayout>
                     </Grid>
-                    <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto" RowSpacing="8">
+                    <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
                         <Label Text="Unit system" VerticalOptions="Center" />
                         <Picker Grid.Column="1" ItemsSource="{Binding UnitSystems}" SelectedItem="{Binding SelectedUnitSystem}" />
                         <Label Grid.Row="1" Text="Theme (live preview)" VerticalOptions="Center" />
                         <Picker Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" />
+                        <Label Grid.Row="2" Text="Layout" VerticalOptions="Center" />
+                        <Picker Grid.Row="2" Grid.Column="1" ItemsSource="{Binding LayoutModes}" SelectedItem="{Binding LayoutMode}" />
                     </Grid>
                 </VerticalStackLayout>
             </Border>
@@ -123,7 +125,7 @@
                         </HorizontalStackLayout>
                     </Grid>
                     <Label Text="Logging changes and update-channel changes take effect after restart." FontSize="12" />
-                    <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
+                    <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
                         <Label Text="Logging level" VerticalOptions="Center" />
                         <Picker Grid.Column="1" ItemsSource="{Binding LoggingLevels}" SelectedItem="{Binding SelectedLoggingLevel}" />
                         <Label Grid.Row="1" Text="Log retention (days)" VerticalOptions="Center" />
@@ -134,6 +136,8 @@
                         <Entry Grid.Row="3" Grid.Column="1" Text="{Binding UpdateCheckIntervalDays}" Keyboard="Numeric" />
                         <Label Grid.Row="4" Text="Update channel" VerticalOptions="Center" />
                         <Picker Grid.Row="4" Grid.Column="1" ItemsSource="{Binding UpdateChannels}" SelectedItem="{Binding UpdateChannel}" />
+                        <Label Grid.Row="5" Text="Log directory" VerticalOptions="Center" />
+                        <Entry Grid.Row="5" Grid.Column="1" Text="{Binding LogDirectory}" Placeholder="Use platform default" />
                     </Grid>
                 </VerticalStackLayout>
             </Border>
@@ -153,6 +157,77 @@
                         <Entry Grid.Row="2" Grid.Column="1" WidthRequest="140" Text="{Binding TextScale}" Keyboard="Numeric" />
                         <Label Grid.Row="3" Text="Announce telemetry warnings" VerticalOptions="Center" />
                         <Switch Grid.Row="3" Grid.Column="1" IsToggled="{Binding AnnounceTelemetryWarnings}" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Padding="14">
+                <VerticalStackLayout Spacing="8">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="Legacy units and speech" FontSize="18" FontAttributes="Bold" VerticalOptions="Center" />
+                        <Button Grid.Column="1" Text="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Legacy" />
+                    </Grid>
+                    <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
+                        <Label Text="Distance units" VerticalOptions="Center" />
+                        <Picker Grid.Column="1" ItemsSource="{Binding DistanceUnits}" SelectedItem="{Binding DistanceUnit}" />
+                        <Label Grid.Row="1" Text="Altitude units" VerticalOptions="Center" />
+                        <Picker Grid.Row="1" Grid.Column="1" ItemsSource="{Binding AltitudeUnits}" SelectedItem="{Binding AltitudeUnit}" />
+                        <Label Grid.Row="2" Text="Speed units" VerticalOptions="Center" />
+                        <Picker Grid.Row="2" Grid.Column="1" ItemsSource="{Binding SpeedUnits}" SelectedItem="{Binding SpeedUnit}" />
+                        <Label Grid.Row="3" Text="Enable speech" VerticalOptions="Center" />
+                        <Switch Grid.Row="3" Grid.Column="1" IsToggled="{Binding SpeechEnabled}" HorizontalOptions="Start" />
+                        <Label Grid.Row="4" Text="Minimum spoken severity" VerticalOptions="Center" />
+                        <Picker Grid.Row="4" Grid.Column="1" ItemsSource="{Binding SpeechSeverities}" SelectedItem="{Binding SpeechSeverity}" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Padding="14">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Telemetry stream rates" FontSize="18" FontAttributes="Bold" />
+                    <Label Text="Requested MAVLink stream rates in hertz. A value of zero disables the stream request." FontSize="12" />
+                    <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
+                        <Label Text="Attitude" /><Entry Grid.Column="1" Text="{Binding AttitudeRateHz}" Keyboard="Numeric" />
+                        <Label Grid.Row="1" Text="Position" /><Entry Grid.Row="1" Grid.Column="1" Text="{Binding PositionRateHz}" Keyboard="Numeric" />
+                        <Label Grid.Row="2" Text="Mode / status" /><Entry Grid.Row="2" Grid.Column="1" Text="{Binding StatusRateHz}" Keyboard="Numeric" />
+                        <Label Grid.Row="3" Text="RC" /><Entry Grid.Row="3" Grid.Column="1" Text="{Binding RcRateHz}" Keyboard="Numeric" />
+                        <Label Grid.Row="4" Text="Sensors" /><Entry Grid.Row="4" Grid.Column="1" Text="{Binding SensorRateHz}" Keyboard="Numeric" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Padding="14">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Connection and vehicle behavior" FontSize="18" FontAttributes="Bold" />
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
+                        <Label Text="Reset flight controller on USB connect (toggle DTR)" /><Switch Grid.Column="1" IsToggled="{Binding ResetOnUsbConnect}" />
+                        <Label Grid.Row="1" Text="Disable RTS reset for ESP32 Serial/JTAG" /><Switch Grid.Row="1" Grid.Column="1" IsToggled="{Binding DisableEsp32RtsReset}" />
+                        <Label Grid.Row="2" Text="Load waypoints on connect" /><Switch Grid.Row="2" Grid.Column="1" IsToggled="{Binding LoadWaypointsOnConnect}" />
+                        <Label Grid.Row="3" Text="Download parameters in background" /><Switch Grid.Row="3" Grid.Column="1" IsToggled="{Binding DownloadParametersInBackground}" />
+                        <Label Grid.Row="4" Text="No RC receiver" /><Switch Grid.Row="4" Grid.Column="1" IsToggled="{Binding NoRcReceiver}" />
+                        <Label Grid.Row="5" Text="Slow computer mode" /><Switch Grid.Row="5" Grid.Column="1" IsToggled="{Binding SlowComputerMode}" />
+                        <Label Grid.Row="6" Text="GCS system ID (0–255)" /><Entry Grid.Row="6" Grid.Column="1" WidthRequest="140" Text="{Binding GcsSystemId}" Keyboard="Numeric" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Padding="14">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Flight map and aircraft icon" FontSize="18" FontAttributes="Bold" />
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
+                        <Label Text="Track length" /><Entry Grid.Column="1" WidthRequest="140" Text="{Binding TrackLength}" Keyboard="Numeric" />
+                        <Label Grid.Row="1" Text="Display distance to home" /><Switch Grid.Row="1" Grid.Column="1" IsToggled="{Binding ShowDistanceToHome}" />
+                        <Label Grid.Row="2" Text="Rotate map to follow aircraft" /><Switch Grid.Row="2" Grid.Column="1" IsToggled="{Binding RotateMapToHeading}" />
+                        <Label Grid.Row="3" Text="Display course over ground" /><Switch Grid.Row="3" Grid.Column="1" IsToggled="{Binding DisplayCourseOverGround}" />
+                        <Label Grid.Row="4" Text="Display heading" /><Switch Grid.Row="4" Grid.Column="1" IsToggled="{Binding DisplayHeading}" />
+                        <Label Grid.Row="5" Text="Display navigation bearing" /><Switch Grid.Row="5" Grid.Column="1" IsToggled="{Binding DisplayNavigationBearing}" />
+                        <Label Grid.Row="6" Text="Display turn radius" /><Switch Grid.Row="6" Grid.Column="1" IsToggled="{Binding DisplayTurnRadius}" />
+                        <Label Grid.Row="7" Text="Display target" /><Switch Grid.Row="7" Grid.Column="1" IsToggled="{Binding DisplayTarget}" />
+                        <Label Grid.Row="8" Text="Display aircraft tooltip" /><Switch Grid.Row="8" Grid.Column="1" IsToggled="{Binding DisplayAircraftToolTip}" />
+                        <Label Grid.Row="9" Text="Aircraft line length" /><Entry Grid.Row="9" Grid.Column="1" WidthRequest="140" Text="{Binding AircraftLineLength}" Keyboard="Numeric" />
+                        <Label Grid.Row="10" Text="Show airports / ADS-B" /><HorizontalStackLayout Grid.Row="10" Grid.Column="1"><Switch IsToggled="{Binding ShowAirports}" /><Switch IsToggled="{Binding ShowAdsb}" /></HorizontalStackLayout>
+                        <Label Grid.Row="11" Text="Show no-fly zones / TFRs" /><HorizontalStackLayout Grid.Row="11" Grid.Column="1"><Switch IsToggled="{Binding ShowNoFlyZones}" /><Switch IsToggled="{Binding ShowTemporaryFlightRestrictions}" /></HorizontalStackLayout>
+                        <Label Grid.Row="12" Text="Map access mode" /><Picker Grid.Row="12" Grid.Column="1" WidthRequest="220" ItemsSource="{Binding MapAccessModes}" SelectedItem="{Binding MapAccessMode}" />
                     </Grid>
                 </VerticalStackLayout>
             </Border>

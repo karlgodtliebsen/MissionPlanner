@@ -162,6 +162,12 @@ public sealed class PlannerSettingsTests
         viewModel.ConnectionHost = "192.168.1.20";
         viewModel.ConnectionPort = 14551;
         viewModel.SelectedUnitSystem = UnitSystem.Aviation;
+        viewModel.DistanceUnit = "Feet";
+        viewModel.SpeedUnit = "Knots";
+        viewModel.TrackLength = 500;
+        viewModel.ShowAirports = false;
+        viewModel.DownloadParametersInBackground = false;
+        viewModel.LogDirectory = "logs/custom";
 
         await viewModel.SaveCommand.ExecuteAsync(null);
 
@@ -169,6 +175,12 @@ public sealed class PlannerSettingsTests
         service.Current.Connection.Host.Should().Be("192.168.1.20");
         service.Current.Connection.Port.Should().Be(14551);
         service.Current.Units.System.Should().Be(UnitSystem.Aviation);
+        service.Current.Legacy.DistanceUnit.Should().Be("Feet");
+        service.Current.Legacy.SpeedUnit.Should().Be("Knots");
+        service.Current.Legacy.TrackLength.Should().Be(500);
+        service.Current.Legacy.ShowAirports.Should().BeFalse();
+        service.Current.Legacy.DownloadParametersInBackground.Should().BeFalse();
+        service.Current.Logging.LogDirectory.Should().Be("logs/custom");
         applicationState.SelectedPort.Should().Be("14551");
         viewModel.StatusMessage.Should().Contain("saved");
     }

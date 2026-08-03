@@ -63,6 +63,13 @@ public sealed partial class PlannerTabViewModel : ObservableObject
     /// <summary>Gets available update channels.</summary>
     public IReadOnlyList<string> UpdateChannels { get; } = ["Stable", "Beta", "Development"];
 
+    public IReadOnlyList<string> DistanceUnits { get; } = ["Meters", "Feet"];
+    public IReadOnlyList<string> AltitudeUnits { get; } = ["Meters", "Feet"];
+    public IReadOnlyList<string> SpeedUnits { get; } = ["MetersPerSecond", "KilometersPerHour", "MilesPerHour", "Knots"];
+    public IReadOnlyList<string> SpeechSeverities { get; } = ["Emergency", "Alert", "Critical", "Error", "Warning", "Notice", "Info", "Debug"];
+    public IReadOnlyList<string> MapAccessModes { get; } = ["ServerOnly", "ServerAndCache", "CacheOnly"];
+    public IReadOnlyList<string> LayoutModes { get; } = ["Basic", "Advanced", "Custom"];
+
     /// <summary>Gets the selected unit system.</summary>
     [ObservableProperty]
     public partial UnitSystem SelectedUnitSystem { get; set; }
@@ -98,6 +105,8 @@ public sealed partial class PlannerTabViewModel : ObservableObject
     /// <summary>Gets the log retention period in days.</summary>
     [ObservableProperty]
     public partial int LogRetentionDays { get; set; }
+
+    [ObservableProperty] public partial string LogDirectory { get; set; } = string.Empty;
 
     /// <summary>Gets the default connection channel.</summary>
     [ObservableProperty]
@@ -162,6 +171,40 @@ public sealed partial class PlannerTabViewModel : ObservableObject
     /// <summary>Gets whether important telemetry warnings should be announced.</summary>
     [ObservableProperty]
     public partial bool AnnounceTelemetryWarnings { get; set; }
+
+    [ObservableProperty] public partial string DistanceUnit { get; set; } = "Meters";
+    [ObservableProperty] public partial string LayoutMode { get; set; } = "Advanced";
+    [ObservableProperty] public partial string AltitudeUnit { get; set; } = "Meters";
+    [ObservableProperty] public partial string SpeedUnit { get; set; } = "MetersPerSecond";
+    [ObservableProperty] public partial bool SpeechEnabled { get; set; }
+    [ObservableProperty] public partial string SpeechSeverity { get; set; } = "Warning";
+    [ObservableProperty] public partial int AttitudeRateHz { get; set; }
+    [ObservableProperty] public partial int PositionRateHz { get; set; }
+    [ObservableProperty] public partial int StatusRateHz { get; set; }
+    [ObservableProperty] public partial int RcRateHz { get; set; }
+    [ObservableProperty] public partial int SensorRateHz { get; set; }
+    [ObservableProperty] public partial bool ResetOnUsbConnect { get; set; }
+    [ObservableProperty] public partial bool DisableEsp32RtsReset { get; set; }
+    [ObservableProperty] public partial int TrackLength { get; set; }
+    [ObservableProperty] public partial bool ShowDistanceToHome { get; set; }
+    [ObservableProperty] public partial bool LoadWaypointsOnConnect { get; set; }
+    [ObservableProperty] public partial bool RotateMapToHeading { get; set; }
+    [ObservableProperty] public partial int GcsSystemId { get; set; }
+    [ObservableProperty] public partial bool DisplayCourseOverGround { get; set; }
+    [ObservableProperty] public partial bool DisplayHeading { get; set; }
+    [ObservableProperty] public partial bool DisplayNavigationBearing { get; set; }
+    [ObservableProperty] public partial bool DisplayTurnRadius { get; set; }
+    [ObservableProperty] public partial bool DisplayTarget { get; set; }
+    [ObservableProperty] public partial bool DisplayAircraftToolTip { get; set; }
+    [ObservableProperty] public partial int AircraftLineLength { get; set; }
+    [ObservableProperty] public partial bool ShowAirports { get; set; }
+    [ObservableProperty] public partial bool ShowAdsb { get; set; }
+    [ObservableProperty] public partial bool ShowNoFlyZones { get; set; }
+    [ObservableProperty] public partial bool ShowTemporaryFlightRestrictions { get; set; }
+    [ObservableProperty] public partial bool DownloadParametersInBackground { get; set; }
+    [ObservableProperty] public partial bool NoRcReceiver { get; set; }
+    [ObservableProperty] public partial bool SlowComputerMode { get; set; }
+    [ObservableProperty] public partial string MapAccessMode { get; set; } = "ServerAndCache";
 
     /// <summary>Gets whether an operation is running.</summary>
     [ObservableProperty]
@@ -331,6 +374,7 @@ public sealed partial class PlannerTabViewModel : ObservableObject
             SelectedTheme = settings.Appearance.Theme;
             SelectedLoggingLevel = settings.Logging.Level;
             LogRetentionDays = settings.Logging.RetentionDays;
+            LogDirectory = settings.Logging.LogDirectory;
             ConnectionChannel = settings.Connection.Channel;
             ConnectionHost = settings.Connection.Host;
             ConnectionPort = settings.Connection.Port;
@@ -347,6 +391,39 @@ public sealed partial class PlannerTabViewModel : ObservableObject
             ReduceMotion = settings.Accessibility.ReduceMotion;
             TextScale = settings.Accessibility.TextScale;
             AnnounceTelemetryWarnings = settings.Accessibility.AnnounceTelemetryWarnings;
+            DistanceUnit = settings.Legacy.DistanceUnit;
+            LayoutMode = settings.Legacy.LayoutMode;
+            AltitudeUnit = settings.Legacy.AltitudeUnit;
+            SpeedUnit = settings.Legacy.SpeedUnit;
+            SpeechEnabled = settings.Legacy.SpeechEnabled;
+            SpeechSeverity = settings.Legacy.SpeechSeverity;
+            AttitudeRateHz = settings.Legacy.AttitudeRateHz;
+            PositionRateHz = settings.Legacy.PositionRateHz;
+            StatusRateHz = settings.Legacy.StatusRateHz;
+            RcRateHz = settings.Legacy.RcRateHz;
+            SensorRateHz = settings.Legacy.SensorRateHz;
+            ResetOnUsbConnect = settings.Legacy.ResetOnUsbConnect;
+            DisableEsp32RtsReset = settings.Legacy.DisableEsp32RtsReset;
+            TrackLength = settings.Legacy.TrackLength;
+            ShowDistanceToHome = settings.Legacy.ShowDistanceToHome;
+            LoadWaypointsOnConnect = settings.Legacy.LoadWaypointsOnConnect;
+            RotateMapToHeading = settings.Legacy.RotateMapToHeading;
+            GcsSystemId = settings.Legacy.GcsSystemId;
+            DisplayCourseOverGround = settings.Legacy.DisplayCourseOverGround;
+            DisplayHeading = settings.Legacy.DisplayHeading;
+            DisplayNavigationBearing = settings.Legacy.DisplayNavigationBearing;
+            DisplayTurnRadius = settings.Legacy.DisplayTurnRadius;
+            DisplayTarget = settings.Legacy.DisplayTarget;
+            DisplayAircraftToolTip = settings.Legacy.DisplayAircraftToolTip;
+            AircraftLineLength = settings.Legacy.AircraftLineLength;
+            ShowAirports = settings.Legacy.ShowAirports;
+            ShowAdsb = settings.Legacy.ShowAdsb;
+            ShowNoFlyZones = settings.Legacy.ShowNoFlyZones;
+            ShowTemporaryFlightRestrictions = settings.Legacy.ShowTemporaryFlightRestrictions;
+            DownloadParametersInBackground = settings.Legacy.DownloadParametersInBackground;
+            NoRcReceiver = settings.Legacy.NoRcReceiver;
+            SlowComputerMode = settings.Legacy.SlowComputerMode;
+            MapAccessMode = settings.Legacy.MapAccessMode;
         }
         finally
         {
@@ -364,12 +441,30 @@ public sealed partial class PlannerTabViewModel : ObservableObject
             Map = new PlannerMapSettings { Provider = SelectedMapProvider, Style = SelectedMapStyle, DefaultZoom = DefaultMapZoom },
             Telemetry = new PlannerTelemetrySettings { DisplayRateHz = TelemetryDisplayRateHz, ChartHistorySeconds = ChartHistorySeconds },
             Appearance = new PlannerAppearanceSettings { Theme = SelectedTheme },
-            Logging = new PlannerLoggingSettings { Level = SelectedLoggingLevel, RetentionDays = LogRetentionDays },
+            Logging = new PlannerLoggingSettings { Level = SelectedLoggingLevel, RetentionDays = LogRetentionDays, LogDirectory = LogDirectory },
             Connection = new PlannerConnectionSettings { Channel = ConnectionChannel, Host = ConnectionHost, Port = ConnectionPort, BaudRate = ConnectionBaudRate },
             ParameterCache = new PlannerParameterCacheSettings { Policy = SelectedParameterCachePolicy, MaximumAgeMinutes = ParameterCacheMaximumAgeMinutes },
             Confirmations = new PlannerConfirmationSettings { ConfirmParameterWrites = ConfirmParameterWrites, ConfirmArmDisarm = ConfirmArmDisarm, ConfirmFirmwareChanges = ConfirmFirmwareChanges },
             Updates = new PlannerUpdateSettings { CheckAutomatically = CheckUpdatesAutomatically, CheckIntervalDays = UpdateCheckIntervalDays, Channel = UpdateChannel },
-            Accessibility = new PlannerAccessibilitySettings { HighContrastTelemetry = HighContrastTelemetry, ReduceMotion = ReduceMotion, TextScale = TextScale, AnnounceTelemetryWarnings = AnnounceTelemetryWarnings }
+            Accessibility = new PlannerAccessibilitySettings { HighContrastTelemetry = HighContrastTelemetry, ReduceMotion = ReduceMotion, TextScale = TextScale, AnnounceTelemetryWarnings = AnnounceTelemetryWarnings },
+            Legacy = new PlannerLegacySettings
+            {
+                LayoutMode = LayoutMode, DistanceUnit = DistanceUnit, AltitudeUnit = AltitudeUnit, SpeedUnit = SpeedUnit,
+                SpeechEnabled = SpeechEnabled, SpeechSeverity = SpeechSeverity,
+                AttitudeRateHz = AttitudeRateHz, PositionRateHz = PositionRateHz,
+                StatusRateHz = StatusRateHz, RcRateHz = RcRateHz, SensorRateHz = SensorRateHz,
+                ResetOnUsbConnect = ResetOnUsbConnect, DisableEsp32RtsReset = DisableEsp32RtsReset,
+                TrackLength = TrackLength, ShowDistanceToHome = ShowDistanceToHome,
+                LoadWaypointsOnConnect = LoadWaypointsOnConnect, RotateMapToHeading = RotateMapToHeading,
+                GcsSystemId = (byte)Math.Clamp(GcsSystemId, byte.MinValue, byte.MaxValue),
+                DisplayCourseOverGround = DisplayCourseOverGround, DisplayHeading = DisplayHeading,
+                DisplayNavigationBearing = DisplayNavigationBearing, DisplayTurnRadius = DisplayTurnRadius,
+                DisplayTarget = DisplayTarget, DisplayAircraftToolTip = DisplayAircraftToolTip,
+                AircraftLineLength = AircraftLineLength, ShowAirports = ShowAirports, ShowAdsb = ShowAdsb,
+                ShowNoFlyZones = ShowNoFlyZones, ShowTemporaryFlightRestrictions = ShowTemporaryFlightRestrictions,
+                DownloadParametersInBackground = DownloadParametersInBackground,
+                NoRcReceiver = NoRcReceiver, SlowComputerMode = SlowComputerMode, MapAccessMode = MapAccessMode
+            }
         };
     }
 

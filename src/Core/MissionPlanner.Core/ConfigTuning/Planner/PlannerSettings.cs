@@ -4,7 +4,7 @@
 public sealed record PlannerSettings
 {
     /// <summary>The current persisted settings schema.</summary>
-    public const int CurrentSchemaVersion = 2;
+    public const int CurrentSchemaVersion = 3;
 
     /// <summary>Gets the persisted schema version.</summary>
     public int SchemaVersion { get; init; } = CurrentSchemaVersion;
@@ -38,4 +38,7 @@ public sealed record PlannerSettings
 
     /// <summary>Gets accessibility settings.</summary>
     public PlannerAccessibilitySettings Accessibility { get; init; } = new();
+
+    /// <summary>Gets established MissionPlanner operational preferences.</summary>
+    public PlannerLegacySettings Legacy { get; init; } = new();
 }

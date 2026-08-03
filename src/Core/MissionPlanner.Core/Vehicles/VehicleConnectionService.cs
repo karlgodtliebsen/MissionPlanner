@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Models;
 using MissionPlanner.Core.Services.Abstractions;
@@ -22,6 +23,7 @@ public class VehicleConnectionService(
     IDateTimeProvider dateTimeProvider,
     IDomainFactory domainFactory,
     IVehicleRegistry vehicleRegistry,
+    IPlannerSettingsService plannerSettings,
     ILogger<VehicleConnectionService> logger)
     : IVehicleConnectionService
 {
@@ -431,6 +433,14 @@ public class VehicleConnectionService(
 
     private void StartParameterPreload(VehicleId vehicleId)
     {
+        if (!plannerSettings.Current.Legacy.DownloadParametersInBackground)
+        {
+            logger.LogDebug(
+                "Background parameter loading is disabled for {VehicleId}.",
+                vehicleId);
+            return;
+        }
+
         parameterPreloadCancellation?.Cancel();
         parameterPreloadCancellation?.Dispose();
 

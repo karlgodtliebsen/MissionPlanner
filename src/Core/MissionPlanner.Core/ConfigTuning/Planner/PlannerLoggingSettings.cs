@@ -8,4 +8,7 @@ public sealed record PlannerLoggingSettings
 
     /// <summary>Gets the log retention period in days.</summary>
     public int RetentionDays { get; init; } = 7;
+
+    /// <summary>Gets the optional custom log directory.</summary>
+    public string LogDirectory { get; init; } = string.Empty;
 }

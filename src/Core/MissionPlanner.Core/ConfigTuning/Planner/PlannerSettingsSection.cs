@@ -34,5 +34,8 @@ public enum PlannerSettingsSection
     Updates,
 
     /// <summary>Accessibility behavior.</summary>
-    Accessibility
+    Accessibility,
+
+    /// <summary>Established MissionPlanner operational preferences.</summary>
+    Legacy
 }
