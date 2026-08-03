@@ -5,6 +5,7 @@ using MissionPlanner.Firmware.Catalog;
 using MissionPlanner.Firmware.Images;
 using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Protocol;
+using MissionPlanner.Firmware.Discovery;
 
 namespace MissionPlanner.Firmware;
 
@@ -36,6 +37,9 @@ public static class FirmwareServiceCollectionExtensions
             .Validate(value => value.BootloaderEraseTimeout > TimeSpan.Zero, "BootloaderEraseTimeout must be positive.")
             .Validate(value => value.BootloaderSyncAttempts > 0, "BootloaderSyncAttempts must be positive.")
             .Validate(value => value.BootloaderRetryDelay >= TimeSpan.Zero, "BootloaderRetryDelay cannot be negative.")
+            .Validate(value => value.BootloaderDiscoveryTimeout > TimeSpan.Zero, "BootloaderDiscoveryTimeout must be positive.")
+            .Validate(value => value.BootloaderPortOpenTimeout > TimeSpan.Zero, "BootloaderPortOpenTimeout must be positive.")
+            .Validate(value => value.BootloaderBaudRate > 0, "BootloaderBaudRate must be positive.")
             .ValidateOnStart();
 
         services.TryAddSingleton<IFirmwareOperationCoordinator, FirmwareOperationCoordinator>();
@@ -52,6 +56,8 @@ public static class FirmwareServiceCollectionExtensions
                 : new SystemSerialDeviceCatalog(serviceProvider.GetRequiredService<TimeProvider>()));
         services.TryAddSingleton<IFirmwareDeviceMonitor, PollingFirmwareDeviceMonitor>();
         services.TryAddSingleton<IFirmwareSerialPortFactory, SystemFirmwareSerialPortFactory>();
+        services.TryAddSingleton<IArduPilotBootloaderClientFactory, ArduPilotBootloaderClientFactory>();
+        services.TryAddSingleton<IBootloaderDiscoveryService, BootloaderDiscoveryService>();
 
         return services;
     }

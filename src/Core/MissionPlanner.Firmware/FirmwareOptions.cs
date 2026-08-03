@@ -29,4 +29,13 @@ public sealed class FirmwareOptions
 
     /// <summary>Gets or sets the named settle delay between synchronization attempts.</summary>
     public TimeSpan BootloaderRetryDelay { get; set; } = TimeSpan.FromMilliseconds(40);
+
+    /// <summary>Gets or sets the overall bootloader discovery timeout.</summary>
+    public TimeSpan BootloaderDiscoveryTimeout { get; set; } = TimeSpan.FromSeconds(30);
+
+    /// <summary>Gets or sets the maximum time allowed to open one candidate port.</summary>
+    public TimeSpan BootloaderPortOpenTimeout { get; set; } = TimeSpan.FromSeconds(2);
+
+    /// <summary>Gets or sets the baud rate used by modern bootloaders.</summary>
+    public int BootloaderBaudRate { get; set; } = 115200;
 }
