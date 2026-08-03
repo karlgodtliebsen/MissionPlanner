@@ -25,7 +25,7 @@
                     <Picker ItemsSource="{Binding Channels}" SelectedItem="{Binding SelectedChannel}" WidthRequest="180" />
                     <Button Text="Refresh catalogue" Command="{Binding RefreshCatalogCommand}" />
                     <Button Text="All Options" Command="{Binding ShowAllOptionsCommand}" />
-                    <Button Text="Load Custom Firmware" IsEnabled="False" ToolTipProperties.Text="Added in the next firmware task" />
+                    <Button Text="Load Custom Firmware" Command="{Binding LoadCustomFirmwareCommand}" />
                 </HorizontalStackLayout>
 
                 <CollectionView ItemsSource="{Binding FirmwareChoices}" SelectionMode="None" EmptyView="No releases are available for this channel.">
@@ -48,6 +48,18 @@
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                 </CollectionView>
+
+                <Border IsVisible="{Binding HasCustomFirmware}" Padding="16" StrokeShape="RoundRectangle 8">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Custom firmware" FontAttributes="Bold" />
+                        <Label Text="{Binding CustomFirmwareName}" />
+                        <Label Text="{Binding CustomFirmwareDescription}" />
+                        <Label Text="{Binding CustomFirmwarePlatform, StringFormat='Platform: {0}'}" />
+                        <Label Text="{Binding CustomFirmwareBoardId, StringFormat='Board ID: {0}'}" />
+                        <Label Text="{Binding CustomFirmwareImageSize, StringFormat='Image size: {0:N0} bytes'}" />
+                        <Label Text="{Binding CustomFirmwareBuild, StringFormat='Build: {0}'}" />
+                    </VerticalStackLayout>
+                </Border>
 
                 <Border Padding="16" StrokeShape="RoundRectangle 8">
                     <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">

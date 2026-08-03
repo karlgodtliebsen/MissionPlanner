@@ -10,6 +10,7 @@ using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Discovery;
 using MissionPlanner.Firmware.Entry;
 using MissionPlanner.Firmware.Installation;
+using MissionPlanner.Firmware.Images;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Presentation;
 
@@ -49,6 +50,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     private readonly IEmbeddedBootloaderUpdateService bootloaderUpdateService;
     private readonly IFirmwareSerialDeviceCatalog deviceCatalog;
     private readonly IFirmwarePageModeResolver modeResolver;
+    private readonly IFirmwarePackageReader packageReader;
     private readonly IActiveVehicleContext activeVehicle;
     private readonly ILogger<InstallFirmwareViewModel> logger;
     private readonly IUserConfirmationService confirmation;
@@ -63,6 +65,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         IEmbeddedBootloaderUpdateService bootloaderUpdateService,
         IFirmwareSerialDeviceCatalog deviceCatalog,
         IFirmwarePageModeResolver modeResolver,
+        IFirmwarePackageReader packageReader,
         IActiveVehicleContext activeVehicle,
         IUserConfirmationService confirmation,
         IDispatcher dispatcher,
@@ -73,6 +76,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         this.bootloaderUpdateService = bootloaderUpdateService;
         this.deviceCatalog = deviceCatalog;
         this.modeResolver = modeResolver;
+        this.packageReader = packageReader;
         this.activeVehicle = activeVehicle;
         this.confirmation = confirmation;
         this.dispatcher = dispatcher;
@@ -92,6 +96,15 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
 
     [ObservableProperty] public partial FirmwareReleaseChannel SelectedChannel { get; set; } = FirmwareReleaseChannel.Stable;
     [ObservableProperty] public partial FirmwareCatalogItemViewModel? SelectedFirmware { get; set; }
+    [ObservableProperty] public partial ApjFirmwarePackage? CustomPackage { get; private set; }
+    [ObservableProperty] public partial string? CustomFirmwareName { get; private set; }
+    [ObservableProperty] public partial string? CustomFirmwareDescription { get; private set; }
+    [ObservableProperty] public partial string? CustomFirmwarePlatform { get; private set; }
+    [ObservableProperty] public partial string? CustomFirmwareBuild { get; private set; }
+    [ObservableProperty] public partial int CustomFirmwareBoardId { get; private set; }
+    [ObservableProperty] public partial long CustomFirmwareImageSize { get; private set; }
+    /// <summary>Gets whether parsed custom metadata is available.</summary>
+    public bool HasCustomFirmware => CustomPackage is not null;
     [ObservableProperty] public partial bool IsConnectedMode { get; private set; }
     [ObservableProperty] public partial bool IsDisconnectedMode { get; private set; }
     [ObservableProperty] public partial bool IsUnsupportedMode { get; private set; }
@@ -136,21 +149,65 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     private Task ShowAllOptionsAsync() => RefreshAsync(true, lifetime?.Token ?? CancellationToken.None, true);
 
     [RelayCommand]
-    private void SelectFirmware(FirmwareCatalogItemViewModel item) => SelectedFirmware = item;
+    private void SelectFirmware(FirmwareCatalogItemViewModel item)
+    {
+        SelectedFirmware = item;
+        CustomPackage = null;
+        OnPropertyChanged(nameof(HasCustomFirmware));
+        InstallCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand]
+    private async Task LoadCustomFirmwareAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var file = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Select ArduPilot firmware (.apj or .px4)" });
+            if (file is null) return;
+            var extension = Path.GetExtension(file.FileName);
+            if (extension.Equals(".hex", StringComparison.OrdinalIgnoreCase))
+                throw new NotSupportedException(".hex firmware requires a future DFU/legacy workflow. Select a GCS-loadable .apj or .px4 package.");
+            if (!extension.Equals(".apj", StringComparison.OrdinalIgnoreCase) && !extension.Equals(".px4", StringComparison.OrdinalIgnoreCase))
+                throw new NotSupportedException("Only .apj and .px4 firmware packages are supported by the modern bootloader workflow.");
+
+            await using var stream = await file.OpenReadAsync();
+            var package = await packageReader.ReadAsync(stream, cancellationToken);
+            CustomPackage = package;
+            CustomFirmwareName = file.FileName;
+            CustomFirmwareDescription = package.Description ?? "Custom ArduPilot firmware";
+            CustomFirmwarePlatform = package.Summary ?? "Platform declared by board ID";
+            CustomFirmwareBuild = package.Version ?? package.GitIdentity ?? "Unknown build";
+            CustomFirmwareBoardId = package.BoardId;
+            CustomFirmwareImageSize = package.Image.Length;
+            SelectedFirmware = null;
+            OnPropertyChanged(nameof(HasCustomFirmware));
+            InstallCommand.NotifyCanExecuteChanged();
+            StatusMessage = "Custom firmware parsed and validated. Connect the target in bootloader mode to install.";
+        }
+        catch (Exception exception)
+        {
+            logger.LogWarning(exception, "Custom firmware selection failed.");
+            CustomPackage = null;
+            OnPropertyChanged(nameof(HasCustomFirmware));
+            InstallCommand.NotifyCanExecuteChanged();
+            StatusMessage = exception.Message;
+        }
+    }
 
     [RelayCommand(CanExecute = nameof(CanStartInstall), AllowConcurrentExecutions = false)]
     private async Task InstallAsync(CancellationToken cancellationToken)
     {
-        if (SelectedFirmware is null || Interlocked.CompareExchange(ref operationRunning, 1, 0) != 0) return;
+        if ((SelectedFirmware is null && CustomPackage is null) || Interlocked.CompareExchange(ref operationRunning, 1, 0) != 0) return;
         try
         {
             SetOperation(true, FirmwareOperationState.Downloading);
-            var target = SelectedFirmware.Entry.Target;
+            var target = SelectedFirmware?.Entry.Target;
             var request = new FirmwareInstallationRequest(
                 new BootloaderEntryContext(new BootloaderDiscoveryRequest(
-                    ExpectedUsbIdentifiers: target.UsbIdentifiers,
-                    BootloaderHints: target.BootloaderNames)),
-                SelectedFirmware.Entry.Artifact);
+                    ExpectedUsbIdentifiers: target?.UsbIdentifiers,
+                    BootloaderHints: target?.BootloaderNames)),
+                SelectedFirmware?.Entry.Artifact,
+                CustomPackage);
             var progress = new Progress<FirmwareProgress>(UpdateProgress);
             var result = await installationService.InstallAsync(request, progress, cancellationToken);
             StatusMessage = result.State == FirmwareOperationState.Completed ? "Firmware installation completed" : $"Firmware installation {result.State}";
@@ -167,7 +224,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         }
     }
 
-    private bool CanStartInstall() => CanInstall && SelectedFirmware is not null && !IsOperationInProgress;
+    private bool CanStartInstall() => CanInstall && (SelectedFirmware is not null || CustomPackage is not null) && !IsOperationInProgress;
 
     [RelayCommand(CanExecute = nameof(CanStartBootloaderUpdate), AllowConcurrentExecutions = false)]
     private async Task UpdateBootloaderAsync(CancellationToken cancellationToken)
@@ -218,6 +275,8 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             FirmwareChoices.Clear();
             foreach (var choice in choices) FirmwareChoices.Add(choice);
             SelectedFirmware = choices.FirstOrDefault();
+            CustomPackage = null;
+            OnPropertyChanged(nameof(HasCustomFirmware));
 
             var devices = await deviceCatalog.GetDevicesAsync(cancellationToken);
             Devices.Clear();
