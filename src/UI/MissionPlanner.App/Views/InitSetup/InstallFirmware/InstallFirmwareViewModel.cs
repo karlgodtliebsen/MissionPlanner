@@ -115,6 +115,9 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     [ObservableProperty] public partial bool CanInstall { get; private set; }
     [ObservableProperty] public partial string StatusMessage { get; private set; } = "Ready";
     [ObservableProperty] public partial string DeviceStatus { get; private set; } = "No flight controller detected";
+    [ObservableProperty] public partial string? LastDiagnosticReport { get; private set; }
+    /// <summary>Gets whether a terminal diagnostic report can be copied.</summary>
+    public bool HasDiagnosticReport => !string.IsNullOrWhiteSpace(LastDiagnosticReport);
 
     /// <summary>Starts observing connection state and refreshes disconnected data.</summary>
     public async Task ActivateAsync()
@@ -210,6 +213,8 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
                 CustomPackage);
             var progress = new Progress<FirmwareProgress>(UpdateProgress);
             var result = await installationService.InstallAsync(request, progress, cancellationToken);
+            LastDiagnosticReport = result.DiagnosticReport?.CreateReport();
+            OnPropertyChanged(nameof(HasDiagnosticReport));
             StatusMessage = result.State == FirmwareOperationState.Completed
                 ? result.ApplicationDevice is null
                     ? "Firmware installation completed; reconnect was not detected. Reconnect the flight controller manually."
@@ -229,6 +234,11 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     }
 
     private bool CanStartInstall() => CanInstall && (SelectedFirmware is not null || CustomPackage is not null) && !IsOperationInProgress;
+
+    [RelayCommand]
+    private Task CopyDiagnosticReportAsync() => string.IsNullOrWhiteSpace(LastDiagnosticReport)
+        ? Task.CompletedTask
+        : Clipboard.Default.SetTextAsync(LastDiagnosticReport);
 
     [RelayCommand(CanExecute = nameof(CanStartBootloaderUpdate), AllowConcurrentExecutions = false)]
     private async Task UpdateBootloaderAsync(CancellationToken cancellationToken)

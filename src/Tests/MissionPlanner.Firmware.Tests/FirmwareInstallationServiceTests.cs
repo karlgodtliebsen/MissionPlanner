@@ -110,7 +110,8 @@ public sealed class FirmwareInstallationServiceTests
                 new UnusedDiscovery(),
                 new FirmwareCompatibilityService(),
                 Interaction,
-                new FixedApplicationDiscovery(applicationDetected ? new SerialDeviceDescriptor("COM11", "application") : null));
+                new FixedApplicationDiscovery(applicationDetected ? new SerialDeviceDescriptor("COM11", "application") : null),
+                NullLogger<FirmwareInstallationService>.Instance);
             Request = new FirmwareInstallationRequest(
                 new BootloaderEntryContext(new BootloaderDiscoveryRequest()),
                 Package: new ApjFirmwarePackage(50, new byte[] { 1, 2, 3, 4 }, 16));

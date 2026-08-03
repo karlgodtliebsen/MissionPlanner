@@ -86,6 +86,11 @@
                 </VerticalStackLayout>
             </Border>
             <Label Text="{Binding StatusMessage}" />
+            <VerticalStackLayout IsVisible="{Binding HasDiagnosticReport}" Spacing="6">
+                <Label Text="Diagnostic report" FontAttributes="Bold" />
+                <Editor Text="{Binding LastDiagnosticReport}" IsReadOnly="True" AutoSize="TextChanges" />
+                <Button Text="Copy diagnostic report" Command="{Binding CopyDiagnosticReportCommand}" HorizontalOptions="Start" />
+            </VerticalStackLayout>
         </VerticalStackLayout>
     </ScrollView>
 </pages:UraniumContentPage>

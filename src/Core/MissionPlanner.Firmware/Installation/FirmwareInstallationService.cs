@@ -6,6 +6,8 @@ using MissionPlanner.Firmware.Exceptions;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Operations;
 using MissionPlanner.Firmware.Recovery;
+using MissionPlanner.Firmware.Diagnostics;
+using Microsoft.Extensions.Logging;
 
 namespace MissionPlanner.Firmware.Installation;
 
@@ -18,7 +20,8 @@ public sealed class FirmwareInstallationService(
     IBootloaderDiscoveryService discovery,
     IFirmwareCompatibilityService compatibility,
     IFirmwareUserInteraction interaction,
-    IFirmwareApplicationDiscoveryService applicationDiscovery) : IFirmwareInstallationService
+    IFirmwareApplicationDiscoveryService applicationDiscovery,
+    ILogger<FirmwareInstallationService> logger) : IFirmwareInstallationService
 {
     /// <inheritdoc />
     public async Task<FirmwareOperationResult> InstallAsync(
@@ -28,7 +31,14 @@ public sealed class FirmwareInstallationService(
     {
         ArgumentNullException.ThrowIfNull(request);
         var operation = operationCoordinator.Begin(FirmwareOperationKind.InstallApplicationFirmware);
+        var startedAt = DateTimeOffset.UtcNow;
         var stage = FirmwareOperationState.Idle;
+        ApjFirmwarePackage? diagnosticPackage = request.Package;
+        string? firmwareSource = request.Artifact?.DownloadUri.AbsoluteUri ?? (request.Package is null ? null : "custom");
+        BootloaderIdentity? diagnosticBootloader = null;
+        SerialDeviceDescriptor? diagnosticBootloaderDevice = null;
+        string? verificationResult = null;
+        using var logScope = logger.BeginScope(new Dictionary<string, object?> { ["FirmwareOperationId"] = operation.OperationId });
         try
         {
             if (connectionGateway.IsVehicleConnected)
@@ -44,6 +54,7 @@ public sealed class FirmwareInstallationService(
                 Transition(FirmwareOperationState.Downloading, "installation.downloading");
                 var downloaded = await downloader.DownloadAsync(request.Artifact, progress, cancellationToken).ConfigureAwait(false);
                 package = downloaded.Package;
+                diagnosticPackage = package;
                 source = downloaded.Metadata.SourceUri.AbsoluteUri;
             }
             else if (package is not null)
@@ -68,6 +79,8 @@ public sealed class FirmwareInstallationService(
             }
 
             var bootloaderDevice = found.Device;
+            diagnosticBootloader = found.Identity;
+            diagnosticBootloaderDevice = found.Device;
             await using (found.ConfigureAwait(false))
             {
                 Transition(FirmwareOperationState.IdentifyingBootloader, "installation.bootloader-identified");
@@ -89,6 +102,7 @@ public sealed class FirmwareInstallationService(
                 await found.Client.ProgramAsync(package, progress, cancellationToken).ConfigureAwait(false);
                 Transition(FirmwareOperationState.Verifying, "installation.verifying");
                 var verification = await found.Client.VerifyAsync(package, cancellationToken).ConfigureAwait(false);
+                verificationResult = verification.Succeeded ? "Succeeded" : $"Failed (expected 0x{verification.ExpectedChecksum:X8}, actual 0x{verification.ActualChecksum:X8})";
                 if (!verification.Succeeded)
                     throw new FirmwareVerificationException($"Expected checksum 0x{verification.ExpectedChecksum:X8}; received 0x{verification.ActualChecksum:X8}.");
                 Transition(FirmwareOperationState.Rebooting, "installation.rebooting");
@@ -105,7 +119,8 @@ public sealed class FirmwareInstallationService(
                 operation.Kind,
                 FirmwareOperationState.Completed,
                 ApplicationDevice: applicationDevice,
-                ReconnectSuggested: applicationDevice is not null);
+                ReconnectSuggested: applicationDevice is not null,
+                DiagnosticReport: CreateDiagnostic(FirmwareOperationState.Completed, applicationDevice));
         }
         catch (FirmwareConnectionConflictException)
         {
@@ -119,15 +134,18 @@ public sealed class FirmwareInstallationService(
             else
                 Transition(FirmwareOperationState.Failed, "installation.cancelled-after-destructive-stage");
             return new FirmwareOperationResult(operation.OperationId, operation.Kind, operation.State,
-                new FirmwareOperationFailure("installation.cancelled", failureStage, exception.Message, exception.GetType().Name));
+                new FirmwareOperationFailure("installation.cancelled", failureStage, exception.Message, exception.GetType().Name),
+                DiagnosticReport: CreateDiagnostic(operation.State, failureCode: "installation.cancelled"));
         }
         catch (Exception exception)
         {
             var failureStage = stage;
             if (operation.State is not (FirmwareOperationState.Completed or FirmwareOperationState.Cancelled or FirmwareOperationState.Failed))
                 Transition(FirmwareOperationState.Failed, FailureCode(exception));
+            logger.LogError(exception, "Firmware operation {OperationId} failed in state {FailureStage} with {FailureCode}.", operation.OperationId, failureStage, FailureCode(exception));
             return new FirmwareOperationResult(operation.OperationId, operation.Kind, operation.State,
-                new FirmwareOperationFailure(FailureCode(exception), failureStage, exception.Message, exception.GetType().Name));
+                new FirmwareOperationFailure(FailureCode(exception), failureStage, exception.Message, exception.GetType().Name),
+                DiagnosticReport: CreateDiagnostic(operation.State, failureCode: FailureCode(exception)));
         }
         finally
         {
@@ -138,8 +156,27 @@ public sealed class FirmwareInstallationService(
             stage = state;
             var report = new FirmwareProgress(state, null, code);
             operation.Transition(report);
+            logger.LogInformation("Firmware operation {OperationId} entered {State} ({MessageCode}).", operation.OperationId, state, code);
             progress?.Report(report);
         }
+
+        FirmwareDiagnosticReport CreateDiagnostic(
+            FirmwareOperationState resultState,
+            SerialDeviceDescriptor? applicationDevice = null,
+            string? failureCode = null) => new(
+                operation.OperationId,
+                resultState,
+                firmwareSource,
+                diagnosticPackage?.BoardId,
+                diagnosticBootloader?.BoardId,
+                diagnosticBootloader?.BootloaderRevision,
+                request.EntryContext.ApplicationDevice?.StableIdentity ?? request.EntryContext.ApplicationDevice?.PortName,
+                diagnosticBootloaderDevice?.StableIdentity ?? diagnosticBootloaderDevice?.PortName,
+                applicationDevice?.StableIdentity ?? applicationDevice?.PortName,
+                diagnosticPackage?.Image.Length,
+                verificationResult,
+                failureCode,
+                DateTimeOffset.UtcNow - startedAt);
     }
 
     private static string FailureCode(Exception exception) => exception switch

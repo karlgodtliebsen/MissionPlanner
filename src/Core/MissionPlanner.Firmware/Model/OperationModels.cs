@@ -1,3 +1,5 @@
+using MissionPlanner.Firmware.Diagnostics;
+
 namespace MissionPlanner.Firmware.Model;
 
 /// <summary>Represents a compatibility decision with a stable reason code.</summary>
@@ -63,4 +65,5 @@ public sealed record FirmwareOperationResult(
     FirmwareOperationState State,
     FirmwareOperationFailure? Failure = null,
     SerialDeviceDescriptor? ApplicationDevice = null,
-    bool ReconnectSuggested = false);
+    bool ReconnectSuggested = false,
+    FirmwareDiagnosticReport? DiagnosticReport = null);
