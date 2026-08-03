@@ -83,7 +83,6 @@
                     SelectionMemberPath="IsSelected"
                     SelectionCommandMemberPath="SelectionChangedCommand" />
 
-
                 <material:DataGridColumn Width="2*" Title="Parameter">
                     <material:DataGridColumn.CellItemTemplate>
                         <DataTemplate x:DataType="tabs:ParameterComparisonItemViewModel">

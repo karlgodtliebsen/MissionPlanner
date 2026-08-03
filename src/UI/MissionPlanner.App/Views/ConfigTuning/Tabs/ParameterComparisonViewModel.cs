@@ -42,6 +42,9 @@ public partial class ParameterComparisonViewModel : ObservableObject
     /// <summary>Gets the currently filtered comparison rows.</summary>
     public ObservableRangeCollection<ParameterComparisonItemViewModel> Items { get; } = [];
 
+    /// <summary>
+    /// Gets the currently selected comparison rows.
+    /// </summary>
     public ObservableCollection<ParameterComparisonItemViewModel> SelectedItems { get; set; } = [];
 
     /// <summary>Gets the available comparison status filters.</summary>
@@ -87,6 +90,7 @@ public partial class ParameterComparisonViewModel : ObservableObject
     [RelayCommand]
     private void SelectAllSafeDifferences()
     {
+        SelectedItems.Clear();
         foreach (var row in allRows)
         {
             row.IsSelected = row.CanStage;
@@ -101,7 +105,7 @@ public partial class ParameterComparisonViewModel : ObservableObject
             return;
         }
 
-        var selected = allRows.Where(row => row.IsSelected).Select(row => row.Name).ToArray();
+        var selected = SelectedItems.Select(row => row.Name).ToArray();
         var staged = comparisons.Stage(comparisonResult, editSession, selected);
         Staged?.Invoke(this, staged.Count);
     }
