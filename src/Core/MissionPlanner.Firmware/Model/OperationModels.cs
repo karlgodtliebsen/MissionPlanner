@@ -61,4 +61,6 @@ public sealed record FirmwareOperationResult(
     Guid OperationId,
     FirmwareOperationKind Kind,
     FirmwareOperationState State,
-    FirmwareOperationFailure? Failure = null);
+    FirmwareOperationFailure? Failure = null,
+    SerialDeviceDescriptor? ApplicationDevice = null,
+    bool ReconnectSuggested = false);

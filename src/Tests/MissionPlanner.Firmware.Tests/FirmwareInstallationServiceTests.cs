@@ -9,6 +9,7 @@ using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Operations;
 using MissionPlanner.Firmware.Protocol;
+using MissionPlanner.Firmware.Recovery;
 
 namespace MissionPlanner.Firmware.Tests;
 
@@ -25,7 +26,9 @@ public sealed class FirmwareInstallationServiceTests
         result.Failure.Should().BeNull();
         fixture.Client.Calls.Should().Equal("erase", "program", "verify", "reboot", "dispose");
         fixture.Interaction.ConfirmCalls.Should().Be(1);
-        fixture.Interaction.ManualCalls.Should().Be(1);
+        fixture.Interaction.ManualCalls.Should().Be(0);
+        result.ApplicationDevice!.PortName.Should().Be("COM11");
+        result.ReconnectSuggested.Should().BeTrue();
     }
 
     [Fact]
@@ -79,9 +82,21 @@ public sealed class FirmwareInstallationServiceTests
         fixture.Coordinator.Begin(FirmwareOperationKind.InstallApplicationFirmware).RequestCancellation().Should().BeTrue();
     }
 
+    [Fact]
+    public async Task MissingReturningApplicationDoesNotTurnSuccessfulFlashIntoFailure()
+    {
+        var fixture = new Fixture(applicationDetected: false);
+
+        var result = await fixture.Service.InstallAsync(fixture.Request, cancellationToken: TestContext.Current.CancellationToken);
+
+        result.State.Should().Be(FirmwareOperationState.Completed);
+        result.ApplicationDevice.Should().BeNull();
+        result.ReconnectSuggested.Should().BeFalse();
+    }
+
     private sealed class Fixture
     {
-        public Fixture(bool connected = false, bool confirm = true, bool verificationSucceeds = true, BootloaderIdentity? bootloader = null)
+        public Fixture(bool connected = false, bool confirm = true, bool verificationSucceeds = true, BootloaderIdentity? bootloader = null, bool applicationDetected = true)
         {
             Coordinator = new FirmwareOperationCoordinator(NullLogger<FirmwareOperationCoordinator>.Instance);
             Client = new FakeClient(verificationSucceeds);
@@ -94,7 +109,8 @@ public sealed class FirmwareInstallationServiceTests
                 new FixedEntry(found),
                 new UnusedDiscovery(),
                 new FirmwareCompatibilityService(),
-                Interaction);
+                Interaction,
+                new FixedApplicationDiscovery(applicationDetected ? new SerialDeviceDescriptor("COM11", "application") : null));
             Request = new FirmwareInstallationRequest(
                 new BootloaderEntryContext(new BootloaderDiscoveryRequest()),
                 Package: new ApjFirmwarePackage(50, new byte[] { 1, 2, 3, 4 }, 16));
@@ -131,6 +147,11 @@ public sealed class FirmwareInstallationServiceTests
     private sealed class UnusedDownloader : IFirmwareArtifactDownloader
     {
         public Task<DownloadedFirmwareArtifact> DownloadAsync(FirmwareArtifact artifact, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default) => throw new InvalidOperationException("Downloader should not be called.");
+    }
+    private sealed class FixedApplicationDiscovery(SerialDeviceDescriptor? device) : IFirmwareApplicationDiscoveryService
+    {
+        public Task<SerialDeviceDescriptor?> FindAsync(FirmwareApplicationDiscoveryRequest request, CancellationToken cancellationToken = default) =>
+            Task.FromResult(device);
     }
     private sealed class FakeClient(bool verificationSucceeds) : IArduPilotBootloaderClient
     {

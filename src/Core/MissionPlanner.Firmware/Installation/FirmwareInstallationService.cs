@@ -5,6 +5,7 @@ using MissionPlanner.Firmware.Entry;
 using MissionPlanner.Firmware.Exceptions;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Operations;
+using MissionPlanner.Firmware.Recovery;
 
 namespace MissionPlanner.Firmware.Installation;
 
@@ -16,7 +17,8 @@ public sealed class FirmwareInstallationService(
     IBootloaderEntryService entryService,
     IBootloaderDiscoveryService discovery,
     IFirmwareCompatibilityService compatibility,
-    IFirmwareUserInteraction interaction) : IFirmwareInstallationService
+    IFirmwareUserInteraction interaction,
+    IFirmwareApplicationDiscoveryService applicationDiscovery) : IFirmwareInstallationService
 {
     /// <inheritdoc />
     public async Task<FirmwareOperationResult> InstallAsync(
@@ -65,6 +67,7 @@ public sealed class FirmwareInstallationService(
                 found = await discovery.FindAsync(request.EntryContext.DiscoveryRequest, progress, cancellationToken).ConfigureAwait(false);
             }
 
+            var bootloaderDevice = found.Device;
             await using (found.ConfigureAwait(false))
             {
                 Transition(FirmwareOperationState.IdentifyingBootloader, "installation.bootloader-identified");
@@ -93,9 +96,16 @@ public sealed class FirmwareInstallationService(
             }
 
             Transition(FirmwareOperationState.WaitingForApplication, "installation.waiting-for-application");
-            await interaction.AcknowledgeManualActionAsync(new FirmwareManualAction("installation.reconnect-after-reboot"), cancellationToken).ConfigureAwait(false);
+            var applicationDevice = await applicationDiscovery.FindAsync(
+                new FirmwareApplicationDiscoveryRequest(bootloaderDevice, request.EntryContext.ApplicationDevice),
+                cancellationToken).ConfigureAwait(false);
             Transition(FirmwareOperationState.Completed, "installation.completed");
-            return new FirmwareOperationResult(operation.OperationId, operation.Kind, FirmwareOperationState.Completed);
+            return new FirmwareOperationResult(
+                operation.OperationId,
+                operation.Kind,
+                FirmwareOperationState.Completed,
+                ApplicationDevice: applicationDevice,
+                ReconnectSuggested: applicationDevice is not null);
         }
         catch (FirmwareConnectionConflictException)
         {

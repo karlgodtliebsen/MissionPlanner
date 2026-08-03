@@ -210,7 +210,11 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
                 CustomPackage);
             var progress = new Progress<FirmwareProgress>(UpdateProgress);
             var result = await installationService.InstallAsync(request, progress, cancellationToken);
-            StatusMessage = result.State == FirmwareOperationState.Completed ? "Firmware installation completed" : $"Firmware installation {result.State}";
+            StatusMessage = result.State == FirmwareOperationState.Completed
+                ? result.ApplicationDevice is null
+                    ? "Firmware installation completed; reconnect was not detected. Reconnect the flight controller manually."
+                    : $"Firmware installation completed. ArduPilot returned on {result.ApplicationDevice.PortName}; reconnect is available."
+                : $"Firmware installation {result.State}";
         }
         catch (Exception exception)
         {
