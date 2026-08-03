@@ -120,8 +120,10 @@ public partial class VirtualizedDataGrid : Border
     protected ScrollView RowsView => rowsView;
 
     /// <summary>Creates an unhosted row presenter for derived controls and tests.</summary>
-    protected Grid CreateRowPresenter() =>
-        new VirtualizedDataGridRowPresenter(this);
+    protected Grid CreateRowPresenter()
+    {
+        return new VirtualizedDataGridRowPresenter(this);
+    }
 
     /// <summary>Gets the number of rows currently realized in the viewport.</summary>
     protected int RealizedRowCount => rowsView.RealizedCount;
@@ -130,11 +132,16 @@ public partial class VirtualizedDataGrid : Border
     protected double RowsExtentHeight => rowsView.ExtentHeight;
 
     /// <summary>Forces an immediate viewport calculation.</summary>
-    protected void UpdateRowsViewport() => rowsView.UpdateViewportNow();
+    protected void UpdateRowsViewport()
+    {
+        rowsView.UpdateViewportNow();
+    }
 
     /// <summary>Calculates a viewport for an explicit vertical offset.</summary>
-    protected void UpdateRowsViewport(double offset, double viewportHeight) =>
+    protected void UpdateRowsViewport(double offset, double viewportHeight)
+    {
         rowsView.UpdateViewport(offset, viewportHeight);
+    }
 
     /// <summary>Gets the logical row indices currently represented by the pool.</summary>
     protected IReadOnlyCollection<int> RealizedRowIndices => rowsView.RealizedIndices;
@@ -294,8 +301,10 @@ public partial class VirtualizedDataGrid : Border
     /// <summary>Reports the measured height of a realized logical row.</summary>
     /// <param name="index">The row index in the displayed source.</param>
     /// <param name="height">The measured row height.</param>
-    protected internal void ReportRowHeight(int index, double height) =>
+    protected internal void ReportRowHeight(int index, double height)
+    {
         rowsView.ReportMeasuredHeight(index, height);
+    }
 
     /// <summary>
     /// Returns cell padding compatible with UraniumUI's selection column. The
@@ -787,6 +796,7 @@ public partial class VirtualizedDataGrid : Border
                         widths[index],
                         NormalizeWidth(AutoColumnWidth));
                 }
+
                 fixedWidth += widths[index];
             }
             else
@@ -844,19 +854,18 @@ public partial class VirtualizedDataGrid : Border
                     ? WidthRequest
                     : 0;
 
-        if (!double.IsFinite(width) || width <= 0)
-        {
-            return 0;
-        }
-
-        return NormalizeWidth(width - Padding.Left - Padding.Right);
+        return !double.IsFinite(width) || width <= 0 ? 0 : NormalizeWidth(width - Padding.Left - Padding.Right);
     }
 
-    private static double NormalizeWidth(double width) =>
-        double.IsFinite(width) && width > 0 ? width : 0;
+    private static double NormalizeWidth(double width)
+    {
+        return double.IsFinite(width) && width > 0 ? width : 0;
+    }
 
-    private static double GetStarWeight(double weight) =>
-        double.IsFinite(weight) && weight > 0 ? weight : 0.0001;
+    private static double GetStarWeight(double weight)
+    {
+        return double.IsFinite(weight) && weight > 0 ? weight : 0.0001;
+    }
 
     private void EnsureResolvedWidths(int expectedCount)
     {
@@ -969,6 +978,7 @@ public partial class VirtualizedDataGrid : Border
         {
             Diagnostics.ItemsSourceChangeCount++;
         }
+
         if (subscriptionsActive)
         {
             DetachItemsSource();
@@ -1149,6 +1159,7 @@ public partial class VirtualizedDataGrid : Border
         {
             Diagnostics.ItemsSourceCollectionChangeCount++;
         }
+
         if (CurrentType is null && e.NewItems is { Count: > 0 })
         {
             CurrentType = e.NewItems
@@ -1204,9 +1215,7 @@ public partial class VirtualizedDataGrid : Border
         RequestAutoColumnMeasurement();
     }
 
-    private void SelectedItems_CollectionChanged(
-        object? sender,
-        NotifyCollectionChangedEventArgs e)
+    private void SelectedItems_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         RefreshSelectedItemSet();
         RefreshSelectionVisuals();
@@ -1214,9 +1223,7 @@ public partial class VirtualizedDataGrid : Border
 
     private void SelectionColumn_SelectionChanged(object? sender, bool isSelected)
     {
-        if (syncingSelectionCells ||
-            sender is not View view ||
-            view.BindingContext is null)
+        if (syncingSelectionCells || sender is not View view || view.BindingContext is null)
         {
             return;
         }

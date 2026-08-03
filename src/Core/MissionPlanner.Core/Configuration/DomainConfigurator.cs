@@ -52,6 +52,12 @@ public static class DomainConfigurator
         services.Configure<SimulationControlOptions>(configuration.GetSection(SimulationControlOptions.SectionName));
         services.Configure<SimulationScenarioOptions>(configuration.GetSection(SimulationScenarioOptions.SectionName));
         services.Configure<SitlManifestOptions>(configuration.GetSection(SitlManifestOptions.SectionName));
+        services.Configure<VehicleMessageStoreOptions>(configuration.GetSection(VehicleMessageStoreOptions.SectionName));
+        services.Configure<CalibrationOptions>(configuration.GetSection(CalibrationOptions.SectionName));
+        services.Configure<CompassCalibrationOptions>(configuration.GetSection(CompassCalibrationOptions.SectionName));
+        services.Configure<FirmwareManifestOptions>(configuration.GetSection(FirmwareManifestOptions.SectionName));
+        services.Configure<ParameterEditSessionOptions>(configuration.GetSection(ParameterEditSessionOptions.SectionName));
+        services.Configure<ParameterProfileRepositoryOptions>(configuration.GetSection(ParameterProfileRepositoryOptions.SectionName));
 
         services.TryAddTransient<IMissionTransferService, MissionTransferService>();
         services.TryAddTransient<IMissionProtocolMapper, MissionProtocolMapper>();
@@ -90,7 +96,6 @@ public static class DomainConfigurator
         services.TryAddSingleton<IReplayTelemetryPipeline, ReplayTelemetryPipeline>();
         services.TryAddSingleton<IReplayDelay, ReplayDelay>();
         services.TryAddSingleton<IReplaySessionManager, ReplaySessionManager>();
-        services.TryAddSingleton<IReplayClock>(provider => provider.GetRequiredService<IReplaySessionManager>());
         services.TryAddSingleton<IMavLinkTransmissionPolicy, ReplayTransmissionPolicy>();
         services.TryAddSingleton<ISimulationControlCatalog, SimulationControlCatalog>();
         services.TryAddSingleton<ISimulationControlService, SimulationControlService>();
@@ -103,11 +108,10 @@ public static class DomainConfigurator
         services.TryAddSingleton<ISitlReleaseSelector, SitlReleaseSelector>();
         services.TryAddSingleton<ISitlPackageManager, SitlPackageManager>();
         services.TryAddSingleton<ISitlInstallationService, SitlInstallationService>();
-
-
         services.TryAddTransient<IVehicleMessagePump, VehicleMessagePump>();
         services.TryAddTransient<IVehicleConnectionMonitor, VehicleConnectionMonitor>();
 
+        services.TryAddSingleton<IReplayClock>(provider => provider.GetRequiredService<IReplaySessionManager>());
 
         // Command ACK correlation must be shared by the command sender and inbound control handler.
         services.TryAddSingleton<ICommandAckTracker, CommandAckTracker>();
@@ -127,19 +131,14 @@ public static class DomainConfigurator
         services.TryAddTransient<IActuatorTestService, ActuatorTestService>();
         services.TryAddTransient<IServoOutputConfigurationService, ServoOutputConfigurationService>();
 
-        //TODO: mus tbe inspected
-        services.Configure<VehicleMessageStoreOptions>(configuration.GetSection(VehicleMessageStoreOptions.SectionName));
-        services.Configure<CalibrationOptions>(configuration.GetSection(CalibrationOptions.SectionName));
-        services.Configure<CompassCalibrationOptions>(configuration.GetSection(CompassCalibrationOptions.SectionName));
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, SerialPortsModule>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, GpsModule>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, RangefinderModule>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, AirspeedModule>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, CanBusModule>());
-        services.Configure<FirmwareManifestOptions>(configuration.GetSection(FirmwareManifestOptions.SectionName));
+
         services.AddHttpClient("Firmware");
         services.AddHttpClient("SITL");
-
 
         services.TryAddSingleton<IOptionalHardwareCatalog, OptionalHardwareCatalog>();
         services.TryAddTransient<IOptionalHardwareService, OptionalHardwareService>();
@@ -188,9 +187,6 @@ public static class DomainConfigurator
         services.TryAddSingleton<IArduPilotPackedParameterDecoder, ArduPilotPackedParameterDecoder>();
         services.TryAddTransient<IVehicleParameterStreamService, VehicleParameterStreamService>();
 
-
-        services.Configure<ParameterEditSessionOptions>(configuration.GetSection(ParameterEditSessionOptions.SectionName));
-        services.Configure<ParameterProfileRepositoryOptions>(configuration.GetSection(ParameterProfileRepositoryOptions.SectionName));
         services.TryAddSingleton<IParameterValueEquivalence, ParameterValueEquivalence>();
         services.TryAddSingleton<IParameterComparisonService, ParameterComparisonService>();
         services.TryAddSingleton<IParameterProfileRepository, JsonParameterProfileRepository>();
@@ -201,13 +197,15 @@ public static class DomainConfigurator
     }
 
     /// <summary>
-    /// Configures domain services using the specified <see cref="IServiceProvider"/>.
+    /// Configures serviceProvider that are being instantiated through the IDomainFactory. These typical requires constructor arguments, that are not registered in the DI container.
+    /// This method registers the domain serviceProvider with the domain factory, allowing them to be created as needed.
+    /// 
     /// </summary>
-    /// <param name="services">The service provider to which domain services will be added.</param>
+    /// <param name="serviceProvider">The service provider from which IDomainFactory will be resolved.</param>
     /// <returns>The updated service provider.</returns>
-    public static IServiceProvider UseDomainServices(this IServiceProvider services)
+    public static IServiceProvider UseDomainServices(this IServiceProvider serviceProvider)
     {
-        var domainFactory = services.GetRequiredService<IDomainFactory>();
+        var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
         domainFactory.Add<IVehicleFileSystemService, VehicleFileSystemService>();
 
         domainFactory.Add<IHeartbeatVehicleHandler, HeartbeatVehicleHandler>();
@@ -228,6 +226,6 @@ public static class DomainConfigurator
         domainFactory.Add<IParameterEditSession, ParameterEditSession>();
 
 
-        return services;
+        return serviceProvider;
     }
 }

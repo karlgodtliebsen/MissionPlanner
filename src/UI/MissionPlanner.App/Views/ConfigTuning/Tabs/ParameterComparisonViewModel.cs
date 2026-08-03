@@ -1,7 +1,7 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
-using MissionPlanner.App.Helpers;
 using MissionPlanner.App.Navigation;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Comparison;
@@ -40,7 +40,9 @@ public partial class ParameterComparisonViewModel : ObservableObject
     }
 
     /// <summary>Gets the currently filtered comparison rows.</summary>
-    public ObservableRangeCollection<ParameterComparisonItemViewModel> Rows { get; } = [];
+    public ObservableRangeCollection<ParameterComparisonItemViewModel> Items { get; } = [];
+
+    public ObservableCollection<ParameterComparisonItemViewModel> SelectedItems { get; set; } = [];
 
     /// <summary>Gets the available comparison status filters.</summary>
     public IReadOnlyList<string> Filters { get; } = ["Differences", "Missing", "Invalid", "Modified", "All"];
@@ -136,6 +138,6 @@ public partial class ParameterComparisonViewModel : ObservableObject
             "Modified" => rows.Where(row => row.CanStage),
             var _ => rows
         };
-        Rows.ReplaceRange(rows);
+        Items.ReplaceRange(rows);
     }
 }

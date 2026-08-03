@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" ?>
-<uranium:UraniumContentPage x:Class="UraniumUI.Material.Extensions.Samples.DataGrids.SelectableDataGridPage"
+<uranium:UraniumContentPage
                     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                     xmlns:m="clr-namespace:UraniumUI.Icons.MaterialSymbols;assembly=UraniumUI.Icons.MaterialSymbols"
@@ -7,7 +7,8 @@
                     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                     xmlns:local="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids"
                     xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
-                    xmlns:models="using:UraniumUI.Material.Extensions.Samples.DataGrids.Models"
+                    xmlns:models="using:UraniumUI.Material.Extensions.Samples.DataGridSamples.Models"
+                    x:Class="UraniumUI.Material.Extensions.Samples.DataGrids.SelectableDataGridPage"
                     >
 
     <uranium:UraniumContentPage.BindingContext>
@@ -20,7 +21,8 @@
 
         <virtualized:VirtualizedDataGrid  
                                     Grid.Row="1"
-                                    ItemsSource="{Binding Items}" SelectedItems="{Binding SelectedItems}" 
+                                    ItemsSource="{Binding Items}" 
+                                    SelectedItems="{Binding SelectedItems}" 
                                     ItemSizingStrategy= "MeasureFirstItem"
                                     
                                     FilterMemberPaths="Name,Id,Age"
@@ -42,7 +44,15 @@
             </virtualized:VirtualizedDataGrid.EmptyView>
 
             <virtualized:VirtualizedDataGrid.Columns>
-                <material:DataGridSelectionColumn  Width="*" />
+                <!--<virtualized:ExtendedSelectableDataGridColumn
+                    x:DataType="models:CustomDataGridStudent"
+                    Width="*"
+                    SelectionMemberPath="IsSelected" />-->
+                
+                <virtualized:ExtendedSelectableDataGridColumn
+                    SelectionMemberPath="IsSelected"
+                    SelectionCommandMemberPath="SelectionChangedCommand" />
+
                 <material:DataGridColumn Width="*" x:DataType="models:CustomDataGridStudent" ValueBinding="{Binding Id}" Title="Id" />
                 <material:DataGridColumn Width="3*" x:DataType="models:CustomDataGridStudent" ValueBinding="{Binding Name}" Title="Name" />
                 <material:DataGridColumn Width="*" x:DataType="models:CustomDataGridStudent" ValueBinding="{Binding Age}" Title="Age" />

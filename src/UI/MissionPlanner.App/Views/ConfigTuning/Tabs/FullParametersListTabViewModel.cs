@@ -22,6 +22,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 {
     private const string DefaultStatusMessage = "Connect a vehicle, then refresh parameters.";
     private readonly IVehicleConnectionSession connectionSession;
+    private readonly IVehicleParameterRegistry parameterRegistry;
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IParameterEditSessionFactory editSessionFactory;
     private readonly IDispatcher dispatcher;
@@ -34,11 +35,13 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     private readonly IParameterProfileService profileWorkflow;
     private readonly ILogger<FullParametersListTabViewModel> logger;
     private CancellationTokenSource? loadCancellation;
+    private CancellationTokenSource? cachedLoadCancellation;
     private IParameterEditSession? editSession;
     private ParameterApplyReport? lastApplyReport;
     private IDisposable? progressDialog;
     private bool disposed;
     private int sessionRefreshScheduled;
+    private int cachedLoadScheduled;
 
     /// <summary>Gets whether the page is temporarily covered by its owned progress dialog.</summary>
     public bool IsShowingProgressDialog { get; private set; }
@@ -71,6 +74,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         ILogger<FullParametersListTabViewModel> logger)
     {
         this.connectionSession = connectionSession;
+        parameterRegistry = connectionSession.ParameterRegistry;
         this.activeVehicle = activeVehicle;
         this.editSessionFactory = editSessionFactory;
         this.dispatcher = dispatcher;
@@ -178,9 +182,15 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         IsBusy = false;
         HasRows = Parameters.Count > 0;
         activeVehicle.Changed += OnActiveVehicleChanged;
+        parameterRegistry.Changed += OnParameterRegistryChanged;
         HasConnection = activeVehicle.IsOnline;
         ShowVehicleDisconnected = !HasConnection;
         StatusMessage = HasConnection ? null : DefaultStatusMessage;
+
+        if (activeVehicle.VehicleId is { } vehicleId && HasConnection)
+        {
+            ScheduleCachedParameterLoad(vehicleId);
+        }
     }
 
     private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs vehicleChangedEventArgs)
@@ -199,6 +209,12 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         dispatcher.Dispatch(() =>
         {
             editSessionFactory?.DiscardPendingChanges();
+            CancelCachedParameterLoad();
+            editSession?.Changed -= OnEditSessionChanged;
+            editSession = null;
+            Parameters.Clear();
+            HasRows = false;
+            TotalParameterCount = 0;
             HasConnection = changed;
             ShowVehicleDisconnected = !changed;
             CancelLoadOperation();
@@ -209,7 +225,111 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             var errorMessage = changed ? null : "The vehicle is disconnected.";
             Debug.Assert(statusMessage is null || errorMessage is null);
             SetMessages(statusMessage, errorMessage);
+
+            if (changed && vehicleChangedEventArgs.Current.VehicleId is { } vehicleId)
+            {
+                ScheduleCachedParameterLoad(vehicleId);
+            }
         });
+    }
+
+    private void OnParameterRegistryChanged(
+        object? sender,
+        VehicleParameterChangedEventArgs args)
+    {
+        if (disposed ||
+            !activeVehicle.IsOnline ||
+            activeVehicle.VehicleId != args.VehicleId ||
+            args.Parameter is null)
+        {
+            return;
+        }
+
+        ScheduleCachedParameterLoad(args.VehicleId);
+    }
+
+    private void ScheduleCachedParameterLoad(VehicleId vehicleId)
+    {
+        if (disposed || IsBusy || !HasCompleteCachedParameterSet(vehicleId) ||
+            Interlocked.CompareExchange(ref cachedLoadScheduled, 1, 0) != 0)
+        {
+            return;
+        }
+
+        var cancellation = CancellationTokenSource.CreateLinkedTokenSource(
+            activeVehicle.ConnectionCancellationToken);
+        cachedLoadCancellation = cancellation;
+        _ = LoadCachedParametersAsync(vehicleId, cancellation);
+    }
+
+    private bool HasCompleteCachedParameterSet(VehicleId vehicleId)
+    {
+        var expectedCount = parameterRegistry.GetParameterCount(vehicleId);
+        return expectedCount is > 0 &&
+               parameterRegistry.GetAllParameters(vehicleId).Count >= expectedCount.Value;
+    }
+
+    private async Task LoadCachedParametersAsync(
+        VehicleId vehicleId,
+        CancellationTokenSource cancellation)
+    {
+        try
+        {
+            var session = editSessionFactory.Create(vehicleId);
+            await session.LoadAsync(cancellationToken: cancellation.Token)
+                .ConfigureAwait(false);
+            cancellation.Token.ThrowIfCancellationRequested();
+
+            await dispatcher.DispatchAsync(() =>
+            {
+                if (disposed ||
+                    !activeVehicle.IsOnline ||
+                    activeVehicle.VehicleId != vehicleId)
+                {
+                    return;
+                }
+
+                AttachSession(session);
+                SynchronizeParameterItems();
+                CompleteBusyState();
+                SetMessages($"Loaded {session.Fields.Count} cached parameters.");
+            });
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+            // The active vehicle changed or the retained page was released.
+        }
+        catch (Exception exception)
+        {
+            logger.LogWarning(
+                exception,
+                "Could not project cached parameters for {VehicleId}.",
+                vehicleId);
+        }
+        finally
+        {
+            Interlocked.CompareExchange(ref cachedLoadCancellation, null, cancellation);
+            cancellation.Dispose();
+            Interlocked.Exchange(ref cachedLoadScheduled, 0);
+        }
+    }
+
+    private void CancelCachedParameterLoad()
+    {
+        var cancellation = Interlocked.Exchange(ref cachedLoadCancellation, null);
+        if (cancellation is null)
+        {
+            return;
+        }
+
+        try
+        {
+            cancellation.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Completion won the race with cancellation.
+        }
     }
 
     private void SetMessages(string? statusMessage = null, string? errorMessage = null)
@@ -268,6 +388,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             return;
         }
 
+        CancelCachedParameterLoad();
         CancelLoadOperation();
         loadCancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
         var cancellationToken = loadCancellation.Token;
@@ -765,6 +886,8 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         disposed = true;
         Interlocked.Exchange(ref sessionRefreshScheduled, 0);
         activeVehicle.Changed -= OnActiveVehicleChanged;
+        parameterRegistry.Changed -= OnParameterRegistryChanged;
+        CancelCachedParameterLoad();
         CancelLoadOperation();
         CloseProgressDialog();
 

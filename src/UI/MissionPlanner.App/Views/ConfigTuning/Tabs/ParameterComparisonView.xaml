@@ -3,7 +3,6 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
-    xmlns:configTuning="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
     xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
     xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
     xmlns:m="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
@@ -11,12 +10,13 @@
     x:DataType="tabs:ParameterComparisonViewModel"
     >
     <Grid
-        BackgroundColor="{AppThemeBinding Light=White, Dark=#1B1B1F}"
+       
         HorizontalOptions="Fill"
         VerticalOptions="Fill"
         RowDefinitions="Auto,*"
         RowSpacing="10"
         Padding="12">
+
         <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto" ColumnSpacing="8">
             <Button Grid.Column="0" Text="Select all safe differences" Command="{Binding SelectAllSafeDifferencesCommand}" />
             <Button Grid.Column="1" Text="Stage selected" Command="{Binding StageSelectedDifferencesCommand}" />
@@ -31,12 +31,12 @@
                 Grid.Column="5" Text="Close" WidthRequest="100" Command="{Binding CloseCommand}">
               
             </Button>
-
         </Grid>
 
         <virtualized:VirtualizedDataGrid
             Grid.Row="1"
-            ItemsSource="{Binding Rows}"
+            ItemsSource="{Binding Items}"
+            SelectedItems="{Binding SelectedItems}" 
             UseAutoColumns="False"
             ItemSizingStrategy="MeasureFirstItem"
             ShowRowSeparators="True"
@@ -66,49 +66,61 @@
             </virtualized:VirtualizedDataGrid.EmptyView>
 
             <virtualized:VirtualizedDataGrid.Columns>
-                <material:DataGridColumn Title="Stage" Width="80">
+                <!--<material:DataGridColumn Title="Stage" Width="*" >
+                    <material:DataGridColumn.CellItemTemplate >
+                        <DataTemplate x:DataType="tabs:ParameterComparisonItemViewModel" >
+                            <HorizontalStackLayout HorizontalOptions="Fill" VerticalOptions="Fill"  >
+                                <CheckBox  IsChecked="{Binding IsSelected}" IsEnabled="{Binding CanStage}" 
+                                       HorizontalOptions="Center" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>-->
+
+                <!--<material:DataGridSelectionColumn  x:DataType="tabs:ParameterComparisonItemViewModel" Width="*" Title="Stage" IsVisible="{Binding CanStage}" />-->
+
+                <virtualized:ExtendedSelectableDataGridColumn Title="Stage"
+                    SelectionMemberPath="IsSelected"
+                    SelectionCommandMemberPath="SelectionChangedCommand" />
+
+
+                <material:DataGridColumn Width="2*" Title="Parameter">
                     <material:DataGridColumn.CellItemTemplate>
                         <DataTemplate x:DataType="tabs:ParameterComparisonItemViewModel">
-                            <CheckBox IsChecked="{Binding IsSelected}" IsEnabled="{Binding CanStage}" HorizontalOptions="Center" VerticalOptions="Center" />
+                            <Label Text="{Binding Name}" VerticalOptions="Center" HorizontalOptions="Start" />
                         </DataTemplate>
                     </material:DataGridColumn.CellItemTemplate>
                 </material:DataGridColumn>
-                <material:DataGridColumn Width="180" Title="Parameter">
+
+                <material:DataGridColumn Width="2*" Title="Live">
                     <material:DataGridColumn.CellItemTemplate>
                         <DataTemplate x:DataType="tabs:ParameterComparisonItemViewModel">
-                            <Label Text="{Binding Name}" VerticalOptions="Center" />
+                            <Label Text="{Binding LeftValueText}" VerticalOptions="Center" HorizontalOptions="End"/>
                         </DataTemplate>
                     </material:DataGridColumn.CellItemTemplate>
                 </material:DataGridColumn>
-                <material:DataGridColumn Width="180" Title="Live">
+                <material:DataGridColumn Width="2*" Title="Right">
                     <material:DataGridColumn.CellItemTemplate>
                         <DataTemplate x:DataType="tabs:ParameterComparisonItemViewModel">
-                            <Label Text="{Binding LeftValueText}" VerticalOptions="Center" />
+                            <Label Text="{Binding RightValueText}" VerticalOptions="Center"  HorizontalOptions="End"/>
                         </DataTemplate>
                     </material:DataGridColumn.CellItemTemplate>
                 </material:DataGridColumn>
-                <material:DataGridColumn Width="180" Title="Right">
+                <material:DataGridColumn Width="2*" Title="Difference">
                     <material:DataGridColumn.CellItemTemplate>
                         <DataTemplate x:DataType="tabs:ParameterComparisonItemViewModel">
-                            <Label Text="{Binding RightValueText}" VerticalOptions="Center" />
+                            <Label Text="{Binding DifferenceText}" VerticalOptions="Center"  HorizontalOptions="End"/>
                         </DataTemplate>
                     </material:DataGridColumn.CellItemTemplate>
                 </material:DataGridColumn>
-                <material:DataGridColumn Width="140" Title="Difference">
+                <material:DataGridColumn Width="2*" Title="Status">
                     <material:DataGridColumn.CellItemTemplate>
                         <DataTemplate x:DataType="tabs:ParameterComparisonItemViewModel">
-                            <Label Text="{Binding DifferenceText}" VerticalOptions="Center" />
+                            <Label Text="{Binding Status}" VerticalOptions="Center"  HorizontalOptions="Center" />
                         </DataTemplate>
                     </material:DataGridColumn.CellItemTemplate>
                 </material:DataGridColumn>
-                <material:DataGridColumn Width="160" Title="Status">
-                    <material:DataGridColumn.CellItemTemplate>
-                        <DataTemplate x:DataType="tabs:ParameterComparisonItemViewModel">
-                            <Label Text="{Binding Status}" VerticalOptions="Center" />
-                        </DataTemplate>
-                    </material:DataGridColumn.CellItemTemplate>
-                </material:DataGridColumn>
-                <material:DataGridColumn Width="*" Title="Message">
+                <material:DataGridColumn Width="4*" Title="Message">
                     <material:DataGridColumn.CellItemTemplate>
                         <DataTemplate x:DataType="tabs:ParameterComparisonItemViewModel">
                             <Label Text="{Binding Message}" VerticalOptions="Center" />

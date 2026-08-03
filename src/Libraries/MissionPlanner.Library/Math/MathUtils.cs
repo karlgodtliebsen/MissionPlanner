@@ -70,20 +70,10 @@ public static class MathUtils
         var decimalMinimum = (decimal)minimum;
 
         var normalizedLeft =
-            decimalMinimum +
-            (decimal.Round(
-                (decimalLeft - decimalMinimum) / decimalStep,
-                0,
-                MidpointRounding.AwayFromZero) *
-            decimalStep);
+            decimalMinimum + (decimal.Round((decimalLeft - decimalMinimum) / decimalStep, 0, MidpointRounding.AwayFromZero) * decimalStep);
 
         var normalizedRight =
-            decimalMinimum +
-            (decimal.Round(
-                (decimalRight - decimalMinimum) / decimalStep,
-                0,
-                MidpointRounding.AwayFromZero) *
-            decimalStep);
+            decimalMinimum + (decimal.Round((decimalRight - decimalMinimum) / decimalStep, 0, MidpointRounding.AwayFromZero) * decimalStep);
 
         return normalizedLeft == normalizedRight;
     }
@@ -91,10 +81,7 @@ public static class MathUtils
     /// <summary>
     /// Formats a numeric value at the precision represented by its smallest meaningful step.
     /// </summary>
-    public static string FormatAtStepPrecision(
-        double value,
-        double? stepSize,
-        IFormatProvider? formatProvider = null)
+    public static string FormatAtStepPrecision(double value, double? stepSize, IFormatProvider? formatProvider = null)
     {
         formatProvider ??= System.Globalization.CultureInfo.CurrentCulture;
 

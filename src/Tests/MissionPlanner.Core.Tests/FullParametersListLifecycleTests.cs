@@ -8,6 +8,7 @@ using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Profiles;
+using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -67,6 +68,59 @@ public sealed class FullParametersListLifecycleTests
         fixture.ViewModel.Parameters.Should().BeEmpty();
         fixture.ViewModel.HasRows.Should().BeFalse();
         fixture.ViewModel.TotalParameterCount.Should().Be(0);
+    }
+
+    /// <summary>Verifies a complete registry snapshot is projected without requesting the vehicle again.</summary>
+    [Fact]
+    public async Task CompleteCachedParametersAreDisplayedWithoutStreamingAgain()
+    {
+        var vehicleId = new VehicleId(1, 1);
+        var registry = new VehicleParameterRegistry();
+        registry.StoreParameter(
+            vehicleId,
+            new MavLink.Parameters.VehicleParameter(
+                "TEST_PARAM",
+                42,
+                MavLink.Parameters.MavParamType.Real32,
+                0,
+                1),
+            CancellationToken.None);
+
+        var field = new ParameterEditField(
+            "TEST_PARAM",
+            MavLink.Parameters.MavParamType.Real32,
+            42,
+            42,
+            42,
+            ParameterFieldMetadata.Empty,
+            null);
+        var session = Substitute.For<IParameterEditSession>();
+        session.Fields.Returns([field]);
+        session.LoadAsync(Arg.Any<IReadOnlyList<string>?>(), Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask);
+        var sessionFactory = Substitute.For<IParameterEditSessionFactory>();
+        sessionFactory.Create(vehicleId).Returns(session);
+        var streamService = Substitute.For<IVehicleParameterStreamService>();
+
+        using var fixture = CreateFixture(
+            true,
+            streamService,
+            editSessionFactory: sessionFactory,
+            parameterRegistry: registry);
+
+        await WaitForAsync(
+            () => fixture.ViewModel.Parameters.Count == 1,
+            TestContext.Current.CancellationToken);
+
+        fixture.ViewModel.Parameters.Single().Name.Should().Be("TEST_PARAM");
+        fixture.ViewModel.HasRows.Should().BeTrue();
+        await streamService.DidNotReceiveWithAnyArgs()
+            .StreamAllParametersWithRetryAsync(
+                default,
+                default,
+                default,
+                default,
+                TestContext.Current.CancellationToken);
     }
 
     /// <summary>Verifies session-wide notifications do not rewrite unchanged rows.</summary>
@@ -167,7 +221,8 @@ public sealed class FullParametersListLifecycleTests
         bool online,
         IVehicleParameterStreamService? streamService = null,
         IExtendedDialogService? extendedDialogService = null,
-        IParameterEditSessionFactory? editSessionFactory = null)
+        IParameterEditSessionFactory? editSessionFactory = null,
+        IVehicleParameterRegistry? parameterRegistry = null)
     {
         var now = DateTimeOffset.UtcNow;
         var vehicleId = new VehicleId(1, 1);
@@ -207,6 +262,8 @@ public sealed class FullParametersListLifecycleTests
         streamService ??= Substitute.For<IVehicleParameterStreamService>();
         var connectionSession = Substitute.For<IVehicleConnectionSession>();
         connectionSession.ParameterStreamService.Returns(streamService);
+        connectionSession.ParameterRegistry.Returns(
+            parameterRegistry ?? new VehicleParameterRegistry());
         if (extendedDialogService is null)
         {
             extendedDialogService = Substitute.For<IExtendedDialogService>();
@@ -238,6 +295,19 @@ public sealed class FullParametersListLifecycleTests
             Substitute.For<IParameterProfileService>(),
             NullLogger<FullParametersListTabViewModel>.Instance);
         return new Fixture(viewModel, connectionLifetime);
+    }
+
+    private static async Task WaitForAsync(
+        Func<bool> predicate,
+        CancellationToken cancellationToken)
+    {
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(2);
+        while (!predicate() && DateTime.UtcNow < deadline)
+        {
+            await Task.Delay(10, cancellationToken);
+        }
+
+        predicate().Should().BeTrue();
     }
 
     private sealed record Fixture(

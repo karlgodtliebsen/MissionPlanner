@@ -1,15 +1,7 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.MavLink.Services.Abstractions;
 
 namespace MissionPlanner.Core.Replay;
-
-/// <summary>Uses cancellable wall-clock delays for production replay timing.</summary>
-public sealed class ReplayDelay : IReplayDelay
-{
-    /// <inheritdoc />
-    public Task DelayAsync(TimeSpan delay, CancellationToken cancellationToken) =>
-        delay <= TimeSpan.Zero ? Task.CompletedTask : Task.Delay(delay, cancellationToken);
-}
 
 /// <summary>Coordinates indexed, speed-adjusted telemetry-log playback in a read-only state pipeline.</summary>
 public sealed class ReplaySessionManager : IReplaySessionManager
@@ -31,11 +23,7 @@ public sealed class ReplaySessionManager : IReplaySessionManager
     /// <param name="pipeline">Replay-only decoding and state pipeline.</param>
     /// <param name="delay">Replay timing abstraction.</param>
     /// <param name="logger">Structured workflow logger.</param>
-    public ReplaySessionManager(
-        ITelemetryLogReader reader,
-        IReplayTelemetryPipeline pipeline,
-        IReplayDelay delay,
-        ILogger<ReplaySessionManager> logger)
+    public ReplaySessionManager(ITelemetryLogReader reader, IReplayTelemetryPipeline pipeline, IReplayDelay delay, ILogger<ReplaySessionManager> logger)
     {
         this.reader = reader;
         this.pipeline = pipeline;
@@ -114,12 +102,7 @@ public sealed class ReplaySessionManager : IReplaySessionManager
             {
                 stream.Dispose();
                 logger.LogError(exception, "Failed to index replay session {SessionId} from {SourceName}.", sessionId, sourceName);
-                Publish(Snapshot with
-                {
-                    State = ReplaySessionState.Failed,
-                    Message = "Telemetry-log indexing failed. Outbound transmission remains disabled until the replay is closed.",
-                    Failure = exception.Message
-                });
+                Publish(Snapshot with { State = ReplaySessionState.Failed, Message = "Telemetry-log indexing failed. Outbound transmission remains disabled until the replay is closed.", Failure = exception.Message });
                 throw;
             }
         }
@@ -152,11 +135,7 @@ public sealed class ReplaySessionManager : IReplaySessionManager
 
             if (current.Index.Entries.Count == 0)
             {
-                return Publish(current with
-                {
-                    State = ReplaySessionState.Completed,
-                    Message = "Replay completed; the telemetry log contains no frames."
-                });
+                return Publish(current with { State = ReplaySessionState.Completed, Message = "Replay completed; the telemetry log contains no frames." });
             }
 
             if (current.NextFrameIndex >= current.Index.Entries.Count)
@@ -166,13 +145,7 @@ public sealed class ReplaySessionManager : IReplaySessionManager
             }
 
             playbackCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            current = Publish(current with
-            {
-                State = ReplaySessionState.Playing,
-                Clock = current.Clock! with { IsRunning = true },
-                Message = "Replay is playing. Outbound transmission is disabled.",
-                Failure = null
-            });
+            current = Publish(current with { State = ReplaySessionState.Playing, Clock = current.Clock! with { IsRunning = true }, Message = "Replay is playing. Outbound transmission is disabled.", Failure = null });
             playbackTask = Task.Run(() => PlaybackLoopAsync(playbackCancellation.Token), CancellationToken.None);
             return current;
         }
@@ -196,12 +169,7 @@ public sealed class ReplaySessionManager : IReplaySessionManager
 
             await StopPlaybackCoreAsync().ConfigureAwait(false);
             var current = Snapshot;
-            return Publish(current with
-            {
-                State = ReplaySessionState.Paused,
-                Clock = current.Clock is null ? null : current.Clock with { IsRunning = false },
-                Message = "Replay is paused. Outbound transmission remains disabled."
-            });
+            return Publish(current with { State = ReplaySessionState.Paused, Clock = current.Clock is null ? null : current.Clock with { IsRunning = false }, Message = "Replay is paused. Outbound transmission remains disabled." });
         }
         finally
         {
@@ -237,12 +205,9 @@ public sealed class ReplaySessionManager : IReplaySessionManager
         }
 
         var current = Snapshot;
-        if (current.Clock is null)
-        {
-            throw new InvalidOperationException("Load a telemetry log before changing replay speed.");
-        }
-
-        return Publish(current with { Clock = current.Clock with { Speed = speed } });
+        return current.Clock is null
+            ? throw new InvalidOperationException("Load a telemetry log before changing replay speed.")
+            : Publish(current with { Clock = current.Clock with { Speed = speed } });
     }
 
     /// <inheritdoc />
@@ -294,12 +259,7 @@ public sealed class ReplaySessionManager : IReplaySessionManager
                 var ownedStream = stream ?? throw new InvalidOperationException("Replay stream was released during playback.");
                 if (current.NextFrameIndex >= index.Entries.Count)
                 {
-                    Publish(current with
-                    {
-                        State = ReplaySessionState.Completed,
-                        Clock = current.Clock is null ? null : current.Clock with { IsRunning = false },
-                        Message = "Replay completed. Outbound transmission remains disabled until the log is closed."
-                    });
+                    Publish(current with { State = ReplaySessionState.Completed, Clock = current.Clock is null ? null : current.Clock with { IsRunning = false }, Message = "Replay completed. Outbound transmission remains disabled until the log is closed." });
                     return;
                 }
 
@@ -337,13 +297,7 @@ public sealed class ReplaySessionManager : IReplaySessionManager
         {
             logger.LogError(exception, "Replay session {SessionId} failed at frame {FrameIndex}.", Snapshot.SessionId, Snapshot.NextFrameIndex);
             var current = Snapshot;
-            Publish(current with
-            {
-                State = ReplaySessionState.Failed,
-                Clock = current.Clock is null ? null : current.Clock with { IsRunning = false },
-                Message = "Telemetry-log replay failed. Outbound transmission remains disabled until the log is closed.",
-                Failure = exception.Message
-            });
+            Publish(current with { State = ReplaySessionState.Failed, Clock = current.Clock is null ? null : current.Clock with { IsRunning = false }, Message = "Telemetry-log replay failed. Outbound transmission remains disabled until the log is closed.", Failure = exception.Message });
         }
     }
 

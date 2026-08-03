@@ -28,6 +28,8 @@ public class VehicleConnectionService(
     // Single active connection (only one vehicle connection supported at a time)
     private ActiveConnection? activeConnection;
     private readonly SemaphoreSlim connectionLock = new(1, 1);
+    private CancellationTokenSource? parameterPreloadCancellation;
+    private Task? parameterPreloadTask;
 
     /// <inheritdoc/>
     public bool IsConnected => activeConnection != null;
@@ -80,6 +82,7 @@ public class VehicleConnectionService(
 
             // Publish success event
             await domainEventHub.PublishDomainEventAsync(new VehicleConnected(vehicleId.Value, "Serial", portName, dateTimeProvider.UtcNow), linkedCts.Token);
+            StartParameterPreload(vehicleId.Value);
 
             logger.LogInformation("Successfully connected to vehicle {VehicleId} via serial port {PortName}", vehicleId, portName);
             return new VehicleConnectionResult(true, vehicleId.Value, connectionSession, ConnectionId: connectionId);
@@ -143,6 +146,7 @@ public class VehicleConnectionService(
 
             // Publish success event
             await domainEventHub.PublishDomainEventAsync(new VehicleConnected(vehicleId.Value, "TCP", endpoint, dateTimeProvider.UtcNow), linkedCts.Token);
+            StartParameterPreload(vehicleId.Value);
 
             logger.LogInformation("Successfully connected to vehicle {VehicleId} via TCP {Endpoint}", vehicleId, endpoint);
             return new VehicleConnectionResult(true, vehicleId.Value, connectionSession, ConnectionId: connectionId);
@@ -219,6 +223,7 @@ public class VehicleConnectionService(
             var connectionId = Guid.NewGuid();
             activeConnection = new ActiveConnection(connectionId, vehicleId.Value, transport, client, "UDP", endpoint);
             await domainEventHub.PublishDomainEventAsync(new VehicleConnected(vehicleId.Value, "UDP", endpoint, dateTimeProvider.UtcNow), linkedCts.Token);
+            StartParameterPreload(vehicleId.Value);
 
             logger.LogInformation("Successfully connected to vehicle {VehicleId} via UDP {Endpoint}", vehicleId, endpoint);
             return new VehicleConnectionResult(true, vehicleId.Value, connectionSession, ConnectionId: connectionId);
@@ -408,6 +413,8 @@ public class VehicleConnectionService(
         {
             logger.LogInformation("Disconnecting vehicle {VehicleId}", vehicleId);
 
+            await CancelParameterPreloadAsync().ConfigureAwait(false);
+
             // Clear active connection
             activeConnection = null;
             await connectionSession.DisconnectAsync(vehicleId, cancellationToken);
@@ -422,9 +429,96 @@ public class VehicleConnectionService(
         activeConnection = null;
     }
 
+    private void StartParameterPreload(VehicleId vehicleId)
+    {
+        parameterPreloadCancellation?.Cancel();
+        parameterPreloadCancellation?.Dispose();
+
+        var cancellation = new CancellationTokenSource();
+        parameterPreloadCancellation = cancellation;
+        parameterPreloadTask = PreloadParametersAsync(vehicleId, cancellation.Token);
+    }
+
+    private async Task PreloadParametersAsync(
+        VehicleId vehicleId,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            logger.LogInformation(
+                "Preloading parameters for connected vehicle {VehicleId}.",
+                vehicleId);
+
+            var result = await connectionSession.ParameterStreamService
+                .StreamAllParametersWithRetryAsync(
+                    vehicleId,
+                    maxRetries: 3,
+                    cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+
+            if (result.Success)
+            {
+                logger.LogInformation(
+                    "Preloaded {Count} parameters for {VehicleId}.",
+                    result.Parameters.Count,
+                    vehicleId);
+            }
+            else if (!cancellationToken.IsCancellationRequested)
+            {
+                logger.LogWarning(
+                    "Parameter preload for {VehicleId} was incomplete: {Error}",
+                    vehicleId,
+                    result.ErrorMessage);
+            }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            logger.LogDebug("Parameter preload cancelled for {VehicleId}.", vehicleId);
+        }
+        catch (Exception exception)
+        {
+            logger.LogWarning(
+                exception,
+                "Background parameter preload failed for {VehicleId}.",
+                vehicleId);
+        }
+    }
+
+    private async Task CancelParameterPreloadAsync()
+    {
+        var cancellation = parameterPreloadCancellation;
+        var preloadTask = parameterPreloadTask;
+        parameterPreloadCancellation = null;
+        parameterPreloadTask = null;
+
+        if (cancellation is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await cancellation.CancelAsync().ConfigureAwait(false);
+            if (preloadTask is not null)
+            {
+                await preloadTask.ConfigureAwait(false);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected while ending the connection-owned preload.
+        }
+        finally
+        {
+            cancellation.Dispose();
+        }
+    }
+
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+        await CancelParameterPreloadAsync().ConfigureAwait(false);
+
         // Disconnect the active connection (if any)
         if (activeConnection != null)
         {

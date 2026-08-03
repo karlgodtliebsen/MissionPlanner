@@ -1,4 +1,5 @@
 ﻿using Bogus;
+using UraniumUI.Material.Extensions.Samples.DataGridSamples.Models;
 
 namespace UraniumUI.Material.Extensions.Samples.DataGrids.Models;
 

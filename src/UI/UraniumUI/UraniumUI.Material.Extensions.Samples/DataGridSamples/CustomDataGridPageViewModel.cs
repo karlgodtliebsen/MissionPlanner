@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Mapsui.Utilities;
 using UraniumUI.Dialogs;
 using UraniumUI.Material.Extensions.Samples.DataGrids.Models;
+using UraniumUI.Material.Extensions.Samples.DataGridSamples.Models;
 
 namespace UraniumUI.Material.Extensions.Samples.DataGrids;
 

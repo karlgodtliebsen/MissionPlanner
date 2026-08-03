@@ -615,28 +615,14 @@ public partial class NumericUpDownField : TextField
         incrementButton = CreateStepButton(IncrementText, IncrementCommand, "Increase value");
         decrementButton = CreateStepButton(DecrementText, DecrementCommand, "Decrease value");
 
-        //incrementButton.BorderColor = new Color(255, 0, 0, 0.5f);
-        //decrementButton.BorderColor = new Color(0, 255, 0, 0.5f);
-
-        //incrementButton.BorderWidth = 1;
-        //decrementButton.BorderWidth = 1;
-
-        //incrementButton.WidthRequest = StepButtonWidth;
-        //incrementButton.HeightRequest = StepButtonHeight * 2;
-        //decrementButton.WidthRequest = StepButtonWidth;
-        //decrementButton.HeightRequest = StepButtonHeight * 2;
-
         var grid = new Grid
         {
-            //BackgroundColor = Colors.Yellow,
-            //BackgroundColor = Colors.Transparent,
             Padding = 0,
             Margin = new Thickness(5, 0, 0, 0),
             ColumnSpacing = 0,
             RowSpacing = 0,
             HorizontalOptions = LayoutOptions.Fill,
             VerticalOptions = LayoutOptions.Center,
-            //HeightRequest = StepButtonHeight,
             RowDefinitions = { new RowDefinition(StepButtonHeight) },
             ColumnDefinitions = { new ColumnDefinition(StepButtonWidth), new ColumnDefinition(StepButtonWidth) }
         };
