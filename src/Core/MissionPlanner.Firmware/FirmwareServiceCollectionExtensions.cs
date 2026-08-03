@@ -6,6 +6,7 @@ using MissionPlanner.Firmware.Images;
 using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Protocol;
 using MissionPlanner.Firmware.Discovery;
+using MissionPlanner.Firmware.Entry;
 
 namespace MissionPlanner.Firmware;
 
@@ -58,6 +59,10 @@ public static class FirmwareServiceCollectionExtensions
         services.TryAddSingleton<IFirmwareSerialPortFactory, SystemFirmwareSerialPortFactory>();
         services.TryAddSingleton<IArduPilotBootloaderClientFactory, ArduPilotBootloaderClientFactory>();
         services.TryAddSingleton<IBootloaderDiscoveryService, BootloaderDiscoveryService>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBootloaderEntryStrategy, AlreadyInBootloaderEntryStrategy>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBootloaderEntryStrategy, TemporaryMavLinkRebootEntryStrategy>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IBootloaderEntryStrategy, ManualReconnectBootloaderEntryStrategy>());
+        services.TryAddSingleton<IBootloaderEntryService, BootloaderEntryService>();
 
         return services;
     }
