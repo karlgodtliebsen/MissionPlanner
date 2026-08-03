@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/Core/">
     <Project Path="Core/MissionPlanner.Core/MissionPlanner.Core.csproj" />
+    <Project Path="Core/MissionPlanner.Firmware/MissionPlanner.Firmware.csproj" />
     <Project Path="Core/MissionPlanner.MavLink/MissionPlanner.MavLink.csproj" />
     <Project Path="Core/MissionPlanner.Transport/MissionPlanner.Transport.csproj" />
   </Folder>
@@ -32,6 +33,7 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/MissionPlanner.Core.Tests/MissionPlanner.Core.Tests.csproj" />
+    <Project Path="Tests/MissionPlanner.Firmware.Tests/MissionPlanner.Firmware.Tests.csproj" />
     <Project Path="Tests/MissionPlanner.Smoke.Simulator.Tests/MissionPlanner.Smoke.Simulator.Tests.csproj" />
     <Project Path="Tests/MissionPlanner.Test.Support/MissionPlanner.Test.Support.csproj" />
     <Project Path="Tests/MissionPlanner.Tests/MissionPlanner.Tests.csproj" />

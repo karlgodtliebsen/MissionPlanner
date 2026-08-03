@@ -4,15 +4,16 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Reactive" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\MissionPlanner.Transport\MissionPlanner.Transport.csproj" />
-    <ProjectReference Include="..\MissionPlanner.MavLink\MissionPlanner.MavLink.csproj" />
   </ItemGroup>
 
 </Project>
