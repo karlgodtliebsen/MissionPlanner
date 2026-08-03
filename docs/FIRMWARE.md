@@ -1,44 +1,95 @@
-# Firmware management
+# Firmware installation
 
-The Setup Firmware workflow is read-only by default and displays identity already captured
-from `HEARTBEAT` and `AUTOPILOT_VERSION`. Discovery and download are enabled only for
-manifest entries that match the reported firmware family, vendor ID, product ID, and board
-version. A manifest-provided technical board target is required; UI labels and marketing
-names are never used to choose a binary.
+## Scope and user modes
 
-## Configuration
+The modern firmware feature installs ArduPilot application firmware through the ArduPilot serial bootloader and can request an embedded bootloader update through an already connected vehicle. It deliberately separates these workflows:
 
-Firmware discovery uses the `Firmware` configuration section:
+- Connected: normal application flashing, catalogue tiles, and custom-file actions are unavailable. A supported, disarmed ArduPilot vehicle may run the separately confirmed Bootloader Update command.
+- Disconnected: Stable, Beta, Latest, All Options, and local `.apj`/`.px4` packages are available. A normal Mission Planner connection must release the transport before installation.
+- Operation in progress: progress replaces normal actions, duplicate commands are rejected, and Shell navigation is cancelled while an unsafe operation owns the page.
+- Unsupported platform: the page explains that direct installation is unavailable.
 
-```json
-{
-  "Firmware": {
-    "ManifestUrl": "https://example.invalid/missionplanner-firmware.json",
-    "Releases": []
-  }
-}
+## Architecture and dependency rules
+
+```mermaid
+flowchart LR
+    UI["MissionPlanner.App / MAUI"] --> Core["MissionPlanner.Core adapters"]
+    UI --> Firmware["MissionPlanner.Firmware"]
+    Core --> Firmware
+    Firmware --> Transport["MissionPlanner.Transport abstractions"]
+    Firmware -. must not reference .-> UI
 ```
 
-`ManifestUrl` is optional but, when present, must be absolute HTTPS. Static `Releases` use
-the same `FirmwareManifestEntry` schema and are useful for managed/offline deployments.
-Every release contains a channel (`Stable`, `Beta`, or `Development`), firmware family,
-technical board target, vendor/product IDs, optional exact board version (zero means every
-revision for that vendor/product pair), version, HTTPS download URI, 64-character SHA-256,
-release notes, and publication timestamp.
+`MissionPlanner.Firmware` owns immutable models, manifest/catalogue handling, package validation, operation policy, device discovery, compatibility, protocol, recovery matching, and orchestration. `MissionPlanner.App` owns pages, file selection, dialogs, navigation policy, clipboard integration, and platform presentation. `MissionPlanner.Core` adapts the existing acknowledged MAVLink command infrastructure. The firmware project has no MAUI dependency and must remain UI-neutral.
 
-## Safety boundaries
+## Installation sequence
 
-1. `FirmwareManifestSelector` performs exact technical identity matching.
-2. `FirmwarePackageManager` checks an existing cache entry or downloads over HTTPS, computes
-   SHA-256, and refuses mismatches before caching.
-3. `FirmwareUpdateCoordinator` refuses flashing without a verified package and confirmed
-   parameter backup.
-4. Normal MAVLink must disconnect before an adapter is invoked.
-5. A successful adapter result enters `WaitingForReconnect`; the workflow completes only
-   when the same vehicle identity reconnects.
-6. `UnsupportedFirmwareFlashingService` is the default. Platform bootloader support must be
-   supplied through `IFirmwareFlashingService`; it must validate package/board compatibility
-   again and must not place serial bootloader logic in a view model.
+```mermaid
+sequenceDiagram
+    participant UI
+    participant I as FirmwareInstallationService
+    participant A as ArtifactDownloader
+    participant P as PackageReader
+    participant D as DeviceDiscovery
+    participant B as BootloaderClient
+    participant F as Flight Controller Bootloader
+    UI->>I: Install selected release
+    I->>A: Download atomically
+    A->>P: Parse bounded package
+    I->>D: Discover and identify
+    D->>B: Synchronize / identify
+    B->>F: GET_DEVICE
+    I->>I: Check board ID and flash size
+    UI-->>I: Final destructive confirmation
+    I->>B: Erase, program, verify, reboot
+    B->>F: Protocol commands
+    I-->>UI: Flash result + returning application device
+```
 
-After flashing, reconnect, verify the newly reported identity, and restore only reviewed
-parameters from the pre-flash backup.
+## Catalogue and package handling
+
+The ArduPilot manifest is retrieved over HTTPS, parsed into normalized data, cached with validators, and filterable by vehicle, release channel, board ID, and USB identity. Stale cached data is distinguishable from a fresh response. Catalogue choices are data-driven; the UI does not assume that every vehicle family exists in every response.
+
+APJ and PX4 GCS packages are JSON containers. Parsing checks their magic, declared and configured size limits, compressed image length, board metadata, optional external image, revision requirements, and checksum inputs before device access. Downloads use a bounded temporary file, validate length and optional SHA-256, parse it, then move it atomically into cache. Temporary and selected-file streams are disposed on every path.
+
+Supported image formats in this workflow are `.apj` and `.px4`. Intel HEX, `_with_bl.hex`, DFU, legacy boards, DroneCAN, BlueOS/network upload, SD-card `.abin`, UART telemetry adapters, and mobile USB-host flashing are not implemented. `.hex` requires a future DFU/legacy workflow.
+
+## Serial ownership, protocol, and recovery
+
+Only one firmware operation may own serial resources. Discovery snapshots devices, prioritizes explicit/new/USB-matching candidates, opens each candidate exclusively with bounded timeouts, and accepts it only after bootloader synchronization and identity. Rejected ports are closed immediately. Port names are treated as transient.
+
+The protocol client implements bounded synchronization, identify, erase, chunked program, checksum verification, and reboot operations. Board identity and writable size are known before erase. Verification is mandatory; a checksum mismatch can never report success.
+
+After reboot, recovery observes bootloader removal and matches the returning application using USB serial, stable OS path, VID/PID, product transition, and operation timing. A new COM name is expected and reported. Failure to rediscover the application does not invalidate a verified flash: the result is “flash succeeded; reconnect not detected.” The firmware library never reuses an old MAVLink parser, channel, or pending registration and never reconstructs the application session automatically.
+
+## State, safety, and cancellation
+
+The guarded lifecycle is Idle → catalogue/package/device/bootloader stages → compatibility → Erasing → Programming → Verifying → Rebooting → WaitingForApplication → Completed, with typed Failed and Cancelled terminals. Invalid transitions throw. Connection state is checked again in the installation service, so UI state alone cannot bypass the disconnected requirement.
+
+Board ID, revision, image size, flash capacity, external-flash, bootloader revision, and supported security metadata are checked before erase. The final prompt repeats detected and selected board IDs and image size. During erase/program/verify, power warnings are shown and navigation is blocked. Cancellation is immediate only before destructive work; once erase begins it is deferred so an abrupt cancellation cannot intentionally strand the controller mid-command. All protocol reads and discovery loops have bounded timeouts.
+
+Embedded Bootloader Update uses `MAV_CMD_FLASH_BOOTLOADER` (42650), confirmation value 290876 in parameter 5, the existing command/ACK service, an explicit warning, and connected/supported/disarmed gates. Accepted, temporary rejection, denial, unsupported, failure, and timeout remain distinct outcomes.
+
+## Platforms
+
+Direct serial installation is enabled for the implemented desktop hosts (Windows, Linux, and Mac Catalyst). Windows provides enriched device identity through its serial-device catalogue. Other targets show unsupported mode until a tested platform adapter exists. Automated protocol tests use in-memory transports and require no hardware.
+
+## Troubleshooting
+
+- Catalogue unavailable: retry Refresh; a valid cached catalogue may be shown as stale.
+- Vehicle connected: disconnect it through Mission Planner before normal installation.
+- Bootloader not found: unplug/replug the controller or use its reset button; confirm no other program owns the serial port.
+- Board mismatch or insufficient flash: select firmware for the detected board. These checks cannot be overridden in the initial implementation.
+- Verification failed: do not treat the controller as updated; copy the diagnostic report and retry only after checking cable and power.
+- Flash completed but reconnect not detected: reconnect manually and select the newly enumerated port. The flash itself remains successful.
+- Embedded update denied/unsupported: preserve the reported ACK outcome and verify the vehicle family, disarmed state, firmware support, and permissions.
+
+## Diagnostics and attribution
+
+Structured logs and the copyable report include operation ID, source, board identities, device transitions, stage, programmed size, verification, failure code, and elapsed time. Firmware bytes, unbounded responses, secrets, and signing material are never logged.
+
+Protocol behavior, manifest/APJ conventions, command semantics, and workflow expectations are derived from the upstream [ArduPilot bootloader documentation](https://ardupilot.org/dev/docs/bootloader.html), [pre-built binary documentation](https://ardupilot.org/dev/docs/pre-built-binaries.html), and [bootloader update documentation](https://ardupilot.org/copter/docs/common-bootloader-update.html). ArduPilot is GPLv3; see its [licence documentation](https://ardupilot.org/dev/docs/license-gplv3.html). This implementation is a clean integration in Mission Planner’s repository and retains the repository’s licensing obligations.
+
+## Existing mandatory-hardware firmware section
+
+The separate mandatory-hardware Setup section continues to display firmware identity from `HEARTBEAT` and `AUTOPILOT_VERSION` and uses the older `FirmwareManifestSelector`, `FirmwarePackageManager`, and `FirmwareUpdateCoordinator` abstractions. Its configured manifest entries require technical family/board/vendor/product matching and HTTPS/SHA-256 validation; labels are never binary-selection keys. `UnsupportedFirmwareFlashingService` remains its default adapter. That workflow and the modern direct bootloader page must not share or retain live serial/MAVLink ownership across a reboot transition.
