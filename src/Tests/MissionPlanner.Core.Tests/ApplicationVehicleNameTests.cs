@@ -31,7 +31,7 @@ public sealed class ApplicationVehicleNameTests
             activeVehicle,
             new ActiveVehicleChangedEventArgs(ActiveVehicleSnapshot.Empty, connected));
         state.VehicleId.Should().Be(session.Id);
-        state.VehicleName.Should().Be("SysID 1:Copter");
+        state.VehicleName.Should().Be("SysID 1:Quadrotor");
 
         session.ApplyHeartbeat(0, 1, 3, 0, 4, 3, DateTimeOffset.UtcNow);
         var updated = new ActiveVehicleSnapshot(session.Id, session.State);
@@ -39,7 +39,7 @@ public sealed class ApplicationVehicleNameTests
         activeVehicle.Changed += Raise.Event<EventHandler<ActiveVehicleChangedEventArgs>>(
             activeVehicle,
             new ActiveVehicleChangedEventArgs(connected, updated));
-        state.VehicleName.Should().Be("SysID 1:Plane");
+        state.VehicleName.Should().Be("SysID 1:Fixed Wing");
 
         var disconnectedState = session.State with
         {
@@ -51,7 +51,7 @@ public sealed class ApplicationVehicleNameTests
             activeVehicle,
             new ActiveVehicleChangedEventArgs(updated, disconnected));
         state.IsConnected.Should().BeFalse();
-        state.VehicleName.Should().Be("SysID 1:Plane");
+        state.VehicleName.Should().Be("SysID 1:Fixed Wing");
     }
 
     private static VehicleSession CreateSession(byte systemId, byte mavType)

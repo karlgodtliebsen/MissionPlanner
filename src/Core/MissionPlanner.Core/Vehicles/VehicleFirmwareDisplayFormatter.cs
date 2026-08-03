@@ -27,6 +27,9 @@ public static class VehicleFirmwareDisplayFormatter
             FirmwareReleaseType.ReleaseCandidate => "-rc",
             _ => $"-{(byte)version.ReleaseType}"
         };
-        return $"{family} {version.Major}.{version.Minor}.{version.Patch}{suffix}";
+        var gitHash = string.IsNullOrWhiteSpace(identity.FlightGitHash)
+            ? string.Empty
+            : $" ({identity.FlightGitHash})";
+        return $"{family} {version.Major}.{version.Minor}.{version.Patch}{suffix}{gitHash}";
     }
 }

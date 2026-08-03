@@ -104,15 +104,19 @@ public sealed class VehicleFirmwareIdentityTests
     [Fact]
     public void FormatsFirmwareDisplayName()
     {
-        var identity = VehicleFirmwareIdentityFactory.FromHeartbeat(2, 3) with { FlightVersion = new FirmwareSemanticVersion(4, 6, 2, FirmwareReleaseType.Development) };
-        VehicleFirmwareDisplayFormatter.Format(identity).Should().Be("ArduCopter 4.6.2-dev");
+        var identity = VehicleFirmwareIdentityFactory.FromHeartbeat(2, 3) with
+        {
+            FlightVersion = new FirmwareSemanticVersion(4, 6, 2, FirmwareReleaseType.Development),
+            FlightGitHash = "e9fc8620"
+        };
+        VehicleFirmwareDisplayFormatter.Format(identity).Should().Be("ArduCopter 4.6.2-dev (e9fc8620)");
     }
 
     /// <summary>Verifies friendly vehicle names for known families and MAV type fallbacks.</summary>
     [Theory]
-    [InlineData(1, FirmwareFamily.ArduCopter, 2, "SysID 1:Copter")]
-    [InlineData(2, FirmwareFamily.ArduPlane, 1, "SysID 2:Plane")]
-    [InlineData(3, FirmwareFamily.Rover, 10, "SysID 3:Rover")]
+    [InlineData(1, FirmwareFamily.ArduCopter, 2, "SysID 1:Quadrotor")]
+    [InlineData(2, FirmwareFamily.ArduPlane, 1, "SysID 2:Fixed Wing")]
+    [InlineData(3, FirmwareFamily.Rover, 10, "SysID 3:Ground Rover")]
     [InlineData(4, FirmwareFamily.Unknown, 2, "SysID 4:Quadrotor")]
     [InlineData(9, FirmwareFamily.Unknown, 0, "SysID 9:Unknown")]
     public void FormatsVehicleDisplayName(byte systemId, FirmwareFamily family, byte mavType, string expected)
@@ -129,11 +133,11 @@ public sealed class VehicleFirmwareIdentityTests
 
         session.ApplyHeartbeat(0, 2, 3, 0, 4, 3, DateTimeOffset.UtcNow);
         session.State.Identity.Should().BeSameAs(originalIdentity);
-        session.State.DisplayName.Should().Be("SysID 1:Copter");
+        session.State.DisplayName.Should().Be("SysID 1:Quadrotor");
 
         session.ApplyHeartbeat(0, 1, 3, 0, 4, 3, DateTimeOffset.UtcNow);
         session.State.Identity.Should().NotBeSameAs(originalIdentity);
-        session.State.DisplayName.Should().Be("SysID 1:Plane");
+        session.State.DisplayName.Should().Be("SysID 1:Fixed Wing");
         session.Id.ComponentId.Should().Be(1);
     }
 

@@ -1,4 +1,4 @@
-using MissionPlanner.Core.Vehicles.Models;
+﻿using MissionPlanner.Core.Vehicles.Models;
 
 namespace MissionPlanner.Core.Vehicles;
 
@@ -13,10 +13,11 @@ public static class VehicleDisplayNameFormatter
     /// <param name="vehicleId">The structured system and component identifier.</param>
     /// <param name="family">The derived firmware family.</param>
     /// <param name="mavType">The detailed MAV_TYPE value.</param>
-    /// <returns>A display name such as <c>SysID 1:Copter</c>.</returns>
+    /// <returns>A display name such as <c>SysID 1:Quadrotor</c>.</returns>
     public static string Format(VehicleId vehicleId, FirmwareFamily family, byte mavType)
     {
-        var typeName = family switch
+        var detailedType = FormatMavType(mavType);
+        var typeName = detailedType ?? family switch
         {
             FirmwareFamily.ArduCopter => "Copter",
             FirmwareFamily.ArduPlane => "Plane",
@@ -25,28 +26,39 @@ public static class VehicleDisplayNameFormatter
             FirmwareFamily.AntennaTracker => "Tracker",
             FirmwareFamily.APPeriph => "Peripheral",
             FirmwareFamily.Blimp => "Blimp",
-            _ => FormatMavType(mavType)
+            var _ => "Unknown"
         };
 
-        return $"SysID {vehicleId.SystemId}:{typeName}";
+        return $"{vehicleId.SystemId}:{typeName}"; //SysID
     }
 
-    private static string FormatMavType(byte mavType) => mavType switch
+    private static string? FormatMavType(byte mavType)
     {
-        1 => "Fixed Wing",
-        2 => "Quadrotor",
-        3 => "Coaxial",
-        4 => "Helicopter",
-        5 => "Antenna Tracker",
-        10 => "Ground Rover",
-        11 => "Surface Boat",
-        12 => "Submarine",
-        13 => "Hexarotor",
-        14 => "Octorotor",
-        15 => "Tricopter",
-        29 => "Dodecarotor",
-        35 => "Decarotor",
-        42 => "Blimp",
-        _ => "Unknown"
-    };
+        return mavType switch
+        {
+            1 => "Fixed Wing",
+            2 => "Quadrotor",
+            3 => "Coaxial",
+            4 => "Helicopter",
+            5 => "Antenna Tracker",
+            10 => "Ground Rover",
+            11 => "Surface Boat",
+            12 => "Submarine",
+            13 => "Hexarotor",
+            14 => "Octorotor",
+            15 => "Tricopter",
+            29 => "Dodecarotor",
+            35 => "Decarotor",
+            42 => "Blimp",
+            19 => "VTOL Tailsitter Duorotor",
+            20 => "VTOL Tailsitter Quadrotor",
+            21 => "VTOL Tiltrotor",
+            22 => "VTOL Fixed Rotor",
+            23 => "VTOL Tailsitter",
+            24 => "VTOL Tiltwing",
+            28 => "Parafoil",
+            41 => "Generic Multirotor",
+            var _ => null
+        };
+    }
 }
