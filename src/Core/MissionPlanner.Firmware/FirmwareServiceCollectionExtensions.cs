@@ -10,6 +10,7 @@ using MissionPlanner.Firmware.Entry;
 using MissionPlanner.Firmware.Compatibility;
 using MissionPlanner.Firmware.Downloads;
 using MissionPlanner.Firmware.Installation;
+using MissionPlanner.Firmware.Connected;
 
 namespace MissionPlanner.Firmware;
 
@@ -71,6 +72,7 @@ public static class FirmwareServiceCollectionExtensions
         services.TryAddSingleton<IFirmwareArtifactStore, FileSystemFirmwareArtifactStore>();
         services.TryAddSingleton<IFirmwareArtifactDownloader, FirmwareArtifactDownloader>();
         services.TryAddSingleton<IFirmwareInstallationService, FirmwareInstallationService>();
+        services.TryAddSingleton<IEmbeddedBootloaderUpdateService, EmbeddedBootloaderUpdateService>();
 
         return services;
     }

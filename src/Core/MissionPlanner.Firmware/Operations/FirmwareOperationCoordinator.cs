@@ -123,6 +123,7 @@ public sealed class FirmwareOperationCoordinator(ILogger<FirmwareOperationCoordi
             var map = new Dictionary<FirmwareOperationState, HashSet<FirmwareOperationState>>();
             Add(map, FirmwareOperationState.Idle, FirmwareOperationState.LoadingCatalog, FirmwareOperationState.SelectingFirmware,
                 FirmwareOperationState.Downloading, FirmwareOperationState.ValidatingPackage, FirmwareOperationState.WaitingForDevice, FirmwareOperationState.EnteringBootloader);
+            map[FirmwareOperationState.Idle].Add(FirmwareOperationState.CheckingCompatibility);
             Add(map, FirmwareOperationState.LoadingCatalog, FirmwareOperationState.SelectingFirmware);
             Add(map, FirmwareOperationState.SelectingFirmware, FirmwareOperationState.Downloading, FirmwareOperationState.ValidatingPackage);
             Add(map, FirmwareOperationState.Downloading, FirmwareOperationState.ValidatingPackage);
@@ -131,8 +132,10 @@ public sealed class FirmwareOperationCoordinator(ILogger<FirmwareOperationCoordi
             Add(map, FirmwareOperationState.EnteringBootloader, FirmwareOperationState.WaitingForDevice, FirmwareOperationState.IdentifyingBootloader);
             Add(map, FirmwareOperationState.IdentifyingBootloader, FirmwareOperationState.CheckingCompatibility);
             Add(map, FirmwareOperationState.CheckingCompatibility, FirmwareOperationState.Erasing);
+            map[FirmwareOperationState.CheckingCompatibility].Add(FirmwareOperationState.Programming);
             Add(map, FirmwareOperationState.Erasing, FirmwareOperationState.Programming);
             Add(map, FirmwareOperationState.Programming, FirmwareOperationState.Verifying);
+            map[FirmwareOperationState.Programming].Add(FirmwareOperationState.Completed);
             Add(map, FirmwareOperationState.Verifying, FirmwareOperationState.Rebooting);
             Add(map, FirmwareOperationState.Rebooting, FirmwareOperationState.WaitingForApplication, FirmwareOperationState.Completed);
             Add(map, FirmwareOperationState.WaitingForApplication, FirmwareOperationState.Completed);
