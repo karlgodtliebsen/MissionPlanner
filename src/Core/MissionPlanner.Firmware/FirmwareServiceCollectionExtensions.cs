@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MissionPlanner.Firmware.Operations;
 using MissionPlanner.Firmware.Catalog;
+using MissionPlanner.Firmware.Images;
 
 namespace MissionPlanner.Firmware;
 
@@ -28,6 +29,7 @@ public static class FirmwareServiceCollectionExtensions
                 "ManifestUri must be an absolute HTTP or HTTPS URI.")
             .Validate(value => value.CatalogCacheDuration > TimeSpan.Zero, "CatalogCacheDuration must be positive.")
             .Validate(value => value.MaximumManifestBytes > 0, "MaximumManifestBytes must be positive.")
+            .Validate(value => value.MaximumFirmwareImageBytes > 0, "MaximumFirmwareImageBytes must be positive.")
             .ValidateOnStart();
 
         services.TryAddSingleton<IFirmwareOperationCoordinator, FirmwareOperationCoordinator>();
@@ -37,6 +39,7 @@ public static class FirmwareServiceCollectionExtensions
         services.TryAddSingleton<IFirmwareManifestParser, ArduPilotFirmwareManifestParser>();
         services.TryAddSingleton<IFirmwareCatalogCache, MemoryFirmwareCatalogCache>();
         services.TryAddSingleton<IFirmwareCatalogService, FirmwareCatalogService>();
+        services.TryAddSingleton<IFirmwarePackageReader, ApjFirmwarePackageReader>();
 
         return services;
     }

@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <None Update="Fixtures\manifest.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Fixtures\valid.apj" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

@@ -14,4 +14,7 @@ public sealed class FirmwareOptions
 
     /// <summary>Gets or sets the maximum accepted decompressed manifest size.</summary>
     public int MaximumManifestBytes { get; set; } = 32 * 1024 * 1024;
+
+    /// <summary>Gets or sets the maximum accepted decompressed firmware image size.</summary>
+    public int MaximumFirmwareImageBytes { get; set; } = 32 * 1024 * 1024;
 }

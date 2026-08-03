@@ -1,0 +1,15 @@
+{
+  "magic": "APJFWv1",
+  "board_id": 50,
+  "board_revision": 1,
+  "description": "Test package",
+  "summary": "CubeOrange",
+  "version": "4.6.1",
+  "git_identity": "abcdef012345",
+  "image_size": 5,
+  "image_maxsize": 1024,
+  "image": "eJxjZGJmYQUAACgAEA==",
+  "extf_image_size": 3,
+  "extf_image": "eJzj5GAHAAA1ABk=",
+  "future_metadata": true
+}
