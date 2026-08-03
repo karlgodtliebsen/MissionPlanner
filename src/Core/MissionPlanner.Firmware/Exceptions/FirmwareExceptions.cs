@@ -25,3 +25,5 @@ public sealed class FirmwareVerificationException(string message, Exception? inn
 public sealed class FirmwareBusyException(string message, Exception? innerException = null) : FirmwareException(message, innerException);
 /// <summary>Indicates that a normal vehicle connection conflicts with firmware serial ownership.</summary>
 public sealed class FirmwareConnectionConflictException(string message, Exception? innerException = null) : FirmwareException(message, innerException);
+/// <summary>Indicates an illegal firmware-operation state transition.</summary>
+public sealed class FirmwareStateTransitionException(string message, Exception? innerException = null) : FirmwareException(message, innerException);

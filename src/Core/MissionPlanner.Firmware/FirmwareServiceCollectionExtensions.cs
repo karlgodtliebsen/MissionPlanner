@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using MissionPlanner.Firmware.Operations;
 
 namespace MissionPlanner.Firmware;
 
@@ -20,6 +22,8 @@ public static class FirmwareServiceCollectionExtensions
         {
             options.Configure(configure);
         }
+
+        services.TryAddSingleton<IFirmwareOperationCoordinator, FirmwareOperationCoordinator>();
 
         return services;
     }
