@@ -1,12 +1,12 @@
-﻿namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
+﻿namespace MissionPlanner.App.Navigation;
 
 /// <summary>Implements Setup-to-Config navigation through the application Shell hierarchy.</summary>
-public sealed class ShellSetupNavigationService : ISetupNavigationService
+public sealed class ShellNavigationService(IDispatcher dispatch) : INavigationService
 {
     /// <inheritdoc />
     public Task OpenConfigAsync(string destination)
     {
-        return MainThread.InvokeOnMainThreadAsync(() =>
+        return dispatch.DispatchAsync(() =>
         {
             var shell = Shell.Current ?? throw new InvalidOperationException("Application Shell is not available.");
             var config = shell.Items.FirstOrDefault(item => string.Equals(item.Title, "Config", StringComparison.Ordinal));

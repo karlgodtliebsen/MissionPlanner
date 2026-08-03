@@ -60,8 +60,11 @@ public static class ApplicationConfigurator
         services.AddSingleton(Options.Create(applicationOptions));
 
         // Register shared state service as singleton for runtime state management
-
+        services.TryAddSingleton<INavigationService, ShellNavigationService>();
+        services.TryAddSingleton<IModalNavigationService, ModalNavigationService>();
         services.TryAddSingleton<IConfigNavigationGuard, ConfigNavigationGuard>();
+
+
         services.TryAddSingleton<IPlannerSettingsStore, PreferencesPlannerSettingsStore>();
         services.TryAddSingleton<IPlannerSecretStore, SecurePlannerSecretStore>();
         services.TryAddSingleton<IPlannerSettingsService, PlannerSettingsService>();
@@ -89,10 +92,8 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<ITextClipboardService, TextClipboardService>();
         services.TryAddSingleton<ISetupCompletionStore, PreferencesSetupCompletionStore>();
         services.TryAddSingleton<IFirmwarePackageCache, FirmwarePackageCache>();
-        services.TryAddSingleton<ISetupNavigationService, ShellSetupNavigationService>();
         services.TryAddSingleton<IParameterComparisonService, ParameterComparisonService>();
         services.TryAddSingleton<IParameterValueEquivalence, ParameterValueEquivalence>();
-        services.TryAddSingleton<IModalNavigationService, ModalNavigationService>();
 
         services
             .AddLibraryServices()

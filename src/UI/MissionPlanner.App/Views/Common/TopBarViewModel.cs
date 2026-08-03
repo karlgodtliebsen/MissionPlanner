@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
+using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Views.Connect;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Replay;
@@ -25,6 +26,7 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
     private const string? DisConnectImage = "Resources/Images/x_light_connect_icon_x.png";
     private readonly IList<IDisposable> disposables = [];
     private readonly IReplaySessionManager replaySessionManager;
+    private readonly INavigationService navigationService;
 
     [ObservableProperty] public partial bool IsConnected { get; set; }
     [ObservableProperty] public partial string? Host { get; set; }
@@ -55,19 +57,22 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
     /// <param name="domainEventHub">The domain event hub.</param>
     /// <param name="logger">The logger instance.</param>
     /// <param name="replaySessionManager">Application-wide replay safety state.</param>
+    /// <param name="navigationService">Shell navigation for configuration destinations.</param>
     public TopBarViewModel(
         ApplicationStateService stateService,
         IServiceFactory serviceFactory,
         IDispatcher dispatcher,
         IDomainEventHub domainEventHub,
         ILogger<TopBarViewModel> logger,
-        IReplaySessionManager replaySessionManager)
+        IReplaySessionManager replaySessionManager,
+        INavigationService navigationService)
     {
         this.logger = logger;
         this.stateService = stateService;
         this.serviceFactory = serviceFactory;
         this.dispatcher = dispatcher;
         this.replaySessionManager = replaySessionManager;
+        this.navigationService = navigationService;
         // Subscribe to connection events
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected));
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
@@ -159,6 +164,12 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
         var view = serviceFactory.Create<ConnectPopupView>();
         var dialogService = serviceFactory.Create<IDialogService>();
         await dialogService.DisplayViewAsync("Connection", view, "Close");
+    }
+
+    [RelayCommand]
+    private Task OpenSettingsAsync()
+    {
+        return navigationService.OpenConfigAsync("Planner");
     }
 
     /// <inheritdoc />

@@ -4,13 +4,13 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.App.Helpers;
+using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Services;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
-using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
 using MissionPlanner.App.Views.Simulation;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Fences;
@@ -99,7 +99,7 @@ public sealed class SetupWorkspaceTests
             parameters,
             new SetupWorkflowCatalog(),
             new MemoryCompletionStore(),
-            Substitute.For<ISetupNavigationService>(),
+            Substitute.For<INavigationService>(),
             confirmation,
             clock,
             dispatcher,
@@ -137,7 +137,7 @@ public sealed class SetupWorkspaceTests
             new VehicleParameterRegistry(),
             new SetupWorkflowCatalog(),
             new MemoryCompletionStore(),
-            Substitute.For<ISetupNavigationService>(),
+            Substitute.For<INavigationService>(),
             Substitute.For<IUserConfirmationService>(),
             Substitute.For<IDateTimeProvider>(),
             dispatcher,
@@ -186,7 +186,7 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<IOptionalHardwareCatalog>().Modules.Should().NotBeEmpty();
         provider.GetRequiredService<ISafetyAssessmentService>().Should().NotBeNull();
         provider.GetRequiredService<ISetupSummaryService>().Should().NotBeNull();
-        provider.GetRequiredService<ISetupNavigationService>().Should().NotBeNull();
+        provider.GetRequiredService<INavigationService>().Should().NotBeNull();
         provider.GetRequiredService<MandatoryHardwareViewModel>().Should().NotBeNull();
         var firmwareViewModel = provider.GetRequiredService<FirmwareSetupViewModel>();
         firmwareViewModel.Descriptor.Key.Should().Be(SetupWorkflowKey.Firmware);

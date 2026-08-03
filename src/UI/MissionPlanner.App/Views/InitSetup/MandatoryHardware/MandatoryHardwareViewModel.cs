@@ -1,10 +1,10 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
-using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -20,7 +20,7 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
     private readonly IVehicleParameterRegistry parameterRegistry;
     private readonly ISetupWorkflowCatalog catalog;
     private readonly ISetupCompletionStore completionStore;
-    private readonly ISetupNavigationService navigation;
+    private readonly INavigationService navigation;
     private readonly IUserConfirmationService confirmation;
     private readonly IDateTimeProvider clock;
     private readonly IDispatcher dispatcher;
@@ -45,7 +45,7 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
         IVehicleParameterRegistry parameterRegistry,
         ISetupWorkflowCatalog catalog,
         ISetupCompletionStore completionStore,
-        ISetupNavigationService navigation,
+        INavigationService navigation,
         IUserConfirmationService confirmation,
         IDateTimeProvider clock,
         IDispatcher dispatcher,
