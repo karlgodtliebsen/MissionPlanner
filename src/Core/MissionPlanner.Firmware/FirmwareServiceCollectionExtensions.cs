@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using MissionPlanner.Firmware.Operations;
 using MissionPlanner.Firmware.Catalog;
 using MissionPlanner.Firmware.Images;
+using MissionPlanner.Firmware.Devices;
 
 namespace MissionPlanner.Firmware;
 
@@ -40,6 +41,12 @@ public static class FirmwareServiceCollectionExtensions
         services.TryAddSingleton<IFirmwareCatalogCache, MemoryFirmwareCatalogCache>();
         services.TryAddSingleton<IFirmwareCatalogService, FirmwareCatalogService>();
         services.TryAddSingleton<IFirmwarePackageReader, ApjFirmwarePackageReader>();
+        services.TryAddSingleton<IFirmwareSerialDeviceCatalog>(serviceProvider =>
+            OperatingSystem.IsWindows()
+                ? new WindowsSerialDeviceCatalog(serviceProvider.GetRequiredService<TimeProvider>())
+                : new SystemSerialDeviceCatalog(serviceProvider.GetRequiredService<TimeProvider>()));
+        services.TryAddSingleton<IFirmwareDeviceMonitor, PollingFirmwareDeviceMonitor>();
+        services.TryAddSingleton<IFirmwareSerialPortFactory, SystemFirmwareSerialPortFactory>();
 
         return services;
     }
