@@ -11,7 +11,14 @@ namespace UraniumUI.Material.VirtualizedDataGrid.Controls;
 internal sealed class VirtualizedDataGridRowsHost : ScrollView
 {
     private readonly VirtualizedDataGrid owner;
-    private readonly AbsoluteLayout extent = new();
+    // A ScrollView may center content whose requested height is shorter than its
+    // viewport on some handlers. Virtual row offsets are relative to the top of
+    // the logical extent, so keep that short extent explicitly top-aligned.
+    private readonly AbsoluteLayout extent = new()
+    {
+        HorizontalOptions = LayoutOptions.Start,
+        VerticalOptions = LayoutOptions.Start
+    };
     private readonly Dictionary<int, VirtualizedDataGridRowPresenter> realized = [];
     private readonly Stack<VirtualizedDataGridRowPresenter> recycled = [];
 

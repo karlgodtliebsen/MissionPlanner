@@ -158,6 +158,42 @@ public class VirtualizedDataGrid_Layout_Tests
         grid.ExposedRootLayout.RowDefinitions[1].Height.ShouldBe(GridLength.Star);
     }
 
+    [Theory]
+    [InlineData(1)]
+    [InlineData(5)]
+    public void ShortRowsExtent_ShouldRemainTopAligned(int rowCount)
+    {
+        var grid = new TestableVirtualizedDataGrid
+        {
+            RowHeight = 80,
+            Columns =
+            [
+                new DataGridColumn
+                {
+                    Title = "Name",
+                    ValueBinding = new Binding(nameof(Row.Name))
+                }
+            ],
+            ItemsSource = new ObservableCollection<Row>(
+                Enumerable.Range(0, rowCount)
+                    .Select(index => new Row($"Row {index}", false)))
+        };
+
+        grid.CalculateViewport(0, 600);
+
+        var extent = grid.ExposedRowsView.Content.ShouldBeOfType<AbsoluteLayout>();
+        extent.VerticalOptions.ShouldBe(LayoutOptions.Start);
+        extent.HeightRequest.ShouldBe(rowCount * 80);
+
+        var presenters = extent.Children
+            .OfType<View>()
+            .OrderBy(view => AbsoluteLayout.GetLayoutBounds(view).Y)
+            .ToArray();
+        presenters.Length.ShouldBe(rowCount);
+        AbsoluteLayout.GetLayoutBounds(presenters[0]).Y.ShouldBe(0);
+        AbsoluteLayout.GetLayoutBounds(presenters[^1]).Y.ShouldBe((rowCount - 1) * 80);
+    }
+
     [Fact]
     public void FixedRowHeight_ShouldBeAppliedToVirtualizedPresenters()
     {
