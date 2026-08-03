@@ -1,4 +1,4 @@
-using ProtocolAutopilot = MissionPlanner.MavLink.Generated.MavAutopilot;
+﻿using ProtocolAutopilot = MissionPlanner.MavLink.Generated.MavAutopilot;
 using ProtocolCapability = MissionPlanner.MavLink.Generated.MavProtocolCapability;
 using ProtocolVehicleType = MissionPlanner.MavLink.Generated.MavType;
 
@@ -15,33 +15,28 @@ public static class MavLinkDomainMappings
     /// <param name="mavType">The generated MAV_TYPE value.</param>
     /// <param name="autopilot">The generated MAV_AUTOPILOT value.</param>
     /// <returns>The domain firmware family, or <see cref="FirmwareFamily.Unknown"/>.</returns>
-    public static FirmwareFamily ToFirmwareFamily(
-        this ProtocolVehicleType mavType,
-        ProtocolAutopilot autopilot)
+    public static FirmwareFamily ToFirmwareFamily(this ProtocolVehicleType mavType, ProtocolAutopilot autopilot)
     {
-        if (autopilot != ProtocolAutopilot.ArduPilotMega)
-        {
-            return FirmwareFamily.Unknown;
-        }
-
-        return mavType switch
-        {
-            ProtocolVehicleType.FixedWing => FirmwareFamily.ArduPlane,
-            ProtocolVehicleType.Quadrotor
-                or ProtocolVehicleType.Coaxial
-                or ProtocolVehicleType.Helicopter
-                or ProtocolVehicleType.Hexarotor
-                or ProtocolVehicleType.Octorotor
-                or ProtocolVehicleType.Tricopter
-                or ProtocolVehicleType.Dodecarotor
-                or ProtocolVehicleType.Decarotor
-                or ProtocolVehicleType.GenericMultirotor => FirmwareFamily.ArduCopter,
-            ProtocolVehicleType.GroundRover or ProtocolVehicleType.SurfaceBoat => FirmwareFamily.Rover,
-            ProtocolVehicleType.Submarine => FirmwareFamily.ArduSub,
-            ProtocolVehicleType.AntennaTracker => FirmwareFamily.AntennaTracker,
-            ProtocolVehicleType.Airship => FirmwareFamily.Blimp,
-            _ => FirmwareFamily.Unknown
-        };
+        return autopilot != ProtocolAutopilot.ArduPilotMega
+            ? FirmwareFamily.Unknown
+            : mavType switch
+            {
+                ProtocolVehicleType.FixedWing => FirmwareFamily.ArduPlane,
+                ProtocolVehicleType.Quadrotor
+                    or ProtocolVehicleType.Coaxial
+                    or ProtocolVehicleType.Helicopter
+                    or ProtocolVehicleType.Hexarotor
+                    or ProtocolVehicleType.Octorotor
+                    or ProtocolVehicleType.Tricopter
+                    or ProtocolVehicleType.Dodecarotor
+                    or ProtocolVehicleType.Decarotor
+                    or ProtocolVehicleType.GenericMultirotor => FirmwareFamily.ArduCopter,
+                ProtocolVehicleType.GroundRover or ProtocolVehicleType.SurfaceBoat => FirmwareFamily.Rover,
+                ProtocolVehicleType.Submarine => FirmwareFamily.ArduSub,
+                ProtocolVehicleType.AntennaTracker => FirmwareFamily.AntennaTracker,
+                ProtocolVehicleType.Airship => FirmwareFamily.Blimp,
+                var _ => FirmwareFamily.Unknown
+            };
     }
 
     /// <summary>
