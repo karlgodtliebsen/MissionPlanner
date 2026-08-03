@@ -40,6 +40,7 @@ public sealed partial class FirmwareProgressViewModel : ObservableObject
     [ObservableProperty] public partial double Progress { get; set; }
     [ObservableProperty] public partial bool HasPercentage { get; set; }
     [ObservableProperty] public partial bool IsPowerCritical { get; set; }
+    [ObservableProperty] public partial string? TechnicalDetail { get; set; }
 }
 
 /// <summary>Drives connected and disconnected firmware installation experiences.</summary>
@@ -51,6 +52,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     private readonly IFirmwareSerialDeviceCatalog deviceCatalog;
     private readonly IFirmwarePageModeResolver modeResolver;
     private readonly IFirmwarePackageReader packageReader;
+    private readonly IFirmwareFilePicker filePicker;
     private readonly IActiveVehicleContext activeVehicle;
     private readonly ILogger<InstallFirmwareViewModel> logger;
     private readonly IUserConfirmationService confirmation;
@@ -66,6 +68,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         IFirmwareSerialDeviceCatalog deviceCatalog,
         IFirmwarePageModeResolver modeResolver,
         IFirmwarePackageReader packageReader,
+        IFirmwareFilePicker filePicker,
         IActiveVehicleContext activeVehicle,
         IUserConfirmationService confirmation,
         IDispatcher dispatcher,
@@ -77,6 +80,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         this.deviceCatalog = deviceCatalog;
         this.modeResolver = modeResolver;
         this.packageReader = packageReader;
+        this.filePicker = filePicker;
         this.activeVehicle = activeVehicle;
         this.confirmation = confirmation;
         this.dispatcher = dispatcher;
@@ -127,6 +131,12 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         activeVehicle.Changed += OnActiveVehicleChanged;
         StatusMessage = "Ready";
         OperationProgress.Stage = "Ready";
+        OperationProgress.Progress = 0;
+        OperationProgress.HasPercentage = false;
+        OperationProgress.IsPowerCritical = false;
+        OperationProgress.TechnicalDetail = null;
+        LastDiagnosticReport = null;
+        OnPropertyChanged(nameof(HasDiagnosticReport));
         ApplyMode();
         if (IsDisconnectedMode) await RefreshAsync(false, lifetime.Token);
     }
@@ -165,7 +175,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     {
         try
         {
-            var file = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Select ArduPilot firmware (.apj or .px4)" });
+            var file = await filePicker.PickAsync(cancellationToken);
             if (file is null) return;
             var extension = Path.GetExtension(file.FileName);
             if (extension.Equals(".hex", StringComparison.OrdinalIgnoreCase))
@@ -173,7 +183,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             if (!extension.Equals(".apj", StringComparison.OrdinalIgnoreCase) && !extension.Equals(".px4", StringComparison.OrdinalIgnoreCase))
                 throw new NotSupportedException("Only .apj and .px4 firmware packages are supported by the modern bootloader workflow.");
 
-            await using var stream = await file.OpenReadAsync();
+            await using var stream = await file.OpenReadAsync(cancellationToken);
             var package = await packageReader.ReadAsync(stream, cancellationToken);
             CustomPackage = package;
             CustomFirmwareName = file.FileName;
@@ -279,10 +289,13 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             var catalog = await catalogService.GetCatalogAsync(
                 new FirmwareCatalogRequest(Channel: allOptions ? null : SelectedChannel, ForceRefresh: forceRefresh),
                 cancellationToken);
+            var devices = await deviceCatalog.GetDevicesAsync(cancellationToken);
             var choices = catalog.Entries
-                .Where(entry => entry.Target.VehicleType != FirmwareVehicleType.Unknown)
+                .Where(entry => entry.Target.VehicleType != FirmwareVehicleType.Unknown &&
+                                entry.Artifact.Format is FirmwareImageFormat.Apj or FirmwareImageFormat.Px4)
                 .GroupBy(entry => allOptions ? $"{entry.Target.VehicleType}:{entry.Target.Platform}:{entry.Target.BoardId}" : entry.Target.VehicleType.ToString())
-                .Select(group => group.First())
+                .Select(group => group.FirstOrDefault(entry =>
+                    entry.Target.UsbIdentifiers.Any(expected => devices.Any(device => device.UsbIdentifier == expected))) ?? group.First())
                 .OrderBy(item => item.Target.VehicleType).ThenBy(item => item.Target.Platform)
                 .Select(item => new FirmwareCatalogItemViewModel(item))
                 .ToArray();
@@ -292,7 +305,6 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             CustomPackage = null;
             OnPropertyChanged(nameof(HasCustomFirmware));
 
-            var devices = await deviceCatalog.GetDevicesAsync(cancellationToken);
             Devices.Clear();
             foreach (var device in devices) Devices.Add($"{device.PortName} · {device.ProductName ?? "Serial device"} · {device.UsbIdentifier?.ToString() ?? "USB identity unavailable"}");
             DeviceStatus = Devices.Count == 0 ? "No flight controller detected" : string.Join(Environment.NewLine, Devices);
@@ -321,7 +333,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     private void ApplyMode(FirmwareOperationState? stage = null)
     {
         var state = modeResolver.Resolve(new FirmwarePageContext(
-            OperatingSystem.IsWindows() || OperatingSystem.IsLinux() || OperatingSystem.IsMacCatalyst(),
+            OperatingSystem.IsWindows(),
             activeVehicle.IsOnline,
             activeVehicle.State?.IsArmed == true,
             activeVehicle.State is not null && activeVehicle.State.Identity.Firmware.Family != Core.Vehicles.Models.FirmwareFamily.Unknown,
@@ -339,9 +351,10 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     private void UpdateProgress(FirmwareProgress progress)
     {
         OperationProgress.Stage = StageText(progress);
-        OperationProgress.Progress = progress.Percentage ?? 0;
+        OperationProgress.Progress = (progress.Percentage ?? 0) / 100d;
         OperationProgress.HasPercentage = progress.Percentage.HasValue;
         OperationProgress.IsPowerCritical = progress.State is FirmwareOperationState.Erasing or FirmwareOperationState.Programming or FirmwareOperationState.Verifying;
+        OperationProgress.TechnicalDetail = progress.TechnicalDetail;
         StatusMessage = OperationProgress.Stage;
     }
 

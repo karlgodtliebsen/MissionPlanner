@@ -39,6 +39,7 @@ public static class FirmwareServiceCollectionExtensions
                 "ManifestUri must be an absolute HTTP or HTTPS URI.")
             .Validate(value => value.CatalogCacheDuration > TimeSpan.Zero, "CatalogCacheDuration must be positive.")
             .Validate(value => value.MaximumManifestBytes > 0, "MaximumManifestBytes must be positive.")
+            .Validate(value => value.MaximumManifestDownloadBytes > 0, "MaximumManifestDownloadBytes must be positive.")
             .Validate(value => value.MaximumFirmwareImageBytes > 0, "MaximumFirmwareImageBytes must be positive.")
             .Validate(value => value.BootloaderCommandTimeout > TimeSpan.Zero, "BootloaderCommandTimeout must be positive.")
             .Validate(value => value.BootloaderEraseTimeout > TimeSpan.Zero, "BootloaderEraseTimeout must be positive.")
@@ -47,6 +48,8 @@ public static class FirmwareServiceCollectionExtensions
             .Validate(value => value.BootloaderDiscoveryTimeout > TimeSpan.Zero, "BootloaderDiscoveryTimeout must be positive.")
             .Validate(value => value.BootloaderPortOpenTimeout > TimeSpan.Zero, "BootloaderPortOpenTimeout must be positive.")
             .Validate(value => value.BootloaderBaudRate > 0, "BootloaderBaudRate must be positive.")
+            .Validate(value => value.TemporaryMavLinkHeartbeatTimeout > TimeSpan.Zero, "TemporaryMavLinkHeartbeatTimeout must be positive.")
+            .Validate(value => value.TemporaryMavLinkCommandAckTimeout > TimeSpan.Zero, "TemporaryMavLinkCommandAckTimeout must be positive.")
             .Validate(value => value.MaximumArtifactBytes > 0, "MaximumArtifactBytes must be positive.")
             .ValidateOnStart();
 

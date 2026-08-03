@@ -21,9 +21,9 @@ public sealed class PollingFirmwareDeviceMonitor(
             await Task.Delay(pollInterval, timeProvider, cancellationToken).ConfigureAwait(false);
             var current = Index(await catalog.GetDevicesAsync(cancellationToken).ConfigureAwait(false));
             var now = timeProvider.GetUtcNow();
-            foreach (var pair in previous.Where(pair => !current.ContainsKey(pair.Key)).OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase))
+            foreach (var pair in previous.Where(pair => !current.TryGetValue(pair.Key, out var replacement) || !SameDeviceMode(pair.Value, replacement)).OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase))
                 yield return new FirmwareDeviceChange(FirmwareDeviceChangeKind.Removed, pair.Value, now);
-            foreach (var pair in current.Where(pair => !previous.ContainsKey(pair.Key)).OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase))
+            foreach (var pair in current.Where(pair => !previous.TryGetValue(pair.Key, out var replaced) || !SameDeviceMode(replaced, pair.Value)).OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase))
                 yield return new FirmwareDeviceChange(FirmwareDeviceChangeKind.Arrived, pair.Value, now);
             previous = current;
         }
@@ -33,4 +33,11 @@ public sealed class PollingFirmwareDeviceMonitor(
         devices.GroupBy(DeviceKey, StringComparer.OrdinalIgnoreCase).ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
 
     private static string DeviceKey(SerialDeviceDescriptor device) => device.StableIdentity ?? $"transient:{device.PortName}";
+
+    private static bool SameDeviceMode(SerialDeviceDescriptor left, SerialDeviceDescriptor right) =>
+        string.Equals(left.PortName, right.PortName, StringComparison.OrdinalIgnoreCase) &&
+        left.UsbIdentifier == right.UsbIdentifier &&
+        string.Equals(left.ProductName, right.ProductName, StringComparison.OrdinalIgnoreCase) &&
+        string.Equals(left.Manufacturer, right.Manufacturer, StringComparison.OrdinalIgnoreCase) &&
+        left.BoardHints.SequenceEqual(right.BoardHints, StringComparer.OrdinalIgnoreCase);
 }

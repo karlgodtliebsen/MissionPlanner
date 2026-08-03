@@ -62,12 +62,13 @@
                 </Border>
 
                 <Border Padding="16" StrokeShape="RoundRectangle 8">
-                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
                         <Label Text="Selected firmware" FontAttributes="Bold" />
                         <Label Grid.Row="1" Text="{Binding SelectedFirmware.Platform, StringFormat='Platform: {0}'}" />
                         <Label Grid.Row="2" Text="{Binding SelectedFirmware.BoardId, StringFormat='Firmware board ID: {0}'}" />
                         <Label Grid.Row="3" Text="{Binding SelectedFirmware.Version, StringFormat='Version: {0}'}" />
-                        <Button Grid.Column="1" Grid.RowSpan="4" Text="Install" Command="{Binding InstallCommand}" IsEnabled="{Binding CanInstall}" VerticalOptions="Center" />
+                        <Label Grid.Row="4" Text="{Binding SelectedFirmware.Channel, StringFormat='Channel: {0}'}" />
+                        <Button Grid.Column="1" Grid.RowSpan="5" Text="Install" Command="{Binding InstallCommand}" IsEnabled="{Binding CanInstall}" VerticalOptions="Center" />
                     </Grid>
                 </Border>
                 <Label Text="Detected device" FontAttributes="Bold" />
@@ -81,6 +82,7 @@
             <Border IsVisible="{Binding IsOperationInProgress}" Padding="20" StrokeShape="RoundRectangle 10">
                 <VerticalStackLayout Spacing="10">
                     <Label Text="{Binding OperationProgress.Stage}" FontSize="20" FontAttributes="Bold" />
+                    <Label Text="{Binding OperationProgress.TechnicalDetail}" />
                     <ProgressBar Progress="{Binding OperationProgress.Progress}" IsVisible="{Binding OperationProgress.HasPercentage}" />
                     <Label Text="Do not disconnect power while flash memory is being changed." TextColor="OrangeRed" IsVisible="{Binding OperationProgress.IsPowerCritical}" />
                 </VerticalStackLayout>

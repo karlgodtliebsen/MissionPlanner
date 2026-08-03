@@ -45,7 +45,9 @@ public sealed class FirmwareArtifactDownloader(
             using var response = await httpClient.GetAsync(artifact.DownloadUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
             var declared = response.Content.Headers.ContentLength;
-            var limit = Math.Min(options.Value.MaximumArtifactBytes, artifact.Size);
+            var limit = artifact.Size is { } expectedSize
+                ? Math.Min(options.Value.MaximumArtifactBytes, expectedSize)
+                : options.Value.MaximumArtifactBytes;
             if (declared > limit) throw new FirmwareDownloadException("Firmware artifact exceeds the configured size limit.");
             await using var source = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
@@ -60,7 +62,8 @@ public sealed class FirmwareArtifactDownloader(
                 hash.AppendData(buffer, 0, read);
                 progress?.Report(new FirmwareProgress(FirmwareOperationState.Downloading, declared is > 0 ? total * 100d / declared : null, "download.progress", total, declared));
             }
-            if (total != artifact.Size) throw new FirmwareDownloadException($"Downloaded size {total} does not match declared artifact size {artifact.Size}.");
+            if (artifact.Size is { } exactSize && total != exactSize)
+                throw new FirmwareDownloadException($"Downloaded size {total} does not match declared artifact size {exactSize}.");
             var sha = Convert.ToHexString(hash.GetHashAndReset());
             if (artifact.Sha256 is not null && !CryptographicOperations.FixedTimeEquals(Convert.FromHexString(artifact.Sha256), Convert.FromHexString(sha)))
                 throw new FirmwareDownloadException("Firmware artifact SHA-256 verification failed.");
@@ -80,7 +83,8 @@ public sealed class FirmwareArtifactDownloader(
 
     private async Task<DownloadedFirmwareArtifact?> ValidateStoredAsync(IFirmwareStoredArtifact stored, FirmwareArtifact expected, bool fromCache, CancellationToken cancellationToken)
     {
-        if (stored.Metadata.Size != expected.Size || expected.Sha256 is not null && !string.Equals(stored.Metadata.Sha256, expected.Sha256, StringComparison.OrdinalIgnoreCase)) return null;
+        if (expected.Size is { } exactSize && stored.Metadata.Size != exactSize ||
+            expected.Sha256 is not null && !string.Equals(stored.Metadata.Sha256, expected.Sha256, StringComparison.OrdinalIgnoreCase)) return null;
         await using var stream = await stored.OpenReadAsync(cancellationToken).ConfigureAwait(false);
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         var buffer = new byte[81920];

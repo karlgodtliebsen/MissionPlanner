@@ -115,6 +115,24 @@ public sealed class FirmwareArtifactDownloaderTests
         reports[^1].CompletedBytes.Should().Be(bytes.Length);
     }
 
+    [Fact]
+    public async Task OfficialManifestArtifactWithoutEncodedLengthDownloadsWithinConfiguredBound()
+    {
+        var bytes = ValidPackage();
+        var store = new MemoryStore();
+        var downloader = CreateDownloader(new StaticHandler(bytes), store);
+        var artifact = new FirmwareArtifact(
+            new Uri("https://firmware.ardupilot.org/Copter/stable/Board/arducopter.apj"),
+            FirmwareImageFormat.Apj,
+            imageSize: 807112);
+
+        var result = await downloader.DownloadAsync(artifact, cancellationToken: TestContext.Current.CancellationToken);
+
+        result.Package.BoardId.Should().Be(50);
+        result.Metadata.Size.Should().Be(bytes.Length);
+        store.Commits.Should().Be(1);
+    }
+
     private static FirmwareArtifactDownloader CreateDownloader(HttpMessageHandler handler, IFirmwareArtifactStore store, long maximumBytes = 1024 * 1024) =>
         new(new HttpClient(handler), store, new ApjFirmwarePackageReader(Options.Create(new FirmwareOptions())),
             Options.Create(new FirmwareOptions { MaximumArtifactBytes = maximumBytes }), TimeProvider.System);

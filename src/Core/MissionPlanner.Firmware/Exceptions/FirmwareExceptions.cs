@@ -24,6 +24,28 @@ public sealed class FirmwareVerificationException(string message, Exception? inn
 /// <summary>Indicates that another firmware operation already owns the subsystem.</summary>
 public sealed class FirmwareBusyException(string message, Exception? innerException = null) : FirmwareException(message, innerException);
 /// <summary>Indicates that a normal vehicle connection conflicts with firmware serial ownership.</summary>
-public sealed class FirmwareConnectionConflictException(string message, Exception? innerException = null) : FirmwareException(message, innerException);
+public sealed class FirmwareConnectionConflictException : FirmwareException
+{
+    /// <summary>Creates a conflict without operation context for compatibility with gateway callers.</summary>
+    public FirmwareConnectionConflictException(string message, Exception? innerException = null) : base(message, innerException) { }
+
+    /// <summary>Creates a conflict carrying the failed operation identity and state.</summary>
+    public FirmwareConnectionConflictException(
+        string message,
+        Guid operationId,
+        MissionPlanner.Firmware.Model.FirmwareOperationState state,
+        Exception? innerException = null)
+        : base($"{message} Operation: {operationId}; state: {state}.", innerException)
+    {
+        OperationId = operationId;
+        State = state;
+    }
+
+    /// <summary>Gets the rejected operation identity when available.</summary>
+    public Guid? OperationId { get; }
+
+    /// <summary>Gets the operation state at rejection when available.</summary>
+    public MissionPlanner.Firmware.Model.FirmwareOperationState? State { get; }
+}
 /// <summary>Indicates an illegal firmware-operation state transition.</summary>
 public sealed class FirmwareStateTransitionException(string message, Exception? innerException = null) : FirmwareException(message, innerException);

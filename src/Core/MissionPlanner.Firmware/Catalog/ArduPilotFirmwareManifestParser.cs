@@ -45,8 +45,9 @@ public sealed class ArduPilotFirmwareManifestParser(IOptions<FirmwareOptions> op
         var bootloaders = ParseStrings(item, "bootloader_str");
         var target = new FirmwareBoardTarget(boardId, platform, ParseVehicle(GetString(item, "vehicletype")), usb, bootloaders);
         var format = ParseFormat(GetString(item, "format"), url);
-        var size = GetLong(item, "image-size") ?? GetLong(item, "size") ?? 1;
-        var artifact = new FirmwareArtifact(url, format, size, GetString(item, "sha256"));
+        var encodedSize = GetLong(item, "size");
+        var imageSize = GetLong(item, "image_size") ?? GetLong(item, "image-size");
+        var artifact = new FirmwareArtifact(url, format, encodedSize, GetString(item, "sha256"), imageSize);
         var raw = item.EnumerateObject().ToDictionary(property => property.Name, property => property.Value.GetRawText(), StringComparer.Ordinal);
         return new FirmwareManifestEntry(
             new FirmwareVersion(versionText, semantic),
@@ -94,14 +95,19 @@ public sealed class ArduPilotFirmwareManifestParser(IOptions<FirmwareOptions> op
         }
     }
 
-    private static FirmwareReleaseChannel ParseChannel(string? value, JsonElement item) => value?.ToUpperInvariant() switch
+    private static FirmwareReleaseChannel ParseChannel(string? value, JsonElement item)
     {
-        "OFFICIAL" or "STABLE" => FirmwareReleaseChannel.Stable,
-        "BETA" => FirmwareReleaseChannel.Beta,
-        "DEV" or "DEVELOPMENT" or "LATEST" => FirmwareReleaseChannel.Latest,
-        _ when item.TryGetProperty("latest", out var latest) && latest.ValueKind == JsonValueKind.Number => FirmwareReleaseChannel.Latest,
-        _ => FirmwareReleaseChannel.Historical
-    };
+        var normalized = value?.Trim().ToUpperInvariant();
+        if (normalized is not null && (normalized.StartsWith("OFFICIAL", StringComparison.Ordinal) || normalized.StartsWith("STABLE", StringComparison.Ordinal)))
+            return FirmwareReleaseChannel.Stable;
+        if (normalized?.StartsWith("BETA", StringComparison.Ordinal) == true)
+            return FirmwareReleaseChannel.Beta;
+        if (normalized is not null && (normalized.StartsWith("DEV", StringComparison.Ordinal) || normalized.StartsWith("LATEST", StringComparison.Ordinal)))
+            return FirmwareReleaseChannel.Latest;
+        return item.TryGetProperty("latest", out var latest) && latest.ValueKind == JsonValueKind.Number && latest.GetInt32() != 0
+            ? FirmwareReleaseChannel.Latest
+            : FirmwareReleaseChannel.Historical;
+    }
 
     private static FirmwareVehicleType ParseVehicle(string? value) => value?.Replace("-", string.Empty).Replace("_", string.Empty).ToUpperInvariant() switch
     {

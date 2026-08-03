@@ -36,6 +36,36 @@ public sealed class FirmwareApplicationDiscoveryServiceTests
         result.Should().BeNull();
     }
 
+    [Fact]
+    public async Task MatchesUsbSerialWhenNoStableOsPathExistsAndPortNameIsReused()
+    {
+        var bootloader = new SerialDeviceDescriptor("COM9", usbIdentifier: new UsbIdentifier(0x1209, 0x5740), usbSerialNumber: "ABC", productName: "ArduPilot Bootloader");
+        var application = new SerialDeviceDescriptor("COM9", usbIdentifier: new UsbIdentifier(0x1209, 0x5740), usbSerialNumber: "ABC", productName: "ArduPilot");
+        var service = Create([], [
+            new FirmwareDeviceChange(FirmwareDeviceChangeKind.Removed, bootloader, DateTimeOffset.UtcNow),
+            new FirmwareDeviceChange(FirmwareDeviceChangeKind.Arrived, application, DateTimeOffset.UtcNow)]);
+
+        var result = await service.FindAsync(new FirmwareApplicationDiscoveryRequest(bootloader), TestContext.Current.CancellationToken);
+
+        result.Should().Be(application);
+    }
+
+    [Fact]
+    public async Task IgnoresUnrelatedRecentSerialArrival()
+    {
+        var bootloader = new SerialDeviceDescriptor("COM9", productName: "Bootloader");
+        var unrelated = new SerialDeviceDescriptor("COM12", productName: "GPS Receiver");
+        var service = Create([], [
+            new FirmwareDeviceChange(FirmwareDeviceChangeKind.Removed, bootloader, DateTimeOffset.UtcNow),
+            new FirmwareDeviceChange(FirmwareDeviceChangeKind.Arrived, unrelated, DateTimeOffset.UtcNow)]);
+
+        var result = await service.FindAsync(
+            new FirmwareApplicationDiscoveryRequest(bootloader, Timeout: TimeSpan.FromMilliseconds(20)),
+            TestContext.Current.CancellationToken);
+
+        result.Should().BeNull();
+    }
+
     private static FirmwareApplicationDiscoveryService Create(
         IReadOnlyList<SerialDeviceDescriptor> snapshot,
         IReadOnlyList<FirmwareDeviceChange> changes) => new(

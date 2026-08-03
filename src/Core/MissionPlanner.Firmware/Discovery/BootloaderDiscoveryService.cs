@@ -57,7 +57,10 @@ public sealed class BootloaderDiscoveryService(
         ISet<string> probed,
         CancellationToken cancellationToken)
     {
-        var key = $"{candidate.StableIdentity ?? "transient"}|{candidate.PortName}";
+        // A controller may leave application mode and return as a bootloader on
+        // the same COM port and with the same USB serial number. ArrivedAt
+        // distinguishes that new device generation from the rejected baseline.
+        var key = $"{candidate.StableIdentity ?? "transient"}|{candidate.PortName}|{candidate.ArrivedAt.UtcTicks}";
         if (!probed.Add(key)) return null;
         IFirmwareSerialPort? port = null;
         IArduPilotBootloaderClient? client = null;

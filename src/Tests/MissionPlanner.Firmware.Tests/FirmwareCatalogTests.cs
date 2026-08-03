@@ -41,6 +41,21 @@ public sealed class FirmwareCatalogTests
     }
 
     [Fact]
+    public void ParserSupportsCurrentOfficialManifestFieldNames()
+    {
+        const string json = """
+            {"firmware":[{"vehicletype":"AntennaTracker","platform":"BeastH7","url":"https://firmware.ardupilot.org/AntennaTracker/stable-4.7.0/BeastH7/antennatracker.apj","format":"apj","mav-firmware-version":"4.7.0","mav-firmware-version-type":"STABLE-4.7.0","board_id":1025,"image_size":807112,"USBID":["0x1209/0x5741"],"bootloader_str":["BeastH7-BL"]}]}
+            """;
+
+        var entry = CreateParser().Parse(System.Text.Encoding.UTF8.GetBytes(json)).Should().ContainSingle().Subject;
+
+        entry.Channel.Should().Be(FirmwareReleaseChannel.Stable);
+        entry.Artifact.Size.Should().BeNull("the official manifest does not report encoded APJ length");
+        entry.Artifact.ImageSize.Should().Be(807112);
+        entry.Target.UsbIdentifiers.Should().Contain(new UsbIdentifier(0x1209, 0x5741));
+    }
+
+    [Fact]
     public async Task CatalogFiltersDeterministicallyWithoutNetworkWhenCacheIsFresh()
     {
         var cache = new MemoryFirmwareCatalogCache();

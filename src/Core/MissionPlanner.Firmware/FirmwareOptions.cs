@@ -13,7 +13,10 @@ public sealed class FirmwareOptions
     public TimeSpan CatalogCacheDuration { get; set; } = TimeSpan.FromHours(6);
 
     /// <summary>Gets or sets the maximum accepted decompressed manifest size.</summary>
-    public int MaximumManifestBytes { get; set; } = 32 * 1024 * 1024;
+    public int MaximumManifestBytes { get; set; } = 128 * 1024 * 1024;
+
+    /// <summary>Gets or sets the maximum compressed or plain manifest response downloaded over HTTP.</summary>
+    public int MaximumManifestDownloadBytes { get; set; } = 8 * 1024 * 1024;
 
     /// <summary>Gets or sets the maximum accepted decompressed firmware image size.</summary>
     public int MaximumFirmwareImageBytes { get; set; } = 32 * 1024 * 1024;
@@ -38,6 +41,12 @@ public sealed class FirmwareOptions
 
     /// <summary>Gets or sets the baud rate used by modern bootloaders.</summary>
     public int BootloaderBaudRate { get; set; } = 115200;
+
+    /// <summary>Gets or sets the bounded wait for a heartbeat on a temporary application channel.</summary>
+    public TimeSpan TemporaryMavLinkHeartbeatTimeout { get; set; } = TimeSpan.FromSeconds(5);
+
+    /// <summary>Gets or sets the bounded wait for reboot acknowledgement before discovery takes over.</summary>
+    public TimeSpan TemporaryMavLinkCommandAckTimeout { get; set; } = TimeSpan.FromSeconds(2);
 
     /// <summary>Gets or sets the maximum encoded artifact download size.</summary>
     public long MaximumArtifactBytes { get; set; } = 64L * 1024 * 1024;

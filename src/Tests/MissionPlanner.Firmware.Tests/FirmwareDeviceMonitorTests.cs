@@ -49,6 +49,28 @@ public sealed class FirmwareDeviceMonitorTests
     }
 
     [Fact]
+    public async Task ReportsModeReplacementWhenStableIdentityAndPortAreReused()
+    {
+        var application = new SerialDeviceDescriptor("COM7", "device-42", new UsbIdentifier(0x2dae, 0x1016), "serial", "Cube");
+        var bootloader = new SerialDeviceDescriptor("COM7", "device-42", new UsbIdentifier(0x2dae, 0x1005), "serial", "Cube-BL");
+        var monitor = new PollingFirmwareDeviceMonitor(
+            new ScriptedCatalog([application], [bootloader]),
+            TimeProvider.System,
+            TimeSpan.Zero);
+        var changes = new List<FirmwareDeviceChange>();
+
+        await foreach (var change in monitor.WatchAsync(TestContext.Current.CancellationToken))
+        {
+            changes.Add(change);
+            if (changes.Count == 2) break;
+        }
+
+        changes.Select(change => (change.Kind, change.Device.ProductName)).Should().Equal(
+            (FirmwareDeviceChangeKind.Removed, "Cube"),
+            (FirmwareDeviceChangeKind.Arrived, "Cube-BL"));
+    }
+
+    [Fact]
     public void StableIdentityDoesNotUseTransientPortName()
     {
         var before = Device("COM7", "device-42");

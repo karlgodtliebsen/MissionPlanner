@@ -19,16 +19,23 @@ public sealed class FirmwareInstallationServiceTests
     public async Task SuccessfulInstallRequiresVerificationAndDisposesPort()
     {
         var fixture = new Fixture();
+        var reports = new List<FirmwareProgress>();
 
-        var result = await fixture.Service.InstallAsync(fixture.Request, cancellationToken: TestContext.Current.CancellationToken);
+        var result = await fixture.Service.InstallAsync(
+            fixture.Request,
+            new InlineProgress(reports.Add),
+            TestContext.Current.CancellationToken);
 
         result.State.Should().Be(FirmwareOperationState.Completed);
         result.Failure.Should().BeNull();
         fixture.Client.Calls.Should().Equal("erase", "program", "verify", "reboot", "dispose");
         fixture.Interaction.ConfirmCalls.Should().Be(1);
         fixture.Interaction.ManualCalls.Should().Be(0);
+        fixture.Client.DestructiveTokens.Should().OnlyContain(token => !token.CanBeCanceled);
         result.ApplicationDevice!.PortName.Should().Be("COM11");
         result.ReconnectSuggested.Should().BeTrue();
+        reports.Single(report => report.State == FirmwareOperationState.IdentifyingBootloader)
+            .TechnicalDetail.Should().Contain("COM9").And.Contain("board ID: 50").And.Contain("bootloader revision: 4");
     }
 
     [Fact]
@@ -77,7 +84,10 @@ public sealed class FirmwareInstallationServiceTests
 
         var act = async () => await fixture.Service.InstallAsync(fixture.Request, cancellationToken: TestContext.Current.CancellationToken);
 
-        await act.Should().ThrowAsync<FirmwareConnectionConflictException>();
+        var exception = await act.Should().ThrowAsync<FirmwareConnectionConflictException>();
+        exception.Which.OperationId.Should().NotBeNull();
+        exception.Which.State.Should().Be(FirmwareOperationState.Failed);
+        exception.Which.Message.Should().Contain("Operation:").And.Contain("state: Failed");
         fixture.Client.Calls.Should().BeEmpty();
         fixture.Coordinator.Begin(FirmwareOperationKind.InstallApplicationFirmware).RequestCancellation().Should().BeTrue();
     }
@@ -214,6 +224,11 @@ public sealed class FirmwareInstallationServiceTests
     {
         public Task<DiscoveredBootloader> FindAsync(BootloaderDiscoveryRequest request, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default) => throw new InvalidOperationException("Discovery should not be called.");
     }
+
+    private sealed class InlineProgress(Action<FirmwareProgress> report) : IProgress<FirmwareProgress>
+    {
+        public void Report(FirmwareProgress value) => report(value);
+    }
     private sealed class FailureDownloader(Exception? failure) : IFirmwareArtifactDownloader
     {
         public Task<DownloadedFirmwareArtifact> DownloadAsync(FirmwareArtifact artifact, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default) =>
@@ -227,11 +242,12 @@ public sealed class FirmwareInstallationServiceTests
     private sealed class FakeClient(bool verificationSucceeds, string? failure) : IArduPilotBootloaderClient
     {
         public List<string> Calls { get; } = [];
+        public List<CancellationToken> DestructiveTokens { get; } = [];
         public Task<BootloaderIdentity> IdentifyAsync(CancellationToken cancellationToken = default) => throw new InvalidOperationException();
-        public Task EraseAsync(CancellationToken cancellationToken = default) { Calls.Add("erase"); return failure switch { "erase" => Task.FromException(new IOException("erase")), "cancel-erase" => Task.FromCanceled(new CancellationToken(true)), _ => Task.CompletedTask }; }
-        public Task ProgramAsync(ApjFirmwarePackage package, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default) { Calls.Add("program"); return failure == "program" ? Task.FromException(new IOException("program")) : Task.CompletedTask; }
-        public Task<FirmwareVerificationResult> VerifyAsync(ApjFirmwarePackage package, CancellationToken cancellationToken = default) { Calls.Add("verify"); return Task.FromResult(new FirmwareVerificationResult(verificationSucceeds, 1, verificationSucceeds ? 1u : 2u)); }
-        public Task RebootAsync(CancellationToken cancellationToken = default) { Calls.Add("reboot"); return Task.CompletedTask; }
+        public Task EraseAsync(CancellationToken cancellationToken = default) { Calls.Add("erase"); DestructiveTokens.Add(cancellationToken); return failure switch { "erase" => Task.FromException(new IOException("erase")), "cancel-erase" => Task.FromCanceled(new CancellationToken(true)), _ => Task.CompletedTask }; }
+        public Task ProgramAsync(ApjFirmwarePackage package, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default) { Calls.Add("program"); DestructiveTokens.Add(cancellationToken); return failure == "program" ? Task.FromException(new IOException("program")) : Task.CompletedTask; }
+        public Task<FirmwareVerificationResult> VerifyAsync(ApjFirmwarePackage package, CancellationToken cancellationToken = default) { Calls.Add("verify"); DestructiveTokens.Add(cancellationToken); return Task.FromResult(new FirmwareVerificationResult(verificationSucceeds, 1, verificationSucceeds ? 1u : 2u)); }
+        public Task RebootAsync(CancellationToken cancellationToken = default) { Calls.Add("reboot"); DestructiveTokens.Add(cancellationToken); return Task.CompletedTask; }
         public ValueTask DisposeAsync() { Calls.Add("dispose"); return ValueTask.CompletedTask; }
     }
 }

@@ -33,11 +33,13 @@ public sealed class FirmwareDomainModelTests
         var relativeUrl = () => new FirmwareArtifact(new Uri("firmware.apj", UriKind.Relative), FirmwareImageFormat.Apj, 10);
         var fileUrl = () => new FirmwareArtifact(new Uri("file:///firmware.apj"), FirmwareImageFormat.Apj, 10);
         var empty = () => new FirmwareArtifact(new Uri("https://firmware.example/fw.apj"), FirmwareImageFormat.Apj, 0);
+        var emptyImage = () => new FirmwareArtifact(new Uri("https://firmware.example/fw.apj"), FirmwareImageFormat.Apj, imageSize: 0);
         var badHash = () => new FirmwareArtifact(new Uri("https://firmware.example/fw.apj"), FirmwareImageFormat.Apj, 10, "xyz");
 
         relativeUrl.Should().Throw<ArgumentException>();
         fileUrl.Should().Throw<ArgumentException>();
         empty.Should().Throw<ArgumentOutOfRangeException>();
+        emptyImage.Should().Throw<ArgumentOutOfRangeException>();
         badHash.Should().Throw<ArgumentException>();
     }
 

@@ -96,9 +96,10 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<IFirmwareConnectionGateway, FirmwareConnectionGateway>();
         services.TryAddSingleton<IConnectedVehicleFirmwareGateway, ConnectedVehicleFirmwareGateway>();
         services.TryAddSingleton<FirmwareInteractionService>();
+        services.TryAddSingleton<IFirmwareFilePicker, MauiFirmwareFilePicker>();
         services.TryAddSingleton<IFirmwareUserInteraction>(serviceProvider => serviceProvider.GetRequiredService<FirmwareInteractionService>());
         services.TryAddSingleton<IBootloaderEntryInteraction>(serviceProvider => serviceProvider.GetRequiredService<FirmwareInteractionService>());
-        services.TryAddSingleton<ITemporaryMavLinkBootloaderGateway, TemporaryMavLinkBootloaderGateway>();
+        services.TryAddSingleton<ITemporaryMavLinkBootloaderGateway, MissionPlanner.Core.Firmware.TemporaryMavLinkBootloaderGateway>();
         services.TryAddSingleton<ITextClipboardService, TextClipboardService>();
         services.TryAddSingleton<ISetupCompletionStore, PreferencesSetupCompletionStore>();
         services.TryAddSingleton<IFirmwarePackageCache, FirmwarePackageCache>();

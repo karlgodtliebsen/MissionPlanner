@@ -10,6 +10,7 @@ public sealed class FirmwareApplicationDiscoveryService(
     IFirmwareDeviceMonitor monitor,
     IOptions<FirmwareOptions> options) : IFirmwareApplicationDiscoveryService
 {
+    private const int MinimumMatchScore = 25;
     /// <inheritdoc />
     public async Task<SerialDeviceDescriptor?> FindAsync(
         FirmwareApplicationDiscoveryRequest request,
@@ -23,19 +24,19 @@ public sealed class FirmwareApplicationDiscoveryService(
         try
         {
             var current = await catalog.GetDevicesAsync(token).ConfigureAwait(false);
-            var removalObserved = current.All(device => !SameDevice(device, request.BootloaderDevice));
+            var removalObserved = current.All(device => !SameBootloaderInstance(device, request.BootloaderDevice));
             var existing = BestMatch(current, request, requirePositiveIdentity: true);
             if (removalObserved && existing is not null) return existing;
 
             await foreach (var change in monitor.WatchAsync(token).ConfigureAwait(false))
             {
-                if (change.Kind == FirmwareDeviceChangeKind.Removed && SameDevice(change.Device, request.BootloaderDevice))
+                if (change.Kind == FirmwareDeviceChangeKind.Removed && SameBootloaderInstance(change.Device, request.BootloaderDevice))
                 {
                     removalObserved = true;
                     continue;
                 }
 
-                if (change.Kind == FirmwareDeviceChangeKind.Arrived && removalObserved && Score(change.Device, request) > 0)
+                if (change.Kind == FirmwareDeviceChangeKind.Arrived && removalObserved && Score(change.Device, request) >= MinimumMatchScore)
                     return change.Device;
             }
         }
@@ -50,7 +51,7 @@ public sealed class FirmwareApplicationDiscoveryService(
         FirmwareApplicationDiscoveryRequest request,
         bool requirePositiveIdentity) => devices
         .Select(device => (Device: device, Score: Score(device, request)))
-        .Where(candidate => !requirePositiveIdentity || candidate.Score > 0)
+        .Where(candidate => !requirePositiveIdentity || candidate.Score >= MinimumMatchScore)
         .OrderByDescending(candidate => candidate.Score)
         .ThenByDescending(candidate => candidate.Device.ArrivedAt)
         .Select(candidate => candidate.Device)
@@ -58,7 +59,6 @@ public sealed class FirmwareApplicationDiscoveryService(
 
     private static int Score(SerialDeviceDescriptor candidate, FirmwareApplicationDiscoveryRequest request)
     {
-        if (SameDevice(candidate, request.BootloaderDevice)) return 0;
         var original = request.OriginalApplicationDevice;
         var score = 0;
         if (original?.UsbSerialNumber is not null && candidate.UsbSerialNumber == original.UsbSerialNumber) score += 100;
@@ -67,11 +67,16 @@ public sealed class FirmwareApplicationDiscoveryService(
         if (original?.UsbIdentifier is not null && candidate.UsbIdentifier == original.UsbIdentifier) score += 40;
         if (request.BootloaderDevice.UsbIdentifier is not null && candidate.UsbIdentifier == request.BootloaderDevice.UsbIdentifier) score += 25;
         if (candidate.ArrivedAt >= request.BootloaderDevice.ArrivedAt) score += 5;
-        if (candidate.ProductName is not null && !candidate.ProductName.Contains("bootloader", StringComparison.OrdinalIgnoreCase)) score += 5;
+        if (candidate.ProductName is not null && !candidate.ProductName.Contains("bootloader", StringComparison.OrdinalIgnoreCase))
+        {
+            score += 5;
+            if (request.BootloaderDevice.ProductName?.Contains("bootloader", StringComparison.OrdinalIgnoreCase) == true &&
+                candidate.ProductName.Contains("ArduPilot", StringComparison.OrdinalIgnoreCase)) score += 20;
+        }
         return score;
     }
 
-    private static bool SameDevice(SerialDeviceDescriptor left, SerialDeviceDescriptor right) =>
-        left.StableIdentity is not null && left.StableIdentity == right.StableIdentity ||
+    private static bool SameBootloaderInstance(SerialDeviceDescriptor left, SerialDeviceDescriptor right) =>
+        left.OsDeviceId is not null && right.OsDeviceId is not null && left.OsDeviceId == right.OsDeviceId ||
         left.PortName.Equals(right.PortName, StringComparison.OrdinalIgnoreCase);
 }

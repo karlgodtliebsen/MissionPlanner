@@ -1,10 +1,12 @@
 using System.Net;
 using System.Net.Http.Headers;
+using Microsoft.Extensions.Options;
+using MissionPlanner.Firmware.Exceptions;
 
 namespace MissionPlanner.Firmware.Catalog;
 
 /// <summary>Retrieves manifests with ETag and Last-Modified conditional requests.</summary>
-public sealed class HttpFirmwareManifestClient(HttpClient httpClient) : IFirmwareManifestClient
+public sealed class HttpFirmwareManifestClient(HttpClient httpClient, IOptions<FirmwareOptions> options) : IFirmwareManifestClient
 {
     /// <inheritdoc />
     public async Task<FirmwareManifestResponse> GetAsync(
@@ -23,7 +25,19 @@ public sealed class HttpFirmwareManifestClient(HttpClient httpClient) : IFirmwar
         }
 
         response.EnsureSuccessStatusCode();
-        var content = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
-        return new FirmwareManifestResponse(content, false, response.Headers.ETag?.ToString(), response.Content.Headers.LastModified);
+        var limit = options.Value.MaximumManifestDownloadBytes;
+        if (response.Content.Headers.ContentLength > limit)
+            throw new FirmwareManifestException("Firmware manifest download exceeds the configured size limit.");
+        await using var source = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        using var content = new MemoryStream();
+        var buffer = new byte[81920];
+        int read;
+        while ((read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
+        {
+            if (content.Length + read > limit)
+                throw new FirmwareManifestException("Firmware manifest download exceeds the configured size limit.");
+            content.Write(buffer, 0, read);
+        }
+        return new FirmwareManifestResponse(content.ToArray(), false, response.Headers.ETag?.ToString(), response.Content.Headers.LastModified);
     }
 }

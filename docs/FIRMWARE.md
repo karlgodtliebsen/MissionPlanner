@@ -48,7 +48,7 @@ sequenceDiagram
 
 ## Catalogue and package handling
 
-The ArduPilot manifest is retrieved over HTTPS, parsed into normalized data, cached with validators, and filterable by vehicle, release channel, board ID, and USB identity. Stale cached data is distinguishable from a fresh response. Catalogue choices are data-driven; the UI does not assume that every vehicle family exists in every response.
+The ArduPilot manifest is retrieved over HTTPS with separate compressed-download and decompressed-document bounds, parsed into normalized data, cached with validators, and filterable by vehicle, release channel, board ID, and USB identity. Current official entries expose decoded application size as `image_size`; encoded artifact length is optional and is enforced exactly only when supplied. Stale cached data is distinguishable from a fresh response. Catalogue choices are data-driven; the UI does not assume that every vehicle family exists in every response.
 
 APJ and PX4 GCS packages are JSON containers. Parsing checks their magic, declared and configured size limits, compressed image length, board metadata, optional external image, revision requirements, and checksum inputs before device access. Downloads use a bounded temporary file, validate length and optional SHA-256, parse it, then move it atomically into cache. Temporary and selected-file streams are disposed on every path.
 
@@ -56,7 +56,9 @@ Supported image formats in this workflow are `.apj` and `.px4`. Intel HEX, `_wit
 
 ## Serial ownership, protocol, and recovery
 
-Only one firmware operation may own serial resources. Discovery snapshots devices, prioritizes explicit/new/USB-matching candidates, opens each candidate exclusively with bounded timeouts, and accepts it only after bootloader synchronization and identity. Rejected ports are closed immediately. Port names are treated as transient.
+Only one firmware operation may own serial resources. Discovery snapshots devices, prioritizes explicit/new/USB-matching candidates, opens each candidate exclusively with bounded timeouts, and accepts it only after bootloader synchronization and identity. Rejected ports are closed immediately. Port names are treated as transient. Mode changes that reuse the same stable identity and COM port are still treated as a new device generation when USB/product descriptors change.
+
+When a disconnected application-mode port is available, the host can create an isolated, one-shot MAVLink parser over that exclusively opened serial stream, wait for a bounded heartbeat, send reboot-to-bootloader, interpret an ACK when one arrives, and dispose the stream before discovery starts. It never starts or reuses the normal Mission Planner vehicle session.
 
 The protocol client implements bounded synchronization, identify, erase, chunked program, checksum verification, and reboot operations. Board identity and writable size are known before erase. Verification is mandatory; a checksum mismatch can never report success.
 
@@ -72,7 +74,7 @@ Embedded Bootloader Update uses `MAV_CMD_FLASH_BOOTLOADER` (42650), confirmation
 
 ## Platforms
 
-Direct serial installation is enabled for the implemented desktop hosts (Windows, Linux, and Mac Catalyst). Windows provides enriched device identity through its serial-device catalogue. Other targets show unsupported mode until a tested platform adapter exists. Automated protocol tests use in-memory transports and require no hardware.
+Direct serial installation is enabled for Windows desktop, the first supported host. Windows provides enriched device identity through its serial-device catalogue. Linux, Mac Catalyst, and mobile targets show unsupported mode until tested platform adapters exist. Automated protocol tests use in-memory transports and require no hardware.
 
 ## Troubleshooting
 

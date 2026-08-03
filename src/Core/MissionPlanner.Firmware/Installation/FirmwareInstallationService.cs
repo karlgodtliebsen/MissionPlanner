@@ -44,7 +44,10 @@ public sealed class FirmwareInstallationService(
             if (connectionGateway.IsVehicleConnected)
             {
                 Transition(FirmwareOperationState.Failed, "installation.connection-conflict");
-                throw new FirmwareConnectionConflictException($"Normal {connectionGateway.ActiveTransportKind} vehicle connection must be disconnected before firmware installation.");
+                throw new FirmwareConnectionConflictException(
+                    $"Normal {connectionGateway.ActiveTransportKind} vehicle connection must be disconnected before firmware installation.",
+                    operation.OperationId,
+                    FirmwareOperationState.Failed);
             }
 
             var package = request.Package;
@@ -83,7 +86,10 @@ public sealed class FirmwareInstallationService(
             diagnosticBootloaderDevice = found.Device;
             await using (found.ConfigureAwait(false))
             {
-                Transition(FirmwareOperationState.IdentifyingBootloader, "installation.bootloader-identified");
+                Transition(
+                    FirmwareOperationState.IdentifyingBootloader,
+                    "installation.bootloader-identified",
+                    $"Device: {found.Device.PortName}; board ID: {found.Identity.BoardId}; bootloader revision: {found.Identity.BootloaderRevision}");
                 Transition(FirmwareOperationState.CheckingCompatibility, "installation.checking-compatibility");
                 var decision = compatibility.Check(package, found.Identity);
                 if (!decision.IsCompatible) throw new FirmwareCompatibilityException($"{decision.Code}: {decision.TechnicalDetail}");
@@ -96,23 +102,28 @@ public sealed class FirmwareInstallationService(
                     return new FirmwareOperationResult(operation.OperationId, operation.Kind, FirmwareOperationState.Cancelled);
                 }
 
+                // The caller may cancel freely until final confirmation. Once erase starts, an
+                // ordinary UI/navigation cancellation must not interrupt the recovery-critical
+                // erase/program/verify/reboot sequence and strand the controller.
+                cancellationToken.ThrowIfCancellationRequested();
+                var destructiveToken = CancellationToken.None;
                 Transition(FirmwareOperationState.Erasing, "installation.erasing");
-                await found.Client.EraseAsync(cancellationToken).ConfigureAwait(false);
+                await found.Client.EraseAsync(destructiveToken).ConfigureAwait(false);
                 Transition(FirmwareOperationState.Programming, "installation.programming");
-                await found.Client.ProgramAsync(package, progress, cancellationToken).ConfigureAwait(false);
+                await found.Client.ProgramAsync(package, progress, destructiveToken).ConfigureAwait(false);
                 Transition(FirmwareOperationState.Verifying, "installation.verifying");
-                var verification = await found.Client.VerifyAsync(package, cancellationToken).ConfigureAwait(false);
+                var verification = await found.Client.VerifyAsync(package, destructiveToken).ConfigureAwait(false);
                 verificationResult = verification.Succeeded ? "Succeeded" : $"Failed (expected 0x{verification.ExpectedChecksum:X8}, actual 0x{verification.ActualChecksum:X8})";
                 if (!verification.Succeeded)
                     throw new FirmwareVerificationException($"Expected checksum 0x{verification.ExpectedChecksum:X8}; received 0x{verification.ActualChecksum:X8}.");
                 Transition(FirmwareOperationState.Rebooting, "installation.rebooting");
-                await found.Client.RebootAsync(cancellationToken).ConfigureAwait(false);
+                await found.Client.RebootAsync(destructiveToken).ConfigureAwait(false);
             }
 
             Transition(FirmwareOperationState.WaitingForApplication, "installation.waiting-for-application");
             var applicationDevice = await applicationDiscovery.FindAsync(
                 new FirmwareApplicationDiscoveryRequest(bootloaderDevice, request.EntryContext.ApplicationDevice),
-                cancellationToken).ConfigureAwait(false);
+                CancellationToken.None).ConfigureAwait(false);
             Transition(FirmwareOperationState.Completed, "installation.completed");
             return new FirmwareOperationResult(
                 operation.OperationId,
@@ -122,8 +133,12 @@ public sealed class FirmwareInstallationService(
                 ReconnectSuggested: applicationDevice is not null,
                 DiagnosticReport: CreateDiagnostic(FirmwareOperationState.Completed, applicationDevice));
         }
-        catch (FirmwareConnectionConflictException)
+        catch (FirmwareConnectionConflictException exception)
         {
+            logger.LogWarning(exception,
+                "Firmware operation {OperationId} was rejected in state {FailureStage} because the vehicle connection owns the transport.",
+                operation.OperationId,
+                stage);
             throw;
         }
         catch (OperationCanceledException exception)
@@ -151,10 +166,10 @@ public sealed class FirmwareInstallationService(
         {
             operation.Dispose();
         }
-        void Transition(FirmwareOperationState state, string code)
+        void Transition(FirmwareOperationState state, string code, string? technicalDetail = null)
         {
             stage = state;
-            var report = new FirmwareProgress(state, null, code);
+            var report = new FirmwareProgress(state, null, code, technicalDetail: technicalDetail);
             operation.Transition(report);
             logger.LogInformation("Firmware operation {OperationId} entered {State} ({MessageCode}).", operation.OperationId, state, code);
             progress?.Report(report);
