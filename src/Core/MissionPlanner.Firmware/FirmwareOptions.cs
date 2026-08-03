@@ -17,4 +17,16 @@ public sealed class FirmwareOptions
 
     /// <summary>Gets or sets the maximum accepted decompressed firmware image size.</summary>
     public int MaximumFirmwareImageBytes { get; set; } = 32 * 1024 * 1024;
+
+    /// <summary>Gets or sets the ordinary bootloader command timeout.</summary>
+    public TimeSpan BootloaderCommandTimeout { get; set; } = TimeSpan.FromSeconds(2);
+
+    /// <summary>Gets or sets the longer chip erase timeout.</summary>
+    public TimeSpan BootloaderEraseTimeout { get; set; } = TimeSpan.FromSeconds(30);
+
+    /// <summary>Gets or sets synchronization retry count.</summary>
+    public int BootloaderSyncAttempts { get; set; } = 3;
+
+    /// <summary>Gets or sets the named settle delay between synchronization attempts.</summary>
+    public TimeSpan BootloaderRetryDelay { get; set; } = TimeSpan.FromMilliseconds(40);
 }

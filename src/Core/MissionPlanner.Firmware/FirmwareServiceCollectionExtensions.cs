@@ -4,6 +4,7 @@ using MissionPlanner.Firmware.Operations;
 using MissionPlanner.Firmware.Catalog;
 using MissionPlanner.Firmware.Images;
 using MissionPlanner.Firmware.Devices;
+using MissionPlanner.Firmware.Protocol;
 
 namespace MissionPlanner.Firmware;
 
@@ -31,6 +32,10 @@ public static class FirmwareServiceCollectionExtensions
             .Validate(value => value.CatalogCacheDuration > TimeSpan.Zero, "CatalogCacheDuration must be positive.")
             .Validate(value => value.MaximumManifestBytes > 0, "MaximumManifestBytes must be positive.")
             .Validate(value => value.MaximumFirmwareImageBytes > 0, "MaximumFirmwareImageBytes must be positive.")
+            .Validate(value => value.BootloaderCommandTimeout > TimeSpan.Zero, "BootloaderCommandTimeout must be positive.")
+            .Validate(value => value.BootloaderEraseTimeout > TimeSpan.Zero, "BootloaderEraseTimeout must be positive.")
+            .Validate(value => value.BootloaderSyncAttempts > 0, "BootloaderSyncAttempts must be positive.")
+            .Validate(value => value.BootloaderRetryDelay >= TimeSpan.Zero, "BootloaderRetryDelay cannot be negative.")
             .ValidateOnStart();
 
         services.TryAddSingleton<IFirmwareOperationCoordinator, FirmwareOperationCoordinator>();
