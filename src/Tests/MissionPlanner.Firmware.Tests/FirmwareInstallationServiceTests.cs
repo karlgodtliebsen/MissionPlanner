@@ -1,0 +1,145 @@
+using FluentAssertions;
+using Microsoft.Extensions.Logging.Abstractions;
+using MissionPlanner.Firmware.Compatibility;
+using MissionPlanner.Firmware.Discovery;
+using MissionPlanner.Firmware.Downloads;
+using MissionPlanner.Firmware.Entry;
+using MissionPlanner.Firmware.Exceptions;
+using MissionPlanner.Firmware.Installation;
+using MissionPlanner.Firmware.Model;
+using MissionPlanner.Firmware.Operations;
+using MissionPlanner.Firmware.Protocol;
+
+namespace MissionPlanner.Firmware.Tests;
+
+public sealed class FirmwareInstallationServiceTests
+{
+    [Fact]
+    public async Task SuccessfulInstallRequiresVerificationAndDisposesPort()
+    {
+        var fixture = new Fixture();
+
+        var result = await fixture.Service.InstallAsync(fixture.Request, cancellationToken: TestContext.Current.CancellationToken);
+
+        result.State.Should().Be(FirmwareOperationState.Completed);
+        result.Failure.Should().BeNull();
+        fixture.Client.Calls.Should().Equal("erase", "program", "verify", "reboot", "dispose");
+        fixture.Interaction.ConfirmCalls.Should().Be(1);
+        fixture.Interaction.ManualCalls.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task CompatibilityFailureCannotReachConfirmationOrErase()
+    {
+        var fixture = new Fixture(bootloader: new BootloaderIdentity(9, 4, 16));
+
+        var result = await fixture.Service.InstallAsync(fixture.Request, cancellationToken: TestContext.Current.CancellationToken);
+
+        result.State.Should().Be(FirmwareOperationState.Failed);
+        result.Failure.Should().NotBeNull();
+        result.Failure!.Stage.Should().Be(FirmwareOperationState.CheckingCompatibility);
+        result.Failure.Code.Should().Be("installation.compatibility-failed");
+        fixture.Interaction.ConfirmCalls.Should().Be(0);
+        fixture.Client.Calls.Should().Equal("dispose");
+    }
+
+    [Fact]
+    public async Task DeclinedFinalConfirmationCannotErase()
+    {
+        var fixture = new Fixture(confirm: false);
+
+        var result = await fixture.Service.InstallAsync(fixture.Request, cancellationToken: TestContext.Current.CancellationToken);
+
+        result.State.Should().Be(FirmwareOperationState.Cancelled);
+        fixture.Client.Calls.Should().Equal("dispose");
+    }
+
+    [Fact]
+    public async Task VerificationMismatchFailsAndNeverReboots()
+    {
+        var fixture = new Fixture(verificationSucceeds: false);
+
+        var result = await fixture.Service.InstallAsync(fixture.Request, cancellationToken: TestContext.Current.CancellationToken);
+
+        result.State.Should().Be(FirmwareOperationState.Failed);
+        result.Failure!.Stage.Should().Be(FirmwareOperationState.Verifying);
+        result.Failure.Code.Should().Be("installation.verification-failed");
+        fixture.Client.Calls.Should().Equal("erase", "program", "verify", "dispose");
+    }
+
+    [Fact]
+    public async Task ConnectedVehicleProducesTypedConflictAndReleasesOperationLease()
+    {
+        var fixture = new Fixture(connected: true);
+
+        var act = async () => await fixture.Service.InstallAsync(fixture.Request, cancellationToken: TestContext.Current.CancellationToken);
+
+        await act.Should().ThrowAsync<FirmwareConnectionConflictException>();
+        fixture.Client.Calls.Should().BeEmpty();
+        fixture.Coordinator.Begin(FirmwareOperationKind.InstallApplicationFirmware).RequestCancellation().Should().BeTrue();
+    }
+
+    private sealed class Fixture
+    {
+        public Fixture(bool connected = false, bool confirm = true, bool verificationSucceeds = true, BootloaderIdentity? bootloader = null)
+        {
+            Coordinator = new FirmwareOperationCoordinator(NullLogger<FirmwareOperationCoordinator>.Instance);
+            Client = new FakeClient(verificationSucceeds);
+            Interaction = new FakeInteraction(confirm);
+            var found = new DiscoveredBootloader(new SerialDeviceDescriptor("COM9", "bootloader"), bootloader ?? new BootloaderIdentity(50, 4, 16), Client);
+            Service = new FirmwareInstallationService(
+                Coordinator,
+                new FakeConnection(connected),
+                new UnusedDownloader(),
+                new FixedEntry(found),
+                new UnusedDiscovery(),
+                new FirmwareCompatibilityService(),
+                Interaction);
+            Request = new FirmwareInstallationRequest(
+                new BootloaderEntryContext(new BootloaderDiscoveryRequest()),
+                Package: new ApjFirmwarePackage(50, new byte[] { 1, 2, 3, 4 }, 16));
+        }
+        public FirmwareOperationCoordinator Coordinator { get; }
+        public FakeClient Client { get; }
+        public FakeInteraction Interaction { get; }
+        public FirmwareInstallationService Service { get; }
+        public FirmwareInstallationRequest Request { get; }
+    }
+
+    private sealed class FakeConnection(bool connected) : IFirmwareConnectionGateway
+    {
+        public bool IsVehicleConnected => connected;
+        public ConnectionTransportKind? ActiveTransportKind => connected ? ConnectionTransportKind.Serial : null;
+        public Task RequestDisconnectAsync(CancellationToken cancellationToken = default) => throw new InvalidOperationException("Automatic disconnect is not allowed.");
+    }
+    private sealed class FakeInteraction(bool confirm) : IFirmwareUserInteraction
+    {
+        public int ConfirmCalls { get; private set; }
+        public int ManualCalls { get; private set; }
+        public Task<bool> ConfirmInstallationAsync(FirmwareInstallationConfirmation confirmation, CancellationToken cancellationToken = default) { ConfirmCalls++; return Task.FromResult(confirm); }
+        public Task AcknowledgeManualActionAsync(FirmwareManualAction action, CancellationToken cancellationToken = default) { ManualCalls++; return Task.CompletedTask; }
+    }
+    private sealed class FixedEntry(DiscoveredBootloader found) : IBootloaderEntryService
+    {
+        public Task<BootloaderEntryResult> EnterAsync(BootloaderEntryContext context, CancellationToken cancellationToken = default) =>
+            Task.FromResult(new BootloaderEntryResult(BootloaderEntryOutcome.BootloaderIdentified, "test", found));
+    }
+    private sealed class UnusedDiscovery : IBootloaderDiscoveryService
+    {
+        public Task<DiscoveredBootloader> FindAsync(BootloaderDiscoveryRequest request, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default) => throw new InvalidOperationException("Discovery should not be called.");
+    }
+    private sealed class UnusedDownloader : IFirmwareArtifactDownloader
+    {
+        public Task<DownloadedFirmwareArtifact> DownloadAsync(FirmwareArtifact artifact, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default) => throw new InvalidOperationException("Downloader should not be called.");
+    }
+    private sealed class FakeClient(bool verificationSucceeds) : IArduPilotBootloaderClient
+    {
+        public List<string> Calls { get; } = [];
+        public Task<BootloaderIdentity> IdentifyAsync(CancellationToken cancellationToken = default) => throw new InvalidOperationException();
+        public Task EraseAsync(CancellationToken cancellationToken = default) { Calls.Add("erase"); return Task.CompletedTask; }
+        public Task ProgramAsync(ApjFirmwarePackage package, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default) { Calls.Add("program"); return Task.CompletedTask; }
+        public Task<FirmwareVerificationResult> VerifyAsync(ApjFirmwarePackage package, CancellationToken cancellationToken = default) { Calls.Add("verify"); return Task.FromResult(new FirmwareVerificationResult(verificationSucceeds, 1, verificationSucceeds ? 1u : 2u)); }
+        public Task RebootAsync(CancellationToken cancellationToken = default) { Calls.Add("reboot"); return Task.CompletedTask; }
+        public ValueTask DisposeAsync() { Calls.Add("dispose"); return ValueTask.CompletedTask; }
+    }
+}

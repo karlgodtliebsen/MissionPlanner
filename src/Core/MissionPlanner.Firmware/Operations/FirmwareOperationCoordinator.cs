@@ -122,7 +122,7 @@ public sealed class FirmwareOperationCoordinator(ILogger<FirmwareOperationCoordi
         {
             var map = new Dictionary<FirmwareOperationState, HashSet<FirmwareOperationState>>();
             Add(map, FirmwareOperationState.Idle, FirmwareOperationState.LoadingCatalog, FirmwareOperationState.SelectingFirmware,
-                FirmwareOperationState.Downloading, FirmwareOperationState.WaitingForDevice, FirmwareOperationState.EnteringBootloader);
+                FirmwareOperationState.Downloading, FirmwareOperationState.ValidatingPackage, FirmwareOperationState.WaitingForDevice, FirmwareOperationState.EnteringBootloader);
             Add(map, FirmwareOperationState.LoadingCatalog, FirmwareOperationState.SelectingFirmware);
             Add(map, FirmwareOperationState.SelectingFirmware, FirmwareOperationState.Downloading, FirmwareOperationState.ValidatingPackage);
             Add(map, FirmwareOperationState.Downloading, FirmwareOperationState.ValidatingPackage);
