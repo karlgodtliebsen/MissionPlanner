@@ -16,6 +16,8 @@ Verified on 2026-08-04 on branch `feature/firmware`.
 
 `FirmwareHardwareTests` is marked `Category=ManualHardware` and skipped unless an operator deliberately converts/runs the scenario under a hardware safety procedure. It records F4, H7, port-change, repeated-upload, mismatch, unplug/replug, and embedded-bootloader-update checks. No CI job requires a physical controller.
 
+The operator checklist and evidence fields are in [Hardware smoke test](Hardware%20smoke%20test.md). Its F4 and H7 records remain explicitly pending; no physical result has been inferred from simulated coverage.
+
 ## Repository regression results
 
 - `MissionPlanner.App` builds successfully for its configured `net10.0` target.
