@@ -28,6 +28,10 @@ using MissionPlanner.Core.ConfigTuning.Comparison;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Configuration;
 using MissionPlanner.Core.Firmware;
+using MissionPlanner.Firmware;
+using MissionPlanner.Firmware.Connected;
+using MissionPlanner.Firmware.Entry;
+using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Simulation;
@@ -89,6 +93,12 @@ public static class ApplicationConfigurator
         services.TryAddTransient<IExtendedDialogService, ExtendedDialogService>();
         services.TryAddSingleton<IUserNotificationService, UserNotificationService>();
         services.TryAddSingleton<IUserConfirmationService, UserConfirmationService>();
+        services.TryAddSingleton<IFirmwareConnectionGateway, FirmwareConnectionGateway>();
+        services.TryAddSingleton<IConnectedVehicleFirmwareGateway, ConnectedVehicleFirmwareGateway>();
+        services.TryAddSingleton<FirmwareInteractionService>();
+        services.TryAddSingleton<IFirmwareUserInteraction>(serviceProvider => serviceProvider.GetRequiredService<FirmwareInteractionService>());
+        services.TryAddSingleton<IBootloaderEntryInteraction>(serviceProvider => serviceProvider.GetRequiredService<FirmwareInteractionService>());
+        services.TryAddSingleton<ITemporaryMavLinkBootloaderGateway, TemporaryMavLinkBootloaderGateway>();
         services.TryAddSingleton<ITextClipboardService, TextClipboardService>();
         services.TryAddSingleton<ISetupCompletionStore, PreferencesSetupCompletionStore>();
         services.TryAddSingleton<IFirmwarePackageCache, FirmwarePackageCache>();
@@ -96,6 +106,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<IParameterValueEquivalence, ParameterValueEquivalence>();
 
         services
+            .AddMissionPlannerFirmware()
             .AddLibraryServices()
             .AddEventHubServices()
             .AddDomainServices(configuration)
@@ -148,7 +159,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<ActionsTabViewModel>();
 
         services.TryAddSingleton<AdvancedViewModel>();
-        services.TryAddSingleton<InstallFirmwareViewModel>();
+        services.TryAddTransient<InstallFirmwareViewModel>();
         services.TryAddSingleton<OptionalHardwareViewModel>();
 
         services.TryAddSingleton<AuxFunctionTabViewModel>();

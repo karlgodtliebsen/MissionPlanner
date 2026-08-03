@@ -1,11 +1,79 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <pages:UraniumContentPage x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.InstallFirmwareView"
-             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:pages="http://schemas.enisn-projects.io/dotnet/maui/uraniumui">
-    <StackLayout>
-        <Label Text="Welcome to .NET MAUI!!!  InstallFirmwareView"
-            HorizontalOptions="Center"
-            VerticalOptions="Center"/>
-    </StackLayout>
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pages="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+    xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
+    x:DataType="local:InstallFirmwareViewModel"
+    Title="Install Firmware">
+    <ScrollView>
+        <VerticalStackLayout Padding="32" Spacing="20" MaximumWidthRequest="1100" HorizontalOptions="Center">
+            <Label Text="Firmware" FontSize="30" FontAttributes="Bold" />
+
+            <Border IsVisible="{Binding IsConnectedMode}" Padding="24" StrokeShape="RoundRectangle 10">
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="A vehicle is connected" FontSize="22" FontAttributes="Bold" />
+                    <Label Text="Application firmware cannot be installed while Mission Planner owns the active connection. Disconnect the vehicle first to browse or install firmware." />
+                    <Label Text="Embedded bootloader update is available only for a supported, disarmed ArduPilot vehicle. Keep power connected and reboot after an accepted update." />
+                    <Button Text="Update Bootloader" Command="{Binding UpdateBootloaderCommand}" IsEnabled="{Binding CanUpdateBootloader}" HorizontalOptions="Start" />
+                </VerticalStackLayout>
+            </Border>
+
+            <VerticalStackLayout IsVisible="{Binding IsDisconnectedMode}" Spacing="16">
+                <HorizontalStackLayout Spacing="10">
+                    <Label Text="Release:" VerticalOptions="Center" />
+                    <Picker ItemsSource="{Binding Channels}" SelectedItem="{Binding SelectedChannel}" WidthRequest="180" />
+                    <Button Text="Refresh catalogue" Command="{Binding RefreshCatalogCommand}" />
+                    <Button Text="All Options" Command="{Binding ShowAllOptionsCommand}" />
+                    <Button Text="Load Custom Firmware" IsEnabled="False" ToolTipProperties.Text="Added in the next firmware task" />
+                </HorizontalStackLayout>
+
+                <CollectionView ItemsSource="{Binding FirmwareChoices}" SelectionMode="None" EmptyView="No releases are available for this channel.">
+                    <CollectionView.ItemsLayout>
+                        <GridItemsLayout Orientation="Vertical" Span="3" HorizontalItemSpacing="12" VerticalItemSpacing="12" />
+                    </CollectionView.ItemsLayout>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
+                            <Border Padding="18" StrokeShape="RoundRectangle 10">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type local:InstallFirmwareViewModel}}, Path=SelectFirmwareCommand}" CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
+                                <VerticalStackLayout Spacing="5">
+                                    <Label Text="{Binding VehicleType}" FontSize="20" FontAttributes="Bold" />
+                                    <Label Text="{Binding Version}" />
+                                    <Label Text="{Binding Platform}" FontSize="12" />
+                                    <Label Text="{Binding BoardId, StringFormat='Board ID {0}'}" FontSize="12" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <Border Padding="16" StrokeShape="RoundRectangle 8">
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
+                        <Label Text="Selected firmware" FontAttributes="Bold" />
+                        <Label Grid.Row="1" Text="{Binding SelectedFirmware.Platform, StringFormat='Platform: {0}'}" />
+                        <Label Grid.Row="2" Text="{Binding SelectedFirmware.BoardId, StringFormat='Firmware board ID: {0}'}" />
+                        <Label Grid.Row="3" Text="{Binding SelectedFirmware.Version, StringFormat='Version: {0}'}" />
+                        <Button Grid.Column="1" Grid.RowSpan="4" Text="Install" Command="{Binding InstallCommand}" IsEnabled="{Binding CanInstall}" VerticalOptions="Center" />
+                    </Grid>
+                </Border>
+                <Label Text="Detected device" FontAttributes="Bold" />
+                <Label Text="{Binding DeviceStatus}" />
+            </VerticalStackLayout>
+
+            <Border IsVisible="{Binding IsUnsupportedMode}" Padding="24" StrokeShape="RoundRectangle 10">
+                <Label Text="Direct firmware installation is not available on this platform." />
+            </Border>
+
+            <Border IsVisible="{Binding IsOperationInProgress}" Padding="20" StrokeShape="RoundRectangle 10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="{Binding OperationProgress.Stage}" FontSize="20" FontAttributes="Bold" />
+                    <ProgressBar Progress="{Binding OperationProgress.Progress}" IsVisible="{Binding OperationProgress.HasPercentage}" />
+                    <Label Text="Do not disconnect power while flash memory is being changed." TextColor="OrangeRed" IsVisible="{Binding OperationProgress.IsPowerCritical}" />
+                </VerticalStackLayout>
+            </Border>
+            <Label Text="{Binding StatusMessage}" />
+        </VerticalStackLayout>
+    </ScrollView>
 </pages:UraniumContentPage>
