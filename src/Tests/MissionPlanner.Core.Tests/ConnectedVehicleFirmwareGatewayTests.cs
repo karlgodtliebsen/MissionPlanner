@@ -37,12 +37,15 @@ public sealed class ConnectedVehicleFirmwareGatewayTests
 
         result.Should().Be(expectedResult);
         await commandService.Received(1).ExecuteExpertAsync(
-            Arg.Is<ExpertVehicleCommand>(command =>
-                command.VehicleId == vehicleId &&
-                command.CommandId == 42650 &&
-                command.Parameters is { Count: 7 } parameters &&
-                parameters[4] == 290876),
+            Arg.Is<ExpertVehicleCommand>(command => IsFlashBootloaderCommand(command, vehicleId)),
             true,
             cancellationToken);
     }
+
+    private static bool IsFlashBootloaderCommand(ExpertVehicleCommand? command, VehicleId vehicleId) =>
+        command is not null &&
+        command.VehicleId == vehicleId &&
+        command.CommandId == 42650 &&
+        command.Parameters.Count == 7 &&
+        command.Parameters[4] == 290876;
 }
