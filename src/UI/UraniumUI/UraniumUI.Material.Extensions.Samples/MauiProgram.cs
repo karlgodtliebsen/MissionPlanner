@@ -7,6 +7,7 @@ using UraniumUI.Material.Extensions.Samples.AppViewModels;
 using UraniumUI.Material.Extensions.Samples.DataGrids;
 using UraniumUI.Material.Extensions.Samples.DataGrids.ArduPilotSample;
 using UraniumUI.Material.Extensions.Samples.DataGridSamples.PaginationSamples;
+using UraniumUI.Material.Extensions.Samples.DataGridSamples.Selectable;
 using UraniumUI.Material.Extensions.Samples.DataGridSamples.VirtualizedDataGridSample;
 using UraniumUI.Material.Extensions.Samples.DialogSamples;
 
@@ -46,7 +47,8 @@ public static class MauiProgram
         builder.Services.AddSingleton<VirtualizedDataGridViewModel>();
         builder.Services.AddTransient<VirtualizedDataGridSampleViewModel>();
         builder.Services.AddTransient<EditorDataGridPageViewModel>();
-        builder.Services.AddSingleton<SelectableDataGridPageViewModel>();
+        builder.Services.AddSingleton<SelectableDataGridPageViewModel1>();
+        builder.Services.AddSingleton<SelectableDataGridPageViewModel2>();
         builder.Services.AddSingleton<SimpleDataGridPageViewModel>();
         builder.Services.AddSingleton<CustomDataGridPageViewModel>();
         builder.Services.AddSingleton<PaginationSampleViewModel>();

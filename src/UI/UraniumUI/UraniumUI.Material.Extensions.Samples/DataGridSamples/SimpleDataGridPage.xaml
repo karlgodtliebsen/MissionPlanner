@@ -11,9 +11,10 @@
     </uranium:UraniumContentPage.BindingContext>
     <uranium:UraniumContentPage.Content>
 
-        <Grid HorizontalOptions="Fill" VerticalOptions="Fill" Margin="50">
+        <Grid HorizontalOptions="Fill" VerticalOptions="Fill" Margin="50" RowDefinitions="600,300" ColumnDefinitions="*,*" RowSpacing="10">
 
-            <virtualized:VirtualizedDataGrid     ItemsSource="{Binding Items}" 
+            <virtualized:VirtualizedDataGrid    Grid.RowSpan="1" 
+                                                ItemsSource="{Binding Items}" 
                                                  UseAutoColumns="True"
                                                  AutoColumnWidth= "250"
 
@@ -35,6 +36,35 @@
                     </VerticalStackLayout>
                 </virtualized:VirtualizedDataGrid.EmptyView>
             </virtualized:VirtualizedDataGrid>
+
+
+            <virtualized:VirtualizedDataGrid     Grid.Row="0" Grid.Column="1"
+                                                 ItemsSource="{Binding FewItems}" 
+                                                 UseAutoColumns="True"
+                                                 AutoColumnWidth= "250"
+
+                                                 ItemSizingStrategy= "MeasureFirstItem"
+                                                 ShowSearchBar="False"
+
+                                                 HorizontalOptions="Center"  
+                                                 VerticalOptions="Fill">
+
+            </virtualized:VirtualizedDataGrid>
+
+
+            <virtualized:VirtualizedDataGrid     Grid.Row="1" Grid.Column="1" ItemsSource="{Binding OneItems}" 
+                                                 UseAutoColumns="True"
+                                                 AutoColumnWidth= "250"
+
+                                                 ItemSizingStrategy= "MeasureFirstItem"
+                                                 ShowSearchBar="False"
+
+                                                 HorizontalOptions="Center"  
+                                                 VerticalOptions="Fill"
+            >
+
+            </virtualized:VirtualizedDataGrid>
+
         </Grid>
 
     </uranium:UraniumContentPage.Content>

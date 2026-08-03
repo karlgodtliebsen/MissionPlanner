@@ -8,11 +8,24 @@ public partial class SimpleDataGridPageViewModel : ObservableObject
 {
     public List<SimpleStudent> Items { get; } = [];
 
+    public List<SimpleStudent> FewItems { get; } = [];
+    public List<SimpleStudent> OneItems { get; } = [];
+
     public SimpleDataGridPageViewModel()
     {
         for (var i = 0; i < 1000; i++)
         {
             Items.Add(GenerateStudent());
+        }
+
+        for (var i = 0; i < 5; i++)
+        {
+            FewItems.Add(GenerateStudent());
+        }
+
+        for (var i = 0; i < 1; i++)
+        {
+            OneItems.Add(GenerateStudent());
         }
     }
 

@@ -8,7 +8,7 @@
                     xmlns:plain="clr-namespace:Plainer.Maui.Controls;assembly=Plainer.Maui"
                     xmlns:dataGrids="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids"
                     xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
-                    xmlns:models="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids.Models"
+                    xmlns:models="using:UraniumUI.Material.Extensions.Samples.DataGridSamples.Models"
                     BindingContext="{uranium:Inject {Type dataGrids:CustomDataGridPageViewModel}}"
                     x:Class="UraniumUI.Material.Extensions.Samples.DataGrids.CustomDataGridPage"
                     x:Name="SamplePage"

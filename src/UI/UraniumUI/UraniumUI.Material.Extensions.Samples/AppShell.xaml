@@ -13,8 +13,8 @@
     xmlns:controlsSamples="using:UraniumUI.Material.Extensions.Samples.ControlsSamples"
     xmlns:arduPilotSample="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids.ArduPilotSample"
     xmlns:virtualizedDataGridSample="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGridSamples.VirtualizedDataGridSample"
-    xmlns:paginationSamples="using:UraniumUI.Material.Extensions.Samples.DataGrids.DataGridSamples.PaginationSamples"
-    xmlns:paginationSamples1="using:UraniumUI.Material.Extensions.Samples.DataGridSamples.PaginationSamples"
+    xmlns:paginationSamples="using:UraniumUI.Material.Extensions.Samples.DataGridSamples.PaginationSamples"
+    xmlns:selectable="using:UraniumUI.Material.Extensions.Samples.DataGridSamples.Selectable"
     x:Name="thisShell"
     FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
     Shell.FlyoutBehavior="Flyout"
@@ -103,12 +103,13 @@
         <ShellContent Title="Editor Data Grid" ContentTemplate="{DataTemplate dataGrids:EditorDataGridPage}" Route="EditorDataGridPage" />
     </FlyoutItem>
     <FlyoutItem Title="Pagination Data Grid" >
-        <ShellContent Title="Pagination Data Grid 1" ContentTemplate="{DataTemplate paginationSamples1:PaginationSamplePage}" Route="PaginationSamplePage1" />
-        <ShellContent Title="Pagination Data Grid 2" ContentTemplate="{DataTemplate paginationSamples1:PaginationSampleExtended1Page}" Route="PaginationSamplePage2" />
-        <ShellContent Title="Pagination Data Grid 3" ContentTemplate="{DataTemplate paginationSamples1:PaginationSampleExtended2Page}" Route="PaginationSamplePage3" />
+        <ShellContent Title="Pagination Data Grid 1" ContentTemplate="{DataTemplate paginationSamples:PaginationSamplePage}" Route="PaginationSamplePage1" />
+        <ShellContent Title="Pagination Data Grid 2" ContentTemplate="{DataTemplate paginationSamples:PaginationSampleExtended1Page}" Route="PaginationSamplePage2" />
+        <ShellContent Title="Pagination Data Grid 3" ContentTemplate="{DataTemplate paginationSamples:PaginationSampleExtended2Page}" Route="PaginationSamplePage3" />
     </FlyoutItem>
     <FlyoutItem Title="Selectable Data Grid" >
-        <ShellContent Title="Selectable Data Grid" ContentTemplate="{DataTemplate dataGrids:SelectableDataGridPage}" Route="SelectableDataGridPage" />
+        <ShellContent Title="Selectable Data Grid 1" ContentTemplate="{DataTemplate selectable:SelectableDataGridPage1}" Route="SelectableDataGridPage1" />
+        <ShellContent Title="Selectable Data Grid 2" ContentTemplate="{DataTemplate selectable:SelectableDataGridPage2}" Route="SelectableDataGridPage2" />
     </FlyoutItem>
     <FlyoutItem Title="Extended Data Grid Samples" >
         <ShellContent Title="Sample 1" ContentTemplate="{DataTemplate virtualizedDataGridSample:VirtualizedDataGridSampleView1}" Route="VirtualizedDataGridView1" />

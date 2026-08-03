@@ -5,14 +5,14 @@
                     xmlns:m="clr-namespace:UraniumUI.Icons.MaterialSymbols;assembly=UraniumUI.Icons.MaterialSymbols"
                     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
-                    xmlns:local="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids"
                     xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
                     xmlns:models="using:UraniumUI.Material.Extensions.Samples.DataGridSamples.Models"
-                    x:Class="UraniumUI.Material.Extensions.Samples.DataGrids.SelectableDataGridPage"
+                    xmlns:selectable="using:UraniumUI.Material.Extensions.Samples.DataGridSamples.Selectable"
+                    x:Class="UraniumUI.Material.Extensions.Samples.DataGridSamples.Selectable.SelectableDataGridPage1"
                     >
 
     <uranium:UraniumContentPage.BindingContext>
-        <local:SelectableDataGridPageViewModel />
+        <selectable:SelectableDataGridPageViewModel1 />
     </uranium:UraniumContentPage.BindingContext>
 
     <Grid RowDefinitions="Auto,*" Margin="50" HorizontalOptions="Fill"  VerticalOptions="Fill">
