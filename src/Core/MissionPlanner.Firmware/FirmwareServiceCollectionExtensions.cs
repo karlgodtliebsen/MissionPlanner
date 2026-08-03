@@ -7,6 +7,7 @@ using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Protocol;
 using MissionPlanner.Firmware.Discovery;
 using MissionPlanner.Firmware.Entry;
+using MissionPlanner.Firmware.Compatibility;
 
 namespace MissionPlanner.Firmware;
 
@@ -63,6 +64,7 @@ public static class FirmwareServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IBootloaderEntryStrategy, TemporaryMavLinkRebootEntryStrategy>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IBootloaderEntryStrategy, ManualReconnectBootloaderEntryStrategy>());
         services.TryAddSingleton<IBootloaderEntryService, BootloaderEntryService>();
+        services.TryAddSingleton<IFirmwareCompatibilityService, FirmwareCompatibilityService>();
 
         return services;
     }

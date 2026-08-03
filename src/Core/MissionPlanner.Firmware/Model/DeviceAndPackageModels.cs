@@ -56,6 +56,10 @@ public sealed record ApjFirmwarePackage
         int imageMaximumSize,
         ReadOnlyMemory<byte> externalImage = default,
         int boardRevision = 0,
+        int? boardRevisionMaximum = null,
+        int minimumBootloaderRevision = 0,
+        bool? requiresSecureBoot = null,
+        bool? isSigned = null,
         string? description = null,
         string? summary = null,
         string? version = null,
@@ -68,9 +72,15 @@ public sealed record ApjFirmwarePackage
         Image = image;
         if (imageMaximumSize <= 0 || image.Length > imageMaximumSize) throw new ArgumentOutOfRangeException(nameof(imageMaximumSize));
         if (boardRevision < 0) throw new ArgumentOutOfRangeException(nameof(boardRevision));
+        if (boardRevisionMaximum < boardRevision) throw new ArgumentOutOfRangeException(nameof(boardRevisionMaximum));
+        if (minimumBootloaderRevision < 0) throw new ArgumentOutOfRangeException(nameof(minimumBootloaderRevision));
         ImageMaximumSize = imageMaximumSize;
         ExternalImage = externalImage;
         BoardRevision = boardRevision;
+        BoardRevisionMaximum = boardRevisionMaximum;
+        MinimumBootloaderRevision = minimumBootloaderRevision;
+        RequiresSecureBoot = requiresSecureBoot;
+        IsSigned = isSigned;
         Description = description;
         Summary = summary;
         Version = version;
@@ -90,6 +100,14 @@ public sealed record ApjFirmwarePackage
     public ReadOnlyMemory<byte> ExternalImage { get; }
     /// <summary>Gets the minimum board revision, or zero when unspecified.</summary>
     public int BoardRevision { get; }
+    /// <summary>Gets the optional maximum supported hardware revision.</summary>
+    public int? BoardRevisionMaximum { get; }
+    /// <summary>Gets the minimum bootloader revision when declared.</summary>
+    public int MinimumBootloaderRevision { get; }
+    /// <summary>Gets whether the package explicitly requires secure boot.</summary>
+    public bool? RequiresSecureBoot { get; }
+    /// <summary>Gets whether the package declares a cryptographic signature.</summary>
+    public bool? IsSigned { get; }
     /// <summary>Gets the package description.</summary>
     public string? Description { get; }
     /// <summary>Gets the package platform summary.</summary>
@@ -112,7 +130,8 @@ public sealed record BootloaderIdentity
         long flashSize,
         int boardRevision = 0,
         long externalFlashSize = 0,
-        string? chipDescription = null)
+        string? chipDescription = null,
+        bool? isSecure = null)
     {
         if (boardId <= 0) throw new ArgumentOutOfRangeException(nameof(boardId));
         if (bootloaderRevision < 2) throw new ArgumentOutOfRangeException(nameof(bootloaderRevision));
@@ -125,6 +144,7 @@ public sealed record BootloaderIdentity
         BoardRevision = boardRevision;
         ExternalFlashSize = externalFlashSize;
         ChipDescription = chipDescription;
+        IsSecure = isSecure;
     }
 
     /// <summary>Gets the bootloader board ID.</summary>
@@ -141,4 +161,6 @@ public sealed record BootloaderIdentity
     public long ExternalFlashSize { get; }
     /// <summary>Gets the optional bootloader chip description.</summary>
     public string? ChipDescription { get; }
+    /// <summary>Gets secure-boot state when the bootloader reports it.</summary>
+    public bool? IsSecure { get; }
 }

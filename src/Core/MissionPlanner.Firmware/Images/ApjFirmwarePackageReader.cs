@@ -35,7 +35,8 @@ public sealed class ApjFirmwarePackageReader(IOptions<FirmwareOptions> options) 
                 : [];
             var raw = root.EnumerateObject().ToDictionary(property => property.Name, property => property.Value.GetRawText(), StringComparer.Ordinal);
             return new ApjFirmwarePackage(
-                boardId, image, maximum, external, OptionalInt(root, "board_revision"), GetString(root, "description"),
+                boardId, image, maximum, external, OptionalInt(root, "board_revision"), OptionalNullableInt(root, "board_revision_max"),
+                OptionalInt(root, "bootloader_min_version"), OptionalBool(root, "secure_boot"), OptionalBool(root, "signed_firmware"), GetString(root, "description"),
                 GetString(root, "summary"), GetString(root, "version"),
                 GetString(root, "git_identity") ?? GetString(root, "ardupilot_git_hash"), raw);
         }
@@ -70,6 +71,8 @@ public sealed class ApjFirmwarePackageReader(IOptions<FirmwareOptions> options) 
         return value > 0 ? value : throw new FirmwarePackageException($"Package field {name} must be positive.");
     }
     private static int OptionalInt(JsonElement root, string name) => root.TryGetProperty(name, out var value) && value.TryGetInt32(out var number) ? number : 0;
+    private static int? OptionalNullableInt(JsonElement root, string name) => root.TryGetProperty(name, out var value) && value.TryGetInt32(out var number) ? number : null;
+    private static bool? OptionalBool(JsonElement root, string name) => root.TryGetProperty(name, out var value) && value.ValueKind is JsonValueKind.True or JsonValueKind.False ? value.GetBoolean() : null;
     private static string RequiredString(JsonElement root, string name) => GetString(root, name) is { Length: > 0 } value ? value : throw new FirmwarePackageException($"Package field {name} is required.");
     private static string? GetString(JsonElement root, string name) => root.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
 }
