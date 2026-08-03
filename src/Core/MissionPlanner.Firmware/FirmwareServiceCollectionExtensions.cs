@@ -8,6 +8,7 @@ using MissionPlanner.Firmware.Protocol;
 using MissionPlanner.Firmware.Discovery;
 using MissionPlanner.Firmware.Entry;
 using MissionPlanner.Firmware.Compatibility;
+using MissionPlanner.Firmware.Downloads;
 
 namespace MissionPlanner.Firmware;
 
@@ -42,6 +43,7 @@ public static class FirmwareServiceCollectionExtensions
             .Validate(value => value.BootloaderDiscoveryTimeout > TimeSpan.Zero, "BootloaderDiscoveryTimeout must be positive.")
             .Validate(value => value.BootloaderPortOpenTimeout > TimeSpan.Zero, "BootloaderPortOpenTimeout must be positive.")
             .Validate(value => value.BootloaderBaudRate > 0, "BootloaderBaudRate must be positive.")
+            .Validate(value => value.MaximumArtifactBytes > 0, "MaximumArtifactBytes must be positive.")
             .ValidateOnStart();
 
         services.TryAddSingleton<IFirmwareOperationCoordinator, FirmwareOperationCoordinator>();
@@ -65,6 +67,8 @@ public static class FirmwareServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IBootloaderEntryStrategy, ManualReconnectBootloaderEntryStrategy>());
         services.TryAddSingleton<IBootloaderEntryService, BootloaderEntryService>();
         services.TryAddSingleton<IFirmwareCompatibilityService, FirmwareCompatibilityService>();
+        services.TryAddSingleton<IFirmwareArtifactStore, FileSystemFirmwareArtifactStore>();
+        services.TryAddSingleton<IFirmwareArtifactDownloader, FirmwareArtifactDownloader>();
 
         return services;
     }

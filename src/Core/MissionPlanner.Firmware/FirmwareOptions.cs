@@ -38,4 +38,10 @@ public sealed class FirmwareOptions
 
     /// <summary>Gets or sets the baud rate used by modern bootloaders.</summary>
     public int BootloaderBaudRate { get; set; } = 115200;
+
+    /// <summary>Gets or sets the maximum encoded artifact download size.</summary>
+    public long MaximumArtifactBytes { get; set; } = 64L * 1024 * 1024;
+
+    /// <summary>Gets or sets whether non-HTTPS artifact URLs are allowed for controlled development.</summary>
+    public bool AllowInsecureArtifactUrls { get; set; }
 }
