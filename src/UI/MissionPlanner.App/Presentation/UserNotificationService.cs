@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Alerts;
 using MissionPlanner.Core.Notifications;
 using MissionPlanner.Library.DateTime.Domain;
+using UraniumUI.Material.Dialogs;
 
 namespace MissionPlanner.App.Presentation;
 
@@ -10,6 +11,7 @@ namespace MissionPlanner.App.Presentation;
 public sealed class UserNotificationService : IUserNotificationService
 {
     private readonly IDispatcher dispatcher;
+    private readonly IExtendedDialogService dialogService;
     private readonly IApplicationNotificationStore notificationStore;
     private readonly IDateTimeProvider clock;
 
@@ -17,23 +19,26 @@ public sealed class UserNotificationService : IUserNotificationService
     /// Initializes a new instance of the <see cref="UserNotificationService"/> class.
     /// </summary>
     /// <param name="dispatcher">The UI dispatcher.</param>
+    /// <param name="dialogService"></param>
     /// <param name="notificationStore">The bounded local-notification history.</param>
     /// <param name="clock">The application clock.</param>
     public UserNotificationService(
         IDispatcher dispatcher,
+        IExtendedDialogService dialogService,
         IApplicationNotificationStore notificationStore,
         IDateTimeProvider clock)
     {
         this.dispatcher = dispatcher;
+        this.dialogService = dialogService;
         this.notificationStore = notificationStore;
         this.clock = clock;
     }
 
     /// <inheritdoc />
-    public Task NotifyAsync(UserNotification notification, CancellationToken cancellationToken = default)
+    public async Task NotifyAsync(UserNotification notification, CancellationToken cancellationToken = default)
     {
         notificationStore.Add(notification, clock.UtcNow);
-        return dispatcher.DispatchAsync(async () =>
+        await dispatcher.DispatchAsync(async () =>
         {
             switch (notification.Presentation)
             {
@@ -44,12 +49,7 @@ public sealed class UserNotificationService : IUserNotificationService
                     await Snackbar.Make(notification.Message).Show(cancellationToken);
                     break;
                 case UserNotificationPresentation.Dialog:
-                    var page = Application.Current?.Windows.FirstOrDefault()?.Page;
-                    if (page is not null)
-                    {
-                        await page.DisplayAlertAsync(notification.Title ?? "Mission Planner", notification.Message, "OK");
-                    }
-
+                    await dialogService.ConfirmAsync(notification.Title ?? "Mission Planner", notification.Message, "OK", "Cancel");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(notification), notification.Presentation, "Unsupported notification presentation.");

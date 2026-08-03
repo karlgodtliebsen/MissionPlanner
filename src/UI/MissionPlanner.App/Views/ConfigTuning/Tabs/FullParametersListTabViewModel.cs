@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Helpers;
 using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.Common;
@@ -441,10 +440,8 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         {
             using var connectionCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, activeVehicle.ConnectionCancellationToken);
             var plan = editSession.CreateWritePlan();
-            var preview = string.Join(
-                Environment.NewLine,
-                plan.Entries.Select(entry =>
-                    $"{entry.DisplayName} ({entry.Name}): {entry.LiveValue:R} → {entry.PendingValue:R} {entry.Units}".TrimEnd()));
+            var preview = string.Join(Environment.NewLine, plan.Entries.Select(entry => $"{entry.DisplayName} ({entry.Name}): {entry.LiveValue:R} → {entry.PendingValue:R} {entry.Units}".TrimEnd()));
+
             var rebootCount = plan.Entries.Count(entry => entry.RebootRequired);
             var accepted = await confirmation.ConfirmAsync(
                 "Review parameter writes",
@@ -462,15 +459,14 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             SetMessages($"Applying {plan.Entries.Count} modified parameters...");
             var progress = new Progress<ParameterApplyProgress>(value =>
                 dispatcher.Dispatch(() => ProgressMessage = $"{value.Index}/{value.Total}: {value.Name} — {value.Message}"));
+
+
             var report = await editSession.ApplyAsync(plan, progress, connectionCancellation.Token);
+
             lastApplyReport = report;
             RebootRequired |= report.RebootRequired;
-            var statusMessage = report.Success
-                ? $"Confirmed {report.Confirmed.Count} parameter changes by vehicle readback."
-                : null;
-            var errorMessage = report.Success
-                ? null
-                : BuildResultSummary(report);
+            var statusMessage = report.Success ? $"Confirmed {report.Confirmed.Count} parameter changes by vehicle readback." : null;
+            var errorMessage = report.Success ? null : BuildResultSummary(report);
 
             SetMessages(statusMessage, errorMessage);
         }
@@ -500,10 +496,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         var viewModel = domainFactory.Create<ParameterComparisonViewModel, IParameterEditSession>(editSession);
         var view = domainFactory.Create<ParameterComparisonView, ParameterComparisonViewModel>(viewModel);
         await modalNavigationService.ShowAsync(view, true, cancellationToken);
-
-        //await dialogService.DisplayViewExtendedAsync("Compare", view, new Size(1024, 768), "OK");
-        //var result = Comparison.Show(editSession);
-        //SetMessages($"Comparing {result.Left.Name} with {result.Right.Name} from {result.Right.Timestamp:g}.", result.Warning);
     }
 
     private void OnComparisonStaged(object? sender, int count)
@@ -744,15 +736,6 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         ShowLoadingCancelled = false;
     }
 
-    //private void SetDisconnectedState()
-    //{
-    //    HasConnection = false;
-    //    ShowVehicleDisconnected = true;
-    //    SetMessages(null, DefaultStatusMessage);
-    //    CloseProgressDialog();
-    //    CompleteBusyState();
-    //}
-
     private void CancelLoadOperation()
     {
         var cancellation = loadCancellation;
@@ -785,11 +768,8 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         CancelLoadOperation();
         CloseProgressDialog();
 
-        if (editSession is not null)
-        {
-            editSession.Changed -= OnEditSessionChanged;
-            editSession = null;
-        }
+        editSession?.Changed -= OnEditSessionChanged;
+        editSession = null;
 
         // The page is retained by Shell even though this view model is transient.
         // Release the large row graph immediately so recycled editor controls and

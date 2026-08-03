@@ -1,9 +1,10 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
+using MissionPlanner.MavLink.Services;
 
 namespace MissionPlanner.Core.Simulation;
 
@@ -14,6 +15,7 @@ public sealed class SimulatorVehicleConnectionFactory(
     IServiceFactory serviceFactory,
     IDomainEventHub domainEventHub,
     IDateTimeProvider clock,
+    IMavLinkConnectionSessionFactory connectionSessionFactory,
     IVehicleMessagePumpCoordinator messagePumpCoordinator,
     IVehicleRegistry vehicleRegistry,
     ISimulationVehicleChannelRegistry channelRegistry,
@@ -33,6 +35,7 @@ public sealed class SimulatorVehicleConnectionFactory(
             serviceFactory,
             domainEventHub,
             clock,
+            connectionSessionFactory,
             loggerFactory.CreateLogger<VehicleConnectionSession>(),
             messagePumpCoordinator,
             false);

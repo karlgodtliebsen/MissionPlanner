@@ -43,8 +43,10 @@ public static class MavLinkConfigurator
         services.TryAddSingleton<IMavFtpResponseDispatcher, MavFtpResponseDispatcher>();
         services.TryAddSingleton<IMavFtpSequenceStore, MavFtpSequenceStore>();
         services.TryAddSingleton<IMavFtpClient, MavFtpClient>();
-        services.AddSingleton(Options.Create(new MavFtpOptions()));
+        services.TryAddTransient<IMavLinkConnectionSession, MavLinkConnectionSession>();
+        services.TryAddTransient<IMavLinkConnectionSessionFactory, MavLinkConnectionSessionFactory>();
 
+        services.AddSingleton(Options.Create(new MavFtpOptions()));
         services.AddSingleton(Options.Create(new MavLinkClientPipelineOptions()));
         services.AddSingleton(Options.Create(new MavLinkConnectionPipelineOptions()));
         services.AddGeneratedMavLinkDecoders();
@@ -74,6 +76,7 @@ public static class MavLinkConfigurator
     {
         var domainFactory = services.GetRequiredService<IDomainFactory>();
         domainFactory.Add<IMavFtpClient, MavFtpClient>();
+        domainFactory.Add<IMavLinkConnectionSession, MavLinkConnectionSession>();
         return services;
     }
 }

@@ -119,9 +119,6 @@ public class VehicleConnectionService(
             var endpoint = $"{host}:{port}";
 
             var linkedCts = await connectionSession.CreateTcpConnection(port, host, null, cancellationToken);
-            var connection = connectionSession.Connection;
-            var messagePump = connectionSession.MessagePump;
-            var parameterService = connectionSession.ParameterService;
             var client = connectionSession.Client;
             var transport = connectionSession.Transport;
             // Wait for heartbeat to identify vehicle
@@ -163,21 +160,13 @@ public class VehicleConnectionService(
     }
 
     /// <inheritdoc/>
-    public Task<VehicleConnectionResult> ConnectUdpAsync(
-        int localPort,
-        string? remoteHost = null,
-        int? remotePort = null,
-        CancellationToken cancellationToken = default)
+    public Task<VehicleConnectionResult> ConnectUdpAsync(int localPort, string? remoteHost = null, int? remotePort = null, CancellationToken cancellationToken = default)
     {
         return ConnectUdpCoreAsync(localPort, remoteHost, remotePort, true, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<VehicleConnectionResult> ConnectUdpExclusiveAsync(
-        int localPort,
-        string? remoteHost = null,
-        int? remotePort = null,
-        CancellationToken cancellationToken = default)
+    public Task<VehicleConnectionResult> ConnectUdpExclusiveAsync(int localPort, string? remoteHost = null, int? remotePort = null, CancellationToken cancellationToken = default)
     {
         return ConnectUdpCoreAsync(localPort, remoteHost, remotePort, false, cancellationToken);
     }
@@ -208,11 +197,7 @@ public class VehicleConnectionService(
 
             var endpoint = $"UDP:{localPort}";
 
-
             var linkedCts = await connectionSession.CreateUdpConnection(localPort, remoteHost ?? "127.0.0.1", remotePort ?? 14550, null, token);
-            var connection = connectionSession.Connection;
-            var messagePump = connectionSession.MessagePump;
-            var parameterService = connectionSession.ParameterService;
             var client = connectionSession.Client;
             var transport = connectionSession.Transport;
             // Wait for heartbeat to identify vehicle

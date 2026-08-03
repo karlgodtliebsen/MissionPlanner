@@ -8,6 +8,7 @@ using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.MavFtp.Abstractions;
+using MissionPlanner.MavLink.Services;
 using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Transport;
 using MissionPlanner.Transport.Abstractions;
@@ -22,6 +23,7 @@ namespace MissionPlanner.Core.Vehicles;
 /// <param name="serviceFactory"></param>
 /// <param name="domainEventHub"></param>
 /// <param name="dateTimeProvider"></param>
+/// <param name="connectionSessionFactory"></param>
 /// <param name="logger"></param>
 /// <param name="messagePumpCoordinator">Shared inbound MAVLink dispatch coordinator.</param>
 /// <param name="resetRegistryOnLifecycle">Whether this session owns the complete vehicle registry lifecycle.</param>
@@ -31,28 +33,18 @@ public sealed class VehicleConnectionSession(
     IServiceFactory serviceFactory,
     IDomainEventHub domainEventHub,
     IDateTimeProvider dateTimeProvider,
+    IMavLinkConnectionSessionFactory connectionSessionFactory,
     ILogger<VehicleConnectionSession> logger,
     IVehicleMessagePumpCoordinator messagePumpCoordinator,
     bool resetRegistryOnLifecycle = true)
     : IVehicleConnectionSession
 {
-    private IMavLinkConnection? connection;
     private IVehicleMessagePump? messagePump;
     private IVehicleMessagePumpLease? messagePumpLease;
     private IVehicleParameterService? parameterService;
     private IVehicleParameterStreamService? parameterStreamService;
-
     private CancellationTokenSource serviceCts = new();
-
-    // Background tasks that must live as long as this service instance
-    private Task? connectionTask;
-    private IMavLinkTransport? transport;
-    private IMavLinkClient? client;
-
-    /// <summary>
-    /// Gets the established MAVLink connection. Throws an exception if no connection is established.
-    /// </summary>
-    public IMavLinkConnection Connection => connection ?? throw new InvalidOperationException("No connection established");
+    private IMavLinkConnectionSession? connectionSession = null;
 
     /// <summary>
     /// Gets the established message pump. Throws an exception if no message pump is established.
@@ -70,22 +62,26 @@ public sealed class VehicleConnectionSession(
     /// <inheritdoc />
     public IVehicleParameterStreamService ParameterStreamService => parameterStreamService ?? throw new InvalidOperationException("No parameter StreamService established");
 
+    /// <summary>
+    /// Gets the established MAVLink connection. Throws an exception if no connection is established.
+    /// </summary>
+    public IMavLinkConnection Connection => connectionSession!.Connection ?? throw new InvalidOperationException("No connection established");
 
     /// <summary>
     /// Gets the established MAVLink client. Throws an exception if no client is established.
     /// </summary>
-    public IMavLinkClient Client => client ?? throw new InvalidOperationException("No client established");
+    public IMavLinkClient Client => connectionSession!.Client ?? throw new InvalidOperationException("No client established");
 
     /// <summary>
     /// Gets the established MAVLink transport. Throws an exception if no transport is established.
     /// </summary>
-    public IMavLinkTransport Transport => transport ?? throw new InvalidOperationException("No transport established");
+    public IMavLinkTransport Transport => connectionSession!.Transport ?? throw new InvalidOperationException("No transport established");
 
 
     /// <inheritdoc />
     public IVehicleFileSystemService? CreateMavFtpConnection()
     {
-        if (connection == null)
+        if (connectionSession is null)
         {
             return null;
         }
@@ -105,7 +101,6 @@ public sealed class VehicleConnectionSession(
     public async Task<CancellationTokenSource> CreateSerialConnection(string portName, int baudRate = 57600, Action<TransportEndpoint>? configure = null, CancellationToken cancellationToken = default)
     {
         serviceCts = new CancellationTokenSource();
-        client?.DisposeAsync();
 
         var registry = serviceFactory.Create<IVehicleRegistry>();
 
@@ -114,20 +109,21 @@ public sealed class VehicleConnectionSession(
             await registry.Reset(cancellationToken);
         }
 
-        // Create serial transport
-        transport = domainFactory.Create<ISerialMavLinkTransport, string, int>(portName, baudRate);
-        // Create MAVLink client
-        client = domainFactory.Create<IMavLinkClient, ISerialMavLinkTransport>((ISerialMavLinkTransport)transport);
+        var transportOptions = serviceFactory.Create<IOptions<TransportEndpoint>>();
+        transportOptions.Value.Protocol = "serial";
+        transportOptions.Value.SerialPort = portName;
+        transportOptions.Value.BaudRate = baudRate;
+        configure?.Invoke(transportOptions.Value);
+
+        connectionSession = await connectionSessionFactory.CreateSerialConnection(transportOptions, cancellationToken);
 
         messagePumpLease = await messagePumpCoordinator.AcquireAsync(cancellationToken).ConfigureAwait(false);
         messagePump = messagePumpLease.Pump;
-        connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
-        parameterService = domainFactory.Create<IVehicleParameterService, IMavLinkClient>(client);
+        parameterService = domainFactory.Create<IVehicleParameterService, IMavLinkClient>(connectionSession.Client!);
 
-        parameterStreamService = CreateParameterStreamService();
+        parameterStreamService = CreateParameterStreamService(connectionSession.Connection!);
         var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
 
-        connectionTask = Task.Run(() => connection.StartAsync(linkedCts.Token), linkedCts.Token);
         return linkedCts;
     }
 
@@ -148,21 +144,16 @@ public sealed class VehicleConnectionSession(
             await registry.Reset(cancellationToken);
         }
 
-        // Create TCP transport
-        transport = domainFactory.Create<ITcpMavLinkTransport, IOptions<TransportEndpoint>>(transportOptions);
-        // Create MAVLink client
-        client = domainFactory.Create<IMavLinkClient, ITcpMavLinkTransport>((ITcpMavLinkTransport)transport);
+        connectionSession = await connectionSessionFactory.CreateTcpConnection(transportOptions, cancellationToken);
 
         messagePumpLease = await messagePumpCoordinator.AcquireAsync(cancellationToken).ConfigureAwait(false);
         messagePump = messagePumpLease.Pump;
-        connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
 
-        parameterService = domainFactory.Create<IVehicleParameterService, IMavLinkClient>(client);
-        parameterStreamService = CreateParameterStreamService();
+        parameterService = domainFactory.Create<IVehicleParameterService, IMavLinkClient>(connectionSession.Client!);
+        parameterStreamService = CreateParameterStreamService(connectionSession.Connection!);
 
         var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
 
-        connectionTask = Task.Run(() => connection.StartAsync(linkedCts.Token), linkedCts.Token);
         return linkedCts;
     }
 
@@ -184,31 +175,29 @@ public sealed class VehicleConnectionSession(
             await registry.Reset(cancellationToken);
         }
 
-        // Create UDP transport
-        transport = domainFactory.Create<IUdpMavLinkTransport, IOptions<TransportEndpoint>>(transportOptions);
-        // Create MAVLink client
-        client = domainFactory.Create<IMavLinkClient, IUdpMavLinkTransport>((IUdpMavLinkTransport)transport);
+        connectionSession = await connectionSessionFactory.CreateUdpConnection(transportOptions, cancellationToken);
 
         messagePumpLease = await messagePumpCoordinator.AcquireAsync(cancellationToken).ConfigureAwait(false);
         messagePump = messagePumpLease.Pump;
-        connection = domainFactory.Create<IMavLinkConnection, IMavLinkClient>(client);
 
-        parameterService = domainFactory.Create<IVehicleParameterService, IMavLinkClient>(client);
-        parameterStreamService = CreateParameterStreamService();
+        parameterService = domainFactory.Create<IVehicleParameterService, IMavLinkClient>(connectionSession.Client!);
+        parameterStreamService = CreateParameterStreamService(connectionSession.Connection!);
 
         var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, serviceCts.Token);
 
-        connectionTask = Task.Run(() => connection.StartAsync(linkedCts.Token), linkedCts.Token);
         return linkedCts;
     }
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
-        // Clean up task references
-        connectionTask = null;
-
         // Stop and dispose services
+        if (connectionSession is not null)
+        {
+            await connectionSession.DisposeAsync().ConfigureAwait(false);
+            connectionSession = null;
+        }
+
         if (messagePumpLease is not null)
         {
             try
@@ -224,52 +213,23 @@ public sealed class VehicleConnectionSession(
             messagePump = null;
         }
 
-        if (connection is not null)
+        if (connectionSession is not null)
         {
             try
             {
-                await connection.DisposeAsync();
+                await connectionSession.DisposeAsync();
             }
             catch (Exception ex)
             {
                 logger.LogDebug(ex, "Non Critical Failure Disposing connection ");
             }
 
-            connection = null;
+            connectionSession = null;
         }
 
         parameterStreamService = null;
         parameterService = null;
-
-        // Stop and disconnect transport
-        if (transport is not null)
-        {
-            try
-            {
-                await transport.DisposeAsync();
-            }
-            catch (Exception ex)
-            {
-                logger.LogDebug(ex, "Non Critical Failure Disposing transport ");
-            }
-
-            transport = null;
-        }
-
-        // Stop and disconnect client
-        if (client is not null)
-        {
-            try
-            {
-                await client.StopAsync();
-            }
-            catch (Exception ex)
-            {
-                logger.LogDebug(ex, "Non Critical Failure Disposing client ");
-            }
-
-            client = null;
-        }
+        connectionSession?.DisposeAsync();
     }
 
     /// <summary>
@@ -296,27 +256,9 @@ public sealed class VehicleConnectionSession(
             // Stop background tasks gracefully. Cancel first; otherwise the wait below just waits for the timeout.
             await serviceCts.CancelAsync().ConfigureAwait(false);
 
-            var tasksToWait = new List<Task>();
-            if (connectionTask is not null && !connectionTask.IsCompleted)
+            if (connectionSession is not null)
             {
-                tasksToWait.Add(connectionTask);
-            }
-
-            if (tasksToWait.Any())
-            {
-                using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                try
-                {
-                    await Task.WhenAll(tasksToWait).WaitAsync(timeoutCts.Token);
-                }
-                catch (OperationCanceledException)
-                {
-                    logger.LogWarning("Background tasks did not complete within timeout period during disconnect");
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "Error waiting for background tasks to complete");
-                }
+                await connectionSession.DisconnectAsync(cancellationToken);
             }
 
             await DisposeAsync();
@@ -343,9 +285,7 @@ public sealed class VehicleConnectionSession(
         }
 
         // Always null the fields  even if there were errors
-        connection = null;
-        transport = null;
-        client = null;
+        connectionSession = null;
         messagePump = null;
         messagePumpLease = null;
         parameterStreamService = null;
@@ -353,12 +293,10 @@ public sealed class VehicleConnectionSession(
         logger.LogInformation("Successfully disconnected vehicle {VehicleId}", vehicleId);
     }
 
-    private IVehicleParameterStreamService CreateParameterStreamService()
+    private IVehicleParameterStreamService CreateParameterStreamService(IMavLinkConnection conn)
     {
-        var mavFtpClient = domainFactory.Create<IMavFtpClient, IMavLinkConnection>(Connection);
-        var fileSystemService = domainFactory.Create<IVehicleFileSystemService, IMavFtpClient>(mavFtpClient);
+        var mavFtpClient = connectionSession.CreateMavFtpClient();
+        var fileSystemService = domainFactory.Create<IVehicleFileSystemService, IMavFtpClient>(mavFtpClient!);
         return domainFactory.Create<IVehicleParameterStreamService, IVehicleParameterService, IVehicleFileSystemService>(ParameterService, fileSystemService);
     }
-
-    /// <inheritdoc />
 }

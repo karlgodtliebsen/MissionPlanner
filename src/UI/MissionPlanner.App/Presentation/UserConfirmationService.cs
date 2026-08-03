@@ -1,9 +1,11 @@
-﻿namespace MissionPlanner.App.Presentation;
+﻿using UraniumUI.Material.Dialogs;
+
+namespace MissionPlanner.App.Presentation;
 
 /// <summary>
 /// Presents safety confirmations on the current page.
 /// </summary>
-public sealed class UserConfirmationService(IDispatcher dispatcher) : IUserConfirmationService
+public sealed class UserConfirmationService(IDispatcher dispatcher, IExtendedDialogService dialogService) : IUserConfirmationService
 {
     /// <inheritdoc />
     public async Task<bool> ConfirmAsync(string title, string message, string acceptText, CancellationToken cancellationToken = default)
@@ -12,11 +14,7 @@ public sealed class UserConfirmationService(IDispatcher dispatcher) : IUserConfi
         var accepted = false;
         await dispatcher.DispatchAsync(async () =>
         {
-            var page = Application.Current?.Windows.FirstOrDefault()?.Page;
-            if (page is not null)
-            {
-                accepted = await page.DisplayAlertAsync(title, message, acceptText, "Cancel");
-            }
+            accepted = await dialogService.ConfirmAsync(title, message, acceptText, "Cancel");
         });
         cancellationToken.ThrowIfCancellationRequested();
         return accepted;

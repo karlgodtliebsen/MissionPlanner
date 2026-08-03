@@ -99,7 +99,6 @@ public static class DomainConfigurator
         services.TryAddSingleton<ISimulationScenarioDelay, SimulationScenarioDelay>();
         services.TryAddSingleton<ISimulationScenarioRunner, SimulationScenarioRunner>();
         services.TryAddSingleton<ISimulationScenarioReportExporter, SimulationScenarioReportExporter>();
-        services.AddHttpClient("SITL");
         services.TryAddSingleton<ISitlManifestProvider, JsonSitlManifestProvider>();
         services.TryAddSingleton<ISitlReleaseSelector, SitlReleaseSelector>();
         services.TryAddSingleton<ISitlPackageManager, SitlPackageManager>();
@@ -115,32 +114,37 @@ public static class DomainConfigurator
         services.TryAddSingleton<IVehicleOperationGate, VehicleOperationGate>();
         services.TryAddTransient<IVehicleCommandPolicy, VehicleCommandPolicy>();
         services.TryAddSingleton<IArduPilotModeCatalog, ArduPilotModeCatalog>();
-        services.Configure<VehicleMessageStoreOptions>(configuration.GetSection(VehicleMessageStoreOptions.SectionName));
         services.TryAddSingleton<IVehicleMessageStore, VehicleMessageStore>();
         services.TryAddSingleton<IApplicationNotificationStore, ApplicationNotificationStore>();
         services.TryAddSingleton<ISetupWorkflowCatalog, SetupWorkflowCatalog>();
         services.TryAddTransient<IFrameConfigurationService, FrameConfigurationService>();
-        services.Configure<CalibrationOptions>(configuration.GetSection(CalibrationOptions.SectionName));
         services.TryAddTransient<IArduPilotCalibrationService, ArduPilotCalibrationService>();
         services.TryAddTransient<ICompassConfigurationService, CompassConfigurationService>();
-        services.Configure<CompassCalibrationOptions>(configuration.GetSection(CompassCalibrationOptions.SectionName));
         services.TryAddTransient<IArduPilotCompassCalibrationService, ArduPilotCompassCalibrationService>();
         services.TryAddTransient<IRadioCalibrationService, RadioCalibrationService>();
         services.TryAddTransient<IFlightModeConfigurationService, FlightModeConfigurationService>();
         services.TryAddTransient<IBatteryConfigurationService, BatteryConfigurationService>();
         services.TryAddTransient<IActuatorTestService, ActuatorTestService>();
         services.TryAddTransient<IServoOutputConfigurationService, ServoOutputConfigurationService>();
+
+        //TODO: mus tbe inspected
+        services.Configure<VehicleMessageStoreOptions>(configuration.GetSection(VehicleMessageStoreOptions.SectionName));
+        services.Configure<CalibrationOptions>(configuration.GetSection(CalibrationOptions.SectionName));
+        services.Configure<CompassCalibrationOptions>(configuration.GetSection(CompassCalibrationOptions.SectionName));
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, SerialPortsModule>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, GpsModule>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, RangefinderModule>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, AirspeedModule>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, CanBusModule>());
+        services.Configure<FirmwareManifestOptions>(configuration.GetSection(FirmwareManifestOptions.SectionName));
+        services.AddHttpClient("Firmware");
+        services.AddHttpClient("SITL");
+
+
         services.TryAddSingleton<IOptionalHardwareCatalog, OptionalHardwareCatalog>();
         services.TryAddTransient<IOptionalHardwareService, OptionalHardwareService>();
         services.TryAddTransient<ISafetyAssessmentService, SafetyAssessmentService>();
         services.TryAddTransient<ISetupSummaryService, SetupSummaryService>();
-        services.Configure<FirmwareManifestOptions>(configuration.GetSection(FirmwareManifestOptions.SectionName));
-        services.AddHttpClient("Firmware");
         services.TryAddSingleton<IFirmwareManifestProvider, JsonFirmwareManifestProvider>();
         services.TryAddSingleton<IFirmwareManifestSelector, FirmwareManifestSelector>();
         services.TryAddTransient<IFirmwarePackageManager, FirmwarePackageManager>();

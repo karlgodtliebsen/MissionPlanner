@@ -12,9 +12,26 @@ namespace MissionPlanner.Core.Vehicles;
 /// Service for managing vehicle parameters via MAVLink.
 /// Handles parameter requests and updates through the MAVLink protocol.
 /// </summary>
-public sealed class VehicleParameterService(IMavLinkClient client, IMavLinkParameterEncoder encoder, IVehicleRegistry vehicleRegistry, ILogger<VehicleParameterService> logger)
-    : IVehicleParameterService
+public sealed class VehicleParameterService : IVehicleParameterService
 {
+    private readonly IMavLinkClient client;
+    private readonly IMavLinkParameterEncoder encoder;
+    private readonly IVehicleRegistry vehicleRegistry;
+    private readonly ILogger<VehicleParameterService> logger;
+
+    /// <summary>
+    /// Service for managing vehicle parameters via MAVLink.
+    /// Handles parameter requests and updates through the MAVLink protocol.
+    /// </summary>
+    public VehicleParameterService(IMavLinkClient client, IMavLinkParameterEncoder encoder, IVehicleRegistry vehicleRegistry, ILogger<VehicleParameterService> logger)
+    {
+        this.client = client;
+        this.encoder = encoder;
+        this.vehicleRegistry = vehicleRegistry;
+        this.logger = logger;
+    }
+
+
     /// <inheritdoc/>
     public async Task<bool> RequestParameterListAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
     {

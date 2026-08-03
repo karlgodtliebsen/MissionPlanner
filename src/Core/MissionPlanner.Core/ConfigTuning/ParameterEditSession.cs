@@ -46,12 +46,12 @@ public sealed class ParameterEditSession : IParameterEditSession
         ILogger<ParameterEditSession> logger)
     {
         Scope = scope;
+        this.logger = logger;
         this.activeVehicle = activeVehicle;
         this.parameterRegistry = parameterRegistry;
         this.parameterService = parameterService;
         this.metadataService = metadataService;
         readbackTimeout = options.Value.ReadbackTimeout > TimeSpan.Zero ? options.Value.ReadbackTimeout : TimeSpan.FromSeconds(3);
-        this.logger = logger;
         parameterRegistry.Changed += OnParameterChanged;
     }
 
@@ -258,25 +258,16 @@ public sealed class ParameterEditSession : IParameterEditSession
     }
 
     /// <inheritdoc />
-    public async Task<ParameterApplyReport> ApplyAsync(
-        ParameterWritePlan plan,
-        IProgress<ParameterApplyProgress>? progress = null,
-        CancellationToken cancellationToken = default)
+    public async Task<ParameterApplyReport> ApplyAsync(ParameterWritePlan plan, IProgress<ParameterApplyProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(plan);
         EnsurePlanCurrent(plan);
-        logger.LogInformation(
-            "Confirmed parameter write plan with {Count} entries for {VehicleId}.",
-            plan.Entries.Count,
-            VehicleId);
+        logger.LogInformation("Confirmed parameter write plan with {Count} entries for {VehicleId}.", plan.Entries.Count, VehicleId);
         return await ApplyCoreAsync(plan.Names, progress, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    public async Task<ParameterApplyReport> RetryFailedAsync(
-        ParameterApplyReport previousReport,
-        IProgress<ParameterApplyProgress>? progress = null,
-        CancellationToken cancellationToken = default)
+    public async Task<ParameterApplyReport> RetryFailedAsync(ParameterApplyReport previousReport, IProgress<ParameterApplyProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(previousReport);
         var retryable = previousReport.Retryable
@@ -291,10 +282,7 @@ public sealed class ParameterEditSession : IParameterEditSession
         return retry with { RebootRequired = previousReport.RebootRequired || retry.RebootRequired };
     }
 
-    private async Task<ParameterApplyReport> ApplyCoreAsync(
-        IReadOnlyList<string>? names,
-        IProgress<ParameterApplyProgress>? progress,
-        CancellationToken cancellationToken)
+    private async Task<ParameterApplyReport> ApplyCoreAsync(IReadOnlyList<string>? names, IProgress<ParameterApplyProgress>? progress, CancellationToken cancellationToken)
     {
         var targets = GetApplyTargets(names);
         if (cancellationToken.IsCancellationRequested)
@@ -441,7 +429,7 @@ public sealed class ParameterEditSession : IParameterEditSession
         foreach (var entry in plan.Entries)
         {
             var field = GetField(entry.Name)
-                ?? throw new InvalidOperationException($"Parameter {entry.Name} is no longer loaded.");
+                        ?? throw new InvalidOperationException($"Parameter {entry.Name} is no longer loaded.");
             if (!Equivalent(field.LiveValue, entry.LiveValue, field.Metadata) ||
                 !Equivalent(field.PendingValue, entry.PendingValue, field.Metadata) ||
                 !field.IsModified ||
@@ -453,8 +441,10 @@ public sealed class ParameterEditSession : IParameterEditSession
         }
     }
 
-    private static bool Equivalent(double left, double right, ParameterFieldMetadata? metadata) =>
-        ParameterValueEquivalence.Default.AreEquivalent(left, right, metadata);
+    private static bool Equivalent(double left, double right, ParameterFieldMetadata? metadata)
+    {
+        return ParameterValueEquivalence.Default.AreEquivalent(left, right, metadata);
+    }
 
     private static void ReportProgress(
         IProgress<ParameterApplyProgress>? progress,

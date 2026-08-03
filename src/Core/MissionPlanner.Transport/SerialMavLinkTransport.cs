@@ -1,5 +1,6 @@
 ﻿using System.IO.Ports;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using MissionPlanner.Transport.Abstractions;
 using Polly;
 using Polly.Retry;
@@ -20,11 +21,12 @@ public sealed class SerialMavLinkTransport : ISerialMavLinkTransport
     /// Initializes a new instance of the <see cref="SerialMavLinkTransport"/> class.
     /// </summary>
     /// <param name="logger">The logger instance.</param>
-    /// <param name="portName">The name of the serial port.</param>
-    /// <param name="baudRate">The baud rate for the serial port.</param>
+    /// <param name="options"></param>
     /// <exception cref="ArgumentException">Thrown when the port name is null or whitespace.</exception>
-    public SerialMavLinkTransport(ILogger<SerialMavLinkTransport> logger, string portName, int baudRate = 115200)
+    public SerialMavLinkTransport(ILogger<SerialMavLinkTransport> logger, IOptions<TransportEndpoint> options)
     {
+        var portName = options.Value.SerialPort;
+        var baudRate = options.Value.BaudRate;
         if (string.IsNullOrWhiteSpace(portName))
         {
             throw new ArgumentException("PortName must be specified.", nameof(portName));

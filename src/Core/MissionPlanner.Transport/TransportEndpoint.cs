@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 
 namespace MissionPlanner.Transport;
 
@@ -77,18 +77,18 @@ public sealed class TransportEndPoint : IEquatable<TransportEndPoint>
     /// <inheritdoc />
     public bool Equals(TransportEndPoint? other)
     {
-        if (ReferenceEquals(this, other))
-        {
-            return true;
-        }
-
-        return other is not null
-            && string.Equals(TransportName, other.TransportName, StringComparison.OrdinalIgnoreCase)
-            && string.Equals(ToString(), other.ToString(), StringComparison.OrdinalIgnoreCase);
+        return ReferenceEquals(this, other)
+            ? true
+            : other is not null
+              && string.Equals(TransportName, other.TransportName, StringComparison.OrdinalIgnoreCase)
+              && string.Equals(ToString(), other.ToString(), StringComparison.OrdinalIgnoreCase);
     }
 
     /// <inheritdoc />
-    public override bool Equals(object? obj) => obj is TransportEndPoint other && Equals(other);
+    public override bool Equals(object? obj)
+    {
+        return obj is TransportEndPoint other && Equals(other);
+    }
 
     /// <inheritdoc />
     public override int GetHashCode()
@@ -156,6 +156,18 @@ public class TransportEndpoint
     /// The port number of the local endpoint.
     /// </summary>
     public int LocalPort { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public string SerialPort { get; set; }
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public int BaudRate { get; set; } = 115200;
+
 
     /// <summary>
     /// The host address of the local endpoint.
