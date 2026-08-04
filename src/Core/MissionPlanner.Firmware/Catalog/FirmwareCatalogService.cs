@@ -32,7 +32,7 @@ public sealed class FirmwareCatalogService(
                 var response = await client.GetAsync(options.Value.ManifestUri, cached, cancellationToken).ConfigureAwait(false);
                 selected = response.NotModified && cached is not null
                     ? cached with { RetrievedAt = now }
-                    : new CachedFirmwareManifest(response.Content.ToArray(), now, response.ETag, response.LastModified);
+                    : new CachedFirmwareManifest(response.Content.ToArray(), now, response.ETag, response.LastModified, options.Value.ManifestUri);
                 _ = parser.Parse(selected.Content);
                 await cache.SetAsync(selected, cancellationToken).ConfigureAwait(false);
             }

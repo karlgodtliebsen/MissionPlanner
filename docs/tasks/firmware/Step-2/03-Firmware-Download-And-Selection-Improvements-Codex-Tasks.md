@@ -305,6 +305,8 @@ Do not mark the whole firmware operation as destructive while only downloading.
 
 # Task 5 — Add persistent catalogue cache
 
+Status: Completed on 2026-08-04. `PersistentFirmwareCatalogCache` layers memory over atomic JSON persistence under an injected cache root and retains source, validators, retrieval time, content, and schema version. Restart, corrupt-entry, concurrent-reader, conditional-refresh, and stale-fallback behaviors are covered by automated tests.
+
 ## Requirements
 
 Replace the single memory cache registration with a layered cache:

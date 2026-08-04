@@ -54,6 +54,8 @@ APJ and PX4 GCS packages are JSON containers. Parsing checks their magic, declar
 
 `IFirmwarePreparationService` provides the non-destructive Download & Validate boundary. It downloads or reuses the immutable cache artifact, reparses it, verifies the manifest/package board ID, and returns package sizes, SHA-256, timestamp, cache identity, and warnings without depending on device discovery or serial services. Install Validated Firmware passes the prepared package directly to installation and does not redownload it.
 
+The catalogue cache layers an in-process value over a durable host-selected cache root. It persists source URI, ETag, Last-Modified, retrieval time, content, and schema version through an atomic replacement. A new process can reuse a fresh manifest or its HTTP validators; corrupt and incompatible cache records are ignored, while `FirmwareCatalogService` retains a valid stale entry when refresh fails.
+
 Supported image formats in this workflow are `.apj` and `.px4`. Intel HEX, `_with_bl.hex`, DFU, legacy boards, DroneCAN, BlueOS/network upload, SD-card `.abin`, UART telemetry adapters, and mobile USB-host flashing are not implemented. `.hex` requires a future DFU/legacy workflow.
 
 ## Serial ownership, protocol, and recovery

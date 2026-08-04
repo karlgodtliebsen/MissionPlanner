@@ -21,7 +21,9 @@ public sealed record CachedFirmwareManifest(
     ReadOnlyMemory<byte> Content,
     DateTimeOffset RetrievedAt,
     string? ETag = null,
-    DateTimeOffset? LastModified = null);
+    DateTimeOffset? LastModified = null,
+    Uri? SourceUri = null,
+    int SchemaVersion = 1);
 
 /// <summary>Represents a conditional manifest response.</summary>
 public sealed record FirmwareManifestResponse(

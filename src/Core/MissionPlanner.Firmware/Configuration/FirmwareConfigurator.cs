@@ -70,7 +70,8 @@ public static class FirmwareConfigurator
         services.TryAddSingleton<HttpClient>();
         services.TryAddSingleton<IFirmwareManifestClient, HttpFirmwareManifestClient>();
         services.TryAddSingleton<IFirmwareManifestParser, ArduPilotFirmwareManifestParser>();
-        services.TryAddSingleton<IFirmwareCatalogCache, MemoryFirmwareCatalogCache>();
+        services.TryAddSingleton<IFirmwareCachePathProvider, DefaultFirmwareCachePathProvider>();
+        services.TryAddSingleton<IFirmwareCatalogCache, PersistentFirmwareCatalogCache>();
         services.TryAddSingleton<IFirmwareCatalogService, FirmwareCatalogService>();
         services.TryAddSingleton<IFirmwarePackageReader, ApjFirmwarePackageReader>();
         services.TryAddSingleton<IFirmwareSerialDeviceCatalog>(serviceProvider =>
