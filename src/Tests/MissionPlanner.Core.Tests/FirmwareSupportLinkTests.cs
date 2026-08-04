@@ -63,4 +63,26 @@ public sealed class FirmwareSupportLinkTests
 
         (help.Title + " " + help.Content).Should().Contain(expected);
     }
+
+    [Fact]
+    public void OfflineSectionsCoverEveryTopicAndSafetyPolicy()
+    {
+        var sections = FirmwareSupportContent.Sections;
+        var allContent = string.Join(" ", sections.Select(section => section.Content));
+
+        sections.Select(section => section.Topic).Should().BeEquivalentTo(Enum.GetValues<FirmwareSupportTopic>());
+        sections.Should().OnlyContain(section =>
+            !string.IsNullOrWhiteSpace(section.Title) && !string.IsNullOrWhiteSpace(section.Content));
+        allContent.Should().Contain("*_with_bl.hex");
+        allContent.Should().Contain("exact target");
+        allContent.Should().Contain("Replacing the driver for the wrong USB device");
+        allContent.Should().Contain("Frame geometry is configured later");
+        allContent.Should().NotContain("frame gallery");
+    }
+
+    [Fact]
+    public void DeviceManagerAvailabilityMatchesTheHostPlatform()
+    {
+        new DeviceManagerLauncher().IsAvailable.Should().Be(OperatingSystem.IsWindows());
+    }
 }

@@ -226,6 +226,8 @@ Keep user guidance separate from low-level exception text.
 
 # Task 4 — Add documentation models and tests
 
+Status: Completed on 2026-08-04. Offline sections now carry a typed `FirmwareSupportTopic`, with one complete section per topic. Policy tests enforce populated topics, unique HTTPS links, host-specific Device Manager availability, exact-target and `_with_bl.hex` DFU safeguards, the wrong-driver warning, and the target-first rule that frame imagery is not a firmware-selection dependency.
+
 Tests should verify:
 
 - Every support category has a title and content.
