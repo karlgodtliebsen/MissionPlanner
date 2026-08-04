@@ -55,6 +55,7 @@ public static class FirmwareConfigurator
             .Validate(value => value.BootloaderSyncAttempts > 0, "BootloaderSyncAttempts must be positive.")
             .Validate(value => value.BootloaderRetryDelay >= TimeSpan.Zero, "BootloaderRetryDelay cannot be negative.")
             .Validate(value => value.BootloaderDiscoveryTimeout > TimeSpan.Zero, "BootloaderDiscoveryTimeout must be positive.")
+            .Validate(value => value.BootloaderDiscoveryPollInterval > TimeSpan.Zero, "BootloaderDiscoveryPollInterval must be positive.")
             .Validate(value => value.BootloaderPortOpenTimeout > TimeSpan.Zero, "BootloaderPortOpenTimeout must be positive.")
             .Validate(value => value.BootloaderBaudRate > 0, "BootloaderBaudRate must be positive.")
             .Validate(value => value.TemporaryMavLinkHeartbeatTimeout > TimeSpan.Zero, "TemporaryMavLinkHeartbeatTimeout must be positive.")

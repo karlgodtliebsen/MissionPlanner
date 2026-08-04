@@ -88,6 +88,23 @@ public sealed class BootloaderDiscoveryServiceTests
     }
 
     [Fact]
+    public async Task ReprobesUnchangedPortWithoutDeviceArrivalEvent()
+    {
+        var device = Device("COM7", "device-42", "Cube");
+        var ports = new FakePortFactory();
+        var clients = new SequencedClientFactory(null, new BootloaderIdentity(50, 4, 1024));
+        var service = CreateService(new FakeCatalog(device), new WaitingMonitor(), ports, clients);
+
+        await using var found = await service.FindAsync(
+            new BootloaderDiscoveryRequest(device),
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        found.Device.PortName.Should().Be("COM7");
+        clients.IdentifyCalls.Should().Be(2);
+        ports.Opened.Should().Equal("COM7", "COM7");
+    }
+
+    [Fact]
     public async Task TimesOutWhenNoCandidateIdentifies()
     {
         var service = CreateService(new FakeCatalog(), new WaitingMonitor(), new FakePortFactory(),
@@ -106,7 +123,12 @@ public sealed class BootloaderDiscoveryServiceTests
         IFirmwareSerialPortFactory ports,
         IArduPilotBootloaderClientFactory clients)
     {
-        return new BootloaderDiscoveryService(catalog, monitor, ports, clients, Options.Create(new FirmwareOptions { BootloaderDiscoveryTimeout = TimeSpan.FromSeconds(1), BootloaderPortOpenTimeout = TimeSpan.FromMilliseconds(50) }), NullLogger<BootloaderDiscoveryService>.Instance);
+        return new BootloaderDiscoveryService(catalog, monitor, ports, clients, Options.Create(new FirmwareOptions
+        {
+            BootloaderDiscoveryTimeout = TimeSpan.FromSeconds(1),
+            BootloaderDiscoveryPollInterval = TimeSpan.FromMilliseconds(5),
+            BootloaderPortOpenTimeout = TimeSpan.FromMilliseconds(50)
+        }), NullLogger<BootloaderDiscoveryService>.Instance);
     }
 
     private static SerialDeviceDescriptor Device(string port, string id, string? product = null)

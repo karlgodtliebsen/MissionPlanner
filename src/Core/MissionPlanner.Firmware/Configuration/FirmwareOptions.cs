@@ -41,6 +41,9 @@ public sealed class FirmwareOptions
     /// <summary>Gets or sets the overall bootloader discovery timeout.</summary>
     public TimeSpan BootloaderDiscoveryTimeout { get; set; } = TimeSpan.FromSeconds(30);
 
+    /// <summary>Gets or sets how often unchanged serial ports are re-probed during discovery.</summary>
+    public TimeSpan BootloaderDiscoveryPollInterval { get; set; } = TimeSpan.FromMilliseconds(200);
+
     /// <summary>Gets or sets the maximum time allowed to open one candidate port.</summary>
     public TimeSpan BootloaderPortOpenTimeout { get; set; } = TimeSpan.FromSeconds(2);
 
