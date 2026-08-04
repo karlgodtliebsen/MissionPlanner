@@ -23,14 +23,19 @@ public sealed class ArduPilotBootloaderClient(
     public async Task<BootloaderIdentity> IdentifyAsync(CancellationToken cancellationToken = default)
     {
         await SynchronizeAsync(cancellationToken).ConfigureAwait(false);
-        var revision = checked((int)await GetInfoAsync(ArduPilotBootloaderProtocol.InfoBootloaderRevision, cancellationToken).ConfigureAwait(false));
+        var identifyTimeout = options.Value.BootloaderSynchronizationTimeout;
+        var revision = checked((int)await GetInfoAsync(ArduPilotBootloaderProtocol.InfoBootloaderRevision, identifyTimeout, cancellationToken).ConfigureAwait(false));
         if (revision is < ArduPilotBootloaderProtocol.MinimumBootloaderRevision or > ArduPilotBootloaderProtocol.MaximumBootloaderRevision)
             throw new FirmwareBootloaderException($"Unsupported bootloader revision {revision}.");
-        var boardId = checked((int)await GetInfoAsync(ArduPilotBootloaderProtocol.InfoBoardId, cancellationToken).ConfigureAwait(false));
-        var boardRevision = checked((int)await GetInfoAsync(ArduPilotBootloaderProtocol.InfoBoardRevision, cancellationToken).ConfigureAwait(false));
-        var flashSize = await GetInfoAsync(ArduPilotBootloaderProtocol.InfoFlashSize, cancellationToken).ConfigureAwait(false);
-        var externalSize = revision >= 5 ? await GetInfoAsync(ArduPilotBootloaderProtocol.InfoExternalFlashSize, cancellationToken).ConfigureAwait(false) : 0;
-        var chip = revision >= 5 ? await GetChipDescriptionAsync(cancellationToken).ConfigureAwait(false) : null;
+        var boardId = checked((int)await GetInfoAsync(ArduPilotBootloaderProtocol.InfoBoardId, identifyTimeout, cancellationToken).ConfigureAwait(false));
+        var boardRevision = checked((int)await GetInfoAsync(ArduPilotBootloaderProtocol.InfoBoardRevision, identifyTimeout, cancellationToken).ConfigureAwait(false));
+        var flashSize = await GetInfoAsync(ArduPilotBootloaderProtocol.InfoFlashSize, identifyTimeout, cancellationToken).ConfigureAwait(false);
+        var chip = revision >= 5 ? await TryGetChipDescriptionAsync(identifyTimeout, cancellationToken).ConfigureAwait(false) : null;
+        // External flash is not required by normal APJ application images. Some revision-five
+        // bootloaders accept the info command but never reply, leaving a native Windows serial
+        // read pending after the bounded async timeout. Report unavailable capacity so packages
+        // that actually require external flash remain conservatively blocked before erase.
+        const uint externalSize = 0;
         identity = new BootloaderIdentity(boardId, revision, flashSize, boardRevision, externalSize, chip);
         logger.LogInformation("Identified bootloader board {BoardId}, revision {Revision}, flash {FlashSize} bytes.", boardId, revision, flashSize);
         return identity;
@@ -112,24 +117,41 @@ public sealed class ArduPilotBootloaderClient(
         throw new FirmwareBootloaderException("Unable to synchronize with the bootloader.", last);
     }
 
-    private async Task<uint> GetInfoAsync(byte parameter, CancellationToken cancellationToken)
+    private async Task<uint> GetInfoAsync(byte parameter, TimeSpan timeout, CancellationToken cancellationToken)
     {
-        await WriteAsync([ArduPilotBootloaderProtocol.GetDevice, parameter, ArduPilotBootloaderProtocol.EndOfCommand], options.Value.BootloaderCommandTimeout, cancellationToken).ConfigureAwait(false);
-        var value = await ReadUInt32Async(options.Value.BootloaderCommandTimeout, cancellationToken).ConfigureAwait(false);
-        await ReadStatusAsync(options.Value.BootloaderCommandTimeout, cancellationToken).ConfigureAwait(false);
+        await WriteAsync([ArduPilotBootloaderProtocol.GetDevice, parameter, ArduPilotBootloaderProtocol.EndOfCommand], timeout, cancellationToken).ConfigureAwait(false);
+        var value = await ReadUInt32Async(timeout, cancellationToken).ConfigureAwait(false);
+        await ReadStatusAsync(timeout, cancellationToken).ConfigureAwait(false);
         return value;
     }
 
-    private async Task<string?> GetChipDescriptionAsync(CancellationToken cancellationToken)
+    private async Task<string?> GetChipDescriptionAsync(TimeSpan timeout, CancellationToken cancellationToken)
     {
-        await WriteAsync([ArduPilotBootloaderProtocol.GetChipDescription, ArduPilotBootloaderProtocol.EndOfCommand], options.Value.BootloaderCommandTimeout, cancellationToken).ConfigureAwait(false);
-        var length = await ReadUInt32Async(options.Value.BootloaderCommandTimeout, cancellationToken).ConfigureAwait(false);
+        await WriteAsync([ArduPilotBootloaderProtocol.GetChipDescription, ArduPilotBootloaderProtocol.EndOfCommand], timeout, cancellationToken).ConfigureAwait(false);
+        var length = await ReadUInt32Async(timeout, cancellationToken).ConfigureAwait(false);
         if (length > 128) throw new FirmwareBootloaderException("Bootloader chip description is too long.");
         var data = new byte[length];
-        await ReadExactAsync(data, options.Value.BootloaderCommandTimeout, cancellationToken).ConfigureAwait(false);
-        await ReadStatusAsync(options.Value.BootloaderCommandTimeout, cancellationToken).ConfigureAwait(false);
+        await ReadExactAsync(data, timeout, cancellationToken).ConfigureAwait(false);
+        await ReadStatusAsync(timeout, cancellationToken).ConfigureAwait(false);
         return length == 0 ? null : Encoding.ASCII.GetString(data);
     }
+
+    private async Task<string?> TryGetChipDescriptionAsync(TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await GetChipDescriptionAsync(timeout, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (IsOptionalIdentityFailure(exception))
+        {
+            logger.LogDebug(exception, "Bootloader did not provide an optional chip description; resynchronizing.");
+            await SynchronizeAsync(cancellationToken).ConfigureAwait(false);
+            return null;
+        }
+    }
+
+    private static bool IsOptionalIdentityFailure(Exception exception) =>
+        exception is FirmwareBootloaderException or TimeoutException or IOException or EndOfStreamException or InvalidOperationException;
 
     private async Task ProgramImageAsync(ReadOnlyMemory<byte> image, byte command, long completedBefore, long total, IProgress<FirmwareProgress>? progress, CancellationToken cancellationToken)
     {

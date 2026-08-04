@@ -35,6 +35,28 @@ public sealed class ArduPilotBootloaderClientTests
     }
 
     [Fact]
+    public async Task IdentifiesRevisionFiveWithoutProbingUnneededExternalFlash()
+    {
+        var stream = new ScriptedBootloaderStream(command =>
+        {
+            if (command[0] == 0x2e)
+                return [.. UInt32(4), (byte)'F', (byte)'4', (byte)'0', (byte)'5', 0x12, 0x10];
+            if (command[0] == 0x22)
+            {
+                var value = command[1] switch { 1 => 5u, 2 => 134u, 3 => 1u, 4 => 983040u, var _ => 0u };
+                return [.. UInt32(value), 0x12, 0x10];
+            }
+            return [0x12, 0x10];
+        });
+        await using var client = CreateClient(stream);
+
+        var identity = await client.IdentifyAsync(TestContext.Current.CancellationToken);
+
+        identity.Should().Be(new BootloaderIdentity(134, 5, 983040, 1, chipDescription: "F405"));
+        stream.Commands.Should().NotContain(command => command[0] == 0x22 && command[1] == 6);
+    }
+
+    [Fact]
     public async Task RejectsInvalidSyncAfterBoundedRetries()
     {
         var stream = new ScriptedBootloaderStream(_ => new byte[] { 0, 0x10 });
