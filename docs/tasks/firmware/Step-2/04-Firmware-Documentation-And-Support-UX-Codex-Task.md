@@ -242,6 +242,8 @@ Tests should verify:
 
 # Task 5 — Offline usability
 
+Status: Completed on 2026-08-04. Essential target selection, release risk, file types, serial/DFU distinction, boot entry, Windows enumeration, driver priority and warning, platform limits, recovery, and evidence collection are embedded in the application. Curated external links supplement this content and are never required to understand the safe workflow.
+
 Include concise embedded text so essential recovery instructions remain available without internet.
 
 External links supplement the embedded content; they must not be the only instructions.

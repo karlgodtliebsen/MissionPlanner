@@ -92,6 +92,10 @@ Embedded Bootloader Update uses `MAV_CMD_FLASH_BOOTLOADER` (42650), confirmation
 
 Direct serial installation is enabled for Windows desktop, the first supported host. Windows provides enriched device identity through its serial-device catalogue. Linux, Mac Catalyst, and mobile targets show unsupported mode until tested platform adapters exist. Automated protocol tests use in-memory transports and require no hardware.
 
+## Embedded help and support
+
+The firmware page includes a keyboard-accessible Help & Support area whose essential guidance is compiled into the application and remains usable offline. It explains exact-target selection, release risk, APJ/PX4/HEX and bootloader image types, serial installation versus STM32 ROM DFU, boot entry, Windows enumeration, driver/tool priority, platform limits, recovery, and diagnostic evidence. External destinations come from one HTTPS-only curated catalogue and supplement rather than replace embedded instructions. Windows Device Manager is launched only through a host service and is hidden on other platforms. Context guidance is derived from typed presentation evidence rather than raw exception messages.
+
 ## Troubleshooting
 
 - Catalogue unavailable: retry Refresh; a valid cached catalogue may be shown as stale.
