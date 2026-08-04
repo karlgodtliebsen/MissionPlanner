@@ -13,6 +13,7 @@ public sealed class WindowsSerialDeviceCatalog(TimeProvider timeProvider) : IFir
     public Task<IReadOnlyList<SerialDeviceDescriptor>> GetDevicesAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        var presentPorts = SerialPortNames().ToHashSet(StringComparer.OrdinalIgnoreCase);
         var devices = new Dictionary<string, SerialDeviceDescriptor>(StringComparer.OrdinalIgnoreCase);
         using var usb = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Enum\USB");
         if (usb is not null)
@@ -28,7 +29,10 @@ public sealed class WindowsSerialDeviceCatalog(TimeProvider timeProvider) : IFir
                     using var instance = hardware.OpenSubKey(instanceKey);
                     using var parameters = instance?.OpenSubKey("Device Parameters");
                     var portName = parameters?.GetValue("PortName") as string;
-                    if (string.IsNullOrWhiteSpace(portName)) continue;
+                    // Enum\USB retains records for devices that are no longer connected. Only
+                    // enrich ports currently exposed by the serial subsystem; otherwise firmware
+                    // discovery opens stale and unrelated historical COM ports.
+                    if (string.IsNullOrWhiteSpace(portName) || !presentPorts.Contains(portName)) continue;
                     var product = CleanRegistryText(instance?.GetValue("FriendlyName") as string ?? instance?.GetValue("DeviceDesc") as string);
                     var manufacturer = CleanRegistryText(instance?.GetValue("Mfg") as string);
                     var stableId = $@"USB\{hardwareKey}\{instanceKey}";
@@ -45,7 +49,7 @@ public sealed class WindowsSerialDeviceCatalog(TimeProvider timeProvider) : IFir
             }
         }
 
-        foreach (var port in SerialPortNames())
+        foreach (var port in presentPorts)
         {
             if (devices.Values.All(device => !string.Equals(device.PortName, port, StringComparison.OrdinalIgnoreCase)))
                 devices[$"transient:{port}"] = new SerialDeviceDescriptor(port, arrivedAt: timeProvider.GetUtcNow());
