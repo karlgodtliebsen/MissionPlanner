@@ -1,6 +1,6 @@
 # Firmware hardware smoke-test record
 
-Status: **Not executed — suitable F4 and H7 controllers and an operator are required.**
+Status: **Partially executed — F4 preflight/entry tested but blocked by the absence of an ArduPilot serial bootloader; H7 hardware is still required.**
 
 This record is intentionally separate from CI. Complete it on Windows with expendable or recoverable test hardware, stable USB power, a known-good data cable, and access to the board's documented recovery method. Do not test on an installed or armed vehicle. Remove propellers and disconnect actuators before starting.
 
@@ -23,18 +23,18 @@ Never paste firmware images, private signing material, or unrelated device ident
 
 | Field | Result |
 |---|---|
-| Controller and revision | Pending |
-| Test date / operator | Pending |
-| Mission Planner commit | Pending |
-| Stable catalogue upload | Pending |
+| Controller and revision | OMNIBUSF4SD / STM32F405; application reports ArduCopter 4.8.0-dev (`3a98d087`) |
+| Test date / operator | 2026-08-04 / Karl Godtliebsen with Codex harness |
+| Mission Planner commit | `4e3e8db55` (entry/discovery fixes through this commit) |
+| Stable catalogue upload | Blocked before erase: official `omnibusf4` Stable 4.7.0 APJ, board ID 1002, could not be used because no serial bootloader answered |
 | Custom APJ upload | Pending |
-| Application → bootloader transition | Pending |
+| Application → bootloader transition | Not available through the supported serial workflow. BOOT/BOOT0 enters STM32 ROM DFU; DFU/HEX bootloader installation is future scope. |
 | Bootloader → application rediscovery | Pending |
 | Repeated upload | Pending |
 | Wrong-board package blocked before erase | Pending |
-| Manual unplug/replug fallback | Pending |
+| Manual unplug/replug fallback | Prompt and resumed discovery exercised; same COM11 application device remained, but no protocol-compatible bootloader was present |
 | Connected embedded-bootloader update | Pending |
-| Diagnostic report / operation IDs | Pending |
+| Diagnostic report / operation IDs | Representative final pre-write result: `8de14620-9228-4ae6-af0c-8aa3dd3ae55e`, `installation.device-not-found`; all attempts stopped before erase |
 
 ## H7 controller
 
