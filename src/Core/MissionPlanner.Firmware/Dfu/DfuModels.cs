@@ -100,7 +100,8 @@ public sealed record DfuDeviceDescriptor(
     int? ProblemCode = null,
     DateTimeOffset? ObservedAt = null,
     DateTimeOffset? ArrivedAt = null,
-    DateTimeOffset? RemovedAt = null);
+    DateTimeOffset? RemovedAt = null,
+    int? ProviderUsbIndex = null);
 
 /// <summary>Contains provider-reported MCU evidence that does not prove the flight-controller PCB.</summary>
 public sealed record DfuDeviceInformation(
@@ -183,7 +184,31 @@ public sealed record DfuProgrammingResult(
     bool ApplicationRediscovered,
     DfuFailure? Failure = null,
     string? ProviderLog = null,
-    int? ExitCode = null);
+    int? ExitCode = null,
+    DfuProgrammingOutcome Outcome = DfuProgrammingOutcome.ProgrammingFailed);
+
+/// <summary>Identifies the conservative outcome of a provider program-and-verify operation.</summary>
+public enum DfuProgrammingOutcome
+{
+    /// <summary>The external tool was not available.</summary>
+    ToolNotFound,
+    /// <summary>No selected USB DFU device was available.</summary>
+    NoDfuDevice,
+    /// <summary>The provider could not connect to the selected device.</summary>
+    ConnectionFailed,
+    /// <summary>The provider rejected the firmware file.</summary>
+    FileRejected,
+    /// <summary>The provider reported an erase failure.</summary>
+    EraseFailed,
+    /// <summary>The provider did not prove programming success.</summary>
+    ProgrammingFailed,
+    /// <summary>The provider reported or failed to prove verification success.</summary>
+    VerificationFailed,
+    /// <summary>A requested detach operation failed.</summary>
+    DetachFailed,
+    /// <summary>Programming and immediate verification both succeeded.</summary>
+    Succeeded
+}
 
 /// <summary>Requests the complete DFU installation use case.</summary>
 public sealed record DfuInstallationRequest(

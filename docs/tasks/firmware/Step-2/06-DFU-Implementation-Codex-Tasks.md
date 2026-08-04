@@ -306,6 +306,8 @@ Add fake runner tests for:
 
 # Task 6 — Implement CubeProgrammer CLI provider
 
+Status: Completed on 2026-08-05. `Stm32CubeProgrammerCliDfuProgrammer` now reports conservative version capabilities, lists and associates USB provider indices, inspects device evidence, builds ST-documented `-c port=usbN -w <file.hex> -v` commands through a dedicated builder, parses progress/device evidence, preserves bounded raw output, and requires both zero exit code and explicit program-plus-verify evidence for success. It re-inspects and hash-compares the local HEX immediately before invocation, distinguishes all required failure outcomes, and deliberately leaves detach/reset and destructive-stage process termination disabled pending target-specific evidence. Fixtures cover two provider versions, differing progress formats, USB index/serial selection, verification failure, and conservative non-English output fallback.
+
 Create:
 
 ```csharp

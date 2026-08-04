@@ -18,6 +18,12 @@ public sealed class DfuOptions
     /// <summary>Gets or sets the maximum number of provider output characters retained per invocation.</summary>
     public int MaximumProviderOutputCharacters { get; set; } = 2 * 1024 * 1024;
 
+    /// <summary>Gets or sets the maximum startup time for a DFU provider programming process.</summary>
+    public TimeSpan ProviderStartupTimeout { get; set; } = TimeSpan.FromSeconds(15);
+
+    /// <summary>Gets or sets the maximum total time for one DFU provider programming process.</summary>
+    public TimeSpan ProviderProgrammingTimeout { get; set; } = TimeSpan.FromMinutes(10);
+
     /// <summary>Gets or sets whether PATH is considered after configured, known, and registered installations.</summary>
     public bool SearchPathForCubeProgrammer { get; set; } = true;
 
