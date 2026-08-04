@@ -69,6 +69,8 @@ Acceptance:
 
 # Task 1 — Add DFU domain and service contracts
 
+Status: Completed on 2026-08-04. `MissionPlanner.Firmware.Dfu` now defines immutable lifecycle, driver/tool, device, memory-range, artifact, progress, failure, programming, installation, and controlled-process models plus all eight platform-neutral service boundaries. A distinct global DFU operation kind participates in the existing coordinator lease, with tests proving serial, connected-update, and DFU operations cannot overlap.
+
 Place platform-neutral contracts in `MissionPlanner.Firmware`, organized under a new `Dfu` namespace/folder.
 
 Add models:

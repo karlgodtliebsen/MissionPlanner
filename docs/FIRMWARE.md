@@ -66,6 +66,8 @@ Catalogue refresh is latest-request-wins. Selecting a new release channel cancel
 
 Supported image formats in this workflow are `.apj` and `.px4`. Intel HEX, `_with_bl.hex`, DFU, legacy boards, DroneCAN, BlueOS/network upload, SD-card `.abin`, UART telemetry adapters, and mobile USB-host flashing are not implemented. `.hex` requires a future DFU/legacy workflow.
 
+The separate DFU architecture now has platform-neutral contracts under `MissionPlanner.Firmware.Dfu` for STM32 USB device evidence, tool/provider capabilities, bounded Intel HEX inspection, artifacts and address ranges, controlled process execution, progress, and typed results. DFU remains distinct from serial ports and serial bootloader clients, while sharing the global firmware-operation lease so destructive workflows cannot overlap. Provider, parser, Windows discovery, and orchestration implementations follow in later tasks.
+
 ## Serial ownership, protocol, and recovery
 
 Only one firmware operation may own serial resources. Discovery snapshots devices, prioritizes explicit/new/USB-matching candidates, opens each candidate exclusively with bounded timeouts, and accepts it only after bootloader synchronization and identity. Rejected ports are closed immediately. Port names are treated as transient. Mode changes that reuse the same stable identity and COM port are still treated as a new device generation when USB/product descriptors change.
