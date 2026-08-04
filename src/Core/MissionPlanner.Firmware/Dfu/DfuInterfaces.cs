@@ -39,6 +39,13 @@ public interface IDfuArtifactResolver
     Task<DfuArtifact> ResolveAsync(DfuInstallationRequest request, CancellationToken cancellationToken = default);
 }
 
+/// <summary>Evaluates target evidence without treating an STM32 identity as proof of board platform.</summary>
+public interface IDfuTargetSafetyService
+{
+    /// <summary>Returns a typed allow, warning, or block decision before provider execution.</summary>
+    DfuTargetSafetyResult Evaluate(DfuTargetSafetyRequest request);
+}
+
 /// <summary>Performs bounded Intel HEX parsing and policy inspection.</summary>
 public interface IIntelHexInspector
 {

@@ -44,6 +44,12 @@ public static class FirmwareConfigurator
         var firmwareOptions = services.AddOptions<FirmwareOptions>(); //as long as we are not using appsettings.json, we can use this to configure the options directly in code.
         services.AddOptions<DfuOptions>()
             .Validate(value => value.OfficialFirmwareHosts is { Length: > 0 } && value.OfficialFirmwareHosts.All(host => Uri.CheckHostName(host) is not UriHostNameType.Unknown), "At least one valid official firmware host is required.")
+            .Validate(value => value.TargetPolicies is not null && value.TargetPolicies.All(policy =>
+                !string.IsNullOrWhiteSpace(policy.Platform) && policy.CompatibleMcuDeviceIds is not null &&
+                policy.CompatibleMcuDeviceIds.All(id => !string.IsNullOrWhiteSpace(id)) &&
+                (policy.MinimumInternalFlashBytes is null or > 0) && (policy.MaximumInternalFlashBytes is null or > 0) &&
+                (policy.MinimumInternalFlashBytes is null || policy.MaximumInternalFlashBytes is null || policy.MinimumInternalFlashBytes <= policy.MaximumInternalFlashBytes)),
+                "DFU target policies must contain valid platform, MCU, and flash constraints.")
             .Validate(value => value.MinimumCubeProgrammerVersion.Major >= 0, "MinimumCubeProgrammerVersion is required.")
             .Validate(value => value.CubeProgrammerProbeTimeout > TimeSpan.Zero, "CubeProgrammerProbeTimeout must be positive.")
             .Validate(value => value.MaximumProviderOutputLines > 0, "MaximumProviderOutputLines must be positive.")
@@ -116,6 +122,7 @@ public static class FirmwareConfigurator
             serviceProvider.GetRequiredService<IOptions<DfuOptions>>(),
             serviceProvider.GetRequiredService<TimeProvider>()));
         services.TryAddSingleton<IDfuArtifactResolver, DfuArtifactResolver>();
+        services.TryAddSingleton<IDfuTargetSafetyService, DfuTargetSafetyService>();
         services.TryAddSingleton<IWindowsUsbDeviceChangeNotifier>(serviceProvider =>
             OperatingSystem.IsWindows() ? new WindowsUsbRegistryChangeNotifier() : new PollingDfuDeviceChangeNotifier());
         services.TryAddSingleton<IDfuDeviceCatalog>(serviceProvider =>

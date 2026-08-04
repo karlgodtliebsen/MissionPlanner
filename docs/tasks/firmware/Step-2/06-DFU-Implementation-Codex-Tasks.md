@@ -410,6 +410,8 @@ Tests:
 
 # Task 8 — Add DFU target-safety service
 
+Status: Completed on 2026-08-05. `IDfuTargetSafetyService` now returns immutable `Allowed`, `AllowedWithStrongWarning`, or `Blocked` decisions from explicit platform/board selection, inspected HEX ranges, manifest/artifact provenance, provider MCU/flash evidence, previous application identity, and an optional remembered association. It blocks missing/invalid targets, known platform/board/MCU/flash conflicts, out-of-flash data, and bootloader-only normal installs. Shared MCU identity is explicitly non-proving; low-evidence selection requires the exact `FLASH <platform>` phrase, while only an application-plus-DFU identity association can elevate compatible evidence to `Allowed`.
+
 Create:
 
 ```csharp

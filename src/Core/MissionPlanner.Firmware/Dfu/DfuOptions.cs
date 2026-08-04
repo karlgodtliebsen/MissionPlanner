@@ -6,6 +6,9 @@ public sealed class DfuOptions
     /// <summary>Gets or sets HTTPS hosts trusted for official sibling derivation and redirects.</summary>
     public string[] OfficialFirmwareHosts { get; set; } = ["firmware.ardupilot.org"];
 
+    /// <summary>Gets or sets optional platform policies containing only known incompatibility evidence.</summary>
+    public DfuTargetPolicy[] TargetPolicies { get; set; } = [];
+
     /// <summary>Gets or sets a user-selected STM32CubeProgrammer CLI executable path.</summary>
     public string? CubeProgrammerExecutablePath { get; set; }
 
