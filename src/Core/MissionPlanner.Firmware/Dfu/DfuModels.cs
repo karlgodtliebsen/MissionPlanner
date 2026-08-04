@@ -197,13 +197,27 @@ public sealed record DfuInstallationRequest(
 /// <summary>Contains one timestamped external-provider output line.</summary>
 public sealed record DfuProcessOutput(DateTimeOffset Timestamp, bool IsError, string Text);
 
+/// <summary>Restricts external-process arguments to a known DFU provider operation.</summary>
+public enum DfuProcessPurpose
+{
+    /// <summary>Runs a non-mutating help or version probe.</summary>
+    ValidateTool,
+    /// <summary>Lists USB DFU devices.</summary>
+    ListDevices,
+    /// <summary>Inspects one selected USB DFU device.</summary>
+    InspectDevice,
+    /// <summary>Programs and verifies one validated Intel HEX artifact.</summary>
+    ProgramAndVerify
+}
+
 /// <summary>Describes a controlled direct process invocation.</summary>
 public sealed record DfuProcessRequest(
     string ExecutablePath,
     IReadOnlyList<string> Arguments,
     TimeSpan StartupTimeout,
     TimeSpan ExecutionTimeout,
-    bool MayKillProcessTreeOnCancellation = false);
+    bool MayKillProcessTreeOnCancellation = false,
+    DfuProcessPurpose Purpose = DfuProcessPurpose.ValidateTool);
 
 /// <summary>Contains bounded process output and termination evidence.</summary>
 public sealed record DfuProcessResult(
@@ -211,4 +225,5 @@ public sealed record DfuProcessResult(
     IReadOnlyList<DfuProcessOutput> Output,
     bool TimedOut = false,
     bool WasCancelled = false,
-    string? FailureCode = null);
+    string? FailureCode = null,
+    bool OutputTruncated = false);

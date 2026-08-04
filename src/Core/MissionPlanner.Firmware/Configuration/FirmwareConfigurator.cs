@@ -45,6 +45,8 @@ public static class FirmwareConfigurator
         services.AddOptions<DfuOptions>()
             .Validate(value => value.MinimumCubeProgrammerVersion.Major >= 0, "MinimumCubeProgrammerVersion is required.")
             .Validate(value => value.CubeProgrammerProbeTimeout > TimeSpan.Zero, "CubeProgrammerProbeTimeout must be positive.")
+            .Validate(value => value.MaximumProviderOutputLines > 0, "MaximumProviderOutputLines must be positive.")
+            .Validate(value => value.MaximumProviderOutputCharacters > 0, "MaximumProviderOutputCharacters must be positive.")
             .Validate(value => value.DefaultUsbVendorId > 0, "DefaultUsbVendorId must be positive.")
             .Validate(value => value.DefaultUsbProductId > 0, "DefaultUsbProductId must be positive.")
             .Validate(value => value.AcceptedWindowsDriverServices is { Length: > 0 } && value.AcceptedWindowsDriverServices.All(service => !string.IsNullOrWhiteSpace(service)), "At least one accepted Windows DFU driver service is required.")
@@ -93,6 +95,8 @@ public static class FirmwareConfigurator
             OperatingSystem.IsWindows()
                 ? new WindowsCubeProgrammerDiscoverySource(serviceProvider.GetRequiredService<IOptions<DfuOptions>>())
                 : new EmptyDfuToolDiscoverySource());
+        services.TryAddSingleton<IDfuChildProcessFactory, SystemDfuChildProcessFactory>();
+        services.TryAddSingleton<IDfuProcessRunner, DfuProcessRunner>();
         services.TryAddSingleton<IDfuToolLocator>(serviceProvider =>
             OperatingSystem.IsWindows()
                 ? new Stm32CubeProgrammerToolLocator(

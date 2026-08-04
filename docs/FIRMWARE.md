@@ -110,6 +110,8 @@ Windows DFU discovery reads present Plug and Play USB instances directly and the
 
 DFU programming uses an externally installed `STM32_Programmer_CLI.exe`; Mission Planner does not bundle, download, or install it. Windows discovery checks an operator-configured executable first, then known ST installation directories, relevant uninstall registry entries, and optionally `PATH`. The executable name and existence are validated before a bounded direct `--version` probe, and Windows file-version metadata is preferred when provider output is localized. Availability distinguishes not installed, invalid configured path, unsupported version, blocked execution, and validated availability. The configured minimum version is enforced before the tool can be selected by the DFU workflow.
 
+External-provider execution always uses a direct no-shell process with individual `ArgumentList` values. The process runner accepts only the CubeProgrammer executable and one of the typed validation, USB-list, USB-inspection, or program-and-verify argument shapes; arbitrary executables and argument sequences are rejected before process creation. Startup, total execution, retained line count, and retained character count are bounded. Standard output and error remain separately timestamped, exit code and truncation are explicit, and invalid UTF-8 is preserved with replacement characters. Cancellation kills a process tree only when the provider request explicitly declares that stage safe; otherwise it waits for a safe exit or returns at the bounded deadline without terminating the provider.
+
 ## Troubleshooting
 
 - Catalogue unavailable: retry Refresh; a valid cached catalogue may be shown as stale.

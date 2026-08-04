@@ -12,6 +12,12 @@ public sealed class DfuOptions
     /// <summary>Gets or sets the timeout for a non-mutating CubeProgrammer validation probe.</summary>
     public TimeSpan CubeProgrammerProbeTimeout { get; set; } = TimeSpan.FromSeconds(10);
 
+    /// <summary>Gets or sets the maximum number of provider output lines retained per invocation.</summary>
+    public int MaximumProviderOutputLines { get; set; } = 10_000;
+
+    /// <summary>Gets or sets the maximum number of provider output characters retained per invocation.</summary>
+    public int MaximumProviderOutputCharacters { get; set; } = 2 * 1024 * 1024;
+
     /// <summary>Gets or sets whether PATH is considered after configured, known, and registered installations.</summary>
     public bool SearchPathForCubeProgrammer { get; set; } = true;
 

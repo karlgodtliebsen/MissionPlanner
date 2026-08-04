@@ -275,6 +275,8 @@ Do not download or install CubeProgrammer automatically.
 
 # Task 5 — Implement safe process runner
 
+Status: Completed on 2026-08-04. The provider runner now uses `ProcessStartInfo.ArgumentList` with no shell, redirected UTF-8 output/error, timestamped bounded capture, explicit exit/truncation evidence, and bounded startup and execution. A fakeable child-process boundary covers success, nonzero exit, hangs, cancellation, large/malformed output, missing executables, and rejected arbitrary invocations without executing CubeProgrammer in CI. Process-tree termination occurs only when the typed request explicitly marks cancellation/timeout termination safe.
+
 Implement `IDfuProcessRunner` using `ProcessStartInfo.ArgumentList`.
 
 Requirements:
