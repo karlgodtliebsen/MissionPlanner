@@ -94,7 +94,10 @@ public sealed class ArduPilotBootloaderClient(
         {
             try
             {
-                await ExecuteStatusCommandAsync([ArduPilotBootloaderProtocol.GetSync, ArduPilotBootloaderProtocol.EndOfCommand], options.Value.BootloaderCommandTimeout, cancellationToken).ConfigureAwait(false);
+                await ExecuteStatusCommandAsync(
+                    [ArduPilotBootloaderProtocol.GetSync, ArduPilotBootloaderProtocol.EndOfCommand],
+                    options.Value.BootloaderSynchronizationTimeout,
+                    cancellationToken).ConfigureAwait(false);
                 return;
             }
             catch (Exception exception) when (exception is FirmwareBootloaderException or TimeoutException)
