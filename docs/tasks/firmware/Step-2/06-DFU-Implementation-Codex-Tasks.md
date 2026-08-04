@@ -179,6 +179,8 @@ Acceptance:
 
 # Task 3 — Add Windows DFU USB device catalogue
 
+Status: Completed on 2026-08-04. A Windows Plug and Play snapshot source now detects the configured STM32 USB system bootloader directly from present USB instances without serial enumeration, captures available identity and driver evidence, and maps wrong-driver, device-problem, busy, unknown, and ready states independently from absence. The monitor uses Windows registry subtree change notification with a bounded polling fallback, while fake-snapshot tests cover default `0483:DF11` discovery, filtering, driver-state distinctions, absence, and presence-generation arrival time.
+
 Implement outside the UI-independent core, in the host or a Windows platform project.
 
 Detect USB devices in DFU mode, including default STM32 identity:

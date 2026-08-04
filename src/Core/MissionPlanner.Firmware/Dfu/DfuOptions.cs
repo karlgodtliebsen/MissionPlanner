@@ -3,6 +3,18 @@ namespace MissionPlanner.Firmware.Dfu;
 /// <summary>Configures bounded Intel HEX inspection and conservative STM32 flash policy.</summary>
 public sealed class DfuOptions
 {
+    /// <summary>Gets or sets the default STM32 system-bootloader USB vendor identifier.</summary>
+    public ushort DefaultUsbVendorId { get; set; } = 0x0483;
+
+    /// <summary>Gets or sets the default STM32 system-bootloader USB product identifier.</summary>
+    public ushort DefaultUsbProductId { get; set; } = 0xDF11;
+
+    /// <summary>Gets or sets Windows driver services accepted by the external DFU provider.</summary>
+    public string[] AcceptedWindowsDriverServices { get; set; } = ["WinUSB", "STTub30"];
+
+    /// <summary>Gets or sets the maximum interval between fallback DFU device snapshots.</summary>
+    public TimeSpan DevicePollInterval { get; set; } = TimeSpan.FromSeconds(2);
+
     /// <summary>Gets or sets the maximum encoded Intel HEX input size.</summary>
     public long MaximumIntelHexSourceBytes { get; set; } = 16 * 1024 * 1024;
 

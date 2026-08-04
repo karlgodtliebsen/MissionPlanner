@@ -98,7 +98,9 @@ public sealed record DfuDeviceDescriptor(
     string? DriverProvider = null,
     string? DriverVersion = null,
     int? ProblemCode = null,
-    DateTimeOffset? ObservedAt = null);
+    DateTimeOffset? ObservedAt = null,
+    DateTimeOffset? ArrivedAt = null,
+    DateTimeOffset? RemovedAt = null);
 
 /// <summary>Contains provider-reported MCU evidence that does not prove the flight-controller PCB.</summary>
 public sealed record DfuDeviceInformation(

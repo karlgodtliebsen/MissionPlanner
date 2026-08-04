@@ -102,6 +102,10 @@ The firmware page includes a keyboard-accessible Help & Support area whose essen
 
 Every DFU Intel HEX artifact is parsed before it can reach an external programming provider. The platform-neutral inspector bounds encoded input, unique data bytes, and represented address span; validates record structure, checksums, EOF, address arithmetic, duplicates, and overlaps; and rejects data outside a configurable conservative STM32 internal-flash range. It returns compact sorted ranges rather than allocating sparse address gaps. Bootloader and application-region flags are evidence for later target-safety decisions, never proof of the connected board identity.
 
+## Windows USB DFU discovery
+
+Windows DFU discovery reads present Plug and Play USB instances directly and therefore does not require or infer a COM port. The initial catalogue selects the configured STM32 system-bootloader identity (`VID 0483`, `PID DF11` by default), retains PnP instance, friendly-name, manufacturer, USB serial, driver service/provider/version, and problem-code evidence where Windows exposes it, and maps absence, ready, wrong-driver, device-problem, busy, and unknown states distinctly. Registry device-change notification prompts immediate snapshots while a bounded polling deadline remains the fallback. Arrival timestamps belong to each continuous presence generation and are reset after removal.
+
 ## Troubleshooting
 
 - Catalogue unavailable: retry Refresh; a valid cached catalogue may be shown as stale.

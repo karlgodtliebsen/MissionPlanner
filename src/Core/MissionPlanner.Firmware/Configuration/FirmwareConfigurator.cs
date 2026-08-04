@@ -43,6 +43,10 @@ public static class FirmwareConfigurator
 
         var firmwareOptions = services.AddOptions<FirmwareOptions>(); //as long as we are not using appsettings.json, we can use this to configure the options directly in code.
         services.AddOptions<DfuOptions>()
+            .Validate(value => value.DefaultUsbVendorId > 0, "DefaultUsbVendorId must be positive.")
+            .Validate(value => value.DefaultUsbProductId > 0, "DefaultUsbProductId must be positive.")
+            .Validate(value => value.AcceptedWindowsDriverServices is { Length: > 0 } && value.AcceptedWindowsDriverServices.All(service => !string.IsNullOrWhiteSpace(service)), "At least one accepted Windows DFU driver service is required.")
+            .Validate(value => value.DevicePollInterval > TimeSpan.Zero, "DevicePollInterval must be positive.")
             .Validate(value => value.MaximumIntelHexSourceBytes > 0, "MaximumIntelHexSourceBytes must be positive.")
             .Validate(value => value.MaximumIntelHexDataBytes > 0, "MaximumIntelHexDataBytes must be positive.")
             .Validate(value => value.MaximumIntelHexAddressSpan > 0, "MaximumIntelHexAddressSpan must be positive.")
@@ -81,6 +85,18 @@ public static class FirmwareConfigurator
 
         services.TryAddSingleton<IFirmwareOperationCoordinator, FirmwareOperationCoordinator>();
         services.TryAddSingleton<IIntelHexInspector, IntelHexInspector>();
+        services.TryAddSingleton<IWindowsDfuPnPSnapshotSource>(serviceProvider =>
+            OperatingSystem.IsWindows() ? new WindowsRegistryDfuPnPSnapshotSource() : new EmptyWindowsDfuPnPSnapshotSource());
+        services.TryAddSingleton<IWindowsUsbDeviceChangeNotifier>(serviceProvider =>
+            OperatingSystem.IsWindows() ? new WindowsUsbRegistryChangeNotifier() : new PollingDfuDeviceChangeNotifier());
+        services.TryAddSingleton<IDfuDeviceCatalog>(serviceProvider =>
+            OperatingSystem.IsWindows()
+                ? new WindowsDfuDeviceCatalog(
+                    serviceProvider.GetRequiredService<IWindowsDfuPnPSnapshotSource>(),
+                    serviceProvider.GetRequiredService<IOptions<DfuOptions>>(),
+                    serviceProvider.GetRequiredService<TimeProvider>())
+                : new EmptyDfuDeviceCatalog());
+        services.TryAddSingleton<IDfuDeviceMonitor, WindowsDfuDeviceMonitor>();
         services.TryAddSingleton(TimeProvider.System);
         services.AddHttpClient(FirmwareHttpClient.Name, (serviceProvider, client) =>
             {
