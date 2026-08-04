@@ -50,6 +50,17 @@ public sealed class BootloaderEntryStrategyTests
     }
 
     [Fact]
+    public async Task TemporaryMavLinkPortOwnershipConflictIsRecoverable()
+    {
+        var strategy = new TemporaryMavLinkRebootEntryStrategy(new ThrowingTemporaryGateway());
+
+        var result = await strategy.TryEnterAsync(Context(applicationDevice: Device()), TestContext.Current.CancellationToken);
+
+        result.Outcome.Should().Be(BootloaderEntryOutcome.Failed);
+        result.Code.Should().Be("entry.temporary-mavlink-failed");
+    }
+
+    [Fact]
     public async Task ManualStrategyPublishesInteractionRequest()
     {
         var interaction = new FakeInteraction();
@@ -118,6 +129,11 @@ public sealed class BootloaderEntryStrategyTests
             ChannelDisposedBeforeReturn = true;
             return Task.FromResult(true);
         }
+    }
+    private sealed class ThrowingTemporaryGateway : ITemporaryMavLinkBootloaderGateway
+    {
+        public Task<bool> RebootToBootloaderAsync(SerialDeviceDescriptor applicationDevice, CancellationToken cancellationToken = default) =>
+            Task.FromException<bool>(new UnauthorizedAccessException("port is owned"));
     }
     private sealed class FakeInteraction : IBootloaderEntryInteraction
     {

@@ -46,7 +46,7 @@ public sealed class TemporaryMavLinkRebootEntryStrategy(ITemporaryMavLinkBootloa
                 ? new BootloaderEntryResult(BootloaderEntryOutcome.ContinueDiscovery, "entry.temporary-mavlink-reboot-sent")
                 : new BootloaderEntryResult(BootloaderEntryOutcome.Failed, "entry.temporary-mavlink-reboot-not-accepted");
         }
-        catch (Exception exception) when (exception is IOException or TimeoutException or FirmwareBootloaderException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or TimeoutException or FirmwareBootloaderException)
         {
             return new BootloaderEntryResult(BootloaderEntryOutcome.Failed, "entry.temporary-mavlink-failed", TechnicalDetail: exception.Message);
         }
