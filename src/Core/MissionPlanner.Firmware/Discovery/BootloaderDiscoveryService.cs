@@ -95,7 +95,7 @@ public sealed class BootloaderDiscoveryService(
         {
             logger.LogDebug("Timed out opening firmware candidate {PortName}.", candidate.PortName);
         }
-        catch (Exception exception) when (exception is FirmwareBootloaderException or IOException or UnauthorizedAccessException or InvalidOperationException)
+        catch (Exception exception) when (exception is FirmwareBootloaderException or TimeoutException or IOException or UnauthorizedAccessException or InvalidOperationException)
         {
             logger.LogDebug(exception, "Rejected non-bootloader serial candidate {PortName}.", candidate.PortName);
         }
