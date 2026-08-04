@@ -33,7 +33,10 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     private readonly ILogger<InstallFirmwareViewModel> logger;
     private readonly IUserConfirmationService confirmation;
     private readonly IDispatcher dispatcher;
+    private readonly object refreshSync = new();
     private CancellationTokenSource? lifetime;
+    private CancellationTokenSource? refreshCancellation;
+    private long refreshVersion;
     private int operationRunning;
     private IReadOnlyList<FirmwareManifestEntry> availableEntries = [];
     private IReadOnlyList<SerialDeviceDescriptor> availableDevices = [];
@@ -106,6 +109,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     [ObservableProperty] public partial bool IsDisconnectedMode { get; private set; }
     [ObservableProperty] public partial bool IsUnsupportedMode { get; private set; }
     [ObservableProperty] public partial bool IsOperationInProgress { get; private set; }
+    [ObservableProperty] public partial bool IsCatalogRefreshRunning { get; private set; }
 
     /// <summary>Gets whether Shell navigation may safely leave this page.</summary>
     public bool CanNavigateAway => !IsOperationInProgress;
@@ -148,6 +152,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     private void Deactivate()
     {
         activeVehicle.Changed -= OnActiveVehicleChanged;
+        CancelRefresh();
         if (!IsOperationInProgress)
         {
             lifetime?.Cancel();
@@ -340,56 +345,89 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             return;
         }
 
+        var (version, refreshToken) = BeginRefresh(cancellationToken);
         try
         {
-            StatusMessage = "Loading firmware catalogue…";
-            var catalog = await catalogService.GetCatalogAsync(
-                new FirmwareCatalogRequest(Channel: allOptions ? null : SelectedChannel, ForceRefresh: forceRefresh),
-                cancellationToken);
-            var devices = await deviceCatalog.GetDevicesAsync(cancellationToken);
-            availableEntries = catalog.Entries.Where(entry => entry.Target.VehicleType != FirmwareVehicleType.Unknown &&
-                entry.Artifact.Format is FirmwareImageFormat.Apj or FirmwareImageFormat.Px4).ToArray();
-            availableDevices = devices;
-            showingAllOptions = allOptions;
-            ApplyTargetQuery();
-            CustomPackage = null;
-            OnPropertyChanged(nameof(HasCustomFirmware));
-
-            DetectedDevices.Clear();
-            foreach (var device in devices)
+            await DispatchAsync(() =>
             {
-                var usbMatch = FirmwareChoices.Any(choice => choice.Entry.Target.UsbIdentifiers.Contains(device.UsbIdentifier ?? default));
-                var hintMatch = FirmwareChoices.Any(choice => choice.Entry.Target.BootloaderNames.Any(hint =>
-                    (!string.IsNullOrWhiteSpace(device.ProductName) && device.ProductName.Contains(hint, StringComparison.OrdinalIgnoreCase)) ||
-                    device.BoardHints.Any(value => value.Contains(hint, StringComparison.OrdinalIgnoreCase))));
-                var recommended = usbMatch || hintMatch;
-                DetectedDevices.Add(new FirmwareDeviceItemViewModel(
-                    device,
-                    recommended,
-                    usbMatch ? "Exact catalogue USB match" : hintMatch ? "Bootloader/board hint match" : "Manual device selection"));
-            }
+                IsCatalogRefreshRunning = true;
+                StatusMessage = "Loading firmware catalogue…";
+            });
+            var channel = SelectedChannel;
+            var catalog = await catalogService.GetCatalogAsync(
+                new FirmwareCatalogRequest(Channel: allOptions ? null : channel, ForceRefresh: forceRefresh),
+                refreshToken);
+            var devices = await deviceCatalog.GetDevicesAsync(refreshToken);
+            var entries = catalog.Entries.Where(entry => entry.Target.VehicleType != FirmwareVehicleType.Unknown &&
+                entry.Artifact.Format is FirmwareImageFormat.Apj or FirmwareImageFormat.Px4).ToArray();
+            refreshToken.ThrowIfCancellationRequested();
+            await DispatchAsync(() =>
+            {
+                if (!IsLatestRefresh(version))
+                {
+                    return;
+                }
 
-            var recommendedDevices = DetectedDevices.Where(item => item.IsRecommended).ToArray();
-            SelectedDevice = recommendedDevices.Length == 1 ? recommendedDevices[0] : null;
-            DeviceStatus = DetectedDevices.Count == 0
-                ? "No flight controller detected"
-                : recommendedDevices.Length > 1
-                    ? "Multiple matching devices detected; select the exact flight controller."
-                    : SelectedDevice is not null
-                        ? $"Recommended device: {SelectedDevice}"
-                        : "Select the flight controller explicitly.";
-            StatusMessage = catalog.IsStale ? "Showing cached firmware catalogue" : $"{FirmwareChoices.Count} vehicle firmware choices available";
+                availableEntries = entries;
+                availableDevices = devices;
+                showingAllOptions = allOptions;
+                ApplyTargetQuery();
+                CustomPackage = null;
+                OnPropertyChanged(nameof(HasCustomFirmware));
+
+                DetectedDevices.Clear();
+                foreach (var device in devices)
+                {
+                    var usbMatch = FirmwareChoices.Any(choice => choice.Entry.Target.UsbIdentifiers.Contains(device.UsbIdentifier ?? default));
+                    var hintMatch = FirmwareChoices.Any(choice => choice.Entry.Target.BootloaderNames.Any(hint =>
+                        (!string.IsNullOrWhiteSpace(device.ProductName) && device.ProductName.Contains(hint, StringComparison.OrdinalIgnoreCase)) ||
+                        device.BoardHints.Any(value => value.Contains(hint, StringComparison.OrdinalIgnoreCase))));
+                    var recommended = usbMatch || hintMatch;
+                    DetectedDevices.Add(new FirmwareDeviceItemViewModel(
+                        device,
+                        recommended,
+                        usbMatch ? "Exact catalogue USB match" : hintMatch ? "Bootloader/board hint match" : "Manual device selection"));
+                }
+
+                var recommendedDevices = DetectedDevices.Where(item => item.IsRecommended).ToArray();
+                SelectedDevice = recommendedDevices.Length == 1 ? recommendedDevices[0] : null;
+                DeviceStatus = DetectedDevices.Count == 0
+                    ? "No flight controller detected"
+                    : recommendedDevices.Length > 1
+                        ? "Multiple matching devices detected; select the exact flight controller."
+                        : SelectedDevice is not null
+                            ? $"Recommended device: {SelectedDevice}"
+                            : "Select the flight controller explicitly.";
+                StatusMessage = catalog.IsStale ? "Showing cached firmware catalogue" : $"{FirmwareChoices.Count} vehicle firmware choices available";
+            });
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }
+        catch (OperationCanceledException) when (refreshToken.IsCancellationRequested) { }
         catch (Exception exception)
         {
             logger.LogError(exception, "Firmware catalogue refresh failed.");
-            StatusMessage = exception.Message;
+            await DispatchAsync(() =>
+            {
+                if (IsLatestRefresh(version))
+                {
+                    StatusMessage = exception.Message;
+                }
+            });
+        }
+        finally
+        {
+            await DispatchAsync(() =>
+            {
+                if (IsLatestRefresh(version))
+                {
+                    IsCatalogRefreshRunning = false;
+                }
+            });
         }
     }
 
     private void ApplyTargetQuery()
     {
+        var previousEntry = SelectedFirmware?.Entry;
         var recommendations = FirmwareTargetSelector.Query(availableEntries,
             new FirmwareTargetQuery(ReleaseChannel: showingAllOptions ? null : SelectedChannel, SearchText: TargetSearchText),
             availableDevices, SelectedFirmware?.BoardId);
@@ -399,10 +437,68 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             FirmwareChoices.Add(new FirmwareCatalogItemViewModel(recommendation));
         }
 
+        var retained = previousEntry is null ? null : FirmwareChoices.FirstOrDefault(item => SameEntry(item.Entry, previousEntry));
         var automatic = FirmwareTargetSelector.UnambiguousHighConfidence(recommendations);
-        SelectedFirmware = automatic is null ? null : FirmwareChoices.Single(item => ReferenceEquals(item.Entry, automatic.Entry));
+        SelectedFirmware = retained ?? (automatic is null ? null : FirmwareChoices.Single(item => ReferenceEquals(item.Entry, automatic.Entry)));
         InstallCommand.NotifyCanExecuteChanged();
     }
+
+    private (long Version, CancellationToken Token) BeginRefresh(CancellationToken cancellationToken)
+    {
+        lock (refreshSync)
+        {
+            refreshCancellation?.Cancel();
+            refreshCancellation?.Dispose();
+            refreshCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            return (++refreshVersion, refreshCancellation.Token);
+        }
+    }
+
+    private void CancelRefresh()
+    {
+        lock (refreshSync)
+        {
+            refreshVersion++;
+            refreshCancellation?.Cancel();
+            refreshCancellation?.Dispose();
+            refreshCancellation = null;
+        }
+    }
+
+    private bool IsLatestRefresh(long version)
+    {
+        lock (refreshSync)
+        {
+            return version == refreshVersion;
+        }
+    }
+
+    private Task DispatchAsync(Action action)
+    {
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        if (!dispatcher.Dispatch(() =>
+            {
+                try
+                {
+                    action();
+                    completion.SetResult();
+                }
+                catch (Exception exception)
+                {
+                    completion.SetException(exception);
+                }
+            }))
+        {
+            completion.SetException(new InvalidOperationException("Unable to dispatch firmware catalogue update."));
+        }
+
+        return completion.Task;
+    }
+
+    private static bool SameEntry(FirmwareManifestEntry left, FirmwareManifestEntry right) =>
+        left.Target.BoardId == right.Target.BoardId &&
+        left.Channel == right.Channel &&
+        left.Artifact.DownloadUri == right.Artifact.DownloadUri;
 
     [RelayCommand]
     private async Task DownloadAndValidateAsync(CancellationToken cancellationToken)

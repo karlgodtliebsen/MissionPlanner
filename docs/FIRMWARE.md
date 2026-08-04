@@ -62,6 +62,8 @@ Manifest and artifact traffic uses the named `MissionPlanner.Firmware` client wi
 
 Manifest entries are parsed independently. Invalid URLs, board IDs, USB identifiers, unsupported formats, and missing required fields skip only the affected entry and produce categorized counts; unknown future fields remain in raw metadata. Invalid JSON/gzip and manifests with no usable entries still fail as a whole. Equivalent mirror entries are deterministically deduplicated and reported.
 
+Catalogue refresh is latest-request-wins. Selecting a new release channel cancels the preceding request and invalidates late responses; only the current response applies a single collection snapshot on the UI dispatcher. The page exposes catalogue-refresh activity and retains an explicitly selected target while that exact board/channel/artifact remains available.
+
 Supported image formats in this workflow are `.apj` and `.px4`. Intel HEX, `_with_bl.hex`, DFU, legacy boards, DroneCAN, BlueOS/network upload, SD-card `.abin`, UART telemetry adapters, and mobile USB-host flashing are not implemented. `.hex` requires a future DFU/legacy workflow.
 
 ## Serial ownership, protocol, and recovery

@@ -451,6 +451,8 @@ Status: Completed on 2026-08-04. Artifact data and metadata now publish together
 
 # Task 9 — Serialize catalogue refresh
 
+Status: Completed on 2026-08-04. Each refresh now owns a linked cancellation source and monotonic request version. Channel changes cancel prior I/O, late results cannot mutate the page, collection snapshots are applied through the UI dispatcher, running state is observable, and a still-valid explicit firmware selection is retained. View-model tests cover cancellation, out-of-order completion, and duplicate-free selection retention.
+
 ## Changes
 
 Implement one of:
