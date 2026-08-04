@@ -74,6 +74,7 @@
                     </Grid>
                 </Border>
                 <Label Text="Detected device" FontAttributes="Bold" />
+                <Picker ItemsSource="{Binding DetectedDevices}" SelectedItem="{Binding SelectedDevice}" Title="Select flight controller" />
                 <Label Text="{Binding DeviceStatus}" />
             </VerticalStackLayout>
 

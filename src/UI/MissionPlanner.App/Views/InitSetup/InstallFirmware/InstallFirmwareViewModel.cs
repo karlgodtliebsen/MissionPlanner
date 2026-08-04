@@ -67,7 +67,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     public ObservableCollection<FirmwareCatalogItemViewModel> FirmwareChoices { get; } = [];
 
     /// <summary>Gets discovered serial devices.</summary>
-    public ObservableCollection<string> Devices { get; } = [];
+    public ObservableCollection<FirmwareDeviceItemViewModel> DetectedDevices { get; } = [];
 
     /// <summary>Gets release channels.</summary>
     public IReadOnlyList<FirmwareReleaseChannel> Channels { get; } =
@@ -78,6 +78,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
 
     [ObservableProperty] public partial FirmwareReleaseChannel SelectedChannel { get; set; } = FirmwareReleaseChannel.Stable;
     [ObservableProperty] public partial FirmwareCatalogItemViewModel? SelectedFirmware { get; set; }
+    [ObservableProperty] public partial FirmwareDeviceItemViewModel? SelectedDevice { get; set; }
     [ObservableProperty] public partial ApjFirmwarePackage? CustomPackage { get; private set; }
     [ObservableProperty] public partial string? CustomFirmwareName { get; private set; }
     [ObservableProperty] public partial string? CustomFirmwareDescription { get; private set; }
@@ -233,8 +234,10 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             var target = SelectedFirmware?.Entry.Target;
             var request = new FirmwareInstallationRequest(
                 new BootloaderEntryContext(new BootloaderDiscoveryRequest(
+                    SelectedDevice?.Descriptor,
                     ExpectedUsbIdentifiers: target?.UsbIdentifiers,
-                    BootloaderHints: target?.BootloaderNames)),
+                    BootloaderHints: target?.BootloaderNames),
+                    SelectedDevice?.Descriptor),
                 SelectedFirmware?.Entry.Artifact,
                 CustomPackage);
             var progress = new Progress<FirmwareProgress>(UpdateProgress);
@@ -346,13 +349,29 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             CustomPackage = null;
             OnPropertyChanged(nameof(HasCustomFirmware));
 
-            Devices.Clear();
+            DetectedDevices.Clear();
             foreach (var device in devices)
             {
-                Devices.Add($"{device.PortName} · {device.ProductName ?? "Serial device"} · {device.UsbIdentifier?.ToString() ?? "USB identity unavailable"}");
+                var usbMatch = FirmwareChoices.Any(choice => choice.Entry.Target.UsbIdentifiers.Contains(device.UsbIdentifier ?? default));
+                var hintMatch = FirmwareChoices.Any(choice => choice.Entry.Target.BootloaderNames.Any(hint =>
+                    (!string.IsNullOrWhiteSpace(device.ProductName) && device.ProductName.Contains(hint, StringComparison.OrdinalIgnoreCase)) ||
+                    device.BoardHints.Any(value => value.Contains(hint, StringComparison.OrdinalIgnoreCase))));
+                var recommended = usbMatch || hintMatch;
+                DetectedDevices.Add(new FirmwareDeviceItemViewModel(
+                    device,
+                    recommended,
+                    usbMatch ? "Exact catalogue USB match" : hintMatch ? "Bootloader/board hint match" : "Manual device selection"));
             }
 
-            DeviceStatus = Devices.Count == 0 ? "No flight controller detected" : string.Join(Environment.NewLine, Devices);
+            var recommendedDevices = DetectedDevices.Where(item => item.IsRecommended).ToArray();
+            SelectedDevice = recommendedDevices.Length == 1 ? recommendedDevices[0] : null;
+            DeviceStatus = DetectedDevices.Count == 0
+                ? "No flight controller detected"
+                : recommendedDevices.Length > 1
+                    ? "Multiple matching devices detected; select the exact flight controller."
+                    : SelectedDevice is not null
+                        ? $"Recommended device: {SelectedDevice}"
+                        : "Select the flight controller explicitly.";
             StatusMessage = catalog.IsStale ? "Showing cached firmware catalogue" : $"{FirmwareChoices.Count} vehicle firmware choices available";
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { }

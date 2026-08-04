@@ -68,6 +68,8 @@ No raw interaction code appears in the UI, and Cancel reliably prevents continua
 
 # Task 2 — Introduce typed device selection
 
+Status: Completed on 2026-08-04. `FirmwareDeviceItemViewModel` preserves the complete serial descriptor and recommendation evidence, ambiguous matches require explicit selection, and the selected descriptor is passed to both bootloader entry and discovery. Discovery tests verify selected devices outrank unrelated COM devices.
+
 ## Problem
 
 The view model currently converts `SerialDeviceDescriptor` objects into display strings. It cannot pass a selected application device into `BootloaderEntryContext`.

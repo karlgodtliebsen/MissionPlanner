@@ -60,6 +60,8 @@ Only one firmware operation may own serial resources. Discovery snapshots device
 
 When a disconnected application-mode port is available, the host can create an isolated, one-shot MAVLink parser over that exclusively opened serial stream, wait for a bounded heartbeat, send reboot-to-bootloader, interpret an ACK when one arrives, and dispose the stream before discovery starts. It never starts or reuses the normal Mission Planner vehicle session.
 
+Detected application devices remain typed through the UI and installation request. The page auto-selects only one uniquely recommended USB/board-hint match; ambiguous candidates require explicit selection and show the recommendation reason. The selected descriptor is supplied both to bootloader entry and discovery, enabling temporary MAVLink reboot while retaining identity across a COM-port change.
+
 The protocol client implements bounded synchronization, identify, erase, chunked program, checksum verification, and reboot operations. Board identity and writable size are known before erase. Verification is mandatory; a checksum mismatch can never report success.
 
 After reboot, recovery observes bootloader removal and matches the returning application using USB serial, stable OS path, VID/PID, product transition, and operation timing. A new COM name is expected and reported. Failure to rediscover the application does not invalidate a verified flash: the result is “flash succeeded; reconnect not detected.” The firmware library never reuses an old MAVLink parser, channel, or pending registration and never reconstructs the application session automatically.

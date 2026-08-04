@@ -52,6 +52,21 @@ public sealed class BootloaderDiscoveryServiceTests
     }
 
     [Fact]
+    public async Task ExplicitSelectionIsProbedBeforeUnrelatedCandidates()
+    {
+        var unrelated = Device("COM1", "unrelated");
+        var selected = Device("COM8", "selected");
+        var ports = new FakePortFactory();
+        var clients = new FakeClientFactory(new Dictionary<string, BootloaderIdentity> { ["COM8"] = new(50, 4, 1024) });
+        var service = CreateService(new FakeCatalog(unrelated, selected), new FakeMonitor(), ports, clients);
+
+        await using var found = await service.FindAsync(new BootloaderDiscoveryRequest(selected), cancellationToken: TestContext.Current.CancellationToken);
+
+        found.Device.Should().Be(selected);
+        ports.Opened.Should().Equal("COM8");
+    }
+
+    [Fact]
     public async Task ReprobesNewBootloaderGenerationOnSameStablePort()
     {
         var application = Device("COM7", "device-42", "Cube");
