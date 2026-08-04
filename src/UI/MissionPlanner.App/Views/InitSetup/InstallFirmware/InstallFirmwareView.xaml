@@ -106,8 +106,12 @@
                     <Label Text="{Binding OperationProgress.TechnicalDetail}" />
                     <ProgressBar Progress="{Binding OperationProgress.Progress}" IsVisible="{Binding OperationProgress.HasPercentage}" />
                     <Label Text="Do not disconnect power while flash memory is being changed." TextColor="OrangeRed" IsVisible="{Binding OperationProgress.IsPowerCritical}" />
+                    <Button Text="Cancel" Command="{Binding CancelCommand}" HorizontalOptions="Start" />
+                    <Label Text="Cancellation is deferred until verification and reboot reach a safe boundary. Keep power connected."
+                           TextColor="OrangeRed" IsVisible="{Binding IsCancellationDeferred}" />
                 </VerticalStackLayout>
             </Border>
+            <Button Text="Cancel" Command="{Binding CancelCommand}" IsVisible="{Binding IsCatalogRefreshRunning}" HorizontalOptions="Start" />
             <Label Text="{Binding StatusMessage}" />
             <VerticalStackLayout IsVisible="{Binding HasDiagnosticReport}" Spacing="6">
                 <Label Text="Diagnostic report" FontAttributes="Bold" />

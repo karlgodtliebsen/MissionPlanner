@@ -108,6 +108,8 @@ public sealed class FirmwareInstallationService(
                 cancellationToken.ThrowIfCancellationRequested();
                 var destructiveToken = CancellationToken.None;
                 Transition(FirmwareOperationState.Erasing, "installation.erasing");
+                using var deferredCancellation = cancellationToken.Register(() =>
+                    operation.RequestCancellation("installation.cancellation-deferred"));
                 await found.Client.EraseAsync(destructiveToken).ConfigureAwait(false);
                 Transition(FirmwareOperationState.Programming, "installation.programming");
                 await found.Client.ProgramAsync(package, progress, destructiveToken).ConfigureAwait(false);
@@ -121,9 +123,17 @@ public sealed class FirmwareInstallationService(
             }
 
             Transition(FirmwareOperationState.WaitingForApplication, "installation.waiting-for-application");
+            if (operation.CancellationRequested || cancellationToken.IsCancellationRequested)
+            {
+                if (operation.State != FirmwareOperationState.Cancelled)
+                    operation.RequestCancellation("installation.cancelled-at-safe-boundary");
+                return new FirmwareOperationResult(operation.OperationId, operation.Kind, FirmwareOperationState.Cancelled,
+                    DiagnosticReport: CreateDiagnostic(FirmwareOperationState.Cancelled));
+            }
+
             var applicationDevice = await applicationDiscovery.FindAsync(
                 new FirmwareApplicationDiscoveryRequest(bootloaderDevice, request.EntryContext.ApplicationDevice),
-                CancellationToken.None).ConfigureAwait(false);
+                cancellationToken).ConfigureAwait(false);
             Transition(FirmwareOperationState.Completed, "installation.completed");
             return new FirmwareOperationResult(
                 operation.OperationId,
@@ -144,7 +154,8 @@ public sealed class FirmwareInstallationService(
         catch (OperationCanceledException exception)
         {
             var failureStage = stage;
-            if (operation.State is not (FirmwareOperationState.Erasing or FirmwareOperationState.Programming or FirmwareOperationState.Verifying or FirmwareOperationState.Rebooting or FirmwareOperationState.WaitingForApplication))
+            if (operation.State == FirmwareOperationState.Cancelled) { }
+            else if (operation.State is not (FirmwareOperationState.Erasing or FirmwareOperationState.Programming or FirmwareOperationState.Verifying or FirmwareOperationState.Rebooting))
                 Transition(FirmwareOperationState.Cancelled, "installation.cancelled");
             else
                 Transition(FirmwareOperationState.Failed, "installation.cancelled-after-destructive-stage");

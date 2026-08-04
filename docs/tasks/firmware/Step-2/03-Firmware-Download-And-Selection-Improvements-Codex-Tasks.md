@@ -479,6 +479,8 @@ Requirements:
 
 # Task 10 — Add safe pre-destructive cancellation
 
+Status: Completed on 2026-08-04. The page now owns and exposes cancellation for catalogue refresh, download/validation, and installation. Pre-destructive requests cancel immediately. Requests during erase/program/verify/reboot are recorded by the operation coordinator, visibly reported as deferred, and stop only after verified reboot and serial disposal at the safe application-wait boundary. Automated tests cover download cancellation, pre-erase cancellation, coordinator deferral, and cancellation during erase without abrupt port disposal.
+
 ## UI
 
 Add Cancel while state is:

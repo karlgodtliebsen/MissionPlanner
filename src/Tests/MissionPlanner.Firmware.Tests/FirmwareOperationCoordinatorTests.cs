@@ -76,6 +76,21 @@ public sealed class FirmwareOperationCoordinatorTests
     }
 
     [Fact]
+    public void DeferredCancellationCompletesAtWaitingForApplicationBoundary()
+    {
+        var coordinator = CreateCoordinator();
+        using var operation = coordinator.Begin(FirmwareOperationKind.InstallApplicationFirmware);
+        foreach (var state in InstallPath.TakeWhile(state => state != FirmwareOperationState.WaitingForApplication))
+            operation.Transition(Progress(state));
+
+        operation.RequestCancellation().Should().BeFalse();
+        operation.Transition(Progress(FirmwareOperationState.WaitingForApplication));
+
+        operation.RequestCancellation().Should().BeTrue();
+        operation.State.Should().Be(FirmwareOperationState.Cancelled);
+    }
+
+    [Fact]
     public void TerminalStateCannotTransitionAgain()
     {
         var coordinator = CreateCoordinator();

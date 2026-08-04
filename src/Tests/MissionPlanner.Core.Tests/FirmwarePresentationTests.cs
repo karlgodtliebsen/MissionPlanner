@@ -210,19 +210,46 @@ public sealed class FirmwarePresentationTests
         viewModel.FirmwareChoices.Select(item => item.ArtifactUrl).Should().OnlyHaveUniqueItems();
     }
 
+    [Fact]
+    public async Task CancelCommandCancelsDownloadAndValidationToken()
+    {
+        var release = Release(FirmwareReleaseChannel.Stable, 1);
+        var catalogService = Substitute.For<IFirmwareCatalogService>();
+        catalogService.GetCatalogAsync(Arg.Any<FirmwareCatalogRequest>(), Arg.Any<CancellationToken>()).Returns(Catalog(release));
+        var preparation = new BlockingPreparationService();
+        var viewModel = CreateViewModel(
+            DisconnectedState(),
+            Substitute.For<IFirmwareFilePicker>(),
+            Substitute.For<IFirmwarePackageReader>(),
+            catalogService: catalogService,
+            preparationService: preparation);
+        await viewModel.RefreshCatalogCommand.ExecuteAsync(null);
+        viewModel.SelectFirmwareCommand.Execute(viewModel.FirmwareChoices.Single());
+
+        var download = viewModel.DownloadAndValidateCommand.ExecuteAsync(null);
+        await WaitUntilAsync(() => viewModel.IsOperationInProgress && preparation.ObservedToken.CanBeCanceled);
+        viewModel.CancelCommand.Execute(null);
+        await download;
+
+        preparation.ObservedToken.IsCancellationRequested.Should().BeTrue();
+        viewModel.IsOperationInProgress.Should().BeFalse();
+        viewModel.StatusMessage.Should().Contain("cancelled");
+    }
+
     private static InstallFirmwareViewModel CreateViewModel(
         FirmwarePageState state,
         IFirmwareFilePicker picker,
         IFirmwarePackageReader reader,
         IFirmwareInstallationService? installationService = null,
-        IFirmwareCatalogService? catalogService = null)
+        IFirmwareCatalogService? catalogService = null,
+        IFirmwarePreparationService? preparationService = null)
     {
         var resolver = Substitute.For<IFirmwarePageModeResolver>();
         resolver.Resolve(Arg.Any<FirmwarePageContext>()).Returns(state);
         return new InstallFirmwareViewModel(
             catalogService ?? Substitute.For<IFirmwareCatalogService>(),
             installationService ?? Substitute.For<IFirmwareInstallationService>(),
-            Substitute.For<IFirmwarePreparationService>(),
+            preparationService ?? Substitute.For<IFirmwarePreparationService>(),
             Substitute.For<IEmbeddedBootloaderUpdateService>(),
             Substitute.For<IFirmwareSerialDeviceCatalog>(),
             resolver,
@@ -277,6 +304,21 @@ public sealed class FirmwarePresentationTests
         {
             WasDisposed = true;
             base.Dispose(disposing);
+        }
+    }
+
+    private sealed class BlockingPreparationService : IFirmwarePreparationService
+    {
+        public CancellationToken ObservedToken { get; private set; }
+
+        public async Task<FirmwarePreparationResult> PrepareAsync(
+            FirmwarePreparationRequest request,
+            IProgress<FirmwareProgress>? progress = null,
+            CancellationToken cancellationToken = default)
+        {
+            ObservedToken = cancellationToken;
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            throw new InvalidOperationException("Unreachable");
         }
     }
 }

@@ -167,14 +167,29 @@ public sealed class FirmwareInstallationServiceTests
         result.Failure!.Stage.Should().Be(FirmwareOperationState.Erasing);
     }
 
+    [Fact]
+    public async Task CallerCancellationDuringEraseIsDeferredUntilPortIsSafelyRebootedAndDisposed()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var fixture = new Fixture(onErase: cancellation.Cancel);
+
+        var result = await fixture.Service.InstallAsync(fixture.Request, cancellationToken: cancellation.Token);
+
+        result.State.Should().Be(FirmwareOperationState.Cancelled);
+        fixture.Client.Calls.Should().Equal("erase", "program", "verify", "reboot", "dispose");
+        fixture.Client.DestructiveTokens.Should().OnlyContain(token => !token.CanBeCanceled);
+        fixture.ApplicationDiscovery.Calls.Should().Be(0);
+    }
+
     private sealed class Fixture
     {
-        public Fixture(bool connected = false, bool confirm = true, bool verificationSucceeds = true, BootloaderIdentity? bootloader = null, bool applicationDetected = true, string? clientFailure = null, Exception? entryFailure = null, Exception? downloadFailure = null)
+        public Fixture(bool connected = false, bool confirm = true, bool verificationSucceeds = true, BootloaderIdentity? bootloader = null, bool applicationDetected = true, string? clientFailure = null, Exception? entryFailure = null, Exception? downloadFailure = null, Action? onErase = null)
         {
             Coordinator = new FirmwareOperationCoordinator(NullLogger<FirmwareOperationCoordinator>.Instance);
-            Client = new FakeClient(verificationSucceeds, clientFailure);
+            Client = new FakeClient(verificationSucceeds, clientFailure, onErase);
             Interaction = new FakeInteraction(confirm);
             var found = new DiscoveredBootloader(new SerialDeviceDescriptor("COM9", "bootloader"), bootloader ?? new BootloaderIdentity(50, 4, 16), Client);
+            ApplicationDiscovery = new FixedApplicationDiscovery(applicationDetected ? new SerialDeviceDescriptor("COM11", "application") : null);
             Service = new FirmwareInstallationService(
                 Coordinator,
                 new FakeConnection(connected),
@@ -183,7 +198,7 @@ public sealed class FirmwareInstallationServiceTests
                 new UnusedDiscovery(),
                 new FirmwareCompatibilityService(),
                 Interaction,
-                new FixedApplicationDiscovery(applicationDetected ? new SerialDeviceDescriptor("COM11", "application") : null),
+                ApplicationDiscovery,
                 NullLogger<FirmwareInstallationService>.Instance);
             Request = downloadFailure is null
                 ? new FirmwareInstallationRequest(
@@ -196,6 +211,7 @@ public sealed class FirmwareInstallationServiceTests
         public FirmwareOperationCoordinator Coordinator { get; }
         public FakeClient Client { get; }
         public FakeInteraction Interaction { get; }
+        public FixedApplicationDiscovery ApplicationDiscovery { get; }
         public FirmwareInstallationService Service { get; }
         public FirmwareInstallationRequest Request { get; }
     }
@@ -236,15 +252,19 @@ public sealed class FirmwareInstallationServiceTests
     }
     private sealed class FixedApplicationDiscovery(SerialDeviceDescriptor? device) : IFirmwareApplicationDiscoveryService
     {
-        public Task<SerialDeviceDescriptor?> FindAsync(FirmwareApplicationDiscoveryRequest request, CancellationToken cancellationToken = default) =>
-            Task.FromResult(device);
+        public int Calls { get; private set; }
+        public Task<SerialDeviceDescriptor?> FindAsync(FirmwareApplicationDiscoveryRequest request, CancellationToken cancellationToken = default)
+        {
+            Calls++;
+            return Task.FromResult(device);
+        }
     }
-    private sealed class FakeClient(bool verificationSucceeds, string? failure) : IArduPilotBootloaderClient
+    private sealed class FakeClient(bool verificationSucceeds, string? failure, Action? onErase) : IArduPilotBootloaderClient
     {
         public List<string> Calls { get; } = [];
         public List<CancellationToken> DestructiveTokens { get; } = [];
         public Task<BootloaderIdentity> IdentifyAsync(CancellationToken cancellationToken = default) => throw new InvalidOperationException();
-        public Task EraseAsync(CancellationToken cancellationToken = default) { Calls.Add("erase"); DestructiveTokens.Add(cancellationToken); return failure switch { "erase" => Task.FromException(new IOException("erase")), "cancel-erase" => Task.FromCanceled(new CancellationToken(true)), _ => Task.CompletedTask }; }
+        public Task EraseAsync(CancellationToken cancellationToken = default) { Calls.Add("erase"); DestructiveTokens.Add(cancellationToken); onErase?.Invoke(); return failure switch { "erase" => Task.FromException(new IOException("erase")), "cancel-erase" => Task.FromCanceled(new CancellationToken(true)), _ => Task.CompletedTask }; }
         public Task ProgramAsync(ApjFirmwarePackage package, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default) { Calls.Add("program"); DestructiveTokens.Add(cancellationToken); return failure == "program" ? Task.FromException(new IOException("program")) : Task.CompletedTask; }
         public Task<FirmwareVerificationResult> VerifyAsync(ApjFirmwarePackage package, CancellationToken cancellationToken = default) { Calls.Add("verify"); DestructiveTokens.Add(cancellationToken); return Task.FromResult(new FirmwareVerificationResult(verificationSucceeds, 1, verificationSucceeds ? 1u : 2u)); }
         public Task RebootAsync(CancellationToken cancellationToken = default) { Calls.Add("reboot"); DestructiveTokens.Add(cancellationToken); return Task.CompletedTask; }

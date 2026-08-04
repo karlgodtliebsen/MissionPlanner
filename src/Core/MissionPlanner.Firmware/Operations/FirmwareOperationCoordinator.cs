@@ -88,8 +88,7 @@ public sealed class FirmwareOperationCoordinator(ILogger<FirmwareOperationCoordi
 
             CancellationRequested = true;
             if (State is FirmwareOperationState.Erasing or FirmwareOperationState.Programming or
-                FirmwareOperationState.Verifying or FirmwareOperationState.Rebooting or
-                FirmwareOperationState.WaitingForApplication)
+                FirmwareOperationState.Verifying or FirmwareOperationState.Rebooting)
             {
                 logger.LogWarning(
                     "Cancellation for firmware operation {OperationId} was deferred in destructive state {State}.",
@@ -145,7 +144,7 @@ public sealed class FirmwareOperationCoordinator(ILogger<FirmwareOperationCoordi
                 map.TryAdd(state, []);
                 map[state].Add(FirmwareOperationState.Failed);
                 if (state is not (FirmwareOperationState.Erasing or FirmwareOperationState.Programming or
-                    FirmwareOperationState.Verifying or FirmwareOperationState.Rebooting or FirmwareOperationState.WaitingForApplication))
+                    FirmwareOperationState.Verifying or FirmwareOperationState.Rebooting))
                 {
                     map[state].Add(FirmwareOperationState.Cancelled);
                 }

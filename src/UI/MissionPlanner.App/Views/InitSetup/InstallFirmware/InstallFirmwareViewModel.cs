@@ -36,6 +36,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     private readonly object refreshSync = new();
     private CancellationTokenSource? lifetime;
     private CancellationTokenSource? refreshCancellation;
+    private CancellationTokenSource? operationCancellation;
     private long refreshVersion;
     private int operationRunning;
     private IReadOnlyList<FirmwareManifestEntry> availableEntries = [];
@@ -110,6 +111,11 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     [ObservableProperty] public partial bool IsUnsupportedMode { get; private set; }
     [ObservableProperty] public partial bool IsOperationInProgress { get; private set; }
     [ObservableProperty] public partial bool IsCatalogRefreshRunning { get; private set; }
+    [ObservableProperty] public partial bool IsCancellationDeferred { get; private set; }
+    [ObservableProperty] public partial FirmwareOperationState? CurrentOperationState { get; private set; }
+
+    /// <summary>Gets whether the current non-terminal work accepts a cancellation request.</summary>
+    public bool CanRequestCancellation => IsCatalogRefreshRunning || IsOperationInProgress;
 
     /// <summary>Gets whether Shell navigation may safely leave this page.</summary>
     public bool CanNavigateAway => !IsOperationInProgress;
@@ -171,6 +177,12 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     }
 
     partial void OnTargetSearchTextChanged(string? value) => ApplyTargetQuery();
+
+    partial void OnIsCatalogRefreshRunningChanged(bool value)
+    {
+        OnPropertyChanged(nameof(CanRequestCancellation));
+        CancelCommand.NotifyCanExecuteChanged();
+    }
 
     [RelayCommand]
     private Task RefreshCatalogAsync()
@@ -249,6 +261,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             return;
         }
 
+        using var ownedCancellation = BeginOperationCancellation(cancellationToken);
         try
         {
             SetOperation(true, FirmwareOperationState.Downloading);
@@ -263,7 +276,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
                 prepared is null ? SelectedFirmware?.Entry.Artifact : null,
                 CustomPackage ?? prepared?.Package);
             var progress = new Progress<FirmwareProgress>(UpdateProgress);
-            var result = await installationService.InstallAsync(request, progress, cancellationToken);
+            var result = await installationService.InstallAsync(request, progress, ownedCancellation.Token);
             LastDiagnosticReport = result.DiagnosticReport?.CreateReport();
             OnPropertyChanged(nameof(HasDiagnosticReport));
             StatusMessage = result.State == FirmwareOperationState.Completed
@@ -279,6 +292,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         }
         finally
         {
+            EndOperationCancellation(ownedCancellation);
             Interlocked.Exchange(ref operationRunning, 0);
             SetOperation(false, null);
         }
@@ -504,12 +518,17 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     private async Task DownloadAndValidateAsync(CancellationToken cancellationToken)
     {
         if (SelectedFirmware is null || IsOperationInProgress) return;
+        using var ownedCancellation = BeginOperationCancellation(cancellationToken);
         try
         {
             SetOperation(true, FirmwareOperationState.Downloading);
-            PreparedFirmware = await preparationService.PrepareAsync(new(SelectedFirmware.Entry), new Progress<FirmwareProgress>(UpdateProgress), cancellationToken);
+            PreparedFirmware = await preparationService.PrepareAsync(new(SelectedFirmware.Entry), new Progress<FirmwareProgress>(UpdateProgress), ownedCancellation.Token);
             OnPropertyChanged(nameof(HasPreparedFirmware));
             StatusMessage = PreparedFirmware.WasCacheHit ? "Validated cached firmware package." : "Firmware downloaded and validated.";
+        }
+        catch (OperationCanceledException) when (ownedCancellation.IsCancellationRequested)
+        {
+            StatusMessage = "Firmware download and validation cancelled.";
         }
         catch (Exception exception)
         {
@@ -518,8 +537,31 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         }
         finally
         {
+            EndOperationCancellation(ownedCancellation);
             SetOperation(false, null);
         }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanRequestCancellation))]
+    private void Cancel()
+    {
+        if (IsCatalogRefreshRunning)
+        {
+            CancelRefresh();
+            StatusMessage = "Firmware catalogue refresh cancelled.";
+        }
+
+        var cancellation = operationCancellation;
+        if (cancellation is null || cancellation.IsCancellationRequested)
+            return;
+
+        IsCancellationDeferred = CurrentOperationState is FirmwareOperationState.Erasing or
+            FirmwareOperationState.Programming or FirmwareOperationState.Verifying or FirmwareOperationState.Rebooting;
+        StatusMessage = IsCancellationDeferred
+            ? "Cancellation requested. The flash will continue through verify and reboot before stopping at a safe boundary. Do not disconnect power."
+            : "Cancelling firmware operation…";
+        cancellation.Cancel();
+        CancelCommand.NotifyCanExecuteChanged();
     }
 
     [RelayCommand]
@@ -533,10 +575,15 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     private void SetOperation(bool active, FirmwareOperationState? stage)
     {
         IsOperationInProgress = active;
+        CurrentOperationState = stage;
+        if (!active)
+            IsCancellationDeferred = false;
         OnPropertyChanged(nameof(CanNavigateAway));
+        OnPropertyChanged(nameof(CanRequestCancellation));
         ApplyMode(stage);
         InstallCommand.NotifyCanExecuteChanged();
         UpdateBootloaderCommand.NotifyCanExecuteChanged();
+        CancelCommand.NotifyCanExecuteChanged();
     }
 
     private void ApplyMode(FirmwareOperationState? stage = null)
@@ -559,12 +606,28 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
 
     private void UpdateProgress(FirmwareProgress progress)
     {
+        CurrentOperationState = progress.State;
         OperationProgress.Stage = StageText(progress);
         OperationProgress.Progress = (progress.Percentage ?? 0) / 100d;
         OperationProgress.HasPercentage = progress.Percentage.HasValue;
         OperationProgress.IsPowerCritical = progress.State is FirmwareOperationState.Erasing or FirmwareOperationState.Programming or FirmwareOperationState.Verifying;
         OperationProgress.TechnicalDetail = progress.TechnicalDetail;
         StatusMessage = OperationProgress.Stage;
+    }
+
+    private CancellationTokenSource BeginOperationCancellation(CancellationToken cancellationToken)
+    {
+        var owned = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, lifetime?.Token ?? CancellationToken.None);
+        operationCancellation = owned;
+        IsCancellationDeferred = false;
+        return owned;
+    }
+
+    private void EndOperationCancellation(CancellationTokenSource owned)
+    {
+        if (ReferenceEquals(operationCancellation, owned))
+            operationCancellation = null;
+        CancelCommand.NotifyCanExecuteChanged();
     }
 
     private static string StageText(FirmwareProgress progress)
