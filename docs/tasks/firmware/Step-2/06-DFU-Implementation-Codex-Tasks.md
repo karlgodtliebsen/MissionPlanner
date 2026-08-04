@@ -116,6 +116,8 @@ Acceptance:
 
 # Task 2 — Implement Intel HEX parser/inspector
 
+Status: Completed on 2026-08-04. The platform-neutral inspector now performs bounded ASCII/HEX parsing, supports record types 00 through 05 required by the workflow, validates checksums, shapes, EOF, address overflow, duplicate and overlapping data, and applies configurable STM32 internal-flash, data-size, source-size, and span limits. It returns SHA-256 provenance and compact sorted ranges with separately stated bootloader/application evidence; malformed artifacts fail before any provider boundary.
+
 Create a bounded Intel HEX parser.
 
 Support records needed for STM32 firmware inspection:

@@ -98,6 +98,10 @@ Direct serial installation is enabled for Windows desktop, the first supported h
 
 The firmware page includes a keyboard-accessible Help & Support area whose essential guidance is compiled into the application and remains usable offline. It explains exact-target selection, release risk, APJ/PX4/HEX and bootloader image types, serial installation versus STM32 ROM DFU, boot entry, Windows enumeration, driver/tool priority, platform limits, recovery, and diagnostic evidence. External destinations come from one HTTPS-only curated catalogue and supplement rather than replace embedded instructions. Windows Device Manager is launched only through a host service and is hidden on other platforms. Context guidance is derived from typed presentation evidence rather than raw exception messages.
 
+## DFU artifact inspection
+
+Every DFU Intel HEX artifact is parsed before it can reach an external programming provider. The platform-neutral inspector bounds encoded input, unique data bytes, and represented address span; validates record structure, checksums, EOF, address arithmetic, duplicates, and overlaps; and rejects data outside a configurable conservative STM32 internal-flash range. It returns compact sorted ranges rather than allocating sparse address gaps. Bootloader and application-region flags are evidence for later target-safety decisions, never proof of the connected board identity.
+
 ## Troubleshooting
 
 - Catalogue unavailable: retry Refresh; a valid cached catalogue may be shown as stale.

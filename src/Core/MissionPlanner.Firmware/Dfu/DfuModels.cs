@@ -142,7 +142,8 @@ public sealed record DfuArtifactMetadata(
     IReadOnlyList<string> Warnings,
     uint? EntryAddress = null,
     bool AppearsToContainBootloader = false,
-    DateTimeOffset? InspectedAt = null);
+    DateTimeOffset? InspectedAt = null,
+    bool AppearsToContainApplication = false);
 
 /// <summary>Represents a locally available, inspected DFU artifact.</summary>
 public sealed record DfuArtifact(

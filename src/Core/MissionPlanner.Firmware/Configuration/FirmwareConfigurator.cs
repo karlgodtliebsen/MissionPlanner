@@ -9,6 +9,7 @@ using MissionPlanner.Firmware.Connected;
 using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Discovery;
 using MissionPlanner.Firmware.Downloads;
+using MissionPlanner.Firmware.Dfu;
 using MissionPlanner.Firmware.Entry;
 using MissionPlanner.Firmware.Images;
 using MissionPlanner.Firmware.Installation;
@@ -41,6 +42,13 @@ public static class FirmwareConfigurator
         ArgumentNullException.ThrowIfNull(services);
 
         var firmwareOptions = services.AddOptions<FirmwareOptions>(); //as long as we are not using appsettings.json, we can use this to configure the options directly in code.
+        services.AddOptions<DfuOptions>()
+            .Validate(value => value.MaximumIntelHexSourceBytes > 0, "MaximumIntelHexSourceBytes must be positive.")
+            .Validate(value => value.MaximumIntelHexDataBytes > 0, "MaximumIntelHexDataBytes must be positive.")
+            .Validate(value => value.MaximumIntelHexAddressSpan > 0, "MaximumIntelHexAddressSpan must be positive.")
+            .Validate(value => value.Stm32FlashEndAddressExclusive > value.Stm32FlashStartAddress, "The STM32 flash policy range must be positive.")
+            .Validate(value => value.ExpectedApplicationStartAddress > value.Stm32FlashStartAddress && value.ExpectedApplicationStartAddress < value.Stm32FlashEndAddressExclusive, "ExpectedApplicationStartAddress must lie inside the STM32 flash policy range.")
+            .ValidateOnStart();
         //If we were using appsettings.json, we would use services.Configure<FirmwareOptions>(configuration.GetSection(FirmwareOptions.SectionName));
         if (options is not null)
         {
@@ -72,6 +80,7 @@ public static class FirmwareConfigurator
             .ValidateOnStart();
 
         services.TryAddSingleton<IFirmwareOperationCoordinator, FirmwareOperationCoordinator>();
+        services.TryAddSingleton<IIntelHexInspector, IntelHexInspector>();
         services.TryAddSingleton(TimeProvider.System);
         services.AddHttpClient(FirmwareHttpClient.Name, (serviceProvider, client) =>
             {
