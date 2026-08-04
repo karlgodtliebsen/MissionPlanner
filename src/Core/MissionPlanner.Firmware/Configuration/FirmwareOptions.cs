@@ -68,6 +68,12 @@ public sealed class FirmwareOptions
     /// <summary>Gets or sets the maximum encoded artifact download size.</summary>
     public long MaximumArtifactBytes { get; set; } = 64L * 1024 * 1024;
 
+    /// <summary>Gets or sets the maximum durable artifact-cache size.</summary>
+    public long ArtifactCacheQuotaBytes { get; set; } = 512L * 1024 * 1024;
+
+    /// <summary>Gets or sets the maximum age of an unused cached artifact.</summary>
+    public TimeSpan ArtifactCacheMaximumAge { get; set; } = TimeSpan.FromDays(90);
+
     /// <summary>Gets or sets whether non-HTTPS artifact URLs are allowed for controlled development.</summary>
     public bool AllowInsecureArtifactUrls { get; set; }
 }

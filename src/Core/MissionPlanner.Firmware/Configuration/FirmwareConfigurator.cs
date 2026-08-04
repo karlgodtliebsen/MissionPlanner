@@ -67,6 +67,8 @@ public static class FirmwareConfigurator
             .Validate(value => value.TemporaryMavLinkHeartbeatTimeout > TimeSpan.Zero, "TemporaryMavLinkHeartbeatTimeout must be positive.")
             .Validate(value => value.TemporaryMavLinkCommandAckTimeout > TimeSpan.Zero, "TemporaryMavLinkCommandAckTimeout must be positive.")
             .Validate(value => value.MaximumArtifactBytes > 0, "MaximumArtifactBytes must be positive.")
+            .Validate(value => value.ArtifactCacheQuotaBytes > 0, "ArtifactCacheQuotaBytes must be positive.")
+            .Validate(value => value.ArtifactCacheMaximumAge > TimeSpan.Zero, "ArtifactCacheMaximumAge must be positive.")
             .ValidateOnStart();
 
         services.TryAddSingleton<IFirmwareOperationCoordinator, FirmwareOperationCoordinator>();

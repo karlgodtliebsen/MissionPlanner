@@ -1,25 +1,35 @@
+using System.Text.Json;
+using System.Collections.Concurrent;
+using Microsoft.Extensions.Options;
+using MissionPlanner.Firmware.Configuration;
+
 namespace MissionPlanner.Firmware.Downloads;
 
-/// <summary>Provides atomic local artifact storage behind the storage abstraction.</summary>
-public sealed class FileSystemFirmwareArtifactStore : IFirmwareArtifactStore
+/// <summary>Stores artifact data and metadata as atomically published cache directories.</summary>
+public sealed class FileSystemFirmwareArtifactStore(
+    IFirmwareCachePathProvider paths,
+    IOptions<FirmwareOptions> options,
+    TimeProvider timeProvider) : IFirmwareArtifactStore
 {
-    private readonly string root = Path.Combine(Path.GetTempPath(), "MissionPlanner", "FirmwareArtifacts");
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> KeyGates = new(StringComparer.Ordinal);
+    private readonly string root = Path.Combine(paths.CacheRoot, "artifacts");
 
     /// <inheritdoc />
-    public Task<IFirmwareStoredArtifact?> TryGetAsync(string cacheKey, CancellationToken cancellationToken = default)
+    public async Task<IFirmwareStoredArtifact?> TryGetAsync(string cacheKey, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var data = DataPath(cacheKey);
-        var metadata = MetadataPath(cacheKey);
-        if (!File.Exists(data) || !File.Exists(metadata)) return Task.FromResult<IFirmwareStoredArtifact?>(null);
+        var directory = EntryDirectory(cacheKey);
         try
         {
-            var fields = File.ReadAllLines(metadata);
-            if (fields.Length != 5) return Task.FromResult<IFirmwareStoredArtifact?>(null);
-            var model = new FirmwareArtifactMetadata(fields[0], new Uri(fields[1]), DateTimeOffset.Parse(fields[2], null, System.Globalization.DateTimeStyles.RoundtripKind), long.Parse(fields[3]), fields[4]);
-            return Task.FromResult<IFirmwareStoredArtifact?>(new Stored(data, model));
+            var metadataPath = Path.Combine(directory, "metadata.json");
+            var dataPath = Path.Combine(directory, "artifact.bin");
+            if (!File.Exists(metadataPath) || !File.Exists(dataPath)) return null;
+            await using var metadataStream = new FileStream(metadataPath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.Asynchronous);
+            var metadata = await JsonSerializer.DeserializeAsync<FirmwareArtifactMetadata>(metadataStream, cancellationToken: cancellationToken).ConfigureAwait(false);
+            if (metadata is null || metadata.CacheKey != cacheKey || new FileInfo(dataPath).Length != metadata.Size) return null;
+            return new Stored(dataPath, metadata);
         }
-        catch (Exception exception) when (exception is IOException or FormatException or UriFormatException) { return Task.FromResult<IFirmwareStoredArtifact?>(null); }
+        catch (Exception exception) when (exception is IOException or JsonException or UnauthorizedAccessException) { return null; }
     }
 
     /// <inheritdoc />
@@ -27,15 +37,70 @@ public sealed class FileSystemFirmwareArtifactStore : IFirmwareArtifactStore
     {
         cancellationToken.ThrowIfCancellationRequested();
         Directory.CreateDirectory(root);
-        var path = Path.Combine(root, $"{cacheKey}.{Guid.NewGuid():N}.partial");
-        IFirmwareArtifactWriter writer = new Writer(this, cacheKey, path, new FileStream(path, FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 81920, FileOptions.Asynchronous));
+        var directory = Path.Combine(root, $".{cacheKey}.{Guid.NewGuid():N}.partial");
+        Directory.CreateDirectory(directory);
+        IFirmwareArtifactWriter writer = new Writer(this, cacheKey, directory,
+            new FileStream(Path.Combine(directory, "artifact.bin"), FileMode.CreateNew, FileAccess.ReadWrite, FileShare.None, 81920, FileOptions.Asynchronous | FileOptions.WriteThrough));
         return Task.FromResult(writer);
     }
 
-    private string DataPath(string key) => Path.Combine(root, $"{key}.bin");
-    private string MetadataPath(string key) => Path.Combine(root, $"{key}.meta");
+    /// <inheritdoc />
+    public async Task<IReadOnlyList<FirmwareArtifactCacheEntry>> EnumerateAsync(CancellationToken cancellationToken = default)
+    {
+        if (!Directory.Exists(root)) return [];
+        var entries = new List<FirmwareArtifactCacheEntry>();
+        foreach (var directory in Directory.EnumerateDirectories(root).Where(path => !Path.GetFileName(path).StartsWith('.')))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (await TryGetAsync(Path.GetFileName(directory), cancellationToken).ConfigureAwait(false) is { } stored)
+                entries.Add(new(stored.Metadata, directory));
+        }
+        return entries;
+    }
 
-    private sealed class Writer(FileSystemFirmwareArtifactStore owner, string key, string path, FileStream stream) : IFirmwareArtifactWriter
+    /// <inheritdoc />
+    public Task<bool> RemoveAsync(string cacheKey, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var directory = EntryDirectory(cacheKey);
+        if (!Directory.Exists(directory)) return Task.FromResult(false);
+        Directory.Delete(directory, true);
+        return Task.FromResult(true);
+    }
+
+    /// <inheritdoc />
+    public async Task CleanupAsync(CancellationToken cancellationToken = default)
+    {
+        if (!Directory.Exists(root)) return;
+        foreach (var partial in Directory.EnumerateDirectories(root, ".*.partial")) Directory.Delete(partial, true);
+        var entries = (await EnumerateAsync(cancellationToken).ConfigureAwait(false)).OrderByDescending(entry => entry.Metadata.DownloadedAt).ToArray();
+        long retained = 0;
+        foreach (var entry in entries)
+        {
+            var expired = timeProvider.GetUtcNow() - entry.Metadata.DownloadedAt > options.Value.ArtifactCacheMaximumAge;
+            if (expired || checked(retained + entry.Metadata.Size) > options.Value.ArtifactCacheQuotaBytes)
+                await RemoveAsync(entry.Metadata.CacheKey, cancellationToken).ConfigureAwait(false);
+            else retained += entry.Metadata.Size;
+        }
+    }
+
+    private string EntryDirectory(string key) => Path.Combine(root, key);
+
+    private async Task<IFirmwareStoredArtifact> PublishAsync(string key, string directory, FirmwareArtifactMetadata metadata, CancellationToken cancellationToken)
+    {
+        var keyGate = KeyGates.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
+        await keyGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            var destination = EntryDirectory(key);
+            if (Directory.Exists(destination)) Directory.Delete(destination, true);
+            Directory.Move(directory, destination);
+            return new Stored(Path.Combine(destination, "artifact.bin"), metadata);
+        }
+        finally { keyGate.Release(); }
+    }
+
+    private sealed class Writer(FileSystemFirmwareArtifactStore owner, string key, string directory, FileStream stream) : IFirmwareArtifactWriter
     {
         private bool committed;
         public Stream Stream => stream;
@@ -44,16 +109,15 @@ public sealed class FileSystemFirmwareArtifactStore : IFirmwareArtifactStore
             if (committed) throw new InvalidOperationException("Artifact writer is already committed.");
             await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
             stream.Dispose();
-            var destination = owner.DataPath(key);
-            File.Move(path, destination, true);
-            await File.WriteAllLinesAsync(owner.MetadataPath(key), [metadata.CacheKey, metadata.SourceUri.AbsoluteUri, metadata.DownloadedAt.ToString("O"), metadata.Size.ToString(System.Globalization.CultureInfo.InvariantCulture), metadata.Sha256], cancellationToken).ConfigureAwait(false);
+            await File.WriteAllTextAsync(Path.Combine(directory, "metadata.json"), JsonSerializer.Serialize(metadata), cancellationToken).ConfigureAwait(false);
+            var stored = await owner.PublishAsync(key, directory, metadata, cancellationToken).ConfigureAwait(false);
             committed = true;
-            return new Stored(destination, metadata);
+            return stored;
         }
         public ValueTask DisposeAsync()
         {
             stream.Dispose();
-            if (!committed) File.Delete(path);
+            if (!committed && Directory.Exists(directory)) Directory.Delete(directory, true);
             return ValueTask.CompletedTask;
         }
     }
@@ -64,8 +128,7 @@ public sealed class FileSystemFirmwareArtifactStore : IFirmwareArtifactStore
         public Task<Stream> OpenReadAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            Stream result = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan);
-            return Task.FromResult(result);
+            return Task.FromResult<Stream>(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan));
         }
     }
 }

@@ -54,6 +54,8 @@ APJ and PX4 GCS packages are JSON containers. Parsing checks their magic, declar
 
 `IFirmwarePreparationService` provides the non-destructive Download & Validate boundary. It downloads or reuses the immutable cache artifact, reparses it, verifies the manifest/package board ID, and returns package sizes, SHA-256, timestamp, cache identity, and warnings without depending on device discovery or serial services. Install Validated Firmware passes the prepared package directly to installation and does not redownload it.
 
+Artifact storage uses the injected durable firmware cache root rather than `%TEMP%`. Each entry is staged in a private partial directory and published only after both bytes and JSON metadata are durable. Reads recheck metadata size and the downloader rechecks SHA-256/package validity. The store exposes enumeration and removal, cleans orphan partials, serializes same-key publication, and applies configurable age and byte-quota retention.
+
 The catalogue cache layers an in-process value over a durable host-selected cache root. It persists source URI, ETag, Last-Modified, retrieval time, content, and schema version through an atomic replacement. A new process can reuse a fresh manifest or its HTTP validators; corrupt and incompatible cache records are ignored, while `FirmwareCatalogService` retains a valid stale entry when refresh fails.
 
 Manifest and artifact traffic uses the named `MissionPlanner.Firmware` client with a configurable MissionPlanner User-Agent, bounded request timeout, bounded connection establishment, and gzip/deflate decompression. Manifest and artifact readers still enforce independent streaming byte limits and propagate caller cancellation. Large artifact downloads have no automatic retry policy.

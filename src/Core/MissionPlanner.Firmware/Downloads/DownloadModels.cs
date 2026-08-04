@@ -16,3 +16,6 @@ public sealed record DownloadedFirmwareArtifact(
     ApjFirmwarePackage Package,
     FirmwareArtifactMetadata Metadata,
     bool FromCache);
+
+/// <summary>Describes one removable cached artifact without exposing a required platform path.</summary>
+public sealed record FirmwareArtifactCacheEntry(FirmwareArtifactMetadata Metadata, string? DiagnosticPath = null);

@@ -19,6 +19,12 @@ public interface IFirmwareArtifactStore
     Task<IFirmwareStoredArtifact?> TryGetAsync(string cacheKey, CancellationToken cancellationToken = default);
     /// <summary>Creates a temporary writer invisible to cache readers.</summary>
     Task<IFirmwareArtifactWriter> CreateTemporaryAsync(string cacheKey, CancellationToken cancellationToken = default);
+    /// <summary>Enumerates valid committed cache entries.</summary>
+    Task<IReadOnlyList<FirmwareArtifactCacheEntry>> EnumerateAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<FirmwareArtifactCacheEntry>>([]);
+    /// <summary>Removes one committed cache entry.</summary>
+    Task<bool> RemoveAsync(string cacheKey, CancellationToken cancellationToken = default) => Task.FromResult(false);
+    /// <summary>Removes partial, corrupt, expired, and over-quota entries.</summary>
+    Task CleanupAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
 }
 
 /// <summary>Represents an atomically committed artifact.</summary>

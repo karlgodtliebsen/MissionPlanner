@@ -426,6 +426,8 @@ Preserve unknown future fields where reasonable.
 
 # Task 8 — Harden artifact cache
 
+Status: Completed on 2026-08-04. Artifact data and metadata now publish together as an atomic directory under the injected durable cache root. Cache reuse revalidates size, SHA-256, and package content; enumeration/removal, partial cleanup, same-key serialization, age expiry, and quota cleanup are available and tested.
+
 ## Changes
 
 1. Replace `%TEMP%` with an injected durable application-cache root.
