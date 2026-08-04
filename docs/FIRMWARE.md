@@ -102,7 +102,7 @@ Direct serial installation is enabled for Windows desktop, the first supported h
 - Flash completed but reconnect not detected: reconnect manually and select the newly enumerated port. The flash itself remains successful.
 - Embedded update denied/unsupported: preserve the reported ACK outcome and verify the vehicle family, disarmed state, firmware support, and permissions.
 
-The operator procedure and evidence record for the required physical F4/H7 validation is maintained in [Hardware smoke test](tasks/firmware/Hardware%20smoke%20test.md). Pending entries are not release evidence.
+Run the [Firmware Download user protocol](tasks/firmware/Step-2/02-Firmware-Download-User-Test-Protocol.md) first to validate catalogue, target, package, cache, offline, and cancellation behavior without hardware. The separate operator procedure and evidence record for required physical F4/H7 validation is maintained in [Hardware smoke test](tasks/firmware/Hardware%20smoke%20test.md). Pending entries are not release evidence.
 
 ## Diagnostics and attribution
 

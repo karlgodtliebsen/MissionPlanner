@@ -522,6 +522,8 @@ If cancellation is requested during a destructive stage:
 
 # Task 11 — Update tests, documentation and user protocol
 
+Status: Completed on 2026-08-04. The no-hardware user protocol now uses Download & Validate as its primary path and records current automated expectations. The firmware guide, automated test matrix, and hardware smoke procedure link the protocol and distinguish non-destructive package acceptance from physical flashing evidence.
+
 Update:
 
 ```text

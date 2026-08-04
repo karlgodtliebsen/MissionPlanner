@@ -58,16 +58,17 @@ Never paste firmware images, private signing material, or unrelated device ident
 
 ## Procedure
 
-1. Start Mission Planner at the recorded commit with no active vehicle connection. Confirm the firmware page detects the application-mode controller and reports its USB identity.
-2. Select the matching Stable catalogue entry. Confirm the displayed platform and firmware board ID before continuing.
-3. Start installation and capture the final confirmation, detected bootloader identity, both COM ports, operation ID, and diagnostic report.
-4. Keep power connected through erase, program, verify, and reboot. A test passes only if protocol verification succeeds; rediscovery is recorded separately.
-5. Repeat with a locally selected matching `.apj` package.
-6. Repeat the successful catalogue upload once to exercise serial-resource cleanup and a second complete transition.
-7. Select a known wrong-board APJ and verify it is rejected after bootloader identification but before erase. Confirm no destructive protocol call occurred.
-8. Exercise the manual unplug/replug prompt and record whether bootloader discovery resumes on the same or a different COM port.
-9. Reconnect normally, keep the vehicle disarmed, run the separately confirmed embedded Bootloader Update action on a supported controller, and record the exact ACK outcome. Reboot only according to the controller documentation.
-10. If any destructive-stage failure occurs, stop normal testing, preserve logs and the diagnostic report, and follow the manufacturer's documented recovery procedure.
+1. Complete the no-hardware [Firmware Download — User Test Protocol](Step-2/02-Firmware-Download-User-Test-Protocol.md) for the exact catalogue target and record its validated package metadata before connecting hardware.
+2. Start Mission Planner at the recorded commit with no active vehicle connection. Confirm the firmware page detects the application-mode controller and reports its USB identity.
+3. Select the matching Stable catalogue entry. Confirm the displayed platform and firmware board ID before continuing.
+4. Start installation and capture the final confirmation, detected bootloader identity, both COM ports, operation ID, and diagnostic report.
+5. Keep power connected through erase, program, verify, and reboot. A test passes only if protocol verification succeeds; rediscovery is recorded separately.
+6. Repeat with a locally selected matching `.apj` package.
+7. Repeat the successful catalogue upload once to exercise serial-resource cleanup and a second complete transition.
+8. Select a known wrong-board APJ and verify it is rejected after bootloader identification but before erase. Confirm no destructive protocol call occurred.
+9. Exercise the manual unplug/replug prompt and record whether bootloader discovery resumes on the same or a different COM port.
+10. Reconnect normally, keep the vehicle disarmed, run the separately confirmed embedded Bootloader Update action on a supported controller, and record the exact ACK outcome. Reboot only according to the controller documentation.
+11. If any destructive-stage failure occurs, stop normal testing, preserve logs and the diagnostic report, and follow the manufacturer's documented recovery procedure.
 
 ## Completion gate
 

@@ -68,13 +68,20 @@
                 </Border>
 
                 <Border Padding="16" StrokeShape="RoundRectangle 8">
-                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
                         <Label Text="Selected firmware" FontAttributes="Bold" />
                         <Label Grid.Row="1" Text="{Binding SelectedFirmware.Platform, StringFormat='Platform: {0}'}" />
                         <Label Grid.Row="2" Text="{Binding SelectedFirmware.BoardId, StringFormat='Firmware board ID: {0}'}" />
                         <Label Grid.Row="3" Text="{Binding SelectedFirmware.Version, StringFormat='Version: {0}'}" />
                         <Label Grid.Row="4" Text="{Binding SelectedFirmware.Channel, StringFormat='Channel: {0}'}" />
-                        <VerticalStackLayout Grid.Column="1" Grid.RowSpan="5" VerticalOptions="Center" Spacing="6">
+                        <Label Grid.Row="5" Text="{Binding SelectedFirmware.VehicleType, StringFormat='Vehicle: {0}'}" />
+                        <Label Grid.Row="6" Text="{Binding SelectedFirmware.Manufacturer, StringFormat='Manufacturer: {0}'}" />
+                        <Label Grid.Row="7" Text="{Binding SelectedFirmware.GitSha, StringFormat='Git SHA: {0}'}" />
+                        <Label Grid.Row="8" Text="{Binding SelectedFirmware.Format, StringFormat='Format: {0}'}" />
+                        <Label Grid.Row="9" Text="{Binding SelectedFirmware.ArtifactUrl, StringFormat='Source: {0}'}" LineBreakMode="CharacterWrap" />
+                        <Label Grid.Row="10" Text="{Binding SelectedFirmware.UsbIdentifiers, StringFormat='USB IDs: {0}'}" />
+                        <Label Grid.Row="11" Text="{Binding SelectedFirmware.BootloaderAliases, StringFormat='Bootloader aliases: {0}'}" />
+                        <VerticalStackLayout Grid.Column="1" Grid.RowSpan="12" VerticalOptions="Center" Spacing="6">
                             <Button Text="Download &amp; Validate" Command="{Binding DownloadAndValidateCommand}" />
                             <Button Text="Install Validated Firmware" Command="{Binding InstallCommand}" IsEnabled="{Binding CanInstall}" />
                             <Button Text="Copy Download URL" Command="{Binding CopyDownloadUrlCommand}" />
@@ -85,10 +92,25 @@
                     <VerticalStackLayout>
                         <Label Text="Validated package" FontAttributes="Bold" />
                         <Label Text="{Binding PreparedFirmware.PackageBoardId, StringFormat='Package board ID: {0}'}" />
+                        <Label Text="{Binding PreparedFirmware.Package.Description, StringFormat='Description: {0}'}" />
+                        <Label Text="{Binding PreparedFirmware.Package.Summary, StringFormat='Platform summary: {0}'}" />
+                        <Label Text="{Binding PreparedFirmware.Package.Version, StringFormat='Package version: {0}'}" />
+                        <Label Text="{Binding PreparedFirmware.Package.GitIdentity, StringFormat='Package build: {0}'}" />
                         <Label Text="{Binding PreparedFirmware.InternalImageSize, StringFormat='Internal image: {0:N0} bytes'}" />
                         <Label Text="{Binding PreparedFirmware.ExternalImageSize, StringFormat='External image: {0:N0} bytes'}" />
                         <Label Text="{Binding PreparedFirmware.Sha256, StringFormat='SHA-256: {0}'}" />
+                        <Label Text="{Binding PreparedFirmware.ArtifactMetadata.Size, StringFormat='Downloaded bytes: {0:N0}'}" />
+                        <Label Text="{Binding PreparedFirmware.ArtifactMetadata.DownloadedAt, StringFormat='Downloaded at: {0:u}'}" />
+                        <Label Text="{Binding PreparedFirmware.ArtifactMetadata.SourceUri, StringFormat='Source: {0}'}" LineBreakMode="CharacterWrap" />
+                        <Label Text="{Binding PreparedFirmware.CacheIdentity, StringFormat='Cache ID: {0}'}" LineBreakMode="CharacterWrap" />
                         <Label Text="{Binding PreparedFirmware.WasCacheHit, StringFormat='Cache hit: {0}'}" />
+                        <CollectionView ItemsSource="{Binding PreparedFirmware.Warnings}" EmptyView="No validation warnings.">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Label Text="{Binding ., StringFormat='Warning: {0}'}" />
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
                     </VerticalStackLayout>
                 </Border>
                 <Label Text="Detected device" FontAttributes="Bold" />
