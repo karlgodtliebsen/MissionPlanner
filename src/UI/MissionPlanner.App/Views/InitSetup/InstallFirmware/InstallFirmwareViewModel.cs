@@ -33,6 +33,9 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     private readonly IDispatcher dispatcher;
     private CancellationTokenSource? lifetime;
     private int operationRunning;
+    private IReadOnlyList<FirmwareManifestEntry> availableEntries = [];
+    private IReadOnlyList<SerialDeviceDescriptor> availableDevices = [];
+    private bool showingAllOptions;
 
     /// <summary>Initializes the firmware page.</summary>
     public InstallFirmwareViewModel(
@@ -79,6 +82,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     [ObservableProperty] public partial FirmwareReleaseChannel SelectedChannel { get; set; } = FirmwareReleaseChannel.Stable;
     [ObservableProperty] public partial FirmwareCatalogItemViewModel? SelectedFirmware { get; set; }
     [ObservableProperty] public partial FirmwareDeviceItemViewModel? SelectedDevice { get; set; }
+    [ObservableProperty] public partial string? TargetSearchText { get; set; }
     [ObservableProperty] public partial ApjFirmwarePackage? CustomPackage { get; private set; }
     [ObservableProperty] public partial string? CustomFirmwareName { get; private set; }
     [ObservableProperty] public partial string? CustomFirmwareDescription { get; private set; }
@@ -152,6 +156,8 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             _ = RefreshAsync(false, lifetime.Token);
         }
     }
+
+    partial void OnTargetSearchTextChanged(string? value) => ApplyTargetQuery();
 
     [RelayCommand]
     private Task RefreshCatalogAsync()
@@ -330,22 +336,11 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
                 new FirmwareCatalogRequest(Channel: allOptions ? null : SelectedChannel, ForceRefresh: forceRefresh),
                 cancellationToken);
             var devices = await deviceCatalog.GetDevicesAsync(cancellationToken);
-            var choices = catalog.Entries
-                .Where(entry => entry.Target.VehicleType != FirmwareVehicleType.Unknown &&
-                                entry.Artifact.Format is FirmwareImageFormat.Apj or FirmwareImageFormat.Px4)
-                .GroupBy(entry => allOptions ? $"{entry.Target.VehicleType}:{entry.Target.Platform}:{entry.Target.BoardId}" : entry.Target.VehicleType.ToString())
-                .Select(group => group.FirstOrDefault(entry =>
-                    entry.Target.UsbIdentifiers.Any(expected => devices.Any(device => device.UsbIdentifier == expected))) ?? group.First())
-                .OrderBy(item => item.Target.VehicleType).ThenBy(item => item.Target.Platform)
-                .Select(item => new FirmwareCatalogItemViewModel(item))
-                .ToArray();
-            FirmwareChoices.Clear();
-            foreach (var choice in choices)
-            {
-                FirmwareChoices.Add(choice);
-            }
-
-            SelectedFirmware = choices.FirstOrDefault();
+            availableEntries = catalog.Entries.Where(entry => entry.Target.VehicleType != FirmwareVehicleType.Unknown &&
+                entry.Artifact.Format is FirmwareImageFormat.Apj or FirmwareImageFormat.Px4).ToArray();
+            availableDevices = devices;
+            showingAllOptions = allOptions;
+            ApplyTargetQuery();
             CustomPackage = null;
             OnPropertyChanged(nameof(HasCustomFirmware));
 
@@ -380,6 +375,22 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             logger.LogError(exception, "Firmware catalogue refresh failed.");
             StatusMessage = exception.Message;
         }
+    }
+
+    private void ApplyTargetQuery()
+    {
+        var recommendations = FirmwareTargetSelector.Query(availableEntries,
+            new FirmwareTargetQuery(ReleaseChannel: showingAllOptions ? null : SelectedChannel, SearchText: TargetSearchText),
+            availableDevices, SelectedFirmware?.BoardId);
+        FirmwareChoices.Clear();
+        foreach (var recommendation in recommendations)
+        {
+            FirmwareChoices.Add(new FirmwareCatalogItemViewModel(recommendation));
+        }
+
+        var automatic = FirmwareTargetSelector.UnambiguousHighConfidence(recommendations);
+        SelectedFirmware = automatic is null ? null : FirmwareChoices.Single(item => ReferenceEquals(item.Entry, automatic.Entry));
+        InstallCommand.NotifyCanExecuteChanged();
     }
 
     private void OnActiveVehicleChanged(object? sender, Core.Vehicles.ActiveVehicleChangedEventArgs e)

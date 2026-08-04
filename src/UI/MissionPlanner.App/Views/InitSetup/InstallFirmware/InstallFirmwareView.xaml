@@ -30,6 +30,8 @@
                     <Button Text="Load Custom Firmware" Command="{Binding LoadCustomFirmwareCommand}" />
                 </HorizontalStackLayout>
 
+                <Entry Text="{Binding TargetSearchText}" Placeholder="Search platform, manufacturer, brand, or board ID" />
+
                 <CollectionView ItemsSource="{Binding FirmwareChoices}" SelectionMode="None" EmptyView="No releases are available for this channel.">
                     <CollectionView.ItemsLayout>
                         <GridItemsLayout Orientation="Vertical" Span="3" HorizontalItemSpacing="12" VerticalItemSpacing="12" />
@@ -44,7 +46,9 @@
                                     <Label Text="{Binding VehicleType}" FontSize="20" FontAttributes="Bold" />
                                     <Label Text="{Binding Version}" />
                                     <Label Text="{Binding Platform}" FontSize="12" />
+                                    <Label Text="{Binding Manufacturer}" FontSize="12" />
                                     <Label Text="{Binding BoardId, StringFormat='Board ID {0}'}" FontSize="12" />
+                                    <Label Text="{Binding MatchReason}" FontSize="12" FontAttributes="Italic" />
                                 </VerticalStackLayout>
                             </Border>
                         </DataTemplate>

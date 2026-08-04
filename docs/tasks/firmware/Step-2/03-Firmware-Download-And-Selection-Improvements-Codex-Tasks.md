@@ -128,6 +128,8 @@ Add a strong preference for selected/newly arrived device in bootloader discover
 
 # Task 3 — Replace first-item firmware selection
 
+Status: Completed on 2026-08-04. `FirmwareTargetSelector` provides typed filters, evidence reasons, and confidence; the UI displays every matching platform and never falls back to the first vehicle-family item. Search covers platform, manufacturer/brand, and board ID, while automatic selection requires exactly one current high-confidence hardware match.
+
 ## Problem
 
 The current view model groups normal choices by vehicle type and selects the first item when no USB match is found. It also selects the first resulting choice automatically.
