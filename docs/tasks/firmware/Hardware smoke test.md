@@ -1,6 +1,6 @@
 # Firmware hardware smoke-test record
 
-Status: **Partially executed — F4 preflight/entry tested but blocked by the absence of an ArduPilot serial bootloader; H7 hardware is still required.**
+Status: **First-release hardware criterion met on an F4 controller; extended F4 scenarios and H7 coverage remain pending.**
 
 This record is intentionally separate from CI. Complete it on Windows with expendable or recoverable test hardware, stable USB power, a known-good data cable, and access to the board's documented recovery method. Do not test on an installed or armed vehicle. Remove propellers and disconnect actuators before starting.
 
@@ -23,18 +23,20 @@ Never paste firmware images, private signing material, or unrelated device ident
 
 | Field | Result |
 |---|---|
-| Controller and revision | OMNIBUSF4SD / STM32F405; application reports ArduCopter 4.8.0-dev (`3a98d087`) |
+| Controller and revision | SpeedyBee F405 target (previously identified by Betaflight as OMNIBUSF4SD) / STM32F405; ArduPilot bootloader revision 5 |
 | Test date / operator | 2026-08-04 / Karl Godtliebsen with Codex harness |
-| Mission Planner commit | `4e3e8db55` (entry/discovery fixes through this commit) |
-| Stable catalogue upload | Blocked before erase: official `omnibusf4` Stable 4.7.0 APJ, board ID 1002, could not be used because no serial bootloader answered |
-| Custom APJ upload | Pending |
-| Application → bootloader transition | Not available through the supported serial workflow. BOOT/BOOT0 enters STM32 ROM DFU; DFU/HEX bootloader installation is future scope. |
-| Bootloader → application rediscovery | Pending |
+| Mission Planner commit | `a2b8ea37d` |
+| USB/application identity | `1209:5741`, serial `5B002E000951353332343134`, `ArduPilot (COM11)` |
+| Stable catalogue upload | Pending; the earlier official `omnibusf4` board-ID 1002 candidate was correctly rejected as incompatible with this board-ID 134 target |
+| Custom APJ upload | **Passed.** Local `arducopter.apj`, board ID 134, Git identity `1511f271`, 848,336-byte image, 983,040-byte maximum |
+| Application → bootloader transition | **Passed.** Temporary MAVLink reboot returned `Accepted`; the device disappeared and returned on COM11 with the same stable USB identity; bootloader identified board 134 before confirmation/erase |
+| Bootloader → application rediscovery | **Passed.** Application returned on COM11 with the same VID/PID, USB serial, and stable device path |
 | Repeated upload | Pending |
-| Wrong-board package blocked before erase | Pending |
-| Manual unplug/replug fallback | Prompt and resumed discovery exercised; same COM11 application device remained, but no protocol-compatible bootloader was present |
+| Wrong-board package blocked before erase | Pre-erase board-ID guards were exercised with the board-ID 1002 catalogue candidate; destructive protocol was not entered |
+| Manual unplug/replug fallback | Prompt/resume and live PnP removal/arrival detection exercised; successful upload used automatic MAVLink entry |
 | Connected embedded-bootloader update | Pending |
-| Diagnostic report / operation IDs | Representative final pre-write result: `8de14620-9228-4ae6-af0c-8aa3dd3ae55e`, `installation.device-not-found`; all attempts stopped before erase |
+| Diagnostic report / operation IDs | **Completed:** `5e431412-621b-42db-b904-c49729f29422`; detected board 134; bootloader revision 5; 848,336 bytes programmed; verification succeeded; elapsed 15.753 s |
+| Recovery method | STM32 ROM DFU through BOOT/BOOT0 is known working; operator previously restored Betaflight and installed `arducopter_with_bl.hex` through original Mission Planner |
 
 ## H7 controller
 
@@ -68,4 +70,4 @@ Never paste firmware images, private signing material, or unrelated device ident
 
 ## Completion gate
 
-The firmware first-release hardware criterion is met only when the F4 and H7 tables contain real successful evidence for the applicable scenarios. Pending entries, simulated transports, or the skipped `FirmwareHardwareTests` theory do not satisfy that criterion.
+The firmware task's first-release hardware criterion requires at least one real supported controller to complete a documented Windows erase/program/verify/reboot cycle. The F4 result above satisfies that gate. The F4 repeated-upload and connected-update scenarios and the full H7 table remain explicit extended hardware-matrix work; simulated transports or the skipped `FirmwareHardwareTests` theory do not count as evidence for those pending rows.

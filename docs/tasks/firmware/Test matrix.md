@@ -10,13 +10,13 @@ Verified on 2026-08-04 on branch `feature/firmware`.
 - Presentation contracts: connected/disconnected/operation/unsupported modes, navigation policy, command gates, Stable/Beta/Latest channel model, all-options filtering, custom package parsing, confirmation adapter, and bootloader interaction codes.
 - Recovery/diagnostics: USB identity across port changes, missing returning application as non-fatal, and bounded copyable reports.
 
-`MissionPlanner.Firmware.Tests`: 101 passed, 1 skipped manual-hardware theory, 0 failed. The test project is hardware-independent and CI-safe. The added audit cases cover the current official manifest schema and bounded compressed retrieval, artifacts without encoded length, isolated temporary MAVLink reboot ACK outcomes, same-port application-to-bootloader replacement, stronger returning-device identity matching, and non-cancellable destructive protocol tokens after confirmation.
+`MissionPlanner.Firmware.Tests`: 106 passed, 1 skipped manual-hardware theory, 0 failed. The test project is hardware-independent and CI-safe. The added audit cases cover the current official manifest schema and bounded compressed retrieval, artifacts without encoded length, isolated temporary MAVLink reboot ACK outcomes, same-port application-to-bootloader replacement, stronger returning-device identity matching, non-cancellable destructive protocol tokens after confirmation, and revision-five identification without an unsafe optional external-flash probe.
 
 ## Manual hardware category
 
 `FirmwareHardwareTests` is marked `Category=ManualHardware` and skipped unless an operator deliberately converts/runs the scenario under a hardware safety procedure. It records F4, H7, port-change, repeated-upload, mismatch, unplug/replug, and embedded-bootloader-update checks. No CI job requires a physical controller.
 
-The operator checklist and evidence fields are in [Hardware smoke test](Hardware%20smoke%20test.md). Its F4 and H7 records remain explicitly pending; no physical result has been inferred from simulated coverage.
+The operator checklist and evidence fields are in [Hardware smoke test](Hardware%20smoke%20test.md). A real F4 board-ID 134 erase/program/verify/reboot cycle passed on Windows; extended F4 scenarios and H7 coverage remain explicitly pending. No physical result is inferred from simulated coverage.
 
 ## Repository regression results
 
