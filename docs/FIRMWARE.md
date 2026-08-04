@@ -118,6 +118,12 @@ Official DFU artifacts are derived only from a selected normalized manifest entr
 
 DFU target safety is evaluated separately from artifact validity. It blocks an absent explicit platform, invalid HEX evidence, known artifact/manifest platform or board mismatch, a clearly bootloader-only image in normal install mode, data beyond reported internal flash, and configured known MCU/flash incompatibility. An STM32 device ID is compatibility evidence only: different flight-controller PCBs commonly share an MCU, so an MCU match never proves the selected ArduPilot platform. Without a remembered association that binds the same previous application identity, DFU USB serial, platform, and board ID, the result remains `AllowedWithStrongWarning` and requires the exact phrase `FLASH <platform>`. A matching remembered association can produce `Allowed`; known conflicts always produce `Blocked` and cannot be overridden by confirmation.
 
+## DFU installation orchestration
+
+`IDfuInstallationService` owns the complete DFU use case and shares the process-wide firmware-operation lease with serial installation. It refuses to start while the normal vehicle connection owns a transport, validates CubeProgrammer availability, resolves and inspects the exact HEX artifact, reselects and inspects the requested USB DFU device, applies target safety, and asks for final confirmation before starting the vendor process. The host cancellation token is freely honored before programming. During program and immediate verify it is passed to the provider only when that provider explicitly reports safe cancellation support; otherwise cancellation is recorded and handled at the next safe boundary without killing CubeProgrammer.
+
+After successful verification the workflow uses only a documented detach capability, otherwise it asks the operator to reset or power-cycle. DFU disappearance and application serial rediscovery are separate bounded observations. The structured result deliberately keeps programming and verification success independent from application rediscovery: a verified flash remains successful when no application port returns, with a reconnect warning and the operation ID and provider evidence preserved for diagnostics. The synthetic serial descriptor used for rediscovery carries only the DFU USB identity as transition evidence; DFU is never modeled as a COM port and no bootloader transport object is reused.
+
 ## Troubleshooting
 
 - Catalogue unavailable: retry Refresh; a valid cached catalogue may be shown as stale.

@@ -60,6 +60,8 @@ public static class FirmwareConfigurator
             .Validate(value => value.DefaultUsbProductId > 0, "DefaultUsbProductId must be positive.")
             .Validate(value => value.AcceptedWindowsDriverServices is { Length: > 0 } && value.AcceptedWindowsDriverServices.All(service => !string.IsNullOrWhiteSpace(service)), "At least one accepted Windows DFU driver service is required.")
             .Validate(value => value.DevicePollInterval > TimeSpan.Zero, "DevicePollInterval must be positive.")
+            .Validate(value => value.DfuDisappearanceTimeout > TimeSpan.Zero, "DfuDisappearanceTimeout must be positive.")
+            .Validate(value => value.DfuApplicationRediscoveryTimeout > TimeSpan.Zero, "DfuApplicationRediscoveryTimeout must be positive.")
             .Validate(value => value.MaximumIntelHexSourceBytes > 0, "MaximumIntelHexSourceBytes must be positive.")
             .Validate(value => value.MaximumIntelHexDataBytes > 0, "MaximumIntelHexDataBytes must be positive.")
             .Validate(value => value.MaximumIntelHexAddressSpan > 0, "MaximumIntelHexAddressSpan must be positive.")
@@ -123,6 +125,7 @@ public static class FirmwareConfigurator
             serviceProvider.GetRequiredService<TimeProvider>()));
         services.TryAddSingleton<IDfuArtifactResolver, DfuArtifactResolver>();
         services.TryAddSingleton<IDfuTargetSafetyService, DfuTargetSafetyService>();
+        services.TryAddSingleton<IDfuInstallationService, DfuInstallationService>();
         services.TryAddSingleton<IWindowsUsbDeviceChangeNotifier>(serviceProvider =>
             OperatingSystem.IsWindows() ? new WindowsUsbRegistryChangeNotifier() : new PollingDfuDeviceChangeNotifier());
         services.TryAddSingleton<IDfuDeviceCatalog>(serviceProvider =>

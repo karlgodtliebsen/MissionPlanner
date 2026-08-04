@@ -185,7 +185,9 @@ public sealed record DfuProgrammingResult(
     DfuFailure? Failure = null,
     string? ProviderLog = null,
     int? ExitCode = null,
-    DfuProgrammingOutcome Outcome = DfuProgrammingOutcome.ProgrammingFailed);
+    DfuProgrammingOutcome Outcome = DfuProgrammingOutcome.ProgrammingFailed,
+    Guid? OperationId = null,
+    IReadOnlyList<string>? Warnings = null);
 
 /// <summary>Identifies the conservative outcome of a provider program-and-verify operation.</summary>
 public enum DfuProgrammingOutcome
@@ -219,7 +221,9 @@ public sealed record DfuInstallationRequest(
     Uri? ArtifactSource = null,
     string? ConfirmationPhrase = null,
     MissionPlanner.Firmware.Model.FirmwareManifestEntry? ManifestEntry = null,
-    string? LocalHexPath = null);
+    string? LocalHexPath = null,
+    MissionPlanner.Firmware.Model.SerialDeviceDescriptor? PreviousApplicationDevice = null,
+    DfuRememberedAssociation? RememberedAssociation = null);
 
 /// <summary>Contains one timestamped external-provider output line.</summary>
 public sealed record DfuProcessOutput(DateTimeOffset Timestamp, bool IsError, string Text);

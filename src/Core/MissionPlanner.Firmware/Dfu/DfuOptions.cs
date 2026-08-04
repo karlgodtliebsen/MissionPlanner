@@ -45,6 +45,12 @@ public sealed class DfuOptions
     /// <summary>Gets or sets the maximum interval between fallback DFU device snapshots.</summary>
     public TimeSpan DevicePollInterval { get; set; } = TimeSpan.FromSeconds(2);
 
+    /// <summary>Gets or sets the bounded wait for the programmed DFU device to disappear.</summary>
+    public TimeSpan DfuDisappearanceTimeout { get; set; } = TimeSpan.FromSeconds(30);
+
+    /// <summary>Gets or sets the bounded wait for application serial rediscovery after DFU.</summary>
+    public TimeSpan DfuApplicationRediscoveryTimeout { get; set; } = TimeSpan.FromSeconds(45);
+
     /// <summary>Gets or sets the maximum encoded Intel HEX input size.</summary>
     public long MaximumIntelHexSourceBytes { get; set; } = 16 * 1024 * 1024;
 

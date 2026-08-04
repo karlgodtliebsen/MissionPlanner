@@ -43,3 +43,12 @@ public sealed record DfuTargetSafetyResult(
     DfuTargetSafetyDecision Decision,
     IReadOnlyList<string> EvidenceCodes,
     string? RequiredConfirmationPhrase = null);
+
+/// <summary>Repeats exact DFU target, device, artifact, and safety evidence at final confirmation.</summary>
+public sealed record DfuInstallationConfirmation(
+    string Platform,
+    int? BoardId,
+    DfuDeviceDescriptor Device,
+    DfuDeviceInformation DeviceInformation,
+    DfuArtifact Artifact,
+    DfuTargetSafetyResult Safety);

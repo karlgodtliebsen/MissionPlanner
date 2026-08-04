@@ -453,6 +453,8 @@ Tests cover shared MCU across different board platforms.
 
 # Task 9 — Implement DFU installation orchestrator
 
+Status: Completed on 2026-08-05. `DfuInstallationService` now owns the safety-ordered workflow under the shared global firmware-operation lease: it rejects an active normal connection, validates the provider, resolves and inspects the HEX, reselects and inspects the exact USB device and driver, evaluates target safety, confirms the evidence, programs and verifies, requests a documented detach or acknowledged power cycle, observes DFU disappearance, and performs bounded application rediscovery. Cancellation remains free before provider execution and is deferred to a safe boundary when the provider cannot safely cancel. Results preserve the operation ID and provider evidence while separating verified programming from application rediscovery; a missing returning serial device is a successful flash with a reconnect warning. Focused tests cover completion, missing application, driver rejection, and rejected confirmation.
+
 Create a separate orchestrator:
 
 ```csharp
