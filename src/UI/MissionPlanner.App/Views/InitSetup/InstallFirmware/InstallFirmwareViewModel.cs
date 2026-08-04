@@ -131,6 +131,8 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     [ObservableProperty] public partial bool IsCancellationDeferred { get; private set; }
     [ObservableProperty] public partial FirmwareOperationState? CurrentOperationState { get; private set; }
     [ObservableProperty] public partial bool IsHelpVisible { get; private set; }
+    [ObservableProperty] public partial FirmwareContextHelp ContextHelp { get; private set; } =
+        FirmwareContextHelpResolver.Resolve(new FirmwareSupportContext(SerialDevicePresent: false));
 
     /// <summary>Gets whether the current non-terminal work accepts a cancellation request.</summary>
     public bool CanRequestCancellation => IsCatalogRefreshRunning || IsOperationInProgress;
@@ -188,6 +190,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
 
     partial void OnSelectedChannelChanged(FirmwareReleaseChannel value)
     {
+        UpdateContextHelp();
         if (lifetime is not null && IsDisconnectedMode)
         {
             _ = RefreshAsync(false, lifetime.Token);
@@ -260,6 +263,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             OnPropertyChanged(nameof(HasCustomFirmware));
             InstallCommand.NotifyCanExecuteChanged();
             StatusMessage = "Custom firmware parsed and validated. Connect the target in bootloader mode to install.";
+            UpdateContextHelp();
         }
         catch (Exception exception)
         {
@@ -431,6 +435,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
                             ? $"Recommended device: {SelectedDevice}"
                             : "Select the flight controller explicitly.";
                 StatusMessage = catalog.IsStale ? "Showing cached firmware catalogue" : $"{FirmwareChoices.Count} vehicle firmware choices available";
+                UpdateContextHelp();
             });
         }
         catch (OperationCanceledException) when (refreshToken.IsCancellationRequested) { }
@@ -552,6 +557,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         {
             logger.LogWarning(exception, "Firmware preparation failed.");
             StatusMessage = exception.Message;
+            UpdateContextHelp(exception is MissionPlanner.Firmware.Exceptions.FirmwarePackageException);
         }
         finally
         {
@@ -657,6 +663,16 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         if (ReferenceEquals(operationCancellation, owned))
             operationCancellation = null;
         CancelCommand.NotifyCanExecuteChanged();
+    }
+
+    private void UpdateContextHelp(bool packageBoardMismatch = false)
+    {
+        ContextHelp = FirmwareContextHelpResolver.Resolve(new FirmwareSupportContext(
+            SerialDevicePresent: DetectedDevices.Count > 0,
+            TargetAmbiguous: FirmwareChoices.Count > 0 && SelectedFirmware is null,
+            PackageBoardMismatch: packageBoardMismatch,
+            Channel: SelectedChannel,
+            CustomPackageSelected: CustomPackage is not null));
     }
 
     private static string StageText(FirmwareProgress progress)

@@ -135,6 +135,12 @@
             </Border>
             <Button Text="Cancel" Command="{Binding CancelCommand}" IsVisible="{Binding IsCatalogRefreshRunning}" HorizontalOptions="Start" />
             <Label Text="{Binding StatusMessage}" />
+            <Border Padding="14" StrokeShape="RoundRectangle 8">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="{Binding ContextHelp.Title}" FontAttributes="Bold" />
+                    <Label Text="{Binding ContextHelp.Content}" />
+                </VerticalStackLayout>
+            </Border>
             <VerticalStackLayout IsVisible="{Binding HasDiagnosticReport}" Spacing="6">
                 <Label Text="Diagnostic report" FontAttributes="Bold" />
                 <Editor Text="{Binding LastDiagnosticReport}" IsReadOnly="True" AutoSize="TextChanges" />

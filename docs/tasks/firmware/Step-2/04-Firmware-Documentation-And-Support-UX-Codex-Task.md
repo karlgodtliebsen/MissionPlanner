@@ -208,6 +208,8 @@ Explain:
 
 # Task 3 — Add context-sensitive help
 
+Status: Completed on 2026-08-04. `FirmwareContextHelpResolver` separates actionable user guidance from technical errors and prioritizes board mismatch, DFU/driver/tool state, ambiguity, custom provenance, release risk, missing serial devices, and normal installation. The firmware page updates its guidance as channel, target, device, custom-package, and validation state changes; future DFU diagnostics can supply the already-defined DFU evidence flags.
+
 Examples:
 
 - If no serial device: show standard cable/driver/Device Manager help.

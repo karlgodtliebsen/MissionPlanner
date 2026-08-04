@@ -1,5 +1,6 @@
 using FluentAssertions;
 using MissionPlanner.App.Views.InitSetup.InstallFirmware;
+using MissionPlanner.Firmware.Model;
 
 namespace MissionPlanner.Core.Tests;
 
@@ -30,5 +31,36 @@ public sealed class FirmwareSupportLinkTests
 
         create.Should().Throw<ArgumentException>().WithMessage("*HTTPS*");
         await launch.Should().ThrowAsync<ArgumentException>().WithMessage("*HTTPS*");
+    }
+
+    [Theory]
+    [InlineData(true, false, false, true, false, false, FirmwareReleaseChannel.Stable, false, "*_with_bl.hex")]
+    [InlineData(false, true, false, true, false, false, FirmwareReleaseChannel.Stable, false, "Zadig")]
+    [InlineData(false, false, true, true, false, false, FirmwareReleaseChannel.Stable, false, "exact hardware target")]
+    [InlineData(false, false, false, false, true, false, FirmwareReleaseChannel.Stable, false, "does not match")]
+    [InlineData(false, false, false, true, false, false, FirmwareReleaseChannel.Latest, false, "development build")]
+    [InlineData(false, false, false, true, false, false, FirmwareReleaseChannel.Stable, true, "provenance")]
+    public void ContextHelpPrioritizesActionableGuidance(
+        bool dfuPresent,
+        bool wrongDriver,
+        bool ambiguous,
+        bool serialPresent,
+        bool boardMismatch,
+        bool cubeProgrammerAvailable,
+        FirmwareReleaseChannel channel,
+        bool custom,
+        string expected)
+    {
+        var help = FirmwareContextHelpResolver.Resolve(new FirmwareSupportContext(
+            dfuPresent,
+            cubeProgrammerAvailable,
+            wrongDriver,
+            serialPresent,
+            ambiguous,
+            boardMismatch,
+            channel,
+            custom));
+
+        (help.Title + " " + help.Content).Should().Contain(expected);
     }
 }

@@ -1,9 +1,53 @@
 using System.Diagnostics;
+using MissionPlanner.Firmware.Model;
 
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
 /// <summary>Contains one offline firmware-help section.</summary>
 public sealed record FirmwareSupportSection(string Title, string Content);
+
+/// <summary>Captures presentation evidence used to choose concise contextual guidance.</summary>
+public sealed record FirmwareSupportContext(
+    bool DfuDevicePresent = false,
+    bool CubeProgrammerAvailable = true,
+    bool WrongDfuDriver = false,
+    bool SerialDevicePresent = true,
+    bool TargetAmbiguous = false,
+    bool PackageBoardMismatch = false,
+    FirmwareReleaseChannel Channel = FirmwareReleaseChannel.Stable,
+    bool CustomPackageSelected = false);
+
+/// <summary>Contains one context-sensitive help result.</summary>
+public sealed record FirmwareContextHelp(string Title, string Content, FirmwareSupportCategory? LinkCategory = null);
+
+/// <summary>Maps current firmware evidence to user guidance without exposing exception text.</summary>
+public static class FirmwareContextHelpResolver
+{
+    /// <summary>Returns the highest-priority guidance for the supplied context.</summary>
+    public static FirmwareContextHelp Resolve(FirmwareSupportContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        if (context.PackageBoardMismatch)
+            return new("Firmware target does not match", "Compare the manifest and package board IDs, then select the exact hardware platform. Compatibility cannot be overridden before erase.", FirmwareSupportCategory.ArduPilot);
+        if (context.WrongDfuDriver)
+            return new("DFU driver needs attention", "Verify the STM32 BOOTLOADER VID/PID in Device Manager. Install STM32CubeProgrammer and its bundled driver first; use Zadig only as a clearly identified fallback.", FirmwareSupportCategory.DriverFallback);
+        if (context.DfuDevicePresent && !context.CubeProgrammerAvailable)
+            return new("STM32 DFU device detected", "Install STM32CubeProgrammer before continuing. For initial ArduPilot installation, confirm the exact target and choose its *_with_bl.hex image.", FirmwareSupportCategory.StMicroelectronics);
+        if (context.DfuDevicePresent)
+            return new("STM32 DFU device detected", "Use the DFU workflow rather than serial APJ installation. Confirm the exact target before selecting *_with_bl.hex.", FirmwareSupportCategory.StMicroelectronics);
+        if (context.TargetAmbiguous)
+            return new("Identify the exact hardware target", "Vehicle family is not sufficient. Search the printed board/platform name and compare board ID, USB identity, and bootloader aliases before selecting firmware.", FirmwareSupportCategory.ArduPilot);
+        if (context.CustomPackageSelected)
+            return new("Custom firmware provenance", "Confirm the package source, board ID, features, and build identity. Compatibility and provenance are your responsibility.", FirmwareSupportCategory.ArduPilot);
+        if (context.Channel == FirmwareReleaseChannel.Latest)
+            return new("Latest is a development build", "Use Latest only for experienced testing. Prefer Stable for normal operation and preserve a recovery path.", FirmwareSupportCategory.ArduPilot);
+        if (context.Channel == FirmwareReleaseChannel.Beta)
+            return new("Beta may contain defects", "Beta supports wider pre-release testing. Prefer Stable unless you intend to test and report issues.", FirmwareSupportCategory.ArduPilot);
+        if (!context.SerialDevicePresent)
+            return new("No serial flight controller detected", "Check a data-capable cable, power, boot mode, and Device Manager. STM32 ROM DFU is a USB device and normally is not a COM port.");
+        return new("Standard serial installation", "Confirm the exact board target, use Download & Validate first, and keep power connected through erase, programming, verification, and reboot.");
+    }
+}
 
 /// <summary>Provides concise offline guidance for firmware selection and recovery.</summary>
 public static class FirmwareSupportContent
