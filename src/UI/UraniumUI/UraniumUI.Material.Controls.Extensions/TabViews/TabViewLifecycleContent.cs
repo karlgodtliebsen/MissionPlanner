@@ -1,26 +1,13 @@
 ﻿namespace UraniumUI.Material.TabViews;
 
 /// <summary>
-/// 
-/// </summary>
-public interface ITabViewLifecycleContent
-{
-    /// <summary>
-    /// 
-    /// </summary>
-    void Activate();
-
-    /// <summary>
-    /// 
-    /// </summary>
-    void Deactivate();
-}
-
-/// <summary>
 /// A ContentView that participates in the lifecycle of a TabView.
 /// </summary>
 public class TabViewLifecycleContent<TViewModel> : ContentView, ITabViewLifecycleContent where TViewModel : class, IDisposable
 {
+    /// <summary>
+    /// The view model associated with this ContentView.
+    /// </summary>
     protected TViewModel? ViewModel;
 
     /// <summary>
@@ -38,6 +25,7 @@ public class TabViewLifecycleContent<TViewModel> : ContentView, ITabViewLifecycl
     /// </summary>
     public virtual void Deactivate()
     {
+        BindingContext = null;
         ViewModel?.Dispose();
         ViewModel = null;
     }

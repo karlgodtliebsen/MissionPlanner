@@ -59,10 +59,11 @@ boundary without turning high-rate domain state into presentation lifecycle noti
 Views and services that need live telemetry subscribe to `VehicleStateUpdated` directly for their
 active lifetime; they do not use `IActiveVehicleContext.Changed` as a telemetry stream.
 
-Flight Data tabs compose `FlightDataTabLifecycle`: expensive initialization runs once on the first
-online activation, connection-bound subscriptions are recreated after reconnect, and all background
-work is cancelled and disposed when a tab is hidden. `ApplicationStateService` also derives its
-vehicle identity and connection flag from this context so application chrome and pages share one source.
+Flight Data uses `LifecycleTabView`. Selecting a tab activates its lifecycle content, which constructs
+and binds a fresh transient view model; leaving the tab disposes that view model. Each view model therefore
+owns its subscriptions and background work for one simple construction-to-disposal lifetime.
+`ApplicationStateService` also derives its vehicle identity and connection flag from the active vehicle
+context so application chrome and pages share one source.
 
 ---
 

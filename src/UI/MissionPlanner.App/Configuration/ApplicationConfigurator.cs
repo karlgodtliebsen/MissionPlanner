@@ -156,9 +156,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<HudViewModel>();
         services.TryAddTransient<MissionMapViewModel>();
 
-        //Tabs on FlightDataView
-        // The concrete view-model and lifecycle registrations must resolve to the
-        // same instance; otherwise FlightDataViewModel would activate a hidden VM.
+        // Tabs on FlightDataView
         services.TryAddTransient<QuickTabViewModel>();
         services.TryAddTransient<ActionsTabViewModel>();
         services.TryAddTransient<MessagesTabViewModel>();
@@ -172,20 +170,6 @@ public static class ApplicationConfigurator
         services.TryAddTransient<PayloadControlTabViewModel>();
         services.TryAddTransient<TelemetryLogsTabViewModel>();
         services.TryAddTransient<DataFlashLogsTabViewModel>();
-
-        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<ActionsTabViewModel>());
-        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<QuickTabViewModel>());
-        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<MessagesTabViewModel>());
-        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<PreflightTabViewModel>());
-        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<GaugesTabViewModel>());
-        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<TransponderTabViewModel>());
-        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<StatusTabViewModel>());
-        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<ServoRelayTabViewModel>());
-        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<AuxFunctionTabViewModel>());
-        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<ScriptsTabViewModel>());
-        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<PayloadControlTabViewModel>());
-        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<TelemetryLogsTabViewModel>());
-        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<DataFlashLogsTabViewModel>());
 
         services.TryAddTransient<AdvancedViewModel>();
         services.TryAddTransient<InstallFirmwareViewModel>();

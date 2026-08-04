@@ -15,7 +15,6 @@ public sealed partial class TelemetryLogsTabViewModel : ObservableObject, IDispo
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IDispatcher dispatcher;
     private readonly ILogger<TelemetryLogsTabViewModel> logger;
-    //private readonly FlightDataTabLifecycle lifecycle;
 
     /// <summary>Initializes the telemetry-log playback view model.</summary>
     /// <param name="replaySessionManager">Read-only replay session coordinator.</param>

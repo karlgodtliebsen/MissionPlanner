@@ -19,7 +19,7 @@ using NSubstitute;
 namespace MissionPlanner.Core.Tests;
 
 /// <summary>
-/// Verifies the shared active-vehicle and Flight Data tab lifecycle infrastructure.
+/// Verifies the shared active-vehicle and Flight Data dependency infrastructure.
 /// </summary>
 public sealed class FlightDataInfrastructureTests
 {
@@ -131,106 +131,6 @@ public sealed class FlightDataInfrastructureTests
     }
 
     /// <summary>
-    /// Verifies that reconnecting replaces and disposes work tied to the previous connection lifetime.
-    /// </summary>
-    [Fact]
-    public async Task ReconnectDoesNotRetainDisposedConnectionWork()
-    {
-        var fixture = CreateContextFixture();
-        using var context = fixture.Context;
-        await fixture.Connected!(new VehicleConnected(fixture.Session.Id, "UDP", "14550", DateTimeOffset.UtcNow), TestContext.Current.CancellationToken);
-        var starts = 0;
-        var disposals = 0;
-        await using var lifecycle = new FlightDataTabLifecycle(
-            "Test",
-            context,
-            startAsync: _ =>
-            {
-                starts++;
-                return Task.FromResult<IDisposable?>(new CallbackDisposable(() => disposals++));
-            });
-
-        await lifecycle.ActivateAsync(TestContext.Current.CancellationToken);
-        await fixture.Disconnected!(new VehicleDisconnected(fixture.Session.Id, DateTimeOffset.UtcNow), TestContext.Current.CancellationToken);
-        await lifecycle.WhenSettledAsync();
-        await fixture.Connected!(new VehicleConnected(fixture.Session.Id, "UDP", "14550", DateTimeOffset.UtcNow), TestContext.Current.CancellationToken);
-        await lifecycle.WhenSettledAsync();
-
-        starts.Should().Be(2);
-        disposals.Should().Be(1);
-        await lifecycle.DeactivateAsync();
-        disposals.Should().Be(2);
-    }
-
-    /// <summary>
-    /// Verifies deterministic lazy initialization and activation/deactivation behavior.
-    /// </summary>
-    [Fact]
-    public async Task TabLifecycleStartsAndStopsDeterministically()
-    {
-        var fixture = CreateContextFixture();
-        using var context = fixture.Context;
-        await fixture.Connected!(new VehicleConnected(fixture.Session.Id, "UDP", "14550", DateTimeOffset.UtcNow), TestContext.Current.CancellationToken);
-        var initializations = 0;
-        var starts = 0;
-        var disposals = 0;
-        await using var lifecycle = new FlightDataTabLifecycle(
-            "Test",
-            context,
-            _ =>
-            {
-                initializations++;
-                return Task.CompletedTask;
-            },
-            _ =>
-            {
-                starts++;
-                return Task.FromResult<IDisposable?>(new CallbackDisposable(() => disposals++));
-            });
-
-        await lifecycle.ActivateAsync(TestContext.Current.CancellationToken);
-        await lifecycle.ActivateAsync(TestContext.Current.CancellationToken);
-        await lifecycle.DeactivateAsync();
-        await lifecycle.DeactivateAsync();
-        await lifecycle.ActivateAsync(TestContext.Current.CancellationToken);
-
-        initializations.Should().Be(1);
-        starts.Should().Be(2);
-        disposals.Should().Be(1);
-        lifecycle.IsActive.Should().BeTrue();
-        lifecycle.IsInitialized.Should().BeTrue();
-    }
-
-    /// <summary>
-    /// Verifies non-vehicle tabs, such as Telemetry Logs, can run while no live vehicle is connected.
-    /// </summary>
-    [Fact]
-    public async Task TabLifecycleCanActivateWithoutOnlineVehicleWhenConfigured()
-    {
-        var fixture = CreateContextFixture();
-        using var context = fixture.Context;
-        var starts = 0;
-        var disposals = 0;
-        await using var lifecycle = new FlightDataTabLifecycle(
-            "Offline",
-            context,
-            startAsync: _ =>
-            {
-                starts++;
-                return Task.FromResult<IDisposable?>(new CallbackDisposable(() => disposals++));
-            },
-            requiresOnlineVehicle: false);
-
-        await lifecycle.ActivateAsync(TestContext.Current.CancellationToken);
-        await lifecycle.DeactivateAsync();
-
-        starts.Should().Be(1);
-        disposals.Should().Be(1);
-        lifecycle.IsInitialized.Should().BeTrue();
-        lifecycle.IsActive.Should().BeFalse();
-    }
-
-    /// <summary>
     /// Verifies that the application dependency graph resolves every current Flight Data view model and shared service.
     /// </summary>
     [Fact]
@@ -301,19 +201,4 @@ public sealed class FlightDataInfrastructureTests
         Func<VehicleDisconnected, CancellationToken, Task>? Disconnected,
         Func<VehicleStateUpdated, CancellationToken, Task>? Updated);
 
-    private sealed class CallbackDisposable(Action callback) : IDisposable
-    {
-        private bool disposed;
-
-        public void Dispose()
-        {
-            if (disposed)
-            {
-                return;
-            }
-
-            disposed = true;
-            callback();
-        }
-    }
 }

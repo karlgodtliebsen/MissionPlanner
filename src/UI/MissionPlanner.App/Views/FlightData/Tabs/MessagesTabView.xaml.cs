@@ -23,8 +23,8 @@ public partial class MessagesTabView : TabViewLifecycleContent<MessagesTabViewMo
     /// <inheritdoc />
     public override void Deactivate()
     {
-        base.Deactivate();
         ViewModel?.PropertyChanged -= OnViewModelPropertyChanged;
+        base.Deactivate();
     }
 
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)

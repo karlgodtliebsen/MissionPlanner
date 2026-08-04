@@ -19,6 +19,7 @@ public class LifecycleTabView : TabView
     {
         if (current != null)
         {
+            current.Content.IsEnabled = false;
             var lifecycleContent = current.Content as ITabViewLifecycleContent;
             lifecycleContent?.Deactivate();
         }
@@ -26,5 +27,6 @@ public class LifecycleTabView : TabView
         var newLifecycleContent = e.Content as ITabViewLifecycleContent;
         newLifecycleContent?.Activate();
         current = e;
+        current.Content.IsEnabled = true;
     }
 }
