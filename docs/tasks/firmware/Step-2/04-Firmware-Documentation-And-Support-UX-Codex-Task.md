@@ -93,6 +93,8 @@ Validate URI scheme and restrict to HTTPS.
 
 # Task 2 — Add firmware Help/Support sections
 
+Status: Completed on 2026-08-04. The firmware page now exposes offline-first target, channel, file-type, serial-versus-DFU, boot-mode, Device Manager, driver-order, platform, and recovery guidance. Curated links launch through the HTTPS-only host abstraction, and a Windows-only host service opens Device Manager without adding platform behavior to the firmware core.
+
 Add a Help or Documentation tab/expander/card group to the firmware page.
 
 Recommended sections:

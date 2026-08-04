@@ -33,6 +33,8 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     private readonly ILogger<InstallFirmwareViewModel> logger;
     private readonly IUserConfirmationService confirmation;
     private readonly IDispatcher dispatcher;
+    private readonly IExternalLinkLauncher externalLinkLauncher;
+    private readonly IDeviceManagerLauncher deviceManagerLauncher;
     private readonly object refreshSync = new();
     private CancellationTokenSource? lifetime;
     private CancellationTokenSource? refreshCancellation;
@@ -55,6 +57,9 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         IFirmwareFilePicker filePicker,
         IActiveVehicleContext activeVehicle,
         IUserConfirmationService confirmation,
+        IFirmwareSupportLinkProvider supportLinkProvider,
+        IExternalLinkLauncher externalLinkLauncher,
+        IDeviceManagerLauncher deviceManagerLauncher,
         IDispatcher dispatcher,
         ILogger<InstallFirmwareViewModel> logger)
     {
@@ -68,6 +73,9 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         this.filePicker = filePicker;
         this.activeVehicle = activeVehicle;
         this.confirmation = confirmation;
+        SupportLinks = supportLinkProvider.GetLinks();
+        this.externalLinkLauncher = externalLinkLauncher;
+        this.deviceManagerLauncher = deviceManagerLauncher;
         this.dispatcher = dispatcher;
         this.logger = logger;
         ActivateAsync().FireAndForget();
@@ -86,6 +94,15 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
 
     /// <summary>Gets operation progress.</summary>
     public FirmwareProgressViewModel OperationProgress { get; } = new();
+
+    /// <summary>Gets concise help that remains available offline.</summary>
+    public IReadOnlyList<FirmwareSupportSection> SupportSections { get; } = FirmwareSupportContent.Sections;
+
+    /// <summary>Gets curated official and fallback support destinations.</summary>
+    public IReadOnlyList<FirmwareSupportLink> SupportLinks { get; }
+
+    /// <summary>Gets whether this host can open Windows Device Manager.</summary>
+    public bool CanOpenDeviceManager => deviceManagerLauncher.IsAvailable;
 
     [ObservableProperty] public partial FirmwareReleaseChannel SelectedChannel { get; set; } = FirmwareReleaseChannel.Stable;
     [ObservableProperty] public partial FirmwareCatalogItemViewModel? SelectedFirmware { get; set; }
@@ -113,6 +130,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     [ObservableProperty] public partial bool IsCatalogRefreshRunning { get; private set; }
     [ObservableProperty] public partial bool IsCancellationDeferred { get; private set; }
     [ObservableProperty] public partial FirmwareOperationState? CurrentOperationState { get; private set; }
+    [ObservableProperty] public partial bool IsHelpVisible { get; private set; }
 
     /// <summary>Gets whether the current non-terminal work accepts a cancellation request.</summary>
     public bool CanRequestCancellation => IsCatalogRefreshRunning || IsOperationInProgress;
@@ -566,6 +584,17 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
 
     [RelayCommand]
     private Task CopyDownloadUrlAsync() => SelectedFirmware is null ? Task.CompletedTask : Clipboard.Default.SetTextAsync(SelectedFirmware.Entry.Artifact.DownloadUri.AbsoluteUri);
+
+    [RelayCommand]
+    private Task OpenSupportLinkAsync(FirmwareSupportLink link, CancellationToken cancellationToken) =>
+        externalLinkLauncher.OpenAsync(link.Uri, cancellationToken);
+
+    [RelayCommand]
+    private Task OpenDeviceManagerAsync(CancellationToken cancellationToken) =>
+        deviceManagerLauncher.OpenAsync(cancellationToken);
+
+    [RelayCommand]
+    private void ToggleHelp() => IsHelpVisible = !IsHelpVisible;
 
     private void OnActiveVehicleChanged(object? sender, Core.Vehicles.ActiveVehicleChangedEventArgs e)
     {

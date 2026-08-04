@@ -257,6 +257,9 @@ public sealed class FirmwarePresentationTests
             picker,
             Substitute.For<IActiveVehicleContext>(),
             Substitute.For<IUserConfirmationService>(),
+            new FirmwareSupportLinkProvider(),
+            Substitute.For<IExternalLinkLauncher>(),
+            Substitute.For<IDeviceManagerLauncher>(),
             ImmediateDispatcher(),
             NullLogger<InstallFirmwareViewModel>.Instance);
     }

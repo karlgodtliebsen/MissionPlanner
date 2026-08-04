@@ -175,6 +175,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<InstallFirmwareViewModel>();
         services.TryAddSingleton<IFirmwareSupportLinkProvider, FirmwareSupportLinkProvider>();
         services.TryAddSingleton<IExternalLinkLauncher, ExternalLinkLauncher>();
+        services.TryAddSingleton<IDeviceManagerLauncher, DeviceManagerLauncher>();
         services.TryAddTransient<OptionalHardwareViewModel>();
 
         services.TryAddTransient<FlightDataViewModel>();

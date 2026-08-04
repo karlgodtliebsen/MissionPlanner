@@ -140,6 +140,41 @@
                 <Editor Text="{Binding LastDiagnosticReport}" IsReadOnly="True" AutoSize="TextChanges" />
                 <Button Text="Copy diagnostic report" Command="{Binding CopyDiagnosticReportCommand}" HorizontalOptions="Start" />
             </VerticalStackLayout>
+
+            <Button Text="Help &amp; Support" Command="{Binding ToggleHelpCommand}" HorizontalOptions="Start"
+                    SemanticProperties.Hint="Show offline firmware selection, installation, DFU, driver, and recovery guidance" />
+            <Border IsVisible="{Binding IsHelpVisible}" Padding="20" StrokeShape="RoundRectangle 10">
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="Firmware Help &amp; Support" FontSize="24" FontAttributes="Bold" />
+                    <Label Text="These essential instructions are embedded and remain available offline. External links provide additional official detail." />
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding SupportSections}" Spacing="12">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="local:FirmwareSupportSection">
+                                <VerticalStackLayout Spacing="4">
+                                    <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold" />
+                                    <Label Text="{Binding Content}" />
+                                </VerticalStackLayout>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                    <Label Text="Official documentation and tools" FontSize="20" FontAttributes="Bold" />
+                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding SupportLinks}" Spacing="8">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="local:FirmwareSupportLink">
+                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12">
+                                    <Label Text="{Binding Title}" FontAttributes="Bold" />
+                                    <Label Grid.Row="1" Text="{Binding Description}" />
+                                    <Button Grid.Column="1" Grid.RowSpan="2" Text="Open"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type local:InstallFirmwareViewModel}}, Path=OpenSupportLinkCommand}"
+                                            CommandParameter="{Binding .}" />
+                                </Grid>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                    <Button Text="Open Windows Device Manager" Command="{Binding OpenDeviceManagerCommand}"
+                            IsVisible="{Binding CanOpenDeviceManager}" HorizontalOptions="Start" />
+                </VerticalStackLayout>
+            </Border>
         </VerticalStackLayout>
     </ScrollView>
 </navigation:ContentPageView>
