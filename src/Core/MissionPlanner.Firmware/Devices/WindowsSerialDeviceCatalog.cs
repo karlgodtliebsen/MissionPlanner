@@ -14,6 +14,7 @@ public sealed class WindowsSerialDeviceCatalog(TimeProvider timeProvider) : IFir
     {
         cancellationToken.ThrowIfCancellationRequested();
         var presentPorts = SerialPortNames().ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var knownUsbPorts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var devices = new Dictionary<string, SerialDeviceDescriptor>(StringComparer.OrdinalIgnoreCase);
         using var usb = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Enum\USB");
         if (usb is not null)
@@ -29,10 +30,13 @@ public sealed class WindowsSerialDeviceCatalog(TimeProvider timeProvider) : IFir
                     using var instance = hardware.OpenSubKey(instanceKey);
                     using var parameters = instance?.OpenSubKey("Device Parameters");
                     var portName = parameters?.GetValue("PortName") as string;
-                    // Enum\USB retains records for devices that are no longer connected. Only
-                    // enrich ports currently exposed by the serial subsystem; otherwise firmware
-                    // discovery opens stale and unrelated historical COM ports.
-                    if (string.IsNullOrWhiteSpace(portName) || !presentPorts.Contains(portName)) continue;
+                    if (string.IsNullOrWhiteSpace(portName)) continue;
+                    knownUsbPorts.Add(portName);
+                    // Both Enum\USB and SerialPort.GetPortNames can retain disconnected device
+                    // history. The volatile Control key exists only while this PnP instance is
+                    // active; require it as well as current serial exposure before probing it.
+                    using var control = instance?.OpenSubKey("Control");
+                    if (control is null || !presentPorts.Contains(portName)) continue;
                     var product = CleanRegistryText(instance?.GetValue("FriendlyName") as string ?? instance?.GetValue("DeviceDesc") as string);
                     var manufacturer = CleanRegistryText(instance?.GetValue("Mfg") as string);
                     var stableId = $@"USB\{hardwareKey}\{instanceKey}";
@@ -51,6 +55,9 @@ public sealed class WindowsSerialDeviceCatalog(TimeProvider timeProvider) : IFir
 
         foreach (var port in presentPorts)
         {
+            // A known USB port without an active PnP instance is stale history, not a transient
+            // device. Unknown ports are retained for non-USB and very short-lived bootloaders.
+            if (knownUsbPorts.Contains(port)) continue;
             if (devices.Values.All(device => !string.Equals(device.PortName, port, StringComparison.OrdinalIgnoreCase)))
                 devices[$"transient:{port}"] = new SerialDeviceDescriptor(port, arrivedAt: timeProvider.GetUtcNow());
         }
