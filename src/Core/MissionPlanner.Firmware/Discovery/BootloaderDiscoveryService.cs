@@ -41,67 +41,65 @@ public sealed class BootloaderDiscoveryService(
 
             progress?.Report(new FirmwareProgress(FirmwareOperationState.WaitingForDevice, null, "discovery.waiting-for-bootloader"));
             using var monitorCancellation = CancellationTokenSource.CreateLinkedTokenSource(deadline.Token);
-            await using var changes = monitor.WatchAsync(monitorCancellation.Token).GetAsyncEnumerator(monitorCancellation.Token);
+            var changes = monitor.WatchAsync(monitorCancellation.Token).GetAsyncEnumerator(monitorCancellation.Token);
             Task<bool>? nextChange = changes.MoveNextAsync().AsTask();
-            while (true)
+            try
             {
-                var poll = Task.Delay(options.Value.BootloaderDiscoveryPollInterval, deadline.Token);
-                var completed = nextChange is null
-                    ? await Task.WhenAny(poll).ConfigureAwait(false)
-                    : await Task.WhenAny(nextChange, poll).ConfigureAwait(false);
-
-                if (nextChange is not null && completed == nextChange)
+                while (true)
                 {
-                    if (!await nextChange.ConfigureAwait(false))
+                    var poll = Task.Delay(options.Value.BootloaderDiscoveryPollInterval, deadline.Token);
+                    var completed = nextChange is null
+                        ? await Task.WhenAny(poll).ConfigureAwait(false)
+                        : await Task.WhenAny(nextChange, poll).ConfigureAwait(false);
+
+                    if (nextChange is not null && completed == nextChange)
                     {
-                        nextChange = null;
+                        if (!await nextChange.ConfigureAwait(false))
+                        {
+                            nextChange = null;
+                            continue;
+                        }
+
+                        var change = changes.Current;
+                        nextChange = changes.MoveNextAsync().AsTask();
+                        if (change.Kind != FirmwareDeviceChangeKind.Arrived)
+                            continue;
+
+                        progress?.Report(new FirmwareProgress(FirmwareOperationState.WaitingForDevice, null, "discovery.device-arrived", technicalDetail: change.Device.PortName));
+                        var arrived = await ProbeAsync(change.Device, request, probed, deadline.Token).ConfigureAwait(false);
+                        if (arrived is not null)
+                            return arrived;
                         continue;
                     }
 
-                    var change = changes.Current;
-                    nextChange = changes.MoveNextAsync().AsTask();
-                    if (change.Kind != FirmwareDeviceChangeKind.Arrived)
-                        continue;
-
-                    progress?.Report(new FirmwareProgress(FirmwareOperationState.WaitingForDevice, null, "discovery.device-arrived", technicalDetail: change.Device.PortName));
-                    var arrived = await ProbeAsync(change.Device, request, probed, deadline.Token).ConfigureAwait(false);
-                    if (arrived is not null)
+                    // Windows often keeps the same COM identity while an ArduPilot controller
+                    // briefly passes through its bootloader, producing no reliable arrival event.
+                    // Re-probe current candidates so that short same-port windows are observable.
+                    probed.Clear();
+                    var current = await catalog.GetDevicesAsync(deadline.Token).ConfigureAwait(false);
+                    foreach (var candidate in Rank(current, request, false))
                     {
-                        await StopMonitorAsync().ConfigureAwait(false);
-                        return arrived;
-                    }
-                    continue;
-                }
-
-                // Windows often keeps the same COM identity while an ArduPilot controller
-                // briefly passes through its bootloader, producing no reliable arrival event.
-                // Re-probe current candidates so that short same-port windows are observable.
-                probed.Clear();
-                var current = await catalog.GetDevicesAsync(deadline.Token).ConfigureAwait(false);
-                foreach (var candidate in Rank(current, request, false))
-                {
-                    var found = await ProbeAsync(candidate, request, probed, deadline.Token).ConfigureAwait(false);
-                    if (found is not null)
-                    {
-                        await StopMonitorAsync().ConfigureAwait(false);
-                        return found;
+                        var found = await ProbeAsync(candidate, request, probed, deadline.Token).ConfigureAwait(false);
+                        if (found is not null)
+                            return found;
                     }
                 }
             }
-
-            async Task StopMonitorAsync()
+            finally
             {
                 monitorCancellation.Cancel();
-                if (nextChange is null)
-                    return;
-                try
+                if (nextChange is not null)
                 {
-                    await nextChange.ConfigureAwait(false);
+                    try
+                    {
+                        await nextChange.ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Expected while ending the monitor after discovery or timeout.
+                    }
                 }
-                catch (OperationCanceledException)
-                {
-                    // Expected while ending the monitor after a protocol-confirmed probe.
-                }
+                await changes.DisposeAsync().ConfigureAwait(false);
             }
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
