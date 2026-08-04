@@ -13,6 +13,7 @@ using MissionPlanner.Firmware.Images;
 using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Presentation;
+using MissionPlanner.Firmware.Preparation;
 using UraniumUI.Extensions;
 
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
@@ -22,6 +23,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
 {
     private readonly IFirmwareCatalogService catalogService;
     private readonly IFirmwareInstallationService installationService;
+    private readonly IFirmwarePreparationService preparationService;
     private readonly IEmbeddedBootloaderUpdateService bootloaderUpdateService;
     private readonly IFirmwareSerialDeviceCatalog deviceCatalog;
     private readonly IFirmwarePageModeResolver modeResolver;
@@ -41,6 +43,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     public InstallFirmwareViewModel(
         IFirmwareCatalogService catalogService,
         IFirmwareInstallationService installationService,
+        IFirmwarePreparationService preparationService,
         IEmbeddedBootloaderUpdateService bootloaderUpdateService,
         IFirmwareSerialDeviceCatalog deviceCatalog,
         IFirmwarePageModeResolver modeResolver,
@@ -53,6 +56,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     {
         this.catalogService = catalogService;
         this.installationService = installationService;
+        this.preparationService = preparationService;
         this.bootloaderUpdateService = bootloaderUpdateService;
         this.deviceCatalog = deviceCatalog;
         this.modeResolver = modeResolver;
@@ -83,6 +87,10 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     [ObservableProperty] public partial FirmwareCatalogItemViewModel? SelectedFirmware { get; set; }
     [ObservableProperty] public partial FirmwareDeviceItemViewModel? SelectedDevice { get; set; }
     [ObservableProperty] public partial string? TargetSearchText { get; set; }
+    [ObservableProperty] public partial FirmwarePreparationResult? PreparedFirmware { get; private set; }
+
+    /// <summary>Gets whether a validated downloadable artifact is ready.</summary>
+    public bool HasPreparedFirmware => PreparedFirmware is not null;
     [ObservableProperty] public partial ApjFirmwarePackage? CustomPackage { get; private set; }
     [ObservableProperty] public partial string? CustomFirmwareName { get; private set; }
     [ObservableProperty] public partial string? CustomFirmwareDescription { get; private set; }
@@ -175,6 +183,8 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     private void SelectFirmware(FirmwareCatalogItemViewModel item)
     {
         SelectedFirmware = item;
+        PreparedFirmware = null;
+        OnPropertyChanged(nameof(HasPreparedFirmware));
         CustomPackage = null;
         OnPropertyChanged(nameof(HasCustomFirmware));
         InstallCommand.NotifyCanExecuteChanged();
@@ -238,14 +248,15 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         {
             SetOperation(true, FirmwareOperationState.Downloading);
             var target = SelectedFirmware?.Entry.Target;
+            var prepared = PreparedFirmware is not null && ReferenceEquals(PreparedFirmware.ManifestEntry, SelectedFirmware?.Entry) ? PreparedFirmware : null;
             var request = new FirmwareInstallationRequest(
                 new BootloaderEntryContext(new BootloaderDiscoveryRequest(
                     SelectedDevice?.Descriptor,
                     ExpectedUsbIdentifiers: target?.UsbIdentifiers,
                     BootloaderHints: target?.BootloaderNames),
                     SelectedDevice?.Descriptor),
-                SelectedFirmware?.Entry.Artifact,
-                CustomPackage);
+                prepared is null ? SelectedFirmware?.Entry.Artifact : null,
+                CustomPackage ?? prepared?.Package);
             var progress = new Progress<FirmwareProgress>(UpdateProgress);
             var result = await installationService.InstallAsync(request, progress, cancellationToken);
             LastDiagnosticReport = result.DiagnosticReport?.CreateReport();
@@ -392,6 +403,31 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         SelectedFirmware = automatic is null ? null : FirmwareChoices.Single(item => ReferenceEquals(item.Entry, automatic.Entry));
         InstallCommand.NotifyCanExecuteChanged();
     }
+
+    [RelayCommand]
+    private async Task DownloadAndValidateAsync(CancellationToken cancellationToken)
+    {
+        if (SelectedFirmware is null || IsOperationInProgress) return;
+        try
+        {
+            SetOperation(true, FirmwareOperationState.Downloading);
+            PreparedFirmware = await preparationService.PrepareAsync(new(SelectedFirmware.Entry), new Progress<FirmwareProgress>(UpdateProgress), cancellationToken);
+            OnPropertyChanged(nameof(HasPreparedFirmware));
+            StatusMessage = PreparedFirmware.WasCacheHit ? "Validated cached firmware package." : "Firmware downloaded and validated.";
+        }
+        catch (Exception exception)
+        {
+            logger.LogWarning(exception, "Firmware preparation failed.");
+            StatusMessage = exception.Message;
+        }
+        finally
+        {
+            SetOperation(false, null);
+        }
+    }
+
+    [RelayCommand]
+    private Task CopyDownloadUrlAsync() => SelectedFirmware is null ? Task.CompletedTask : Clipboard.Default.SetTextAsync(SelectedFirmware.Entry.Artifact.DownloadUri.AbsoluteUri);
 
     private void OnActiveVehicleChanged(object? sender, Core.Vehicles.ActiveVehicleChangedEventArgs e)
     {

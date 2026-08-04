@@ -12,6 +12,7 @@ using MissionPlanner.Firmware.Images;
 using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Firmware.Operations;
 using MissionPlanner.Firmware.Presentation;
+using MissionPlanner.Firmware.Preparation;
 using MissionPlanner.Firmware.Protocol;
 using MissionPlanner.Firmware.Recovery;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -87,6 +88,7 @@ public static class FirmwareConfigurator
         services.TryAddSingleton<IFirmwareCompatibilityService, FirmwareCompatibilityService>();
         services.TryAddSingleton<IFirmwareArtifactStore, FileSystemFirmwareArtifactStore>();
         services.TryAddSingleton<IFirmwareArtifactDownloader, FirmwareArtifactDownloader>();
+        services.TryAddSingleton<IFirmwarePreparationService, FirmwarePreparationService>();
         services.TryAddSingleton<IFirmwareInstallationService, FirmwareInstallationService>();
         services.TryAddSingleton<IEmbeddedBootloaderUpdateService, EmbeddedBootloaderUpdateService>();
         services.TryAddSingleton<IFirmwarePageModeResolver, FirmwarePageModeResolver>();

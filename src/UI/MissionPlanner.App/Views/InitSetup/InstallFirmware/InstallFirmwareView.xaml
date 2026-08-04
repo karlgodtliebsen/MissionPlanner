@@ -74,8 +74,22 @@
                         <Label Grid.Row="2" Text="{Binding SelectedFirmware.BoardId, StringFormat='Firmware board ID: {0}'}" />
                         <Label Grid.Row="3" Text="{Binding SelectedFirmware.Version, StringFormat='Version: {0}'}" />
                         <Label Grid.Row="4" Text="{Binding SelectedFirmware.Channel, StringFormat='Channel: {0}'}" />
-                        <Button Grid.Column="1" Grid.RowSpan="5" Text="Install" Command="{Binding InstallCommand}" IsEnabled="{Binding CanInstall}" VerticalOptions="Center" />
+                        <VerticalStackLayout Grid.Column="1" Grid.RowSpan="5" VerticalOptions="Center" Spacing="6">
+                            <Button Text="Download &amp; Validate" Command="{Binding DownloadAndValidateCommand}" />
+                            <Button Text="Install Validated Firmware" Command="{Binding InstallCommand}" IsEnabled="{Binding CanInstall}" />
+                            <Button Text="Copy Download URL" Command="{Binding CopyDownloadUrlCommand}" />
+                        </VerticalStackLayout>
                     </Grid>
+                </Border>
+                <Border IsVisible="{Binding HasPreparedFirmware}" Padding="12" StrokeShape="RoundRectangle 8">
+                    <VerticalStackLayout>
+                        <Label Text="Validated package" FontAttributes="Bold" />
+                        <Label Text="{Binding PreparedFirmware.PackageBoardId, StringFormat='Package board ID: {0}'}" />
+                        <Label Text="{Binding PreparedFirmware.InternalImageSize, StringFormat='Internal image: {0:N0} bytes'}" />
+                        <Label Text="{Binding PreparedFirmware.ExternalImageSize, StringFormat='External image: {0:N0} bytes'}" />
+                        <Label Text="{Binding PreparedFirmware.Sha256, StringFormat='SHA-256: {0}'}" />
+                        <Label Text="{Binding PreparedFirmware.WasCacheHit, StringFormat='Cache hit: {0}'}" />
+                    </VerticalStackLayout>
                 </Border>
                 <Label Text="Detected device" FontAttributes="Bold" />
                 <Picker ItemsSource="{Binding DetectedDevices}" SelectedItem="{Binding SelectedDevice}" Title="Select flight controller" />

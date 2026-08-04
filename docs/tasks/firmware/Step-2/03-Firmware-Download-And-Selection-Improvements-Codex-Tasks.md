@@ -211,6 +211,8 @@ Optional small vehicle-family icons are acceptable, but target selection must be
 
 # Task 4 — Add a non-destructive Download & Validate use case
 
+Status: Completed on 2026-08-04. `IFirmwarePreparationService` downloads, atomically stores, reparses, hash-validates, and checks manifest/package board identity without any device dependency. The UI exposes Download & Validate, package/cache evidence, URL copy, and installation reuses the prepared package.
+
 ## New core API
 
 Add a presentation-neutral service, for example:

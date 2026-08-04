@@ -52,6 +52,8 @@ The ArduPilot manifest is retrieved over HTTPS with separate compressed-download
 
 APJ and PX4 GCS packages are JSON containers. Parsing checks their magic, declared and configured size limits, compressed image length, board metadata, optional external image, revision requirements, and checksum inputs before device access. Downloads use a bounded temporary file, validate length and optional SHA-256, parse it, then move it atomically into cache. Temporary and selected-file streams are disposed on every path.
 
+`IFirmwarePreparationService` provides the non-destructive Download & Validate boundary. It downloads or reuses the immutable cache artifact, reparses it, verifies the manifest/package board ID, and returns package sizes, SHA-256, timestamp, cache identity, and warnings without depending on device discovery or serial services. Install Validated Firmware passes the prepared package directly to installation and does not redownload it.
+
 Supported image formats in this workflow are `.apj` and `.px4`. Intel HEX, `_with_bl.hex`, DFU, legacy boards, DroneCAN, BlueOS/network upload, SD-card `.abin`, UART telemetry adapters, and mobile USB-host flashing are not implemented. `.hex` requires a future DFU/legacy workflow.
 
 ## Serial ownership, protocol, and recovery
