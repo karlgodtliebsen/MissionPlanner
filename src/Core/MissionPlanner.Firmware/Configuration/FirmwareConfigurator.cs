@@ -43,6 +43,7 @@ public static class FirmwareConfigurator
 
         var firmwareOptions = services.AddOptions<FirmwareOptions>(); //as long as we are not using appsettings.json, we can use this to configure the options directly in code.
         services.AddOptions<DfuOptions>()
+            .Validate(value => value.OfficialFirmwareHosts is { Length: > 0 } && value.OfficialFirmwareHosts.All(host => Uri.CheckHostName(host) is not UriHostNameType.Unknown), "At least one valid official firmware host is required.")
             .Validate(value => value.MinimumCubeProgrammerVersion.Major >= 0, "MinimumCubeProgrammerVersion is required.")
             .Validate(value => value.CubeProgrammerProbeTimeout > TimeSpan.Zero, "CubeProgrammerProbeTimeout must be positive.")
             .Validate(value => value.MaximumProviderOutputLines > 0, "MaximumProviderOutputLines must be positive.")
@@ -108,6 +109,13 @@ public static class FirmwareConfigurator
                     serviceProvider.GetRequiredService<IOptions<DfuOptions>>())
                 : new UnsupportedDfuToolLocator());
         services.TryAddSingleton<IDfuProgrammer, Stm32CubeProgrammerCliDfuProgrammer>();
+        services.TryAddSingleton<IDfuHexArtifactDownloader>(serviceProvider => new DfuHexArtifactDownloader(
+            serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(FirmwareHttpClient.Name),
+            serviceProvider.GetRequiredService<IFirmwareArtifactStore>(),
+            serviceProvider.GetRequiredService<IIntelHexInspector>(),
+            serviceProvider.GetRequiredService<IOptions<DfuOptions>>(),
+            serviceProvider.GetRequiredService<TimeProvider>()));
+        services.TryAddSingleton<IDfuArtifactResolver, DfuArtifactResolver>();
         services.TryAddSingleton<IWindowsUsbDeviceChangeNotifier>(serviceProvider =>
             OperatingSystem.IsWindows() ? new WindowsUsbRegistryChangeNotifier() : new PollingDfuDeviceChangeNotifier());
         services.TryAddSingleton<IDfuDeviceCatalog>(serviceProvider =>

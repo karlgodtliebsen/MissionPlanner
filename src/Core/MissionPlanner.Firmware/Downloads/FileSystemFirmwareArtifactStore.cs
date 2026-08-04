@@ -22,11 +22,12 @@ public sealed class FileSystemFirmwareArtifactStore(
         try
         {
             var metadataPath = Path.Combine(directory, "metadata.json");
-            var dataPath = Path.Combine(directory, "artifact.bin");
-            if (!File.Exists(metadataPath) || !File.Exists(dataPath)) return null;
+            if (!File.Exists(metadataPath)) return null;
             await using var metadataStream = new FileStream(metadataPath, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, FileOptions.Asynchronous);
             var metadata = await JsonSerializer.DeserializeAsync<FirmwareArtifactMetadata>(metadataStream, cancellationToken: cancellationToken).ConfigureAwait(false);
-            if (metadata is null || metadata.CacheKey != cacheKey || new FileInfo(dataPath).Length != metadata.Size) return null;
+            if (metadata is null) return null;
+            var dataPath = Path.Combine(directory, ArtifactFileName(metadata.SourceUri));
+            if (!File.Exists(dataPath) || metadata.CacheKey != cacheKey || new FileInfo(dataPath).Length != metadata.Size) return null;
             return new Stored(dataPath, metadata);
         }
         catch (Exception exception) when (exception is IOException or JsonException or UnauthorizedAccessException) { return null; }
@@ -92,10 +93,13 @@ public sealed class FileSystemFirmwareArtifactStore(
         await keyGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
+            var fileName = ArtifactFileName(metadata.SourceUri);
+            if (!string.Equals(fileName, "artifact.bin", StringComparison.Ordinal))
+                File.Move(Path.Combine(directory, "artifact.bin"), Path.Combine(directory, fileName));
             var destination = EntryDirectory(key);
             if (Directory.Exists(destination)) Directory.Delete(destination, true);
             Directory.Move(directory, destination);
-            return new Stored(Path.Combine(destination, "artifact.bin"), metadata);
+            return new Stored(Path.Combine(destination, fileName), metadata);
         }
         finally { keyGate.Release(); }
     }
@@ -125,10 +129,19 @@ public sealed class FileSystemFirmwareArtifactStore(
     private sealed class Stored(string path, FirmwareArtifactMetadata metadata) : IFirmwareStoredArtifact
     {
         public FirmwareArtifactMetadata Metadata => metadata;
+        public string? LocalPath => path;
         public Task<Stream> OpenReadAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             return Task.FromResult<Stream>(new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan));
         }
+    }
+
+    private static string ArtifactFileName(Uri sourceUri)
+    {
+        var extension = Path.GetExtension(sourceUri.AbsolutePath);
+        return extension.Length is > 1 and <= 10 && extension.Skip(1).All(char.IsAsciiLetterOrDigit)
+            ? $"artifact{extension.ToLowerInvariant()}"
+            : "artifact.bin";
     }
 }

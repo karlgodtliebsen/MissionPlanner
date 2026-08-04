@@ -3,6 +3,9 @@ namespace MissionPlanner.Firmware.Dfu;
 /// <summary>Configures bounded Intel HEX inspection and conservative STM32 flash policy.</summary>
 public sealed class DfuOptions
 {
+    /// <summary>Gets or sets HTTPS hosts trusted for official sibling derivation and redirects.</summary>
+    public string[] OfficialFirmwareHosts { get; set; } = ["firmware.ardupilot.org"];
+
     /// <summary>Gets or sets a user-selected STM32CubeProgrammer CLI executable path.</summary>
     public string? CubeProgrammerExecutablePath { get; set; }
 

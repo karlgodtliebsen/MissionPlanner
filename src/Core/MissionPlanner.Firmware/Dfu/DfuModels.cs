@@ -217,7 +217,9 @@ public sealed record DfuInstallationRequest(
     DfuDeviceDescriptor Device,
     DfuArtifact? Artifact = null,
     Uri? ArtifactSource = null,
-    string? ConfirmationPhrase = null);
+    string? ConfirmationPhrase = null,
+    MissionPlanner.Firmware.Model.FirmwareManifestEntry? ManifestEntry = null,
+    string? LocalHexPath = null);
 
 /// <summary>Contains one timestamped external-provider output line.</summary>
 public sealed record DfuProcessOutput(DateTimeOffset Timestamp, bool IsError, string Text);

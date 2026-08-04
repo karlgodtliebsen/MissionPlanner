@@ -367,6 +367,8 @@ Acceptance:
 
 # Task 7 — Implement DFU artifact resolver
 
+Status: Completed on 2026-08-05. The resolver now requires exactly one official manifest release or local HEX selection. Official Copter, Plane, Rover, and Sub releases derive only their approved `_with_bl.hex` sibling within the same directory and only from configured trusted HTTPS hosts; bounded downloads and redirects stay on configured hosts, reuse the shared atomic cache, undergo Intel HEX inspection, and record final URI/SHA-256 provenance. Local files require an existing `.hex`, are always inspected, and receive a warning when their name does not claim bootloader inclusion. Missing siblings, nonofficial derivation, target mismatches, unsupported vehicle naming, and ambiguous source selection fail without substitution.
+
 Create resolver paths:
 
 ## Official sibling resolver
