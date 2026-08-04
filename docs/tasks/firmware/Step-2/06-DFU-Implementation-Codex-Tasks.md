@@ -36,6 +36,8 @@ Not supported initially:
 
 # Task 0 — Architecture discovery and ADR
 
+Status: Completed on 2026-08-04. [ADR-DFU-STM32CubeProgrammer-CLI](../../../adr/ADR-DFU-STM32CubeProgrammer-CLI.md) records the accepted external-provider boundary, separate DFU/serial contracts, ST licensing and distribution constraint, explicit target limitation, global operation ownership, controlled process execution, and deferred destructive-stage cancellation policy before DFU source implementation begins.
+
 Before editing:
 
 1. Read all firmware docs/tasks.
