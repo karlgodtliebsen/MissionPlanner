@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Helpers;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Services;
 using MissionPlanner.Core.ConfigTuning.Planner;
@@ -63,11 +62,34 @@ public sealed partial class PlannerTabViewModel : ObservableObject
     /// <summary>Gets available update channels.</summary>
     public IReadOnlyList<string> UpdateChannels { get; } = ["Stable", "Beta", "Development"];
 
+    /// <summary>
+    /// 
+    /// </summary>
     public IReadOnlyList<string> DistanceUnits { get; } = ["Meters", "Feet"];
+
+    /// <summary>
+    /// 
+    /// </summary>
     public IReadOnlyList<string> AltitudeUnits { get; } = ["Meters", "Feet"];
+
+    /// <summary>
+    /// 
+    /// </summary>
     public IReadOnlyList<string> SpeedUnits { get; } = ["MetersPerSecond", "KilometersPerHour", "MilesPerHour", "Knots"];
+
+    /// <summary>
+    /// 
+    /// </summary>
     public IReadOnlyList<string> SpeechSeverities { get; } = ["Emergency", "Alert", "Critical", "Error", "Warning", "Notice", "Info", "Debug"];
+
+    /// <summary>
+    /// 
+    /// </summary>
     public IReadOnlyList<string> MapAccessModes { get; } = ["ServerOnly", "ServerAndCache", "CacheOnly"];
+
+    /// <summary>
+    /// 
+    /// </summary>
     public IReadOnlyList<string> LayoutModes { get; } = ["Basic", "Advanced", "Custom"];
 
     /// <summary>Gets the selected unit system.</summary>
@@ -449,21 +471,39 @@ public sealed partial class PlannerTabViewModel : ObservableObject
             Accessibility = new PlannerAccessibilitySettings { HighContrastTelemetry = HighContrastTelemetry, ReduceMotion = ReduceMotion, TextScale = TextScale, AnnounceTelemetryWarnings = AnnounceTelemetryWarnings },
             Legacy = new PlannerLegacySettings
             {
-                LayoutMode = LayoutMode, DistanceUnit = DistanceUnit, AltitudeUnit = AltitudeUnit, SpeedUnit = SpeedUnit,
-                SpeechEnabled = SpeechEnabled, SpeechSeverity = SpeechSeverity,
-                AttitudeRateHz = AttitudeRateHz, PositionRateHz = PositionRateHz,
-                StatusRateHz = StatusRateHz, RcRateHz = RcRateHz, SensorRateHz = SensorRateHz,
-                ResetOnUsbConnect = ResetOnUsbConnect, DisableEsp32RtsReset = DisableEsp32RtsReset,
-                TrackLength = TrackLength, ShowDistanceToHome = ShowDistanceToHome,
-                LoadWaypointsOnConnect = LoadWaypointsOnConnect, RotateMapToHeading = RotateMapToHeading,
+                LayoutMode = LayoutMode,
+                DistanceUnit = DistanceUnit,
+                AltitudeUnit = AltitudeUnit,
+                SpeedUnit = SpeedUnit,
+                SpeechEnabled = SpeechEnabled,
+                SpeechSeverity = SpeechSeverity,
+                AttitudeRateHz = AttitudeRateHz,
+                PositionRateHz = PositionRateHz,
+                StatusRateHz = StatusRateHz,
+                RcRateHz = RcRateHz,
+                SensorRateHz = SensorRateHz,
+                ResetOnUsbConnect = ResetOnUsbConnect,
+                DisableEsp32RtsReset = DisableEsp32RtsReset,
+                TrackLength = TrackLength,
+                ShowDistanceToHome = ShowDistanceToHome,
+                LoadWaypointsOnConnect = LoadWaypointsOnConnect,
+                RotateMapToHeading = RotateMapToHeading,
                 GcsSystemId = (byte)Math.Clamp(GcsSystemId, byte.MinValue, byte.MaxValue),
-                DisplayCourseOverGround = DisplayCourseOverGround, DisplayHeading = DisplayHeading,
-                DisplayNavigationBearing = DisplayNavigationBearing, DisplayTurnRadius = DisplayTurnRadius,
-                DisplayTarget = DisplayTarget, DisplayAircraftToolTip = DisplayAircraftToolTip,
-                AircraftLineLength = AircraftLineLength, ShowAirports = ShowAirports, ShowAdsb = ShowAdsb,
-                ShowNoFlyZones = ShowNoFlyZones, ShowTemporaryFlightRestrictions = ShowTemporaryFlightRestrictions,
+                DisplayCourseOverGround = DisplayCourseOverGround,
+                DisplayHeading = DisplayHeading,
+                DisplayNavigationBearing = DisplayNavigationBearing,
+                DisplayTurnRadius = DisplayTurnRadius,
+                DisplayTarget = DisplayTarget,
+                DisplayAircraftToolTip = DisplayAircraftToolTip,
+                AircraftLineLength = AircraftLineLength,
+                ShowAirports = ShowAirports,
+                ShowAdsb = ShowAdsb,
+                ShowNoFlyZones = ShowNoFlyZones,
+                ShowTemporaryFlightRestrictions = ShowTemporaryFlightRestrictions,
                 DownloadParametersInBackground = DownloadParametersInBackground,
-                NoRcReceiver = NoRcReceiver, SlowComputerMode = SlowComputerMode, MapAccessMode = MapAccessMode
+                NoRcReceiver = NoRcReceiver,
+                SlowComputerMode = SlowComputerMode,
+                MapAccessMode = MapAccessMode
             }
         };
     }

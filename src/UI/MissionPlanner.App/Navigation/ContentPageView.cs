@@ -1,4 +1,5 @@
 ﻿using MissionPlanner.App.Helpers;
+using UraniumUI.Pages;
 
 namespace MissionPlanner.App.Navigation;
 
@@ -6,7 +7,7 @@ namespace MissionPlanner.App.Navigation;
 /// Represents a content page view that is associated with a specific view model type.
 /// Handles viewmodel allocation and cleanup for navigation events.
 /// </summary>
-public class ContentPageView<TViewModel> : ContentPage
+public class ContentPageView<TViewModel> : UraniumContentPage
     where TViewModel : class, IDisposable
 
 {
