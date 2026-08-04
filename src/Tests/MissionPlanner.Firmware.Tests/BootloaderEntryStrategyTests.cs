@@ -65,14 +65,38 @@ public sealed class BootloaderEntryStrategyTests
     public async Task RecoverableFailurePermitsNextStrategy()
     {
         var calls = new List<int>();
+        var discovered = new DiscoveredBootloader(Device(), new BootloaderIdentity(50, 4, 1024), new NoOpClient());
         var service = new BootloaderEntryService(
             [new ScriptedStrategy(200, BootloaderEntryOutcome.ContinueDiscovery, calls), new ScriptedStrategy(100, BootloaderEntryOutcome.Failed, calls)],
+            new FakeDiscovery(discovered),
             NullLogger<BootloaderEntryService>.Instance);
 
         var result = await service.EnterAsync(Context(), TestContext.Current.CancellationToken);
 
         calls.Should().Equal(100, 200);
-        result.Outcome.Should().Be(BootloaderEntryOutcome.ContinueDiscovery);
+        result.Outcome.Should().Be(BootloaderEntryOutcome.BootloaderIdentified);
+        await discovered.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task DiscoveryFailureAfterRebootPermitsManualFallback()
+    {
+        var calls = new List<int>();
+        var discovery = new SequencedDiscovery();
+        var service = new BootloaderEntryService(
+            [
+                new ScriptedStrategy(200, BootloaderEntryOutcome.ContinueDiscovery, calls),
+                new ScriptedStrategy(300, BootloaderEntryOutcome.ContinueDiscovery, calls)
+            ],
+            discovery,
+            NullLogger<BootloaderEntryService>.Instance);
+
+        var result = await service.EnterAsync(Context(), TestContext.Current.CancellationToken);
+
+        calls.Should().Equal(200, 300);
+        discovery.CallCount.Should().Be(2);
+        result.Outcome.Should().Be(BootloaderEntryOutcome.BootloaderIdentified);
+        await result.Bootloader!.DisposeAsync();
     }
 
     private static BootloaderEntryContext Context(SerialDeviceDescriptor? applicationDevice = null, bool active = false) =>
@@ -99,6 +123,17 @@ public sealed class BootloaderEntryStrategyTests
     {
         public string? Code { get; private set; }
         public Task RequestAsync(string interactionCode, CancellationToken cancellationToken = default) { Code = interactionCode; return Task.CompletedTask; }
+    }
+    private sealed class SequencedDiscovery : IBootloaderDiscoveryService
+    {
+        public int CallCount { get; private set; }
+        public Task<DiscoveredBootloader> FindAsync(BootloaderDiscoveryRequest request, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default)
+        {
+            CallCount++;
+            return CallCount == 1
+                ? Task.FromException<DiscoveredBootloader>(new FirmwareDeviceNotFoundException("not found after automatic reboot"))
+                : Task.FromResult(new DiscoveredBootloader(Device(), new BootloaderIdentity(50, 4, 1024), new NoOpClient()));
+        }
     }
     private sealed class ScriptedStrategy(int priority, BootloaderEntryOutcome outcome, ICollection<int> calls) : IBootloaderEntryStrategy
     {
