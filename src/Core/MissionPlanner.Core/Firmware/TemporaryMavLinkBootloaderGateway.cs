@@ -16,6 +16,7 @@ namespace MissionPlanner.Core.Firmware;
 /// <summary>
 /// Uses a one-shot isolated serial stream to request bootloader reboot without creating a
 /// Mission Planner vehicle session or publishing messages into the application event hub.
+/// </summary>
 // </summary>
 public sealed class TemporaryMavLinkBootloaderGateway(
     IFirmwareSerialPortFactory serialPortFactory,
@@ -82,7 +83,13 @@ public sealed class TemporaryMavLinkBootloaderGateway(
         {
             while (true)
             {
-                var count = await stream.ReadAsync(buffer, timeoutSource.Token).ConfigureAwait(false);
+                // SerialPort.BaseStream on Windows may ignore ReadAsync cancellation. Enforce
+                // the bounded MAVLink wait independently; disposing the owned port releases the
+                // outstanding native read after this method returns.
+                var count = await stream.ReadAsync(buffer, CancellationToken.None)
+                    .AsTask()
+                    .WaitAsync(timeoutSource.Token)
+                    .ConfigureAwait(false);
                 if (count == 0)
                 {
                     return null;

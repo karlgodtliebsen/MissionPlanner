@@ -161,7 +161,8 @@ public sealed class TemporaryMavLinkBootloaderGatewayTests
         {
             if (reads.Count == 0)
             {
-                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+                // Models SerialPort.BaseStream on Windows, where cancellation may be ignored.
+                await Task.Delay(Timeout.InfiniteTimeSpan);
                 return 0;
             }
 
