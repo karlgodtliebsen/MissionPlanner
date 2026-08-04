@@ -43,6 +43,8 @@ public static class FirmwareConfigurator
 
         var firmwareOptions = services.AddOptions<FirmwareOptions>(); //as long as we are not using appsettings.json, we can use this to configure the options directly in code.
         services.AddOptions<DfuOptions>()
+            .Validate(value => value.MinimumCubeProgrammerVersion.Major >= 0, "MinimumCubeProgrammerVersion is required.")
+            .Validate(value => value.CubeProgrammerProbeTimeout > TimeSpan.Zero, "CubeProgrammerProbeTimeout must be positive.")
             .Validate(value => value.DefaultUsbVendorId > 0, "DefaultUsbVendorId must be positive.")
             .Validate(value => value.DefaultUsbProductId > 0, "DefaultUsbProductId must be positive.")
             .Validate(value => value.AcceptedWindowsDriverServices is { Length: > 0 } && value.AcceptedWindowsDriverServices.All(service => !string.IsNullOrWhiteSpace(service)), "At least one accepted Windows DFU driver service is required.")
@@ -87,6 +89,17 @@ public static class FirmwareConfigurator
         services.TryAddSingleton<IIntelHexInspector, IntelHexInspector>();
         services.TryAddSingleton<IWindowsDfuPnPSnapshotSource>(serviceProvider =>
             OperatingSystem.IsWindows() ? new WindowsRegistryDfuPnPSnapshotSource() : new EmptyWindowsDfuPnPSnapshotSource());
+        services.TryAddSingleton<IDfuToolDiscoverySource>(serviceProvider =>
+            OperatingSystem.IsWindows()
+                ? new WindowsCubeProgrammerDiscoverySource(serviceProvider.GetRequiredService<IOptions<DfuOptions>>())
+                : new EmptyDfuToolDiscoverySource());
+        services.TryAddSingleton<IDfuToolLocator>(serviceProvider =>
+            OperatingSystem.IsWindows()
+                ? new Stm32CubeProgrammerToolLocator(
+                    serviceProvider.GetRequiredService<IDfuToolDiscoverySource>(),
+                    serviceProvider.GetService<IDfuProcessRunner>() ?? new UnavailableDfuProcessRunner(),
+                    serviceProvider.GetRequiredService<IOptions<DfuOptions>>())
+                : new UnsupportedDfuToolLocator());
         services.TryAddSingleton<IWindowsUsbDeviceChangeNotifier>(serviceProvider =>
             OperatingSystem.IsWindows() ? new WindowsUsbRegistryChangeNotifier() : new PollingDfuDeviceChangeNotifier());
         services.TryAddSingleton<IDfuDeviceCatalog>(serviceProvider =>

@@ -3,6 +3,18 @@ namespace MissionPlanner.Firmware.Dfu;
 /// <summary>Configures bounded Intel HEX inspection and conservative STM32 flash policy.</summary>
 public sealed class DfuOptions
 {
+    /// <summary>Gets or sets a user-selected STM32CubeProgrammer CLI executable path.</summary>
+    public string? CubeProgrammerExecutablePath { get; set; }
+
+    /// <summary>Gets or sets the minimum supported STM32CubeProgrammer version.</summary>
+    public Version MinimumCubeProgrammerVersion { get; set; } = new(2, 10);
+
+    /// <summary>Gets or sets the timeout for a non-mutating CubeProgrammer validation probe.</summary>
+    public TimeSpan CubeProgrammerProbeTimeout { get; set; } = TimeSpan.FromSeconds(10);
+
+    /// <summary>Gets or sets whether PATH is considered after configured, known, and registered installations.</summary>
+    public bool SearchPathForCubeProgrammer { get; set; } = true;
+
     /// <summary>Gets or sets the default STM32 system-bootloader USB vendor identifier.</summary>
     public ushort DefaultUsbVendorId { get; set; } = 0x0483;
 

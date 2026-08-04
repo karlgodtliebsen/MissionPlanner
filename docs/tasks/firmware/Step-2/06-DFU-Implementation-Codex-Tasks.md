@@ -228,6 +228,8 @@ Acceptance:
 
 # Task 4 — Implement STM32CubeProgrammer tool locator
 
+Status: Completed on 2026-08-04. The Windows discovery source checks the user-configured executable, known ST installation directories, 64/32-bit uninstall registration, and optional `PATH` in order. The locator validates existence, invokes a bounded non-mutating direct version probe, prefers file-version evidence where available, enforces a configurable minimum version, and returns distinct not-installed, invalid-path, unsupported-version, execution-blocked, and available states. Mission Planner does not download or install the vendor tool.
+
 Create a Windows implementation of `IDfuToolLocator`.
 
 Discovery sources:

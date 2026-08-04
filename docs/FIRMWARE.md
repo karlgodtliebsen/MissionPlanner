@@ -106,6 +106,10 @@ Every DFU Intel HEX artifact is parsed before it can reach an external programmi
 
 Windows DFU discovery reads present Plug and Play USB instances directly and therefore does not require or infer a COM port. The initial catalogue selects the configured STM32 system-bootloader identity (`VID 0483`, `PID DF11` by default), retains PnP instance, friendly-name, manufacturer, USB serial, driver service/provider/version, and problem-code evidence where Windows exposes it, and maps absence, ready, wrong-driver, device-problem, busy, and unknown states distinctly. Registry device-change notification prompts immediate snapshots while a bounded polling deadline remains the fallback. Arrival timestamps belong to each continuous presence generation and are reset after removal.
 
+## STM32CubeProgrammer dependency
+
+DFU programming uses an externally installed `STM32_Programmer_CLI.exe`; Mission Planner does not bundle, download, or install it. Windows discovery checks an operator-configured executable first, then known ST installation directories, relevant uninstall registry entries, and optionally `PATH`. The executable name and existence are validated before a bounded direct `--version` probe, and Windows file-version metadata is preferred when provider output is localized. Availability distinguishes not installed, invalid configured path, unsupported version, blocked execution, and validated availability. The configured minimum version is enforced before the tool can be selected by the DFU workflow.
+
 ## Troubleshooting
 
 - Catalogue unavailable: retry Refresh; a valid cached catalogue may be shown as stale.
