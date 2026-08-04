@@ -17,7 +17,7 @@ namespace MissionPlanner.App.Views.FlightData.Tabs;
 /// <summary>
 /// Presents a bounded, filterable active-vehicle message history with separate MAVLink and application origins.
 /// </summary>
-public partial class MessagesTabViewModel : ObservableObject, IFlightDataTabLifecycle, IDisposable
+public partial class MessagesTabViewModel : ObservableObject, IDisposable
 {
     private static readonly JsonSerializerOptions jsonOptions = new() { WriteIndented = true };
     private readonly IActiveVehicleContext activeVehicle;
@@ -27,7 +27,6 @@ public partial class MessagesTabViewModel : ObservableObject, IFlightDataTabLife
     private readonly IFileSaver fileSaver;
     private readonly IDispatcher dispatcher;
     private readonly ILogger<MessagesTabViewModel> logger;
-    private readonly FlightDataTabLifecycle lifecycle;
 
     /// <summary>Initializes a Messages-tab view model.</summary>
     /// <param name="activeVehicle">The active-vehicle context.</param>
@@ -47,28 +46,10 @@ public partial class MessagesTabViewModel : ObservableObject, IFlightDataTabLife
         this.fileSaver = fileSaver;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        lifecycle = new FlightDataTabLifecycle("Messages", activeVehicle, startAsync: _ =>
-        {
-            vehicleMessages.MessageAdded += OnVehicleMessageAdded;
-            applicationMessages.NotificationAdded += OnApplicationMessageAdded;
-            dispatcher.Dispatch(Refresh);
-            return Task.FromResult<IDisposable?>(new CallbackDisposable(() =>
-            {
-                vehicleMessages.MessageAdded -= OnVehicleMessageAdded;
-                applicationMessages.NotificationAdded -= OnApplicationMessageAdded;
-            }));
-        });
+        vehicleMessages.MessageAdded += OnVehicleMessageAdded;
+        applicationMessages.NotificationAdded += OnApplicationMessageAdded;
         Refresh();
     }
-
-    /// <inheritdoc />
-    public string Key => lifecycle.Key;
-
-    /// <inheritdoc />
-    public bool IsActive => lifecycle.IsActive;
-
-    /// <inheritdoc />
-    public bool IsInitialized => lifecycle.IsInitialized;
 
     /// <summary>Gets all available exact-severity filters.</summary>
     public IReadOnlyList<string> SeverityFilters { get; } =
@@ -104,17 +85,6 @@ public partial class MessagesTabViewModel : ObservableObject, IFlightDataTabLife
     /// <summary>Gets the pause/resume button label.</summary>
     public string PauseButtonText => IsAutoScrollPaused ? "Resume Auto-scroll" : "Pause Auto-scroll";
 
-    /// <inheritdoc />
-    public Task ActivateAsync(CancellationToken cancellationToken = default)
-    {
-        return lifecycle.ActivateAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public Task DeactivateAsync()
-    {
-        return lifecycle.DeactivateAsync();
-    }
 
     /// <summary>Creates a UTF-8-ready text export of the current filtered view.</summary>
     /// <returns>The complete timestamped text representation.</returns>
@@ -136,7 +106,8 @@ public partial class MessagesTabViewModel : ObservableObject, IFlightDataTabLife
     /// <inheritdoc />
     public void Dispose()
     {
-        lifecycle.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        vehicleMessages.MessageAdded -= OnVehicleMessageAdded;
+        applicationMessages.NotificationAdded -= OnApplicationMessageAdded;
     }
 
     partial void OnSelectedSeverityChanged(string value)

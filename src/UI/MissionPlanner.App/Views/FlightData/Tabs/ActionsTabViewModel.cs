@@ -17,7 +17,7 @@ namespace MissionPlanner.App.Views.FlightData.Tabs;
 /// <summary>
 /// Presents safety-aware, acknowledged actions for the active ArduPilot vehicle.
 /// </summary>
-public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifecycle, IDisposable
+public partial class ActionsTabViewModel : ObservableObject, IDisposable
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleCommandService commandService;
@@ -29,8 +29,8 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
     private readonly IDomainEventHub domainEventHub;
     private readonly AsyncOperationRunner operationRunner;
     private readonly ILogger<ActionsTabViewModel> logger;
-    private readonly FlightDataTabLifecycle lifecycle;
     private readonly IReplaySessionManager? replaySessionManager;
+    private IDisposable? stateSubscription;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ActionsTabViewModel"/> class.
@@ -68,17 +68,9 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
         this.logger = logger;
         this.replaySessionManager = replaySessionManager;
         operationRunner = new AsyncOperationRunner(activeVehicle);
-        lifecycle = new FlightDataTabLifecycle("Actions", activeVehicle, startAsync: _ =>
-        {
-            activeVehicle.Changed += OnActiveVehicleChanged;
-            var stateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
-            ApplySnapshot(activeVehicle.Current);
-            return Task.FromResult<IDisposable?>(new CallbackDisposable(() =>
-            {
-                activeVehicle.Changed -= OnActiveVehicleChanged;
-                stateSubscription.Dispose();
-            }));
-        });
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        stateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
+
         ApplySnapshot(activeVehicle.Current);
         if (replaySessionManager is not null)
         {
@@ -86,15 +78,6 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
             ApplyReplayState(replaySessionManager.Snapshot);
         }
     }
-
-    /// <inheritdoc />
-    public string Key => lifecycle.Key;
-
-    /// <inheritdoc />
-    public bool IsActive => lifecycle.IsActive;
-
-    /// <inheritdoc />
-    public bool IsInitialized => lifecycle.IsInitialized;
 
     /// <summary>Gets the modes appropriate to the connected firmware family.</summary>
     [ObservableProperty]
@@ -169,23 +152,12 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
     public partial string DataSourceMode { get; private set; } = "LIVE / SIMULATION";
 
     /// <inheritdoc />
-    public Task ActivateAsync(CancellationToken cancellationToken = default)
-    {
-        return lifecycle.ActivateAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public Task DeactivateAsync()
-    {
-        return lifecycle.DeactivateAsync();
-    }
-
-    /// <inheritdoc />
     public void Dispose()
     {
         replaySessionManager?.Changed -= OnReplayChanged;
-
-        lifecycle.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        stateSubscription?.Dispose();
+        stateSubscription = null;
     }
 
     [RelayCommand]
@@ -476,7 +448,7 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
         {
             dispatcher.Dispatch(() =>
             {
-                if (lifecycle.IsActive && evt.VehicleId == activeVehicle.VehicleId)
+                if (evt.VehicleId == activeVehicle.VehicleId)
                 {
                     ApplySnapshot(new ActiveVehicleSnapshot(evt.VehicleId, evt.VehicleState));
                 }
@@ -517,19 +489,5 @@ public partial class ActionsTabViewModel : ObservableObject, IFlightDataTabLifec
     private bool IsAllowed(VehicleState? state, VehicleAction action)
     {
         return state is not null && commandPolicy.Evaluate(state, action).IsAllowed;
-    }
-
-    private sealed class CallbackDisposable(Action callback) : IDisposable
-    {
-        private bool disposed;
-
-        public void Dispose()
-        {
-            if (!disposed)
-            {
-                disposed = true;
-                callback();
-            }
-        }
     }
 }

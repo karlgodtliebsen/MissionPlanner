@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -9,55 +9,29 @@ using MissionPlanner.Core.Vehicles.Models;
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
 /// <summary>Projects isolated, read-only telemetry-log playback into the Flight Data workspace.</summary>
-public sealed partial class TelemetryLogsTabViewModel : ObservableObject, IFlightDataTabLifecycle, IDisposable
+public sealed partial class TelemetryLogsTabViewModel : ObservableObject, IDisposable
 {
     private readonly IReplaySessionManager replaySessionManager;
+    private readonly IActiveVehicleContext activeVehicle;
     private readonly IDispatcher dispatcher;
     private readonly ILogger<TelemetryLogsTabViewModel> logger;
-    private readonly FlightDataTabLifecycle lifecycle;
+    //private readonly FlightDataTabLifecycle lifecycle;
 
     /// <summary>Initializes the telemetry-log playback view model.</summary>
     /// <param name="replaySessionManager">Read-only replay session coordinator.</param>
     /// <param name="activeVehicle">Active-vehicle context used by the shared tab lifecycle.</param>
     /// <param name="dispatcher">UI dispatcher.</param>
     /// <param name="logger">Structured workflow logger.</param>
-    public TelemetryLogsTabViewModel(
-        IReplaySessionManager replaySessionManager,
-        IActiveVehicleContext activeVehicle,
-        IDispatcher dispatcher,
-        ILogger<TelemetryLogsTabViewModel> logger)
+    public TelemetryLogsTabViewModel(IReplaySessionManager replaySessionManager, IActiveVehicleContext activeVehicle, IDispatcher dispatcher, ILogger<TelemetryLogsTabViewModel> logger)
     {
         this.replaySessionManager = replaySessionManager;
+        this.activeVehicle = activeVehicle;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        lifecycle = new FlightDataTabLifecycle(
-            "Telemetry Logs",
-            activeVehicle,
-            startAsync: _ =>
-            {
-                replaySessionManager.Changed += OnReplayChanged;
-                dispatcher.Dispatch(() => ApplySnapshot(replaySessionManager.Snapshot));
-                return Task.FromResult<IDisposable?>(new CallbackDisposable(
-                    () => replaySessionManager.Changed -= OnReplayChanged));
-            },
-            requiresOnlineVehicle: false);
+        replaySessionManager.Changed += OnReplayChanged;
         ApplySnapshot(replaySessionManager.Snapshot);
     }
 
-    /// <inheritdoc />
-    public string Key => lifecycle.Key;
-
-    /// <inheritdoc />
-    public bool IsActive => lifecycle.IsActive;
-
-    /// <inheritdoc />
-    public bool IsInitialized => lifecycle.IsInitialized;
-
-    /// <inheritdoc />
-    public Task ActivateAsync(CancellationToken cancellationToken = default) => lifecycle.ActivateAsync(cancellationToken);
-
-    /// <inheritdoc />
-    public Task DeactivateAsync() => lifecycle.DeactivateAsync();
 
     /// <summary>Gets replay-only vehicle states; these vehicles never enter the live registry.</summary>
     public ObservableCollection<VehicleState> ReplayVehicles { get; } = [];
@@ -132,10 +106,7 @@ public sealed partial class TelemetryLogsTabViewModel : ObservableObject, IFligh
     {
         await RunAsync(async cancellationToken =>
         {
-            var file = await FilePicker.Default.PickAsync(new PickOptions
-            {
-                PickerTitle = "Select a Mission Planner telemetry log (.tlog)"
-            });
+            var file = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Select a Mission Planner telemetry log (.tlog)" });
             if (file is null)
             {
                 StatusMessage = "Telemetry-log selection cancelled.";
@@ -143,7 +114,7 @@ public sealed partial class TelemetryLogsTabViewModel : ObservableObject, IFligh
             }
 
             var selectedStream = await file.OpenReadAsync();
-            Stream ownedStream = selectedStream;
+            var ownedStream = selectedStream;
             if (!selectedStream.CanSeek)
             {
                 var temporaryPath = Path.Combine(Path.GetTempPath(), $"missionplanner-replay-{Guid.NewGuid():N}.tlog");
@@ -165,36 +136,48 @@ public sealed partial class TelemetryLogsTabViewModel : ObservableObject, IFligh
     }
 
     [RelayCommand(CanExecute = nameof(CanControlReplay))]
-    private Task PlayPauseAsync() => RunAsync(async cancellationToken =>
+    private Task PlayPauseAsync()
     {
-        if (replaySessionManager.Snapshot.State == ReplaySessionState.Playing)
+        return RunAsync(async cancellationToken =>
         {
-            await replaySessionManager.PauseAsync(cancellationToken);
-        }
-        else
-        {
-            await replaySessionManager.PlayAsync(cancellationToken);
-        }
-    });
+            if (replaySessionManager.Snapshot.State == ReplaySessionState.Playing)
+            {
+                await replaySessionManager.PauseAsync(cancellationToken);
+            }
+            else
+            {
+                await replaySessionManager.PlayAsync(cancellationToken);
+            }
+        });
+    }
 
     [RelayCommand(CanExecute = nameof(CanControlReplay))]
-    private Task SeekAsync() => RunAsync(cancellationToken =>
-        replaySessionManager.SeekAsync(TimeSpan.FromSeconds(SeekSeconds), cancellationToken));
-
-    [RelayCommand(CanExecute = nameof(CanControlReplay))]
-    private Task ApplySpeedAsync() => RunAsync(_ =>
+    private Task SeekAsync()
     {
-        replaySessionManager.SetSpeed(PlaybackSpeed);
-        return Task.CompletedTask;
-    });
+        return RunAsync(cancellationToken =>
+            replaySessionManager.SeekAsync(TimeSpan.FromSeconds(SeekSeconds), cancellationToken));
+    }
 
     [RelayCommand(CanExecute = nameof(CanControlReplay))]
-    private Task CloseReplayAsync() => RunAsync(replaySessionManager.CloseAsync);
+    private Task ApplySpeedAsync()
+    {
+        return RunAsync(_ =>
+        {
+            replaySessionManager.SetSpeed(PlaybackSpeed);
+            return Task.CompletedTask;
+        });
+    }
+
+    [RelayCommand(CanExecute = nameof(CanControlReplay))]
+    private Task CloseReplayAsync()
+    {
+        return RunAsync(replaySessionManager.CloseAsync);
+    }
 
     /// <inheritdoc />
     public void Dispose()
     {
-        lifecycle.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        replaySessionManager.Changed -= OnReplayChanged;
     }
 
     private async Task RunAsync(Func<CancellationToken, Task> operation)
@@ -267,7 +250,11 @@ public sealed partial class TelemetryLogsTabViewModel : ObservableObject, IFligh
 
         public void Dispose()
         {
-            if (disposed) return;
+            if (disposed)
+            {
+                return;
+            }
+
             disposed = true;
             callback();
         }

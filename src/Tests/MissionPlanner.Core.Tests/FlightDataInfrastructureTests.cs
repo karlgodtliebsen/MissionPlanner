@@ -1,7 +1,6 @@
+﻿using CommunityToolkit.Maui.Storage;
 using FluentAssertions;
-using CommunityToolkit.Maui.Storage;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.FlightData;
@@ -57,13 +56,7 @@ public sealed class FlightDataInfrastructureTests
             new VehicleConnected(fixture.Session.Id, "UDP", "14550", DateTimeOffset.UtcNow),
             TestContext.Current.CancellationToken);
         var connectionToken = context.ConnectionCancellationToken;
-        var heartbeatState = fixture.Session.State with
-        {
-            Connection = fixture.Session.State.Connection with
-            {
-                LastHeartbeatAt = fixture.Session.State.LastHeartbeatAt + TimeSpan.FromSeconds(1)
-            }
-        };
+        var heartbeatState = fixture.Session.State with { Connection = fixture.Session.State.Connection with { LastHeartbeatAt = fixture.Session.State.LastHeartbeatAt + TimeSpan.FromSeconds(1) } };
 
         await fixture.Updated!(
             new VehicleStateUpdated(heartbeatState),
@@ -91,10 +84,7 @@ public sealed class FlightDataInfrastructureTests
         var onlineToken = context.ConnectionCancellationToken;
         var changes = new List<ActiveVehicleChangedEventArgs>();
         context.Changed += (_, args) => changes.Add(args);
-        var offlineState = fixture.Session.State with
-        {
-            Connection = fixture.Session.State.Connection with { State = VehicleConnectionState.Offline }
-        };
+        var offlineState = fixture.Session.State with { Connection = fixture.Session.State.Connection with { State = VehicleConnectionState.Offline } };
 
         await fixture.Updated!(
             new VehicleStateUpdated(offlineState),
@@ -246,13 +236,7 @@ public sealed class FlightDataInfrastructureTests
     [Fact]
     public async Task DependencyInjectionResolvesFlightDataViewModels()
     {
-        var values = new Dictionary<string, string?>
-        {
-            ["ApplicationSettings:Channel"] = "UDP",
-            ["ApplicationSettings:BaudRate"] = "115200",
-            ["ApplicationSettings:Host"] = "127.0.0.1",
-            ["ApplicationSettings:Port"] = "14550"
-        };
+        var values = new Dictionary<string, string?> { ["ApplicationSettings:Channel"] = "UDP", ["ApplicationSettings:BaudRate"] = "115200", ["ApplicationSettings:Host"] = "127.0.0.1", ["ApplicationSettings:Port"] = "14550" };
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(values).Build();
         var services = new ServiceCollection();
         services.AddApplicationConfiguration(configuration);
@@ -282,14 +266,6 @@ public sealed class FlightDataInfrastructureTests
         provider.GetRequiredService<PayloadControlTabViewModel>().Should().NotBeNull();
         provider.GetRequiredService<TelemetryLogsTabViewModel>().Should().NotBeNull();
         provider.GetRequiredService<DataFlashLogsTabViewModel>().Should().NotBeNull();
-
-        var lifecycles = provider.GetServices<IFlightDataTabLifecycle>().ToArray();
-        lifecycles.Select(lifecycle => lifecycle.Key).Should().BeEquivalentTo(
-            "Quick", "Actions", "Messages", "PreFlight", "Gauges", "Transponder", "Status",
-            "Servo/Relay", "Aux Function", "Scripts", "Payload Control", "Telemetry Logs", "DataFlash Logs");
-        lifecycles.Should().HaveCount(13);
-        lifecycles.Should().OnlyContain(lifecycle =>
-            ReferenceEquals(lifecycle, provider.GetRequiredService(lifecycle.GetType())));
     }
 
     private static ContextFixture CreateContextFixture()
