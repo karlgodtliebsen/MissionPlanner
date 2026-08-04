@@ -40,10 +40,21 @@ public sealed class HttpFirmwareManifestClientTests
         result.Content.ToArray().Should().Equal(bytes);
     }
 
+    [Fact]
+    public async Task PropagatesCallerCancellation()
+    {
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        var client = new HttpFirmwareManifestClient(new HttpClient(new Handler([])), Options.Create(new FirmwareOptions()));
+        var act = () => client.GetAsync(new Uri("https://firmware.ardupilot.org/manifest.json.gz"), null, cancellation.Token);
+        await act.Should().ThrowAsync<OperationCanceledException>();
+    }
+
     private sealed class Handler(byte[] bytes) : HttpMessageHandler
     {
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(bytes) });
         }
     }

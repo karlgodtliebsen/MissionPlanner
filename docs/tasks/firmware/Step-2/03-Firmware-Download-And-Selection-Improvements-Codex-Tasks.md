@@ -351,6 +351,8 @@ Use an injected application-cache path abstraction. Do not directly depend on MA
 
 # Task 6 — Harden firmware HTTP configuration
 
+Status: Completed on 2026-08-04. All manifest and artifact traffic uses the named `MissionPlanner.Firmware` client with configurable product identity and request timeout, bounded connect time, decompression, cancellation propagation, and existing streaming byte limits. No large-download retry policy is registered.
+
 ## Changes
 
 Register a named/typed client:

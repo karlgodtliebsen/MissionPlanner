@@ -56,6 +56,8 @@ APJ and PX4 GCS packages are JSON containers. Parsing checks their magic, declar
 
 The catalogue cache layers an in-process value over a durable host-selected cache root. It persists source URI, ETag, Last-Modified, retrieval time, content, and schema version through an atomic replacement. A new process can reuse a fresh manifest or its HTTP validators; corrupt and incompatible cache records are ignored, while `FirmwareCatalogService` retains a valid stale entry when refresh fails.
 
+Manifest and artifact traffic uses the named `MissionPlanner.Firmware` client with a configurable MissionPlanner User-Agent, bounded request timeout, bounded connection establishment, and gzip/deflate decompression. Manifest and artifact readers still enforce independent streaming byte limits and propagate caller cancellation. Large artifact downloads have no automatic retry policy.
+
 Supported image formats in this workflow are `.apj` and `.px4`. Intel HEX, `_with_bl.hex`, DFU, legacy boards, DroneCAN, BlueOS/network upload, SD-card `.abin`, UART telemetry adapters, and mobile USB-host flashing are not implemented. `.hex` requires a future DFU/legacy workflow.
 
 ## Serial ownership, protocol, and recovery

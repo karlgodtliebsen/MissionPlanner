@@ -23,6 +23,12 @@ public sealed class FirmwareOptions
     /// <summary>Gets or sets the maximum compressed or plain manifest response downloaded over HTTP.</summary>
     public int MaximumManifestDownloadBytes { get; set; } = 8 * 1024 * 1024;
 
+    /// <summary>Gets or sets the bounded timeout for firmware HTTP requests.</summary>
+    public TimeSpan HttpRequestTimeout { get; set; } = TimeSpan.FromMinutes(2);
+
+    /// <summary>Gets or sets the product token sent with firmware HTTP requests.</summary>
+    public string HttpUserAgent { get; set; } = "MissionPlanner/1.0";
+
     /// <summary>Gets or sets the maximum accepted decompressed firmware image size.</summary>
     public int MaximumFirmwareImageBytes { get; set; } = 32 * 1024 * 1024;
 

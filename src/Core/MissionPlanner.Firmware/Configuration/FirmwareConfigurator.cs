@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
+using System.Net;
 using MissionPlanner.Firmware.Catalog;
 using MissionPlanner.Firmware.Compatibility;
 using MissionPlanner.Firmware.Connected;
@@ -50,6 +52,8 @@ public static class FirmwareConfigurator
             .Validate(value => value.CatalogCacheDuration > TimeSpan.Zero, "CatalogCacheDuration must be positive.")
             .Validate(value => value.MaximumManifestBytes > 0, "MaximumManifestBytes must be positive.")
             .Validate(value => value.MaximumManifestDownloadBytes > 0, "MaximumManifestDownloadBytes must be positive.")
+            .Validate(value => value.HttpRequestTimeout > TimeSpan.Zero, "HttpRequestTimeout must be positive.")
+            .Validate(value => !string.IsNullOrWhiteSpace(value.HttpUserAgent), "HttpUserAgent is required.")
             .Validate(value => value.MaximumFirmwareImageBytes > 0, "MaximumFirmwareImageBytes must be positive.")
             .Validate(value => value.BootloaderCommandTimeout > TimeSpan.Zero, "BootloaderCommandTimeout must be positive.")
             .Validate(value => value.BootloaderEraseTimeout > TimeSpan.Zero, "BootloaderEraseTimeout must be positive.")
@@ -67,8 +71,20 @@ public static class FirmwareConfigurator
 
         services.TryAddSingleton<IFirmwareOperationCoordinator, FirmwareOperationCoordinator>();
         services.TryAddSingleton(TimeProvider.System);
-        services.TryAddSingleton<HttpClient>();
-        services.TryAddSingleton<IFirmwareManifestClient, HttpFirmwareManifestClient>();
+        services.AddHttpClient(FirmwareHttpClient.Name, (serviceProvider, client) =>
+            {
+                var configured = serviceProvider.GetRequiredService<IOptions<FirmwareOptions>>().Value;
+                client.Timeout = configured.HttpRequestTimeout;
+                client.DefaultRequestHeaders.UserAgent.ParseAdd(configured.HttpUserAgent);
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
+            {
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                ConnectTimeout = TimeSpan.FromSeconds(15)
+            });
+        services.TryAddSingleton<IFirmwareManifestClient>(serviceProvider => new HttpFirmwareManifestClient(
+            serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(FirmwareHttpClient.Name),
+            serviceProvider.GetRequiredService<IOptions<FirmwareOptions>>()));
         services.TryAddSingleton<IFirmwareManifestParser, ArduPilotFirmwareManifestParser>();
         services.TryAddSingleton<IFirmwareCachePathProvider, DefaultFirmwareCachePathProvider>();
         services.TryAddSingleton<IFirmwareCatalogCache, PersistentFirmwareCatalogCache>();
@@ -88,7 +104,12 @@ public static class FirmwareConfigurator
         services.TryAddSingleton<IBootloaderEntryService, BootloaderEntryService>();
         services.TryAddSingleton<IFirmwareCompatibilityService, FirmwareCompatibilityService>();
         services.TryAddSingleton<IFirmwareArtifactStore, FileSystemFirmwareArtifactStore>();
-        services.TryAddSingleton<IFirmwareArtifactDownloader, FirmwareArtifactDownloader>();
+        services.TryAddSingleton<IFirmwareArtifactDownloader>(serviceProvider => new FirmwareArtifactDownloader(
+            serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(FirmwareHttpClient.Name),
+            serviceProvider.GetRequiredService<IFirmwareArtifactStore>(),
+            serviceProvider.GetRequiredService<IFirmwarePackageReader>(),
+            serviceProvider.GetRequiredService<IOptions<FirmwareOptions>>(),
+            serviceProvider.GetRequiredService<TimeProvider>()));
         services.TryAddSingleton<IFirmwarePreparationService, FirmwarePreparationService>();
         services.TryAddSingleton<IFirmwareInstallationService, FirmwareInstallationService>();
         services.TryAddSingleton<IEmbeddedBootloaderUpdateService, EmbeddedBootloaderUpdateService>();
