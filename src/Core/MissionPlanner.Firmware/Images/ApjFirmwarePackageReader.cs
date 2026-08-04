@@ -1,6 +1,7 @@
-using System.IO.Compression;
+﻿using System.IO.Compression;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Exceptions;
 using MissionPlanner.Firmware.Model;
 

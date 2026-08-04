@@ -1,4 +1,4 @@
-namespace MissionPlanner.Firmware;
+﻿namespace MissionPlanner.Firmware.Configuration;
 
 /// <summary>
 /// Configures the firmware subsystem. Concrete catalogue, cache, discovery, and protocol
@@ -6,6 +6,11 @@ namespace MissionPlanner.Firmware;
 /// </summary>
 public sealed class FirmwareOptions
 {
+    /// <summary>
+    /// Gets or sets the name of the configuration section.
+    /// </summary>
+    public static string SectionName { get; set; } = "Firmware";
+
     /// <summary>Gets or sets the official manifest URI.</summary>
     public Uri ManifestUri { get; set; } = new("https://firmware.ardupilot.org/manifest.json.gz");
 

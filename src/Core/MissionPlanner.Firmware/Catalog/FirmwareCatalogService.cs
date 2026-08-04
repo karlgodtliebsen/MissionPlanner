@@ -1,5 +1,6 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Exceptions;
 using MissionPlanner.Firmware.Model;
 

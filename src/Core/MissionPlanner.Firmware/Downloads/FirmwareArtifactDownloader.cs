@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Exceptions;
 using MissionPlanner.Firmware.Images;
 using MissionPlanner.Firmware.Model;
@@ -23,7 +24,10 @@ public sealed class FirmwareArtifactDownloader(
     {
         ArgumentNullException.ThrowIfNull(artifact);
         if (!options.Value.AllowInsecureArtifactUrls && artifact.DownloadUri.Scheme != Uri.UriSchemeHttps)
+        {
             throw new FirmwareDownloadException("Firmware artifacts require HTTPS.");
+        }
+
         var cacheKey = CacheKey(artifact);
         var cached = await store.TryGetAsync(cacheKey, cancellationToken).ConfigureAwait(false);
         if (cached is not null)
@@ -31,7 +35,10 @@ public sealed class FirmwareArtifactDownloader(
             try
             {
                 var cachedResult = await ValidateStoredAsync(cached, artifact, true, cancellationToken).ConfigureAwait(false);
-                if (cachedResult is not null) return cachedResult;
+                if (cachedResult is not null)
+                {
+                    return cachedResult;
+                }
             }
             catch (Exception exception) when (exception is FirmwarePackageException or IOException or CryptographicException)
             {
@@ -48,7 +55,11 @@ public sealed class FirmwareArtifactDownloader(
             var limit = artifact.Size is { } expectedSize
                 ? Math.Min(options.Value.MaximumArtifactBytes, expectedSize)
                 : options.Value.MaximumArtifactBytes;
-            if (declared > limit) throw new FirmwareDownloadException("Firmware artifact exceeds the configured size limit.");
+            if (declared > limit)
+            {
+                throw new FirmwareDownloadException("Firmware artifact exceeds the configured size limit.");
+            }
+
             await using var source = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
             using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
             var buffer = new byte[81920];
@@ -57,16 +68,27 @@ public sealed class FirmwareArtifactDownloader(
             while ((read = await source.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
             {
                 total = checked(total + read);
-                if (total > limit) throw new FirmwareDownloadException("Firmware artifact exceeded the configured size limit while streaming.");
+                if (total > limit)
+                {
+                    throw new FirmwareDownloadException("Firmware artifact exceeded the configured size limit while streaming.");
+                }
+
                 await writer.Stream.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
                 hash.AppendData(buffer, 0, read);
                 progress?.Report(new FirmwareProgress(FirmwareOperationState.Downloading, declared is > 0 ? total * 100d / declared : null, "download.progress", total, declared));
             }
+
             if (artifact.Size is { } exactSize && total != exactSize)
+            {
                 throw new FirmwareDownloadException($"Downloaded size {total} does not match declared artifact size {exactSize}.");
+            }
+
             var sha = Convert.ToHexString(hash.GetHashAndReset());
             if (artifact.Sha256 is not null && !CryptographicOperations.FixedTimeEquals(Convert.FromHexString(artifact.Sha256), Convert.FromHexString(sha)))
+            {
                 throw new FirmwareDownloadException("Firmware artifact SHA-256 verification failed.");
+            }
+
             writer.Stream.Position = 0;
             _ = await packageReader.ReadAsync(writer.Stream, cancellationToken).ConfigureAwait(false);
             var metadata = new FirmwareArtifactMetadata(cacheKey, artifact.DownloadUri, timeProvider.GetUtcNow(), total, sha);
@@ -83,16 +105,32 @@ public sealed class FirmwareArtifactDownloader(
 
     private async Task<DownloadedFirmwareArtifact?> ValidateStoredAsync(IFirmwareStoredArtifact stored, FirmwareArtifact expected, bool fromCache, CancellationToken cancellationToken)
     {
-        if (expected.Size is { } exactSize && stored.Metadata.Size != exactSize ||
-            expected.Sha256 is not null && !string.Equals(stored.Metadata.Sha256, expected.Sha256, StringComparison.OrdinalIgnoreCase)) return null;
+        if ((expected.Size is { } exactSize && stored.Metadata.Size != exactSize) ||
+            (expected.Sha256 is not null && !string.Equals(stored.Metadata.Sha256, expected.Sha256, StringComparison.OrdinalIgnoreCase)))
+        {
+            return null;
+        }
+
         await using var stream = await stored.OpenReadAsync(cancellationToken).ConfigureAwait(false);
         using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
         var buffer = new byte[81920];
         int read;
-        while ((read = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0) hash.AppendData(buffer, 0, read);
+        while ((read = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
+        {
+            hash.AppendData(buffer, 0, read);
+        }
+
         var actualHash = Convert.ToHexString(hash.GetHashAndReset());
-        if (!string.Equals(actualHash, stored.Metadata.Sha256, StringComparison.OrdinalIgnoreCase)) return null;
-        if (!stream.CanSeek) throw new IOException("Stored artifact stream must support validation rewind.");
+        if (!string.Equals(actualHash, stored.Metadata.Sha256, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        if (!stream.CanSeek)
+        {
+            throw new IOException("Stored artifact stream must support validation rewind.");
+        }
+
         stream.Position = 0;
         var package = await packageReader.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
         return new DownloadedFirmwareArtifact(stored, package, stored.Metadata, fromCache);

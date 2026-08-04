@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Discovery;
 using MissionPlanner.Firmware.Exceptions;
@@ -19,10 +20,7 @@ public sealed class BootloaderDiscoveryServiceTests
         var unrelated = Device("COM1", "unrelated");
         var bootloader = Device("COM9", "bootloader", "Cube-BL");
         var ports = new FakePortFactory();
-        var clients = new FakeClientFactory(new Dictionary<string, BootloaderIdentity>
-        {
-            ["COM9"] = new(50, 4, 1024)
-        });
+        var clients = new FakeClientFactory(new Dictionary<string, BootloaderIdentity> { ["COM9"] = new(50, 4, 1024) });
         var service = CreateService(new FakeCatalog(application, unrelated), new FakeMonitor(bootloader, bootloader), ports, clients);
 
         await using var found = await service.FindAsync(
@@ -44,7 +42,7 @@ public sealed class BootloaderDiscoveryServiceTests
         var clients = new FakeClientFactory(new Dictionary<string, BootloaderIdentity> { ["COM4"] = new(9, 4, 2048) });
         var service = CreateService(new FakeCatalog(candidate), new FakeMonitor(), ports, clients);
 
-        var found = await service.FindAsync(new BootloaderDiscoveryRequest(SelectedDevice: candidate), cancellationToken: TestContext.Current.CancellationToken);
+        var found = await service.FindAsync(new BootloaderDiscoveryRequest(candidate), cancellationToken: TestContext.Current.CancellationToken);
 
         found.Identity.BoardId.Should().Be(9);
         clients.IdentifyCalls.Should().Be(1);
@@ -63,7 +61,7 @@ public sealed class BootloaderDiscoveryServiceTests
         var service = CreateService(new FakeCatalog(application), new FakeMonitor(bootloader), ports, clients);
 
         await using var found = await service.FindAsync(
-            new BootloaderDiscoveryRequest(SelectedDevice: application),
+            new BootloaderDiscoveryRequest(application),
             cancellationToken: TestContext.Current.CancellationToken);
 
         found.Device.PortName.Should().Be("COM7");
@@ -89,20 +87,22 @@ public sealed class BootloaderDiscoveryServiceTests
         IFirmwareSerialDeviceCatalog catalog,
         IFirmwareDeviceMonitor monitor,
         IFirmwareSerialPortFactory ports,
-        IArduPilotBootloaderClientFactory clients) =>
-        new(catalog, monitor, ports, clients, Options.Create(new FirmwareOptions
-        {
-            BootloaderDiscoveryTimeout = TimeSpan.FromSeconds(1),
-            BootloaderPortOpenTimeout = TimeSpan.FromMilliseconds(50)
-        }), NullLogger<BootloaderDiscoveryService>.Instance);
+        IArduPilotBootloaderClientFactory clients)
+    {
+        return new BootloaderDiscoveryService(catalog, monitor, ports, clients, Options.Create(new FirmwareOptions { BootloaderDiscoveryTimeout = TimeSpan.FromSeconds(1), BootloaderPortOpenTimeout = TimeSpan.FromMilliseconds(50) }), NullLogger<BootloaderDiscoveryService>.Instance);
+    }
 
-    private static SerialDeviceDescriptor Device(string port, string id, string? product = null) =>
-        new(port, id, new UsbIdentifier(0x2dae, 0x1016), id, product);
+    private static SerialDeviceDescriptor Device(string port, string id, string? product = null)
+    {
+        return new SerialDeviceDescriptor(port, id, new UsbIdentifier(0x2dae, 0x1016), id, product);
+    }
 
     private sealed class FakeCatalog(params SerialDeviceDescriptor[] devices) : IFirmwareSerialDeviceCatalog
     {
-        public Task<IReadOnlyList<SerialDeviceDescriptor>> GetDevicesAsync(CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<SerialDeviceDescriptor>>(devices);
+        public Task<IReadOnlyList<SerialDeviceDescriptor>> GetDevicesAsync(CancellationToken cancellationToken = default)
+        {
+            return Task.FromResult<IReadOnlyList<SerialDeviceDescriptor>>(devices);
+        }
     }
 
     private sealed class FakeMonitor(params SerialDeviceDescriptor[] devices) : IFirmwareDeviceMonitor
@@ -131,6 +131,7 @@ public sealed class BootloaderDiscoveryServiceTests
     {
         public List<string> Opened { get; } = [];
         public Dictionary<string, FakePort> Ports { get; } = new(StringComparer.OrdinalIgnoreCase);
+
         public Task<IFirmwareSerialPort> OpenAsync(SerialPortOpenOptions options, CancellationToken cancellationToken = default)
         {
             Opened.Add(options.PortName);
@@ -146,14 +147,25 @@ public sealed class BootloaderDiscoveryServiceTests
         public Stream Stream { get; } = new MemoryStream();
         public bool IsOpen => !Disposed;
         public bool Disposed { get; private set; }
-        public ValueTask DisposeAsync() { Disposed = true; Stream.Dispose(); return ValueTask.CompletedTask; }
+
+        public ValueTask DisposeAsync()
+        {
+            Disposed = true;
+            Stream.Dispose();
+            return ValueTask.CompletedTask;
+        }
     }
 
     private sealed class FakeClientFactory(IReadOnlyDictionary<string, BootloaderIdentity> identities) : IArduPilotBootloaderClientFactory
     {
         public int IdentifyCalls { get; private set; }
         public int DestructiveCalls { get; private set; }
-        public IArduPilotBootloaderClient Create(IFirmwareSerialPort port) => new FakeClient(this, port, identities.GetValueOrDefault(port.PortName));
+
+        public IArduPilotBootloaderClient Create(IFirmwareSerialPort port)
+        {
+            return new FakeClient(this, port, identities.GetValueOrDefault(port.PortName));
+        }
+
         private sealed class FakeClient(FakeClientFactory owner, IFirmwareSerialPort port, BootloaderIdentity? identity) : IArduPilotBootloaderClient
         {
             public Task<BootloaderIdentity> IdentifyAsync(CancellationToken cancellationToken = default)
@@ -161,11 +173,35 @@ public sealed class BootloaderDiscoveryServiceTests
                 owner.IdentifyCalls++;
                 return identity is null ? Task.FromException<BootloaderIdentity>(new FirmwareBootloaderException("not a bootloader")) : Task.FromResult(identity);
             }
-            public Task EraseAsync(CancellationToken cancellationToken = default) { owner.DestructiveCalls++; return Task.CompletedTask; }
-            public Task ProgramAsync(ApjFirmwarePackage package, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default) { owner.DestructiveCalls++; return Task.CompletedTask; }
-            public Task<FirmwareVerificationResult> VerifyAsync(ApjFirmwarePackage package, CancellationToken cancellationToken = default) { owner.DestructiveCalls++; return Task.FromResult(new FirmwareVerificationResult(true, 0, 0)); }
-            public Task RebootAsync(CancellationToken cancellationToken = default) { owner.DestructiveCalls++; return Task.CompletedTask; }
-            public ValueTask DisposeAsync() => port.DisposeAsync();
+
+            public Task EraseAsync(CancellationToken cancellationToken = default)
+            {
+                owner.DestructiveCalls++;
+                return Task.CompletedTask;
+            }
+
+            public Task ProgramAsync(ApjFirmwarePackage package, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default)
+            {
+                owner.DestructiveCalls++;
+                return Task.CompletedTask;
+            }
+
+            public Task<FirmwareVerificationResult> VerifyAsync(ApjFirmwarePackage package, CancellationToken cancellationToken = default)
+            {
+                owner.DestructiveCalls++;
+                return Task.FromResult(new FirmwareVerificationResult(true, 0, 0));
+            }
+
+            public Task RebootAsync(CancellationToken cancellationToken = default)
+            {
+                owner.DestructiveCalls++;
+                return Task.CompletedTask;
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                return port.DisposeAsync();
+            }
         }
     }
 
@@ -174,8 +210,10 @@ public sealed class BootloaderDiscoveryServiceTests
         private int index;
         public int IdentifyCalls { get; private set; }
 
-        public IArduPilotBootloaderClient Create(IFirmwareSerialPort port) =>
-            new FakeClient(this, port, identities[Math.Min(index++, identities.Length - 1)]);
+        public IArduPilotBootloaderClient Create(IFirmwareSerialPort port)
+        {
+            return new FakeClient(this, port, identities[Math.Min(index++, identities.Length - 1)]);
+        }
 
         private sealed class FakeClient(SequencedClientFactory owner, IFirmwareSerialPort port, BootloaderIdentity? identity) : IArduPilotBootloaderClient
         {
@@ -187,11 +225,30 @@ public sealed class BootloaderDiscoveryServiceTests
                     : Task.FromResult(identity);
             }
 
-            public Task EraseAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
-            public Task ProgramAsync(ApjFirmwarePackage package, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default) => Task.CompletedTask;
-            public Task<FirmwareVerificationResult> VerifyAsync(ApjFirmwarePackage package, CancellationToken cancellationToken = default) => Task.FromResult(new FirmwareVerificationResult(true, 0, 0));
-            public Task RebootAsync(CancellationToken cancellationToken = default) => Task.CompletedTask;
-            public ValueTask DisposeAsync() => port.DisposeAsync();
+            public Task EraseAsync(CancellationToken cancellationToken = default)
+            {
+                return Task.CompletedTask;
+            }
+
+            public Task ProgramAsync(ApjFirmwarePackage package, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default)
+            {
+                return Task.CompletedTask;
+            }
+
+            public Task<FirmwareVerificationResult> VerifyAsync(ApjFirmwarePackage package, CancellationToken cancellationToken = default)
+            {
+                return Task.FromResult(new FirmwareVerificationResult(true, 0, 0));
+            }
+
+            public Task RebootAsync(CancellationToken cancellationToken = default)
+            {
+                return Task.CompletedTask;
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                return port.DisposeAsync();
+            }
         }
     }
 }

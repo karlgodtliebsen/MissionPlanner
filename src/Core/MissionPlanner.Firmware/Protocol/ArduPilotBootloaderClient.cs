@@ -1,7 +1,8 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Exceptions;
 using MissionPlanner.Firmware.Images;
@@ -55,6 +56,7 @@ public sealed class ArduPilotBootloaderClient(
             await ExecuteStatusCommandAsync([ArduPilotBootloaderProtocol.ExternalErase, .. size, ArduPilotBootloaderProtocol.EndOfCommand], options.Value.BootloaderEraseTimeout, cancellationToken).ConfigureAwait(false);
             await ProgramImageAsync(package.ExternalImage, ArduPilotBootloaderProtocol.ExternalProgramMulti, 0, package.Image.Length + package.ExternalImage.Length, progress, cancellationToken).ConfigureAwait(false);
         }
+
         await ProgramImageAsync(package.Image, ArduPilotBootloaderProtocol.ProgramMulti, package.ExternalImage.Length, package.Image.Length + package.ExternalImage.Length, progress, cancellationToken).ConfigureAwait(false);
     }
 
@@ -73,6 +75,7 @@ public sealed class ArduPilotBootloaderClient(
             externalActual = await GetExternalChecksumAsync(package.ExternalImage.Length, cancellationToken).ConfigureAwait(false);
             externalExpected = ArduPilotFirmwareChecksum.Update(0, Pad4(package.ExternalImage.Span));
         }
+
         var succeeded = actual == expected && externalActual == externalExpected;
         return new FirmwareVerificationResult(succeeded, expected, actual, externalExpected, externalActual);
     }
@@ -101,6 +104,7 @@ public sealed class ArduPilotBootloaderClient(
                     await Task.Delay(options.Value.BootloaderRetryDelay, timeProvider, cancellationToken).ConfigureAwait(false);
             }
         }
+
         throw new FirmwareBootloaderException("Unable to synchronize with the bootloader.", last);
     }
 
@@ -202,17 +206,23 @@ public sealed class ArduPilotBootloaderClient(
     {
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         deadline.CancelAfter(timeout);
-        try { await port.Stream.WriteAsync(data, deadline.Token).ConfigureAwait(false); await port.Stream.FlushAsync(deadline.Token).ConfigureAwait(false); }
+        try
+        {
+            await port.Stream.WriteAsync(data, deadline.Token).ConfigureAwait(false);
+            await port.Stream.FlushAsync(deadline.Token).ConfigureAwait(false);
+        }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { throw new TimeoutException("Timed out writing a bootloader command."); }
     }
 
     private BootloaderIdentity RequireIdentity() => identity ?? throw new FirmwareBootloaderException("Bootloader identity must be read before destructive operations.");
+
     private static void ValidatePackage(BootloaderIdentity device, ApjFirmwarePackage package)
     {
         if (device.BoardId != package.BoardId && !(device.BoardId == 33 && package.BoardId == 9)) throw new FirmwareCompatibilityException($"Firmware board {package.BoardId} does not match bootloader board {device.BoardId}.");
         if (package.Image.Length > device.FlashSize) throw new FirmwareCompatibilityException("Firmware image exceeds application flash capacity.");
         if (package.ExternalImage.Length > device.ExternalFlashSize) throw new FirmwareCompatibilityException("External image exceeds external flash capacity.");
     }
+
     private static byte[] Pad4(ReadOnlySpan<byte> image)
     {
         var length = checked((image.Length + 3) & ~3);

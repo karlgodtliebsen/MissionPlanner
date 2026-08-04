@@ -11,6 +11,11 @@ public class ContentPageView<TViewModel> : ContentPage
 
 {
     /// <summary>
+    ///  
+    /// </summary>
+    protected TViewModel? ViewModel;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ContentPageView{TViewModel}"/> class.
     /// </summary>
     protected ContentPageView()
@@ -43,15 +48,15 @@ public class ContentPageView<TViewModel> : ContentPage
         base.OnNavigatedTo(args);
         if (args.NavigationType is NavigationType.Replace or NavigationType.Remove)
         {
-            var viewModel = ServiceHelper.GetRequiredService<TViewModel>();
-            BindingContext = viewModel;
+            ViewModel = ServiceHelper.GetRequiredService<TViewModel>();
+            BindingContext = ViewModel;
         }
     }
 
     private void DeactivateViewModel()
     {
-        var viewModel = BindingContext as TViewModel;
         BindingContext = null;
-        viewModel?.Dispose();
+        ViewModel?.Dispose();
+        ViewModel = null;
     }
 }

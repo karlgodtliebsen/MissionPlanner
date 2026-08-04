@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Exceptions;
 using MissionPlanner.Firmware.Images;
 
@@ -32,7 +33,14 @@ public sealed class FirmwarePackageReaderTests
     [InlineData("APJFWv1", 50, 5, 4, "eJxjZGJmYQUAACgAEA==")]
     public async Task RejectsInvalidPackages(string magic, int boardId, int imageSize, int maximum, string image)
     {
-        var json = JsonSerializer.Serialize(new { magic, board_id = boardId, image_size = imageSize, image_maxsize = maximum, image });
+        var json = JsonSerializer.Serialize(new
+        {
+            magic,
+            board_id = boardId,
+            image_size = imageSize,
+            image_maxsize = maximum,
+            image
+        });
         await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
 
         var act = async () => await CreateReader().ReadAsync(stream, TestContext.Current.CancellationToken);
@@ -58,5 +66,8 @@ public sealed class FirmwarePackageReaderTests
         ArduPilotFirmwareChecksum.Calculate(Encoding.ASCII.GetBytes("abc"), 16).Should().Be(0x708ff7d5);
     }
 
-    private static ApjFirmwarePackageReader CreateReader() => new(Options.Create(new FirmwareOptions()));
+    private static ApjFirmwarePackageReader CreateReader()
+    {
+        return new ApjFirmwarePackageReader(Options.Create(new FirmwareOptions()));
+    }
 }

@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -9,39 +9,13 @@ using MissionPlanner.Firmware.Connected;
 using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Discovery;
 using MissionPlanner.Firmware.Entry;
-using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Firmware.Images;
+using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Presentation;
+using UraniumUI.Extensions;
 
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
-
-/// <summary>One data-driven firmware choice displayed by the install page.</summary>
-public sealed partial class FirmwareCatalogItemViewModel(FirmwareManifestEntry entry) : ObservableObject
-{
-    /// <summary>Gets the normalized release.</summary>
-    public FirmwareManifestEntry Entry { get; } = entry;
-    /// <summary>Gets the vehicle label.</summary>
-    public string VehicleType => Entry.Target.VehicleType.ToString();
-    /// <summary>Gets the version label.</summary>
-    public string Version => Entry.Version.ToString();
-    /// <summary>Gets the platform label.</summary>
-    public string Platform => Entry.Target.Platform;
-    /// <summary>Gets the board identifier.</summary>
-    public int BoardId => Entry.Target.BoardId;
-    /// <summary>Gets the release channel.</summary>
-    public FirmwareReleaseChannel Channel => Entry.Channel;
-}
-
-/// <summary>Presentation state for one firmware operation.</summary>
-public sealed partial class FirmwareProgressViewModel : ObservableObject
-{
-    [ObservableProperty] public partial string Stage { get; set; } = "Ready";
-    [ObservableProperty] public partial double Progress { get; set; }
-    [ObservableProperty] public partial bool HasPercentage { get; set; }
-    [ObservableProperty] public partial bool IsPowerCritical { get; set; }
-    [ObservableProperty] public partial string? TechnicalDetail { get; set; }
-}
 
 /// <summary>Drives connected and disconnected firmware installation experiences.</summary>
 public sealed partial class InstallFirmwareViewModel : ObservableObject, IDisposable
@@ -85,16 +59,20 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         this.confirmation = confirmation;
         this.dispatcher = dispatcher;
         this.logger = logger;
+        ActivateAsync().FireAndForget();
         ApplyMode();
     }
 
     /// <summary>Gets catalogue choices.</summary>
     public ObservableCollection<FirmwareCatalogItemViewModel> FirmwareChoices { get; } = [];
+
     /// <summary>Gets discovered serial devices.</summary>
     public ObservableCollection<string> Devices { get; } = [];
+
     /// <summary>Gets release channels.</summary>
     public IReadOnlyList<FirmwareReleaseChannel> Channels { get; } =
         [FirmwareReleaseChannel.Stable, FirmwareReleaseChannel.Beta, FirmwareReleaseChannel.Latest];
+
     /// <summary>Gets operation progress.</summary>
     public FirmwareProgressViewModel OperationProgress { get; } = new();
 
@@ -107,26 +85,35 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     [ObservableProperty] public partial string? CustomFirmwareBuild { get; private set; }
     [ObservableProperty] public partial int CustomFirmwareBoardId { get; private set; }
     [ObservableProperty] public partial long CustomFirmwareImageSize { get; private set; }
+
     /// <summary>Gets whether parsed custom metadata is available.</summary>
     public bool HasCustomFirmware => CustomPackage is not null;
+
     [ObservableProperty] public partial bool IsConnectedMode { get; private set; }
     [ObservableProperty] public partial bool IsDisconnectedMode { get; private set; }
     [ObservableProperty] public partial bool IsUnsupportedMode { get; private set; }
     [ObservableProperty] public partial bool IsOperationInProgress { get; private set; }
+
     /// <summary>Gets whether Shell navigation may safely leave this page.</summary>
     public bool CanNavigateAway => !IsOperationInProgress;
+
     [ObservableProperty] public partial bool CanUpdateBootloader { get; private set; }
     [ObservableProperty] public partial bool CanInstall { get; private set; }
     [ObservableProperty] public partial string StatusMessage { get; private set; } = "Ready";
     [ObservableProperty] public partial string DeviceStatus { get; private set; } = "No flight controller detected";
     [ObservableProperty] public partial string? LastDiagnosticReport { get; private set; }
+
     /// <summary>Gets whether a terminal diagnostic report can be copied.</summary>
     public bool HasDiagnosticReport => !string.IsNullOrWhiteSpace(LastDiagnosticReport);
 
     /// <summary>Starts observing connection state and refreshes disconnected data.</summary>
-    public async Task ActivateAsync()
+    private async Task ActivateAsync()
     {
-        if (lifetime is not null) return;
+        if (lifetime is not null)
+        {
+            return;
+        }
+
         lifetime = new CancellationTokenSource();
         activeVehicle.Changed += OnActiveVehicleChanged;
         StatusMessage = "Ready";
@@ -138,28 +125,44 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         LastDiagnosticReport = null;
         OnPropertyChanged(nameof(HasDiagnosticReport));
         ApplyMode();
-        if (IsDisconnectedMode) await RefreshAsync(false, lifetime.Token);
+        if (IsDisconnectedMode)
+        {
+            await RefreshAsync(false, lifetime.Token);
+        }
     }
 
     /// <summary>Stops page-owned observation without cancelling an unsafe firmware operation.</summary>
-    public void Deactivate()
+    private void Deactivate()
     {
         activeVehicle.Changed -= OnActiveVehicleChanged;
-        if (!IsOperationInProgress) lifetime?.Cancel();
+        if (!IsOperationInProgress)
+        {
+            lifetime?.Cancel();
+        }
+
         lifetime?.Dispose();
         lifetime = null;
     }
 
     partial void OnSelectedChannelChanged(FirmwareReleaseChannel value)
     {
-        if (lifetime is not null && IsDisconnectedMode) _ = RefreshAsync(false, lifetime.Token);
+        if (lifetime is not null && IsDisconnectedMode)
+        {
+            _ = RefreshAsync(false, lifetime.Token);
+        }
     }
 
     [RelayCommand]
-    private Task RefreshCatalogAsync() => RefreshAsync(true, lifetime?.Token ?? CancellationToken.None);
+    private Task RefreshCatalogAsync()
+    {
+        return RefreshAsync(true, lifetime?.Token ?? CancellationToken.None);
+    }
 
     [RelayCommand]
-    private Task ShowAllOptionsAsync() => RefreshAsync(true, lifetime?.Token ?? CancellationToken.None, true);
+    private Task ShowAllOptionsAsync()
+    {
+        return RefreshAsync(true, lifetime?.Token ?? CancellationToken.None, true);
+    }
 
     [RelayCommand]
     private void SelectFirmware(FirmwareCatalogItemViewModel item)
@@ -176,12 +179,21 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         try
         {
             var file = await filePicker.PickAsync(cancellationToken);
-            if (file is null) return;
+            if (file is null)
+            {
+                return;
+            }
+
             var extension = Path.GetExtension(file.FileName);
             if (extension.Equals(".hex", StringComparison.OrdinalIgnoreCase))
+            {
                 throw new NotSupportedException(".hex firmware requires a future DFU/legacy workflow. Select a GCS-loadable .apj or .px4 package.");
+            }
+
             if (!extension.Equals(".apj", StringComparison.OrdinalIgnoreCase) && !extension.Equals(".px4", StringComparison.OrdinalIgnoreCase))
+            {
                 throw new NotSupportedException("Only .apj and .px4 firmware packages are supported by the modern bootloader workflow.");
+            }
 
             await using var stream = await file.OpenReadAsync(cancellationToken);
             var package = await packageReader.ReadAsync(stream, cancellationToken);
@@ -210,7 +222,11 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     [RelayCommand(CanExecute = nameof(CanStartInstall), AllowConcurrentExecutions = false)]
     private async Task InstallAsync(CancellationToken cancellationToken)
     {
-        if ((SelectedFirmware is null && CustomPackage is null) || Interlocked.CompareExchange(ref operationRunning, 1, 0) != 0) return;
+        if ((SelectedFirmware is null && CustomPackage is null) || Interlocked.CompareExchange(ref operationRunning, 1, 0) != 0)
+        {
+            return;
+        }
+
         try
         {
             SetOperation(true, FirmwareOperationState.Downloading);
@@ -243,17 +259,27 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         }
     }
 
-    private bool CanStartInstall() => CanInstall && (SelectedFirmware is not null || CustomPackage is not null) && !IsOperationInProgress;
+    private bool CanStartInstall()
+    {
+        return CanInstall && (SelectedFirmware is not null || CustomPackage is not null) && !IsOperationInProgress;
+    }
 
     [RelayCommand]
-    private Task CopyDiagnosticReportAsync() => string.IsNullOrWhiteSpace(LastDiagnosticReport)
-        ? Task.CompletedTask
-        : Clipboard.Default.SetTextAsync(LastDiagnosticReport);
+    private Task CopyDiagnosticReportAsync()
+    {
+        return string.IsNullOrWhiteSpace(LastDiagnosticReport)
+            ? Task.CompletedTask
+            : Clipboard.Default.SetTextAsync(LastDiagnosticReport);
+    }
 
     [RelayCommand(CanExecute = nameof(CanStartBootloaderUpdate), AllowConcurrentExecutions = false)]
     private async Task UpdateBootloaderAsync(CancellationToken cancellationToken)
     {
-        if (Interlocked.CompareExchange(ref operationRunning, 1, 0) != 0) return;
+        if (Interlocked.CompareExchange(ref operationRunning, 1, 0) != 0)
+        {
+            return;
+        }
+
         try
         {
             var accepted = await confirmation.ConfirmAsync(
@@ -261,7 +287,11 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
                 "This writes the bootloader stored inside the connected flight controller. The vehicle must remain disarmed and powered. Reboot is required after the command is accepted.",
                 "Update Bootloader",
                 cancellationToken);
-            if (!accepted) return;
+            if (!accepted)
+            {
+                return;
+            }
+
             SetOperation(true, FirmwareOperationState.Programming);
             var result = await bootloaderUpdateService.UpdateAsync(new BootloaderUpdateRequest(true), cancellationToken);
             StatusMessage = result.Code + (result.RebootRequired ? " — reboot the flight controller to use the new bootloader." : string.Empty);
@@ -278,11 +308,18 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         }
     }
 
-    private bool CanStartBootloaderUpdate() => CanUpdateBootloader && !IsOperationInProgress;
+    private bool CanStartBootloaderUpdate()
+    {
+        return CanUpdateBootloader && !IsOperationInProgress;
+    }
 
     private async Task RefreshAsync(bool forceRefresh, CancellationToken cancellationToken, bool allOptions = false)
     {
-        if (!IsDisconnectedMode || IsOperationInProgress) return;
+        if (!IsDisconnectedMode || IsOperationInProgress)
+        {
+            return;
+        }
+
         try
         {
             StatusMessage = "Loading firmware catalogue…";
@@ -300,13 +337,21 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
                 .Select(item => new FirmwareCatalogItemViewModel(item))
                 .ToArray();
             FirmwareChoices.Clear();
-            foreach (var choice in choices) FirmwareChoices.Add(choice);
+            foreach (var choice in choices)
+            {
+                FirmwareChoices.Add(choice);
+            }
+
             SelectedFirmware = choices.FirstOrDefault();
             CustomPackage = null;
             OnPropertyChanged(nameof(HasCustomFirmware));
 
             Devices.Clear();
-            foreach (var device in devices) Devices.Add($"{device.PortName} · {device.ProductName ?? "Serial device"} · {device.UsbIdentifier?.ToString() ?? "USB identity unavailable"}");
+            foreach (var device in devices)
+            {
+                Devices.Add($"{device.PortName} · {device.ProductName ?? "Serial device"} · {device.UsbIdentifier?.ToString() ?? "USB identity unavailable"}");
+            }
+
             DeviceStatus = Devices.Count == 0 ? "No flight controller detected" : string.Join(Environment.NewLine, Devices);
             StatusMessage = catalog.IsStale ? "Showing cached firmware catalogue" : $"{FirmwareChoices.Count} vehicle firmware choices available";
         }
@@ -318,8 +363,10 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         }
     }
 
-    private void OnActiveVehicleChanged(object? sender, Core.Vehicles.ActiveVehicleChangedEventArgs e) =>
+    private void OnActiveVehicleChanged(object? sender, Core.Vehicles.ActiveVehicleChangedEventArgs e)
+    {
         dispatcher.Dispatch(() => ApplyMode());
+    }
 
     private void SetOperation(bool active, FirmwareOperationState? stage)
     {
@@ -358,21 +405,27 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         StatusMessage = OperationProgress.Stage;
     }
 
-    private static string StageText(FirmwareProgress progress) => progress.State switch
+    private static string StageText(FirmwareProgress progress)
     {
-        FirmwareOperationState.Downloading => "Downloading firmware",
-        FirmwareOperationState.WaitingForDevice => "Waiting for flight controller",
-        FirmwareOperationState.IdentifyingBootloader => "Identifying bootloader",
-        FirmwareOperationState.CheckingCompatibility => "Checking compatibility",
-        FirmwareOperationState.Erasing => "Erasing flash — do not disconnect power",
-        FirmwareOperationState.Programming => $"Programming{(progress.Percentage is null ? string.Empty : $" {progress.Percentage:0}%")}",
-        FirmwareOperationState.Verifying => "Verifying firmware — do not disconnect power",
-        FirmwareOperationState.Rebooting => "Rebooting",
-        FirmwareOperationState.WaitingForApplication => "Waiting for ArduPilot",
-        FirmwareOperationState.Completed => "Completed",
-        _ => progress.MessageCode
-    };
+        return progress.State switch
+        {
+            FirmwareOperationState.Downloading => "Downloading firmware",
+            FirmwareOperationState.WaitingForDevice => "Waiting for flight controller",
+            FirmwareOperationState.IdentifyingBootloader => "Identifying bootloader",
+            FirmwareOperationState.CheckingCompatibility => "Checking compatibility",
+            FirmwareOperationState.Erasing => "Erasing flash — do not disconnect power",
+            FirmwareOperationState.Programming => $"Programming{(progress.Percentage is null ? string.Empty : $" {progress.Percentage:0}%")}",
+            FirmwareOperationState.Verifying => "Verifying firmware — do not disconnect power",
+            FirmwareOperationState.Rebooting => "Rebooting",
+            FirmwareOperationState.WaitingForApplication => "Waiting for ArduPilot",
+            FirmwareOperationState.Completed => "Completed",
+            var _ => progress.MessageCode
+        };
+    }
 
     /// <inheritdoc />
-    public void Dispose() => Deactivate();
+    public void Dispose()
+    {
+        Deactivate();
+    }
 }

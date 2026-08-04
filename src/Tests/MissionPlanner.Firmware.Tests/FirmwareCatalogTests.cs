@@ -3,6 +3,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Firmware.Catalog;
+using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Exceptions;
 using MissionPlanner.Firmware.Model;
 
@@ -44,8 +45,8 @@ public sealed class FirmwareCatalogTests
     public void ParserSupportsCurrentOfficialManifestFieldNames()
     {
         const string json = """
-            {"firmware":[{"vehicletype":"AntennaTracker","platform":"BeastH7","url":"https://firmware.ardupilot.org/AntennaTracker/stable-4.7.0/BeastH7/antennatracker.apj","format":"apj","mav-firmware-version":"4.7.0","mav-firmware-version-type":"STABLE-4.7.0","board_id":1025,"image_size":807112,"USBID":["0x1209/0x5741"],"bootloader_str":["BeastH7-BL"]}]}
-            """;
+                            {"firmware":[{"vehicletype":"AntennaTracker","platform":"BeastH7","url":"https://firmware.ardupilot.org/AntennaTracker/stable-4.7.0/BeastH7/antennatracker.apj","format":"apj","mav-firmware-version":"4.7.0","mav-firmware-version-type":"STABLE-4.7.0","board_id":1025,"image_size":807112,"USBID":["0x1209/0x5741"],"bootloader_str":["BeastH7-BL"]}]}
+                            """;
 
         var entry = CreateParser().Parse(System.Text.Encoding.UTF8.GetBytes(json)).Should().ContainSingle().Subject;
 
@@ -96,12 +97,24 @@ public sealed class FirmwareCatalogTests
         return new FirmwareCatalogService(client, CreateParser(), cache, options, clock, NullLogger<FirmwareCatalogService>.Instance);
     }
 
-    private static ArduPilotFirmwareManifestParser CreateParser() => new(Options.Create(new FirmwareOptions()));
-    private static byte[] FixtureBytes() => File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "Fixtures", "manifest.json"));
+    private static ArduPilotFirmwareManifestParser CreateParser()
+    {
+        return new ArduPilotFirmwareManifestParser(Options.Create(new FirmwareOptions()));
+    }
+
+    private static byte[] FixtureBytes()
+    {
+        return File.ReadAllBytes(Path.Combine(AppContext.BaseDirectory, "Fixtures", "manifest.json"));
+    }
+
     private static byte[] Gzip(byte[] input)
     {
         using var output = new MemoryStream();
-        using (var gzip = new GZipStream(output, CompressionMode.Compress, true)) gzip.Write(input);
+        using (var gzip = new GZipStream(output, CompressionMode.Compress, true))
+        {
+            gzip.Write(input);
+        }
+
         return output.ToArray();
     }
 
@@ -109,6 +122,7 @@ public sealed class FirmwareCatalogTests
     {
         public Exception? Exception { get; init; }
         public int CallCount { get; private set; }
+
         public Task<FirmwareManifestResponse> GetAsync(Uri uri, CachedFirmwareManifest? cached, CancellationToken cancellationToken = default)
         {
             CallCount++;
@@ -120,6 +134,9 @@ public sealed class FirmwareCatalogTests
 
     private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
     {
-        public override DateTimeOffset GetUtcNow() => now;
+        public override DateTimeOffset GetUtcNow()
+        {
+            return now;
+        }
     }
 }

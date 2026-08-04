@@ -2,6 +2,7 @@ using System.Globalization;
 using System.IO.Compression;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Exceptions;
 using MissionPlanner.Firmware.Model;
 
@@ -18,7 +19,9 @@ public sealed class ArduPilotFirmwareManifestParser(IOptions<FirmwareOptions> op
             var json = IsGzip(content.Span) ? Decompress(content) : content.ToArray();
             using var document = JsonDocument.Parse(json);
             if (!document.RootElement.TryGetProperty("firmware", out var releases) || releases.ValueKind != JsonValueKind.Array)
+            {
                 throw new FirmwareManifestException("Manifest does not contain a firmware array.");
+            }
 
             return releases.EnumerateArray().Select(ParseEntry)
                 .GroupBy(EntryKey, StringComparer.OrdinalIgnoreCase)
@@ -68,9 +71,13 @@ public sealed class ArduPilotFirmwareManifestParser(IOptions<FirmwareOptions> op
         while ((read = gzip.Read(buffer)) > 0)
         {
             if (output.Length + read > options.Value.MaximumManifestBytes)
+            {
                 throw new FirmwareManifestException("Decompressed manifest exceeds the configured size limit.");
+            }
+
             output.Write(buffer, 0, read);
         }
+
         return output.ToArray();
     }
 
@@ -80,6 +87,7 @@ public sealed class ArduPilotFirmwareManifestParser(IOptions<FirmwareOptions> op
     private static int RequiredInt(JsonElement item, string name) => item.TryGetProperty(name, out var value) && value.TryGetInt32(out var number) ? number : throw new FirmwareManifestException($"Manifest release is missing {name}.");
     private static string? GetString(JsonElement item, string name) => item.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString()?.Trim() : null;
     private static long? GetLong(JsonElement item, string name) => item.TryGetProperty(name, out var value) && value.TryGetInt64(out var number) ? number : null;
+
     private static IEnumerable<string> ParseStrings(JsonElement item, string name) => item.TryGetProperty(name, out var value)
         ? value.ValueKind == JsonValueKind.Array ? value.EnumerateArray().Select(element => element.GetString() ?? string.Empty) : [value.GetString() ?? string.Empty]
         : [];
@@ -91,7 +99,9 @@ public sealed class ArduPilotFirmwareManifestParser(IOptions<FirmwareOptions> op
             var parts = text.Replace("0x", string.Empty, StringComparison.OrdinalIgnoreCase).Split('/');
             if (parts.Length == 2 && int.TryParse(parts[0], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var vid) &&
                 int.TryParse(parts[1], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var pid) && vid > 0 && pid > 0)
+            {
                 yield return new UsbIdentifier(vid, pid);
+            }
         }
     }
 
@@ -99,11 +109,20 @@ public sealed class ArduPilotFirmwareManifestParser(IOptions<FirmwareOptions> op
     {
         var normalized = value?.Trim().ToUpperInvariant();
         if (normalized is not null && (normalized.StartsWith("OFFICIAL", StringComparison.Ordinal) || normalized.StartsWith("STABLE", StringComparison.Ordinal)))
+        {
             return FirmwareReleaseChannel.Stable;
+        }
+
         if (normalized?.StartsWith("BETA", StringComparison.Ordinal) == true)
+        {
             return FirmwareReleaseChannel.Beta;
+        }
+
         if (normalized is not null && (normalized.StartsWith("DEV", StringComparison.Ordinal) || normalized.StartsWith("LATEST", StringComparison.Ordinal)))
+        {
             return FirmwareReleaseChannel.Latest;
+        }
+
         return item.TryGetProperty("latest", out var latest) && latest.ValueKind == JsonValueKind.Number && latest.GetInt32() != 0
             ? FirmwareReleaseChannel.Latest
             : FirmwareReleaseChannel.Historical;
@@ -113,9 +132,11 @@ public sealed class ArduPilotFirmwareManifestParser(IOptions<FirmwareOptions> op
     {
         "COPTER" => FirmwareVehicleType.Copter, "HELICOPTER" or "HELI" => FirmwareVehicleType.Helicopter,
         "PLANE" => FirmwareVehicleType.Plane, "ROVER" => FirmwareVehicleType.Rover, "SUB" => FirmwareVehicleType.Sub,
-        "ANTENNATRACKER" => FirmwareVehicleType.AntennaTracker, "BLIMP" => FirmwareVehicleType.Blimp, _ => FirmwareVehicleType.Unknown
+        "ANTENNATRACKER" => FirmwareVehicleType.AntennaTracker, "BLIMP" => FirmwareVehicleType.Blimp, var _ => FirmwareVehicleType.Unknown
     };
 
     private static FirmwareImageFormat ParseFormat(string? value, Uri uri) => (value ?? Path.GetExtension(uri.AbsolutePath).TrimStart('.')).ToUpperInvariant() switch
-    { "APJ" => FirmwareImageFormat.Apj, "PX4" => FirmwareImageFormat.Px4, "HEX" => FirmwareImageFormat.IntelHex, "ABIN" => FirmwareImageFormat.Abin, _ => FirmwareImageFormat.Unknown };
+    {
+        "APJ" => FirmwareImageFormat.Apj, "PX4" => FirmwareImageFormat.Px4, "HEX" => FirmwareImageFormat.IntelHex, "ABIN" => FirmwareImageFormat.Abin, var _ => FirmwareImageFormat.Unknown
+    };
 }

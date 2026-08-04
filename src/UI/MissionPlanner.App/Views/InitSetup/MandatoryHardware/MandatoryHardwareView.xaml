@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<uranium:UraniumContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<navigation:ContentPageView x:TypeArguments="mandatoryHardware:MandatoryHardwareViewModel"  
+                            xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                            xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                             xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                             xmlns:mandatoryHardware="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware"
+                            xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                             x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.MandatoryHardwareView"
                             x:DataType="mandatoryHardware:MandatoryHardwareViewModel"
                             x:Name="RootPage"
                             Title="Initial Setup">
+
     <Grid Padding="20" RowDefinitions="Auto,Auto,190,*" RowSpacing="14">
         <VerticalStackLayout Spacing="4">
             <Label Text="Initial Setup" FontSize="26" FontAttributes="Bold" />
@@ -90,4 +92,4 @@
             </VerticalStackLayout>
         </ScrollView>
     </Grid>
-</uranium:UraniumContentPage>
+</navigation:ContentPageView>

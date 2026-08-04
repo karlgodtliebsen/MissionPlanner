@@ -81,12 +81,11 @@ public sealed class ParameterEditSessionTests
         ]);
         var session = fixture.Factory.Create(fixture.VehicleId);
         await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
-        session.TrySetPending("FIRST", 3, out _).Should().BeTrue();
+        session.TrySetPending("FIRST", 3, out var _).Should().BeTrue();
 
         var plan = session.CreateWritePlan();
 
-        plan.Entries.Should().ContainSingle().Which.Should().Match<ParameterWritePlanEntry>(
-            entry => entry.Name == "FIRST" && entry.LiveValue == 1 && entry.PendingValue == 3 && entry.RebootRequired);
+        plan.Entries.Should().ContainSingle().Which.Should().Match<ParameterWritePlanEntry>(entry => entry.Name == "FIRST" && entry.LiveValue == 1 && entry.PendingValue == 3 && entry.RebootRequired);
     }
 
     /// <summary>A preview cannot execute after its pending values change.</summary>
@@ -96,9 +95,9 @@ public sealed class ParameterEditSessionTests
         using var fixture = CreateFixture([(Parameter("GAIN", 1), Metadata("GAIN"))]);
         var session = fixture.Factory.Create(fixture.VehicleId);
         await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
-        session.TrySetPending("GAIN", 2, out _).Should().BeTrue();
+        session.TrySetPending("GAIN", 2, out var _).Should().BeTrue();
         var plan = session.CreateWritePlan();
-        session.TrySetPending("GAIN", 3, out _).Should().BeTrue();
+        session.TrySetPending("GAIN", 3, out var _).Should().BeTrue();
 
         var act = () => session.ApplyAsync(plan, cancellationToken: TestContext.Current.CancellationToken);
 
@@ -113,7 +112,7 @@ public sealed class ParameterEditSessionTests
         using var fixture = CreateFixture([(Parameter("GAIN", 1), Metadata("GAIN"))]);
         var session = fixture.Factory.Create(fixture.VehicleId);
         await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
-        session.TrySetPending("GAIN", 2, out _).Should().BeTrue();
+        session.TrySetPending("GAIN", 2, out var _).Should().BeTrue();
         var plan = session.CreateWritePlan();
         using var cancellation = new CancellationTokenSource();
         await cancellation.CancelAsync();
@@ -137,8 +136,8 @@ public sealed class ParameterEditSessionTests
         fixture.ParameterService.FailingWrites.Add("SECOND");
         var session = fixture.Factory.Create(fixture.VehicleId);
         await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
-        session.TrySetPending("FIRST", 10, out _).Should().BeTrue();
-        session.TrySetPending("SECOND", 20, out _).Should().BeTrue();
+        session.TrySetPending("FIRST", 10, out var _).Should().BeTrue();
+        session.TrySetPending("SECOND", 20, out var _).Should().BeTrue();
         var progress = new RecordingProgress();
 
         var initial = await session.ApplyAsync(session.CreateWritePlan(), progress, TestContext.Current.CancellationToken);
@@ -678,6 +677,9 @@ public sealed class ParameterEditSessionTests
     {
         public List<ParameterApplyProgress> Values { get; } = [];
 
-        public void Report(ParameterApplyProgress value) => Values.Add(value);
+        public void Report(ParameterApplyProgress value)
+        {
+            Values.Add(value);
+        }
     }
 }

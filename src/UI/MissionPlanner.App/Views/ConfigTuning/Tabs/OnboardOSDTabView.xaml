@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
-             xmlns:config="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
-             x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.OnboardOSDTabView"
-             x:DataType="tabs:OnboardOsdTabViewModel"
-             Title="Onboard OSD">
+<navigation:ContentPageView x:TypeArguments="tabs:OnboardOsdTabViewModel" 
+                            xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                            xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
+                            xmlns:config="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
+                            xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                            x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.OnboardOSDTabView"
+                            x:DataType="tabs:OnboardOsdTabViewModel"
+                            Title="Onboard OSD">
     <Grid RowDefinitions="Auto,Auto,*" Padding="12" RowSpacing="10">
         <Grid ColumnDefinitions="Auto,220,*,Auto" ColumnSpacing="8">
             <Label Text="Screen" VerticalOptions="Center" />
@@ -142,4 +144,4 @@
             </Grid>
         </Grid>
     </Grid>
-</ContentPage>
+</navigation:ContentPageView>

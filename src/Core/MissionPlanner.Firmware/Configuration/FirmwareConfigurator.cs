@@ -1,42 +1,51 @@
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using MissionPlanner.Firmware.Operations;
 using MissionPlanner.Firmware.Catalog;
-using MissionPlanner.Firmware.Images;
-using MissionPlanner.Firmware.Devices;
-using MissionPlanner.Firmware.Protocol;
-using MissionPlanner.Firmware.Discovery;
-using MissionPlanner.Firmware.Entry;
 using MissionPlanner.Firmware.Compatibility;
-using MissionPlanner.Firmware.Downloads;
-using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Firmware.Connected;
+using MissionPlanner.Firmware.Devices;
+using MissionPlanner.Firmware.Discovery;
+using MissionPlanner.Firmware.Downloads;
+using MissionPlanner.Firmware.Entry;
+using MissionPlanner.Firmware.Images;
+using MissionPlanner.Firmware.Installation;
+using MissionPlanner.Firmware.Operations;
 using MissionPlanner.Firmware.Presentation;
+using MissionPlanner.Firmware.Protocol;
 using MissionPlanner.Firmware.Recovery;
+using MissionPlanner.Library.Factory.Domain.Abstractions;
 
-namespace MissionPlanner.Firmware;
+namespace MissionPlanner.Firmware.Configuration;
 
-/// <summary>Registers the Mission Planner firmware subsystem.</summary>
-public static class FirmwareServiceCollectionExtensions
+/// <summary>
+/// 
+/// </summary>
+public static class FirmwareConfigurator
 {
-    /// <summary>Adds firmware services and optional host configuration.</summary>
-    /// <param name="services">The host service collection.</param>
-    /// <param name="configure">An optional firmware-options configuration callback.</param>
-    /// <returns>The supplied service collection.</returns>
-    public static IServiceCollection AddMissionPlannerFirmware(
-        this IServiceCollection services,
-        Action<FirmwareOptions>? configure = null)
+    /// <summary>
+    /// Adds Firmware services to the specified service collection.
+    /// </summary>
+    /// <param name="services">The service collection to which domain services will be added.</param>
+    /// <param name="configuration">The application configuration.</param>
+    /// <param name="options">An optional firmware-options configuration callback.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddFirmwareServices(this IServiceCollection services, IConfiguration configuration, Action<FirmwareOptions>? options = null)
     {
+        //services.Configure<FirmwareOptions>(configuration.GetSection(FirmwareOptions.SectionName));
+        //IOptions<FirmwareOptions> options,
+
         ArgumentNullException.ThrowIfNull(services);
 
-        var options = services.AddOptions<FirmwareOptions>();
-        if (configure is not null)
+        var firmwareOptions = services.AddOptions<FirmwareOptions>(); //as long as we are not using appsettings.json, we can use this to configure the options directly in code.
+        //If we were using appsettings.json, we would use services.Configure<FirmwareOptions>(configuration.GetSection(FirmwareOptions.SectionName));
+        if (options is not null)
         {
-            options.Configure(configure);
+            firmwareOptions.Configure(options);
         }
 
-        options.Validate(value => value.ManifestUri.IsAbsoluteUri && value.ManifestUri.Scheme is "http" or "https",
-                "ManifestUri must be an absolute HTTP or HTTPS URI.")
+        firmwareOptions
+            .Validate(value => value.ManifestUri.IsAbsoluteUri && value.ManifestUri.Scheme is "http" or "https", "ManifestUri must be an absolute HTTP or HTTPS URI.")
             .Validate(value => value.CatalogCacheDuration > TimeSpan.Zero, "CatalogCacheDuration must be positive.")
             .Validate(value => value.MaximumManifestBytes > 0, "MaximumManifestBytes must be positive.")
             .Validate(value => value.MaximumManifestDownloadBytes > 0, "MaximumManifestDownloadBytes must be positive.")
@@ -81,6 +90,23 @@ public static class FirmwareServiceCollectionExtensions
         services.TryAddSingleton<IFirmwarePageModeResolver, FirmwarePageModeResolver>();
         services.TryAddSingleton<IFirmwareApplicationDiscoveryService, FirmwareApplicationDiscoveryService>();
 
+
         return services;
+    }
+
+    /// <summary>
+    /// Configures serviceProvider that are being instantiated through the IDomainFactory. These typical requires constructor arguments, that are not registered in the DI container.
+    /// This method registers the domain serviceProvider with the domain factory, allowing them to be created as needed.
+    /// 
+    /// </summary>
+    /// <param name="serviceProvider">The service provider from which IDomainFactory will be resolved.</param>
+    /// <returns>The updated service provider.</returns>
+    public static IServiceProvider UseFirmwareServices(this IServiceProvider serviceProvider)
+    {
+        var domainFactory = serviceProvider.GetRequiredService<IDomainFactory>();
+        //domainFactory.Add<IVehicleFileSystemService, VehicleFileSystemService>();
+
+
+        return serviceProvider;
     }
 }

@@ -1,5 +1,6 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Exceptions;
 using MissionPlanner.Firmware.Model;
@@ -32,22 +33,33 @@ public sealed class BootloaderDiscoveryService(
             foreach (var candidate in Rank(baseline, request, false))
             {
                 var found = await ProbeAsync(candidate, request, probed, deadline.Token).ConfigureAwait(false);
-                if (found is not null) return found;
+                if (found is not null)
+                {
+                    return found;
+                }
             }
 
             progress?.Report(new FirmwareProgress(FirmwareOperationState.WaitingForDevice, null, "discovery.waiting-for-bootloader"));
             await foreach (var change in monitor.WatchAsync(deadline.Token).ConfigureAwait(false))
             {
-                if (change.Kind != FirmwareDeviceChangeKind.Arrived) continue;
+                if (change.Kind != FirmwareDeviceChangeKind.Arrived)
+                {
+                    continue;
+                }
+
                 progress?.Report(new FirmwareProgress(FirmwareOperationState.WaitingForDevice, null, "discovery.device-arrived", technicalDetail: change.Device.PortName));
                 var found = await ProbeAsync(change.Device, request, probed, deadline.Token).ConfigureAwait(false);
-                if (found is not null) return found;
+                if (found is not null)
+                {
+                    return found;
+                }
             }
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
             throw new FirmwareDeviceNotFoundException("No protocol-compatible bootloader appeared before the discovery deadline.");
         }
+
         throw new FirmwareDeviceNotFoundException("Bootloader monitoring ended without identifying a device.");
     }
 
@@ -61,7 +73,11 @@ public sealed class BootloaderDiscoveryService(
         // the same COM port and with the same USB serial number. ArrivedAt
         // distinguishes that new device generation from the rejected baseline.
         var key = $"{candidate.StableIdentity ?? "transient"}|{candidate.PortName}|{candidate.ArrivedAt.UtcTicks}";
-        if (!probed.Add(key)) return null;
+        if (!probed.Add(key))
+        {
+            return null;
+        }
+
         IFirmwareSerialPort? port = null;
         IArduPilotBootloaderClient? client = null;
         try
@@ -83,23 +99,39 @@ public sealed class BootloaderDiscoveryService(
         {
             logger.LogDebug(exception, "Rejected non-bootloader serial candidate {PortName}.", candidate.PortName);
         }
-        if (client is not null) await client.DisposeAsync().ConfigureAwait(false);
-        else if (port is not null) await port.DisposeAsync().ConfigureAwait(false);
+
+        if (client is not null)
+        {
+            await client.DisposeAsync().ConfigureAwait(false);
+        }
+        else if (port is not null)
+        {
+            await port.DisposeAsync().ConfigureAwait(false);
+        }
+
         return null;
     }
 
-    private static IEnumerable<SerialDeviceDescriptor> Rank(IEnumerable<SerialDeviceDescriptor> devices, BootloaderDiscoveryRequest request, bool newlyArrived) =>
-        devices.OrderByDescending(device => newlyArrived)
+    private static IEnumerable<SerialDeviceDescriptor> Rank(IEnumerable<SerialDeviceDescriptor> devices, BootloaderDiscoveryRequest request, bool newlyArrived)
+    {
+        return devices.OrderByDescending(device => newlyArrived)
             .ThenByDescending(device => IsSelected(device, request.SelectedDevice))
             .ThenByDescending(device => request.ExpectedUsbIdentifiers?.Contains(device.UsbIdentifier ?? default) == true)
             .ThenByDescending(device => MatchesHint(device, request.BootloaderHints))
             .ThenBy(device => device.PortName, StringComparer.OrdinalIgnoreCase);
+    }
 
-    private static bool IsSelected(SerialDeviceDescriptor device, SerialDeviceDescriptor? selected) => selected is not null &&
-        ((selected.StableIdentity is not null && string.Equals(device.StableIdentity, selected.StableIdentity, StringComparison.OrdinalIgnoreCase)) ||
-         string.Equals(device.PortName, selected.PortName, StringComparison.OrdinalIgnoreCase));
+    private static bool IsSelected(SerialDeviceDescriptor device, SerialDeviceDescriptor? selected)
+    {
+        return selected is not null &&
+               ((selected.StableIdentity is not null && string.Equals(device.StableIdentity, selected.StableIdentity, StringComparison.OrdinalIgnoreCase)) ||
+                string.Equals(device.PortName, selected.PortName, StringComparison.OrdinalIgnoreCase));
+    }
 
-    private static bool MatchesHint(SerialDeviceDescriptor device, IReadOnlyCollection<string>? hints) => hints?.Any(hint =>
-        (!string.IsNullOrWhiteSpace(device.ProductName) && device.ProductName.Contains(hint, StringComparison.OrdinalIgnoreCase)) ||
-        device.BoardHints.Any(value => value.Contains(hint, StringComparison.OrdinalIgnoreCase))) == true;
+    private static bool MatchesHint(SerialDeviceDescriptor device, IReadOnlyCollection<string>? hints)
+    {
+        return hints?.Any(hint =>
+            (!string.IsNullOrWhiteSpace(device.ProductName) && device.ProductName.Contains(hint, StringComparison.OrdinalIgnoreCase)) ||
+            device.BoardHints.Any(value => value.Contains(hint, StringComparison.OrdinalIgnoreCase))) == true;
+    }
 }

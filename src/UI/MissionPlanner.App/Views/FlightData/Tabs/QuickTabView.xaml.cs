@@ -14,17 +14,4 @@ public partial class QuickTabView : ContentView
         var viewModel = ServiceHelper.GetRequiredService<QuickTabViewModel>();
         BindingContext = viewModel;
     }
-    ///// <inheritdoc />
-    //protected override void OnAppearing()
-    //{
-    //    base.OnAppearing();
-    //    viewModel.InitializeView();
-    //}
-
-    ///// <inheritdoc />
-    //protected override void OnDisappearing()
-    //{
-    //    viewModel.Deactivate();
-    //    base.OnDisappearing();
-    //}
 }

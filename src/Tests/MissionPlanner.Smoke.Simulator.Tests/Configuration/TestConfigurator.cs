@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Configuration;
+using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Library.Configuration;
 using MissionPlanner.MavLink.Configuration;
 using MissionPlanner.Simulator.SmokeTests;
@@ -52,6 +53,7 @@ public static class TestConfigurator
             .AddEventHubServices()
             .AddDomainServices(configuration)
             .AddMavLinkTransportServices(configuration)
+            .AddFirmwareServices(configuration)
             .AddMavLinkServices(configuration);
 
         services.TryAddTransient<ITransportSmokeTestService, TransportSmokeTestService>();

@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<uranium:UraniumContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                    xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
-                    xmlns:flightData="clr-namespace:MissionPlanner.App.Views.FlightData"
-                    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
-                    xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
-                    xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
-                    xmlns:hud="clr-namespace:MissionPlanner.App.Views.FlightData.Hud"
-                    xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
-                    x:Class="MissionPlanner.App.Views.FlightData.FlightDataView"
-                    x:DataType="flightData:FlightDataViewModel"
+<navigation:ContentPageView x:TypeArguments="flightData:FlightDataViewModel"  
+                            xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                            xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
+                            xmlns:flightData="clr-namespace:MissionPlanner.App.Views.FlightData"
+                            xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                            xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
+                            xmlns:hud="clr-namespace:MissionPlanner.App.Views.FlightData.Hud"
+                            xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
+                            xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                            x:Class="MissionPlanner.App.Views.FlightData.FlightDataView"
+                            x:DataType="flightData:FlightDataViewModel"
                     
-                    >
+>
 
     <Grid  ColumnDefinitions="260,5,*" ColumnSpacing="0" Padding="5,0,0,0" Margin="0,0,0,0">
 
@@ -35,7 +36,6 @@
                     <material:TabItem Title="Messages">
                         <tabs:MessagesTabView />
                     </material:TabItem>
-
 
                     <material:TabItem Title="PreFlight">
                         <tabs:PreflightTabView />
@@ -121,4 +121,4 @@
 
     </Grid>
 
-</uranium:UraniumContentPage>
+</navigation:ContentPageView>

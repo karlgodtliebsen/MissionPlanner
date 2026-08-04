@@ -1,4 +1,4 @@
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Configuration;
 using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Simulation;
+using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink;

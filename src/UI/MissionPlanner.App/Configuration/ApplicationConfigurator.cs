@@ -28,13 +28,13 @@ using MissionPlanner.Core.ConfigTuning.Comparison;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Configuration;
 using MissionPlanner.Core.Firmware;
-using MissionPlanner.Firmware;
-using MissionPlanner.Firmware.Connected;
-using MissionPlanner.Firmware.Entry;
-using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Simulation;
+using MissionPlanner.Firmware.Configuration;
+using MissionPlanner.Firmware.Connected;
+using MissionPlanner.Firmware.Entry;
+using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Library;
 using MissionPlanner.Library.Configuration;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -64,20 +64,20 @@ public static class ApplicationConfigurator
         services.AddSingleton(Options.Create(applicationOptions));
 
         // Register shared state service as singleton for runtime state management
-        services.TryAddSingleton<INavigationService, ShellNavigationService>();
-        services.TryAddSingleton<IModalNavigationService, ModalNavigationService>();
-        services.TryAddSingleton<IConfigNavigationGuard, ConfigNavigationGuard>();
+        services.TryAddTransient<INavigationService, ShellNavigationService>();
+        services.TryAddTransient<IModalNavigationService, ModalNavigationService>();
+        services.TryAddTransient<IConfigNavigationGuard, ConfigNavigationGuard>();
 
 
-        services.TryAddSingleton<IPlannerSettingsStore, PreferencesPlannerSettingsStore>();
-        services.TryAddSingleton<IPlannerSecretStore, SecurePlannerSecretStore>();
-        services.TryAddSingleton<IPlannerSettingsService, PlannerSettingsService>();
-        services.TryAddSingleton<ISimulatorProfileStore, PreferencesSimulatorProfileStore>();
-        services.TryAddSingleton<ISimulatorProfileService, SimulatorProfileService>();
-        services.TryAddSingleton<ISimulationScenarioPresetStore, PreferencesSimulationScenarioPresetStore>();
-        services.TryAddSingleton<ISitlCachePathProvider, MauiSitlCachePathProvider>();
-        services.TryAddSingleton<ISitlPlatformService, LocalSitlPlatformService>();
-        services.TryAddSingleton<ISimulatorProcessHost, LocalSimulatorProcessHost>();
+        services.TryAddTransient<IPlannerSettingsStore, PreferencesPlannerSettingsStore>();
+        services.TryAddTransient<IPlannerSecretStore, SecurePlannerSecretStore>();
+        services.TryAddTransient<IPlannerSettingsService, PlannerSettingsService>();
+        services.TryAddTransient<ISimulatorProfileStore, PreferencesSimulatorProfileStore>();
+        services.TryAddTransient<ISimulatorProfileService, SimulatorProfileService>();
+        services.TryAddTransient<ISimulationScenarioPresetStore, PreferencesSimulationScenarioPresetStore>();
+        services.TryAddTransient<ISitlCachePathProvider, MauiSitlCachePathProvider>();
+        services.TryAddTransient<ISitlPlatformService, LocalSitlPlatformService>();
+        services.TryAddTransient<ISimulatorProcessHost, LocalSimulatorProcessHost>();
 
 
         services.Replace(ServiceDescriptor.Singleton<ISimulatorOwnedProcessRecovery, LocalSimulatorOwnedProcessRecovery>());
@@ -85,33 +85,33 @@ public static class ApplicationConfigurator
 
 
         //services.TryAddSingleton<Views.Vehicles.Views.ModelMapper>();
-        services.TryAddSingleton<ApplicationStateService>();
-        services.TryAddSingleton<ParametersFileHandler>();
-        services.TryAddSingleton<PlannerSettingsRuntime>();
+        services.TryAddTransient<ApplicationStateService>();
+        services.TryAddTransient<ParametersFileHandler>();
+        services.TryAddTransient<PlannerSettingsRuntime>();
         services.TryAddSingleton(new CancellationTokenSource());
 
         services.TryAddTransient<IExtendedDialogService, ExtendedDialogService>();
-        services.TryAddSingleton<IUserNotificationService, UserNotificationService>();
-        services.TryAddSingleton<IUserConfirmationService, UserConfirmationService>();
-        services.TryAddSingleton<IFirmwareConnectionGateway, FirmwareConnectionGateway>();
-        services.TryAddSingleton<IConnectedVehicleFirmwareGateway, ConnectedVehicleFirmwareGateway>();
-        services.TryAddSingleton<FirmwareInteractionService>();
-        services.TryAddSingleton<IFirmwareFilePicker, MauiFirmwareFilePicker>();
-        services.TryAddSingleton<IFirmwareUserInteraction>(serviceProvider => serviceProvider.GetRequiredService<FirmwareInteractionService>());
-        services.TryAddSingleton<IBootloaderEntryInteraction>(serviceProvider => serviceProvider.GetRequiredService<FirmwareInteractionService>());
-        services.TryAddSingleton<ITemporaryMavLinkBootloaderGateway, MissionPlanner.Core.Firmware.TemporaryMavLinkBootloaderGateway>();
-        services.TryAddSingleton<ITextClipboardService, TextClipboardService>();
-        services.TryAddSingleton<ISetupCompletionStore, PreferencesSetupCompletionStore>();
-        services.TryAddSingleton<IFirmwarePackageCache, FirmwarePackageCache>();
-        services.TryAddSingleton<IParameterComparisonService, ParameterComparisonService>();
-        services.TryAddSingleton<IParameterValueEquivalence, ParameterValueEquivalence>();
+        services.TryAddTransient<IUserNotificationService, UserNotificationService>();
+        services.TryAddTransient<IUserConfirmationService, UserConfirmationService>();
+        services.TryAddTransient<IFirmwareConnectionGateway, FirmwareConnectionGateway>();
+        services.TryAddTransient<IConnectedVehicleFirmwareGateway, ConnectedVehicleFirmwareGateway>();
+        services.TryAddTransient<FirmwareInteractionService>();
+        services.TryAddTransient<IFirmwareFilePicker, MauiFirmwareFilePicker>();
+        services.TryAddTransient<IFirmwareUserInteraction>(serviceProvider => serviceProvider.GetRequiredService<FirmwareInteractionService>());
+        services.TryAddTransient<IBootloaderEntryInteraction>(serviceProvider => serviceProvider.GetRequiredService<FirmwareInteractionService>());
+        services.TryAddTransient<ITemporaryMavLinkBootloaderGateway, TemporaryMavLinkBootloaderGateway>();
+        services.TryAddTransient<ITextClipboardService, TextClipboardService>();
+        services.TryAddTransient<ISetupCompletionStore, PreferencesSetupCompletionStore>();
+        services.TryAddTransient<IFirmwarePackageCache, FirmwarePackageCache>();
+        services.TryAddTransient<IParameterComparisonService, ParameterComparisonService>();
+        services.TryAddTransient<IParameterValueEquivalence, ParameterValueEquivalence>();
 
         services
-            .AddMissionPlannerFirmware()
             .AddLibraryServices()
             .AddEventHubServices()
             .AddDomainServices(configuration)
             .AddMavLinkTransportServices(configuration)
+            .AddFirmwareServices(configuration)
             .AddMavLinkServices(configuration)
             .AddLogging(configuration, (s, l, c) =>
                 /*Customize logging*/
@@ -133,70 +133,71 @@ public static class ApplicationConfigurator
 
     private static IServiceCollection AddViewsConfiguration(this IServiceCollection services)
     {
-        services.TryAddSingleton<App>();
-        services.TryAddSingleton<AppShell>();
+        services.TryAddTransient<App>();
+        services.TryAddTransient<AppShell>();
 
         // Common/Shared UI Components
-        services.TryAddSingleton<StatusBarViewModel>();
+        services.TryAddTransient<StatusBarViewModel>();
 
-        services.TryAddSingleton<TopBarViewModel>();
+        services.TryAddTransient<TopBarViewModel>();
 
-        services.TryAddSingleton<ExitViewModel>();
-        services.TryAddSingleton<ExitContentView>();
+        services.TryAddTransient<ExitViewModel>();
+        services.TryAddTransient<ExitContentView>();
         services.TryAddTransient<ErrorViewModel>();
         services.TryAddTransient<ErrorView>();
 
-        services.TryAddSingleton<HelpViewModel>();
+        services.TryAddTransient<HelpViewModel>();
         services.TryAddTransient<ConnectPopupViewModel>();
         services.TryAddTransient<ConnectPopupView>();
         services.TryAddTransient<StatisticsViewModel>();
 
         services.TryAddTransient<AsyncOperationRunner>();
 
-        services.TryAddSingleton<HudViewModel>();
-        services.TryAddSingleton<MissionMapViewModel>();
+        services.TryAddTransient<HudViewModel>();
+        services.TryAddTransient<MissionMapViewModel>();
 
-        services.TryAddSingleton<QuickTabViewModel>();
-        services.TryAddSingleton<ActionsTabViewModel>();
-
-        services.TryAddSingleton<AdvancedViewModel>();
-        services.TryAddTransient<InstallFirmwareViewModel>();
-        services.TryAddSingleton<OptionalHardwareViewModel>();
-
-        services.TryAddSingleton<AuxFunctionTabViewModel>();
-        services.TryAddSingleton<DataFlashLogsTabViewModel>();
-        services.TryAddSingleton<GaugesTabViewModel>();
-        services.TryAddSingleton<MessagesTabViewModel>();
-        services.TryAddSingleton<PayloadControlTabViewModel>();
-        services.TryAddSingleton<StatusTabViewModel>();
-        services.TryAddSingleton<PreflightTabViewModel>();
-        services.TryAddSingleton<ScriptsTabViewModel>();
-        services.TryAddSingleton<ServoRelayTabViewModel>();
-        services.TryAddSingleton<TelemetryLogsTabViewModel>();
-        services.TryAddSingleton<TransponderTabViewModel>();
-
-
-        services.TryAddSingleton<FlightDataViewModel>();
-        services.TryAddSingleton<FlightPlannerViewModel>();
-        services.TryAddSingleton<SimulationViewModel>();
-        services.TryAddSingleton<ExitViewModel>();
-
-        services.TryAddTransient<FullParametersListTabViewModel>();
-        services.TryAddSingleton<ParameterComparisonViewModel>();
-        services.TryAddTransient<MavFtpTabViewModel>();
-
-        services.TryAddSingleton<MandatoryHardwareViewModel>();
-        services.TryAddSingleton<GeoFenceTabViewModel>();
-        services.TryAddSingleton<BasicTuningTabViewModel>();
-        services.TryAddSingleton<ExtendedTuningTabViewModel>();
-        services.TryAddSingleton<OnboardOsdTabViewModel>();
-        services.TryAddSingleton<PlannerTabViewModel>();
-        services.TryAddSingleton<CubeLan8PortSwitchTabViewModel>();
+        //Tabs on FlightDataView
+        services.TryAddTransient<QuickTabViewModel>();
+        services.TryAddTransient<ActionsTabViewModel>();
+        services.TryAddTransient<MessagesTabViewModel>();
+        services.TryAddTransient<PreflightTabViewModel>();
+        services.TryAddTransient<GaugesTabViewModel>();
+        services.TryAddTransient<TransponderTabViewModel>();
+        services.TryAddTransient<StatusTabViewModel>();
+        services.TryAddTransient<ServoRelayTabViewModel>();
+        services.TryAddTransient<AuxFunctionTabViewModel>();
+        services.TryAddTransient<ScriptsTabViewModel>();
+        services.TryAddTransient<PayloadControlTabViewModel>();
+        services.TryAddTransient<TelemetryLogsTabViewModel>();
+        services.TryAddTransient<DataFlashLogsTabViewModel>();
 
 
         services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<ActionsTabViewModel>());
         services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<QuickTabViewModel>());
         services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<MessagesTabViewModel>());
+
+
+        services.TryAddTransient<AdvancedViewModel>();
+        services.TryAddTransient<InstallFirmwareViewModel>();
+        services.TryAddTransient<OptionalHardwareViewModel>();
+
+        services.TryAddTransient<FlightDataViewModel>();
+        services.TryAddTransient<FlightPlannerViewModel>();
+        services.TryAddTransient<SimulationViewModel>();
+        services.TryAddTransient<ExitViewModel>();
+
+        services.TryAddTransient<FullParametersListTabViewModel>();
+        services.TryAddTransient<ParameterComparisonViewModel>();
+        services.TryAddTransient<MavFtpTabViewModel>();
+
+        services.TryAddTransient<MandatoryHardwareViewModel>();
+        services.TryAddTransient<GeoFenceTabViewModel>();
+        services.TryAddTransient<BasicTuningTabViewModel>();
+        services.TryAddTransient<ExtendedTuningTabViewModel>();
+        services.TryAddTransient<OnboardOsdTabViewModel>();
+        services.TryAddTransient<PlannerTabViewModel>();
+        services.TryAddTransient<CubeLan8PortSwitchTabViewModel>();
+
 
         services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<FirmwareSetupViewModel>(serviceProvider, SetupWorkflowKey.Firmware));
         services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<FrameSetupViewModel>(serviceProvider, SetupWorkflowKey.Frame));

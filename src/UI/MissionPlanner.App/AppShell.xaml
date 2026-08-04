@@ -114,9 +114,7 @@
             ContentTemplate="{DataTemplate advanced:AdvancedView}" Route="SetupAdvanced" />
 
     </FlyoutItem>
-    <FlyoutItem Title="Config"  
-                Icon="Resources/Images/x_light_tuningconfig_icon_x.png">
-
+    <FlyoutItem Title="Config" Icon="Resources/Images/x_light_tuningconfig_icon_x.png">
         <ShellContent Title="Geo Fence" Route="ConfigGeoFence" ContentTemplate="{DataTemplate tabs:GeoFenceTabView}"/>
         <ShellContent Title="Basic Tuning" Route="ConfigBasicTuning" ContentTemplate="{DataTemplate tabs:BasicTuningTabView}"/>
         <ShellContent Title="Extended Tuning" Route="ConfigExtendedTuning" ContentTemplate="{DataTemplate tabs:ExtendedTuningTabView}"/>

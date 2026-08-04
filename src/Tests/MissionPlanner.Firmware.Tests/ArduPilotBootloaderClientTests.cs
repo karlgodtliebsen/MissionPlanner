@@ -2,6 +2,7 @@ using System.Buffers.Binary;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Exceptions;
 using MissionPlanner.Firmware.Images;
@@ -112,13 +113,7 @@ public sealed class ArduPilotBootloaderClientTests
 
     private static ArduPilotBootloaderClient CreateClient(Stream stream)
     {
-        var options = Options.Create(new FirmwareOptions
-        {
-            BootloaderCommandTimeout = TimeSpan.FromMilliseconds(30),
-            BootloaderEraseTimeout = TimeSpan.FromMilliseconds(30),
-            BootloaderSyncAttempts = 2,
-            BootloaderRetryDelay = TimeSpan.Zero
-        });
+        var options = Options.Create(new FirmwareOptions { BootloaderCommandTimeout = TimeSpan.FromMilliseconds(30), BootloaderEraseTimeout = TimeSpan.FromMilliseconds(30), BootloaderSyncAttempts = 2, BootloaderRetryDelay = TimeSpan.Zero });
         return new ArduPilotBootloaderClient(new TestPort(stream), options, TimeProvider.System, NullLogger<ArduPilotBootloaderClient>.Instance);
     }
 
@@ -126,10 +121,15 @@ public sealed class ArduPilotBootloaderClientTests
     {
         if (command[0] == 0x22)
         {
-            var value = command[1] switch { 1 => 4u, 2 => 50u, 3 => 2u, 4 => 16u, _ => 0u };
+            var value = command[1] switch { 1 => 4u, 2 => 50u, 3 => 2u, 4 => 16u, var _ => 0u };
             return [.. UInt32(value), 0x12, 0x10];
         }
-        if (command[0] == 0x29) return [.. UInt32(checksum), 0x12, 0x10];
+
+        if (command[0] == 0x29)
+        {
+            return [.. UInt32(checksum), 0x12, 0x10];
+        }
+
         return command[0] == 0x30 ? [] : [0x12, 0x10];
     }
 
@@ -145,33 +145,66 @@ public sealed class ArduPilotBootloaderClientTests
         public string PortName => "TEST";
         public Stream Stream => stream;
         public bool IsOpen => true;
-        public ValueTask DisposeAsync() { stream.Dispose(); return ValueTask.CompletedTask; }
+
+        public ValueTask DisposeAsync()
+        {
+            stream.Dispose();
+            return ValueTask.CompletedTask;
+        }
     }
 
     private sealed class ScriptedBootloaderStream(Func<byte[], byte[]> reply) : Stream
     {
         private readonly Queue<byte> input = new();
         public List<byte[]> Commands { get; } = [];
+
         public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var command = buffer.ToArray();
             Commands.Add(command);
-            foreach (var value in reply(command)) input.Enqueue(value);
+            foreach (var value in reply(command))
+            {
+                input.Enqueue(value);
+            }
+
             await ValueTask.CompletedTask;
         }
+
         public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (input.Count == 0) return ValueTask.FromResult(0);
+            if (input.Count == 0)
+            {
+                return ValueTask.FromResult(0);
+            }
+
             buffer.Span[0] = input.Dequeue();
             return ValueTask.FromResult(1);
         }
+
         public override void Flush() { }
-        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
-        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
-        public override void SetLength(long value) => throw new NotSupportedException();
-        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            throw new NotSupportedException();
+        }
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            throw new NotSupportedException();
+        }
+
+        public override void SetLength(long value)
+        {
+            throw new NotSupportedException();
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            throw new NotSupportedException();
+        }
+
         public override bool CanRead => true;
         public override bool CanSeek => false;
         public override bool CanWrite => true;
@@ -182,13 +215,38 @@ public sealed class ArduPilotBootloaderClientTests
     private sealed class HangingStream : Stream
     {
         public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
-        { await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken); return 0; }
-        public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
+        {
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            return 0;
+        }
+
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            return ValueTask.CompletedTask;
+        }
+
         public override void Flush() { }
-        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
-        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
-        public override void SetLength(long value) => throw new NotSupportedException();
-        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            throw new NotSupportedException();
+        }
+
+        public override long Seek(long offset, SeekOrigin origin)
+        {
+            throw new NotSupportedException();
+        }
+
+        public override void SetLength(long value)
+        {
+            throw new NotSupportedException();
+        }
+
+        public override void Write(byte[] buffer, int offset, int count)
+        {
+            throw new NotSupportedException();
+        }
+
         public override bool CanRead => true;
         public override bool CanSeek => false;
         public override bool CanWrite => true;

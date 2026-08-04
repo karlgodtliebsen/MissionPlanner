@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Model;
 
@@ -11,6 +12,7 @@ public sealed class FirmwareApplicationDiscoveryService(
     IOptions<FirmwareOptions> options) : IFirmwareApplicationDiscoveryService
 {
     private const int MinimumMatchScore = 25;
+
     /// <inheritdoc />
     public async Task<SerialDeviceDescriptor?> FindAsync(
         FirmwareApplicationDiscoveryRequest request,
@@ -25,8 +27,11 @@ public sealed class FirmwareApplicationDiscoveryService(
         {
             var current = await catalog.GetDevicesAsync(token).ConfigureAwait(false);
             var removalObserved = current.All(device => !SameBootloaderInstance(device, request.BootloaderDevice));
-            var existing = BestMatch(current, request, requirePositiveIdentity: true);
-            if (removalObserved && existing is not null) return existing;
+            var existing = BestMatch(current, request, true);
+            if (removalObserved && existing is not null)
+            {
+                return existing;
+            }
 
             await foreach (var change in monitor.WatchAsync(token).ConfigureAwait(false))
             {
@@ -37,7 +42,9 @@ public sealed class FirmwareApplicationDiscoveryService(
                 }
 
                 if (change.Kind == FirmwareDeviceChangeKind.Arrived && removalObserved && Score(change.Device, request) >= MinimumMatchScore)
+                {
                     return change.Device;
+                }
             }
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { }
@@ -61,22 +68,50 @@ public sealed class FirmwareApplicationDiscoveryService(
     {
         var original = request.OriginalApplicationDevice;
         var score = 0;
-        if (original?.UsbSerialNumber is not null && candidate.UsbSerialNumber == original.UsbSerialNumber) score += 100;
-        if (original?.OsDeviceId is not null && candidate.OsDeviceId == original.OsDeviceId) score += 80;
-        if (request.BootloaderDevice.UsbSerialNumber is not null && candidate.UsbSerialNumber == request.BootloaderDevice.UsbSerialNumber) score += 70;
-        if (original?.UsbIdentifier is not null && candidate.UsbIdentifier == original.UsbIdentifier) score += 40;
-        if (request.BootloaderDevice.UsbIdentifier is not null && candidate.UsbIdentifier == request.BootloaderDevice.UsbIdentifier) score += 25;
-        if (candidate.ArrivedAt >= request.BootloaderDevice.ArrivedAt) score += 5;
+        if (original?.UsbSerialNumber is not null && candidate.UsbSerialNumber == original.UsbSerialNumber)
+        {
+            score += 100;
+        }
+
+        if (original?.OsDeviceId is not null && candidate.OsDeviceId == original.OsDeviceId)
+        {
+            score += 80;
+        }
+
+        if (request.BootloaderDevice.UsbSerialNumber is not null && candidate.UsbSerialNumber == request.BootloaderDevice.UsbSerialNumber)
+        {
+            score += 70;
+        }
+
+        if (original?.UsbIdentifier is not null && candidate.UsbIdentifier == original.UsbIdentifier)
+        {
+            score += 40;
+        }
+
+        if (request.BootloaderDevice.UsbIdentifier is not null && candidate.UsbIdentifier == request.BootloaderDevice.UsbIdentifier)
+        {
+            score += 25;
+        }
+
+        if (candidate.ArrivedAt >= request.BootloaderDevice.ArrivedAt)
+        {
+            score += 5;
+        }
+
         if (candidate.ProductName is not null && !candidate.ProductName.Contains("bootloader", StringComparison.OrdinalIgnoreCase))
         {
             score += 5;
             if (request.BootloaderDevice.ProductName?.Contains("bootloader", StringComparison.OrdinalIgnoreCase) == true &&
-                candidate.ProductName.Contains("ArduPilot", StringComparison.OrdinalIgnoreCase)) score += 20;
+                candidate.ProductName.Contains("ArduPilot", StringComparison.OrdinalIgnoreCase))
+            {
+                score += 20;
+            }
         }
+
         return score;
     }
 
     private static bool SameBootloaderInstance(SerialDeviceDescriptor left, SerialDeviceDescriptor right) =>
-        left.OsDeviceId is not null && right.OsDeviceId is not null && left.OsDeviceId == right.OsDeviceId ||
+        (left.OsDeviceId is not null && right.OsDeviceId is not null && left.OsDeviceId == right.OsDeviceId) ||
         left.PortName.Equals(right.PortName, StringComparison.OrdinalIgnoreCase);
 }
