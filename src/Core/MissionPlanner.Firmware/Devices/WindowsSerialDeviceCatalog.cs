@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using Microsoft.Win32;
 using MissionPlanner.Firmware.Model;
@@ -14,6 +15,7 @@ public sealed class WindowsSerialDeviceCatalog(TimeProvider timeProvider) : IFir
     {
         cancellationToken.ThrowIfCancellationRequested();
         var presentPorts = SerialPortNames().ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var presentDeviceIds = PresentDeviceInstanceIds();
         var knownUsbPorts = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var devices = new Dictionary<string, SerialDeviceDescriptor>(StringComparer.OrdinalIgnoreCase);
         using var usb = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Enum\USB");
@@ -32,14 +34,13 @@ public sealed class WindowsSerialDeviceCatalog(TimeProvider timeProvider) : IFir
                     var portName = parameters?.GetValue("PortName") as string;
                     if (string.IsNullOrWhiteSpace(portName)) continue;
                     knownUsbPorts.Add(portName);
+                    var stableId = $@"USB\{hardwareKey}\{instanceKey}";
                     // Both Enum\USB and SerialPort.GetPortNames can retain disconnected device
-                    // history. The volatile Control key exists only while this PnP instance is
-                    // active; require it as well as current serial exposure before probing it.
-                    using var control = instance?.OpenSubKey("Control");
-                    if (control is null || !presentPorts.Contains(portName)) continue;
+                    // history. Configuration Manager supplies the authoritative set of currently
+                    // present PnP instances; require that identity and current serial exposure.
+                    if (!presentDeviceIds.Contains(stableId) || !presentPorts.Contains(portName)) continue;
                     var product = CleanRegistryText(instance?.GetValue("FriendlyName") as string ?? instance?.GetValue("DeviceDesc") as string);
                     var manufacturer = CleanRegistryText(instance?.GetValue("Mfg") as string);
-                    var stableId = $@"USB\{hardwareKey}\{instanceKey}";
                     devices[stableId] = new SerialDeviceDescriptor(
                         portName,
                         stableId,
@@ -64,6 +65,21 @@ public sealed class WindowsSerialDeviceCatalog(TimeProvider timeProvider) : IFir
         return Task.FromResult<IReadOnlyList<SerialDeviceDescriptor>>(devices.Values.OrderBy(device => device.PortName, StringComparer.OrdinalIgnoreCase).ToArray());
     }
 
+    private static HashSet<string> PresentDeviceInstanceIds()
+    {
+        const uint presentDevices = 0x00000100;
+        if (CM_Get_Device_ID_List_Size(out var characterCount, null, presentDevices) != 0 || characterCount == 0)
+            return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        var buffer = new char[characterCount];
+        if (CM_Get_Device_ID_List(null, buffer, characterCount, presentDevices) != 0)
+            return new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        return new string(buffer)
+            .Split('\0', StringSplitOptions.RemoveEmptyEntries)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+    }
+
     private static IEnumerable<string> SerialPortNames() => System.IO.Ports.SerialPort.GetPortNames().Distinct(StringComparer.OrdinalIgnoreCase);
     private static string? CleanRegistryText(string? value)
     {
@@ -81,4 +97,10 @@ public sealed class WindowsSerialDeviceCatalog(TimeProvider timeProvider) : IFir
         identifier = new UsbIdentifier(vendor, product);
         return true;
     }
+
+    [DllImport("cfgmgr32.dll", EntryPoint = "CM_Get_Device_ID_List_SizeW", CharSet = CharSet.Unicode)]
+    private static extern int CM_Get_Device_ID_List_Size(out uint characterCount, string? filter, uint flags);
+
+    [DllImport("cfgmgr32.dll", EntryPoint = "CM_Get_Device_ID_ListW", CharSet = CharSet.Unicode)]
+    private static extern int CM_Get_Device_ID_List(string? filter, [Out] char[] buffer, uint bufferLength, uint flags);
 }
