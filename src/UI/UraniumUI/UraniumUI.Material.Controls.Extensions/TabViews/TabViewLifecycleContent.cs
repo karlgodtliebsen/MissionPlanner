@@ -21,16 +21,16 @@ public interface ITabViewLifecycleContent
 /// </summary>
 public class TabViewLifecycleContent<TViewModel> : ContentView, ITabViewLifecycleContent where TViewModel : class, IDisposable
 {
-    private TViewModel? viewModel;
+    protected TViewModel? ViewModel;
 
     /// <summary>
     /// 
     /// </summary>
     public virtual void Activate()
     {
-        viewModel?.Dispose();
-        viewModel = ServiceHelper.GetRequiredService<TViewModel>();
-        BindingContext = viewModel;
+        ViewModel?.Dispose();
+        ViewModel = ServiceHelper.GetRequiredService<TViewModel>();
+        BindingContext = ViewModel;
     }
 
     /// <summary>
@@ -38,7 +38,7 @@ public class TabViewLifecycleContent<TViewModel> : ContentView, ITabViewLifecycl
     /// </summary>
     public virtual void Deactivate()
     {
-        viewModel?.Dispose();
-        viewModel = null;
+        ViewModel?.Dispose();
+        ViewModel = null;
     }
 }

@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-              xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
-              x:Class="MissionPlanner.App.Views.FlightData.Tabs.MessagesTabView"
-              x:DataType="tabs:MessagesTabViewModel">
+<tabViews:TabViewLifecycleContent x:TypeArguments="tabs:MessagesTabViewModel" 
+                                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                                  xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
+                                  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  x:Class="MissionPlanner.App.Views.FlightData.Tabs.MessagesTabView"
+                                  x:DataType="tabs:MessagesTabViewModel">
     <Grid Padding="8" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="15">
         <Grid Grid.Row="0" ColumnDefinitions="140,*" ColumnSpacing="8">
             <Picker Grid.Column="0"
@@ -69,4 +71,4 @@
 
         <Label Grid.Row="3" Text="{Binding Status}" LineBreakMode="TailTruncation" />
     </Grid>
-</ContentView>
+</tabViews:TabViewLifecycleContent>

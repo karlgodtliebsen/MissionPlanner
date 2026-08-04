@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-              xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
-              xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
-              x:Class="MissionPlanner.App.Views.FlightData.Tabs.ScriptsTabView"
+<tabViews:TabViewLifecycleContent x:TypeArguments="tabs:ScriptsTabViewModel" 
+                                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                                  xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
+                                  xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                                  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  x:Class="MissionPlanner.App.Views.FlightData.Tabs.ScriptsTabView"
              
-              x:DataType="tabs:ScriptsTabViewModel">
+                                  x:DataType="tabs:ScriptsTabViewModel">
 
 
     <Label Text="Scripts"
            FontSize="16"
            HorizontalOptions="Center"
            VerticalOptions="Center" />
-</ContentView>
+</tabViews:TabViewLifecycleContent>

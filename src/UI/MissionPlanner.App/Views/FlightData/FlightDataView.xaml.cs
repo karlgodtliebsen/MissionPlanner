@@ -1,6 +1,4 @@
 ﻿using MissionPlanner.App.Navigation;
-using UraniumUI.Extensions;
-using UraniumUI.Material.Controls;
 
 namespace MissionPlanner.App.Views.FlightData;
 
@@ -15,16 +13,5 @@ public partial class FlightDataView : ContentPageView<FlightDataViewModel>
     public FlightDataView()
     {
         InitializeComponent();
-        TabView.SelectedTabChanged += (sender, item) => SelectTabSet(item).FireAndForget();
-    }
-
-    private async Task SelectTabSet(TabItem tabItem)
-    {
-        if (ViewModel is null)
-        {
-            return;
-        }
-
-        await ViewModel.SelectTabAsync(TabView.Tabs.IndexOf(tabItem));
     }
 }

@@ -1,9 +1,9 @@
-﻿using MissionPlanner.App.Helpers;
+﻿using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
 /// <inheritdoc />
-public partial class AuxFunctionTabView : ContentView
+public partial class AuxFunctionTabView : TabViewLifecycleContent<AuxFunctionTabViewModel>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="AuxFunctionTabView"/> class.
@@ -11,7 +11,5 @@ public partial class AuxFunctionTabView : ContentView
     public AuxFunctionTabView()
     {
         InitializeComponent();
-        var viewModel = ServiceHelper.GetRequiredService<AuxFunctionTabViewModel>();
-        BindingContext = viewModel;
     }
 }

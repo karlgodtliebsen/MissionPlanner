@@ -1,9 +1,9 @@
-﻿using MissionPlanner.App.Helpers;
+﻿using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
 /// <inheritdoc />
-public partial class TransponderTabView : ContentView
+public partial class TransponderTabView : TabViewLifecycleContent<TransponderTabViewModel>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="TransponderTabView"/> class.
@@ -11,7 +11,5 @@ public partial class TransponderTabView : ContentView
     public TransponderTabView()
     {
         InitializeComponent();
-        var viewModel = ServiceHelper.GetRequiredService<TransponderTabViewModel>();
-        BindingContext = viewModel;
     }
 }

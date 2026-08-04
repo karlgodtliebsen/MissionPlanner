@@ -1,15 +1,15 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
 /// <inheritdoc />
-public partial class QuickTabViewModel : ObservableObject, IFlightDataTabLifecycle, IDisposable
+public partial class QuickTabViewModel : ObservableObject, IDisposable
 {
     private readonly IDispatcher dispatcher;
     private readonly ILogger<QuickTabViewModel> logger;
-    private readonly FlightDataTabLifecycle lifecycle;
 
     /// <summary>
     /// Yaw angle in degrees. Positive = nose right.
@@ -79,49 +79,23 @@ public partial class QuickTabViewModel : ObservableObject, IFlightDataTabLifecyc
     [ObservableProperty]
     public partial string FlightMode { get; set; }
 
+    private IDisposable? disposable;
+
     /// <inheritdoc />
-    public QuickTabViewModel(
-        IVehicleHudDataService hudDataService,
-        IActiveVehicleContext activeVehicle,
-        IDispatcher dispatcher,
-        ILogger<QuickTabViewModel> logger)
+    public QuickTabViewModel(IVehicleHudDataService hudDataService, IActiveVehicleContext activeVehicle, IDispatcher dispatcher, ILogger<QuickTabViewModel> logger)
     {
         this.dispatcher = dispatcher;
         this.logger = logger;
         FlightMode = "Unknown";
-        lifecycle = new FlightDataTabLifecycle("Quick", activeVehicle, startAsync: _ =>
-        {
-            logger.LogDebug("Starting Quick tab telemetry subscription for {VehicleId}.", activeVehicle.VehicleId);
-            return Task.FromResult<IDisposable?>(SubscribeToVehicleData(hudDataService));
-        });
+        logger.LogDebug("Starting Quick tab telemetry subscription for {VehicleId}.", activeVehicle.VehicleId);
+        var observable = hudDataService.ObservePrimaryVehicleHudData();
+        disposable = SubscribeToVehicleData(observable);
     }
 
-    /// <inheritdoc />
-    public string Key => lifecycle.Key;
 
-    /// <inheritdoc />
-    public bool IsActive => lifecycle.IsActive;
-
-    /// <inheritdoc />
-    public bool IsInitialized => lifecycle.IsInitialized;
-
-    /// <inheritdoc />
-    public Task ActivateAsync(CancellationToken cancellationToken = default)
-    {
-        return lifecycle.ActivateAsync(cancellationToken);
-    }
-
-    /// <inheritdoc />
-    public Task DeactivateAsync()
-    {
-        return lifecycle.DeactivateAsync();
-    }
-
-    private IDisposable SubscribeToVehicleData(IVehicleHudDataService hudDataService)
+    private IDisposable SubscribeToVehicleData(IObservable<VehicleHudData> observable)
     {
         // Subscribe to HUD data updates from the primary vehicle
-        var observable = hudDataService.ObservePrimaryVehicleHudData();
-
         return observable.Subscribe(hudData =>
             // Update all properties with the new data
             dispatcher.Dispatch(() =>
@@ -148,6 +122,7 @@ public partial class QuickTabViewModel : ObservableObject, IFlightDataTabLifecyc
     public void Dispose()
     {
         logger.LogDebug("Disposing Quick tab telemetry lifecycle.");
-        lifecycle.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        disposable?.Dispose();
+        disposable = null;
     }
 }

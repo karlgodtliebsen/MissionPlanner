@@ -6,7 +6,6 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
-using UraniumUI.Extensions;
 
 namespace MissionPlanner.App.Views.FlightData;
 
@@ -26,11 +25,8 @@ public partial class FlightDataViewModel : ObservableObject, IDisposable
     private readonly IDateTimeProvider clock;
     private readonly IDispatcher dispatcher;
     private readonly ILogger<FlightDataViewModel> logger;
-    private readonly IReadOnlyDictionary<string, IFlightDataTabLifecycle> tabLifecycles;
-    private readonly SemaphoreSlim tabTransitionLock = new(1, 1);
-    private IFlightDataTabLifecycle? activeTab;
+
     private IDisposable? stateSubscription;
-    private bool isViewActive;
     private bool disposed;
 
     /// <summary>
@@ -40,26 +36,17 @@ public partial class FlightDataViewModel : ObservableObject, IDisposable
     /// <param name="domainEventHub">The domain event hub used for live vehicle state.</param>
     /// <param name="clock">The application clock.</param>
     /// <param name="dispatcher">The UI dispatcher.</param>
-    /// <param name="tabLifecycles">The registered lifecycle-aware Flight Data tabs.</param>
     /// <param name="logger">The logger.</param>
-    public FlightDataViewModel(
-        IActiveVehicleContext activeVehicle,
-        IDomainEventHub domainEventHub,
-        IDateTimeProvider clock,
-        IDispatcher dispatcher,
-        IEnumerable<IFlightDataTabLifecycle> tabLifecycles,
-        ILogger<FlightDataViewModel> logger)
+    public FlightDataViewModel(IActiveVehicleContext activeVehicle, IDomainEventHub domainEventHub, IDateTimeProvider clock, IDispatcher dispatcher, ILogger<FlightDataViewModel> logger)
     {
         this.activeVehicle = activeVehicle;
         this.domainEventHub = domainEventHub;
         this.clock = clock;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        this.tabLifecycles = tabLifecycles.ToDictionary(tab => tab.Key, StringComparer.Ordinal);
         SelectedMapStyle = "GEO";
         UpdateVehicleStatus(activeVehicle.Current);
-
-        ActivateAsync(0).FireAndForget();
+        Activate();
     }
 
     /// <summary>
@@ -100,83 +87,26 @@ public partial class FlightDataViewModel : ObservableObject, IDisposable
     /// <summary>
     /// Activates the Flight Data page and its selected tab.
     /// </summary>
-    /// <param name="selectedTabIndex">The zero-based selected tab index.</param>
-    /// <param name="cancellationToken">A token that cancels activation.</param>
-    private async Task ActivateAsync(int selectedTabIndex, CancellationToken cancellationToken = default)
+    private void Activate()
     {
-        ObjectDisposedException.ThrowIf(disposed, this);
-        if (!isViewActive)
-        {
-            isViewActive = true;
-            activeVehicle.Changed += OnActiveVehicleChanged;
-            stateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
-            UpdateVehicleStatus(activeVehicle.Current);
-        }
-
-        await SelectTabAsync(selectedTabIndex, cancellationToken).ConfigureAwait(false);
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        stateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
+        UpdateVehicleStatus(activeVehicle.Current);
     }
 
     /// <summary>
-    /// Selects a tab and deterministically deactivates the previously visible tab.
+    /// Deactivates the Flight Data page
     /// </summary>
-    /// <param name="selectedTabIndex">The zero-based selected tab index.</param>
-    /// <param name="cancellationToken">A token that cancels activation.</param>
-    public async Task SelectTabAsync(int selectedTabIndex, CancellationToken cancellationToken = default)
+    private void Deactivate()
     {
-        ObjectDisposedException.ThrowIf(disposed, this);
-        if (selectedTabIndex < 0 || selectedTabIndex >= tabKeys.Length)
-        {
-            throw new ArgumentOutOfRangeException(nameof(selectedTabIndex));
-        }
-
-        await tabTransitionLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            var key = tabKeys[selectedTabIndex];
-            tabLifecycles.TryGetValue(key, out var nextTab);
-            if (ReferenceEquals(activeTab, nextTab))
-            {
-                return;
-            }
-
-            if (activeTab is not null)
-            {
-                logger.LogDebug("Deactivating Flight Data tab {TabKey}.", activeTab.Key);
-                await activeTab.DeactivateAsync().ConfigureAwait(false);
-            }
-
-            activeTab = nextTab;
-            if (isViewActive && activeTab is not null)
-            {
-                logger.LogDebug("Activating Flight Data tab {TabKey}.", activeTab.Key);
-                await activeTab.ActivateAsync(cancellationToken).ConfigureAwait(false);
-            }
-        }
-        finally
-        {
-            tabTransitionLock.Release();
-        }
-    }
-
-    /// <summary>
-    /// Deactivates the Flight Data page and stops work owned by its visible tab.
-    /// </summary>
-    private async Task DeactivateAsync()
-    {
-        if (disposed || !isViewActive)
+        if (disposed)
         {
             return;
         }
 
-        isViewActive = false;
         activeVehicle.Changed -= OnActiveVehicleChanged;
         stateSubscription?.Dispose();
         stateSubscription = null;
-        if (activeTab is not null)
-        {
-            await activeTab.DeactivateAsync().ConfigureAwait(false);
-            activeTab = null;
-        }
     }
 
     /// <inheritdoc />
@@ -187,9 +117,8 @@ public partial class FlightDataViewModel : ObservableObject, IDisposable
             return;
         }
 
-        DeactivateAsync().GetAwaiter().GetResult();
+        Deactivate();
         disposed = true;
-        tabTransitionLock.Dispose();
     }
 
     private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs e)
@@ -203,7 +132,7 @@ public partial class FlightDataViewModel : ObservableObject, IDisposable
         {
             dispatcher.Dispatch(() =>
             {
-                if (isViewActive && evt.VehicleId == activeVehicle.VehicleId)
+                if (evt.VehicleId == activeVehicle.VehicleId)
                 {
                     UpdateVehicleStatus(new ActiveVehicleSnapshot(evt.VehicleId, evt.VehicleState));
                 }

@@ -1,9 +1,9 @@
-﻿using MissionPlanner.App.Helpers;
+﻿using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
 /// <inheritdoc />
-public partial class DataFlashLogsTabView : ContentView
+public partial class DataFlashLogsTabView : TabViewLifecycleContent<DataFlashLogsTabViewModel>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="DataFlashLogsTabView"/> class.
@@ -11,7 +11,5 @@ public partial class DataFlashLogsTabView : ContentView
     public DataFlashLogsTabView()
     {
         InitializeComponent();
-        var viewModel = ServiceHelper.GetRequiredService<DataFlashLogsTabViewModel>();
-        BindingContext = viewModel;
     }
 }

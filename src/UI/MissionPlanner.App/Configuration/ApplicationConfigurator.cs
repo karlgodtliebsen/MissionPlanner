@@ -159,33 +159,33 @@ public static class ApplicationConfigurator
         //Tabs on FlightDataView
         // The concrete view-model and lifecycle registrations must resolve to the
         // same instance; otherwise FlightDataViewModel would activate a hidden VM.
-        services.TryAddSingleton<QuickTabViewModel>();
-        services.TryAddSingleton<ActionsTabViewModel>();
-        services.TryAddSingleton<MessagesTabViewModel>();
-        services.TryAddSingleton<PreflightTabViewModel>();
-        services.TryAddSingleton<GaugesTabViewModel>();
-        services.TryAddSingleton<TransponderTabViewModel>();
-        services.TryAddSingleton<StatusTabViewModel>();
-        services.TryAddSingleton<ServoRelayTabViewModel>();
-        services.TryAddSingleton<AuxFunctionTabViewModel>();
-        services.TryAddSingleton<ScriptsTabViewModel>();
-        services.TryAddSingleton<PayloadControlTabViewModel>();
-        services.TryAddSingleton<TelemetryLogsTabViewModel>();
-        services.TryAddSingleton<DataFlashLogsTabViewModel>();
+        services.TryAddTransient<QuickTabViewModel>();
+        services.TryAddTransient<ActionsTabViewModel>();
+        services.TryAddTransient<MessagesTabViewModel>();
+        services.TryAddTransient<PreflightTabViewModel>();
+        services.TryAddTransient<GaugesTabViewModel>();
+        services.TryAddTransient<TransponderTabViewModel>();
+        services.TryAddTransient<StatusTabViewModel>();
+        services.TryAddTransient<ServoRelayTabViewModel>();
+        services.TryAddTransient<AuxFunctionTabViewModel>();
+        services.TryAddTransient<ScriptsTabViewModel>();
+        services.TryAddTransient<PayloadControlTabViewModel>();
+        services.TryAddTransient<TelemetryLogsTabViewModel>();
+        services.TryAddTransient<DataFlashLogsTabViewModel>();
 
-        services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<ActionsTabViewModel>());
-        services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<QuickTabViewModel>());
-        services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<MessagesTabViewModel>());
-        services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<PreflightTabViewModel>());
-        services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<GaugesTabViewModel>());
-        services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<TransponderTabViewModel>());
-        services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<StatusTabViewModel>());
-        services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<ServoRelayTabViewModel>());
-        services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<AuxFunctionTabViewModel>());
-        services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<ScriptsTabViewModel>());
-        services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<PayloadControlTabViewModel>());
-        services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<TelemetryLogsTabViewModel>());
-        services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<DataFlashLogsTabViewModel>());
+        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<ActionsTabViewModel>());
+        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<QuickTabViewModel>());
+        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<MessagesTabViewModel>());
+        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<PreflightTabViewModel>());
+        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<GaugesTabViewModel>());
+        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<TransponderTabViewModel>());
+        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<StatusTabViewModel>());
+        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<ServoRelayTabViewModel>());
+        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<AuxFunctionTabViewModel>());
+        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<ScriptsTabViewModel>());
+        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<PayloadControlTabViewModel>());
+        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<TelemetryLogsTabViewModel>());
+        //services.AddSingleton<IFlightDataTabLifecycle>(serviceProvider => serviceProvider.GetRequiredService<DataFlashLogsTabViewModel>());
 
         services.TryAddTransient<AdvancedViewModel>();
         services.TryAddTransient<InstallFirmwareViewModel>();
@@ -245,8 +245,8 @@ public static class ApplicationConfigurator
         serviceProvider
             .UseMavLinkServices()
             .UseDomainServices()
-            ;
-        serviceProvider.GetRequiredService<PlannerSettingsRuntime>().ApplyCurrent();
+            .GetRequiredService<PlannerSettingsRuntime>().ApplyCurrent();
+
         var plannerSettingsService = serviceProvider.GetRequiredService<IPlannerSettingsService>();
         var loadResult = plannerSettingsService.InitializeAsync().AsTask().GetAwaiter().GetResult();
         var connection = loadResult.Settings.Connection;
@@ -256,9 +256,7 @@ public static class ApplicationConfigurator
         var stateService = serviceProvider.GetRequiredService<ApplicationStateService>();
         stateService.Initialize(state);
         _ = serviceProvider.GetRequiredService<PlannerSettingsRuntime>();
-
         serviceProvider.UseApplicationServices();
-
         return serviceProvider;
     }
 }

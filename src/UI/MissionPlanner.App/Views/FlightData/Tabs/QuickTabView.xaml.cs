@@ -1,9 +1,9 @@
-﻿using MissionPlanner.App.Helpers;
+﻿using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
 /// <inheritdoc />
-public partial class QuickTabView : ContentView
+public partial class QuickTabView : TabViewLifecycleContent<QuickTabViewModel>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="QuickTabView"/> class.
@@ -11,7 +11,5 @@ public partial class QuickTabView : ContentView
     public QuickTabView()
     {
         InitializeComponent();
-        var viewModel = ServiceHelper.GetRequiredService<QuickTabViewModel>();
-        BindingContext = viewModel;
     }
 }

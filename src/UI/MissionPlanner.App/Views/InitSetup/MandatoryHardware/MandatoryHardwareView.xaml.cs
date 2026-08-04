@@ -57,7 +57,7 @@ public partial class MandatoryHardwareView : ContentPageView<MandatoryHardwareVi
     //protected override void OnAppearing()
     //{
     //    base.OnAppearing();
-    //    viewModel.Activate();
+    //    ViewModel.Activate();
     //    foreach (var sectionView in sectionViews)
     //    {
     //        sectionView.Activate();
@@ -72,7 +72,7 @@ public partial class MandatoryHardwareView : ContentPageView<MandatoryHardwareVi
     //        sectionView.Deactivate();
     //    }
 
-    //    viewModel.Deactivate();
+    //    ViewModel.Deactivate();
     //    base.OnDisappearing();
     //}
 }

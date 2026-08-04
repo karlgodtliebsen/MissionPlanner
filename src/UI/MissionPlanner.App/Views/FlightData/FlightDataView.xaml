@@ -9,6 +9,7 @@
                             xmlns:hud="clr-namespace:MissionPlanner.App.Views.FlightData.Hud"
                             xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
                             xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                            xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                             x:Class="MissionPlanner.App.Views.FlightData.FlightDataView"
                             x:DataType="flightData:FlightDataViewModel"
                     
@@ -24,7 +25,7 @@
                         VerticalOptions="Fill"
                         Padding="0"
             >
-                <material:TabView x:Name="TabView" TabHeaderItemColumnWidth="*" >
+                <tabViews:LifecycleTabView x:Name="TabView" TabHeaderItemColumnWidth="*" >
 
                     <material:TabItem Title="Quick">
                         <tabs:QuickTabView />
@@ -69,7 +70,7 @@
                     <material:TabItem Title="DataFlash Logs">
                         <tabs:DataFlashLogsTabView />
                     </material:TabItem>
-                </material:TabView>
+                </tabViews:LifecycleTabView>
             </ScrollView>
         </Grid>
 
