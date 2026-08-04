@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles;
@@ -6,6 +6,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
+using UraniumUI.Extensions;
 
 namespace MissionPlanner.App.Views.FlightData;
 
@@ -57,6 +58,8 @@ public partial class FlightDataViewModel : ObservableObject, IDisposable
         this.tabLifecycles = tabLifecycles.ToDictionary(tab => tab.Key, StringComparer.Ordinal);
         SelectedMapStyle = "GEO";
         UpdateVehicleStatus(activeVehicle.Current);
+
+        ActivateAsync(0).FireAndForget();
     }
 
     /// <summary>
@@ -99,7 +102,7 @@ public partial class FlightDataViewModel : ObservableObject, IDisposable
     /// </summary>
     /// <param name="selectedTabIndex">The zero-based selected tab index.</param>
     /// <param name="cancellationToken">A token that cancels activation.</param>
-    public async Task ActivateAsync(int selectedTabIndex, CancellationToken cancellationToken = default)
+    private async Task ActivateAsync(int selectedTabIndex, CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         if (!isViewActive)
@@ -158,7 +161,7 @@ public partial class FlightDataViewModel : ObservableObject, IDisposable
     /// <summary>
     /// Deactivates the Flight Data page and stops work owned by its visible tab.
     /// </summary>
-    public async Task DeactivateAsync()
+    private async Task DeactivateAsync()
     {
         if (disposed || !isViewActive)
         {
@@ -225,13 +228,10 @@ public partial class FlightDataViewModel : ObservableObject, IDisposable
     private string FormatAge(DateTimeOffset observedAt)
     {
         var age = clock.UtcNow - observedAt;
-        if (age <= TimeSpan.FromSeconds(2))
-        {
-            return "live";
-        }
-
-        return age < TimeSpan.FromMinutes(1)
-            ? $"{Math.Max(0, (int)age.TotalSeconds)}s old"
-            : $"{Math.Max(0, (int)age.TotalMinutes)}m old";
+        return age <= TimeSpan.FromSeconds(2)
+            ? "live"
+            : age < TimeSpan.FromMinutes(1)
+                ? $"{Math.Max(0, (int)age.TotalSeconds)}s old"
+                : $"{Math.Max(0, (int)age.TotalMinutes)}m old";
     }
 }

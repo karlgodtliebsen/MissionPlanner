@@ -212,6 +212,35 @@ public sealed class FlightDataInfrastructureTests
     }
 
     /// <summary>
+    /// Verifies non-vehicle tabs, such as Telemetry Logs, can run while no live vehicle is connected.
+    /// </summary>
+    [Fact]
+    public async Task TabLifecycleCanActivateWithoutOnlineVehicleWhenConfigured()
+    {
+        var fixture = CreateContextFixture();
+        using var context = fixture.Context;
+        var starts = 0;
+        var disposals = 0;
+        await using var lifecycle = new FlightDataTabLifecycle(
+            "Offline",
+            context,
+            startAsync: _ =>
+            {
+                starts++;
+                return Task.FromResult<IDisposable?>(new CallbackDisposable(() => disposals++));
+            },
+            requiresOnlineVehicle: false);
+
+        await lifecycle.ActivateAsync(TestContext.Current.CancellationToken);
+        await lifecycle.DeactivateAsync();
+
+        starts.Should().Be(1);
+        disposals.Should().Be(1);
+        lifecycle.IsInitialized.Should().BeTrue();
+        lifecycle.IsActive.Should().BeFalse();
+    }
+
+    /// <summary>
     /// Verifies that the application dependency graph resolves every current Flight Data view model and shared service.
     /// </summary>
     [Fact]
@@ -253,6 +282,14 @@ public sealed class FlightDataInfrastructureTests
         provider.GetRequiredService<PayloadControlTabViewModel>().Should().NotBeNull();
         provider.GetRequiredService<TelemetryLogsTabViewModel>().Should().NotBeNull();
         provider.GetRequiredService<DataFlashLogsTabViewModel>().Should().NotBeNull();
+
+        var lifecycles = provider.GetServices<IFlightDataTabLifecycle>().ToArray();
+        lifecycles.Select(lifecycle => lifecycle.Key).Should().BeEquivalentTo(
+            "Quick", "Actions", "Messages", "PreFlight", "Gauges", "Transponder", "Status",
+            "Servo/Relay", "Aux Function", "Scripts", "Payload Control", "Telemetry Logs", "DataFlash Logs");
+        lifecycles.Should().HaveCount(13);
+        lifecycles.Should().OnlyContain(lifecycle =>
+            ReferenceEquals(lifecycle, provider.GetRequiredService(lifecycle.GetType())));
     }
 
     private static ContextFixture CreateContextFixture()

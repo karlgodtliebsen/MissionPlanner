@@ -11,6 +11,7 @@ public sealed class FlightDataTabLifecycle : IFlightDataTabLifecycle, IAsyncDisp
     private readonly IActiveVehicleContext activeVehicle;
     private readonly Func<CancellationToken, Task>? initializeAsync;
     private readonly Func<CancellationToken, Task<IDisposable?>>? startAsync;
+    private readonly bool requiresOnlineVehicle;
     private readonly SemaphoreSlim transitionLock = new(1, 1);
     private readonly Lock sync = new();
     private CancellationTokenSource? workCancellation;
@@ -25,17 +26,20 @@ public sealed class FlightDataTabLifecycle : IFlightDataTabLifecycle, IAsyncDisp
     /// <param name="activeVehicle">The shared active-vehicle context.</param>
     /// <param name="initializeAsync">Optional expensive work run once on the first online activation.</param>
     /// <param name="startAsync">Optional vehicle-bound work started for each active online connection.</param>
+    /// <param name="requiresOnlineVehicle">Whether work should start only while an active vehicle is online.</param>
     public FlightDataTabLifecycle(
         string key,
         IActiveVehicleContext activeVehicle,
         Func<CancellationToken, Task>? initializeAsync = null,
-        Func<CancellationToken, Task<IDisposable?>>? startAsync = null)
+        Func<CancellationToken, Task<IDisposable?>>? startAsync = null,
+        bool requiresOnlineVehicle = true)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(key);
         Key = key;
         this.activeVehicle = activeVehicle;
         this.initializeAsync = initializeAsync;
         this.startAsync = startAsync;
+        this.requiresOnlineVehicle = requiresOnlineVehicle;
     }
 
     /// <inheritdoc />
@@ -123,14 +127,14 @@ public sealed class FlightDataTabLifecycle : IFlightDataTabLifecycle, IAsyncDisp
 
     private async Task StartAsync(CancellationToken cancellationToken)
     {
-        if (!IsActive || !activeVehicle.IsOnline)
+        if (!IsActive || (requiresOnlineVehicle && !activeVehicle.IsOnline))
         {
             return;
         }
 
-        workCancellation = CancellationTokenSource.CreateLinkedTokenSource(
-            cancellationToken,
-            activeVehicle.ConnectionCancellationToken);
+        workCancellation = requiresOnlineVehicle
+            ? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, activeVehicle.ConnectionCancellationToken)
+            : CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
         if (!IsInitialized)
         {
