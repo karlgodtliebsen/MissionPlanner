@@ -173,6 +173,8 @@ public static class ApplicationConfigurator
 
         services.TryAddTransient<AdvancedViewModel>();
         services.TryAddTransient<InstallFirmwareViewModel>();
+        services.TryAddSingleton<IFirmwareSupportLinkProvider, FirmwareSupportLinkProvider>();
+        services.TryAddSingleton<IExternalLinkLauncher, ExternalLinkLauncher>();
         services.TryAddTransient<OptionalHardwareViewModel>();
 
         services.TryAddTransient<FlightDataViewModel>();

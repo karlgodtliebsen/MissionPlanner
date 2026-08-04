@@ -36,6 +36,8 @@ Optional vehicle-family icons can improve recognition, but the platform name and
 
 # Task 1 — Add a link catalogue
 
+Status: Completed on 2026-08-04. `FirmwareSupportLinkProvider` centralizes the official ArduPilot and STMicroelectronics destinations plus a clearly labeled third-party Zadig fallback. Models reject missing text and non-HTTPS destinations, while `IExternalLinkLauncher` keeps host launching out of XAML and enforces HTTPS again at the boundary.
+
 Create a UI-independent link model in the host/presentation layer, for example:
 
 ```csharp
