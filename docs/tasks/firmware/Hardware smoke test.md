@@ -1,6 +1,6 @@
 # Firmware hardware smoke-test record
 
-Status: **First-release hardware criterion met on an F4 controller; extended F4 scenarios and H7 coverage remain pending.**
+Status: **F4 serial upload protocol completed, but operational acceptance remains pending with the corrected OmnibusF4 target; H7 coverage is also pending.**
 
 This record is intentionally separate from CI. Complete it on Windows with expendable or recoverable test hardware, stable USB power, a known-good data cable, and access to the board's documented recovery method. Do not test on an installed or armed vehicle. Remove propellers and disconnect actuators before starting.
 
@@ -23,20 +23,21 @@ Never paste firmware images, private signing material, or unrelated device ident
 
 | Field | Result |
 |---|---|
-| Controller and revision | SpeedyBee F405 target (previously identified by Betaflight as OMNIBUSF4SD) / STM32F405; ArduPilot bootloader revision 5 |
+| Controller and revision | OmnibusF4 / STM32F405; previously identified by Betaflight as `OMNIBUSF4SD`; STM32 device ID `0x413`, 1 MB internal flash |
 | Test date / operator | 2026-08-04 / Karl Godtliebsen with Codex harness |
 | Mission Planner commit | `a2b8ea37d` |
-| USB/application identity | `1209:5741`, serial `5B002E000951353332343134`, `ArduPilot (COM11)` |
-| Stable catalogue upload | Pending; the earlier official `omnibusf4` board-ID 1002 candidate was correctly rejected as incompatible with this board-ID 134 target |
-| Custom APJ upload | **Passed.** Local `arducopter.apj`, board ID 134, Git identity `1511f271`, 848,336-byte image, 983,040-byte maximum |
-| Application → bootloader transition | **Passed.** Temporary MAVLink reboot returned `Accepted`; the device disappeared and returned on COM11 with the same stable USB identity; bootloader identified board 134 before confirmation/erase |
-| Bootloader → application rediscovery | **Passed.** Application returned on COM11 with the same VID/PID, USB serial, and stable device path |
+| USB/application identity | During board-ID 134 test: `1209:5741`, serial `5B002E000951353332343134`, `ArduPilot (COM11)`; corrected OmnibusF4 application identity to be recorded on its matching upload |
+| STM32 ROM DFU identity | VID:PID `0483:DF11`, serial `345F348D3335` |
+| Stable catalogue upload | Pending with the corrected `omnibusf4` board-ID 1002 bootloader/application target |
+| Custom APJ upload | **Protocol passed but operational result failed.** The uploader erased, programmed and verified the board-ID 134 `speedybeef4` package, but that hardware definition could not initialize the physical IMU (`Config Error: INS: unable to initialize driver`) |
+| Application → bootloader transition | **Protocol passed.** Temporary MAVLink reboot returned `Accepted`; the device disappeared and returned on COM11; the then-installed bootloader identified board 134 before confirmation/erase |
+| Bootloader → application rediscovery | **Transport passed, operational acceptance failed.** The application returned on COM11, but produced no attitude because the mismatched SpeedyBee hardware definition could not initialize INS |
 | Repeated upload | Pending |
 | Wrong-board package blocked before erase | Pre-erase board-ID guards were exercised with the board-ID 1002 catalogue candidate; destructive protocol was not entered |
 | Manual unplug/replug fallback | Prompt/resume and live PnP removal/arrival detection exercised; successful upload used automatic MAVLink entry |
 | Connected embedded-bootloader update | Pending |
-| Diagnostic report / operation IDs | **Completed:** `5e431412-621b-42db-b904-c49729f29422`; detected board 134; bootloader revision 5; 848,336 bytes programmed; verification succeeded; elapsed 15.753 s |
-| Recovery method | STM32 ROM DFU through BOOT/BOOT0 is known working; operator previously restored Betaflight and installed `arducopter_with_bl.hex` through original Mission Planner |
+| Diagnostic report / operation IDs | **Protocol completed:** `5e431412-621b-42db-b904-c49729f29422`; detected board 134; bootloader revision 5; 848,336 bytes programmed; verification succeeded; elapsed 15.753 s. This is not an operational target pass. |
+| Recovery method | **Passed.** Operator entered STM32 ROM DFU with BOOT/BOOT0 and used STM32CubeProgrammer to install a custom-built OmnibusF4 image. INS, the original Mission Planner HUD and the new Mission Planner HUD all work afterward. |
 
 ## H7 controller
 
@@ -70,4 +71,4 @@ Never paste firmware images, private signing material, or unrelated device ident
 
 ## Completion gate
 
-The firmware task's first-release hardware criterion requires at least one real supported controller to complete a documented Windows erase/program/verify/reboot cycle. The F4 result above satisfies that gate. The F4 repeated-upload and connected-update scenarios and the full H7 table remain explicit extended hardware-matrix work; simulated transports or the skipped `FirmwareHardwareTests` theory do not count as evidence for those pending rows.
+The firmware task's first-release hardware criterion requires at least one real supported controller to complete a documented Windows erase/program/verify/reboot cycle with an operational matching target. The board-ID 134 run proves the serial protocol path but does not satisfy that gate because the target was physically incompatible. Re-run the new uploader with the corrected OmnibusF4 board-ID 1002 bootloader and matching APJ before marking the F4 result complete. The extended F4 scenarios and full H7 table remain pending.

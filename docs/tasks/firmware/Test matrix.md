@@ -16,7 +16,7 @@ Verified on 2026-08-04 on branch `feature/firmware`.
 
 `FirmwareHardwareTests` is marked `Category=ManualHardware` and skipped unless an operator deliberately converts/runs the scenario under a hardware safety procedure. It records F4, H7, port-change, repeated-upload, mismatch, unplug/replug, and embedded-bootloader-update checks. No CI job requires a physical controller.
 
-The operator checklist and evidence fields are in [Hardware smoke test](Hardware%20smoke%20test.md). A real F4 board-ID 134 erase/program/verify/reboot cycle passed on Windows; extended F4 scenarios and H7 coverage remain explicitly pending. No physical result is inferred from simulated coverage.
+The operator checklist and evidence fields are in [Hardware smoke test](Hardware%20smoke%20test.md). A real F4 board-ID 134 erase/program/verify/reboot protocol cycle completed on Windows, but the SpeedyBee target was physically incompatible with the OmnibusF4 controller and failed INS initialization. Operational acceptance therefore remains pending with a matching OmnibusF4 board-ID 1002 APJ; extended F4 scenarios and H7 coverage also remain explicit. No physical result is inferred from simulated coverage.
 
 ## Repository regression results
 
