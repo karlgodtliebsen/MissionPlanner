@@ -24,6 +24,7 @@ Documentation lives in `docs/` and is organized into three categories: core docu
 | [MAVLINK_DOMAIN_PROMOTION.md](MAVLINK_DOMAIN_PROMOTION.md) | Rules and machine-readable ownership catalog for domain promotion |
 | [MAVFTP.md](MAVFTP.md) | MAVLink filesystem streaming, correlation, retries, and limitations |
 | [SERILOG_QUICKSTART.md](SERILOG_QUICKSTART.md) | Logging setup and diagnostic workflow |
+| [UI_VIEW_LIFECYCLE_AND_NAVIGATION.md](UI_VIEW_LIFECYCLE_AND_NAVIGATION.md) | Coding guide for lifecycle-aware tabs and Shell-based page navigation |
 
 Historical point-in-time analysis and fix logs (HUD integration analysis, parameter
 streaming debugging iterations, connection fix reports, etc.) were consolidated into the
