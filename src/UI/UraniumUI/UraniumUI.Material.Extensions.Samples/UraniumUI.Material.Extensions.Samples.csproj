@@ -121,6 +121,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="ControlsSamples\TabViewContent1.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="ControlsSamples\TabViewContent2.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="ControlsSamples\TabViewContent3.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="DataGridSamples\ArduPilotSample\VirtualizedDataGridView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

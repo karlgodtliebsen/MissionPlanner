@@ -1,4 +1,4 @@
-﻿namespace UraniumUI.Material.Extensions.Samples;
+﻿namespace UraniumUI.Material;
 
 /// <summary>
 /// Helper class for retrieving services from the MAUI application's service provider.

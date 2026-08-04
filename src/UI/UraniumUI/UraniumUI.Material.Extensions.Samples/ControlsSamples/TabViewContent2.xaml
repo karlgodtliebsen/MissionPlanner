@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<tabViews:TabViewLifecycleContent x:TypeArguments="controlsSamples:TabViewModel2" 
+                                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                                  xmlns:controlsSamples="clr-namespace:UraniumUI.Material.Extensions.Samples.ControlsSamples"
+                                  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  x:Class="UraniumUI.Material.Extensions.Samples.ControlsSamples.TabViewContent2"
+                                  x:DataType="controlsSamples:TabViewModel2"
+                                  >
+    <VerticalStackLayout Margin="20" BackgroundColor="Coral" MinimumHeightRequest="50" VerticalOptions="Center">
+        <Label 
+            Text="{Binding Name}"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center" />
+    </VerticalStackLayout>
+</tabViews:TabViewLifecycleContent>

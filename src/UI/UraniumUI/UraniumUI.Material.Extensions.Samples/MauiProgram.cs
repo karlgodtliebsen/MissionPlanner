@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Mopups.Hosting;
 using UraniumUI.Material.Dialogs;
 using UraniumUI.Material.Extensions.Samples.AppViewModels;
+using UraniumUI.Material.Extensions.Samples.ControlsSamples;
 using UraniumUI.Material.Extensions.Samples.DataGrids;
 using UraniumUI.Material.Extensions.Samples.DataGrids.ArduPilotSample;
 using UraniumUI.Material.Extensions.Samples.DataGridSamples.PaginationSamples;
@@ -55,6 +56,10 @@ public static class MauiProgram
         builder.Services.AddSingleton<PaginationSampleExtendedViewModel>();
         builder.Services.AddSingleton<MainPageViewModel>();
         builder.Services.AddSingleton<DialogSampleViewModel>();
+
+        builder.Services.AddTransient<TabViewModel1>();
+        builder.Services.AddTransient<TabViewModel2>();
+        builder.Services.AddTransient<TabViewModel3>();
 
         return builder.Build();
     }

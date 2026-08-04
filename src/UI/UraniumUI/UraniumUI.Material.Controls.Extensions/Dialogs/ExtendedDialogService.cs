@@ -27,13 +27,13 @@ public class ExtendedDialogService : DefaultDialogService, IExtendedDialogServic
     }
 
     /// <inheritdoc />
-    public new async Task DisplayViewExtendedAsync(string title, View content, string okText = "OK")
+    public async Task DisplayViewExtendedAsync(string title, View content, string okText = "OK")
     {
         await DisplayLightweightViewAsync(title, content, okText, null);
     }
 
     /// <inheritdoc />
-    public new Task<bool> DisplayViewExtendedAsync(string title, View content, string okText, string cancelText)
+    public Task<bool> DisplayViewExtendedAsync(string title, View content, string okText, string cancelText)
     {
         return DisplayLightweightViewAsync(title, content, okText, cancelText);
     }
@@ -183,8 +183,8 @@ public class ExtendedDialogService : DefaultDialogService, IExtendedDialogServic
     {
         var viewport = GetViewport(page);
         var margin = DeviceInfo.Current.Idiom == DeviceIdiom.Phone ? Math.Min(options.OuterMargin, 12) : options.OuterMargin;
-        var availableWidth = Math.Max(1, viewport.Width - margin * 2);
-        var availableHeight = Math.Max(1, viewport.Height - margin * 2);
+        var availableWidth = Math.Max(1, viewport.Width - (margin * 2));
+        var availableHeight = Math.Max(1, viewport.Height - (margin * 2));
         var defaultWidth = CalculateWidth(options, availableWidth);
         var defaultHeight = CalculateHeight(options, availableHeight);
         /*
