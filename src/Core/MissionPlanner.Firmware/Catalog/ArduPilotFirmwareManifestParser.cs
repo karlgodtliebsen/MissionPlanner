@@ -13,6 +13,10 @@ public sealed class ArduPilotFirmwareManifestParser(IOptions<FirmwareOptions> op
 {
     /// <inheritdoc />
     public IReadOnlyList<FirmwareManifestEntry> Parse(ReadOnlyMemory<byte> content)
+        => ParseWithDiagnostics(content).Entries;
+
+    /// <inheritdoc />
+    public FirmwareManifestParseResult ParseWithDiagnostics(ReadOnlyMemory<byte> content)
     {
         try
         {
@@ -23,12 +27,30 @@ public sealed class ArduPilotFirmwareManifestParser(IOptions<FirmwareOptions> op
                 throw new FirmwareManifestException("Manifest does not contain a firmware array.");
             }
 
-            return releases.EnumerateArray().Select(ParseEntry)
+            var accepted = new List<FirmwareManifestEntry>();
+            var reasons = new Dictionary<string, int>(StringComparer.Ordinal);
+            var total = 0;
+            foreach (var item in releases.EnumerateArray())
+            {
+                total++;
+                try { accepted.Add(ParseEntry(item)); }
+                catch (Exception exception) when (exception is FirmwareManifestException or ArgumentException or FormatException)
+                {
+                    var reason = SkipReason(exception);
+                    reasons[reason] = reasons.GetValueOrDefault(reason) + 1;
+                }
+            }
+
+            if (accepted.Count == 0)
+                throw new FirmwareManifestException("Manifest contains no usable firmware entries.");
+            var entries = accepted
                 .GroupBy(EntryKey, StringComparer.OrdinalIgnoreCase)
                 .Select(group => group.OrderByDescending(item => item.Version.SemanticVersion).First())
                 .OrderBy(item => item.Target.VehicleType).ThenBy(item => item.Target.Platform, StringComparer.OrdinalIgnoreCase)
                 .ThenByDescending(item => item.Version.SemanticVersion).ThenBy(item => item.Version.Value, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
+            if (accepted.Count > entries.Length) reasons["duplicate-mirror"] = accepted.Count - entries.Length;
+            return new(entries, new(total, entries.Length, total - entries.Length, reasons));
         }
         catch (FirmwareManifestException) { throw; }
         catch (Exception exception) when (exception is JsonException or InvalidDataException or FormatException or ArgumentException)
@@ -48,6 +70,7 @@ public sealed class ArduPilotFirmwareManifestParser(IOptions<FirmwareOptions> op
         var bootloaders = ParseStrings(item, "bootloader_str");
         var target = new FirmwareBoardTarget(boardId, platform, ParseVehicle(GetString(item, "vehicletype")), usb, bootloaders);
         var format = ParseFormat(GetString(item, "format"), url);
+        if (format == FirmwareImageFormat.Unknown) throw new FirmwareManifestException("Manifest release has an unsupported format.");
         var encodedSize = GetLong(item, "size");
         var imageSize = GetLong(item, "image_size") ?? GetLong(item, "image-size");
         var artifact = new FirmwareArtifact(url, format, encodedSize, GetString(item, "sha256"), imageSize);
@@ -82,7 +105,7 @@ public sealed class ArduPilotFirmwareManifestParser(IOptions<FirmwareOptions> op
     }
 
     private static bool IsGzip(ReadOnlySpan<byte> value) => value.Length >= 2 && value[0] == 0x1f && value[1] == 0x8b;
-    private static string EntryKey(FirmwareManifestEntry entry) => $"{entry.Target.BoardId}|{entry.Target.VehicleType}|{entry.Channel}|{entry.Version.Value}|{entry.Artifact.DownloadUri}";
+    private static string EntryKey(FirmwareManifestEntry entry) => $"{entry.Target.BoardId}|{entry.Target.Platform}|{entry.Target.VehicleType}|{entry.Channel}|{entry.Version.Value}|{entry.Artifact.Format}";
     private static string RequiredString(JsonElement item, string name) => GetString(item, name) is { Length: > 0 } value ? value : throw new FirmwareManifestException($"Manifest release is missing {name}.");
     private static int RequiredInt(JsonElement item, string name) => item.TryGetProperty(name, out var value) && value.TryGetInt32(out var number) ? number : throw new FirmwareManifestException($"Manifest release is missing {name}.");
     private static string? GetString(JsonElement item, string name) => item.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString()?.Trim() : null;
@@ -92,18 +115,32 @@ public sealed class ArduPilotFirmwareManifestParser(IOptions<FirmwareOptions> op
         ? value.ValueKind == JsonValueKind.Array ? value.EnumerateArray().Select(element => element.GetString() ?? string.Empty) : [value.GetString() ?? string.Empty]
         : [];
 
-    private static IEnumerable<UsbIdentifier> ParseUsb(JsonElement item)
+    private static IReadOnlyList<UsbIdentifier> ParseUsb(JsonElement item)
     {
-        foreach (var text in ParseStrings(item, "USBID"))
+        var values = ParseStrings(item, "USBID").Where(value => !string.IsNullOrWhiteSpace(value)).ToArray();
+        var parsed = new List<UsbIdentifier>();
+        foreach (var text in values)
         {
             var parts = text.Replace("0x", string.Empty, StringComparison.OrdinalIgnoreCase).Split('/');
             if (parts.Length == 2 && int.TryParse(parts[0], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var vid) &&
                 int.TryParse(parts[1], NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var pid) && vid > 0 && pid > 0)
             {
-                yield return new UsbIdentifier(vid, pid);
+                parsed.Add(new UsbIdentifier(vid, pid));
             }
         }
+
+        if (values.Length > 0 && parsed.Count == 0) throw new FirmwareManifestException("Manifest release contains an invalid USB identifier.");
+        return parsed;
     }
+
+    private static string SkipReason(Exception exception) => exception.Message switch
+    {
+        var value when value.Contains("USB identifier", StringComparison.OrdinalIgnoreCase) => "invalid-usb-id",
+        var value when value.Contains("unsupported format", StringComparison.OrdinalIgnoreCase) => "unsupported-format",
+        var value when value.Contains("board", StringComparison.OrdinalIgnoreCase) => "invalid-board-id",
+        var value when value.Contains("URI", StringComparison.OrdinalIgnoreCase) || value.Contains("URL", StringComparison.OrdinalIgnoreCase) => "invalid-uri",
+        _ => "missing-or-invalid-field"
+    };
 
     private static FirmwareReleaseChannel ParseChannel(string? value, JsonElement item)
     {

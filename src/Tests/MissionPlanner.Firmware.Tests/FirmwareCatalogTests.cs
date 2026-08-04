@@ -57,6 +57,43 @@ public sealed class FirmwareCatalogTests
     }
 
     [Fact]
+    public void ParserSkipsMalformedEntryAndReportsReason()
+    {
+        const string json = """
+            {"firmware":[
+              {"vehicletype":"Copter","platform":"Good","url":"https://example.test/good.apj","format":"apj","version":"1.0","board_id":50,"future":"kept"},
+              {"vehicletype":"Copter","platform":"BadUsb","url":"https://example.test/bad.apj","format":"apj","version":"1.0","board_id":51,"USBID":["wrong"]}
+            ]}
+            """;
+        var result = CreateParser().ParseWithDiagnostics(System.Text.Encoding.UTF8.GetBytes(json));
+        result.Entries.Should().ContainSingle().Which.RawMetadata.Should().ContainKey("future");
+        result.Diagnostics.Should().BeEquivalentTo(new { TotalEntries = 2, AcceptedEntries = 1, SkippedEntries = 1 });
+        result.Diagnostics.SkipReasons.Should().Contain("invalid-usb-id", 1);
+    }
+
+    [Fact]
+    public void ParserFailsWhenAllEntriesAreMalformed()
+    {
+        const string json = """{"firmware":[{"platform":"Missing board and URL"}]}""";
+        var act = () => CreateParser().Parse(System.Text.Encoding.UTF8.GetBytes(json));
+        act.Should().Throw<FirmwareManifestException>().WithMessage("*no usable*");
+    }
+
+    [Fact]
+    public void ParserDeduplicatesMirrorEntriesWithDiagnostic()
+    {
+        const string json = """
+            {"firmware":[
+              {"vehicletype":"Copter","platform":"Board","url":"https://one.test/fw.apj","format":"apj","version":"1.0","board_id":50},
+              {"vehicletype":"Copter","platform":"Board","url":"https://two.test/fw.apj","format":"apj","version":"1.0","board_id":50}
+            ]}
+            """;
+        var result = CreateParser().ParseWithDiagnostics(System.Text.Encoding.UTF8.GetBytes(json));
+        result.Entries.Should().ContainSingle();
+        result.Diagnostics.SkipReasons.Should().Contain("duplicate-mirror", 1);
+    }
+
+    [Fact]
     public async Task CatalogFiltersDeterministicallyWithoutNetworkWhenCacheIsFresh()
     {
         var cache = new MemoryFirmwareCatalogCache();

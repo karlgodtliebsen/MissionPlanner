@@ -14,7 +14,20 @@ public sealed record FirmwareCatalogRequest(
 public sealed record FirmwareCatalog(
     IReadOnlyList<FirmwareManifestEntry> Entries,
     DateTimeOffset RetrievedAt,
-    bool IsStale);
+    bool IsStale,
+    FirmwareManifestParseDiagnostics? ParseDiagnostics = null);
+
+/// <summary>Summarizes accepted and independently skipped manifest entries.</summary>
+public sealed record FirmwareManifestParseDiagnostics(
+    int TotalEntries,
+    int AcceptedEntries,
+    int SkippedEntries,
+    IReadOnlyDictionary<string, int> SkipReasons);
+
+/// <summary>Contains normalized entries and parser diagnostics.</summary>
+public sealed record FirmwareManifestParseResult(
+    IReadOnlyList<FirmwareManifestEntry> Entries,
+    FirmwareManifestParseDiagnostics Diagnostics);
 
 /// <summary>Contains a cacheable source manifest and HTTP validators.</summary>
 public sealed record CachedFirmwareManifest(

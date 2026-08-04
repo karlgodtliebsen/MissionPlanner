@@ -384,6 +384,8 @@ Make official manifest and firmware-host settings configurable through `Firmware
 
 # Task 7 — Make manifest parsing resilient per entry
 
+Status: Completed on 2026-08-04. Entries parse independently with total/accepted/skipped diagnostics and categorized reasons. Invalid fields or unsupported formats skip one entry, unknown fields remain available, mirrors deduplicate deterministically, and invalid documents or all-invalid manifests fail.
+
 ## Changes
 
 Parse each manifest entry independently.

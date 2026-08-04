@@ -58,6 +58,8 @@ The catalogue cache layers an in-process value over a durable host-selected cach
 
 Manifest and artifact traffic uses the named `MissionPlanner.Firmware` client with a configurable MissionPlanner User-Agent, bounded request timeout, bounded connection establishment, and gzip/deflate decompression. Manifest and artifact readers still enforce independent streaming byte limits and propagate caller cancellation. Large artifact downloads have no automatic retry policy.
 
+Manifest entries are parsed independently. Invalid URLs, board IDs, USB identifiers, unsupported formats, and missing required fields skip only the affected entry and produce categorized counts; unknown future fields remain in raw metadata. Invalid JSON/gzip and manifests with no usable entries still fail as a whole. Equivalent mirror entries are deterministically deduplicated and reported.
+
 Supported image formats in this workflow are `.apj` and `.px4`. Intel HEX, `_with_bl.hex`, DFU, legacy boards, DroneCAN, BlueOS/network upload, SD-card `.abin`, UART telemetry adapters, and mobile USB-host flashing are not implemented. `.hex` requires a future DFU/legacy workflow.
 
 ## Serial ownership, protocol, and recovery

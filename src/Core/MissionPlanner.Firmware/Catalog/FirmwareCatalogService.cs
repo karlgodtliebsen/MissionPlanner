@@ -46,11 +46,12 @@ public sealed class FirmwareCatalogService(
             catch (Exception exception) { throw new FirmwareManifestException("Manifest retrieval failed and no valid cache is available.", exception); }
         }
 
-        IEnumerable<FirmwareManifestEntry> entries = parser.Parse(selected.Content);
+        var parsed = parser.ParseWithDiagnostics(selected.Content);
+        IEnumerable<FirmwareManifestEntry> entries = parsed.Entries;
         if (request.VehicleType is { } vehicle) entries = entries.Where(entry => entry.Target.VehicleType == vehicle);
         if (request.Channel is { } channel) entries = entries.Where(entry => entry.Channel == channel);
         if (request.BoardId is { } board) entries = entries.Where(entry => entry.Target.BoardId == board);
         if (request.UsbIdentifier is { } usb) entries = entries.Where(entry => entry.Target.UsbIdentifiers.Contains(usb));
-        return new FirmwareCatalog(entries.ToArray(), selected.RetrievedAt, stale);
+        return new FirmwareCatalog(entries.ToArray(), selected.RetrievedAt, stale, parsed.Diagnostics);
     }
 }
