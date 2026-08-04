@@ -1,6 +1,7 @@
 using MissionPlanner.App.Presentation;
 using MissionPlanner.Firmware.Entry;
 using MissionPlanner.Firmware.Installation;
+using MissionPlanner.Firmware.Model;
 
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
@@ -18,17 +19,17 @@ public sealed class FirmwareInteractionService(IUserConfirmationService confirma
             cancellationToken);
 
     /// <inheritdoc />
-    public async Task AcknowledgeManualActionAsync(FirmwareManualAction action, CancellationToken cancellationToken = default) =>
-        _ = await confirmation.ConfirmAsync("Firmware", Message(action.Code), "Continue", cancellationToken);
+    public Task<bool> AcknowledgeManualActionAsync(FirmwareManualAction action, CancellationToken cancellationToken = default) =>
+        confirmation.ConfirmAsync("Firmware", Message(action.Code), "Continue", cancellationToken);
 
     /// <inheritdoc />
-    public async Task RequestAsync(string interactionCode, CancellationToken cancellationToken = default) =>
-        _ = await confirmation.ConfirmAsync("Flight controller bootloader", Message(interactionCode), "Continue", cancellationToken);
+    public Task<bool> RequestAsync(string interactionCode, CancellationToken cancellationToken = default) =>
+        confirmation.ConfirmAsync("Flight controller bootloader", Message(interactionCode), "Continue", cancellationToken);
 
     private static string Message(string code) => code switch
     {
-        "bootloader.manual-reconnect" => "Unplug and reconnect the flight controller, or press its hardware reset button, to enter the bootloader.",
-        "installation.reconnect-after-reboot" => "The controller has rebooted. Wait for ArduPilot to reappear before reconnecting Mission Planner.",
-        _ => code
+        FirmwareInteractionCodes.ManualBootloaderReconnect => "Unplug and reconnect the flight controller, or press its hardware reset button, to enter the bootloader.",
+        FirmwareInteractionCodes.ReconnectAfterReboot => "The controller has rebooted. Wait for ArduPilot to reappear before reconnecting Mission Planner.",
+        _ => "Mission Planner requires an additional firmware action. Copy the diagnostic report if this message persists."
     };
 }

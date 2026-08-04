@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Firmware.Discovery;
 using MissionPlanner.Firmware.Exceptions;
+using MissionPlanner.Firmware.Model;
 
 namespace MissionPlanner.Firmware.Entry;
 
@@ -62,7 +63,12 @@ public sealed class ManualReconnectBootloaderEntryStrategy(IBootloaderEntryInter
     public async Task<BootloaderEntryResult> TryEnterAsync(BootloaderEntryContext context, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(context);
-        await interaction.RequestAsync("entry.manual-unplug-replug", cancellationToken).ConfigureAwait(false);
+        var accepted = await interaction.RequestAsync(FirmwareInteractionCodes.ManualBootloaderReconnect, cancellationToken).ConfigureAwait(false);
+        if (!accepted)
+        {
+            throw new OperationCanceledException("The operator rejected the manual bootloader reconnect request.");
+        }
+
         return new BootloaderEntryResult(BootloaderEntryOutcome.ContinueDiscovery, "entry.manual-reconnect-requested");
     }
 }

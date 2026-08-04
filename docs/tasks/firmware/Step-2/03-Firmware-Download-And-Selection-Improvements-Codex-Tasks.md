@@ -24,6 +24,8 @@ The user must not need to begin bootloader discovery merely to prove that downlo
 
 # Task 1 — Correct current interaction defects
 
+Status: Completed on 2026-08-04. Shared `FirmwareInteractionCodes` now owns host interaction identifiers, interaction boundaries preserve accept/reject results, and rejection cancels before discovery or erase. Automated coverage includes acceptance, operator rejection, and external-token cancellation.
+
 ## Scope
 
 Inspect:

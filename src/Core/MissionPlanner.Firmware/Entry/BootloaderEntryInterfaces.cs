@@ -22,7 +22,8 @@ public interface ITemporaryMavLinkBootloaderGateway
 public interface IBootloaderEntryInteraction
 {
     /// <summary>Requests unplug/replug or hardware reset without embedding UI text.</summary>
-    Task RequestAsync(string interactionCode, CancellationToken cancellationToken = default);
+    /// <returns><see langword="true"/> when the operator accepts the request; otherwise, <see langword="false"/>.</returns>
+    Task<bool> RequestAsync(string interactionCode, CancellationToken cancellationToken = default);
 }
 
 /// <summary>Runs bootloader-entry strategies in deterministic priority order.</summary>

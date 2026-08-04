@@ -19,7 +19,8 @@ public interface IFirmwareUserInteraction
     /// <summary>Requests final confirmation after compatibility and before erase.</summary>
     Task<bool> ConfirmInstallationAsync(FirmwareInstallationConfirmation confirmation, CancellationToken cancellationToken = default);
     /// <summary>Presents a manual post-operation action.</summary>
-    Task AcknowledgeManualActionAsync(FirmwareManualAction action, CancellationToken cancellationToken = default);
+    /// <returns><see langword="true"/> when the operator acknowledges the action; otherwise, <see langword="false"/>.</returns>
+    Task<bool> AcknowledgeManualActionAsync(FirmwareManualAction action, CancellationToken cancellationToken = default);
 }
 
 /// <summary>Runs the disconnected application-firmware workflow.</summary>

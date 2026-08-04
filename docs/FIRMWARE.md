@@ -70,6 +70,8 @@ The guarded lifecycle is Idle → catalogue/package/device/bootloader stages →
 
 Board ID, revision, image size, flash capacity, external-flash, bootloader revision, and supported security metadata are checked before erase. The final prompt repeats detected and selected board IDs and image size. During erase/program/verify, power warnings are shown and navigation is blocked. Cancellation is immediate only before destructive work; once erase begins it is deferred so an abrupt cancellation cannot intentionally strand the controller mid-command. All protocol reads and discovery loops have bounded timeouts.
 
+Host interaction prompts use the shared `FirmwareInteractionCodes` contract rather than duplicated UI strings. Both final confirmation and manual bootloader requests preserve the operator's Boolean response. Rejecting either request ends the operation as Cancelled before erase; cancellation from the caller token remains independently observable as cancellation rather than acceptance.
+
 Embedded Bootloader Update uses `MAV_CMD_FLASH_BOOTLOADER` (42650), confirmation value 290876 in parameter 5, the existing command/ACK service, an explicit warning, and connected/supported/disarmed gates. Accepted, temporary rejection, denial, unsupported, failure, and timeout remain distinct outcomes.
 
 ## Platforms

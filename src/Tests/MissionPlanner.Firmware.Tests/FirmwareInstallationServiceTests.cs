@@ -211,7 +211,7 @@ public sealed class FirmwareInstallationServiceTests
         public int ConfirmCalls { get; private set; }
         public int ManualCalls { get; private set; }
         public Task<bool> ConfirmInstallationAsync(FirmwareInstallationConfirmation confirmation, CancellationToken cancellationToken = default) { ConfirmCalls++; return Task.FromResult(confirm); }
-        public Task AcknowledgeManualActionAsync(FirmwareManualAction action, CancellationToken cancellationToken = default) { ManualCalls++; return Task.CompletedTask; }
+        public Task<bool> AcknowledgeManualActionAsync(FirmwareManualAction action, CancellationToken cancellationToken = default) { ManualCalls++; return Task.FromResult(confirm); }
     }
     private sealed class FixedEntry(DiscoveredBootloader found, Exception? failure) : IBootloaderEntryService
     {

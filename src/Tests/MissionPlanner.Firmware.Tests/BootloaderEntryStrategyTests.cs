@@ -69,7 +69,31 @@ public sealed class BootloaderEntryStrategyTests
         var result = await strategy.TryEnterAsync(Context(), TestContext.Current.CancellationToken);
 
         result.Outcome.Should().Be(BootloaderEntryOutcome.ContinueDiscovery);
-        interaction.Code.Should().Be("entry.manual-unplug-replug");
+        interaction.Code.Should().Be(FirmwareInteractionCodes.ManualBootloaderReconnect);
+    }
+
+    [Fact]
+    public async Task ManualStrategyRejectionCancelsBeforeDiscovery()
+    {
+        var interaction = new FakeInteraction(accepted: false);
+        var strategy = new ManualReconnectBootloaderEntryStrategy(interaction);
+
+        var act = () => strategy.TryEnterAsync(Context(), TestContext.Current.CancellationToken);
+
+        await act.Should().ThrowAsync<OperationCanceledException>()
+            .WithMessage("*operator rejected*");
+    }
+
+    [Fact]
+    public async Task ManualStrategyPropagatesExternalCancellation()
+    {
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        var strategy = new ManualReconnectBootloaderEntryStrategy(new FakeInteraction());
+
+        var act = () => strategy.TryEnterAsync(Context(), cancellation.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>();
     }
 
     [Fact]
@@ -135,10 +159,15 @@ public sealed class BootloaderEntryStrategyTests
         public Task<bool> RebootToBootloaderAsync(SerialDeviceDescriptor applicationDevice, CancellationToken cancellationToken = default) =>
             Task.FromException<bool>(new UnauthorizedAccessException("port is owned"));
     }
-    private sealed class FakeInteraction : IBootloaderEntryInteraction
+    private sealed class FakeInteraction(bool accepted = true) : IBootloaderEntryInteraction
     {
         public string? Code { get; private set; }
-        public Task RequestAsync(string interactionCode, CancellationToken cancellationToken = default) { Code = interactionCode; return Task.CompletedTask; }
+        public Task<bool> RequestAsync(string interactionCode, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            Code = interactionCode;
+            return Task.FromResult(accepted);
+        }
     }
     private sealed class SequencedDiscovery : IBootloaderDiscoveryService
     {
