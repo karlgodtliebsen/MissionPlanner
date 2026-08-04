@@ -193,7 +193,13 @@ public sealed class ArduPilotBootloaderClient(
         {
             while (offset < destination.Length)
             {
-                var read = await port.Stream.ReadAsync(destination[offset..], deadline.Token).ConfigureAwait(false);
+                // SerialPort.BaseStream on Windows does not reliably observe the token passed to
+                // ReadAsync. WaitAsync enforces our protocol deadline; discovery then disposes the
+                // owning port, which releases the outstanding native read.
+                var read = await port.Stream.ReadAsync(destination[offset..], CancellationToken.None)
+                    .AsTask()
+                    .WaitAsync(deadline.Token)
+                    .ConfigureAwait(false);
                 if (read == 0) throw new EndOfStreamException("Bootloader disconnected during a reply.");
                 offset += read;
             }
@@ -208,8 +214,13 @@ public sealed class ArduPilotBootloaderClient(
         deadline.CancelAfter(timeout);
         try
         {
-            await port.Stream.WriteAsync(data, deadline.Token).ConfigureAwait(false);
-            await port.Stream.FlushAsync(deadline.Token).ConfigureAwait(false);
+            await port.Stream.WriteAsync(data, CancellationToken.None)
+                .AsTask()
+                .WaitAsync(deadline.Token)
+                .ConfigureAwait(false);
+            await port.Stream.FlushAsync(CancellationToken.None)
+                .WaitAsync(deadline.Token)
+                .ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { throw new TimeoutException("Timed out writing a bootloader command."); }
     }

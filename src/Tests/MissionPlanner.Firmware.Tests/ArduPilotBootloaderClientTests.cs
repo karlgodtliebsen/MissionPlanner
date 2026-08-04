@@ -216,7 +216,8 @@ public sealed class ArduPilotBootloaderClientTests
     {
         public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
         {
-            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            // Models SerialPort.BaseStream on Windows, where cancellation may be ignored.
+            await Task.Delay(Timeout.InfiniteTimeSpan);
             return 0;
         }
 
