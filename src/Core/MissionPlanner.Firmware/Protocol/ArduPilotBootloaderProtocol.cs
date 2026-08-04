@@ -23,5 +23,7 @@ internal static class ArduPilotBootloaderProtocol
     public const byte InfoBoardRevision = 0x03;
     public const byte InfoFlashSize = 0x04;
     public const byte InfoExternalFlashSize = 0x06;
+    public const int MinimumBootloaderRevision = 2;
+    public const int MaximumBootloaderRevision = 20;
     public const int MaximumProgramChunk = 252;
 }

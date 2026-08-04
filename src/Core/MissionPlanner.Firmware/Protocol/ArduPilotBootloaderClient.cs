@@ -24,7 +24,8 @@ public sealed class ArduPilotBootloaderClient(
     {
         await SynchronizeAsync(cancellationToken).ConfigureAwait(false);
         var revision = checked((int)await GetInfoAsync(ArduPilotBootloaderProtocol.InfoBootloaderRevision, cancellationToken).ConfigureAwait(false));
-        if (revision is < 2 or > 5) throw new FirmwareBootloaderException($"Unsupported bootloader revision {revision}.");
+        if (revision is < ArduPilotBootloaderProtocol.MinimumBootloaderRevision or > ArduPilotBootloaderProtocol.MaximumBootloaderRevision)
+            throw new FirmwareBootloaderException($"Unsupported bootloader revision {revision}.");
         var boardId = checked((int)await GetInfoAsync(ArduPilotBootloaderProtocol.InfoBoardId, cancellationToken).ConfigureAwait(false));
         var boardRevision = checked((int)await GetInfoAsync(ArduPilotBootloaderProtocol.InfoBoardRevision, cancellationToken).ConfigureAwait(false));
         var flashSize = await GetInfoAsync(ArduPilotBootloaderProtocol.InfoFlashSize, cancellationToken).ConfigureAwait(false);
