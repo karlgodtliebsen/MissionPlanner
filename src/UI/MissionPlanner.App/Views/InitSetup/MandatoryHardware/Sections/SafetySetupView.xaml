@@ -7,7 +7,8 @@
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SafetySetupView"
                                   x:DataType="sections:SafetySetupViewModel">
-    <VerticalStackLayout Spacing="10">
+    <ScrollView VerticalScrollBarVisibility="Always">
+        <VerticalStackLayout Spacing="10">
         <ProgressBar Progress="{Binding Progress}" />
         <Label Text="{Binding Error}" TextColor="Red" />
         <Label Text="Safety and arming" FontSize="18" FontAttributes="Bold" />
@@ -33,5 +34,6 @@
         <Button Text="Re-assess safety"
                 Command="{Binding RefreshCommand}"
                 HorizontalOptions="Start" />
-    </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
 </tabViews:TabViewLifecycleContent>

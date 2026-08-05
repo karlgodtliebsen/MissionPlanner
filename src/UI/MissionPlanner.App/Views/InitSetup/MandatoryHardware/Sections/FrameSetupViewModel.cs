@@ -8,6 +8,7 @@ using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
+using UraniumUI.Extensions;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -56,6 +57,8 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
         this.clock = clock;
         this.dispatcher = dispatcher;
         this.logger = logger;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        LoadAsync().FireAndForget();
     }
 
     /// <summary>Gets frame parameters supported by both live values and firmware metadata.</summary>
@@ -117,18 +120,12 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
     }
 
     /// <inheritdoc />
-    protected override void OnActivated()
-    {
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        _ = LoadAsync();
-    }
-
-    /// <inheritdoc />
-    protected override void OnDeactivated()
+    public override void Dispose()
     {
         activeVehicle.Changed -= OnActiveVehicleChanged;
-        base.OnDeactivated();
+        base.Dispose();
     }
+
 
     [RelayCommand]
     private Task LoadCommandAsync()
@@ -240,13 +237,7 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
     {
         if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
         {
-            dispatcher.Dispatch(() =>
-            {
-                if (IsActive)
-                {
-                    _ = LoadAsync();
-                }
-            });
+            dispatcher.Dispatch(() => LoadAsync().FireAndForget());
         }
     }
 

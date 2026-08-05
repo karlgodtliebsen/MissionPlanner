@@ -37,6 +37,8 @@ public sealed partial class FlightModesSetupViewModel : SetupWorkflowDetailViewM
         this.modeService = modeService;
         this.dispatcher = dispatcher;
         this.logger = logger;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        Load();
     }
 
     /// <summary>Gets the six flight-mode slots.</summary>
@@ -60,20 +62,6 @@ public sealed partial class FlightModesSetupViewModel : SetupWorkflowDetailViewM
         operationCancellation?.Cancel();
         operationCancellation?.Dispose();
         operationCancellation = null;
-    }
-
-    /// <inheritdoc />
-    protected override void OnActivated()
-    {
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        Load();
-    }
-
-    /// <inheritdoc />
-    protected override void OnDeactivated()
-    {
-        activeVehicle.Changed -= OnActiveVehicleChanged;
-        base.OnDeactivated();
     }
 
     /// <inheritdoc />
@@ -128,13 +116,7 @@ public sealed partial class FlightModesSetupViewModel : SetupWorkflowDetailViewM
     {
         if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
         {
-            dispatcher.Dispatch(() =>
-            {
-                if (IsActive)
-                {
-                    Load();
-                }
-            });
+            dispatcher.Dispatch(Load);
         }
     }
 

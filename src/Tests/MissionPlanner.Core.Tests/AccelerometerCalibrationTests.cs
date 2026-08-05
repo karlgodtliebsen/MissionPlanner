@@ -210,7 +210,6 @@ public sealed class AccelerometerCalibrationTests
             clock,
             ImmediateDispatcher(),
             Substitute.For<ILogger<AccelerometerSetupViewModel>>());
-        viewModel.Activate();
         var waiting = new CalibrationSnapshot(vehicleId, AccelerometerCalibrationKind.SixPosition,
             CalibrationWorkflowState.WaitingForOrientation, CalibrationOrientation.NoseUp,
             new HashSet<CalibrationOrientation>(), 0.5, "Nose up");
@@ -224,7 +223,6 @@ public sealed class AccelerometerCalibrationTests
             calibration, new CalibrationStateChangedEventArgs(waiting with { State = CalibrationWorkflowState.Success, RequiredOrientation = null, Progress = 1 }));
         store.GetAll().Should().ContainSingle(item => item.Workflow == SetupWorkflowKey.Accelerometer);
 
-        viewModel.Deactivate();
         var inactiveImage = viewModel.OrientationImage;
         calibration.StateChanged += Raise.Event<EventHandler<CalibrationStateChangedEventArgs>>(
             calibration, new CalibrationStateChangedEventArgs(waiting with { RequiredOrientation = CalibrationOrientation.NoseDown }));

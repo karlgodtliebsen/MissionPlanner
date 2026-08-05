@@ -63,6 +63,12 @@ public sealed partial class RadioSetupViewModel : Models.SetupWorkflowDetailView
         this.clock = clock;
         this.dispatcher = dispatcher;
         this.logger = logger;
+        radioService.StateChanged += OnCalibrationStateChanged;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        observedRadioAt = activeVehicle.State?.Radio.ObservedAt;
+        vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
+        Show(radioService.Current);
+        RefreshLiveChannels();
     }
 
     /// <summary>Gets the live RC channels.</summary>
@@ -114,32 +120,13 @@ public sealed partial class RadioSetupViewModel : Models.SetupWorkflowDetailView
     }
 
     /// <inheritdoc />
-    protected override void OnActivated()
-    {
-        radioService.StateChanged += OnCalibrationStateChanged;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        observedRadioAt = activeVehicle.State?.Radio.ObservedAt;
-        vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
-        Show(radioService.Current);
-        RefreshLiveChannels();
-    }
-
-    /// <inheritdoc />
-    protected override void OnDeactivated()
+    public override void Dispose()
     {
         radioService.StateChanged -= OnCalibrationStateChanged;
         activeVehicle.Changed -= OnActiveVehicleChanged;
         vehicleStateSubscription?.Dispose();
         vehicleStateSubscription = null;
         observedRadioAt = null;
-        base.OnDeactivated();
-    }
-
-    /// <inheritdoc />
-    public override void Dispose()
-    {
-        radioService.StateChanged -= OnCalibrationStateChanged;
-        activeVehicle.Changed -= OnActiveVehicleChanged;
         base.Dispose();
         radioService.Dispose();
     }
@@ -235,8 +222,7 @@ public sealed partial class RadioSetupViewModel : Models.SetupWorkflowDetailView
         {
             dispatcher.Dispatch(() =>
             {
-                if (IsActive &&
-                    evt.VehicleId == activeVehicle.VehicleId &&
+                if (evt.VehicleId == activeVehicle.VehicleId &&
                     evt.VehicleState.Radio.ObservedAt != observedRadioAt)
                 {
                     observedRadioAt = evt.VehicleState.Radio.ObservedAt;
@@ -255,7 +241,7 @@ public sealed partial class RadioSetupViewModel : Models.SetupWorkflowDetailView
 
     private void RefreshLiveChannels()
     {
-        if (!IsActive || activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
+        if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
             Channels.Clear();
             OnPropertyChanged(nameof(HasChannels));

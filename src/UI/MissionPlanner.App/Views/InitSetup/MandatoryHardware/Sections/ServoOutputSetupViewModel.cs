@@ -8,6 +8,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
+using UraniumUI.Extensions;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -44,6 +45,10 @@ public sealed partial class ServoOutputSetupViewModel : Models.SetupWorkflowDeta
         this.domainEventHub = domainEventHub;
         this.dispatcher = dispatcher;
         this.logger = logger;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        observedServoAt = activeVehicle.State?.Radio.ServoObservedAt;
+        vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
+        LoadAsync().FireAndForget();
     }
 
     /// <summary>Gets the discovered servo outputs.</summary>
@@ -91,28 +96,12 @@ public sealed partial class ServoOutputSetupViewModel : Models.SetupWorkflowDeta
     }
 
     /// <inheritdoc />
-    protected override void OnActivated()
-    {
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        observedServoAt = activeVehicle.State?.Radio.ServoObservedAt;
-        vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
-        _ = LoadAsync();
-    }
-
-    /// <inheritdoc />
-    protected override void OnDeactivated()
+    public override void Dispose()
     {
         activeVehicle.Changed -= OnActiveVehicleChanged;
         vehicleStateSubscription?.Dispose();
         vehicleStateSubscription = null;
         observedServoAt = null;
-        base.OnDeactivated();
-    }
-
-    /// <inheritdoc />
-    public override void Dispose()
-    {
-        activeVehicle.Changed -= OnActiveVehicleChanged;
         base.Dispose();
     }
 
@@ -166,11 +155,8 @@ public sealed partial class ServoOutputSetupViewModel : Models.SetupWorkflowDeta
     {
         dispatcher.Dispatch(() =>
         {
-            if (IsActive)
-            {
-                observedServoAt = args.Current.State?.Radio.ServoObservedAt;
-                _ = LoadAsync();
-            }
+            observedServoAt = args.Current.State?.Radio.ServoObservedAt;
+            _ = LoadAsync();
         });
     }
 
@@ -180,8 +166,7 @@ public sealed partial class ServoOutputSetupViewModel : Models.SetupWorkflowDeta
         {
             dispatcher.Dispatch(() =>
             {
-                if (IsActive &&
-                    evt.VehicleId == activeVehicle.VehicleId &&
+                if (evt.VehicleId == activeVehicle.VehicleId &&
                     evt.VehicleState.Radio.ServoObservedAt != observedServoAt)
                 {
                     observedServoAt = evt.VehicleState.Radio.ServoObservedAt;
@@ -195,7 +180,7 @@ public sealed partial class ServoOutputSetupViewModel : Models.SetupWorkflowDeta
 
     private void RefreshLive()
     {
-        if (!IsActive || activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline || Outputs.Count == 0)
+        if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline || Outputs.Count == 0)
         {
             return;
         }

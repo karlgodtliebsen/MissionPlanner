@@ -8,6 +8,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
+using UraniumUI.Extensions;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -44,6 +45,10 @@ public sealed partial class BatterySetupViewModel : Models.SetupWorkflowDetailVi
         this.domainEventHub = domainEventHub;
         this.dispatcher = dispatcher;
         this.logger = logger;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        observedPower = activeVehicle.State?.Power;
+        vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
+        LoadAsync().FireAndForget();
     }
 
     /// <summary>Gets the discovered battery instances.</summary>
@@ -97,28 +102,12 @@ public sealed partial class BatterySetupViewModel : Models.SetupWorkflowDetailVi
     }
 
     /// <inheritdoc />
-    protected override void OnActivated()
-    {
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        observedPower = activeVehicle.State?.Power;
-        vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
-        _ = LoadAsync();
-    }
-
-    /// <inheritdoc />
-    protected override void OnDeactivated()
+    public override void Dispose()
     {
         activeVehicle.Changed -= OnActiveVehicleChanged;
         vehicleStateSubscription?.Dispose();
         vehicleStateSubscription = null;
         observedPower = null;
-        base.OnDeactivated();
-    }
-
-    /// <inheritdoc />
-    public override void Dispose()
-    {
-        activeVehicle.Changed -= OnActiveVehicleChanged;
         base.Dispose();
     }
 
@@ -240,11 +229,8 @@ public sealed partial class BatterySetupViewModel : Models.SetupWorkflowDetailVi
     {
         dispatcher.Dispatch(() =>
         {
-            if (IsActive)
-            {
-                observedPower = args.Current.State?.Power;
-                _ = LoadAsync();
-            }
+            observedPower = args.Current.State?.Power;
+            _ = LoadAsync();
         });
     }
 
@@ -254,7 +240,7 @@ public sealed partial class BatterySetupViewModel : Models.SetupWorkflowDetailVi
         {
             dispatcher.Dispatch(() =>
             {
-                if (IsActive &&
+                if (
                     evt.VehicleId == activeVehicle.VehicleId &&
                     evt.VehicleState.Power != observedPower)
                 {
@@ -269,7 +255,7 @@ public sealed partial class BatterySetupViewModel : Models.SetupWorkflowDetailVi
 
     private void RefreshLiveReadings()
     {
-        if (!IsActive || activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline || Instances.Count == 0)
+        if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline || Instances.Count == 0)
         {
             return;
         }

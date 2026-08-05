@@ -10,7 +10,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Projects the consolidated, exportable setup summary into Setup controls.</summary>
-public sealed partial class SetupSummaryViewModel : Models.SetupWorkflowDetailViewModel
+public sealed partial class SetupSummaryViewModel : SetupWorkflowDetailViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly ISetupSummaryService summaryService;
@@ -36,6 +36,8 @@ public sealed partial class SetupSummaryViewModel : Models.SetupWorkflowDetailVi
         this.summaryService = summaryService;
         this.dispatcher = dispatcher;
         this.logger = logger;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        Refresh();
     }
 
     /// <summary>Gets the summary sections.</summary>
@@ -58,20 +60,6 @@ public sealed partial class SetupSummaryViewModel : Models.SetupWorkflowDetailVi
 
     /// <summary>Gets whether any warnings were raised.</summary>
     public bool HasWarnings => Warnings.Count > 0;
-
-    /// <inheritdoc />
-    protected override void OnActivated()
-    {
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        Refresh();
-    }
-
-    /// <inheritdoc />
-    protected override void OnDeactivated()
-    {
-        activeVehicle.Changed -= OnActiveVehicleChanged;
-        base.OnDeactivated();
-    }
 
     /// <inheritdoc />
     public override void Dispose()
@@ -142,31 +130,7 @@ public sealed partial class SetupSummaryViewModel : Models.SetupWorkflowDetailVi
     {
         if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
         {
-            dispatcher.Dispatch(() =>
-            {
-                if (IsActive)
-                {
-                    Refresh();
-                }
-            });
+            dispatcher.Dispatch(Refresh);
         }
     }
-}
-
-/// <summary>Presents one summary section for display.</summary>
-public sealed class SetupSummarySectionViewModel
-{
-    /// <summary>Initializes a section view model.</summary>
-    /// <param name="section">The summary section.</param>
-    public SetupSummarySectionViewModel(SetupSummarySection section)
-    {
-        Title = section.Title;
-        Entries = section.Entries;
-    }
-
-    /// <summary>Gets the section title.</summary>
-    public string Title { get; }
-
-    /// <summary>Gets the section entries.</summary>
-    public IReadOnlyList<SetupSummaryEntry> Entries { get; }
 }

@@ -6,47 +6,49 @@
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.EscMotorSetupView"
                                   x:DataType="sections:EscMotorSetupViewModel">
-    <VerticalStackLayout Spacing="10">
-        <ProgressBar Progress="{Binding Progress}" />
-        <Label Text="{Binding Error}" TextColor="Red" />
-        <Label Text="ESC calibration and motor test" FontSize="18" FontAttributes="Bold" />
-        <Label Text="Remove ALL propellers before any actuator test. Motors will spin."
+    <ScrollView VerticalScrollBarVisibility="Always">
+        <VerticalStackLayout Spacing="10">
+            <ProgressBar Progress="{Binding Progress}" />
+            <Label Text="{Binding Error}" TextColor="Red" />
+            <Label Text="ESC calibration and motor test" FontSize="18" FontAttributes="Bold" />
+            <Label Text="Remove ALL propellers before any actuator test. Motors will spin."
                TextColor="OrangeRed"
                FontAttributes="Bold"
                LineBreakMode="WordWrap" />
-        <Label Text="{Binding EscExplanation}" LineBreakMode="WordWrap" />
-        <VerticalStackLayout IsVisible="{Binding EscCalibrationApplicable}"
+            <Label Text="{Binding EscExplanation}" LineBreakMode="WordWrap" />
+            <VerticalStackLayout IsVisible="{Binding EscCalibrationApplicable}"
                              BindableLayout.ItemsSource="{Binding EscSteps}">
-            <BindableLayout.ItemTemplate>
-                <DataTemplate x:DataType="x:String">
-                    <Label Text="{Binding .}" LineBreakMode="WordWrap" />
-                </DataTemplate>
-            </BindableLayout.ItemTemplate>
-        </VerticalStackLayout>
-        <VerticalStackLayout IsVisible="{Binding SupportsMotorTest}" Spacing="6">
-            <Label Text="Motor test" FontSize="16" FontAttributes="Bold" />
-            <Grid ColumnDefinitions="120,*,120,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="6">
-                <Label Text="Motor / count" VerticalOptions="Center" />
-                <Entry Grid.Column="1" Text="{Binding MotorIndex}" Keyboard="Numeric" />
-                <Label Grid.Column="2" Text="Throttle %" VerticalOptions="Center" />
-                <Entry Grid.Column="3" Text="{Binding ThrottlePercent}" Keyboard="Numeric" />
-                <Label Grid.Row="1" Text="Duration (s)" VerticalOptions="Center" />
-                <Entry Grid.Row="1" Grid.Column="1" Text="{Binding DurationSeconds}" Keyboard="Numeric" />
-            </Grid>
-            <Label Text="{Binding Instruction}" FontAttributes="Bold" LineBreakMode="WordWrap" />
-            <HorizontalStackLayout Spacing="10">
-                <Button Text="Test motor" Command="{Binding TestMotorCommand}" />
-                <Button Text="Test sequence" Command="{Binding TestSequenceCommand}" />
-                <Button TextColor="OrangeRed" FontAttributes="Bold" Text="STOP" Command="{Binding StopCommand}" />
-            </HorizontalStackLayout>
-            <Label Text="Operation log" FontAttributes="Bold" />
-            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Log}">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="x:String">
-                        <Label Text="{Binding .}" FontSize="12" Opacity="0.8" />
+                        <Label Text="{Binding .}" LineBreakMode="WordWrap" />
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>
             </VerticalStackLayout>
+            <VerticalStackLayout IsVisible="{Binding SupportsMotorTest}" Spacing="6">
+                <Label Text="Motor test" FontSize="16" FontAttributes="Bold" />
+                <Grid ColumnDefinitions="120,*,120,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="6">
+                    <Label Text="Motor / count" VerticalOptions="Center" />
+                    <Entry Grid.Column="1" Text="{Binding MotorIndex}" Keyboard="Numeric" />
+                    <Label Grid.Column="2" Text="Throttle %" VerticalOptions="Center" />
+                    <Entry Grid.Column="3" Text="{Binding ThrottlePercent}" Keyboard="Numeric" />
+                    <Label Grid.Row="1" Text="Duration (s)" VerticalOptions="Center" />
+                    <Entry Grid.Row="1" Grid.Column="1" Text="{Binding DurationSeconds}" Keyboard="Numeric" />
+                </Grid>
+                <Label Text="{Binding Instruction}" FontAttributes="Bold" LineBreakMode="WordWrap" />
+                <HorizontalStackLayout Spacing="10">
+                    <Button Text="Test motor" Command="{Binding TestMotorCommand}" />
+                    <Button Text="Test sequence" Command="{Binding TestSequenceCommand}" />
+                    <Button TextColor="OrangeRed" FontAttributes="Bold" Text="STOP" Command="{Binding StopCommand}" />
+                </HorizontalStackLayout>
+                <Label Text="Operation log" FontAttributes="Bold" />
+                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Log}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                            <Label Text="{Binding .}" FontSize="12" Opacity="0.8" />
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+            </VerticalStackLayout>
         </VerticalStackLayout>
-    </VerticalStackLayout>
+    </ScrollView>
 </tabViews:TabViewLifecycleContent>

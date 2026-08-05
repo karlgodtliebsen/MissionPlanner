@@ -6,7 +6,8 @@
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.ServoOutputSetupView"
                                   x:DataType="sections:ServoOutputSetupViewModel">
-    <VerticalStackLayout Spacing="10">
+    <ScrollView VerticalScrollBarVisibility="Always">
+        <VerticalStackLayout Spacing="10">
         <ProgressBar Progress="{Binding Progress}" />
         <Label Text="{Binding Error}" TextColor="Red" />
         <Label Text="Servo output functions" FontSize="18" FontAttributes="Bold" />
@@ -31,5 +32,6 @@
         <Button Text="Refresh servo outputs"
                 Command="{Binding RefreshCommand}"
                 HorizontalOptions="Start" />
-    </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
 </tabViews:TabViewLifecycleContent>

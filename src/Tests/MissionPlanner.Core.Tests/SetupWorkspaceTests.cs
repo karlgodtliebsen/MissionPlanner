@@ -3,7 +3,6 @@ using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
-using MissionPlanner.App.Helpers;
 using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Services;
@@ -104,7 +103,6 @@ public sealed class SetupWorkspaceTests
             clock,
             dispatcher,
             Substitute.For<ILogger<MandatoryHardwareViewModel>>());
-        viewModel.Activate();
         viewModel.SelectedWorkflow = viewModel.Workflows.Single(item => item.Descriptor.Key == SetupWorkflowKey.Frame);
         viewModel.IsFrameSelected.Should().BeTrue();
         viewModel.IsFirmwareSelected.Should().BeFalse();
@@ -120,7 +118,6 @@ public sealed class SetupWorkspaceTests
         viewModel.Workflows.Should().Contain(item =>
             item.State == SetupWorkflowState.Available || item.State == SetupWorkflowState.NotStarted);
 
-        viewModel.Deactivate();
         var heading = viewModel.VehicleHeading;
         context.Set(reconnected with { Connection = reconnected.Connection with { State = VehicleConnectionState.Offline } });
         viewModel.VehicleHeading.Should().Be(heading);
@@ -142,7 +139,6 @@ public sealed class SetupWorkspaceTests
             Substitute.For<IDateTimeProvider>(),
             dispatcher,
             Substitute.For<ILogger<MandatoryHardwareViewModel>>());
-        viewModel.Activate();
         viewModel.SelectedWorkflow = viewModel.Workflows.Single(item => item.Descriptor.Key == SetupWorkflowKey.Frame);
         var workflowItems = viewModel.Workflows.ToArray();
         var selectedWorkflow = viewModel.SelectedWorkflow;

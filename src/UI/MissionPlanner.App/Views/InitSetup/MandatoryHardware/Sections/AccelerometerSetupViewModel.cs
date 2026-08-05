@@ -56,6 +56,9 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
         this.clock = clock;
         this.dispatcher = dispatcher;
         this.logger = logger;
+        calibration.StateChanged += OnCalibrationStateChanged;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        Show(calibration.Current);
     }
 
     /// <summary>Gets the current calibration workflow stage.</summary>
@@ -107,25 +110,10 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
     }
 
     /// <inheritdoc />
-    protected override void OnActivated()
-    {
-        calibration.StateChanged += OnCalibrationStateChanged;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        Show(calibration.Current);
-    }
-
-    /// <inheritdoc />
-    protected override void OnDeactivated()
-    {
-        calibration.StateChanged -= OnCalibrationStateChanged;
-        activeVehicle.Changed -= OnActiveVehicleChanged;
-        base.OnDeactivated();
-    }
-
-    /// <inheritdoc />
     public override void Dispose()
     {
         calibration.StateChanged -= OnCalibrationStateChanged;
+        activeVehicle.Changed -= OnActiveVehicleChanged;
         base.Dispose();
         calibration.Dispose();
     }
@@ -246,13 +234,7 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
             return;
         }
 
-        dispatcher.Dispatch(() =>
-        {
-            if (IsActive)
-            {
-                Show(calibration.Current);
-            }
-        });
+        dispatcher.Dispatch(() => Show(calibration.Current));
     }
 
     private void Show(CalibrationSnapshot snapshot)

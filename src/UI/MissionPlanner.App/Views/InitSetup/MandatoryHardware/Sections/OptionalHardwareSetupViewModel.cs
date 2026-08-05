@@ -6,6 +6,7 @@ using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using UraniumUI.Extensions;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -37,6 +38,8 @@ public sealed partial class OptionalHardwareSetupViewModel : SetupWorkflowDetail
         this.hardwareService = hardwareService;
         this.dispatcher = dispatcher;
         this.logger = logger;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        LoadAsync().FireAndForget();
     }
 
     /// <summary>Gets the discovered optional-hardware modules.</summary>
@@ -88,18 +91,12 @@ public sealed partial class OptionalHardwareSetupViewModel : SetupWorkflowDetail
     }
 
     /// <inheritdoc />
-    protected override void OnActivated()
-    {
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        _ = LoadAsync();
-    }
-
-    /// <inheritdoc />
-    protected override void OnDeactivated()
+    public override void Dispose()
     {
         activeVehicle.Changed -= OnActiveVehicleChanged;
-        base.OnDeactivated();
+        base.Dispose();
     }
+
 
     /// <summary>Writes one peripheral setting and reloads on success.</summary>
     /// <param name="parameterName">The parameter to write.</param>
@@ -177,13 +174,7 @@ public sealed partial class OptionalHardwareSetupViewModel : SetupWorkflowDetail
     {
         if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
         {
-            dispatcher.Dispatch(() =>
-            {
-                if (IsActive)
-                {
-                    _ = LoadAsync();
-                }
-            });
+            dispatcher.Dispatch(() => LoadAsync().FireAndForget());
         }
     }
 

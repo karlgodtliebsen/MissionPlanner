@@ -6,7 +6,9 @@
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.RadioSetupView"
                                   x:DataType="sections:RadioSetupViewModel">
-    <VerticalStackLayout Spacing="10">
+    <ScrollView VerticalScrollBarVisibility="Always">
+
+        <VerticalStackLayout Spacing="10">
         <ProgressBar Progress="{Binding Progress}" />
         <Label Text="{Binding Error}" TextColor="Red" />
         <Label Text="Radio calibration" FontSize="18" FontAttributes="Bold" />
@@ -45,5 +47,6 @@
             <Button Text="Cancel" IsEnabled="{Binding CanFinish}" Command="{Binding CancelCalibrationCommand}" />
             <Button Text="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" />
         </HorizontalStackLayout>
-    </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
 </tabViews:TabViewLifecycleContent>

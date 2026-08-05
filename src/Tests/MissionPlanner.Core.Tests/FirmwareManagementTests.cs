@@ -36,7 +36,6 @@ public sealed class FirmwareManagementTests
             Substitute.For<IUserConfirmationService>(),
             ImmediateDispatcher(),
             Substitute.For<ILogger<FirmwareSetupViewModel>>());
-        viewModel.Activate();
 
         viewModel.VehicleLabel.Should().Be(state.DisplayName);
         viewModel.FirmwareVersion.Should().Contain("4.5.6-beta");

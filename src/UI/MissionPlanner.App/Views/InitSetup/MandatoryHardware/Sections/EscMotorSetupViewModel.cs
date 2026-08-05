@@ -42,6 +42,10 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
         this.logger = logger;
         MaximumDuration = actuatorService.MaximumDurationSeconds;
         MaximumThrottle = actuatorService.MaximumThrottlePercent;
+        actuatorService.StateChanged += OnStateChanged;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        Load();
+        Show(actuatorService.Current);
     }
 
     /// <summary>Gets the audit log of actuator operations.</summary>
@@ -98,26 +102,10 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
     }
 
     /// <inheritdoc />
-    protected override void OnActivated()
-    {
-        actuatorService.StateChanged += OnStateChanged;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        Load();
-        Show(actuatorService.Current);
-    }
-
-    /// <inheritdoc />
-    protected override void OnDeactivated()
-    {
-        actuatorService.StateChanged -= OnStateChanged;
-        activeVehicle.Changed -= OnActiveVehicleChanged;
-        base.OnDeactivated();
-    }
-
-    /// <inheritdoc />
     public override void Dispose()
     {
         actuatorService.StateChanged -= OnStateChanged;
+        activeVehicle.Changed -= OnActiveVehicleChanged;
         base.Dispose();
         actuatorService.Dispose();
     }
@@ -238,13 +226,7 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
     {
         if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
         {
-            dispatcher.Dispatch(() =>
-            {
-                if (IsActive)
-                {
-                    Load();
-                }
-            });
+            dispatcher.Dispatch(Load);
         }
     }
 

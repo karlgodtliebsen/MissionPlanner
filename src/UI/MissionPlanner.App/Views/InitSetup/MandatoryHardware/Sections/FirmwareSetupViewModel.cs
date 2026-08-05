@@ -209,13 +209,7 @@ public sealed partial class FirmwareSetupViewModel : Models.SetupWorkflowDetailV
 
     private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
     {
-        dispatcher.Dispatch(() =>
-        {
-            if (IsActive)
-            {
-                UpdateVehicle(args.Current.State);
-            }
-        });
+        dispatcher.Dispatch(() => UpdateVehicle(args.Current.State));
     }
 
     private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
@@ -224,9 +218,7 @@ public sealed partial class FirmwareSetupViewModel : Models.SetupWorkflowDetailV
         {
             dispatcher.Dispatch(() =>
             {
-                if (IsActive &&
-                    evt.VehicleId == activeVehicle.VehicleId &&
-                    evt.VehicleState.Identity != projectedIdentity)
+                if (evt.VehicleId == activeVehicle.VehicleId && evt.VehicleState.Identity != projectedIdentity)
                 {
                     UpdateVehicle(evt.VehicleState);
                 }

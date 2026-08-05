@@ -6,7 +6,8 @@
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.FlightModesSetupView"
                                   x:DataType="sections:FlightModesSetupViewModel">
-    <VerticalStackLayout Spacing="10">
+    <ScrollView VerticalScrollBarVisibility="Always">
+        <VerticalStackLayout Spacing="10">
         <ProgressBar Progress="{Binding Progress}" />
         <Label Text="{Binding Error}" TextColor="Red" />
         <Label Text="Flight-mode assignment" FontSize="18" FontAttributes="Bold" />
@@ -34,5 +35,6 @@
         <Button Text="Refresh flight modes"
                 Command="{Binding RefreshCommand}"
                 HorizontalOptions="Start" />
-    </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
 </tabViews:TabViewLifecycleContent>
