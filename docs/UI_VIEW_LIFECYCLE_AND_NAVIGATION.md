@@ -86,8 +86,18 @@ It owns the border, selected left marker, and content host; derived XAML supplie
 inner content because `HeaderContent` is the class content property. `SelectionColor` and
 `SelectedStrokeThickness` can be styled per application theme without duplicating the
 selection trigger or marker layout in every header view. The unselected border uses a
-transparent brush rather than a null stroke because the MAUI Windows border handler cannot
-convert a `SolidPaint` whose color is null while attaching the visual tree.
+non-null theme outline brush because the MAUI Windows border handler cannot convert a
+`SolidPaint` whose color is null while attaching the visual tree.
+
+`BorderStyleClass` accepts the same comma-separated class form used in XAML and defaults
+to `SurfaceContainer,Rounded,Elevation1`; set it to another class list or an empty string
+when a host needs different border chrome.
+
+The default chrome follows UraniumUI's theme palette: `Primary`/`PrimaryDark` supplies the
+selected marker, border, and 20%-opacity selected background; `Surface`/`SurfaceDark`
+supplies the normal background; and `OutlineVariant`/`OutlineVariantDark` supplies the
+normal non-null border. Unselected content uses the same 50% opacity as the stock TabView.
+Setting `SelectionColor` remains an explicit single-color override for specialized hosts.
 
 Selection visuals remain template-owned. Rich card headers should use the established
 narrow primary-color bar on the left edge; compact horizontal headers may retain

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using UraniumUI.Resources;
 
 namespace UraniumUI.Material.TabViews;
 
@@ -24,13 +25,18 @@ public class ExtendedTabHeaderView : ContentView
 
     /// <summary>Identifies the selection-indicator color.</summary>
     public static readonly BindableProperty SelectionColorProperty = BindableProperty.Create(
-        nameof(SelectionColor), typeof(Color), typeof(ExtendedTabHeaderView), Color.FromArgb("#29B6F6"),
+        nameof(SelectionColor), typeof(Color), typeof(ExtendedTabHeaderView), null,
         propertyChanged: OnSelectionAppearanceChanged);
 
     /// <summary>Identifies the selected border thickness.</summary>
     public static readonly BindableProperty SelectedStrokeThicknessProperty = BindableProperty.Create(
         nameof(SelectedStrokeThickness), typeof(double), typeof(ExtendedTabHeaderView), 1d,
         propertyChanged: OnSelectionAppearanceChanged);
+
+    /// <summary>Identifies the comma-separated style classes applied to the internal border.</summary>
+    public static readonly BindableProperty BorderStyleClassProperty = BindableProperty.Create(
+        nameof(BorderStyleClass), typeof(string), typeof(ExtendedTabHeaderView),
+        "", propertyChanged: OnBorderStyleClassChanged);
 
     /// <summary>Gets whether this header represents the selected tab.</summary>
     public bool IsHeaderSelected
@@ -47,9 +53,9 @@ public class ExtendedTabHeaderView : ContentView
     }
 
     /// <summary>Gets or sets the selected marker and border color.</summary>
-    public Color SelectionColor
+    public Color? SelectionColor
     {
-        get => (Color)GetValue(SelectionColorProperty);
+        get => (Color?)GetValue(SelectionColorProperty);
         set => SetValue(SelectionColorProperty, value);
     }
 
@@ -60,6 +66,13 @@ public class ExtendedTabHeaderView : ContentView
         set => SetValue(SelectedStrokeThicknessProperty, value);
     }
 
+    /// <summary>Gets or sets the comma-separated style classes applied to the internal border.</summary>
+    public string BorderStyleClass
+    {
+        get => (string)GetValue(BorderStyleClassProperty);
+        set => SetValue(BorderStyleClassProperty, value);
+    }
+
     /// <summary>Initializes the reusable header chrome.</summary>
     public ExtendedTabHeaderView()
     {
@@ -68,7 +81,8 @@ public class ExtendedTabHeaderView : ContentView
         var layout = new Grid { ColumnDefinitions = { new ColumnDefinition(new GridLength(4)), new ColumnDefinition(GridLength.Star) } };
         layout.Add(selectionIndicator, 0);
         layout.Add(contentHost, 1);
-        border = new Border { Content = layout, StrokeThickness = 1, StyleClass = ["SurfaceContainer", "Rounded", "Elevation1"] }; //StyleClass="SurfaceContainer,Rounded,Elevation1">
+        border = new Border { Content = layout, StrokeThickness = 1 /*StyleClass = ["SurfaceContainer", "Rounded", "Elevation1"]*/ };
+        ApplyBorderStyleClass();
         Content = border;
         UpdateSelectionVisuals();
     }
@@ -90,14 +104,42 @@ public class ExtendedTabHeaderView : ContentView
         ((ExtendedTabHeaderView)bindable).UpdateSelectionVisuals();
     }
 
+    private static void OnBorderStyleClassChanged(BindableObject bindable, object oldValue, object newValue)
+    {
+        ((ExtendedTabHeaderView)bindable).ApplyBorderStyleClass();
+    }
+
+    private void ApplyBorderStyleClass()
+    {
+        border.StyleClass = string.IsNullOrWhiteSpace(BorderStyleClass)
+            ? []
+            : BorderStyleClass.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    }
+
     private void UpdateSelectionVisuals()
     {
-        selectionIndicator.BackgroundColor = SelectionColor;
+        var primaryLight = SelectionColor ?? ColorResource.GetColor("Primary", Colors.Green);
+        var primaryDark = SelectionColor ?? ColorResource.GetColor("PrimaryDark", Colors.LightGreen);
+        var surfaceLight = ColorResource.GetColor("Surface", Colors.White);
+        var surfaceDark = ColorResource.GetColor("SurfaceDark", Colors.Black);
+        var outlineLight = ColorResource.GetColor("OutlineVariant", Colors.Gray);
+        var outlineDark = ColorResource.GetColor("OutlineVariantDark", Colors.DarkGray);
+
+        selectionIndicator.SetAppThemeColor(
+            BoxView.ColorProperty,
+            primaryLight.WithAlpha(.2f),
+            primaryDark.WithAlpha(.2f));
         selectionIndicator.IsVisible = IsHeaderSelected;
-        // A null Border.Stroke becomes a SolidPaint with a null Color in the MAUI
-        // Windows handler and crashes while the destination visual tree is attached.
-        border.Stroke = IsHeaderSelected ? SelectionColor : Colors.Transparent;
+        border.SetAppThemeColor(
+            BackgroundColorProperty,
+            IsHeaderSelected ? primaryLight.WithAlpha(.2f) : surfaceLight,
+            IsHeaderSelected ? primaryDark.WithAlpha(.2f) : surfaceDark);
+        border.SetAppTheme(
+            Border.StrokeProperty,
+            new SolidColorBrush(IsHeaderSelected ? primaryLight : outlineLight),
+            new SolidColorBrush(IsHeaderSelected ? primaryDark : outlineDark));
         border.StrokeThickness = IsHeaderSelected ? SelectedStrokeThickness : 1;
+        contentHost.Opacity = IsHeaderSelected ? 1 : .5;
     }
 
     [Conditional("DEBUG")]

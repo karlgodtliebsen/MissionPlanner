@@ -34,12 +34,15 @@
                             <DataTrigger TargetType="Border"
                                          Binding="{Binding Source={RelativeSource Self}, Path=(tabViews:ExtendedTabView.IsHeaderSelected)}"
                                          Value="True">
-                                <Setter Property="Stroke" Value="#29B6F6" />
+                                <Setter Property="Stroke"
+                                        Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
                                 <Setter Property="StrokeThickness" Value="3" />
                             </DataTrigger>
                         </Border.Triggers>
                         <Grid ColumnDefinitions="4,*">
-                            <BoxView BackgroundColor="#29B6F6" IsVisible="False">
+                            <BoxView BackgroundColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                                     Opacity="0.2"
+                                     IsVisible="False">
                                 <BoxView.Triggers>
                                     <DataTrigger TargetType="BoxView"
                                                  Binding="{Binding Source={RelativeSource Self}, Path=(tabViews:ExtendedTabView.IsHeaderSelected)}"

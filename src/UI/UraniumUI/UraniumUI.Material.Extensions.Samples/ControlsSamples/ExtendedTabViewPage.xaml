@@ -41,6 +41,7 @@
             <Border StyleClass="SurfaceContainer,Rounded,Elevation1">
 
                 <tabViews:ExtendedTabView Margin="25"
+
                                           HeaderItemsSource="{Binding TabHeaders}"
                                           TabHeaderItemColumnWidth="220">
 

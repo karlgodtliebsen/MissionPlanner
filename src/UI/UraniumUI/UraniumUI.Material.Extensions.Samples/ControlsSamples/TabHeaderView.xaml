@@ -6,7 +6,9 @@
     xmlns:controlsSamples="clr-namespace:UraniumUI.Material.Extensions.Samples.ControlsSamples"
     x:Class="UraniumUI.Material.Extensions.Samples.ControlsSamples.TabHeaderView"
     x:DataType="controlsSamples:TabHeaderModel"
-    Margin="10,0,0,0">
+    Margin="10,0,0,0"
+    BorderStyleClass="SurfaceContainer,Rounded,Elevation1"
+    >
 
     <VerticalStackLayout Margin="10"
                          Spacing="20"
