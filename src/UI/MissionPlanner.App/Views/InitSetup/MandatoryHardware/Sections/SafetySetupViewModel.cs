@@ -1,7 +1,8 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -18,26 +19,29 @@ public sealed partial class SafetySetupViewModel : SetupWorkflowDetailViewModel
     private readonly ILogger<SafetySetupViewModel> logger;
 
     /// <summary>Initializes the safety Setup workflow.</summary>
-    /// <param name="descriptor">The safety workflow descriptor.</param>
+    /// <param name="workflowCatalog"></param>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="safetyService">The safety assessment service.</param>
     /// <param name="parameterRegistry">The live parameter registry.</param>
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public SafetySetupViewModel(
-        SetupWorkflowDescriptor descriptor,
+        ISetupWorkflowCatalog workflowCatalog,
         IActiveVehicleContext activeVehicle,
         ISafetyAssessmentService safetyService,
         IVehicleParameterRegistry parameterRegistry,
-        IDispatcher dispatcher,
-        ILogger<SafetySetupViewModel> logger)
-        : base(descriptor)
+        IDispatcher dispatcher, ILogger<SafetySetupViewModel> logger)
+        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.OptionalHardware))
     {
         this.activeVehicle = activeVehicle;
         this.safetyService = safetyService;
         this.parameterRegistry = parameterRegistry;
         this.dispatcher = dispatcher;
         this.logger = logger;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        parameterRegistry.Changed += OnParameterChanged;
+        Status = "Connect a vehicle to assess safety configuration.";
+        Refresh();
     }
 
     /// <summary>Gets the assessed safety checks.</summary>
@@ -48,26 +52,10 @@ public sealed partial class SafetySetupViewModel : SetupWorkflowDetailViewModel
 
     /// <summary>Gets the workflow status.</summary>
     [ObservableProperty]
-    public partial string Status { get; private set; } = "Connect a vehicle to assess safety configuration.";
+    public partial string Status { get; set; }
 
     /// <summary>Gets whether any warnings were raised.</summary>
     public bool HasWarnings => Warnings.Count > 0;
-
-    /// <inheritdoc />
-    protected override void OnActivated()
-    {
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        parameterRegistry.Changed += OnParameterChanged;
-        Refresh();
-    }
-
-    /// <inheritdoc />
-    protected override void OnDeactivated()
-    {
-        activeVehicle.Changed -= OnActiveVehicleChanged;
-        parameterRegistry.Changed -= OnParameterChanged;
-        base.OnDeactivated();
-    }
 
     /// <inheritdoc />
     public override void Dispose()
@@ -85,7 +73,7 @@ public sealed partial class SafetySetupViewModel : SetupWorkflowDetailViewModel
             Items.Clear();
             Warnings.Clear();
             Status = "Connect a vehicle to assess safety configuration.";
-            OnPropertyChanged(nameof(HasWarnings));
+            //  OnPropertyChanged(nameof(HasWarnings));
             return;
         }
 
@@ -107,12 +95,12 @@ public sealed partial class SafetySetupViewModel : SetupWorkflowDetailViewModel
             Status = assessment.Warnings.Count == 0
                 ? "No safety contradictions detected. This is not a safe-to-fly certification."
                 : $"{assessment.Warnings.Count} safety item(s) need attention. This is not a safe-to-fly certification.";
-            OnPropertyChanged(nameof(HasWarnings));
+            //OnPropertyChanged(nameof(HasWarnings));
         }
         catch (Exception exception)
         {
             logger.LogError(exception, "Building safety assessment failed.");
-            Error = exception.Message;
+            //Error = exception.Message;
         }
     }
 
@@ -122,10 +110,10 @@ public sealed partial class SafetySetupViewModel : SetupWorkflowDetailViewModel
         {
             dispatcher.Dispatch(() =>
             {
-                if (IsActive)
-                {
-                    Refresh();
-                }
+                //if (IsActive)
+                //{
+                //    Refresh();
+                //}
             });
         }
     }

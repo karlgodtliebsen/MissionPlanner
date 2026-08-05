@@ -1,7 +1,8 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -19,18 +20,18 @@ public sealed partial class FlightModesSetupViewModel : SetupWorkflowDetailViewM
     private CancellationTokenSource? operationCancellation;
 
     /// <summary>Initializes the flight-mode Setup workflow.</summary>
-    /// <param name="descriptor">The flight-mode workflow descriptor.</param>
+    /// <param name="workflowCatalog">The Setup workflow catalog.</param>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="modeService">The flight-mode configuration service.</param>
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public FlightModesSetupViewModel(
-        SetupWorkflowDescriptor descriptor,
+        ISetupWorkflowCatalog workflowCatalog,
         IActiveVehicleContext activeVehicle,
         IFlightModeConfigurationService modeService,
         IDispatcher dispatcher,
         ILogger<FlightModesSetupViewModel> logger)
-        : base(descriptor)
+        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.FlightModes))
     {
         this.activeVehicle = activeVehicle;
         this.modeService = modeService;

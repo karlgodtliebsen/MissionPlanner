@@ -1,8 +1,9 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -19,20 +20,20 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
     private readonly ILogger<EscMotorSetupViewModel> logger;
 
     /// <summary>Initializes the ESC and motor-test Setup workflow.</summary>
-    /// <param name="descriptor">The ESC workflow descriptor.</param>
+    /// <param name="workflowCatalog">The Setup workflow catalog.</param>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="actuatorService">The actuator-test service.</param>
     /// <param name="confirmation">The shared confirmation service.</param>
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public EscMotorSetupViewModel(
-        SetupWorkflowDescriptor descriptor,
+        ISetupWorkflowCatalog workflowCatalog,
         IActiveVehicleContext activeVehicle,
         IActuatorTestService actuatorService,
         IUserConfirmationService confirmation,
         IDispatcher dispatcher,
         ILogger<EscMotorSetupViewModel> logger)
-        : base(descriptor)
+        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Esc))
     {
         this.activeVehicle = activeVehicle;
         this.actuatorService = actuatorService;

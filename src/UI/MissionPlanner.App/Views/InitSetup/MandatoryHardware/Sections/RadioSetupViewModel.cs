@@ -7,14 +7,13 @@ using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Projects live RC channels and the radio endpoint-calibration state machine into Setup controls.</summary>
-public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
+public sealed partial class RadioSetupViewModel : Models.SetupWorkflowDetailViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IRadioCalibrationService radioService;
@@ -31,7 +30,6 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
     private DateTimeOffset? observedRadioAt;
 
     /// <summary>Initializes the radio Setup workflow.</summary>
-    /// <param name="descriptor">The radio workflow descriptor.</param>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="radioService">The radio calibration service.</param>
     /// <param name="domainEventHub">The domain event hub used for live radio state.</param>
@@ -43,7 +41,6 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public RadioSetupViewModel(
-        SetupWorkflowDescriptor descriptor,
         IActiveVehicleContext activeVehicle,
         IRadioCalibrationService radioService,
         IDomainEventHub domainEventHub,
@@ -54,7 +51,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
         IDateTimeProvider clock,
         IDispatcher dispatcher,
         ILogger<RadioSetupViewModel> logger)
-        : base(descriptor)
+        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Radio))
     {
         this.activeVehicle = activeVehicle;
         this.radioService = radioService;

@@ -1,7 +1,7 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using MissionPlanner.Core.Setup;
 
-namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
+namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
 
 /// <summary>Provides the common presentation and lifecycle state for one Setup workflow.</summary>
 public partial class SetupWorkflowDetailViewModel : ObservableObject, IDisposable

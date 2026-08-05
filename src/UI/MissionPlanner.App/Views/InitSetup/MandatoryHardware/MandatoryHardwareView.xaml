@@ -7,6 +7,7 @@
                             xmlns:mandatoryHardware="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware"
                             xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                             xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                            xmlns:tabsUtils="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.TabsUtils"
                             x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.MandatoryHardwareView"
                             x:DataType="mandatoryHardware:MandatoryHardwareViewModel"
                             Title="Initial Setup">
@@ -20,16 +21,23 @@
         </VerticalStackLayout>
 
         <Button Grid.Row="1" Text="Re-evaluate vehicle" Command="{Binding RefreshCommand}" HorizontalOptions="Start" />
+                                  <!--HeaderItemsSource="{Binding Workflows}"
+                                  SelectedHeaderItem="{Binding SelectedWorkflow, Mode=TwoWay}"-->
 
         <tabViews:ExtendedTabView Grid.Row="2"
                                   HeaderItemsSource="{Binding Workflows}"
-                                  SelectedHeaderItem="{Binding SelectedWorkflow, Mode=TwoWay}"
                                   TabHeaderItemColumnWidth="290"
                                   CachingStrategy="CacheOnLayout"
                                   UseAnimation="False">
             <material:TabView.TabHeaderItemTemplate>
+                <DataTemplate>
+                    <tabsUtils:TabHeaderView />
+                </DataTemplate>
+            </material:TabView.TabHeaderItemTemplate>
+
+            <!--<material:TabView.TabHeaderItemTemplate>
                 <DataTemplate x:DataType="sections:SetupWorkflowItemViewModel">
-                    <Border Margin="5" Padding="14" HeightRequest="180" StrokeThickness="1">
+                    <Border Margin="5" Padding="14" HeightRequest="180" StrokeThickness="1"> 
                         <Border.Triggers>
                             <DataTrigger TargetType="Border"
                                          Binding="{Binding Source={RelativeSource Self}, Path=(tabViews:ExtendedTabView.IsHeaderSelected)}"
@@ -61,7 +69,7 @@
                         </Grid>
                     </Border>
                 </DataTemplate>
-            </material:TabView.TabHeaderItemTemplate>
+            </material:TabView.TabHeaderItemTemplate>-->
 
             <material:TabItem Title="Firmware"><sections:FirmwareSetupView /></material:TabItem>
             <material:TabItem Title="Frame"><sections:FrameSetupView /></material:TabItem>

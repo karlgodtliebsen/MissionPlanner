@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -27,7 +28,6 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
     private CancellationTokenSource? operationCancellation;
 
     /// <summary>Initializes the compass Setup workflow.</summary>
-    /// <param name="descriptor">The compass workflow descriptor.</param>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="compassService">The compass discovery and configuration service.</param>
     /// <param name="calibration">The onboard compass calibration state machine.</param>
@@ -39,7 +39,6 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public CompassSetupViewModel(
-        SetupWorkflowDescriptor descriptor,
         IActiveVehicleContext activeVehicle,
         ICompassConfigurationService compassService,
         IArduPilotCompassCalibrationService calibration,
@@ -50,7 +49,7 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
         IDateTimeProvider clock,
         IDispatcher dispatcher,
         ILogger<CompassSetupViewModel> logger)
-        : base(descriptor)
+        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Compass))
     {
         this.activeVehicle = activeVehicle;
         this.compassService = compassService;

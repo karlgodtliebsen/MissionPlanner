@@ -1,6 +1,6 @@
-using FluentAssertions;
-using Microsoft.Maui.Controls;
+﻿using FluentAssertions;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
 using MissionPlanner.Core.Setup;
 
 namespace MissionPlanner.Core.Tests;

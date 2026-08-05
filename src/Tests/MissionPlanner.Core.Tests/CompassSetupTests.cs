@@ -186,7 +186,6 @@ public sealed class CompassSetupTests
         var clock = Substitute.For<IDateTimeProvider>();
         clock.UtcNow.Returns(DateTimeOffset.UtcNow);
         using var viewModel = new CompassSetupViewModel(
-            new SetupWorkflowCatalog().Workflows.Single(item => item.Key == SetupWorkflowKey.Compass),
             active,
             Substitute.For<ICompassConfigurationService>(),
             calibration,

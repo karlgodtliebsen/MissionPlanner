@@ -15,7 +15,7 @@ using MissionPlanner.Library.EventHub.Abstractions;
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Presents firmware identity and guarded discovery, verification, and flashing actions.</summary>
-public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewModel
+public sealed partial class FirmwareSetupViewModel : Models.SetupWorkflowDetailViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IDomainEventHub domainEventHub;
@@ -29,7 +29,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
     private VehicleIdentityState? projectedIdentity;
 
     /// <summary>Initializes the firmware setup workflow.</summary>
-    /// <param name="descriptor">The firmware workflow descriptor.</param>
+    /// <param name="workflowCatalog">The Setup workflow catalog.</param>
     /// <param name="activeVehicle">The active-vehicle context.</param>
     /// <param name="domainEventHub">The domain event hub used for firmware identity updates.</param>
     /// <param name="coordinator">The guarded update coordinator.</param>
@@ -38,7 +38,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public FirmwareSetupViewModel(
-        SetupWorkflowDescriptor descriptor,
+        ISetupWorkflowCatalog workflowCatalog,
         IActiveVehicleContext activeVehicle,
         IDomainEventHub domainEventHub,
         IFirmwareUpdateCoordinator coordinator,
@@ -46,7 +46,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         IUserConfirmationService confirmation,
         IDispatcher dispatcher,
         ILogger<FirmwareSetupViewModel> logger)
-        : base(descriptor)
+        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Firmware))
     {
         this.activeVehicle = activeVehicle;
         this.domainEventHub = domainEventHub;
@@ -55,6 +55,11 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         this.confirmation = confirmation;
         this.dispatcher = dispatcher;
         this.logger = logger;
+
+        coordinator.StateChanged += OnStateChanged;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
+        UpdateVehicle(activeVehicle.State);
     }
 
     /// <summary>Gets the available release channels.</summary>
@@ -189,25 +194,6 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         operationCancellation?.Cancel();
         operationCancellation?.Dispose();
         operationCancellation = null;
-    }
-
-    /// <inheritdoc />
-    protected override void OnActivated()
-    {
-        coordinator.StateChanged += OnStateChanged;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
-        UpdateVehicle(activeVehicle.State);
-    }
-
-    /// <inheritdoc />
-    protected override void OnDeactivated()
-    {
-        coordinator.StateChanged -= OnStateChanged;
-        activeVehicle.Changed -= OnActiveVehicleChanged;
-        vehicleStateSubscription?.Dispose();
-        vehicleStateSubscription = null;
-        base.OnDeactivated();
     }
 
     /// <inheritdoc />

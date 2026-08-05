@@ -97,7 +97,7 @@
 	  <Compile Update="ControlsSamples\ExtendedTabViewPage.xaml.cs">
 	    <DependentUpon>ExtendedTabViewPage.xaml</DependentUpon>
 	  </Compile>
-	  <Compile Update="ControlsSamples\TabViewHeader.xaml.cs">
+	  <Compile Update="ControlsSamples\TabHeaderView.xaml.cs">
 	    <DependentUpon>TabViewHeader.xaml</DependentUpon>
 	  </Compile>
 	  <Compile Update="DataGridSamples\ArduPilotSample\VirtualizedDataGridView.xaml.cs">

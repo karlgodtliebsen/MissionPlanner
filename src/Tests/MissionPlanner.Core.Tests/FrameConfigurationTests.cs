@@ -158,7 +158,6 @@ public sealed class FrameConfigurationTests
         var clock = Substitute.For<IDateTimeProvider>();
         clock.UtcNow.Returns(DateTimeOffset.UtcNow);
         using var viewModel = new FrameSetupViewModel(
-            new SetupWorkflowCatalog().Workflows.Single(item => item.Key == SetupWorkflowKey.Frame),
             context,
             frameService,
             registry,

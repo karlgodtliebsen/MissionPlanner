@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -12,7 +12,7 @@ using MissionPlanner.Library.EventHub.Abstractions;
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Projects servo output functions with live PWM and confirmed function writes into Setup controls.</summary>
-public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewModel
+public sealed partial class ServoOutputSetupViewModel : Models.SetupWorkflowDetailViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IServoOutputConfigurationService servoService;
@@ -24,20 +24,20 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
     private DateTimeOffset? observedServoAt;
 
     /// <summary>Initializes the servo output Setup workflow.</summary>
-    /// <param name="descriptor">The servo output workflow descriptor.</param>
+    /// <param name="workflowCatalog">The setup workflow catalog.</param>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="servoService">The servo output configuration service.</param>
     /// <param name="domainEventHub">The domain event hub used for live servo output state.</param>
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public ServoOutputSetupViewModel(
-        SetupWorkflowDescriptor descriptor,
+        ISetupWorkflowCatalog workflowCatalog,
         IActiveVehicleContext activeVehicle,
         IServoOutputConfigurationService servoService,
         IDomainEventHub domainEventHub,
         IDispatcher dispatcher,
         ILogger<ServoOutputSetupViewModel> logger)
-        : base(descriptor)
+        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.ServoOutput))
     {
         this.activeVehicle = activeVehicle;
         this.servoService = servoService;
@@ -256,7 +256,7 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
 public sealed partial class ServoOutputItemViewModel : ObservableObject
 {
     private readonly ServoOutputSetupViewModel parent;
-    private bool suppressApply;
+    private readonly bool suppressApply;
 
     /// <summary>Initializes a servo output row.</summary>
     /// <param name="info">The output projection.</param>

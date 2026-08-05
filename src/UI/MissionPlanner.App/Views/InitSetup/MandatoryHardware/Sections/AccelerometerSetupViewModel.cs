@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -25,7 +26,6 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
     private CancellationTokenSource? operationCancellation;
 
     /// <summary>Initializes the accelerometer Setup workflow.</summary>
-    /// <param name="descriptor">The workflow descriptor.</param>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="calibration">The Core calibration state machine.</param>
     /// <param name="parameterRegistry">The live parameter registry.</param>
@@ -36,7 +36,6 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public AccelerometerSetupViewModel(
-        SetupWorkflowDescriptor descriptor,
         IActiveVehicleContext activeVehicle,
         IArduPilotCalibrationService calibration,
         IVehicleParameterRegistry parameterRegistry,
@@ -46,7 +45,7 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
         IDateTimeProvider clock,
         IDispatcher dispatcher,
         ILogger<AccelerometerSetupViewModel> logger)
-        : base(descriptor)
+        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Accelerometer))
     {
         this.activeVehicle = activeVehicle;
         this.calibration = calibration;

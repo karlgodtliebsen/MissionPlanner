@@ -4,11 +4,10 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware;
@@ -27,7 +26,6 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
     private readonly ILogger<MandatoryHardwareViewModel> logger;
     private readonly Lock parameterRefreshSync = new();
     private CancellationTokenSource? parameterRefreshCancellation;
-    private bool active;
     private bool disposed;
 
     /// <summary>Initializes the Setup workspace shell.</summary>
@@ -60,11 +58,32 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
         this.clock = clock;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        Refresh();
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        parameterRegistry.Changed += OnParameterChanged;
+        RefreshCore();
     }
 
     /// <summary>Gets the relevant workflows in dependency order.</summary>
     public ObservableCollection<SetupWorkflowItemViewModel> Workflows { get; } = [];
+
+    ///// <summary>
+    ///// Gets the tab headers.
+    ///// </summary>
+    //public TabHeaderModel[] TabHeaders { get; } =
+    //[
+    //    new() { Title = "Firmware", Content = "Confirm firmware, board identity, and protocol capabilities." },
+    //    new() { Title = "Frame", Content = "Choose the vehicle frame and actuator layout." },
+    //    new() { Title = "Accelerometer", Content = "Calibrate level and orientation sensors." },
+    //    new() { Title = "Compass", Content = "Calibrate compass instances and orientation." },
+    //    new() { Title = "Radio", Content = "Calibrate pilot input channels and ranges." },
+    //    new() { Title = "Flight Modes", Content = "Assign flight modes to pilot controls." },
+    //    new() { Title = "Battery", Content = "Configure voltage, current, and capacity monitoring." },
+    //    new() { Title = "ESC", Content = "Configure and calibrate electronic speed controllers." },
+    //    new() { Title = "Servo Output", Content = "Review actuator functions, limits, and reversal." },
+    //    new() { Title = "Optional Hardware", Content = "Configure supported serial, CAN, rangefinder, and other peripherals." },
+    //    new() { Title = "Safety", Content = "Review arming, failsafe, and mandatory preflight settings." },
+    //    new() { Title = "Summary", Content = "Review completion, warnings, and links to advanced configuration." }
+    //];
 
     /// <summary>Gets or sets the selected workflow.</summary>
     [ObservableProperty]
@@ -127,34 +146,6 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     public partial string? Error { get; private set; }
 
-    /// <summary>Activates vehicle and parameter change tracking for the visible page.</summary>
-    public void Activate()
-    {
-        if (active || disposed)
-        {
-            return;
-        }
-
-        active = true;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        parameterRegistry.Changed += OnParameterChanged;
-        Refresh();
-    }
-
-    /// <summary>Deactivates the shell-level connection and workflow-evaluation tracking.</summary>
-    public void Deactivate()
-    {
-        if (!active)
-        {
-            return;
-        }
-
-        active = false;
-        activeVehicle.Changed -= OnActiveVehicleChanged;
-        parameterRegistry.Changed -= OnParameterChanged;
-        CancelParameterRefresh();
-    }
-
     /// <inheritdoc />
     public void Dispose()
     {
@@ -164,7 +155,9 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
         }
 
         disposed = true;
-        Deactivate();
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        parameterRegistry.Changed -= OnParameterChanged;
+        CancelParameterRefresh();
     }
 
     partial void OnSelectedWorkflowChanged(SetupWorkflowItemViewModel? value)
@@ -243,7 +236,10 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
         }
     }
 
-    private bool IsSelected(SetupWorkflowKey key) => SelectedWorkflow?.Descriptor.Key == key;
+    private bool IsSelected(SetupWorkflowKey key)
+    {
+        return SelectedWorkflow?.Descriptor.Key == key;
+    }
 
     private void RefreshCore()
     {
@@ -279,11 +275,6 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
 
         dispatcher.Dispatch(() =>
         {
-            if (!active)
-            {
-                return;
-            }
-
             CancelParameterRefresh();
             Refresh();
         });
@@ -313,7 +304,7 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
         try
         {
             await Task.Delay(TimeSpan.FromMilliseconds(150), cancellationToken);
-            if (active && !cancellationToken.IsCancellationRequested)
+            if (!cancellationToken.IsCancellationRequested)
             {
                 dispatcher.Dispatch(Refresh);
             }

@@ -1,8 +1,9 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -25,7 +26,6 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
     private CancellationTokenSource? operationCancellation;
 
     /// <summary>Initializes the frame setup workflow.</summary>
-    /// <param name="descriptor">The frame workflow descriptor.</param>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="frameService">The guarded frame-configuration service.</param>
     /// <param name="parameterRegistry">The live parameter registry.</param>
@@ -36,7 +36,6 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public FrameSetupViewModel(
-        SetupWorkflowDescriptor descriptor,
         IActiveVehicleContext activeVehicle,
         IFrameConfigurationService frameService,
         IVehicleParameterRegistry parameterRegistry,
@@ -46,7 +45,7 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
         IDateTimeProvider clock,
         IDispatcher dispatcher,
         ILogger<FrameSetupViewModel> logger)
-        : base(descriptor)
+        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Frame))
     {
         this.activeVehicle = activeVehicle;
         this.frameService = frameService;

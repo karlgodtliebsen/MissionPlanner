@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<sections:SetupSectionView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:setup="clr-namespace:MissionPlanner.Core.Setup;assembly=MissionPlanner.Core"
-             xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
-             x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SetupSummaryView"
-             x:DataType="sections:SetupSummaryViewModel">
+<tabViews:TabViewLifecycleContent x:TypeArguments="sections:SetupSummaryViewModel" 
+                                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                                  xmlns:setup="clr-namespace:MissionPlanner.Core.Setup;assembly=MissionPlanner.Core"
+                                  xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
+                                  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SetupSummaryView"
+                                  x:DataType="sections:SetupSummaryViewModel">
     <VerticalStackLayout Spacing="10">
         <ProgressBar Progress="{Binding Progress}" />
         <Label Text="{Binding Error}" TextColor="Red" />
@@ -52,4 +54,4 @@
                 HeightRequest="180"
                 IsVisible="{Binding HasExport}" />
     </VerticalStackLayout>
-</sections:SetupSectionView>
+</tabViews:TabViewLifecycleContent>

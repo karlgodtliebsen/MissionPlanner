@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -12,7 +12,7 @@ using MissionPlanner.Library.EventHub.Abstractions;
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Projects battery monitor discovery, live readings, calibration, and failsafe editing into Setup controls.</summary>
-public sealed partial class BatterySetupViewModel : SetupWorkflowDetailViewModel
+public sealed partial class BatterySetupViewModel : Models.SetupWorkflowDetailViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IBatteryConfigurationService batteryService;
@@ -24,20 +24,20 @@ public sealed partial class BatterySetupViewModel : SetupWorkflowDetailViewModel
     private VehiclePowerState? observedPower;
 
     /// <summary>Initializes the battery Setup workflow.</summary>
-    /// <param name="descriptor">The battery workflow descriptor.</param>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="batteryService">The battery configuration service.</param>
+    /// <param name="workflowCatalog">The Setup workflow catalog.</param>
     /// <param name="domainEventHub">The domain event hub used for live battery state.</param>
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public BatterySetupViewModel(
-        SetupWorkflowDescriptor descriptor,
         IActiveVehicleContext activeVehicle,
         IBatteryConfigurationService batteryService,
+        ISetupWorkflowCatalog workflowCatalog,
         IDomainEventHub domainEventHub,
         IDispatcher dispatcher,
         ILogger<BatterySetupViewModel> logger)
-        : base(descriptor)
+        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Battery))
     {
         this.activeVehicle = activeVehicle;
         this.batteryService = batteryService;

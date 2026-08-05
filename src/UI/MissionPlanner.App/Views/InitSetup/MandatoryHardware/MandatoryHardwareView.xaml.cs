@@ -1,5 +1,4 @@
-using MissionPlanner.App.Helpers;
-using MissionPlanner.App.Navigation;
+﻿using MissionPlanner.App.Navigation;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware;
 
@@ -12,15 +11,15 @@ public partial class MandatoryHardwareView : ContentPageView<MandatoryHardwareVi
         InitializeComponent();
     }
 
-    /// <inheritdoc />
-    protected override void OnNavigatedTo(NavigatedToEventArgs args)
-    {
-        base.OnNavigatedTo(args);
-        if (ViewModel is null)
-        {
-            ViewModel = ServiceHelper.GetRequiredService<MandatoryHardwareViewModel>();
-            BindingContext = ViewModel;
-        }
-        ViewModel?.Activate();
-    }
+    ///// <inheritdoc />
+    //protected override void OnNavigatedTo(NavigatedToEventArgs args)
+    //{
+    //    base.OnNavigatedTo(args);
+    //    if (ViewModel is null)
+    //    {
+    //        ViewModel = ServiceHelper.GetRequiredService<MandatoryHardwareViewModel>();
+    //        BindingContext = ViewModel;
+    //    }
+    //    ViewModel?.Activate();
+    //}
 }

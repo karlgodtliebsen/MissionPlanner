@@ -1,7 +1,8 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -18,18 +19,19 @@ public sealed partial class OptionalHardwareSetupViewModel : SetupWorkflowDetail
     private CancellationTokenSource? operationCancellation;
 
     /// <summary>Initializes the optional-hardware Setup workflow.</summary>
-    /// <param name="descriptor">The optional-hardware workflow descriptor.</param>
+    /// <param name="workflowCatalog">The setup workflow catalog.</param>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="hardwareService">The optional-hardware service.</param>
     /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public OptionalHardwareSetupViewModel(
-        SetupWorkflowDescriptor descriptor,
+        ISetupWorkflowCatalog workflowCatalog,
         IActiveVehicleContext activeVehicle,
         IOptionalHardwareService hardwareService,
         IDispatcher dispatcher,
-        ILogger<OptionalHardwareSetupViewModel> logger)
-        : base(descriptor)
+        ILogger<OptionalHardwareSetupViewModel> logger
+    )
+        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.OptionalHardware))
     {
         this.activeVehicle = activeVehicle;
         this.hardwareService = hardwareService;

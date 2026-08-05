@@ -1,4 +1,4 @@
-using MissionPlanner.Core.Vehicles.Models;
+﻿using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.Parameters;
 
 namespace MissionPlanner.Core.Setup;
@@ -14,10 +14,7 @@ public interface ISetupWorkflowCatalog
     /// <param name="parameters">The currently known vehicle parameters.</param>
     /// <param name="evidence">Locally persisted completion evidence.</param>
     /// <returns>Ordered workflow evaluations.</returns>
-    IReadOnlyList<SetupWorkflowEvaluation> Evaluate(
-        ActiveVehicleSnapshot snapshot,
-        IReadOnlyDictionary<string, VehicleParameter> parameters,
-        IReadOnlyList<SetupCompletionEvidence> evidence);
+    IReadOnlyList<SetupWorkflowEvaluation> Evaluate(ActiveVehicleSnapshot snapshot, IReadOnlyDictionary<string, VehicleParameter> parameters, IReadOnlyList<SetupCompletionEvidence> evidence);
 
     /// <summary>Creates completion evidence for the current vehicle state.</summary>
     /// <param name="workflow">The completed workflow.</param>
@@ -25,9 +22,5 @@ public interface ISetupWorkflowCatalog
     /// <param name="parameters">The currently known parameters.</param>
     /// <param name="completedAt">The completion timestamp.</param>
     /// <returns>Fingerprint-bound local evidence.</returns>
-    SetupCompletionEvidence CreateEvidence(
-        SetupWorkflowKey workflow,
-        VehicleState state,
-        IReadOnlyDictionary<string, VehicleParameter> parameters,
-        DateTimeOffset completedAt);
+    SetupCompletionEvidence CreateEvidence(SetupWorkflowKey workflow, VehicleState state, IReadOnlyDictionary<string, VehicleParameter> parameters, DateTimeOffset completedAt);
 }

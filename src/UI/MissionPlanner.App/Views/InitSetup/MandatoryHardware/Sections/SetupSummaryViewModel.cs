@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -9,7 +10,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Projects the consolidated, exportable setup summary into Setup controls.</summary>
-public sealed partial class SetupSummaryViewModel : SetupWorkflowDetailViewModel
+public sealed partial class SetupSummaryViewModel : Models.SetupWorkflowDetailViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly ISetupSummaryService summaryService;

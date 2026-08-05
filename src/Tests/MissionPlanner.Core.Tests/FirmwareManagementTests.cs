@@ -28,7 +28,7 @@ public sealed class FirmwareManagementTests
         var flashing = Substitute.For<IFirmwareFlashingService>();
         flashing.GetPlatformSupport(state.Identity.Firmware).Returns(new FirmwareFlashSupport(false, "adapter unavailable"));
         using var viewModel = new FirmwareSetupViewModel(
-            new SetupWorkflowCatalog().Workflows[0],
+            new SetupWorkflowCatalog(),
             active,
             Substitute.For<IDomainEventHub>(),
             coordinator,

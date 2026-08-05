@@ -195,30 +195,22 @@ public static class ApplicationConfigurator
         services.TryAddTransient<PlannerTabViewModel>();
         services.TryAddTransient<CubeLan8PortSwitchTabViewModel>();
 
-
-        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<FirmwareSetupViewModel>(serviceProvider, SetupWorkflowKey.Firmware));
-        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<FrameSetupViewModel>(serviceProvider, SetupWorkflowKey.Frame));
-        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<AccelerometerSetupViewModel>(serviceProvider, SetupWorkflowKey.Accelerometer));
-        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<CompassSetupViewModel>(serviceProvider, SetupWorkflowKey.Compass));
-        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<RadioSetupViewModel>(serviceProvider, SetupWorkflowKey.Radio));
-        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<FlightModesSetupViewModel>(serviceProvider, SetupWorkflowKey.FlightModes));
-        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<BatterySetupViewModel>(serviceProvider, SetupWorkflowKey.Battery));
-        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<EscMotorSetupViewModel>(serviceProvider, SetupWorkflowKey.Esc));
-        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<ServoOutputSetupViewModel>(serviceProvider, SetupWorkflowKey.ServoOutput));
-        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<OptionalHardwareSetupViewModel>(serviceProvider, SetupWorkflowKey.OptionalHardware));
-        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<SafetySetupViewModel>(serviceProvider, SetupWorkflowKey.Safety));
-        services.TryAddTransient(serviceProvider => CreateSetupSectionViewModel<SetupSummaryViewModel>(serviceProvider, SetupWorkflowKey.Summary));
+        // Workflow Tabs on Setup Mandatory Hardware View
+        services.TryAddTransient<FirmwareSetupViewModel>();
+        services.TryAddTransient<FrameSetupViewModel>();
+        services.TryAddTransient<AccelerometerSetupViewModel>();
+        services.TryAddTransient<CompassSetupViewModel>();
+        services.TryAddTransient<RadioSetupViewModel>();
+        services.TryAddTransient<FlightModesSetupViewModel>();
+        services.TryAddTransient<BatterySetupViewModel>();
+        services.TryAddTransient<EscMotorSetupViewModel>();
+        services.TryAddTransient<ServoOutputSetupViewModel>();
+        services.TryAddTransient<OptionalHardwareSetupViewModel>();
+        services.TryAddTransient<SafetySetupViewModel>();
+        services.TryAddTransient<SetupSummaryViewModel>();
 
         return services;
     }
-
-    private static TViewModel CreateSetupSectionViewModel<TViewModel>(IServiceProvider serviceProvider, SetupWorkflowKey key)
-        where TViewModel : SetupWorkflowDetailViewModel
-    {
-        var descriptor = serviceProvider.GetRequiredService<ISetupWorkflowCatalog>().Workflows.Single(workflow => workflow.Key == key);
-        return ActivatorUtilities.CreateInstance<TViewModel>(serviceProvider, descriptor);
-    }
-
 
     /// <summary>
     /// Post ServiceProvider Build Setup - This method is called after the ServiceProvider has been built and is used to perform any additional setup or initialization that requires access to the fully constructed service provider. 
