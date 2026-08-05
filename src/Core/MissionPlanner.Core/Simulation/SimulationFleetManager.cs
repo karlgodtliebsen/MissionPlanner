@@ -1,4 +1,6 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
+using MissionPlanner.Simulation;
+using MissionPlanner.Simulation.Abstractions;
 
 namespace MissionPlanner.Core.Simulation;
 
@@ -332,18 +334,27 @@ public sealed class SimulationFleetManager(
         Changed?.Invoke(this, new SimulationFleetChangedEventArgs(snapshot));
     }
 
-    private SimulationFleetSessionSnapshot CreateSnapshot(Member member) =>
-        new(member.Allocation, member.Manager.Current, selectedSessionId == member.Allocation.FleetSessionId);
+    private SimulationFleetSessionSnapshot CreateSnapshot(Member member)
+    {
+        return new SimulationFleetSessionSnapshot(member.Allocation, member.Manager.Current, selectedSessionId == member.Allocation.FleetSessionId);
+    }
 
-    private Member GetMember(Guid fleetSessionId) => members.TryGetValue(fleetSessionId, out var member)
-        ? member
-        : throw new KeyNotFoundException($"Simulation fleet session {fleetSessionId} was not found.");
+    private Member GetMember(Guid fleetSessionId)
+    {
+        return members.TryGetValue(fleetSessionId, out var member)
+            ? member
+            : throw new KeyNotFoundException($"Simulation fleet session {fleetSessionId} was not found.");
+    }
 
-    private int ResultIndex(SimulationFleetOperationResult result) =>
-        members.TryGetValue(result.FleetSessionId, out var member) ? member.Allocation.Index : int.MaxValue;
+    private int ResultIndex(SimulationFleetOperationResult result)
+    {
+        return members.TryGetValue(result.FleetSessionId, out var member) ? member.Allocation.Index : int.MaxValue;
+    }
 
-    private static bool IsTerminal(SimulationSessionState state) =>
-        state is SimulationSessionState.Stopped or SimulationSessionState.Completed or SimulationSessionState.Failed;
+    private static bool IsTerminal(SimulationSessionState state)
+    {
+        return state is SimulationSessionState.Stopped or SimulationSessionState.Completed or SimulationSessionState.Failed;
+    }
 
     private sealed record Member(SimulationInstanceAllocation Allocation, ISimulationSessionManager Manager);
 }

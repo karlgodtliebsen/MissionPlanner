@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Identifies a simulation scenario event result.</summary>
 public enum SimulationScenarioEventResult

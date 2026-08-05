@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Identifies observable scenario-runner state.</summary>
 public enum SimulationScenarioRunnerState

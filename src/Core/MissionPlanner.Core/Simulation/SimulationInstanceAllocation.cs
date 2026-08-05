@@ -1,3 +1,5 @@
+using MissionPlanner.Simulation;
+
 namespace MissionPlanner.Core.Simulation;
 
 /// <summary>Contains all resources deterministically allocated to one fleet member.</summary>

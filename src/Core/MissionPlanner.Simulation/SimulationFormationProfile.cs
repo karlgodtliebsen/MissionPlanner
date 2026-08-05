@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Contains launch-only offsets for a named multi-instance layout.</summary>
 /// <param name="Name">User-facing formation profile name.</param>
@@ -11,10 +11,12 @@ public sealed record SimulationFormationProfile(
     /// <param name="count">Number of positions.</param>
     /// <param name="spacingMeters">Spacing between positions.</param>
     /// <returns>The launch-offset data.</returns>
-    public static SimulationFormationProfile CreateLine(int count, double spacingMeters) =>
-        new("Line", Enumerable.Range(0, count)
+    public static SimulationFormationProfile CreateLine(int count, double spacingMeters)
+    {
+        return new SimulationFormationProfile("Line", Enumerable.Range(0, count)
             .Select(index => new SimulationFormationOffset(index * spacingMeters, 0))
             .ToArray());
+    }
 
     /// <summary>Creates a square-grid set of launch positions.</summary>
     /// <param name="count">Number of positions.</param>

@@ -1,4 +1,6 @@
-namespace MissionPlanner.Core.Simulation;
+﻿using MissionPlanner.Simulation.Abstractions;
+
+namespace MissionPlanner.Simulation;
 
 /// <summary>Declines orphan recovery on hosts without an exact process-identity implementation.</summary>
 public sealed class UnavailableSimulatorOwnedProcessRecovery : ISimulatorOwnedProcessRecovery

@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Core.Simulation;
+﻿namespace MissionPlanner.Simulation;
 
 /// <summary>Describes one scenario validation problem.</summary>
 /// <param name="Severity">Problem severity.</param>

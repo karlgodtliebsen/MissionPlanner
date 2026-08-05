@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation.Abstractions;
 
 /// <summary>Persists an opaque simulation scenario-preset document.</summary>
 public interface ISimulationScenarioPresetStore

@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Configures declarative scenario execution bounds.</summary>
 public sealed class SimulationScenarioOptions

@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Provides observable scenario runner state.</summary>
 /// <param name="State">Runner state.</param>

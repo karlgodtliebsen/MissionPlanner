@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Stores one requested control value in a reusable preset.</summary>
 /// <param name="ControlKey">Logical control key.</param>

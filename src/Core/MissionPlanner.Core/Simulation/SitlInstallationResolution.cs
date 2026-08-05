@@ -1,3 +1,5 @@
+using MissionPlanner.Simulation;
+
 namespace MissionPlanner.Core.Simulation;
 
 /// <summary>Describes how a pinned profile resolves to an installation.</summary>

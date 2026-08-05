@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+﻿namespace MissionPlanner.Simulation;
 
 /// <summary>Describes runtime termination.</summary>
 /// <param name="ExitCode">Runtime exit code when available.</param>

@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Core.Simulation;
+﻿namespace MissionPlanner.Simulation;
 
 /// <summary>Stores a literal safe value or a reference to a declared variable.</summary>
 /// <param name="Kind">Expected value type.</param>

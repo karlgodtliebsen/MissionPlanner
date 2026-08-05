@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Describes one profile or runtime validation problem.</summary>
 /// <param name="Code">Stable diagnostic code.</param>

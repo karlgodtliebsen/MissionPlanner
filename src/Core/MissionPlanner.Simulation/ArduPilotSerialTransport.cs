@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Identifies a supported direct-SITL serial endpoint transport.</summary>
 public enum ArduPilotSerialTransport

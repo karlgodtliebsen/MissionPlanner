@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Identifies the result of a safe orphan recovery attempt.</summary>
 public enum SimulationOrphanRecoveryState

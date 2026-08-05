@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Describes the simulation start location.</summary>
 /// <param name="LatitudeDegrees">Latitude in decimal degrees.</param>

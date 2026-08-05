@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Configures bounded simulation-control discovery, readback, and event retention.</summary>
 public sealed class SimulationControlOptions

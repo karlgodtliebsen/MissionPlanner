@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Describes a relative launch offset without introducing autonomous formation control.</summary>
 /// <param name="NorthMeters">North offset from the base home location.</param>

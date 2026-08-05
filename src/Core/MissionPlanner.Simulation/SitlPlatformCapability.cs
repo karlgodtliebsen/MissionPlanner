@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Describes current SITL host capabilities.</summary>
 /// <param name="Platform">Detected host/runtime platform.</param>

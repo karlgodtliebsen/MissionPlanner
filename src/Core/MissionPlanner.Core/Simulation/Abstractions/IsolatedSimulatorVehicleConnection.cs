@@ -7,6 +7,7 @@ using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
+using MissionPlanner.Simulation;
 
 namespace MissionPlanner.Core.Simulation;
 

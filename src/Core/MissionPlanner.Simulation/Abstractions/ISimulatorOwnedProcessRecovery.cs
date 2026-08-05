@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation.Abstractions;
 
 /// <summary>Performs platform-specific exact-process identity verification and recovery.</summary>
 public interface ISimulatorOwnedProcessRecovery

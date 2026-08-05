@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Configures simulation workspace lifecycle limits.</summary>
 public sealed class SimulationWorkspaceOptions

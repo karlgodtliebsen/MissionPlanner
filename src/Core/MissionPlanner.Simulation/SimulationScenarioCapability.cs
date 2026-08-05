@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Describes one live capability required by a scenario.</summary>
 /// <param name="Name">Capability name.</param>

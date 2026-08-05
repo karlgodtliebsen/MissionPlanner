@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Defines one declarative, bounded scenario step.</summary>
 /// <param name="Id">Unique stable step identifier.</param>

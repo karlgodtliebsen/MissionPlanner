@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Identifies telemetry exposed to declarative conditions.</summary>
 public enum SimulationTelemetryMetric

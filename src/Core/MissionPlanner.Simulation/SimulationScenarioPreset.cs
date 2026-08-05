@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Defines a reusable environment/fault preset separate from a launch profile.</summary>
 /// <param name="Id">Stable preset identity.</param>

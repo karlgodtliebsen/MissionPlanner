@@ -1,9 +1,11 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Simulation;
+using MissionPlanner.Simulation.Abstractions;
 
 namespace MissionPlanner.Core.Simulation;
 
@@ -63,8 +65,10 @@ public sealed class SitlInstallationService(
     }
 
     /// <inheritdoc />
-    public Task RemoveAsync(SitlInstallation installation, CancellationToken cancellationToken = default) =>
-        packageManager.RemoveAsync(installation, cancellationToken);
+    public Task RemoveAsync(SitlInstallation installation, CancellationToken cancellationToken = default)
+    {
+        return packageManager.RemoveAsync(installation, cancellationToken);
+    }
 
     /// <inheritdoc />
     public SitlInstallationResolution Resolve(
@@ -165,9 +169,11 @@ public sealed class SitlInstallationService(
         return $"external-{Convert.ToHexString(SHA256.HashData(data))[..16].ToLowerInvariant()}";
     }
 
-    private static bool PathsEqual(string first, string second) =>
-        string.Equals(
+    private static bool PathsEqual(string first, string second)
+    {
+        return string.Equals(
             Path.GetFullPath(first),
             Path.GetFullPath(second),
             OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
+    }
 }

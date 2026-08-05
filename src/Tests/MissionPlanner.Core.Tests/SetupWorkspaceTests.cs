@@ -29,6 +29,7 @@ using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.MavLink.Services.Abstractions;
+using MissionPlanner.Simulation.Abstractions;
 using NSubstitute;
 
 namespace MissionPlanner.Core.Tests;

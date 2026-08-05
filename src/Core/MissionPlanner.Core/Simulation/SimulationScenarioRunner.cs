@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Commands;
@@ -10,6 +10,8 @@ using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink.Commands;
 using MissionPlanner.MavLink.Missions;
+using MissionPlanner.Simulation;
+using MissionPlanner.Simulation.Abstractions;
 
 namespace MissionPlanner.Core.Simulation;
 
@@ -701,8 +703,9 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
         SimulationScenarioRunResult result,
         string summary,
         SimulationScenarioValidationReport validation,
-        IReadOnlyList<SimulationScenarioStepReport> steps) =>
-        new(
+        IReadOnlyList<SimulationScenarioStepReport> steps)
+    {
+        return new SimulationScenarioRunReport(
             1,
             runId,
             request.Document.Id,
@@ -717,6 +720,7 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
             validation,
             steps,
             CaptureTelemetry(request.VehicleId));
+    }
 
     private VehicleSession GetExactVehicle(Guid sessionId, VehicleId vehicleId)
     {
@@ -765,15 +769,18 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
                 state.Gps.FixType);
     }
 
-    private static bool MatchesState(VehicleState state, SimulationVehicleStateRequirement requirement) => requirement switch
+    private static bool MatchesState(VehicleState state, SimulationVehicleStateRequirement requirement)
     {
-        SimulationVehicleStateRequirement.Online => state.Connection.State == VehicleConnectionState.Online,
-        SimulationVehicleStateRequirement.Armed => state.Flight.IsArmed,
-        SimulationVehicleStateRequirement.Disarmed => !state.Flight.IsArmed,
-        SimulationVehicleStateRequirement.OnGround => state.Flight.LandedState == VehicleLandedState.OnGround,
-        SimulationVehicleStateRequirement.InAir => state.Flight.LandedState == VehicleLandedState.InAir,
-        var _ => false
-    };
+        return requirement switch
+        {
+            SimulationVehicleStateRequirement.Online => state.Connection.State == VehicleConnectionState.Online,
+            SimulationVehicleStateRequirement.Armed => state.Flight.IsArmed,
+            SimulationVehicleStateRequirement.Disarmed => !state.Flight.IsArmed,
+            SimulationVehicleStateRequirement.OnGround => state.Flight.LandedState == VehicleLandedState.OnGround,
+            SimulationVehicleStateRequirement.InAir => state.Flight.LandedState == VehicleLandedState.InAir,
+            var _ => false
+        };
+    }
 
     private static bool EvaluateCondition(
         VehicleState state,
@@ -851,10 +858,12 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
 
     private static double ResolveNumber(
         SimulationScenarioValue value,
-        IReadOnlyDictionary<string, SimulationScenarioValue> variables) =>
-        ResolveValue(value, variables) is double number
+        IReadOnlyDictionary<string, SimulationScenarioValue> variables)
+    {
+        return ResolveValue(value, variables) is double number
             ? number
             : throw new InvalidOperationException("The scenario value did not resolve to a number.");
+    }
 
     private static string CommandEvidence(VehicleCommandResponse response)
     {
@@ -866,19 +875,26 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
         return response.Message ?? $"Vehicle command acknowledged as {response.Result}.";
     }
 
-    private static bool RequiresHazardConfirmation(SimulationScenarioStepKind kind) => kind is
-        SimulationScenarioStepKind.Arm or
-        SimulationScenarioStepKind.Takeoff or
-        SimulationScenarioStepKind.StartMission or
-        SimulationScenarioStepKind.InjectFault;
+    private static bool RequiresHazardConfirmation(SimulationScenarioStepKind kind)
+    {
+        return kind is
+            SimulationScenarioStepKind.Arm or
+            SimulationScenarioStepKind.Takeoff or
+            SimulationScenarioStepKind.StartMission or
+            SimulationScenarioStepKind.InjectFault;
+    }
 
-    private static string DescribePlan(SimulationScenarioStep step) =>
-        $"Validated {step.Kind} with explicit {step.TimeoutSeconds}-second timeout; no action executed.";
+    private static string DescribePlan(SimulationScenarioStep step)
+    {
+        return $"Validated {step.Kind} with explicit {step.TimeoutSeconds}-second timeout; no action executed.";
+    }
 
     private static string DescribeCondition(
         SimulationTelemetryCondition condition,
-        IReadOnlyDictionary<string, SimulationScenarioValue> variables) =>
-        $"Observed {condition.Metric} {condition.Operator} {Convert.ToString(ResolveValue(condition.Expected, variables), CultureInfo.InvariantCulture)}.";
+        IReadOnlyDictionary<string, SimulationScenarioValue> variables)
+    {
+        return $"Observed {condition.Metric} {condition.Operator} {Convert.ToString(ResolveValue(condition.Expected, variables), CultureInfo.InvariantCulture)}.";
+    }
 
     private void Publish(SimulationScenarioRunnerSnapshot snapshot)
     {

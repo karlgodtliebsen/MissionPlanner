@@ -39,6 +39,7 @@ using MissionPlanner.Library;
 using MissionPlanner.Library.Configuration;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Configuration;
+using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Transport.Configuration;
 using UraniumUI.Material.Dialogs;
 

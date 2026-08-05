@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Signals an actionable simulator-to-vehicle connection failure.</summary>
 public sealed class SimulationConnectionException : Exception

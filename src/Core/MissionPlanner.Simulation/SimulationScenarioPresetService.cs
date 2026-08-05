@@ -1,7 +1,8 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.Simulation.Abstractions;
 
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Loads and persists schema-versioned simulation scenario presets.</summary>
 public sealed class SimulationScenarioPresetService(
@@ -83,19 +84,23 @@ public sealed class SimulationScenarioPresetService(
         }
     }
 
-    private ValueTask PersistAsync(CancellationToken cancellationToken) =>
-        store.WriteAsync(
+    private ValueTask PersistAsync(CancellationToken cancellationToken)
+    {
+        return store.WriteAsync(
             JsonSerializer.Serialize(new PresetDocument(SchemaVersion, presets), jsonOptions),
             cancellationToken);
+    }
 
-    private static bool IsValid(SimulationScenarioPreset preset) =>
-        preset.Id != Guid.Empty &&
-        !string.IsNullOrWhiteSpace(preset.Name) &&
-        preset.Controls is not null &&
-        preset.Controls.All(control =>
-            !string.IsNullOrWhiteSpace(control.ControlKey) &&
-            double.IsFinite(control.Value) &&
-            (control.Duration is null || control.Duration > TimeSpan.Zero));
+    private static bool IsValid(SimulationScenarioPreset preset)
+    {
+        return preset.Id != Guid.Empty &&
+               !string.IsNullOrWhiteSpace(preset.Name) &&
+               preset.Controls is not null &&
+               preset.Controls.All(control =>
+                   !string.IsNullOrWhiteSpace(control.ControlKey) &&
+                   double.IsFinite(control.Value) &&
+                   (control.Duration is null || control.Duration > TimeSpan.Zero));
+    }
 
     private sealed record PresetDocument(int Version, IReadOnlyList<SimulationScenarioPreset> Presets);
 }

@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Defines one typed, side-effect-free telemetry condition.</summary>
 /// <param name="Metric">Telemetry metric.</param>

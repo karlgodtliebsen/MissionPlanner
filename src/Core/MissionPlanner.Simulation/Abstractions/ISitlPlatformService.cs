@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation.Abstractions;
 
 /// <summary>Provides host-platform detection and safe executable version probing.</summary>
 public interface ISitlPlatformService

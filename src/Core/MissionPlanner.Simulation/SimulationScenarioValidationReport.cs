@@ -1,4 +1,4 @@
-﻿namespace MissionPlanner.Core.Simulation;
+﻿namespace MissionPlanner.Simulation;
 
 /// <summary>Contains dry-run schema and live-capability results.</summary>
 /// <param name="Issues">Validation issues.</param>

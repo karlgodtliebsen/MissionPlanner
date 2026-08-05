@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation.Abstractions;
 
 /// <summary>Persists an opaque, non-secret simulator-profile document.</summary>
 public interface ISimulatorProfileStore

@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Defines one safe embedded mission item for scenario upload.</summary>
 /// <param name="Frame">MAV_FRAME numeric value.</param>

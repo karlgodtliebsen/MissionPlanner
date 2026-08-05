@@ -1,6 +1,7 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.Simulation.Abstractions;
 
 namespace MissionPlanner.Core.Simulation;
 
@@ -95,13 +96,15 @@ public sealed class SimulatorProfileService(
         await store.WriteAsync(document, cancellationToken).ConfigureAwait(false);
     }
 
-    private static bool IsStructurallyValid(SimulatorProfile profile) =>
-        profile.Id != Guid.Empty &&
-        !string.IsNullOrWhiteSpace(profile.Name) &&
-        profile.Endpoints is not null &&
-        profile.Binary is not null &&
-        profile.AdditionalArguments is not null &&
-        profile.Environment is not null;
+    private static bool IsStructurallyValid(SimulatorProfile profile)
+    {
+        return profile.Id != Guid.Empty &&
+               !string.IsNullOrWhiteSpace(profile.Name) &&
+               profile.Endpoints is not null &&
+               profile.Binary is not null &&
+               profile.AdditionalArguments is not null &&
+               profile.Environment is not null;
+    }
 
     private sealed record ProfileDocument(
         [property: JsonPropertyName("schemaVersion")] int Version,

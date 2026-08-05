@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation.Abstractions;
 
 /// <summary>Provides host-specific validation without coupling the workspace to a runtime implementation.</summary>
 public interface ISimulatorHostEnvironment

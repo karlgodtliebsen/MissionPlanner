@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+﻿namespace MissionPlanner.Simulation;
 
 /// <summary>Contains sufficient process identity to recover only a MissionPlanner-owned orphan.</summary>
 /// <param name="SessionId">Owning simulation session.</param>

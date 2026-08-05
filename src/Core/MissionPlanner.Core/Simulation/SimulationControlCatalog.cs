@@ -1,4 +1,5 @@
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Simulation;
 
 namespace MissionPlanner.Core.Simulation;
 
@@ -34,7 +35,7 @@ public sealed class SimulationControlCatalog : ISimulationControlCatalog
             "RC signal loss",
             "Simulates complete loss of RC input; RC failsafe behavior remains firmware-configured.",
             [new SimulationParameterBinding("SIM_RC_FAIL", 1, 0)]),
-        new SimulationControlDescriptor(
+        new(
             "battery-voltage",
             "Battery voltage",
             "Overrides simulated resting battery voltage temporarily and may trigger configured battery failsafes.",
@@ -47,7 +48,7 @@ public sealed class SimulationControlCatalog : ISimulationControlCatalog
             [new SimulationParameterBinding("SIM_BATT_VOLTAGE")],
             allSitlFamilies,
             sourceParameterDocumentation),
-        new SimulationControlDescriptor(
+        new(
             "rangefinder-failure",
             "Rangefinder failure",
             "No bounded general-purpose rangefinder failure parameter is documented; availability remains explicit.",
@@ -77,8 +78,9 @@ public sealed class SimulationControlCatalog : ISimulationControlCatalog
         string unit,
         double minimum,
         double maximum,
-        string parameterName) =>
-        new(
+        string parameterName)
+    {
+        return new SimulationControlDescriptor(
             key,
             name,
             description,
@@ -91,13 +93,15 @@ public sealed class SimulationControlCatalog : ISimulationControlCatalog
             [new SimulationParameterBinding(parameterName)],
             allSitlFamilies,
             simulationParametersDocumentation);
+    }
 
     private static SimulationControlDescriptor Fault(
         string key,
         string name,
         string description,
-        IReadOnlyList<SimulationParameterBinding> parameters) =>
-        new(
+        IReadOnlyList<SimulationParameterBinding> parameters)
+    {
+        return new SimulationControlDescriptor(
             key,
             name,
             description,
@@ -110,4 +114,5 @@ public sealed class SimulationControlCatalog : ISimulationControlCatalog
             parameters,
             allSitlFamilies,
             simulationParametersDocumentation);
+    }
 }

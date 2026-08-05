@@ -1,4 +1,4 @@
-using CommunityToolkit.Maui.Storage;
+﻿using CommunityToolkit.Maui.Storage;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -7,6 +7,8 @@ using MissionPlanner.App.Views.Simulation;
 using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
+using MissionPlanner.Simulation;
+using MissionPlanner.Simulation.Abstractions;
 using NSubstitute;
 
 namespace MissionPlanner.Core.Tests;
@@ -96,11 +98,7 @@ public sealed class SimulationWorkspaceTests
     [Fact]
     public async Task ValidatorRejectsPortConflictsAndInvalidExecutable()
     {
-        var host = new FakeHostEnvironment
-        {
-            OccupiedPort = 14550,
-            ExecutableIssue = new SimulationValidationIssue("host.executable-missing", "binary.executablePath", "Missing executable")
-        };
+        var host = new FakeHostEnvironment { OccupiedPort = 14550, ExecutableIssue = new SimulationValidationIssue("host.executable-missing", "binary.executablePath", "Missing executable") };
         var validator = new SimulatorProfileValidator(host);
         var profile = Profile() with
         {
@@ -144,15 +142,7 @@ public sealed class SimulationWorkspaceTests
     [Fact]
     public void DiagnosticsRedactSecrets()
     {
-        var profile = Profile() with
-        {
-            AdditionalArguments = ["--model", "quad", "--api-key=sensitive-key", "--token", "split-secret"],
-            Environment = new Dictionary<string, string>
-            {
-                ["NORMAL_VALUE"] = "visible",
-                ["AUTH_TOKEN"] = "sensitive-token"
-            }
-        };
+        var profile = Profile() with { AdditionalArguments = ["--model", "quad", "--api-key=sensitive-key", "--token", "split-secret"], Environment = new Dictionary<string, string> { ["NORMAL_VALUE"] = "visible", ["AUTH_TOKEN"] = "sensitive-token" } };
         var snapshot = SimulationSessionSnapshot.Stopped with
         {
             Profile = profile,
@@ -257,8 +247,8 @@ public sealed class SimulationWorkspaceTests
         var parser = new SimulationScenarioParser(Options.Create(new SimulationScenarioOptions()));
         var runner = Substitute.For<ISimulationScenarioRunner>();
         var parsed = parser.Parse("""
-            {"schemaVersion":1,"id":"f5444dc2-cbb6-47a2-b033-e860bed41d3c","name":"dry","variables":{},"steps":[{"id":"online","kind":"waitForState","name":"online","timeoutSeconds":2,"state":"online"}]}
-            """);
+                                  {"schemaVersion":1,"id":"f5444dc2-cbb6-47a2-b033-e860bed41d3c","name":"dry","variables":{},"steps":[{"id":"online","kind":"waitForState","name":"online","timeoutSeconds":2,"state":"online"}]}
+                                  """);
         var report = new SimulationScenarioRunReport(
             1,
             Guid.NewGuid(),
@@ -285,12 +275,14 @@ public sealed class SimulationWorkspaceTests
         platform.Current.Returns(new SitlPlatformCapability(SitlPlatform.Windows, SitlArchitecture.X64, true, "Test"));
         var profileService = Substitute.For<ISimulatorProfileService>();
         profileService.Profiles.Returns([profile]);
+        ISimulationDiagnosticsService diagnosticsService = new SimulationDiagnosticsService();
         using var viewModel = new SimulationViewModel(
             profileService,
             manager,
-            new SimulationDiagnosticsService(),
+            diagnosticsService,
             Substitute.For<ISitlInstallationService>(),
             platform,
+
             new ArduPilotFrameCatalog(),
             Substitute.For<ISimulationControlCatalog>(),
             Substitute.For<ISimulationControlService>(),
@@ -301,9 +293,7 @@ public sealed class SimulationWorkspaceTests
             new ParametersFileHandler(Substitute.For<IFileSaver>()),
             dispatcher,
             Substitute.For<ILogger<SimulationViewModel>>())
-        {
-            ScenarioDocumentText = parser.Serialize(parsed)
-        };
+        { ScenarioDocumentText = parser.Serialize(parsed) };
 
         await viewModel.DryRunScenarioAsync();
 
@@ -316,13 +306,7 @@ public sealed class SimulationWorkspaceTests
 
     private static SimulationSessionManager Manager(FakeRuntime runtime)
     {
-        var options = Options.Create(new SimulationWorkspaceOptions
-        {
-            HeartbeatTimeoutSeconds = 1,
-            StopTimeoutSeconds = 1,
-            RecentOutputCapacity = 3,
-            LogRootDirectory = Path.Combine(Path.GetTempPath(), "MissionPlannerTests", "Simulation")
-        });
+        var options = Options.Create(new SimulationWorkspaceOptions { HeartbeatTimeoutSeconds = 1, StopTimeoutSeconds = 1, RecentOutputCapacity = 3, LogRootDirectory = Path.Combine(Path.GetTempPath(), "MissionPlannerTests", "Simulation") });
         return new SimulationSessionManager(
             new SimulatorProfileValidator(new FakeHostEnvironment()),
             runtime,
@@ -331,10 +315,10 @@ public sealed class SimulationWorkspaceTests
             Substitute.For<ILogger<SimulationSessionManager>>());
     }
 
-    private static SimulatorProfile Profile() => SimulatorProfile.CreateDefault() with
+    private static SimulatorProfile Profile()
     {
-        Binary = new SimulatorBinaryReference("4.6.0", Path.GetFullPath("arducopter-test"), "test")
-    };
+        return SimulatorProfile.CreateDefault() with { Binary = new SimulatorBinaryReference("4.6.0", Path.GetFullPath("arducopter-test"), "test") };
+    }
 
     private static async Task WaitUntilAsync(Func<bool> condition, CancellationToken cancellationToken)
     {
@@ -426,7 +410,7 @@ public sealed class SimulationWorkspaceTests
         public VehicleId? ConnectedVehicleId => new(1, 1);
 
         public IReadOnlyList<SimulationEndpoint> ConnectionEndpoints { get; } =
-        [new SimulationEndpoint("MAVLink", SimulationEndpointTransport.Udp, "127.0.0.1", 14550)];
+            [new("MAVLink", SimulationEndpointTransport.Udp, "127.0.0.1", 14550)];
 
         public Task<SimulatorRuntimeExit> Completion => completion.Task;
 
@@ -458,10 +442,16 @@ public sealed class SimulationWorkspaceTests
             return ValueTask.CompletedTask;
         }
 
-        public void Exit(SimulatorRuntimeExit exit) => completion.TrySetResult(exit);
+        public void Exit(SimulatorRuntimeExit exit)
+        {
+            completion.TrySetResult(exit);
+        }
 
-        public void Write(string text) => OutputReceived?.Invoke(
-            this,
-            new SimulatorOutputLine(DateTimeOffset.UtcNow, SimulatorOutputStream.StandardOutput, text));
+        public void Write(string text)
+        {
+            OutputReceived?.Invoke(
+                this,
+                new SimulatorOutputLine(DateTimeOffset.UtcNow, SimulatorOutputStream.StandardOutput, text));
+        }
     }
 }

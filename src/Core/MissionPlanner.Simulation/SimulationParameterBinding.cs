@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Maps a logical simulation control to one firmware parameter variant.</summary>
 /// <param name="Name">Exact parameter name.</param>

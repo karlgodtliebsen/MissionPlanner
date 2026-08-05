@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Contains isolated artifact locations for one deterministic SITL instance.</summary>
 /// <param name="InstanceRootDirectory">Root directory uniquely assigned to the instance and SystemId.</param>

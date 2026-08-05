@@ -1,3 +1,5 @@
+using MissionPlanner.Simulation;
+
 namespace MissionPlanner.Core.Simulation;
 
 /// <summary>Executes one declarative scenario against an exact simulator target.</summary>

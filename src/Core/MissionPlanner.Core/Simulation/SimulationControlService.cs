@@ -5,6 +5,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Simulation;
 
 namespace MissionPlanner.Core.Simulation;
 
@@ -73,14 +74,18 @@ public sealed class SimulationControlService : ISimulationControlService
     /// <inheritdoc />
     public async Task<IReadOnlyList<SimulationControlCapability>> DiscoverAsync(
         CancellationToken cancellationToken = default)
-        => await DiscoverCoreAsync(GetTarget(), cancellationToken).ConfigureAwait(false);
+    {
+        return await DiscoverCoreAsync(GetTarget(), cancellationToken).ConfigureAwait(false);
+    }
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<SimulationControlCapability>> DiscoverAsync(
         Guid sessionId,
         VehicleId vehicleId,
         CancellationToken cancellationToken = default)
-        => await DiscoverCoreAsync(GetTarget(sessionId, vehicleId), cancellationToken).ConfigureAwait(false);
+    {
+        return await DiscoverCoreAsync(GetTarget(sessionId, vehicleId), cancellationToken).ConfigureAwait(false);
+    }
 
     private async Task<IReadOnlyList<SimulationControlCapability>> DiscoverCoreAsync(
         SimulationTarget target,
@@ -118,13 +123,15 @@ public sealed class SimulationControlService : ISimulationControlService
         TimeSpan? duration,
         bool confirmed,
         CancellationToken cancellationToken = default)
-        => await ApplyCoreAsync(
+    {
+        await ApplyCoreAsync(
             GetTarget(),
             controlKey,
             requestedValue,
             duration,
             confirmed,
             cancellationToken).ConfigureAwait(false);
+    }
 
     /// <inheritdoc />
     public async Task ApplyAsync(
@@ -135,13 +142,15 @@ public sealed class SimulationControlService : ISimulationControlService
         TimeSpan? duration,
         bool confirmed,
         CancellationToken cancellationToken = default)
-        => await ApplyCoreAsync(
+    {
+        await ApplyCoreAsync(
             GetTarget(sessionId, vehicleId),
             controlKey,
             requestedValue,
             duration,
             confirmed,
             cancellationToken).ConfigureAwait(false);
+    }
 
     private async Task ApplyCoreAsync(
         SimulationTarget target,
@@ -230,7 +239,9 @@ public sealed class SimulationControlService : ISimulationControlService
 
     /// <inheritdoc />
     public async Task ResetAsync(string controlKey, CancellationToken cancellationToken = default)
-        => await ResetTargetAsync(GetTarget(), controlKey, cancellationToken).ConfigureAwait(false);
+    {
+        await ResetTargetAsync(GetTarget(), controlKey, cancellationToken).ConfigureAwait(false);
+    }
 
     /// <inheritdoc />
     public async Task ResetAsync(
@@ -238,7 +249,9 @@ public sealed class SimulationControlService : ISimulationControlService
         VehicleId vehicleId,
         string controlKey,
         CancellationToken cancellationToken = default)
-        => await ResetTargetAsync(GetTarget(sessionId, vehicleId), controlKey, cancellationToken).ConfigureAwait(false);
+    {
+        await ResetTargetAsync(GetTarget(sessionId, vehicleId), controlKey, cancellationToken).ConfigureAwait(false);
+    }
 
     private async Task ResetTargetAsync(
         SimulationTarget target,
@@ -506,8 +519,10 @@ public sealed class SimulationControlService : ISimulationControlService
     private static SimulationControlCapability Unavailable(
         SimulationControlDescriptor descriptor,
         VehicleFirmwareIdentity? firmware,
-        string reason) =>
-        new(descriptor, false, null, null, null, reason, firmware?.FlightVersion);
+        string reason)
+    {
+        return new SimulationControlCapability(descriptor, false, null, null, null, reason, firmware?.FlightVersion);
+    }
 
     private SimulationTarget GetTarget()
     {
@@ -577,9 +592,11 @@ public sealed class SimulationControlService : ISimulationControlService
         return singleSessionMatches || fleetChannelMatches;
     }
 
-    private SimulationControlDescriptor GetDescriptor(string controlKey) =>
-        catalog.Controls.FirstOrDefault(item => item.Key.Equals(controlKey, StringComparison.Ordinal)) ??
-        throw new KeyNotFoundException($"Unknown simulation control '{controlKey}'.");
+    private SimulationControlDescriptor GetDescriptor(string controlKey)
+    {
+        return catalog.Controls.FirstOrDefault(item => item.Key.Equals(controlKey, StringComparison.Ordinal)) ??
+               throw new KeyNotFoundException($"Unknown simulation control '{controlKey}'.");
+    }
 
     private static void ValidateRequest(
         SimulationControlDescriptor descriptor,
@@ -638,14 +655,20 @@ public sealed class SimulationControlService : ISimulationControlService
         }
     }
 
-    private static bool NearlyEqual(double first, double second) =>
-        Math.Abs(first - second) <= Math.Max(0.0001, Math.Abs(second) * 0.00001);
+    private static bool NearlyEqual(double first, double second)
+    {
+        return Math.Abs(first - second) <= Math.Max(0.0001, Math.Abs(second) * 0.00001);
+    }
 
-    private static string ResetKey(SimulationTarget target, string controlKey) =>
-        $"{target.SessionId:N}:{target.VehicleId.SystemId}:{target.VehicleId.ComponentId}:{controlKey}";
+    private static string ResetKey(SimulationTarget target, string controlKey)
+    {
+        return $"{target.SessionId:N}:{target.VehicleId.SystemId}:{target.VehicleId.ComponentId}:{controlKey}";
+    }
 
-    private IVehicleParameterService GetParameterService(VehicleId vehicleId) =>
-        simulationChannels?.Find(vehicleId)?.ConnectionSession.ParameterService ?? connectionSession.ParameterService;
+    private IVehicleParameterService GetParameterService(VehicleId vehicleId)
+    {
+        return simulationChannels?.Find(vehicleId)?.ConnectionSession.ParameterService ?? connectionSession.ParameterService;
+    }
 
     private sealed record SimulationTarget(
         Guid SessionId,

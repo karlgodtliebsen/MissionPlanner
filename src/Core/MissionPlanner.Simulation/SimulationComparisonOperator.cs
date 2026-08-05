@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Identifies a supported, side-effect-free telemetry comparison.</summary>
 public enum SimulationComparisonOperator

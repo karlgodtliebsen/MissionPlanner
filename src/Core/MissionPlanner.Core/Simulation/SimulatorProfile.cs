@@ -1,4 +1,5 @@
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Simulation;
 
 namespace MissionPlanner.Core.Simulation;
 
@@ -32,19 +33,22 @@ public sealed record SimulatorProfile(
 
     /// <summary>Creates a default local ArduCopter profile.</summary>
     /// <returns>A new profile with a unique identity.</returns>
-    public static SimulatorProfile CreateDefault() => new(
-        Guid.NewGuid(),
-        "ArduCopter SITL",
-        FirmwareFamily.ArduCopter,
-        "quad",
-        new SimulationLocation(-35.363261, 149.165230, 584, 353),
-        1,
-        [
-            new SimulationEndpoint("MAVLink", SimulationEndpointTransport.Udp, "127.0.0.1", 14550),
-            new SimulationEndpoint("Console", SimulationEndpointTransport.Tcp, "127.0.0.1", 5760)
-        ],
-        new SimulatorBinaryReference("unselected", string.Empty, "external"),
-        [],
-        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
-        ArduPilotLaunchSettings.Default);
+    public static SimulatorProfile CreateDefault()
+    {
+        return new SimulatorProfile(
+            Guid.NewGuid(),
+            "ArduCopter SITL",
+            FirmwareFamily.ArduCopter,
+            "quad",
+            new SimulationLocation(-35.363261, 149.165230, 584, 353),
+            1,
+            [
+                new SimulationEndpoint("MAVLink", SimulationEndpointTransport.Udp, "127.0.0.1", 14550),
+                new SimulationEndpoint("Console", SimulationEndpointTransport.Tcp, "127.0.0.1", 5760)
+            ],
+            new SimulatorBinaryReference("unselected", string.Empty, "external"),
+            [],
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+            ArduPilotLaunchSettings.Default);
+    }
 }

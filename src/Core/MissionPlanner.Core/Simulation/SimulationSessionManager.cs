@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Library.DateTime.Domain;
+using MissionPlanner.Simulation;
 
 namespace MissionPlanner.Core.Simulation;
 
@@ -68,10 +69,7 @@ public sealed class SimulationSessionManager : ISimulationSessionManager
         {
             if (runtimeSession is not null)
             {
-                return Publish(current with
-                {
-                    Message = "Stop the current simulation before starting another profile."
-                });
+                return Publish(current with { Message = "Stop the current simulation before starting another profile." });
             }
 
             var sessionId = Guid.NewGuid();
@@ -103,20 +101,10 @@ public sealed class SimulationSessionManager : ISimulationSessionManager
                     "Simulation profile validation failed for {ProfileId} with {IssueCount} issue(s).",
                     profile.Id,
                     issues.Count);
-                return Publish(current with
-                {
-                    State = SimulationSessionState.Failed,
-                    EndedAt = clock.UtcNow,
-                    Message = "Simulation profile validation failed.",
-                    Failure = failure
-                });
+                return Publish(current with { State = SimulationSessionState.Failed, EndedAt = clock.UtcNow, Message = "Simulation profile validation failed.", Failure = failure });
             }
 
-            Publish(current with
-            {
-                State = SimulationSessionState.Starting,
-                Message = $"Starting with runtime adapter '{runtime.Name}'."
-            });
+            Publish(current with { State = SimulationSessionState.Starting, Message = $"Starting with runtime adapter '{runtime.Name}'." });
             lifecycleCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             artifacts.CreateDirectories();
             var createdSession = await runtime.StartAsync(
@@ -136,13 +124,7 @@ public sealed class SimulationSessionManager : ISimulationSessionManager
 
             var heartbeatTimeout = TimeSpan.FromSeconds(Math.Max(1, options.HeartbeatTimeoutSeconds));
             await createdSession.WaitForHeartbeatAsync(heartbeatTimeout, lifecycleCancellation.Token).ConfigureAwait(false);
-            Publish(current with
-            {
-                State = SimulationSessionState.Running,
-                Message = "Simulator is running and the expected heartbeat was observed.",
-                VehicleId = createdSession.ConnectedVehicleId,
-                RuntimeDiagnostics = createdSession.Diagnostics
-            });
+            Publish(current with { State = SimulationSessionState.Running, Message = "Simulator is running and the expected heartbeat was observed.", VehicleId = createdSession.ConnectedVehicleId, RuntimeDiagnostics = createdSession.Diagnostics });
             logger.LogInformation(
                 "Simulation session {SessionId} is running with runtime {RuntimeId} for profile {ProfileId}.",
                 sessionId,
@@ -154,26 +136,14 @@ public sealed class SimulationSessionManager : ISimulationSessionManager
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested || lifecycleCancellation?.IsCancellationRequested == true)
         {
             await CleanupCreatedSessionAsync().ConfigureAwait(false);
-            Publish(current with
-            {
-                State = SimulationSessionState.Stopped,
-                EndedAt = clock.UtcNow,
-                Message = "Simulation start was cancelled.",
-                Failure = null
-            });
+            Publish(current with { State = SimulationSessionState.Stopped, EndedAt = clock.UtcNow, Message = "Simulation start was cancelled.", Failure = null });
             throw;
         }
         catch (Exception exception)
         {
             logger.LogError(exception, "Simulation session failed during startup for profile {ProfileId}.", profile.Id);
             await CleanupCreatedSessionAsync().ConfigureAwait(false);
-            return Publish(current with
-            {
-                State = SimulationSessionState.Failed,
-                EndedAt = clock.UtcNow,
-                Message = "Simulation startup failed.",
-                Failure = exception.Message
-            });
+            return Publish(current with { State = SimulationSessionState.Failed, EndedAt = clock.UtcNow, Message = "Simulation startup failed.", Failure = exception.Message });
         }
         finally
         {
@@ -192,20 +162,10 @@ public sealed class SimulationSessionManager : ISimulationSessionManager
             var ownedSession = runtimeSession;
             if (ownedSession is null)
             {
-                return Publish(current with
-                {
-                    State = SimulationSessionState.Stopped,
-                    EndedAt = current.StartedAt is null ? null : clock.UtcNow,
-                    Message = "No simulation is running.",
-                    Failure = null
-                });
+                return Publish(current with { State = SimulationSessionState.Stopped, EndedAt = current.StartedAt is null ? null : clock.UtcNow, Message = "No simulation is running.", Failure = null });
             }
 
-            Publish(current with
-            {
-                State = SimulationSessionState.Stopping,
-                Message = $"Stopping owned runtime '{ownedSession.Identity.RuntimeId}'."
-            });
+            Publish(current with { State = SimulationSessionState.Stopping, Message = $"Stopping owned runtime '{ownedSession.Identity.RuntimeId}'." });
             ownedSession.OutputReceived -= OnOutputReceived;
             using var stopCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             stopCancellation.CancelAfter(TimeSpan.FromSeconds(Math.Max(1, options.StopTimeoutSeconds)));
@@ -234,13 +194,7 @@ public sealed class SimulationSessionManager : ISimulationSessionManager
 
                 runtimeSession = null;
                 DisposeLifecycleCancellation();
-                var failed = Publish(current with
-                {
-                    State = SimulationSessionState.Failed,
-                    EndedAt = clock.UtcNow,
-                    Message = "The owned simulator did not stop cleanly.",
-                    Failure = exception.Message
-                });
+                var failed = Publish(current with { State = SimulationSessionState.Failed, EndedAt = clock.UtcNow, Message = "The owned simulator did not stop cleanly.", Failure = exception.Message });
                 cancellationToken.ThrowIfCancellationRequested();
                 return failed;
             }
@@ -251,13 +205,7 @@ public sealed class SimulationSessionManager : ISimulationSessionManager
                 "Stopped owned simulation session {SessionId} with runtime {RuntimeId}.",
                 current.SessionId,
                 ownedSession.Identity.RuntimeId);
-            return Publish(current with
-            {
-                State = SimulationSessionState.Stopped,
-                EndedAt = clock.UtcNow,
-                Message = "Simulation stopped.",
-                Failure = null
-            });
+            return Publish(current with { State = SimulationSessionState.Stopped, EndedAt = clock.UtcNow, Message = "Simulation stopped.", Failure = null });
         }
         finally
         {
@@ -272,13 +220,7 @@ public sealed class SimulationSessionManager : ISimulationSessionManager
         var profile = Current.Profile ?? lastProfile;
         if (profile is null)
         {
-            return Publish(Current with
-            {
-                State = SimulationSessionState.Failed,
-                EndedAt = clock.UtcNow,
-                Message = "Simulation restart failed.",
-                Failure = "No simulation profile has been selected."
-            });
+            return Publish(Current with { State = SimulationSessionState.Failed, EndedAt = clock.UtcNow, Message = "Simulation restart failed.", Failure = "No simulation profile has been selected." });
         }
 
         await StopAsync(cancellationToken).ConfigureAwait(false);
@@ -335,13 +277,7 @@ public sealed class SimulationSessionManager : ISimulationSessionManager
             DisposeLifecycleCancellation();
             await ownedSession.DisposeAsync().ConfigureAwait(false);
             var successful = exit.WasExpected && exit.ExitCode is null or 0;
-            Publish(current with
-            {
-                State = successful ? SimulationSessionState.Completed : SimulationSessionState.Failed,
-                EndedAt = clock.UtcNow,
-                Message = successful ? "Simulation completed." : "Simulation runtime exited unexpectedly.",
-                Failure = successful ? null : exit.Message ?? $"Runtime exit code: {exit.ExitCode?.ToString() ?? "unavailable"}."
-            });
+            Publish(current with { State = successful ? SimulationSessionState.Completed : SimulationSessionState.Failed, EndedAt = clock.UtcNow, Message = successful ? "Simulation completed." : "Simulation runtime exited unexpectedly.", Failure = successful ? null : exit.Message ?? $"Runtime exit code: {exit.ExitCode?.ToString() ?? "unavailable"}." });
             logger.LogInformation(
                 "Simulation session {SessionId} ended in state {State} with exit code {ExitCode}.",
                 sessionId,

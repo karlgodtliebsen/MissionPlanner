@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation.Abstractions;
 
 /// <summary>Reserves an endpoint set against other MissionPlanner-owned simulator sessions.</summary>
 public interface ISimulationPortAllocator

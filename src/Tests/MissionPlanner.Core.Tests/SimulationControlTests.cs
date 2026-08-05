@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Simulation;
@@ -7,6 +7,8 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Simulation;
+using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Transport;
 using NSubstitute;
 
@@ -216,21 +218,21 @@ public sealed class SimulationControlTests
         return new ControlFixture(catalog, service, writes, vehicleId => current = Snapshot(vehicleId, now));
     }
 
-    private static SimulationSessionSnapshot Snapshot(VehicleId vehicleId, DateTimeOffset now) => new(
-        Guid.NewGuid(),
-        SimulatorProfile.CreateDefault() with
-        {
-            LaunchSettings = ArduPilotLaunchSettings.Default with { SystemId = vehicleId.SystemId }
-        },
-        SimulationSessionState.Running,
-        new SimulatorRuntimeIdentity($"sitl-{vehicleId.SystemId}", "test", null),
-        [],
-        now - TimeSpan.FromMinutes(1),
-        null,
-        "Running",
-        null,
-        [],
-        vehicleId);
+    private static SimulationSessionSnapshot Snapshot(VehicleId vehicleId, DateTimeOffset now)
+    {
+        return new SimulationSessionSnapshot(
+            Guid.NewGuid(),
+            SimulatorProfile.CreateDefault() with { LaunchSettings = ArduPilotLaunchSettings.Default with { SystemId = vehicleId.SystemId } },
+            SimulationSessionState.Running,
+            new SimulatorRuntimeIdentity($"sitl-{vehicleId.SystemId}", "test", null),
+            [],
+            now - TimeSpan.FromMinutes(1),
+            null,
+            "Running",
+            null,
+            [],
+            vehicleId);
+    }
 
     private static VehicleSession CreateVehicleSession(VehicleId vehicleId)
     {
@@ -255,17 +257,7 @@ public sealed class SimulationControlTests
             null,
             null,
             null);
-        state = state with
-        {
-            Identity = state.Identity with
-            {
-                Firmware = state.Identity.Firmware with
-                {
-                    Family = FirmwareFamily.ArduCopter,
-                    FlightVersion = new FirmwareSemanticVersion(4, 6, 0, FirmwareReleaseType.Official)
-                }
-            }
-        };
+        state = state with { Identity = state.Identity with { Firmware = state.Identity.Firmware with { Family = FirmwareFamily.ArduCopter, FlightVersion = new FirmwareSemanticVersion(4, 6, 0, FirmwareReleaseType.Official) } } };
         var clock = Substitute.For<IDateTimeProvider>();
         clock.UtcNow.Returns(now);
         return new VehicleSession(state, new TransportEndPoint("simulation-test"), clock);
@@ -288,15 +280,20 @@ public sealed class SimulationControlTests
         List<ParameterWrite> Writes,
         Action<VehicleId> SelectVehicle) : IAsyncDisposable
     {
-        public ValueTask DisposeAsync() => Service.DisposeAsync();
+        public ValueTask DisposeAsync()
+        {
+            return Service.DisposeAsync();
+        }
     }
 
     private sealed class MemoryPresetStore(string? document) : ISimulationScenarioPresetStore
     {
         public string? Document { get; private set; } = document;
 
-        public ValueTask<string?> ReadAsync(CancellationToken cancellationToken = default) =>
-            ValueTask.FromResult(Document);
+        public ValueTask<string?> ReadAsync(CancellationToken cancellationToken = default)
+        {
+            return ValueTask.FromResult(Document);
+        }
 
         public ValueTask WriteAsync(string value, CancellationToken cancellationToken = default)
         {

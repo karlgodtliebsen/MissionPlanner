@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation.Abstractions;
 
 /// <summary>Loads and saves scenario presets separately from simulator launch profiles.</summary>
 public interface ISimulationScenarioPresetService

@@ -1,3 +1,5 @@
+using MissionPlanner.Simulation;
+
 namespace MissionPlanner.Core.Simulation;
 
 /// <summary>Validates simulator profiles and host resources before runtime creation.</summary>

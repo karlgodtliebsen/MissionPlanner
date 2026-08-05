@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation.Abstractions;
 
 /// <summary>Parses and validates the safe declarative scenario schema.</summary>
 public interface ISimulationScenarioParser

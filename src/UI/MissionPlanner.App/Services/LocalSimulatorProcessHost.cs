@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
-using MissionPlanner.Core.Simulation;
+using MissionPlanner.Simulation;
+using MissionPlanner.Simulation.Abstractions;
 
 namespace MissionPlanner.App.Services;
 
@@ -46,15 +47,12 @@ public sealed class LocalSimulatorProcessHost : ISimulatorProcessHost
         var process = new Process { StartInfo = processStartInfo, EnableRaisingEvents = true };
         try
         {
-            if (!process.Start())
-            {
-                throw new InvalidOperationException("The operating system did not start the selected SITL executable.");
-            }
-
-            return Task.FromResult<ISimulatorProcessSession>(new LocalSimulatorProcessSession(
-                process,
-                Path.GetFullPath(startInfo.ExecutablePath),
-                new DateTimeOffset(process.StartTime.ToUniversalTime())));
+            return !process.Start()
+                ? throw new InvalidOperationException("The operating system did not start the selected SITL executable.")
+                : Task.FromResult<ISimulatorProcessSession>(new LocalSimulatorProcessSession(
+                    process,
+                    Path.GetFullPath(startInfo.ExecutablePath),
+                    new DateTimeOffset(process.StartTime.ToUniversalTime())));
         }
         catch
         {

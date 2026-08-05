@@ -1,9 +1,10 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Simulation.Abstractions;
 
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Stores non-secret ownership markers under the configured simulation artifact root.</summary>
 public sealed class SimulationOwnershipStore : ISimulationOwnershipStore
@@ -116,5 +117,8 @@ public sealed class SimulationOwnershipStore : ISimulationOwnershipStore
         return results;
     }
 
-    private string MarkerPath(Guid sessionId) => Path.Combine(markerDirectory, $"{sessionId:N}.owned.json");
+    private string MarkerPath(Guid sessionId)
+    {
+        return Path.Combine(markerDirectory, $"{sessionId:N}.owned.json");
+    }
 }

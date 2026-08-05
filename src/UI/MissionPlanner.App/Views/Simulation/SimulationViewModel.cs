@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -7,6 +7,8 @@ using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Simulation;
+using MissionPlanner.Simulation.Abstractions;
 
 namespace MissionPlanner.App.Views.Simulation;
 
@@ -372,10 +374,10 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
 
     /// <summary>Gets whether the selected or last profile may be restarted.</summary>
     public bool CanRestart => !IsBusy && sessionManager.Current.Profile is not null &&
-        SessionState is not SimulationSessionState.Validating and
-        not SimulationSessionState.Starting and
-        not SimulationSessionState.WaitingForHeartbeat and
-        not SimulationSessionState.Stopping;
+                              SessionState is not SimulationSessionState.Validating and
+                                  not SimulationSessionState.Starting and
+                                  not SimulationSessionState.WaitingForHeartbeat and
+                                  not SimulationSessionState.Stopping;
 
     /// <summary>Gets whether a verified manifest release can be installed.</summary>
     public bool CanInstallRelease => !IsBusy && SelectedRelease is not null;
@@ -385,7 +387,10 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
 
     /// <summary>Cancels the active profile, discovery, download, or start operation.</summary>
     [RelayCommand(CanExecute = nameof(CanCancelOperation))]
-    public void CancelOperation() => operationCancellation?.Cancel();
+    public void CancelOperation()
+    {
+        operationCancellation?.Cancel();
+    }
 
     /// <summary>Activates workspace observation without changing simulator ownership.</summary>
     public void Activate()
@@ -403,6 +408,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
             fleetManager.Changed += OnFleetChanged;
             RefreshFleetSessions();
         }
+
         timerCancellation = new CancellationTokenSource();
         _ = UpdateElapsedAsync(timerCancellation.Token);
         if (!initialized)
@@ -425,10 +431,8 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
 
         active = false;
         sessionManager.Changed -= OnSessionChanged;
-        if (fleetManager is not null)
-        {
-            fleetManager.Changed -= OnFleetChanged;
-        }
+        fleetManager?.Changed -= OnFleetChanged;
+
         timerCancellation?.Cancel();
         timerCancellation?.Dispose();
         timerCancellation = null;
@@ -437,26 +441,29 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     /// <summary>Loads persisted profiles.</summary>
     /// <returns>A task representing initialization.</returns>
     [RelayCommand]
-    public Task InitializeAsync() => RunAsync(async cancellationToken =>
+    public Task InitializeAsync()
     {
-        var profiles = await profileService.InitializeAsync(cancellationToken);
-        Profiles.Clear();
-        foreach (var profile in profiles)
+        return RunAsync(async cancellationToken =>
         {
-            Profiles.Add(profile);
-        }
+            var profiles = await profileService.InitializeAsync(cancellationToken);
+            Profiles.Clear();
+            foreach (var profile in profiles)
+            {
+                Profiles.Add(profile);
+            }
 
-        SelectedProfile = Profiles.FirstOrDefault();
-        await scenarioPresetService.InitializeAsync(cancellationToken);
-        ReplaceScenarioPresets();
-        await RefreshInstallationsCoreAsync(cancellationToken);
-        if (sessionManager.Current.State == SimulationSessionState.Running)
-        {
-            await RefreshControlsCoreAsync(cancellationToken);
-        }
+            SelectedProfile = Profiles.FirstOrDefault();
+            await scenarioPresetService.InitializeAsync(cancellationToken);
+            ReplaceScenarioPresets();
+            await RefreshInstallationsCoreAsync(cancellationToken);
+            if (sessionManager.Current.State == SimulationSessionState.Running)
+            {
+                await RefreshControlsCoreAsync(cancellationToken);
+            }
 
-        initialized = true;
-    });
+            initialized = true;
+        });
+    }
 
     /// <summary>Creates a new editable profile from safe defaults.</summary>
     [RelayCommand]
@@ -468,39 +475,48 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     /// <summary>Saves the current profile editor.</summary>
     /// <returns>A task representing persistence.</returns>
     [RelayCommand]
-    public Task SaveProfileAsync() => RunAsync(async cancellationToken =>
+    public Task SaveProfileAsync()
     {
-        var profile = CreateProfile();
-        await profileService.SaveAsync(profile, cancellationToken);
-        ReplaceProfiles(profileService.Profiles, profile.Id);
-        StatusMessage = $"Profile '{profile.Name}' saved.";
-    });
+        return RunAsync(async cancellationToken =>
+        {
+            var profile = CreateProfile();
+            await profileService.SaveAsync(profile, cancellationToken);
+            ReplaceProfiles(profileService.Profiles, profile.Id);
+            StatusMessage = $"Profile '{profile.Name}' saved.";
+        });
+    }
 
     /// <summary>Refreshes configured, cached, and manifest SITL choices.</summary>
     /// <returns>A task representing discovery.</returns>
     [RelayCommand]
-    public Task RefreshInstallationsAsync() => RunAsync(RefreshInstallationsCoreAsync);
+    public Task RefreshInstallationsAsync()
+    {
+        return RunAsync(RefreshInstallationsCoreAsync);
+    }
 
     /// <summary>Downloads, verifies, and atomically installs the selected release.</summary>
     /// <returns>A task representing installation.</returns>
     [RelayCommand]
-    public Task InstallReleaseAsync() => RunAsync(async cancellationToken =>
+    public Task InstallReleaseAsync()
     {
-        if (SelectedRelease is null)
+        return RunAsync(async cancellationToken =>
         {
-            InstallationStatus = "Select a compatible verified SITL release first.";
-            return;
-        }
+            if (SelectedRelease is null)
+            {
+                InstallationStatus = "Select a compatible verified SITL release first.";
+                return;
+            }
 
-        InstallProgress = 0;
-        InstallationStatus = $"Downloading and verifying SITL {SelectedRelease.Version}.";
-        var progress = new Progress<double>(value => dispatcher.Dispatch(() => InstallProgress = value));
-        var installed = await installationService.InstallAsync(SelectedRelease, progress, cancellationToken);
-        await RefreshInstallationsCoreAsync(cancellationToken);
-        SelectedInstallation = Installations.FirstOrDefault(item => item.InstallationId == installed.InstallationId);
-        UseSelectedInstallation();
-        InstallationStatus = $"Verified SITL {installed.Version} is installed and selected.";
-    });
+            InstallProgress = 0;
+            InstallationStatus = $"Downloading and verifying SITL {SelectedRelease.Version}.";
+            var progress = new Progress<double>(value => dispatcher.Dispatch(() => InstallProgress = value));
+            var installed = await installationService.InstallAsync(SelectedRelease, progress, cancellationToken);
+            await RefreshInstallationsCoreAsync(cancellationToken);
+            SelectedInstallation = Installations.FirstOrDefault(item => item.InstallationId == installed.InstallationId);
+            UseSelectedInstallation();
+            InstallationStatus = $"Verified SITL {installed.Version} is installed and selected.";
+        });
+    }
 
     /// <summary>Pins the profile editor to the selected available installation.</summary>
     [RelayCommand]
@@ -521,17 +537,20 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     /// <summary>Removes only the selected MissionPlanner-owned cached installation.</summary>
     /// <returns>A task representing cache removal.</returns>
     [RelayCommand]
-    public Task RemoveInstallationAsync() => RunAsync(async cancellationToken =>
+    public Task RemoveInstallationAsync()
     {
-        if (SelectedInstallation is null)
+        return RunAsync(async cancellationToken =>
         {
-            return;
-        }
+            if (SelectedInstallation is null)
+            {
+                return;
+            }
 
-        await installationService.RemoveAsync(SelectedInstallation, cancellationToken);
-        await RefreshInstallationsCoreAsync(cancellationToken);
-        InstallationStatus = "MissionPlanner-owned SITL cache entry removed. External installations were not touched.";
-    });
+            await installationService.RemoveAsync(SelectedInstallation, cancellationToken);
+            await RefreshInstallationsCoreAsync(cancellationToken);
+            InstallationStatus = "MissionPlanner-owned SITL cache entry removed. External installations were not touched.";
+        });
+    }
 
     /// <summary>Applies the selected typed location preset to the launch-profile editor.</summary>
     [RelayCommand]
@@ -564,63 +583,75 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     /// <summary>Refreshes documented controls against the exact connected simulator.</summary>
     /// <returns>A task representing capability discovery.</returns>
     [RelayCommand]
-    public Task RefreshControlsAsync() => RunAsync(RefreshControlsCoreAsync);
+    public Task RefreshControlsAsync()
+    {
+        return RunAsync(RefreshControlsCoreAsync);
+    }
 
     /// <summary>Applies the selected environment value or bounded hazardous control.</summary>
     /// <returns>A task representing confirmed parameter write/readback.</returns>
     [RelayCommand]
-    public Task ApplyControlAsync() => RunAsync(async cancellationToken =>
+    public Task ApplyControlAsync()
     {
-        if (SelectedControl is null)
+        return RunAsync(async cancellationToken =>
         {
-            return;
-        }
+            if (SelectedControl is null)
+            {
+                return;
+            }
 
-        TimeSpan? duration = SelectedControl.Descriptor.MaximumDuration is null
-            ? null
-            : TimeSpan.FromSeconds(FaultDurationSeconds);
-        await controlService.ApplyAsync(
-            SelectedControl.Descriptor.Key,
-            ControlRequestedValue,
-            duration,
-            HazardConfirmed,
-            cancellationToken);
-        HazardConfirmed = false;
-        await RefreshControlsCoreAsync(cancellationToken);
-        StatusMessage = $"Simulation control '{SelectedControl.Descriptor.DisplayName}' applied and confirmed.";
-    });
+            TimeSpan? duration = SelectedControl.Descriptor.MaximumDuration is null
+                ? null
+                : TimeSpan.FromSeconds(FaultDurationSeconds);
+            await controlService.ApplyAsync(
+                SelectedControl.Descriptor.Key,
+                ControlRequestedValue,
+                duration,
+                HazardConfirmed,
+                cancellationToken);
+            HazardConfirmed = false;
+            await RefreshControlsCoreAsync(cancellationToken);
+            StatusMessage = $"Simulation control '{SelectedControl.Descriptor.DisplayName}' applied and confirmed.";
+        });
+    }
 
     /// <summary>Resets the selected active hazardous control.</summary>
     /// <returns>A task representing confirmed reset readback.</returns>
     [RelayCommand]
-    public Task ResetControlAsync() => RunAsync(async cancellationToken =>
+    public Task ResetControlAsync()
     {
-        if (SelectedControl is null)
+        return RunAsync(async cancellationToken =>
         {
-            return;
-        }
+            if (SelectedControl is null)
+            {
+                return;
+            }
 
-        await controlService.ResetAsync(SelectedControl.Descriptor.Key, cancellationToken);
-        HazardConfirmed = false;
-        await RefreshControlsCoreAsync(cancellationToken);
-        StatusMessage = $"Simulation control '{SelectedControl.Descriptor.DisplayName}' reset.";
-    });
+            await controlService.ResetAsync(SelectedControl.Descriptor.Key, cancellationToken);
+            HazardConfirmed = false;
+            await RefreshControlsCoreAsync(cancellationToken);
+            StatusMessage = $"Simulation control '{SelectedControl.Descriptor.DisplayName}' reset.";
+        });
+    }
 
     /// <summary>Saves staged location/control values as a scenario preset separate from launch profiles.</summary>
     /// <returns>A task representing preset persistence.</returns>
     [RelayCommand]
-    public Task SaveScenarioPresetAsync() => RunAsync(async cancellationToken =>
+    public Task SaveScenarioPresetAsync()
     {
-        StoreControlEdit(SelectedControl);
-        var preset = new SimulationScenarioPreset(
-            SelectedScenarioPreset?.Id ?? Guid.NewGuid(),
-            ScenarioPresetName.Trim(),
-            new SimulationLocation(Latitude, Longitude, Altitude, Heading),
-            stagedControls.Values.OrderBy(item => item.ControlKey, StringComparer.Ordinal).ToArray());
-        await scenarioPresetService.SaveAsync(preset, cancellationToken);
-        ReplaceScenarioPresets(preset.Id);
-        StatusMessage = $"Scenario preset '{preset.Name}' saved separately from launch profiles.";
-    });
+        return RunAsync(async cancellationToken =>
+        {
+            StoreControlEdit(SelectedControl);
+            var preset = new SimulationScenarioPreset(
+                SelectedScenarioPreset?.Id ?? Guid.NewGuid(),
+                ScenarioPresetName.Trim(),
+                new SimulationLocation(Latitude, Longitude, Altitude, Heading),
+                stagedControls.Values.OrderBy(item => item.ControlKey, StringComparer.Ordinal).ToArray());
+            await scenarioPresetService.SaveAsync(preset, cancellationToken);
+            ReplaceScenarioPresets(preset.Id);
+            StatusMessage = $"Scenario preset '{preset.Name}' saved separately from launch profiles.";
+        });
+    }
 
     /// <summary>Loads the selected scenario preset into the staged editor without executing faults.</summary>
     [RelayCommand]
@@ -652,133 +683,169 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     /// <summary>Deletes the selected scenario preset.</summary>
     /// <returns>A task representing preset persistence.</returns>
     [RelayCommand]
-    public Task DeleteScenarioPresetAsync() => RunAsync(async cancellationToken =>
+    public Task DeleteScenarioPresetAsync()
     {
-        if (SelectedScenarioPreset is null)
+        return RunAsync(async cancellationToken =>
         {
-            return;
-        }
+            if (SelectedScenarioPreset is null)
+            {
+                return;
+            }
 
-        await scenarioPresetService.DeleteAsync(SelectedScenarioPreset.Id, cancellationToken);
-        ReplaceScenarioPresets();
-        StatusMessage = "Scenario preset deleted.";
-    });
+            await scenarioPresetService.DeleteAsync(SelectedScenarioPreset.Id, cancellationToken);
+            ReplaceScenarioPresets();
+            StatusMessage = "Scenario preset deleted.";
+        });
+    }
 
     /// <summary>Loads a declarative scenario JSON file into the editor without executing it.</summary>
     /// <returns>A task representing file selection.</returns>
     [RelayCommand]
-    public Task LoadScenarioDocumentAsync() => RunAsync(async cancellationToken =>
+    public Task LoadScenarioDocumentAsync()
     {
-        var document = await fileHandler.LoadTextFileAsync("Select a simulation scenario JSON file", cancellationToken);
-        if (document is not null)
+        return RunAsync(async cancellationToken =>
         {
-            ScenarioDocumentText = document;
-            ScenarioRunnerStatus = "Scenario document loaded; use Dry run before execution.";
-        }
-    });
+            var document = await fileHandler.LoadTextFileAsync("Select a simulation scenario JSON file", cancellationToken);
+            if (document is not null)
+            {
+                ScenarioDocumentText = document;
+                ScenarioRunnerStatus = "Scenario document loaded; use Dry run before execution.";
+            }
+        });
+    }
 
     /// <summary>Validates the scenario and exact target without changing the vehicle.</summary>
     /// <returns>A task representing dry-run capability validation.</returns>
     [RelayCommand]
-    public Task DryRunScenarioAsync() => ExecuteScenarioAsync(dryRun: true);
+    public Task DryRunScenarioAsync()
+    {
+        return ExecuteScenarioAsync(true);
+    }
 
     /// <summary>Executes the scenario against the exact running simulator vehicle.</summary>
     /// <returns>A task representing bounded execution.</returns>
     [RelayCommand]
-    public Task RunScenarioAsync() => ExecuteScenarioAsync(dryRun: false);
+    public Task RunScenarioAsync()
+    {
+        return ExecuteScenarioAsync(false);
+    }
 
     /// <summary>Requests a pause after the active scenario step reaches a safe boundary.</summary>
     [RelayCommand]
-    public void PauseScenario() => ScenarioRunnerStatus = scenarioRunner.Pause()
-        ? "Pause requested at the next safe step boundary."
-        : "The scenario is not currently in a pausable step.";
+    public void PauseScenario()
+    {
+        ScenarioRunnerStatus = scenarioRunner.Pause()
+            ? "Pause requested at the next safe step boundary."
+            : "The scenario is not currently in a pausable step.";
+    }
 
     /// <summary>Resumes a scenario paused between steps.</summary>
     [RelayCommand]
-    public void ResumeScenario() => ScenarioRunnerStatus = scenarioRunner.Resume()
-        ? "Scenario resumed."
-        : "The scenario is not paused.";
+    public void ResumeScenario()
+    {
+        ScenarioRunnerStatus = scenarioRunner.Resume()
+            ? "Scenario resumed."
+            : "The scenario is not paused.";
+    }
 
     /// <summary>Exports the last run as versioned machine-readable JSON.</summary>
     /// <returns>A task representing file export.</returns>
     [RelayCommand]
-    public Task ExportScenarioJsonAsync() => ExportScenarioReportAsync(machineReadable: true);
+    public Task ExportScenarioJsonAsync()
+    {
+        return ExportScenarioReportAsync(true);
+    }
 
     /// <summary>Exports the last run as a human-readable text report.</summary>
     /// <returns>A task representing file export.</returns>
     [RelayCommand]
-    public Task ExportScenarioTextAsync() => ExportScenarioReportAsync(machineReadable: false);
+    public Task ExportScenarioTextAsync()
+    {
+        return ExportScenarioReportAsync(false);
+    }
 
     /// <summary>Deletes the selected profile.</summary>
     /// <returns>A task representing persistence.</returns>
     [RelayCommand]
-    public Task DeleteProfileAsync() => RunAsync(async cancellationToken =>
+    public Task DeleteProfileAsync()
     {
-        if (SelectedProfile is null)
+        return RunAsync(async cancellationToken =>
         {
-            return;
-        }
+            if (SelectedProfile is null)
+            {
+                return;
+            }
 
-        await profileService.DeleteAsync(SelectedProfile.Id, cancellationToken);
-        ReplaceProfiles(profileService.Profiles, profileService.Profiles[0].Id);
-        StatusMessage = "Simulation profile deleted.";
-    });
+            await profileService.DeleteAsync(SelectedProfile.Id, cancellationToken);
+            ReplaceProfiles(profileService.Profiles, profileService.Profiles[0].Id);
+            StatusMessage = "Simulation profile deleted.";
+        });
+    }
 
     /// <summary>Saves, validates, and starts the edited profile.</summary>
     /// <returns>A task representing startup through heartbeat readiness.</returns>
     [RelayCommand]
-    public Task StartAsync() => RunAsync(async cancellationToken =>
+    public Task StartAsync()
     {
-        var profile = CreateProfile();
-        await profileService.SaveAsync(profile, cancellationToken);
-        ReplaceProfiles(profileService.Profiles, profile.Id);
-        var started = await sessionManager.StartAsync(profile, cancellationToken);
-        if (started.State == SimulationSessionState.Running)
+        return RunAsync(async cancellationToken =>
         {
-            await RefreshControlsCoreAsync(cancellationToken);
-        }
-    });
+            var profile = CreateProfile();
+            await profileService.SaveAsync(profile, cancellationToken);
+            ReplaceProfiles(profileService.Profiles, profile.Id);
+            var started = await sessionManager.StartAsync(profile, cancellationToken);
+            if (started.State == SimulationSessionState.Running)
+            {
+                await RefreshControlsCoreAsync(cancellationToken);
+            }
+        });
+    }
 
     /// <summary>Allocates and starts all requested fleet members with bounded concurrency.</summary>
     /// <returns>A task representing the fleet start operation.</returns>
     [RelayCommand]
-    public Task StartAllAsync() => RunAsync(async cancellationToken =>
+    public Task StartAllAsync()
     {
-        if (fleetManager is null)
+        return RunAsync(async cancellationToken =>
         {
-            throw new InvalidOperationException("Multi-instance simulation is unavailable.");
-        }
+            if (fleetManager is null)
+            {
+                throw new InvalidOperationException("Multi-instance simulation is unavailable.");
+            }
 
-        var profile = CreateProfile();
-        var request = new SimulationFleetLaunchRequest(
-            profile,
-            FleetCount,
-            SimulationFormationProfile.CreateLine(FleetCount, FleetSpacingMeters),
-            FleetPortStride,
-            FleetMaximumConcurrency);
-        var report = await fleetManager.StartAllAsync(request, cancellationToken);
-        RefreshFleetSessions();
-        FleetStatus = report.Succeeded
-            ? $"All {report.Results.Count} simulator sessions are running."
-            : $"{report.Results.Count(result => result.Succeeded)} of {report.Results.Count} simulator sessions started; inspect per-session failures.";
-    });
+            var profile = CreateProfile();
+            var request = new SimulationFleetLaunchRequest(
+                profile,
+                FleetCount,
+                SimulationFormationProfile.CreateLine(FleetCount, FleetSpacingMeters),
+                FleetPortStride,
+                FleetMaximumConcurrency);
+            var report = await fleetManager.StartAllAsync(request, cancellationToken);
+            RefreshFleetSessions();
+            FleetStatus = report.Succeeded
+                ? $"All {report.Results.Count} simulator sessions are running."
+                : $"{report.Results.Count(result => result.Succeeded)} of {report.Results.Count} simulator sessions started; inspect per-session failures.";
+        });
+    }
 
     /// <summary>Stops all exact fleet members with bounded concurrency.</summary>
     /// <returns>A task representing the fleet stop operation.</returns>
     [RelayCommand]
-    public Task StopAllAsync() => RunAsync(async cancellationToken =>
+    public Task StopAllAsync()
     {
-        if (fleetManager is null)
+        return RunAsync(async cancellationToken =>
         {
-            return;
-        }
+            if (fleetManager is null)
+            {
+                return;
+            }
 
-        var report = await fleetManager.StopAllAsync(FleetMaximumConcurrency, cancellationToken);
-        RefreshFleetSessions();
-        FleetStatus = report.Succeeded
-            ? "All simulator fleet sessions stopped."
-            : $"{report.Results.Count(result => !result.Succeeded)} simulator session(s) did not stop cleanly.";
-    });
+            var report = await fleetManager.StopAllAsync(FleetMaximumConcurrency, cancellationToken);
+            RefreshFleetSessions();
+            FleetStatus = report.Succeeded
+                ? "All simulator fleet sessions stopped."
+                : $"{report.Results.Count(result => !result.Succeeded)} simulator session(s) did not stop cleanly.";
+        });
+    }
 
     /// <summary>Stops only the exact runtime session owned by the workspace.</summary>
     /// <returns>A task representing shutdown.</returns>
@@ -800,22 +867,25 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     /// <summary>Restarts the current session profile.</summary>
     /// <returns>A task representing restart.</returns>
     [RelayCommand]
-    public Task RestartAsync() => RunAsync(async cancellationToken =>
+    public Task RestartAsync()
     {
-        await sessionManager.RestartAsync(cancellationToken);
-    });
+        return RunAsync(async cancellationToken => await sessionManager.RestartAsync(cancellationToken));
+    }
 
     /// <summary>Exports a redacted structured diagnostic bundle.</summary>
     /// <returns>A task representing file export.</returns>
     [RelayCommand]
-    public Task ExportDiagnosticsAsync() => RunAsync(async cancellationToken =>
+    public Task ExportDiagnosticsAsync()
     {
-        var path = await fileHandler.SaveTextFileAsync(
-            $"simulation-{sessionManager.Current.SessionId:N}-diagnostics.json",
-            diagnosticsService.CreateBundle(sessionManager.Current),
-            cancellationToken);
-        StatusMessage = path is null ? "Diagnostic export cancelled." : $"Diagnostics exported to {path}.";
-    });
+        return RunAsync(async cancellationToken =>
+        {
+            var path = await fileHandler.SaveTextFileAsync(
+                $"simulation-{sessionManager.Current.SessionId:N}-diagnostics.json",
+                diagnosticsService.CreateBundle(sessionManager.Current),
+                cancellationToken);
+            StatusMessage = path is null ? "Diagnostic export cancelled." : $"Diagnostics exported to {path}.";
+        });
+    }
 
     /// <inheritdoc />
     public void Dispose()
@@ -828,10 +898,8 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         disposed = true;
         Deactivate();
         scenarioRunner.Changed -= OnScenarioRunnerChanged;
-        if (fleetManager is not null)
-        {
-            fleetManager.Changed -= OnFleetChanged;
-        }
+        fleetManager?.Changed -= OnFleetChanged;
+
         operationCancellation?.Cancel();
     }
 
@@ -864,9 +932,15 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
 
     partial void OnSelectedControlChanging(
         SimulationControlCapability? oldValue,
-        SimulationControlCapability? newValue) => StoreControlEdit(oldValue);
+        SimulationControlCapability? newValue)
+    {
+        StoreControlEdit(oldValue);
+    }
 
-    partial void OnSelectedControlChanged(SimulationControlCapability? value) => LoadControlEdit(value);
+    partial void OnSelectedControlChanged(SimulationControlCapability? value)
+    {
+        LoadControlEdit(value);
+    }
 
     partial void OnSelectedFleetSessionChanged(SimulationFleetSessionSnapshot? value)
     {
@@ -879,9 +953,15 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         ApplySnapshot(value.Session);
     }
 
-    partial void OnControlRequestedValueChanged(double value) => StoreControlEdit(SelectedControl);
+    partial void OnControlRequestedValueChanged(double value)
+    {
+        StoreControlEdit(SelectedControl);
+    }
 
-    partial void OnFaultDurationSecondsChanged(double value) => StoreControlEdit(SelectedControl);
+    partial void OnFaultDurationSecondsChanged(double value)
+    {
+        StoreControlEdit(SelectedControl);
+    }
 
     partial void OnBinaryPathChanged(string value)
     {
@@ -931,10 +1011,13 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         }
     }
 
-    private void OnSessionChanged(object? sender, SimulationSessionChangedEventArgs e) =>
+    private void OnSessionChanged(object? sender, SimulationSessionChangedEventArgs e)
+    {
         dispatcher.Dispatch(() => ApplySnapshot(e.Snapshot));
+    }
 
-    private void OnFleetChanged(object? sender, SimulationFleetChangedEventArgs e) =>
+    private void OnFleetChanged(object? sender, SimulationFleetChangedEventArgs e)
+    {
         dispatcher.Dispatch(() =>
         {
             RefreshFleetSessions();
@@ -943,6 +1026,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
                 ApplySnapshot(e.Session.Session);
             }
         });
+    }
 
     private void RefreshFleetSessions()
     {
@@ -1120,9 +1204,15 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
             : $"Found {Installations.Count} SITL installation(s).";
     }
 
-    private Task RefreshReleasesAsync() => RunAsync(RefreshReleasesCoreAsync);
+    private Task RefreshReleasesAsync()
+    {
+        return RunAsync(RefreshReleasesCoreAsync);
+    }
 
-    private bool CanCancelOperation() => IsBusy;
+    private bool CanCancelOperation()
+    {
+        return IsBusy;
+    }
 
     private async Task RefreshReleasesCoreAsync(CancellationToken cancellationToken)
     {
@@ -1150,8 +1240,8 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         }
 
         SelectedControl = ControlCapabilities.FirstOrDefault(item => item.Descriptor.Key == selectedKey) ??
-            ControlCapabilities.FirstOrDefault(item => item.IsAvailable) ??
-            ControlCapabilities.FirstOrDefault();
+                          ControlCapabilities.FirstOrDefault(item => item.IsAvailable) ??
+                          ControlCapabilities.FirstOrDefault();
         ScenarioEvents.Clear();
         foreach (var item in controlService.Events)
         {
@@ -1159,47 +1249,53 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         }
     }
 
-    private Task ExecuteScenarioAsync(bool dryRun) => RunAsync(async cancellationToken =>
+    private Task ExecuteScenarioAsync(bool dryRun)
     {
-        var snapshot = SelectedFleetSession is { Session.State: SimulationSessionState.Running, Session.VehicleId: not null }
-            ? SelectedFleetSession.Session
-            : sessionManager.Current;
-        if (snapshot.State != SimulationSessionState.Running || snapshot.VehicleId is null)
+        return RunAsync(async cancellationToken =>
         {
-            throw new InvalidOperationException("Start and connect an exact simulator vehicle before running a scenario.");
-        }
+            var snapshot = SelectedFleetSession is { Session.State: SimulationSessionState.Running, Session.VehicleId: not null }
+                ? SelectedFleetSession.Session
+                : sessionManager.Current;
+            if (snapshot.State != SimulationSessionState.Running || snapshot.VehicleId is null)
+            {
+                throw new InvalidOperationException("Start and connect an exact simulator vehicle before running a scenario.");
+            }
 
-        var document = scenarioParser.Parse(ScenarioDocumentText);
-        LastScenarioReport = await scenarioRunner.RunAsync(
-            new SimulationScenarioRunRequest(
-                document,
-                snapshot.SessionId,
-                snapshot.VehicleId.Value,
-                dryRun,
-                ScenarioHazardsConfirmed),
-            cancellationToken);
-        ScenarioHazardsConfirmed = false;
-        ScenarioRunnerStatus = LastScenarioReport.Summary;
-        StatusMessage = LastScenarioReport.Summary;
-    });
+            var document = scenarioParser.Parse(ScenarioDocumentText);
+            LastScenarioReport = await scenarioRunner.RunAsync(
+                new SimulationScenarioRunRequest(
+                    document,
+                    snapshot.SessionId,
+                    snapshot.VehicleId.Value,
+                    dryRun,
+                    ScenarioHazardsConfirmed),
+                cancellationToken);
+            ScenarioHazardsConfirmed = false;
+            ScenarioRunnerStatus = LastScenarioReport.Summary;
+            StatusMessage = LastScenarioReport.Summary;
+        });
+    }
 
-    private Task ExportScenarioReportAsync(bool machineReadable) => RunAsync(async cancellationToken =>
+    private Task ExportScenarioReportAsync(bool machineReadable)
     {
-        if (LastScenarioReport is null)
+        return RunAsync(async cancellationToken =>
         {
-            throw new InvalidOperationException("Run or dry-run a scenario before exporting its report.");
-        }
+            if (LastScenarioReport is null)
+            {
+                throw new InvalidOperationException("Run or dry-run a scenario before exporting its report.");
+            }
 
-        var extension = machineReadable ? "json" : "txt";
-        var content = machineReadable
-            ? scenarioReportExporter.ToJson(LastScenarioReport)
-            : scenarioReportExporter.ToText(LastScenarioReport);
-        var path = await fileHandler.SaveTextFileAsync(
-            $"simulation-scenario-{LastScenarioReport.RunId:N}.{extension}",
-            content,
-            cancellationToken);
-        StatusMessage = path is null ? "Scenario report export cancelled." : $"Scenario report exported to {path}.";
-    });
+            var extension = machineReadable ? "json" : "txt";
+            var content = machineReadable
+                ? scenarioReportExporter.ToJson(LastScenarioReport)
+                : scenarioReportExporter.ToText(LastScenarioReport);
+            var path = await fileHandler.SaveTextFileAsync(
+                $"simulation-scenario-{LastScenarioReport.RunId:N}.{extension}",
+                content,
+                cancellationToken);
+            StatusMessage = path is null ? "Scenario report export cancelled." : $"Scenario report exported to {path}.";
+        });
+    }
 
     private void OnScenarioRunnerChanged(object? sender, SimulationScenarioRunnerChangedEventArgs args)
     {
@@ -1231,7 +1327,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
             var fields = line.Split(',', StringSplitOptions.TrimEntries);
             if (fields.Length != 4 ||
                 !int.TryParse(fields[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var index) ||
-                !Enum.TryParse<ArduPilotSerialTransport>(fields[1], ignoreCase: true, out var transport) ||
+                !Enum.TryParse<ArduPilotSerialTransport>(fields[1], true, out var transport) ||
                 !int.TryParse(fields[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out var port))
             {
                 throw new InvalidOperationException(
@@ -1299,31 +1395,31 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     }
 
     private const string ExampleScenarioJson = """
-        {
-          "schemaVersion": 1,
-          "id": "6d9f5f05-2906-4c36-af7c-0a8d6abf4d40",
-          "name": "Connected simulator check",
-          "variables": {},
-          "steps": [
-            {
-              "id": "online",
-              "kind": "waitForState",
-              "name": "Wait for exact simulator",
-              "timeoutSeconds": 10,
-              "state": "online"
-            },
-            {
-              "id": "disarmed",
-              "kind": "assertTelemetry",
-              "name": "Confirm safe disarmed state",
-              "timeoutSeconds": 5,
-              "condition": {
-                "metric": "armed",
-                "operator": "equal",
-                "expected": { "kind": "boolean", "booleanValue": false }
-              }
-            }
-          ]
-        }
-        """;
+                                               {
+                                                 "schemaVersion": 1,
+                                                 "id": "6d9f5f05-2906-4c36-af7c-0a8d6abf4d40",
+                                                 "name": "Connected simulator check",
+                                                 "variables": {},
+                                                 "steps": [
+                                                   {
+                                                     "id": "online",
+                                                     "kind": "waitForState",
+                                                     "name": "Wait for exact simulator",
+                                                     "timeoutSeconds": 10,
+                                                     "state": "online"
+                                                   },
+                                                   {
+                                                     "id": "disarmed",
+                                                     "kind": "assertTelemetry",
+                                                     "name": "Confirm safe disarmed state",
+                                                     "timeoutSeconds": 5,
+                                                     "condition": {
+                                                       "metric": "armed",
+                                                       "operator": "equal",
+                                                       "expected": { "kind": "boolean", "booleanValue": false }
+                                                     }
+                                                   }
+                                                 ]
+                                               }
+                                               """;
 }

@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation.Abstractions;
 
 /// <summary>Represents one exact local process owned by a simulator runtime.</summary>
 public interface ISimulatorProcessSession : IAsyncDisposable

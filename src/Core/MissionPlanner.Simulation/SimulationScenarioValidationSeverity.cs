@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Identifies scenario validation severity.</summary>
 public enum SimulationScenarioValidationSeverity

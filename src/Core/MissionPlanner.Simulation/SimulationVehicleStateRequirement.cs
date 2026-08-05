@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Identifies a named state used by a wait-for-state step.</summary>
 public enum SimulationVehicleStateRequirement

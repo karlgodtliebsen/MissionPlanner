@@ -1,3 +1,5 @@
+using MissionPlanner.Simulation;
+
 namespace MissionPlanner.Core.Simulation;
 
 /// <summary>Explicitly reports that a launch adapter is not installed yet.</summary>
@@ -15,7 +17,7 @@ public sealed class UnavailableSimulatorRuntime : ISimulatorRuntime
         cancellationToken.ThrowIfCancellationRequested();
         IReadOnlyList<SimulationValidationIssue> result =
         [
-            new SimulationValidationIssue(
+            new(
                 "runtime.unavailable",
                 "runtime",
                 "No simulator launch runtime is installed. ArduPilot SITL runtime support is provided by Simulation step 03.")
@@ -26,6 +28,8 @@ public sealed class UnavailableSimulatorRuntime : ISimulatorRuntime
     /// <inheritdoc />
     public Task<ISimulatorRuntimeSession> StartAsync(
         SimulatorStartRequest request,
-        CancellationToken cancellationToken = default) =>
+        CancellationToken cancellationToken = default)
+    {
         throw new NotSupportedException("No simulator launch runtime is installed.");
+    }
 }

@@ -11,6 +11,8 @@ using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Core.Vehicles.Observations;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink.Missions;
+using MissionPlanner.Simulation;
+using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Transport;
 using NSubstitute;
 
@@ -26,13 +28,10 @@ public sealed class SimulationScenarioTests
     {
         var parser = CreateParser();
         var document = Document(
-            TakeoffStep(new SimulationScenarioValue(SimulationScenarioValueKind.Number, Variable: "altitude"))) with
-        {
-            Variables = new Dictionary<string, SimulationScenarioValue>
+                TakeoffStep(new SimulationScenarioValue(SimulationScenarioValueKind.Number, Variable: "altitude"))) with
             {
-                ["altitude"] = new(SimulationScenarioValueKind.Number, NumberValue: 12)
-            }
-        };
+                Variables = new Dictionary<string, SimulationScenarioValue> { ["altitude"] = new(SimulationScenarioValueKind.Number, NumberValue: 12) }
+            };
 
         var json = parser.Serialize(document);
         parser.Parse(json).Should().BeEquivalentTo(document);
@@ -67,15 +66,10 @@ public sealed class SimulationScenarioTests
         var fixture = CreateFixture();
         var document = Document(
             Step("mode", SimulationScenarioStepKind.SetMode) with { Mode = "Guided" },
-            Step("fault", SimulationScenarioStepKind.InjectFault) with
-            {
-                ControlKey = "rc-failure",
-                Value = Number(1),
-                DurationSeconds = 5
-            });
+            Step("fault", SimulationScenarioStepKind.InjectFault) with { ControlKey = "rc-failure", Value = Number(1), DurationSeconds = 5 });
 
         var report = await fixture.Runner.RunAsync(
-            Request(document, dryRun: true, confirmed: false),
+            Request(document, true, false),
             TestContext.Current.CancellationToken);
 
         report.Result.Should().Be(SimulationScenarioRunResult.DryRun);
@@ -99,12 +93,7 @@ public sealed class SimulationScenarioTests
             TakeoffStep(Number(10)),
             Step("upload", SimulationScenarioStepKind.UploadMission) with { MissionItems = [MissionItem()] },
             Step("start", SimulationScenarioStepKind.StartMission),
-            Step("inject", SimulationScenarioStepKind.InjectFault) with
-            {
-                ControlKey = "rc-failure",
-                Value = Number(1),
-                DurationSeconds = 5
-            },
+            Step("inject", SimulationScenarioStepKind.InjectFault) with { ControlKey = "rc-failure", Value = Number(1), DurationSeconds = 5 },
             Step("clear", SimulationScenarioStepKind.ClearFault) with { ControlKey = "rc-failure" },
             Step("land", SimulationScenarioStepKind.Land),
             Step("assert", SimulationScenarioStepKind.AssertTelemetry) with
@@ -112,11 +101,11 @@ public sealed class SimulationScenarioTests
                 Condition = new SimulationTelemetryCondition(
                     SimulationTelemetryMetric.Online,
                     SimulationComparisonOperator.Equal,
-                    new SimulationScenarioValue(SimulationScenarioValueKind.Boolean, BooleanValue: true))
+                    new SimulationScenarioValue(SimulationScenarioValueKind.Boolean, true))
             });
 
         var report = await fixture.Runner.RunAsync(
-            Request(document, dryRun: false, confirmed: true),
+            Request(document, false, true),
             TestContext.Current.CancellationToken);
 
         report.Result.Should().Be(SimulationScenarioRunResult.Succeeded);
@@ -128,7 +117,7 @@ public sealed class SimulationScenarioTests
         await fixture.Missions.Received(1).UploadItemsAsync(
             vehicleId,
             Arg.Is<IReadOnlyList<MavLinkMissionItem>>(items => ContainsSingleFirstSequence(items)),
-            MissionPlanner.Core.Missions.Models.MissionPlanType.FlightMission,
+            Missions.Models.MissionPlanType.FlightMission,
             null,
             Arg.Any<CancellationToken>());
         await fixture.Controls.Received(1).ApplyAsync("rc-failure", 1, TimeSpan.FromSeconds(5), true, Arg.Any<CancellationToken>());
@@ -151,7 +140,7 @@ public sealed class SimulationScenarioTests
             Step("land", SimulationScenarioStepKind.Land));
 
         var report = await fixture.Runner.RunAsync(
-            Request(document, dryRun: false, confirmed: true),
+            Request(document, false, true),
             TestContext.Current.CancellationToken);
 
         report.Result.Should().Be(SimulationScenarioRunResult.Failed);
@@ -167,13 +156,10 @@ public sealed class SimulationScenarioTests
     {
         var fixture = CreateFixture();
         var document = Document(
-            Step("armed", SimulationScenarioStepKind.WaitForState, timeoutSeconds: 1) with
-            {
-                State = SimulationVehicleStateRequirement.Armed
-            });
+            Step("armed", SimulationScenarioStepKind.WaitForState, 1) with { State = SimulationVehicleStateRequirement.Armed });
 
         var report = await fixture.Runner.RunAsync(
-            Request(document, dryRun: false, confirmed: false),
+            Request(document, false, false),
             TestContext.Current.CancellationToken);
 
         report.Result.Should().Be(SimulationScenarioRunResult.Failed);
@@ -186,14 +172,11 @@ public sealed class SimulationScenarioTests
     {
         var fixture = CreateFixture();
         var document = Document(
-            Step("armed", SimulationScenarioStepKind.WaitForState, timeoutSeconds: 10) with
-            {
-                State = SimulationVehicleStateRequirement.Armed
-            });
+            Step("armed", SimulationScenarioStepKind.WaitForState, 10) with { State = SimulationVehicleStateRequirement.Armed });
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
         cancellation.CancelAfter(TimeSpan.FromMilliseconds(50));
 
-        var report = await fixture.Runner.RunAsync(Request(document, dryRun: false, confirmed: false), cancellation.Token);
+        var report = await fixture.Runner.RunAsync(Request(document, false, false), cancellation.Token);
 
         report.Result.Should().Be(SimulationScenarioRunResult.Canceled);
         report.Steps.Should().ContainSingle().Which.Result.Should().Be(SimulationScenarioStepResult.Canceled);
@@ -217,7 +200,7 @@ public sealed class SimulationScenarioTests
         });
         var document = Document(
             Step("arm", SimulationScenarioStepKind.Arm),
-            Step("altitude", SimulationScenarioStepKind.WaitCondition, timeoutSeconds: 10) with
+            Step("altitude", SimulationScenarioStepKind.WaitCondition, 10) with
             {
                 Condition = new SimulationTelemetryCondition(
                     SimulationTelemetryMetric.RelativeAltitudeMeters,
@@ -227,7 +210,7 @@ public sealed class SimulationScenarioTests
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
         cancellation.CancelAfter(TimeSpan.FromMilliseconds(80));
 
-        var report = await fixture.Runner.RunAsync(Request(document, dryRun: false, confirmed: true), cancellation.Token);
+        var report = await fixture.Runner.RunAsync(Request(document, false, true), cancellation.Token);
 
         report.Result.Should().Be(SimulationScenarioRunResult.Canceled);
         await fixture.Commands.Received(1).DisarmAsync(vehicleId, true, CancellationToken.None);
@@ -246,7 +229,7 @@ public sealed class SimulationScenarioTests
             Step("arm", SimulationScenarioStepKind.Arm));
 
         var running = fixture.Runner.RunAsync(
-            Request(document, dryRun: false, confirmed: true),
+            Request(document, false, true),
             TestContext.Current.CancellationToken);
         await WaitUntilAsync(() => fixture.Runner.Current.StepId == "mode", TimeSpan.FromSeconds(2));
         fixture.Runner.Pause().Should().BeTrue();
@@ -264,14 +247,9 @@ public sealed class SimulationScenarioTests
     [Fact]
     public async Task ValidationRejectsWrongVehicleAndMissingCapability()
     {
-        var fixture = CreateFixture(controlAvailable: false);
+        var fixture = CreateFixture(false);
         var document = Document(
-            Step("fault", SimulationScenarioStepKind.InjectFault) with
-            {
-                ControlKey = "gps-failure",
-                Value = Number(1),
-                DurationSeconds = 5
-            });
+            Step("fault", SimulationScenarioStepKind.InjectFault) with { ControlKey = "gps-failure", Value = Number(1), DurationSeconds = 5 });
 
         var wrongTarget = await fixture.Runner.ValidateAsync(
             document,
@@ -293,8 +271,10 @@ public sealed class SimulationScenarioTests
     private static readonly VehicleId vehicleId = new(1, 1);
     private static readonly Guid sessionId = Guid.Parse("7d1180e5-c227-433b-a395-e243366780fb");
 
-    private static ISimulationScenarioParser CreateParser() =>
-        new SimulationScenarioParser(Options.Create(new SimulationScenarioOptions()));
+    private static ISimulationScenarioParser CreateParser()
+    {
+        return new SimulationScenarioParser(Options.Create(new SimulationScenarioOptions()));
+    }
 
     private static ScenarioFixture CreateFixture(bool controlAvailable = true)
     {
@@ -302,45 +282,39 @@ public sealed class SimulationScenarioTests
         var clock = Substitute.For<IDateTimeProvider>();
         clock.UtcNow.Returns(_ => DateTimeOffset.UtcNow);
         var state = new VehicleState(
-            vehicleId,
-            0,
-            2,
-            3,
-            0,
-            4,
-            3,
-            VehicleConnectionState.Online,
-            now,
-            VehicleMode.Stabilize,
-            false,
-            55,
-            12,
-            10,
-            0,
-            0,
-            0,
-            90,
-            12) with
-        {
-            Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
-                LandedState: VehicleLandedState.OnGround, ObservedAt: now),
-            Position = VehiclePositionState.Empty with
+                vehicleId,
+                0,
+                2,
+                3,
+                0,
+                4,
+                3,
+                VehicleConnectionState.Online,
+                now,
+                VehicleMode.Stabilize,
+                false,
+                55,
+                12,
+                10,
+                0,
+                0,
+                0,
+                90,
+                12) with
             {
-                LatitudeDegrees = 55,
-                LongitudeDegrees = 12,
-                AltitudeMslMeters = 10,
-                RelativeAltitudeMeters = 0,
-                ObservedAt = now
-            },
-            Motion = VehicleMotionState.Empty with { GroundSpeedMetersPerSecond = 0, ObservedAt = now }
-        };
-        state = state with
-        {
-            Identity = state.Identity with
-            {
-                Firmware = state.Identity.Firmware with { Family = FirmwareFamily.ArduCopter }
-            }
-        };
+                Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
+                    LandedState: VehicleLandedState.OnGround, ObservedAt: now),
+                Position = VehiclePositionState.Empty with
+                {
+                    LatitudeDegrees = 55,
+                    LongitudeDegrees = 12,
+                    AltitudeMslMeters = 10,
+                    RelativeAltitudeMeters = 0,
+                    ObservedAt = now
+                },
+                Motion = VehicleMotionState.Empty with { GroundSpeedMetersPerSecond = 0, ObservedAt = now }
+            };
+        state = state with { Identity = state.Identity with { Firmware = state.Identity.Firmware with { Family = FirmwareFamily.ArduCopter } } };
         var session = new VehicleSession(state, new TransportEndPoint("scenario-test"), clock);
         var registry = Substitute.For<IVehicleRegistry>();
         registry.GetRequired(vehicleId).Returns(session);
@@ -379,16 +353,15 @@ public sealed class SimulationScenarioTests
                 Arg.Any<CancellationToken>())
             .Returns(upload);
         var controls = Substitute.For<ISimulationControlService>();
-        var descriptor = new SimulationControlCatalog().Controls.Single(item => item.Key == "rc-failure") with
-        {
-            Key = controlAvailable ? "rc-failure" : "gps-failure"
-        };
+        var descriptor = new SimulationControlCatalog().Controls.Single(item => item.Key == "rc-failure") with { Key = controlAvailable ? "rc-failure" : "gps-failure" };
         IReadOnlyList<SimulationControlCapability> capabilities =
-        [new(descriptor, controlAvailable, controlAvailable ? "SIM_RC_FAIL" : null,
-            controlAvailable ? MissionPlanner.MavLink.Parameters.MavParamType.Real32 : null,
-            controlAvailable ? 0 : null,
-            controlAvailable ? "Available on exact target." : "Required parameter is absent.",
-            null)];
+        [
+            new(descriptor, controlAvailable, controlAvailable ? "SIM_RC_FAIL" : null,
+                controlAvailable ? MavLink.Parameters.MavParamType.Real32 : null,
+                controlAvailable ? 0 : null,
+                controlAvailable ? "Available on exact target." : "Required parameter is absent.",
+                null)
+        ];
         controls.DiscoverAsync(Arg.Any<CancellationToken>()).Returns(capabilities);
         controls.ApplyAsync(Arg.Any<string>(), Arg.Any<double>(), Arg.Any<TimeSpan?>(), Arg.Any<bool>(), Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask);
@@ -411,35 +384,51 @@ public sealed class SimulationScenarioTests
     private static SimulationScenarioRunRequest Request(
         SimulationScenarioDocument document,
         bool dryRun,
-        bool confirmed) =>
-        new(document, sessionId, vehicleId, dryRun, confirmed);
+        bool confirmed)
+    {
+        return new SimulationScenarioRunRequest(document, sessionId, vehicleId, dryRun, confirmed);
+    }
 
-    private static SimulationScenarioDocument Document(params SimulationScenarioStep[] steps) =>
-        new(1, Guid.Parse("011bb91e-a8b5-4430-aa4a-3a0711dc8163"), "Scenario test",
+    private static SimulationScenarioDocument Document(params SimulationScenarioStep[] steps)
+    {
+        return new SimulationScenarioDocument(1, Guid.Parse("011bb91e-a8b5-4430-aa4a-3a0711dc8163"), "Scenario test",
             new Dictionary<string, SimulationScenarioValue>(), steps);
+    }
 
     private static SimulationScenarioStep Step(
         string id,
         SimulationScenarioStepKind kind,
-        int timeoutSeconds = 2) =>
-        new(id, kind, id, timeoutSeconds);
+        int timeoutSeconds = 2)
+    {
+        return new SimulationScenarioStep(id, kind, id, timeoutSeconds);
+    }
 
-    private static SimulationScenarioStep TakeoffStep(SimulationScenarioValue value) =>
-        Step("takeoff", SimulationScenarioStepKind.Takeoff) with { Value = value };
+    private static SimulationScenarioStep TakeoffStep(SimulationScenarioValue value)
+    {
+        return Step("takeoff", SimulationScenarioStepKind.Takeoff) with { Value = value };
+    }
 
-    private static SimulationScenarioValue Number(double value) =>
-        new(SimulationScenarioValueKind.Number, NumberValue: value);
+    private static SimulationScenarioValue Number(double value)
+    {
+        return new SimulationScenarioValue(SimulationScenarioValueKind.Number, NumberValue: value);
+    }
 
-    private static SimulationScenarioMissionItem MissionItem() =>
-        new(3, 16, false, true, 0, 0, 0, 0, 550000000, 120000000, 10);
+    private static SimulationScenarioMissionItem MissionItem()
+    {
+        return new SimulationScenarioMissionItem(3, 16, false, true, 0, 0, 0, 0, 550000000, 120000000, 10);
+    }
 
-    private static bool ContainsSingleFirstSequence(IReadOnlyList<MavLinkMissionItem>? items) =>
-        items?.Count == 1 && items[0].Sequence == 0;
+    private static bool ContainsSingleFirstSequence(IReadOnlyList<MavLinkMissionItem>? items)
+    {
+        return items?.Count == 1 && items[0].Sequence == 0;
+    }
 
     private static VehicleCommandResponse Response(
         VehicleCommandResult result = VehicleCommandResult.Accepted,
-        string message = "MAVLink ACK accepted.") =>
-        new(vehicleId, result, DateTimeOffset.UtcNow, message);
+        string message = "MAVLink ACK accepted.")
+    {
+        return new VehicleCommandResponse(vehicleId, result, DateTimeOffset.UtcNow, message);
+    }
 
     private static async Task WaitUntilAsync(Func<bool> condition, TimeSpan timeout)
     {

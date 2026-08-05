@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Identifies overall scenario execution result.</summary>
 public enum SimulationScenarioRunResult

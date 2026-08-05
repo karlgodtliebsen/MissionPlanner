@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Describes a named launch-location preset.</summary>
 /// <param name="Key">Stable preset key.</param>

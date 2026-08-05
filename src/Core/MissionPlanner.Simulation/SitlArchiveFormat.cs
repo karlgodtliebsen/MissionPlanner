@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Identifies a verified SITL package archive format.</summary>
 public enum SitlArchiveFormat

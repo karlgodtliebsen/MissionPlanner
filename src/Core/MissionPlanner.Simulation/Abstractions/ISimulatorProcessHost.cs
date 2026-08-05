@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation.Abstractions;
 
 /// <summary>Starts an exact local process without exposing process APIs to Core.</summary>
 public interface ISimulatorProcessHost

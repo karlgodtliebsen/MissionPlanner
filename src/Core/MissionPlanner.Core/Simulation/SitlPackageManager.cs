@@ -1,4 +1,4 @@
-using System.Formats.Tar;
+﻿using System.Formats.Tar;
 using System.Globalization;
 using System.IO.Compression;
 using System.Security.Cryptography;
@@ -6,6 +6,8 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Simulation;
+using MissionPlanner.Simulation.Abstractions;
 
 namespace MissionPlanner.Core.Simulation;
 
@@ -13,10 +15,7 @@ namespace MissionPlanner.Core.Simulation;
 public sealed class SitlPackageManager : ISitlPackageManager
 {
     private const string MarkerFileName = "installation.json";
-    private static readonly JsonSerializerOptions jsonOptions = new(JsonSerializerDefaults.Web)
-    {
-        WriteIndented = true
-    };
+    private static readonly JsonSerializerOptions jsonOptions = new(JsonSerializerDefaults.Web) { WriteIndented = true };
     private readonly IHttpClientFactory httpClientFactory;
     private readonly ISitlCachePathProvider cachePathProvider;
     private readonly SitlManifestOptions options;
@@ -282,7 +281,7 @@ public sealed class SitlPackageManager : ISitlPackageManager
             FileOptions.Asynchronous | FileOptions.SequentialScan);
         if (release.ArchiveFormat == SitlArchiveFormat.Zip)
         {
-            using var zip = new ZipArchive(archive, ZipArchiveMode.Read, leaveOpen: true);
+            using var zip = new ZipArchive(archive, ZipArchiveMode.Read, true);
             long extracted = 0;
             foreach (var entry in zip.Entries)
             {
@@ -312,8 +311,8 @@ public sealed class SitlPackageManager : ISitlPackageManager
             return;
         }
 
-        await using var gzip = new GZipStream(archive, CompressionMode.Decompress, leaveOpen: true);
-        using var tar = new TarReader(gzip, leaveOpen: true);
+        await using var gzip = new GZipStream(archive, CompressionMode.Decompress, true);
+        using var tar = new TarReader(gzip, true);
         long total = 0;
         TarEntry? tarEntry;
         while ((tarEntry = tar.GetNextEntry()) is not null)
@@ -429,7 +428,7 @@ public sealed class SitlPackageManager : ISitlPackageManager
     private static void EnsureUnderRoot(string root, string path)
     {
         var fullRoot = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) +
-            Path.DirectorySeparatorChar;
+                       Path.DirectorySeparatorChar;
         var fullPath = Path.GetFullPath(path);
         var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
         if (!fullPath.StartsWith(fullRoot, comparison))
@@ -523,8 +522,10 @@ public sealed class SitlPackageManager : ISitlPackageManager
         return Convert.ToHexString(digest).ToLower(CultureInfo.InvariantCulture);
     }
 
-    private static bool HashMatches(string computed, string expected) =>
-        string.Equals(computed, expected, StringComparison.OrdinalIgnoreCase);
+    private static bool HashMatches(string computed, string expected)
+    {
+        return string.Equals(computed, expected, StringComparison.OrdinalIgnoreCase);
+    }
 
     private sealed record CachedInstallationMarker(
         string CacheKey,

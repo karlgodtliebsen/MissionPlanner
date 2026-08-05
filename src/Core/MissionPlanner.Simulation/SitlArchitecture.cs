@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Identifies a supported SITL CPU architecture.</summary>
 public enum SitlArchitecture

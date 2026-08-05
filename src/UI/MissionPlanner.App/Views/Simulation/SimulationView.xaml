@@ -5,6 +5,7 @@
                             xmlns:simulation="clr-namespace:MissionPlanner.Core.Simulation;assembly=MissionPlanner.Core"
                             xmlns:vm="clr-namespace:MissionPlanner.App.Views.Simulation"
                             xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                            xmlns:simulation1="clr-namespace:MissionPlanner.Simulation;assembly=MissionPlanner.Simulation"
                             x:Class="MissionPlanner.App.Views.Simulation.SimulationView"
                             x:DataType="vm:SimulationViewModel"
                             Title="Simulation">
@@ -296,7 +297,7 @@
                             <Label Text="Runtime output will appear here." Padding="12" />
                         </CollectionView.EmptyView>
                         <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="simulation:SimulatorOutputLine">
+                            <DataTemplate x:DataType="simulation1:SimulatorOutputLine">
                                 <Grid Padding="4" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
                                     <Label Text="{Binding Timestamp, StringFormat='{}{0:HH:mm:ss}'}" />
                                     <Label Grid.Column="1" Text="{Binding Stream}" FontAttributes="Bold" />

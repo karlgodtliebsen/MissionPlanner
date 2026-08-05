@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Defines a schema-versioned declarative simulation scenario.</summary>
 /// <param name="SchemaVersion">Scenario schema version; currently 1.</param>

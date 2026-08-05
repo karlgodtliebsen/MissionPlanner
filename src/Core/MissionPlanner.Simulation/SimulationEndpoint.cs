@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Describes one named simulator endpoint.</summary>
 /// <param name="Name">Stable endpoint role, such as MAVLink or console.</param>

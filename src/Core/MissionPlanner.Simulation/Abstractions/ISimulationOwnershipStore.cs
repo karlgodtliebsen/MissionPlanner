@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+﻿namespace MissionPlanner.Simulation.Abstractions;
 
 /// <summary>Persists and recovers exact process ownership markers.</summary>
 public interface ISimulationOwnershipStore

@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Provides scenario-runner state-change event data.</summary>
 /// <param name="snapshot">New runner state.</param>

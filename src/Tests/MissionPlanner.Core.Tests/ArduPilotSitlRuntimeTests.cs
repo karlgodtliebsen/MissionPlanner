@@ -1,10 +1,12 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
+using MissionPlanner.Simulation;
+using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Transport;
 using NSubstitute;
 
@@ -120,10 +122,7 @@ public sealed class ArduPilotSitlRuntimeTests
             service,
             registry,
             Substitute.For<ILogger<SimulatorVehicleConnection>>());
-        var profile = Profile() with
-        {
-            LaunchSettings = ArduPilotLaunchSettings.Default with { SystemId = 7 }
-        };
+        var profile = Profile() with { LaunchSettings = ArduPilotLaunchSettings.Default with { SystemId = 7 } };
 
         var connected = await connection.ConnectAsync(
             profile,
@@ -297,17 +296,19 @@ public sealed class ArduPilotSitlRuntimeTests
         return new VehicleId(1, 1);
     }
 
-    private static SimulatorProfile Profile() => SimulatorProfile.CreateDefault() with
+    private static SimulatorProfile Profile()
     {
-        Binary = new SimulatorBinaryReference("4.6.0", Path.GetFullPath("arducopter-test.exe"), "test"),
-        LaunchSettings = ArduPilotLaunchSettings.Default
-    };
+        return SimulatorProfile.CreateDefault() with { Binary = new SimulatorBinaryReference("4.6.0", Path.GetFullPath("arducopter-test.exe"), "test"), LaunchSettings = ArduPilotLaunchSettings.Default };
+    }
 
-    private static IReadOnlyList<SimulationEndpoint> Endpoints(int mavLinkPort, int consolePort) =>
-    [
-        new SimulationEndpoint("MAVLink", SimulationEndpointTransport.Udp, "127.0.0.1", mavLinkPort),
-        new SimulationEndpoint("Console", SimulationEndpointTransport.Tcp, "127.0.0.1", consolePort)
-    ];
+    private static IReadOnlyList<SimulationEndpoint> Endpoints(int mavLinkPort, int consolePort)
+    {
+        return
+        [
+            new SimulationEndpoint("MAVLink", SimulationEndpointTransport.Udp, "127.0.0.1", mavLinkPort),
+            new SimulationEndpoint("Console", SimulationEndpointTransport.Tcp, "127.0.0.1", consolePort)
+        ];
+    }
 
     private static VehicleSession Session(VehicleId vehicleId, FirmwareFamily family)
     {
@@ -332,13 +333,7 @@ public sealed class ArduPilotSitlRuntimeTests
             null,
             null,
             null);
-        state = state with
-        {
-            Identity = state.Identity with
-            {
-                Firmware = state.Identity.Firmware with { Family = family }
-            }
-        };
+        state = state with { Identity = state.Identity with { Firmware = state.Identity.Firmware with { Family = family } } };
         var clock = Substitute.For<IDateTimeProvider>();
         clock.UtcNow.Returns(now);
         return new VehicleSession(state, new TransportEndPoint("test"), clock);
@@ -375,12 +370,17 @@ public sealed class ArduPilotSitlRuntimeTests
             return ValueTask.CompletedTask;
         }
 
-        public void WriteError(string message) => OutputReceived?.Invoke(
-            this,
-            new SimulatorOutputLine(DateTimeOffset.UtcNow, SimulatorOutputStream.StandardError, message));
+        public void WriteError(string message)
+        {
+            OutputReceived?.Invoke(
+                this,
+                new SimulatorOutputLine(DateTimeOffset.UtcNow, SimulatorOutputStream.StandardError, message));
+        }
 
-        public void Exit(int exitCode, string message) =>
+        public void Exit(int exitCode, string message)
+        {
             completion.TrySetResult(new SimulatorRuntimeExit(exitCode, false, message));
+        }
     }
 
     private sealed class FakePortLease(

@@ -1,4 +1,4 @@
-using System.IO.Compression;
+﻿using System.IO.Compression;
 using System.Net;
 using System.Security.Cryptography;
 using FluentAssertions;
@@ -7,6 +7,8 @@ using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Simulation;
+using MissionPlanner.Simulation.Abstractions;
 using NSubstitute;
 
 namespace MissionPlanner.Core.Tests;
@@ -116,13 +118,7 @@ public sealed class SitlInstallationTests
         (await manager.DiscoverCachedAsync(TestContext.Current.CancellationToken))
             .Select(item => item.InstallationId)
             .Should().BeEquivalentTo(first.InstallationId, third.InstallationId);
-        var external = first with
-        {
-            InstallationId = "external-test",
-            Source = SitlInstallationSource.External,
-            CacheKey = null,
-            ExecutablePath = Path.Combine(cache.Path, "user-owned.exe")
-        };
+        var external = first with { InstallationId = "external-test", Source = SitlInstallationSource.External, CacheKey = null, ExecutablePath = Path.Combine(cache.Path, "user-owned.exe") };
         await FluentActions.Awaiting(() => manager.RemoveAsync(external, TestContext.Current.CancellationToken))
             .Should().ThrowAsync<InvalidOperationException>().WithMessage("*cannot be removed*");
     }
@@ -200,15 +196,7 @@ public sealed class SitlInstallationTests
             profile with { Binary = profile.Binary with { InstallationId = "cached-missing" } },
             [installation]).State.Should().Be(SitlInstallationState.Missing);
         service.Resolve(
-            profile with
-            {
-                Binary = profile.Binary with
-                {
-                    InstallationId = "cached-missing",
-                    Version = "9.9.9",
-                    ExecutablePath = Path.GetFullPath("missing.exe")
-                }
-            },
+            profile with { Binary = profile.Binary with { InstallationId = "cached-missing", Version = "9.9.9", ExecutablePath = Path.GetFullPath("missing.exe") } },
             [installation]).State.Should().Be(SitlInstallationState.Missing);
     }
 
@@ -219,8 +207,10 @@ public sealed class SitlInstallationTests
         return service;
     }
 
-    private static SitlPlatformCapability Capability() =>
-        new(SitlPlatform.Windows, SitlArchitecture.X64, true, "Supported test platform.");
+    private static SitlPlatformCapability Capability()
+    {
+        return new SitlPlatformCapability(SitlPlatform.Windows, SitlArchitecture.X64, true, "Supported test platform.");
+    }
 
     private static SitlManifestEntry Release(
         string version,
@@ -229,8 +219,9 @@ public sealed class SitlInstallationTests
         SitlPlatform platform = SitlPlatform.Windows,
         SitlArchitecture architecture = SitlArchitecture.X64,
         string? sha256 = null,
-        DateTimeOffset? publishedAt = null) =>
-        new(
+        DateTimeOffset? publishedAt = null)
+    {
+        return new SitlManifestEntry(
             family,
             platform,
             architecture,
@@ -241,6 +232,7 @@ public sealed class SitlInstallationTests
             SitlArchiveFormat.Zip,
             "bin/arducopter.exe",
             publishedAt ?? new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero));
+    }
 
     private static SitlPackageManager PackageManager(string cachePath, byte[] archive)
     {
@@ -259,7 +251,7 @@ public sealed class SitlInstallationTests
     private static byte[] Zip(params (string Path, string Content)[] entries)
     {
         using var buffer = new MemoryStream();
-        using (var archive = new ZipArchive(buffer, ZipArchiveMode.Create, leaveOpen: true))
+        using (var archive = new ZipArchive(buffer, ZipArchiveMode.Create, true))
         {
             foreach (var item in entries)
             {
@@ -272,7 +264,10 @@ public sealed class SitlInstallationTests
         return buffer.ToArray();
     }
 
-    private static string Hash(byte[] value) => Convert.ToHexString(SHA256.HashData(value)).ToLowerInvariant();
+    private static string Hash(byte[] value)
+    {
+        return Convert.ToHexString(SHA256.HashData(value)).ToLowerInvariant();
+    }
 
     private sealed class ArchiveHandler(byte[] archive) : HttpMessageHandler
     {
@@ -281,11 +276,7 @@ public sealed class SitlInstallationTests
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new ByteArrayContent(archive),
-                RequestMessage = request
-            });
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(archive), RequestMessage = request });
         }
     }
 
@@ -293,7 +284,10 @@ public sealed class SitlInstallationTests
     {
         public List<double> Values { get; } = [];
 
-        public void Report(double value) => Values.Add(value);
+        public void Report(double value)
+        {
+            Values.Add(value);
+        }
     }
 
     private sealed class TestCache : IDisposable
@@ -314,7 +308,7 @@ public sealed class SitlInstallationTests
         {
             if (Directory.Exists(Path))
             {
-                Directory.Delete(Path, recursive: true);
+                Directory.Delete(Path, true);
             }
         }
     }

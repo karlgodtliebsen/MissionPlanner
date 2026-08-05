@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Contains one timestamped simulator output line.</summary>
 /// <param name="Timestamp">Capture time.</param>

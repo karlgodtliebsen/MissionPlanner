@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Library.DateTime.Domain;
+using MissionPlanner.Simulation;
 
 namespace MissionPlanner.Core.Simulation;
 
@@ -13,10 +14,13 @@ public sealed class SimulationSessionManagerFactory(
     ILoggerFactory loggerFactory) : ISimulationSessionManagerFactory
 {
     /// <inheritdoc />
-    public ISimulationSessionManager Create() => new SimulationSessionManager(
-        profileValidator,
-        runtime,
-        clock,
-        options,
-        loggerFactory.CreateLogger<SimulationSessionManager>());
+    public ISimulationSessionManager Create()
+    {
+        return new SimulationSessionManager(
+            profileValidator,
+            runtime,
+            clock,
+            options,
+            loggerFactory.CreateLogger<SimulationSessionManager>());
+    }
 }

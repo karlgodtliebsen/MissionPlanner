@@ -1,3 +1,5 @@
+using MissionPlanner.Simulation;
+
 namespace MissionPlanner.Core.Simulation;
 
 /// <summary>Defines a process-, container-, or remote-neutral simulator runtime adapter.</summary>

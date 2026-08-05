@@ -30,6 +30,8 @@ using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.MavLink.Services.Abstractions;
+using MissionPlanner.Simulation;
+using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Transport;
 using MissionPlanner.Transport.Abstractions;
 

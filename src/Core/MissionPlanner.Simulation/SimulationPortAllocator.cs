@@ -1,4 +1,6 @@
-﻿namespace MissionPlanner.Core.Simulation;
+﻿using MissionPlanner.Simulation.Abstractions;
+
+namespace MissionPlanner.Simulation;
 
 /// <summary>Reserves endpoint identities across concurrently owned simulator sessions.</summary>
 public sealed class SimulationPortAllocator(ISimulatorHostEnvironment hostEnvironment) : ISimulationPortAllocator

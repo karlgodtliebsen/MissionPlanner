@@ -1,5 +1,6 @@
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Simulation;
 
 namespace MissionPlanner.Core.Simulation;
 

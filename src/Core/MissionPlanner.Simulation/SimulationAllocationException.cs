@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Signals a deterministic resource-allocation conflict.</summary>
 public sealed class SimulationAllocationException : Exception

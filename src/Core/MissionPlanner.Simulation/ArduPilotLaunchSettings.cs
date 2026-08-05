@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Configures typed ArduPilot SITL launch behavior.</summary>
 /// <param name="Instance">Zero-based SITL instance number.</param>

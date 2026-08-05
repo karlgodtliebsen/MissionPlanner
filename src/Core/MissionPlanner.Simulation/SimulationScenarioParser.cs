@@ -1,10 +1,11 @@
-using System.Text;
+﻿using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Simulation.Abstractions;
 
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Parses the closed, versioned JSON scenario schema without code execution.</summary>
 public sealed partial class SimulationScenarioParser(IOptions<SimulationScenarioOptions> options) : ISimulationScenarioParser
@@ -25,7 +26,7 @@ public sealed partial class SimulationScenarioParser(IOptions<SimulationScenario
         try
         {
             document = JsonSerializer.Deserialize<SimulationScenarioDocument>(json, jsonOptions) ??
-                throw new InvalidDataException("The scenario document was empty.");
+                       throw new InvalidDataException("The scenario document was empty.");
         }
         catch (JsonException exception)
         {
@@ -74,7 +75,7 @@ public sealed partial class SimulationScenarioParser(IOptions<SimulationScenario
                     Error(issues, $"variables.{variable.Key}", "Variable names must use 1–64 letters, digits, underscores, or hyphens.");
                 }
 
-                ValidateValue(variable.Value, $"variables.{variable.Key}", document.Variables, allowReference: false, issues);
+                ValidateValue(variable.Value, $"variables.{variable.Key}", document.Variables, false, issues);
             }
         }
 
@@ -137,7 +138,7 @@ public sealed partial class SimulationScenarioParser(IOptions<SimulationScenario
                 Error(issues, $"{path}.mode", "SetMode requires a firmware mode name.");
                 break;
             case SimulationScenarioStepKind.Takeoff:
-                ValidateValue(step.Value, $"{path}.value", variables, allowReference: true, issues, SimulationScenarioValueKind.Number);
+                ValidateValue(step.Value, $"{path}.value", variables, true, issues, SimulationScenarioValueKind.Number);
                 break;
             case SimulationScenarioStepKind.UploadMission:
                 ValidateMission(step.MissionItems, path, issues);
@@ -151,11 +152,12 @@ public sealed partial class SimulationScenarioParser(IOptions<SimulationScenario
                     Error(issues, $"{path}.controlKey", "InjectFault requires a documented control key.");
                 }
 
-                ValidateValue(step.Value, $"{path}.value", variables, allowReference: true, issues, SimulationScenarioValueKind.Number);
+                ValidateValue(step.Value, $"{path}.value", variables, true, issues, SimulationScenarioValueKind.Number);
                 if (step.DurationSeconds is < 1 or > 3600)
                 {
                     Error(issues, $"{path}.durationSeconds", "InjectFault requires a duration from 1 to 3600 seconds.");
                 }
+
                 break;
             case SimulationScenarioStepKind.ClearFault when string.IsNullOrWhiteSpace(step.ControlKey):
                 Error(issues, $"{path}.controlKey", "ClearFault requires a documented control key.");
@@ -206,15 +208,15 @@ public sealed partial class SimulationScenarioParser(IOptions<SimulationScenario
         {
             SimulationTelemetryMetric.Online or SimulationTelemetryMetric.Armed => SimulationScenarioValueKind.Boolean,
             SimulationTelemetryMetric.Mode or SimulationTelemetryMetric.LandedState or SimulationTelemetryMetric.GpsFixType => SimulationScenarioValueKind.Text,
-            _ => SimulationScenarioValueKind.Number
+            var _ => SimulationScenarioValueKind.Number
         };
-        ValidateValue(condition.Expected, $"{path}.condition.expected", variables, allowReference: true, issues, expectedKind);
+        ValidateValue(condition.Expected, $"{path}.condition.expected", variables, true, issues, expectedKind);
         if (expectedKind != SimulationScenarioValueKind.Number && condition.Operator is not (SimulationComparisonOperator.Equal or SimulationComparisonOperator.NotEqual))
         {
             Error(issues, $"{path}.condition.operator", "Boolean and text telemetry support only Equal or NotEqual.");
         }
 
-        if (condition.Tolerance is < 0 || condition.Tolerance is { } tolerance && !double.IsFinite(tolerance))
+        if (condition.Tolerance is < 0 || (condition.Tolerance is { } tolerance && !double.IsFinite(tolerance)))
         {
             Error(issues, $"{path}.condition.tolerance", "Tolerance must be a finite non-negative number.");
         }
@@ -267,7 +269,7 @@ public sealed partial class SimulationScenarioParser(IOptions<SimulationScenario
             SimulationScenarioValueKind.Boolean => value.BooleanValue is not null && value.NumberValue is null && value.TextValue is null,
             SimulationScenarioValueKind.Number => value.NumberValue is { } number && double.IsFinite(number) && value.BooleanValue is null && value.TextValue is null,
             SimulationScenarioValueKind.Text => !string.IsNullOrWhiteSpace(value.TextValue) && value.TextValue.Length <= 200 && value.BooleanValue is null && value.NumberValue is null,
-            _ => false
+            var _ => false
         };
         if (!valid)
         {
@@ -275,17 +277,15 @@ public sealed partial class SimulationScenarioParser(IOptions<SimulationScenario
         }
     }
 
-    private static void Error(ICollection<SimulationScenarioValidationIssue> issues, string path, string message) =>
+    private static void Error(ICollection<SimulationScenarioValidationIssue> issues, string path, string message)
+    {
         issues.Add(new SimulationScenarioValidationIssue(SimulationScenarioValidationSeverity.Error, path, message));
+    }
 
     private static JsonSerializerOptions CreateOptions()
     {
-        var result = new JsonSerializerOptions(JsonSerializerDefaults.Web)
-        {
-            WriteIndented = true,
-            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
-        };
-        result.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase, allowIntegerValues: false));
+        var result = new JsonSerializerOptions(JsonSerializerDefaults.Web) { WriteIndented = true, UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow };
+        result.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase, false));
         return result;
     }
 

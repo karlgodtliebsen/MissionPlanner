@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Contains platform-neutral local process start settings.</summary>
 /// <param name="ExecutablePath">Absolute executable path.</param>

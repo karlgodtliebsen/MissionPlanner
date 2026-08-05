@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>References a simulator binary selected by a persisted profile.</summary>
 /// <param name="Version">Version or user-provided version label.</param>

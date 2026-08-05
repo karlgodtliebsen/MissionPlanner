@@ -1,6 +1,7 @@
-using System.Net.NetworkInformation;
+﻿using System.Net.NetworkInformation;
+using MissionPlanner.Simulation.Abstractions;
 
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Provides read-only local host validation for simulator profiles.</summary>
 public sealed class LocalSimulatorHostEnvironment : ISimulatorHostEnvironment

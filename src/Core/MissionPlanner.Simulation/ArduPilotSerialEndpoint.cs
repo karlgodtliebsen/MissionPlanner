@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Describes one additional typed ArduPilot serial endpoint.</summary>
 /// <param name="Index">ArduPilot serial index from 1 through 9; serial zero is reserved for MissionPlanner MAVLink.</param>

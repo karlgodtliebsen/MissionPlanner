@@ -17,6 +17,8 @@ using MissionPlanner.MavLink.Commands;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services.Abstractions;
+using MissionPlanner.Simulation;
+using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Transport;
 using NSubstitute;
 

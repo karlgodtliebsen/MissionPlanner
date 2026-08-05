@@ -1,3 +1,5 @@
+using MissionPlanner.Simulation;
+
 namespace MissionPlanner.Core.Simulation;
 
 /// <summary>Builds an ArduPilot direct-binary launch plan from typed profile values.</summary>

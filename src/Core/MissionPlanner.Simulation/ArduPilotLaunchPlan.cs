@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Contains a tokenized ArduPilot process launch plan.</summary>
 /// <param name="ExecutablePath">Absolute executable path.</param>

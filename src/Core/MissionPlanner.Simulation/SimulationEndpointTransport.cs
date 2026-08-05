@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Identifies an endpoint transport used by a simulation profile.</summary>
 public enum SimulationEndpointTransport

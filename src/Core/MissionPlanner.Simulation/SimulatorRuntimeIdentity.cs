@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation;
 
 /// <summary>Uniquely identifies a runtime session owned by MissionPlanner.</summary>
 /// <param name="RuntimeId">Adapter-provided exact runtime identity.</param>

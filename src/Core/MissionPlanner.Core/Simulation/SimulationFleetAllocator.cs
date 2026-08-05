@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Simulation;
 
 namespace MissionPlanner.Core.Simulation;
 
@@ -52,12 +53,7 @@ public sealed class SimulationFleetAllocator(
             var serialEndpoints = baseSettings.EffectiveSerialEndpoints
                 .Select(endpoint => endpoint with { Port = CheckedPort(endpoint.Port, portOffset) })
                 .ToArray();
-            var settings = baseSettings with
-            {
-                Instance = instance,
-                SystemId = systemId,
-                AdditionalSerialEndpoints = serialEndpoints
-            };
+            var settings = baseSettings with { Instance = instance, SystemId = systemId, AdditionalSerialEndpoints = serialEndpoints };
             var offset = request.Formation.Offsets[index];
             var profile = request.BaseProfile with
             {
@@ -153,8 +149,10 @@ public sealed class SimulationFleetAllocator(
         }
     }
 
-    private static string ToEndpointKey(SimulationEndpoint endpoint) =>
-        $"{endpoint.Transport}:{endpoint.Host.Trim().ToUpperInvariant()}:{endpoint.Port}";
+    private static string ToEndpointKey(SimulationEndpoint endpoint)
+    {
+        return $"{endpoint.Transport}:{endpoint.Host.Trim().ToUpperInvariant()}:{endpoint.Port}";
+    }
 
     private static SimulationLocation ApplyOffset(SimulationLocation location, SimulationFormationOffset offset)
     {

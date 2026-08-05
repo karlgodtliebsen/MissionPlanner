@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Simulation.Abstractions;
 
 /// <summary>Provides cancellable delays for scenario wait polling.</summary>
 public interface ISimulationScenarioDelay
