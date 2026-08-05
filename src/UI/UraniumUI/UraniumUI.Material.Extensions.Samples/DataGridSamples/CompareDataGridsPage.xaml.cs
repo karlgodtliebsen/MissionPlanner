@@ -1,11 +1,11 @@
 ﻿using InputKit.Shared.Controls;
 using UraniumUI.Pages;
 
-namespace UraniumUI.Material.Extensions.Samples;
+namespace UraniumUI.Material.Extensions.Samples.DataGridSamples;
 
-public partial class MainPage : UraniumContentPage
+public partial class CompareDataGridsPage : UraniumContentPage
 {
-    public MainPage()
+    public CompareDataGridsPage()
     {
         SelectionView.GlobalSetting.CornerRadius = 0;
         InitializeComponent();

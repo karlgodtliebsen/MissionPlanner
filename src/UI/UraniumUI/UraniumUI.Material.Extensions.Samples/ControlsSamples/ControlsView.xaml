@@ -252,27 +252,6 @@
                 </HorizontalStackLayout>
             </VerticalStackLayout>
 
-            <BoxView  StyleClass="Divider" />
-
-            <VerticalStackLayout Spacing="20" WidthRequest="600" HorizontalOptions="Fill">
-
-                <Label Text="Extended Tab view control that supports lifecycle events for its tabs view and view models"></Label>
-                <tabViews:LifecycleTabView Margin="0,25,0,0" >
-
-                    <material:TabItem Title="View 1">
-                        <controlsSamples:TabViewContent1></controlsSamples:TabViewContent1>
-                    </material:TabItem>
-                    <material:TabItem Title="View 2">
-                        <controlsSamples:TabViewContent2></controlsSamples:TabViewContent2>
-                    </material:TabItem>
-                    <material:TabItem Title="View 3">
-                        <controlsSamples:TabViewContent3></controlsSamples:TabViewContent3>
-                    </material:TabItem>
-
-                </tabViews:LifecycleTabView>
-            </VerticalStackLayout>
-
-
         </VerticalStackLayout>
 
     </ScrollView>

@@ -4,9 +4,9 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Mapsui.Utilities;
 using UraniumUI.Material.Extensions.Samples.DataGrids.Models;
 
-namespace UraniumUI.Material.Extensions.Samples;
+namespace UraniumUI.Material.Extensions.Samples.DataGridSamples;
 
-public partial class MainPageViewModel : ObservableObject
+public partial class CompareDataGridsViewModel : ObservableObject
 {
     public ObservableRangeCollection<TodoItem> Items { get; } = [];
     public ObservableCollection<TodoItem> SelectedItems { get; set; } = [];
@@ -27,7 +27,7 @@ public partial class MainPageViewModel : ObservableObject
 
     public ICommand RemoveSelectedItemsCommand { get; private set; }
 
-    public MainPageViewModel()
+    public CompareDataGridsViewModel()
     {
         if (Items.Count == 0)
         {

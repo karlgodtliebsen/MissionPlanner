@@ -1,32 +1,67 @@
-﻿using UraniumUI.Material.Controls;
+using UraniumUI.Material.Controls;
 
 namespace UraniumUI.Material.TabViews;
 
-/// <summary>
-/// Represents a tab view control that supports lifecycle events for its tabs.
-/// </summary>
+/// <summary>Represents a tab view control that owns the lifecycle of its selected content.</summary>
 public class LifecycleTabView : TabView
 {
-    private TabItem? current;
+    private View? currentContent;
+    private bool isLoaded;
 
-    /// <inheritdoc />
+    /// <summary>Initializes lifecycle handling at selection and visual-tree boundaries.</summary>
     public LifecycleTabView()
     {
-        SelectedTabChanged += LifecycleTabView_SelectedTabChanged;
+        Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
     }
 
-    private void LifecycleTabView_SelectedTabChanged(object? sender, TabItem e)
+    /// <inheritdoc />
+    protected override async Task OnSelectedTabChanged(TabItem oldValue, TabItem newValue)
     {
-        if (current != null)
+        // RecreateAlways clears oldValue.Content inside the base implementation. Capture
+        // and deactivate it before that happens rather than using SelectedTabChanged.
+        var oldContent = oldValue?.Content ?? currentContent;
+        if (oldContent is not null && oldValue != newValue)
         {
-            current.Content.IsEnabled = false;
-            var lifecycleContent = current.Content as ITabViewLifecycleContent;
-            lifecycleContent?.Deactivate();
+            oldContent.IsEnabled = false;
+            (oldContent as ITabViewLifecycleContent)?.Deactivate();
         }
 
-        var newLifecycleContent = e.Content as ITabViewLifecycleContent;
-        newLifecycleContent?.Activate();
-        current = e;
-        current.Content.IsEnabled = true;
+        await base.OnSelectedTabChanged(oldValue, newValue).ConfigureAwait(true);
+
+        currentContent = newValue?.Content;
+        if (currentContent is null)
+        {
+            return;
+        }
+
+        currentContent.IsEnabled = true;
+        if (isLoaded)
+        {
+            (currentContent as ITabViewLifecycleContent)?.Activate();
+        }
+    }
+
+    private void OnLoaded(object? sender, EventArgs e)
+    {
+        if (isLoaded) return;
+        isLoaded = true;
+        currentContent ??= SelectedTab?.Content;
+        if (currentContent is not null)
+        {
+            currentContent.IsEnabled = true;
+            (currentContent as ITabViewLifecycleContent)?.Activate();
+        }
+    }
+
+    private void OnUnloaded(object? sender, EventArgs e)
+    {
+        if (!isLoaded) return;
+        isLoaded = false;
+        if (currentContent is not null)
+        {
+            currentContent.IsEnabled = false;
+            (currentContent as ITabViewLifecycleContent)?.Deactivate();
+        }
     }
 }

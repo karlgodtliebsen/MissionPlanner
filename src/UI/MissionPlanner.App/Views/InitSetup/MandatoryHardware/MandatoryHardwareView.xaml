@@ -1,16 +1,17 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<navigation:ContentPageView x:TypeArguments="mandatoryHardware:MandatoryHardwareViewModel"  
+<navigation:ContentPageView x:TypeArguments="mandatoryHardware:MandatoryHardwareViewModel"
                             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                            xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                             xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                             xmlns:mandatoryHardware="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware"
                             xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                            xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                             x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.MandatoryHardwareView"
                             x:DataType="mandatoryHardware:MandatoryHardwareViewModel"
-                            x:Name="RootPage"
                             Title="Initial Setup">
 
-    <Grid Padding="20" RowDefinitions="Auto,Auto,190,*" RowSpacing="14">
+    <Grid Padding="20" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="14">
         <VerticalStackLayout Spacing="4">
             <Label Text="Initial Setup" FontSize="26" FontAttributes="Bold" />
             <Label Text="{Binding VehicleHeading}" FontSize="16" />
@@ -18,78 +19,73 @@
             <Label Text="{Binding Error}" TextColor="Red" />
         </VerticalStackLayout>
 
-        <Button Grid.Row="1"
-                Text="Re-evaluate vehicle"
-                Command="{Binding RefreshCommand}"
-                HorizontalOptions="Start" />
+        <Button Grid.Row="1" Text="Re-evaluate vehicle" Command="{Binding RefreshCommand}" HorizontalOptions="Start" />
 
-        <CollectionView Grid.Row="2"
-                        ItemsSource="{Binding Workflows}"
-                        SelectedItem="{Binding SelectedWorkflow, Mode=TwoWay}"
-                        SelectionMode="Single">
-            <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Horizontal" ItemSpacing="10" />
-            </CollectionView.ItemsLayout>
-            <CollectionView.ItemTemplate>
+        <tabViews:ExtendedTabView Grid.Row="2"
+                                  HeaderItemsSource="{Binding Workflows}"
+                                  SelectedHeaderItem="{Binding SelectedWorkflow, Mode=TwoWay}"
+                                  TabHeaderItemColumnWidth="290"
+                                  CachingStrategy="CacheOnLayout"
+                                  UseAnimation="False">
+            <material:TabView.TabHeaderItemTemplate>
                 <DataTemplate x:DataType="sections:SetupWorkflowItemViewModel">
-                    <Border WidthRequest="290" Padding="14" StrokeThickness="1">
-                        <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="5">
-                            <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="16" />
-                            <Label Grid.Column="1" Text="{Binding StateDisplay}" FontAttributes="Bold" />
-                            <Label Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding Description}" LineBreakMode="WordWrap" />
-                            <Label Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding StatusText}" Opacity="0.72" LineBreakMode="WordWrap" />
+                    <Border Margin="5" Padding="14" HeightRequest="180" StrokeThickness="1">
+                        <Border.Triggers>
+                            <DataTrigger TargetType="Border"
+                                         Binding="{Binding Source={RelativeSource Self}, Path=(tabViews:ExtendedTabView.IsHeaderSelected)}"
+                                         Value="True">
+                                <Setter Property="Stroke" Value="#29B6F6" />
+                                <Setter Property="StrokeThickness" Value="3" />
+                            </DataTrigger>
+                        </Border.Triggers>
+                        <Grid ColumnDefinitions="4,*">
+                            <BoxView BackgroundColor="#29B6F6" IsVisible="False">
+                                <BoxView.Triggers>
+                                    <DataTrigger TargetType="BoxView"
+                                                 Binding="{Binding Source={RelativeSource Self}, Path=(tabViews:ExtendedTabView.IsHeaderSelected)}"
+                                                 Value="True">
+                                        <Setter Property="IsVisible" Value="True" />
+                                    </DataTrigger>
+                                </BoxView.Triggers>
+                            </BoxView>
+                            <Grid Grid.Column="1" Margin="10,0,0,0"
+                                  RowDefinitions="Auto,Auto,*" ColumnDefinitions="*,Auto" RowSpacing="5">
+                                <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="16" />
+                                <Label Grid.Column="1" Text="{Binding StateDisplay}" FontAttributes="Bold" />
+                                <Label Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding Description}" LineBreakMode="WordWrap" />
+                                <Label Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding StatusText}" Opacity="0.72" LineBreakMode="WordWrap" />
+                            </Grid>
                         </Grid>
                     </Border>
                 </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
+            </material:TabView.TabHeaderItemTemplate>
 
-        <ScrollView Grid.Row="3">
-            <VerticalStackLayout Spacing="14" BindableLayout.EmptyView="Select a setup workflow.">
-                <Label Text="{Binding SelectedWorkflow.Title}" FontSize="24" FontAttributes="Bold" />
-                <Label Text="{Binding SelectedWorkflow.Description}" FontSize="16" LineBreakMode="WordWrap" />
-                <Label Text="{Binding SelectedWorkflow.StatusText}" FontAttributes="Italic" />
+            <material:TabItem Title="Firmware"><sections:FirmwareSetupView /></material:TabItem>
+            <material:TabItem Title="Frame"><sections:FrameSetupView /></material:TabItem>
+            <material:TabItem Title="Accelerometer"><sections:AccelerometerSetupView /></material:TabItem>
+            <material:TabItem Title="Compass"><sections:CompassSetupView /></material:TabItem>
+            <material:TabItem Title="Radio"><sections:RadioSetupView /></material:TabItem>
+            <material:TabItem Title="Flight Modes"><sections:FlightModesSetupView /></material:TabItem>
+            <material:TabItem Title="Battery"><sections:BatterySetupView /></material:TabItem>
+            <material:TabItem Title="ESC / Motors"><sections:EscMotorSetupView /></material:TabItem>
+            <material:TabItem Title="Servo Output"><sections:ServoOutputSetupView /></material:TabItem>
+            <material:TabItem Title="Optional Hardware"><sections:OptionalHardwareSetupView /></material:TabItem>
+            <material:TabItem Title="Safety"><sections:SafetySetupView /></material:TabItem>
+            <material:TabItem Title="Summary"><sections:SetupSummaryView /></material:TabItem>
+        </tabViews:ExtendedTabView>
 
-                <sections:FirmwareSetupView x:Name="FirmwareSectionView"
-                                            IsVisible="{Binding BindingContext.IsFirmwareSelected, Source={x:Reference RootPage}}" />
-                <sections:FrameSetupView x:Name="FrameSectionView"
-                                         IsVisible="{Binding BindingContext.IsFrameSelected, Source={x:Reference RootPage}}" />
-                <sections:AccelerometerSetupView x:Name="AccelerometerSectionView"
-                                                 IsVisible="{Binding BindingContext.IsAccelerometerSelected, Source={x:Reference RootPage}}" />
-                <sections:CompassSetupView x:Name="CompassSectionView"
-                                           IsVisible="{Binding BindingContext.IsCompassSelected, Source={x:Reference RootPage}}" />
-                <sections:RadioSetupView x:Name="RadioSectionView"
-                                         IsVisible="{Binding BindingContext.IsRadioSelected, Source={x:Reference RootPage}}" />
-                <sections:FlightModesSetupView x:Name="FlightModesSectionView"
-                                               IsVisible="{Binding BindingContext.IsFlightModesSelected, Source={x:Reference RootPage}}" />
-                <sections:BatterySetupView x:Name="BatterySectionView"
-                                           IsVisible="{Binding BindingContext.IsBatterySelected, Source={x:Reference RootPage}}" />
-                <sections:EscMotorSetupView x:Name="EscMotorSectionView"
-                                            IsVisible="{Binding BindingContext.IsEscSelected, Source={x:Reference RootPage}}" />
-                <sections:ServoOutputSetupView x:Name="ServoOutputSectionView"
-                                               IsVisible="{Binding BindingContext.IsServoOutputSelected, Source={x:Reference RootPage}}" />
-                <sections:OptionalHardwareSetupView x:Name="OptionalHardwareSectionView"
-                                                    IsVisible="{Binding BindingContext.IsOptionalHardwareSelected, Source={x:Reference RootPage}}" />
-                <sections:SafetySetupView x:Name="SafetySectionView"
-                                          IsVisible="{Binding BindingContext.IsSafetySelected, Source={x:Reference RootPage}}" />
-                <sections:SetupSummaryView x:Name="SummarySectionView"
-                                           IsVisible="{Binding BindingContext.IsSummarySelected, Source={x:Reference RootPage}}" />
-
-                <HorizontalStackLayout Spacing="10">
-                    <Button
-                            Text="Record reviewed"
-                            IsEnabled="{Binding SelectedWorkflow.CanOpen}"
-                            IsVisible="{Binding CanRecordSelectedWorkflowManually}"
-                            Command="{Binding MarkCompleteCommand}" />
-                    <Button
-                            Text="Open related Config page"
-                            IsVisible="{Binding HasConfigDestination}"
-                            Command="{Binding OpenConfigCommand}" />
-                </HorizontalStackLayout>
-                <Label Text="Completion is stored locally and automatically requires review when firmware or parameters change. Prerequisites are guidance, not a rigid wizard."
-                       LineBreakMode="WordWrap"
-                       Opacity="0.7" />
-            </VerticalStackLayout>
-        </ScrollView>
+        <VerticalStackLayout Grid.Row="3" Spacing="8">
+            <HorizontalStackLayout Spacing="10">
+                <Button Text="Record reviewed"
+                        IsEnabled="{Binding SelectedWorkflow.CanOpen}"
+                        IsVisible="{Binding CanRecordSelectedWorkflowManually}"
+                        Command="{Binding MarkCompleteCommand}" />
+                <Button Text="Open related Config page"
+                        IsVisible="{Binding HasConfigDestination}"
+                        Command="{Binding OpenConfigCommand}" />
+            </HorizontalStackLayout>
+            <Label Text="Completion is stored locally and automatically requires review when firmware or parameters change. Prerequisites are guidance, not a rigid wizard."
+                   LineBreakMode="WordWrap" Opacity="0.7" />
+        </VerticalStackLayout>
     </Grid>
 </navigation:ContentPageView>

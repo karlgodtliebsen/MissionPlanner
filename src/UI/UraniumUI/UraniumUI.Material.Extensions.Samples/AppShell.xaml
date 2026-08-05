@@ -3,10 +3,9 @@
     x:Class="UraniumUI.Material.Extensions.Samples.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:UraniumUI.Material.Extensions.Samples"
     xmlns:controls="clr-namespace:Plainer.Maui.Controls;assembly=Plainer.Maui"
-    xmlns:appViewModels="clr-namespace:UraniumUI.Material.Extensions.Samples.AppViewModels"
     xmlns:controls1="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
+    xmlns:appViewModels="clr-namespace:UraniumUI.Material.Extensions.Samples.AppViewModels"
     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
     xmlns:dataGrids="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids"
     xmlns:dialogSamples="using:UraniumUI.Material.Extensions.Samples.DialogSamples"
@@ -15,6 +14,7 @@
     xmlns:virtualizedDataGridSample="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGridSamples.VirtualizedDataGridSample"
     xmlns:paginationSamples="using:UraniumUI.Material.Extensions.Samples.DataGridSamples.PaginationSamples"
     xmlns:selectable="using:UraniumUI.Material.Extensions.Samples.DataGridSamples.Selectable"
+    xmlns:dataGridSamples="using:UraniumUI.Material.Extensions.Samples.DataGridSamples"
     x:Name="thisShell"
     FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
     Shell.FlyoutBehavior="Flyout"
@@ -81,11 +81,14 @@
     <FlyoutItem Title="Extended Controls" >
         <ShellContent Title="Extended Controls" ContentTemplate="{DataTemplate controlsSamples:ControlsView}" Route="Controls" />
     </FlyoutItem>
+    <FlyoutItem Title="Extended TabViews" >
+        <ShellContent Title="Extended TabViews" ContentTemplate="{DataTemplate controlsSamples:ExtendedTabViewPage}" Route="ExtendedTabViewPage" />
+    </FlyoutItem>
     <FlyoutItem Title="Extended Dialogs" >
         <ShellContent Title="Extended Dialogs" ContentTemplate="{DataTemplate dialogSamples:DialogSampleView}" Route="Dialogs" />
     </FlyoutItem>
     <FlyoutItem Title="Compare Data Grids" >
-        <ShellContent Title="Compare Data Grids" ContentTemplate="{DataTemplate local:MainPage}" Route="MainPage" />
+        <ShellContent Title="Compare Data Grids" ContentTemplate="{DataTemplate dataGridSamples:CompareDataGridsPage}" Route="CompareDataGridsPage" />
     </FlyoutItem>
     <FlyoutItem Title="Simple Data Grid" >
         <ShellContent Title="Simple Data Grid with AutoColumns" ContentTemplate="{DataTemplate dataGrids:SimpleDataGridPage}" Route="SimpleDataGridPage" />

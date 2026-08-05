@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<tabViews:ExtendedTabHeaderView
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+    xmlns:controlsSamples="clr-namespace:UraniumUI.Material.Extensions.Samples.ControlsSamples"
+    x:Class="UraniumUI.Material.Extensions.Samples.ControlsSamples.TabHeaderView"
+    x:DataType="controlsSamples:TabHeaderModel"
+    Margin="10,0,0,0">
+
+    <VerticalStackLayout Margin="10"
+                         Spacing="20"
+                         BackgroundColor="Transparent"
+                         MinimumHeightRequest="50"
+                         VerticalOptions="Fill">
+        <Label Text="{Binding Title}"
+               VerticalOptions="Center"
+               HorizontalOptions="Start" />
+        <Label Text="{Binding Content}"
+               VerticalOptions="Center"
+               HorizontalOptions="Start" />
+    </VerticalStackLayout>
+</tabViews:ExtendedTabHeaderView>

@@ -1,72 +1,32 @@
+using MissionPlanner.App.Helpers;
+using UraniumUI.Material.TabViews;
+
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
-/// <summary>
-/// Provides visibility and page-lifecycle coordination for a setup section while the
-/// concrete view retains ownership of its ViewModel.
-/// </summary>
-public abstract class SetupSectionView : ContentView
+/// <summary>Creates and disposes a setup workflow ViewModel at selected-tab lifecycle boundaries.</summary>
+public abstract class SetupSectionView : ContentView, ITabViewLifecycleContent
 {
-    private SetupWorkflowDetailViewModel? ownedViewModel;
+    private Func<SetupWorkflowDetailViewModel>? createViewModel;
+    private SetupWorkflowDetailViewModel? viewModel;
 
-    /// <summary>Initializes a setup section view.</summary>
-    protected SetupSectionView()
-    {
-        Loaded += OnLoaded;
-        Unloaded += OnUnloaded;
-    }
+    /// <summary>Configures the transient ViewModel owned by this tab content.</summary>
+    protected void ConfigureViewModel<TViewModel>() where TViewModel : SetupWorkflowDetailViewModel =>
+        createViewModel = ServiceHelper.GetRequiredService<TViewModel>;
 
-    /// <summary>Gets or sets the ViewModel owned by the concrete section view.</summary>
-    protected SetupWorkflowDetailViewModel? OwnedViewModel
-    {
-        get => ownedViewModel;
-        set
-        {
-            ownedViewModel = value;
-            UpdateActivation();
-        }
-    }
-
-    /// <summary>Activates the owned ViewModel when this section is visible.</summary>
+    /// <inheritdoc />
     public void Activate()
     {
-        UpdateActivation();
-    }
-
-    /// <summary>Deactivates the owned ViewModel.</summary>
-    public void Deactivate()
-    {
-        ownedViewModel?.Deactivate();
+        if (viewModel is not null) return;
+        viewModel = createViewModel?.Invoke() ?? throw new InvalidOperationException("A setup section must configure its ViewModel.");
+        BindingContext = viewModel;
+        viewModel.Activate();
     }
 
     /// <inheritdoc />
-    protected override void OnPropertyChanged(string? propertyName = null)
+    public void Deactivate()
     {
-        base.OnPropertyChanged(propertyName);
-        if (propertyName == IsVisibleProperty.PropertyName)
-        {
-            UpdateActivation();
-        }
-    }
-
-    private void OnLoaded(object? sender, EventArgs args)
-    {
-        UpdateActivation();
-    }
-
-    private void OnUnloaded(object? sender, EventArgs args)
-    {
-        Deactivate();
-    }
-
-    private void UpdateActivation()
-    {
-        if (IsLoaded && IsVisible)
-        {
-            ownedViewModel?.Activate();
-        }
-        else
-        {
-            ownedViewModel?.Deactivate();
-        }
+        BindingContext = null;
+        viewModel?.Dispose();
+        viewModel = null;
     }
 }

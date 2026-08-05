@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pages:UraniumContentPage 
+             x:Class="UraniumUI.Material.Extensions.Samples.ControlsSamples.ExtendedTabViewPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:UraniumUI.Material.Extensions.Samples.ControlsSamples"
+             xmlns:pages="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+             xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+             xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+             >
+    <VerticalStackLayout Padding="24" Spacing="20">
+
+
+        <VerticalStackLayout Spacing="20" WidthRequest="600" HorizontalOptions="Fill">
+
+            <Label Text="Extended Tab view control that supports lifecycle events for its tabs view and view models"></Label>
+            <Border StyleClass="SurfaceContainer,Rounded,Elevation1">
+                <tabViews:LifecycleTabView  Margin="25" >
+
+                    <material:TabItem Title="View 1">
+                        <local:TabViewContent1></local:TabViewContent1>
+                    </material:TabItem>
+                    <material:TabItem Title="View 2">
+                        <local:TabViewContent2></local:TabViewContent2>
+                    </material:TabItem>
+                    <material:TabItem Title="View 3">
+                        <local:TabViewContent3></local:TabViewContent3>
+                    </material:TabItem>
+
+                </tabViews:LifecycleTabView>
+            </Border>
+        </VerticalStackLayout>
+
+
+        <BoxView  StyleClass="Divider" />
+
+
+        <VerticalStackLayout Spacing="20" HorizontalOptions="Fill">
+
+            <Label Text="Extended Tab view control that supports lifecycle events for its tabs view and view models"></Label>
+            <Border StyleClass="SurfaceContainer,Rounded,Elevation1">
+
+                <tabViews:ExtendedTabView Margin="25"
+                                          HeaderItemsSource="{Binding TabHeaders}"
+                                          TabHeaderItemColumnWidth="220">
+
+                    <material:TabView.TabHeaderItemTemplate>
+                        <DataTemplate>
+                            <local:TabHeaderView />
+                        </DataTemplate>
+                    </material:TabView.TabHeaderItemTemplate>
+
+                    <material:TabItem >
+                        <local:TabViewContent1 />
+                    </material:TabItem>
+                    <material:TabItem Title="View 2">
+                        <local:TabViewContent2></local:TabViewContent2>
+                    </material:TabItem>
+                    <material:TabItem Title="View 3">
+                        <local:TabViewContent3></local:TabViewContent3>
+                    </material:TabItem>
+                </tabViews:ExtendedTabView>
+
+            </Border>
+        </VerticalStackLayout>
+
+    </VerticalStackLayout>
+</pages:UraniumContentPage>

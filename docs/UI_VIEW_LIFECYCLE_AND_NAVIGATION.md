@@ -22,9 +22,18 @@ example is in `UraniumUI.Material.Extensions.Samples/ControlsSamples`, while the
 Data screen is the production reference.
 
 When selection changes, `LifecycleTabView` disables and deactivates the old tab content,
-then activates and enables the new content. `TabViewLifecycleContent<TViewModel>` implements
+then activates and enables the new content while the control is loaded. Loading activates
+the selected tab and unloading deactivates it. Do not drive tab lifecycle from page
+`OnAppearing`/`OnDisappearing` or ordinary navigation notifications: popup overlays can
+produce those notifications even though the selected tab still owns the visible workflow.
+`TabViewLifecycleContent<TViewModel>` implements
 that contract by resolving a new ViewModel from DI on activation and clearing the binding,
 disposing the ViewModel, and dropping its reference on deactivation.
+
+Lifecycle selection is implemented in the protected TabView selection override, not from
+the public `SelectedTabChanged` event. UraniumUI may clear `oldValue.Content` before raising
+that event when `RecreateAlways` caching is active, so event-based cleanup must not
+dereference the old `TabItem.Content`.
 
 ### View and XAML pattern
 
@@ -54,6 +63,60 @@ Host it directly inside a `TabItem`:
     </material:TabItem>
 </tabViews:LifecycleTabView>
 ```
+
+### Rich data-bound headers
+
+Use `ExtendedTabView` when each static lifecycle tab needs a larger header view bound to a
+separate data collection. `HeaderItemsSource` is aligned with `Tabs` by index; the header
+template receives that item while the content keeps its lifecycle-owned binding context.
+`SelectedHeaderItem` supports two-way selection binding. Keep both collections in the same
+stable order and do not put lifecycle ownership on the header view. The control propagates
+the attached `ExtendedTabView.IsHeaderSelected` state through a custom header view tree, so
+nested elements can style selection with a self-relative `DataTrigger`; this state belongs
+to the control and must not be duplicated in the header ViewModel.
+
+For a reusable header `ContentView`, inherit `ExtendedTabHeaderView` and bind its nested
+visuals to the ordinary `IsHeaderSelected` property on the root view. This avoids relying
+on attached-property binding propagation through a templated `ContentView`. Debug builds
+write one diagnostic line for each actual header selection transition, including header
+type, bound data type, title when present, and the new state.
+
+`ExtendedTabHeaderView` is also the preferred base class for consistent rich-card chrome.
+It owns the border, selected left marker, and content host; derived XAML supplies only the
+inner content because `HeaderContent` is the class content property. `SelectionColor` and
+`SelectedStrokeThickness` can be styled per application theme without duplicating the
+selection trigger or marker layout in every header view. The unselected border uses a
+transparent brush rather than a null stroke because the MAUI Windows border handler cannot
+convert a `SolidPaint` whose color is null while attaching the visual tree.
+
+Selection visuals remain template-owned. Rich card headers should use the established
+narrow primary-color bar on the left edge; compact horizontal headers may retain
+UraniumUI's bottom indicator. Bind the bar's visibility to the same header selection state
+rather than adding selection state to the header data model.
+
+```xml
+<tabViews:ExtendedTabView
+    HeaderItemsSource="{Binding Workflows}"
+    SelectedHeaderItem="{Binding SelectedWorkflow, Mode=TwoWay}"
+    TabHeaderItemColumnWidth="290">
+    <material:TabView.TabHeaderItemTemplate>
+        <DataTemplate x:DataType="local:WorkflowHeaderModel">
+            <local:WorkflowHeader />
+        </DataTemplate>
+    </material:TabView.TabHeaderItemTemplate>
+    <material:TabItem Title="First">
+        <local:FirstWorkflowView />
+    </material:TabItem>
+    <material:TabItem Title="Second">
+        <local:SecondWorkflowView />
+    </material:TabItem>
+</tabViews:ExtendedTabView>
+```
+
+The Mandatory Hardware page is the production reference. Its rich workflow cards come
+from `Workflows`, while each setup content view resolves its transient ViewModel only when
+selected and disposes it on tab change or actual removal from the visual tree. The
+`ExtendedTabViewPage` sample is the compact control demonstration.
 
 Keep the content view parameterless so XAML can construct it. Do not resolve or construct
 its ViewModel in the view constructor; the lifecycle base class owns that operation.
@@ -201,6 +264,9 @@ semantics; callers must preserve that distinction rather than bypassing
 - The ViewModel is transient, implements `IDisposable`, and owns its subscriptions and
   cancellation lifetime.
 - The view does not resolve a ViewModel when a lifecycle base class already owns it.
+- Rich headers use `HeaderItemsSource`; header views do not create lifecycle ViewModels.
+- Popup display does not deactivate the selected tab; only selection or visual-tree
+  lifecycle changes do.
 - Paired event attachment and detachment occur in the matching lifecycle methods.
 - Shell destinations use a deferred `DataTemplate` and a unique, stable route.
 - ViewModels navigate through an injected abstraction and honor workspace guards.

@@ -9,11 +9,12 @@
              xmlns:local="clr-namespace:UraniumUI.Material.Extensions.Samples"
              xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
              xmlns:models="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids.Models"
-             x:Class="UraniumUI.Material.Extensions.Samples.MainPage"
+             xmlns:dataGridSamples="using:UraniumUI.Material.Extensions.Samples.DataGridSamples"
+             x:Class="UraniumUI.Material.Extensions.Samples.DataGridSamples.CompareDataGridsPage"
              >
 
     <uranium:UraniumContentPage.BindingContext>
-        <local:MainPageViewModel />
+        <dataGridSamples:CompareDataGridsViewModel />
     </uranium:UraniumContentPage.BindingContext>
 
     <uranium:UraniumContentPage.Resources>

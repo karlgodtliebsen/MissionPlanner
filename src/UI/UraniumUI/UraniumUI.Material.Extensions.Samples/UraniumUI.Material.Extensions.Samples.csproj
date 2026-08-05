@@ -94,6 +94,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="ControlsSamples\ExtendedTabViewPage.xaml.cs">
+	    <DependentUpon>ExtendedTabViewPage.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="ControlsSamples\TabViewHeader.xaml.cs">
+	    <DependentUpon>TabViewHeader.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="DataGridSamples\ArduPilotSample\VirtualizedDataGridView.xaml.cs">
 	    <DependentUpon>VirtualizedDataGridView.xaml</DependentUpon>
 	  </Compile>
@@ -118,9 +124,18 @@
 	  <Compile Update="DataGridSamples\VirtualizedDataGridSample\VirtualizedDataGridSampleView1.xaml.cs">
 	    <DependentUpon>VirtualizedDataGridSampleView1.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="DataGridSamples\CompareDataGridsPage.xaml.cs">
+	    <DependentUpon>CompareDataGridsPage.xaml</DependentUpon>
+	  </Compile>
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="ControlsSamples\ExtendedTabViewPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="ControlsSamples\TabHeaderView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="ControlsSamples\TabViewContent1.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

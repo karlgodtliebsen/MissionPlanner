@@ -15,7 +15,11 @@ public class TabViewLifecycleContent<TViewModel> : ContentView, ITabViewLifecycl
     /// </summary>
     public virtual void Activate()
     {
-        ViewModel?.Dispose();
+        if (ViewModel is not null)
+        {
+            return;
+        }
+
         ViewModel = ServiceHelper.GetRequiredService<TViewModel>();
         BindingContext = ViewModel;
     }

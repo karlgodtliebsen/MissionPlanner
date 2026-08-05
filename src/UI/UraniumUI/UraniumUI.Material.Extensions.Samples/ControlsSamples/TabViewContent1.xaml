@@ -6,12 +6,15 @@
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   x:Class="UraniumUI.Material.Extensions.Samples.ControlsSamples.TabViewContent1"
                                   x:DataType="controlsSamples:TabViewModel1"
-                                  
+                                  HeightRequest="200"
+                                  VerticalOptions="Fill"
+                                  BackgroundColor="CadetBlue"
+                                  Margin="50"
                                   >
-    <VerticalStackLayout Margin="20" BackgroundColor="CadetBlue" MinimumHeightRequest="50" VerticalOptions="Center">
+    <Grid Margin="20" MinimumHeightRequest="50" VerticalOptions="Fill" HorizontalOptions="Fill">
         <Label 
             Text="{Binding Name}"
             VerticalOptions="Center" 
             HorizontalOptions="Center" />
-    </VerticalStackLayout>
+    </Grid>
 </tabViews:TabViewLifecycleContent>
