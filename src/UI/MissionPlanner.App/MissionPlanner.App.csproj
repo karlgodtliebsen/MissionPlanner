@@ -87,6 +87,7 @@
     </ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\..\Core\MissionPlanner.Simulation\MissionPlanner.Simulation.csproj" />
 	  <ProjectReference Include="..\..\Libraries\MissionPlanner.Library\MissionPlanner.Library.csproj" />
 	  <ProjectReference Include="..\..\Core\MissionPlanner.Core\MissionPlanner.Core.csproj" />
 	  <ProjectReference Include="..\UraniumUI\UraniumUI.Material.Controls.Extensions\UraniumUI.Material.Controls.Extensions.csproj" />

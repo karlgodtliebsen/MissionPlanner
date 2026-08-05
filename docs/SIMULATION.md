@@ -2,6 +2,18 @@
 
 ## Architecture
 
+The transport-independent simulation domain is housed in
+`src/Core/MissionPlanner.Simulation`. `MissionPlanner.Core` references that project and
+retains the simulation implementations that directly integrate with Core vehicle,
+mission, replay, command, and firmware types. This one-way project dependency prevents the
+simulation domain from acquiring a circular dependency on the application domain while
+those integration boundaries are extracted incrementally.
+
+The initial extraction places 78 source files in `MissionPlanner.Simulation`. The 70 files
+that remain under `MissionPlanner.Core/Simulation` form the Core-coupled closure: this
+includes both files with direct Core dependencies and files whose public contracts consume
+those Core-dependent simulation types.
+
 The Simulation workspace is an application surface over the Core simulation domain. It
 does not start processes or create MAVLink transports directly. `ISimulatorRuntime`
 represents a local process, container, or remote adapter, and returns one
