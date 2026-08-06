@@ -1,4 +1,5 @@
 ﻿using MissionPlanner.App.Navigation;
+using MissionPlanner.App.Views.Missions;
 
 namespace MissionPlanner.App.Views.FlightPlanner;
 
@@ -13,5 +14,13 @@ public partial class FlightPlannerView : ExtendedContentPage<FlightPlannerViewMo
     public FlightPlannerView()
     {
         InitializeComponent();
+        Editor.WidthRequestChanged += Editor_WidthRequestChanged;
+        //TheGridSplitter.On
+    }
+
+    private void Editor_WidthRequestChanged(object? sender, WidthEventArgs e)
+    {
+        //Editor.MinimumWidthRequest = e.Width;
+        TheGrid.ColumnDefinitions[2].Width = new GridLength(e.Width);
     }
 }

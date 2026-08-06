@@ -163,6 +163,8 @@ public static class ApplicationConfigurator
         services.TryAddTransient<HudViewModel>();
         services.TryAddSingleton<MissionMapViewModel>();
 
+        services.TryAddTransient<MissionItemListDockViewModel>();
+
         // Tabs on FlightDataView
         services.TryAddTransient<QuickTabViewModel>();
         services.TryAddTransient<ActionsTabViewModel>();

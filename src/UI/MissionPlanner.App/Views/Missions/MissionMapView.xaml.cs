@@ -35,10 +35,7 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>, 
     public MissionMapView()
     {
         InitializeComponent();
-
-        //viewModel = ServiceHelper.GetRequiredService<MissionMapViewModel>();
         plannerSettings = ServiceHelper.GetRequiredService<IPlannerSettingsService>();
-        //BindingContext = viewModel;
         map = new Mapsui.Map();
         map.Layers.Add(CreateTileLayer(ViewModel.SelectedMapType));
         MissionMap.Map = map;

@@ -19,13 +19,4 @@ public partial class MissionItemListView : ExtendedContentView<MissionMapViewMod
     {
         InitializeComponent();
     }
-
-    private void OnRowEditCompleted(object? sender, EventArgs e)
-    {
-        if (sender is Entry { BindingContext: MissionItemRow row })
-        {
-            // Stale rows (already replaced by a rebuild) are ignored by the command.
-            ViewModel.ApplyRowEditCommand.Execute(row);
-        }
-    }
 }
