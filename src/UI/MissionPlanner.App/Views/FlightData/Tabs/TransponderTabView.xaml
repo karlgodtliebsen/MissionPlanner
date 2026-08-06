@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<tabViews:TabViewLifecycleContent x:TypeArguments="tabs:TransponderTabViewModel" 
-                                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-                                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                                  xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
-                                  xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
-                                  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
-                                  x:Class="MissionPlanner.App.Views.FlightData.Tabs.TransponderTabView"
-             
-                                  x:DataType="tabs:TransponderTabViewModel">
-
-
-    <Label Text="Transponder"
-           FontSize="16"
-           HorizontalOptions="Center"
-           VerticalOptions="Center" />
-
+<tabViews:TabViewLifecycleContent x:TypeArguments="tabs:TransponderTabViewModel"
+ xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+ xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs" xmlns:components="clr-namespace:MissionPlanner.Core.FlightData.Components;assembly=MissionPlanner.Core"
+ xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+ x:Class="MissionPlanner.App.Views.FlightData.Tabs.TransponderTabView" x:DataType="tabs:TransponderTabViewModel">
+ <Grid Padding="16" RowDefinitions="Auto,Auto,*" RowSpacing="10">
+  <Label Text="{Binding Status}" FontSize="20" FontAttributes="Bold" />
+  <CollectionView Grid.Row="1" ItemsSource="{Binding Components}" HeightRequest="100">
+   <CollectionView.ItemTemplate><DataTemplate x:DataType="components:TransponderComponentState"><Border Padding="8" Margin="4" StyleClass="SurfaceContainer,Rounded"><Label Text="{Binding FlightId, StringFormat='Flight {0}'}" /></Border></DataTemplate></CollectionView.ItemTemplate>
+  </CollectionView>
+  <CollectionView Grid.Row="2" ItemsSource="{Binding Traffic}">
+   <CollectionView.Header><Label Text="Nearby ADS-B traffic" FontAttributes="Bold" /></CollectionView.Header>
+   <CollectionView.ItemTemplate><DataTemplate x:DataType="components:AdsbTrafficTrack"><Grid Padding="6" ColumnDefinitions="120,120,120,*"><Label Text="{Binding Callsign}" /><Label Grid.Column="1" Text="{Binding IcaoAddress}" /><Label Grid.Column="2" Text="{Binding AltitudeMeters, StringFormat='{0:0} m'}" /><Label Grid.Column="3" Text="{Binding ObservedAt}" /></Grid></DataTemplate></CollectionView.ItemTemplate>
+  </CollectionView>
+ </Grid>
 </tabViews:TabViewLifecycleContent>

@@ -74,6 +74,8 @@ explainable readiness assessment and an acknowledged ArduPilot pre-arm diagnosti
 it explicitly reports stale and unavailable evidence and never claims the aircraft is safe.
 **Gauges** provides a responsive default flight dashboard backed by the shared promoted-
 telemetry descriptor catalog, explicit freshness, unit conversion, and bounded-rate updates.
+**Transponder** discovers component-scoped uAvionix status and presents a bounded,
+vehicle-scoped ADS-B traffic list; configuration writes remain a documented limitation.
 Feature description per tab comes from v1.38 (`FlightData.Designer.cs` tab pages).
 
 ### Shared infrastructure

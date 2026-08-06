@@ -38,3 +38,13 @@ The default dashboard contains airspeed, ground speed, relative altitude, climb 
 heading, and battery remaining. Tiles remain stable and update in place at no more than the
 configured `PlannerTelemetrySettings.DisplayRateHz`. Metric and imperial display conversion
 occurs only in the projector; domain values remain SI.
+
+## Transponder and ADS-B traffic
+
+Peripheral discovery is keyed by MAVLink system and component ID; no fixed transponder ID
+or single-device assumption is used. Component heartbeat evidence stays outside the
+autopilot `VehicleState`. uAvionix status is stored for its exact source component, while a
+bounded vehicle-scoped traffic store deduplicates ADS-B tracks by ICAO address and expires
+them after 30 seconds. The tab makes unsupported/not-discovered state explicit and presents
+observed status and nearby traffic without fabricating absent fields. Configuration and
+IDENT controls remain unavailable until their response-correlation workflow is completed.

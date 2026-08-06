@@ -3,6 +3,8 @@
 MAVLink wire coverage and MissionPlanner domain coverage are deliberately different.
 Every selected-dialect packet can be parsed and decoded, but only messages that represent
 durable product state or a meaningful transition belong in the vehicle aggregate. The
+ADS-B traffic and uAvionix status workflows are owned by Flight Data's peripheral component
+registry. They remain keyed, bounded state outside `VehicleState`.
 default for a new dialect message is diagnostic telemetry, not a new observation and
 handler.
 

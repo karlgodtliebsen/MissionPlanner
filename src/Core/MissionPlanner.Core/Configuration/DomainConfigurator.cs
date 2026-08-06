@@ -162,12 +162,15 @@ public static class DomainConfigurator
         services.TryAddEnumerable(ServiceDescriptor.Transient<IVehicleMessageHandler, HealthTelemetryHandler>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IVehicleMessageHandler, SensorTelemetryHandler>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IVehicleMessageHandler, ControlMessageHandler>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IVehicleMessageHandler, FlightData.Components.PeripheralComponentHandler>());
 
         services.TryAddTransient<IVehicleCommandService, VehicleCommandService>();
         services.TryAddTransient<FlightData.Preflight.IPreflightAssessmentService, FlightData.Preflight.PreflightAssessmentService>();
         services.TryAddTransient<FlightData.Preflight.IPreflightCommandService, FlightData.Preflight.PreflightCommandService>();
         services.TryAddSingleton<FlightData.Telemetry.ITelemetryFieldCatalog, FlightData.Telemetry.TelemetryFieldCatalog>();
         services.TryAddSingleton<FlightData.Telemetry.ITelemetrySnapshotProjector, FlightData.Telemetry.TelemetrySnapshotProjector>();
+        services.TryAddSingleton<FlightData.Components.VehicleComponentRegistry>();
+        services.TryAddSingleton<FlightData.Components.IVehicleComponentRegistry>(provider => provider.GetRequiredService<FlightData.Components.VehicleComponentRegistry>());
         services.TryAddTransient<IVehicleService, VehicleService>();
 
         // MAVLink command sending services
