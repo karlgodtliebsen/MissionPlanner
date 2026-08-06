@@ -15,6 +15,7 @@
     <File Path="../docs/DESIGN_CONCEPTS.md" />
     <File Path="../docs/FEATURES.md" />
     <File Path="../docs/FIRMWARE.md" />
+    <File Path="../docs/FLIGHT_DATA.md" />
     <File Path="../docs/KNOWN_TEST_FAILURES.md" />
     <File Path="../docs/MAVFTP.md" />
     <File Path="../docs/MAVLINK.md" />
