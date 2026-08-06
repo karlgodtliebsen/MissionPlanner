@@ -28,4 +28,7 @@ public static class MavLinkCommandIds
 
     /// <summary>Reboots or shuts down an autopilot component.</summary>
     public const ushort PreflightRebootShutdown = (ushort)Generated.MavCmd.PreflightRebootShutdown;
+
+    /// <summary>Requests ArduPilot to run its pre-arm checks and report diagnostics.</summary>
+    public const ushort RunPrearmChecks = (ushort)Generated.MavCmd.RunPrearmChecks;
 }

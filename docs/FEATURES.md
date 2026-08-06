@@ -69,7 +69,9 @@ HUD + tabset on the left, shared mission map on the right.
 
 ## Tabset
 
-All tab views exist (`Views/FlightData/Tabs`), but only **Quick** has an implementation.
+All tab views exist under `Views/FlightData/Tabs`. **Preflight** now provides a conservative,
+explainable readiness assessment and an acknowledged ArduPilot pre-arm diagnostic request;
+it explicitly reports stale and unavailable evidence and never claims the aircraft is safe.
 Feature description per tab comes from v1.38 (`FlightData.Designer.cs` tab pages).
 
 ### Shared infrastructure

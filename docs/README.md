@@ -23,6 +23,7 @@ Documentation lives in `docs/` and is organized into three categories: core docu
 | [MAVLINK.md](MAVLINK.md) | Official dialect provenance, generated coverage, and maintenance workflow |
 | [MAVLINK_DOMAIN_PROMOTION.md](MAVLINK_DOMAIN_PROMOTION.md) | Rules and machine-readable ownership catalog for domain promotion |
 | [MAVFTP.md](MAVFTP.md) | MAVLink filesystem streaming, correlation, retries, and limitations |
+| [FLIGHT_DATA.md](FLIGHT_DATA.md) | Flight Data tab architecture, lifecycle, safety, and operator workflows |
 | [SERILOG_QUICKSTART.md](SERILOG_QUICKSTART.md) | Logging setup and diagnostic workflow |
 | [UI_VIEW_LIFECYCLE_AND_NAVIGATION.md](UI_VIEW_LIFECYCLE_AND_NAVIGATION.md) | Coding guide for lifecycle-aware tabs and Shell-based page navigation |
 

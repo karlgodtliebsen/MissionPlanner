@@ -164,6 +164,8 @@ public static class DomainConfigurator
         services.TryAddEnumerable(ServiceDescriptor.Transient<IVehicleMessageHandler, ControlMessageHandler>());
 
         services.TryAddTransient<IVehicleCommandService, VehicleCommandService>();
+        services.TryAddTransient<FlightData.Preflight.IPreflightAssessmentService, FlightData.Preflight.PreflightAssessmentService>();
+        services.TryAddTransient<FlightData.Preflight.IPreflightCommandService, FlightData.Preflight.PreflightCommandService>();
         services.TryAddTransient<IVehicleService, VehicleService>();
 
         // MAVLink command sending services
