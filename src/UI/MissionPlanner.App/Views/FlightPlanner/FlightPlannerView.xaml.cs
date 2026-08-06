@@ -1,12 +1,11 @@
-﻿using MissionPlanner.App.Helpers;
-using UraniumUI.Pages;
+﻿using MissionPlanner.App.Navigation;
 
 namespace MissionPlanner.App.Views.FlightPlanner;
 
 /// <summary>
 /// Represents the view for flight planning.
 /// </summary>
-public partial class FlightPlannerView : UraniumContentPage
+public partial class FlightPlannerView : ContentPageView<FlightPlannerViewModel>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="FlightPlannerView"/> class.
@@ -14,7 +13,5 @@ public partial class FlightPlannerView : UraniumContentPage
     public FlightPlannerView()
     {
         InitializeComponent();
-        var viewModel = ServiceHelper.GetRequiredService<FlightPlannerViewModel>();
-        BindingContext = viewModel;
     }
 }

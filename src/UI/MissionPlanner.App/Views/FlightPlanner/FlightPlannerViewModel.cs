@@ -6,7 +6,6 @@ using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Missions.Transfer;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.App.Views.FlightPlanner;
@@ -15,7 +14,7 @@ namespace MissionPlanner.App.Views.FlightPlanner;
 /// View model for the Plan screen. Composes the shared <see cref="MissionMapViewModel"/> (map,
 /// mission editing, file load/save) and adds vehicle transfer: Read, Write and Write Fast.
 /// </summary>
-public partial class FlightPlannerViewModel : ObservableObject
+public partial class FlightPlannerViewModel : ObservableObject, IDisposable
 {
     private readonly IMissionTransferService transferService;
     private readonly IMissionProtocolMapper protocolMapper;
@@ -186,5 +185,10 @@ public partial class FlightPlannerViewModel : ObservableObject
     private VehicleId? CurrentVehicleId()
     {
         return vehicleRegistry.Vehicles.FirstOrDefault()?.Id;
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
     }
 }

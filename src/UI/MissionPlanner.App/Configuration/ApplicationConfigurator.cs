@@ -65,6 +65,7 @@ public static class ApplicationConfigurator
         DomainException.ThrowIfNull(applicationOptions, ApplicationOptions.Template);
 
         services.AddSingleton(Options.Create(applicationOptions));
+        services.TryAddSingleton(new CancellationTokenSource());
 
         // Register shared state service as singleton for runtime state management
         services.TryAddTransient<INavigationService, ShellNavigationService>();
@@ -89,7 +90,6 @@ public static class ApplicationConfigurator
         services.TryAddTransient<ApplicationStateService>();
         services.TryAddTransient<ParametersFileHandler>();
         services.TryAddTransient<PlannerSettingsRuntime>();
-        services.TryAddSingleton(new CancellationTokenSource());
 
         services.TryAddTransient<IExtendedDialogService, ExtendedDialogService>();
         services.TryAddTransient<IUserNotificationService, UserNotificationService>();
@@ -98,14 +98,19 @@ public static class ApplicationConfigurator
         services.TryAddTransient<IConnectedVehicleFirmwareGateway, ConnectedVehicleFirmwareGateway>();
         services.TryAddTransient<FirmwareInteractionService>();
         services.TryAddTransient<IFirmwareFilePicker, MauiFirmwareFilePicker>();
-        services.TryAddTransient<IFirmwareUserInteraction>(serviceProvider => serviceProvider.GetRequiredService<FirmwareInteractionService>());
-        services.TryAddTransient<IBootloaderEntryInteraction>(serviceProvider => serviceProvider.GetRequiredService<FirmwareInteractionService>());
+
+        services.TryAddTransient<IFirmwareUserInteraction, FirmwareInteractionService>();
+        services.TryAddTransient<IBootloaderEntryInteraction, FirmwareInteractionService>();
+
         services.TryAddTransient<ITemporaryMavLinkBootloaderGateway, TemporaryMavLinkBootloaderGateway>();
         services.TryAddTransient<ITextClipboardService, TextClipboardService>();
         services.TryAddTransient<ISetupCompletionStore, PreferencesSetupCompletionStore>();
         services.TryAddTransient<IFirmwarePackageCache, FirmwarePackageCache>();
         services.TryAddTransient<IParameterComparisonService, ParameterComparisonService>();
         services.TryAddTransient<IParameterValueEquivalence, ParameterValueEquivalence>();
+        services.TryAddSingleton<IFirmwareSupportLinkProvider, FirmwareSupportLinkProvider>();
+        services.TryAddSingleton<IExternalLinkLauncher, ExternalLinkLauncher>();
+        services.TryAddSingleton<IDeviceManagerLauncher, DeviceManagerLauncher>();
 
         services
             .AddLibraryServices()
@@ -156,7 +161,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<AsyncOperationRunner>();
 
         services.TryAddTransient<HudViewModel>();
-        services.TryAddTransient<MissionMapViewModel>();
+        services.TryAddSingleton<MissionMapViewModel>();
 
         // Tabs on FlightDataView
         services.TryAddTransient<QuickTabViewModel>();
@@ -175,9 +180,6 @@ public static class ApplicationConfigurator
 
         services.TryAddTransient<AdvancedViewModel>();
         services.TryAddTransient<InstallFirmwareViewModel>();
-        services.TryAddSingleton<IFirmwareSupportLinkProvider, FirmwareSupportLinkProvider>();
-        services.TryAddSingleton<IExternalLinkLauncher, ExternalLinkLauncher>();
-        services.TryAddSingleton<IDeviceManagerLauncher, DeviceManagerLauncher>();
         services.TryAddTransient<OptionalHardwareViewModel>();
 
         services.TryAddTransient<FlightDataViewModel>();
