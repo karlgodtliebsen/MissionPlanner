@@ -25,3 +25,16 @@ operation-gated command path. It requires an online, disarmed vehicle, is disabl
 telemetry replay, supports cancellation/disconnect, and captures bounded recent
 `STATUSTEXT` diagnostics. An ACK means the request was accepted; the resulting diagnostics
 remain separate evidence.
+
+## Gauges and shared telemetry catalog
+
+Gauges and Status share an explicit descriptor catalog over promoted `VehicleState`; they
+never reflect over MAVLink wire records. Each descriptor owns a stable key, category, raw
+accessor, observation timestamp, units, formatting, recommended gauge type and range.
+Projection preserves the raw SI/domain value alongside its formatted value and represents
+fresh, stale, and unavailable values explicitly.
+
+The default dashboard contains airspeed, ground speed, relative altitude, climb rate,
+heading, and battery remaining. Tiles remain stable and update in place at no more than the
+configured `PlannerTelemetrySettings.DisplayRateHz`. Metric and imperial display conversion
+occurs only in the projector; domain values remain SI.

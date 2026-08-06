@@ -166,6 +166,8 @@ public static class DomainConfigurator
         services.TryAddTransient<IVehicleCommandService, VehicleCommandService>();
         services.TryAddTransient<FlightData.Preflight.IPreflightAssessmentService, FlightData.Preflight.PreflightAssessmentService>();
         services.TryAddTransient<FlightData.Preflight.IPreflightCommandService, FlightData.Preflight.PreflightCommandService>();
+        services.TryAddSingleton<FlightData.Telemetry.ITelemetryFieldCatalog, FlightData.Telemetry.TelemetryFieldCatalog>();
+        services.TryAddSingleton<FlightData.Telemetry.ITelemetrySnapshotProjector, FlightData.Telemetry.TelemetrySnapshotProjector>();
         services.TryAddTransient<IVehicleService, VehicleService>();
 
         // MAVLink command sending services

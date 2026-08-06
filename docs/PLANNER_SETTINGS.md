@@ -3,6 +3,10 @@
 The Config > Planner page owns local MissionPlanner behavior. It does not read or write
 flight-controller parameters.
 
+Flight Data gauges use `Units.System` for display conversion and
+`Telemetry.DisplayRateHz` as their maximum UI publication rate. Raw domain values remain in
+SI units regardless of these presentation preferences.
+
 ## Inventory and ownership
 
 Before Config task 06, local behavior came from several independent sources:

@@ -1,18 +1,22 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<tabViews:TabViewLifecycleContent x:TypeArguments="tabs:GaugesTabViewModel" 
-                                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-                                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                                  xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
-                                  xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
-                                  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
-                                  x:Class="MissionPlanner.App.Views.FlightData.Tabs.GaugesTabView"
-             
-                                  x:DataType="tabs:GaugesTabViewModel">
-
-
-    <Label Text="Gauges"
-           FontSize="16"
-           HorizontalOptions="Center"
-           VerticalOptions="Center" />
-
+<tabViews:TabViewLifecycleContent x:TypeArguments="tabs:GaugesTabViewModel"
+ xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+ xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
+ xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+ x:Class="MissionPlanner.App.Views.FlightData.Tabs.GaugesTabView" x:DataType="tabs:GaugesTabViewModel">
+ <Grid Padding="16" RowDefinitions="Auto,*">
+  <Label Text="Flight gauges" FontSize="20" FontAttributes="Bold" />
+  <CollectionView Grid.Row="1" ItemsSource="{Binding Tiles}">
+   <CollectionView.ItemsLayout><GridItemsLayout Orientation="Vertical" Span="3" /></CollectionView.ItemsLayout>
+   <CollectionView.ItemTemplate><DataTemplate x:DataType="tabs:GaugeTileViewModel">
+    <Border Margin="6" Padding="16" MinimumHeightRequest="130" StyleClass="SurfaceContainer,Rounded,Elevation1">
+     <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center">
+      <Label Text="{Binding Label}" HorizontalTextAlignment="Center" />
+      <HorizontalStackLayout HorizontalOptions="Center"><Label Text="{Binding Value}" FontSize="28" FontAttributes="Bold" /><Label Text="{Binding Unit}" VerticalTextAlignment="End" /></HorizontalStackLayout>
+      <Label Text="{Binding Freshness}" FontSize="12" HorizontalTextAlignment="Center" />
+     </VerticalStackLayout>
+    </Border>
+   </DataTemplate></CollectionView.ItemTemplate>
+  </CollectionView>
+ </Grid>
 </tabViews:TabViewLifecycleContent>

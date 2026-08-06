@@ -72,6 +72,8 @@ HUD + tabset on the left, shared mission map on the right.
 All tab views exist under `Views/FlightData/Tabs`. **Preflight** now provides a conservative,
 explainable readiness assessment and an acknowledged ArduPilot pre-arm diagnostic request;
 it explicitly reports stale and unavailable evidence and never claims the aircraft is safe.
+**Gauges** provides a responsive default flight dashboard backed by the shared promoted-
+telemetry descriptor catalog, explicit freshness, unit conversion, and bounded-rate updates.
 Feature description per tab comes from v1.38 (`FlightData.Designer.cs` tab pages).
 
 ### Shared infrastructure
