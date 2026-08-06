@@ -48,3 +48,8 @@ bounded vehicle-scoped traffic store deduplicates ADS-B tracks by ICAO address a
 them after 30 seconds. The tab makes unsupported/not-discovered state explicit and presents
 observed status and nearby traffic without fabricating absent fields. Configuration and
 IDENT controls remain unavailable until their response-correlation workflow is completed.
+
+`HeartbeatMessage` retains exactly one dispatcher owner: `HeartbeatVehicleHandler`. That
+handler updates both the vehicle registry and peripheral component discovery. The separate
+peripheral handler owns only ADS-B/uAvionix messages, preventing duplicate-handler failure
+during USB, UDP, or TCP connection startup.

@@ -8,6 +8,15 @@ namespace MissionPlanner.Core.Tests;
 /// <summary>Verifies component-scoped transponder and traffic storage.</summary>
 public sealed class ComponentRegistryTests
 {
+    /// <summary>The peripheral handler must not duplicate the connection heartbeat owner.</summary>
+    [Fact]
+    public void PeripheralHandlerDoesNotClaimHeartbeatMessages()
+    {
+        var handler = new PeripheralComponentHandler(new VehicleComponentRegistry());
+
+        handler.MessageTypes.Should().NotContain(typeof(HeartbeatMessage));
+    }
+
     /// <summary>Traffic is deduplicated by vehicle and ICAO identity.</summary>
     [Fact]
     public void TrafficUpdatesInPlaceByIcao()
