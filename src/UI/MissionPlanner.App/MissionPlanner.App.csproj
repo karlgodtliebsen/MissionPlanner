@@ -187,7 +187,7 @@
 	  <MauiXaml Update="Views\InitSetup\OptionalHardware\OptionalHardwareView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Views\Missions\MissionItemListDockView.xaml">
+	  <MauiXaml Update="Views\Missions\DockView\MissionItemListDockView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>

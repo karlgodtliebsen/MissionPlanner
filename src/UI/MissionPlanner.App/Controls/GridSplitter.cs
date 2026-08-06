@@ -1,4 +1,4 @@
-using static Microsoft.Maui.Controls.Grid;
+﻿using static Microsoft.Maui.Controls.Grid;
 
 namespace MissionPlanner.App.Controls;
 
@@ -13,6 +13,21 @@ public class GridSplitter : ContentView
     private double leftColumnStartWidth;
     private double rightColumnStartWidth;
     private Grid? parentGrid;
+
+    /// <summary>
+    /// Occurs when the user starts dragging the splitter.
+    /// </summary>
+    public event EventHandler? DragStarted;
+
+    /// <summary>
+    /// Occurs while the user is dragging the splitter.
+    /// </summary>
+    public event EventHandler? DragRunning;
+
+    /// <summary>
+    /// Occurs when the user completes dragging the splitter.
+    /// </summary>
+    public event EventHandler? DraggedCompleted;
 
     /// <summary>
     /// Gets or sets the thickness of the splitter. Default is 4.
@@ -40,13 +55,7 @@ public class GridSplitter : ContentView
 
         // Create a BoxView as content to make the control hit-testable
         // ContentView with only BackgroundColor won't receive touch/gesture events
-        boxView = new BoxView
-        {
-            Color = SplitterColor,
-            WidthRequest = SplitterThickness,
-            HorizontalOptions = LayoutOptions.Fill,
-            VerticalOptions = LayoutOptions.Fill
-        };
+        boxView = new BoxView { Color = SplitterColor, WidthRequest = SplitterThickness, HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill };
         Content = boxView;
 
         // Ensure the control can receive input
@@ -126,7 +135,7 @@ public class GridSplitter : ContentView
         }
 
         parentGrid = grid;
-        int columnIndex = GetColumn(this);
+        var columnIndex = GetColumn(this);
 
         // Ensure we have valid left and right columns
         if (columnIndex > 0 && columnIndex + 1 < grid.ColumnDefinitions.Count)
@@ -156,12 +165,13 @@ public class GridSplitter : ContentView
                 rightColumnStartWidth = GetActualColumnWidth(rightColumn, parentGrid.ColumnDefinitions.IndexOf(rightColumn));
 
                 System.Diagnostics.Debug.WriteLine($"GridSplitter Started: Left={leftColumnStartWidth}, Right={rightColumnStartWidth}");
+                DragStarted?.Invoke(this, EventArgs.Empty);
                 break;
 
             case GestureStatus.Running:
-                double delta = e.TotalX;
-                double newLeftWidth = leftColumnStartWidth + delta;
-                double newRightWidth = rightColumnStartWidth - delta;
+                var delta = e.TotalX;
+                var newLeftWidth = leftColumnStartWidth + delta;
+                var newRightWidth = rightColumnStartWidth - delta;
 
                 System.Diagnostics.Debug.WriteLine($"GridSplitter Running: Delta={delta}, NewLeft={newLeftWidth}, NewRight={newRightWidth}");
 
@@ -198,6 +208,7 @@ public class GridSplitter : ContentView
 
                     // Force the grid to re-layout immediately
                     ForceGridLayout();
+                    DragRunning?.Invoke(this, EventArgs.Empty);
                 }
 
                 break;
@@ -206,6 +217,7 @@ public class GridSplitter : ContentView
                 System.Diagnostics.Debug.WriteLine("GridSplitter Completed");
                 // Final layout update to ensure everything is settled
                 ForceGridLayout();
+                DraggedCompleted?.Invoke(this, EventArgs.Empty);
                 break;
 
             case GestureStatus.Canceled:
@@ -281,7 +293,7 @@ public class GridSplitter : ContentView
             {
                 if (child is BindableObject bindable)
                 {
-                    int childColumn = GetColumn(bindable);
+                    var childColumn = GetColumn(bindable);
                     if (childColumn == columnIndex && child is View viewElement && viewElement.Width > 0)
                     {
                         return viewElement.Width;
@@ -296,8 +308,8 @@ public class GridSplitter : ContentView
             // For star sizing, calculate proportional width
             if (column.Width.IsStar)
             {
-                double totalStars = parentGrid.ColumnDefinitions.Sum(c => c.Width.IsStar ? c.Width.Value : 0);
-                double availableWidth = parentGrid.Width;
+                var totalStars = parentGrid.ColumnDefinitions.Sum(c => c.Width.IsStar ? c.Width.Value : 0);
+                var availableWidth = parentGrid.Width;
 
                 // Subtract absolute widths
                 foreach (var col in parentGrid.ColumnDefinitions)

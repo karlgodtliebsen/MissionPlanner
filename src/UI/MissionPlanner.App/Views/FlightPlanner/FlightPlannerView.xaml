@@ -3,12 +3,13 @@
                          xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                          xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                          xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                         xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                          xmlns:vm="clr-namespace:MissionPlanner.App.Views.FlightPlanner"
                          xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
                          xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                          xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
                          xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
-                         xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                         xmlns:dockView="clr-namespace:MissionPlanner.App.Views.Missions.DockView"
                          x:Class="MissionPlanner.App.Views.FlightPlanner.FlightPlannerView"
                          x:DataType="vm:FlightPlannerViewModel">
 
@@ -27,7 +28,6 @@
             <Button Text="Read" Command="{Binding ReadFromVehicleCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
             <Button Text="Write" Command="{Binding WriteToVehicleCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
             <Button Text="Write Fast" Command="{Binding WriteToVehicleFastCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,12,4" />
-            <Button Text="Expand" Command="{Binding ExpandCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,12,4" />
 
             <Label Text="Map:" VerticalOptions="Center" Margin="0,0,4,4" />
             <Picker ItemsSource="{Binding Map.AvailableMapTypes}"
@@ -59,9 +59,11 @@
                                    Grid.Column="1" 
                                    SplitterThickness="4"
                                    SplitterColor="#3e3e42"
-                                   HoverColor="#007acc" />
+                                   HoverColor="#007acc" 
+                                   IsVisible="{Binding IsExpanded}" 
+                                   />
 
-            <missions:MissionItemListDockView x:Name="Editor" Grid.Column="2" Width="50"/>
+            <dockView:MissionItemListDockView x:Name="Editor" Grid.Column="2" Width="50"/>
 
         </Grid>
 

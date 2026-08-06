@@ -44,6 +44,7 @@ using MissionPlanner.Simulation.ArduPilot;
 using MissionPlanner.Simulation.Configuration;
 using MissionPlanner.Transport.Configuration;
 using UraniumUI.Material.Dialogs;
+using MissionItemListDockViewModel = MissionPlanner.App.Views.Missions.DockView.MissionItemListDockViewModel;
 
 namespace MissionPlanner.App.Configuration;
 
