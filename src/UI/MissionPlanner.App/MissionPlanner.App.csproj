@@ -127,9 +127,6 @@
 	  <Compile Update="Views\InitSetup\MandatoryHardware\MandatoryHardwareView.xaml.cs">
 	    <DependentUpon>MandatoryHardwareView.xaml</DependentUpon>
 	  </Compile>
-	  <Compile Update="Views\Missions\MissionItemListDockView.xaml.cs">
-	    <DependentUpon>MissionItemListDockView.xaml</DependentUpon>
-	  </Compile>
 	  <Compile Update="Views\Simulation\SimulationView.xaml.cs">
 	    <DependentUpon>SimulationView.xaml</DependentUpon>
 	  </Compile>
