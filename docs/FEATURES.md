@@ -189,9 +189,13 @@ Feature description per tab comes from v1.38 (`FlightData.Designer.cs` tab pages
   disconnect handling, stop-on-failure, and an ordered bounded log. Arbitrary in-process
   C#/Python/Lua and arbitrary MAVLink command IDs are intentionally unsupported.
 
-### Payload Control (Missing)
+### Payload Control
 
-* Gimbal pan/tilt/zoom control, camera trigger, payload actions
+* Implemented: multi-component heartbeat discovery and exact component targeting for
+  acknowledged single-image capture, video start/stop, and bounded gimbal-manager pitch/yaw
+  with yaw-lock semantics. Replay and operation gates are enforced and ACK does not imply
+  observed state. Capability information, zoom/focus, continuous control, and legacy mount
+  fallback remain documented limitations.
 
 ### Telemetry Logs
 

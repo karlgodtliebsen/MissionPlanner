@@ -9,9 +9,23 @@
              
                                   x:DataType="tabs:PayloadControlTabViewModel">
 
-    <Label Text="Payload Control"
-           FontSize="16"
-           HorizontalOptions="Center"
-           VerticalOptions="Center" />
+    <Grid Padding="16" RowDefinitions="Auto,Auto,Auto,Auto,Auto,*">
+        <Label Text="Payload Control" FontSize="20" FontAttributes="Bold" />
+        <Picker Grid.Row="1" Title="Discovered component" ItemsSource="{Binding Payloads}"
+                ItemDisplayBinding="{Binding Kind}" SelectedItem="{Binding SelectedPayload}" />
+        <HorizontalStackLayout Grid.Row="2" Spacing="8">
+            <Button Text="Capture image" Command="{Binding CaptureCommand}" />
+            <Button Text="Start video" Command="{Binding StartVideoCommand}" />
+            <Button Text="Stop video" Command="{Binding StopVideoCommand}" />
+        </HorizontalStackLayout>
+        <HorizontalStackLayout Grid.Row="3" Spacing="8">
+            <Entry Text="{Binding Pitch}" Placeholder="Pitch (-90..90)" />
+            <Entry Text="{Binding Yaw}" Placeholder="Yaw (-180..180)" />
+            <CheckBox IsChecked="{Binding YawLock}" /><Label Text="Earth-frame yaw lock" VerticalOptions="Center" />
+            <Button Text="Move gimbal" Command="{Binding MoveGimbalCommand}" />
+        </HorizontalStackLayout>
+        <Label Grid.Row="4" Text="{Binding Status}" />
+        <Label Grid.Row="5" Text="Commands target the selected component. ACK does not imply observed state." />
+    </Grid>
 
 </tabViews:TabViewLifecycleContent>

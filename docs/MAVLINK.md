@@ -265,6 +265,9 @@ messages. Existing MAVFTP connection, dispatcher, cancellation, and reconnect ow
 unchanged.
 
 Log transfer, camera, gimbal, mount, ADS-B, generator/EFI, ESC, winch, landing target,
+and other component workflows remain outside general `VehicleState`. Payload Control owns
+camera/gimbal component targeting and generated command encoding; every request targets the
+selected component and correlates its ACK by system, component, and command.
 OpenDroneID, cellular/Wi-Fi, CAN, serial control, tunnel, and device-operation messages are
 typed and available to protocol workflows and inspectors. They deliberately remain without
 application services until a current product feature needs an owning state machine.

@@ -179,6 +179,9 @@ public static class DomainConfigurator
         services.TryAddSingleton<FlightData.Scripting.IVehicleScriptParser, FlightData.Scripting.VehicleScriptParser>();
         services.TryAddTransient<FlightData.Scripting.IVehicleScriptValidator, FlightData.Scripting.VehicleScriptValidator>();
         services.TryAddTransient<FlightData.Scripting.IVehicleScriptExecutor, FlightData.Scripting.VehicleScriptExecutor>();
+        services.TryAddTransient<FlightData.Payload.PayloadProtocolService>();
+        services.TryAddTransient<FlightData.Payload.ICameraProtocolService>(provider => provider.GetRequiredService<FlightData.Payload.PayloadProtocolService>());
+        services.TryAddTransient<FlightData.Payload.IGimbalProtocolService>(provider => provider.GetRequiredService<FlightData.Payload.PayloadProtocolService>());
         services.TryAddTransient<IVehicleService, VehicleService>();
 
         // MAVLink command sending services

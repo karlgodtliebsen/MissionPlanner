@@ -99,3 +99,18 @@ Version 1 permits `notify`, bounded `delay`, `waitForConnection`, `arm`, `disarm
 reflection, dynamic compilation, loops, and parallel execution are prohibited. See
 `VEHICLE_SCRIPTS.md` for the schema.
 
+## Payload Control
+
+Payload components are discovered from component heartbeats and keyed by vehicle system
+and exact component ID. Camera and gimbal workflow state remains outside general autopilot
+`VehicleState`. The tab never assumes a single payload or fixed component ID and commands
+always encode the selected component as the MAVLink target.
+
+The initial camera workflow supports acknowledged single-image capture and video start/stop.
+The initial gimbal-manager workflow supports bounded pitch/yaw and vehicle-frame or
+earth-frame yaw-lock flags; unused rates are encoded as MAVLink NaN. Writes are blocked
+during replay, serialized per vehicle, cancelled on disconnect or tab disposal, and ACK is
+kept distinct from observed payload state. Zoom, focus, camera mode, status promotion,
+continuous pointer control, and legacy mount fallback remain explicit limitations pending
+capability-information/state handlers.
+
