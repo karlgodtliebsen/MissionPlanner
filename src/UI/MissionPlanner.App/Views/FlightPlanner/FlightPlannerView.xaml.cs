@@ -14,13 +14,13 @@ public partial class FlightPlannerView : ExtendedContentPage<FlightPlannerViewMo
     public FlightPlannerView()
     {
         InitializeComponent();
-        Editor.WidthRequestChanged += Editor_WidthRequestChanged;
+        //Editor.WidthRequestChanged += Editor_WidthRequestChanged;
         //TheGridSplitter.On
     }
 
     private void Editor_WidthRequestChanged(object? sender, WidthEventArgs e)
     {
         //Editor.MinimumWidthRequest = e.Width;
-        TheGrid.ColumnDefinitions[2].Width = new GridLength(e.Width);
+        //TheGrid.ColumnDefinitions[2].Width = new GridLength(e.Width);
     }
 }

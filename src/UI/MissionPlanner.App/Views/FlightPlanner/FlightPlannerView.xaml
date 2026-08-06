@@ -16,9 +16,8 @@
         <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
     </navigation:ExtendedContentPage.Resources>
 
-    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="4" Padding="5" >
+    <!--<Grid RowDefinitions="Auto,*,Auto" RowSpacing="4" Padding="5" >
 
-        <!-- Toolbar -->
         <FlexLayout Grid.Row="0" Wrap="Wrap" AlignItems="Center" JustifyContent="Start" Margin="10,10,0,0">
 
             <Button Text="Load File" Command="{Binding Map.LoadWpFileCommand}" Margin="0,0,4,4" />
@@ -66,9 +65,9 @@
 
         </Grid>
 
-    </Grid>
+    </Grid>-->
 
-    <!--<toolkit:DockLayout>
+    <toolkit:DockLayout>
 
         <FlexLayout  toolkit:DockLayout.DockPosition="Top" Grid.Row="0" Wrap="Wrap" HeightRequest="50" AlignItems="Center" JustifyContent="Start" Margin="10,10,0,0">
 
@@ -108,7 +107,7 @@
         <missions:MissionMapView  />
 
 
-    </toolkit:DockLayout>-->
+    </toolkit:DockLayout>
 
 
 
