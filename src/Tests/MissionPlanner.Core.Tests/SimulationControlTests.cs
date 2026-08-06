@@ -5,10 +5,13 @@ using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Simulation;
 using MissionPlanner.Simulation.Abstractions;
+using MissionPlanner.Simulation.ArduPilot;
 using MissionPlanner.Transport;
 using NSubstitute;
 

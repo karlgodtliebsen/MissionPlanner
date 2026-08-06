@@ -16,6 +16,7 @@ using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Configuration;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.MavLink.Services.Abstractions;
+using MissionPlanner.Simulation;
 using MissionPlanner.Transport;
 using MissionPlanner.Transport.Abstractions;
 using NSubstitute;
@@ -32,8 +33,8 @@ public sealed class SimulationPlaybackDiagnosticsTests
     {
         await using var provider = CreateReplayProvider(new CapturingReplayDelay());
         var crc = provider.GetRequiredService<IMavLinkCrcExtraProvider>();
-        var first = MavLinkKnownFrames.CreateHeartbeatV2(crc, sequence: 1, customMode: 10);
-        var second = MavLinkKnownFrames.CreateHeartbeatV2(crc, sequence: 2, customMode: 20);
+        var first = MavLinkKnownFrames.CreateHeartbeatV2(crc, 1, customMode: 10);
+        var second = MavLinkKnownFrames.CreateHeartbeatV2(crc, 2, customMode: 20);
         await using var stream = CreateTelemetryLog(
             (DateTimeOffset.Parse("2026-07-23T10:00:00Z"), first),
             (DateTimeOffset.Parse("2026-07-23T10:00:02Z"), second),
@@ -60,9 +61,9 @@ public sealed class SimulationPlaybackDiagnosticsTests
         var manager = provider.GetRequiredService<IReplaySessionManager>();
         var start = DateTimeOffset.Parse("2026-07-23T10:00:00Z");
         var stream = CreateTelemetryLog(
-            (start, MavLinkKnownFrames.CreateHeartbeatV2(crc, sequence: 1, customMode: 10)),
-            (start.AddSeconds(1), MavLinkKnownFrames.CreateHeartbeatV2(crc, sequence: 2, customMode: 20)),
-            (start.AddSeconds(3), MavLinkKnownFrames.CreateHeartbeatV2(crc, sequence: 3, customMode: 30)));
+            (start, MavLinkKnownFrames.CreateHeartbeatV2(crc, 1, customMode: 10)),
+            (start.AddSeconds(1), MavLinkKnownFrames.CreateHeartbeatV2(crc, 2, customMode: 20)),
+            (start.AddSeconds(3), MavLinkKnownFrames.CreateHeartbeatV2(crc, 3, customMode: 30)));
 
         await manager.LoadAsync(stream, "clock.tlog", TestContext.Current.CancellationToken);
         manager.SetSpeed(2);
@@ -97,8 +98,8 @@ public sealed class SimulationPlaybackDiagnosticsTests
         var startedAt = DateTimeOffset.Parse("2026-07-23T10:00:00Z");
         await manager.LoadAsync(
             CreateTelemetryLog(
-                (startedAt, MavLinkKnownFrames.CreateHeartbeatV2(crc, sequence: 1)),
-                (startedAt.AddMinutes(1), MavLinkKnownFrames.CreateHeartbeatV2(crc, sequence: 2))),
+                (startedAt, MavLinkKnownFrames.CreateHeartbeatV2(crc, 1)),
+                (startedAt.AddMinutes(1), MavLinkKnownFrames.CreateHeartbeatV2(crc, 2))),
             "pause.tlog",
             TestContext.Current.CancellationToken);
 
@@ -199,7 +200,7 @@ public sealed class SimulationPlaybackDiagnosticsTests
         for (var run = 0; run < 10; run++)
         {
             var stream = new TrackingMemoryStream(CreateTelemetryLogBytes(
-                (DateTimeOffset.UtcNow, MavLinkKnownFrames.CreateHeartbeatV2(crc, sequence: (byte)run))));
+                (DateTimeOffset.UtcNow, MavLinkKnownFrames.CreateHeartbeatV2(crc, (byte)run))));
             await manager.LoadAsync(stream, $"run-{run}.tlog", TestContext.Current.CancellationToken);
             await manager.PlayAsync(TestContext.Current.CancellationToken);
             await WaitUntilAsync(() => manager.Snapshot.State == ReplaySessionState.Completed);
@@ -259,8 +260,10 @@ public sealed class SimulationPlaybackDiagnosticsTests
         return services.BuildServiceProvider();
     }
 
-    private static MemoryStream CreateTelemetryLog(params (DateTimeOffset Timestamp, byte[] Packet)[] records) =>
-        new(CreateTelemetryLogBytes(records), writable: false);
+    private static MemoryStream CreateTelemetryLog(params (DateTimeOffset Timestamp, byte[] Packet)[] records)
+    {
+        return new MemoryStream(CreateTelemetryLogBytes(records), false);
+    }
 
     private static byte[] CreateTelemetryLogBytes(params (DateTimeOffset Timestamp, byte[] Packet)[] records)
     {
@@ -328,7 +331,10 @@ public sealed class SimulationPlaybackDiagnosticsTests
 
         public int ResetCount { get; private set; }
 
-        public void Reset() => ResetCount++;
+        public void Reset()
+        {
+            ResetCount++;
+        }
 
         public ValueTask<bool> ProcessAsync(
             ReadOnlyMemory<byte> packet,
@@ -341,7 +347,7 @@ public sealed class SimulationPlaybackDiagnosticsTests
         }
     }
 
-    private sealed class TrackingMemoryStream(byte[] buffer) : MemoryStream(buffer, writable: false)
+    private sealed class TrackingMemoryStream(byte[] buffer) : MemoryStream(buffer, false)
     {
         public bool WasDisposed { get; private set; }
 

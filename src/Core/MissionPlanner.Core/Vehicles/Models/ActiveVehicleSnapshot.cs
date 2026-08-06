@@ -1,3 +1,5 @@
+using MissionPlanner.Shared.Models.Vehicles.Models;
+
 namespace MissionPlanner.Core.Vehicles.Models;
 
 /// <summary>

@@ -4,6 +4,7 @@ using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Vehicles;
 

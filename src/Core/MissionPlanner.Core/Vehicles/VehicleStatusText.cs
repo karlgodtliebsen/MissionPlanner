@@ -1,7 +1,9 @@
-﻿namespace MissionPlanner.Core.Vehicles;
+﻿using MissionPlanner.Shared.Models.Vehicles.Models;
 
-using MissionPlanner.Core.Vehicles.Models;
-using MissionPlanner.MavLink;
+namespace MissionPlanner.Core.Vehicles;
+
+using Models;
+using MavLink;
 
 /// <summary>
 /// Represents a status text message from a vehicle.

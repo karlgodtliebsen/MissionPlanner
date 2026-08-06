@@ -11,8 +11,11 @@ using MissionPlanner.Core.ConfigTuning.Osd;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
+using MissionPlanner.Firmware.Model;
 using MissionPlanner.Library;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Test.Support.Configuration;
 using NSubstitute;
 

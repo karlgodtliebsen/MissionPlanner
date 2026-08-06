@@ -9,6 +9,7 @@ using MissionPlanner.Core.ConfigTuning.VendorDevices.CubeLan;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 

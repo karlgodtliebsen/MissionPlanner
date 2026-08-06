@@ -4,6 +4,7 @@ using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Core.Vehicles.Observations;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Messages;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Vehicles.Handlers;
 
@@ -60,6 +61,7 @@ public sealed class FlightTelemetryHandler(IVehicleRegistry vehicleRegistry, IDo
             {
                 await PublishStateIfChangedAsync(previousState, result.Vehicle, cancellationToken).ConfigureAwait(false);
             }
+
             return;
         }
 
@@ -68,6 +70,7 @@ public sealed class FlightTelemetryHandler(IVehicleRegistry vehicleRegistry, IDo
         {
             return;
         }
+
         var previous = vehicle.State;
 
         switch (message)
@@ -151,7 +154,7 @@ public sealed class FlightTelemetryHandler(IVehicleRegistry vehicleRegistry, IDo
 
     private static (double Roll, double Pitch, double Yaw) ToEuler(double w, double x, double y, double z)
     {
-        var norm = Math.Sqrt((w * w) + (x * x) + (y * y) + (z * z));
+        var norm = Math.Sqrt(w * w + x * x + y * y + z * z);
         if (norm <= double.Epsilon)
         {
             return (0, 0, 0);
@@ -161,14 +164,20 @@ public sealed class FlightTelemetryHandler(IVehicleRegistry vehicleRegistry, IDo
         x /= norm;
         y /= norm;
         z /= norm;
-        var roll = Math.Atan2(2 * ((w * x) + (y * z)), 1 - (2 * ((x * x) + (y * y))));
-        var pitchTerm = Math.Clamp(2 * ((w * y) - (z * x)), -1, 1);
+        var roll = Math.Atan2(2 * (w * x + y * z), 1 - 2 * (x * x + y * y));
+        var pitchTerm = Math.Clamp(2 * (w * y - z * x), -1, 1);
         var pitch = Math.Asin(pitchTerm);
-        var yaw = Math.Atan2(2 * ((w * z) + (x * y)), 1 - (2 * ((y * y) + (z * z))));
+        var yaw = Math.Atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z));
         return (roll, pitch, yaw);
     }
 
-    private static VehicleVtolState MapVtolState(byte value) => value <= 4 ? (VehicleVtolState)value : VehicleVtolState.Undefined;
+    private static VehicleVtolState MapVtolState(byte value)
+    {
+        return value <= 4 ? (VehicleVtolState)value : VehicleVtolState.Undefined;
+    }
 
-    private static VehicleLandedState MapLandedState(byte value) => value <= 4 ? (VehicleLandedState)value : VehicleLandedState.Undefined;
+    private static VehicleLandedState MapLandedState(byte value)
+    {
+        return value <= 4 ? (VehicleLandedState)value : VehicleLandedState.Undefined;
+    }
 }

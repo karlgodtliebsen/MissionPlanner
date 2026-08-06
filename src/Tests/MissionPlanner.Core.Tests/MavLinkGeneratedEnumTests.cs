@@ -1,12 +1,8 @@
-using System.Reflection;
+﻿using System.Reflection;
 using FluentAssertions;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.Commands;
 using MissionPlanner.MavLink.Generated;
 using MissionPlanner.MavLink.Generator;
-using DomainCapability = MissionPlanner.Core.Vehicles.Models.MavProtocolCapability;
-using ProtocolCapability = MissionPlanner.MavLink.Generated.MavProtocolCapability;
-using ProtocolGpsFixType = MissionPlanner.MavLink.Generated.GpsFixType;
 
 namespace MissionPlanner.Core.Tests;
 
@@ -25,11 +21,9 @@ public sealed class MavLinkGeneratedEnumTests
         ((byte)MavAutopilot.ArduPilotMega).Should().Be(3);
         ((byte)MavComponent.MissionPlanner).Should().Be(190);
         ((byte)MavState.Active).Should().Be(4);
-        ((byte)ProtocolGpsFixType.Value3dFix).Should().Be(3);
         ((byte)FirmwareVersionType.Official).Should().Be(255);
         ((byte)MavMissionResult.Accepted).Should().Be(0);
         ((byte)MavMissionType.Rally).Should().Be(2);
-        Enum.GetUnderlyingType(typeof(ProtocolCapability)).Should().Be(typeof(ulong));
         Enum.GetUnderlyingType(typeof(MavCmd)).Should().Be(typeof(ushort));
     }
 
@@ -73,19 +67,6 @@ public sealed class MavLinkGeneratedEnumTests
         ((ushort)MavCmd.MissionStart).Should().Be(300);
     }
 
-    /// <summary>Verifies generated protocol concepts map explicitly into smaller domain concepts.</summary>
-    [Fact]
-    public void GeneratedProtocolEnumsMapToDomainConcepts()
-    {
-        VehicleFirmwareIdentityFactory.MapFamily(MavType.Airship, MavAutopilot.ArduPilotMega)
-            .Should().Be(FirmwareFamily.Blimp);
-        VehicleFirmwareIdentityFactory.MapFamily(MavType.Quadrotor, MavAutopilot.Px4)
-            .Should().Be(FirmwareFamily.Unknown);
-
-        var protocol = ProtocolCapability.ParamFloat | ProtocolCapability.ParamEncodeBytewise | ProtocolCapability.Ftp;
-        protocol.ToDomainCapabilities().Should().Be(
-            DomainCapability.ParamFloat | DomainCapability.ParamUnion | DomainCapability.Ftp);
-    }
 
     /// <summary>Verifies the committed enum source exactly matches deterministic generation.</summary>
     [Fact]

@@ -8,6 +8,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library;
 using MissionPlanner.MavLink.Services.Abstractions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Simulator.SmokeTests;
 using MissionPlanner.Smoke.Simulator.Tests.Configuration;
 using MissionPlanner.Transport;

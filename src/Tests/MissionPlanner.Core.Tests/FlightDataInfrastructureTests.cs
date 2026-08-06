@@ -13,6 +13,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Transport;
 using NSubstitute;
 
@@ -200,5 +201,4 @@ public sealed class FlightDataInfrastructureTests
         Func<VehicleConnected, CancellationToken, Task>? Connected,
         Func<VehicleDisconnected, CancellationToken, Task>? Disconnected,
         Func<VehicleStateUpdated, CancellationToken, Task>? Updated);
-
 }

@@ -6,6 +6,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using NSubstitute;
 using MavParamType = MissionPlanner.MavLink.Parameters.MavParamType;
 
@@ -25,7 +26,7 @@ public sealed class BatterySetupTests
         Store(registry, "BATT_CAPACITY", 5000);
         Store(registry, "BATT3_MONITOR", 4); // Sparse: instance 2 absent.
         var now = DateTimeOffset.UtcNow;
-        var context = new TestActiveVehicleContext(State(now, voltage: 12.4, current: 8));
+        var context = new TestActiveVehicleContext(State(now, 12.4, 8));
         var service = CreateService(context, registry, now);
 
         var configuration = await service.GetConfigurationAsync(vehicleId, TestContext.Current.CancellationToken);
@@ -47,7 +48,7 @@ public sealed class BatterySetupTests
         var now = DateTimeOffset.UtcNow;
         var service = CreateService(new TestActiveVehicleContext(State(now, 12.0, 0)), registry, now);
 
-        var result = await service.CalibrateVoltageAsync(vehicleId, 1, measuredVolts: 12.0, referenceVolts: 12.6, TestContext.Current.CancellationToken);
+        var result = await service.CalibrateVoltageAsync(vehicleId, 1, 12.0, 12.6, TestContext.Current.CancellationToken);
 
         result.Success.Should().BeTrue();
         registry.GetParameter(vehicleId, "BATT_VOLT_MULT")!.Value.Should().BeApproximately(10.0f * (12.6f / 12.0f), 0.001f);
@@ -63,7 +64,7 @@ public sealed class BatterySetupTests
         var now = DateTimeOffset.UtcNow;
         var service = CreateService(new TestActiveVehicleContext(State(now, 0, 0)), registry, now);
 
-        var result = await service.CalibrateVoltageAsync(vehicleId, 1, measuredVolts: 0, referenceVolts: 12.6, TestContext.Current.CancellationToken);
+        var result = await service.CalibrateVoltageAsync(vehicleId, 1, 0, 12.6, TestContext.Current.CancellationToken);
 
         result.Success.Should().BeFalse();
         registry.GetParameter(vehicleId, "BATT_VOLT_MULT")!.Value.Should().Be(10.0f);
@@ -124,17 +125,19 @@ public sealed class BatterySetupTests
             Substitute.For<ILogger<BatteryConfigurationService>>());
     }
 
-    private static void Store(VehicleParameterRegistry registry, string name, float value) =>
+    private static void Store(VehicleParameterRegistry registry, string name, float value)
+    {
         registry.StoreParameter(vehicleId, new VehicleParameter(name, value, MavParamType.Real32, 0, 1), CancellationToken.None);
+    }
 
     private static VehicleState State(DateTimeOffset now, double voltage, double current)
     {
         var state = new VehicleState(vehicleId, 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online, now,
-            VehicleMode.Stabilize, false, null, null, null, null, null, null, null, null) with
-        {
-            Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
-                LandedState: VehicleLandedState.OnGround, ObservedAt: now)
-        };
+                VehicleMode.Stabilize, false, null, null, null, null, null, null, null, null) with
+            {
+                Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
+                    LandedState: VehicleLandedState.OnGround, ObservedAt: now)
+            };
         return state with
         {
             Power = VehiclePowerState.Empty with

@@ -1,4 +1,5 @@
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Setup;
 
@@ -7,18 +8,25 @@ public enum RadioCalibrationState
 {
     /// <summary>No calibration has started.</summary>
     NotStarted,
+
     /// <summary>Live stick movement is being captured for endpoint extremes.</summary>
     Capturing,
+
     /// <summary>Captured endpoints are ready for validation and review.</summary>
     Review,
+
     /// <summary>Captured endpoints are being written and confirmed.</summary>
     Writing,
+
     /// <summary>Endpoints were written and confirmed by readback.</summary>
     Success,
+
     /// <summary>Validation or the confirmed write failed.</summary>
     Failed,
+
     /// <summary>The user cancelled calibration.</summary>
     Cancelled,
+
     /// <summary>The vehicle disconnected during calibration.</summary>
     Disconnected
 }
@@ -28,8 +36,10 @@ public enum RadioIssueSeverity
 {
     /// <summary>Informational guidance.</summary>
     Info,
+
     /// <summary>A configuration that should be reviewed before flight.</summary>
     Warning,
+
     /// <summary>A hazardous configuration that blocks a confirmed write.</summary>
     Hazard
 }
@@ -72,7 +82,10 @@ public sealed record RadioChannelsView(
     /// <summary>Gets an empty projection for the specified vehicle.</summary>
     /// <param name="vehicleId">The vehicle identifier.</param>
     /// <returns>An empty projection.</returns>
-    public static RadioChannelsView Empty(VehicleId vehicleId) => new(vehicleId, [], true, []);
+    public static RadioChannelsView Empty(VehicleId vehicleId)
+    {
+        return new RadioChannelsView(vehicleId, [], true, []);
+    }
 }
 
 /// <summary>Captures the observed endpoint extremes for one channel during calibration.</summary>

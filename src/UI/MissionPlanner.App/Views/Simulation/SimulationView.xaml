@@ -60,7 +60,7 @@
                                     <Label Text="No fleet sessions are allocated." Padding="8" />
                                 </CollectionView.EmptyView>
                                 <CollectionView.ItemTemplate>
-                                    <DataTemplate x:DataType="simulation:SimulationFleetSessionSnapshot">
+                                    <DataTemplate x:DataType="simulation1:SimulationFleetSessionSnapshot">
                                         <Grid Padding="5" ColumnDefinitions="1.2*,Auto,Auto" ColumnSpacing="8">
                                             <VerticalStackLayout>
                                                 <Label Text="{Binding Allocation.Profile.Name}" FontAttributes="Bold" />
@@ -275,7 +275,7 @@
                         </HorizontalStackLayout>
                         <CollectionView ItemsSource="{Binding ScenarioEvents}" HeightRequest="85">
                             <CollectionView.ItemTemplate>
-                                <DataTemplate x:DataType="simulation:SimulationScenarioEvent">
+                                <DataTemplate x:DataType="simulation1:SimulationScenarioEvent">
                                     <Label Text="{Binding Message}" LineBreakMode="TailTruncation" />
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>

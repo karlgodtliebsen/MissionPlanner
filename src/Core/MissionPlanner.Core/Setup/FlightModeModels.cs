@@ -1,4 +1,6 @@
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Setup;
 
@@ -38,8 +40,10 @@ public sealed record FlightModeConfiguration(
     /// <param name="vehicleId">The vehicle identifier.</param>
     /// <param name="family">The firmware family.</param>
     /// <returns>An unsupported configuration.</returns>
-    public static FlightModeConfiguration Unsupported(VehicleId vehicleId, FirmwareFamily family) =>
-        new(vehicleId, family, false, 0, [], [], null);
+    public static FlightModeConfiguration Unsupported(VehicleId vehicleId, FirmwareFamily family)
+    {
+        return new FlightModeConfiguration(vehicleId, family, false, 0, [], [], null);
+    }
 }
 
 /// <summary>Represents the outcome of a confirmed flight-mode slot write.</summary>

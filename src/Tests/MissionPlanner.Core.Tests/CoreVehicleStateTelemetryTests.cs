@@ -6,10 +6,12 @@ using MissionPlanner.Core.Vehicles.Handlers;
 using MissionPlanner.Core.Vehicles.Handlers.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Core.Vehicles.Observations;
+using MissionPlanner.Firmware;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Transport;
 using NSubstitute;
 

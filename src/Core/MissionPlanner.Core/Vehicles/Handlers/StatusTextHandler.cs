@@ -8,6 +8,7 @@ using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink;
 using MissionPlanner.MavLink.Messages;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Vehicles.Handlers;
 
@@ -166,8 +167,10 @@ public sealed class StatusTextHandler : IStatusTextHandler
         return completed;
     }
 
-    private void ScheduleTimeout(ChunkKey key, int generation) =>
+    private void ScheduleTimeout(ChunkKey key, int generation)
+    {
         _ = FlushAfterTimeoutAsync(key, generation);
+    }
 
     private async Task FlushAfterTimeoutAsync(ChunkKey key, int generation)
     {
@@ -208,18 +211,21 @@ public sealed class StatusTextHandler : IStatusTextHandler
         await domainEventHub.PublishDomainEventAsync(new VehicleStatusTextReceived(stored), cancellationToken).ConfigureAwait(false);
     }
 
-    private VehicleSession? FindVehicle(byte systemId, byte componentId) =>
-        vehicleRegistry.GetRequired(new VehicleId(systemId, 1)) ??
-        vehicleRegistry.GetRequired(new VehicleId(systemId, componentId)) ??
-        vehicleRegistry.Vehicles.FirstOrDefault(candidate => candidate.Id.SystemId == systemId);
+    private VehicleSession? FindVehicle(byte systemId, byte componentId)
+    {
+        return vehicleRegistry.GetRequired(new VehicleId(systemId, 1)) ??
+               vehicleRegistry.GetRequired(new VehicleId(systemId, componentId)) ??
+               vehicleRegistry.Vehicles.FirstOrDefault(candidate => candidate.Id.SystemId == systemId);
+    }
 
     private static VehicleStatusText CreateMessage(
         VehicleId vehicleId,
         StatusTextMessage source,
         string text,
         bool assembled,
-        bool truncated) =>
-        new(
+        bool truncated)
+    {
+        return new VehicleStatusText(
             vehicleId,
             source.SystemId,
             source.ComponentId,
@@ -229,6 +235,7 @@ public sealed class StatusTextHandler : IStatusTextHandler
             source.Id,
             assembled,
             truncated);
+    }
 
     private readonly record struct ChunkKey(VehicleId VehicleId, byte SystemId, byte ComponentId, ushort ProtocolId);
 
@@ -270,12 +277,14 @@ public sealed class StatusTextHandler : IStatusTextHandler
 
         public int ChunkCount { get; private set; } = 1;
 
-        public bool IsDuplicateFirst(StatusTextMessage message) =>
-            ChunkCount == 1 &&
-            message.SystemId == SourceSystemId &&
-            message.ComponentId == SourceComponentId &&
-            message.Severity == Severity &&
-            message.Text == text.ToString();
+        public bool IsDuplicateFirst(StatusTextMessage message)
+        {
+            return ChunkCount == 1 &&
+                   message.SystemId == SourceSystemId &&
+                   message.ComponentId == SourceComponentId &&
+                   message.Severity == Severity &&
+                   message.Text == text.ToString();
+        }
 
         public void Append(string value, DateTimeOffset receivedAt)
         {
@@ -290,8 +299,9 @@ public sealed class StatusTextHandler : IStatusTextHandler
             Generation++;
         }
 
-        public VehicleStatusText ToMessage(bool truncated) =>
-            new(
+        public VehicleStatusText ToMessage(bool truncated)
+        {
+            return new VehicleStatusText(
                 VehicleId,
                 SourceSystemId,
                 SourceComponentId,
@@ -301,5 +311,6 @@ public sealed class StatusTextHandler : IStatusTextHandler
                 ProtocolId,
                 ChunkCount > 1,
                 truncated);
+        }
     }
 }

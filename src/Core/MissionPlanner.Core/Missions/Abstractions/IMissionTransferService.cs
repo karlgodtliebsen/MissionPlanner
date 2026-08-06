@@ -2,6 +2,7 @@
 using MissionPlanner.Core.Missions.Transfer;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.Missions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Missions.Abstractions;
 

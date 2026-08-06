@@ -8,6 +8,8 @@ using MissionPlanner.Core.ConfigTuning.Tuning;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware.Model;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
@@ -299,7 +301,10 @@ public sealed partial class BasicTuningTabViewModel : ObservableObject, IDisposa
         }).ConfigureAwait(false);
     }
 
-    private bool CanOperate() => !IsBusy && workspace is not null && workspace.Session.IsValid;
+    private bool CanOperate()
+    {
+        return !IsBusy && workspace is not null && workspace.Session.IsValid;
+    }
 
     private async Task ApplyGroupAsync(BasicTuningGroupViewModel group)
     {
@@ -470,11 +475,8 @@ public sealed partial class BasicTuningTabViewModel : ObservableObject, IDisposa
 
     private void DetachWorkspace()
     {
-        if (workspace is not null)
-        {
-            workspace.Session.Changed -= OnSessionChanged;
-            workspace = null;
-        }
+        workspace?.Session.Changed -= OnSessionChanged;
+        workspace = null;
     }
 
     private void CancelOperation()
@@ -484,12 +486,11 @@ public sealed partial class BasicTuningTabViewModel : ObservableObject, IDisposa
         IsBusy = false;
     }
 
-    private readonly record struct ActiveProfileKey(
-        VehicleId? VehicleId,
-        bool IsOnline,
-        VehicleFirmwareIdentity? Firmware)
+    private readonly record struct ActiveProfileKey(VehicleId? VehicleId, bool IsOnline, VehicleFirmwareIdentity? Firmware)
     {
-        public static ActiveProfileKey From(ActiveVehicleSnapshot snapshot) =>
-            new(snapshot.VehicleId, snapshot.IsOnline, snapshot.State?.Identity.Firmware);
+        public static ActiveProfileKey From(ActiveVehicleSnapshot snapshot)
+        {
+            return new ActiveProfileKey(snapshot.VehicleId, snapshot.IsOnline, snapshot.State?.Identity.Firmware);
+        }
     }
 }

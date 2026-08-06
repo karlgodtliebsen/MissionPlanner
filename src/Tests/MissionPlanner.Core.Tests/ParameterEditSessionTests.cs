@@ -7,8 +7,11 @@ using MissionPlanner.Core.Configuration;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
+using MissionPlanner.Firmware.Model;
 using MissionPlanner.Library.Configuration;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using NSubstitute;
 
 namespace MissionPlanner.Core.Tests;

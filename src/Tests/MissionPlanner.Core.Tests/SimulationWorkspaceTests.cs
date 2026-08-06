@@ -6,9 +6,12 @@ using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.Simulation;
 using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
 using MissionPlanner.Library.DateTime.Domain;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Simulation;
 using MissionPlanner.Simulation.Abstractions;
+using MissionPlanner.Simulation.ArduPilot;
 using NSubstitute;
 
 namespace MissionPlanner.Core.Tests;
@@ -282,7 +285,6 @@ public sealed class SimulationWorkspaceTests
             diagnosticsService,
             Substitute.For<ISitlInstallationService>(),
             platform,
-
             new ArduPilotFrameCatalog(),
             Substitute.For<ISimulationControlCatalog>(),
             Substitute.For<ISimulationControlService>(),
@@ -292,8 +294,7 @@ public sealed class SimulationWorkspaceTests
             new SimulationScenarioReportExporter(),
             new ParametersFileHandler(Substitute.For<IFileSaver>()),
             dispatcher,
-            Substitute.For<ILogger<SimulationViewModel>>())
-        { ScenarioDocumentText = parser.Serialize(parsed) };
+            Substitute.For<ILogger<SimulationViewModel>>()) { ScenarioDocumentText = parser.Serialize(parsed) };
 
         await viewModel.DryRunScenarioAsync();
 

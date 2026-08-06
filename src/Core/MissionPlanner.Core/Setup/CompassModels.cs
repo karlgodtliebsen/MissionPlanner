@@ -1,4 +1,5 @@
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Setup;
 
@@ -7,18 +8,25 @@ public enum CompassCalibrationWorkflowState
 {
     /// <summary>No calibration has started.</summary>
     NotStarted,
+
     /// <summary>The start command is awaiting the first protocol evidence.</summary>
     Preparing,
+
     /// <summary>The vehicle is sampling one or more compasses.</summary>
     Running,
+
     /// <summary>Calibration succeeded but the results require explicit acceptance before they persist.</summary>
     PendingAcceptance,
+
     /// <summary>All calibrated compasses were accepted or auto-saved.</summary>
     Success,
+
     /// <summary>At least one compass explicitly failed calibration.</summary>
     Failed,
+
     /// <summary>The user cancelled calibration.</summary>
     Cancelled,
+
     /// <summary>The vehicle disconnected during calibration.</summary>
     Disconnected
 }
@@ -28,16 +36,22 @@ public enum CompassCalibrationStatus
 {
     /// <summary>The compass has not begun calibration.</summary>
     NotStarted,
+
     /// <summary>The compass is queued and waiting to start.</summary>
     WaitingToStart,
+
     /// <summary>The compass is actively sampling.</summary>
     Running,
+
     /// <summary>The compass reported success.</summary>
     Success,
+
     /// <summary>The compass reported a generic failure.</summary>
     Failed,
+
     /// <summary>The compass reported a bad-orientation failure.</summary>
     BadOrientation,
+
     /// <summary>The compass reported a bad-radius failure.</summary>
     BadRadius
 }
@@ -88,6 +102,7 @@ public enum CompassIssueSeverity
 {
     /// <summary>Informational guidance.</summary>
     Info,
+
     /// <summary>A configuration that should be reviewed before flight.</summary>
     Warning
 }
@@ -106,7 +121,10 @@ public sealed record CompassInventory(
     /// <summary>Gets an empty inventory for the specified vehicle.</summary>
     /// <param name="vehicleId">The vehicle identifier.</param>
     /// <returns>An inventory with no compasses.</returns>
-    public static CompassInventory Empty(VehicleId vehicleId) => new(vehicleId, [], [], []);
+    public static CompassInventory Empty(VehicleId vehicleId)
+    {
+        return new CompassInventory(vehicleId, [], [], []);
+    }
 }
 
 /// <summary>Projects the live per-compass calibration progress.</summary>

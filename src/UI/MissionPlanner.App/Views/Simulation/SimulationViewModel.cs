@@ -4,11 +4,12 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Views.ConfigTuning;
-using MissionPlanner.Core.Firmware;
-using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
+using MissionPlanner.Firmware.Model;
 using MissionPlanner.Simulation;
 using MissionPlanner.Simulation.Abstractions;
+using MissionPlanner.Simulation.ArduPilot;
 
 namespace MissionPlanner.App.Views.Simulation;
 

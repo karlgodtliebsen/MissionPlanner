@@ -13,6 +13,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using UraniumUI.Material.Dialogs;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;

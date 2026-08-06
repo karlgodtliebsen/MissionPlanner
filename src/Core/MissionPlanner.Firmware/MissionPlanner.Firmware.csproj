@@ -15,6 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\MissionPlanner.MavLink\MissionPlanner.MavLink.csproj" />
+    <ProjectReference Include="..\MissionPlanner.Shared.Models\MissionPlanner.Shared.Models.csproj" />
     <ProjectReference Include="..\MissionPlanner.Transport\MissionPlanner.Transport.csproj" />
   </ItemGroup>
 

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.Generated;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.ConfigTuning.VendorDevices.CubeLan;
 

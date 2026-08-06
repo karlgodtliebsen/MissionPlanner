@@ -1,8 +1,9 @@
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Firmware.Model;
 
 namespace MissionPlanner.Core.Firmware;
 
@@ -15,7 +16,7 @@ public sealed class JsonFirmwareManifestProvider(
     private static readonly JsonSerializerOptions jsonOptions = CreateJsonOptions();
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<FirmwareManifestEntry>> GetReleasesAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FirmwareManifestEntryRecord>> GetReleasesAsync(CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(options.Value.ManifestUrl))
         {
@@ -29,7 +30,7 @@ public sealed class JsonFirmwareManifestProvider(
 
         logger.LogInformation("Downloading firmware manifest from {ManifestHost}.", manifestUri.Host);
         var client = httpClientFactory.CreateClient("Firmware");
-        return await client.GetFromJsonAsync<List<FirmwareManifestEntry>>(manifestUri, jsonOptions, cancellationToken).ConfigureAwait(false) ?? [];
+        return await client.GetFromJsonAsync<List<FirmwareManifestEntryRecord>>(manifestUri, jsonOptions, cancellationToken).ConfigureAwait(false) ?? [];
     }
 
     private static JsonSerializerOptions CreateJsonOptions()

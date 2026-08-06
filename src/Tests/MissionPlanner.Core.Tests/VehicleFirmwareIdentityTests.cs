@@ -6,11 +6,14 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Core.Vehicles.Observations;
+using MissionPlanner.Firmware;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Decoding;
+using MissionPlanner.MavLink.Generated;
 using MissionPlanner.MavLink.Messages;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Transport;
 using NSubstitute;
 using MavAutopilot = MissionPlanner.MavLink.Generated.MavAutopilot;
@@ -104,11 +107,7 @@ public sealed class VehicleFirmwareIdentityTests
     [Fact]
     public void FormatsFirmwareDisplayName()
     {
-        var identity = VehicleFirmwareIdentityFactory.FromHeartbeat(2, 3) with
-        {
-            FlightVersion = new FirmwareSemanticVersion(4, 6, 2, FirmwareReleaseType.Development),
-            FlightGitHash = "e9fc8620"
-        };
+        var identity = VehicleFirmwareIdentityFactory.FromHeartbeat(2, 3) with { FlightVersion = new FirmwareSemanticVersion(4, 6, 2, FirmwareReleaseType.Development), FlightGitHash = "e9fc8620" };
         VehicleFirmwareDisplayFormatter.Format(identity).Should().Be("ArduCopter 4.6.2-dev (e9fc8620)");
     }
 

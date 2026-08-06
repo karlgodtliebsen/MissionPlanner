@@ -4,6 +4,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.Generated;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MavParamType = MissionPlanner.MavLink.Parameters.MavParamType;
 
 namespace MissionPlanner.Core.Setup;
@@ -91,16 +92,22 @@ public sealed class CompassConfigurationService : ICompassConfigurationService
     }
 
     /// <inheritdoc />
-    public Task<CompassParameterApplyResult> SetOrientationAsync(VehicleId vehicleId, int index, int orientationValue, CancellationToken cancellationToken = default) =>
-        ApplyAsync(vehicleId, OrientationName(index), orientationValue, $"orientation of compass {index}", cancellationToken);
+    public Task<CompassParameterApplyResult> SetOrientationAsync(VehicleId vehicleId, int index, int orientationValue, CancellationToken cancellationToken = default)
+    {
+        return ApplyAsync(vehicleId, OrientationName(index), orientationValue, $"orientation of compass {index}", cancellationToken);
+    }
 
     /// <inheritdoc />
-    public Task<CompassParameterApplyResult> SetUseAsync(VehicleId vehicleId, int index, bool use, CancellationToken cancellationToken = default) =>
-        ApplyAsync(vehicleId, UseName(index), use ? 1 : 0, $"use flag of compass {index}", cancellationToken);
+    public Task<CompassParameterApplyResult> SetUseAsync(VehicleId vehicleId, int index, bool use, CancellationToken cancellationToken = default)
+    {
+        return ApplyAsync(vehicleId, UseName(index), use ? 1 : 0, $"use flag of compass {index}", cancellationToken);
+    }
 
     /// <inheritdoc />
-    public Task<CompassParameterApplyResult> SetExternalAsync(VehicleId vehicleId, int index, bool external, CancellationToken cancellationToken = default) =>
-        ApplyAsync(vehicleId, ExternalName(index), external ? 1 : 0, $"external flag of compass {index}", cancellationToken);
+    public Task<CompassParameterApplyResult> SetExternalAsync(VehicleId vehicleId, int index, bool external, CancellationToken cancellationToken = default)
+    {
+        return ApplyAsync(vehicleId, ExternalName(index), external ? 1 : 0, $"external flag of compass {index}", cancellationToken);
+    }
 
     /// <inheritdoc />
     public bool WouldDisableOnlyEnabledCompass(CompassInventory inventory, int index)
@@ -150,6 +157,7 @@ public sealed class CompassConfigurationService : ICompassConfigurationService
     private async Task<bool> WriteAndConfirmAsync(VehicleId vehicleId, string name, float value, MavParamType type, CancellationToken cancellationToken)
     {
         var readback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
         void OnChanged(object? sender, VehicleParameterChangedEventArgs args)
         {
             if (args.VehicleId == vehicleId && args.Parameter is { } parameter &&
@@ -274,29 +282,55 @@ public sealed class CompassConfigurationService : ICompassConfigurationService
         return state;
     }
 
-    private static string DeviceIdName(int slot) => slot == 1 ? "COMPASS_DEV_ID" : $"COMPASS_DEV_ID{slot}";
+    private static string DeviceIdName(int slot)
+    {
+        return slot == 1 ? "COMPASS_DEV_ID" : $"COMPASS_DEV_ID{slot}";
+    }
 
-    private static string UseName(int slot) => slot == 1 ? "COMPASS_USE" : $"COMPASS_USE{slot}";
+    private static string UseName(int slot)
+    {
+        return slot == 1 ? "COMPASS_USE" : $"COMPASS_USE{slot}";
+    }
 
-    private static string ExternalName(int slot) => slot == 1 ? "COMPASS_EXTERNAL" : $"COMPASS_EXTERN{slot}";
+    private static string ExternalName(int slot)
+    {
+        return slot == 1 ? "COMPASS_EXTERNAL" : $"COMPASS_EXTERN{slot}";
+    }
 
-    private static string OrientationName(int slot) => slot == 1 ? "COMPASS_ORIENT" : $"COMPASS_ORIENT{slot}";
+    private static string OrientationName(int slot)
+    {
+        return slot == 1 ? "COMPASS_ORIENT" : $"COMPASS_ORIENT{slot}";
+    }
 
-    private static string OffsetName(int slot, string axis) => slot == 1 ? $"COMPASS_OFS_{axis}" : $"COMPASS_OFS{slot}_{axis}";
+    private static string OffsetName(int slot, string axis)
+    {
+        return slot == 1 ? $"COMPASS_OFS_{axis}" : $"COMPASS_OFS{slot}_{axis}";
+    }
 
-    private static uint ToDeviceId(float value) => value <= 0 ? 0u : (uint)Math.Round(value);
+    private static uint ToDeviceId(float value)
+    {
+        return value <= 0 ? 0u : (uint)Math.Round(value);
+    }
 
-    private static bool ReadBool(IReadOnlyDictionary<string, VehicleParameter> values, string name, bool fallback) =>
-        values.TryGetValue(name, out var parameter) ? parameter.Value != 0 : fallback;
+    private static bool ReadBool(IReadOnlyDictionary<string, VehicleParameter> values, string name, bool fallback)
+    {
+        return values.TryGetValue(name, out var parameter) ? parameter.Value != 0 : fallback;
+    }
 
-    private static bool? ReadOptionalBool(IReadOnlyDictionary<string, VehicleParameter> values, string name) =>
-        values.TryGetValue(name, out var parameter) ? parameter.Value != 0 : null;
+    private static bool? ReadOptionalBool(IReadOnlyDictionary<string, VehicleParameter> values, string name)
+    {
+        return values.TryGetValue(name, out var parameter) ? parameter.Value != 0 : null;
+    }
 
-    private static int ReadInt(IReadOnlyDictionary<string, VehicleParameter> values, string name, int fallback) =>
-        values.TryGetValue(name, out var parameter) ? (int)Math.Round(parameter.Value) : fallback;
+    private static int ReadInt(IReadOnlyDictionary<string, VehicleParameter> values, string name, int fallback)
+    {
+        return values.TryGetValue(name, out var parameter) ? (int)Math.Round(parameter.Value) : fallback;
+    }
 
-    private static double ReadDouble(IReadOnlyDictionary<string, VehicleParameter> values, string name) =>
-        values.TryGetValue(name, out var parameter) ? parameter.Value : 0d;
+    private static double ReadDouble(IReadOnlyDictionary<string, VehicleParameter> values, string name)
+    {
+        return values.TryGetValue(name, out var parameter) ? parameter.Value : 0d;
+    }
 
     private static string HumanizeOrientation(MavSensorOrientation orientation)
     {
@@ -310,9 +344,12 @@ public sealed class CompassConfigurationService : ICompassConfigurationService
         return name switch
         {
             "None" => "None (0°)",
-            _ => name
+            var _ => name
         };
     }
 
-    private static bool NearlyEqual(float first, float second) => Math.Abs(first - second) <= 0.0001f;
+    private static bool NearlyEqual(float first, float second)
+    {
+        return Math.Abs(first - second) <= 0.0001f;
+    }
 }

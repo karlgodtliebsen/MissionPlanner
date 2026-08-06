@@ -1,3 +1,5 @@
+using MissionPlanner.Firmware.Model;
+
 namespace MissionPlanner.Core.Firmware;
 
 /// <summary>Provides a firmware update state change.</summary>

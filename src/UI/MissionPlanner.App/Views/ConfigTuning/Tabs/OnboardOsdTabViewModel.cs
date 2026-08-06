@@ -8,6 +8,8 @@ using MissionPlanner.Core.ConfigTuning.Osd;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware.Model;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
@@ -92,7 +94,10 @@ public sealed partial class OsdItemViewModel : ObservableObject
         loading = false;
     }
 
-    internal void SetValidationError(string? error) => ValidationError = error;
+    internal void SetValidationError(string? error)
+    {
+        ValidationError = error;
+    }
 
     partial void OnIsEnabledChanged(bool value)
     {
@@ -176,7 +181,10 @@ public sealed class OsdScreenViewModel
     public ObservableCollection<OsdItemViewModel> Items { get; }
 
     /// <inheritdoc />
-    public override string ToString() => Title;
+    public override string ToString()
+    {
+        return Title;
+    }
 }
 
 /// <summary>Coordinates onboard OSD discovery, placement preview, files, and confirmed writes.</summary>
@@ -329,7 +337,10 @@ public sealed partial class OnboardOsdTabViewModel : ObservableObject, IDisposab
         ResetScreenCommand.NotifyCanExecuteChanged();
     }
 
-    partial void OnSelectedItemChanged(OsdItemViewModel? value) => LayoutChanged?.Invoke(this, EventArgs.Empty);
+    partial void OnSelectedItemChanged(OsdItemViewModel? value)
+    {
+        LayoutChanged?.Invoke(this, EventArgs.Empty);
+    }
 
     [RelayCommand(CanExecute = nameof(CanUseScreen))]
     private async Task ApplyScreenAsync()
@@ -433,22 +444,43 @@ public sealed partial class OnboardOsdTabViewModel : ObservableObject, IDisposab
     }
 
     [RelayCommand(CanExecute = nameof(CanMove))]
-    private void MoveLeft() => MoveSelected(-1, 0);
+    private void MoveLeft()
+    {
+        MoveSelected(-1, 0);
+    }
 
     [RelayCommand(CanExecute = nameof(CanMove))]
-    private void MoveRight() => MoveSelected(1, 0);
+    private void MoveRight()
+    {
+        MoveSelected(1, 0);
+    }
 
     [RelayCommand(CanExecute = nameof(CanMove))]
-    private void MoveUp() => MoveSelected(0, -1);
+    private void MoveUp()
+    {
+        MoveSelected(0, -1);
+    }
 
     [RelayCommand(CanExecute = nameof(CanMove))]
-    private void MoveDown() => MoveSelected(0, 1);
+    private void MoveDown()
+    {
+        MoveSelected(0, 1);
+    }
 
-    private bool CanUseWorkspace() => !IsBusy && workspace?.Session.IsValid == true;
+    private bool CanUseWorkspace()
+    {
+        return !IsBusy && workspace?.Session.IsValid == true;
+    }
 
-    private bool CanUseScreen() => CanUseWorkspace() && SelectedScreen is not null;
+    private bool CanUseScreen()
+    {
+        return CanUseWorkspace() && SelectedScreen is not null;
+    }
 
-    private bool CanMove() => CanUseScreen() && SelectedItem is not null;
+    private bool CanMove()
+    {
+        return CanUseScreen() && SelectedItem is not null;
+    }
 
     private void MoveSelected(int deltaColumn, int deltaRow)
     {
@@ -612,8 +644,10 @@ public sealed partial class OnboardOsdTabViewModel : ObservableObject, IDisposab
 
         LayoutChanged?.Invoke(this, EventArgs.Empty);
 
-        static string itemPrefix(OsdValidationIssue issue) =>
-            issue.Severity == OsdValidationSeverity.Warning ? "Warning: " : "Error: ";
+        static string itemPrefix(OsdValidationIssue issue)
+        {
+            return issue.Severity == OsdValidationSeverity.Warning ? "Warning: " : "Error: ";
+        }
     }
 
     private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
@@ -624,15 +658,15 @@ public sealed partial class OnboardOsdTabViewModel : ObservableObject, IDisposab
         }
     }
 
-    private void OnSessionChanged(object? sender, EventArgs args) => dispatcher.Dispatch(RefreshAll);
+    private void OnSessionChanged(object? sender, EventArgs args)
+    {
+        dispatcher.Dispatch(RefreshAll);
+    }
 
     private void DetachWorkspace()
     {
-        if (workspace is not null)
-        {
-            workspace.Session.Changed -= OnSessionChanged;
-            workspace = null;
-        }
+        workspace?.Session.Changed -= OnSessionChanged;
+        workspace = null;
     }
 
     private void CancelOperation()
@@ -654,12 +688,11 @@ public sealed partial class OnboardOsdTabViewModel : ObservableObject, IDisposab
         MoveDownCommand.NotifyCanExecuteChanged();
     }
 
-    private readonly record struct ActiveProfileKey(
-        VehicleId? VehicleId,
-        bool IsOnline,
-        VehicleFirmwareIdentity? Firmware)
+    private readonly record struct ActiveProfileKey(VehicleId? VehicleId, bool IsOnline, VehicleFirmwareIdentity? Firmware)
     {
-        public static ActiveProfileKey From(ActiveVehicleSnapshot snapshot) =>
-            new(snapshot.VehicleId, snapshot.IsOnline, snapshot.State?.Identity.Firmware);
+        public static ActiveProfileKey From(ActiveVehicleSnapshot snapshot)
+        {
+            return new ActiveProfileKey(snapshot.VehicleId, snapshot.IsOnline, snapshot.State?.Identity.Firmware);
+        }
     }
 }

@@ -1,21 +1,22 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.Net;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
-using System.Net;
 using MissionPlanner.Firmware.Catalog;
 using MissionPlanner.Firmware.Compatibility;
 using MissionPlanner.Firmware.Connected;
 using MissionPlanner.Firmware.Devices;
+using MissionPlanner.Firmware.Dfu;
 using MissionPlanner.Firmware.Discovery;
 using MissionPlanner.Firmware.Downloads;
-using MissionPlanner.Firmware.Dfu;
 using MissionPlanner.Firmware.Entry;
 using MissionPlanner.Firmware.Images;
 using MissionPlanner.Firmware.Installation;
+using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Operations;
-using MissionPlanner.Firmware.Presentation;
 using MissionPlanner.Firmware.Preparation;
+using MissionPlanner.Firmware.Presentation;
 using MissionPlanner.Firmware.Protocol;
 using MissionPlanner.Firmware.Recovery;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -45,10 +46,10 @@ public static class FirmwareConfigurator
         services.AddOptions<DfuOptions>()
             .Validate(value => value.OfficialFirmwareHosts is { Length: > 0 } && value.OfficialFirmwareHosts.All(host => Uri.CheckHostName(host) is not UriHostNameType.Unknown), "At least one valid official firmware host is required.")
             .Validate(value => value.TargetPolicies is not null && value.TargetPolicies.All(policy =>
-                !string.IsNullOrWhiteSpace(policy.Platform) && policy.CompatibleMcuDeviceIds is not null &&
-                policy.CompatibleMcuDeviceIds.All(id => !string.IsNullOrWhiteSpace(id)) &&
-                (policy.MinimumInternalFlashBytes is null or > 0) && (policy.MaximumInternalFlashBytes is null or > 0) &&
-                (policy.MinimumInternalFlashBytes is null || policy.MaximumInternalFlashBytes is null || policy.MinimumInternalFlashBytes <= policy.MaximumInternalFlashBytes)),
+                    !string.IsNullOrWhiteSpace(policy.Platform) && policy.CompatibleMcuDeviceIds is not null &&
+                    policy.CompatibleMcuDeviceIds.All(id => !string.IsNullOrWhiteSpace(id)) &&
+                    policy.MinimumInternalFlashBytes is null or > 0 && policy.MaximumInternalFlashBytes is null or > 0 &&
+                    (policy.MinimumInternalFlashBytes is null || policy.MaximumInternalFlashBytes is null || policy.MinimumInternalFlashBytes <= policy.MaximumInternalFlashBytes)),
                 "DFU target policies must contain valid platform, MCU, and flash constraints.")
             .Validate(value => value.MinimumCubeProgrammerVersion.Major >= 0, "MinimumCubeProgrammerVersion is required.")
             .Validate(value => value.CubeProgrammerProbeTimeout > TimeSpan.Zero, "CubeProgrammerProbeTimeout must be positive.")
@@ -143,11 +144,7 @@ public static class FirmwareConfigurator
                 client.Timeout = configured.HttpRequestTimeout;
                 client.DefaultRequestHeaders.UserAgent.ParseAdd(configured.HttpUserAgent);
             })
-            .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler
-            {
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
-                ConnectTimeout = TimeSpan.FromSeconds(15)
-            });
+            .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate, ConnectTimeout = TimeSpan.FromSeconds(15) });
         services.TryAddSingleton<IFirmwareManifestClient>(serviceProvider => new HttpFirmwareManifestClient(
             serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(FirmwareHttpClient.Name),
             serviceProvider.GetRequiredService<IOptions<FirmwareOptions>>()));
@@ -182,6 +179,7 @@ public static class FirmwareConfigurator
         services.TryAddSingleton<IFirmwarePageModeResolver, FirmwarePageModeResolver>();
         services.TryAddSingleton<IFirmwareApplicationDiscoveryService, FirmwareApplicationDiscoveryService>();
 
+        services.TryAddSingleton<IFirmwareManifestSelector, FirmwareManifestSelector>();
 
         return services;
     }

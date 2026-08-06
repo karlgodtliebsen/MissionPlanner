@@ -1,4 +1,7 @@
-﻿namespace MissionPlanner.Core.Vehicles.Models;
+﻿using MissionPlanner.Firmware;
+using MissionPlanner.Firmware.Model;
+
+namespace MissionPlanner.Core.Vehicles.Models;
 
 /// <summary>
 /// Creates firmware identities from protocol-neutral vehicle observations.

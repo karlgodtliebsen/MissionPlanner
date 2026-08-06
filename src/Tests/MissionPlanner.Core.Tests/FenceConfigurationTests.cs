@@ -11,6 +11,7 @@ using MissionPlanner.Core.Missions.Transfer;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Encoding;
@@ -19,9 +20,9 @@ using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Missions;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.MavLink.Services.Abstractions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Transport;
 using NSubstitute;
-using DomainProtocolCapability = MissionPlanner.Core.Vehicles.Models.MavProtocolCapability;
 using MissionItemType = MissionPlanner.MavLink.Missions.MavMissionType;
 using ParameterWireType = MissionPlanner.MavLink.Parameters.MavParamType;
 
@@ -385,7 +386,7 @@ public sealed class FenceConfigurationTests
             new VehicleId(1, 1), 0, 2, 3, 0, 4, 3,
             VehicleConnectionState.Online, DateTimeOffset.UtcNow, VehicleMode.Stabilize, false,
             null, null, null, null, null, null, null, null);
-        return state with { Identity = state.Identity with { Firmware = state.Identity.Firmware with { Family = FirmwareFamily.ArduCopter, Capabilities = (ulong)DomainProtocolCapability.MissionFence } } };
+        return state with { Identity = state.Identity with { Firmware = state.Identity.Firmware with { Family = FirmwareFamily.ArduCopter, Capabilities = (ulong)MavProtocolCapabilityMap.MissionFence } } };
     }
 
     private sealed record Fixture(

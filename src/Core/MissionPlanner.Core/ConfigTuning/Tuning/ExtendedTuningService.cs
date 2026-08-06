@@ -2,6 +2,7 @@
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.ConfigTuning.Tuning;
 
@@ -65,8 +66,7 @@ public sealed class ExtendedTuningService(
             }
         }
 
-        foreach (var fieldSet in group.Fields.GroupBy(
-                     item => (item.Definition.Axis, item.Definition.Instance)))
+        foreach (var fieldSet in group.Fields.GroupBy(item => (item.Definition.Axis, item.Definition.Instance)))
         {
             var byComponent = fieldSet.ToDictionary(item => item.Definition.Component.Key, StringComparer.Ordinal);
             foreach (var rule in group.Descriptor.Rules)
@@ -83,7 +83,7 @@ public sealed class ExtendedTuningService(
                 {
                     BasicTuningRuleKind.LessThanOrEqual => firstState.PendingValue > secondState.PendingValue,
                     BasicTuningRuleKind.PositiveCompanion => firstState.PendingValue > 0 && secondState.PendingValue <= 0,
-                    _ => throw new ArgumentOutOfRangeException(nameof(rule.Kind), rule.Kind, "Unknown advanced tuning rule kind.")
+                    var _ => throw new ArgumentOutOfRangeException(nameof(rule.Kind), rule.Kind, "Unknown advanced tuning rule kind.")
                 };
                 if (invalid)
                 {
@@ -250,7 +250,7 @@ public sealed class ExtendedTuningService(
         {
             foreach (var item in previous)
             {
-                workspace.Session.TrySetPending(item.Key, item.Value, out _);
+                workspace.Session.TrySetPending(item.Key, item.Value, out var _);
             }
 
             return new AxisCopyApplyResult(false, errors);
@@ -259,10 +259,12 @@ public sealed class ExtendedTuningService(
         return new AxisCopyApplyResult(true, []);
     }
 
-    private static ResolvedAdvancedTuningGroup GetGroup(ExtendedTuningWorkspace workspace, string descriptorKey) =>
-        workspace.Groups.FirstOrDefault(group =>
-            string.Equals(group.Descriptor.Key, descriptorKey, StringComparison.Ordinal))
-        ?? throw new ArgumentException($"Advanced tuning group '{descriptorKey}' is not present.", nameof(descriptorKey));
+    private static ResolvedAdvancedTuningGroup GetGroup(ExtendedTuningWorkspace workspace, string descriptorKey)
+    {
+        return workspace.Groups.FirstOrDefault(group =>
+                   string.Equals(group.Descriptor.Key, descriptorKey, StringComparison.Ordinal))
+               ?? throw new ArgumentException($"Advanced tuning group '{descriptorKey}' is not present.", nameof(descriptorKey));
+    }
 
     private static bool NearlyEqual(double left, double right)
     {

@@ -1,6 +1,7 @@
-using MissionPlanner.Core.Vehicles.Models;
+﻿using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Core.Simulation.Abstractions;
 
 /// <summary>Routes vehicle operations to independently owned simulator transports.</summary>
 public interface ISimulationVehicleChannelRegistry

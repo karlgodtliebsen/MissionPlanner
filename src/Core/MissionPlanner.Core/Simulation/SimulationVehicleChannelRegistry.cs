@@ -1,5 +1,6 @@
-using System.Collections.Concurrent;
-using MissionPlanner.Core.Vehicles.Models;
+﻿using System.Collections.Concurrent;
+using MissionPlanner.Core.Simulation.Abstractions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Simulation;
 

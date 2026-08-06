@@ -8,6 +8,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using UraniumUI.Extensions;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;

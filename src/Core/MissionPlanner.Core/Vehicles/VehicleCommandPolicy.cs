@@ -1,7 +1,9 @@
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
 using MissionPlanner.Library.DateTime.Domain;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Vehicles;
 
@@ -36,15 +38,21 @@ public sealed class VehicleCommandPolicy(IDateTimeProvider clock) : IVehicleComm
             VehicleAction.RebootAutopilot => ValidateReboot(state),
             VehicleAction.SetHomeHere => ValidateSetHome(state),
             VehicleAction.ExpertCommand => VehicleCommandDecision.Allow(true, "Expert commands can change safety-critical vehicle behavior."),
-            _ => VehicleCommandDecision.Deny("The action is not supported.")
+            var _ => VehicleCommandDecision.Deny("The action is not supported.")
         };
     }
 
     /// <inheritdoc />
-    public VehicleCommandResponse? ValidateArm(VehicleState state) => ToResponse(state, Evaluate(state, VehicleAction.Arm));
+    public VehicleCommandResponse? ValidateArm(VehicleState state)
+    {
+        return ToResponse(state, Evaluate(state, VehicleAction.Arm));
+    }
 
     /// <inheritdoc />
-    public VehicleCommandResponse? ValidateDisarm(VehicleState state) => ToResponse(state, Evaluate(state, VehicleAction.Disarm));
+    public VehicleCommandResponse? ValidateDisarm(VehicleState state)
+    {
+        return ToResponse(state, Evaluate(state, VehicleAction.Disarm));
+    }
 
     /// <inheritdoc />
     public VehicleCommandResponse? ValidateSetMode(VehicleState state, VehicleMode mode)
@@ -141,19 +149,27 @@ public sealed class VehicleCommandPolicy(IDateTimeProvider clock) : IVehicleComm
         return VehicleCommandDecision.Allow(true, "Rebooting the autopilot interrupts telemetry and control until it restarts.");
     }
 
-    private VehicleCommandDecision ValidateSetHome(VehicleState state) => HasFreshPosition(state)
-        ? VehicleCommandDecision.Allow(true, "Changing home affects RTL and other recovery behavior.")
-        : VehicleCommandDecision.Deny("Setting home requires a fresh 3D GPS position.");
+    private VehicleCommandDecision ValidateSetHome(VehicleState state)
+    {
+        return HasFreshPosition(state)
+            ? VehicleCommandDecision.Allow(true, "Changing home affects RTL and other recovery behavior.")
+            : VehicleCommandDecision.Deny("Setting home requires a fresh 3D GPS position.");
+    }
 
-    private bool HasFreshPosition(VehicleState state) =>
-        state.Gps.FixType >= GpsFixType.Fix3D &&
-        !state.Gps.IsStale(clock.UtcNow, maximumActionTelemetryAge) &&
-        state.Position.LatitudeDegrees is not null &&
-        state.Position.LongitudeDegrees is not null &&
-        state.Position.ObservedAt is { } observedAt &&
-        clock.UtcNow - observedAt <= maximumActionTelemetryAge;
+    private bool HasFreshPosition(VehicleState state)
+    {
+        return state.Gps.FixType >= GpsFixType.Fix3D &&
+               !state.Gps.IsStale(clock.UtcNow, maximumActionTelemetryAge) &&
+               state.Position.LatitudeDegrees is not null &&
+               state.Position.LongitudeDegrees is not null &&
+               state.Position.ObservedAt is { } observedAt &&
+               clock.UtcNow - observedAt <= maximumActionTelemetryAge;
+    }
 
-    private VehicleCommandResponse? ToResponse(VehicleState state, VehicleCommandDecision decision) => decision.IsAllowed
-        ? null
-        : new VehicleCommandResponse(state.VehicleId, VehicleCommandResult.Denied, clock.UtcNow, decision.Reason);
+    private VehicleCommandResponse? ToResponse(VehicleState state, VehicleCommandDecision decision)
+    {
+        return decision.IsAllowed
+            ? null
+            : new VehicleCommandResponse(state.VehicleId, VehicleCommandResult.Denied, clock.UtcNow, decision.Reason);
+    }
 }

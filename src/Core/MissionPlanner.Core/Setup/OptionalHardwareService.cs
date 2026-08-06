@@ -3,6 +3,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Setup;
 
@@ -11,15 +12,19 @@ public sealed class OptionalHardwareCatalog : IOptionalHardwareCatalog
 {
     /// <summary>Initializes the catalog from the registered modules.</summary>
     /// <param name="modules">The registered optional-hardware modules.</param>
-    public OptionalHardwareCatalog(IEnumerable<IOptionalHardwareModule> modules) =>
+    public OptionalHardwareCatalog(IEnumerable<IOptionalHardwareModule> modules)
+    {
         Modules = modules.OrderBy(module => module.Title, StringComparer.Ordinal).ToArray();
+    }
 
     /// <inheritdoc />
     public IReadOnlyList<IOptionalHardwareModule> Modules { get; }
 
     /// <inheritdoc />
-    public IReadOnlyList<IOptionalHardwareModule> GetAvailable(IReadOnlyDictionary<string, VehicleParameter> parameters) =>
-        Modules.Where(module => module.IsAvailable(parameters)).ToArray();
+    public IReadOnlyList<IOptionalHardwareModule> GetAvailable(IReadOnlyDictionary<string, VehicleParameter> parameters)
+    {
+        return Modules.Where(module => module.IsAvailable(parameters)).ToArray();
+    }
 }
 
 /// <summary>Discovers available optional-hardware modules and applies guarded, readback-confirmed edits.</summary>
@@ -112,6 +117,7 @@ public sealed class OptionalHardwareService : IOptionalHardwareService
     private async Task<bool> WriteAndConfirmAsync(VehicleId vehicleId, PeripheralSetting setting, double value, CancellationToken cancellationToken)
     {
         var readback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
         void OnChanged(object? sender, VehicleParameterChangedEventArgs args)
         {
             if (args.VehicleId == vehicleId && args.Parameter is { } parameter && parameter.Name == setting.Name && NearlyEqual(parameter.Value, value))
@@ -147,5 +153,8 @@ public sealed class OptionalHardwareService : IOptionalHardwareService
         }
     }
 
-    private static bool NearlyEqual(double first, double second) => Math.Abs(first - second) <= 0.0005;
+    private static bool NearlyEqual(double first, double second)
+    {
+        return Math.Abs(first - second) <= 0.0005;
+    }
 }

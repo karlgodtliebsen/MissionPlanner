@@ -1,4 +1,5 @@
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Setup;
 
@@ -32,7 +33,10 @@ public sealed record ServoOutputConfiguration(
     /// <summary>Creates an empty configuration for the specified vehicle.</summary>
     /// <param name="vehicleId">The vehicle identifier.</param>
     /// <returns>An empty configuration.</returns>
-    public static ServoOutputConfiguration Empty(VehicleId vehicleId) => new(vehicleId, [], []);
+    public static ServoOutputConfiguration Empty(VehicleId vehicleId)
+    {
+        return new ServoOutputConfiguration(vehicleId, [], []);
+    }
 }
 
 /// <summary>Represents the outcome of a confirmed servo function write.</summary>

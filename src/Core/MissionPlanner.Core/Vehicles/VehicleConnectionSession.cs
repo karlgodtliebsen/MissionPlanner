@@ -10,6 +10,7 @@ using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.MavFtp.Abstractions;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.MavLink.Services.Abstractions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Transport;
 using MissionPlanner.Transport.Abstractions;
 

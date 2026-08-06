@@ -10,6 +10,7 @@ using MissionPlanner.MavLink.Generated;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.MavLink.Services.Abstractions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Setup;
 
@@ -18,12 +19,14 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
 {
     private const ushort PreflightCalibrationCommand = (ushort)MavCmd.PreflightCalibration;
     private const ushort AccelerometerPositionCommand = (ushort)MavCmd.AccelcalVehiclePos;
+
     private static readonly string[] calibrationParameters =
     [
         "INS_ACCOFFS_X", "INS_ACCOFFS_Y", "INS_ACCOFFS_Z",
         "INS_ACCSCAL_X", "INS_ACCSCAL_Y", "INS_ACCSCAL_Z",
         "AHRS_TRIM_X", "AHRS_TRIM_Y"
     ];
+
     private readonly Lock sync = new();
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleRegistry vehicleRegistry;
@@ -94,12 +97,16 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
     public event EventHandler<CalibrationStateChangedEventArgs>? StateChanged;
 
     /// <inheritdoc />
-    public Task StartSixPositionAsync(VehicleId vehicleId, CancellationToken cancellationToken = default) =>
-        StartAsync(vehicleId, AccelerometerCalibrationKind.SixPosition, cancellationToken);
+    public Task StartSixPositionAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
+    {
+        return StartAsync(vehicleId, AccelerometerCalibrationKind.SixPosition, cancellationToken);
+    }
 
     /// <inheritdoc />
-    public Task StartLevelAsync(VehicleId vehicleId, CancellationToken cancellationToken = default) =>
-        StartAsync(vehicleId, AccelerometerCalibrationKind.Level, cancellationToken);
+    public Task StartLevelAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
+    {
+        return StartAsync(vehicleId, AccelerometerCalibrationKind.Level, cancellationToken);
+    }
 
     /// <inheritdoc />
     public async Task ConfirmOrientationAsync(CancellationToken cancellationToken = default)
@@ -120,12 +127,7 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
         }
 
         await SendCommandAsync(vehicleId, AccelerometerPositionCommand, [(float)orientation], cancellationToken).ConfigureAwait(false);
-        Transition(Current with
-        {
-            State = CalibrationWorkflowState.Sampling,
-            Progress = Math.Max(Current.Progress, Math.Min(0.99, (completedOrientations.Count + 0.5) / 6d)),
-            Instruction = $"Keep the vehicle {OrientationText(orientation)} and motionless while it samples."
-        });
+        Transition(Current with { State = CalibrationWorkflowState.Sampling, Progress = Math.Max(Current.Progress, Math.Min(0.99, (completedOrientations.Count + 0.5) / 6d)), Instruction = $"Keep the vehicle {OrientationText(orientation)} and motionless while it samples." });
     }
 
     /// <inheritdoc />
@@ -316,11 +318,7 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
             startSignal?.TrySetResult();
             if (Current.Kind == AccelerometerCalibrationKind.Level)
             {
-                Transition(Current with
-                {
-                    State = CalibrationWorkflowState.Completing,
-                    Instruction = "Keep the vehicle level and motionless until completion is acknowledged."
-                });
+                Transition(Current with { State = CalibrationWorkflowState.Completing, Instruction = "Keep the vehicle level and motionless until completion is acknowledged." });
             }
             else if (Current.State == CalibrationWorkflowState.Preparing)
             {
@@ -339,11 +337,7 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
             }
             else if (Current.State == CalibrationWorkflowState.Preparing)
             {
-                Transition(Current with
-                {
-                    State = CalibrationWorkflowState.WaitingForOrientation,
-                    Instruction = "Calibration accepted. Waiting for the vehicle to request an orientation."
-                });
+                Transition(Current with { State = CalibrationWorkflowState.WaitingForOrientation, Instruction = "Calibration accepted. Waiting for the vehicle to request an orientation." });
             }
 
             return;
@@ -395,7 +389,7 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
                 }
             }
             else if (Current.State == CalibrationWorkflowState.WaitingForOrientation &&
-                Current.RequiredOrientation is { } current && current != orientation)
+                     Current.RequiredOrientation is { } current && current != orientation)
             {
                 return;
             }
@@ -416,8 +410,8 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
     private void OnStatusTextAdded(object? sender, VehicleStatusTextAddedEventArgs args)
     {
         if (args.Message.VehicleId != Current.VehicleId ||
-            !args.Message.Text.Contains("calib", StringComparison.OrdinalIgnoreCase) &&
-            !args.Message.Text.Contains("place vehicle", StringComparison.OrdinalIgnoreCase))
+            (!args.Message.Text.Contains("calib", StringComparison.OrdinalIgnoreCase) &&
+             !args.Message.Text.Contains("place vehicle", StringComparison.OrdinalIgnoreCase)))
         {
             return;
         }
@@ -505,20 +499,29 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
         operationLease = null;
     }
 
-    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(disposed, this);
-
-    private static bool IsActive(CalibrationWorkflowState state) => state is
-        CalibrationWorkflowState.Preparing or CalibrationWorkflowState.WaitingForOrientation or
-        CalibrationWorkflowState.Sampling or CalibrationWorkflowState.Completing;
-
-    private static string OrientationText(CalibrationOrientation orientation) => orientation switch
+    private void ThrowIfDisposed()
     {
-        CalibrationOrientation.Level => "level on its landing gear",
-        CalibrationOrientation.Left => "on its left side",
-        CalibrationOrientation.Right => "on its right side",
-        CalibrationOrientation.NoseDown => "with its nose pointing straight down",
-        CalibrationOrientation.NoseUp => "with its nose pointing straight up",
-        CalibrationOrientation.Back => "upside down on its back",
-        _ => orientation.ToString()
-    };
+        ObjectDisposedException.ThrowIf(disposed, this);
+    }
+
+    private static bool IsActive(CalibrationWorkflowState state)
+    {
+        return state is
+            CalibrationWorkflowState.Preparing or CalibrationWorkflowState.WaitingForOrientation or
+            CalibrationWorkflowState.Sampling or CalibrationWorkflowState.Completing;
+    }
+
+    private static string OrientationText(CalibrationOrientation orientation)
+    {
+        return orientation switch
+        {
+            CalibrationOrientation.Level => "level on its landing gear",
+            CalibrationOrientation.Left => "on its left side",
+            CalibrationOrientation.Right => "on its right side",
+            CalibrationOrientation.NoseDown => "with its nose pointing straight down",
+            CalibrationOrientation.NoseUp => "with its nose pointing straight up",
+            CalibrationOrientation.Back => "upside down on its back",
+            _ => orientation.ToString()
+        };
+    }
 }

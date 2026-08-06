@@ -4,6 +4,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MavParamType = MissionPlanner.MavLink.Parameters.MavParamType;
 
 namespace MissionPlanner.Core.Setup;
@@ -110,6 +111,7 @@ public sealed class ServoOutputConfigurationService : IServoOutputConfigurationS
     private async Task<bool> WriteAndConfirmAsync(VehicleId vehicleId, string name, int value, MavParamType type, CancellationToken cancellationToken)
     {
         var readback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
         void OnChanged(object? sender, VehicleParameterChangedEventArgs args)
         {
             if (args.VehicleId == vehicleId && args.Parameter is { } parameter && parameter.Name == name && Math.Abs(parameter.Value - value) <= 0.5f)

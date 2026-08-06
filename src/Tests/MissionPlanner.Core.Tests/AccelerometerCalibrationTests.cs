@@ -18,6 +18,7 @@ using MissionPlanner.MavLink.Generated;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.MavLink.Services.Abstractions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Transport;
 using NSubstitute;
 
@@ -275,10 +276,10 @@ public sealed class AccelerometerCalibrationTests
         var now = DateTimeOffset.UtcNow;
         return new VehicleState(vehicleId, 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online, now,
                 VehicleMode.Stabilize, false, null, null, null, null, null, null, null, null) with
-        {
-            Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
+            {
+                Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
                     LandedState: VehicleLandedState.OnGround, ObservedAt: now)
-        };
+            };
     }
 
     private static IDispatcher ImmediateDispatcher()

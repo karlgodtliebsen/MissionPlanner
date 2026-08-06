@@ -1,4 +1,4 @@
-using MissionPlanner.Core.Vehicles.Models;
+﻿using MissionPlanner.Firmware.Model;
 
 namespace MissionPlanner.Core.Firmware;
 
@@ -8,15 +8,23 @@ public sealed class UnsupportedFirmwareFlashingService : IFirmwareFlashingServic
     private const string Reason = "Firmware flashing is unavailable because no platform bootloader adapter is installed.";
 
     /// <inheritdoc />
-    public FirmwareFlashSupport GetPlatformSupport(VehicleFirmwareIdentity identity) => new(false, Reason);
+    public FirmwareFlashSupport GetPlatformSupport(VehicleFirmwareIdentity identity)
+    {
+        return new FirmwareFlashSupport(false, Reason);
+    }
 
     /// <inheritdoc />
-    public FirmwareFlashSupport GetSupport(VehicleFirmwareIdentity identity, FirmwarePackage package) => new(false, Reason);
+    public FirmwareFlashSupport GetSupport(VehicleFirmwareIdentity identity, FirmwarePackage package)
+    {
+        return new FirmwareFlashSupport(false, Reason);
+    }
 
     /// <inheritdoc />
     public Task<FirmwareFlashResult> FlashAsync(
         FirmwareFlashRequest request,
         IProgress<double>? progress = null,
-        CancellationToken cancellationToken = default) =>
-        Task.FromResult(new FirmwareFlashResult(false, Reason));
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(new FirmwareFlashResult(false, Reason));
+    }
 }

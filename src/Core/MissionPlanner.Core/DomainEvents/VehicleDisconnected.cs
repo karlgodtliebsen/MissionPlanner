@@ -1,5 +1,6 @@
 ﻿using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Events;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.DomainEvents;
 
@@ -12,10 +13,12 @@ public class VehicleDisconnected : DomainEvent<VehicleDisconnectedData>
     /// Provides the public API for VehicleId.
     /// </summary>
     public VehicleId VehicleId => ((VehicleDisconnectedData)Payload!).VehicleId;
+
     /// <summary>
     /// Provides the public API for DisconnectedAt.
     /// </summary>
     public DateTimeOffset DisconnectedAt => ((VehicleDisconnectedData)Payload!).DisconnectedAt;
+
     /// <summary>
     /// Provides the public API for Reason.
     /// </summary>

@@ -4,7 +4,9 @@ using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Missions.Transfer;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
+using MissionPlanner.MavLink.Generated;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.ConfigTuning.Fences;
 

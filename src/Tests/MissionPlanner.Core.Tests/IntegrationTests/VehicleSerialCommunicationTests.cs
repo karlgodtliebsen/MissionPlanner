@@ -13,6 +13,7 @@ using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.MavLink.Services.Abstractions;
+using MissionPlanner.Shared.Models.Services.Abstractions;
 using MissionPlanner.Test.Support.Configuration;
 using MissionPlanner.Transport;
 using MissionPlanner.Transport.Abstractions;

@@ -1,5 +1,7 @@
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Vehicles;
 
@@ -13,39 +15,43 @@ public sealed class ArduPilotModeCatalog : IArduPilotModeCatalog
         {
             [FirmwareFamily.ArduCopter] =
             [
-                new("Stabilize", 0, VehicleMode.Stabilize), new("Alt Hold", 2, VehicleMode.AltHold),
-                new("Auto", 3), new("Guided", 4, VehicleMode.Guided), new("Loiter", 5, VehicleMode.Loiter),
-                new("RTL", 6, VehicleMode.Rtl), new("Land", 9, VehicleMode.Land), new("Pos Hold", 16),
-                new("Brake", 17), new("Smart RTL", 21)
+                new VehicleModeOption("Stabilize", 0, VehicleMode.Stabilize), new VehicleModeOption("Alt Hold", 2, VehicleMode.AltHold),
+                new VehicleModeOption("Auto", 3), new VehicleModeOption("Guided", 4, VehicleMode.Guided), new VehicleModeOption("Loiter", 5, VehicleMode.Loiter),
+                new VehicleModeOption("RTL", 6, VehicleMode.Rtl), new VehicleModeOption("Land", 9, VehicleMode.Land), new VehicleModeOption("Pos Hold", 16),
+                new VehicleModeOption("Brake", 17), new VehicleModeOption("Smart RTL", 21)
             ],
             [FirmwareFamily.ArduPlane] =
             [
-                new("Manual", 0), new("Circle", 1), new("Stabilize", 2, VehicleMode.Stabilize),
-                new("Training", 3), new("Acro", 4), new("FBWA", 5), new("FBWB", 6), new("Cruise", 7),
-                new("Auto", 10), new("RTL", 11, VehicleMode.Rtl), new("Loiter", 12, VehicleMode.Loiter),
-                new("Takeoff", 13), new("Guided", 15, VehicleMode.Guided), new("QStabilize", 17),
-                new("QHover", 18), new("QLoiter", 19), new("QLand", 20, VehicleMode.Land), new("QRTL", 21)
+                new VehicleModeOption("Manual", 0), new VehicleModeOption("Circle", 1), new VehicleModeOption("Stabilize", 2, VehicleMode.Stabilize),
+                new VehicleModeOption("Training", 3), new VehicleModeOption("Acro", 4), new VehicleModeOption("FBWA", 5), new VehicleModeOption("FBWB", 6), new VehicleModeOption("Cruise", 7),
+                new VehicleModeOption("Auto", 10), new VehicleModeOption("RTL", 11, VehicleMode.Rtl), new VehicleModeOption("Loiter", 12, VehicleMode.Loiter),
+                new VehicleModeOption("Takeoff", 13), new VehicleModeOption("Guided", 15, VehicleMode.Guided), new VehicleModeOption("QStabilize", 17),
+                new VehicleModeOption("QHover", 18), new VehicleModeOption("QLoiter", 19), new VehicleModeOption("QLand", 20, VehicleMode.Land), new VehicleModeOption("QRTL", 21)
             ],
             [FirmwareFamily.Rover] =
             [
-                new("Manual", 0), new("Acro", 1), new("Steering", 3), new("Hold", 4, VehicleMode.Loiter),
-                new("Loiter", 5), new("Follow", 6), new("Simple", 7), new("Auto", 10),
-                new("RTL", 11, VehicleMode.Rtl), new("Smart RTL", 12), new("Guided", 15, VehicleMode.Guided)
+                new VehicleModeOption("Manual", 0), new VehicleModeOption("Acro", 1), new VehicleModeOption("Steering", 3), new VehicleModeOption("Hold", 4, VehicleMode.Loiter),
+                new VehicleModeOption("Loiter", 5), new VehicleModeOption("Follow", 6), new VehicleModeOption("Simple", 7), new VehicleModeOption("Auto", 10),
+                new VehicleModeOption("RTL", 11, VehicleMode.Rtl), new VehicleModeOption("Smart RTL", 12), new VehicleModeOption("Guided", 15, VehicleMode.Guided)
             ],
             [FirmwareFamily.ArduSub] =
             [
-                new("Stabilize", 0, VehicleMode.Stabilize), new("Acro", 1),
-                new("Alt Hold", 2, VehicleMode.AltHold), new("Auto", 3),
-                new("Guided", 4, VehicleMode.Guided), new("Circle", 7),
-                new("Surface", 9, VehicleMode.Rtl), new("Pos Hold", 16, VehicleMode.Loiter), new("Manual", 19)
+                new VehicleModeOption("Stabilize", 0, VehicleMode.Stabilize), new VehicleModeOption("Acro", 1),
+                new VehicleModeOption("Alt Hold", 2, VehicleMode.AltHold), new VehicleModeOption("Auto", 3),
+                new VehicleModeOption("Guided", 4, VehicleMode.Guided), new VehicleModeOption("Circle", 7),
+                new VehicleModeOption("Surface", 9, VehicleMode.Rtl), new VehicleModeOption("Pos Hold", 16, VehicleMode.Loiter), new VehicleModeOption("Manual", 19)
             ]
         };
 
     /// <inheritdoc />
-    public IReadOnlyList<VehicleModeOption> GetModes(FirmwareFamily family) =>
-        modes.TryGetValue(family, out var result) ? result : [];
+    public IReadOnlyList<VehicleModeOption> GetModes(FirmwareFamily family)
+    {
+        return modes.TryGetValue(family, out var result) ? result : [];
+    }
 
     /// <inheritdoc />
-    public VehicleModeOption? Find(FirmwareFamily family, VehicleMode mode) =>
-        GetModes(family).FirstOrDefault(candidate => candidate.SemanticMode == mode);
+    public VehicleModeOption? Find(FirmwareFamily family, VehicleMode mode)
+    {
+        return GetModes(family).FirstOrDefault(candidate => candidate.SemanticMode == mode);
+    }
 }

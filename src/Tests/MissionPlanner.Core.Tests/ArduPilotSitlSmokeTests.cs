@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using CommunityToolkit.Maui.Storage;
 using FluentAssertions;
@@ -9,7 +9,10 @@ using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
 using MissionPlanner.Simulation;
+using MissionPlanner.Simulation.Abstractions;
+using MissionPlanner.Simulation.ArduPilot;
 using NSubstitute;
 
 namespace MissionPlanner.Core.Tests;

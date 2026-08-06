@@ -21,16 +21,22 @@ using MissionPlanner.Core.ConfigTuning.VendorDevices.CubeLan;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Setup;
-using MissionPlanner.Core.Simulation;
+using MissionPlanner.Core.Simulation.Abstractions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
+using MissionPlanner.Firmware.Model;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink.Encoding;
+using MissionPlanner.MavLink.Generated;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.MavLink.Services.Abstractions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Simulation.Abstractions;
+using MissionPlanner.Simulation.ArduPilot;
 using NSubstitute;
+using MavParamType = MissionPlanner.MavLink.Parameters.MavParamType;
 
 namespace MissionPlanner.Core.Tests;
 

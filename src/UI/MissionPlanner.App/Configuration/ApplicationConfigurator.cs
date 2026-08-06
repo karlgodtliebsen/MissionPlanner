@@ -30,7 +30,6 @@ using MissionPlanner.Core.Configuration;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Setup;
-using MissionPlanner.Core.Simulation;
 using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Connected;
 using MissionPlanner.Firmware.Entry;
@@ -39,7 +38,10 @@ using MissionPlanner.Library;
 using MissionPlanner.Library.Configuration;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Configuration;
+using MissionPlanner.Simulation;
 using MissionPlanner.Simulation.Abstractions;
+using MissionPlanner.Simulation.ArduPilot;
+using MissionPlanner.Simulation.Configuration;
 using MissionPlanner.Transport.Configuration;
 using UraniumUI.Material.Dialogs;
 
@@ -80,10 +82,8 @@ public static class ApplicationConfigurator
         services.TryAddTransient<ISitlPlatformService, LocalSitlPlatformService>();
         services.TryAddTransient<ISimulatorProcessHost, LocalSimulatorProcessHost>();
 
-
         services.Replace(ServiceDescriptor.Singleton<ISimulatorOwnedProcessRecovery, LocalSimulatorOwnedProcessRecovery>());
         services.Replace(ServiceDescriptor.Singleton<ISimulatorRuntime, ArduPilotSitlRuntime>());
-
 
         //services.TryAddSingleton<Views.Vehicles.Views.ModelMapper>();
         services.TryAddTransient<ApplicationStateService>();
@@ -113,11 +113,12 @@ public static class ApplicationConfigurator
             .AddDomainServices(configuration)
             .AddMavLinkTransportServices(configuration)
             .AddFirmwareServices(configuration)
+            .AddSimulationServices(configuration)
             .AddMavLinkServices(configuration)
             .AddLogging(configuration, (s, l, c) =>
                 /*Customize logging*/
                 services.AddSerilog(c))
-            .AddViewsConfiguration();
+            .AddViewsModelsConfiguration();
 
         return services;
     }
@@ -132,7 +133,7 @@ public static class ApplicationConfigurator
         return services;
     }
 
-    private static IServiceCollection AddViewsConfiguration(this IServiceCollection services)
+    private static IServiceCollection AddViewsModelsConfiguration(this IServiceCollection services)
     {
         services.TryAddTransient<App>();
         services.TryAddTransient<AppShell>();
@@ -225,6 +226,7 @@ public static class ApplicationConfigurator
         serviceProvider
             .UseMavLinkServices()
             .UseDomainServices()
+            .UseSimulationServices()
             .GetRequiredService<PlannerSettingsRuntime>().ApplyCurrent();
 
         var plannerSettingsService = serviceProvider.GetRequiredService<IPlannerSettingsService>();

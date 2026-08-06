@@ -4,6 +4,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MavParamType = MissionPlanner.MavLink.Parameters.MavParamType;
 
 namespace MissionPlanner.Core.Setup;
@@ -14,6 +15,7 @@ public sealed class BatteryConfigurationService : IBatteryConfigurationService
     private static readonly TimeSpan staleWindow = TimeSpan.FromSeconds(3);
     private static readonly TimeSpan readbackTimeout = TimeSpan.FromSeconds(4);
     private const int MaximumInstances = 9;
+
     private static readonly IReadOnlyDictionary<BatterySetting, string> suffixes = new Dictionary<BatterySetting, string>
     {
         [BatterySetting.Monitor] = "MONITOR",
@@ -28,6 +30,7 @@ public sealed class BatteryConfigurationService : IBatteryConfigurationService
         [BatterySetting.LowAction] = "FS_LOW_ACT",
         [BatterySetting.CriticalAction] = "FS_CRT_ACT"
     };
+
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleParameterRegistry parameterRegistry;
     private readonly IVehicleParameterMetadataService metadataService;
@@ -130,12 +133,16 @@ public sealed class BatteryConfigurationService : IBatteryConfigurationService
     }
 
     /// <inheritdoc />
-    public Task<BatteryApplyResult> CalibrateVoltageAsync(VehicleId vehicleId, int instance, double measuredVolts, double referenceVolts, CancellationToken cancellationToken = default) =>
-        CalibrateAsync(vehicleId, instance, BatterySetting.VoltageMultiplier, measuredVolts, referenceVolts, "voltage", cancellationToken);
+    public Task<BatteryApplyResult> CalibrateVoltageAsync(VehicleId vehicleId, int instance, double measuredVolts, double referenceVolts, CancellationToken cancellationToken = default)
+    {
+        return CalibrateAsync(vehicleId, instance, BatterySetting.VoltageMultiplier, measuredVolts, referenceVolts, "voltage", cancellationToken);
+    }
 
     /// <inheritdoc />
-    public Task<BatteryApplyResult> CalibrateCurrentAsync(VehicleId vehicleId, int instance, double measuredAmps, double referenceAmps, CancellationToken cancellationToken = default) =>
-        CalibrateAsync(vehicleId, instance, BatterySetting.CurrentPerVolt, measuredAmps, referenceAmps, "current", cancellationToken);
+    public Task<BatteryApplyResult> CalibrateCurrentAsync(VehicleId vehicleId, int instance, double measuredAmps, double referenceAmps, CancellationToken cancellationToken = default)
+    {
+        return CalibrateAsync(vehicleId, instance, BatterySetting.CurrentPerVolt, measuredAmps, referenceAmps, "current", cancellationToken);
+    }
 
     /// <inheritdoc />
     public async Task RefreshAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
@@ -247,13 +254,17 @@ public sealed class BatteryConfigurationService : IBatteryConfigurationService
         return new BatteryLiveReading(null, null, null, null, true, false);
     }
 
-    private static double? ReadValue(IReadOnlyDictionary<string, VehicleParameter> values, int instance, BatterySetting setting) =>
-        values.TryGetValue(Name(instance, setting), out var parameter) ? parameter.Value : null;
+    private static double? ReadValue(IReadOnlyDictionary<string, VehicleParameter> values, int instance, BatterySetting setting)
+    {
+        return values.TryGetValue(Name(instance, setting), out var parameter) ? parameter.Value : null;
+    }
 
-    private static IReadOnlyList<BatterySettingOption> Options(IReadOnlyDictionary<string, ParameterMetadata> metadata, string name) =>
-        metadata.TryGetValue(name, out var definition)
+    private static IReadOnlyList<BatterySettingOption> Options(IReadOnlyDictionary<string, ParameterMetadata> metadata, string name)
+    {
+        return metadata.TryGetValue(name, out var definition)
             ? definition.GetValueOptions().OrderBy(option => option.Key).Select(option => new BatterySettingOption(option.Key, option.Value)).ToArray()
             : [];
+    }
 
     private async Task<ParameterMetadata?> GetMetadataAsync(VehicleId vehicleId, string name, CancellationToken cancellationToken)
     {
@@ -278,11 +289,15 @@ public sealed class BatteryConfigurationService : IBatteryConfigurationService
         return state;
     }
 
-    private static string Name(int instance, BatterySetting setting) => $"{(instance == 1 ? "BATT" : $"BATT{instance}")}_{suffixes[setting]}";
+    private static string Name(int instance, BatterySetting setting)
+    {
+        return $"{(instance == 1 ? "BATT" : $"BATT{instance}")}_{suffixes[setting]}";
+    }
 
     private async Task<bool> WriteAndConfirmAsync(VehicleId vehicleId, string name, float value, MavParamType type, CancellationToken cancellationToken)
     {
         var readback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
         void OnChanged(object? sender, VehicleParameterChangedEventArgs args)
         {
             if (args.VehicleId == vehicleId && args.Parameter is { } parameter && parameter.Name == name && NearlyEqual(parameter.Value, value))
@@ -318,5 +333,8 @@ public sealed class BatteryConfigurationService : IBatteryConfigurationService
         }
     }
 
-    private static bool NearlyEqual(float first, float second) => Math.Abs(first - second) <= 0.0005f;
+    private static bool NearlyEqual(float first, float second)
+    {
+        return Math.Abs(first - second) <= 0.0005f;
+    }
 }

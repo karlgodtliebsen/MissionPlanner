@@ -2,7 +2,9 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Setup;
 
@@ -10,13 +12,10 @@ namespace MissionPlanner.Core.Setup;
 public sealed class FrameConfigurationService : IFrameConfigurationService
 {
     private static readonly TimeSpan readbackTimeout = TimeSpan.FromSeconds(4);
+
     private static readonly IReadOnlyDictionary<FirmwareFamily, string[]> frameParameters =
-        new Dictionary<FirmwareFamily, string[]>
-        {
-            [FirmwareFamily.ArduCopter] = ["FRAME_CLASS", "FRAME_TYPE"],
-            [FirmwareFamily.ArduPlane] = ["Q_FRAME_CLASS", "Q_FRAME_TYPE"],
-            [FirmwareFamily.Rover] = ["FRAME_CLASS", "FRAME_TYPE"]
-        };
+        new Dictionary<FirmwareFamily, string[]> { [FirmwareFamily.ArduCopter] = ["FRAME_CLASS", "FRAME_TYPE"], [FirmwareFamily.ArduPlane] = ["Q_FRAME_CLASS", "Q_FRAME_TYPE"], [FirmwareFamily.Rover] = ["FRAME_CLASS", "FRAME_TYPE"] };
+
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleParameterRegistry parameterRegistry;
     private readonly IVehicleParameterMetadataService metadataService;
@@ -175,8 +174,8 @@ public sealed class FrameConfigurationService : IFrameConfigurationService
         const string name = "ARMING_CHECK";
         if (!values.TryGetValue(name, out var parameter) || parameter.Value == 1 ||
             !metadata.TryGetValue(name, out var definition) || definition.ReadOnly ||
-            definition.MinValue is { } minimum && 1 < minimum ||
-            definition.MaxValue is { } maximum && 1 > maximum)
+            (definition.MinValue is { } minimum && 1 < minimum) ||
+            (definition.MaxValue is { } maximum && 1 > maximum))
         {
             return [];
         }
@@ -202,14 +201,14 @@ public sealed class FrameConfigurationService : IFrameConfigurationService
         if (settings.TryGetValue(change.Name, out var setting))
         {
             return setting.ParameterType == change.ParameterType &&
-                NearlyEqual(setting.CurrentValue, change.OriginalValue) &&
-                setting.Options.Any(option => NearlyEqual(option.Value, change.PendingValue));
+                   NearlyEqual(setting.CurrentValue, change.OriginalValue) &&
+                   setting.Options.Any(option => NearlyEqual(option.Value, change.PendingValue));
         }
 
         return recommendations.TryGetValue(change.Name, out var recommendation) &&
-            recommendation.ParameterType == change.ParameterType &&
-            NearlyEqual(recommendation.CurrentValue, change.OriginalValue) &&
-            NearlyEqual(recommendation.RecommendedValue, change.PendingValue);
+               recommendation.ParameterType == change.ParameterType &&
+               NearlyEqual(recommendation.CurrentValue, change.OriginalValue) &&
+               NearlyEqual(recommendation.RecommendedValue, change.PendingValue);
     }
 
     private async Task<FrameConfigurationApplyResult> RollBackAsync(
@@ -252,6 +251,7 @@ public sealed class FrameConfigurationService : IFrameConfigurationService
         CancellationToken cancellationToken)
     {
         var readback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
         void OnChanged(object? sender, VehicleParameterChangedEventArgs args)
         {
             if (args.VehicleId == vehicleId && args.Parameter is { } parameter &&
@@ -290,10 +290,15 @@ public sealed class FrameConfigurationService : IFrameConfigurationService
 
     private static bool RequiresReboot(
         IEnumerable<FrameParameterChange> changes,
-        FrameConfigurationSnapshot configuration) =>
-        changes.Any(change =>
+        FrameConfigurationSnapshot configuration)
+    {
+        return changes.Any(change =>
             configuration.Settings.FirstOrDefault(item => item.Name == change.Name)?.RebootRequired == true ||
             configuration.Recommendations.FirstOrDefault(item => item.Name == change.Name)?.RebootRequired == true);
+    }
 
-    private static bool NearlyEqual(float first, float second) => Math.Abs(first - second) <= 0.0001f;
+    private static bool NearlyEqual(float first, float second)
+    {
+        return Math.Abs(first - second) <= 0.0001f;
+    }
 }

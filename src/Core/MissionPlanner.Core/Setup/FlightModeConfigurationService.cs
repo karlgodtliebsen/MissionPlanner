@@ -2,8 +2,10 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MavParamType = MissionPlanner.MavLink.Parameters.MavParamType;
 
 namespace MissionPlanner.Core.Setup;
@@ -87,7 +89,7 @@ public sealed class FlightModeConfigurationService : IFlightModeConfigurationSer
     {
         var state = RequireActiveVehicle(vehicleId);
         var family = state.Identity.Firmware.Family;
-        if (!TryResolveNames(family, out _, out var slotPrefix))
+        if (!TryResolveNames(family, out var _, out var slotPrefix))
         {
             return new FlightModeApplyResult(false, $"Flight-mode slots are not configurable for {family}.");
         }
@@ -195,6 +197,7 @@ public sealed class FlightModeConfigurationService : IFlightModeConfigurationSer
     {
         var type = parameterRegistry.GetParameter(vehicleId, name)?.Type ?? MavParamType.Int8;
         var readback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
         void OnChanged(object? sender, VehicleParameterChangedEventArgs args)
         {
             if (args.VehicleId == vehicleId && args.Parameter is { } parameter && parameter.Name == name &&

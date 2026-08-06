@@ -6,6 +6,7 @@ using MissionPlanner.MavLink;
 using MissionPlanner.MavLink.Commands;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services.Abstractions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Transport;
 
 namespace MissionPlanner.Simulator;

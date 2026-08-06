@@ -1,5 +1,6 @@
 ﻿using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Events;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.DomainEvents;
 
@@ -12,14 +13,17 @@ public class VehicleConnected : DomainEvent<VehicleConnectedData>
     /// Provides the public API for VehicleId.
     /// </summary>
     public VehicleId VehicleId => ((VehicleConnectedData)Payload!).VehicleId;
+
     /// <summary>
     /// Provides the public API for ConnectionType.
     /// </summary>
     public string ConnectionType => ((VehicleConnectedData)Payload!).ConnectionType;
+
     /// <summary>
     /// Provides the public API for Endpoint.
     /// </summary>
     public string Endpoint => ((VehicleConnectedData)Payload!).Endpoint;
+
     /// <summary>
     /// Provides the public API for ConnectedAt.
     /// </summary>

@@ -4,6 +4,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Transport;
 
 namespace MissionPlanner.Core.Vehicles;
@@ -49,10 +50,7 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider 
             return false;
         }
 
-        var offlineState = vehicle.State with
-        {
-            Connection = vehicle.State.Connection with { State = VehicleConnectionState.Offline }
-        };
+        var offlineState = vehicle.State with { Connection = vehicle.State.Connection with { State = VehicleConnectionState.Offline } };
         await eventHub.PublishDomainEventAsync(new VehicleStateUpdated(offlineState), cancellationToken).ConfigureAwait(false);
         logger.LogInformation("Removed exact vehicle {VehicleId} from the registry.", vehicleId);
         return true;
@@ -70,6 +68,7 @@ public sealed class VehicleRegistry(IDomainEventHub eventHub, IDateTimeProvider 
             {
                 stateChanged = vehicle.UpdateConnectionState(now, staleAfter, degradedAfter, offlineAfter);
             }
+
             await eventHub.PublishDomainEventAsync(new VehicleStateUpdated(vehicle.State), cancellationToken);
             if (stateChanged is not null)
             {

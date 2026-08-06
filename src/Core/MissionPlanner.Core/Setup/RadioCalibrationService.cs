@@ -7,6 +7,7 @@ using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MavParamType = MissionPlanner.MavLink.Parameters.MavParamType;
 
 namespace MissionPlanner.Core.Setup;
@@ -19,6 +20,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
     private const int MinimumPlausiblePwm = 800;
     private const int MaximumPlausiblePwm = 2200;
     private const int MinimumTravel = 200;
+
     private static readonly (string Parameter, int Default, string Function)[] pilotFunctions =
     [
         ("RCMAP_ROLL", 1, "Roll"),
@@ -26,6 +28,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
         ("RCMAP_THROTTLE", 3, "Throttle"),
         ("RCMAP_YAW", 4, "Yaw")
     ];
+
     private readonly Lock sync = new();
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleParameterRegistry parameterRegistry;
@@ -285,7 +288,6 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
                 "Vehicle disconnected during radio calibration."));
             return;
         }
-
     }
 
     private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
@@ -347,12 +349,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
             var number = index + 1;
             if (captures.TryGetValue(number, out var existing))
             {
-                captures[number] = existing with
-                {
-                    Minimum = Math.Min(existing.Minimum, pwm),
-                    Maximum = Math.Max(existing.Maximum, pwm),
-                    Current = pwm
-                };
+                captures[number] = existing with { Minimum = Math.Min(existing.Minimum, pwm), Maximum = Math.Max(existing.Maximum, pwm), Current = pwm };
             }
             else
             {
@@ -444,6 +441,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
     {
         var type = parameterRegistry.GetParameter(vehicleId, name)?.Type ?? MavParamType.Int16;
         var readback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
         void OnChanged(object? sender, VehicleParameterChangedEventArgs args)
         {
             if (args.VehicleId == vehicleId && args.Parameter is { } parameter && parameter.Name == name &&
@@ -492,7 +490,10 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
         StateChanged?.Invoke(this, new RadioCalibrationStateChangedEventArgs(snapshot));
     }
 
-    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(disposed, this);
+    private void ThrowIfDisposed()
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+    }
 
     private static double Normalize(int pwm, int minimum, int maximum, int trim, bool reversed)
     {
@@ -510,11 +511,18 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
         return reversed ? -value : value;
     }
 
-    private static string Label(string? function) => function is null ? string.Empty : $" ({function})";
+    private static string Label(string? function)
+    {
+        return function is null ? string.Empty : $" ({function})";
+    }
 
-    private static int ReadInt(IReadOnlyDictionary<string, VehicleParameter> parameters, string name, int fallback) =>
-        parameters.TryGetValue(name, out var parameter) ? (int)Math.Round(parameter.Value) : fallback;
+    private static int ReadInt(IReadOnlyDictionary<string, VehicleParameter> parameters, string name, int fallback)
+    {
+        return parameters.TryGetValue(name, out var parameter) ? (int)Math.Round(parameter.Value) : fallback;
+    }
 
-    private static bool ReadBool(IReadOnlyDictionary<string, VehicleParameter> parameters, string name) =>
-        parameters.TryGetValue(name, out var parameter) && parameter.Value != 0;
+    private static bool ReadBool(IReadOnlyDictionary<string, VehicleParameter> parameters, string name)
+    {
+        return parameters.TryGetValue(name, out var parameter) && parameter.Value != 0;
+    }
 }

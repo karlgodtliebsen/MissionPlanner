@@ -3,6 +3,7 @@ using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Generated;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.ConfigTuning.Tuning;
 

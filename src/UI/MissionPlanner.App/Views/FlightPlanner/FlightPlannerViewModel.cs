@@ -7,6 +7,7 @@ using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Missions.Transfer;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.App.Views.FlightPlanner;
 

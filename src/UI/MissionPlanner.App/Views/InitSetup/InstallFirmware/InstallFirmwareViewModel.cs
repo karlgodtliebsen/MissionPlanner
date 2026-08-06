@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Firmware;
 using MissionPlanner.Firmware.Catalog;
 using MissionPlanner.Firmware.Connected;
 using MissionPlanner.Firmware.Devices;
@@ -112,6 +113,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
 
     /// <summary>Gets whether a validated downloadable artifact is ready.</summary>
     public bool HasPreparedFirmware => PreparedFirmware is not null;
+
     [ObservableProperty] public partial ApjFirmwarePackage? CustomPackage { get; private set; }
     [ObservableProperty] public partial string? CustomFirmwareName { get; private set; }
     [ObservableProperty] public partial string? CustomFirmwareDescription { get; private set; }
@@ -131,7 +133,9 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     [ObservableProperty] public partial bool IsCancellationDeferred { get; private set; }
     [ObservableProperty] public partial FirmwareOperationState? CurrentOperationState { get; private set; }
     [ObservableProperty] public partial bool IsHelpVisible { get; private set; }
-    [ObservableProperty] public partial FirmwareContextHelp ContextHelp { get; private set; } =
+
+    [ObservableProperty]
+    public partial FirmwareContextHelp ContextHelp { get; private set; } =
         FirmwareContextHelpResolver.Resolve(new FirmwareSupportContext(SerialDevicePresent: false));
 
     /// <summary>Gets whether the current non-terminal work accepts a cancellation request.</summary>
@@ -197,7 +201,10 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         }
     }
 
-    partial void OnTargetSearchTextChanged(string? value) => ApplyTargetQuery();
+    partial void OnTargetSearchTextChanged(string? value)
+    {
+        ApplyTargetQuery();
+    }
 
     partial void OnIsCatalogRefreshRunningChanged(bool value)
     {
@@ -291,9 +298,9 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             var prepared = PreparedFirmware is not null && ReferenceEquals(PreparedFirmware.ManifestEntry, SelectedFirmware?.Entry) ? PreparedFirmware : null;
             var request = new FirmwareInstallationRequest(
                 new BootloaderEntryContext(new BootloaderDiscoveryRequest(
-                    SelectedDevice?.Descriptor,
-                    ExpectedUsbIdentifiers: target?.UsbIdentifiers,
-                    BootloaderHints: target?.BootloaderNames),
+                        SelectedDevice?.Descriptor,
+                        target?.UsbIdentifiers,
+                        target?.BootloaderNames),
                     SelectedDevice?.Descriptor),
                 prepared is null ? SelectedFirmware?.Entry.Artifact : null,
                 CustomPackage ?? prepared?.Package);
@@ -395,7 +402,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
                 refreshToken);
             var devices = await deviceCatalog.GetDevicesAsync(refreshToken);
             var entries = catalog.Entries.Where(entry => entry.Target.VehicleType != FirmwareVehicleType.Unknown &&
-                entry.Artifact.Format is FirmwareImageFormat.Apj or FirmwareImageFormat.Px4).ToArray();
+                                                         entry.Artifact.Format is FirmwareImageFormat.Apj or FirmwareImageFormat.Px4).ToArray();
             refreshToken.ThrowIfCancellationRequested();
             await DispatchAsync(() =>
             {
@@ -532,20 +539,26 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         return completion.Task;
     }
 
-    private static bool SameEntry(FirmwareManifestEntry left, FirmwareManifestEntry right) =>
-        left.Target.BoardId == right.Target.BoardId &&
-        left.Channel == right.Channel &&
-        left.Artifact.DownloadUri == right.Artifact.DownloadUri;
+    private static bool SameEntry(FirmwareManifestEntry left, FirmwareManifestEntry right)
+    {
+        return left.Target.BoardId == right.Target.BoardId &&
+               left.Channel == right.Channel &&
+               left.Artifact.DownloadUri == right.Artifact.DownloadUri;
+    }
 
     [RelayCommand]
     private async Task DownloadAndValidateAsync(CancellationToken cancellationToken)
     {
-        if (SelectedFirmware is null || IsOperationInProgress) return;
+        if (SelectedFirmware is null || IsOperationInProgress)
+        {
+            return;
+        }
+
         using var ownedCancellation = BeginOperationCancellation(cancellationToken);
         try
         {
             SetOperation(true, FirmwareOperationState.Downloading);
-            PreparedFirmware = await preparationService.PrepareAsync(new(SelectedFirmware.Entry), new Progress<FirmwareProgress>(UpdateProgress), ownedCancellation.Token);
+            PreparedFirmware = await preparationService.PrepareAsync(new FirmwarePreparationRequest(SelectedFirmware.Entry), new Progress<FirmwareProgress>(UpdateProgress), ownedCancellation.Token);
             OnPropertyChanged(nameof(HasPreparedFirmware));
             StatusMessage = PreparedFirmware.WasCacheHit ? "Validated cached firmware package." : "Firmware downloaded and validated.";
         }
@@ -557,7 +570,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         {
             logger.LogWarning(exception, "Firmware preparation failed.");
             StatusMessage = exception.Message;
-            UpdateContextHelp(exception is MissionPlanner.Firmware.Exceptions.FirmwarePackageException);
+            UpdateContextHelp(exception is Firmware.Exceptions.FirmwarePackageException);
         }
         finally
         {
@@ -577,7 +590,9 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
 
         var cancellation = operationCancellation;
         if (cancellation is null || cancellation.IsCancellationRequested)
+        {
             return;
+        }
 
         IsCancellationDeferred = CurrentOperationState is FirmwareOperationState.Erasing or
             FirmwareOperationState.Programming or FirmwareOperationState.Verifying or FirmwareOperationState.Rebooting;
@@ -589,18 +604,28 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     }
 
     [RelayCommand]
-    private Task CopyDownloadUrlAsync() => SelectedFirmware is null ? Task.CompletedTask : Clipboard.Default.SetTextAsync(SelectedFirmware.Entry.Artifact.DownloadUri.AbsoluteUri);
+    private Task CopyDownloadUrlAsync()
+    {
+        return SelectedFirmware is null ? Task.CompletedTask : Clipboard.Default.SetTextAsync(SelectedFirmware.Entry.Artifact.DownloadUri.AbsoluteUri);
+    }
 
     [RelayCommand]
-    private Task OpenSupportLinkAsync(FirmwareSupportLink link, CancellationToken cancellationToken) =>
-        externalLinkLauncher.OpenAsync(link.Uri, cancellationToken);
+    private Task OpenSupportLinkAsync(FirmwareSupportLink link, CancellationToken cancellationToken)
+    {
+        return externalLinkLauncher.OpenAsync(link.Uri, cancellationToken);
+    }
 
     [RelayCommand]
-    private Task OpenDeviceManagerAsync(CancellationToken cancellationToken) =>
-        deviceManagerLauncher.OpenAsync(cancellationToken);
+    private Task OpenDeviceManagerAsync(CancellationToken cancellationToken)
+    {
+        return deviceManagerLauncher.OpenAsync(cancellationToken);
+    }
 
     [RelayCommand]
-    private void ToggleHelp() => IsHelpVisible = !IsHelpVisible;
+    private void ToggleHelp()
+    {
+        IsHelpVisible = !IsHelpVisible;
+    }
 
     private void OnActiveVehicleChanged(object? sender, Core.Vehicles.ActiveVehicleChangedEventArgs e)
     {
@@ -612,7 +637,10 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         IsOperationInProgress = active;
         CurrentOperationState = stage;
         if (!active)
+        {
             IsCancellationDeferred = false;
+        }
+
         OnPropertyChanged(nameof(CanNavigateAway));
         OnPropertyChanged(nameof(CanRequestCancellation));
         ApplyMode(stage);
@@ -627,7 +655,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             OperatingSystem.IsWindows(),
             activeVehicle.IsOnline,
             activeVehicle.State?.IsArmed == true,
-            activeVehicle.State is not null && activeVehicle.State.Identity.Firmware.Family != Core.Vehicles.Models.FirmwareFamily.Unknown,
+            activeVehicle.State is not null && activeVehicle.State.Identity.Firmware.Family != FirmwareFamily.Unknown,
             IsOperationInProgress,
             stage));
         IsConnectedMode = state.Mode == FirmwarePageMode.Connected;
@@ -661,7 +689,10 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     private void EndOperationCancellation(CancellationTokenSource owned)
     {
         if (ReferenceEquals(operationCancellation, owned))
+        {
             operationCancellation = null;
+        }
+
         CancelCommand.NotifyCanExecuteChanged();
     }
 

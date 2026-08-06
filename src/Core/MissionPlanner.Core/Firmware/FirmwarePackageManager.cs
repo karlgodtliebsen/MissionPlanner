@@ -1,6 +1,7 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.Firmware.Model;
 
 namespace MissionPlanner.Core.Firmware;
 
@@ -12,7 +13,7 @@ public sealed class FirmwarePackageManager(
 {
     /// <inheritdoc />
     public async Task<FirmwarePackage> PrepareAsync(
-        FirmwareManifestEntry release,
+        FirmwareManifestEntryRecord release,
         IProgress<double>? progress = null,
         CancellationToken cancellationToken = default)
     {
@@ -69,7 +70,7 @@ public sealed class FirmwarePackageManager(
         return new FirmwarePackage(release, localPath, computed, true);
     }
 
-    private static void ValidateRelease(FirmwareManifestEntry release)
+    private static void ValidateRelease(FirmwareManifestEntryRecord release)
     {
         if (!release.DownloadUri.IsAbsoluteUri || release.DownloadUri.Scheme != Uri.UriSchemeHttps)
         {
@@ -82,7 +83,7 @@ public sealed class FirmwarePackageManager(
         }
     }
 
-    private static string CreateCacheKey(FirmwareManifestEntry release)
+    private static string CreateCacheKey(FirmwareManifestEntryRecord release)
     {
         var identity = $"{release.BoardTarget}|{release.Version}|{release.DownloadUri}";
         return $"firmware-{Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(identity))).ToLowerInvariant()}.bin";
@@ -94,6 +95,8 @@ public sealed class FirmwarePackageManager(
         return Convert.ToHexString(digest).ToLower(CultureInfo.InvariantCulture);
     }
 
-    private static bool HashMatches(string computed, string expected) =>
-        string.Equals(computed, expected, StringComparison.OrdinalIgnoreCase);
+    private static bool HashMatches(string computed, string expected)
+    {
+        return string.Equals(computed, expected, StringComparison.OrdinalIgnoreCase);
+    }
 }

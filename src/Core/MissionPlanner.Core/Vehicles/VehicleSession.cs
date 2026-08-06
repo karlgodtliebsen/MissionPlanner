@@ -1,8 +1,10 @@
 ﻿using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Core.Vehicles.Observations;
+using MissionPlanner.Firmware;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink.Messages;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Transport;
 
 namespace MissionPlanner.Core.Vehicles;
@@ -188,7 +190,7 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
 
     private static double? CalculateHorizontalSpeed(double? northMetersPerSecond, double? eastMetersPerSecond)
     {
-        return northMetersPerSecond is not { } north || eastMetersPerSecond is not { } east ? null : Math.Sqrt((north * north) + (east * east));
+        return northMetersPerSecond is not { } north || eastMetersPerSecond is not { } east ? null : Math.Sqrt(north * north + east * east);
     }
 
     /// <summary>

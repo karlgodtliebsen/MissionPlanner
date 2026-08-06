@@ -1,7 +1,9 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
+using MissionPlanner.MavLink.Generated;
 using MissionPlanner.MavLink.Parameters;
 
 namespace MissionPlanner.Core.Setup;
@@ -102,8 +104,10 @@ public sealed class SetupWorkflowCatalog : ISetupWorkflowCatalog
         SetupWorkflowKey workflow,
         VehicleState state,
         IReadOnlyDictionary<string, VehicleParameter> parameters,
-        DateTimeOffset completedAt) =>
-        new(CreateVehicleKey(state), workflow, CreateFirmwareSignature(state), CreateParameterSignature(parameters), completedAt);
+        DateTimeOffset completedAt)
+    {
+        return new SetupCompletionEvidence(CreateVehicleKey(state), workflow, CreateFirmwareSignature(state), CreateParameterSignature(parameters), completedAt);
+    }
 
     private static SetupWorkflowDescriptor Descriptor(
         SetupWorkflowKey key,
@@ -111,28 +115,31 @@ public sealed class SetupWorkflowCatalog : ISetupWorkflowCatalog
         string description,
         IReadOnlySet<FirmwareFamily>? families = null,
         IReadOnlyList<SetupWorkflowKey>? prerequisites = null,
-        string? configDestination = null) =>
-        new(key, title, description, families ?? new HashSet<FirmwareFamily>(), prerequisites ?? [], configDestination);
+        string? configDestination = null)
+    {
+        return new SetupWorkflowDescriptor(key, title, description, families ?? new HashSet<FirmwareFamily>(), prerequisites ?? [], configDestination);
+    }
 
     private static bool IsSupported(SetupWorkflowDescriptor descriptor, VehicleState state, IReadOnlyDictionary<string, VehicleParameter> parameters)
     {
-        if (descriptor.SupportedFamilies.Count > 0 && !descriptor.SupportedFamilies.Contains(state.Identity.Firmware.Family))
-        {
-            return false;
-        }
-
-        return descriptor.Key != SetupWorkflowKey.OptionalHardware ||
-            state.Identity.Firmware.Supports(MavProtocolCapability.Ftp) ||
-            parameters.Keys.Any(IsOptionalHardwareParameter);
+        return descriptor.SupportedFamilies.Count > 0 && !descriptor.SupportedFamilies.Contains(state.Identity.Firmware.Family)
+            ? false
+            : descriptor.Key != SetupWorkflowKey.OptionalHardware ||
+              state.Identity.Firmware.Supports(MavProtocolCapability.Ftp) ||
+              parameters.Keys.Any(IsOptionalHardwareParameter);
     }
 
-    private static bool IsVisible(SetupWorkflowDescriptor descriptor, VehicleState state, IReadOnlyDictionary<string, VehicleParameter> parameters) =>
-        IsSupported(descriptor, state, parameters) || descriptor.Key is SetupWorkflowKey.Firmware or SetupWorkflowKey.Summary;
+    private static bool IsVisible(SetupWorkflowDescriptor descriptor, VehicleState state, IReadOnlyDictionary<string, VehicleParameter> parameters)
+    {
+        return IsSupported(descriptor, state, parameters) || descriptor.Key is SetupWorkflowKey.Firmware or SetupWorkflowKey.Summary;
+    }
 
-    private static bool IsOptionalHardwareParameter(string name) =>
-        name.StartsWith("SERIAL", StringComparison.Ordinal) ||
-        name.StartsWith("CAN_", StringComparison.Ordinal) ||
-        name.StartsWith("RNGFND", StringComparison.Ordinal);
+    private static bool IsOptionalHardwareParameter(string name)
+    {
+        return name.StartsWith("SERIAL", StringComparison.Ordinal) ||
+               name.StartsWith("CAN_", StringComparison.Ordinal) ||
+               name.StartsWith("RNGFND", StringComparison.Ordinal);
+    }
 
     private static string CreateVehicleKey(VehicleState state)
     {

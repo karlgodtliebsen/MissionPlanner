@@ -8,6 +8,8 @@ using MissionPlanner.Core.ConfigTuning.Tuning;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware.Model;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
@@ -217,17 +219,14 @@ public sealed partial class ExtendedTuningGroupViewModel : ObservableObject
     /// <returns><see langword="true"/> when the group should be shown.</returns>
     public bool Matches(string search)
     {
-        if (string.IsNullOrWhiteSpace(search))
-        {
-            return true;
-        }
-
-        return Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-               Category.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-               Description.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-               resolved.Fields.Any(item =>
-                   item.ParameterName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                   item.Definition.Component.Title.Contains(search, StringComparison.OrdinalIgnoreCase));
+        return string.IsNullOrWhiteSpace(search)
+            ? true
+            : Title.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+              Category.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+              Description.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+              resolved.Fields.Any(item =>
+                  item.ParameterName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                  item.Definition.Component.Title.Contains(search, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>Applies a field filter and optionally expands matching rows.</summary>
@@ -467,7 +466,10 @@ public sealed partial class ExtendedTuningTabViewModel : ObservableObject, IDisp
         DetachWorkspace();
     }
 
-    partial void OnSearchTextChanged(string value) => FilterGroups();
+    partial void OnSearchTextChanged(string value)
+    {
+        FilterGroups();
+    }
 
     private async Task ApplyGroupAsync(ExtendedTuningGroupViewModel group)
     {
@@ -728,7 +730,10 @@ public sealed partial class ExtendedTuningTabViewModel : ObservableObject, IDisp
         }
     }
 
-    private void OnSessionChanged(object? sender, EventArgs args) => dispatcher.Dispatch(RefreshState);
+    private void OnSessionChanged(object? sender, EventArgs args)
+    {
+        dispatcher.Dispatch(RefreshState);
+    }
 
     private void OnMetricChanged(object? sender, ControlResponseMetricChangedEventArgs args)
     {
@@ -740,11 +745,8 @@ public sealed partial class ExtendedTuningTabViewModel : ObservableObject, IDisp
 
     private void DetachWorkspace()
     {
-        if (workspace is not null)
-        {
-            workspace.Session.Changed -= OnSessionChanged;
-            workspace = null;
-        }
+        workspace?.Session.Changed -= OnSessionChanged;
+        workspace = null;
     }
 
     private void CancelOperation()
@@ -754,19 +756,21 @@ public sealed partial class ExtendedTuningTabViewModel : ObservableObject, IDisp
         IsBusy = false;
     }
 
-    private static ControlResponseMetricViewModel ToMetricViewModel(ControlResponseMetric metric) => new(
-        metric.Axis.ToString(System.Globalization.CultureInfo.InvariantCulture),
-        metric.Desired,
-        metric.Achieved,
-        metric.Error,
-        $"FF {metric.FeedForward:G4} · P {metric.Proportional:G4} · I {metric.Integral:G4} · D {metric.Derivative:G4}");
-
-    private readonly record struct ActiveProfileKey(
-        VehicleId? VehicleId,
-        bool IsOnline,
-        VehicleFirmwareIdentity? Firmware)
+    private static ControlResponseMetricViewModel ToMetricViewModel(ControlResponseMetric metric)
     {
-        public static ActiveProfileKey From(ActiveVehicleSnapshot snapshot) =>
-            new(snapshot.VehicleId, snapshot.IsOnline, snapshot.State?.Identity.Firmware);
+        return new ControlResponseMetricViewModel(
+            metric.Axis.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            metric.Desired,
+            metric.Achieved,
+            metric.Error,
+            $"FF {metric.FeedForward:G4} · P {metric.Proportional:G4} · I {metric.Integral:G4} · D {metric.Derivative:G4}");
+    }
+
+    private readonly record struct ActiveProfileKey(VehicleId? VehicleId, bool IsOnline, VehicleFirmwareIdentity? Firmware)
+    {
+        public static ActiveProfileKey From(ActiveVehicleSnapshot snapshot)
+        {
+            return new ActiveProfileKey(snapshot.VehicleId, snapshot.IsOnline, snapshot.State?.Identity.Firmware);
+        }
     }
 }

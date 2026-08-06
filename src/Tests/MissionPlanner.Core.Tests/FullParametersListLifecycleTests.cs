@@ -12,6 +12,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using NSubstitute;
 using UraniumUI.Material.Dialogs;
 

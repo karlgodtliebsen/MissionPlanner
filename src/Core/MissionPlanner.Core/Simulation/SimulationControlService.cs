@@ -1,11 +1,14 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MissionPlanner.Core.Simulation.Abstractions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware.Model;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Simulation;
+using MissionPlanner.Simulation.Abstractions;
 
 namespace MissionPlanner.Core.Simulation;
 
@@ -484,10 +487,7 @@ public sealed class SimulationControlService : ISimulationControlService
         }
     }
 
-    private SimulationControlCapability ResolveCapability(
-        SimulationTarget target,
-        SimulationControlDescriptor descriptor,
-        VehicleFirmwareIdentity? firmware)
+    private SimulationControlCapability ResolveCapability(SimulationTarget target, SimulationControlDescriptor descriptor, VehicleFirmwareIdentity? firmware)
     {
         if (!descriptor.SupportedFamilies.Contains(target.Profile.FirmwareFamily))
         {
@@ -533,16 +533,13 @@ public sealed class SimulationControlService : ISimulationControlService
         }
 
         var vehicle = vehicleRegistry.GetRequired(snapshot.VehicleId.Value);
-        if (vehicle is null || vehicle.State.Connection.State != VehicleConnectionState.Online)
-        {
-            throw new InvalidOperationException("The simulator vehicle is not online.");
-        }
-
-        return new SimulationTarget(
-            snapshot.SessionId,
-            snapshot.VehicleId.Value,
-            snapshot.Profile,
-            snapshot.StartedAt ?? clock.UtcNow);
+        return vehicle is null || vehicle.State.Connection.State != VehicleConnectionState.Online
+            ? throw new InvalidOperationException("The simulator vehicle is not online.")
+            : new SimulationTarget(
+                snapshot.SessionId,
+                snapshot.VehicleId.Value,
+                snapshot.Profile,
+                snapshot.StartedAt ?? clock.UtcNow);
     }
 
     private SimulationTarget GetTarget(Guid sessionId, VehicleId vehicleId)
@@ -567,12 +564,9 @@ public sealed class SimulationControlService : ISimulationControlService
         }
 
         var vehicle = vehicleRegistry.GetRequired(vehicleId);
-        if (vehicle is null || vehicle.State.Connection.State != VehicleConnectionState.Online)
-        {
-            throw new InvalidOperationException("The simulator vehicle is not online.");
-        }
-
-        return new SimulationTarget(sessionId, vehicleId, channel.Profile, channel.StartedAt);
+        return vehicle is null || vehicle.State.Connection.State != VehicleConnectionState.Online
+            ? throw new InvalidOperationException("The simulator vehicle is not online.")
+            : new SimulationTarget(sessionId, vehicleId, channel.Profile, channel.StartedAt);
     }
 
     private void EnsureSameTarget(SimulationTarget target)

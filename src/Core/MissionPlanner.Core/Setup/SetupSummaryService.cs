@@ -6,6 +6,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Setup;
 
@@ -101,7 +102,10 @@ public sealed class SetupSummaryService : ISetupSummaryService
     }
 
     /// <inheritdoc />
-    public string ExportJson(SetupSummary summary) => JsonSerializer.Serialize(summary, jsonOptions);
+    public string ExportJson(SetupSummary summary)
+    {
+        return JsonSerializer.Serialize(summary, jsonOptions);
+    }
 
     /// <inheritdoc />
     public string ExportMarkdown(SetupSummary summary)
@@ -153,13 +157,16 @@ public sealed class SetupSummaryService : ISetupSummaryService
         return new SetupSummaryEntry(label, "Not available", SetupAssessmentStatus.NotAssessed);
     }
 
-    private static SetupAssessmentStatus MapWorkflowStatus(SetupWorkflowState state) => state switch
+    private static SetupAssessmentStatus MapWorkflowStatus(SetupWorkflowState state)
     {
-        SetupWorkflowState.Completed => SetupAssessmentStatus.Pass,
-        SetupWorkflowState.Warning or SetupWorkflowState.Failed => SetupAssessmentStatus.Warning,
-        SetupWorkflowState.Unsupported => SetupAssessmentStatus.Unsupported,
-        _ => SetupAssessmentStatus.NotAssessed
-    };
+        return state switch
+        {
+            SetupWorkflowState.Completed => SetupAssessmentStatus.Pass,
+            SetupWorkflowState.Warning or SetupWorkflowState.Failed => SetupAssessmentStatus.Warning,
+            SetupWorkflowState.Unsupported => SetupAssessmentStatus.Unsupported,
+            _ => SetupAssessmentStatus.NotAssessed
+        };
+    }
 
     private static string DescribeFirmware(VehicleState state)
     {

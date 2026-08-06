@@ -1,6 +1,8 @@
 using System.Text.Json;
 using MissionPlanner.Core.Replay;
 using MissionPlanner.MavLink;
+using MissionPlanner.Simulation;
+using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Transport;
 
 namespace MissionPlanner.Core.Simulation;
@@ -8,10 +10,7 @@ namespace MissionPlanner.Core.Simulation;
 /// <summary>Creates redacted structured diagnostics for the simulation workspace.</summary>
 public sealed class SimulationDiagnosticsService(IReplaySessionManager? replaySessionManager = null) : ISimulationDiagnosticsService
 {
-    private static readonly JsonSerializerOptions jsonOptions = new(JsonSerializerDefaults.Web)
-    {
-        WriteIndented = true
-    };
+    private static readonly JsonSerializerOptions jsonOptions = new(JsonSerializerDefaults.Web) { WriteIndented = true };
     private static readonly string[] sensitiveTerms = ["password", "passwd", "secret", "token", "api-key", "apikey"];
 
     /// <inheritdoc />
@@ -66,12 +65,7 @@ public sealed class SimulationDiagnosticsService(IReplaySessionManager? replaySe
                     profile.Location,
                     profile.Speedup,
                     profile.Endpoints,
-                    binary = new
-                    {
-                        profile.Binary.Version,
-                        profile.Binary.ExecutablePath,
-                        profile.Binary.Source
-                    },
+                    binary = new { profile.Binary.Version, profile.Binary.ExecutablePath, profile.Binary.Source },
                     additionalArguments = RedactArguments(profile.AdditionalArguments, knownSecrets),
                     environment = profile.Environment.ToDictionary(
                         item => item.Key,
@@ -81,10 +75,7 @@ public sealed class SimulationDiagnosticsService(IReplaySessionManager? replaySe
                         StringComparer.OrdinalIgnoreCase)
                 },
             replay = CreateReplayDiagnostics(replaySessionManager?.Snapshot),
-            recentOutput = snapshot.RecentOutput.Select(line => line with
-            {
-                Text = RedactKnownSecrets(line.Text, knownSecrets) ?? string.Empty
-            }).ToArray()
+            recentOutput = snapshot.RecentOutput.Select(line => line with { Text = RedactKnownSecrets(line.Text, knownSecrets) ?? string.Empty }).ToArray()
         };
         return JsonSerializer.Serialize(document, jsonOptions);
     }
@@ -106,12 +97,7 @@ public sealed class SimulationDiagnosticsService(IReplaySessionManager? replaySe
             replay.DecodedFrames,
             replay.RejectedFrames,
             replay.Clock,
-            vehicles = replay.Vehicles.Select(vehicle => new
-            {
-                vehicle.VehicleId,
-                vehicle.DisplayName,
-                firmware = vehicle.Identity.Firmware.Family
-            }).ToArray(),
+            vehicles = replay.Vehicles.Select(vehicle => new { vehicle.VehicleId, vehicle.DisplayName, firmware = vehicle.Identity.Firmware.Family }).ToArray(),
             transmission = "prohibited"
         };
     }
@@ -161,8 +147,10 @@ public sealed class SimulationDiagnosticsService(IReplaySessionManager? replaySe
         return result;
     }
 
-    private static bool IsSensitive(string value) =>
-        sensitiveTerms.Any(term => value.Contains(term, StringComparison.OrdinalIgnoreCase));
+    private static bool IsSensitive(string value)
+    {
+        return sensitiveTerms.Any(term => value.Contains(term, StringComparison.OrdinalIgnoreCase));
+    }
 
     private static IReadOnlyList<string> GetKnownSecrets(
         SimulatorProfile? profile,
@@ -209,6 +197,8 @@ public sealed class SimulationDiagnosticsService(IReplaySessionManager? replaySe
         return value;
     }
 
-    private static string AssemblyVersion(Type type) =>
-        type.Assembly.GetName().Version?.ToString() ?? "unavailable";
+    private static string AssemblyVersion(Type type)
+    {
+        return type.Assembly.GetName().Version?.ToString() ?? "unavailable";
+    }
 }

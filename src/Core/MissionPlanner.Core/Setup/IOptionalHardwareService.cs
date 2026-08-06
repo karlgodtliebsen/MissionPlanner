@@ -1,5 +1,6 @@
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Setup;
 

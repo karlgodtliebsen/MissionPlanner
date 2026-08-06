@@ -2,6 +2,7 @@
 using MissionPlanner.Core.Vehicles.Handlers.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Core.Vehicles.Observations;
+using MissionPlanner.Firmware;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Messages;
 
@@ -39,6 +40,7 @@ public sealed class NavigationTelemetryHandler(
         {
             return;
         }
+
         var previous = vehicle.State;
 
         switch (message)

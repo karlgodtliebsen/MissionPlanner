@@ -1,3 +1,5 @@
+using MissionPlanner.Shared.Models.Vehicles.Models;
+
 namespace MissionPlanner.Core.Vehicles.Models;
 
 /// <summary>
@@ -22,5 +24,8 @@ public sealed record VehicleFlightState(
     DateTimeOffset? ObservedAt = null)
 {
     /// <summary>Returns whether extended flight state is older than <paramref name="maximumAge"/>.</summary>
-    public bool IsStale(DateTimeOffset now, TimeSpan maximumAge) => ObservedAt is null || now - ObservedAt > maximumAge;
+    public bool IsStale(DateTimeOffset now, TimeSpan maximumAge)
+    {
+        return ObservedAt is null || now - ObservedAt > maximumAge;
+    }
 }

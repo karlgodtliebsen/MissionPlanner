@@ -10,6 +10,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.Generated;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using NSubstitute;
 
 namespace MissionPlanner.Core.Tests;

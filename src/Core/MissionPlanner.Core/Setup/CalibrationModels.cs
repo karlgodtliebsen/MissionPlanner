@@ -1,4 +1,5 @@
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Setup;
 
@@ -7,6 +8,7 @@ public enum AccelerometerCalibrationKind
 {
     /// <summary>Six-position accelerometer calibration.</summary>
     SixPosition,
+
     /// <summary>Level-board trim calibration.</summary>
     Level
 }
@@ -16,20 +18,28 @@ public enum CalibrationWorkflowState
 {
     /// <summary>No calibration has started.</summary>
     NotStarted,
+
     /// <summary>The start command is awaiting protocol acknowledgement.</summary>
     Preparing,
+
     /// <summary>The vehicle requested a specific physical orientation.</summary>
     WaitingForOrientation,
+
     /// <summary>The vehicle is sampling the confirmed orientation.</summary>
     Sampling,
+
     /// <summary>The vehicle is completing calibration.</summary>
     Completing,
+
     /// <summary>The protocol explicitly confirmed success.</summary>
     Success,
+
     /// <summary>The protocol rejected or explicitly failed calibration.</summary>
     Failed,
+
     /// <summary>The user cancelled calibration.</summary>
     Cancelled,
+
     /// <summary>The vehicle disconnected during calibration.</summary>
     Disconnected
 }
@@ -39,14 +49,19 @@ public enum CalibrationOrientation
 {
     /// <summary>Vehicle level on its landing gear.</summary>
     Level = 1,
+
     /// <summary>Vehicle resting on its left side.</summary>
     Left = 2,
+
     /// <summary>Vehicle resting on its right side.</summary>
     Right = 3,
+
     /// <summary>Vehicle nose pointing down.</summary>
     NoseDown = 4,
+
     /// <summary>Vehicle nose pointing up.</summary>
     NoseUp = 5,
+
     /// <summary>Vehicle resting upside down on its back.</summary>
     Back = 6
 }

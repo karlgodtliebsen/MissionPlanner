@@ -1,4 +1,7 @@
+﻿using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
+using MissionPlanner.Firmware.Model;
 
 namespace MissionPlanner.Core.Vehicles;
 
@@ -25,7 +28,7 @@ public static class VehicleFirmwareDisplayFormatter
             FirmwareReleaseType.Alpha => "-alpha",
             FirmwareReleaseType.Beta => "-beta",
             FirmwareReleaseType.ReleaseCandidate => "-rc",
-            _ => $"-{(byte)version.ReleaseType}"
+            var _ => $"-{(byte)version.ReleaseType}"
         };
         var gitHash = string.IsNullOrWhiteSpace(identity.FlightGitHash)
             ? string.Empty

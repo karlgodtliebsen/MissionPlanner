@@ -1,3 +1,5 @@
+using MissionPlanner.Firmware;
+
 namespace MissionPlanner.Core.Vehicles.Models;
 
 /// <summary>Contains telemetry for an additional GPS receiver.</summary>
@@ -22,5 +24,8 @@ public sealed record VehicleGpsReceiverState(
     DateTimeOffset ObservedAt)
 {
     /// <summary>Returns whether this receiver state is older than <paramref name="maximumAge"/>.</summary>
-    public bool IsStale(DateTimeOffset now, TimeSpan maximumAge) => now - ObservedAt > maximumAge;
+    public bool IsStale(DateTimeOffset now, TimeSpan maximumAge)
+    {
+        return now - ObservedAt > maximumAge;
+    }
 }

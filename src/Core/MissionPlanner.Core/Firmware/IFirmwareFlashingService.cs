@@ -1,4 +1,4 @@
-using MissionPlanner.Core.Vehicles.Models;
+﻿using MissionPlanner.Firmware.Model;
 
 namespace MissionPlanner.Core.Firmware;
 

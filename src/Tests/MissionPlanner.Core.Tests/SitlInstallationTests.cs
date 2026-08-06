@@ -7,6 +7,8 @@ using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
+using MissionPlanner.Firmware.Model;
 using MissionPlanner.Simulation;
 using MissionPlanner.Simulation.Abstractions;
 using NSubstitute;

@@ -1,4 +1,5 @@
-﻿using MissionPlanner.Core.Vehicles.Models;
+﻿using MissionPlanner.Firmware.Model;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.ConfigTuning;
 

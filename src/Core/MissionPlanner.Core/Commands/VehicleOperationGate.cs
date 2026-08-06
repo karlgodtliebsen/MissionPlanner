@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Commands;
 
@@ -24,11 +25,15 @@ public sealed class VehicleOperationGate : IVehicleOperationGate
     }
 
     /// <inheritdoc />
-    public string? GetCurrentOperation(VehicleId vehicleId) =>
-        reservations.TryGetValue(vehicleId, out var reservation) ? reservation.OperationName : null;
+    public string? GetCurrentOperation(VehicleId vehicleId)
+    {
+        return reservations.TryGetValue(vehicleId, out var reservation) ? reservation.OperationName : null;
+    }
 
-    private void Release(Reservation reservation) =>
+    private void Release(Reservation reservation)
+    {
         reservations.TryRemove(new KeyValuePair<VehicleId, Reservation>(reservation.VehicleId, reservation));
+    }
 
     private sealed class Reservation(VehicleOperationGate owner, VehicleId vehicleId, string operationName) : IDisposable
     {

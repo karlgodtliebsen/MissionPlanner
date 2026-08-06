@@ -4,12 +4,15 @@ using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Models;
+using MissionPlanner.Core.Simulation.Abstractions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink.Commands;
 using MissionPlanner.MavLink.Missions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Simulation;
 using MissionPlanner.Simulation.Abstractions;
 
@@ -530,12 +533,9 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
                     items,
                     MissionPlanType.FlightMission,
                     cancellationToken: cancellationToken).ConfigureAwait(false);
-                if (!upload.Success)
-                {
-                    throw new InvalidOperationException(upload.Error ?? $"Mission upload ACK result {upload.AckResult}.");
-                }
-
-                return $"Mission upload acknowledged for {items.Length} items (ACK {upload.AckResult ?? 0}).";
+                return !upload.Success
+                    ? throw new InvalidOperationException(upload.Error ?? $"Mission upload ACK result {upload.AckResult}.")
+                    : $"Mission upload acknowledged for {items.Length} items (ACK {upload.AckResult ?? 0}).";
             }
 
             case SimulationScenarioStepKind.StartMission:
@@ -734,12 +734,9 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
         }
 
         var vehicle = vehicleRegistry.GetRequired(vehicleId);
-        if (vehicle is null || vehicle.State.Connection.State != VehicleConnectionState.Online)
-        {
-            throw new InvalidOperationException($"Simulation vehicle {vehicleId} is not online.");
-        }
-
-        return vehicle;
+        return vehicle is null || vehicle.State.Connection.State != VehicleConnectionState.Online
+            ? throw new InvalidOperationException($"Simulation vehicle {vehicleId} is not online.")
+            : vehicle;
     }
 
     private bool IsPrimaryTarget(Guid sessionId, VehicleId vehicleId)
@@ -867,12 +864,9 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
 
     private static string CommandEvidence(VehicleCommandResponse response)
     {
-        if (response.Result != VehicleCommandResult.Accepted)
-        {
-            throw new InvalidOperationException(response.Message ?? $"Vehicle command result was {response.Result}.");
-        }
-
-        return response.Message ?? $"Vehicle command acknowledged as {response.Result}.";
+        return response.Result != VehicleCommandResult.Accepted
+            ? throw new InvalidOperationException(response.Message ?? $"Vehicle command result was {response.Result}.")
+            : response.Message ?? $"Vehicle command acknowledged as {response.Result}.";
     }
 
     private static bool RequiresHazardConfirmation(SimulationScenarioStepKind kind)

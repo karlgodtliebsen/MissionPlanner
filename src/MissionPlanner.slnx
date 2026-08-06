@@ -3,6 +3,7 @@
     <Project Path="Core/MissionPlanner.Core/MissionPlanner.Core.csproj" />
     <Project Path="Core/MissionPlanner.Firmware/MissionPlanner.Firmware.csproj" />
     <Project Path="Core/MissionPlanner.MavLink/MissionPlanner.MavLink.csproj" />
+    <Project Path="Core/MissionPlanner.Shared.Models/MissionPlanner.Shared.Models.csproj" />
     <Project Path="Core/MissionPlanner.Simulation/MissionPlanner.Simulation.csproj" />
     <Project Path="Core/MissionPlanner.Transport/MissionPlanner.Transport.csproj" />
   </Folder>

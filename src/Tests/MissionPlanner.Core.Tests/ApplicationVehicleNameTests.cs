@@ -4,6 +4,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Transport;
 using NSubstitute;
 
@@ -41,10 +42,7 @@ public sealed class ApplicationVehicleNameTests
             new ActiveVehicleChangedEventArgs(connected, updated));
         state.VehicleName.Should().Be("SysID 1:Fixed Wing");
 
-        var disconnectedState = session.State with
-        {
-            Connection = session.State.Connection with { State = VehicleConnectionState.Offline }
-        };
+        var disconnectedState = session.State with { Connection = session.State.Connection with { State = VehicleConnectionState.Offline } };
         var disconnected = new ActiveVehicleSnapshot(session.Id, disconnectedState);
         activeVehicle.Current.Returns(disconnected);
         activeVehicle.Changed += Raise.Event<EventHandler<ActiveVehicleChangedEventArgs>>(

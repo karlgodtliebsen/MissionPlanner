@@ -1,4 +1,5 @@
-using MissionPlanner.Core.Vehicles.Models;
+﻿using MissionPlanner.Firmware.Model;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Firmware;
 
@@ -22,7 +23,7 @@ public interface IFirmwareUpdateCoordinator : IDisposable
     /// <param name="channel">The requested channel.</param>
     /// <param name="cancellationToken">A token that cancels discovery.</param>
     /// <returns>The compatible releases.</returns>
-    Task<IReadOnlyList<FirmwareManifestEntry>> DiscoverAsync(
+    Task<IReadOnlyList<FirmwareManifestEntryRecord>> DiscoverAsync(
         VehicleFirmwareIdentity identity,
         FirmwareReleaseChannel channel,
         CancellationToken cancellationToken = default);
@@ -31,7 +32,7 @@ public interface IFirmwareUpdateCoordinator : IDisposable
     /// <param name="release">The selected compatible release.</param>
     /// <param name="cancellationToken">A token that cancels preparation.</param>
     /// <returns>The verified package.</returns>
-    Task<FirmwarePackage> PrepareAsync(FirmwareManifestEntry release, CancellationToken cancellationToken = default);
+    Task<FirmwarePackage> PrepareAsync(FirmwareManifestEntryRecord release, CancellationToken cancellationToken = default);
 
     /// <summary>Disconnects normal MAVLink and invokes the safe platform adapter.</summary>
     /// <param name="vehicleId">The currently connected vehicle.</param>

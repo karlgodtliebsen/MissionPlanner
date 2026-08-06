@@ -10,6 +10,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.MavFtp;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using UraniumUI.Extensions;
 using UraniumUI.Material.Dialogs;
 

@@ -8,6 +8,7 @@ using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Transport;
 using NSubstitute;
 
@@ -93,7 +94,11 @@ public sealed class NavigationEstimatorSensorTelemetryTests
         IVehicleMessageHandler[] handlers = [new SensorTelemetryHandler(registry, domainEventHub)];
         var eventHub = Substitute.For<IEventHub>();
         Func<MavLinkMessage, CancellationToken, Task>? callback = null;
-        eventHub.SubscribeAsync(MavLinkEventTopics.ReceivedMessage, Arg.Any<Func<MavLinkMessage, CancellationToken, Task>>()).Returns(call => { callback = call.Arg<Func<MavLinkMessage, CancellationToken, Task>>(); return Substitute.For<IDisposable>(); });
+        eventHub.SubscribeAsync(MavLinkEventTopics.ReceivedMessage, Arg.Any<Func<MavLinkMessage, CancellationToken, Task>>()).Returns(call =>
+        {
+            callback = call.Arg<Func<MavLinkMessage, CancellationToken, Task>>();
+            return Substitute.For<IDisposable>();
+        });
         await using var pump = new VehicleMessagePump(new VehicleMessageDispatcher(handlers), eventHub, NullLogger<VehicleMessagePump>.Instance);
         await pump.StartAsync(TestContext.Current.CancellationToken);
         await callback!(new VibrationMessage(1, 1, EndPoint, 1, 1, 2, 3, 0, 0, 0, ObservedAt), TestContext.Current.CancellationToken);

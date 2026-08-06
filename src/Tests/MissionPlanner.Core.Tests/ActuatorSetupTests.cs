@@ -5,6 +5,7 @@ using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub;
 using MissionPlanner.MavLink.Encoding;
@@ -13,6 +14,7 @@ using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.MavLink.Services.Abstractions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Transport;
 using NSubstitute;
 using MavParamType = MissionPlanner.MavLink.Parameters.MavParamType;
@@ -45,7 +47,7 @@ public sealed class ActuatorSetupTests
         (await disarmed.Service.TestMotorAsync(vehicleId, new MotorTestRequest(1, MotorThrottleType.Percent, 500, 2), TestContext.Current.CancellationToken)).Success.Should().BeFalse();
         disarmed.CommandParameters.Should().BeEmpty("no command may be sent for a rejected test");
 
-        using var armed = CreateFixture(armed: true);
+        using var armed = CreateFixture(true);
         var result = await armed.Service.TestMotorAsync(vehicleId, new MotorTestRequest(1, MotorThrottleType.Percent, 10, 2), TestContext.Current.CancellationToken);
         result.Success.Should().BeFalse();
         result.Message.Should().Contain("Disarm");
@@ -133,8 +135,10 @@ public sealed class ActuatorSetupTests
             Substitute.For<ILogger<ServoOutputConfigurationService>>());
     }
 
-    private static void Store(VehicleParameterRegistry registry, string name, float value) =>
+    private static void Store(VehicleParameterRegistry registry, string name, float value)
+    {
         registry.StoreParameter(vehicleId, new VehicleParameter(name, value, MavParamType.Int16, 0, 1), CancellationToken.None);
+    }
 
     private static ActuatorFixture CreateFixture(bool armed = false, int pwmType = 0)
     {
@@ -168,15 +172,12 @@ public sealed class ActuatorSetupTests
     {
         var timestamp = now ?? DateTimeOffset.UtcNow;
         var state = new VehicleState(vehicleId, 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online, timestamp,
-            VehicleMode.Stabilize, false, null, null, null, null, null, null, null, null) with
-        {
-            Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, armed,
-                LandedState: VehicleLandedState.OnGround, ObservedAt: timestamp)
-        };
-        return state with
-        {
-            Radio = VehicleRadioState.Empty with { ServoOutputsRaw = [1500, 1500, 1500], ServoObservedAt = timestamp }
-        };
+                VehicleMode.Stabilize, false, null, null, null, null, null, null, null, null) with
+            {
+                Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, armed,
+                    LandedState: VehicleLandedState.OnGround, ObservedAt: timestamp)
+            };
+        return state with { Radio = VehicleRadioState.Empty with { ServoOutputsRaw = [1500, 1500, 1500], ServoObservedAt = timestamp } };
     }
 
     private sealed record ActuatorFixture(
@@ -185,12 +186,18 @@ public sealed class ActuatorSetupTests
         TaskCompletionSource CommandSent,
         List<IReadOnlyList<float>> CommandParameters) : IDisposable
     {
-        public Task PublishAckAsync(MavResult result) => EventHub.PublishAsync<MavLinkMessage>(
-            MavLinkEventTopics.ReceivedMessage,
-            new CommandAckMessage(1, 1, endPoint, (ushort)MavCmd.DoMotorTest, (byte)result, DateTimeOffset.UtcNow),
-            TestContext.Current.CancellationToken);
+        public Task PublishAckAsync(MavResult result)
+        {
+            return EventHub.PublishAsync<MavLinkMessage>(
+                MavLinkEventTopics.ReceivedMessage,
+                new CommandAckMessage(1, 1, endPoint, (ushort)MavCmd.DoMotorTest, (byte)result, DateTimeOffset.UtcNow),
+                TestContext.Current.CancellationToken);
+        }
 
-        public void Dispose() => Service.Dispose();
+        public void Dispose()
+        {
+            Service.Dispose();
+        }
     }
 
     private sealed class TestActiveVehicleContext(VehicleState state) : IActiveVehicleContext

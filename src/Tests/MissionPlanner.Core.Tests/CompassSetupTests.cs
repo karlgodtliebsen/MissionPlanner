@@ -16,6 +16,7 @@ using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.MavLink.Services.Abstractions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Transport;
 using NSubstitute;
 
@@ -266,10 +267,10 @@ public sealed class CompassSetupTests
         var now = DateTimeOffset.UtcNow;
         var state = new VehicleState(vehicleId, 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online, now,
                 VehicleMode.Stabilize, false, null, null, null, null, null, null, null, null) with
-        {
-            Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
+            {
+                Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
                     LandedState: VehicleLandedState.OnGround, ObservedAt: now)
-        };
+            };
         if (magnetometerHealthy is { } healthy)
         {
             state = state with { Health = VehicleHealthState.Empty with { SensorsPresent = 0x04, SensorsHealthy = healthy ? 0x04u : 0u } };

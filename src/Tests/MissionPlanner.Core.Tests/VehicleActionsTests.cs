@@ -8,12 +8,14 @@ using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Commands;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services.Abstractions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Transport;
 using NSubstitute;
 using MavResult = MissionPlanner.MavLink.Generated.MavResult;
@@ -124,7 +126,7 @@ public sealed class VehicleActionsTests
         BinaryPrimitives.ReadUInt16LittleEndian(packet.AsSpan(38, 2)).Should().Be(commandId);
         packet[40].Should().Be(12);
         packet[41].Should().Be(34);
-        BitConverter.ToSingle(packet, 10 + (6 * 4)).Should().Be(7);
+        BitConverter.ToSingle(packet, 10 + 6 * 4).Should().Be(7);
     }
 
     /// <summary>Verifies that each typed action is sent with its expected command ID and reports its ACK.</summary>
@@ -369,9 +371,9 @@ public sealed class VehicleActionsTests
     {
         return new VehicleState(new VehicleId(1, 1), 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online, now, VehicleMode.Stabilize,
                 false, null, null, null, null, null, null, null, null) with
-        {
-            Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false, LandedState: VehicleLandedState.OnGround, ObservedAt: now)
-        };
+            {
+                Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false, LandedState: VehicleLandedState.OnGround, ObservedAt: now)
+            };
     }
 
     private static VehicleState WithFlight(VehicleState state, bool armed, VehicleLandedState landedState, DateTimeOffset observedAt)

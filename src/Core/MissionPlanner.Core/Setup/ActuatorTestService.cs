@@ -3,6 +3,7 @@ using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Encoding;
@@ -10,6 +11,7 @@ using MissionPlanner.MavLink.Generated;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.MavLink.Services.Abstractions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Setup;
 
@@ -80,8 +82,10 @@ public sealed class ActuatorTestService : IActuatorTestService
     public event EventHandler<MotorTestStateChangedEventArgs>? StateChanged;
 
     /// <inheritdoc />
-    public bool SupportsMotorTest(FirmwareFamily family) =>
-        family is FirmwareFamily.ArduCopter or FirmwareFamily.Rover or FirmwareFamily.ArduSub or FirmwareFamily.Blimp;
+    public bool SupportsMotorTest(FirmwareFamily family)
+    {
+        return family is FirmwareFamily.ArduCopter or FirmwareFamily.Rover or FirmwareFamily.ArduSub or FirmwareFamily.Blimp;
+    }
 
     /// <inheritdoc />
     public EscCalibrationGuidance GetEscCalibrationGuidance(VehicleId vehicleId)

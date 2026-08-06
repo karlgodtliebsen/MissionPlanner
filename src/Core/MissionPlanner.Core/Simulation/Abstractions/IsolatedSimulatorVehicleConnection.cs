@@ -7,9 +7,11 @@ using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Simulation;
+using MissionPlanner.Simulation.Abstractions;
 
-namespace MissionPlanner.Core.Simulation;
+namespace MissionPlanner.Core.Simulation.Abstractions;
 
 /// <summary>Connects one SITL endpoint without replacing any application or simulator connection.</summary>
 public sealed class IsolatedSimulatorVehicleConnection : ISimulatorVehicleConnection

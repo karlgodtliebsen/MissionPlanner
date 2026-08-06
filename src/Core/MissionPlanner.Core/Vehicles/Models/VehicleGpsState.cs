@@ -1,3 +1,5 @@
+using MissionPlanner.Firmware;
+
 namespace MissionPlanner.Core.Vehicles.Models;
 
 /// <summary>
@@ -31,5 +33,8 @@ public sealed record VehicleGpsState(
     public static VehicleGpsState Empty { get; } = new(GpsFixType.Unknown, null, null, null, null, null, null, null, null);
 
     /// <summary>Returns whether primary GPS data is older than <paramref name="maximumAge"/>.</summary>
-    public bool IsStale(DateTimeOffset now, TimeSpan maximumAge) => ObservedAt is null || now - ObservedAt > maximumAge;
+    public bool IsStale(DateTimeOffset now, TimeSpan maximumAge)
+    {
+        return ObservedAt is null || now - ObservedAt > maximumAge;
+    }
 }

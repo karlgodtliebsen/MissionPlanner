@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware.Model;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Firmware;
 
@@ -69,7 +70,7 @@ public sealed class FirmwareUpdateCoordinator : IFirmwareUpdateCoordinator
     }
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<FirmwareManifestEntry>> DiscoverAsync(VehicleFirmwareIdentity identity, FirmwareReleaseChannel channel, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<FirmwareManifestEntryRecord>> DiscoverAsync(VehicleFirmwareIdentity identity, FirmwareReleaseChannel channel, CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
         Package = null;
@@ -96,7 +97,7 @@ public sealed class FirmwareUpdateCoordinator : IFirmwareUpdateCoordinator
     }
 
     /// <inheritdoc />
-    public async Task<FirmwarePackage> PrepareAsync(FirmwareManifestEntry release, CancellationToken cancellationToken = default)
+    public async Task<FirmwarePackage> PrepareAsync(FirmwareManifestEntryRecord release, CancellationToken cancellationToken = default)
     {
         ThrowIfDisposed();
         Package = null;

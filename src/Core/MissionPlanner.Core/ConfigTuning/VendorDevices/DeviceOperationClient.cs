@@ -7,6 +7,7 @@ using MissionPlanner.MavLink.Generated;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.MavLink.Services.Abstractions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.ConfigTuning.VendorDevices;
 
@@ -89,7 +90,7 @@ public sealed class DeviceOperationClient : IDeviceOperationClient
         CancellationToken cancellationToken)
     {
         var session = vehicleRegistry.GetRequired(vehicleId)
-            ?? throw new InvalidOperationException($"Vehicle {vehicleId} is not connected.");
+                      ?? throw new InvalidOperationException($"Vehicle {vehicleId} is not connected.");
         var id = NextRequestId();
         var reply = new TaskCompletionSource<DeviceOpReadReplyMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
         using var subscription = eventHub.SubscribeAsync<MavLinkMessage>(MavLinkEventTopics.ReceivedMessage, (message, _) =>
@@ -147,7 +148,7 @@ public sealed class DeviceOperationClient : IDeviceOperationClient
         CancellationToken cancellationToken)
     {
         var session = vehicleRegistry.GetRequired(vehicleId)
-            ?? throw new InvalidOperationException($"Vehicle {vehicleId} is not connected.");
+                      ?? throw new InvalidOperationException($"Vehicle {vehicleId} is not connected.");
         var id = NextRequestId();
         var reply = new TaskCompletionSource<DeviceOpWriteReplyMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
         using var subscription = eventHub.SubscribeAsync<MavLinkMessage>(MavLinkEventTopics.ReceivedMessage, (message, _) =>
@@ -195,5 +196,8 @@ public sealed class DeviceOperationClient : IDeviceOperationClient
         }
     }
 
-    private uint NextRequestId() => unchecked((uint)Interlocked.Increment(ref requestId));
+    private uint NextRequestId()
+    {
+        return unchecked((uint)Interlocked.Increment(ref requestId));
+    }
 }

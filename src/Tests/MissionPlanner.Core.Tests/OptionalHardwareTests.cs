@@ -5,6 +5,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using NSubstitute;
 using MavParamType = MissionPlanner.MavLink.Parameters.MavParamType;
 
@@ -89,16 +90,25 @@ public sealed class OptionalHardwareTests
             Substitute.For<ILogger<OptionalHardwareService>>());
     }
 
-    private static IEnumerable<IOptionalHardwareModule> Modules() =>
-        [new SerialPortsModule(), new GpsModule(), new RangefinderModule(), new AirspeedModule(), new CanBusModule()];
+    private static IEnumerable<IOptionalHardwareModule> Modules()
+    {
+        return [new SerialPortsModule(), new GpsModule(), new RangefinderModule(), new AirspeedModule(), new CanBusModule()];
+    }
 
-    private static IReadOnlyDictionary<string, ParameterMetadata> Metadata() => new Dictionary<string, ParameterMetadata>();
+    private static IReadOnlyDictionary<string, ParameterMetadata> Metadata()
+    {
+        return new Dictionary<string, ParameterMetadata>();
+    }
 
-    private static void Store(VehicleParameterRegistry registry, string name, float value) =>
+    private static void Store(VehicleParameterRegistry registry, string name, float value)
+    {
         registry.StoreParameter(vehicleId, new VehicleParameter(name, value, MavParamType.Int16, 0, 1), CancellationToken.None);
+    }
 
-    private static IReadOnlyDictionary<string, VehicleParameter> Parameters(params (string Name, float Value)[] values) =>
-        values.ToDictionary(item => item.Name, item => new VehicleParameter(item.Name, item.Value, MavParamType.Int16, 0, (ushort)values.Length), StringComparer.Ordinal);
+    private static IReadOnlyDictionary<string, VehicleParameter> Parameters(params (string Name, float Value)[] values)
+    {
+        return values.ToDictionary(item => item.Name, item => new VehicleParameter(item.Name, item.Value, MavParamType.Int16, 0, (ushort)values.Length), StringComparer.Ordinal);
+    }
 
     private static VehicleState State()
     {

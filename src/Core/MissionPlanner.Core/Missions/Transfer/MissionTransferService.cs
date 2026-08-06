@@ -2,6 +2,7 @@
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Simulation;
+using MissionPlanner.Core.Simulation.Abstractions;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
@@ -10,6 +11,8 @@ using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Missions;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.MavLink.Services.Abstractions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
+using MissionPlanner.Simulation.Abstractions;
 
 namespace MissionPlanner.Core.Missions.Transfer;
 

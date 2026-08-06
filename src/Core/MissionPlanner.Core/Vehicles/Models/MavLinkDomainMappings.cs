@@ -1,4 +1,5 @@
-﻿using ProtocolAutopilot = MissionPlanner.MavLink.Generated.MavAutopilot;
+﻿using MissionPlanner.Firmware;
+using ProtocolAutopilot = MissionPlanner.MavLink.Generated.MavAutopilot;
 using ProtocolCapability = MissionPlanner.MavLink.Generated.MavProtocolCapability;
 using ProtocolVehicleType = MissionPlanner.MavLink.Generated.MavType;
 
@@ -44,24 +45,46 @@ public static class MavLinkDomainMappings
     /// </summary>
     /// <param name="capabilities">The generated MAV_PROTOCOL_CAPABILITY flags.</param>
     /// <returns>The supported domain capability flags.</returns>
-    public static MavProtocolCapability ToDomainCapabilities(this ProtocolCapability capabilities)
+    public static MavProtocolCapabilityMap ToDomainCapabilities(this ProtocolCapability capabilities)
     {
-        var result = MavProtocolCapability.None;
+        var result = MavProtocolCapabilityMap.None;
         if ((capabilities & ProtocolCapability.ParamFloat) != 0)
         {
-            result |= MavProtocolCapability.ParamFloat;
+            result |= MavProtocolCapabilityMap.ParamFloat;
         }
 
         if ((capabilities & ProtocolCapability.ParamEncodeBytewise) != 0)
         {
-            result |= MavProtocolCapability.ParamUnion;
+            result |= MavProtocolCapabilityMap.ParamUnion;
         }
 
         if ((capabilities & ProtocolCapability.Ftp) != 0)
         {
-            result |= MavProtocolCapability.Ftp;
+            result |= MavProtocolCapabilityMap.Ftp;
         }
 
         return result;
     }
+}
+
+/// <summary>
+/// Identifies named MAVLink protocol capabilities used by Mission Planner.
+/// </summary>
+[Flags]
+public enum MavProtocolCapabilityMap : ulong
+{
+    /// <summary>No capability.</summary>
+    None = 0,
+
+    /// <summary>Supports float parameter encoding.</summary>
+    ParamFloat = 1UL << 1,
+
+    /// <summary>Supports union parameter encoding.</summary>
+    ParamUnion = 1UL << 4,
+
+    /// <summary>Supports MAVLink FTP.</summary>
+    Ftp = 1UL << 5,
+
+    /// <summary>Supports the typed mission fence protocol.</summary>
+    MissionFence = 1UL << 14
 }

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Notifications;
 

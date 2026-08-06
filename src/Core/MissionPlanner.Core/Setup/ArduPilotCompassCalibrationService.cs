@@ -10,6 +10,7 @@ using MissionPlanner.MavLink.Generated;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.MavLink.Services.Abstractions;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Setup;
 
@@ -275,11 +276,7 @@ public sealed class ArduPilotCompassCalibrationService : IArduPilotCompassCalibr
             {
                 if (Current.State == CompassCalibrationWorkflowState.Preparing)
                 {
-                    Transition(Current with
-                    {
-                        State = CompassCalibrationWorkflowState.Running,
-                        Instruction = "Rotate the vehicle so that each side points down toward the earth in turn until each compass completes."
-                    });
+                    Transition(Current with { State = CompassCalibrationWorkflowState.Running, Instruction = "Rotate the vehicle so that each side points down toward the earth in turn until each compass completes." });
                 }
             }
 
@@ -309,13 +306,7 @@ public sealed class ArduPilotCompassCalibrationService : IArduPilotCompassCalibr
                 Math.Clamp((int)message.CompletionPct, 0, 100),
                 message.Attempt);
 
-            Transition(Current with
-            {
-                State = CompassCalibrationWorkflowState.Running,
-                Progress = progress.Values.ToArray(),
-                OverallProgress = CalculateOverallProgress(),
-                Instruction = "Keep rotating the vehicle through all orientations until every compass reaches one hundred percent."
-            });
+            Transition(Current with { State = CompassCalibrationWorkflowState.Running, Progress = progress.Values.ToArray(), OverallProgress = CalculateOverallProgress(), Instruction = "Keep rotating the vehicle through all orientations until every compass reaches one hundred percent." });
         }
     }
 
@@ -348,12 +339,7 @@ public sealed class ArduPilotCompassCalibrationService : IArduPilotCompassCalibr
                 100,
                 progress.TryGetValue(message.CompassId, out var existing) ? existing.Attempt : 0);
 
-            Transition(Current with
-            {
-                Progress = progress.Values.ToArray(),
-                Reports = reports.Values.ToArray(),
-                OverallProgress = CalculateOverallProgress()
-            });
+            Transition(Current with { Progress = progress.Values.ToArray(), Reports = reports.Values.ToArray(), OverallProgress = CalculateOverallProgress() });
 
             TryFinalize();
         }
@@ -435,7 +421,10 @@ public sealed class ArduPilotCompassCalibrationService : IArduPilotCompassCalibr
         await connection.SendRawAsync(packet, session.EndPoint, cancellationToken).ConfigureAwait(false);
     }
 
-    private void Finish(CompassCalibrationWorkflowState state, string message) => FinishWithSummary(state, message, Current.QualitySummary);
+    private void Finish(CompassCalibrationWorkflowState state, string message)
+    {
+        FinishWithSummary(state, message, Current.QualitySummary);
+    }
 
     private void FinishWithSummary(CompassCalibrationWorkflowState state, string message, string? summary)
     {
@@ -479,36 +468,48 @@ public sealed class ArduPilotCompassCalibrationService : IArduPilotCompassCalibr
         operationLease = null;
     }
 
-    private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(disposed, this);
+    private void ThrowIfDisposed()
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+    }
 
     private static string BuildQualitySummary(IReadOnlyList<CompassCalibrationReport> completed)
     {
         var lines = completed
             .OrderBy(report => report.CompassId)
             .Select(report => $"Compass {report.CompassId + 1}: fitness {report.Fitness:F1} mGauss ({QualityLabel(report.Fitness)})" +
-                (report.OldOrientation != report.NewOrientation ? $", orientation corrected to {report.NewOrientation}" : string.Empty));
+                              (report.OldOrientation != report.NewOrientation ? $", orientation corrected to {report.NewOrientation}" : string.Empty));
         return string.Join(Environment.NewLine, lines);
     }
 
-    private static string QualityLabel(double fitness) => fitness switch
+    private static string QualityLabel(double fitness)
     {
-        <= 8 => "good",
-        <= 16 => "acceptable",
-        _ => "poor, consider recalibrating"
-    };
+        return fitness switch
+        {
+            <= 8 => "good",
+            <= 16 => "acceptable",
+            _ => "poor, consider recalibrating"
+        };
+    }
 
-    private static CompassCalibrationStatus MapStatus(byte status) => (MagCalStatus)status switch
+    private static CompassCalibrationStatus MapStatus(byte status)
     {
-        MagCalStatus.MagCalNotStarted => CompassCalibrationStatus.NotStarted,
-        MagCalStatus.MagCalWaitingToStart => CompassCalibrationStatus.WaitingToStart,
-        MagCalStatus.MagCalRunningStepOne or MagCalStatus.MagCalRunningStepTwo => CompassCalibrationStatus.Running,
-        MagCalStatus.MagCalSuccess => CompassCalibrationStatus.Success,
-        MagCalStatus.MagCalFailedOrientation => CompassCalibrationStatus.BadOrientation,
-        MagCalStatus.MagCalFailedRadius => CompassCalibrationStatus.BadRadius,
-        _ => CompassCalibrationStatus.Failed
-    };
+        return (MagCalStatus)status switch
+        {
+            MagCalStatus.MagCalNotStarted => CompassCalibrationStatus.NotStarted,
+            MagCalStatus.MagCalWaitingToStart => CompassCalibrationStatus.WaitingToStart,
+            MagCalStatus.MagCalRunningStepOne or MagCalStatus.MagCalRunningStepTwo => CompassCalibrationStatus.Running,
+            MagCalStatus.MagCalSuccess => CompassCalibrationStatus.Success,
+            MagCalStatus.MagCalFailedOrientation => CompassCalibrationStatus.BadOrientation,
+            MagCalStatus.MagCalFailedRadius => CompassCalibrationStatus.BadRadius,
+            _ => CompassCalibrationStatus.Failed
+        };
+    }
 
-    private static bool IsActive(CompassCalibrationWorkflowState state) => state is
-        CompassCalibrationWorkflowState.Preparing or CompassCalibrationWorkflowState.Running or
-        CompassCalibrationWorkflowState.PendingAcceptance;
+    private static bool IsActive(CompassCalibrationWorkflowState state)
+    {
+        return state is
+            CompassCalibrationWorkflowState.Preparing or CompassCalibrationWorkflowState.Running or
+            CompassCalibrationWorkflowState.PendingAcceptance;
+    }
 }

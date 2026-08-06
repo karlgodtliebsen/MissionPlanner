@@ -10,6 +10,7 @@ using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.EventHub.Events;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Tests.LibraryTests;
 using MissionPlanner.Transport;
 

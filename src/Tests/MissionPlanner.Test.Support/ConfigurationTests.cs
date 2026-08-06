@@ -11,6 +11,7 @@ using MissionPlanner.MavLink.Decoding;
 using MissionPlanner.MavLink.Decoding.Utils;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.Services.Abstractions;
+using MissionPlanner.Shared.Models.Services.Abstractions;
 using MissionPlanner.Test.Support.Configuration;
 using MissionPlanner.Transport;
 using MissionPlanner.Transport.Abstractions;

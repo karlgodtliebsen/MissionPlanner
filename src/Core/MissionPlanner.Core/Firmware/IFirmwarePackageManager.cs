@@ -1,3 +1,5 @@
+﻿using MissionPlanner.Firmware.Model;
+
 namespace MissionPlanner.Core.Firmware;
 
 /// <summary>Downloads, caches, and verifies firmware packages.</summary>
@@ -8,8 +10,5 @@ public interface IFirmwarePackageManager
     /// <param name="progress">Optional byte-download progress from zero to one.</param>
     /// <param name="cancellationToken">A token that cancels download and verification.</param>
     /// <returns>The verified package.</returns>
-    Task<FirmwarePackage> PrepareAsync(
-        FirmwareManifestEntry release,
-        IProgress<double>? progress = null,
-        CancellationToken cancellationToken = default);
+    Task<FirmwarePackage> PrepareAsync(FirmwareManifestEntryRecord release, IProgress<double>? progress = null, CancellationToken cancellationToken = default);
 }

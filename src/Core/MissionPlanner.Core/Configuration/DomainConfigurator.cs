@@ -19,21 +19,25 @@ using MissionPlanner.Core.Missions.Validation;
 using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Services;
-using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Simulation;
+using MissionPlanner.Core.Simulation.Abstractions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Handlers;
 using MissionPlanner.Core.Vehicles.Handlers.Abstractions;
+using MissionPlanner.Firmware.Model;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Client;
 using MissionPlanner.MavLink.Services;
 using MissionPlanner.MavLink.Services.Abstractions;
+using MissionPlanner.Shared.Models.Services;
+using MissionPlanner.Shared.Models.Services.Abstractions;
 using MissionPlanner.Simulation;
 using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Transport;
 using MissionPlanner.Transport.Abstractions;
+using IMavLinkCommandService = MissionPlanner.Core.Services.Abstractions.IMavLinkCommandService;
 
 namespace MissionPlanner.Core.Configuration;
 
@@ -77,39 +81,22 @@ public static class DomainConfigurator
         services.TryAddSingleton<IDeviceOperationClient, DeviceOperationClient>();
         services.TryAddSingleton<ICubeLanConfigurationCodec, CubeLanConfigurationCodec>();
         services.TryAddSingleton<IVendorDeviceAdapter<CubeLanConfiguration>, CubeLanDeviceAdapter>();
-        services.TryAddSingleton<ISimulatorHostEnvironment, LocalSimulatorHostEnvironment>();
-        services.TryAddSingleton<ISimulatorProfileValidator, SimulatorProfileValidator>();
-        services.TryAddSingleton<IArduPilotFrameCatalog, ArduPilotFrameCatalog>();
-        services.TryAddSingleton<IArduPilotLaunchPlanBuilder, ArduPilotLaunchPlanBuilder>();
-        services.TryAddSingleton<ISimulationPortAllocator, SimulationPortAllocator>();
-        services.TryAddSingleton<ISimulatorOwnedProcessRecovery, UnavailableSimulatorOwnedProcessRecovery>();
-        services.TryAddSingleton<ISimulationOwnershipStore, SimulationOwnershipStore>();
         services.TryAddSingleton<IVehicleMessagePumpCoordinator, VehicleMessagePumpCoordinator>();
+
         services.TryAddSingleton<ISimulationVehicleChannelRegistry, SimulationVehicleChannelRegistry>();
-        services.TryAddSingleton<ISimulatorVehicleConnection, SimulatorVehicleConnection>();
         services.TryAddSingleton<ISimulatorVehicleConnectionFactory, SimulatorVehicleConnectionFactory>();
-        services.TryAddSingleton<ISimulatorRuntime, UnavailableSimulatorRuntime>();
-        services.TryAddSingleton<ISimulationSessionManager, SimulationSessionManager>();
-        services.TryAddSingleton<ISimulationSessionManagerFactory, SimulationSessionManagerFactory>();
-        services.TryAddSingleton<ISimulationFleetAllocator, SimulationFleetAllocator>();
-        services.TryAddSingleton<ISimulationFleetManager, SimulationFleetManager>();
         services.TryAddSingleton<ISimulationDiagnosticsService, SimulationDiagnosticsService>();
+        services.TryAddSingleton<ISimulationControlService, SimulationControlService>();
+        services.TryAddSingleton<ISimulationScenarioRunner, SimulationScenarioRunner>();
+        services.TryAddSingleton<ISimulationFleetAllocator, SimulationFleetAllocator>();
+        services.TryAddSingleton<ISimulatorVehicleConnection, SimulatorVehicleConnection>();
+
         services.TryAddSingleton<ITelemetryLogReader, TelemetryLogReader>();
         services.TryAddSingleton<IReplayTelemetryPipeline, ReplayTelemetryPipeline>();
         services.TryAddSingleton<IReplayDelay, ReplayDelay>();
         services.TryAddSingleton<IReplaySessionManager, ReplaySessionManager>();
         services.TryAddSingleton<IMavLinkTransmissionPolicy, ReplayTransmissionPolicy>();
-        services.TryAddSingleton<ISimulationControlCatalog, SimulationControlCatalog>();
-        services.TryAddSingleton<ISimulationControlService, SimulationControlService>();
-        services.TryAddSingleton<ISimulationScenarioPresetService, SimulationScenarioPresetService>();
-        services.TryAddSingleton<ISimulationScenarioParser, SimulationScenarioParser>();
-        services.TryAddSingleton<ISimulationScenarioDelay, SimulationScenarioDelay>();
-        services.TryAddSingleton<ISimulationScenarioRunner, SimulationScenarioRunner>();
-        services.TryAddSingleton<ISimulationScenarioReportExporter, SimulationScenarioReportExporter>();
-        services.TryAddSingleton<ISitlManifestProvider, JsonSitlManifestProvider>();
-        services.TryAddSingleton<ISitlReleaseSelector, SitlReleaseSelector>();
-        services.TryAddSingleton<ISitlPackageManager, SitlPackageManager>();
-        services.TryAddSingleton<ISitlInstallationService, SitlInstallationService>();
+
         services.TryAddTransient<IVehicleMessagePump, VehicleMessagePump>();
         services.TryAddTransient<IVehicleConnectionMonitor, VehicleConnectionMonitor>();
 
@@ -147,7 +134,6 @@ public static class DomainConfigurator
         services.TryAddTransient<ISafetyAssessmentService, SafetyAssessmentService>();
         services.TryAddTransient<ISetupSummaryService, SetupSummaryService>();
         services.TryAddSingleton<IFirmwareManifestProvider, JsonFirmwareManifestProvider>();
-        services.TryAddSingleton<IFirmwareManifestSelector, FirmwareManifestSelector>();
         services.TryAddTransient<IFirmwarePackageManager, FirmwarePackageManager>();
         services.TryAddSingleton<IFirmwareFlashingService, UnsupportedFirmwareFlashingService>();
         services.TryAddTransient<IFirmwareUpdateCoordinator, FirmwareUpdateCoordinator>();

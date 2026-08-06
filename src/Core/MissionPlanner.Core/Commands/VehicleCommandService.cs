@@ -1,11 +1,14 @@
 ﻿using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Simulation;
+using MissionPlanner.Core.Simulation.Abstractions;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Commands;
 using MissionPlanner.MavLink.Encoding;
+using MissionPlanner.Shared.Models.Vehicles.Models;
+using MissionPlanner.Simulation.Abstractions;
 
 namespace MissionPlanner.Core.Commands;
 

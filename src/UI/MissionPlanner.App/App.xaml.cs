@@ -4,6 +4,7 @@ using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library;
 using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.Simulation.Abstractions;
 using Serilog;
 
 namespace MissionPlanner.App;

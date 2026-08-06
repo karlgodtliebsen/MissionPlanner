@@ -1,4 +1,5 @@
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Setup;
 
@@ -7,12 +8,16 @@ public enum SetupAssessmentStatus
 {
     /// <summary>The item is configured as expected.</summary>
     Pass,
+
     /// <summary>The item is configured in a way that should be reviewed.</summary>
     Warning,
+
     /// <summary>The item is available but not configured.</summary>
     NotConfigured,
+
     /// <summary>The item is not supported by this firmware or vehicle.</summary>
     Unsupported,
+
     /// <summary>The item could not be assessed from available evidence.</summary>
     NotAssessed
 }
@@ -36,7 +41,10 @@ public sealed record SafetyAssessment(
     /// <summary>Creates an empty assessment for the specified vehicle.</summary>
     /// <param name="vehicleId">The vehicle identifier.</param>
     /// <returns>An empty assessment.</returns>
-    public static SafetyAssessment Empty(VehicleId vehicleId) => new(vehicleId, [], []);
+    public static SafetyAssessment Empty(VehicleId vehicleId)
+    {
+        return new SafetyAssessment(vehicleId, [], []);
+    }
 }
 
 /// <summary>Projects one labelled entry in a setup summary section.</summary>

@@ -1,4 +1,6 @@
-﻿namespace MissionPlanner.Core.Vehicles.Models;
+﻿using MissionPlanner.Shared.Models.Vehicles.Models;
+
+namespace MissionPlanner.Core.Vehicles.Models;
 
 /// <summary>
 /// Represents HUD-specific data extracted from vehicle telemetry.

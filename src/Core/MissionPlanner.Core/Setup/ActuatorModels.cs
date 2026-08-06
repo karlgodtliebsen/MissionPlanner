@@ -1,4 +1,5 @@
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Setup;
 
@@ -7,6 +8,7 @@ public enum MotorThrottleType
 {
     /// <summary>Throttle as a percentage from zero to one hundred.</summary>
     Percent,
+
     /// <summary>Throttle as an absolute PWM value in microseconds.</summary>
     Pwm
 }
@@ -16,12 +18,16 @@ public enum MotorTestState
 {
     /// <summary>No actuator test is running.</summary>
     Idle,
+
     /// <summary>A bounded actuator test is running on the vehicle.</summary>
     Running,
+
     /// <summary>The last actuator test stopped normally.</summary>
     Stopped,
+
     /// <summary>The last actuator test was rejected or failed.</summary>
     Failed,
+
     /// <summary>The vehicle disconnected during an actuator test.</summary>
     Disconnected
 }

@@ -1,4 +1,5 @@
 ﻿using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Transport;
 
 namespace MissionPlanner.Core.Vehicles.Abstractions;

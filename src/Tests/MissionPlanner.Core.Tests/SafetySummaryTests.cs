@@ -1,12 +1,14 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
+using MissionPlanner.Firmware.Model;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using NSubstitute;
 using MavParamType = MissionPlanner.MavLink.Parameters.MavParamType;
 
@@ -73,8 +75,10 @@ public sealed class SafetySummaryTests
         markdown.Should().Contain("# Setup summary").And.Contain("not a certification").And.Contain("## Safety");
     }
 
-    private static void Store(VehicleParameterRegistry registry, string name, float value) =>
+    private static void Store(VehicleParameterRegistry registry, string name, float value)
+    {
         registry.StoreParameter(vehicleId, new VehicleParameter(name, value, MavParamType.Int32, 0, 1), CancellationToken.None);
+    }
 
     private static IActiveVehicleContext Context(FirmwareFamily family)
     {
@@ -103,11 +107,19 @@ public sealed class SafetySummaryTests
     {
         private readonly List<SetupCompletionEvidence> values = [];
 
-        public IReadOnlyList<SetupCompletionEvidence> GetAll() => values;
+        public IReadOnlyList<SetupCompletionEvidence> GetAll()
+        {
+            return values;
+        }
 
-        public void Save(SetupCompletionEvidence evidence) => values.Add(evidence);
+        public void Save(SetupCompletionEvidence evidence)
+        {
+            values.Add(evidence);
+        }
 
-        public void Remove(string vehicleKey, SetupWorkflowKey workflow) =>
+        public void Remove(string vehicleKey, SetupWorkflowKey workflow)
+        {
             values.RemoveAll(item => item.VehicleKey == vehicleKey && item.Workflow == workflow);
+        }
     }
 }

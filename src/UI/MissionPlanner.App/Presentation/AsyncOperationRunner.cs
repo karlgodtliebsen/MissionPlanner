@@ -1,6 +1,7 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.App.Presentation;
 
@@ -34,11 +35,8 @@ public partial class AsyncOperationRunner : ObservableObject
     /// <param name="timeout">The optional operation timeout.</param>
     /// <param name="cancellationToken">A caller cancellation token.</param>
     /// <returns>The final presentation state.</returns>
-    public async Task<AsyncOperationState> RunAsync(
-        Func<VehicleId, CancellationToken, Task<AsyncOperationState>> operation,
-        string? busyMessage = null,
-        TimeSpan? timeout = null,
-        CancellationToken cancellationToken = default)
+    public async Task<AsyncOperationState> RunAsync(Func<VehicleId, CancellationToken, Task<AsyncOperationState>> operation,
+        string? busyMessage = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
     {
         var target = activeVehicle.VehicleId;
         if (target is null || !activeVehicle.IsOnline)

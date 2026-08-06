@@ -1,14 +1,14 @@
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Simulation;
+using MissionPlanner.Simulation.Abstractions;
+using MissionPlanner.Simulation.ArduPilot;
 
 namespace MissionPlanner.Core.Simulation;
 
 /// <summary>Allocates deterministic SITL identities, endpoints, locations, and artifact paths.</summary>
-public sealed class SimulationFleetAllocator(
-    IVehicleRegistry vehicleRegistry,
-    IOptions<SimulationWorkspaceOptions> options) : ISimulationFleetAllocator
+public sealed class SimulationFleetAllocator(IVehicleRegistry vehicleRegistry, IOptions<SimulationWorkspaceOptions> options) : ISimulationFleetAllocator
 {
     /// <inheritdoc />
     public IReadOnlyList<SimulationInstanceAllocation> Allocate(
@@ -122,12 +122,9 @@ public sealed class SimulationFleetAllocator(
     private static int CheckedPort(int port, int offset)
     {
         var result = checked(port + offset);
-        if (result is < 1 or > 65535)
-        {
-            throw new SimulationAllocationException($"Allocated port {result} is outside the valid range.");
-        }
-
-        return result;
+        return result is < 1 or > 65535
+            ? throw new SimulationAllocationException($"Allocated port {result} is outside the valid range.")
+            : result;
     }
 
     private static IEnumerable<SimulationEndpoint> GetAllEndpoints(SimulatorProfile profile)
@@ -158,9 +155,9 @@ public sealed class SimulationFleetAllocator(
     {
         const double earthRadiusMeters = 6378137;
         var latitudeRadians = location.LatitudeDegrees * Math.PI / 180;
-        var latitude = location.LatitudeDegrees + offset.NorthMeters / earthRadiusMeters * 180 / Math.PI;
+        var latitude = location.LatitudeDegrees + (offset.NorthMeters / earthRadiusMeters * 180 / Math.PI);
         var longitudeScale = Math.Max(0.000001, Math.Abs(Math.Cos(latitudeRadians)));
-        var longitude = location.LongitudeDegrees + offset.EastMeters / (earthRadiusMeters * longitudeScale) * 180 / Math.PI;
+        var longitude = location.LongitudeDegrees + (offset.EastMeters / (earthRadiusMeters * longitudeScale) * 180 / Math.PI);
         var heading = (location.HeadingDegrees + offset.HeadingDegrees) % 360;
         if (heading < 0)
         {

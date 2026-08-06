@@ -2,6 +2,7 @@
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.Generated;
 using MissionPlanner.MavLink.Messages;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Commands;
 

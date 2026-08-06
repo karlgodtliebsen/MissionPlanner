@@ -1,4 +1,4 @@
-namespace MissionPlanner.Firmware.Model;
+﻿namespace MissionPlanner.Firmware.Model;
 
 /// <summary>Defines stable codes for firmware interactions presented by a host.</summary>
 public static class FirmwareInteractionCodes

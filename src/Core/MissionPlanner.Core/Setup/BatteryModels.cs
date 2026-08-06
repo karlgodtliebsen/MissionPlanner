@@ -1,4 +1,5 @@
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Setup;
 
@@ -7,24 +8,34 @@ public enum BatterySetting
 {
     /// <summary>The battery monitor backend selector (BATT_MONITOR).</summary>
     Monitor,
+
     /// <summary>The pack capacity in milliampere-hours (BATT_CAPACITY).</summary>
     Capacity,
+
     /// <summary>The low-voltage failsafe threshold (BATT_LOW_VOLT).</summary>
     LowVoltage,
+
     /// <summary>The critical-voltage failsafe threshold (BATT_CRT_VOLT).</summary>
     CriticalVoltage,
+
     /// <summary>The low-capacity failsafe threshold (BATT_LOW_MAH).</summary>
     LowCapacity,
+
     /// <summary>The critical-capacity failsafe threshold (BATT_CRT_MAH).</summary>
     CriticalCapacity,
+
     /// <summary>The voltage multiplier (BATT_VOLT_MULT).</summary>
     VoltageMultiplier,
+
     /// <summary>The amperes-per-volt current scale (BATT_AMP_PERVLT).</summary>
     CurrentPerVolt,
+
     /// <summary>The current sensor offset (BATT_AMP_OFFSET).</summary>
     CurrentOffset,
+
     /// <summary>The low-battery failsafe action (BATT_FS_LOW_ACT).</summary>
     LowAction,
+
     /// <summary>The critical-battery failsafe action (BATT_FS_CRT_ACT).</summary>
     CriticalAction
 }
@@ -34,8 +45,10 @@ public enum BatteryIssueSeverity
 {
     /// <summary>Informational guidance.</summary>
     Info,
+
     /// <summary>A configuration that should be reviewed before flight.</summary>
     Warning,
+
     /// <summary>A configuration that must not be saved.</summary>
     Blocking
 }
@@ -81,7 +94,10 @@ public sealed record BatteryMonitorInstance(
     /// <summary>Gets the stored value for a setting, when present.</summary>
     /// <param name="setting">The setting kind.</param>
     /// <returns>The stored value, or null when the parameter is absent.</returns>
-    public double? Get(BatterySetting setting) => Values.TryGetValue(setting, out var value) ? value : null;
+    public double? Get(BatterySetting setting)
+    {
+        return Values.TryGetValue(setting, out var value) ? value : null;
+    }
 }
 
 /// <summary>Represents the immutable battery configuration projected by the Setup UI.</summary>
@@ -102,7 +118,10 @@ public sealed record BatteryConfiguration(
     /// <summary>Creates an empty configuration for the specified vehicle.</summary>
     /// <param name="vehicleId">The vehicle identifier.</param>
     /// <returns>An empty configuration.</returns>
-    public static BatteryConfiguration Empty(VehicleId vehicleId) => new(vehicleId, [], [], [], [], []);
+    public static BatteryConfiguration Empty(VehicleId vehicleId)
+    {
+        return new BatteryConfiguration(vehicleId, [], [], [], [], []);
+    }
 }
 
 /// <summary>Represents the outcome of a confirmed battery setting write.</summary>

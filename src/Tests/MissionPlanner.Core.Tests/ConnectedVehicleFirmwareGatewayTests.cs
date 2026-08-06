@@ -4,6 +4,7 @@ using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware.Connected;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using NSubstitute;
 
 namespace MissionPlanner.Core.Tests;
@@ -42,10 +43,12 @@ public sealed class ConnectedVehicleFirmwareGatewayTests
             cancellationToken);
     }
 
-    private static bool IsFlashBootloaderCommand(ExpertVehicleCommand? command, VehicleId vehicleId) =>
-        command is not null &&
-        command.VehicleId == vehicleId &&
-        command.CommandId == 42650 &&
-        command.Parameters.Count == 7 &&
-        command.Parameters[4] == 290876;
+    private static bool IsFlashBootloaderCommand(ExpertVehicleCommand? command, VehicleId vehicleId)
+    {
+        return command is not null &&
+               command.VehicleId == vehicleId &&
+               command.CommandId == 42650 &&
+               command.Parameters.Count == 7 &&
+               command.Parameters[4] == 290876;
+    }
 }

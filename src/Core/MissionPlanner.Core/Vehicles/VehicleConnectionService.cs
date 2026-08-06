@@ -9,6 +9,7 @@ using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Client;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Transport.Abstractions;
 
 namespace MissionPlanner.Core.Vehicles;

@@ -10,7 +10,11 @@ using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware;
+using MissionPlanner.Firmware.Model;
 using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.MavLink.Generated;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using NSubstitute;
 
 namespace MissionPlanner.Core.Tests;
@@ -240,7 +244,7 @@ public sealed class FirmwareManagementTests
         return new FirmwarePackageManager(factory, cache, Substitute.For<ILogger<FirmwarePackageManager>>());
     }
 
-    private static async Task<IReadOnlyList<FirmwareManifestEntry>> WaitForCancellationAsync(CancellationToken cancellationToken)
+    private static async Task<IReadOnlyList<FirmwareManifestEntryRecord>> WaitForCancellationAsync(CancellationToken cancellationToken)
     {
         await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
         return [];
@@ -251,9 +255,9 @@ public sealed class FirmwareManagementTests
         return Convert.ToHexString(SHA256.HashData(value)).ToLowerInvariant();
     }
 
-    private static FirmwareManifestEntry Release(FirmwareReleaseChannel channel)
+    private static FirmwareManifestEntryRecord Release(FirmwareReleaseChannel channel)
     {
-        return new FirmwareManifestEntry(
+        return new FirmwareManifestEntryRecord(
             FirmwareFamily.ArduCopter,
             "fmuv6c",
             0x1209,

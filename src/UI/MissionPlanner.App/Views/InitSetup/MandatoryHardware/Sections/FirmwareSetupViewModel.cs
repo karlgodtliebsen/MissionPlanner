@@ -10,7 +10,9 @@ using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Firmware.Model;
 using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.MavLink.Generated;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -66,7 +68,7 @@ public sealed partial class FirmwareSetupViewModel : Models.SetupWorkflowDetailV
     public IReadOnlyList<FirmwareReleaseChannel> Channels { get; } = Enum.GetValues<FirmwareReleaseChannel>();
 
     /// <summary>Gets compatible manifest releases.</summary>
-    public ObservableCollection<FirmwareManifestEntry> Releases { get; } = [];
+    public ObservableCollection<FirmwareManifestEntryRecord> Releases { get; } = [];
 
     /// <summary>Gets or sets the selected release channel.</summary>
     [ObservableProperty]
@@ -75,7 +77,7 @@ public sealed partial class FirmwareSetupViewModel : Models.SetupWorkflowDetailV
     /// <summary>Gets or sets the selected compatible release.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(DownloadCommand))]
-    public partial FirmwareManifestEntry? SelectedRelease { get; set; }
+    public partial FirmwareManifestEntryRecord? SelectedRelease { get; set; }
 
     /// <summary>Gets the manifest-provided technical board target for the selected release.</summary>
     public string SelectedBoardTarget => SelectedRelease?.BoardTarget ?? "No compatible release selected";
@@ -145,7 +147,7 @@ public sealed partial class FirmwareSetupViewModel : Models.SetupWorkflowDetailV
         Status = "Discover releases for the selected channel.";
     }
 
-    partial void OnSelectedReleaseChanged(FirmwareManifestEntry? value)
+    partial void OnSelectedReleaseChanged(FirmwareManifestEntryRecord? value)
     {
         if (coordinator.Package?.Release != value)
         {
@@ -181,9 +183,11 @@ public sealed partial class FirmwareSetupViewModel : Models.SetupWorkflowDetailV
         HardwareUid = identity.HardwareUid?.ToString("X16", CultureInfo.InvariantCulture) ?? "Not reported";
         HardwareUid2 = identity.HardwareUid2 ?? "Not reported";
         MavLinkVersion = state.Identity.MavLinkVersion.ToString(CultureInfo.InvariantCulture);
-        var names = Enum.GetValues<MavProtocolCapability>()
-            .Where(value => value != MavProtocolCapability.None && identity.Supports(value))
+
+        var names = Enum.GetValues<MavProtocolCapabilityMap>()
+            .Where(value => value != MavProtocolCapabilityMap.None && identity.Supports((MavProtocolCapability)value))
             .Select(value => value.ToString());
+
         Capabilities = $"0x{identity.Capabilities:X16} ({string.Join(", ", names.DefaultIfEmpty("none named"))})";
         FlashingAvailability = flashingService.GetPlatformSupport(identity).Reason;
     }

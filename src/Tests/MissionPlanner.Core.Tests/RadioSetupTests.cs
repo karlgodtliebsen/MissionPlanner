@@ -9,6 +9,7 @@ using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using NSubstitute;
 using MavParamType = MissionPlanner.MavLink.Parameters.MavParamType;
 
@@ -133,18 +134,20 @@ public sealed class RadioSetupTests
             Substitute.For<ILogger<RadioCalibrationService>>());
     }
 
-    private static void Store(VehicleParameterRegistry registry, string name, float value) =>
+    private static void Store(VehicleParameterRegistry registry, string name, float value)
+    {
         registry.StoreParameter(vehicleId, new VehicleParameter(name, value, MavParamType.Int16, 0, 1), CancellationToken.None);
+    }
 
     private static VehicleState StateWithChannels(ushort[] channels, DateTimeOffset observedAt)
     {
         var now = DateTimeOffset.UtcNow;
         var state = new VehicleState(vehicleId, 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online, now,
-            VehicleMode.Stabilize, false, null, null, null, null, null, null, null, null) with
-        {
-            Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
-                LandedState: VehicleLandedState.OnGround, ObservedAt: now)
-        };
+                VehicleMode.Stabilize, false, null, null, null, null, null, null, null, null) with
+            {
+                Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
+                    LandedState: VehicleLandedState.OnGround, ObservedAt: now)
+            };
         return state with { Radio = VehicleRadioState.Empty with { ChannelCount = channels.Length, ChannelsRaw = channels, ObservedAt = observedAt } };
     }
 
@@ -175,13 +178,7 @@ public sealed class RadioSetupTests
         public void SetOnline(bool online)
         {
             var previous = Current;
-            var nextState = Current.State! with
-            {
-                Connection = Current.State!.Connection with
-                {
-                    State = online ? VehicleConnectionState.Online : VehicleConnectionState.Offline
-                }
-            };
+            var nextState = Current.State! with { Connection = Current.State!.Connection with { State = online ? VehicleConnectionState.Online : VehicleConnectionState.Offline } };
             Current = new ActiveVehicleSnapshot(nextState.VehicleId, nextState);
             if (!online)
             {

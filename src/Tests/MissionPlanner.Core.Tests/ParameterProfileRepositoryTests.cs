@@ -1,10 +1,12 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.ConfigTuning;
-using MissionPlanner.Core.ConfigTuning.Profiles;
 using MissionPlanner.Core.ConfigTuning.Comparison;
-using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Core.ConfigTuning.Profiles;
+using MissionPlanner.Firmware;
+using MissionPlanner.Firmware.Model;
 using MissionPlanner.MavLink.Parameters;
+using MissionPlanner.Shared.Models.Vehicles.Models;
 using NSubstitute;
 
 namespace MissionPlanner.Core.Tests;
@@ -42,7 +44,7 @@ public sealed class ParameterProfileRepositoryTests
         review.Comparison.Rows.Single(row => row.Name == "GAIN").CanStage.Should().BeTrue();
         review.Comparison.Rows.Single(row => row.Name == "UNKNOWN").Status.Should().Be(ParameterComparisonStatus.OnlyOnRight);
         session.DidNotReceiveWithAnyArgs().ApplyAsync(
-            default(IReadOnlyList<string>),
+            default,
             TestContext.Current.CancellationToken);
     }
 
