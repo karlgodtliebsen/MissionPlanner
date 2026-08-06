@@ -5,7 +5,7 @@ namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 /// <summary>
 /// Provides the public API for BasicTuningTabView.
 /// </summary>
-public partial class BasicTuningTabView : ContentPageView<BasicTuningTabViewModel>
+public partial class BasicTuningTabView : ExtendedContentPage<BasicTuningTabViewModel>
 {
     /// <summary>
     /// Provides the public API for BasicTuningTabView.

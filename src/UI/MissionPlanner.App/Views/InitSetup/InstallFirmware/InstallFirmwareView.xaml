@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<navigation:ContentPageView x:TypeArguments="local:InstallFirmwareViewModel"
+<navigation:ExtendedContentPage x:TypeArguments="local:InstallFirmwareViewModel"
     x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.InstallFirmwareView"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -183,4 +183,4 @@
             </Border>
         </VerticalStackLayout>
     </ScrollView>
-</navigation:ContentPageView>
+</navigation:ExtendedContentPage>

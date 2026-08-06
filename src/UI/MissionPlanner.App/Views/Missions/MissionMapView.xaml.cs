@@ -8,6 +8,7 @@ using Mapsui.Tiling;
 using Mapsui.Tiling.Layers;
 using Mapsui.UI.Maui;
 using MissionPlanner.App.Helpers;
+using MissionPlanner.App.Navigation;
 using MissionPlanner.Core.ConfigTuning.Planner;
 
 namespace MissionPlanner.App.Views.Missions;
@@ -17,11 +18,11 @@ namespace MissionPlanner.App.Views.Missions;
 /// hosts the right-click context menu mirroring the classic MissionPlanner flight planner menu.
 /// Bound to the singleton <see cref="MissionMapViewModel"/>, so every instance edits the same plan.
 /// </summary>
-public partial class MissionMapView : ContentView, IDisposable
+public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>, IDisposable
 {
     private const double WebMercatorInitialResolution = 156543.03392804097;
 
-    private readonly MissionMapViewModel viewModel;
+    //private readonly MissionMapViewModel viewModel;
     private readonly Pin vehiclePin;
     private Polyline routeLine;
     private readonly List<Pin> missionPins = [];
@@ -34,14 +35,15 @@ public partial class MissionMapView : ContentView, IDisposable
     public MissionMapView()
     {
         InitializeComponent();
-        viewModel = ServiceHelper.GetRequiredService<MissionMapViewModel>();
+
+        //viewModel = ServiceHelper.GetRequiredService<MissionMapViewModel>();
         plannerSettings = ServiceHelper.GetRequiredService<IPlannerSettingsService>();
-        BindingContext = viewModel;
+        //BindingContext = viewModel;
         map = new Mapsui.Map();
-        map.Layers.Add(CreateTileLayer(viewModel.SelectedMapType));
+        map.Layers.Add(CreateTileLayer(ViewModel.SelectedMapType));
         MissionMap.Map = map;
 
-        vehiclePin = new Pin(MissionMap) { Label = "Vehicle", Type = PinType.Pin, Position = new Position(viewModel.VehicleLatitude, viewModel.VehicleLongitude) };
+        vehiclePin = new Pin(MissionMap) { Label = "Vehicle", Type = PinType.Pin, Position = new Position(ViewModel.VehicleLatitude, ViewModel.VehicleLongitude) };
         MissionMap.Pins.Add(vehiclePin);
 
         routeLine = new Polyline { StrokeColor = Colors.OrangeRed, StrokeWidth = 3 };
@@ -53,9 +55,9 @@ public partial class MissionMapView : ContentView, IDisposable
         pointer.PointerMoved += OnPointerMoved;
         GestureRecognizers.Add(pointer);
 
-        viewModel.PropertyChanged += ViewModel_PropertyChanged;
-        viewModel.MissionChanged += OnMissionChanged;
-        viewModel.FitToMissionRequested += OnFitToMissionRequested;
+        ViewModel.PropertyChanged += ViewModel_PropertyChanged;
+        ViewModel.MissionChanged += OnMissionChanged;
+        ViewModel.FitToMissionRequested += OnFitToMissionRequested;
         Loaded += OnFirstLoaded;
 
         RedrawMission();
@@ -65,10 +67,10 @@ public partial class MissionMapView : ContentView, IDisposable
     {
         if (e.PropertyName is nameof(MissionMapViewModel.VehicleLatitude) or nameof(MissionMapViewModel.VehicleLongitude))
         {
-            Position position = new(viewModel.VehicleLatitude, viewModel.VehicleLongitude);
+            Position position = new(ViewModel.VehicleLatitude, ViewModel.VehicleLongitude);
             vehiclePin.Position = position;
 
-            if (viewModel.FollowVehicle)
+            if (ViewModel.FollowVehicle)
             {
                 CenterMap(position.Latitude, position.Longitude);
             }
@@ -79,7 +81,7 @@ public partial class MissionMapView : ContentView, IDisposable
         }
         else if (e.PropertyName is nameof(MissionMapViewModel.SelectedMapType))
         {
-            ApplyMapType(viewModel.SelectedMapType);
+            ApplyMapType(ViewModel.SelectedMapType);
         }
     }
 
@@ -92,12 +94,12 @@ public partial class MissionMapView : ContentView, IDisposable
     {
         var positions = new List<(double Latitude, double Longitude)>();
 
-        if (viewModel.HomePosition is { } home)
+        if (ViewModel.HomePosition is { } home)
         {
             positions.Add((home.LatitudeDegrees, home.LongitudeDegrees));
         }
 
-        foreach (var item in viewModel.Mission.Items)
+        foreach (var item in ViewModel.Mission.Items)
         {
             if (MissionMapViewModel.PositionOf(item) is { } position)
             {
@@ -169,13 +171,13 @@ public partial class MissionMapView : ContentView, IDisposable
         // the existing Polyline's positions never repaints. Replace the instance instead.
         var newRouteLine = new Polyline { StrokeColor = Colors.OrangeRed, StrokeWidth = 3 };
 
-        if (viewModel.HomePosition is { } home)
+        if (ViewModel.HomePosition is { } home)
         {
             AddMissionPin("H: Home", home.LatitudeDegrees, home.LongitudeDegrees, Colors.Green);
             newRouteLine.Positions.Add(new Position(home.LatitudeDegrees, home.LongitudeDegrees));
         }
 
-        foreach (var item in viewModel.Mission.Items)
+        foreach (var item in ViewModel.Mission.Items)
         {
             if (MissionMapViewModel.PositionOf(item) is not { } position)
             {
@@ -209,7 +211,7 @@ public partial class MissionMapView : ContentView, IDisposable
 
     private void OnMapClicked(object? sender, MapClickedEventArgs e)
     {
-        viewModel.HandleMapClick(e.Point.Latitude, e.Point.Longitude);
+        ViewModel.HandleMapClick(e.Point.Latitude, e.Point.Longitude);
     }
 
     private void OnPointerMoved(object? sender, PointerEventArgs e)
@@ -227,7 +229,7 @@ public partial class MissionMapView : ContentView, IDisposable
 
         var world = viewport.ScreenToWorld(point.X, point.Y);
         var (longitude, latitude) = SphericalMercator.ToLonLat(world.X, world.Y);
-        viewModel.SetContextPosition(latitude, longitude);
+        ViewModel.SetContextPosition(latitude, longitude);
     }
 
     private async void OnFirstLoaded(object? sender, EventArgs e)
@@ -235,7 +237,7 @@ public partial class MissionMapView : ContentView, IDisposable
         Loaded -= OnFirstLoaded;
 
         // Without a vehicle fix, start the map near the user's own location.
-        if (viewModel.VehicleLatitude == 0 && viewModel.VehicleLongitude == 0)
+        if (ViewModel.VehicleLatitude == 0 && ViewModel.VehicleLongitude == 0)
         {
             await CenterOnMyLocationAsync();
         }
@@ -286,7 +288,7 @@ public partial class MissionMapView : ContentView, IDisposable
 
     private void OnZoomToVehicleClicked(object? sender, EventArgs e)
     {
-        CenterMap(viewModel.VehicleLatitude, viewModel.VehicleLongitude, DefaultZoomResolution);
+        CenterMap(ViewModel.VehicleLatitude, ViewModel.VehicleLongitude, DefaultZoomResolution);
     }
 
     private async void OnCenterOnMyLocationClicked(object? sender, EventArgs e)
@@ -296,15 +298,15 @@ public partial class MissionMapView : ContentView, IDisposable
 
     private void OnToggleFollowVehicleClicked(object? sender, EventArgs e)
     {
-        viewModel.FollowVehicle = !viewModel.FollowVehicle;
+        ViewModel.FollowVehicle = !ViewModel.FollowVehicle;
     }
 
     /// <inheritdoc />
     public void Dispose()
     {
-        viewModel.PropertyChanged -= ViewModel_PropertyChanged;
-        viewModel.MissionChanged -= OnMissionChanged;
-        viewModel.FitToMissionRequested -= OnFitToMissionRequested;
+        ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+        ViewModel.MissionChanged -= OnMissionChanged;
+        ViewModel.FitToMissionRequested -= OnFitToMissionRequested;
         MissionMap.MapClicked -= OnMapClicked;
     }
 }

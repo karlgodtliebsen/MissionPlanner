@@ -44,6 +44,8 @@ public partial class FlightPlannerViewModel : ObservableObject, IDisposable
     /// <summary>The shared mission map editor (same instance as the FlightData map).</summary>
     public MissionMapViewModel Map { get; }
 
+    [ObservableProperty] public partial bool IsExpanded { get; set; }
+
     /// <summary>True while a vehicle transfer is running; disables the transfer buttons.</summary>
     [ObservableProperty]
     public partial bool IsBusy { get; set; }
@@ -128,6 +130,12 @@ public partial class FlightPlannerViewModel : ObservableObject, IDisposable
         await UploadAsync(true);
     }
 
+
+    [RelayCommand]
+    private async Task Expanded()
+    {
+        IsExpanded = !IsExpanded;
+    }
 
     /// <summary>Uploads without validation, mirroring the old "Write Fast" behavior of skipping verification.</summary>
     [RelayCommand]

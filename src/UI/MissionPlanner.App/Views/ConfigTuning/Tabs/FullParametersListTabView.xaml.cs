@@ -5,7 +5,7 @@ namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 /// <summary>
 /// Interaction logic for FullParametersListTabView.xaml
 /// </summary>
-public partial class FullParametersListTabView : ContentPageView<FullParametersListTabViewModel>
+public partial class FullParametersListTabView : ExtendedContentPage<FullParametersListTabViewModel>
 
 {
     /// <summary>

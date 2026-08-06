@@ -1,4 +1,4 @@
-﻿using MissionPlanner.App.Helpers;
+﻿using MissionPlanner.App.Navigation;
 
 namespace MissionPlanner.App.Views.Missions;
 
@@ -8,9 +8,9 @@ namespace MissionPlanner.App.Views.Missions;
 /// leg columns (Dist/AZ/Grad) and a header with mission info and editor settings.
 /// Bound to the singleton <see cref="MissionMapViewModel"/>.
 /// </summary>
-public partial class MissionItemListView : ContentView
+public partial class MissionItemListView : ExtendedContentView<MissionMapViewModel>
 {
-    private readonly MissionMapViewModel viewModel;
+    //private readonly MissionMapViewModel viewModel;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MissionItemListView"/> class.
@@ -18,8 +18,6 @@ public partial class MissionItemListView : ContentView
     public MissionItemListView()
     {
         InitializeComponent();
-        viewModel = ServiceHelper.GetRequiredService<MissionMapViewModel>();
-        BindingContext = viewModel;
     }
 
     private void OnRowEditCompleted(object? sender, EventArgs e)
@@ -27,7 +25,7 @@ public partial class MissionItemListView : ContentView
         if (sender is Entry { BindingContext: MissionItemRow row })
         {
             // Stale rows (already replaced by a rebuild) are ignored by the command.
-            viewModel.ApplyRowEditCommand.Execute(row);
+            ViewModel.ApplyRowEditCommand.Execute(row);
         }
     }
 }

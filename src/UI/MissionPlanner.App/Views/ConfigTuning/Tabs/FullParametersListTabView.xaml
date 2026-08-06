@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<navigation:ContentPageView x:TypeArguments="tabs:FullParametersListTabViewModel"
+<navigation:ExtendedContentPage x:TypeArguments="tabs:FullParametersListTabViewModel"
                       xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                       xmlns:m="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
@@ -13,7 +13,7 @@
                       x:DataType="tabs:FullParametersListTabViewModel">
 
 
-    <navigation:ContentPageView.Content>
+    <navigation:ExtendedContentPage.Content>
 
         <Grid RowDefinitions="Auto,Auto,*"
           HorizontalOptions="Fill"
@@ -259,5 +259,5 @@
 
             </Grid>
         </Grid>
-    </navigation:ContentPageView.Content>
-</navigation:ContentPageView>      
+    </navigation:ExtendedContentPage.Content>
+</navigation:ExtendedContentPage>      

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<navigation:ContentPageView x:TypeArguments="vm:FlightPlannerViewModel"  
+<navigation:ExtendedContentPage x:TypeArguments="vm:FlightPlannerViewModel"  
                          xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                          xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                          xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
@@ -8,12 +8,13 @@
                          xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                          xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
                          xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                         xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                          x:Class="MissionPlanner.App.Views.FlightPlanner.FlightPlannerView"
                          x:DataType="vm:FlightPlannerViewModel">
 
-    <navigation:ContentPageView.Resources>
+    <navigation:ExtendedContentPage.Resources>
         <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
-    </navigation:ContentPageView.Resources>
+    </navigation:ExtendedContentPage.Resources>
 
     <Grid RowDefinitions="Auto,*" RowSpacing="4" Padding="5" >
 
@@ -27,6 +28,7 @@
             <Button Text="Read" Command="{Binding ReadFromVehicleCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
             <Button Text="Write" Command="{Binding WriteToVehicleCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
             <Button Text="Write Fast" Command="{Binding WriteToVehicleFastCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,12,4" />
+            <Button Text="Expand" Command="{Binding ExpandCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,12,4" />
 
             <Label Text="Map:" VerticalOptions="Center" Margin="0,0,4,4" />
             <Picker ItemsSource="{Binding Map.AvailableMapTypes}"
@@ -51,10 +53,17 @@
         </FlexLayout>
 
         <!-- Map + mission list -->
-        <Grid Grid.Row="1" ColumnDefinitions="*,5,360" ColumnSpacing="4" Margin="0,10,0,10">
+        <Grid Grid.Row="1" ColumnDefinitions="*" ColumnSpacing="4" Margin="10,10,10,10">
 
             <missions:MissionMapView Grid.Column="0" />
-            <!-- Vertical Grid Splitter -->
+
+        </Grid>
+
+
+        <!--<Grid Grid.Row="1" ColumnDefinitions="*,5,360" ColumnSpacing="4" Margin="0,10,0,10">
+
+            <missions:MissionMapView Grid.Column="0" />
+
             <controls:GridSplitter Grid.Column="1" 
                                    SplitterThickness="4"
                                    SplitterColor="#3e3e42"
@@ -62,8 +71,34 @@
 
             <missions:MissionItemListView Grid.Column="2" />
 
-        </Grid>
+        </Grid>-->
 
     </Grid>
 
-</navigation:ContentPageView>
+
+    <uranium:UraniumContentPage.Attachments>
+        <material:BottomSheetView  BackgroundColor="{DynamicResource Primary}" IsPresented="{Binding IsExpanded}" MaximumHeightRequest="300">
+            <material:BottomSheetView.Header>
+                <Grid
+                    
+                   HeightRequest="50"
+                   BackgroundColor="{StaticResource Primary}"
+                   ColumnDefinitions="Auto" ColumnSpacing="10">
+                    <Label 
+                        Margin="20,0,0,0"
+                          Text="Waypoint Editor" 
+                          VerticalOptions="Center"
+                          FontSize="Medium"
+                          TextColor="{StaticResource OnPrimary}"/>
+
+                </Grid>
+            </material:BottomSheetView.Header>
+
+
+            <missions:MissionItemListView />
+
+
+        </material:BottomSheetView>
+    </uranium:UraniumContentPage.Attachments>
+
+</navigation:ExtendedContentPage>

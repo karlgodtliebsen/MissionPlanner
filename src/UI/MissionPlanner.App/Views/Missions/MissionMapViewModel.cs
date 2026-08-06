@@ -6,12 +6,12 @@ using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Files;
 using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.MavLink.Missions;
-using MissionPlanner.Core.ConfigTuning.Planner;
 
 namespace MissionPlanner.App.Views.Missions;
 
@@ -20,7 +20,7 @@ namespace MissionPlanner.App.Views.Missions;
 /// edited, and exposes the commands behind the map's right-click context menu. It is registered as a
 /// singleton so the FlightData map and the Plan screen edit the same mission.
 /// </summary>
-public partial class MissionMapViewModel : ObservableObject
+public partial class MissionMapViewModel : ObservableObject, IDisposable
 {
     private readonly IMissionFileCodec fileCodec;
     private readonly IMissionProtocolMapper protocolMapper;
@@ -30,18 +30,18 @@ public partial class MissionMapViewModel : ObservableObject
     /// <summary>
     /// Initializes a new instance of the <see cref="MissionMapViewModel"/> class.
     /// </summary>
-    public MissionMapViewModel(
-        IMissionFileCodec fileCodec,
-        IMissionProtocolMapper protocolMapper,
-        IFileSaver fileSaver,
-        IPlannerSettingsService settingsService,
-        ILogger<MissionMapViewModel> logger)
+    public MissionMapViewModel(IMissionFileCodec fileCodec, IMissionProtocolMapper protocolMapper, IFileSaver fileSaver, IPlannerSettingsService settingsService, ILogger<MissionMapViewModel> logger)
     {
         this.fileCodec = fileCodec;
         this.protocolMapper = protocolMapper;
         this.fileSaver = fileSaver;
         this.logger = logger;
         SelectedMapType = MapType(settingsService.Current.Map);
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
     }
 
     [ObservableProperty] public partial double VehicleLatitude { get; set; }
@@ -72,7 +72,7 @@ public partial class MissionMapViewModel : ObservableObject
 
     /// <summary>When true the waypoint list shows the complete editor (all columns + header inputs).</summary>
     [ObservableProperty]
-    public partial bool IsCompleteEditorMode { get; set; }
+    public partial bool IsCompleteEditorMode { get; set; } = true;
 
     /// <summary>When true, a primary map click appends a waypoint at the clicked position.</summary>
     [ObservableProperty]
@@ -98,17 +98,20 @@ public partial class MissionMapViewModel : ObservableObject
     public IReadOnlyList<string> AvailableMapTypes { get; } =
         ["OpenStreetMap", "Esri World Topo", "Esri World Physical", "Esri Shaded Relief", "Esri Dark Gray"];
 
-    private static string MapType(PlannerMapSettings settings) => settings.Provider switch
+    private static string MapType(PlannerMapSettings settings)
     {
-        PlannerMapProvider.OpenStreetMap => "OpenStreetMap",
-        _ => settings.Style switch
+        return settings.Provider switch
         {
-            PlannerMapStyle.Physical => "Esri World Physical",
-            PlannerMapStyle.ShadedRelief => "Esri Shaded Relief",
-            PlannerMapStyle.DarkGray => "Esri Dark Gray",
-            _ => "Esri World Topo"
-        }
-    };
+            PlannerMapProvider.OpenStreetMap => "OpenStreetMap",
+            var _ => settings.Style switch
+            {
+                PlannerMapStyle.Physical => "Esri World Physical",
+                PlannerMapStyle.ShadedRelief => "Esri Shaded Relief",
+                PlannerMapStyle.DarkGray => "Esri Dark Gray",
+                var _ => "Esri World Topo"
+            }
+        };
+    }
 
     /// <summary>
     /// Commands selectable in the waypoint editor. Names follow v1.38's mavcmd.xml; the set is
@@ -528,7 +531,7 @@ public partial class MissionMapViewModel : ObservableObject
             DefaultAltitude(),
             time,
             turns,
-            RadiusMeters: LoiterRadiusMeters));
+            LoiterRadiusMeters));
         OnMissionChanged("Loiter added.");
     }
 
@@ -546,7 +549,7 @@ public partial class MissionMapViewModel : ObservableObject
             position,
             DefaultAltitude(),
             TimeSpan.Zero,
-            AcceptanceRadiusMeters: WaypointRadiusMeters));
+            WaypointRadiusMeters));
         OnMissionChanged(message);
     }
 

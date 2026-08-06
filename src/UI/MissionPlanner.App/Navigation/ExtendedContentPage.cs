@@ -7,7 +7,7 @@ namespace MissionPlanner.App.Navigation;
 /// Represents a content page view that is associated with a specific view model type.
 /// Handles viewmodel allocation and cleanup for navigation events.
 /// </summary>
-public class ContentPageView<TViewModel> : UraniumContentPage
+public class ExtendedContentPage<TViewModel> : UraniumContentPage
     where TViewModel : class, IDisposable
 
 {
@@ -17,9 +17,9 @@ public class ContentPageView<TViewModel> : UraniumContentPage
     protected TViewModel? ViewModel;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ContentPageView{TViewModel}"/> class.
+    /// Initializes a new instance of the <see cref="ExtendedContentPage{TViewModel}"/> class.
     /// </summary>
-    protected ContentPageView()
+    protected ExtendedContentPage()
     {
     }
 

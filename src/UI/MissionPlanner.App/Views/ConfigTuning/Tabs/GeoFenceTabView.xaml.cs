@@ -5,7 +5,7 @@ namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 /// <summary>
 /// Provides the public API for GeoFenceTabView.
 /// </summary>
-public partial class GeoFenceTabView : ContentPageView<GeoFenceTabViewModel>
+public partial class GeoFenceTabView : ExtendedContentPage<GeoFenceTabViewModel>
 {
     /// <summary>
     /// Provides the public API for GeoFenceTabView.

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<navigation:ContentPageView x:TypeArguments="vm:SimulationViewModel" 
+<navigation:ExtendedContentPage x:TypeArguments="vm:SimulationViewModel" 
                             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                             xmlns:simulation="clr-namespace:MissionPlanner.Core.Simulation;assembly=MissionPlanner.Core"
@@ -310,4 +310,4 @@
             </Grid>
         </Grid>
     </Grid>
-</navigation:ContentPageView>
+</navigation:ExtendedContentPage>
