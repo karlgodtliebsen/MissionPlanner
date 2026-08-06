@@ -96,11 +96,21 @@ public sealed class VehicleComponentRegistry : IVehicleComponentRegistry
 public sealed class PeripheralComponentHandler(VehicleComponentRegistry registry) : IVehicleMessageHandler
 {
     /// <inheritdoc />
-    public IReadOnlyCollection<Type> MessageTypes { get; } = [typeof(HeartbeatMessage), typeof(UavionixAdsbOutStatusMessage), typeof(AdsbVehicleMessage)];
+    public IReadOnlyCollection<Type> MessageTypes { get; } = [typeof(UavionixAdsbOutStatusMessage), typeof(AdsbVehicleMessage)];
     /// <inheritdoc />
     public ValueTask HandleAsync(MavLinkMessage message, CancellationToken cancellationToken)
     {
-        switch (message) { case HeartbeatMessage heartbeat: registry.Observe(heartbeat); break; case UavionixAdsbOutStatusMessage status: registry.Observe(status); break; case AdsbVehicleMessage track: registry.Observe(track); break; }
+        switch (message)
+        {
+            case UavionixAdsbOutStatusMessage status:
+                registry.Observe(status);
+                break;
+            case AdsbVehicleMessage track:
+                registry.Observe(track);
+                break;
+            default:
+                throw new ArgumentException("Unsupported peripheral message type.", nameof(message));
+        }
         return ValueTask.CompletedTask;
     }
 }
