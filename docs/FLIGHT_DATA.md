@@ -56,3 +56,11 @@ sorted stably, updated in place at the configured display rate, and searchable b
 category. Raw SI/domain values, formatted values, units, freshness and observation time are
 kept distinct. Its versioned JSON export contains capture and vehicle identity plus those
 field values; it contains no transport credentials. Status is not a MAVLink packet inspector.
+
+## Servo and relay
+
+Servo output telemetry is presented as observed PWM, separately from requested commands.
+Typed set-servo and set-relay workflows validate channel/value bounds, require a disarmed
+vehicle and explicit confirmation, use the shared acknowledged operation path, and block
+replay. An ACK is reported as accepted but unconfirmed; it is never presented as measured
+output. Motor-function mapping and relay-status promotion remain explicit limitations.

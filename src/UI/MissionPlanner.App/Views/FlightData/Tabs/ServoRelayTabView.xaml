@@ -1,16 +1,1 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<tabViews:TabViewLifecycleContent x:TypeArguments="tabs:ServoRelayTabViewModel" 
-                                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-                                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                                  xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
-                                  xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
-                                  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
-                                  x:Class="MissionPlanner.App.Views.FlightData.Tabs.ServoRelayTabView"
-                                  x:DataType="tabs:ServoRelayTabViewModel">
-
-
-    <Label Text="Servo Relay"
-           FontSize="16"
-           HorizontalOptions="Center"
-           VerticalOptions="Center" />
-</tabViews:TabViewLifecycleContent>
+<?xml version="1.0" encoding="utf-8" ?><tabViews:TabViewLifecycleContent x:TypeArguments="tabs:ServoRelayTabViewModel" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" x:Class="MissionPlanner.App.Views.FlightData.Tabs.ServoRelayTabView" x:DataType="tabs:ServoRelayTabViewModel"><Grid Padding="16" RowDefinitions="Auto,*,Auto,Auto"><Label Text="Observed servo outputs" FontSize="20" FontAttributes="Bold" /><CollectionView Grid.Row="1" ItemsSource="{Binding ServoOutputs}" /><HorizontalStackLayout Grid.Row="2"><Entry Text="{Binding Channel}" Placeholder="Channel" /><Entry Text="{Binding Pwm}" Placeholder="PWM" /><CheckBox IsChecked="{Binding IsConfirmed}" /><Label Text="Confirm disarmed test" /><Button Text="Set servo" Command="{Binding SetServoCommand}" /></HorizontalStackLayout><Label Grid.Row="3" Text="{Binding Result}" /></Grid></tabViews:TabViewLifecycleContent>
