@@ -76,6 +76,8 @@ it explicitly reports stale and unavailable evidence and never claims the aircra
 telemetry descriptor catalog, explicit freshness, unit conversion, and bounded-rate updates.
 **Transponder** discovers component-scoped uAvionix status and presents a bounded,
 vehicle-scoped ADS-B traffic list; configuration writes remain a documented limitation.
+**Status** provides searchable promoted telemetry with stable rows, freshness and a
+versioned JSON snapshot; advanced combined filters and data-grid column sorting remain.
 Feature description per tab comes from v1.38 (`FlightData.Designer.cs` tab pages).
 
 ### Shared infrastructure

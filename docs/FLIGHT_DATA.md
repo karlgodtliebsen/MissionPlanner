@@ -48,3 +48,11 @@ bounded vehicle-scoped traffic store deduplicates ADS-B tracks by ICAO address a
 them after 30 seconds. The tab makes unsupported/not-discovered state explicit and presents
 observed status and nearby traffic without fabricating absent fields. Configuration and
 IDENT controls remain unavailable until their response-correlation workflow is completed.
+
+## Status
+
+Status uses the same explicit promoted-state descriptors as Gauges. Rows are created once,
+sorted stably, updated in place at the configured display rate, and searchable by label or
+category. Raw SI/domain values, formatted values, units, freshness and observation time are
+kept distinct. Its versioned JSON export contains capture and vehicle identity plus those
+field values; it contains no transport credentials. Status is not a MAVLink packet inspector.
