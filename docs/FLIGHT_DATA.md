@@ -49,6 +49,12 @@ them after 30 seconds. The tab makes unsupported/not-discovered state explicit a
 observed status and nearby traffic without fabricating absent fields. Configuration and
 IDENT controls remain unavailable until their response-correlation workflow is completed.
 
+`HeartbeatMessage` retains exactly one dispatcher owner: `HeartbeatVehicleHandler`. That
+handler updates both the vehicle registry and peripheral component discovery. The separate
+peripheral handler owns only ADS-B/uAvionix messages, preventing duplicate-handler failure
+during USB, UDP, or TCP connection startup.
+
+
 ## Status
 
 Status uses the same explicit promoted-state descriptors as Gauges. Rows are created once,
@@ -64,3 +70,4 @@ Typed set-servo and set-relay workflows validate channel/value bounds, require a
 vehicle and explicit confirmation, use the shared acknowledged operation path, and block
 replay. An ACK is reported as accepted but unconfirmed; it is never presented as measured
 output. Motor-function mapping and relay-status promotion remain explicit limitations.
+
