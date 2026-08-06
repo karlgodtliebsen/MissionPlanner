@@ -155,25 +155,30 @@ Feature description per tab comes from v1.38 (`FlightData.Designer.cs` tab pages
 * Capacity and chunk timeout can be overridden with `VehicleMessages:Capacity` and
   `VehicleMessages:ChunkTimeout`; defaults are 500 messages per vehicle and two seconds.
 
-### PreFlight (Missing)
+### PreFlight
 
-* Pre-flight checklist/warning items (user-configurable conditions with pass/fail display)
+* Implemented: explainable conservative preflight assessment with freshness, remediation,
+  overall severity, and an acknowledged/replay-safe pre-arm-check request.
 
-### Gauges (Missing)
+### Gauges
 
-* Analog instruments: airspeed, ground speed, altitude, climb rate, heading compass
+* Implemented: stable promoted-state airspeed, ground speed, altitude, climb, heading, and
+  battery gauges using planner units and bounded publication rates.
 
-### Transponder (Missing)
+### Transponder
 
-* ADS-B transponder (uAvionix/ping) status and control: squawk code, ident, mode
+* Implemented: multi-component transponder discovery, observed uAvionix status, and bounded
+  deduplicated ADS-B traffic. Configuration/IDENT remain unavailable pending correlation.
 
-### Status (Missing)
+### Status
 
-* Grid of every live telemetry/status variable (v1.38 `CurrentState` dump), filterable
+* Implemented: searchable promoted-state status catalog with raw values, formatted units,
+  freshness, timestamps, and versioned JSON export.
 
-### Servo/Relay (Missing)
+### Servo/Relay
 
-* Manual servo output set high/low/toggle per channel; relay on/off buttons
+* Implemented: observed servo PWM plus bounded, disarmed, confirmed, acknowledged servo and
+  relay requests with replay blocking. ACK is not presented as observed output.
 
 ### Aux Function
 

@@ -1,5 +1,7 @@
 # Flight Data 06 — ArduPilot auxiliary-function execution
 
+Status: **Completed.**
+
 ## Objective
 
 Implement `AuxFunctionTabView` as a capability-aware interface for generated `MavCmd.DoAuxFunction`, without duplicating richer typed workflows from Actions, Servo/Relay or Payload Control.

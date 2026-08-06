@@ -114,3 +114,31 @@ kept distinct from observed payload state. Zoom, focus, camera mode, status prom
 continuous pointer control, and legacy mount fallback remain explicit limitations pending
 capability-information/state handlers.
 
+## Integration and replay safety
+
+All eight tabs are instantiated through `TabViewLifecycleContent<TViewModel>`. Selection
+creates one transient view model and leaving the tab disposes it. Disposal cancels work,
+releases timers and subscriptions, and does not clear UI-bound collections. Active vehicle
+changes rebuild vehicle/component selections; connection-lifetime tokens cancel outbound
+work on disconnect or vehicle switch.
+
+Every vehicle-changing tab uses a typed service, replay prohibition, and the shared
+per-vehicle operation gate. “Accepted” consistently means a MAVLink ACK was received; it
+does not claim that physical or component state changed. Telemetry presentation is bounded
+by planner display-rate settings and stale/unavailable evidence is explicit.
+
+## Verification matrix and troubleshooting
+
+Deterministic automated coverage verifies Windows-target compilation, DI resolution,
+catalog/policy behavior, constrained script validation, multi-component discovery, replay
+policies, and lifecycle infrastructure. Android and Mac Catalyst builds, SITL payload
+plugins, real serial flight controllers, light/dark themes, touch/keyboard interaction,
+disconnect/reconnect, and active-vehicle switching remain manual release checks.
+
+If a tab shows offline or unavailable, confirm the intended vehicle is active and emitting
+fresh heartbeat/state evidence. Payload and transponder tabs require component heartbeats;
+no fixed component ID is assumed. A busy result means another operation owns that vehicle's
+gate. A timeout means no matching ACK arrived and must not be interpreted as failure or
+success of the physical action. During telemetry replay all write controls are intentionally
+read-only.
+

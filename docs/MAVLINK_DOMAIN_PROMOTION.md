@@ -101,10 +101,9 @@ immutable-state allocation. `TIMESYNC` remains a protocol workflow rather than v
 
 Task 10 validates dedicated ownership for command, mission, parameter, log-transfer, camera,
 gimbal, and peripheral families. Command acknowledgements use a singleton correlation
-tracker. Flight Data Payload Control now owns component-scoped camera and gimbal command
-workflows keyed by vehicle and component ID; payload state is not promoted into the
-autopilot aggregate.
-tracker shared by inbound and outbound paths. Mission responses remain in one transfer state
+tracker shared by inbound and outbound paths. Flight Data Payload Control owns
+component-scoped camera and gimbal command workflows keyed by vehicle and component ID;
+payload state is not promoted into the autopilot aggregate. Mission responses remain in one transfer state
 machine and are correlated by vehicle, mission type, and sequence; they never update
 `VehicleState` directly. Packed MAVFTP parameter loading is an optimized transport with the
 classic parameter stream as its automatic fallback.

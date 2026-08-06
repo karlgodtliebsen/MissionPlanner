@@ -1,5 +1,7 @@
 # Flight Data 04 — Comprehensive promoted-telemetry Status tab
 
+Status: **Completed.**
+
 ## Objective
 
 Implement `StatusTabView` as a searchable, grouped, virtualized view of all promoted vehicle telemetry and diagnostics.

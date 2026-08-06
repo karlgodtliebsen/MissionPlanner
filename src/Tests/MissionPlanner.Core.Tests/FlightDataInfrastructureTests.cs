@@ -165,6 +165,10 @@ public sealed class FlightDataInfrastructureTests
         provider.GetRequiredService<AuxFunctionTabViewModel>().Should().NotBeNull();
         provider.GetRequiredService<ScriptsTabViewModel>().Should().NotBeNull();
         provider.GetRequiredService<PayloadControlTabViewModel>().Should().NotBeNull();
+        provider.GetRequiredService<MissionPlanner.Core.FlightData.Auxiliary.IAuxiliaryFunctionService>().Should().NotBeNull();
+        provider.GetRequiredService<MissionPlanner.Core.FlightData.Scripting.IVehicleScriptExecutor>().Should().NotBeNull();
+        provider.GetRequiredService<MissionPlanner.Core.FlightData.Payload.ICameraProtocolService>().Should().NotBeNull();
+        provider.GetRequiredService<MissionPlanner.Core.FlightData.Payload.IGimbalProtocolService>().Should().NotBeNull();
         provider.GetRequiredService<TelemetryLogsTabViewModel>().Should().NotBeNull();
         provider.GetRequiredService<DataFlashLogsTabViewModel>().Should().NotBeNull();
     }

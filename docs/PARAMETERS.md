@@ -314,6 +314,10 @@ the registry. Calibration completion is not inferred from a parameter write or U
 
 ## Known issues / next steps
 
+Flight Data Aux Function treats `RCx_OPTION` and related parameter values as firmware-owned
+numeric identifiers. IDs absent from the reviewed application catalog remain visible but
+disabled; parameter presence never makes an unknown or hazardous action safe to execute.
+
 - Parameter loading into the Full Parameters List UI is slow (see FEATURES.md) — the
   merge of ~1000 values with metadata needs profiling.
 - Delete the unused `VehicleParameterStreamService` V1–V3 classes.

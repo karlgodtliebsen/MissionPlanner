@@ -1,5 +1,7 @@
 # Flight Data 02 — Gauges and shared telemetry descriptor catalog
 
+Status: **Completed.**
+
 ## Objective
 
 Implement `GaugesTabView` and establish the telemetry descriptor/catalog infrastructure reused by the Status tab.

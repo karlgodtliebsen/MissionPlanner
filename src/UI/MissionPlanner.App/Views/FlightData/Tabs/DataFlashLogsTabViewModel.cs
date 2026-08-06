@@ -1,7 +1,10 @@
-using MissionPlanner.Core.Vehicles.Abstractions;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
-/// <inheritdoc />
-public partial class DataFlashLogsTabViewModel(IActiveVehicleContext activeVehicle)
-    : FlightDataTabViewModelBase("DataFlash Logs", activeVehicle);
+/// <summary>Placeholder for the future DataFlash log workflow.</summary>
+public partial class DataFlashLogsTabViewModel : ObservableObject, IDisposable
+{
+    /// <inheritdoc />
+    public void Dispose() { }
+}

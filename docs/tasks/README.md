@@ -6,7 +6,8 @@ Run each family sequentially. Commit after every completed task so a failed late
 
 Recommended order across families:
 
-1. Flight Data tasks 01–03, because they establish shared action/message/status infrastructure. Folder name is docs\tasks\flight-data
+1. Flight Data task sets are completed/superseded. `flight-data/task-2` is the completed
+   implementation record; current behavior is documented in `docs/FLIGHT_DATA.md`.
 2. Setup tasks, especially identity, firmware, calibration, and hardware workflows. Folder name is docs\tasks\seetup
 3. Config tasks. Folder name is docs\tasks\config
 4. Simulation tasks. Folder name is docs\tasks\simulation.

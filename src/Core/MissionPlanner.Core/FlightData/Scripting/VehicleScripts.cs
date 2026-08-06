@@ -1,6 +1,7 @@
 using System.Text.Json;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.FlightData.Auxiliary;
+using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.MavLink.Generated;
 
@@ -16,7 +17,21 @@ public sealed record VehicleScriptStep(string Action, IReadOnlyDictionary<string
 public sealed record VehicleScriptValidationResult(bool IsValid, IReadOnlyList<string> Errors);
 
 /// <summary>Describes script execution progress.</summary>
-public enum VehicleScriptExecutionState { Validating, DryRun, Running, Succeeded, Failed, Cancelled }
+public enum VehicleScriptExecutionState
+{
+    /// <summary>The document is being validated.</summary>
+    Validating,
+    /// <summary>The document is being evaluated without side effects.</summary>
+    DryRun,
+    /// <summary>The document is executing.</summary>
+    Running,
+    /// <summary>Every executed step succeeded.</summary>
+    Succeeded,
+    /// <summary>Execution stopped after a failure.</summary>
+    Failed,
+    /// <summary>Execution was cancelled.</summary>
+    Cancelled
+}
 
 /// <summary>Records one ordered script-step result.</summary>
 public sealed record VehicleScriptStepResult(int Index, string Action, bool Succeeded, string Message, DateTimeOffset CompletedAt);
@@ -92,7 +107,8 @@ public sealed class VehicleScriptValidator(IVehicleScriptActionRegistry registry
 
 /// <summary>Sequential constrained script engine.</summary>
 public sealed class VehicleScriptExecutor(IVehicleScriptValidator validator, IActiveVehicleContext active,
-    IVehicleCommandService commands, IAuxiliaryFunctionCatalog auxiliaryCatalog, IAuxiliaryFunctionService auxiliary)
+    IVehicleCommandService commands, IAuxiliaryFunctionCatalog auxiliaryCatalog, IAuxiliaryFunctionService auxiliary,
+    IReplaySessionManager? replay = null)
     : IVehicleScriptExecutor
 {
     /// <inheritdoc />
@@ -130,6 +146,8 @@ public sealed class VehicleScriptExecutor(IVehicleScriptValidator validator, IAc
             while (!active.IsOnline) await Task.Delay(100, token);
             return (true, "Vehicle is online.");
         }
+        if (replay is not null && replay.Snapshot.State != ReplaySessionState.Unloaded)
+            return (false, "Vehicle-changing script steps are blocked during replay.");
         if (active.State is not { } state) return (false, "No active vehicle.");
         VehicleCommandResponse response;
         if (step.Action.Equals("arm", StringComparison.OrdinalIgnoreCase)) response = await commands.ArmAsync(state.VehicleId, token);

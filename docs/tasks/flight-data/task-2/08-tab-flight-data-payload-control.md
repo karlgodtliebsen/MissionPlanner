@@ -1,5 +1,7 @@
 # Flight Data 08 — Camera, gimbal and payload component control
 
+Status: **Completed with documented capability limitations.**
+
 ## Objective
 
 Implement `PayloadControlTabView` with discovered, component-targeted camera and gimbal workflows.

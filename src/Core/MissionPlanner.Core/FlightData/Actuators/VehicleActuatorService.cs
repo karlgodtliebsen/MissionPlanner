@@ -32,7 +32,8 @@ public sealed class VehicleActuatorService(IVehicleCommandService commands, IRep
     private async Task<ActuatorCommandResult> Execute(VehicleState state, ushort id, bool valid, IReadOnlyList<float> parameters, bool confirmed, string label, CancellationToken token)
     {
         if (!valid) return new(null, false, $"{label} request is outside supported bounds.");
-        if (replay?.Snapshot.State != ReplaySessionState.Unloaded) return new(null, false, "Actuator writes are blocked during replay.");
+        if (replay is not null && replay.Snapshot.State != ReplaySessionState.Unloaded)
+            return new(null, false, "Actuator writes are blocked during replay.");
         if (state.IsArmed || !confirmed) return new(null, false, "Disarm and explicitly confirm the actuator test.");
         var ack = await commands.ExecuteExpertAsync(new ExpertVehicleCommand(state.VehicleId, id, parameters), true, token);
         return new(ack, false, $"Command {ack.Result}; observed state is not confirmed by the ACK.");

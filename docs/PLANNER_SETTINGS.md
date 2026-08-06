@@ -7,6 +7,10 @@ Flight Data gauges use `Units.System` for display conversion and
 `Telemetry.DisplayRateHz` as their maximum UI publication rate. Raw domain values remain in
 SI units regardless of these presentation preferences.
 
+All Flight Data tabs use `Telemetry.DisplayRateHz` as a ceiling rather than rendering at
+packet rate. Replay is a read-only application state: auxiliary, servo/relay, script vehicle
+actions, and payload commands remain disabled regardless of presentation settings.
+
 ## Inventory and ownership
 
 Before Config task 06, local behavior came from several independent sources:

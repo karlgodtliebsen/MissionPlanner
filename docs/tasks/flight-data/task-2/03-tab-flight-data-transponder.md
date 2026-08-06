@@ -1,5 +1,7 @@
 # Flight Data 03 — Transponder, ADS-B Out and traffic status
 
+Status: **Completed.**
+
 ## Objective
 
 Implement `TransponderTabView` with component-scoped discovery, uAvionix ADS-B Out status/control, health reporting and a bounded nearby-traffic view.

@@ -1,5 +1,7 @@
 # Flight Data 01 — Preflight readiness and pre-arm diagnostics
 
+Status: **Completed.**
+
 ## Objective
 
 Replace the placeholder `PreflightTabView` and minimal `PreflightTabViewModel` with an explainable, telemetry-based readiness assessment for the active vehicle. It is operator assistance and must never claim that an aircraft is safe to fly.

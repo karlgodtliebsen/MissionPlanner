@@ -2,6 +2,9 @@
 
 Source baseline: `MissionPlanner-202600806-v1`.
 
+Status: **Completed 2026-08-07.** Tasks 01–09 were implemented sequentially with separate
+commits. Known limitations are recorded in `docs/FLIGHT_DATA.md` and `docs/FEATURES.md`.
+
 Tabs covered:
 
 ```text

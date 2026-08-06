@@ -7,10 +7,24 @@ using MissionPlanner.Shared.Models.Vehicles.Models;
 namespace MissionPlanner.Core.FlightData.Auxiliary;
 
 /// <summary>Classifies the operator risk of an auxiliary function.</summary>
-public enum AuxiliaryFunctionHazard { Safe, Warning, High }
+public enum AuxiliaryFunctionHazard
+{
+    /// <summary>No additional confirmation is required.</summary>
+    Safe,
+    /// <summary>The operator must explicitly confirm the action.</summary>
+    Warning,
+    /// <summary>The action is safety-critical and may be unavailable generically.</summary>
+    High
+}
 
 /// <summary>Describes how an auxiliary function consumes switch input.</summary>
-public enum AuxiliarySwitchBehavior { ThreePosition, Momentary }
+public enum AuxiliarySwitchBehavior
+{
+    /// <summary>The function consumes low, middle, and high states.</summary>
+    ThreePosition,
+    /// <summary>The function represents a bounded press/release action.</summary>
+    Momentary
+}
 
 /// <summary>Describes one reviewed ArduPilot auxiliary function.</summary>
 public sealed record AuxiliaryFunctionDescriptor(int Id, string Name, string Description, string Category,

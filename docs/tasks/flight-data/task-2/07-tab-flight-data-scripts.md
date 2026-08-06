@@ -1,5 +1,7 @@
 # Flight Data 07 — Safe cross-platform vehicle automation scripts
 
+Status: **Completed.**
+
 ## Objective
 
 Implement `ScriptsTabView` as a constrained, auditable local automation facility. Do not reproduce the legacy unrestricted IronPython model inside the MAUI process.

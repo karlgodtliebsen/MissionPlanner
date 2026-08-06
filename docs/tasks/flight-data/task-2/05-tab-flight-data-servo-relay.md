@@ -1,5 +1,7 @@
 # Flight Data 05 — Servo and relay observation/control
 
+Status: **Completed.**
+
 ## Objective
 
 Implement `ServoRelayTabView` with live actuator observation and safety-gated typed servo/relay commands.
