@@ -71,3 +71,18 @@ vehicle and explicit confirmation, use the shared acknowledged operation path, a
 replay. An ACK is reported as accepted but unconfirmed; it is never presented as measured
 output. Motor-function mapping and relay-status promotion remain explicit limitations.
 
+## Auxiliary functions
+
+Aux Function sends generated `MAV_CMD_DO_AUX_FUNCTION` commands through the shared
+acknowledged and per-vehicle operation-gated command path. The reviewed catalog classifies
+functions as safe, warning, or high risk and describes three-position or momentary switch
+semantics. Warning and high-risk actions require explicit confirmation. An ACK confirms
+only command acceptance, never the resulting switch state.
+
+The generic catalog is deliberately not a second Actions menu. Arm, mode, takeoff, land,
+RTL, servo/relay, camera, and gimbal operations point to their typed workflow. Emergency
+motor stop, GPS disable, parachute release, unknown IDs, and other unreviewed hazardous
+functions are shown as unavailable rather than exposed as one-click actions. Catalog
+contents can differ by firmware; unknown parameter-derived IDs must remain identifiable
+and disabled until reviewed.
+

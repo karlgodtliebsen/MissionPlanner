@@ -9,8 +9,16 @@
                                     x:DataType="tabs:AuxFunctionTabViewModel">
 
 
-    <Label Text="Aux Functions"
-           FontSize="16"
-           HorizontalOptions="Center"
-           VerticalOptions="Center" />
+    <Grid Padding="16" RowDefinitions="Auto,Auto,Auto,Auto,*" ColumnDefinitions="*,Auto">
+        <Label Text="Auxiliary functions" FontSize="20" FontAttributes="Bold" Grid.ColumnSpan="2" />
+        <Picker Grid.Row="1" Grid.ColumnSpan="2" Title="Function" ItemsSource="{Binding Functions}"
+                ItemDisplayBinding="{Binding Name}" SelectedItem="{Binding SelectedFunction}" />
+        <Label Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding SelectedFunction.Description}" />
+        <Picker Grid.Row="3" Title="Switch level" ItemsSource="{Binding Levels}" SelectedItem="{Binding Level}" />
+        <HorizontalStackLayout Grid.Row="3" Grid.Column="1">
+            <CheckBox IsChecked="{Binding IsConfirmed}" /><Label Text="Confirm warning/high-risk action" VerticalOptions="Center" />
+            <Button Text="Execute" Command="{Binding ExecuteCommand}" />
+        </HorizontalStackLayout>
+        <Label Grid.Row="4" Grid.ColumnSpan="2" Text="{Binding Result}" />
+    </Grid>
 </tabViews:TabViewLifecycleContent>

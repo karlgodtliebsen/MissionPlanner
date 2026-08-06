@@ -175,9 +175,12 @@ Feature description per tab comes from v1.38 (`FlightData.Designer.cs` tab pages
 
 * Manual servo output set high/low/toggle per channel; relay on/off buttons
 
-### Aux Function (Missing)
+### Aux Function
 
-* Trigger ArduPilot auxiliary functions (camera trigger, gripper, landing gear, …)
+* Implemented: reviewed, capability-aware auxiliary-function catalog with generated
+  low/middle/high switch encoding, explicit warning confirmation, shared acknowledged
+  command execution, replay blocking, typed-workflow redirects, and disabled unknown or
+  hazardous functions. ACK acceptance is kept distinct from observed switch state.
 
 ### Scripts (Missing)
 
