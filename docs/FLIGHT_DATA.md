@@ -86,3 +86,16 @@ functions are shown as unavailable rather than exposed as one-click actions. Cat
 contents can differ by firmware; unknown parameter-derived IDs must remain identifiable
 and disabled until reviewed.
 
+## Scripts
+
+Scripts are versioned declarative JSON documents, not arbitrary C#, Python, or Lua. The
+engine validates the complete document before running, resolves every action through an
+allow-list, executes sequentially through typed services, applies a bounded timeout per
+step, links cancellation to the active vehicle connection, stops on the first failure,
+and retains a bounded ordered log. Dry run performs full validation without execution.
+
+Version 1 permits `notify`, bounded `delay`, `waitForConnection`, `arm`, `disarm`, `land`,
+`rtl`, `hold`, and reviewed `auxFunction` steps. Arbitrary MAVLink command IDs, IO,
+reflection, dynamic compilation, loops, and parallel execution are prohibited. See
+`VEHICLE_SCRIPTS.md` for the schema.
+

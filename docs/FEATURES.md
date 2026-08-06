@@ -182,9 +182,12 @@ Feature description per tab comes from v1.38 (`FlightData.Designer.cs` tab pages
   command execution, replay blocking, typed-workflow redirects, and disabled unknown or
   hazardous functions. ACK acceptance is kept distinct from observed switch state.
 
-### Scripts (Missing)
+### Scripts
 
-* Run user scripts against the vehicle (v1.38 used IronPython; new equivalent TBD — consider Lua/C# scripting)
+* Implemented: versioned declarative JSON automation with whole-document validation,
+  allow-listed typed actions, dry run, sequential execution, bounded timeouts, cancellation,
+  disconnect handling, stop-on-failure, and an ordered bounded log. Arbitrary in-process
+  C#/Python/Lua and arbitrary MAVLink command IDs are intentionally unsupported.
 
 ### Payload Control (Missing)
 

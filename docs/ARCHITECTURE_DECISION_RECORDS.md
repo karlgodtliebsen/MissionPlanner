@@ -266,6 +266,26 @@ USB / UDP / TCP
 
 &#x20;ViewModels
 
+## ADR: Constrained declarative vehicle automation
+
+**Status:** Accepted (2026-08-07)
+
+**Context:** Unrestricted embedded C#, Python, or Lua would execute arbitrary code inside
+the GCS process. Out-of-process scripting adds runtime, IPC, permission, and cross-platform
+lifecycle complexity. Onboard ArduPilot Lua is a separate deployment workflow that depends
+on reviewed MAVFTP upload and mutation support.
+
+**Decision:** MissionPlanner initially supports versioned declarative JSON. Every action is
+allow-listed, the complete document is validated before execution, and vehicle changes use
+existing typed safety-aware services and operation gates. Execution is sequential,
+cancellable, timeout-bounded, stop-on-failure, and auditable. Dry run has no side effects.
+Arbitrary code, command IDs, IO, reflection, dynamic compilation, loops, and parallel
+execution are prohibited.
+
+**Consequences:** The format is deliberately less expressive, but portable, reviewable,
+deterministic, and testable. New actions require an explicit registry and typed-service
+change. Out-of-process plugins and onboard Lua remain separate future decisions.
+
 
 
 

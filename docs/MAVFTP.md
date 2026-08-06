@@ -70,3 +70,11 @@ and packed-parameter clients. Reserving a request advances past both the request
 response before the packet is sent; an observed response then reconciles the next sequence. A
 cancelled request therefore cannot leave a recreated client reusing a request sequence that
 ArduPilot may still hold in its duplicate cache.
+
+## Onboard Lua boundary
+
+The Flight Data Scripts tab executes only constrained local declarative scripts. It does
+not upload or manage ArduPilot Lua scripts. Onboard Lua management requires a separately
+reviewed MAVFTP upload and filesystem-mutation workflow with atomic replacement, path
+validation, capability detection, rollback, and explicit confirmation. Existing MAVFTP
+listing and download support is insufficient and must not be presented as upload support.
