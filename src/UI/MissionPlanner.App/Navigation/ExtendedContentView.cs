@@ -22,7 +22,10 @@ public class ExtendedContentView<TViewModel> : ContentView where TViewModel : cl
         BindingContext = ViewModel;
     }
 
-    private void Dispose()
+    /// <summary>
+    /// Disposes the resources used by the view and its associated view model.     
+    /// </summary>
+    public virtual void Dispose()
     {
         BindingContext = null;
         ViewModel?.Dispose();

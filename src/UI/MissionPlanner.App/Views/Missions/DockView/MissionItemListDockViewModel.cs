@@ -1,14 +1,17 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using UraniumUI.Material.Dialogs;
 
 namespace MissionPlanner.App.Views.Missions.DockView;
 
 public partial class MissionItemListDockViewModel : ObservableObject, IDisposable
 {
+    private readonly IExtendedDialogService dialogService;
     [ObservableProperty] public partial bool IsExpanded { get; set; }
 
     [ObservableProperty] public partial double CalculatedWidth { get; set; }
     [ObservableProperty] public partial string GuidingText { get; set; } = "<<";
+    [ObservableProperty] public partial string PopupText { get; set; } = "^";
     [ObservableProperty] public partial double ShrinkWidth { get; set; }
     [ObservableProperty] public partial double ExpandWidth { get; set; }
 
@@ -18,8 +21,9 @@ public partial class MissionItemListDockViewModel : ObservableObject, IDisposabl
     public event EventHandler<WidthEventArgs>? WidthRequestChanged;
 
     /// <inheritdoc />
-    public MissionItemListDockViewModel()
+    public MissionItemListDockViewModel(IExtendedDialogService dialogService)
     {
+        this.dialogService = dialogService;
     }
 
     partial void OnShrinkWidthChanged(double value)
@@ -59,6 +63,19 @@ public partial class MissionItemListDockViewModel : ObservableObject, IDisposabl
         CalculatedWidth = IsExpanded ? ExpandWidth : ShrinkWidth;
         GuidingText = IsExpanded ? ">>" : "<<";
         WidthRequestChanged?.Invoke(this, new WidthEventArgs(CalculatedWidth, IsExpanded));
+    }
+
+    [RelayCommand]
+    private async Task PopupAsync()
+    {
+        IsExpanded = true;
+        CalculatedWidth = ShrinkWidth;
+        PopupText = IsExpanded ? "v" : "^";
+        WidthRequestChanged?.Invoke(this, new WidthEventArgs(CalculatedWidth, IsExpanded));
+        //var view = ServiceHelper.GetRequiredService<MissionItemListDockView>();
+        //using var v = view as IDisposable;
+        //await dialogService.DisplayViewExtendedAsync("", view);
+        ////view.Dispose();
     }
 
     /// <inheritdoc />

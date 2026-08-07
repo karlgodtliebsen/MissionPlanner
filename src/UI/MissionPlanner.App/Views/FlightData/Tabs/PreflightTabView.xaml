@@ -65,10 +65,7 @@
                 </material:DataGridColumn>
             </controls:VirtualizedDataGrid.Columns>
         </controls:VirtualizedDataGrid>
-
-
-        <!--
-        
+        <!--        
         x:DataType="preflight:PreflightCheckResult"
         x:DataType="preflight:PreflightCheckResult"
         x:DataType="preflight:PreflightCheckResult"

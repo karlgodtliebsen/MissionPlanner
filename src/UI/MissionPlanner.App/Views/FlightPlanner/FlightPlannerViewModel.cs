@@ -1,21 +1,30 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Views.Missions;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Missions.Transfer;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
+using UraniumUI.Material.Dialogs;
 
 namespace MissionPlanner.App.Views.FlightPlanner;
 
 /// <summary>
-/// View model for the Plan screen. Composes the shared <see cref="MissionMapViewModel"/> (map,
+/// View model for the Plan screen. Composes the shared <see cref="MissionItemListViewModel"/> (map,
 /// mission editing, file load/save) and adds vehicle transfer: Read, Write and Write Fast.
 /// </summary>
 public partial class FlightPlannerViewModel : ObservableObject, IDisposable
 {
+    private readonly IModalNavigationService modalNavigationService;
+
+    private readonly IExtendedDialogService dialogService;
+    private readonly IServiceFactory factory;
+
+    private readonly IDomainFactory domainFactory;
     private readonly IMissionTransferService transferService;
     private readonly IMissionProtocolMapper protocolMapper;
     private readonly IMissionValidator validator;
@@ -26,7 +35,11 @@ public partial class FlightPlannerViewModel : ObservableObject, IDisposable
     /// Initializes a new instance of the <see cref="FlightPlannerViewModel"/> class.
     /// </summary>
     public FlightPlannerViewModel(
-        MissionMapViewModel map,
+        MissionItemListViewModel map,
+        IExtendedDialogService dialogService,
+        IModalNavigationService modalNavigationService,
+        IServiceFactory factory,
+        IDomainFactory domainFactory,
         IMissionTransferService transferService,
         IMissionProtocolMapper protocolMapper,
         IMissionValidator validator,
@@ -34,19 +47,22 @@ public partial class FlightPlannerViewModel : ObservableObject, IDisposable
         ILogger<FlightPlannerViewModel> logger)
     {
         Map = map;
+        this.dialogService = dialogService;
+        this.modalNavigationService = modalNavigationService;
+        this.factory = factory;
+        this.domainFactory = domainFactory;
         this.transferService = transferService;
         this.protocolMapper = protocolMapper;
         this.validator = validator;
         this.vehicleRegistry = vehicleRegistry;
         this.logger = logger;
-
-        map.IsCompleteEditorMode = true;
+        //map.IsCompleteEditorMode = true;
     }
 
     /// <summary>The shared mission map editor (same instance as the FlightData map).</summary>
-    public MissionMapViewModel Map { get; }
+    public MissionItemListViewModel Map { get; }
 
-    [ObservableProperty] public partial bool IsExpanded { get; set; }
+    // [ObservableProperty] public partial bool IsExpanded { get; set; }
 
     /// <summary>True while a vehicle transfer is running; disables the transfer buttons.</summary>
     [ObservableProperty]
@@ -118,6 +134,17 @@ public partial class FlightPlannerViewModel : ObservableObject, IDisposable
         {
             IsBusy = false;
         }
+    }
+
+    [RelayCommand]
+    private async Task EditAsync(CancellationToken cancellationToken)
+    {
+        //IModalNavigationService
+        //UraniumContentPage
+        //MissionItemListViewModel viewModel
+        //    await dialogService.DisplayViewExtendedAsync("Editor", view);
+        var pageView = domainFactory.Create<MissionItemListView, MissionItemListViewModel>(Map);
+        await modalNavigationService.ShowAsync(pageView, true, cancellationToken);
     }
 
     [RelayCommand]

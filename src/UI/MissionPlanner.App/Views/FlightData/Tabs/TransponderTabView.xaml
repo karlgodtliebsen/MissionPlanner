@@ -3,9 +3,40 @@
  xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
  xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs" xmlns:components="clr-namespace:MissionPlanner.Core.FlightData.Components;assembly=MissionPlanner.Core"
  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+ xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+ xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
+ xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
  x:Class="MissionPlanner.App.Views.FlightData.Tabs.TransponderTabView" x:DataType="tabs:TransponderTabViewModel">
     <Grid Padding="16" RowDefinitions="Auto,Auto,*" RowSpacing="10">
         <Label Text="{Binding Status}" FontSize="20" FontAttributes="Bold" />
+
+
+        <controls:VirtualizedDataGrid Grid.Row="1" 
+                                      ItemsSource="{Binding Components}" 
+                                      ItemSizingStrategy= "MeasureFirstItem"
+                                      ShowSearchBar="False"
+                                      HorizontalOptions="Fill" 
+                                      VerticalOptions="Fill" 
+                                      BackgroundColor="Transparent"
+        >
+            <controls:VirtualizedDataGrid.EmptyView>
+                <Label HorizontalOptions="Center" Text="No Rows could be found"
+                        FontSize="12" Opacity="0.6" Margin="0,20" />
+            </controls:VirtualizedDataGrid.EmptyView>
+
+            <controls:VirtualizedDataGrid.Columns>
+
+                <material:DataGridColumn Width="*" Title="VehicleType">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="components:TransponderComponentState">
+                            <Label Text="{Binding FlightId}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+            </controls:VirtualizedDataGrid.Columns>
+        </controls:VirtualizedDataGrid>
+
+        <!--
         <CollectionView Grid.Row="1" ItemsSource="{Binding Components}" HeightRequest="100">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="components:TransponderComponentState">
@@ -15,7 +46,54 @@
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
-        <CollectionView Grid.Row="2" ItemsSource="{Binding Traffic}">
+        -->
+        <controls:VirtualizedDataGrid Grid.Row="2" 
+                                      ItemsSource="{Binding Traffic}" 
+                                      ItemSizingStrategy= "MeasureFirstItem"
+                                      ShowSearchBar="False"
+                                      HorizontalOptions="Fill" 
+                                      VerticalOptions="Fill" 
+                                      BackgroundColor="Transparent"
+        >
+            <controls:VirtualizedDataGrid.EmptyView>
+                <Label HorizontalOptions="Center" Text="No Rows could be found"
+                       FontSize="12" Opacity="0.6" Margin="0,20" />
+            </controls:VirtualizedDataGrid.EmptyView>
+
+            <controls:VirtualizedDataGrid.Columns>
+
+                <material:DataGridColumn Width="120" Title="Callsign">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="components:AdsbTrafficTrack">
+                            <Label Text="{Binding Callsign}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+                <material:DataGridColumn Width="120" Title="Icao Address">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="components:AdsbTrafficTrack">
+                            <Label Text="{Binding IcaoAddress}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+                <material:DataGridColumn Width="120" Title="Altitude (m)">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="components:AdsbTrafficTrack">
+                            <Label Text="{Binding AltitudeMeters, StringFormat='{0:0} m'}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+                <material:DataGridColumn Width="120" Title="Observed At">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="components:AdsbTrafficTrack">
+                            <Label Text="{Binding ObservedAt}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+            </controls:VirtualizedDataGrid.Columns>
+        </controls:VirtualizedDataGrid>
+
+        <!--<CollectionView Grid.Row="2" ItemsSource="{Binding Traffic}">
             <CollectionView.Header>
                 <Label Text="Nearby ADS-B traffic" FontAttributes="Bold" />
             </CollectionView.Header>
@@ -29,6 +107,8 @@
                     </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
-        </CollectionView>
+        </CollectionView>-->
+
+
     </Grid>
 </tabViews:TabViewLifecycleContent>

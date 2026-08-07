@@ -5,14 +5,21 @@
                                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                                 xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
                                 xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
-                                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                                 xmlns:dockView="clr-namespace:MissionPlanner.App.Views.Missions.DockView"
                                 x:Class="MissionPlanner.App.Views.Missions.DockView.MissionItemListDockView"
                                 x:DataType="dockView:MissionItemListDockViewModel"
                                 WidthRequest="{Binding CalculatedWidth}"
                                 >
-    <Grid RowDefinitions="Auto,*">
-        <Button HorizontalOptions="Start"  MaximumWidthRequest="50" Margin="10,0,0,0" Text="{Binding GuidingText}" Command="{Binding ExpandCommand}" ></Button>
-        <missions:MissionItemListView Grid.Row="1" IsVisible="{Binding IsExpanded}"/>
+    <Grid RowDefinitions="Auto,*" ColumnDefinitions="Auto,Auto">
+        
+        <!--<Button HorizontalOptions="Start"  MaximumWidthRequest="50" Margin="10,0,0,0" 
+                Text="{Binding GuidingText}" Command="{Binding ExpandCommand}" ></Button>
+
+
+        <Button HorizontalOptions="Start" Grid.Column="1"  MaximumWidthRequest="50" Margin="10,0,0,0"  
+                Text="{Binding PopupText}" Command="{Binding PopupCommand}" ></Button>
+
+        <missions:MissionItemListView x:Name="ItemListView"  Grid.Row="1" Grid.ColumnSpan="2" IsVisible="{Binding IsExpanded}"/>-->
+
     </Grid>
 </navigation:ExtendedContentView>

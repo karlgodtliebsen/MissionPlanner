@@ -6,6 +6,8 @@
     xmlns:pages="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
     xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
     xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+    xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+    xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
     x:DataType="local:InstallFirmwareViewModel"
     Title="Install Firmware">
     <ScrollView>
@@ -32,6 +34,71 @@
 
                 <Entry Text="{Binding TargetSearchText}" Placeholder="Search platform, manufacturer, brand, or board ID" />
 
+                <controls:VirtualizedDataGrid 
+                          ItemsSource="{Binding FirmwareChoices}" 
+                          ItemSizingStrategy= "MeasureFirstItem"
+                          ShowSearchBar="False"
+                          HorizontalOptions="Fill" 
+                          VerticalOptions="Fill" 
+                          BackgroundColor="Transparent"
+      >
+                    <controls:VirtualizedDataGrid.EmptyView>
+                        <Label HorizontalOptions="Center" Text="No releases are available for this channel."
+                        FontSize="12" Opacity="0.6" Margin="0,20" />
+                    </controls:VirtualizedDataGrid.EmptyView>
+
+                    <controls:VirtualizedDataGrid.Columns>
+
+                        <material:DataGridColumn Width="*" Title="VehicleType">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
+                                    <Label Text="{Binding VehicleType}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
+                        <material:DataGridColumn Width="*" Title="Version">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
+                                    <Label Text="{Binding Version}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
+                        <material:DataGridColumn Width="*" Title="Platform">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
+                                    <Label Text="{Binding Platform}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+                        <material:DataGridColumn Width="*" Title="Manufacturer">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
+                                    <Label Text="{Binding Manufacturer}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+                        <material:DataGridColumn Width="*" Title="BoardId">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
+                                    <Label Text="{Binding BoardId, StringFormat='Board ID {0}'}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+                        <material:DataGridColumn Width="*" Title="MatchReason">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
+                                    <Label Text="{Binding MatchReason}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+                    </controls:VirtualizedDataGrid.Columns>
+                </controls:VirtualizedDataGrid>
+
+                <!--
+                
+                
                 <CollectionView 
                     ItemsSource="{Binding FirmwareChoices}" SelectionMode="None" EmptyView="No releases are available for this channel.">
                     <CollectionView.ItemsLayout>
@@ -54,7 +121,7 @@
                             </Border>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
-                </CollectionView>
+                </CollectionView>-->
 
                 <Border IsVisible="{Binding HasCustomFirmware}" Padding="16" StrokeShape="RoundRectangle 8">
                     <VerticalStackLayout Spacing="4">

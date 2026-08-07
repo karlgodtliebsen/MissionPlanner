@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<navigation:ExtendedContentView x:TypeArguments="missions:MissionMapViewModel" 
+<navigation:ExtendedContentView x:TypeArguments="missions:MissionItemListViewModel" 
                                 xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                                 xmlns:mapsui="clr-namespace:Mapsui.UI.Maui;assembly=Mapsui.UI.Maui"
                                 xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
                                 xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                                 x:Class="MissionPlanner.App.Views.Missions.MissionMapView"
-                                x:DataType="missions:MissionMapViewModel"
+                                x:DataType="missions:MissionItemListViewModel"
                                 BackgroundColor="#1e1e1e">
 
     <mapsui:MapView x:Name="MissionMap">

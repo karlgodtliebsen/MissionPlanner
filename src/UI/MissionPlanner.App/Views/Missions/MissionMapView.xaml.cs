@@ -16,13 +16,13 @@ namespace MissionPlanner.App.Views.Missions;
 /// <summary>
 /// Shared mission map editor control. Renders the mission plan (pins + route) on a Mapsui map and
 /// hosts the right-click context menu mirroring the classic MissionPlanner flight planner menu.
-/// Bound to the singleton <see cref="MissionMapViewModel"/>, so every instance edits the same plan.
+/// Bound to the singleton <see cref="MissionItemListViewModel"/>, so every instance edits the same plan.
 /// </summary>
-public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>, IDisposable
+public partial class MissionMapView : ExtendedContentView<MissionItemListViewModel>, IDisposable
 {
     private const double WebMercatorInitialResolution = 156543.03392804097;
 
-    //private readonly MissionMapViewModel viewModel;
+    //private readonly MissionItemListViewModel viewModel;
     private readonly Pin vehiclePin;
     private Polyline routeLine;
     private readonly List<Pin> missionPins = [];
@@ -37,7 +37,7 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>, 
         InitializeComponent();
         plannerSettings = ServiceHelper.GetRequiredService<IPlannerSettingsService>();
         map = new Mapsui.Map();
-        map.Layers.Add(CreateTileLayer(ViewModel.SelectedMapType));
+        map.Layers.Add(CreateTileLayer(ViewModel!.SelectedMapType));
         MissionMap.Map = map;
 
         vehiclePin = new Pin(MissionMap) { Label = "Vehicle", Type = PinType.Pin, Position = new Position(ViewModel.VehicleLatitude, ViewModel.VehicleLongitude) };
@@ -62,7 +62,7 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>, 
 
     private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(MissionMapViewModel.VehicleLatitude) or nameof(MissionMapViewModel.VehicleLongitude))
+        if (e.PropertyName is nameof(MissionItemListViewModel.VehicleLatitude) or nameof(MissionItemListViewModel.VehicleLongitude))
         {
             Position position = new(ViewModel.VehicleLatitude, ViewModel.VehicleLongitude);
             vehiclePin.Position = position;
@@ -72,11 +72,11 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>, 
                 CenterMap(position.Latitude, position.Longitude);
             }
         }
-        else if (e.PropertyName is nameof(MissionMapViewModel.HomePosition))
+        else if (e.PropertyName is nameof(MissionItemListViewModel.HomePosition))
         {
             RedrawMission();
         }
-        else if (e.PropertyName is nameof(MissionMapViewModel.SelectedMapType))
+        else if (e.PropertyName is nameof(MissionItemListViewModel.SelectedMapType))
         {
             ApplyMapType(ViewModel.SelectedMapType);
         }
@@ -98,7 +98,7 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>, 
 
         foreach (var item in ViewModel.Mission.Items)
         {
-            if (MissionMapViewModel.PositionOf(item) is { } position)
+            if (MissionItemListViewModel.PositionOf(item) is { } position)
             {
                 positions.Add((position.LatitudeDegrees, position.LongitudeDegrees));
             }
@@ -176,7 +176,7 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>, 
 
         foreach (var item in ViewModel.Mission.Items)
         {
-            if (MissionMapViewModel.PositionOf(item) is not { } position)
+            if (MissionItemListViewModel.PositionOf(item) is not { } position)
             {
                 continue;
             }

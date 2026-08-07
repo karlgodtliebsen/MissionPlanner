@@ -6,6 +6,8 @@
                             xmlns:vm="clr-namespace:MissionPlanner.App.Views.Simulation"
                             xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                             xmlns:simulation1="clr-namespace:MissionPlanner.Simulation;assembly=MissionPlanner.Simulation"
+                            xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+                            xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                             x:Class="MissionPlanner.App.Views.Simulation.SimulationView"
                             x:DataType="vm:SimulationViewModel"
                             Title="Simulation">
@@ -293,6 +295,45 @@
                         </HorizontalStackLayout>
                     </Grid>
 
+                    <controls:VirtualizedDataGrid Grid.Row="1" 
+                                                  ItemsSource="{Binding RecentOutput}" 
+                                                  ItemSizingStrategy= "MeasureFirstItem"
+                                                  ShowSearchBar="False"
+                                                  HorizontalOptions="Fill" 
+                                                  VerticalOptions="Fill" 
+                                                  BackgroundColor="Transparent"
+                    >
+                        <controls:VirtualizedDataGrid.EmptyView>
+                            <Label HorizontalOptions="Center" Text="No Rows could be found"
+                                   FontSize="12" Opacity="0.6" Margin="0,20" />
+                        </controls:VirtualizedDataGrid.EmptyView>
+
+                        <controls:VirtualizedDataGrid.Columns>
+
+                            <material:DataGridColumn Width="*" Title="Timestamp">
+                                <material:DataGridColumn.CellItemTemplate>
+                                    <DataTemplate x:DataType="simulation1:SimulatorOutputLine">
+                                        <Label Text="{Binding Timestamp, StringFormat='{}{0:HH:mm:ss}'}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                                    </DataTemplate>
+                                </material:DataGridColumn.CellItemTemplate>
+                            </material:DataGridColumn>
+                            <material:DataGridColumn Width="*" Title="Stream">
+                                <material:DataGridColumn.CellItemTemplate>
+                                    <DataTemplate x:DataType="simulation1:SimulatorOutputLine">
+                                        <Label Text="{Binding Stream}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                                    </DataTemplate>
+                                </material:DataGridColumn.CellItemTemplate>
+                            </material:DataGridColumn>
+                            <material:DataGridColumn Width="5*" Title="Text">
+                                <material:DataGridColumn.CellItemTemplate>
+                                    <DataTemplate x:DataType="simulation1:SimulatorOutputLine">
+                                        <Label Text="{Binding Text}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                                    </DataTemplate>
+                                </material:DataGridColumn.CellItemTemplate>
+                            </material:DataGridColumn>
+                        </controls:VirtualizedDataGrid.Columns>
+                    </controls:VirtualizedDataGrid>
+                    <!--
                     <CollectionView Grid.Row="1" ItemsSource="{Binding RecentOutput}">
                         <CollectionView.EmptyView>
                             <Label Text="Runtime output will appear here." Padding="12" />
@@ -307,6 +348,9 @@
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
+                    -->
+
+
                 </Grid>
 
             </Grid>

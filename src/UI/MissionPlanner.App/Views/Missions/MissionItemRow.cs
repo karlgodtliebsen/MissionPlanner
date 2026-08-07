@@ -7,7 +7,7 @@ namespace MissionPlanner.App.Views.Missions;
 /// Display/edit row for a mission item in the mission list. The value fields are strings so the
 /// complete editor can bind them to entries; Command and Frame are select values (v1.38-style
 /// names). Edits are applied back to the mission via
-/// <see cref="MissionMapViewModel.ApplyRowEditCommand"/>; command/frame selection changes apply
+/// <see cref="MissionItemListViewModel.ApplyRowEditCommand"/>; command/frame selection changes apply
 /// immediately through the attached selection callback.
 /// </summary>
 public sealed partial class MissionItemRow : ObservableObject

@@ -616,8 +616,8 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         }
 
         var viewModel = domainFactory.Create<ParameterComparisonViewModel, IParameterEditSession>(editSession);
-        var view = domainFactory.Create<ParameterComparisonView, ParameterComparisonViewModel>(viewModel);
-        await modalNavigationService.ShowAsync(view, true, cancellationToken);
+        var pageView = domainFactory.Create<ParameterComparisonView, ParameterComparisonViewModel>(viewModel);
+        await modalNavigationService.ShowAsync(pageView, true, cancellationToken);
     }
 
     private void OnComparisonStaged(object? sender, int count)

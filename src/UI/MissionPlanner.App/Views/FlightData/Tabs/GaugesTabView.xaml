@@ -3,11 +3,60 @@
  xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
  xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+ xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+ xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
  x:Class="MissionPlanner.App.Views.FlightData.Tabs.GaugesTabView" x:DataType="tabs:GaugesTabViewModel">
  <Grid Padding="16" RowDefinitions="Auto,*">
   <Label Text="Flight gauges" FontSize="20" FontAttributes="Bold" />
-  
-  <CollectionView Grid.Row="1" ItemsSource="{Binding Tiles}">
+
+        <controls:VirtualizedDataGrid Grid.Row="1" 
+                                      ItemsSource="{Binding Tiles}" 
+                                      ItemSizingStrategy= "MeasureFirstItem"
+                                      ShowSearchBar="False"
+                                      HorizontalOptions="Fill" 
+                                      VerticalOptions="Fill" 
+                                      BackgroundColor="Transparent"
+        >
+            <controls:VirtualizedDataGrid.EmptyView>
+                <Label HorizontalOptions="Center" Text="No Rows could be found"
+                       FontSize="12" Opacity="0.6" Margin="0,20" />
+            </controls:VirtualizedDataGrid.EmptyView>
+
+            <controls:VirtualizedDataGrid.Columns>
+
+                <material:DataGridColumn Width="*" Title="Label">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="tabs:GaugeTileViewModel">
+                            <Label Text="{Binding Label}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+                <material:DataGridColumn Width="*" Title="Value">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="tabs:GaugeTileViewModel">
+                            <Label Text="{Binding Value}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+                <material:DataGridColumn Width="*" Title="Unit">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="tabs:GaugeTileViewModel">
+                            <Label Text="{Binding Unit}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+                <material:DataGridColumn Width="*" Title="Freshness">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="tabs:GaugeTileViewModel">
+                            <Label Text="{Binding Freshness}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+            </controls:VirtualizedDataGrid.Columns>
+        </controls:VirtualizedDataGrid>
+
+        <!--
+     <CollectionView Grid.Row="1" ItemsSource="{Binding Tiles}">
    <CollectionView.ItemsLayout>
        <GridItemsLayout Orientation="Vertical" Span="3" />
    </CollectionView.ItemsLayout>
@@ -17,7 +66,8 @@
      <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center">
       <Label Text="{Binding Label}" HorizontalTextAlignment="Center" />
       <HorizontalStackLayout HorizontalOptions="Center">
-          <Label Text="{Binding Value}" FontSize="28" FontAttributes="Bold" /><Label Text="{Binding Unit}" VerticalTextAlignment="End" />
+            <Label Text="{Binding Value}" FontSize="28" FontAttributes="Bold" />
+            <Label Text="{Binding Unit}" VerticalTextAlignment="End" />
       </HorizontalStackLayout>
       <Label Text="{Binding Freshness}" FontSize="12" HorizontalTextAlignment="Center" />
      </VerticalStackLayout>
@@ -25,6 +75,9 @@
    </DataTemplate>
    </CollectionView.ItemTemplate>
   </CollectionView>
+     -->
+
+
 
  </Grid>
 </tabViews:TabViewLifecycleContent>

@@ -91,6 +91,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<ApplicationStateService>();
         services.TryAddTransient<ParametersFileHandler>();
         services.TryAddTransient<PlannerSettingsRuntime>();
+        services.TryAddTransient<MissionItemListView>();
 
         services.TryAddTransient<IExtendedDialogService, ExtendedDialogService>();
         services.TryAddTransient<IUserNotificationService, UserNotificationService>();
@@ -132,10 +133,11 @@ public static class ApplicationConfigurator
     private static IServiceProvider UseApplicationServices(this IServiceProvider services)
     {
         var domainFactory = services.GetRequiredService<IDomainFactory>();
-        domainFactory.Add<ErrorViewModel, ErrorViewModel>();
-        domainFactory.Add<ErrorView, ErrorView>();
-        domainFactory.Add<ParameterComparisonViewModel, ParameterComparisonViewModel>();
-        domainFactory.Add<ParameterComparisonView, ParameterComparisonView>();
+        domainFactory.Add<ErrorViewModel>();
+        domainFactory.Add<ErrorView>();
+        domainFactory.Add<ParameterComparisonViewModel>();
+        domainFactory.Add<ParameterComparisonView>();
+        domainFactory.Add<MissionItemListView>();
         return services;
     }
 
@@ -162,7 +164,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<AsyncOperationRunner>();
 
         services.TryAddTransient<HudViewModel>();
-        services.TryAddSingleton<MissionMapViewModel>();
+        services.TryAddSingleton<MissionItemListViewModel>();
 
         services.TryAddTransient<MissionItemListDockViewModel>();
 

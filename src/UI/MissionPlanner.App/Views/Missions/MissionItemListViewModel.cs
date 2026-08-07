@@ -6,6 +6,7 @@ using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.App.Navigation;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Files;
@@ -20,23 +21,31 @@ namespace MissionPlanner.App.Views.Missions;
 /// edited, and exposes the commands behind the map's right-click context menu. It is registered as a
 /// singleton so the FlightData map and the Plan screen edit the same mission.
 /// </summary>
-public partial class MissionMapViewModel : ObservableObject, IDisposable
+public partial class MissionItemListViewModel : ObservableObject, IDisposable
 {
     private readonly IMissionFileCodec fileCodec;
+    private readonly IModalNavigationService modalNavigationService;
     private readonly IMissionProtocolMapper protocolMapper;
     private readonly IFileSaver fileSaver;
-    private readonly ILogger<MissionMapViewModel> logger;
+    private readonly ILogger<MissionItemListViewModel> logger;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="MissionMapViewModel"/> class.
+    /// Initializes a new instance of the <see cref="MissionItemListViewModel"/> class.
     /// </summary>
-    public MissionMapViewModel(IMissionFileCodec fileCodec, IMissionProtocolMapper protocolMapper, IFileSaver fileSaver, IPlannerSettingsService settingsService, ILogger<MissionMapViewModel> logger)
+    public MissionItemListViewModel(IMissionFileCodec fileCodec, IModalNavigationService modalNavigationService, IMissionProtocolMapper protocolMapper, IFileSaver fileSaver, IPlannerSettingsService settingsService, ILogger<MissionItemListViewModel> logger)
     {
         this.fileCodec = fileCodec;
+        this.modalNavigationService = modalNavigationService;
         this.protocolMapper = protocolMapper;
         this.fileSaver = fileSaver;
         this.logger = logger;
         SelectedMapType = MapType(settingsService.Current.Map);
+    }
+
+    [RelayCommand]
+    private Task CloseAsync(CancellationToken cancellationToken)
+    {
+        return modalNavigationService.CloseAsync(true, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -69,10 +78,6 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     /// <summary>The name of the tile source rendered by map views bound to this view model.</summary>
     [ObservableProperty]
     public partial string SelectedMapType { get; set; } = "OpenStreetMap";
-
-    /// <summary>When true the waypoint list shows the complete editor (all columns + header inputs).</summary>
-    [ObservableProperty]
-    public partial bool IsCompleteEditorMode { get; set; } = true;
 
     /// <summary>When true, a primary map click appends a waypoint at the clicked position.</summary>
     [ObservableProperty]

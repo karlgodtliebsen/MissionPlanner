@@ -6,6 +6,12 @@
 public interface IDomainFactory
 {
     /// <summary>
+    /// Register a Implementation->Implementation relation. This must be done before using the factory
+    /// </summary>
+    /// <typeparam name="TImplementation"></typeparam>
+    void Add<TImplementation>() where TImplementation : class;
+
+    /// <summary>
     /// Adds a service and its implementation to the domain factory.
     /// </summary>
     /// <typeparam name="TService">The type of the service.</typeparam>

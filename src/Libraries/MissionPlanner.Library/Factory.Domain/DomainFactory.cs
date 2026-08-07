@@ -13,6 +13,18 @@ public sealed class DomainFactory(IServiceProvider serviceProvider) : IDomainFac
     private readonly IDictionary<Type, Type> typeMap = new ConcurrentDictionary<Type, Type>();
 
     /// <summary>
+    /// Register a Implementation->Implementation relation. This must be done before using the factory
+    /// </summary>
+    /// <typeparam name="TImplementation"></typeparam>
+    public void Add<TImplementation>() where TImplementation : class
+    {
+        if (!typeMap.ContainsKey(typeof(TImplementation)))
+        {
+            typeMap.Add(typeof(TImplementation), typeof(TImplementation));
+        }
+    }
+
+    /// <summary>
     /// Register a Service->Implementation relation. This must be done before using the factory
     /// </summary>
     /// <typeparam name="TService"></typeparam>

@@ -9,7 +9,9 @@
              xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
              x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.CubeLan8PortSwitchTabView"
              x:DataType="tabs:CubeLan8PortSwitchTabViewModel"
-             Title="CubeLAN 8 Port Switch">
+             Title="CubeLAN 8 Port Switch"
+    >
+
     <Grid Padding="20" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
         <VerticalStackLayout Spacing="4">
             <Label Text="CubeLAN 8 Port Switch" FontSize="24" FontAttributes="Bold" />
@@ -44,7 +46,18 @@
             <controls:VirtualizedDataGrid.Columns>
                 <material:DataGridColumn Width="*"  ValueBinding="{Binding ClassOfServiceEnabled}" Title="Class of service" />
                 <material:DataGridColumn Width="*"  ValueBinding="{Binding ClassOfServiceHighPriority}" Title="COS high priority" />
+                <material:DataGridColumn Width="*"  ValueBinding="{Binding EnergyEfficientEthernetEnabled}" Title="Energy Efficient Ethernet" />
                 <material:DataGridColumn Width="*"  ValueBinding="{Binding VlanTagged}" Title="VlanTagged" />
+                <material:DataGridColumn Width="*" Title="Freshness">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="tabs:CubeLanPortViewModel">
+                            <HorizontalStackLayout Margin="0,0,12,4">
+                                <CheckBox IsChecked="{Binding IsMember}" />
+                                <Label Text="{Binding Label}" VerticalOptions="Center" />
+                            </HorizontalStackLayout>
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
             </controls:VirtualizedDataGrid.Columns>
         </controls:VirtualizedDataGrid>
 
@@ -73,16 +86,21 @@
                         <VerticalStackLayout Spacing="8">
                             <Label Text="{Binding DisplayName}" FontSize="18" FontAttributes="Bold" />
                             <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="6">
-                                <Label Text="Class of service" VerticalOptions="Center" />
+                               
+        <Label Text="Class of service" VerticalOptions="Center" />
                                 <Switch Grid.Column="1" IsToggled="{Binding ClassOfServiceEnabled}" />
-                                <Label Grid.Row="1" Text="COS high priority" VerticalOptions="Center" />
+                                
+        <Label Grid.Row="1" Text="COS high priority" VerticalOptions="Center" />
                                 <Switch Grid.Row="1" Grid.Column="1" IsToggled="{Binding ClassOfServiceHighPriority}" />
-                                <Label Grid.Row="2" Text="Energy Efficient Ethernet" VerticalOptions="Center" />
+                                
+        <Label Grid.Row="2" Text="Energy Efficient Ethernet" VerticalOptions="Center" />
                                 <Switch Grid.Row="2" Grid.Column="1" IsToggled="{Binding EnergyEfficientEthernetEnabled}" />                               
-                                <Label Grid.Row="3" Text="VLAN tagged" VerticalOptions="Center" />
+                                
+        <Label Grid.Row="3" Text="VLAN tagged" VerticalOptions="Center" />
                                 <Switch Grid.Row="3" Grid.Column="1" IsToggled="{Binding VlanTagged}" />
                             </Grid>
-                            <Label Text="VLAN membership" FontAttributes="Bold" />
+                            
+        <Label Text="VLAN membership" FontAttributes="Bold" />
                             <FlexLayout BindableLayout.ItemsSource="{Binding Memberships}" Direction="Row" Wrap="Wrap">
                                 <BindableLayout.ItemTemplate>
                                     <DataTemplate x:DataType="tabs:CubeLanMembershipViewModel">
@@ -93,6 +111,7 @@
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
                             </FlexLayout>
+        
                         </VerticalStackLayout>
                     </Border>
                 </DataTemplate>
