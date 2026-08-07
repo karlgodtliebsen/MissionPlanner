@@ -230,6 +230,18 @@ Use `PagerTemplate` when application styling should own the pager. Its binding c
 
 `PagerView` can also be supplied directly and takes precedence over `PagerTemplate`.
 
+## Compiled bindings and row recycling
+
+Column `ValueBinding` supports compiled `x:DataType` bindings. Recycled row presenters keep
+their previous non-null item while invisible in the grid's bounded recycle pool and are
+rebound directly to the next item. New presenters also receive their first item before cell
+bindings are created. This avoids evaluating generated typed getters with a transient null
+source. Null row entries are not supported. When rows are fully released, the visual tree is
+detached before the binding context is cleared, so unloaded or empty grids do not retain
+their source items.
+
+Applications do not need nullable row models or fallback bindings to accommodate recycling.
+
 ## Existing ViewModel paging
 
 Do not page the same data twice.

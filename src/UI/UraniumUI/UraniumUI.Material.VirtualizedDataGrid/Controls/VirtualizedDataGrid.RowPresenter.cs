@@ -16,7 +16,7 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
     private Grid? cellsGrid;
     private bool visualTreeReleased;
 
-    internal bool HasBoundItem => BindingContext is not null;
+    internal bool HasBoundItem => RealizedIndex >= 0 && BindingContext is not null;
     internal int RealizedIndex { get; set; } = -1;
 
     /// <summary>
@@ -24,11 +24,23 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
     /// </summary>
     /// <param name="owner">The data grid that owns the row presenter.</param>
     public VirtualizedDataGridRowPresenter(VirtualizedDataGrid owner)
+        : this(owner, null)
+    {
+    }
+
+    /// <summary>Initializes a hosted presenter with its first row item.</summary>
+    /// <param name="owner">The data grid that owns the row presenter.</param>
+    /// <param name="item">The initial non-null row item.</param>
+    internal VirtualizedDataGridRowPresenter(VirtualizedDataGrid owner, object? item)
     {
         this.owner = owner ?? throw new ArgumentNullException(nameof(owner));
 
         HorizontalOptions = LayoutOptions.Fill;
         VerticalOptions = LayoutOptions.Start;
+        if (item is not null)
+        {
+            BindingContext = item;
+        }
 
         owner.RegisterPresenter(this);
         SizeChanged += OnPresenterSizeChanged;
