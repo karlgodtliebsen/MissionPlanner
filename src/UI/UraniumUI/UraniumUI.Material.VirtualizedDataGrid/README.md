@@ -230,17 +230,21 @@ Use `PagerTemplate` when application styling should own the pager. Its binding c
 
 `PagerView` can also be supplied directly and takes precedence over `PagerTemplate`.
 
-## Compiled bindings and row recycling
+## Column value bindings
 
-Column `ValueBinding` supports compiled `x:DataType` bindings. Recycled row presenters keep
-their previous non-null item while invisible in the grid's bounded recycle pool and are
-rebound directly to the next item. New presenters also receive their first item before cell
-bindings are created. This avoids evaluating generated typed getters with a transient null
-source. Null row entries are not supported. When rows are fully released, the visual tree is
-detached before the binding context is cleared, so unloaded or empty grids do not retain
-their source items.
+`DataGridColumn.ValueBinding` is a reusable binding template that is cloned for every
+realized row. Use an ordinary runtime binding and do not set `x:DataType` on the column:
 
-Applications do not need nullable row models or fallback bindings to accommodate recycling.
+```xml
+<material:DataGridColumn Title="Severity"
+                         ValueBinding="{Binding SeverityDisplay}" />
+```
+
+Adding `x:DataType` to `DataGridColumn` makes XAML source generation create MAUI's internal
+`TypedBinding`. A `TypedBinding` cannot be cloned for multiple row targets, so it is not
+supported as a column `ValueBinding`. The containing page and actual `DataTemplate` content
+may still use `x:DataType`; this restriction applies specifically to reusable column binding
+templates.
 
 ## Existing ViewModel paging
 

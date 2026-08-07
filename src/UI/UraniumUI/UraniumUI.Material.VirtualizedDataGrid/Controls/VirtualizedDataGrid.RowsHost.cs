@@ -367,13 +367,8 @@ internal sealed class VirtualizedDataGridRowsHost : ScrollView
             var presenter = realized[index];
             realized.Remove(index);
             presenter.RealizedIndex = -1;
+            presenter.BindingContext = null;
             presenter.IsVisible = false;
-
-            // Keep the previous non-null item while the attached presenter is in the
-            // bounded recycle pool. Setting BindingContext to null here immediately
-            // evaluates compiled x:DataType bindings with a null source. A recycled
-            // presenter is rebound directly from one valid item to the next in Realize.
-            // ReleaseRows still clears the context after detaching the visual tree.
             recycled.Push(presenter);
         }
     }
@@ -386,17 +381,12 @@ internal sealed class VirtualizedDataGridRowsHost : ScrollView
             return;
         }
 
-        var item = itemsSource![index] ?? throw new InvalidOperationException(
-            "VirtualizedDataGrid does not support null row items.");
         var presenter = recycled.Count > 0
             ? recycled.Pop()
-            : new VirtualizedDataGridRowPresenter(owner, item);
+            : new VirtualizedDataGridRowPresenter(owner);
         presenter.RealizedIndex = index;
         presenter.IsVisible = true;
-        if (!ReferenceEquals(presenter.BindingContext, item))
-        {
-            presenter.BindingContext = item;
-        }
+        presenter.BindingContext = itemsSource![index];
 
         if (!extent.Children.Contains(presenter))
         {
