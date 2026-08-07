@@ -5,6 +5,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
              xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+             xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+             xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
              x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.CubeLan8PortSwitchTabView"
              x:DataType="tabs:CubeLan8PortSwitchTabViewModel"
              Title="CubeLAN 8 Port Switch">
@@ -26,6 +28,33 @@
             </Grid>
         </Border>
 
+        <controls:VirtualizedDataGrid Grid.Row="2" 
+                                      ItemsSource="{Binding Ports}" 
+                                      ItemSizingStrategy= "MeasureFirstItem"
+                                      ShowSearchBar="False"
+                                      HorizontalOptions="Fill" 
+                                      VerticalOptions="Fill" 
+                                      BackgroundColor="Transparent">
+            <controls:VirtualizedDataGrid.EmptyView>
+                <VerticalStackLayout Padding="20" Spacing="8" HorizontalOptions="Center">
+                    <Label Text="No editable CubeLAN device is available." FontSize="18" FontAttributes="Bold" HorizontalTextAlignment="Center" />
+                    <Label Text="Unsupported, not discovered, authentication-required, and disconnected states remain explicit and send no undocumented commands." HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </controls:VirtualizedDataGrid.EmptyView>
+            <controls:VirtualizedDataGrid.Columns>
+                <material:DataGridColumn Width="*"  ValueBinding="{Binding ClassOfServiceEnabled}" Title="Class of service" />
+                <material:DataGridColumn Width="*"  ValueBinding="{Binding ClassOfServiceHighPriority}" Title="COS high priority" />
+                <material:DataGridColumn Width="*"  ValueBinding="{Binding VlanTagged}" Title="VlanTagged" />
+            </controls:VirtualizedDataGrid.Columns>
+        </controls:VirtualizedDataGrid>
+
+
+
+        <!--
+        x:DataType="tabs:CubeLanPortViewModel"
+        x:DataType="tabs:CubeLanPortViewModel"
+        x:DataType="tabs:CubeLanPortViewModel"
+        
         <CollectionView Grid.Row="2" ItemsSource="{Binding Ports}" SelectionMode="None" IsEnabled="{Binding CanEdit}">
             <CollectionView.EmptyView>
                 <VerticalStackLayout Padding="20" Spacing="8" HorizontalOptions="Center">
@@ -33,10 +62,12 @@
                     <Label Text="Unsupported, not discovered, authentication-required, and disconnected states remain explicit and send no undocumented commands." HorizontalTextAlignment="Center" />
                 </VerticalStackLayout>
             </CollectionView.EmptyView>
-            <CollectionView.ItemsLayout>
+            
+        <CollectionView.ItemsLayout>
                 <GridItemsLayout Orientation="Vertical" Span="2" HorizontalItemSpacing="12" VerticalItemSpacing="12" />
             </CollectionView.ItemsLayout>
-            <CollectionView.ItemTemplate>
+
+        <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="tabs:CubeLanPortViewModel">
                     <Border Padding="12">
                         <VerticalStackLayout Spacing="8">
@@ -47,7 +78,7 @@
                                 <Label Grid.Row="1" Text="COS high priority" VerticalOptions="Center" />
                                 <Switch Grid.Row="1" Grid.Column="1" IsToggled="{Binding ClassOfServiceHighPriority}" />
                                 <Label Grid.Row="2" Text="Energy Efficient Ethernet" VerticalOptions="Center" />
-                                <Switch Grid.Row="2" Grid.Column="1" IsToggled="{Binding EnergyEfficientEthernetEnabled}" />
+                                <Switch Grid.Row="2" Grid.Column="1" IsToggled="{Binding EnergyEfficientEthernetEnabled}" />                               
                                 <Label Grid.Row="3" Text="VLAN tagged" VerticalOptions="Center" />
                                 <Switch Grid.Row="3" Grid.Column="1" IsToggled="{Binding VlanTagged}" />
                             </Grid>
@@ -66,7 +97,9 @@
                     </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
+        
         </CollectionView>
+        -->
 
         <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="12">
             <Label Text="{Binding IsDirty, StringFormat='Pending local changes: {0}'}" VerticalOptions="Center" />

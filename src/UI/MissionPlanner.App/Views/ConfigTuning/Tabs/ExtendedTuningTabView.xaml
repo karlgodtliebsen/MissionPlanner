@@ -4,6 +4,8 @@
                             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                             xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
                             xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                            xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+                            xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                             x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.ExtendedTuningTabView"
                             x:DataType="tabs:ExtendedTuningTabViewModel"
                             Title="Extended Tuning">
@@ -45,7 +47,36 @@
             <Border Grid.Column="1" Padding="8">
                 <VerticalStackLayout Spacing="4">
                     <Label Text="Live controller response (read-only PID_TUNING context)" FontAttributes="Bold" />
-                    <CollectionView ItemsSource="{Binding ResponseMetrics}"
+
+                    <controls:VirtualizedDataGrid 
+                        ItemsSource="{Binding Areas}" 
+                        ItemSizingStrategy= "MeasureFirstItem"
+                        ShowSearchBar="False"
+                        HeightRequest="54"
+                        HorizontalOptions="Fill" 
+                        VerticalOptions="Fill" 
+                        BackgroundColor="Transparent">
+                        <controls:VirtualizedDataGrid.EmptyView>
+                            <Label HorizontalOptions="Center" Text="No PID response telemetry received." FontSize="12" Opacity="0.6" Margin="0,20" />
+                        </controls:VirtualizedDataGrid.EmptyView>
+                        <controls:VirtualizedDataGrid.Columns>
+                            <material:DataGridColumn Width="*"  ValueBinding="{Binding Axis}" Title="Axis" />
+                            <material:DataGridColumn Width="*"  ValueBinding="{Binding Desired}" Title="Desired" />
+                            <material:DataGridColumn Width="*"  ValueBinding="{Binding Achieved}" Title="Achieved" />
+                            <material:DataGridColumn Width="*"  ValueBinding="{Binding Error}" Title="Error" />
+                        </controls:VirtualizedDataGrid.Columns>
+                    </controls:VirtualizedDataGrid>
+
+
+                    <!--
+                    
+                    x:DataType="tabs:ControlResponseMetricViewModel"
+                    x:DataType="tabs:ControlResponseMetricViewModel"
+                    x:DataType="tabs:ControlResponseMetricViewModel"
+                    x:DataType="tabs:ControlResponseMetricViewModel"
+                    
+                    <CollectionView 
+                                    ItemsSource="{Binding ResponseMetrics}"
                                     ItemsLayout="HorizontalList"
                                     HeightRequest="54"
                                     EmptyView="No PID response telemetry received.">
@@ -59,7 +90,9 @@
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
-                    </CollectionView>
+                    </CollectionView>-->
+
+
                 </VerticalStackLayout>
             </Border>
         </Grid>
@@ -186,5 +219,7 @@
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
+
+
     </Grid>
 </navigation:ExtendedContentPage>

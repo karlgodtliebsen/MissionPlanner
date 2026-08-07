@@ -5,6 +5,8 @@
                                   xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
                                   xmlns:vehicles="clr-namespace:MissionPlanner.Core.Vehicles.Models;assembly=MissionPlanner.Core"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+                                  xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                                   x:Class="MissionPlanner.App.Views.FlightData.Tabs.TelemetryLogsTabView"
                                   x:DataType="tabs:TelemetryLogsTabViewModel">
     <Grid Padding="12" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="10">
@@ -44,7 +46,46 @@
 
         <Grid Grid.Row="4" RowDefinitions="Auto,*" RowSpacing="6">
             <Label Grid.Row="0" Text="Replay vehicles" FontAttributes="Bold" />
-            <CollectionView Grid.Row="1" ItemsSource="{Binding ReplayVehicles}" EmptyView="No vehicle heartbeat has been decoded at this replay position.">
+
+
+
+            <controls:VirtualizedDataGrid 
+                Grid.Row="1" 
+                ItemsSource="{Binding ReplayVehicles}" 
+                ItemSizingStrategy= "MeasureFirstItem"
+                ShowSearchBar="False"
+                HorizontalOptions="Fill" 
+                VerticalOptions="Fill" 
+                BackgroundColor="Transparent">
+                <controls:VirtualizedDataGrid.EmptyView>
+                    <Label HorizontalOptions="Center" Text="No vehicle heartbeat has been decoded at this replay position." FontSize="12" Opacity="0.6" Margin="0,20" />
+                </controls:VirtualizedDataGrid.EmptyView>
+                <controls:VirtualizedDataGrid.Columns>
+                    <material:DataGridColumn Width="*"  Title="REPLAY" />
+                    <material:DataGridColumn Title="DisplayName" Width="*">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="vehicles:VehicleState">
+                                <Label Text="{Binding DisplayName}" LineBreakMode="WordWrap" />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+
+                    <material:DataGridColumn Title="VehicleId" Width="*">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="vehicles:VehicleState">
+                                <Label Text="{Binding VehicleId}" LineBreakMode="WordWrap" />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+
+                </controls:VirtualizedDataGrid.Columns>
+            </controls:VirtualizedDataGrid>
+
+            <!--
+            <CollectionView 
+            Grid.Row="1" 
+            ItemsSource="{Binding ReplayVehicles}" 
+                            EmptyView="No vehicle heartbeat has been decoded at this replay position.">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="vehicles:VehicleState">
                         <Grid Padding="8,5" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
@@ -55,6 +96,9 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
+            -->
+
+
         </Grid>
     </Grid>
 </tabViews:TabViewLifecycleContent>

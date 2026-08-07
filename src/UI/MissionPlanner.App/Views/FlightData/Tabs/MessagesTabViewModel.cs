@@ -58,6 +58,8 @@ public partial class MessagesTabViewModel : ObservableObject, IDisposable
     /// <summary>Gets the filtered current-vehicle rows in arrival order.</summary>
     public ObservableCollection<MessageListItem> Items { get; } = [];
 
+    public ObservableCollection<MessageListItem> SelectedItems { get; } = [];
+
     /// <summary>Gets or sets the selected exact severity or origin filter.</summary>
     [ObservableProperty]
     public partial string SelectedSeverity { get; set; } = "All";
@@ -249,7 +251,9 @@ public partial class MessagesTabViewModel : ObservableObject, IDisposable
             .Concat(applicationMessages.GetMessages(vehicleId).Select(ToRow))
             .Where(MatchesFilter)
             .OrderBy(row => row.ReceivedAt)
-            .ThenBy(row => row.Identity);
+            .ThenBy(row => row.Identity)
+            .ToList();
+
         foreach (var row in rows)
         {
             Items.Add(row);

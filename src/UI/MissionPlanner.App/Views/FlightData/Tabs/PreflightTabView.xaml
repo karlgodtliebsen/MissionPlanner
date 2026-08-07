@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<tabViews:TabViewLifecycleContent x:TypeArguments="tabs:PreflightTabViewModel"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
-    xmlns:preflight="clr-namespace:MissionPlanner.Core.FlightData.Preflight;assembly=MissionPlanner.Core"
-    xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
-    x:Class="MissionPlanner.App.Views.FlightData.Tabs.PreflightTabView" x:DataType="tabs:PreflightTabViewModel">
-    <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="16" RowSpacing="12">
+<tabViews:TabViewLifecycleContent 
+                x:TypeArguments="tabs:PreflightTabViewModel"
+                xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
+                xmlns:preflight="clr-namespace:MissionPlanner.Core.FlightData.Preflight;assembly=MissionPlanner.Core"
+                xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+                xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                x:Class="MissionPlanner.App.Views.FlightData.Tabs.PreflightTabView" 
+                x:DataType="tabs:PreflightTabViewModel"
+    >
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Padding="16" RowSpacing="12" HorizontalOptions="Fill">
         <VerticalStackLayout Spacing="4">
             <Label Text="{Binding OverallStatus}" FontSize="20" FontAttributes="Bold" />
             <Label Text="{Binding Disclaimer}" FontAttributes="Italic" Opacity="0.8" />
@@ -16,6 +21,59 @@
             <Button Text="Run pre-arm checks" Command="{Binding RunPrearmCommand}" IsEnabled="{Binding CanRunPrearm}" />
             <Label Text="{Binding CommandResult}" VerticalTextAlignment="Center" />
         </HorizontalStackLayout>
+
+        <controls:VirtualizedDataGrid 
+              Grid.Row="2" 
+              Width="100"
+              ItemsSource="{Binding Checks}" 
+              ItemSizingStrategy= "MeasureFirstItem"
+              ShowSearchBar="False"
+              HorizontalOptions="Fill" 
+              VerticalOptions="Fill" 
+              BackgroundColor="Transparent">
+            <controls:VirtualizedDataGrid.EmptyView>
+                <Label HorizontalOptions="Center" Text="No items." FontSize="12" Opacity="0.6" Margin="0,20" />
+            </controls:VirtualizedDataGrid.EmptyView>
+            <controls:VirtualizedDataGrid.Columns>
+                <material:DataGridColumn Title="Status" Width="*">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="preflight:PreflightCheckResult">
+                            <Label Text="{Binding Status}" LineBreakMode="WordWrap" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+                <material:DataGridColumn Title="Title" Width="*">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="preflight:PreflightCheckResult">
+                            <Label Text="{Binding Title}" LineBreakMode="WordWrap" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+                <material:DataGridColumn Title="Summary" Width="*">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="preflight:PreflightCheckResult">
+                            <Label Text="{Binding Summary}" LineBreakMode="WordWrap" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+                <material:DataGridColumn Title="Remediation" Width="*">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="preflight:PreflightCheckResult">
+                            <Label Text="{Binding Remediation}" LineBreakMode="WordWrap" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+            </controls:VirtualizedDataGrid.Columns>
+        </controls:VirtualizedDataGrid>
+
+
+        <!--
+        
+        x:DataType="preflight:PreflightCheckResult"
+        x:DataType="preflight:PreflightCheckResult"
+        x:DataType="preflight:PreflightCheckResult"
+        x:DataType="preflight:PreflightCheckResult"
+        
         <CollectionView Grid.Row="2" ItemsSource="{Binding Checks}">
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="preflight:PreflightCheckResult">
@@ -29,7 +87,9 @@
                     </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
-        </CollectionView>
+        </CollectionView>-->
+
+
         <Editor Grid.Row="3" Text="{Binding Report}" IsReadOnly="True" HeightRequest="90" />
     </Grid>
 </tabViews:TabViewLifecycleContent>

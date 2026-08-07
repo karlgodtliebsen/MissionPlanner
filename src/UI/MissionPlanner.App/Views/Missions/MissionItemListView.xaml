@@ -51,7 +51,6 @@
                 </controls:VirtualizedDataGrid.EmptyView>
 
                 <controls:VirtualizedDataGrid.Columns>
-                    
                     <material:DataGridColumn Width="*" Title="#">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="missions:MissionItemRow">

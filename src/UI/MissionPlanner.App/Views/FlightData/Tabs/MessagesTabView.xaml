@@ -4,8 +4,12 @@
                                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                                   xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+                                  xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                                   x:Class="MissionPlanner.App.Views.FlightData.Tabs.MessagesTabView"
-                                  x:DataType="tabs:MessagesTabViewModel">
+                                  x:DataType="tabs:MessagesTabViewModel"
+                                  >
+
     <Grid Padding="8" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="15">
         <Grid Grid.Row="0" ColumnDefinitions="140,*" ColumnSpacing="8">
             <Picker Grid.Column="0"
@@ -27,8 +31,109 @@
                 <Button Text="Export JSON" Command="{Binding ExportJsonCommand}" />
             </HorizontalStackLayout>
         </ScrollView>
+        <Grid Grid.Row="2" >
+            <!--
+            <material:DataGrid   
+                ItemsSource="{Binding Items}" 
+                SelectedItems="{Binding SelectedItems}" 
+                HorizontalOptions="Fill" 
+                VerticalOptions="Fill" 
+                BackgroundColor="Transparent"
+            >
+                <material:DataGrid.Columns>
+                    <material:DataGridColumn Width="*"  ValueBinding="{Binding SeverityDisplay}" Title="Severity" />
+                    <material:DataGridColumn Width="*"  ValueBinding="{Binding Text}" Title="Title" />
+                    <material:DataGridColumn Width="*"  ValueBinding="{Binding Details}" Title="Details" />
+                </material:DataGrid.Columns>
+            </material:DataGrid>
+            
+            -->
 
-        <CollectionView x:Name="MessageCollection"
+            <controls:VirtualizedDataGrid 
+                ItemsSource="{Binding Items}" 
+                ItemSizingStrategy= "MeasureFirstItem"
+                ShowSearchBar="False"
+                HorizontalOptions="Fill" 
+                VerticalOptions="Fill" 
+                BackgroundColor="Transparent">
+                <controls:VirtualizedDataGrid.EmptyView>
+                    <Label HorizontalOptions="Center" Text="No messages match the current vehicle and filter." FontSize="12" Opacity="0.6" Margin="0,20" />
+                </controls:VirtualizedDataGrid.EmptyView>
+                <controls:VirtualizedDataGrid.Columns>
+                    <material:DataGridColumn Title="Severity" Width="*">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="tabs:MessageListItem">
+                                <Label Text="{Binding SeverityDisplay}" />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+
+                    <material:DataGridColumn Title="Title" Width="*">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="tabs:MessageListItem">
+                                <Label Text="{Binding Text}" />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+
+                    <material:DataGridColumn Title="Details" Width="*">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="tabs:MessageListItem">
+                                <Label Text="{Binding Details}" LineBreakMode="WordWrap" />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+
+                    <material:DataGridColumn Title="Notification" Width="160">
+                        <material:DataGridColumn.CellItemTemplate >
+                            <DataTemplate  >
+                                <Label 
+                                    Text="Local application notification — not MAVLink STATUSTEXT"
+                                    FontSize="11"
+                                    FontAttributes="Italic"
+                                    IsVisible="False">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding Origin}" Value="Application">
+                                            <Setter Property="IsVisible" Value="True" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+
+                </controls:VirtualizedDataGrid.Columns>
+
+
+            </controls:VirtualizedDataGrid>
+
+
+            <!--
+            x:DataType="tabs:MessageListItem"
+            x:DataType="tabs:MessageListItem"
+            x:DataType="tabs:MessageListItem"
+            
+            <material:DataGridColumn Title="Notification" Width="160">
+                    <material:DataGridColumn.CellItemTemplate >
+                        <DataTemplate x:DataType="tabs:MessageListItem" >
+                 <Label Grid.Row="2" Grid.ColumnSpan="2"
+                        Text="Local application notification — not MAVLink STATUSTEXT"
+                        FontSize="11"
+                        FontAttributes="Italic"
+                        IsVisible="False">
+                     <Label.Triggers>
+                         <DataTrigger TargetType="Label" Binding="{Binding Origin}" Value="Application">
+                             <Setter Property="IsVisible" Value="True" />
+                         </DataTrigger>
+                     </Label.Triggers>
+                 </Label>
+
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>-->
+
+            <!--<CollectionView x:Name="MessageCollection"
                         Grid.Row="2"
                         ItemsSource="{Binding Items}"
                         SelectedItem="{Binding SelectedMessage}"
@@ -67,7 +172,10 @@
                     </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
-        </CollectionView>
+        </CollectionView>-->
+
+        </Grid>
+
 
         <Label Grid.Row="3" Text="{Binding Status}" LineBreakMode="TailTruncation" />
     </Grid>

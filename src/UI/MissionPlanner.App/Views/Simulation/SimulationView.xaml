@@ -292,6 +292,7 @@
                             <Button Text="Restart" Command="{Binding RestartCommand}" IsEnabled="{Binding CanRestart}" />
                         </HorizontalStackLayout>
                     </Grid>
+
                     <CollectionView Grid.Row="1" ItemsSource="{Binding RecentOutput}">
                         <CollectionView.EmptyView>
                             <Label Text="Runtime output will appear here." Padding="12" />
@@ -307,6 +308,7 @@
                         </CollectionView.ItemTemplate>
                     </CollectionView>
                 </Grid>
+
             </Grid>
         </Grid>
     </Grid>

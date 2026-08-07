@@ -6,17 +6,25 @@
  x:Class="MissionPlanner.App.Views.FlightData.Tabs.GaugesTabView" x:DataType="tabs:GaugesTabViewModel">
  <Grid Padding="16" RowDefinitions="Auto,*">
   <Label Text="Flight gauges" FontSize="20" FontAttributes="Bold" />
+  
   <CollectionView Grid.Row="1" ItemsSource="{Binding Tiles}">
-   <CollectionView.ItemsLayout><GridItemsLayout Orientation="Vertical" Span="3" /></CollectionView.ItemsLayout>
-   <CollectionView.ItemTemplate><DataTemplate x:DataType="tabs:GaugeTileViewModel">
+   <CollectionView.ItemsLayout>
+       <GridItemsLayout Orientation="Vertical" Span="3" />
+   </CollectionView.ItemsLayout>
+   <CollectionView.ItemTemplate>
+       <DataTemplate x:DataType="tabs:GaugeTileViewModel">
     <Border Margin="6" Padding="16" MinimumHeightRequest="130" StyleClass="SurfaceContainer,Rounded,Elevation1">
      <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center">
       <Label Text="{Binding Label}" HorizontalTextAlignment="Center" />
-      <HorizontalStackLayout HorizontalOptions="Center"><Label Text="{Binding Value}" FontSize="28" FontAttributes="Bold" /><Label Text="{Binding Unit}" VerticalTextAlignment="End" /></HorizontalStackLayout>
+      <HorizontalStackLayout HorizontalOptions="Center">
+          <Label Text="{Binding Value}" FontSize="28" FontAttributes="Bold" /><Label Text="{Binding Unit}" VerticalTextAlignment="End" />
+      </HorizontalStackLayout>
       <Label Text="{Binding Freshness}" FontSize="12" HorizontalTextAlignment="Center" />
      </VerticalStackLayout>
     </Border>
-   </DataTemplate></CollectionView.ItemTemplate>
+   </DataTemplate>
+   </CollectionView.ItemTemplate>
   </CollectionView>
+
  </Grid>
 </tabViews:TabViewLifecycleContent>

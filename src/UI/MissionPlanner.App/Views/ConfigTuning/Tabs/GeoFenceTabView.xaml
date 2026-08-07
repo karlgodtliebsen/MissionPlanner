@@ -5,6 +5,8 @@
                             xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
                             xmlns:config="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
                             xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                            xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+                            xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                             x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.GeoFenceTabView"
                             x:DataType="tabs:GeoFenceTabViewModel"
                             Title="GeoFence">
@@ -86,6 +88,26 @@
                     <Border Padding="10">
                         <VerticalStackLayout Spacing="8">
                             <Label Text="Local geometry" FontAttributes="Bold" FontSize="18" />
+
+
+                            <controls:VirtualizedDataGrid 
+                                ItemsSource="{Binding Areas}" 
+                                ItemSizingStrategy= "MeasureFirstItem"
+                                ShowSearchBar="False"
+                                HorizontalOptions="Fill" 
+                                VerticalOptions="Fill" 
+                                BackgroundColor="Transparent">
+                                <controls:VirtualizedDataGrid.EmptyView>
+                                    <Label HorizontalOptions="Center" Text="No items." FontSize="12" Opacity="0.6" Margin="0,20" />
+                                </controls:VirtualizedDataGrid.EmptyView>
+                                <controls:VirtualizedDataGrid.Columns>
+                                    <material:DataGridColumn Width="*"  ValueBinding="{Binding Kind}" Title="Kind" />
+                                    <material:DataGridColumn Width="*"  ValueBinding="{Binding Summary}" Title="Summary" />
+                                </controls:VirtualizedDataGrid.Columns>
+                            </controls:VirtualizedDataGrid>
+
+                                <!--
+                            x:DataType="tabs:FenceAreaListItem"
                             <CollectionView ItemsSource="{Binding Areas}"
                                             SelectedItem="{Binding SelectedArea}"
                                             SelectionMode="Single"
@@ -98,7 +120,10 @@
                                         </Grid>
                                     </DataTemplate>
                                 </CollectionView.ItemTemplate>
-                            </CollectionView>
+                            </CollectionView>-->
+
+
+
                             <HorizontalStackLayout Spacing="6">
                                 <Button Text="Remove selected" Command="{Binding RemoveAreaCommand}" CommandParameter="{Binding SelectedArea}" />
                                 <Button Text="Remove return" Command="{Binding RemoveReturnPointCommand}" />

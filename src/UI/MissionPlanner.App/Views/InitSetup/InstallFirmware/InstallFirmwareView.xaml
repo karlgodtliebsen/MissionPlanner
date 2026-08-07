@@ -32,7 +32,8 @@
 
                 <Entry Text="{Binding TargetSearchText}" Placeholder="Search platform, manufacturer, brand, or board ID" />
 
-                <CollectionView ItemsSource="{Binding FirmwareChoices}" SelectionMode="None" EmptyView="No releases are available for this channel.">
+                <CollectionView 
+                    ItemsSource="{Binding FirmwareChoices}" SelectionMode="None" EmptyView="No releases are available for this channel.">
                     <CollectionView.ItemsLayout>
                         <GridItemsLayout Orientation="Vertical" Span="3" HorizontalItemSpacing="12" VerticalItemSpacing="12" />
                     </CollectionView.ItemsLayout>

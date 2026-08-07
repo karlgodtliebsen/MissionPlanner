@@ -4,6 +4,9 @@
                       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                       xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
                       xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                      xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+                      xmlns:tabs1="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
+                      xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                       x:Name="RootPage"
                       x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.MAVFtpTabView"
                       Title="Vehicle Files">
@@ -16,7 +19,7 @@
             <Button Grid.Column="4" Text="Reset sessions"  IsVisible="{Binding HasConnection}" Command="{Binding ResetSessionsCommand}" />
         </Grid>
         <Grid Grid.Row="1">
-            <CollectionView ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry}" SelectionMode="Single" 
+            <!--<CollectionView ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry}" SelectionMode="Single" 
                             EmptyView="{Binding EmptyText}" >
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
@@ -33,7 +36,30 @@
                         </Grid>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
-            </CollectionView>
+            </CollectionView>-->
+
+            <controls:VirtualizedDataGrid 
+                ItemsSource="{Binding Entries}" 
+                ItemSizingStrategy= "MeasureFirstItem"
+                ShowSearchBar="False"
+                HorizontalOptions="Fill" 
+                VerticalOptions="Fill" 
+                BackgroundColor="Transparent">
+                <controls:VirtualizedDataGrid.EmptyView>
+                    <Label HorizontalOptions="Center" Text="No items." FontSize="12" Opacity="0.6" Margin="0,20" />
+                </controls:VirtualizedDataGrid.EmptyView>
+                <controls:VirtualizedDataGrid.Columns>
+                    <material:DataGridColumn Width="100"  ValueBinding="{Binding Name}" Title="Name" />
+                    <material:DataGridColumn Width="100"  ValueBinding="{Binding TypeText}" Title="Type" />
+                    <material:DataGridColumn Width="100"  ValueBinding="{Binding SizeText}" Title="Size" />
+                </controls:VirtualizedDataGrid.Columns>
+            </controls:VirtualizedDataGrid>
+            <!--        
+          x:DataType="tabs:VehicleFileSystemEntryViewModel"  
+          x:DataType="tabs:VehicleFileSystemEntryViewModel" 
+          x:DataType="tabs:VehicleFileSystemEntryViewModel" 
+            -->
+
         </Grid>
         <VerticalStackLayout Grid.Row="2" Spacing="6">
             <Label Text="{Binding ErrorText}" TextColor="Red" />

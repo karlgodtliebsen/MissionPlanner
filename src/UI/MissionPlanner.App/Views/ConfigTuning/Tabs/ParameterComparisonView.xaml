@@ -66,23 +66,9 @@
             </virtualized:VirtualizedDataGrid.EmptyView>
 
             <virtualized:VirtualizedDataGrid.Columns>
-                <!--<material:DataGridColumn Title="Stage" Width="*" >
-                    <material:DataGridColumn.CellItemTemplate >
-                        <DataTemplate x:DataType="tabs:ParameterComparisonItemViewModel" >
-                            <HorizontalStackLayout HorizontalOptions="Fill" VerticalOptions="Fill"  >
-                                <CheckBox  IsChecked="{Binding IsSelected}" IsEnabled="{Binding CanStage}" 
-                                       HorizontalOptions="Center" VerticalOptions="Center" />
-                            </HorizontalStackLayout>
-                        </DataTemplate>
-                    </material:DataGridColumn.CellItemTemplate>
-                </material:DataGridColumn>-->
-
-                <!--<material:DataGridSelectionColumn  x:DataType="tabs:ParameterComparisonItemViewModel" Width="*" Title="Stage" IsVisible="{Binding CanStage}" />-->
-
                 <virtualized:ExtendedSelectableDataGridColumn Title="Stage"
                     SelectionMemberPath="IsSelected"
                     SelectionCommandMemberPath="SelectionChangedCommand" />
-
                 <material:DataGridColumn Width="2*" Title="Parameter">
                     <material:DataGridColumn.CellItemTemplate>
                         <DataTemplate x:DataType="tabs:ParameterComparisonItemViewModel">

@@ -33,7 +33,7 @@ public partial class MessagesTabView : TabViewLifecycleContent<MessagesTabViewMo
             ViewModel is { IsAutoScrollPaused: false } &&
             ViewModel.Items.LastOrDefault() is { } last)
         {
-            MessageCollection.ScrollTo(last, position: ScrollToPosition.End, animate: true);
+            //MessageCollection.ScrollTo(last, position: ScrollToPosition.End, animate: true);
         }
     }
 }

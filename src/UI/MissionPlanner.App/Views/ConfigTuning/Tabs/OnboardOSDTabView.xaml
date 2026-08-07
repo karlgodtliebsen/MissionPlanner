@@ -90,6 +90,7 @@
             </ScrollView>
 
             <Grid Grid.Column="1" RowDefinitions="2*,Auto" RowSpacing="10">
+               
                 <CollectionView ItemsSource="{Binding SelectedScreen.Items}"
                                 SelectedItem="{Binding SelectedItem}"
                                 SelectionMode="Single"
