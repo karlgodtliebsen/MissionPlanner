@@ -9,17 +9,29 @@
                                 x:Class="MissionPlanner.App.Views.Missions.DockView.MissionItemListDockView"
                                 x:DataType="dockView:MissionItemListDockViewModel"
                                 WidthRequest="{Binding CalculatedWidth}"
+                                
                                 >
-    <Grid RowDefinitions="Auto,*" ColumnDefinitions="Auto,Auto">
-        
-        <!--<Button HorizontalOptions="Start"  MaximumWidthRequest="50" Margin="10,0,0,0" 
-                Text="{Binding GuidingText}" Command="{Binding ExpandCommand}" ></Button>
 
-
-        <Button HorizontalOptions="Start" Grid.Column="1"  MaximumWidthRequest="50" Margin="10,0,0,0"  
-                Text="{Binding PopupText}" Command="{Binding PopupCommand}" ></Button>
-
-        <missions:MissionItemListView x:Name="ItemListView"  Grid.Row="1" Grid.ColumnSpan="2" IsVisible="{Binding IsExpanded}"/>-->
-
+    <Grid RowDefinitions="Auto,*" RowSpacing="6"  BackgroundColor="#252526" HorizontalOptions="Fill"  VerticalOptions="Fill">
+        <HorizontalStackLayout HorizontalOptions="End" VerticalOptions="Center">
+            <Button Width="25" Height="25"  HorizontalOptions="Center"  VerticalOptions="Center" Margin="0" 
+                x:DataType="dockView:MissionItemListDockViewModel" FontSize="8"
+                Text="Editor"  Command="{Binding EditCommand}"
+                IsVisible="{Binding IsExpanded}"
+                >
+            </Button>
+            <Button Width="25" Height="25"  HorizontalOptions="Center" VerticalOptions="Center" Margin="0" 
+                x:DataType="dockView:MissionItemListDockViewModel" FontSize="8"
+                Text="{Binding GuidingText}"  Command="{Binding ExpandCommand}"
+                >
+            </Button>
+        </HorizontalStackLayout>
+        <Grid Grid.Row="1" HorizontalOptions="Fill" VerticalOptions="Fill" IsVisible="{Binding IsExpanded}">
+            <missions:MissionItemListView HorizontalOptions="Fill" VerticalOptions="Fill" ></missions:MissionItemListView>
+        </Grid>
     </Grid>
 </navigation:ExtendedContentView>
+
+<!--IsVisible="{Binding IsExpanded}"-->
+    
+    

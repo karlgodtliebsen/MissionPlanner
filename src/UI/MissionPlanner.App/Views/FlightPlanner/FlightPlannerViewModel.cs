@@ -6,6 +6,7 @@ using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Missions.Transfer;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using UraniumUI.Material.Dialogs;
@@ -19,14 +20,16 @@ namespace MissionPlanner.App.Views.FlightPlanner;
 public partial class FlightPlannerViewModel : ObservableObject, IDisposable
 {
     private readonly IExtendedDialogService dialogService;
-    private readonly IServiceFactory factory;
 
     private readonly IDomainFactory domainFactory;
+    private readonly IDomainEventHub domainEventHub;
     private readonly IMissionTransferService transferService;
     private readonly IMissionProtocolMapper protocolMapper;
     private readonly IMissionValidator validator;
     private readonly IVehicleRegistry vehicleRegistry;
     private readonly ILogger<FlightPlannerViewModel> logger;
+
+    private readonly IList<IDisposable> disposables = [];
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FlightPlannerViewModel"/> class.
@@ -34,8 +37,8 @@ public partial class FlightPlannerViewModel : ObservableObject, IDisposable
     public FlightPlannerViewModel(
         MissionItemListViewModel map,
         IExtendedDialogService dialogService,
-        IServiceFactory factory,
         IDomainFactory domainFactory,
+        IDomainEventHub domainEventHub,
         IMissionTransferService transferService,
         IMissionProtocolMapper protocolMapper,
         IMissionValidator validator,
@@ -44,14 +47,15 @@ public partial class FlightPlannerViewModel : ObservableObject, IDisposable
     {
         Map = map;
         this.dialogService = dialogService;
-        this.factory = factory;
         this.domainFactory = domainFactory;
+        this.domainEventHub = domainEventHub;
         this.transferService = transferService;
         this.protocolMapper = protocolMapper;
         this.validator = validator;
         this.vehicleRegistry = vehicleRegistry;
         this.logger = logger;
-        //map.IsCompleteEditorMode = true;
+
+        disposables.Add(domainEventHub.SubscribeDomainEventAsync<EditorDisplayEvent>(ShowHideEditAsync));
     }
 
     /// <summary>The shared mission map editor (same instance as the FlightData map).</summary>
@@ -131,16 +135,32 @@ public partial class FlightPlannerViewModel : ObservableObject, IDisposable
         }
     }
 
+
     [RelayCommand]
     private async Task EditAsync(CancellationToken cancellationToken)
     {
-        //IModalNavigationService
-        //UraniumContentPage
-        //MissionItemListViewModel viewModel
-        //    await dialogService.DisplayViewExtendedAsync("Editor", view);
-        var pageView = domainFactory.Create<MissionItemListView, MissionItemListViewModel>(Map);
-        await dialogService.ShowAsync(pageView, true, cancellationToken);
+        await ShowHideEditAsync(new EditorDisplayEvent("EditorOpen"), cancellationToken);
     }
+
+    [RelayCommand]
+    private async Task CloseAsync(CancellationToken cancellationToken)
+    {
+        await ShowHideEditAsync(new EditorDisplayEvent("EditorClose"), cancellationToken);
+    }
+
+    private async Task ShowHideEditAsync(EditorDisplayEvent e, CancellationToken cancellationToken)
+    {
+        if (e.Name == "EditorOpen")
+        {
+            var pageView = domainFactory.Create<MissionItemListViewPage, MissionItemListViewModel>(Map);
+            await dialogService.ShowAsync(pageView, true, cancellationToken);
+        }
+        else if (e.Name == "EditorClose")
+        {
+            await dialogService.CloseAsync(true, cancellationToken);
+        }
+    }
+
 
     [RelayCommand]
     private void ClearMission()
@@ -215,5 +235,9 @@ public partial class FlightPlannerViewModel : ObservableObject, IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
+        foreach (var disposable in disposables)
+        {
+            disposable.Dispose();
+        }
     }
 }

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<uranium:UraniumContentPage
+                    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
+                    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                    x:Class="MissionPlanner.App.Views.Missions.MissionItemListViewPage"
+                    x:DataType="missions:MissionItemListViewModel"
+                    Padding="25"
+                    BackgroundColor="Transparent"
+                  >
+
+    <Border StyleClass="SurfaceContainer,Rounded,Elevation1"  HorizontalOptions="Fill"   VerticalOptions="Fill">
+        <Grid RowDefinitions="Auto,*" 
+          RowSpacing="6" BackgroundColor="#252526" HorizontalOptions="Fill"   VerticalOptions="Fill">
+
+            <Button HorizontalOptions="End" Margin="0,10,10,10"
+                Text="Close" WidthRequest="100" Command="{Binding CloseCommand}">
+            </Button>
+
+            <missions:MissionItemListView Grid.Row="1" HorizontalOptions="Fill" VerticalOptions="Fill" Margin="25,10,25,10"></missions:MissionItemListView>
+
+        </Grid>
+    </Border>
+</uranium:UraniumContentPage>

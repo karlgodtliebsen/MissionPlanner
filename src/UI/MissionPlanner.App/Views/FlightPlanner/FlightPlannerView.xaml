@@ -2,12 +2,9 @@
 <navigation:ExtendedContentPage x:TypeArguments="vm:FlightPlannerViewModel"  
                          xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                          xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                         xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
-                         xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                          xmlns:vm="clr-namespace:MissionPlanner.App.Views.FlightPlanner"
                          xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
                          xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-                         xmlns:controls="clr-namespace:MissionPlanner.App.Controls"
                          xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                          xmlns:dockView="clr-namespace:MissionPlanner.App.Views.Missions.DockView"
                          x:Class="MissionPlanner.App.Views.FlightPlanner.FlightPlannerView"
@@ -17,7 +14,7 @@
         <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
     </navigation:ExtendedContentPage.Resources>
 
-    <Grid RowDefinitions="Auto,*,Auto" RowSpacing="4" Padding="5" >
+    <Grid RowDefinitions="Auto,*" RowSpacing="4" Padding="5"  HorizontalOptions="Fill" VerticalOptions="Fill">
 
         <FlexLayout Grid.Row="0" Wrap="Wrap" AlignItems="Center" JustifyContent="Start" Margin="10,10,0,0">
 
@@ -51,24 +48,13 @@
             <Label Text="{Binding Map.StatusMessage}" VerticalOptions="Center" Opacity="0.7" Margin="0,0,0,4" />
 
         </FlexLayout>
-
-        <!--<Grid Grid.Row="1" ColumnDefinitions="*,5,Auto" x:Name="TheGrid" ColumnSpacing="4" Margin="0,10,0,10">-->
-
-        <missions:MissionMapView Grid.Row="1" />
-
-            <!--<controls:GridSplitter x:Name="TheGridSplitter" 
-                                   Grid.Column="1" 
-                                   SplitterThickness="4"
-                                   SplitterColor="#3e3e42"
-                                   HoverColor="#007acc" 
-                                   IsVisible="{Binding IsExpanded}" 
-                                   />
-
-            <dockView:MissionItemListDockView x:Name="Editor" Grid.Column="2" Width="50"/>-->
-
-        <!--</Grid>-->
-
+        
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" HorizontalOptions="Fill" VerticalOptions="Fill">
+            <missions:MissionMapView Grid.Column="0"  HorizontalOptions="Fill" VerticalOptions="Fill"/>
+            <dockView:MissionItemListDockView Grid.Column="1"  HorizontalOptions="Fill" VerticalOptions="Fill"/>
+        </Grid>
     </Grid>
+
 
     <!--<toolkit:DockLayout>
 
@@ -81,6 +67,7 @@
             <Button Text="Read" Command="{Binding ReadFromVehicleCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
             <Button Text="Write" Command="{Binding WriteToVehicleCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
             <Button Text="Write Fast" Command="{Binding WriteToVehicleFastCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,12,4" />
+            <Button Text="Edit" Command="{Binding EditCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,12,4" />
 
             <Label Text="Map:" VerticalOptions="Center" Margin="0,0,4,4" />
             <Picker ItemsSource="{Binding Map.AvailableMapTypes}"
@@ -105,7 +92,7 @@
         </FlexLayout>
 
 
-        <missions:MissionItemListDockView toolkit:DockLayout.DockPosition="Right"/>
+        <missions:MissionItemListView toolkit:DockLayout.DockPosition="Bottom" HeightRequest="50"/>
         
         <missions:MissionMapView  />
 
@@ -113,6 +100,24 @@
     </toolkit:DockLayout>-->
 
 
+
+    <!--<Grid Grid.Row="1" ColumnDefinitions="*,5,Auto" x:Name="TheGrid" ColumnSpacing="4" Margin="0,10,0,10">-->
+    <!--
+
+        <missions:MissionMapView Grid.Row="1" />
+
+            -->
+    <!--<controls:GridSplitter x:Name="TheGridSplitter" 
+                                   Grid.Column="1" 
+                                   SplitterThickness="4"
+                                   SplitterColor="#3e3e42"
+                                   HoverColor="#007acc" 
+                                   IsVisible="{Binding IsExpanded}" 
+                                   />
+
+            <dockView:MissionItemListDockView x:Name="Editor" Grid.Column="2" Width="50"/>-->
+
+    <!--</Grid>-->
 
 
 </navigation:ExtendedContentPage>

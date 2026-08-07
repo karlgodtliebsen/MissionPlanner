@@ -22,6 +22,7 @@ using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
 using MissionPlanner.App.Views.InitSetup.OptionalHardware;
 using MissionPlanner.App.Views.Missions;
+using MissionPlanner.App.Views.Missions.DockView;
 using MissionPlanner.App.Views.Simulation;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Comparison;
@@ -44,7 +45,6 @@ using MissionPlanner.Simulation.ArduPilot;
 using MissionPlanner.Simulation.Configuration;
 using MissionPlanner.Transport.Configuration;
 using UraniumUI.Material.Dialogs;
-using MissionItemListDockViewModel = MissionPlanner.App.Views.Missions.DockView.MissionItemListDockViewModel;
 
 namespace MissionPlanner.App.Configuration;
 
@@ -89,7 +89,8 @@ public static class ApplicationConfigurator
         services.TryAddTransient<ApplicationStateService>();
         services.TryAddTransient<ParametersFileHandler>();
         services.TryAddTransient<PlannerSettingsRuntime>();
-        services.TryAddTransient<MissionItemListView>();
+        services.TryAddTransient<MissionItemListViewPage>();
+        services.TryAddTransient<MissionItemListDockViewModel>();
 
         services.TryAddTransient<IExtendedDialogService, ExtendedDialogService>();
         services.TryAddTransient<IUserNotificationService, UserNotificationService>();
@@ -135,7 +136,7 @@ public static class ApplicationConfigurator
         domainFactory.Add<ErrorView>();
         domainFactory.Add<ParameterComparisonViewModel>();
         domainFactory.Add<ParameterComparisonView>();
-        domainFactory.Add<MissionItemListView>();
+        domainFactory.Add<MissionItemListViewPage>();
         return services;
     }
 
@@ -164,7 +165,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<HudViewModel>();
         services.TryAddSingleton<MissionItemListViewModel>();
 
-        services.TryAddTransient<MissionItemListDockViewModel>();
+        //services.TryAddTransient<MissionItemListDockViewModel>();
 
         // Tabs on FlightDataView
         services.TryAddTransient<QuickTabViewModel>();

@@ -1,23 +1,19 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<uranium:UraniumContentPage
+<navigation:ExtendedContentView 
+                    x:TypeArguments="missions:MissionItemListViewModel" 
                     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                     xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
                     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                     xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
-                    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                    xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                     x:Class="MissionPlanner.App.Views.Missions.MissionItemListView"
                     x:DataType="missions:MissionItemListViewModel"
                     BackgroundColor="Transparent"
-                    Padding="25"
                     x:Name="Root">
 
     <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" 
-          RowSpacing="6" BackgroundColor="#252526" Padding="6"  Margin="25" HorizontalOptions="Fill"   VerticalOptions="Fill">
-      
-            <Button HorizontalOptions="End" 
-                     Text="Close" WidthRequest="100" Command="{Binding CloseCommand}">
-            </Button>
+          RowSpacing="6" BackgroundColor="#252526"   HorizontalOptions="Fill"   VerticalOptions="Fill">
 
         <!-- Title + mode switch BackgroundColor="#252526" -->
         <Label Grid.Row="1" Grid.Column="0" Text="Mission" FontAttributes="Bold" FontSize="16" VerticalOptions="Center" />
@@ -174,4 +170,4 @@
             </controls:VirtualizedDataGrid>
         </Grid>
     </Grid>
-</uranium:UraniumContentPage>
+</navigation:ExtendedContentView>

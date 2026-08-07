@@ -127,6 +127,9 @@
 	  <Compile Update="Views\InitSetup\MandatoryHardware\MandatoryHardwareView.xaml.cs">
 	    <DependentUpon>MandatoryHardwareView.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Views\Missions\MissionItemListViewPage.xaml.cs">
+	    <DependentUpon>MissionItemListViewPage.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\Simulation\SimulationView.xaml.cs">
 	    <DependentUpon>SimulationView.xaml</DependentUpon>
 	  </Compile>
@@ -188,6 +191,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\Missions\DockView\MissionItemListDockView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\Missions\MissionItemListViewPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	</ItemGroup>

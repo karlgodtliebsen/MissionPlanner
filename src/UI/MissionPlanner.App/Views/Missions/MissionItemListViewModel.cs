@@ -11,6 +11,7 @@ using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Files;
 using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Vehicles;
+using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Missions;
 using UraniumUI.Material.Dialogs;
 
@@ -24,6 +25,7 @@ namespace MissionPlanner.App.Views.Missions;
 public partial class MissionItemListViewModel : ObservableObject, IDisposable
 {
     private readonly IMissionFileCodec fileCodec;
+    private readonly IDomainEventHub domainEventHub;
     private readonly IMissionProtocolMapper protocolMapper;
     private readonly IFileSaver fileSaver;
     private readonly ILogger<MissionItemListViewModel> logger;
@@ -32,20 +34,18 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
     /// <summary>
     /// Initializes a new instance of the <see cref="MissionItemListViewModel"/> class.
     /// </summary>
-    public MissionItemListViewModel(IMissionFileCodec fileCodec, IExtendedDialogService dialogService, IMissionProtocolMapper protocolMapper, IFileSaver fileSaver, IPlannerSettingsService settingsService, ILogger<MissionItemListViewModel> logger)
+    public MissionItemListViewModel(IMissionFileCodec fileCodec,
+        IDomainEventHub domainEventHub, //IExtendedDialogService dialogService, 
+        IMissionProtocolMapper protocolMapper, IFileSaver fileSaver,
+        IPlannerSettingsService settingsService, ILogger<MissionItemListViewModel> logger)
     {
         this.fileCodec = fileCodec;
-        this.dialogService = dialogService;
+        this.domainEventHub = domainEventHub;
+        //this.dialogService = dialogService;
         this.protocolMapper = protocolMapper;
         this.fileSaver = fileSaver;
         this.logger = logger;
         SelectedMapType = MapType(settingsService.Current.Map);
-    }
-
-    [RelayCommand]
-    private Task CloseAsync(CancellationToken cancellationToken)
-    {
-        return dialogService.CloseAsync(true, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -465,6 +465,13 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
     {
         ShowStatus($"{feature} is not implemented yet.");
     }
+
+    [RelayCommand]
+    private async Task CloseAsync(CancellationToken cancellationToken)
+    {
+        await domainEventHub.PublishDomainEventAsync(new EditorDisplayEvent("EditorClose"), cancellationToken);
+    }
+
 
     private async Task LoadMissionFileAsync(bool append)
     {
