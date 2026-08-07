@@ -6,6 +6,7 @@ namespace MissionPlanner.App.Navigation;
 /// <summary>
 /// Represents a content page view that is associated with a specific view model type.
 /// Handles viewmodel allocation and cleanup for navigation events.
+/// Used to Enforce Cleanup when Navigating away from a view. The view model is automatically disposed when the view is disposed.
 /// </summary>
 public class ExtendedContentPage<TViewModel> : UraniumContentPage
     where TViewModel : class, IDisposable

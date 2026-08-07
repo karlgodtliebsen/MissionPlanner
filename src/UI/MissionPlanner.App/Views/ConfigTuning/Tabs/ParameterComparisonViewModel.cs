@@ -2,11 +2,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
-using MissionPlanner.App.Navigation;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Comparison;
 using MissionPlanner.Library;
 using MissionPlanner.Library.DateTime.Domain;
+using UraniumUI.Material.Dialogs;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
@@ -19,14 +19,14 @@ public partial class ParameterComparisonViewModel : ObservableObject
     private readonly IParameterComparisonService comparisons;
     private readonly ParametersFileHandler parametersFileHandler;
     private readonly IDateTimeProvider dateTimeProvider;
-    private readonly IModalNavigationService modalNavigationService;
+    private readonly IExtendedDialogService dialogService;
 
 
     /// <summary>Provides the parameter comparison workspace.</summary>
-    public ParameterComparisonViewModel(IParameterComparisonService comparisons, IModalNavigationService modalNavigationService, ParametersFileHandler parametersFileHandler, IDateTimeProvider dateTimeProvider, IParameterEditSession session)
+    public ParameterComparisonViewModel(IParameterComparisonService comparisons, IExtendedDialogService dialogService, ParametersFileHandler parametersFileHandler, IDateTimeProvider dateTimeProvider, IParameterEditSession session)
     {
         this.comparisons = comparisons;
-        this.modalNavigationService = modalNavigationService;
+        this.dialogService = dialogService;
         this.parametersFileHandler = parametersFileHandler;
         this.dateTimeProvider = dateTimeProvider;
         editSession = session;
@@ -36,7 +36,7 @@ public partial class ParameterComparisonViewModel : ObservableObject
     [RelayCommand]
     private Task CloseAsync(CancellationToken cancellationToken)
     {
-        return modalNavigationService.CloseAsync(true, cancellationToken);
+        return dialogService.CloseAsync(true, cancellationToken);
     }
 
     /// <summary>Gets the currently filtered comparison rows.</summary>

@@ -1,8 +1,6 @@
 ﻿using CommunityToolkit.Maui.Storage;
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
-using MissionPlanner.App.Helpers;
-using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
@@ -289,7 +287,6 @@ public sealed class FullParametersListLifecycleTests
             dispatcher,
             extendedDialogService,
             Substitute.For<IDomainFactory>(),
-            Substitute.For<IModalNavigationService>(),
             new ParametersFileHandler(Substitute.For<IFileSaver>()),
             Substitute.For<IUserConfirmationService>(),
             Substitute.For<IParameterProfileRepository>(),
@@ -298,9 +295,7 @@ public sealed class FullParametersListLifecycleTests
         return new Fixture(viewModel, connectionLifetime);
     }
 
-    private static async Task WaitForAsync(
-        Func<bool> predicate,
-        CancellationToken cancellationToken)
+    private static async Task WaitForAsync(Func<bool> predicate, CancellationToken cancellationToken)
     {
         var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(2);
         while (!predicate() && DateTime.UtcNow < deadline)
@@ -311,9 +306,7 @@ public sealed class FullParametersListLifecycleTests
         predicate().Should().BeTrue();
     }
 
-    private sealed record Fixture(
-        FullParametersListTabViewModel ViewModel,
-        CancellationTokenSource ConnectionLifetime) : IDisposable
+    private sealed record Fixture(FullParametersListTabViewModel ViewModel, CancellationTokenSource ConnectionLifetime) : IDisposable
     {
         public void Dispose()
         {

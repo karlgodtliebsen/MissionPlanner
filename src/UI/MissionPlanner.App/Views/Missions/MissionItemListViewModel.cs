@@ -6,13 +6,13 @@ using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Navigation;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Files;
 using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.MavLink.Missions;
+using UraniumUI.Material.Dialogs;
 
 namespace MissionPlanner.App.Views.Missions;
 
@@ -24,18 +24,18 @@ namespace MissionPlanner.App.Views.Missions;
 public partial class MissionItemListViewModel : ObservableObject, IDisposable
 {
     private readonly IMissionFileCodec fileCodec;
-    private readonly IModalNavigationService modalNavigationService;
     private readonly IMissionProtocolMapper protocolMapper;
     private readonly IFileSaver fileSaver;
     private readonly ILogger<MissionItemListViewModel> logger;
+    private readonly IExtendedDialogService dialogService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MissionItemListViewModel"/> class.
     /// </summary>
-    public MissionItemListViewModel(IMissionFileCodec fileCodec, IModalNavigationService modalNavigationService, IMissionProtocolMapper protocolMapper, IFileSaver fileSaver, IPlannerSettingsService settingsService, ILogger<MissionItemListViewModel> logger)
+    public MissionItemListViewModel(IMissionFileCodec fileCodec, IExtendedDialogService dialogService, IMissionProtocolMapper protocolMapper, IFileSaver fileSaver, IPlannerSettingsService settingsService, ILogger<MissionItemListViewModel> logger)
     {
         this.fileCodec = fileCodec;
-        this.modalNavigationService = modalNavigationService;
+        this.dialogService = dialogService;
         this.protocolMapper = protocolMapper;
         this.fileSaver = fileSaver;
         this.logger = logger;
@@ -45,7 +45,7 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private Task CloseAsync(CancellationToken cancellationToken)
     {
-        return modalNavigationService.CloseAsync(true, cancellationToken);
+        return dialogService.CloseAsync(true, cancellationToken);
     }
 
     /// <inheritdoc />

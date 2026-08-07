@@ -70,9 +70,7 @@ public static class ApplicationConfigurator
 
         // Register shared state service as singleton for runtime state management
         services.TryAddTransient<INavigationService, ShellNavigationService>();
-        services.TryAddTransient<IModalNavigationService, ModalNavigationService>();
         services.TryAddTransient<IConfigNavigationGuard, ConfigNavigationGuard>();
-
 
         services.TryAddTransient<IPlannerSettingsStore, PreferencesPlannerSettingsStore>();
         services.TryAddTransient<IPlannerSecretStore, SecurePlannerSecretStore>();

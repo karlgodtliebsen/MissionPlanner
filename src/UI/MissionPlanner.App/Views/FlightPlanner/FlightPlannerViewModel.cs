@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Views.Missions;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Models;
@@ -19,8 +18,6 @@ namespace MissionPlanner.App.Views.FlightPlanner;
 /// </summary>
 public partial class FlightPlannerViewModel : ObservableObject, IDisposable
 {
-    private readonly IModalNavigationService modalNavigationService;
-
     private readonly IExtendedDialogService dialogService;
     private readonly IServiceFactory factory;
 
@@ -37,7 +34,6 @@ public partial class FlightPlannerViewModel : ObservableObject, IDisposable
     public FlightPlannerViewModel(
         MissionItemListViewModel map,
         IExtendedDialogService dialogService,
-        IModalNavigationService modalNavigationService,
         IServiceFactory factory,
         IDomainFactory domainFactory,
         IMissionTransferService transferService,
@@ -48,7 +44,6 @@ public partial class FlightPlannerViewModel : ObservableObject, IDisposable
     {
         Map = map;
         this.dialogService = dialogService;
-        this.modalNavigationService = modalNavigationService;
         this.factory = factory;
         this.domainFactory = domainFactory;
         this.transferService = transferService;
@@ -144,7 +139,7 @@ public partial class FlightPlannerViewModel : ObservableObject, IDisposable
         //MissionItemListViewModel viewModel
         //    await dialogService.DisplayViewExtendedAsync("Editor", view);
         var pageView = domainFactory.Create<MissionItemListView, MissionItemListViewModel>(Map);
-        await modalNavigationService.ShowAsync(pageView, true, cancellationToken);
+        await dialogService.ShowAsync(pageView, true, cancellationToken);
     }
 
     [RelayCommand]

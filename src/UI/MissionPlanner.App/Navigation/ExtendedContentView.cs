@@ -4,6 +4,7 @@ namespace MissionPlanner.App.Navigation;
 
 /// <summary>
 /// Represents a content view that is associated with a specific view model type.
+/// Used to Enforce Cleanup when Navigating away from a view. The view model is automatically disposed when the view is disposed.
 /// </summary>
 /// <typeparam name="TViewModel"></typeparam>
 public class ExtendedContentView<TViewModel> : ContentView where TViewModel : class, IDisposable

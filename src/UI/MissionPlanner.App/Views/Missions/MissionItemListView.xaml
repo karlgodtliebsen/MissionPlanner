@@ -8,22 +8,16 @@
                     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                     x:Class="MissionPlanner.App.Views.Missions.MissionItemListView"
                     x:DataType="missions:MissionItemListViewModel"
+                    BackgroundColor="Transparent"
+                    Padding="25"
                     x:Name="Root">
 
-                                <!--Margin="50"
-                                MinimumWidthRequest="2000"
-                                MaximumHeightRequest="600"-->
-
-
     <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" 
-          RowSpacing="6" BackgroundColor="#252526" Padding="6"  Margin="0" HorizontalOptions="Fill"   VerticalOptions="Fill">
+          RowSpacing="6" BackgroundColor="#252526" Padding="6"  Margin="25" HorizontalOptions="Fill"   VerticalOptions="Fill">
       
             <Button HorizontalOptions="End" 
                      Text="Close" WidthRequest="100" Command="{Binding CloseCommand}">
-
             </Button>
-            
-
 
         <!-- Title + mode switch BackgroundColor="#252526" -->
         <Label Grid.Row="1" Grid.Column="0" Text="Mission" FontAttributes="Bold" FontSize="16" VerticalOptions="Center" />
@@ -47,7 +41,7 @@
             <Entry Grid.Column="7" Text="{Binding AltWarnMeters}" Keyboard="Numeric" HorizontalTextAlignment="End"  FontSize="11" WidthRequest="25"  />
         </Grid>
 
-        <Grid Grid.Row="5" HorizontalOptions="Fill" VerticalOptions="Fill" Margin="50">
+        <Grid Grid.Row="5" HorizontalOptions="Fill" VerticalOptions="Fill" >
             
             <controls:VirtualizedDataGrid 
                 ItemsSource="{Binding MissionItems}" 
