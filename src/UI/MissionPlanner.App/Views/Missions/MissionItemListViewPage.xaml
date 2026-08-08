@@ -18,7 +18,7 @@
                 Text="Close" WidthRequest="100" Command="{Binding CloseCommand}">
             </Button>
 
-            <missions:MissionItemListView Grid.Row="1" HorizontalOptions="Fill" VerticalOptions="Fill" Margin="25,10,25,10"></missions:MissionItemListView>
+            <missions:MissionItemListView Grid.Row="1" HorizontalOptions="Fill" VerticalOptions="Fill" Margin="25,10,25,10" ShowAllRows="True"></missions:MissionItemListView>
 
         </Grid>
     </Border>
