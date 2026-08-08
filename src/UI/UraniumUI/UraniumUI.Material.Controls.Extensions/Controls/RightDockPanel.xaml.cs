@@ -2,18 +2,12 @@
 
 namespace UraniumUI.Material.Controls;
 
-/// <summary>
-/// A panel that docks content to the right side and can be expanded or collapsed.
-/// </summary>
 public partial class RightDockPanel : ContentView
 {
-    private double savedExpandedWidth = 320;
-    private double panStartWidth;
-    private bool isLoaded;
+    private double _savedExpandedWidth = 320;
+    private double _panStartWidth;
+    private bool _isLoaded;
 
-    /// <summary>
-    /// 
-    /// </summary>
     public RightDockPanel()
     {
         InitializeComponent();
@@ -36,13 +30,13 @@ public partial class RightDockPanel : ContentView
 
     private void RightDockPanel_Loaded(object? sender, EventArgs e)
     {
-        isLoaded = true;
+        _isLoaded = true;
         ApplyState(false);
     }
 
     private void RightDockPanel_SizeChanged(object? sender, EventArgs e)
     {
-        if (isLoaded)
+        if (_isLoaded)
         {
             CoerceDockWidth();
         }
@@ -203,7 +197,7 @@ public partial class RightDockPanel : ContentView
 
     private static void OnLayoutPropertyChanged(BindableObject bindable, object oldValue, object newValue)
     {
-        if (bindable is RightDockPanel panel && panel.isLoaded)
+        if (bindable is RightDockPanel panel && panel._isLoaded)
         {
             panel.ApplyState(false);
         }
@@ -219,7 +213,7 @@ public partial class RightDockPanel : ContentView
     {
         if (DockColumn.Width.Value > 0)
         {
-            savedExpandedWidth = DockColumn.Width.Value;
+            _savedExpandedWidth = DockColumn.Width.Value;
         }
 
         IsExpanded = false;
@@ -228,7 +222,7 @@ public partial class RightDockPanel : ContentView
 
     private void ApplyState(bool animated)
     {
-        if (!isLoaded)
+        if (!_isLoaded)
         {
             return;
         }
@@ -244,7 +238,7 @@ public partial class RightDockPanel : ContentView
             SplitterHost.IsVisible = true;
             EdgeToggleButton.IsVisible = ShowEdgeToggleWhenExpanded;
             EdgeToggleButton.Text = CollapseGlyph;
-            savedExpandedWidth = width;
+            _savedExpandedWidth = width;
         }
         else
         {
@@ -261,19 +255,28 @@ public partial class RightDockPanel : ContentView
     {
         if (!AutoSizeToContent)
         {
-            return DockWidth > 0 ? DockWidth : savedExpandedWidth;
+            return DockWidth > 0 ? DockWidth : _savedExpandedWidth;
         }
 
-        if (DockContent is VisualElement view)
+        if (DockContent is not VisualElement view)
         {
-            var measured = view.Measure(double.PositiveInfinity, Height).Width;
-            if (double.IsFinite(measured) && measured > 0)
-            {
-                return measured;
-            }
+            return DockWidth > 0 ? DockWidth : _savedExpandedWidth;
         }
 
-        return DockWidth > 0 ? DockWidth : savedExpandedWidth;
+        var desiredWidth = view.DesiredSize.Width;
+        if (desiredWidth > 0 && !double.IsNaN(desiredWidth) && !double.IsInfinity(desiredWidth))
+        {
+            return desiredWidth;
+        }
+
+        var availableHeight = Height > 0 ? Height : double.PositiveInfinity;
+        var measuredWidth = view.Measure(double.PositiveInfinity, availableHeight).Width;
+
+        return measuredWidth > 0 && !double.IsNaN(measuredWidth) && !double.IsInfinity(measuredWidth)
+            ? measuredWidth
+            : DockWidth > 0
+                ? DockWidth
+                : _savedExpandedWidth;
     }
 
     private void CoerceDockWidth()
@@ -285,7 +288,7 @@ public partial class RightDockPanel : ContentView
 
         var width = ClampWidth(DockColumn.Width.Value <= 0 ? ResolveExpandedWidth() : DockColumn.Width.Value);
         DockColumn.Width = new GridLength(width, GridUnitType.Absolute);
-        savedExpandedWidth = width;
+        _savedExpandedWidth = width;
     }
 
     private double ClampWidth(double width)
@@ -304,15 +307,15 @@ public partial class RightDockPanel : ContentView
         switch (e.StatusType)
         {
             case GestureStatus.Started:
-                panStartWidth = DockColumn.Width.Value;
+                _panStartWidth = DockColumn.Width.Value;
                 break;
 
             case GestureStatus.Running:
-                var newWidth = panStartWidth - e.TotalX;
+                var newWidth = _panStartWidth - e.TotalX;
                 newWidth = ClampWidth(newWidth);
                 DockColumn.Width = new GridLength(newWidth, GridUnitType.Absolute);
                 DockWidth = newWidth;
-                savedExpandedWidth = newWidth;
+                _savedExpandedWidth = newWidth;
                 break;
         }
     }

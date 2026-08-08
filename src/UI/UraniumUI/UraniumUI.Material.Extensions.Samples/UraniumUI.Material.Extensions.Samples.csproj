@@ -14,8 +14,9 @@
 		<SingleProject>true</SingleProject>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
+        <MauiXamlInflator>SourceGen</MauiXamlInflator>
 
-		<!-- Display name -->
+        <!-- Display name -->
 		<ApplicationTitle>UraniumUI.Material.Extensions.Samples</ApplicationTitle>
 
 		<!-- App Identifier -->

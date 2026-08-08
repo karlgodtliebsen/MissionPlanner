@@ -23,7 +23,15 @@
         <PackageReference Include="UraniumUI.Material" />
     </ItemGroup>
     <ItemGroup>
+      <Compile Update="Controls\RightDockPanel2.xaml.cs">
+        <DependentUpon>RightDockPanel2.xaml</DependentUpon>
+      </Compile>
+    </ItemGroup>
+    <ItemGroup>
       <MauiXaml Update="Controls\RightDockPanel.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </MauiXaml>
+      <MauiXaml Update="Controls\RightDockPanel2.xaml">
         <Generator>MSBuild:Compile</Generator>
       </MauiXaml>
     </ItemGroup>

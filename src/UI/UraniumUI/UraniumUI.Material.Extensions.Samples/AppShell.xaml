@@ -88,7 +88,7 @@
         <ShellContent Title="Extended Dialogs" ContentTemplate="{DataTemplate dialogSamples:DialogSampleView}" Route="Dialogs" />
     </FlyoutItem>
      <FlyoutItem Title="Right Dock Panel" >
-        <ShellContent Title="Right Dock Panel" ContentTemplate="{DataTemplate controlsSamples:RightDockPanelSample}" Route="RightDockPanel" />
+        <ShellContent Title="Right Dock Panel" ContentTemplate="{DataTemplate controlsSamples:RightDockPanelSample}" Route="RightDockPanel2" />
     </FlyoutItem>  
     
     <FlyoutItem Title="Compare Data Grids" >

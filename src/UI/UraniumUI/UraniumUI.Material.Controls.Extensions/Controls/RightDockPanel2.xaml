@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="UraniumUI.Material.Controls.RightDockPanel2"
+    x:Name="root"
+    >
+
+    <Grid ColumnSpacing="0" RowSpacing="0" HorizontalOptions="Fill" VerticalOptions="Fill">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition x:Name="SplitterColumn" Width="6" />
+            <ColumnDefinition x:Name="DockColumn" Width="320" />
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0" x:Name="MainHost" />
+
+        <Grid Grid.Column="1" x:Name="SplitterHost" BackgroundColor="{Binding Source={x:Reference root}, Path=SplitterColor}">
+            <Grid.GestureRecognizers>
+                <PanGestureRecognizer PanUpdated="OnSplitterPanUpdated" />
+            </Grid.GestureRecognizers>
+        </Grid>
+
+        <Border Grid.Column="2" x:Name="DockBorder" BackgroundColor="{Binding Source={x:Reference root}, Path=DockBackground}"
+                Stroke="{Binding Source={x:Reference root}, Path=DockBorderColor}" StrokeThickness="1">
+            <Grid RowDefinitions="Auto,*">
+                <Grid Padding="8,6"
+                      BackgroundColor="{Binding Source={x:Reference root}, Path=HeaderBackground}"
+                      ColumnDefinitions="Auto,*,Auto">
+
+                    <Button Grid.Column="0"
+                            WidthRequest="32"
+                            HeightRequest="32"
+                            Text="{Binding Source={x:Reference root}, Path=CollapseGlyph}"
+                            Clicked="OnToggleClicked" />
+
+                    <Label Grid.Column="1"
+                           VerticalOptions="Center"
+                           Text="{Binding Source={x:Reference root}, Path=Title}"
+                           FontAttributes="Bold" />
+
+                    <ContentView Grid.Column="2" x:Name="HeaderHost" />
+                </Grid>
+
+                <ContentView Grid.Row="1" x:Name="DockHost" />
+            </Grid>
+        </Border>
+
+        <Button x:Name="EdgeToggleButton"
+                Grid.ColumnSpan="3"
+                HorizontalOptions="End"
+                VerticalOptions="Start"
+                Margin="0,8,8,0"
+                WidthRequest="36"
+                HeightRequest="36"
+                ZIndex="100"
+                Text="{Binding Source={x:Reference root}, Path=ExpandGlyph}"
+                Clicked="OnToggleClicked" />
+
+    </Grid>
+
+
+
+</ContentView>

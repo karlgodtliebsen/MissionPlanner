@@ -4,41 +4,42 @@
                     xmlns:controls="using:UraniumUI.Material.Controls"
                     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                     x:Class="UraniumUI.Material.Extensions.Samples.ControlsSamples.RightDockPanelSample"
->
-    <!--<Grid RowDefinitions="*" x:Name="HostGrid">
+                >
+
+    <!--<Grid RowDefinitions="*" x:Name="HostGrid" HorizontalOptions="Fill" VerticalOptions="Fill" BackgroundColor="Red">-->
+
+    <!--   
+
+                AutoSizeToContent="True"
+                ShowEdgeToggleWhenExpanded="True"
     
-                    DockBackground="{AppThemeBinding Light=White, Dark=#1E1E1E}"
-                HeaderBackground="{AppThemeBinding Light=#F3F3F3, Dark=#2A2A2A}"
-                DockBorderColor="{AppThemeBinding Light=#D0D0D0, Dark=#404040}"
-                SplitterColor="{AppThemeBinding Light=#D8D8D8, Dark=#505050}"
-
-    
-    
-    -->
-
-
-
-
-    <controls:RightDockPanel
-                Title="Inspector"
                 HorizontalOptions="Fill"
                 VerticalOptions="Fill"
                 WidthRequest="200"
                 HeightRequest="200"
- DockWidth="360"
+    
+    -->
+
+    <controls:RightDockPanel3 
+                HorizontalOptions="Fill" 
+                VerticalOptions="Fill" 
+                Title="Inspector"
+                DockWidth="360"
                 MinDockWidth="260"
                 MaxDockWidth="520"
-                AutoSizeToContent="True"
-                IsExpanded="True"
-                ShowEdgeToggleWhenExpanded="True"
-                DockBackground="Red"
-                HeaderBackground="Blue"
-                DockBorderColor="AntiqueWhite"
-                SplitterColor="YellowGreen"
-                
+                IsExpanded="False"
+
+                AutoSizeToContent="False"
+                ShowEdgeToggleWhenExpanded="False"
+
+                DockBackground="{AppThemeBinding Light=White, Dark=#1E1E1E}"
+                HeaderBackground="{AppThemeBinding Light=#F3F3F3, Dark=#2A2A2A}"
+                DockBorderColor="{AppThemeBinding Light=#D0D0D0, Dark=#404040}"
+                SplitterColor="{AppThemeBinding Light=#D8D8D8, Dark=#505050}"
+               
                 >
 
-        <controls:RightDockPanel.MainContent>
+        <controls:RightDockPanel3.MainContent>
             <Grid Padding="16">
                 <VerticalStackLayout Spacing="12">
                     <Label Text="Main content area" FontSize="24" FontAttributes="Bold" />
@@ -46,9 +47,9 @@
                     <Editor HeightRequest="200" Placeholder="Main editor surface..." />
                 </VerticalStackLayout>
             </Grid>
-        </controls:RightDockPanel.MainContent>
+        </controls:RightDockPanel3.MainContent>
 
-        <controls:RightDockPanel.DockContent>
+        <controls:RightDockPanel3.DockContent>
             <ScrollView>
                 <VerticalStackLayout Padding="12" Spacing="10">
                     <Label Text="Properties" FontAttributes="Bold" FontSize="18" />
@@ -60,9 +61,9 @@
                     <Button Text="Apply" />
                 </VerticalStackLayout>
             </ScrollView>
-        </controls:RightDockPanel.DockContent>
+        </controls:RightDockPanel3.DockContent>
 
-    </controls:RightDockPanel>
+    </controls:RightDockPanel3>
 
 
 
