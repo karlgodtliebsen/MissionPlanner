@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<uranium:UraniumContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:controls="using:UraniumUI.Material.Controls"
+                    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                    x:Class="UraniumUI.Material.Extensions.Samples.ControlsSamples.RightDockPanelSample"
+>
+    <!--<Grid RowDefinitions="*" x:Name="HostGrid">
+    
+                    DockBackground="{AppThemeBinding Light=White, Dark=#1E1E1E}"
+                HeaderBackground="{AppThemeBinding Light=#F3F3F3, Dark=#2A2A2A}"
+                DockBorderColor="{AppThemeBinding Light=#D0D0D0, Dark=#404040}"
+                SplitterColor="{AppThemeBinding Light=#D8D8D8, Dark=#505050}"
+
+    
+    
+    -->
+
+
+
+
+    <controls:RightDockPanel
+                Title="Inspector"
+                HorizontalOptions="Fill"
+                VerticalOptions="Fill"
+                WidthRequest="200"
+                HeightRequest="200"
+ DockWidth="360"
+                MinDockWidth="260"
+                MaxDockWidth="520"
+                AutoSizeToContent="True"
+                IsExpanded="True"
+                ShowEdgeToggleWhenExpanded="True"
+                DockBackground="Red"
+                HeaderBackground="Blue"
+                DockBorderColor="AntiqueWhite"
+                SplitterColor="YellowGreen"
+                
+                >
+
+        <controls:RightDockPanel.MainContent>
+            <Grid Padding="16">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Main content area" FontSize="24" FontAttributes="Bold" />
+                    <Button Text="Do something" />
+                    <Editor HeightRequest="200" Placeholder="Main editor surface..." />
+                </VerticalStackLayout>
+            </Grid>
+        </controls:RightDockPanel.MainContent>
+
+        <controls:RightDockPanel.DockContent>
+            <ScrollView>
+                <VerticalStackLayout Padding="12" Spacing="10">
+                    <Label Text="Properties" FontAttributes="Bold" FontSize="18" />
+                    <Entry Placeholder="Name" />
+                    <Entry Placeholder="Category" />
+                    <Label Text="Description" />
+                    <Editor AutoSize="TextChanges" />
+                    <CheckBox />
+                    <Button Text="Apply" />
+                </VerticalStackLayout>
+            </ScrollView>
+        </controls:RightDockPanel.DockContent>
+
+    </controls:RightDockPanel>
+
+
+
+    <!--</Grid>-->
+
+</uranium:UraniumContentPage>

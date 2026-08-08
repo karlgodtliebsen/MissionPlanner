@@ -22,4 +22,9 @@
         <PackageReference Include="UraniumUI.Icons.MaterialSymbols" />
         <PackageReference Include="UraniumUI.Material" />
     </ItemGroup>
+    <ItemGroup>
+      <MauiXaml Update="Controls\RightDockPanel.xaml">
+        <Generator>MSBuild:Compile</Generator>
+      </MauiXaml>
+    </ItemGroup>
 </Project>
