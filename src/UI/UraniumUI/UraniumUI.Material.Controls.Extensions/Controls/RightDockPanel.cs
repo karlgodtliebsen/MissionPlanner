@@ -2,73 +2,79 @@
 
 namespace UraniumUI.Material.Controls;
 
-public class RightDockPanel3 : ContentView
+/// <summary>
+/// A panel that docks content to the right side with a collapsible feature.
+/// </summary>
+public class RightDockPanel : ContentView
 {
-    private readonly Grid _root;
-    private readonly Grid _mainHost;
-    private readonly Grid _splitterHost;
-    private readonly Border _dockBorder;
-    private readonly Grid _headerGrid;
-    private readonly ContentView _headerHost;
-    private readonly ContentView _dockHost;
-    private readonly Button _headerToggleButton;
-    private readonly Button _edgeToggleButton;
+    private readonly Grid root;
+    private readonly Grid mainHost;
+    private readonly Grid splitterHost;
+    private readonly Border dockBorder;
+    private readonly Grid headerGrid;
+    private readonly ContentView headerHost;
+    private readonly ContentView dockHost;
+    private readonly Button headerToggleButton;
+    private readonly Button edgeToggleButton;
 
-    private readonly ColumnDefinition _mainColumn;
-    private readonly ColumnDefinition _splitterColumn;
-    private readonly ColumnDefinition _dockColumn;
+    private readonly ColumnDefinition mainColumn;
+    private readonly ColumnDefinition splitterColumn;
+    private readonly ColumnDefinition dockColumn;
 
-    private double _savedExpandedWidth = 320;
-    private double _panStartWidth;
-    private bool _isBuilt;
+    private double savedExpandedWidth = 320;
+    private double panStartWidth;
+    private bool isBuilt;
 
-    public RightDockPanel3()
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RightDockPanel"/> class.
+    /// </summary>
+    public RightDockPanel()
     {
-        _mainColumn = new ColumnDefinition { Width = GridLength.Star };
-        _splitterColumn = new ColumnDefinition { Width = 6 };
-        _dockColumn = new ColumnDefinition { Width = 320 };
+        mainColumn = new ColumnDefinition { Width = GridLength.Star };
+        splitterColumn = new ColumnDefinition { Width = 6 };
+        dockColumn = new ColumnDefinition { Width = 320 };
 
-        _root = new Grid { ColumnSpacing = 0, RowSpacing = 0, ColumnDefinitions = { _mainColumn, _splitterColumn, _dockColumn } };
+        root = new Grid { ColumnSpacing = 0, RowSpacing = 0, ColumnDefinitions = { mainColumn, splitterColumn, dockColumn } };
 
-        _mainHost = [];
-        Grid.SetColumn(_mainHost, 0);
+        mainHost = [];
+        Grid.SetColumn(mainHost, 0);
 
-        _splitterHost = [];
-        Grid.SetColumn(_splitterHost, 1);
+        splitterHost = [];
+        Grid.SetColumn(splitterHost, 1);
 
         var splitterPan = new PanGestureRecognizer();
         splitterPan.PanUpdated += OnSplitterPanUpdated;
-        _splitterHost.GestureRecognizers.Add(splitterPan);
+        splitterHost.GestureRecognizers.Add(splitterPan);
 
-        _headerToggleButton = new Button { WidthRequest = 32, HeightRequest = 32, Padding = 0 };
-        _headerToggleButton.Clicked += OnToggleClicked;
+        headerToggleButton = new Button { WidthRequest = 32, HeightRequest = 32, Padding = 0 };
+        headerToggleButton.Clicked += OnToggleClicked;
 
-        _headerHost = new ContentView();
+        headerHost = new ContentView();
 
-        _headerGrid = new Grid { Padding = new Thickness(8, 6), ColumnDefinitions = { new ColumnDefinition { Width = GridLength.Auto }, new ColumnDefinition { Width = GridLength.Star }, new ColumnDefinition { Width = GridLength.Auto } } };
+        headerGrid = new Grid { Padding = new Thickness(8, 6), ColumnDefinitions = { new ColumnDefinition { Width = GridLength.Auto }, new ColumnDefinition { Width = GridLength.Star }, new ColumnDefinition { Width = GridLength.Auto } } };
 
-        _headerGrid.Add(_headerToggleButton);
-        Grid.SetColumn(_headerToggleButton, 0);
+        headerGrid.Add(headerToggleButton);
+        Grid.SetColumn(headerToggleButton, 0);
 
         var titleLabel = new Label { VerticalOptions = LayoutOptions.Center, FontAttributes = FontAttributes.Bold };
         titleLabel.SetBinding(Label.TextProperty, new Binding(nameof(Title), source: this));
-        _headerGrid.Add(titleLabel);
+        headerGrid.Add(titleLabel);
         Grid.SetColumn(titleLabel, 1);
 
-        _headerGrid.Add(_headerHost);
-        Grid.SetColumn(_headerHost, 2);
+        headerGrid.Add(headerHost);
+        Grid.SetColumn(headerHost, 2);
 
-        _dockHost = new ContentView();
+        dockHost = new ContentView();
 
         var dockLayout = new Grid { RowDefinitions = { new RowDefinition { Height = GridLength.Auto }, new RowDefinition { Height = GridLength.Star } } };
-        dockLayout.Add(_headerGrid);
-        dockLayout.Add(_dockHost);
-        Grid.SetRow(_dockHost, 1);
+        dockLayout.Add(headerGrid);
+        dockLayout.Add(dockHost);
+        Grid.SetRow(dockHost, 1);
 
-        _dockBorder = new Border { Content = dockLayout, StrokeThickness = 1 };
-        Grid.SetColumn(_dockBorder, 2);
+        dockBorder = new Border { Content = dockLayout, StrokeThickness = 1 };
+        Grid.SetColumn(dockBorder, 2);
 
-        _edgeToggleButton = new Button
+        edgeToggleButton = new Button
         {
             WidthRequest = 36,
             HeightRequest = 36,
@@ -77,21 +83,21 @@ public class RightDockPanel3 : ContentView
             Margin = new Thickness(0, 8, 8, 0),
             ZIndex = 100
         };
-        _edgeToggleButton.Clicked += OnToggleClicked;
-        Grid.SetColumnSpan(_edgeToggleButton, 3);
+        edgeToggleButton.Clicked += OnToggleClicked;
+        Grid.SetColumnSpan(edgeToggleButton, 3);
 
-        _root.Children.Add(_mainHost);
-        _root.Children.Add(_splitterHost);
-        _root.Children.Add(_dockBorder);
-        _root.Children.Add(_edgeToggleButton);
+        root.Children.Add(mainHost);
+        root.Children.Add(splitterHost);
+        root.Children.Add(dockBorder);
+        root.Children.Add(edgeToggleButton);
 
-        Content = _root;
+        Content = root;
 
         ToggleCommand = new Command(() => IsExpanded = !IsExpanded);
 
         SizeChanged += (_, _) =>
         {
-            if (_isBuilt)
+            if (isBuilt)
             {
                 ApplyState();
             }
@@ -99,7 +105,7 @@ public class RightDockPanel3 : ContentView
 
         Loaded += (_, _) =>
         {
-            _isBuilt = true;
+            isBuilt = true;
             ApplyHostedContent();
             ApplyStyling();
             ApplyState();
@@ -110,7 +116,7 @@ public class RightDockPanel3 : ContentView
         BindableProperty.Create(
             nameof(MainContent),
             typeof(View),
-            typeof(RightDockPanel2),
+            typeof(RightDockPanel),
             default(View),
             propertyChanged: OnHostedContentChanged);
 
@@ -124,7 +130,7 @@ public class RightDockPanel3 : ContentView
         BindableProperty.Create(
             nameof(DockContent),
             typeof(View),
-            typeof(RightDockPanel2),
+            typeof(RightDockPanel),
             default(View),
             propertyChanged: OnHostedContentChanged);
 
@@ -138,7 +144,7 @@ public class RightDockPanel3 : ContentView
         BindableProperty.Create(
             nameof(HeaderContent),
             typeof(View),
-            typeof(RightDockPanel2),
+            typeof(RightDockPanel),
             default(View),
             propertyChanged: OnHostedContentChanged);
 
@@ -152,7 +158,7 @@ public class RightDockPanel3 : ContentView
         BindableProperty.Create(
             nameof(Title),
             typeof(string),
-            typeof(RightDockPanel2),
+            typeof(RightDockPanel),
             "Panel");
 
     public string Title
@@ -165,7 +171,7 @@ public class RightDockPanel3 : ContentView
         BindableProperty.Create(
             nameof(IsExpanded),
             typeof(bool),
-            typeof(RightDockPanel2),
+            typeof(RightDockPanel),
             true,
             BindingMode.TwoWay,
             propertyChanged: OnLayoutStateChanged);
@@ -180,7 +186,7 @@ public class RightDockPanel3 : ContentView
         BindableProperty.Create(
             nameof(DockWidth),
             typeof(double),
-            typeof(RightDockPanel2),
+            typeof(RightDockPanel),
             320d,
             BindingMode.TwoWay,
             propertyChanged: OnLayoutStateChanged);
@@ -195,7 +201,7 @@ public class RightDockPanel3 : ContentView
         BindableProperty.Create(
             nameof(MinDockWidth),
             typeof(double),
-            typeof(RightDockPanel2),
+            typeof(RightDockPanel),
             220d,
             propertyChanged: OnLayoutStateChanged);
 
@@ -209,7 +215,7 @@ public class RightDockPanel3 : ContentView
         BindableProperty.Create(
             nameof(MaxDockWidth),
             typeof(double),
-            typeof(RightDockPanel2),
+            typeof(RightDockPanel),
             600d,
             propertyChanged: OnLayoutStateChanged);
 
@@ -223,7 +229,7 @@ public class RightDockPanel3 : ContentView
         BindableProperty.Create(
             nameof(AutoSizeToContent),
             typeof(bool),
-            typeof(RightDockPanel2),
+            typeof(RightDockPanel),
             false,
             propertyChanged: OnLayoutStateChanged);
 
@@ -237,7 +243,7 @@ public class RightDockPanel3 : ContentView
         BindableProperty.Create(
             nameof(ShowEdgeToggleWhenExpanded),
             typeof(bool),
-            typeof(RightDockPanel2),
+            typeof(RightDockPanel),
             false,
             propertyChanged: OnLayoutStateChanged);
 
@@ -251,7 +257,7 @@ public class RightDockPanel3 : ContentView
         BindableProperty.Create(
             nameof(SplitterColor),
             typeof(Color),
-            typeof(RightDockPanel2),
+            typeof(RightDockPanel),
             Colors.LightGray,
             propertyChanged: OnStyleChanged);
 
@@ -265,7 +271,7 @@ public class RightDockPanel3 : ContentView
         BindableProperty.Create(
             nameof(DockBackground),
             typeof(Color),
-            typeof(RightDockPanel2),
+            typeof(RightDockPanel),
             Colors.White,
             propertyChanged: OnStyleChanged);
 
@@ -279,7 +285,7 @@ public class RightDockPanel3 : ContentView
         BindableProperty.Create(
             nameof(DockBorderColor),
             typeof(Color),
-            typeof(RightDockPanel2),
+            typeof(RightDockPanel),
             Colors.Gray,
             propertyChanged: OnStyleChanged);
 
@@ -293,7 +299,7 @@ public class RightDockPanel3 : ContentView
         BindableProperty.Create(
             nameof(HeaderBackground),
             typeof(Color),
-            typeof(RightDockPanel2),
+            typeof(RightDockPanel),
             Color.FromArgb("#F3F3F3"),
             propertyChanged: OnStyleChanged);
 
@@ -307,7 +313,7 @@ public class RightDockPanel3 : ContentView
         BindableProperty.Create(
             nameof(ExpandGlyph),
             typeof(string),
-            typeof(RightDockPanel2),
+            typeof(RightDockPanel),
             "◀",
             propertyChanged: OnStyleChanged);
 
@@ -321,7 +327,7 @@ public class RightDockPanel3 : ContentView
         BindableProperty.Create(
             nameof(CollapseGlyph),
             typeof(string),
-            typeof(RightDockPanel2),
+            typeof(RightDockPanel),
             "▶",
             propertyChanged: OnStyleChanged);
 
@@ -335,7 +341,7 @@ public class RightDockPanel3 : ContentView
         BindableProperty.Create(
             nameof(ToggleCommand),
             typeof(ICommand),
-            typeof(RightDockPanel2),
+            typeof(RightDockPanel),
             default(ICommand));
 
     public ICommand? ToggleCommand
@@ -354,14 +360,14 @@ public class RightDockPanel3 : ContentView
 
     private static void OnHostedContentChanged(BindableObject bindable, object oldValue, object newValue)
     {
-        var panel = (RightDockPanel3)bindable;
+        var panel = (RightDockPanel)bindable;
 
         if (newValue is View newView)
         {
             panel.PropagateBindingContext(newView);
         }
 
-        if (panel._isBuilt)
+        if (panel.isBuilt)
         {
             panel.ApplyHostedContent();
         }
@@ -369,8 +375,8 @@ public class RightDockPanel3 : ContentView
 
     private static void OnLayoutStateChanged(BindableObject bindable, object oldValue, object newValue)
     {
-        var panel = (RightDockPanel3)bindable;
-        if (panel._isBuilt)
+        var panel = (RightDockPanel)bindable;
+        if (panel.isBuilt)
         {
             panel.ApplyState();
         }
@@ -378,8 +384,8 @@ public class RightDockPanel3 : ContentView
 
     private static void OnStyleChanged(BindableObject bindable, object oldValue, object newValue)
     {
-        var panel = (RightDockPanel3)bindable;
-        if (panel._isBuilt)
+        var panel = (RightDockPanel)bindable;
+        if (panel.isBuilt)
         {
             panel.ApplyStyling();
         }
@@ -397,31 +403,31 @@ public class RightDockPanel3 : ContentView
 
     private void ApplyHostedContent()
     {
-        _mainHost.Children.Clear();
+        mainHost.Children.Clear();
 
         if (MainContent != null)
         {
-            _mainHost.Children.Add(MainContent);
+            mainHost.Children.Add(MainContent);
         }
 
-        _dockHost.Content = DockContent;
-        _headerHost.Content = HeaderContent;
+        dockHost.Content = DockContent;
+        headerHost.Content = HeaderContent;
     }
 
     private void ApplyStyling()
     {
-        _splitterHost.BackgroundColor = SplitterColor;
-        _dockBorder.BackgroundColor = DockBackground;
-        _dockBorder.Stroke = DockBorderColor;
-        _headerGrid.BackgroundColor = HeaderBackground;
+        splitterHost.BackgroundColor = SplitterColor;
+        dockBorder.BackgroundColor = DockBackground;
+        dockBorder.Stroke = DockBorderColor;
+        headerGrid.BackgroundColor = HeaderBackground;
 
-        _headerToggleButton.Text = CollapseGlyph;
-        _edgeToggleButton.Text = ExpandGlyph;
+        headerToggleButton.Text = CollapseGlyph;
+        edgeToggleButton.Text = ExpandGlyph;
     }
 
     private void ApplyState()
     {
-        if (!_isBuilt)
+        if (!isBuilt)
         {
             return;
         }
@@ -431,31 +437,31 @@ public class RightDockPanel3 : ContentView
             var width = ResolveExpandedWidth();
             width = ClampWidth(width);
 
-            _dockColumn.Width = new GridLength(width, GridUnitType.Absolute);
-            _splitterColumn.Width = new GridLength(6, GridUnitType.Absolute);
+            dockColumn.Width = new GridLength(width, GridUnitType.Absolute);
+            splitterColumn.Width = new GridLength(6, GridUnitType.Absolute);
 
-            _dockBorder.IsVisible = true;
-            _splitterHost.IsVisible = true;
-            _edgeToggleButton.IsVisible = ShowEdgeToggleWhenExpanded;
-            _edgeToggleButton.Text = CollapseGlyph;
-            _headerToggleButton.Text = CollapseGlyph;
+            dockBorder.IsVisible = true;
+            splitterHost.IsVisible = true;
+            edgeToggleButton.IsVisible = ShowEdgeToggleWhenExpanded;
+            edgeToggleButton.Text = CollapseGlyph;
+            headerToggleButton.Text = CollapseGlyph;
 
-            _savedExpandedWidth = width;
+            savedExpandedWidth = width;
         }
         else
         {
-            if (_dockColumn.Width.Value > 0)
+            if (dockColumn.Width.Value > 0)
             {
-                _savedExpandedWidth = _dockColumn.Width.Value;
+                savedExpandedWidth = dockColumn.Width.Value;
             }
 
-            _dockColumn.Width = new GridLength(0, GridUnitType.Absolute);
-            _splitterColumn.Width = new GridLength(0, GridUnitType.Absolute);
+            dockColumn.Width = new GridLength(0, GridUnitType.Absolute);
+            splitterColumn.Width = new GridLength(0, GridUnitType.Absolute);
 
-            _dockBorder.IsVisible = false;
-            _splitterHost.IsVisible = false;
-            _edgeToggleButton.IsVisible = true;
-            _edgeToggleButton.Text = ExpandGlyph;
+            dockBorder.IsVisible = false;
+            splitterHost.IsVisible = false;
+            edgeToggleButton.IsVisible = true;
+            edgeToggleButton.Text = ExpandGlyph;
         }
     }
 
@@ -463,12 +469,12 @@ public class RightDockPanel3 : ContentView
     {
         if (!AutoSizeToContent)
         {
-            return DockWidth > 0 ? DockWidth : _savedExpandedWidth;
+            return DockWidth > 0 ? DockWidth : savedExpandedWidth;
         }
 
         if (DockContent is not VisualElement view)
         {
-            return DockWidth > 0 ? DockWidth : _savedExpandedWidth;
+            return DockWidth > 0 ? DockWidth : savedExpandedWidth;
         }
 
         var desiredWidth = view.DesiredSize.Width;
@@ -484,7 +490,7 @@ public class RightDockPanel3 : ContentView
             ? measuredWidth
             : DockWidth > 0
                 ? DockWidth
-                : _savedExpandedWidth;
+                : savedExpandedWidth;
     }
 
     private double ClampWidth(double width)
@@ -522,16 +528,16 @@ public class RightDockPanel3 : ContentView
         switch (e.StatusType)
         {
             case GestureStatus.Started:
-                _panStartWidth = _dockColumn.Width.Value;
+                panStartWidth = dockColumn.Width.Value;
                 break;
 
             case GestureStatus.Running:
-                var newWidth = _panStartWidth - e.TotalX;
+                var newWidth = panStartWidth - e.TotalX;
                 newWidth = ClampWidth(newWidth);
 
-                _dockColumn.Width = new GridLength(newWidth, GridUnitType.Absolute);
+                dockColumn.Width = new GridLength(newWidth, GridUnitType.Absolute);
                 DockWidth = newWidth;
-                _savedExpandedWidth = newWidth;
+                savedExpandedWidth = newWidth;
                 break;
         }
     }

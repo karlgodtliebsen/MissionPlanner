@@ -8,7 +8,7 @@ public partial class RightDockPanelSample : UraniumContentPage
     {
         InitializeComponent();
 
-        //var v = new RightDockPanel3
+        //var v = new RightDockPanel
         //{
         //    Content = new Label { Text = "hello world. Here is right dockpanel content" },
         //    IsExpanded = true,
