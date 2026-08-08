@@ -13,7 +13,7 @@
                     x:Name="Root">
 
     <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" Margin="10"
-          RowSpacing="6" BackgroundColor="#252526"   HorizontalOptions="Fill"   VerticalOptions="Fill">
+          RowSpacing="6" BackgroundColor="Transparent"   HorizontalOptions="Fill"   VerticalOptions="Fill">
 
         <!-- Title + mode switch BackgroundColor="#252526" -->
         <Label Grid.Row="1" Grid.Column="0" Text="Mission" FontAttributes="Bold" FontSize="16" VerticalOptions="Center" />
@@ -23,7 +23,8 @@
         <!-- Complete-mode header: info + editor settings -->
         <Label Grid.Row="3" Text="{Binding MissionSummary}" FontSize="12" FontAttributes="Bold" />
 
-        <Grid Grid.Row="4" HorizontalOptions="Start"  ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" VerticalOptions="Center" ColumnSpacing="6"  >
+        <Grid Grid.Row="4" HorizontalOptions="Start"  ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" VerticalOptions="Center" ColumnSpacing="6"
+              IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
             <Label Grid.Column="0" Text="WP Radius (m):" FontSize="11" VerticalOptions="Center"  />
             <Entry Grid.Column="1" Text="{Binding WaypointRadiusMeters}" Keyboard="Numeric" HorizontalTextAlignment="End"  FontSize="11" WidthRequest="25"   />
 
@@ -54,14 +55,14 @@
 
                 <controls:VirtualizedDataGrid.Columns>
 
-                    <material:DataGridColumn Width="*" Title="#" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
+                    <material:DataGridColumn Width="75" Title="#" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="missions:MissionItemRow">
                                 <Label Text="{Binding Number}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"  />
                             </DataTemplate>
                         </material:DataGridColumn.CellItemTemplate>
                     </material:DataGridColumn>
-                    <material:DataGridColumn Width="2*" Title="Command" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
+                    <material:DataGridColumn Width="*" Title="Command" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="missions:MissionItemRow">
                                 <Picker ItemsSource="{Binding CommandOptions, Source={RelativeSource AncestorType={x:Type missions:MissionItemListViewModel}}}"
@@ -99,32 +100,32 @@
                             </DataTemplate>
                         </material:DataGridColumn.CellItemTemplate>
                     </material:DataGridColumn>
-                    <material:DataGridColumn Width="2*" Title="Latitude">
+                    <material:DataGridColumn Width="120" Title="Latitude">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="missions:MissionItemRow">
                                 <Entry Text="{Binding Latitude, StringFormat='{0:F7}'}"   HorizontalOptions="Fill"  HorizontalTextAlignment="End"/>
                             </DataTemplate>
                         </material:DataGridColumn.CellItemTemplate>
                     </material:DataGridColumn>
-                    <material:DataGridColumn Width="2*" Title="Longitude">
+                    <material:DataGridColumn Width="120" Title="Longitude">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="missions:MissionItemRow">
                                 <Entry Text="{Binding Longitude, StringFormat='{0:F7}'}"   HorizontalOptions="Fill"  HorizontalTextAlignment="End"/>
                             </DataTemplate>
                         </material:DataGridColumn.CellItemTemplate>
                     </material:DataGridColumn>
-                    <material:DataGridColumn Width="*" Title="Alt (m)">
+                    <material:DataGridColumn Width="100" Title="Alt (m)">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="missions:MissionItemRow">
                                 <Entry Text="{Binding Altitude, StringFormat='{0:F1}'}" HorizontalOptions="Fill" HorizontalTextAlignment="End" />
                             </DataTemplate>
                         </material:DataGridColumn.CellItemTemplate>
                     </material:DataGridColumn>
-                    <material:DataGridColumn Width="*" Title="Frame" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
+                    <material:DataGridColumn Width="125" Title="Frame" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="missions:MissionItemRow">
                                 <Picker ItemsSource="{Binding FrameOptions, Source={RelativeSource AncestorType={x:Type missions:MissionItemListViewModel}}}"
-                                    SelectedItem="{Binding SelectedFrame}" VerticalOptions="Center" />
+                                    SelectedItem="{Binding SelectedFrame}" VerticalOptions="Center" HorizontalTextAlignment="Center" />
                             </DataTemplate>
                         </material:DataGridColumn.CellItemTemplate>
                     </material:DataGridColumn>
@@ -149,10 +150,10 @@
                             </DataTemplate>
                         </material:DataGridColumn.CellItemTemplate>
                     </material:DataGridColumn>
-                    <material:DataGridColumn Width="100" Title="Commands">
+                    <material:DataGridColumn Width="130" Title="Commands">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="missions:MissionItemRow">
-                                <HorizontalStackLayout Spacing="4" VerticalOptions="Center">
+                                <HorizontalStackLayout Spacing="4" VerticalOptions="Center" HorizontalOptions="Center">
                                     <Button Text="▲" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
                                       Command="{Binding MoveItemUpCommand, Source={RelativeSource AncestorType={x:Type missions:MissionItemListViewModel}}}"
                                       CommandParameter="{Binding .}" />

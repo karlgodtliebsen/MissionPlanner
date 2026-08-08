@@ -11,7 +11,7 @@ public partial class MissionItemListDockViewModel : ObservableObject, IDisposabl
     [ObservableProperty] public partial double CalculatedWidth { get; set; }
     [ObservableProperty] public partial string GuidingText { get; set; } = "<<";
     [ObservableProperty] public partial double ShrinkWidth { get; set; } = 40;
-    [ObservableProperty] public partial double ExpandWidth { get; set; } = 650;
+    [ObservableProperty] public partial double ExpandWidth { get; set; } = 500;
 
     /// <inheritdoc />
     public MissionItemListDockViewModel(IDomainEventHub domainEventHub)
