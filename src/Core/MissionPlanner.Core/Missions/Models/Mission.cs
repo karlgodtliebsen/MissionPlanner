@@ -26,18 +26,22 @@ public sealed class Mission
     /// Provides the public API for Id.
     /// </summary>
     public MissionId Id { get; }
+
     /// <summary>
     /// Provides the public API for Name.
     /// </summary>
     public string Name { get; private set; }
+
     /// <summary>
     /// Provides the public API for Type.
     /// </summary>
     public MissionPlanType Type { get; }
+
     /// <summary>
     /// Provides the public API for Revision.
     /// </summary>
     public int Revision { get; private set; }
+
     /// <summary>
     /// Provides the public API for Items.
     /// </summary>
@@ -126,6 +130,7 @@ public sealed class Mission
             throw new KeyNotFoundException($"Mission item {id} was not found.");
         }
 
+        var row = items[index];
         items[index] = WithSequence(replacement, (ushort)index);
         Revision++;
     }
@@ -142,9 +147,12 @@ public sealed class Mission
     {
         return item switch
         {
-            WaypointMissionItem x => x with { Sequence = sequence }, TakeoffMissionItem x => x with { Sequence = sequence },
-            LandMissionItem x => x with { Sequence = sequence }, ReturnToLaunchMissionItem x => x with { Sequence = sequence },
-            ChangeSpeedMissionItem x => x with { Sequence = sequence }, LoiterMissionItem x => x with { Sequence = sequence },
+            WaypointMissionItem x => x with { Sequence = sequence },
+            TakeoffMissionItem x => x with { Sequence = sequence },
+            LandMissionItem x => x with { Sequence = sequence },
+            ReturnToLaunchMissionItem x => x with { Sequence = sequence },
+            ChangeSpeedMissionItem x => x with { Sequence = sequence },
+            LoiterMissionItem x => x with { Sequence = sequence },
             var _ => throw new NotSupportedException(item.GetType().Name)
         };
     }

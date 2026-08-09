@@ -3,19 +3,91 @@
                                   xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
                                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
                                   xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs" 
-                                  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" 
+                                  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:controls1="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+                                  xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                                   x:Class="MissionPlanner.App.Views.FlightData.Tabs.ServoRelayTabView" 
                                   x:DataType="tabs:ServoRelayTabViewModel">
-    <Grid Padding="16" RowDefinitions="Auto,*,Auto,Auto">
+
+    <Grid Padding="16" RowDefinitions="Auto,*,2,Auto,2,Auto" HorizontalOptions="Fill">
+
         <Label Text="Observed servo outputs" FontSize="20" FontAttributes="Bold" />
-        <CollectionView Grid.Row="1" ItemsSource="{Binding ServoOutputs}" />
-        <HorizontalStackLayout Grid.Row="2">
+
+        <!--<CollectionView Grid.Row="1" ItemsSource="{Binding ServoOutputs}" />-->
+
+
+        <controls1:VirtualizedDataGrid 
+                                      Grid.Row="1" 
+                                      ItemsSource="{Binding ServoOutputs}" 
+                                      ItemSizingStrategy= "MeasureFirstItem"
+                                      UseAutoColumns="True"
+                                      ShowSearchBar="False"
+                                      HorizontalOptions="Fill" 
+                                      VerticalOptions="Fill" 
+                                      BackgroundColor="Transparent"
+        >
+            <controls1:VirtualizedDataGrid.EmptyView>
+                <Label HorizontalOptions="Center" Text="No Rows could be found"
+                       FontSize="12" Opacity="0.6" Margin="0,20" />
+            </controls1:VirtualizedDataGrid.EmptyView>
+            <controls1:VirtualizedDataGrid.Columns>
+
+                <material:DataGridColumn Width="*" Title="">
+                    <material:DataGridColumn.CellItemTemplate>
+                        <DataTemplate x:DataType="tabs:ServoRelayTabViewModel">
+                            <Label Text="{Binding .}" FontSize="18" FontAttributes="Bold" />
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
+            </controls1:VirtualizedDataGrid.Columns>
+        </controls1:VirtualizedDataGrid>
+
+        <!--<controls1:VirtualizedDataGrid 
+            Grid.Row="1" 
+            ItemsSource="{Binding ServoOutputs}" 
+            ItemSizingStrategy= "MeasureFirstItem"
+            UseAutoColumns="True"
+            ShowSearchBar="False"
+            HorizontalOptions="Fill" 
+            VerticalOptions="Fill" 
+            BackgroundColor="Transparent"
+        >
+            <controls1:VirtualizedDataGrid.EmptyView>
+                <Label HorizontalOptions="Center" Text="No Rows could be found"
+                       FontSize="12" Opacity="0.6" Margin="0,20" />
+            </controls1:VirtualizedDataGrid.EmptyView>
+        </controls1:VirtualizedDataGrid>-->
+
+        <!--
             <Entry Text="{Binding Channel}" Placeholder="Channel" />
             <Entry Text="{Binding Pwm}" Placeholder="PWM" />
-            <CheckBox IsChecked="{Binding IsConfirmed}" />
-            <Label Text="Confirm disarmed test" />
-            <Button Text="Set servo" Command="{Binding SetServoCommand}" />
-        </HorizontalStackLayout>
-        <Label Grid.Row="3" Text="{Binding Result}" />
+            -->
+        <BoxView Grid.Row="2"  HorizontalOptions="Fill" ></BoxView>
+        <Grid Grid.Row="3" ColumnDefinitions="Auto,Auto,Auto,*" VerticalOptions="Center" HorizontalOptions="Fill" ColumnSpacing="5" Margin="0,10,0,10">
+
+            <controls:NumericField Grid.Column="0" 
+                                   Title="Channel"
+                                   Value="{Binding Channel, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                                   NumberFormat="F0"
+                                   HorizontalOptions="Fill"
+                                   HorizontalTextAlignment="End" />
+
+            <controls:NumericField Grid.Column="1" 
+                                   Title="PWM"
+                                   Value="{Binding Pwm, Mode=TwoWay}"
+                                   NumberFormat="F1"
+                                   HorizontalOptions="Fill"
+                                   HorizontalTextAlignment="End" />
+
+            <material:CheckBox  Grid.Column="2" Text="Confirm disarmed test" IsChecked="{Binding IsConfirmed}" />
+
+            <Button Grid.Column="3" Text="Set servo" Command="{Binding SetServoCommand}" />
+
+        </Grid>
+
+        <BoxView Grid.Row="4" HorizontalOptions="Fill" ></BoxView>
+        <Label Grid.Row="5" Text="{Binding Result}" />
+
     </Grid>
 </tabViews:TabViewLifecycleContent>

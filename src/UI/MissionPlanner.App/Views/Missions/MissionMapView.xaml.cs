@@ -21,8 +21,6 @@ namespace MissionPlanner.App.Views.Missions;
 public partial class MissionMapView : ExtendedContentView<MissionItemListViewModel>, IDisposable
 {
     private const double WebMercatorInitialResolution = 156543.03392804097;
-
-    //private readonly MissionItemListViewModel viewModel;
     private readonly Pin vehiclePin;
     private Polyline routeLine;
     private readonly List<Pin> missionPins = [];
@@ -36,6 +34,8 @@ public partial class MissionMapView : ExtendedContentView<MissionItemListViewMod
     {
         InitializeComponent();
         plannerSettings = ServiceHelper.GetRequiredService<IPlannerSettingsService>();
+        BindingContext = ServiceHelper.GetRequiredService<MissionItemListViewModel>();
+
         map = new Mapsui.Map();
         map.Layers.Add(CreateTileLayer(ViewModel!.SelectedMapType));
         MissionMap.Map = map;

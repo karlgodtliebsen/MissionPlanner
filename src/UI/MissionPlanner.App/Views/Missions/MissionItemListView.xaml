@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<navigation:ExtendedContentView 
-                    x:TypeArguments="missions:MissionItemListViewModel" 
+<ContentView 
                     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                     xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
                     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                     xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
                     xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                    xmlns:extended="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                     x:Class="MissionPlanner.App.Views.Missions.MissionItemListView"
                     x:DataType="missions:MissionItemListViewModel"
                     BackgroundColor="Transparent"
@@ -26,20 +26,48 @@
         <Grid Grid.Row="4" HorizontalOptions="Start"  ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" VerticalOptions="Center" ColumnSpacing="6"
               IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
             <Label Grid.Column="0" Text="WP Radius (m):" FontSize="11" VerticalOptions="Center"  />
-            <Entry Grid.Column="1" Text="{Binding WaypointRadiusMeters}" Keyboard="Numeric" HorizontalTextAlignment="End"  FontSize="11" WidthRequest="25"   />
+            <!--<Entry Grid.Column="1" Text="{Binding WaypointRadiusMeters}" 
+                   Keyboard="Numeric" HorizontalTextAlignment="End"  FontSize="11" WidthRequest="25"   />-->
+            <extended:NumericField
+                Grid.Column="1"   FontSize="11" WidthRequest="25"
+                Text="{Binding WaypointRadiusMeters,Mode=TwoWay}"
+                NumberFormat="F1"
+                HorizontalOptions="Fill"
+                HorizontalTextAlignment="End" />
 
             <Label Grid.Column="2" Text="Loiter Radius (m):" FontSize="11" VerticalOptions="Center"  />
-            <Entry Grid.Column="3" Text="{Binding LoiterRadiusMeters}" Keyboard="Numeric" HorizontalTextAlignment="End" FontSize="11" WidthRequest="25"  />
+            <!--<Entry Grid.Column="3" Text="{Binding LoiterRadiusMeters}" 
+                   Keyboard="Numeric" HorizontalTextAlignment="End" FontSize="11" WidthRequest="25"  />-->
+            <extended:NumericField
+                Grid.Column="3"   FontSize="11" WidthRequest="25"
+                Text="{Binding LoiterRadiusMeters,Mode=TwoWay}"
+                NumberFormat="F1"
+                HorizontalOptions="Fill"
+                HorizontalTextAlignment="End" />
 
             <Label Grid.Column="4" Text="Default Alt (m):" FontSize="11" VerticalOptions="Center" />
-            <Entry Grid.Column="5" Text="{Binding DefaultAltitudeMeters}" Keyboard="Numeric" HorizontalTextAlignment="End"  FontSize="11" WidthRequest="25"  />
-
+            <!--<Entry Grid.Column="5" Text="{Binding DefaultAltitudeMeters}" 
+                   Keyboard="Numeric" HorizontalTextAlignment="End"  FontSize="11" WidthRequest="25"  />-->
+            <extended:NumericField
+                Grid.Column="5"  FontSize="11" WidthRequest="25"
+                Text="{Binding DefaultAltitudeMeters,Mode=TwoWay}"
+                NumberFormat="F1"
+                HorizontalOptions="Fill"
+                HorizontalTextAlignment="End" />
             <Label Grid.Column="6" Text="Alt Warn (m):" FontSize="11" VerticalOptions="Center"  />
-            <Entry Grid.Column="7" Text="{Binding AltWarnMeters}" Keyboard="Numeric" HorizontalTextAlignment="End"  FontSize="11" WidthRequest="25"  />
+            <!--<Entry Grid.Column="7" Text="{Binding AltWarnMeters}" 
+                   Keyboard="Numeric" HorizontalTextAlignment="End"  FontSize="11" WidthRequest="25"  />-->
+            <extended:NumericField
+                Grid.Column="7" FontSize="11" WidthRequest="25"
+                Text="{Binding AltWarnMeters,Mode=TwoWay}"
+                NumberFormat="F1"
+                HorizontalOptions="Fill"
+                HorizontalTextAlignment="End" />
+
         </Grid>
 
         <Grid Grid.Row="5" HorizontalOptions="Fill" VerticalOptions="Fill" >
-            
+
             <controls:VirtualizedDataGrid 
                 ItemsSource="{Binding MissionItems}" 
                 ItemSizingStrategy= "MeasureFirstItem"
@@ -75,49 +103,78 @@
                     <material:DataGridColumn Width="100" Title="Param1"  IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="missions:MissionItemRow">
-                                <Entry Text="{Binding Param1}"   HorizontalOptions="Fill"  HorizontalTextAlignment="End" />
+                                <extended:NumericField
+                                    Value="{Binding Param1, Mode=TwoWay}"
+                                    NumberFormat="F1"
+                                    HorizontalOptions="Fill"
+                                    HorizontalTextAlignment="End" />
                             </DataTemplate>
                         </material:DataGridColumn.CellItemTemplate>
                     </material:DataGridColumn>
                     <material:DataGridColumn Width="100" Title="Param2"  IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="missions:MissionItemRow">
-                                <Entry Text="{Binding Param2}"    HorizontalOptions="Fill"  HorizontalTextAlignment="End" />
+                                <extended:NumericField
+                                    Value="{Binding Param2, Mode=TwoWay}"
+                                    NumberFormat="F1"
+                                    HorizontalOptions="Fill"
+                                    HorizontalTextAlignment="End" />
                             </DataTemplate>
                         </material:DataGridColumn.CellItemTemplate>
                     </material:DataGridColumn>
                     <material:DataGridColumn Width="100" Title="Param3" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="missions:MissionItemRow">
-                                <Entry Text="{Binding Param3}"   HorizontalOptions="Fill"  HorizontalTextAlignment="End" />
+                                <extended:NumericField
+                                    Value="{Binding Param3, Mode=TwoWay}"
+                                    NumberFormat="F1"
+                                    HorizontalOptions="Fill"
+                                    HorizontalTextAlignment="End" />
                             </DataTemplate>
                         </material:DataGridColumn.CellItemTemplate>
                     </material:DataGridColumn>
                     <material:DataGridColumn Width="100" Title="Param4" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="missions:MissionItemRow">
-                                <Entry Text="{Binding Param4}"   HorizontalOptions="Fill"  HorizontalTextAlignment="End"  />
+                                <extended:NumericField
+                                    Value="{Binding Param4, Mode=TwoWay}"
+                                    NumberFormat="F1"
+                                    HorizontalOptions="Fill"
+                                    HorizontalTextAlignment="End" />
                             </DataTemplate>
                         </material:DataGridColumn.CellItemTemplate>
                     </material:DataGridColumn>
                     <material:DataGridColumn Width="120" Title="Latitude">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="missions:MissionItemRow">
-                                <Entry Text="{Binding Latitude, StringFormat='{0:F7}'}"   HorizontalOptions="Fill"  HorizontalTextAlignment="End"/>
+                                <extended:NumericField
+                                    Value="{Binding Latitude, Mode=TwoWay}"
+                                    NumberFormat="F7"
+                                    HorizontalOptions="Fill"
+                                    HorizontalTextAlignment="End" />
+
                             </DataTemplate>
                         </material:DataGridColumn.CellItemTemplate>
                     </material:DataGridColumn>
                     <material:DataGridColumn Width="120" Title="Longitude">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="missions:MissionItemRow">
-                                <Entry Text="{Binding Longitude, StringFormat='{0:F7}'}"   HorizontalOptions="Fill"  HorizontalTextAlignment="End"/>
+                                <extended:NumericField
+                                    Value="{Binding Longitude, Mode=TwoWay}"
+                                    NumberFormat="F7"
+                                    HorizontalOptions="Fill"
+                                    HorizontalTextAlignment="End" />
                             </DataTemplate>
                         </material:DataGridColumn.CellItemTemplate>
                     </material:DataGridColumn>
                     <material:DataGridColumn Width="100" Title="Alt (m)">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="missions:MissionItemRow">
-                                <Entry Text="{Binding Altitude, StringFormat='{0:F1}'}" HorizontalOptions="Fill" HorizontalTextAlignment="End" />
+                                <extended:NumericField
+                                    Value="{Binding Altitude, Mode=TwoWay}"
+                                    NumberFormat="F1"
+                                    HorizontalOptions="Fill"
+                                    HorizontalTextAlignment="End" />
                             </DataTemplate>
                         </material:DataGridColumn.CellItemTemplate>
                     </material:DataGridColumn>
@@ -171,4 +228,4 @@
             </controls:VirtualizedDataGrid>
         </Grid>
     </Grid>
-</navigation:ExtendedContentView>
+</ContentView>

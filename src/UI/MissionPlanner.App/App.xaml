@@ -4,6 +4,7 @@
              xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:virtualizedResources="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Resources;assembly=UraniumUI.Material.VirtualizedDataGrid"
+             xmlns:converters="clr-namespace:UraniumUI.Material.Controls.Converters;assembly=UraniumUI.Material.Controls.Extensions"
              x:Class="MissionPlanner.App.App">
     <Application.Resources>
         <ResourceDictionary>
@@ -14,7 +15,11 @@
                 <ResourceDictionary x:Name="OverrideStyles" Source="Resources/Styles/Override.xaml" />
                 <virtualizedResources:StyleResource ColorsOverride="{x:Reference AppColors}" />
             </ResourceDictionary.MergedDictionaries>
+
+            <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
             <toolkit:MultiConverter x:Key="NullToBoolConverter" />
+            <converters:IntegerDoubleConverter x:Key="IntegerDoubleConverter" />
+            <converters:ByteDoubleConverter x:Key="ByteDoubleConverter" />
             <toolkit:BoolToObjectConverter
                 x:Key="BoolToYesNoConverter"
                 TrueObject="Yes"

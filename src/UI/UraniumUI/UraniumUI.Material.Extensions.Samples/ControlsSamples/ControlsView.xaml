@@ -10,6 +10,58 @@
     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
     xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions">
 
+    <uranium:UraniumContentPage.Resources>
+        <!--<Style TargetType="controls:NumericField" >
+            <Setter Property="Opacity" Value="1"/>
+            <Setter Property="BackgroundColor" Value="Green" />
+            <Setter Property="AccentColor" Value="Yellow" />
+            <Setter Property="BorderColor" Value="Red" />
+            <Setter Property="TitleColor" Value="Orange" />
+            <Setter Property="Height" Value="30" />
+            <Setter Property="MaximumHeightRequest" Value="30" />
+
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal"/>
+                        <VisualState x:Name="Disabled">
+                            <VisualState.Setters>
+                                <Setter Property="Opacity" Value="0.6" />
+                                <Setter Property="BorderColor" Value="Blue" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+
+        <Style TargetType="Entry">
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+            <Setter Property="BackgroundColor" Value="Green" />
+            <Setter Property="FontFamily" Value="OpenSansRegular"/>
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="HorizontalTextAlignment" Value="End" />
+            <Setter Property="HorizontalOptions" Value="End" />
+
+            <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}" />
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup x:Name="CommonStates">
+                        <VisualState x:Name="Normal" />
+                        <VisualState x:Name="Disabled">
+                            <VisualState.Setters>
+                                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray600}}" />
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>-->
+
+    </uranium:UraniumContentPage.Resources>
+
+
+
     <ScrollView VerticalScrollBarVisibility="Always">
 
         <VerticalStackLayout Padding="24" Spacing="20">
@@ -40,6 +92,68 @@
                 </HorizontalStackLayout>
             </VerticalStackLayout>
 
+            <BoxView  StyleClass="Divider" />
+
+            <VerticalStackLayout Spacing="20"  HorizontalOptions="Fill">
+                <Label Text="Numeric Editor Fields" HorizontalOptions="Center"></Label>
+                <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+
+
+                    <controls:NumericField
+                        Value="{Binding StepSize, Mode=TwoWay}"
+                        NumberFormat="F7"
+                        BorderThickness="0"
+                        MinimumWidthRequest="200"
+                        HorizontalOptions="Fill"
+                        HorizontalTextAlignment="End" 
+                        />
+
+                    <controls:NumericField
+                        Value="{Binding StepSize, Mode=TwoWay}"
+                        NumberFormat="N7"
+                        CultureName="da-DK"
+                        Min="0"
+                        Max="1000"
+                        HorizontalOptions="Fill"
+                        HorizontalTextAlignment="End" 
+                        AllowClear="True"
+                        AllowSign="False"
+                        AllowThousands="True" />
+
+                    <controls:NumericField
+                        Value="{Binding StepSize, Mode=TwoWay}"
+                        NumberFormat="N2"
+                        CultureName="da-DK"
+                        Min="0"
+                        Max="100"
+                        HorizontalOptions="Fill"
+                        HorizontalTextAlignment="End" 
+                        AllowSign="False"
+                        AllowThousands="True" />
+
+
+
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
+
+            <BoxView  StyleClass="Divider" />
+
+            <VerticalStackLayout Spacing="20"  HorizontalOptions="Fill">
+                <Label Text="Styled Entry" HorizontalOptions="Center"></Label>
+                <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                    <!--<Entry
+                        Text="{Binding StepSize, Mode=TwoWay}"
+                        MinimumWidthRequest="200"
+                        HorizontalOptions="Fill"
+                        HorizontalTextAlignment="End" />-->
+                    <controls:NumericField
+                        Value="{Binding StepSize, Mode=TwoWay}"
+                        MinimumWidthRequest="200"
+                        NumberFormat="F1"
+                        HorizontalOptions="Fill"
+                        HorizontalTextAlignment="End" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
             <BoxView  StyleClass="Divider" />
 
             <VerticalStackLayout Spacing="20"  HorizontalOptions="Fill">

@@ -4,6 +4,7 @@
                                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.BatterySetupView"
                                   x:DataType="sections:BatterySetupViewModel">
     <ScrollView VerticalScrollBarVisibility="Always">
@@ -29,16 +30,36 @@
                                 <Label Text="Remaining percentage is an estimate, not a measured capacity truth." Opacity="0.7" FontSize="12" />
                                 <Grid ColumnDefinitions="140,*,Auto" RowSpacing="6" ColumnSpacing="8" IsVisible="{Binding SupportsCapacity}">
                                     <Label Text="Capacity (mAh)" VerticalOptions="Center" />
-                                    <Entry Grid.Column="1" Text="{Binding Capacity}" Keyboard="Numeric" />
+                                    <!--<Entry Grid.Column="1" Text="{Binding Capacity}" Keyboard="Numeric" />-->
+                                    <controls:NumericField
+                                        Grid.Column="1" 
+                                        Value="{Binding Capacity, Mode=TwoWay}"
+                                        NumberFormat="F1"
+                                        HorizontalOptions="Fill"
+                                        HorizontalTextAlignment="End" />
+
                                     <Button Grid.Column="2"  Text="Write" Command="{Binding ApplyCapacityCommand}" />
                                 </Grid>
                                 <VerticalStackLayout IsVisible="{Binding SupportsVoltageFailsafe}" Spacing="4">
                                     <Label Text="Voltage failsafe (V)" FontAttributes="Bold" />
                                     <Grid ColumnDefinitions="140,*,140,*,Auto" ColumnSpacing="8">
                                         <Label Text="Low" VerticalOptions="Center" />
-                                        <Entry Grid.Column="1" Text="{Binding LowVoltage}" Keyboard="Numeric" />
+                                        <!--<Entry Grid.Column="1" Text="{Binding LowVoltage}" Keyboard="Numeric" />-->
+                                        <controls:NumericField
+                                            Grid.Column="1" 
+                                            Value="{Binding LowVoltage, Mode=TwoWay}"
+                                            NumberFormat="F1"
+                                            HorizontalOptions="Fill"
+                                            HorizontalTextAlignment="End" />
                                         <Label Grid.Column="2" Text="Critical" VerticalOptions="Center" />
-                                        <Entry Grid.Column="3" Text="{Binding CriticalVoltage}" Keyboard="Numeric" />
+                                        <!--<Entry Grid.Column="3" Text="{Binding CriticalVoltage}" Keyboard="Numeric" />-->
+                                        <controls:NumericField
+                                            Grid.Column="3" 
+                                            Value="{Binding CriticalVoltage, Mode=TwoWay}"
+                                            NumberFormat="F1"
+                                            HorizontalOptions="Fill"
+                                            HorizontalTextAlignment="End" />
+
                                         <Button Grid.Column="4"  Text="Write" Command="{Binding ApplyVoltageFailsafeCommand}" />
                                     </Grid>
                                 </VerticalStackLayout>
@@ -46,20 +67,46 @@
                                     <Label Text="Capacity failsafe (mAh)" FontAttributes="Bold" />
                                     <Grid ColumnDefinitions="140,*,140,*,Auto" ColumnSpacing="8">
                                         <Label Text="Low" VerticalOptions="Center" />
-                                        <Entry Grid.Column="1" Text="{Binding LowCapacity}" Keyboard="Numeric" />
+                                        <!--<Entry Grid.Column="1" Text="{Binding LowCapacity}" Keyboard="Numeric" />-->
+                                        <controls:NumericField
+                                            Grid.Column="1" 
+                                            Value="{Binding LowCapacity, Mode=TwoWay}"
+                                            NumberFormat="F1"
+                                            HorizontalOptions="Fill"
+                                            HorizontalTextAlignment="End" />
                                         <Label Grid.Column="2" Text="Critical" VerticalOptions="Center" />
-                                        <Entry Grid.Column="3" Text="{Binding CriticalCapacity}" Keyboard="Numeric" />
+                                        <!--<Entry Grid.Column="3" Text="{Binding CriticalCapacity}" Keyboard="Numeric" />-->
+                                        <controls:NumericField
+                                            Grid.Column="3" 
+                                            Value="{Binding CriticalCapacity, Mode=TwoWay}"
+                                            NumberFormat="F1"
+                                            HorizontalOptions="Fill"
+                                            HorizontalTextAlignment="End" />
+
+
                                         <Button Grid.Column="4"  Text="Write" Command="{Binding ApplyCapacityFailsafeCommand}" />
                                     </Grid>
                                 </VerticalStackLayout>
                                 <Grid ColumnDefinitions="180,*,Auto" ColumnSpacing="8" IsVisible="{Binding SupportsVoltageCalibration}">
                                     <Label Text="Measured voltage (V)" VerticalOptions="Center" />
-                                    <Entry Grid.Column="1" Text="{Binding ReferenceVoltage}" Keyboard="Numeric" />
+                                    <!--<Entry Grid.Column="1" Text="{Binding ReferenceVoltage}" Keyboard="Numeric" />-->
+                                    <controls:NumericField
+                                        Grid.Column="1" 
+                                        Value="{Binding ReferenceVoltage, Mode=TwoWay}"
+                                        NumberFormat="F1"
+                                        HorizontalOptions="Fill"
+                                        HorizontalTextAlignment="End" />
                                     <Button Grid.Column="2"  Text="Calibrate voltage" Command="{Binding CalibrateVoltageCommand}" />
                                 </Grid>
                                 <Grid ColumnDefinitions="180,*,Auto" ColumnSpacing="8" IsVisible="{Binding SupportsCurrentCalibration}">
                                     <Label Text="Measured current (A)" VerticalOptions="Center" />
-                                    <Entry Grid.Column="1" Text="{Binding ReferenceCurrent}" Keyboard="Numeric" />
+                                    <!--<Entry Grid.Column="1" Text="{Binding ReferenceCurrent}" Keyboard="Numeric" />-->
+                                    <controls:NumericField
+                                        Grid.Column="1" 
+                                        Value="{Binding ReferenceCurrent, Mode=TwoWay}"
+                                        NumberFormat="F1"
+                                        HorizontalOptions="Fill"
+                                        HorizontalTextAlignment="End" />
                                     <Button Grid.Column="2"  Text="Calibrate current" Command="{Binding CalibrateCurrentCommand}" />
                                 </Grid>
                             </VerticalStackLayout>

@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Maui;
 using CommunityToolkit.Maui.Storage;
+using InputKit.Handlers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.Logging;
@@ -57,6 +58,7 @@ public static class MauiProgramExtensions
 #endif
         builder
             .UseMauiApp<App>()
+            .ConfigureMauiHandlers(handlers => handlers.AddInputKitHandlers())
             .UseMauiCommunityToolkit()
             .UseUraniumUI()
             .UseUraniumUIMaterial()

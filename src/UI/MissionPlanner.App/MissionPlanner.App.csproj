@@ -41,6 +41,7 @@
 	  </Content>
 	</ItemGroup>
 	<ItemGroup>
+        <PackageReference Include="InputKit.Maui" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
         <PackageReference Include="Riok.Mapperly" />
         <PackageReference Include="Serilog" />
@@ -196,6 +197,10 @@
 	  <MauiXaml Update="Views\Missions\MissionItemListViewPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Controls\" />
 	</ItemGroup>
 
 </Project>

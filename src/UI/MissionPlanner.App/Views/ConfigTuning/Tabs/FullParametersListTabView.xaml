@@ -149,14 +149,19 @@
                         <material:DataGridColumn Title="Value" >
                             <material:DataGridColumn.CellItemTemplate >
                                 <DataTemplate  x:DataType="configTuning:ParameterItemViewModel" >
-                                    <controls:AlignedEditorField
-                                        FontSize="12"  IsReadOnly="{Binding IsReadOnly}"
-                                        Keyboard="Numeric"
+                                    <controls:NumericField
+                                        IsReadOnly="{Binding IsReadOnly}"
+                                        Value="{Binding Value, Mode=TwoWay}"
                                         BorderColor="Aqua"
-                                        HorizontalOptions="Fill" VerticalOptions="Center"  
-                                        Text="{Binding ValueText, Mode=TwoWay}"
-                                        HorizontalTextAlignment="End"
-                                        VerticalTextAlignment="Center" />
+                                        NumberFormat="N7"
+                                        Min="{Binding Min}"
+                                        Max="{Binding Max}"
+                                        HorizontalOptions="Fill"
+                                        VerticalOptions="Center"  
+                                        HorizontalTextAlignment="End" 
+                                        AllowClear="True"
+                                        AllowSign="True"
+                                        AllowThousands="True" />
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
                         </material:DataGridColumn>
@@ -199,6 +204,23 @@
                                                                        VerticalOptions="Center" HorizontalOptions="Fill"
                                                                        HorizontalTextAlignment="End"
                                                                        VerticalTextAlignment="Center" />
+
+
+                                        <!--<controls:NumericField
+                                            IsVisible="{Binding HasNumericRangeData}" 
+                                            Value="{Binding Value, Mode=TwoWay}"
+                                            BorderColor="Aqua"
+                                            NumberFormat="N7"
+                                            WidthRequest="200" 
+                                            Min="{Binding Min}"
+                                            Max="{Binding Max}"
+                                            HorizontalOptions="Fill"
+                                            VerticalOptions="Center"  
+                                            HorizontalTextAlignment="End" 
+                                            AllowClear="True"
+                                            AllowSign="True"
+                                            AllowThousands="True" />-->
+
                                     </VerticalStackLayout>
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
@@ -241,7 +263,6 @@
                         <material:DataGridColumn Title="Description" Width="*">
                             <material:DataGridColumn.CellItemTemplate>
                                 <DataTemplate  x:DataType="configTuning:ParameterItemViewModel">
-
                                     <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="10,10,0,10">
                                         <Label FontSize="12" VerticalOptions="Center" VerticalTextAlignment="Center" LineBreakMode="WordWrap"  HorizontalOptions="Start" HorizontalTextAlignment="Start" Text="{Binding DisplayName}"/>
                                         <Label FontSize="12" VerticalOptions="Fill" HorizontalOptions="Fill"  Text=" "/>
@@ -253,10 +274,6 @@
 
                     </virtualized:VirtualizedDataGrid.Columns>
                 </virtualized:VirtualizedDataGrid>
-
-                <!--<tabs:ParameterComparisonView
-                    IsVisible="{Binding IsComparisonVisible}" />-->
-
             </Grid>
         </Grid>
     </navigation:ExtendedContentPage.Content>

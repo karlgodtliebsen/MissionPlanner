@@ -1,6 +1,4 @@
-﻿using MissionPlanner.App.Navigation;
-
-namespace MissionPlanner.App.Views.Missions;
+﻿namespace MissionPlanner.App.Views.Missions;
 
 /// <summary>
 /// Two-mode waypoint list/editor.
@@ -8,7 +6,7 @@ namespace MissionPlanner.App.Views.Missions;
 /// Mode 2 ("Complete")b mirrors the classic MissionPlanner waypoint grid with editable params/coordinates,
 /// derived leg columns (Dist/AZ/Grad) and a header with mission info and editor settings.
 /// </summary>
-public partial class MissionItemListView : ExtendedContentView<MissionItemListViewModel>
+public partial class MissionItemListView : ContentView
 {
     /// <summary>
     /// Gets or sets a value indicating whether all rows are displayed.

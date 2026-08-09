@@ -14,4 +14,18 @@ public partial class FlightPlannerView : ExtendedContentPage<FlightPlannerViewMo
     {
         InitializeComponent();
     }
+
+    /// <inheritdoc/>
+    protected override void OnNavigatedTo(NavigatedToEventArgs args)
+    {
+        base.OnNavigatedTo(args);
+        ItemListView.BindingContext = ViewModel!.Map;
+    }
+
+    /// <inheritdoc />
+    protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
+    {
+        base.OnNavigatedFrom(args);
+        ItemListView.BindingContext = null;
+    }
 }

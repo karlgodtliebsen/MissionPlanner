@@ -6,22 +6,35 @@
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
                                   xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                                  xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                                   x:Class="MissionPlanner.App.Views.FlightData.Tabs.MessagesTabView"
                                   x:DataType="tabs:MessagesTabViewModel"
                                   >
 
-    <Grid Padding="8" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="15">
-        <Grid Grid.Row="0" ColumnDefinitions="140,*" ColumnSpacing="8">
-            <Picker Grid.Column="0"
+    <Grid Padding="8" RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="15">
+        <!--<Picker Grid.Column="0"
                     Title="Severity"
                     ItemsSource="{Binding SeverityFilters}"
-                    SelectedItem="{Binding SelectedSeverity}" />
-            <SearchBar Grid.Column="1"
+                    SelectedItem="{Binding SelectedSeverity}" />-->
+            <!--ItemTemplate="{StaticResource RichSelectItemTemplate}"-->
+
+        <!--<uranium:Select
+            Placeholder="Severity"
+            ItemsSource="{Binding SeverityFilters}"
+            SelectedItem="{Binding SelectedSeverity}"
+        />-->
+
+        <material:SelectField
+            Title="Severity"
+            ItemsSource="{Binding SeverityFilters}"
+            SelectedItem="{Binding SelectedSeverity}"
+        />
+
+        <SearchBar Grid.Row="1"
                        Placeholder="Search text or source"
                        Text="{Binding SearchText}" />
-        </Grid>
 
-        <ScrollView Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
+        <ScrollView Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,8">
             <HorizontalStackLayout Spacing="6">
                 <Button Text="{Binding PauseButtonText}" Command="{Binding TogglePauseCommand}" />
                 <Button Text="Clear View" Command="{Binding ClearCurrentViewCommand}" />
@@ -31,26 +44,10 @@
                 <Button Text="Export JSON" Command="{Binding ExportJsonCommand}" />
             </HorizontalStackLayout>
         </ScrollView>
-        <Grid Grid.Row="2" >
-            <!--
-            <material:DataGrid   
-                ItemsSource="{Binding Items}" 
-                SelectedItems="{Binding SelectedItems}" 
-                HorizontalOptions="Fill" 
-                VerticalOptions="Fill" 
-                BackgroundColor="Transparent"
-            >
-                <material:DataGrid.Columns>
-                    <material:DataGridColumn Width="*"  ValueBinding="{Binding SeverityDisplay}" Title="Severity" />
-                    <material:DataGridColumn Width="*"  ValueBinding="{Binding Text}" Title="Title" />
-                    <material:DataGridColumn Width="*"  ValueBinding="{Binding Details}" Title="Details" />
-                </material:DataGrid.Columns>
-            </material:DataGrid>
-            
-            -->
-
+        <Grid Grid.Row="3" >
             <controls:VirtualizedDataGrid 
                 ItemsSource="{Binding Items}" 
+                SelectedItems="{Binding SelectedItems}" 
                 ItemSizingStrategy= "MeasureFirstItem"
                 ShowSearchBar="False"
                 HorizontalOptions="Fill" 
@@ -104,79 +101,8 @@
                     </material:DataGridColumn>
 
                 </controls:VirtualizedDataGrid.Columns>
-
-
             </controls:VirtualizedDataGrid>
-
-
-            <!--
-            x:DataType="tabs:MessageListItem"
-            x:DataType="tabs:MessageListItem"
-            x:DataType="tabs:MessageListItem"
-            
-            <material:DataGridColumn Title="Notification" Width="160">
-                    <material:DataGridColumn.CellItemTemplate >
-                        <DataTemplate x:DataType="tabs:MessageListItem" >
-                 <Label Grid.Row="2" Grid.ColumnSpan="2"
-                        Text="Local application notification — not MAVLink STATUSTEXT"
-                        FontSize="11"
-                        FontAttributes="Italic"
-                        IsVisible="False">
-                     <Label.Triggers>
-                         <DataTrigger TargetType="Label" Binding="{Binding Origin}" Value="Application">
-                             <Setter Property="IsVisible" Value="True" />
-                         </DataTrigger>
-                     </Label.Triggers>
-                 </Label>
-
-                        </DataTemplate>
-                    </material:DataGridColumn.CellItemTemplate>
-                </material:DataGridColumn>-->
-
-            <!--<CollectionView x:Name="MessageCollection"
-                        Grid.Row="2"
-                        ItemsSource="{Binding Items}"
-                        SelectedItem="{Binding SelectedMessage}"
-                        SelectionMode="Single">
-            <CollectionView.EmptyView>
-                <Label Text="No messages match the current vehicle and filter."
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center" />
-            </CollectionView.EmptyView>
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="tabs:MessageListItem">
-                    <Border Padding="8" Margin="0,0,0,5">
-                        <Grid ColumnDefinitions="145,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="8">
-                            <Label Grid.Row="0" Grid.Column="0"
-                                   Text="{Binding SeverityDisplay}"
-                                   FontAttributes="Bold" />
-                            <Label Grid.Row="0" Grid.Column="1"
-                                   Text="{Binding Text}"
-                                   LineBreakMode="WordWrap" />
-                            <Label Grid.Row="1" Grid.ColumnSpan="2"
-                                   Text="{Binding Details}"
-                                   FontSize="11"
-                                   Opacity="0.75" />
-                            <Label Grid.Row="2" Grid.ColumnSpan="2"
-                                   Text="Local application notification — not MAVLink STATUSTEXT"
-                                   FontSize="11"
-                                   FontAttributes="Italic"
-                                   IsVisible="False">
-                                <Label.Triggers>
-                                    <DataTrigger TargetType="Label" Binding="{Binding Origin}" Value="Application">
-                                        <Setter Property="IsVisible" Value="True" />
-                                    </DataTrigger>
-                                </Label.Triggers>
-                            </Label>
-                        </Grid>
-                    </Border>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>-->
-
         </Grid>
-
-
-        <Label Grid.Row="3" Text="{Binding Status}" LineBreakMode="TailTruncation" />
+        <Label Grid.Row="4" Text="{Binding Status}" LineBreakMode="TailTruncation" />
     </Grid>
 </tabViews:TabViewLifecycleContent>

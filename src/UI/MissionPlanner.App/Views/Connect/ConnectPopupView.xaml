@@ -6,13 +6,11 @@
               xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
               xmlns:validations="clr-namespace:InputKit.Shared.Validations;assembly=InputKit.Maui"
               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+              xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
               x:Class="MissionPlanner.App.Views.Connect.ConnectPopupView"
               x:DataType="connect:ConnectPopupViewModel"
               BackgroundColor="#80000000">
 
-    <ContentView.Resources>
-        <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
-    </ContentView.Resources>
     <!--<validations:RequiredValidation />
         <validations:RegexValidation Pattern="{x:Static input:AdvancedEntry.REGEX_EMAIL}" Message="Invalid email address" />-->
 
@@ -23,8 +21,10 @@
         -->
     <Grid>
 
-        <VerticalStackLayout Spacing="12" Margin="25" IsVisible="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}">
+        <VerticalStackLayout Spacing="12" Margin="25" 
+                             IsVisible="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}">
 
+            <!--
             <Picker ItemsSource="{Binding Channels}"
                 SelectedItem="{Binding SelectedChannel}"
                 Title="Channel" 
@@ -37,6 +37,41 @@
 
             <material:EditorField Title="Host" Text="{Binding SelectedHost}" IsVisible="{Binding ShowSelectedHost}" />
             <material:EditorField Title="Port" Text="{Binding SelectedPort}" IsVisible="{Binding ShowSelectedHost}"/>
+            
+            -->
+
+            <!--<uranium:Select
+            Placeholder="Channel"
+            ItemsSource="{Binding Channels}"
+            SelectedItem="{Binding SelectedChannel}"
+            Margin="0,0,12,4"
+        />
+
+            <uranium:Select
+            Placeholder="Baud rate"
+            ItemsSource="{Binding BaudRates}"
+            SelectedItem="{Binding SelectedBaudRate}"
+            Margin="0,0,12,4"
+            IsVisible="{Binding ShowSelectedCom}"
+        />-->
+
+            <material:SelectField
+                Title="Channel"
+                AllowClear="True"
+                ItemsSource="{Binding Channels}"
+                SelectedItem="{Binding SelectedChannel}"
+                />
+           
+            <material:SelectField
+                Title="Baud rate"
+                AllowClear="True"
+                ItemsSource="{Binding BaudRates}"
+                SelectedItem="{Binding SelectedBaudRate}"
+                />
+
+
+            <controls:AlignedEditorField Title="Host" Text="{Binding SelectedHost}" IsVisible="{Binding ShowSelectedHost}" />
+            <controls:AlignedEditorField Title="Port" Text="{Binding SelectedPort}" IsVisible="{Binding ShowSelectedHost}" />
 
             <Label Text="{Binding StatusMessage}"
                        TextColor="LightGray"

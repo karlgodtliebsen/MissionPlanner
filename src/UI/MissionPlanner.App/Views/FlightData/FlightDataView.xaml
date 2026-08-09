@@ -10,6 +10,7 @@
                             xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
                             xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                             xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                            xmlns:extended="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                             x:Class="MissionPlanner.App.Views.FlightData.FlightDataView"
                             x:DataType="flightData:FlightDataViewModel"
                     
@@ -75,10 +76,18 @@
         </Grid>
 
         <!-- Vertical Grid Splitter -->
-        <controls:GridSplitter Grid.Column="1" 
-                                SplitterThickness="4"
-                                SplitterColor="#3e3e42"
-                                HoverColor="#007acc" />
+
+        <extended:GridSplitter
+            Grid.Column="1"
+            ResizeMode="PreviousAndNext"
+            MinPreviousWidth="180"
+            MinNextWidth="220"
+            Thickness="12"
+            SplitterColor="#3e3e42"
+            HoverColor="#007acc"
+            ResetOnDoubleTap="True"
+            ResetPreviousWidth="260" 
+        />
 
         <!-- Right column: telemetry graph + map -->
         <Grid Grid.Column="2" RowDefinitions="*,Auto" RowSpacing="4">

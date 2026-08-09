@@ -20,17 +20,35 @@
              >
 
         <Label Grid.Row ="0" FontSize="22" Text="Large VirtualizedData Grid With AutoColumns and Fixed RowHeight"></Label>
-        <controls:NumericUpDownField  Grid.Row ="1"
-                                          Title="Number of Rows"
-                                          Value="{Binding NumberOfRows, Mode=TwoWay}"
-                                          Min="0"
-                                          Max="1000"
-                                          StepSize="10"
-                                          BorderColor="MediumPurple"
-                                          ButtonOrientation="Vertical"
-                                          HorizontalTextAlignment="End"
-                                          VerticalTextAlignment="Center"
-                                          WidthRequest="220" />
+        <HorizontalStackLayout Grid.Row ="1" HorizontalOptions="Fill">
+
+            <controls:NumericUpDownField 
+                Title="Number of Rows"
+                Value="{Binding NumberOfRows, Mode=TwoWay}"
+                Min="0"
+                Max="1000"
+                StepSize="10"
+                BorderColor="MediumPurple"
+                ButtonOrientation="Vertical"
+                HorizontalTextAlignment="End"
+                VerticalTextAlignment="Center"
+            />
+
+            <controls:NumericField
+                Value="{Binding NumberOfRows, Mode=TwoWay}"
+                BorderColor="MediumPurple"
+                NumberFormat="N0"
+                Min="0"
+                Max="1000"
+                HorizontalOptions="Fill"
+                VerticalOptions="Center"  
+                HorizontalTextAlignment="End" 
+                AllowClear="True"
+                AllowSign="True"
+                AllowThousands="True" />
+
+
+        </HorizontalStackLayout>
         <virtualized:VirtualizedDataGrid  
                                         x:Name="TheDataGrid"
                                         Grid.Row="2" 

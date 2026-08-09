@@ -4,6 +4,7 @@
                                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                                   xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                                   x:Class="MissionPlanner.App.Views.FlightData.Tabs.ActionsTabView"
                                   x:DataType="tabs:ActionsTabViewModel">
 
@@ -34,9 +35,17 @@
 
             <Label Text="Takeoff altitude (m)" FontAttributes="Bold" />
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                <Entry Grid.Column="0"
+                <!--<Entry Grid.Column="0"
                        Keyboard="Numeric"
-                       Text="{Binding TakeoffAltitudeMeters}" />
+                       Text="{Binding TakeoffAltitudeMeters}" />-->
+
+                <controls:NumericField
+                    Grid.Column="0"
+                    Value="{Binding TakeoffAltitudeMeters, Mode=TwoWay}"
+                    NumberFormat="F1"
+                    HorizontalOptions="Fill"
+                    HorizontalTextAlignment="End" />
+
                 <Button  Grid.Column="1" Text="Takeoff" Command="{Binding TakeoffCommand}" IsEnabled="{Binding CanTakeoff}" />
             </Grid>
 
@@ -60,8 +69,19 @@
             </HorizontalStackLayout>
             <VerticalStackLayout IsVisible="{Binding IsExpertSectionVisible}" Spacing="6">
                 <Label Text="Advanced commands can be hazardous. Verify the command ID and all seven parameters." TextColor="OrangeRed" />
-                <Entry Placeholder="Command ID" Keyboard="Numeric" Text="{Binding ExpertCommandId}" />
-                <Entry Placeholder="Seven invariant parameters, separated by spaces" Text="{Binding ExpertParameters}" />
+               
+                <!--<Entry Placeholder="Command ID" Keyboard="Numeric" Text="{Binding ExpertCommandId}" />
+                <Entry Placeholder="Seven invariant parameters, separated by spaces" Text="{Binding ExpertParameters}" />-->
+
+                <controls:NumericField
+                    Title="Command ID"
+                    Value="{Binding TakeoffAltitudeMeters, Mode=TwoWay}"
+                    NumberFormat="F1"
+                    HorizontalOptions="Fill"
+                    HorizontalTextAlignment="End" />
+
+                <controls:AlignedEditorField Title="Seven invariant parameters, separated by spaces" Text="{Binding ExpertParameters}" />
+
                 <Button Text="Validate, Confirm, and Send" Command="{Binding ExecuteExpertCommand}" IsEnabled="{Binding CanTransmit}" />
             </VerticalStackLayout>
         </VerticalStackLayout>

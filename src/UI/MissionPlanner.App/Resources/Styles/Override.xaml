@@ -3,6 +3,7 @@
 <ResourceDictionary 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
     x:ClassModifier="internal">
 
     <Style
@@ -21,4 +22,13 @@
         <Setter Property="HorizontalOptions" Value="Center" />
         <Setter Property="VerticalOptions" Value="Center" />
     </Style>
+
+    <Style TargetType="uranium:Select">
+        <Setter Property="DropDownBackgroundColor" Value="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}" />
+        <Setter Property="DropDownBorderColor" Value="{AppThemeBinding Light={StaticResource Outline}, Dark={StaticResource OutlineDark}}" />
+        <Setter Property="SelectedItemBackgroundColor" Value="{AppThemeBinding Light={StaticResource PrimaryContainer}, Dark={StaticResource PrimaryContainerDark}}" />
+        <Setter Property="HoveredItemBackgroundColor" Value="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}" />
+        <Setter Property="PressedItemBackgroundColor" Value="{AppThemeBinding Light={StaticResource PrimaryContainer}, Dark={StaticResource PrimaryContainerDark}}" />
+    </Style>
+
 </ResourceDictionary>

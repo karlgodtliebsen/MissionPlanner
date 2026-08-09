@@ -7,6 +7,7 @@
                     xmlns:dataGrids="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids"
                     xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
                     xmlns:models="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids.Models"
+                    xmlns:controls="using:UraniumUI.Material.Controls"
                     x:Class="UraniumUI.Material.Extensions.Samples.DataGrids.EditorDataGridPage"
                     >
     <uranium:UraniumContentPage.BindingContext>
@@ -32,9 +33,23 @@
                 <material:DataGridColumn Width="*" Title="Age">
                     <material:DataGridColumn.CellItemTemplate >
                         <DataTemplate x:DataType="models:EditorStudent" >
-                            <Border  Padding="3" HorizontalOptions="Center" VerticalOptions="Center" StrokeShape="RoundRectangle 6">
+                            <!--<Border  Padding="3" HorizontalOptions="Center" VerticalOptions="Center" StrokeShape="RoundRectangle 6">
                                 <plain:EntryView HorizontalTextAlignment="End" Text="{Binding Age}" HorizontalOptions="Center"/>
-                            </Border>
+                            </Border>-->
+
+                            <controls:NumericField 
+                                    Padding="3" 
+                                    Value="{Binding Age, Mode=TwoWay}"
+                                    BorderColor="MediumPurple"
+                                    NumberFormat="N0"
+                                    Min="0"
+                                    Max="100"
+                                    HorizontalOptions="Fill"
+                                    VerticalOptions="Center"  
+                                    HorizontalTextAlignment="End" 
+                                    AllowClear="True"
+                                    AllowSign="False"
+                                    AllowThousands="False" />
                         </DataTemplate>
                     </material:DataGridColumn.CellItemTemplate>
                 </material:DataGridColumn>

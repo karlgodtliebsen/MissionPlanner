@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- Microsoft.Extensions family -->
+    <PackageVersion Include="InputKit.Maui" Version="4.6.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.10" />
@@ -37,7 +38,6 @@
     <PackageVersion Include="Spectre.Console.Cli" Version="0.55.0" />
     <PackageVersion Include="System.IO.Ports" Version="10.0.10" />
     <PackageVersion Include="System.Reactive" Version="7.0.0" />
-
     <!--Other-->
     <PackageVersion Include="Polly" Version="8.7.0" />
     <PackageVersion Include="DynamicData" Version="9.4.31" />
@@ -51,7 +51,7 @@
     <PackageVersion Include="Plainer.Maui" Version="1.8.0" />
     <PackageVersion Include="Mapsui" Version="5.1.0" />
     <PackageVersion Include="Mapsui.Maui" Version="5.1.0" />
-    <PackageVersion Include="SkiaSharp.Views.Maui.Controls" Version="4.150.1" />
+    <PackageVersion Include="SkiaSharp.Views.Maui.Controls" Version="4.151.1" />
     <PackageVersion Include="CommunityToolkit.Maui" Version="15.0.0" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <!--MAUI Uranium-->

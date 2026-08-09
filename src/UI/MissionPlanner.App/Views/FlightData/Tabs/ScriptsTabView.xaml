@@ -10,7 +10,7 @@
                                   x:DataType="tabs:ScriptsTabViewModel">
 
 
-    <Grid Padding="16" RowDefinitions="Auto,220,Auto,Auto,*">
+    <Grid Padding="16" RowDefinitions="Auto,220,Auto,Auto,*" RowSpacing="10">
         <Label Text="Constrained vehicle scripts" FontSize="20" FontAttributes="Bold" />
         <Editor Grid.Row="1" Text="{Binding ScriptJson}" AutoSize="Disabled" />
         <HorizontalStackLayout Grid.Row="2" Spacing="8">

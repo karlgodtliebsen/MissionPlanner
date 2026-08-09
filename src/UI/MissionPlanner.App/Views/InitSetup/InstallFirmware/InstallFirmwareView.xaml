@@ -8,6 +8,7 @@
     xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
     xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+    xmlns:controls1="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
     x:DataType="local:InstallFirmwareViewModel"
     Title="Install Firmware">
     <ScrollView>
@@ -32,7 +33,7 @@
                     <Button Text="Load Custom Firmware" Command="{Binding LoadCustomFirmwareCommand}" />
                 </HorizontalStackLayout>
 
-                <Entry Text="{Binding TargetSearchText}" Placeholder="Search platform, manufacturer, brand, or board ID" />
+                <controls1:AlignedEditorField Title="Search platform, manufacturer, brand, or board ID" Text="{Binding TargetSearchText}" />
 
                 <controls:VirtualizedDataGrid 
                           ItemsSource="{Binding FirmwareChoices}" 
@@ -95,34 +96,7 @@
                         </material:DataGridColumn>
                     </controls:VirtualizedDataGrid.Columns>
                 </controls:VirtualizedDataGrid>
-
-                <!--
-                
-                
-                <CollectionView 
-                    ItemsSource="{Binding FirmwareChoices}" SelectionMode="None" EmptyView="No releases are available for this channel.">
-                    <CollectionView.ItemsLayout>
-                        <GridItemsLayout Orientation="Vertical" Span="3" HorizontalItemSpacing="12" VerticalItemSpacing="12" />
-                    </CollectionView.ItemsLayout>
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
-                            <Border Padding="18" StrokeShape="RoundRectangle 10">
-                                <Border.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type local:InstallFirmwareViewModel}}, Path=SelectFirmwareCommand}" CommandParameter="{Binding .}" />
-                                </Border.GestureRecognizers>
-                                <VerticalStackLayout Spacing="5">
-                                    <Label Text="{Binding VehicleType}" FontSize="20" FontAttributes="Bold" />
-                                    <Label Text="{Binding Version}" />
-                                    <Label Text="{Binding Platform}" FontSize="12" />
-                                    <Label Text="{Binding Manufacturer}" FontSize="12" />
-                                    <Label Text="{Binding BoardId, StringFormat='Board ID {0}'}" FontSize="12" />
-                                    <Label Text="{Binding MatchReason}" FontSize="12" FontAttributes="Italic" />
-                                </VerticalStackLayout>
-                            </Border>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>-->
-
+ 
                 <Border IsVisible="{Binding HasCustomFirmware}" Padding="16" StrokeShape="RoundRectangle 8">
                     <VerticalStackLayout Spacing="4">
                         <Label Text="Custom firmware" FontAttributes="Bold" />

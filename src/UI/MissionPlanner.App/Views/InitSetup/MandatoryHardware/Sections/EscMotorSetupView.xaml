@@ -4,6 +4,7 @@
                                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.EscMotorSetupView"
                                   x:DataType="sections:EscMotorSetupViewModel">
     <ScrollView VerticalScrollBarVisibility="Always">
@@ -28,11 +29,31 @@
                 <Label Text="Motor test" FontSize="16" FontAttributes="Bold" />
                 <Grid ColumnDefinitions="120,*,120,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="6">
                     <Label Text="Motor / count" VerticalOptions="Center" />
-                    <Entry Grid.Column="1" Text="{Binding MotorIndex}" Keyboard="Numeric" />
+                    <!--<Entry Grid.Column="1" Text="{Binding MotorIndex}" Keyboard="Numeric" />-->
+                    <controls:NumericField
+                        Grid.Column="1" 
+                        Value="{Binding MotorIndex, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
+                        NumberFormat="F0"
+                        HorizontalOptions="Fill"
+                        HorizontalTextAlignment="End" />
+
                     <Label Grid.Column="2" Text="Throttle %" VerticalOptions="Center" />
-                    <Entry Grid.Column="3" Text="{Binding ThrottlePercent}" Keyboard="Numeric" />
+                    <!--<Entry Grid.Column="3" Text="{Binding ThrottlePercent}" Keyboard="Numeric" />-->
+                    <controls:NumericField
+                        Grid.Column="3" 
+                        Value="{Binding ThrottlePercent, Mode=TwoWay}"
+                        NumberFormat="F1"
+                        HorizontalOptions="Fill"
+                        HorizontalTextAlignment="End" />
                     <Label Grid.Row="1" Text="Duration (s)" VerticalOptions="Center" />
-                    <Entry Grid.Row="1" Grid.Column="1" Text="{Binding DurationSeconds}" Keyboard="Numeric" />
+                    <!--<Entry Grid.Row="1" Grid.Column="1" Text="{Binding DurationSeconds}" Keyboard="Numeric" />-->
+                    <controls:NumericField
+                        Grid.Row="1" Grid.Column="1" 
+                        Value="{Binding DurationSeconds, Mode=TwoWay}"
+                        NumberFormat="F1"
+                        HorizontalOptions="Fill"
+                        HorizontalTextAlignment="End" />
+
                 </Grid>
                 <Label Text="{Binding Instruction}" FontAttributes="Bold" LineBreakMode="WordWrap" />
                 <HorizontalStackLayout Spacing="10">

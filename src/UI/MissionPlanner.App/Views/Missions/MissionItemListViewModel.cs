@@ -1,10 +1,12 @@
 ﻿using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ExCSS;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Missions.Abstractions;
@@ -13,7 +15,6 @@ using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Missions;
-using UraniumUI.Material.Dialogs;
 
 namespace MissionPlanner.App.Views.Missions;
 
@@ -26,22 +27,21 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
 {
     private readonly IMissionFileCodec fileCodec;
     private readonly IDomainEventHub domainEventHub;
+    private readonly IDispatcher dispatcher;
     private readonly IMissionProtocolMapper protocolMapper;
     private readonly IFileSaver fileSaver;
     private readonly ILogger<MissionItemListViewModel> logger;
-    private readonly IExtendedDialogService dialogService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MissionItemListViewModel"/> class.
     /// </summary>
-    public MissionItemListViewModel(IMissionFileCodec fileCodec,
-        IDomainEventHub domainEventHub, //IExtendedDialogService dialogService, 
-        IMissionProtocolMapper protocolMapper, IFileSaver fileSaver,
+    public MissionItemListViewModel(
+        IMissionFileCodec fileCodec, IDomainEventHub domainEventHub, IDispatcher dispatcher, IMissionProtocolMapper protocolMapper, IFileSaver fileSaver,
         IPlannerSettingsService settingsService, ILogger<MissionItemListViewModel> logger)
     {
         this.fileCodec = fileCodec;
         this.domainEventHub = domainEventHub;
-        //this.dialogService = dialogService;
+        this.dispatcher = dispatcher;
         this.protocolMapper = protocolMapper;
         this.fileSaver = fileSaver;
         this.logger = logger;
@@ -51,6 +51,10 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
+        foreach (var row in MissionItems)
+        {
+            row.Dispose();
+        }
     }
 
     [ObservableProperty] public partial double VehicleLatitude { get; set; }
@@ -58,6 +62,7 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
     [ObservableProperty] public partial double VehicleLongitude { get; set; }
 
     [ObservableProperty] public partial double VehicleHeading { get; set; }
+    // [ObservableProperty] public partial bool DirtyRows { get; set; }
 
     /// <summary>When true the map keeps centering on the vehicle as telemetry arrives.</summary>
     [ObservableProperty]
@@ -148,8 +153,15 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
     /// <summary>The frame names offered by the editor's Frame select.</summary>
     public IReadOnlyList<string> FrameOptions { get; } = frameDefinitions.Select(x => x.Name).ToArray();
 
-    /// <summary>Display rows for the mission items, kept in sync with <see cref="Mission"/>.</summary>
+    /// <summary>
+    /// Display rows for the mission items, kept in sync with <see cref="Mission"/>.
+    /// </summary>
     public ObservableCollection<MissionItemRow> MissionItems { get; } = [];
+
+    /// <summary>
+    /// Display rows for the mission items that have been edited but not yet applied.
+    /// </summary>
+    public ObservableCollection<MissionItemRow> DirtyMissionItems { get; } = [];
 
     /// <summary>
     /// The map position the context menu actions operate on (where the user right-clicked/tapped).
@@ -398,8 +410,7 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    [Obsolete]
-    private async Task SaveWpFileAsync()
+    private async Task SaveWpFileAsync(CancellationToken cancellationToken)
     {
         if (Mission.Items.Count == 0)
         {
@@ -417,7 +428,7 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
 
             var content = fileCodec.Build(Mission, HomePosition, format.Value);
             using var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
-            var result = await fileSaver.SaveAsync($"{Mission.Name}{extension}", stream, CancellationToken.None);
+            var result = await fileSaver.SaveAsync($"{Mission.Name}{extension}", stream, cancellationToken);
             ShowStatus(result.IsSuccessful ? $"Mission saved to {result.FilePath}." : "Save cancelled.");
         }
         catch (Exception ex)
@@ -425,9 +436,10 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
             logger.LogError(ex, "Failed to save mission file");
             ShowStatus($"Save failed: {ex.Message}");
         }
+
+        DirtyMissionItems.Clear();
     }
 
-    [Obsolete]
     private static async Task<(MissionFileFormat? Format, string? Extension)> PickSaveFormatAsync()
     {
         var page = Application.Current?.Windows.FirstOrDefault()?.Page;
@@ -436,8 +448,7 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
             return (MissionFileFormat.QgcWpl, ".waypoints");
         }
 
-        var choice = await page.DisplayActionSheet("Save mission as", "Cancel", null,
-            "Waypoints (.waypoints)", "Text (.txt)", "Mission JSON (.mission)");
+        var choice = await page.DisplayActionSheetAsync("Save mission as", "Cancel", null, "Waypoints (.waypoints)", "Text (.txt)", "Mission JSON (.mission)");
 
         return choice switch
         {
@@ -536,14 +547,7 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
             return;
         }
 
-        Mission.Add(new LoiterMissionItem(
-            MissionItemId.New(),
-            0,
-            position,
-            DefaultAltitude(),
-            time,
-            turns,
-            LoiterRadiusMeters));
+        Mission.Add(new LoiterMissionItem(MissionItemId.New(), 0, position, DefaultAltitude(), time, turns, LoiterRadiusMeters));
         OnMissionChanged("Loiter added.");
     }
 
@@ -555,13 +559,7 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
             return;
         }
 
-        Mission.Add(new WaypointMissionItem(
-            MissionItemId.New(),
-            0,
-            position,
-            DefaultAltitude(),
-            TimeSpan.Zero,
-            WaypointRadiusMeters));
+        Mission.Add(new WaypointMissionItem(MissionItemId.New(), 0, position, DefaultAltitude(), TimeSpan.Zero, WaypointRadiusMeters));
         OnMissionChanged(message);
     }
 
@@ -634,6 +632,12 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
 
     private void RebuildRows()
     {
+        foreach (var row in MissionItems)
+        {
+            row.Dispose();
+        }
+
+        DirtyMissionItems.Clear();
         MissionItems.Clear();
 
         var previousPosition = HomePosition;
@@ -689,22 +693,78 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
                 SelectedCommand = CommandNameFor(protocol.Command),
                 SelectedFrame = FrameNameFor(protocol.Frame)
             };
-            row.AttachSelectionChanged(ApplyRowEdit);
-
+            row.AttachNotifications(ApplyRowEdit, EditStateChanged);
             MissionItems.Add(row);
         }
 
         MissionSummary = Mission.Items.Count == 0
             ? "0 items"
             : $"{Mission.Items.Count} items • {totalDistance:F0} m total";
+
+        var dirtyItems = DirtyMissionItems.Any();
+        Debug.Assert(dirtyItems == false);
+        CancelRowEditsCommand.NotifyCanExecuteChanged();
+        ApplyRowEditsCommand.NotifyCanExecuteChanged();
     }
 
     /// <summary>
     /// Applies the edited values of a row (params, lat/lon, altitude) back to the mission item.
     /// </summary>
-    [RelayCommand]
+    [RelayCommand(CanExecute = "HasDirtyRows")]
+    public void ApplyRowEdits()
+    {
+        if (HasDirtyRows() == false)
+        {
+            return;
+        }
+
+        var allItems = DirtyMissionItems.ToList();
+        foreach (var row in allItems)
+        {
+            ApplyRowEdit(row);
+        }
+
+        CancelRowEditsCommand.NotifyCanExecuteChanged();
+        ApplyRowEditsCommand.NotifyCanExecuteChanged();
+    }
+
+    /// <summary>
+    ///  
+    /// </summary>
+    /// <returns></returns>
+    public bool HasDirtyRows()
+    {
+        var hasDirtyRows = DirtyMissionItems.Any();
+        Debug.Print($"HasDirtyRows {hasDirtyRows}");
+        return hasDirtyRows;
+    }
+
+    private void EditStateChanged(MissionItemRow row)
+    {
+        if (!DirtyMissionItems.Any(r => r.Equals(row)))
+        {
+            DirtyMissionItems.Add(row);
+        }
+
+        CancelRowEditsCommand.NotifyCanExecuteChanged();
+        ApplyRowEditsCommand.NotifyCanExecuteChanged();
+        MissionSummary = "EditStateChanged IsDirty: " + HasDirtyRows();
+    }
+
+    /// <summary>
+    /// Cancels any edits made to the mission items and rebuilds the rows to their original state.
+    /// </summary>
+    [RelayCommand(CanExecute = "HasDirtyRows")]
+    public void CancelRowEdits()
+    {
+        RebuildRows();
+        CancelRowEditsCommand.NotifyCanExecuteChanged();
+        ApplyRowEditsCommand.NotifyCanExecuteChanged();
+    }
+
     private void ApplyRowEdit(MissionItemRow row)
     {
+        row.Dispose();
         var index = Mission.Items.ToList().FindIndex(x => x.Id == row.Id);
         if (index < 0)
         {
@@ -820,15 +880,18 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
 
     private void ShowStatus(string message)
     {
-        StatusMessage = message;
-        try
+        dispatcher.Dispatch(() =>
         {
-            MainThread.BeginInvokeOnMainThread(() => Toast.Make(message).Show());
-        }
-        catch (Exception ex)
-        {
-            logger.LogDebug(ex, "Unable to show toast");
-        }
+            StatusMessage = message;
+            try
+            {
+                Toast.Make(message).Show();
+            }
+            catch (Exception ex)
+            {
+                logger.LogDebug(ex, "Unable to show toast");
+            }
+        });
     }
 
     private static async Task<double?> PromptAsync(string title, string message, string initialValue)

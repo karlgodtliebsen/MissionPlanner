@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Vehicles.Models;
 
@@ -15,17 +15,36 @@ public enum TelemetryGaugeType { Numeric, Dial, Bar }
 
 /// <summary>Defines one explicit promoted-state projection.</summary>
 public sealed record TelemetryFieldDescriptor(
-    string Key, string Label, TelemetryFieldCategory Category,
-    Func<VehicleState, object?> Value, Func<VehicleState, DateTimeOffset?> ObservedAt,
-    string UnitKind, string Format, TelemetryGaugeType GaugeType, double? Minimum = null, double? Maximum = null);
+    string Key,
+    string Label,
+    TelemetryFieldCategory Category,
+    Func<VehicleState, object?> Value,
+    Func<VehicleState, DateTimeOffset?> ObservedAt,
+    string UnitKind,
+    string Format,
+    TelemetryGaugeType GaugeType,
+    double? Minimum = null,
+    double? Maximum = null);
 
 /// <summary>Contains raw and formatted telemetry with explicit freshness.</summary>
 public sealed record TelemetryValueSnapshot(
-    TelemetryFieldDescriptor Descriptor, object? RawValue, string DisplayValue, string Unit,
-    TelemetryFreshness Freshness, DateTimeOffset? ObservedAt);
+    TelemetryFieldDescriptor Descriptor,
+    object? RawValue,
+    string DisplayValue,
+    string Unit,
+    TelemetryFreshness Freshness,
+    DateTimeOffset? ObservedAt);
 
-/// <summary>Provides the explicit promoted telemetry descriptor set.</summary>
-public interface ITelemetryFieldCatalog { IReadOnlyList<TelemetryFieldDescriptor> Fields { get; } }
+/// <summary>
+/// Provides the explicit promoted telemetry descriptor set.
+/// </summary>
+public interface ITelemetryFieldCatalog
+{
+    /// <summary>
+    /// Gets the collection of telemetry field descriptors.
+    /// </summary>
+    IReadOnlyList<TelemetryFieldDescriptor> Fields { get; }
+}
 
 /// <summary>Projects and formats descriptors for the selected unit system.</summary>
 public interface ITelemetrySnapshotProjector
@@ -57,13 +76,20 @@ public sealed class TelemetryFieldCatalog : ITelemetryFieldCatalog
         D("radio-rssi", "Radio RSSI", TelemetryFieldCategory.Radio, s => s.Radio.RssiPercent, s => s.Radio.ObservedAt, "percent", "0", TelemetryGaugeType.Bar, 0, 100),
         D("mode", "Flight mode", TelemetryFieldCategory.Flight, s => s.Flight.Mode, s => s.Connection.LastHeartbeatAt, "text", "", TelemetryGaugeType.Numeric),
         D("armed", "Armed", TelemetryFieldCategory.Flight, s => s.Flight.IsArmed, s => s.Connection.LastHeartbeatAt, "text", "", TelemetryGaugeType.Numeric),
-        D("ekf", "EKF healthy", TelemetryFieldCategory.Health, s => s.Health.EkfHealthy, s => s.Health.ObservedAt, "text", "", TelemetryGaugeType.Numeric),
+        D("ekf", "EKF healthy", TelemetryFieldCategory.Health, s => s.Health.EkfHealthy, s => s.Health.ObservedAt, "text", "", TelemetryGaugeType.Numeric)
     ];
 
     private static TelemetryFieldDescriptor D(string key, string label, TelemetryFieldCategory category,
         Func<VehicleState, object?> value, Func<VehicleState, DateTimeOffset?> observed, string unit, string format,
-        TelemetryGaugeType gauge, double? min = null, double? max = null) => new(key, label, category, value, observed, unit, format, gauge, min, max);
-    private static double? Degrees(double? radians) => radians * 180 / Math.PI;
+        TelemetryGaugeType gauge, double? min = null, double? max = null)
+    {
+        return new TelemetryFieldDescriptor(key, label, category, value, observed, unit, format, gauge, min, max);
+    }
+
+    private static double? Degrees(double? radians)
+    {
+        return radians * 180 / Math.PI;
+    }
 }
 
 /// <summary>Formats telemetry while preserving its raw domain value.</summary>
@@ -74,7 +100,11 @@ public sealed class TelemetrySnapshotProjector : ITelemetrySnapshotProjector
     {
         var raw = descriptor.Value(state);
         var observed = descriptor.ObservedAt(state);
-        if (raw is null) return new(descriptor, null, "Unavailable", string.Empty, TelemetryFreshness.Unavailable, observed);
+        if (raw is null)
+        {
+            return new TelemetryValueSnapshot(descriptor, null, "Unavailable", string.Empty, TelemetryFreshness.Unavailable, observed);
+        }
+
         var freshness = observed is null || now - observed > TimeSpan.FromSeconds(10) ? TelemetryFreshness.Stale : TelemetryFreshness.Fresh;
         var value = raw;
         var unit = Unit(descriptor.UnitKind, units);
@@ -83,14 +113,22 @@ public sealed class TelemetrySnapshotProjector : ITelemetrySnapshotProjector
             var number = convertible.ToDouble(CultureInfo.InvariantCulture);
             value = units == UnitSystem.Imperial ? descriptor.UnitKind == "speed" ? number * 2.236936 : number * 3.28084 : number;
         }
+
         var display = value is IFormattable formattable ? formattable.ToString(descriptor.Format, CultureInfo.CurrentCulture) : value.ToString() ?? "Unavailable";
-        return new(descriptor, raw, display, unit, freshness, observed);
+        return new TelemetryValueSnapshot(descriptor, raw, display, unit, freshness, observed);
     }
 
-    private static string Unit(string kind, UnitSystem units) => kind switch
+    private static string Unit(string kind, UnitSystem units)
     {
-        "angle" => "°", "speed" => units == UnitSystem.Imperial ? "mph" : "m/s",
-        "distance" => units == UnitSystem.Imperial ? "ft" : "m", "voltage" => "V",
-        "current" => "A", "percent" => "%", _ => string.Empty,
-    };
+        return kind switch
+        {
+            "angle" => "°",
+            "speed" => units == UnitSystem.Imperial ? "mph" : "m/s",
+            "distance" => units == UnitSystem.Imperial ? "ft" : "m",
+            "voltage" => "V",
+            "current" => "A",
+            "percent" => "%",
+            var _ => string.Empty
+        };
+    }
 }

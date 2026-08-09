@@ -56,7 +56,7 @@ public class RightDockPanel : ContentView
         headerGrid.Add(headerToggleButton);
         Grid.SetColumn(headerToggleButton, 0);
 
-        var titleLabel = new Label { VerticalOptions = LayoutOptions.Center, FontAttributes = FontAttributes.Bold };
+        var titleLabel = new Label { VerticalOptions = LayoutOptions.Center, FontAttributes = FontAttributes.Bold, Margin = new Thickness(5, 0, 0, 0) };
         titleLabel.SetBinding(Label.TextProperty, new Binding(nameof(Title), source: this));
         headerGrid.Add(titleLabel);
         Grid.SetColumn(titleLabel, 1);

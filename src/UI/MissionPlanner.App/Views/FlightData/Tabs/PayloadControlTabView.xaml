@@ -5,27 +5,51 @@
                                   xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
                                   xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                                   x:Class="MissionPlanner.App.Views.FlightData.Tabs.PayloadControlTabView"
              
                                   x:DataType="tabs:PayloadControlTabViewModel">
 
-    <Grid Padding="16" RowDefinitions="Auto,Auto,Auto,Auto,Auto,*">
+    <Grid Padding="16" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,*" RowSpacing="10">
         <Label Text="Payload Control" FontSize="20" FontAttributes="Bold" />
         <Picker Grid.Row="1" Title="Discovered component" ItemsSource="{Binding Payloads}"
                 ItemDisplayBinding="{Binding Kind}" SelectedItem="{Binding SelectedPayload}" />
-        <HorizontalStackLayout Grid.Row="2" Spacing="8">
+        <HorizontalStackLayout Grid.Row="2" Spacing="8" Margin="0,10,0,10">
             <Button Text="Capture image" Command="{Binding CaptureCommand}" />
             <Button Text="Start video" Command="{Binding StartVideoCommand}" />
             <Button Text="Stop video" Command="{Binding StopVideoCommand}" />
         </HorizontalStackLayout>
         <HorizontalStackLayout Grid.Row="3" Spacing="8">
-            <Entry Text="{Binding Pitch}" Placeholder="Pitch (-90..90)" />
-            <Entry Text="{Binding Yaw}" Placeholder="Yaw (-180..180)" />
-            <CheckBox IsChecked="{Binding YawLock}" /><Label Text="Earth-frame yaw lock" VerticalOptions="Center" />
-            <Button Text="Move gimbal" Command="{Binding MoveGimbalCommand}" />
+
+            <controls:NumericField
+                Title="Pitch (-90..90)"
+                Value="{Binding Pitch, Mode=TwoWay}" 
+                Min="-90"
+                Max="90"
+                AllowSign="True"
+                NumberFormat="F1"
+                HorizontalOptions="Fill"
+                HorizontalTextAlignment="End" />
+
+
+            <controls:NumericField
+                Title="Yaw (-180..180)"
+                Value="{Binding Yaw, Mode=TwoWay}"
+                Min="-180"
+                Max="180"   
+                NumberFormat="F1"
+                AllowSign="True"
+                HorizontalOptions="Fill"
+                HorizontalTextAlignment="End" />
+
         </HorizontalStackLayout>
-        <Label Grid.Row="4" Text="{Binding Status}" />
-        <Label Grid.Row="5" Text="Commands target the selected component. ACK does not imply observed state." />
+        <material:CheckBox  Grid.Row="4" Text="Earth-frame yaw lock" IsChecked="{Binding YawLock}" />
+        <Button  Grid.Row="5" Text="Move gimbal" Command="{Binding MoveGimbalCommand}" />
+
+
+        <Label Grid.Row="6" Text="{Binding Status}" />
+        <Label Grid.Row="7" Text="Commands target the selected component. ACK does not imply observed state." />
     </Grid>
 
 </tabViews:TabViewLifecycleContent>

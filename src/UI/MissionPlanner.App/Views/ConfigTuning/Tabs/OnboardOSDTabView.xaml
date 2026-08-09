@@ -5,6 +5,7 @@
                             xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
                             xmlns:config="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
                             xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                            xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                             x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.OnboardOSDTabView"
                             x:DataType="tabs:OnboardOsdTabViewModel"
                             Title="Onboard OSD">
@@ -63,7 +64,16 @@
                                                 <Label Text="{Binding Name}" FontSize="11" />
                                             </VerticalStackLayout>
                                             <Label Grid.Column="1" Text="{Binding LiveValue, StringFormat='Live {0:G}'}" VerticalOptions="Center" />
-                                            <Entry Grid.Column="2" Text="{Binding Value, Mode=TwoWay}" Keyboard="Numeric" IsReadOnly="{Binding IsReadOnly}" />
+                                            <!--<Entry Grid.Column="2" Text="{Binding Value, Mode=TwoWay}" Keyboard="Numeric" 
+                                                   IsReadOnly="{Binding IsReadOnly}" />-->
+                                            <controls:NumericField
+                                                IsReadOnly="{Binding IsReadOnly}" 
+                                                Grid.Column="2" 
+                                                Value="{Binding Value, Mode=TwoWay}"
+                                                NumberFormat="F1"
+                                                HorizontalOptions="Fill"
+                                                HorizontalTextAlignment="End" />
+
                                         </Grid>
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
@@ -79,7 +89,16 @@
                                     <DataTemplate x:DataType="config:ParameterItemViewModel">
                                         <Grid ColumnDefinitions="*,130" ColumnSpacing="8">
                                             <Label Text="{Binding DisplayName}" />
-                                            <Entry Grid.Column="1" Text="{Binding Value, Mode=TwoWay}" Keyboard="Numeric" IsReadOnly="{Binding IsReadOnly}" />
+                                            <!--<Entry Grid.Column="1" Text="{Binding Value, Mode=TwoWay}" 
+                                                   Keyboard="Numeric" IsReadOnly="{Binding IsReadOnly}" />-->
+
+                                            <controls:NumericField
+                                                IsReadOnly="{Binding IsReadOnly}" 
+                                                Grid.Column="1" 
+                                                Value="{Binding Value, Mode=TwoWay}"
+                                                NumberFormat="F1"
+                                                HorizontalOptions="Fill"
+                                                HorizontalTextAlignment="End" />
                                         </Grid>
                                     </DataTemplate>
                                 </BindableLayout.ItemTemplate>
@@ -119,9 +138,25 @@
                         <Label Text="{Binding SelectedItem.Description}" FontSize="12" LineBreakMode="WordWrap" />
                         <Grid ColumnDefinitions="Auto,90,Auto,90" ColumnSpacing="6">
                             <Label Text="Column" VerticalOptions="Center" />
-                            <Entry Grid.Column="1" Text="{Binding SelectedItem.Column, Mode=TwoWay}" Keyboard="Numeric" />
+                            <!--<Entry Grid.Column="1" Text="{Binding SelectedItem.Column, Mode=TwoWay}" Keyboard="Numeric" />-->
+                            <controls:NumericField
+                                Grid.Column="1" 
+                                Value="{Binding SelectedItem.Column, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                                NumberFormat="F1"
+                                HorizontalOptions="Fill"
+                                HorizontalTextAlignment="End" />
+
                             <Label Grid.Column="2" Text="Row" VerticalOptions="Center" />
-                            <Entry Grid.Column="3" Text="{Binding SelectedItem.Row, Mode=TwoWay}" Keyboard="Numeric" />
+                            <!--<Entry Grid.Column="3" Text="{Binding SelectedItem.Row, Mode=TwoWay}" Keyboard="Numeric" />-->
+
+                            <controls:NumericField
+                                Grid.Column="3" 
+                                Value="{Binding SelectedItem.Row, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                                NumberFormat="F1"
+                                HorizontalOptions="Fill"
+                                HorizontalTextAlignment="End" />
+
+
                         </Grid>
                         <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="6">
                             <Button  Text="← Left" Command="{Binding MoveLeftCommand}" />
@@ -135,7 +170,17 @@
                                 <DataTemplate x:DataType="config:ParameterItemViewModel">
                                     <Grid ColumnDefinitions="*,110" ColumnSpacing="6">
                                         <Label Text="{Binding DisplayName}" />
-                                        <Entry Grid.Column="1" Text="{Binding Value, Mode=TwoWay}" Keyboard="Numeric" IsReadOnly="{Binding IsReadOnly}" />
+                                        <!--<Entry Grid.Column="1" Text="{Binding Value, Mode=TwoWay}" Keyboard="Numeric" 
+                                               IsReadOnly="{Binding IsReadOnly}" />-->
+
+                                        <controls:NumericField
+                                            IsReadOnly="{Binding IsReadOnly}" 
+                                            Grid.Column="1" 
+                                            Value="{Binding Value, Mode=TwoWay}"
+                                            NumberFormat="F1"
+                                            HorizontalOptions="Fill"
+                                            HorizontalTextAlignment="End" />
+
                                     </Grid>
                                 </DataTemplate>
                             </BindableLayout.ItemTemplate>

@@ -4,6 +4,7 @@
                                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.OptionalHardwareSetupView"
                                   x:DataType="sections:OptionalHardwareSetupViewModel">
     <ScrollView VerticalScrollBarVisibility="Always">
@@ -42,10 +43,19 @@
                                                     ItemsSource="{Binding Options}"
                                                     SelectedItem="{Binding SelectedOption}"
                                                     ItemDisplayBinding="{Binding Name}" />
-                                            <Entry Grid.Column="1"
+                                            <!--<Entry Grid.Column="1"
                                                    Text="{Binding NumericValue}"
                                                    IsVisible="{Binding IsNumeric}"
-                                                   Keyboard="Numeric" />
+                                                   Keyboard="Numeric" />-->
+
+                                            <controls:NumericField
+                                                Grid.Column="1" 
+                                                IsVisible="{Binding IsNumeric}"
+                                                Text="{Binding NumericValue,Mode=TwoWay}"
+                                                NumberFormat="F1"
+                                                HorizontalOptions="Fill"
+                                                HorizontalTextAlignment="End" />
+
                                             <Button Grid.Column="2"
                                                     Text="Write"
                                                     Command="{Binding ApplyCommand}" />

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using MissionPlanner.Core.Missions.Models;
 
 namespace MissionPlanner.App.Views.Missions;
@@ -7,12 +8,29 @@ namespace MissionPlanner.App.Views.Missions;
 /// Display/edit row for a mission item in the mission list. The value fields are strings so the
 /// complete editor can bind them to entries; Command and Frame are select values (v1.38-style
 /// names). Edits are applied back to the mission via
-/// <see cref="MissionItemListViewModel.ApplyRowEditCommand"/>; command/frame selection changes apply
 /// immediately through the attached selection callback.
 /// </summary>
-public sealed partial class MissionItemRow : ObservableObject
+public sealed partial class MissionItemRow : ObservableObject, IDisposable
 {
+    private bool Equals(MissionItemRow other)
+    {
+        return Id.Equals(other.Id);
+    }
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj)
+    {
+        return ReferenceEquals(this, obj) || (obj is MissionItemRow other && Equals(other));
+    }
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+    {
+        return Id.GetHashCode();
+    }
+
     private Action<MissionItemRow>? selectionChanged;
+    private Action<MissionItemRow>? valueChanged;
 
     /// <summary>The identifier of the underlying mission item.</summary>
     public required MissionItemId Id { get; init; }
@@ -38,25 +56,32 @@ public sealed partial class MissionItemRow : ObservableObject
     public partial string? SelectedFrame { get; set; } = "Relative";
 
     /// <summary>Command parameter 1 (editable).</summary>
-    public string Param1 { get; set; } = string.Empty;
+    [ObservableProperty]
+    public partial string Param1 { get; set; } = string.Empty;
 
     /// <summary>Command parameter 2 (editable).</summary>
-    public string Param2 { get; set; } = string.Empty;
+    [ObservableProperty]
+    public partial string Param2 { get; set; } = string.Empty;
 
     /// <summary>Command parameter 3 (editable).</summary>
-    public string Param3 { get; set; } = string.Empty;
+    [ObservableProperty]
+    public partial string Param3 { get; set; } = string.Empty;
 
     /// <summary>Command parameter 4 (editable).</summary>
-    public string Param4 { get; set; } = string.Empty;
+    [ObservableProperty]
+    public partial string Param4 { get; set; } = string.Empty;
 
     /// <summary>The latitude in degrees (editable), or empty when the item has no position.</summary>
-    public double? Latitude { get; set; }
+    [ObservableProperty]
+    public partial double? Latitude { get; set; }
 
     /// <summary>The longitude in degrees (editable), or empty when the item has no position.</summary>
-    public double? Longitude { get; set; }
+    [ObservableProperty]
+    public partial double? Longitude { get; set; }
 
     /// <summary>The altitude in meters (editable), or empty when the item has no altitude.</summary>
-    public double? Altitude { get; set; }
+    [ObservableProperty]
+    public partial double? Altitude { get; set; }
 
     /// <summary>Ground distance in meters from the previous positioned item (or home), display only.</summary>
     public double? Distance { get; init; }
@@ -67,13 +92,14 @@ public sealed partial class MissionItemRow : ObservableObject
     /// <summary>Climb gradient in percent over the leg, display only.</summary>
     public double? Gradient { get; init; }
 
-    /// <summary>
-    /// Attaches the callback invoked when the command or frame selection changes. Attach after
-    /// setting the initial selections so building the row does not trigger an apply.
-    /// </summary>
-    public void AttachSelectionChanged(Action<MissionItemRow> callback)
+    /// <inheritdoc />
+    protected override void OnPropertyChanged(PropertyChangedEventArgs e)
     {
-        selectionChanged = callback;
+        base.OnPropertyChanged(e);
+        if (e.PropertyName is not nameof(SelectedFrame) and not nameof(SelectedCommand))
+        {
+            valueChanged?.Invoke(this);
+        }
     }
 
     partial void OnSelectedCommandChanged(string? oldValue, string? newValue)
@@ -104,5 +130,24 @@ public sealed partial class MissionItemRow : ObservableObject
         {
             selectionChanged?.Invoke(this);
         }
+    }
+
+    /// <summary>
+    /// Callback to owner viewModel to apply a command/frame selection change immediately to the underlying mission item.
+    /// </summary>
+    /// <param name="sChanged"></param>
+    /// <param name="vChanged"></param>
+    public void AttachNotifications(Action<MissionItemRow> sChanged, Action<MissionItemRow> vChanged)
+    {
+        selectionChanged = sChanged;
+        valueChanged = vChanged;
+    }
+
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        selectionChanged = null;
+        valueChanged = null;
     }
 }

@@ -7,6 +7,7 @@
                             xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                             xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
                             xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                            xmlns:controls1="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                             x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.GeoFenceTabView"
                             x:DataType="tabs:GeoFenceTabViewModel"
                             Title="GeoFence">
@@ -52,11 +53,18 @@
                                     <DataTemplate x:DataType="config:ParameterItemViewModel">
                                         <Grid ColumnDefinitions="*,110" RowDefinitions="Auto,Auto" ColumnSpacing="8">
                                             <Label Text="{Binding DisplayName}" FontAttributes="Bold" />
-                                            <Entry Grid.Column="1"
+                                            <!--<Entry Grid.Column="1"
                                                    Text="{Binding Value, Mode=TwoWay}"
                                                    IsReadOnly="{Binding IsReadOnly}"
-                                                   Keyboard="Numeric" />
-                                            <Label Grid.Row="1" Grid.ColumnSpan="2"
+                                                   Keyboard="Numeric" />-->
+                                            <controls1:NumericField
+                                                Grid.Column="1"
+                                                IsReadOnly="{Binding IsReadOnly}"
+                                                Value="{Binding Value, Mode=TwoWay}"
+                                                NumberFormat="F7"
+                                                HorizontalOptions="Fill"
+                                                HorizontalTextAlignment="End" />
+                                                <Label Grid.Row="1" Grid.ColumnSpan="2"
                                                    Text="{Binding ValidationError}"
                                                    TextColor="OrangeRed"
                                                    FontSize="12" />
@@ -76,7 +84,15 @@
                                 <Button Grid.Row="1" Text="Inclusion circle" Command="{Binding BeginCircleInclusionCommand}" />
                                 <Button Grid.Row="1" Grid.Column="1" Text="Exclusion circle" Command="{Binding BeginCircleExclusionCommand}" />
                                 <Button Grid.Row="2" Text="Set return point" Command="{Binding BeginReturnPointCommand}" />
-                                <Entry Grid.Row="2" Grid.Column="1" Placeholder="Circle radius (m)" Text="{Binding CircleRadiusMeters, Mode=TwoWay}" Keyboard="Numeric" />
+                                <!--<Entry Grid.Row="2" Grid.Column="1" Placeholder="Circle radius (m)" 
+                                       Text="{Binding CircleRadiusMeters, Mode=TwoWay}" Keyboard="Numeric" />-->
+                                <controls1:NumericField
+                                    Grid.Row="2" Grid.Column="1" Title="Circle radius (m)" 
+                                    Value="{Binding CircleRadiusMeters, Mode=TwoWay}"
+                                    NumberFormat="F1"
+                                    HorizontalOptions="Fill"
+                                    HorizontalTextAlignment="End" />
+
                             </Grid>
                             <HorizontalStackLayout Spacing="6" IsVisible="{Binding IsFenceEditMode}">
                                 <Button Text="Finish polygon" Command="{Binding FinishPolygonCommand}" />

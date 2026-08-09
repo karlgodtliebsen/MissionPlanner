@@ -7,7 +7,8 @@
  xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
  xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
  x:Class="MissionPlanner.App.Views.FlightData.Tabs.TransponderTabView" x:DataType="tabs:TransponderTabViewModel">
-    <Grid Padding="16" RowDefinitions="Auto,Auto,*" RowSpacing="10">
+
+    <Grid Padding="16" RowDefinitions="Auto,*,*" RowSpacing="10">
         <Label Text="{Binding Status}" FontSize="20" FontAttributes="Bold" />
 
 
@@ -25,7 +26,6 @@
             </controls:VirtualizedDataGrid.EmptyView>
 
             <controls:VirtualizedDataGrid.Columns>
-
                 <material:DataGridColumn Width="*" Title="VehicleType">
                     <material:DataGridColumn.CellItemTemplate>
                         <DataTemplate x:DataType="components:TransponderComponentState">
@@ -62,28 +62,28 @@
 
             <controls:VirtualizedDataGrid.Columns>
 
-                <material:DataGridColumn Width="120" Title="Callsign">
+                <material:DataGridColumn Width="*" Title="Callsign">
                     <material:DataGridColumn.CellItemTemplate>
                         <DataTemplate x:DataType="components:AdsbTrafficTrack">
                             <Label Text="{Binding Callsign}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
                         </DataTemplate>
                     </material:DataGridColumn.CellItemTemplate>
                 </material:DataGridColumn>
-                <material:DataGridColumn Width="120" Title="Icao Address">
+                <material:DataGridColumn Width="*" Title="Icao Address">
                     <material:DataGridColumn.CellItemTemplate>
                         <DataTemplate x:DataType="components:AdsbTrafficTrack">
                             <Label Text="{Binding IcaoAddress}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
                         </DataTemplate>
                     </material:DataGridColumn.CellItemTemplate>
                 </material:DataGridColumn>
-                <material:DataGridColumn Width="120" Title="Altitude (m)">
+                <material:DataGridColumn Width="*" Title="Altitude (m)">
                     <material:DataGridColumn.CellItemTemplate>
                         <DataTemplate x:DataType="components:AdsbTrafficTrack">
                             <Label Text="{Binding AltitudeMeters, StringFormat='{0:0} m'}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
                         </DataTemplate>
                     </material:DataGridColumn.CellItemTemplate>
                 </material:DataGridColumn>
-                <material:DataGridColumn Width="120" Title="Observed At">
+                <material:DataGridColumn Width="*" Title="Observed At">
                     <material:DataGridColumn.CellItemTemplate>
                         <DataTemplate x:DataType="components:AdsbTrafficTrack">
                             <Label Text="{Binding ObservedAt}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
