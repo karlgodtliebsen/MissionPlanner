@@ -216,3 +216,20 @@ Version 1.1:
 - re-checks the stepper once when the handler is attached;
 - relies on `ICommand.CanExecuteChanged` rather than assigning button
   `IsEnabled` repeatedly.
+# NumericField
+
+`NumericField` extends UraniumUI `TextField` for single-line culture-aware numeric input.
+Bind its numeric `Value` property and use `NumberFormat` for focus-loss formatting; do not
+apply `StringFormat` to `Text`, because that reformats the user's temporary editing text.
+
+```xml
+<controls:NumericField Value="{Binding StepSize}"
+                       NumberFormat="F7"
+                       CultureName="da-DK"
+                       Min="0"
+                       Max="100" />
+```
+
+The current culture is used when `CultureName` is empty. Decimal and thousands separators
+follow that culture. Invalid characters are rejected, incomplete numeric text remains
+editable, and the canonical format is applied only on completion or loss of focus.
