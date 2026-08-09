@@ -68,7 +68,8 @@
             <virtualized:VirtualizedDataGrid.Columns>
                 <virtualized:ExtendedSelectableDataGridColumn Title="Stage"
                     SelectionMemberPath="IsSelected"
-                    SelectionCommandMemberPath="SelectionChangedCommand" />
+                    SelectionCommandMemberPath="SelectionChangedCommand"
+                    SelectionChanged="ExtendedSelectableDataGridColumn_OnSelectionChanged"/>
                 <material:DataGridColumn Width="2*" Title="Parameter">
                     <material:DataGridColumn.CellItemTemplate>
                         <DataTemplate x:DataType="tabs:ParameterComparisonItemViewModel">

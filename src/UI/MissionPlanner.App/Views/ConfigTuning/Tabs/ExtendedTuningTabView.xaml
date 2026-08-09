@@ -142,8 +142,8 @@
                                         <Button  Text="Review &amp; apply group" Command="{Binding ApplyCommand}" />
                                     </HorizontalStackLayout>
                                     <HorizontalStackLayout Grid.Column="1" Spacing="6" IsVisible="{Binding SupportsAxisCopy}">
-                                        <Picker Title="Source axis" WidthRequest="110" ItemsSource="{Binding Axes}" SelectedItem="{Binding SelectedSourceAxis}" />
-                                        <Picker Title="Target axis" WidthRequest="110" ItemsSource="{Binding Axes}" SelectedItem="{Binding SelectedTargetAxis}" />
+                                        <material:SelectField Title="Source axis" WidthRequest="110" ItemsSource="{Binding Axes}" SelectedItem="{Binding SelectedSourceAxis}" />
+                                        <material:SelectField Title="Target axis" WidthRequest="110" ItemsSource="{Binding Axes}" SelectedItem="{Binding SelectedTargetAxis}" />
                                         <Button  Text="Preview axis copy" Command="{Binding PreviewCopyCommand}" />
                                     </HorizontalStackLayout>
                                 </Grid>
@@ -195,18 +195,7 @@
                                                                 </DataTrigger>
                                                             </controls1:NumericField.Triggers>
                                                         </controls1:NumericField>
-
-                                                        <!--<Entry Text="{Binding Editor.Value, Mode=TwoWay}"
-                                                               Keyboard="Numeric"
-                                                               IsReadOnly="{Binding Editor.IsReadOnly}">
-                                                            <Entry.Triggers>
-                                                                <DataTrigger TargetType="Entry" Binding="{Binding Editor.HasValuesData}" Value="True">
-                                                                    <Setter Property="IsVisible" Value="False" />
-                                                                </DataTrigger>
-                                                            </Entry.Triggers>
-                                                        </Entry>-->
-
-                                                        <Picker ItemsSource="{Binding Editor.ValuesData}"
+                                                        <material:SelectField ItemsSource="{Binding Editor.ValuesData}"
                                                                 SelectedItem="{Binding Editor.SelectedValue, Mode=TwoWay}"
                                                                 IsVisible="{Binding Editor.HasValuesData}" />
                                                     </Grid>

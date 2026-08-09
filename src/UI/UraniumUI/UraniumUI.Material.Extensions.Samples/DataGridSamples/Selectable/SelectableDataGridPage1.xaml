@@ -44,7 +44,8 @@
             </virtualized:VirtualizedDataGrid.EmptyView>
 
             <virtualized:VirtualizedDataGrid.Columns>
-                <!--<virtualized:ExtendedSelectableDataGridColumn
+                <!--
+                <virtualized:ExtendedSelectableDataGridColumn
                     x:DataType="models:CustomDataGridStudent"
                     Width="*"
                     SelectionMemberPath="IsSelected" />-->

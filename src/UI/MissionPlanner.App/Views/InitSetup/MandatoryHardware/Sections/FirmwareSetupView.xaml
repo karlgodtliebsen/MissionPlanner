@@ -4,6 +4,7 @@
                                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.FirmwareSetupView"
                                   x:DataType="sections:FirmwareSetupViewModel">
     <ScrollView VerticalScrollBarVisibility="Always">
@@ -38,14 +39,14 @@
 
             <Label Text="Firmware discovery" FontSize="18" FontAttributes="Bold" />
             <HorizontalStackLayout Spacing="10">
-                <Picker Title="Channel"
+                <material:SelectField Title="Channel"
                     ItemsSource="{Binding Channels}"
                     SelectedItem="{Binding SelectedChannel}" />
                 <Button 
                     Text="Discover compatible releases"
                     Command="{Binding DiscoverCommand}" />
             </HorizontalStackLayout>
-            <Picker Title="Compatible release (exact board IDs)"
+            <material:SelectField Title="Compatible release (exact board IDs)"
                 ItemsSource="{Binding Releases}"
                 SelectedItem="{Binding SelectedRelease}"
                 ItemDisplayBinding="{Binding Version}" />

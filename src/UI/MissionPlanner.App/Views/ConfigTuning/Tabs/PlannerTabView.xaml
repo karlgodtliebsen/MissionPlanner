@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
              xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+             xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
              x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.PlannerTabView"
              x:DataType="tabs:PlannerTabViewModel"
              Title="Planner">
@@ -22,11 +23,11 @@
                     </Grid>
                     <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
                         <Label Text="Unit system" VerticalOptions="Center" />
-                        <Picker Grid.Column="1" ItemsSource="{Binding UnitSystems}" SelectedItem="{Binding SelectedUnitSystem}" />
+                        <material:SelectField Grid.Column="1" ItemsSource="{Binding UnitSystems}" SelectedItem="{Binding SelectedUnitSystem}" />
                         <Label Grid.Row="1" Text="Theme (live preview)" VerticalOptions="Center" />
-                        <Picker Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" />
+                        <material:SelectField Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Themes}" SelectedItem="{Binding SelectedTheme}" />
                         <Label Grid.Row="2" Text="Layout" VerticalOptions="Center" />
-                        <Picker Grid.Row="2" Grid.Column="1" ItemsSource="{Binding LayoutModes}" SelectedItem="{Binding LayoutMode}" />
+                        <material:SelectField Grid.Row="2" Grid.Column="1" ItemsSource="{Binding LayoutModes}" SelectedItem="{Binding LayoutMode}" />
                     </Grid>
                 </VerticalStackLayout>
             </Border>
@@ -40,9 +41,9 @@
                     <Label Text="Provider and style changes require restart because map tile layers are created during view initialization." FontSize="12" />
                     <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
                         <Label Text="Provider" VerticalOptions="Center" />
-                        <Picker Grid.Column="1" ItemsSource="{Binding MapProviders}" SelectedItem="{Binding SelectedMapProvider}" />
+                        <material:SelectField Grid.Column="1" ItemsSource="{Binding MapProviders}" SelectedItem="{Binding SelectedMapProvider}" />
                         <Label Grid.Row="1" Text="Style" VerticalOptions="Center" />
-                        <Picker Grid.Row="1" Grid.Column="1" ItemsSource="{Binding MapStyles}" SelectedItem="{Binding SelectedMapStyle}" />
+                        <material:SelectField Grid.Row="1" Grid.Column="1" ItemsSource="{Binding MapStyles}" SelectedItem="{Binding SelectedMapStyle}" />
                         <Label Grid.Row="2" Text="Default zoom (1–22)" VerticalOptions="Center" />
                         <!--<Entry Grid.Row="2" Grid.Column="1" Text="{Binding DefaultMapZoom}" Keyboard="Numeric" />-->
                         <controls:NumericField
@@ -64,7 +65,6 @@
                     </Grid>
                     <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto" RowSpacing="8">
                         <Label Text="Maximum display rate (Hz)" VerticalOptions="Center" />
-                        <!--<Entry Grid.Column="1" Text="{Binding TelemetryDisplayRateHz}" Keyboard="Numeric" />-->
                         <controls:NumericField
                             Grid.Column="1" 
                             Value="{Binding TelemetryDisplayRateHz, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
@@ -73,7 +73,6 @@
                             HorizontalTextAlignment="End" />
 
                         <Label Grid.Row="1" Text="Chart history (seconds)" VerticalOptions="Center" />
-                        <!--<Entry Grid.Row="1" Grid.Column="1" Text="{Binding ChartHistorySeconds}" Keyboard="Numeric" />-->
                         <controls:NumericField
                             Grid.Row="1"
                             Grid.Column="1"
@@ -94,18 +93,11 @@
                     <Label Text="Defaults update the connection UI immediately while disconnected; they never interrupt an active connection." FontSize="12" />
                     <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8">
                         <Label Text="Channel" VerticalOptions="Center" />
-                        <Picker Grid.Column="1" ItemsSource="{Binding ConnectionChannels}" SelectedItem="{Binding ConnectionChannel}" />
+                        <material:SelectField Grid.Column="1" ItemsSource="{Binding ConnectionChannels}" SelectedItem="{Binding ConnectionChannel}" />
                         
                         <Label Grid.Row="1" Text="Host" VerticalOptions="Center" />
                         <controls:AlignedEditorField Grid.Row="1" Grid.Column="1" Text="{Binding ConnectionHost}" Title="Use platform default" />
-                        <!--<controls:NumericField
-                            Grid.Column="1" 
-                            Value="{Binding TelemetryDisplayRateHz, Mode=TwoWay}"
-                            NumberFormat="F1"
-                            HorizontalOptions="Fill"
-                            HorizontalTextAlignment="End" />-->
                         <Label Grid.Row="2" Text="Port" VerticalOptions="Center" />
-                        <!--<Entry Grid.Row="2" Grid.Column="1" Text="{Binding ConnectionPort}" Keyboard="Numeric" />-->
                         <controls:NumericField
                             Grid.Column="1" 
                             Value="{Binding ConnectionPort, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
@@ -113,8 +105,7 @@
                             HorizontalOptions="Fill"
                             HorizontalTextAlignment="End" />
                         <Label Grid.Row="3" Text="Serial baud rate" VerticalOptions="Center" />
-                        <!--<Entry Grid.Row="3" Grid.Column="1" Text="{Binding ConnectionBaudRate}" Keyboard="Numeric" />-->
-                        
+                       
                         <controls:NumericField
                             Grid.Column="3" 
                             Value="{Binding ConnectionBaudRate, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
@@ -133,7 +124,7 @@
                     </Grid>
                     <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto" RowSpacing="8">
                         <Label Text="Policy" VerticalOptions="Center" />
-                        <Picker Grid.Column="1" ItemsSource="{Binding ParameterCachePolicies}" SelectedItem="{Binding SelectedParameterCachePolicy}" />
+                        <material:SelectField Grid.Column="1" ItemsSource="{Binding ParameterCachePolicies}" SelectedItem="{Binding SelectedParameterCachePolicy}" />
                         <Label Grid.Row="1" Text="Maximum age (minutes)" VerticalOptions="Center" />
                         <!--<Entry Grid.Row="1" Grid.Column="1" Text="{Binding ParameterCacheMaximumAgeMinutes}" Keyboard="Numeric" />-->
                         <controls:NumericField
@@ -176,7 +167,7 @@
                     <Label Text="Logging changes and update-channel changes take effect after restart." FontSize="12" />
                     <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
                         <Label Text="Logging level" VerticalOptions="Center" />
-                        <Picker Grid.Column="1" ItemsSource="{Binding LoggingLevels}" SelectedItem="{Binding SelectedLoggingLevel}" />
+                        <material:SelectField Grid.Column="1" ItemsSource="{Binding LoggingLevels}" SelectedItem="{Binding SelectedLoggingLevel}" />
                         <Label Grid.Row="1" Text="Log retention (days)" VerticalOptions="Center" />
                         <!--<Entry Grid.Row="1" Grid.Column="1" Text="{Binding LogRetentionDays}" Keyboard="Numeric" />-->
 
@@ -198,7 +189,7 @@
                             HorizontalTextAlignment="End" />
 
                         <Label Grid.Row="4" Text="Update channel" VerticalOptions="Center" />
-                        <Picker Grid.Row="4" Grid.Column="1" ItemsSource="{Binding UpdateChannels}" SelectedItem="{Binding UpdateChannel}" />
+                        <material:SelectField Grid.Row="4" Grid.Column="1" ItemsSource="{Binding UpdateChannels}" SelectedItem="{Binding UpdateChannel}" />
                         <Label Grid.Row="5" Text="Log directory" VerticalOptions="Center" />
                         <controls:AlignedEditorField Grid.Row="5" Grid.Column="1" Text="{Binding LogDirectory}" Title="Use platform default" />
 
@@ -241,15 +232,15 @@
                     </Grid>
                     <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
                         <Label Text="Distance units" VerticalOptions="Center" />
-                        <Picker Grid.Column="1" ItemsSource="{Binding DistanceUnits}" SelectedItem="{Binding DistanceUnit}" />
+                        <material:SelectField Grid.Column="1" ItemsSource="{Binding DistanceUnits}" SelectedItem="{Binding DistanceUnit}" />
                         <Label Grid.Row="1" Text="Altitude units" VerticalOptions="Center" />
-                        <Picker Grid.Row="1" Grid.Column="1" ItemsSource="{Binding AltitudeUnits}" SelectedItem="{Binding AltitudeUnit}" />
+                        <material:SelectField Grid.Row="1" Grid.Column="1" ItemsSource="{Binding AltitudeUnits}" SelectedItem="{Binding AltitudeUnit}" />
                         <Label Grid.Row="2" Text="Speed units" VerticalOptions="Center" />
-                        <Picker Grid.Row="2" Grid.Column="1" ItemsSource="{Binding SpeedUnits}" SelectedItem="{Binding SpeedUnit}" />
+                        <material:SelectField Grid.Row="2" Grid.Column="1" ItemsSource="{Binding SpeedUnits}" SelectedItem="{Binding SpeedUnit}" />
                         <Label Grid.Row="3" Text="Enable speech" VerticalOptions="Center" />
                         <Switch Grid.Row="3" Grid.Column="1" IsToggled="{Binding SpeechEnabled}" HorizontalOptions="Start" />
                         <Label Grid.Row="4" Text="Minimum spoken severity" VerticalOptions="Center" />
-                        <Picker Grid.Row="4" Grid.Column="1" ItemsSource="{Binding SpeechSeverities}" SelectedItem="{Binding SpeechSeverity}" />
+                        <material:SelectField Grid.Row="4" Grid.Column="1" ItemsSource="{Binding SpeechSeverities}" SelectedItem="{Binding SpeechSeverity}" />
                     </Grid>
                 </VerticalStackLayout>
             </Border>
@@ -364,7 +355,7 @@
                         <Label Grid.Row="10" Text="Show airports / ADS-B" /><HorizontalStackLayout Grid.Row="10" Grid.Column="1"><Switch IsToggled="{Binding ShowAirports}" /><Switch IsToggled="{Binding ShowAdsb}" /></HorizontalStackLayout>
                         <Label Grid.Row="11" Text="Show no-fly zones / TFRs" /><HorizontalStackLayout Grid.Row="11" Grid.Column="1"><Switch IsToggled="{Binding ShowNoFlyZones}" /><Switch IsToggled="{Binding ShowTemporaryFlightRestrictions}" /></HorizontalStackLayout>
                         <Label Grid.Row="12" Text="Map access mode" />
-                        <Picker Grid.Row="12" Grid.Column="1" WidthRequest="220" ItemsSource="{Binding MapAccessModes}" SelectedItem="{Binding MapAccessMode}" />
+                        <material:SelectField Grid.Row="12" Grid.Column="1" WidthRequest="220" ItemsSource="{Binding MapAccessModes}" SelectedItem="{Binding MapAccessMode}" />
                     </Grid>
                 </VerticalStackLayout>
             </Border>

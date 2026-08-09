@@ -23,38 +23,6 @@
 
         <VerticalStackLayout Spacing="12" Margin="25" 
                              IsVisible="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}">
-
-            <!--
-            <Picker ItemsSource="{Binding Channels}"
-                SelectedItem="{Binding SelectedChannel}"
-                Title="Channel" 
-                Margin="0,0,12,4" />
-            <Picker ItemsSource="{Binding BaudRates}"
-                SelectedItem="{Binding SelectedBaudRate}"
-                IsVisible="{Binding ShowSelectedCom}"
-                Title="Baud rate"  
-                Margin="0,0,12,4" />
-
-            <material:EditorField Title="Host" Text="{Binding SelectedHost}" IsVisible="{Binding ShowSelectedHost}" />
-            <material:EditorField Title="Port" Text="{Binding SelectedPort}" IsVisible="{Binding ShowSelectedHost}"/>
-            
-            -->
-
-            <!--<uranium:Select
-            Placeholder="Channel"
-            ItemsSource="{Binding Channels}"
-            SelectedItem="{Binding SelectedChannel}"
-            Margin="0,0,12,4"
-        />
-
-            <uranium:Select
-            Placeholder="Baud rate"
-            ItemsSource="{Binding BaudRates}"
-            SelectedItem="{Binding SelectedBaudRate}"
-            Margin="0,0,12,4"
-            IsVisible="{Binding ShowSelectedCom}"
-        />-->
-
             <material:SelectField
                 Title="Channel"
                 AllowClear="True"

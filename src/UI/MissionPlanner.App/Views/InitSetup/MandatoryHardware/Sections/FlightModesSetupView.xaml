@@ -4,6 +4,7 @@
                                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.FlightModesSetupView"
                                   x:DataType="sections:FlightModesSetupViewModel">
     <ScrollView VerticalScrollBarVisibility="Always">
@@ -22,7 +23,7 @@
                         <Grid ColumnDefinitions="Auto,*,*" ColumnSpacing="8">
                             <Label Text="●" TextColor="LimeGreen" IsVisible="{Binding IsActive}" VerticalOptions="Center" />
                             <Label Grid.Column="1" Text="{Binding BandDescription}" VerticalOptions="Center" />
-                            <Picker Grid.Column="2"
+                            <material:SelectField Grid.Column="2"
                                     Title="Mode"
                                     ItemsSource="{Binding Options}"
                                     SelectedItem="{Binding SelectedMode}"

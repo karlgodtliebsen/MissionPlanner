@@ -13,10 +13,6 @@
     <Grid Padding="16" RowDefinitions="Auto,*,2,Auto,2,Auto" HorizontalOptions="Fill">
 
         <Label Text="Observed servo outputs" FontSize="20" FontAttributes="Bold" />
-
-        <!--<CollectionView Grid.Row="1" ItemsSource="{Binding ServoOutputs}" />-->
-
-
         <controls1:VirtualizedDataGrid 
                                       Grid.Row="1" 
                                       ItemsSource="{Binding ServoOutputs}" 
@@ -42,27 +38,6 @@
                 </material:DataGridColumn>
             </controls1:VirtualizedDataGrid.Columns>
         </controls1:VirtualizedDataGrid>
-
-        <!--<controls1:VirtualizedDataGrid 
-            Grid.Row="1" 
-            ItemsSource="{Binding ServoOutputs}" 
-            ItemSizingStrategy= "MeasureFirstItem"
-            UseAutoColumns="True"
-            ShowSearchBar="False"
-            HorizontalOptions="Fill" 
-            VerticalOptions="Fill" 
-            BackgroundColor="Transparent"
-        >
-            <controls1:VirtualizedDataGrid.EmptyView>
-                <Label HorizontalOptions="Center" Text="No Rows could be found"
-                       FontSize="12" Opacity="0.6" Margin="0,20" />
-            </controls1:VirtualizedDataGrid.EmptyView>
-        </controls1:VirtualizedDataGrid>-->
-
-        <!--
-            <Entry Text="{Binding Channel}" Placeholder="Channel" />
-            <Entry Text="{Binding Pwm}" Placeholder="PWM" />
-            -->
         <BoxView Grid.Row="2"  HorizontalOptions="Fill" ></BoxView>
         <Grid Grid.Row="3" ColumnDefinitions="Auto,Auto,Auto,*" VerticalOptions="Center" HorizontalOptions="Fill" ColumnSpacing="5" Margin="0,10,0,10">
 

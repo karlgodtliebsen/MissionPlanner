@@ -5,6 +5,7 @@
                                   xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                                   x:Class="MissionPlanner.App.Views.FlightData.Tabs.ActionsTabView"
                                   x:DataType="tabs:ActionsTabViewModel">
 
@@ -26,7 +27,7 @@
 
             <Label Text="Flight mode" FontAttributes="Bold" />
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                <Picker Grid.Column="0"
+                <material:SelectField Grid.Column="0"
                         ItemsSource="{Binding Modes}"
                         SelectedItem="{Binding SelectedMode}"
                         ItemDisplayBinding="{Binding Name}" />
@@ -35,17 +36,12 @@
 
             <Label Text="Takeoff altitude (m)" FontAttributes="Bold" />
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                <!--<Entry Grid.Column="0"
-                       Keyboard="Numeric"
-                       Text="{Binding TakeoffAltitudeMeters}" />-->
-
                 <controls:NumericField
                     Grid.Column="0"
                     Value="{Binding TakeoffAltitudeMeters, Mode=TwoWay}"
                     NumberFormat="F1"
                     HorizontalOptions="Fill"
                     HorizontalTextAlignment="End" />
-
                 <Button  Grid.Column="1" Text="Takeoff" Command="{Binding TakeoffCommand}" IsEnabled="{Binding CanTakeoff}" />
             </Grid>
 

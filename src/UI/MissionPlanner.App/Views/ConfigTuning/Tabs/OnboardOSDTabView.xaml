@@ -6,13 +6,14 @@
                             xmlns:config="clr-namespace:MissionPlanner.App.Views.ConfigTuning"
                             xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                             xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                            xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                             x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.OnboardOSDTabView"
                             x:DataType="tabs:OnboardOsdTabViewModel"
                             Title="Onboard OSD">
     <Grid RowDefinitions="Auto,Auto,*" Padding="12" RowSpacing="10">
         <Grid ColumnDefinitions="Auto,220,*,Auto" ColumnSpacing="8">
             <Label Text="Screen" VerticalOptions="Center" />
-            <Picker Grid.Column="1" ItemsSource="{Binding Screens}" SelectedItem="{Binding SelectedScreen}" />
+            <material:SelectField Grid.Column="1" ItemsSource="{Binding Screens}" SelectedItem="{Binding SelectedScreen}" />
             <HorizontalStackLayout Grid.Column="2" Spacing="8">
                 <Button  Text="Apply selected screen" Command="{Binding ApplyScreenCommand}" />
                 <Button  Text="Reset to live" Command="{Binding ResetScreenCommand}" />

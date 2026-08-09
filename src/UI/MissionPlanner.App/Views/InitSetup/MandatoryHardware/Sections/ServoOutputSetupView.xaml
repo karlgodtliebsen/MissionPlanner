@@ -4,6 +4,7 @@
                                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.ServoOutputSetupView"
                                   x:DataType="sections:ServoOutputSetupViewModel">
     <ScrollView VerticalScrollBarVisibility="Always">
@@ -18,7 +19,7 @@
                     <Border Padding="10" StrokeThickness="1">
                         <Grid ColumnDefinitions="100,*,120" ColumnSpacing="8">
                             <Label Text="{Binding Header}" FontAttributes="Bold" VerticalOptions="Center" />
-                            <Picker Grid.Column="1"
+                            <material:SelectField Grid.Column="1"
                                     Title="Function"
                                     ItemsSource="{Binding Functions}"
                                     SelectedItem="{Binding SelectedFunction}"

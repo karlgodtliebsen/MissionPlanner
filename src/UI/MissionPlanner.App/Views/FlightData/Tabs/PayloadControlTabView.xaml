@@ -13,7 +13,7 @@
 
     <Grid Padding="16" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,*" RowSpacing="10">
         <Label Text="Payload Control" FontSize="20" FontAttributes="Bold" />
-        <Picker Grid.Row="1" Title="Discovered component" ItemsSource="{Binding Payloads}"
+        <material:SelectField Grid.Row="1" Title="Discovered component" ItemsSource="{Binding Payloads}"
                 ItemDisplayBinding="{Binding Kind}" SelectedItem="{Binding SelectedPayload}" />
         <HorizontalStackLayout Grid.Row="2" Spacing="8" Margin="0,10,0,10">
             <Button Text="Capture image" Command="{Binding CaptureCommand}" />

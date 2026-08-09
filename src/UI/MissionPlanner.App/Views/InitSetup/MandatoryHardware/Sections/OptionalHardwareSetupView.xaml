@@ -5,6 +5,7 @@
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.OptionalHardwareSetupView"
                                   x:DataType="sections:OptionalHardwareSetupViewModel">
     <ScrollView VerticalScrollBarVisibility="Always">
@@ -37,17 +38,12 @@
                                     <DataTemplate x:DataType="sections:PeripheralSettingViewModel">
                                         <Grid ColumnDefinitions="200,*,Auto" ColumnSpacing="8">
                                             <Label Text="{Binding DisplayName}" VerticalOptions="Center" />
-                                            <Picker Grid.Column="1"
+                                            <material:SelectField Grid.Column="1"
                                                     Title="Value"
                                                     IsVisible="{Binding HasOptions}"
                                                     ItemsSource="{Binding Options}"
                                                     SelectedItem="{Binding SelectedOption}"
                                                     ItemDisplayBinding="{Binding Name}" />
-                                            <!--<Entry Grid.Column="1"
-                                                   Text="{Binding NumericValue}"
-                                                   IsVisible="{Binding IsNumeric}"
-                                                   Keyboard="Numeric" />-->
-
                                             <controls:NumericField
                                                 Grid.Column="1" 
                                                 IsVisible="{Binding IsNumeric}"

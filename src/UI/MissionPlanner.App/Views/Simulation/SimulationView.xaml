@@ -28,7 +28,7 @@
                     <Border Padding="12">
                         <VerticalStackLayout Spacing="8">
                             <Label Text="Profiles" FontSize="18" FontAttributes="Bold" />
-                            <Picker Title="Select profile"
+                            <material:SelectField Title="Select profile"
                                     ItemsSource="{Binding Profiles}"
                                     ItemDisplayBinding="{Binding Name}"
                                     SelectedItem="{Binding SelectedProfile}" />
@@ -45,10 +45,6 @@
                             <Label Text="Multi-vehicle fleet" FontSize="18" FontAttributes="Bold" />
                             <Label Text="Each member receives an isolated process, MAVLink channel, SystemId, port set, home offset, and artifact directory." />
                             <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
-                                <!--<Entry Text="{Binding FleetCount}" Keyboard="Numeric" Placeholder="Count" />
-                                <Entry Grid.Column="1" Text="{Binding FleetSpacingMeters}" Keyboard="Numeric" Placeholder="Spacing m" />
-                                <Entry Grid.Column="2" Text="{Binding FleetPortStride}" Keyboard="Numeric" Placeholder="Port stride" />
-                                <Entry Grid.Column="3" Text="{Binding FleetMaximumConcurrency}" Keyboard="Numeric" Placeholder="Concurrency" />-->
                                 <controls1:NumericField
                                     Grid.Column="0" 
                                     Title="Count"
@@ -115,7 +111,7 @@
                         <VerticalStackLayout Spacing="8">
                             <Label Text="SITL installations" FontSize="18" FontAttributes="Bold" />
                             <Label Text="{Binding PlatformCapability}" />
-                            <Picker Title="Installed / configured"
+                            <material:SelectField Title="Installed / configured"
                                     ItemsSource="{Binding Installations}"
                                     ItemDisplayBinding="{Binding DisplayName}"
                                     SelectedItem="{Binding SelectedInstallation}" />
@@ -127,9 +123,9 @@
                                         IsEnabled="{Binding CanRemoveInstallation}" />
                             </HorizontalStackLayout>
                             <Grid ColumnDefinitions="0.7*,1.3*" ColumnSpacing="8">
-                                <Picker ItemsSource="{Binding ReleaseChannels}"
+                                <material:SelectField ItemsSource="{Binding ReleaseChannels}"
                                         SelectedItem="{Binding SelectedReleaseChannel}" />
-                                <Picker Grid.Column="1"
+                                <material:SelectField Grid.Column="1"
                                         Title="Compatible verified release"
                                         ItemsSource="{Binding AvailableReleases}"
                                         ItemDisplayBinding="{Binding DisplayName}"
@@ -155,11 +151,11 @@
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                                 <VerticalStackLayout>
                                     <Label Text="Firmware" />
-                                    <Picker ItemsSource="{Binding FirmwareFamilies}" SelectedItem="{Binding SelectedFirmwareFamily}" />
+                                    <material:SelectField ItemsSource="{Binding FirmwareFamilies}" SelectedItem="{Binding SelectedFirmwareFamily}" />
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Grid.Column="1">
                                     <Label Text="Frame / model" />
-                                    <Picker ItemsSource="{Binding AvailableFrames}" SelectedItem="{Binding FrameModel}" />
+                                    <material:SelectField ItemsSource="{Binding AvailableFrames}" SelectedItem="{Binding FrameModel}" />
                                 </VerticalStackLayout>
                             </Grid>
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
@@ -170,7 +166,6 @@
                                 </VerticalStackLayout>
                                 <VerticalStackLayout Grid.Column="1">
                                     <Label Text="Speedup" />
-                                    <!--<Entry Text="{Binding Speedup}" Keyboard="Numeric" />-->
                                     <controls1:NumericField
                                         Text="{Binding Speedup,Mode=TwoWay}"
                                         NumberFormat="F1"
@@ -183,20 +178,13 @@
 
                             <Label Text="Start location (latitude, longitude, altitude, heading)" />
                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                                <Picker Title="Location preset"
+                                <material:SelectField Title="Location preset"
                                         ItemsSource="{Binding LocationPresets}"
                                         ItemDisplayBinding="{Binding Name}"
                                         SelectedItem="{Binding SelectedLocationPreset}" />
                                 <Button Grid.Column="1" Text="Apply preset" Command="{Binding ApplyLocationPresetCommand}" />
                             </Grid>
                             <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
-                                <!--
-                                <Entry Text="{Binding Latitude}" Keyboard="Numeric" Placeholder="Latitude" />
-                                <Entry Grid.Column="1" Text="{Binding Longitude}" Keyboard="Numeric" Placeholder="Longitude" />
-                                <Entry Grid.Row="1" Text="{Binding Altitude}" Keyboard="Numeric" Placeholder="Altitude m" />
-                                <Entry Grid.Row="1" Grid.Column="1" Text="{Binding Heading}" Keyboard="Numeric" Placeholder="Heading °" />
-                                -->
-
                                 <controls1:NumericField
                                     Title="Latitude"
                                     Text="{Binding Latitude,Mode=TwoWay}"
@@ -233,9 +221,6 @@
                             <vm:SimulationLocationMapView HeightRequest="220" />
                             <Label Text="Ports" />
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                                <!--<Entry Text="{Binding MavLinkPort}" Keyboard="Numeric" Placeholder="MAVLink UDP" />
-                                <Entry Grid.Column="1" Text="{Binding ConsolePort}" Keyboard="Numeric" Placeholder="Console TCP" />
-                                -->
                                 <controls1:NumericField
                                     Title="MAVLink UDP"
                                     Text="{Binding MavLinkPort,Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
@@ -252,9 +237,6 @@
                             </Grid>
                             <Label Text="Instance identity" />
                             <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                                <!--<Entry Text="{Binding InstanceNumber}" Keyboard="Numeric" Placeholder="Instance (0-254)" />
-                                <Entry Grid.Column="1" Text="{Binding SystemId}" Keyboard="Numeric" Placeholder="SystemId (1-255)" />-->
-
                                 <controls1:NumericField
                                     Title="Instance (0-254)"
                                     Text="{Binding InstanceNumber,Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
@@ -275,15 +257,6 @@
                             <Label Text="Additional serial endpoints (index,UdpClient|TcpClient,host,port)" />
                             <controls1:AlignedEditorField Text="{Binding SerialEndpointsText}" AutoSize="TextChanges" MinimumHeightRequest="60" />
                             <HorizontalStackLayout Spacing="12">
-
-                                <!--<CheckBox IsChecked="{Binding WipeState}" />
-                                <Label Text="Wipe state" VerticalOptions="Center" />
-                                
-                                <CheckBox IsChecked="{Binding ShowConsoleWindow}" />
-                                <Label Text="Show console" VerticalOptions="Center" />
-                                
-                                <CheckBox IsChecked="{Binding EnableMapIntegration}" />
-                                <Label Text="Map integration" VerticalOptions="Center" />-->
                                 <material:CheckBox Text="Wipe state" LineBreakMode="WordWrap" IsChecked="{Binding WipeState}" />
                                 <material:CheckBox Text="Show console" LineBreakMode="WordWrap" IsChecked="{Binding ShowConsoleWindow}" />
                                 <material:CheckBox Text="Map integration" LineBreakMode="WordWrap" IsChecked="{Binding EnableMapIntegration}" />
@@ -317,8 +290,6 @@
                                                 MinimumHeightRequest="220" />
 
                             <HorizontalStackLayout Spacing="8">
-                                <!--<CheckBox IsChecked="{Binding ScenarioHazardsConfirmed}" />
-                                <Label Text="I confirm arm, takeoff, mission start, and fault steps" VerticalOptions="Center" />-->
                                 <material:CheckBox Text="I confirm arm, takeoff, mission start, and fault steps" LineBreakMode="WordWrap" IsChecked="{Binding ScenarioHazardsConfirmed}" />
                             </HorizontalStackLayout>
                             <HorizontalStackLayout Spacing="8">
@@ -362,15 +333,13 @@
                             <Label Text="Environment, sensors, and bounded faults" FontSize="18" FontAttributes="Bold" />
                             <Button Grid.Column="1" Text="Refresh" Command="{Binding RefreshControlsCommand}" />
                         </Grid>
-                        <Picker Title="Documented control"
+                        <material:SelectField Title="Documented control"
                                 ItemsSource="{Binding ControlCapabilities}"
                                 ItemDisplayBinding="{Binding DisplayName}"
                                 SelectedItem="{Binding SelectedControl}" />
                         <Label Text="{Binding SelectedControl.Reason}" />
                         <Label Text="{Binding SelectedControl.Descriptor.Description}" />
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                            <!--<Entry Text="{Binding ControlRequestedValue}" Keyboard="Numeric" Placeholder="Requested value" />
-                            <Entry Grid.Column="1" Text="{Binding FaultDurationSeconds}" Keyboard="Numeric" Placeholder="Fault duration seconds" />-->
                             <controls1:NumericField
                                 Title="Requested Value"
                                 Text="{Binding ControlRequestedValue,Mode=TwoWay}"
@@ -398,7 +367,7 @@
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                             <controls1:AlignedEditorField Text="{Binding ScenarioPresetName}" Title="Scenario preset name" />
 
-                            <Picker Grid.Column="1"
+                            <material:SelectField Grid.Column="1"
                                     Title="Saved scenario preset"
                                     ItemsSource="{Binding ScenarioPresets}"
                                     ItemDisplayBinding="{Binding Name}"

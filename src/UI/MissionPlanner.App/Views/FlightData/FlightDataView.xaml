@@ -102,7 +102,7 @@
                   ColumnSpacing="10"
                   BackgroundColor="#2d2d30">
 
-                <Picker 
+                <material:SelectField 
                         Grid.Column="0"
                         ItemsSource="{Binding MapStyles}"
                         SelectedItem="{Binding SelectedMapStyle}" />

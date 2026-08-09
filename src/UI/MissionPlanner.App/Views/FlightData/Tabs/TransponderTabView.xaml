@@ -35,18 +35,6 @@
                 </material:DataGridColumn>
             </controls:VirtualizedDataGrid.Columns>
         </controls:VirtualizedDataGrid>
-
-        <!--
-        <CollectionView Grid.Row="1" ItemsSource="{Binding Components}" HeightRequest="100">
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="components:TransponderComponentState">
-                    <Border Padding="8" Margin="4" StyleClass="SurfaceContainer,Rounded">
-                        <Label Text="{Binding FlightId, StringFormat='Flight {0}'}" />
-                    </Border>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-        -->
         <controls:VirtualizedDataGrid Grid.Row="2" 
                                       ItemsSource="{Binding Traffic}" 
                                       ItemSizingStrategy= "MeasureFirstItem"

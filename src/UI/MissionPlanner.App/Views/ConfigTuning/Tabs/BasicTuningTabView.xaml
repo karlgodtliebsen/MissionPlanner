@@ -5,6 +5,7 @@
                             xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
                             xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                             xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                            xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                             x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.BasicTuningTabView"
                             x:DataType="tabs:BasicTuningTabViewModel"
                             Title="Basic Tuning">
@@ -93,7 +94,7 @@
                                                             </controls:NumericField.Triggers>
                                                         </controls:NumericField>
   
-                                                        <Picker ItemsSource="{Binding Editor.ValuesData}"
+                                                        <material:SelectField ItemsSource="{Binding Editor.ValuesData}"
                                                                 SelectedItem="{Binding Editor.SelectedValue, Mode=TwoWay}"
                                                                 IsVisible="{Binding Editor.HasValuesData}" />
                                                     </Grid>

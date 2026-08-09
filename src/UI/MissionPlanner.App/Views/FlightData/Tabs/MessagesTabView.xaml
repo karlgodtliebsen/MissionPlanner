@@ -12,18 +12,6 @@
                                   >
 
     <Grid Padding="8" RowDefinitions="Auto,Auto,Auto,*,Auto" RowSpacing="15">
-        <!--<Picker Grid.Column="0"
-                    Title="Severity"
-                    ItemsSource="{Binding SeverityFilters}"
-                    SelectedItem="{Binding SelectedSeverity}" />-->
-            <!--ItemTemplate="{StaticResource RichSelectItemTemplate}"-->
-
-        <!--<uranium:Select
-            Placeholder="Severity"
-            ItemsSource="{Binding SeverityFilters}"
-            SelectedItem="{Binding SelectedSeverity}"
-        />-->
-
         <material:SelectField
             Title="Severity"
             ItemsSource="{Binding SeverityFilters}"

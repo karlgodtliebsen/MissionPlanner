@@ -22,7 +22,7 @@
                             <Grid ColumnDefinitions="180,*,*" RowDefinitions="Auto,Auto" RowSpacing="4" ColumnSpacing="8">
                                 <Label Text="{Binding DisplayName}" FontAttributes="Bold" />
                                 <Label Grid.Column="1" Text="{Binding CurrentDisplay, StringFormat='Current: {0}'}" />
-                                <Picker Grid.Column="2"
+                                <material:SelectField Grid.Column="2"
                                     Title="Pending value"
                                     ItemsSource="{Binding Options}"
                                     SelectedItem="{Binding SelectedOption}"
@@ -42,9 +42,6 @@
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="sections:FrameRecommendationViewModel">
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-                            <!--<CheckBox IsChecked="{Binding IsSelected}" />
-                            <Label Grid.Column="1" Text="{Binding Description}" 
-                                   LineBreakMode="WordWrap" VerticalOptions="Center" />-->
                             <material:CheckBox Text="{Binding Description}" LineBreakMode="WordWrap" IsChecked="{Binding IsSelected}" />
                         </Grid>
                     </DataTemplate>

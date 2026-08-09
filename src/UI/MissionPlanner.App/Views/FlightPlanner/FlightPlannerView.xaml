@@ -46,20 +46,15 @@
                     <Button Text="Read" Command="{Binding ReadFromVehicleCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
                     <Button Text="Write" Command="{Binding WriteToVehicleCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
                     <Button Text="Write Fast" Command="{Binding WriteToVehicleFastCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
-                    <Button Text="Edit" Command="{Binding EditCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
+                    <Button Text="Editor" Command="{Binding EditCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
 
                     <Label Text="Map:" VerticalOptions="Center" Margin="0,0,4,4" />
-                    <Picker ItemsSource="{Binding Map.AvailableMapTypes}"
+                    <material:SelectField ItemsSource="{Binding Map.AvailableMapTypes}"
                                 SelectedItem="{Binding Map.SelectedMapType}"
                                 WidthRequest="170"
                                 Margin="0,0,4,4" />
 
                     <Label Text="Default Altitude (m):" VerticalOptions="Center" Margin="0,0,4,4" />
-                    <!--<Entry Text="{Binding Map.DefaultAltitudeMeters}"
-                               Keyboard="Numeric"
-                               WidthRequest="70"
-                               Margin="0,0,4,4" />-->
-
                     <controls:NumericField
                         WidthRequest="70"
                         BorderThickness="0.1"
@@ -71,8 +66,6 @@
 
 
                     <Grid  ColumnDefinitions="30,Auto" Margin="0,0,4,4"  >
-                        <!--<CheckBox IsChecked="{Binding Map.AddWaypointOnMapClick}"  VerticalOptions="Center"  />
-                        <Label Grid.Column="1" Text="Click map to add WP" VerticalOptions="Center"  />-->
                         <material:CheckBox Text="Click map to add WP" IsChecked="{Binding Map.AddWaypointOnMapClick}" />
                     </Grid>
 

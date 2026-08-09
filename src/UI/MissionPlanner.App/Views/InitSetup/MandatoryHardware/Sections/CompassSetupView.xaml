@@ -4,6 +4,7 @@
                                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.CompassSetupView"
                                   x:DataType="sections:CompassSetupViewModel">
     <ScrollView VerticalScrollBarVisibility="Always">
@@ -37,7 +38,7 @@
                                     <Switch IsToggled="{Binding IsUsed}" />
                                     <Label Text="External" VerticalOptions="Center" IsVisible="{Binding SupportsExternal}" />
                                     <Switch IsToggled="{Binding IsExternal}" IsVisible="{Binding SupportsExternal}" />
-                                    <Picker Title="Orientation"
+                                    <material:SelectField Title="Orientation"
                                         ItemsSource="{Binding Orientations}"
                                         SelectedItem="{Binding SelectedOrientation}"
                                         ItemDisplayBinding="{Binding Name}" />

@@ -27,7 +27,7 @@
             <VerticalStackLayout IsVisible="{Binding IsDisconnectedMode}" Spacing="16">
                 <HorizontalStackLayout Spacing="10">
                     <Label Text="Release:" VerticalOptions="Center" />
-                    <Picker ItemsSource="{Binding Channels}" SelectedItem="{Binding SelectedChannel}" WidthRequest="180" />
+                    <material:SelectField ItemsSource="{Binding Channels}" SelectedItem="{Binding SelectedChannel}" WidthRequest="180" />
                     <Button Text="Refresh catalogue" Command="{Binding RefreshCatalogCommand}" />
                     <Button Text="All Options" Command="{Binding ShowAllOptionsCommand}" />
                     <Button Text="Load Custom Firmware" Command="{Binding LoadCustomFirmwareCommand}" />
@@ -156,7 +156,7 @@
                     </VerticalStackLayout>
                 </Border>
                 <Label Text="Detected device" FontAttributes="Bold" />
-                <Picker ItemsSource="{Binding DetectedDevices}" SelectedItem="{Binding SelectedDevice}" Title="Select flight controller" />
+                <material:SelectField ItemsSource="{Binding DetectedDevices}" SelectedItem="{Binding SelectedDevice}" Title="Select flight controller" />
                 <Label Text="{Binding DeviceStatus}" />
             </VerticalStackLayout>
 

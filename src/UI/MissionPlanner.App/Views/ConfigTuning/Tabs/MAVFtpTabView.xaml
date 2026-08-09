@@ -18,48 +18,51 @@
             <Button Grid.Column="3" Text="Open" IsVisible="{Binding HasEntries}" Command="{Binding OpenSelectedCommand}" />
             <Button Grid.Column="4" Text="Reset sessions"  IsVisible="{Binding HasConnection}" Command="{Binding ResetSessionsCommand}" />
         </Grid>
-        <Grid Grid.Row="1">
-            <!--<CollectionView ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry}" SelectionMode="Single" 
-                            EmptyView="{Binding EmptyText}" >
-                <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid Padding="8" ColumnDefinitions="36,*,120,140">
-                            <Grid.GestureRecognizers>
-                                <TapGestureRecognizer NumberOfTapsRequired="2"
-                                                      Command="{Binding Source={x:Reference RootPage}, Path=BindingContext.OpenEntryCommand}"
-                                                      CommandParameter="{Binding .}" />
-                            </Grid.GestureRecognizers>
-                            <Label Text="{Binding Icon}" FontSize="20" />
-                            <Label Grid.Column="1" Text="{Binding Name}" VerticalTextAlignment="Center" />
-                            <Label Grid.Column="2" Text="{Binding TypeText}" VerticalTextAlignment="Center" />
-                            <Label Grid.Column="3" Text="{Binding SizeText}" HorizontalTextAlignment="End" VerticalTextAlignment="Center" />
-                        </Grid>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>-->
-
+        <Grid Grid.Row="1"  HorizontalOptions="Fill" >
             <controls:VirtualizedDataGrid 
                 ItemsSource="{Binding Entries}" 
+                SelectedItems="{Binding SelectedEntries}"
                 ItemSizingStrategy= "MeasureFirstItem"
                 ShowSearchBar="False"
-                HorizontalOptions="Fill" 
+                HorizontalOptions="Center" 
                 VerticalOptions="Fill" 
                 BackgroundColor="Transparent">
                 <controls:VirtualizedDataGrid.EmptyView>
-                    <Label HorizontalOptions="Center" Text="No items." FontSize="12" Opacity="0.6" Margin="0,20" />
+                    <Label HorizontalOptions="Center" Text="{Binding EmptyText}" FontSize="12" Opacity="0.6" Margin="0,20" />
                 </controls:VirtualizedDataGrid.EmptyView>
                 <controls:VirtualizedDataGrid.Columns>
-                    <material:DataGridColumn Width="100"  ValueBinding="{Binding Name}" Title="Name" />
+                    <!--
+                    <material:DataGridColumn Width="200"  ValueBinding="{Binding Name}" Title="Name" />
                     <material:DataGridColumn Width="100"  ValueBinding="{Binding TypeText}" Title="Type" />
-                    <material:DataGridColumn Width="100"  ValueBinding="{Binding SizeText}" Title="Size" />
+                    <material:DataGridColumn Width="10"  ValueBinding="{Binding SizeText}" Title="Size" />
+                    -->
+                    <controls:ExtendedSelectableDataGridColumn
+                        SelectionMemberPath="IsSelected"
+                        SelectionCommandMemberPath="SelectionChangedCommand" />
+
+                    <material:DataGridColumn Width="400" Title="Name">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="tabs:VehicleFileSystemEntryViewModel">
+                                <Label Text="{Binding Name}" HorizontalOptions="Start" VerticalOptions="Center"  />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+                    <material:DataGridColumn Width="100" Title="Type">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="tabs:VehicleFileSystemEntryViewModel">
+                                <Label Text="{Binding TypeText}"  HorizontalOptions="Start" VerticalOptions="Center"  />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+                    <material:DataGridColumn Width="100" Title="Size">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="tabs:VehicleFileSystemEntryViewModel">
+                                <Label Text="{Binding SizeText}"  HorizontalOptions="Start" VerticalOptions="Center"  />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
                 </controls:VirtualizedDataGrid.Columns>
             </controls:VirtualizedDataGrid>
-            <!--        
-          x:DataType="tabs:VehicleFileSystemEntryViewModel"  
-          x:DataType="tabs:VehicleFileSystemEntryViewModel" 
-          x:DataType="tabs:VehicleFileSystemEntryViewModel" 
-            -->
-
         </Grid>
         <VerticalStackLayout Grid.Row="2" Spacing="6">
             <Label Text="{Binding ErrorText}" TextColor="Red" />

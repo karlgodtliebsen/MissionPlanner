@@ -18,18 +18,16 @@
         
         <Label Text="Auxiliary functions:" FontSize="20" FontAttributes="Bold" Grid.ColumnSpan="2" />
         
-        <Picker Grid.Row="1" Grid.ColumnSpan="2" Title="Function" ItemsSource="{Binding Functions}"
+        <material:SelectField Grid.Row="1" Grid.ColumnSpan="2" Title="Function" ItemsSource="{Binding Functions}"
                 ItemDisplayBinding="{Binding Name}" 
                 SelectedItem="{Binding SelectedFunction}" />
         
         <Label Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding SelectedFunction.Description}" />
 
-        <Picker Grid.Row="3" Grid.ColumnSpan="2" Title="Switch level" ItemsSource="{Binding Levels}" 
+        <material:SelectField Grid.Row="3" Grid.ColumnSpan="2" Title="Switch level" ItemsSource="{Binding Levels}" 
                 SelectedItem="{Binding Level}" />
 
         <HorizontalStackLayout Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" VerticalOptions="Start" HorizontalOptions="Start">
-            <!--<CheckBox IsChecked="{Binding IsConfirmed}" />
-            <Label Text="Confirm warning/high-risk action" VerticalOptions="Center" />-->
             <material:CheckBox Text="Confirm warning/high-risk action" IsChecked="{Binding IsConfirmed}" />
             <Button Text="Execute" Command="{Binding ExecuteCommand}" />
         </HorizontalStackLayout>

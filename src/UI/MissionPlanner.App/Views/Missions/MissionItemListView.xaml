@@ -12,67 +12,66 @@
                     BackgroundColor="Transparent"
                     x:Name="Root">
 
-    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" Margin="10"
-          RowSpacing="6" BackgroundColor="Transparent"   HorizontalOptions="Fill"   VerticalOptions="Fill">
+    <Grid RowDefinitions="Auto,*" Margin="10"
+          RowSpacing="6" BackgroundColor="Transparent"  HorizontalOptions="Center"   VerticalOptions="Fill">
 
-        <!-- Title + mode switch BackgroundColor="#252526" -->
-        <Label Grid.Row="1" Grid.Column="0" Text="Mission" FontAttributes="Bold" FontSize="16" VerticalOptions="Center" />
+        <Border StyleClass="SurfaceContainer,Rounded,Elevation1" HorizontalOptions="Center"  >
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="10"
+                  RowSpacing="6" BackgroundColor="Transparent"   HorizontalOptions="Fill"   VerticalOptions="Fill">
+                <!-- Title + mode switch BackgroundColor="#252526" -->
+                <Label Grid.Row="1"  Text="Mission" FontAttributes="Bold" FontSize="16" VerticalOptions="Center" />
 
-        <Label Grid.Row="2" Text="{Binding HomePosition, StringFormat='Home: {0}'}" FontSize="12" Opacity="0.8" />
+                <Label Grid.Row="2" Text="{Binding HomePosition, StringFormat='Home: {0}'}" FontSize="12" Opacity="0.8" />
 
-        <!-- Complete-mode header: info + editor settings -->
-        <Label Grid.Row="3" Text="{Binding MissionSummary}" FontSize="12" FontAttributes="Bold" />
+                <!-- Complete-mode header: info + editor settings -->
+                <Label Grid.Row="3" Text="{Binding MissionSummary}" FontSize="12" FontAttributes="Bold" />
 
-        <Grid Grid.Row="4" HorizontalOptions="Start"  ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" VerticalOptions="Center" ColumnSpacing="6"
-              IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
-            <Label Grid.Column="0" Text="WP Radius (m):" FontSize="11" VerticalOptions="Center"  />
-            <!--<Entry Grid.Column="1" Text="{Binding WaypointRadiusMeters}" 
-                   Keyboard="Numeric" HorizontalTextAlignment="End"  FontSize="11" WidthRequest="25"   />-->
-            <extended:NumericField
-                Grid.Column="1"   FontSize="11" WidthRequest="25"
-                Text="{Binding WaypointRadiusMeters,Mode=TwoWay}"
-                NumberFormat="F1"
-                HorizontalOptions="Fill"
-                HorizontalTextAlignment="End" />
+                <Grid Grid.Row="4" 
+                      Width="400"
+                      HorizontalOptions="Start"  ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" VerticalOptions="Center" ColumnSpacing="6"
+                        IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
+                    <Label Grid.Column="0" Text="WP Radius (m):" FontSize="11" VerticalOptions="Center"  />
+                    <extended:NumericField
+                        Grid.Column="1"   FontSize="11" WidthRequest="25"
+                        Text="{Binding WaypointRadiusMeters,Mode=TwoWay}"
+                        NumberFormat="F1"
+                        HorizontalOptions="Fill"
+                        HorizontalTextAlignment="End" />
 
-            <Label Grid.Column="2" Text="Loiter Radius (m):" FontSize="11" VerticalOptions="Center"  />
-            <!--<Entry Grid.Column="3" Text="{Binding LoiterRadiusMeters}" 
-                   Keyboard="Numeric" HorizontalTextAlignment="End" FontSize="11" WidthRequest="25"  />-->
-            <extended:NumericField
-                Grid.Column="3"   FontSize="11" WidthRequest="25"
-                Text="{Binding LoiterRadiusMeters,Mode=TwoWay}"
-                NumberFormat="F1"
-                HorizontalOptions="Fill"
-                HorizontalTextAlignment="End" />
+                    <Label Grid.Column="2" Text="Loiter Radius (m):" FontSize="11" VerticalOptions="Center"  />
+                    <extended:NumericField
+                        Grid.Column="3"   FontSize="11" WidthRequest="25"
+                        Text="{Binding LoiterRadiusMeters,Mode=TwoWay}"
+                        NumberFormat="F1"
+                        HorizontalOptions="Fill"
+                        HorizontalTextAlignment="End" />
 
-            <Label Grid.Column="4" Text="Default Alt (m):" FontSize="11" VerticalOptions="Center" />
-            <!--<Entry Grid.Column="5" Text="{Binding DefaultAltitudeMeters}" 
-                   Keyboard="Numeric" HorizontalTextAlignment="End"  FontSize="11" WidthRequest="25"  />-->
-            <extended:NumericField
-                Grid.Column="5"  FontSize="11" WidthRequest="25"
-                Text="{Binding DefaultAltitudeMeters,Mode=TwoWay}"
-                NumberFormat="F1"
-                HorizontalOptions="Fill"
-                HorizontalTextAlignment="End" />
-            <Label Grid.Column="6" Text="Alt Warn (m):" FontSize="11" VerticalOptions="Center"  />
-            <!--<Entry Grid.Column="7" Text="{Binding AltWarnMeters}" 
-                   Keyboard="Numeric" HorizontalTextAlignment="End"  FontSize="11" WidthRequest="25"  />-->
-            <extended:NumericField
-                Grid.Column="7" FontSize="11" WidthRequest="25"
-                Text="{Binding AltWarnMeters,Mode=TwoWay}"
-                NumberFormat="F1"
-                HorizontalOptions="Fill"
-                HorizontalTextAlignment="End" />
+                    <Label Grid.Column="4" Text="Default Alt (m):" FontSize="11" VerticalOptions="Center" />
+                    <extended:NumericField
+                        Grid.Column="5"  FontSize="11" WidthRequest="25"
+                        Text="{Binding DefaultAltitudeMeters,Mode=TwoWay}"
+                        NumberFormat="F1"
+                        HorizontalOptions="Fill"
+                        HorizontalTextAlignment="End" />
+                    <Label Grid.Column="6" Text="Alt Warn (m):" FontSize="11" VerticalOptions="Center"  />
+                    <extended:NumericField
+                        Grid.Column="7" FontSize="11" WidthRequest="25"
+                        Text="{Binding AltWarnMeters,Mode=TwoWay}"
+                        NumberFormat="F1"
+                        HorizontalOptions="Fill"
+                        HorizontalTextAlignment="End" />
 
-        </Grid>
+                </Grid>
+            </Grid>
+        </Border>
 
-        <Grid Grid.Row="5" HorizontalOptions="Fill" VerticalOptions="Fill" >
+        <Grid Grid.Row="1" HorizontalOptions="Fill" VerticalOptions="Fill" >
 
             <controls:VirtualizedDataGrid 
                 ItemsSource="{Binding MissionItems}" 
                 ItemSizingStrategy= "MeasureFirstItem"
                 ShowSearchBar="False"
-                HorizontalOptions="Fill" 
+                HorizontalOptions="Center" 
                 VerticalOptions="Fill" 
                 BackgroundColor="Transparent"
             >
@@ -83,17 +82,18 @@
 
                 <controls:VirtualizedDataGrid.Columns>
 
-                    <material:DataGridColumn Width="75" Title="#" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
+                        <material:DataGridColumn Width="75" Title="#" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="missions:MissionItemRow">
+                                    <Label Text="{Binding Number}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"  />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
+                    <material:DataGridColumn Width="200" Title="Command" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="missions:MissionItemRow">
-                                <Label Text="{Binding Number}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"  />
-                            </DataTemplate>
-                        </material:DataGridColumn.CellItemTemplate>
-                    </material:DataGridColumn>
-                    <material:DataGridColumn Width="*" Title="Command" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
-                        <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate x:DataType="missions:MissionItemRow">
-                                <Picker ItemsSource="{Binding CommandOptions, Source={RelativeSource AncestorType={x:Type missions:MissionItemListViewModel}}}"
+                                <material:SelectField ItemsSource="{Binding CommandOptions, Source={RelativeSource AncestorType={x:Type missions:MissionItemListViewModel}}}"
                                         SelectedItem="{Binding SelectedCommand}"
                                         HorizontalTextAlignment="Center"
                                         VerticalOptions="Center" />
@@ -181,7 +181,7 @@
                     <material:DataGridColumn Width="125" Title="Frame" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="missions:MissionItemRow">
-                                <Picker ItemsSource="{Binding FrameOptions, Source={RelativeSource AncestorType={x:Type missions:MissionItemListViewModel}}}"
+                                <material:SelectField ItemsSource="{Binding FrameOptions, Source={RelativeSource AncestorType={x:Type missions:MissionItemListViewModel}}}"
                                     SelectedItem="{Binding SelectedFrame}" VerticalOptions="Center" HorizontalTextAlignment="Center" />
                             </DataTemplate>
                         </material:DataGridColumn.CellItemTemplate>
