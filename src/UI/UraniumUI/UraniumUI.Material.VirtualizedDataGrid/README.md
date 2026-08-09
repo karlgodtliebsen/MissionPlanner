@@ -9,6 +9,40 @@ This revision builds on the virtualized grid and adds four data-view features:
 
 The row renderer remains a platform `CollectionView`, so only viewport rows are realized.
 
+## Selection
+
+Selection remains compatible with UraniumUI selection columns and defaults to
+multiple selection:
+
+```xml
+<virtualized:VirtualizedDataGrid
+    ItemsSource="{Binding Items}"
+    SelectionMode="Multiple"
+    SelectedItems="{Binding SelectedItems, Mode=TwoWay}"
+    SelectionChangedCommand="{Binding SelectionChangedCommand}">
+    <virtualized:VirtualizedDataGrid.Columns>
+        <material:DataGridSelectionColumn />
+        <!-- data columns -->
+    </virtualized:VirtualizedDataGrid.Columns>
+</virtualized:VirtualizedDataGrid>
+```
+
+Use single selection by binding `SelectedItem` instead:
+
+```xml
+<virtualized:VirtualizedDataGrid
+    ItemsSource="{Binding Items}"
+    SelectionMode="Single"
+    SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+    SelectionChangedCommand="{Binding SelectionChangedCommand}" />
+```
+
+`SelectionMode` supports `None`, `Single`, and `Multiple`. In single mode,
+`SelectedItem` and `SelectedItems` are kept synchronized. The command receives a
+`VirtualizedDataGridSelectionChangedEventArgs` containing `PreviousSelection`,
+`CurrentSelection`, and `SelectedItem`. The control also exposes a matching
+`SelectionChanged` event for code-behind consumers.
+
 ## Files added in v2
 
 ```text

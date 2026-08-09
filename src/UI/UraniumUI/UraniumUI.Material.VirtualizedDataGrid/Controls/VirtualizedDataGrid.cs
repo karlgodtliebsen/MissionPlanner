@@ -42,6 +42,7 @@ public partial class VirtualizedDataGrid : Border
     private bool visualResourcesReleased;
     private bool settingAutoColumns;
     private bool syncingSelectionCells;
+    private bool updatingSelection;
     private int deferRefreshCount;
     private bool refreshPending;
     private IList? deferredSnapshot;
@@ -50,6 +51,9 @@ public partial class VirtualizedDataGrid : Border
     private bool autoColumnMeasurementScheduled;
     private bool autoColumnWidthsFrozen;
     private int autoColumnMeasurementGeneration;
+
+    /// <summary>Occurs after the effective row selection changes.</summary>
+    public event EventHandler<VirtualizedDataGridSelectionChangedEventArgs>? SelectionChanged;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VirtualizedDataGrid"/> class.
@@ -1026,14 +1030,50 @@ public partial class VirtualizedDataGrid : Border
 
     private void OnSelectedItemsSet(IList? oldValue, IList? newValue)
     {
+        var previousSelection = oldValue is null
+            ? Array.Empty<object>()
+            : SnapshotSelection(oldValue);
+
         if (subscriptionsActive)
         {
             DetachSelectedItems();
             AttachSelectedItems(newValue);
         }
 
-        RefreshSelectedItemSet();
-        RefreshSelectionVisuals();
+        NormalizeSelection(SelectionMode == SelectionMode.Single ? newValue?.Cast<object?>().LastOrDefault() : null);
+        CompleteSelectionChange(previousSelection);
+    }
+
+    private void OnSelectedItemSet(object? oldValue, object? newValue)
+    {
+        if (updatingSelection || SelectionMode != SelectionMode.Single)
+        {
+            return;
+        }
+
+        var previousSelection = SnapshotSelection();
+        ReplaceSelection(newValue);
+        CompleteSelectionChange(previousSelection);
+    }
+
+    private void OnSelectionModeChanged()
+    {
+        var previousSelection = SnapshotSelection();
+
+        switch (SelectionMode)
+        {
+            case SelectionMode.None:
+                ReplaceSelection(null);
+                break;
+            case SelectionMode.Single:
+                NormalizeSelection(SelectedItem ?? SelectedItems.Cast<object?>().FirstOrDefault());
+                break;
+            case SelectionMode.Multiple:
+                SetSelectedItem(null);
+                break;
+        }
+
+        CompleteSelectionChange(previousSelection);
     }
 
     private void ActivateSubscriptions()
@@ -1217,8 +1257,15 @@ public partial class VirtualizedDataGrid : Border
 
     private void SelectedItems_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        RefreshSelectedItemSet();
-        RefreshSelectionVisuals();
+        if (updatingSelection)
+        {
+            return;
+        }
+
+        var previousSelection = selectedItemSet.ToArray();
+        var preferredItem = e.NewItems?.Cast<object?>().LastOrDefault();
+        NormalizeSelection(preferredItem);
+        CompleteSelectionChange(previousSelection);
     }
 
     private void SelectionColumn_SelectionChanged(object? sender, bool isSelected)
@@ -1230,9 +1277,23 @@ public partial class VirtualizedDataGrid : Border
 
         var item = view.BindingContext;
 
+        if (SelectionMode == SelectionMode.None)
+        {
+            RefreshSelectionVisuals();
+            return;
+        }
+
+        var previousSelection = SnapshotSelection();
+
         try
         {
-            if (isSelected)
+            updatingSelection = true;
+
+            if (SelectionMode == SelectionMode.Single)
+            {
+                ReplaceSelectionCore(isSelected ? item : null);
+            }
+            else if (isSelected)
             {
                 if (!SelectedItems.Contains(item))
                 {
@@ -1249,10 +1310,111 @@ public partial class VirtualizedDataGrid : Border
             // The caller supplied a read-only SelectedItems collection.
             return;
         }
+        finally
+        {
+            updatingSelection = false;
+        }
 
         OnPropertyChanged(nameof(SelectedItems));
+        CompleteSelectionChange(previousSelection);
+    }
+
+    private void NormalizeSelection(object? preferredItem)
+    {
+        if (updatingSelection)
+        {
+            return;
+        }
+
+        if (SelectionMode == SelectionMode.None)
+        {
+            ReplaceSelection(null);
+            return;
+        }
+
+        if (SelectionMode == SelectionMode.Single)
+        {
+            var item = preferredItem ?? SelectedItems.Cast<object?>().FirstOrDefault();
+            ReplaceSelection(item);
+            return;
+        }
+
+        SetSelectedItem(null);
+    }
+
+    private void ReplaceSelection(object? item)
+    {
+        try
+        {
+            updatingSelection = true;
+            ReplaceSelectionCore(item);
+        }
+        catch (NotSupportedException)
+        {
+            // The caller supplied a read-only SelectedItems collection.
+        }
+        finally
+        {
+            updatingSelection = false;
+        }
+    }
+
+    private void ReplaceSelectionCore(object? item)
+    {
+        SelectedItems.Clear();
+        if (item is not null)
+        {
+            SelectedItems.Add(item);
+        }
+
+        SetSelectedItem(item);
+        OnPropertyChanged(nameof(SelectedItems));
+    }
+
+    private void SetSelectedItem(object? item)
+    {
+        if (ReferenceEquals(SelectedItem, item))
+        {
+            return;
+        }
+
+        var wasUpdatingSelection = updatingSelection;
+        updatingSelection = true;
+        SetValue(SelectedItemProperty, item);
+        updatingSelection = wasUpdatingSelection;
+    }
+
+    private void CompleteSelectionChange(IReadOnlyList<object> previousSelection)
+    {
         RefreshSelectedItemSet();
         RefreshSelectionVisuals();
+
+        var currentSelection = SnapshotSelection();
+        if (previousSelection.SequenceEqual(currentSelection))
+        {
+            return;
+        }
+
+        var args = new VirtualizedDataGridSelectionChangedEventArgs(
+            previousSelection,
+            currentSelection,
+            SelectedItem);
+
+        SelectionChanged?.Invoke(this, args);
+        if (SelectionChangedCommand?.CanExecute(args) == true)
+        {
+            SelectionChangedCommand.Execute(args);
+        }
+    }
+
+    private IReadOnlyList<object> SnapshotSelection()
+    {
+        return SnapshotSelection(SelectedItems);
+    }
+
+    private static IReadOnlyList<object> SnapshotSelection(IList source)
+    {
+        return source.Cast<object?>().Where(item => item is not null).Cast<object>().ToArray();
     }
 
     /// <summary>

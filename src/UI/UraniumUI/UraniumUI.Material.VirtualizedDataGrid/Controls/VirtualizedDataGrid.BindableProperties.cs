@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.ObjectModel;
+using System.Windows.Input;
 using InputKit.Shared;
 using UraniumUI.Material.Controls;
 
@@ -164,6 +165,62 @@ public partial class VirtualizedDataGrid
         defaultBindingMode: BindingMode.TwoWay,
         propertyChanged: static (bindable, oldValue, newValue) =>
             ((VirtualizedDataGrid)bindable).OnSelectedItemsSet((IList?)oldValue, (IList?)newValue));
+
+    /// <summary>
+    /// Gets or sets the selected row when <see cref="SelectionMode"/> is
+    /// <see cref="Microsoft.Maui.Controls.SelectionMode.Single"/>.
+    /// </summary>
+    public object? SelectedItem
+    {
+        get => GetValue(SelectedItemProperty);
+        set => SetValue(SelectedItemProperty, value);
+    }
+
+    /// <summary>Identifies the <see cref="SelectedItem"/> bindable property.</summary>
+    public static readonly BindableProperty SelectedItemProperty = BindableProperty.Create(
+        nameof(SelectedItem),
+        typeof(object),
+        typeof(VirtualizedDataGrid),
+        null,
+        BindingMode.TwoWay,
+        propertyChanged: static (bindable, oldValue, newValue) =>
+            ((VirtualizedDataGrid)bindable).OnSelectedItemSet(oldValue, newValue));
+
+    /// <summary>
+    /// Gets or sets whether selection is disabled, limited to one row, or allows
+    /// multiple rows. The default is <see cref="Microsoft.Maui.Controls.SelectionMode.Multiple"/>
+    /// for compatibility with <see cref="SelectedItems"/>.
+    /// </summary>
+    public SelectionMode SelectionMode
+    {
+        get => (SelectionMode)GetValue(SelectionModeProperty);
+        set => SetValue(SelectionModeProperty, value);
+    }
+
+    /// <summary>Identifies the <see cref="SelectionMode"/> bindable property.</summary>
+    public static readonly BindableProperty SelectionModeProperty = BindableProperty.Create(
+        nameof(SelectionMode),
+        typeof(SelectionMode),
+        typeof(VirtualizedDataGrid),
+        SelectionMode.Multiple,
+        propertyChanged: static (bindable, _, _) =>
+            ((VirtualizedDataGrid)bindable).OnSelectionModeChanged());
+
+    /// <summary>
+    /// Gets or sets the command invoked after the effective selection changes.
+    /// The command parameter is a <see cref="VirtualizedDataGridSelectionChangedEventArgs"/>.
+    /// </summary>
+    public ICommand? SelectionChangedCommand
+    {
+        get => (ICommand?)GetValue(SelectionChangedCommandProperty);
+        set => SetValue(SelectionChangedCommandProperty, value);
+    }
+
+    /// <summary>Identifies the <see cref="SelectionChangedCommand"/> bindable property.</summary>
+    public static readonly BindableProperty SelectionChangedCommandProperty = BindableProperty.Create(
+        nameof(SelectionChangedCommand),
+        typeof(ICommand),
+        typeof(VirtualizedDataGrid));
 
     /// <summary>
     /// Gets or sets the accent color used to highlight selected rows.
