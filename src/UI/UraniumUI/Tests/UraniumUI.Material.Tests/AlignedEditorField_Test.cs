@@ -24,4 +24,17 @@ public class AlignedEditorField_Test
         control.EditorView.HorizontalTextAlignment.ShouldBe(TextAlignment.Center);
         control.EditorView.VerticalTextAlignment.ShouldBe(TextAlignment.End);
     }
+
+    [Fact]
+    public void AutoSize_ShouldBeForwardedToEditor()
+    {
+        var control = AnimationReadyHandler.Prepare(
+            new AlignedEditorField { AutoSize = EditorAutoSizeOption.Disabled });
+
+        control.EditorView.AutoSize.ShouldBe(EditorAutoSizeOption.Disabled);
+
+        control.AutoSize = EditorAutoSizeOption.TextChanges;
+
+        control.EditorView.AutoSize.ShouldBe(EditorAutoSizeOption.TextChanges);
+    }
 }

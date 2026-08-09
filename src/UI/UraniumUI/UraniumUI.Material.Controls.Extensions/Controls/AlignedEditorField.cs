@@ -20,6 +20,10 @@ public class AlignedEditorField : EditorField
         EditorView.SetBinding(
             Editor.VerticalTextAlignmentProperty,
             new Binding(nameof(VerticalTextAlignment), source: this));
+
+        EditorView.SetBinding(
+            Editor.AutoSizeProperty,
+            new Binding(nameof(AutoSize), source: this));
     }
 
     /// <summary>
@@ -59,4 +63,23 @@ public class AlignedEditorField : EditorField
             typeof(TextAlignment),
             typeof(AlignedEditorField),
             Editor.VerticalTextAlignmentProperty.DefaultValue);
+
+    /// <summary>
+    /// Gets or sets whether the editor changes height as its text changes.
+    /// </summary>
+    public EditorAutoSizeOption AutoSize
+    {
+        get => (EditorAutoSizeOption)GetValue(AutoSizeProperty);
+        set => SetValue(AutoSizeProperty, value);
+    }
+
+    /// <summary>
+    /// Identifies the <see cref="AutoSize"/> bindable property.
+    /// </summary>
+    public static readonly BindableProperty AutoSizeProperty =
+        BindableProperty.Create(
+            nameof(AutoSize),
+            typeof(EditorAutoSizeOption),
+            typeof(AlignedEditorField),
+            EditorAutoSizeOption.TextChanges);
 }

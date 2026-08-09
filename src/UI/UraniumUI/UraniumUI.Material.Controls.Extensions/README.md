@@ -233,3 +233,17 @@ apply `StringFormat` to `Text`, because that reformats the user's temporary edit
 The current culture is used when `CultureName` is empty. Decimal and thousands separators
 follow that culture. Invalid characters are rejected, incomplete numeric text remains
 editable, and the canonical format is applied only on completion or loss of focus.
+
+# AlignedEditorField
+
+`AlignedEditorField` forwards horizontal alignment, vertical alignment, and MAUI editor
+auto-sizing to UraniumUI's inner `EditorView`. Its default remains `TextChanges`, matching
+the underlying UraniumUI `EditorField`.
+
+```xml
+<controls:AlignedEditorField Text="{Binding Notes}"
+                             AutoSize="TextChanges"
+                             MinimumHeightRequest="60" />
+```
+
+Use `AutoSize="Disabled"` when the editor must retain a fixed requested height.
