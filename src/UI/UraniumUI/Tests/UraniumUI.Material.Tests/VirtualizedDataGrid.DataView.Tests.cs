@@ -48,6 +48,46 @@ public class VirtualizedDataGridDataViewTests
     }
 
     [Fact]
+    public void TextFilter_ShouldRebindAlreadyRealizedRowsToFilteredItems()
+    {
+        var rows = new ObservableCollection<Row>
+        {
+            new("FIRST", "First row"),
+            new("SECOND", "Second row"),
+            new("MATCH", "Only matching row")
+        };
+        var control = AnimationReadyHandler.Prepare(CreateGrid(rows));
+        control.CalculateViewport();
+
+        control.FilterMemberPaths = nameof(Row.Name);
+        control.FilterText = "MATCH";
+        control.CalculateViewport();
+
+        control.ExposedRealizedItems.ShouldBe([rows[2]]);
+    }
+
+    [Fact]
+    public void ClearingTextFilter_ShouldRestoreRealizedRowsInSourceOrder()
+    {
+        var rows = new ObservableCollection<Row>
+        {
+            new("FIRST", "First row"),
+            new("SECOND", "Second row"),
+            new("MATCH", "Only matching row")
+        };
+        var control = AnimationReadyHandler.Prepare(CreateGrid(rows));
+        control.CalculateViewport();
+        control.FilterMemberPaths = nameof(Row.Name);
+        control.FilterText = "MATCH";
+        control.CalculateViewport();
+
+        control.FilterText = string.Empty;
+        control.CalculateViewport();
+
+        control.ExposedRealizedItems.ShouldBe(rows);
+    }
+
+    [Fact]
     public void Paging_ShouldExposeOnlyCurrentPageAndClampNavigation()
     {
         var rows = new ObservableCollection<Row>(
@@ -222,6 +262,22 @@ public class VirtualizedDataGridDataViewTests
         public ScrollView ExposedRowsView => RowsView;
         public ContentView ExposedEmptyViewHost => EmptyViewHost;
         public System.Collections.IList? ExposedDisplayedItemsSource => DisplayedItemsSource;
+
+        public IReadOnlyList<Row> ExposedRealizedItems
+        {
+            get
+            {
+                var extent = RowsView.Content.ShouldBeOfType<AbsoluteLayout>();
+                return extent.Children
+                    .OfType<View>()
+                    .Where(view => view.IsVisible)
+                    .OrderBy(view => extent.GetLayoutBounds(view).Y)
+                    .Select(view => view.BindingContext.ShouldBeOfType<Row>())
+                    .ToArray();
+            }
+        }
+
+        public void CalculateViewport() => UpdateRowsViewport(0, 400);
     }
 
     private sealed record Row(string Name, string Description);

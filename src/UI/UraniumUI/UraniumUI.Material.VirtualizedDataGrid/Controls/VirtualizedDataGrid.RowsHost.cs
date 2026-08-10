@@ -377,6 +377,12 @@ internal sealed class VirtualizedDataGridRowsHost : ScrollView
     {
         if (realized.TryGetValue(index, out var existing))
         {
+            var item = itemsSource![index];
+            if (!ReferenceEquals(existing.BindingContext, item))
+            {
+                existing.BindingContext = item;
+            }
+
             PositionPresenter(index, existing);
             return;
         }

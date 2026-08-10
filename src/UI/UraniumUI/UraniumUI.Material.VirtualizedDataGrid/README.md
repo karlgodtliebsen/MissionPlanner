@@ -46,6 +46,11 @@ height for the remaining rows. Intermediate `SizeChanged` measurements are
 accepted until that first row reaches its final arranged height, preventing an
 early provisional measurement from becoming the permanent row size.
 
+Filtering and paging replace the grid's displayed item view without replacing
+the caller's `ItemsSource`. Realized presenters are rebound by displayed index
+whenever that view changes, so applying or clearing a filter immediately shows
+the corresponding items in their correct order.
+
 ## Selection
 
 Selection remains compatible with UraniumUI selection columns and defaults to
