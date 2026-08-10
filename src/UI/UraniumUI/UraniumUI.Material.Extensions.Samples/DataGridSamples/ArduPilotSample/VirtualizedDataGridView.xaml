@@ -64,19 +64,8 @@
             </virtualized:VirtualizedDataGrid.EmptyView>
 
             <virtualized:VirtualizedDataGrid.Columns>
-                <material:DataGridColumn Title="Param" Width="160">
-                    <material:DataGridColumn.CellItemTemplate >
-                        <DataTemplate x:DataType="arduPilotSample:ParameterItemViewModel" >
-
-                            <Label FontSize="12" VerticalOptions="Center" VerticalTextAlignment="Center" 
-                                             HorizontalOptions="Start" HorizontalTextAlignment="Start" 
-                                                 Text="{Binding Name}"/>
-
-                        </DataTemplate>
-                    </material:DataGridColumn.CellItemTemplate>
-                </material:DataGridColumn>
-
-             <material:DataGridColumn Title="Value" >
+                <material:DataGridColumn Width="160" x:DataType="arduPilotSample:ParameterItemViewModel" ValueBinding="{Binding Name}" Title="Param"  />
+                <material:DataGridColumn Title="Value" >
                     <material:DataGridColumn.CellItemTemplate >
                         <DataTemplate  x:DataType="arduPilotSample:ParameterItemViewModel" >
                             <controls:NumericField
@@ -92,8 +81,6 @@
                                 AllowClear="True"
                                 AllowSign="True"
                                 AllowThousands="True" />
-
-
                         </DataTemplate>
                     </material:DataGridColumn.CellItemTemplate>
                 </material:DataGridColumn>
@@ -140,9 +127,9 @@
                     </material:DataGridColumn.CellItemTemplate>
                 </material:DataGridColumn>
 
-                <material:DataGridColumn Width="100"  ValueBinding="{Binding Range}" Title="Range"  />
-                <material:DataGridColumn Width="100"  ValueBinding="{Binding OriginalValueText}" Title="Default"  />
-                <material:DataGridColumn Width="125" Title="Units">
+                <material:DataGridColumn Width="100" x:DataType="arduPilotSample:ParameterItemViewModel" ValueBinding="{Binding Range}" Title="Range"  />
+                <material:DataGridColumn Width="100" x:DataType="arduPilotSample:ParameterItemViewModel" ValueBinding="{Binding OriginalValueText}" Title="Default"  />
+                <material:DataGridColumn Width="125" x:DataType="arduPilotSample:ParameterItemViewModel" Title="Units">
                     <material:DataGridColumn.CellItemTemplate>
                         <DataTemplate x:DataType="arduPilotSample:ParameterItemViewModel">
                             <Label FontSize="14" Text="{Binding Units}" Margin="10,0" VerticalOptions="Center" HorizontalOptions="Center" HorizontalTextAlignment="Center" />
@@ -150,8 +137,7 @@
                     </material:DataGridColumn.CellItemTemplate>
                 </material:DataGridColumn>
 
-
-                <material:DataGridColumn Width="150" Title="Write status">
+                <material:DataGridColumn Width="150" x:DataType="arduPilotSample:ParameterItemViewModel" Title="Write status">
                     <material:DataGridColumn.CellItemTemplate>
                         <DataTemplate x:DataType="arduPilotSample:ParameterItemViewModel">
                             <VerticalStackLayout Margin="10,0" VerticalOptions="Center" HorizontalOptions="Fill">
@@ -162,10 +148,9 @@
                     </material:DataGridColumn.CellItemTemplate>
                 </material:DataGridColumn>
 
-                <material:DataGridColumn Title="Description" Width="*">
+                <material:DataGridColumn x:DataType="arduPilotSample:ParameterItemViewModel" Title="Description" Width="*">
                     <material:DataGridColumn.CellItemTemplate>
                         <DataTemplate x:DataType="arduPilotSample:ParameterItemViewModel">
-
                             <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="10,10,0,10">
                                 <Label FontSize="12" VerticalOptions="Center" VerticalTextAlignment="Center" LineBreakMode="WordWrap"  HorizontalOptions="Start" HorizontalTextAlignment="Start" Text="{Binding DisplayName}"/>
                                 <Label FontSize="12" VerticalOptions="Fill" HorizontalOptions="Fill"  Text=" "/>

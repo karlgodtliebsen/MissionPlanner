@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<uranium:UraniumContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+<uranium:UraniumContentPage 
+                    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                     xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
-                    xmlns:models="using:UraniumUI.Material.Extensions.Samples.DataGrids.Models"
-                    xmlns:paginationSamples="using:UraniumUI.Material.Extensions.Samples.DataGridSamples.PaginationSamples"
+                    xmlns:paginationSamples="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGridSamples.PaginationSamples"
+                    xmlns:models="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids.Models"
                     x:Class="UraniumUI.Material.Extensions.Samples.DataGridSamples.PaginationSamples.PaginationSamplePage"
                     x:DataType="paginationSamples:PaginationSampleViewModel"
                     >
@@ -53,13 +54,12 @@
                     </material:DataGridColumn.CellItemTemplate>
                 </material:DataGridColumn>
 
-                <material:DataGridColumn Title="Title" ValueBinding="{Binding title}" />
-                <material:DataGridColumn Title="Price" ValueBinding="{Binding price}" />
-                <material:DataGridColumn Title="Rating" ValueBinding="{Binding rating}" />
-                <material:DataGridColumn Title="Stock" ValueBinding="{Binding stock}" />
-                <material:DataGridColumn Title="Brand" ValueBinding="{Binding brand}" />
-                <material:DataGridColumn Title="Category" ValueBinding="{Binding category}" />
-
+                <material:DataGridColumn x:DataType="models:Product" Title="Title" ValueBinding="{Binding title}" />
+                <material:DataGridColumn x:DataType="models:Product" Title="Price" ValueBinding="{Binding price}" />
+                <material:DataGridColumn x:DataType="models:Product" Title="Rating" ValueBinding="{Binding rating}" />
+                <material:DataGridColumn x:DataType="models:Product" Title="Stock" ValueBinding="{Binding stock}" />
+                <material:DataGridColumn x:DataType="models:Product" Title="Brand" ValueBinding="{Binding brand}" />
+                <material:DataGridColumn x:DataType="models:Product" Title="Category" ValueBinding="{Binding category}" />
             </virtualized:VirtualizedDataGrid.Columns>
         </virtualized:VirtualizedDataGrid>
     </Grid>

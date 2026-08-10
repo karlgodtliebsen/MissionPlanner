@@ -8,11 +8,10 @@
                     xmlns:models="using:UraniumUI.Material.Extensions.Samples.DataGridSamples.Models"
                     xmlns:selectable="using:UraniumUI.Material.Extensions.Samples.DataGridSamples.Selectable"
                     x:Class="UraniumUI.Material.Extensions.Samples.DataGridSamples.Selectable.SelectableDataGridPage1"
+                    x:DataType="selectable:SelectableDataGridPageViewModel1"
                     >
 
-    <uranium:UraniumContentPage.BindingContext>
-        <selectable:SelectableDataGridPageViewModel1 />
-    </uranium:UraniumContentPage.BindingContext>
+
 
     <Grid RowDefinitions="Auto,Auto,*" 
           RowSpacing="30"
@@ -46,12 +45,11 @@
                 <virtualized:ExtendedSelectableDataGridColumn
                     SelectionMemberPath="IsSelected"
                     SelectionCommandMemberPath="SelectionChangedCommand" />
-                <material:DataGridColumn Width="*"  ValueBinding="{Binding Id}" Title="Id" />
-                <material:DataGridColumn Width="3*"  ValueBinding="{Binding Name}" Title="Name" />
-                <material:DataGridColumn Width="*"  ValueBinding="{Binding Age}" Title="Age" />
+                <material:DataGridColumn Width="*" x:DataType="models:CustomDataGridStudent" ValueBinding="{Binding Id}" Title="Id" />
+                <material:DataGridColumn Width="3*" x:DataType="models:CustomDataGridStudent" ValueBinding="{Binding Name}" Title="Name" />
+                <material:DataGridColumn Width="*" x:DataType="models:CustomDataGridStudent"  ValueBinding="{Binding Age}" Title="Age" />
             </virtualized:VirtualizedDataGrid.Columns>
         </virtualized:VirtualizedDataGrid>
 
     </Grid>
 </uranium:UraniumContentPage>
-            <!--x:DataType="selectable:SelectableCustomDataGridStudent"-->

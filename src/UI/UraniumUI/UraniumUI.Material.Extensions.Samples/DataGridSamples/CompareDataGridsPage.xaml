@@ -6,16 +6,13 @@
              xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
              xmlns:input="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
              xmlns:validation="clr-namespace:InputKit.Shared.Validations;assembly=InputKit.Maui"
-             xmlns:local="clr-namespace:UraniumUI.Material.Extensions.Samples"
              xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
              xmlns:models="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids.Models"
-             xmlns:dataGridSamples="using:UraniumUI.Material.Extensions.Samples.DataGridSamples"
+             xmlns:dataGridSamples="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGridSamples"
              x:Class="UraniumUI.Material.Extensions.Samples.DataGridSamples.CompareDataGridsPage"
+             x:DataType="dataGridSamples:CompareDataGridsViewModel"
              >
 
-    <uranium:UraniumContentPage.BindingContext>
-        <dataGridSamples:CompareDataGridsViewModel />
-    </uranium:UraniumContentPage.BindingContext>
 
     <uranium:UraniumContentPage.Resources>
         <Style TargetType="Frame">
@@ -37,9 +34,9 @@
         >
                 <material:DataGrid.Columns>
                     <material:DataGridSelectionColumn/>
-                    <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding Content}" Title="Todo" />
-                    <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding Type}" Title="Type"/>
-                    <material:DataGridColumn x:DataType="models:TodoItem" ValueBinding="{Binding IsDone, Converter={StaticResource BoolToYesNoConverter}}" Title="Done"/>
+                    <material:DataGridColumn  ValueBinding="{Binding Content}" Title="Todo" />
+                    <material:DataGridColumn  ValueBinding="{Binding Type}" Title="Type"/>
+                    <material:DataGridColumn  ValueBinding="{Binding IsDone, Converter={StaticResource BoolToYesNoConverter}}" Title="Done"/>
                 </material:DataGrid.Columns>
             </material:DataGrid>
 

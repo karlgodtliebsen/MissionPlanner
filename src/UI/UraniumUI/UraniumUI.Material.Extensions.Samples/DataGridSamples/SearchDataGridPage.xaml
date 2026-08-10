@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="UTF-8" ?>
-<uranium:UraniumContentPage x:Class="UraniumUI.Material.Extensions.Samples.DataGrids.SearchDataGridPage"
+<uranium:UraniumContentPage 
                     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                     xmlns:dataGrids="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids"
                     xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
-                    >
-    <uranium:UraniumContentPage.BindingContext>
-        <dataGrids:SimpleDataGridPageViewModel />
-    </uranium:UraniumContentPage.BindingContext>
+                    x:Class="UraniumUI.Material.Extensions.Samples.DataGrids.SearchDataGridPage"
+                    x:DataType="dataGrids:SimpleDataGridPageViewModel"
+                   >
+
     <uranium:UraniumContentPage.Content>
 
         <Grid HorizontalOptions="Fill" VerticalOptions="Fill" Margin="50">

@@ -5,15 +5,12 @@
                     xmlns:m="clr-namespace:UraniumUI.Icons.MaterialSymbols;assembly=UraniumUI.Icons.MaterialSymbols"
                     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
-                    xmlns:plain="clr-namespace:Plainer.Maui.Controls;assembly=Plainer.Maui"
                     xmlns:dataGrids="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids"
                     xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
-                    xmlns:models="using:UraniumUI.Material.Extensions.Samples.DataGridSamples.Models"
-                    xmlns:controls="using:UraniumUI.Material.Controls"
-                    BindingContext="{uranium:Inject {Type dataGrids:CustomDataGridPageViewModel}}"
+                    xmlns:models="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGridSamples.Models;assembly=UraniumUI.Material.Extensions.Samples"
+                    xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                     x:Class="UraniumUI.Material.Extensions.Samples.DataGrids.CustomDataGridPage"
-                    x:Name="SamplePage"
-                   x:DataType="dataGrids:CustomDataGridPageViewModel"
+                    x:DataType="dataGrids:CustomDataGridPageViewModel"
                    >
     <uranium:UraniumContentPage.Content>
 
@@ -23,20 +20,16 @@
                    Margin="8,20"  HorizontalOptions="Center" />
 
             <BoxView Grid.Row="1" StyleClass="Divider" Margin="8,20" />
-            
-            <HorizontalStackLayout Grid.Row="2" HorizontalOptions="Center" Margin="8,20" >
-                <Button StyleClass="FilledButton" Text="Add data" Command="{Binding AddNewCommand}" />
-            </HorizontalStackLayout>
 
             <ActivityIndicator Grid.Row="2" IsRunning="{Binding IsBusy}" Margin="40" />
 
             <virtualized:VirtualizedDataGrid 
                                             Grid.Row="3" 
                                             ItemsSource="{Binding Items}" 
-                                            MinimumStarColumnWidth="200"
                                             ItemSizingStrategy= "MeasureFirstItem"
                                             ShowSearchBar="False"
-
+                                            MinimumStarColumnWidth="50"
+                                            MaximumWidthRequest="600"
                                             HorizontalOptions="Fill" 
                                             VerticalOptions="Fill" 
                                             >
@@ -55,15 +48,7 @@
 
                 <virtualized:VirtualizedDataGrid.Columns>
                     <material:DataGridColumn Width="*" x:DataType="models:CustomDataGridStudent" ValueBinding="{Binding Id}" Title="Id" />
-                    
-                    <material:DataGridColumn Width="4*" Title="Student Name">
-                        <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate x:DataType="models:CustomDataGridStudent">
-                                <Label Text="{Binding Name}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
-                            </DataTemplate>
-                        </material:DataGridColumn.CellItemTemplate>
-                    </material:DataGridColumn>
-
+                    <material:DataGridColumn Width="3*" x:DataType="models:CustomDataGridStudent" ValueBinding="{Binding Name}" Title="Student Name" />
                     <material:DataGridColumn Width="*" Title="Age">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="models:CustomDataGridStudent">
@@ -83,24 +68,8 @@
                             </DataTemplate>
                         </material:DataGridColumn.CellItemTemplate>
                     </material:DataGridColumn>
-
-                    <material:DataGridColumn Width="*" Title="Actions"  >
-                        <material:DataGridColumn.CellItemTemplate>
-                            <DataTemplate  x:DataType="models:CustomDataGridStudent">
-                                <Button Text="Remove" 
-                                            
-                                            BackgroundColor="{AppThemeBinding Light={StaticResource Secondary},Dark={StaticResource SecondaryDark}}" 
-                                            TextColor="{AppThemeBinding Light={StaticResource OnSecondary},Dark={StaticResource OnSecondaryDark}}"
-                                            Command="{Binding Source={x:Reference SamplePage}, Path=BindingContext.RemoveItemCommand}"
-                                            CommandParameter="{Binding .}"
-                                            />
-                            </DataTemplate>
-                        </material:DataGridColumn.CellItemTemplate>
-                    </material:DataGridColumn>
-
                 </virtualized:VirtualizedDataGrid.Columns>
             </virtualized:VirtualizedDataGrid>
         </Grid>
-
     </uranium:UraniumContentPage.Content>
 </uranium:UraniumContentPage>

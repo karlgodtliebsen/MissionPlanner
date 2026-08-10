@@ -9,6 +9,7 @@ public partial class CompareDataGridsPage : UraniumContentPage
     {
         SelectionView.GlobalSetting.CornerRadius = 0;
         InitializeComponent();
+        BindingContext = ServiceHelper.GetRequiredService<CompareDataGridsViewModel>();
     }
 
     private void ShowBottomSheet(object sender, EventArgs e)

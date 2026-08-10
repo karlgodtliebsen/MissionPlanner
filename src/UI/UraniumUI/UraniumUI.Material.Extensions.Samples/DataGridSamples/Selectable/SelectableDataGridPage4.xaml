@@ -2,17 +2,15 @@
 <uranium:UraniumContentPage
                     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                    xmlns:m="clr-namespace:UraniumUI.Icons.MaterialSymbols;assembly=UraniumUI.Icons.MaterialSymbols"
                     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                     xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
                     xmlns:selectable="using:UraniumUI.Material.Extensions.Samples.DataGridSamples.Selectable"
+                    xmlns:models="using:UraniumUI.Material.Extensions.Samples.DataGridSamples.Models"
                     x:Class="UraniumUI.Material.Extensions.Samples.DataGridSamples.Selectable.SelectableDataGridPage4"
+                    x:DataType="selectable:SelectableDataGridPageViewModel4"
                     >
 
-    <uranium:UraniumContentPage.BindingContext>
-        <selectable:SelectableDataGridPageViewModel4 />
-    </uranium:UraniumContentPage.BindingContext>
 
     <Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="*,*" ColumnSpacing="20"
           RowSpacing="30"
@@ -46,9 +44,9 @@
             </virtualized:VirtualizedDataGrid.EmptyView>
 
             <virtualized:VirtualizedDataGrid.Columns>
-                <material:DataGridColumn Width="*" ValueBinding="{Binding Id}" Title="Id" />
-                <material:DataGridColumn Width="3*" ValueBinding="{Binding Name}" Title="Name" />
-                <material:DataGridColumn Width="*" ValueBinding="{Binding Age}" Title="Age" />
+                <material:DataGridColumn Width="*" x:DataType="models:CustomDataGridStudent"  ValueBinding="{Binding Id}" Title="Id" />
+                <material:DataGridColumn Width="3*" x:DataType="models:CustomDataGridStudent"  ValueBinding="{Binding Name}" Title="Name" />
+                <material:DataGridColumn Width="*" x:DataType="models:CustomDataGridStudent"  ValueBinding="{Binding Age}" Title="Age" />
             </virtualized:VirtualizedDataGrid.Columns>
         </virtualized:VirtualizedDataGrid>
 
@@ -78,9 +76,9 @@
             </virtualized:VirtualizedDataGrid.EmptyView>
 
             <virtualized:VirtualizedDataGrid.Columns>
-                <material:DataGridColumn Width="*" ValueBinding="{Binding Id}" Title="Id" />
-                <material:DataGridColumn Width="3*" ValueBinding="{Binding Name}" Title="Name" />
-                <material:DataGridColumn Width="*" ValueBinding="{Binding Age}" Title="Age" />
+                <material:DataGridColumn Width="*"  x:DataType="models:CustomDataGridStudent" ValueBinding="{Binding Id}" Title="Id" />
+                <material:DataGridColumn Width="3*" x:DataType="models:CustomDataGridStudent"  ValueBinding="{Binding Name}" Title="Name" />
+                <material:DataGridColumn Width="*" x:DataType="models:CustomDataGridStudent"  ValueBinding="{Binding Age}" Title="Age" />
             </virtualized:VirtualizedDataGrid.Columns>
         </virtualized:VirtualizedDataGrid>
 

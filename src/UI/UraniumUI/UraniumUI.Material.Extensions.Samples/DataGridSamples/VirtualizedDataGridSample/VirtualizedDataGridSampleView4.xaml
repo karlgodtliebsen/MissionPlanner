@@ -1,15 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <virtualizedDataGridSample:ContentPageView
-    x:TypeArguments="virtualizedDataGridSample:VirtualizedDataGridSampleViewModel"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
-    xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
-    xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
-    xmlns:virtualizedDataGridSample="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGridSamples.VirtualizedDataGridSample"
-    x:DataType="virtualizedDataGridSample:VirtualizedDataGridSampleViewModel"
-    x:Class="UraniumUI.Material.Extensions.Samples.DataGridSamples.VirtualizedDataGridSample.VirtualizedDataGridSampleView4"
->
+                        x:TypeArguments="virtualizedDataGridSample:VirtualizedDataGridSampleViewModel"
+                        xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                        xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                        xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+                        xmlns:virtualizedDataGridSample="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGridSamples.VirtualizedDataGridSample"
+                        x:DataType="virtualizedDataGridSample:VirtualizedDataGridSampleViewModel"
+                        x:Class="UraniumUI.Material.Extensions.Samples.DataGridSamples.VirtualizedDataGridSample.VirtualizedDataGridSampleView4"
+                    >
     <Grid 
               RowDefinitions="Auto,Auto,600"
               RowSpacing="25"

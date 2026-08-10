@@ -41,24 +41,13 @@
                         </material:DataGridColumn.CellItemTemplate>
                     </material:DataGridColumn>
 
-                    <material:DataGridColumn Title="Title" ValueBinding="{Binding title}" />
-                    <material:DataGridColumn Title="Price" ValueBinding="{Binding price}" />
-                    <material:DataGridColumn Title="Rating" ValueBinding="{Binding rating}" />
-                    <material:DataGridColumn Title="Stock" ValueBinding="{Binding stock}" />
-                    <material:DataGridColumn Title="Brand" ValueBinding="{Binding brand}" />
-                    <material:DataGridColumn Title="Category" ValueBinding="{Binding category}" />
-
+                <material:DataGridColumn Title="Title" x:DataType="models:Product" ValueBinding="{Binding title}" />
+                <material:DataGridColumn Title="Price" x:DataType="models:Product"  ValueBinding="{Binding price}" />
+                <material:DataGridColumn Title="Rating" x:DataType="models:Product"  ValueBinding="{Binding rating}" />
+                <material:DataGridColumn Title="Stock" x:DataType="models:Product"  ValueBinding="{Binding stock}" />
+                <material:DataGridColumn Title="Brand" x:DataType="models:Product"  ValueBinding="{Binding brand}" />
+                <material:DataGridColumn Title="Category" x:DataType="models:Product"  ValueBinding="{Binding category}" />
                 </virtualized:VirtualizedDataGrid.Columns>
             </virtualized:VirtualizedDataGrid>
-
-
         </Grid>
-    <!--x:DataType="models:Product
-    x:DataType="models:Product
-    x:DataType="models:Product
-    x:DataType="models:Product
-    x:DataType="models:Product
-    x:DataType="models:Product-->
-
-
 </uranium:UraniumContentPage>

@@ -1,5 +1,4 @@
-﻿using UraniumUI.Extensions;
-using UraniumUI.Material.Controls;
+﻿using UraniumUI.Material.Controls;
 using CheckBox = InputKit.Shared.Controls.CheckBox;
 
 namespace UraniumUI.Material.VirtualizedDataGrid.Controls;
@@ -30,10 +29,7 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
         HorizontalOptions = LayoutOptions.Fill;
         VerticalOptions = LayoutOptions.Start;
         GestureRecognizers.Add(
-            new TapGestureRecognizer
-            {
-                Command = new Command(() => owner.HandleRowTapped(BindingContext))
-            });
+            new TapGestureRecognizer { Command = new Command(() => owner.HandleRowTapped(BindingContext)) });
 
         owner.RegisterPresenter(this);
         SizeChanged += OnPresenterSizeChanged;
@@ -183,17 +179,13 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
             {
                 var desiredWidth = child is ContentView { Content: View contentView } cell
                     ? contentView.Measure(
-                        double.PositiveInfinity,
-                        double.PositiveInfinity).Width +
+                          double.PositiveInfinity,
+                          double.PositiveInfinity).Width +
                       cell.Padding.Left +
                       cell.Padding.Right
-                    : child.Measure(
-                        double.PositiveInfinity,
-                        double.PositiveInfinity).Width;
+                    : child.Measure(double.PositiveInfinity, double.PositiveInfinity).Width;
 
-                widths[column] = Math.Max(
-                    widths[column],
-                    desiredWidth);
+                widths[column] = Math.Max(widths[column], desiredWidth);
             }
         }
 
@@ -206,8 +198,7 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
     /// <param name="isSelected"><see langword="true"/> when the row is selected; otherwise, <see langword="false"/>.</param>
     internal void ApplySelectionStateCore(bool isSelected)
     {
-        VisualStateManager.GoToState(
-            this,
+        VisualStateManager.GoToState(this,
             isSelected
                 ? VirtualizedDataGrid.DataGridCellVisualStates.Selected
                 : VirtualizedDataGrid.DataGridCellVisualStates.Unselected);
@@ -223,9 +214,7 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
         }
     }
 
-    private void BuildColumnDefinitions(
-        IReadOnlyList<DataGridColumn> columns,
-        IReadOnlyList<double> widths)
+    private void BuildColumnDefinitions(IReadOnlyList<DataGridColumn> columns, IReadOnlyList<double> widths)
     {
         if (cellsGrid is null)
         {
@@ -238,8 +227,7 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
                 ? widths[index]
                 : 0;
 
-            cellsGrid.ColumnDefinitions.Add(
-                new ColumnDefinition { Width = new GridLength(Math.Max(0, width), GridUnitType.Absolute) });
+            cellsGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(Math.Max(0, width), GridUnitType.Absolute) });
         }
     }
 
@@ -262,25 +250,14 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
             var created =
                 column.CellItemTemplate?.CreateContent() as View
                 ?? owner.CellItemTemplate?.CreateContent() as View
-                ?? (valueBinding is not null
-                    ? owner.LabelFactory(valueBinding)
-                    : null)
+                ?? (valueBinding is not null ? owner.LabelFactory(valueBinding) : null)
                 ?? new Label();
 
-            var cell = new ContentView
-            {
-                Content = created,
-                Padding = owner.GetCellPadding(column),
-                IsVisible = column.IsVisible
-            };
+            var cell = new ContentView { Content = created, Padding = owner.GetCellPadding(column), IsVisible = column.IsVisible };
 
-            cell.SetBinding(
-                IsVisibleProperty,
-                new Binding(nameof(DataGridColumn.IsVisible), source: column));
+            cell.SetBinding(IsVisibleProperty, new Binding(nameof(DataGridColumn.IsVisible), source: column));
 
-            VirtualizedDataGrid.ApplyStyleClassToView(
-                cell,
-                column.CellStyleClass);
+            VirtualizedDataGrid.ApplyStyleClassToView(cell, column.CellStyleClass);
 
             if (column is IDataGridSelectionColumn)
             {
@@ -289,12 +266,9 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
 
             // Preserve UraniumUI's DataGridValueBindingExtension contract for a shared
             // CellItemTemplate. The template receives a BindingBase as its BindingContext.
-            if (column.CellItemTemplate is null &&
-                owner.CellItemTemplate is not null &&
-                column.ValueBinding is Binding)
+            if (column.CellItemTemplate is null && owner.CellItemTemplate is not null && column.ValueBinding is Binding)
             {
-                templateValueBindingCells.Add(
-                    new TemplateValueBindingCell(cell, column.ValueBinding));
+                templateValueBindingCells.Add(new TemplateValueBindingCell(cell, column.ValueBinding));
             }
 
             Grid.SetColumn(cell, columnIndex);
@@ -342,7 +316,5 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
         return null;
     }
 
-    private sealed record TemplateValueBindingCell(
-        ContentView Cell,
-        BindingBase BindingTemplate);
+    private sealed record TemplateValueBindingCell(ContentView Cell, BindingBase BindingTemplate);
 }

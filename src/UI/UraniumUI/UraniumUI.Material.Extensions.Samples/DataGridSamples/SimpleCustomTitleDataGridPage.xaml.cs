@@ -7,5 +7,6 @@ public partial class SimpleCustomTitleDataGridPage : UraniumContentPage
     public SimpleCustomTitleDataGridPage()
     {
         InitializeComponent();
+        BindingContext = ServiceHelper.GetRequiredService<SimpleDataGridPageViewModel>();
     }
 }

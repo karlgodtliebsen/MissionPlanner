@@ -15,6 +15,7 @@ public partial class PaginationSampleExtendedViewModel : ObservableObject
 
     [ObservableProperty] public partial string Message { get; set; }
 
+    /// <inheritdoc />
     public PaginationSampleExtendedViewModel(IExtendedDialogService dialogService, IDispatcher dispatcher)
     {
         this.dialogService = dialogService;

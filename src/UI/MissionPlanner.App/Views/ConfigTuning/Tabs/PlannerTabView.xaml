@@ -343,7 +343,6 @@
                         <Label Grid.Row="7" Text="Display target" /><Switch Grid.Row="7" Grid.Column="1" IsToggled="{Binding DisplayTarget}" />
                         <Label Grid.Row="8" Text="Display aircraft tooltip" /><Switch Grid.Row="8" Grid.Column="1" IsToggled="{Binding DisplayAircraftToolTip}" />
                         <Label Grid.Row="9" Text="Aircraft line length" />
-                        <!--<Entry Grid.Row="9" Grid.Column="1" WidthRequest="140" Text="{Binding AircraftLineLength}" Keyboard="Numeric" />-->
                         <controls:NumericField
                             Grid.Row="9" Grid.Column="1" 
                             WidthRequest="140"
