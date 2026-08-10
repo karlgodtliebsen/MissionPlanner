@@ -21,11 +21,11 @@
         <Grid Grid.Row="1"  HorizontalOptions="Fill" >
             <controls:VirtualizedDataGrid 
                 ItemsSource="{Binding Entries}" 
-                
-                SelectionMode="Single"
                 SelectedItem="{Binding SelectedEntry, Mode=TwoWay}"
+                SelectionMode="Single"
                 SelectionChangedCommand="{Binding SelectionChangedCommand}"
-               
+                SelectionTrigger="SelectionColumnAndRowClick"
+
                 ItemSizingStrategy= "MeasureFirstItem"
                 ShowSearchBar="False"
                 HorizontalOptions="Center" 
