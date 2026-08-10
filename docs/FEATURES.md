@@ -57,6 +57,14 @@ HUD + tabset on the left, shared mission map on the right.
 
 * More details in overlay (v1.38 shows: battery %, GPS fix text, distance readouts, EKF/vibe indicators, warning banners)
 
+## Gauges
+
+The Gauges flight-data tab presents four live SkiaSharp instruments in the
+traditional two-by-two layout: vertical speed, ground speed, relative altitude,
+and heading. The instruments consume the shared telemetry projection pipeline,
+including configured metric or imperial units and freshness-aware unavailable
+states, and update their needles without recreating the tab content.
+
 ## Flight Map
 
 ### Status

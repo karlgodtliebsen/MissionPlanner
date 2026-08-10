@@ -158,7 +158,12 @@ public sealed class FlightDataInfrastructureTests
         provider.GetRequiredService<ActionsTabViewModel>().Should().NotBeNull();
         provider.GetRequiredService<MessagesTabViewModel>().Should().NotBeNull();
         provider.GetRequiredService<PreflightTabViewModel>().Should().NotBeNull();
-        provider.GetRequiredService<GaugesTabViewModel>().Should().NotBeNull();
+        var gauges = provider.GetRequiredService<GaugesTabViewModel>();
+        gauges.Tiles.Select(tile => tile.Descriptor.Key).Should().Equal(
+            "vertical-speed",
+            "ground-speed",
+            "altitude-relative",
+            "heading");
         provider.GetRequiredService<TransponderTabViewModel>().Should().NotBeNull();
         provider.GetRequiredService<StatusTabViewModel>().Should().NotBeNull();
         provider.GetRequiredService<ServoRelayTabViewModel>().Should().NotBeNull();

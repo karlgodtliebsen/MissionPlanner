@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.DomainEvents;
@@ -11,7 +12,6 @@ namespace MissionPlanner.App.Views.FlightData.Tabs;
 /// <summary>Displays a bounded-rate dashboard projected from promoted vehicle state.</summary>
 public sealed class GaugesTabViewModel : IDisposable
 {
-    private static readonly string[] defaults = ["air-speed", "ground-speed", "altitude-relative", "vertical-speed", "heading", "battery-remaining"];
     private readonly IActiveVehicleContext activeVehicle;
     private readonly ITelemetryFieldCatalog catalog;
     private readonly ITelemetrySnapshotProjector projector;
@@ -26,7 +26,11 @@ public sealed class GaugesTabViewModel : IDisposable
         ITelemetrySnapshotProjector projector, IPlannerSettingsService settings, IDomainEventHub events, IDispatcher dispatcher)
     {
         this.activeVehicle = activeVehicle; this.catalog = catalog; this.projector = projector; this.settings = settings; this.dispatcher = dispatcher;
-        foreach (var key in defaults) Tiles.Add(new GaugeTileViewModel(catalog.Fields.Single(x => x.Key == key)));
+        VerticalSpeed = CreateTile("vertical-speed");
+        Speed = CreateTile("ground-speed");
+        Altitude = CreateTile("altitude-relative");
+        Heading = CreateTile("heading");
+        Tiles = [VerticalSpeed, Speed, Altitude, Heading];
         activeVehicle.Changed += OnChanged;
         settings.SettingsChanged += OnSettingsChanged;
         subscription = events.SubscribeDomainEventAsync<VehicleStateUpdated>(OnStateUpdated);
@@ -34,7 +38,19 @@ public sealed class GaugesTabViewModel : IDisposable
     }
 
     /// <summary>Gets stable dashboard tiles updated in place.</summary>
-    public ObservableCollection<GaugeTileViewModel> Tiles { get; } = [];
+    public ObservableCollection<GaugeTileViewModel> Tiles { get; }
+
+    /// <summary>Gets the vertical-speed instrument.</summary>
+    public GaugeTileViewModel VerticalSpeed { get; }
+
+    /// <summary>Gets the ground-speed instrument.</summary>
+    public GaugeTileViewModel Speed { get; }
+
+    /// <summary>Gets the relative-altitude instrument.</summary>
+    public GaugeTileViewModel Altitude { get; }
+
+    /// <summary>Gets the heading instrument.</summary>
+    public GaugeTileViewModel Heading { get; }
 
     /// <inheritdoc />
     public void Dispose()
@@ -60,6 +76,9 @@ public sealed class GaugesTabViewModel : IDisposable
         var state = activeVehicle.State;
         foreach (var tile in Tiles) tile.Update(state is null ? null : projector.Project(tile.Descriptor, state, settings.Current.Units.System, DateTimeOffset.UtcNow));
     }
+
+    private GaugeTileViewModel CreateTile(string key) =>
+        new(catalog.Fields.Single(field => field.Key == key));
 }
 
 /// <summary>Provides one stable bindable gauge tile.</summary>
@@ -75,9 +94,20 @@ public partial class GaugeTileViewModel(TelemetryFieldDescriptor descriptor) : O
     [ObservableProperty] public partial string Unit { get; private set; } = string.Empty;
     /// <summary>Gets the explicit freshness label.</summary>
     [ObservableProperty] public partial string Freshness { get; private set; } = "Unavailable";
+    /// <summary>Gets the numeric reading used to position an analog needle.</summary>
+    [ObservableProperty] public partial double? NumericValue { get; private set; }
     /// <summary>Updates this object without replacing it.</summary>
     public void Update(TelemetryValueSnapshot? snapshot)
     {
-        Value = snapshot?.DisplayValue ?? "Unavailable"; Unit = snapshot?.Unit ?? string.Empty; Freshness = snapshot?.Freshness.ToString() ?? "Unavailable";
+        Value = snapshot?.DisplayValue ?? "Unavailable";
+        Unit = snapshot?.Unit ?? string.Empty;
+        Freshness = snapshot?.Freshness.ToString() ?? "Unavailable";
+        NumericValue = snapshot is not null && double.TryParse(
+            snapshot.DisplayValue,
+            NumberStyles.Float,
+            CultureInfo.CurrentCulture,
+            out var numericValue)
+                ? numericValue
+                : null;
     }
 }

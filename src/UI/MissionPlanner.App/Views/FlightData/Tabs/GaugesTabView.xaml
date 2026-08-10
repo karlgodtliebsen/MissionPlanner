@@ -1,83 +1,52 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<tabViews:TabViewLifecycleContent x:TypeArguments="tabs:GaugesTabViewModel"
- xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
- xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
- xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
- xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
- xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
- x:Class="MissionPlanner.App.Views.FlightData.Tabs.GaugesTabView" x:DataType="tabs:GaugesTabViewModel">
- <Grid Padding="16" RowDefinitions="Auto,*">
-  <Label Text="Flight gauges" FontSize="20" FontAttributes="Bold" />
+<tabViews:TabViewLifecycleContent
+    x:Class="MissionPlanner.App.Views.FlightData.Tabs.GaugesTabView"
+    x:TypeArguments="tabs:GaugesTabViewModel"
+    x:DataType="tabs:GaugesTabViewModel"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
+    xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions">
 
-        <controls:VirtualizedDataGrid Grid.Row="1" 
-                                      ItemsSource="{Binding Tiles}" 
-                                      ItemSizingStrategy= "MeasureFirstItem"
-                                      ShowSearchBar="False"
-                                      HorizontalOptions="Fill" 
-                                      VerticalOptions="Fill" 
-                                      BackgroundColor="Transparent"
-        >
-            <controls:VirtualizedDataGrid.EmptyView>
-                <Label HorizontalOptions="Center" Text="No Rows could be found"
-                       FontSize="12" Opacity="0.6" Margin="0,20" />
-            </controls:VirtualizedDataGrid.EmptyView>
+    <Grid Padding="12" RowDefinitions="Auto,*" RowSpacing="8">
+        <Label FontAttributes="Bold" FontSize="20" Text="Flight gauges" />
 
-            <controls:VirtualizedDataGrid.Columns>
+        <Grid Grid.Row="1" ColumnDefinitions="*,*" RowDefinitions="*,*" ColumnSpacing="8" RowSpacing="8">
+            <Border StrokeThickness="1" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                <tabs:FlightGaugeView
+                    Minimum="-10" Maximum="10"
+                    Label="VSI"
+                    Value="{Binding VerticalSpeed.NumericValue}"
+                    DisplayValue="{Binding VerticalSpeed.Value}"
+                    Unit="{Binding VerticalSpeed.Unit}" />
+            </Border>
 
-                <material:DataGridColumn Width="*" Title="Label">
-                    <material:DataGridColumn.CellItemTemplate>
-                        <DataTemplate x:DataType="tabs:GaugeTileViewModel">
-                            <Label Text="{Binding Label}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
-                        </DataTemplate>
-                    </material:DataGridColumn.CellItemTemplate>
-                </material:DataGridColumn>
-                <material:DataGridColumn Width="*" Title="Value">
-                    <material:DataGridColumn.CellItemTemplate>
-                        <DataTemplate x:DataType="tabs:GaugeTileViewModel">
-                            <Label Text="{Binding Value}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
-                        </DataTemplate>
-                    </material:DataGridColumn.CellItemTemplate>
-                </material:DataGridColumn>
-                <material:DataGridColumn Width="*" Title="Unit">
-                    <material:DataGridColumn.CellItemTemplate>
-                        <DataTemplate x:DataType="tabs:GaugeTileViewModel">
-                            <Label Text="{Binding Unit}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
-                        </DataTemplate>
-                    </material:DataGridColumn.CellItemTemplate>
-                </material:DataGridColumn>
-                <material:DataGridColumn Width="*" Title="Freshness">
-                    <material:DataGridColumn.CellItemTemplate>
-                        <DataTemplate x:DataType="tabs:GaugeTileViewModel">
-                            <Label Text="{Binding Freshness}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
-                        </DataTemplate>
-                    </material:DataGridColumn.CellItemTemplate>
-                </material:DataGridColumn>
-            </controls:VirtualizedDataGrid.Columns>
-        </controls:VirtualizedDataGrid>
+            <Border Grid.Column="1" StrokeThickness="1" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                <tabs:FlightGaugeView
+                    Minimum="0" Maximum="60"
+                    Label="Speed"
+                    Value="{Binding Speed.NumericValue}"
+                    DisplayValue="{Binding Speed.Value}"
+                    Unit="{Binding Speed.Unit}" />
+            </Border>
 
-        <!--
-     <CollectionView Grid.Row="1" ItemsSource="{Binding Tiles}">
-   <CollectionView.ItemsLayout>
-       <GridItemsLayout Orientation="Vertical" Span="3" />
-   </CollectionView.ItemsLayout>
-   <CollectionView.ItemTemplate>
-       <DataTemplate x:DataType="tabs:GaugeTileViewModel">
-    <Border Margin="6" Padding="16" MinimumHeightRequest="130" StyleClass="SurfaceContainer,Rounded,Elevation1">
-     <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center">
-      <Label Text="{Binding Label}" HorizontalTextAlignment="Center" />
-      <HorizontalStackLayout HorizontalOptions="Center">
-            <Label Text="{Binding Value}" FontSize="28" FontAttributes="Bold" />
-            <Label Text="{Binding Unit}" VerticalTextAlignment="End" />
-      </HorizontalStackLayout>
-      <Label Text="{Binding Freshness}" FontSize="12" HorizontalTextAlignment="Center" />
-     </VerticalStackLayout>
-    </Border>
-   </DataTemplate>
-   </CollectionView.ItemTemplate>
-  </CollectionView>
-     -->
+            <Border Grid.Row="1" StrokeThickness="1" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                <tabs:FlightGaugeView
+                    Minimum="0" Maximum="100"
+                    Label="Alt"
+                    Value="{Binding Altitude.NumericValue}"
+                    DisplayValue="{Binding Altitude.Value}"
+                    Unit="{Binding Altitude.Unit}" />
+            </Border>
 
-
-
- </Grid>
+            <Border Grid.Row="1" Grid.Column="1" StrokeThickness="1" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                <tabs:FlightGaugeView
+                    Mode="Compass"
+                    Label="Heading"
+                    Value="{Binding Heading.NumericValue}"
+                    DisplayValue="{Binding Heading.Value}"
+                    Unit="{Binding Heading.Unit}" />
+            </Border>
+        </Grid>
+    </Grid>
 </tabViews:TabViewLifecycleContent>
