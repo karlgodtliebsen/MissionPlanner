@@ -112,6 +112,7 @@ public class RightDockPanel : ContentView
         };
     }
 
+    /// <summary>Identifies the <see cref="MainContent"/> bindable property.</summary>
     public static readonly BindableProperty MainContentProperty =
         BindableProperty.Create(
             nameof(MainContent),
@@ -120,12 +121,14 @@ public class RightDockPanel : ContentView
             default(View),
             propertyChanged: OnHostedContentChanged);
 
+    /// <summary>Gets or sets the primary content displayed beside the dock.</summary>
     public View? MainContent
     {
         get => (View?)GetValue(MainContentProperty);
         set => SetValue(MainContentProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="DockContent"/> bindable property.</summary>
     public static readonly BindableProperty DockContentProperty =
         BindableProperty.Create(
             nameof(DockContent),
@@ -134,12 +137,14 @@ public class RightDockPanel : ContentView
             default(View),
             propertyChanged: OnHostedContentChanged);
 
+    /// <summary>Gets or sets the content displayed inside the right dock.</summary>
     public View? DockContent
     {
         get => (View?)GetValue(DockContentProperty);
         set => SetValue(DockContentProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="HeaderContent"/> bindable property.</summary>
     public static readonly BindableProperty HeaderContentProperty =
         BindableProperty.Create(
             nameof(HeaderContent),
@@ -148,12 +153,14 @@ public class RightDockPanel : ContentView
             default(View),
             propertyChanged: OnHostedContentChanged);
 
+    /// <summary>Gets or sets custom content displayed in the dock header.</summary>
     public View? HeaderContent
     {
         get => (View?)GetValue(HeaderContentProperty);
         set => SetValue(HeaderContentProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="Title"/> bindable property.</summary>
     public static readonly BindableProperty TitleProperty =
         BindableProperty.Create(
             nameof(Title),
@@ -161,12 +168,14 @@ public class RightDockPanel : ContentView
             typeof(RightDockPanel),
             "Panel");
 
+    /// <summary>Gets or sets the dock header title.</summary>
     public string Title
     {
         get => (string)GetValue(TitleProperty);
         set => SetValue(TitleProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="IsExpanded"/> bindable property.</summary>
     public static readonly BindableProperty IsExpandedProperty =
         BindableProperty.Create(
             nameof(IsExpanded),
@@ -176,12 +185,14 @@ public class RightDockPanel : ContentView
             BindingMode.TwoWay,
             propertyChanged: OnLayoutStateChanged);
 
+    /// <summary>Gets or sets whether the right dock is expanded.</summary>
     public bool IsExpanded
     {
         get => (bool)GetValue(IsExpandedProperty);
         set => SetValue(IsExpandedProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="DockWidth"/> bindable property.</summary>
     public static readonly BindableProperty DockWidthProperty =
         BindableProperty.Create(
             nameof(DockWidth),
@@ -191,12 +202,14 @@ public class RightDockPanel : ContentView
             BindingMode.TwoWay,
             propertyChanged: OnLayoutStateChanged);
 
+    /// <summary>Gets or sets the expanded dock width.</summary>
     public double DockWidth
     {
         get => (double)GetValue(DockWidthProperty);
         set => SetValue(DockWidthProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="MinDockWidth"/> bindable property.</summary>
     public static readonly BindableProperty MinDockWidthProperty =
         BindableProperty.Create(
             nameof(MinDockWidth),
@@ -205,12 +218,14 @@ public class RightDockPanel : ContentView
             220d,
             propertyChanged: OnLayoutStateChanged);
 
+    /// <summary>Gets or sets the minimum dock width during resizing.</summary>
     public double MinDockWidth
     {
         get => (double)GetValue(MinDockWidthProperty);
         set => SetValue(MinDockWidthProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="MaxDockWidth"/> bindable property.</summary>
     public static readonly BindableProperty MaxDockWidthProperty =
         BindableProperty.Create(
             nameof(MaxDockWidth),
@@ -219,12 +234,14 @@ public class RightDockPanel : ContentView
             600d,
             propertyChanged: OnLayoutStateChanged);
 
+    /// <summary>Gets or sets the maximum dock width during resizing.</summary>
     public double MaxDockWidth
     {
         get => (double)GetValue(MaxDockWidthProperty);
         set => SetValue(MaxDockWidthProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="AutoSizeToContent"/> bindable property.</summary>
     public static readonly BindableProperty AutoSizeToContentProperty =
         BindableProperty.Create(
             nameof(AutoSizeToContent),
@@ -233,12 +250,14 @@ public class RightDockPanel : ContentView
             false,
             propertyChanged: OnLayoutStateChanged);
 
+    /// <summary>Gets or sets whether the expanded dock sizes itself to its content.</summary>
     public bool AutoSizeToContent
     {
         get => (bool)GetValue(AutoSizeToContentProperty);
         set => SetValue(AutoSizeToContentProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="ShowEdgeToggleWhenExpanded"/> bindable property.</summary>
     public static readonly BindableProperty ShowEdgeToggleWhenExpandedProperty =
         BindableProperty.Create(
             nameof(ShowEdgeToggleWhenExpanded),
@@ -247,12 +266,14 @@ public class RightDockPanel : ContentView
             false,
             propertyChanged: OnLayoutStateChanged);
 
+    /// <summary>Gets or sets whether the edge toggle remains visible while expanded.</summary>
     public bool ShowEdgeToggleWhenExpanded
     {
         get => (bool)GetValue(ShowEdgeToggleWhenExpandedProperty);
         set => SetValue(ShowEdgeToggleWhenExpandedProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="SplitterColor"/> bindable property.</summary>
     public static readonly BindableProperty SplitterColorProperty =
         BindableProperty.Create(
             nameof(SplitterColor),
@@ -261,12 +282,14 @@ public class RightDockPanel : ContentView
             Colors.LightGray,
             propertyChanged: OnStyleChanged);
 
+    /// <summary>Gets or sets the dock splitter color.</summary>
     public Color SplitterColor
     {
         get => (Color)GetValue(SplitterColorProperty);
         set => SetValue(SplitterColorProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="DockBackground"/> bindable property.</summary>
     public static readonly BindableProperty DockBackgroundProperty =
         BindableProperty.Create(
             nameof(DockBackground),
@@ -275,12 +298,14 @@ public class RightDockPanel : ContentView
             Colors.White,
             propertyChanged: OnStyleChanged);
 
+    /// <summary>Gets or sets the dock content background color.</summary>
     public Color DockBackground
     {
         get => (Color)GetValue(DockBackgroundProperty);
         set => SetValue(DockBackgroundProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="DockBorderColor"/> bindable property.</summary>
     public static readonly BindableProperty DockBorderColorProperty =
         BindableProperty.Create(
             nameof(DockBorderColor),
@@ -289,12 +314,14 @@ public class RightDockPanel : ContentView
             Colors.Gray,
             propertyChanged: OnStyleChanged);
 
+    /// <summary>Gets or sets the dock border color.</summary>
     public Color DockBorderColor
     {
         get => (Color)GetValue(DockBorderColorProperty);
         set => SetValue(DockBorderColorProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="HeaderBackground"/> bindable property.</summary>
     public static readonly BindableProperty HeaderBackgroundProperty =
         BindableProperty.Create(
             nameof(HeaderBackground),
@@ -303,12 +330,14 @@ public class RightDockPanel : ContentView
             Color.FromArgb("#F3F3F3"),
             propertyChanged: OnStyleChanged);
 
+    /// <summary>Gets or sets the dock header background color.</summary>
     public Color HeaderBackground
     {
         get => (Color)GetValue(HeaderBackgroundProperty);
         set => SetValue(HeaderBackgroundProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="ExpandGlyph"/> bindable property.</summary>
     public static readonly BindableProperty ExpandGlyphProperty =
         BindableProperty.Create(
             nameof(ExpandGlyph),
@@ -317,12 +346,14 @@ public class RightDockPanel : ContentView
             "◀",
             propertyChanged: OnStyleChanged);
 
+    /// <summary>Gets or sets the glyph shown for the expand action.</summary>
     public string ExpandGlyph
     {
         get => (string)GetValue(ExpandGlyphProperty);
         set => SetValue(ExpandGlyphProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="CollapseGlyph"/> bindable property.</summary>
     public static readonly BindableProperty CollapseGlyphProperty =
         BindableProperty.Create(
             nameof(CollapseGlyph),
@@ -331,12 +362,14 @@ public class RightDockPanel : ContentView
             "▶",
             propertyChanged: OnStyleChanged);
 
+    /// <summary>Gets or sets the glyph shown for the collapse action.</summary>
     public string CollapseGlyph
     {
         get => (string)GetValue(CollapseGlyphProperty);
         set => SetValue(CollapseGlyphProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="ToggleCommand"/> bindable property.</summary>
     public static readonly BindableProperty ToggleCommandProperty =
         BindableProperty.Create(
             nameof(ToggleCommand),
@@ -344,12 +377,14 @@ public class RightDockPanel : ContentView
             typeof(RightDockPanel),
             default(ICommand));
 
+    /// <summary>Gets or sets the command that toggles the dock state.</summary>
     public ICommand? ToggleCommand
     {
         get => (ICommand?)GetValue(ToggleCommandProperty);
         set => SetValue(ToggleCommandProperty, value);
     }
 
+    /// <inheritdoc />
     protected override void OnBindingContextChanged()
     {
         base.OnBindingContextChanged();

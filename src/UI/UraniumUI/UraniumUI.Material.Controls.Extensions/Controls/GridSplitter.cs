@@ -16,8 +16,13 @@ public class GridSplitter : ContentView
     private readonly BoxView boxView;
     private bool isDragging;
 
+    /// <summary>Occurs when the user starts dragging the splitter.</summary>
     public event EventHandler<(double? Previous, double? Next)>? ResizeStarted;
+
+    /// <summary>Occurs while the adjacent column widths change.</summary>
     public event EventHandler<(double? Previous, double? Next)>? ResizeChanged;
+
+    /// <summary>Occurs when a splitter drag completes or is canceled.</summary>
     public event EventHandler<(double? Previous, double? Next)>? ResizeCompleted;
 
     /// <inheritdoc />
@@ -57,132 +62,161 @@ public class GridSplitter : ContentView
         SizeChanged += (_, _) => ApplyAppearance();
     }
 
+    /// <summary>Identifies the <see cref="ResizeMode"/> bindable property.</summary>
     public static readonly BindableProperty ResizeModeProperty =
         BindableProperty.Create(nameof(ResizeMode), typeof(GridSplitterResizeMode), typeof(GridSplitter), GridSplitterResizeMode.PreviousAndNext);
 
+    /// <summary>Gets or sets which adjacent columns are resized.</summary>
     public GridSplitterResizeMode ResizeMode
     {
         get => (GridSplitterResizeMode)GetValue(ResizeModeProperty);
         set => SetValue(ResizeModeProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="Thickness"/> bindable property.</summary>
     public static readonly BindableProperty ThicknessProperty =
         BindableProperty.Create(nameof(Thickness), typeof(double), typeof(GridSplitter), 8d, propertyChanged: OnAppearanceChanged);
 
+    /// <summary>Gets or sets the splitter width, in device-independent units.</summary>
     public double Thickness
     {
         get => (double)GetValue(ThicknessProperty);
         set => SetValue(ThicknessProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="SplitterColor"/> bindable property.</summary>
     public static readonly BindableProperty SplitterColorProperty =
         BindableProperty.Create(nameof(SplitterColor), typeof(Color), typeof(GridSplitter), Colors.DarkGray, propertyChanged: OnAppearanceChanged);
 
+    /// <summary>Gets or sets the splitter color while idle.</summary>
     public Color SplitterColor
     {
         get => (Color)GetValue(SplitterColorProperty);
         set => SetValue(SplitterColorProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="HoverColor"/> bindable property.</summary>
     public static readonly BindableProperty HoverColorProperty =
         BindableProperty.Create(nameof(HoverColor), typeof(Color), typeof(GridSplitter), Colors.Gray);
 
+    /// <summary>Gets or sets the splitter color while hovered or dragged.</summary>
     public Color HoverColor
     {
         get => (Color)GetValue(HoverColorProperty);
         set => SetValue(HoverColorProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="MinPreviousWidth"/> bindable property.</summary>
     public static readonly BindableProperty MinPreviousWidthProperty =
         BindableProperty.Create(nameof(MinPreviousWidth), typeof(double), typeof(GridSplitter), 100d);
 
+    /// <summary>Gets or sets the minimum width of the preceding column.</summary>
     public double MinPreviousWidth
     {
         get => (double)GetValue(MinPreviousWidthProperty);
         set => SetValue(MinPreviousWidthProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="MinNextWidth"/> bindable property.</summary>
     public static readonly BindableProperty MinNextWidthProperty =
         BindableProperty.Create(nameof(MinNextWidth), typeof(double), typeof(GridSplitter), 100d);
 
+    /// <summary>Gets or sets the minimum width of the following column.</summary>
     public double MinNextWidth
     {
         get => (double)GetValue(MinNextWidthProperty);
         set => SetValue(MinNextWidthProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="MaxPreviousWidth"/> bindable property.</summary>
     public static readonly BindableProperty MaxPreviousWidthProperty =
         BindableProperty.Create(nameof(MaxPreviousWidth), typeof(double), typeof(GridSplitter), double.PositiveInfinity);
 
+    /// <summary>Gets or sets the maximum width of the preceding column.</summary>
     public double MaxPreviousWidth
     {
         get => (double)GetValue(MaxPreviousWidthProperty);
         set => SetValue(MaxPreviousWidthProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="MaxNextWidth"/> bindable property.</summary>
     public static readonly BindableProperty MaxNextWidthProperty =
         BindableProperty.Create(nameof(MaxNextWidth), typeof(double), typeof(GridSplitter), double.PositiveInfinity);
 
+    /// <summary>Gets or sets the maximum width of the following column.</summary>
     public double MaxNextWidth
     {
         get => (double)GetValue(MaxNextWidthProperty);
         set => SetValue(MaxNextWidthProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="ResetOnDoubleTap"/> bindable property.</summary>
     public static readonly BindableProperty ResetOnDoubleTapProperty =
         BindableProperty.Create(nameof(ResetOnDoubleTap), typeof(bool), typeof(GridSplitter), false);
 
+    /// <summary>Gets or sets whether double-clicking restores configured widths.</summary>
     public bool ResetOnDoubleTap
     {
         get => (bool)GetValue(ResetOnDoubleTapProperty);
         set => SetValue(ResetOnDoubleTapProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="ResetPreviousWidth"/> bindable property.</summary>
     public static readonly BindableProperty ResetPreviousWidthProperty =
         BindableProperty.Create(nameof(ResetPreviousWidth), typeof(double), typeof(GridSplitter), -1d);
 
+    /// <summary>Gets or sets the preceding column width restored by a double-click.</summary>
     public double ResetPreviousWidth
     {
         get => (double)GetValue(ResetPreviousWidthProperty);
         set => SetValue(ResetPreviousWidthProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="ResetNextWidth"/> bindable property.</summary>
     public static readonly BindableProperty ResetNextWidthProperty =
         BindableProperty.Create(nameof(ResetNextWidth), typeof(double), typeof(GridSplitter), -1d);
 
+    /// <summary>Gets or sets the following column width restored by a double-click.</summary>
     public double ResetNextWidth
     {
         get => (double)GetValue(ResetNextWidthProperty);
         set => SetValue(ResetNextWidthProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="ResizeStartedCommand"/> bindable property.</summary>
     public static readonly BindableProperty ResizeStartedCommandProperty =
         BindableProperty.Create(nameof(ResizeStartedCommand), typeof(ICommand), typeof(GridSplitter));
 
+    /// <summary>Gets or sets the command invoked when resizing starts.</summary>
     public ICommand? ResizeStartedCommand
     {
         get => (ICommand?)GetValue(ResizeStartedCommandProperty);
         set => SetValue(ResizeStartedCommandProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="ResizeChangedCommand"/> bindable property.</summary>
     public static readonly BindableProperty ResizeChangedCommandProperty =
         BindableProperty.Create(nameof(ResizeChangedCommand), typeof(ICommand), typeof(GridSplitter));
 
+    /// <summary>Gets or sets the command invoked as widths change.</summary>
     public ICommand? ResizeChangedCommand
     {
         get => (ICommand?)GetValue(ResizeChangedCommandProperty);
         set => SetValue(ResizeChangedCommandProperty, value);
     }
 
+    /// <summary>Identifies the <see cref="ResizeCompletedCommand"/> bindable property.</summary>
     public static readonly BindableProperty ResizeCompletedCommandProperty =
         BindableProperty.Create(nameof(ResizeCompletedCommand), typeof(ICommand), typeof(GridSplitter));
 
+    /// <summary>Gets or sets the command invoked when resizing completes.</summary>
     public ICommand? ResizeCompletedCommand
     {
         get => (ICommand?)GetValue(ResizeCompletedCommandProperty);
         set => SetValue(ResizeCompletedCommandProperty, value);
     }
 
+    /// <inheritdoc />
     protected override void OnParentSet()
     {
         base.OnParentSet();
