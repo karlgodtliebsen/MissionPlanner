@@ -29,6 +29,11 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
 
         HorizontalOptions = LayoutOptions.Fill;
         VerticalOptions = LayoutOptions.Start;
+        GestureRecognizers.Add(
+            new TapGestureRecognizer
+            {
+                Command = new Command(() => owner.HandleRowTapped(BindingContext))
+            });
 
         owner.RegisterPresenter(this);
         SizeChanged += OnPresenterSizeChanged;

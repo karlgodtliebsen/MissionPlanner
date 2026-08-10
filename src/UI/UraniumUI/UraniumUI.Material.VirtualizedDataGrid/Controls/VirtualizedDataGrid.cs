@@ -1275,8 +1275,31 @@ public partial class VirtualizedDataGrid : Border
             return;
         }
 
-        var item = view.BindingContext;
+        if (SelectionTrigger == DataGridSelectionTrigger.RowClick)
+        {
+            RefreshSelectionVisuals();
+            return;
+        }
 
+        ChangeItemSelection(view.BindingContext, isSelected);
+    }
+
+    /// <summary>Handles a tap raised by a realized row presenter.</summary>
+    /// <param name="item">The tapped row item.</param>
+    internal void HandleRowTapped(object? item)
+    {
+        if (item is null ||
+            SelectionTrigger == DataGridSelectionTrigger.SelectionColumn)
+        {
+            return;
+        }
+
+        var shouldSelect = SelectionMode == SelectionMode.Single || !IsItemSelected(item);
+        ChangeItemSelection(item, shouldSelect);
+    }
+
+    private void ChangeItemSelection(object item, bool isSelected)
+    {
         if (SelectionMode == SelectionMode.None)
         {
             RefreshSelectionVisuals();

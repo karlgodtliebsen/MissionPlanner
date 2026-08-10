@@ -179,6 +179,49 @@ public class VirtualizedDataGrid_Layout_Tests
     }
 
     [Fact]
+    public void RowClickTrigger_ShouldSelectTappedRowInSingleMode()
+    {
+        var item = new Row("First", false);
+        var grid = new TestableVirtualizedDataGrid
+        {
+            SelectionMode = SelectionMode.Single,
+            SelectionTrigger = DataGridSelectionTrigger.RowClick,
+            Columns = [new DataGridColumn { ValueBinding = new Binding(nameof(Row.Name)) }]
+        };
+        var row = grid.CreateRow();
+        row.BindingContext = item;
+
+        row.GestureRecognizers
+            .Single()
+            .ShouldBeOfType<TapGestureRecognizer>()
+            .Command!.Execute(null);
+
+        grid.SelectedItem.ShouldBeSameAs(item);
+        grid.SelectedItems.Count.ShouldBe(1);
+    }
+
+    [Fact]
+    public void RowClickTrigger_ShouldToggleTappedRowInMultipleMode()
+    {
+        var item = new Row("First", false);
+        var grid = new TestableVirtualizedDataGrid
+        {
+            SelectionMode = SelectionMode.Multiple,
+            SelectionTrigger = DataGridSelectionTrigger.RowClick,
+            Columns = [new DataGridColumn { ValueBinding = new Binding(nameof(Row.Name)) }]
+        };
+        var row = grid.CreateRow();
+        row.BindingContext = item;
+        var tap = row.GestureRecognizers.Single().ShouldBeOfType<TapGestureRecognizer>();
+
+        tap.Command!.Execute(null);
+        grid.SelectedItems.Contains(item).ShouldBeTrue();
+
+        tap.Command.Execute(null);
+        grid.SelectedItems.Contains(item).ShouldBeFalse();
+    }
+
+    [Fact]
     public void RowsViewport_ShouldRemainBoundedForVirtualization()
     {
         var grid = new TestableVirtualizedDataGrid();

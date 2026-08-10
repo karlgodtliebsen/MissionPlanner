@@ -33,6 +33,7 @@ Use single selection by binding `SelectedItem` instead:
 <virtualized:VirtualizedDataGrid
     ItemsSource="{Binding Items}"
     SelectionMode="Single"
+    SelectionTrigger="RowClick"
     SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
     SelectionChangedCommand="{Binding SelectionChangedCommand}" />
 ```
@@ -44,6 +45,17 @@ Use single selection by binding `SelectedItem` instead:
 `SelectionChanged` event for code-behind consumers. Selection visuals are also
 synchronized for both the standard UraniumUI `DataGridSelectionColumn` and
 `ExtendedSelectableDataGridColumn`.
+
+`SelectionTrigger` controls how the user changes selection:
+
+```text
+SelectionColumn             selection-column checkbox only (default)
+RowClick                    row click only; no selection column is required
+SelectionColumnAndRowClick  either interaction
+```
+
+In `Single` mode, a row click replaces the selection. In `Multiple` mode, a
+row click toggles the clicked item.
 
 ## Files added in v2
 

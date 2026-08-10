@@ -207,6 +207,23 @@ public partial class VirtualizedDataGrid
             ((VirtualizedDataGrid)bindable).OnSelectionModeChanged());
 
     /// <summary>
+    /// Gets or sets which user interaction changes the row selection. The default
+    /// is <see cref="DataGridSelectionTrigger.SelectionColumn"/> for compatibility.
+    /// </summary>
+    public DataGridSelectionTrigger SelectionTrigger
+    {
+        get => (DataGridSelectionTrigger)GetValue(SelectionTriggerProperty);
+        set => SetValue(SelectionTriggerProperty, value);
+    }
+
+    /// <summary>Identifies the <see cref="SelectionTrigger"/> bindable property.</summary>
+    public static readonly BindableProperty SelectionTriggerProperty = BindableProperty.Create(
+        nameof(SelectionTrigger),
+        typeof(DataGridSelectionTrigger),
+        typeof(VirtualizedDataGrid),
+        DataGridSelectionTrigger.SelectionColumn);
+
+    /// <summary>
     /// Gets or sets the command invoked after the effective selection changes.
     /// The command parameter is a <see cref="VirtualizedDataGridSelectionChangedEventArgs"/>.
     /// </summary>
