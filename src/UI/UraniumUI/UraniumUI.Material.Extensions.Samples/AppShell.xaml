@@ -115,8 +115,12 @@
         <ShellContent Title="Pagination Data Grid 3" ContentTemplate="{DataTemplate paginationSamples:PaginationSampleExtended2Page}" Route="PaginationSamplePage3" />
     </FlyoutItem>
     <FlyoutItem Title="Selectable Data Grid" >
-        <ShellContent Title="Selectable Data Grid 1" ContentTemplate="{DataTemplate selectable:SelectableDataGridPage1}" Route="SelectableDataGridPage1" />
-        <ShellContent Title="Selectable Data Grid 2" ContentTemplate="{DataTemplate selectable:SelectableDataGridPage2}" Route="SelectableDataGridPage2" />
+        <ShellContent Title="Multi Selection" ContentTemplate="{DataTemplate selectable:SelectableDataGridPage1}" Route="SelectableDataGridPage1" />
+        <ShellContent Title="Single Selection" ContentTemplate="{DataTemplate selectable:SelectableDataGridPage2}" Route="SelectableDataGridPage2" />
+        <ShellContent Title="Multi Selections With ViewModel Wrapper" ContentTemplate="{DataTemplate selectable:SelectableDataGridPage3}" Route="SelectableDataGridPage3" />
+        <ShellContent Title="Multi Selections With Row Click" ContentTemplate="{DataTemplate selectable:SelectableDataGridPage4}" Route="SelectableDataGridPage4" />
+        <ShellContent Title="Multi Selections With SelectionColumn" ContentTemplate="{DataTemplate selectable:SelectableDataGridPage5}" Route="SelectableDataGridPage5" />
+        <ShellContent Title="Multi Selections With SelectionColumnAndRowClick" ContentTemplate="{DataTemplate selectable:SelectableDataGridPage6}" Route="SelectableDataGridPage6" />
     </FlyoutItem>
     <FlyoutItem Title="Extended Data Grid Samples" >
         <ShellContent Title="Sample 1" ContentTemplate="{DataTemplate virtualizedDataGridSample:VirtualizedDataGridSampleView1}" Route="VirtualizedDataGridView1" />

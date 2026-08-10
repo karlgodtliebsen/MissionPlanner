@@ -9,7 +9,10 @@ namespace UraniumUI.Material.Extensions.Samples.DataGridSamples.Selectable;
 
 public partial class SelectableDataGridPageViewModel2 : ObservableObject
 {
-    public ObservableRangeCollection<SelectableCustomDataGridStudent> Items { get; private set; } = [];
+    public ObservableRangeCollection<CustomDataGridStudent> Items { get; } = [];
+
+
+    [ObservableProperty] public partial CustomDataGridStudent? SelectedItem { get; set; }
 
     private StudentDataStore DataStore { get; } = new StudentDataStore();
 
@@ -18,49 +21,38 @@ public partial class SelectableDataGridPageViewModel2 : ObservableObject
         Initialize().FireAndForget();
     }
 
-    private bool CanRemoveSelected()
+    private bool CanRemoveSelectedSingle()
     {
-        return Items.Any(item => item.IsSelected);
+        return SelectedItem is not null;
     }
+
+
+    [RelayCommand(CanExecute = nameof(CanRemoveSelectedSingle))]
+    private void RemoveSelectedSingle()
+    {
+        if (SelectedItem is null)
+        {
+            return;
+        }
+
+        var allItems = Items.ToList();
+        allItems.Remove(SelectedItem);
+
+        Items.Clear();
+        Items.AddRange(allItems);
+        SelectedItem = null;
+    }
+
 
     [RelayCommand]
     private void SelectionChanged()
     {
-        RemoveSelectedCommand.NotifyCanExecuteChanged();
-    }
-
-    [RelayCommand(CanExecute = nameof(CanRemoveSelected))]
-    private void RemoveSelected()
-    {
-        var allItems = Items.ToList();
-        var items = Items.Where(item => item.IsSelected).ToList();
-        foreach (var customDataGridStudent in items)
-        {
-            allItems.Remove(customDataGridStudent);
-        }
-
-        Items.Clear();
-        Items.AddRange(allItems);
+        RemoveSelectedSingleCommand.NotifyCanExecuteChanged();
     }
 
     private async Task Initialize()
     {
         var collection = await DataStore.GetListAsync(1000, false);
-        Items.AddRange(collection.Select(item => new SelectableCustomDataGridStudent(item)));
+        Items.AddRange(collection);
     }
-}
-
-public partial class SelectableCustomDataGridStudent : ObservableObject
-{
-    //may use this property to bind to the selection column in the DataGrid
-    //else use the  public ObservableCollection<CustomDataGridStudent> SelectedItems { get; set; } = []; on the viewmodel
-    [ObservableProperty] public partial bool IsSelected { get; set; }
-
-    /// <inheritdoc />
-    public SelectableCustomDataGridStudent(CustomDataGridStudent customDataGridStudent)
-    {
-        Student = customDataGridStudent;
-    }
-
-    public CustomDataGridStudent Student { get; set; }
 }

@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using UraniumUI.Extensions;
@@ -8,15 +7,15 @@ using UraniumUI.Material.Extensions.Samples.DataGridSamples.Models;
 
 namespace UraniumUI.Material.Extensions.Samples.DataGridSamples.Selectable;
 
-public partial class SelectableDataGridPageViewModel1 : ObservableObject
+public partial class SelectableDataGridPageViewModel5 : ObservableObject
 {
-    public ObservableRangeCollection<CustomDataGridStudent> Items { get; } = [];
+    public ObservableRangeCollection<CustomDataGridStudent> Items { get; private set; } = [];
 
-    public ObservableCollection<CustomDataGridStudent> SelectedItems { get; } = [];
+    public ObservableRangeCollection<CustomDataGridStudent> SelectedItems { get; private set; } = [];
 
-    private StudentDataStore DataStore { get; } = new StudentDataStore();
+    private StudentDataStore DataStore { get; } = new();
 
-    public SelectableDataGridPageViewModel1()
+    public SelectableDataGridPageViewModel5()
     {
         Initialize().FireAndForget();
     }
@@ -26,28 +25,25 @@ public partial class SelectableDataGridPageViewModel1 : ObservableObject
         return SelectedItems.Any();
     }
 
-
-    [RelayCommand(CanExecute = nameof(CanRemoveSelected))]
-    private void RemoveSelected()
-    {
-        var allItems = Items.ToList();
-        foreach (var customDataGridStudent in SelectedItems)
-        {
-            allItems.Remove(customDataGridStudent);
-        }
-
-        Items.Clear();
-        Items.AddRange(allItems);
-        SelectedItems.Clear();
-    }
-
-
     [RelayCommand]
     private void SelectionChanged()
     {
         RemoveSelectedCommand.NotifyCanExecuteChanged();
     }
 
+    [RelayCommand(CanExecute = nameof(CanRemoveSelected))]
+    private void RemoveSelected()
+    {
+        var allItems = Items.ToList();
+        var items = SelectedItems.ToList();
+        foreach (var customDataGridStudent in items)
+        {
+            allItems.Remove(customDataGridStudent);
+        }
+
+        Items.Clear();
+        Items.AddRange(allItems);
+    }
 
     private async Task Initialize()
     {

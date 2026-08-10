@@ -51,6 +51,11 @@ public static class MauiProgram
         builder.Services.AddTransient<EditorDataGridPageViewModel>();
         builder.Services.AddSingleton<SelectableDataGridPageViewModel1>();
         builder.Services.AddSingleton<SelectableDataGridPageViewModel2>();
+        builder.Services.AddSingleton<SelectableDataGridPageViewModel3>();
+        builder.Services.AddSingleton<SelectableDataGridPageViewModel4>();
+        builder.Services.AddSingleton<SelectableDataGridPageViewModel5>();
+        builder.Services.AddSingleton<SelectableDataGridPageViewModel6>();
+
         builder.Services.AddSingleton<SimpleDataGridPageViewModel>();
         builder.Services.AddSingleton<CustomDataGridPageViewModel>();
         builder.Services.AddSingleton<CompareDataGridsViewModel>();

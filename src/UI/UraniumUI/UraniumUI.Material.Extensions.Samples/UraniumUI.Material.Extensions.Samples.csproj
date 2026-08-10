@@ -110,6 +110,9 @@
 	  <Compile Update="DataGridSamples\Selectable\SelectableDataGridPage2.xaml.cs">
 	    <DependentUpon>SelectableDataGridPage2.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="DataGridSamples\Selectable\SelectableDataGridPage3.xaml.cs">
+	    <DependentUpon>SelectableDataGridPage3.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="DataGridSamples\Selectable\SelectableDataGridPage1.xaml.cs">
 	    <DependentUpon>SelectableDataGridPage1.xaml</DependentUpon>
 	  </Compile>
@@ -164,7 +167,19 @@
 	  <MauiXaml Update="DataGridSamples\Selectable\SelectableDataGridPage2.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="DataGridSamples\Selectable\SelectableDataGridPage3.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="DataGridSamples\Selectable\SelectableDataGridPage1.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="DataGridSamples\Selectable\SelectableDataGridPage4.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="DataGridSamples\Selectable\SelectableDataGridPage5.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="DataGridSamples\Selectable\SelectableDataGridPage6.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="DataGridSamples\SimpleCustomTitleDataGridPage.xaml">
