@@ -21,7 +21,8 @@
         <virtualized:VirtualizedDataGrid 
             Grid.Row="1"
             ItemsSource="{Binding Items}" 
-            
+            RowHeight="85"
+            EstimatedRowHeight="85"
             HorizontalOptions="Fill"
             VerticalOptions="Center"
             MaximumWidthRequest="600"
