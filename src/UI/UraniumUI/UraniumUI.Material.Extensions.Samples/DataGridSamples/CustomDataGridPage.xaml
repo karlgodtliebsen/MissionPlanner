@@ -9,6 +9,7 @@
                     xmlns:dataGrids="clr-namespace:UraniumUI.Material.Extensions.Samples.DataGrids"
                     xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
                     xmlns:models="using:UraniumUI.Material.Extensions.Samples.DataGridSamples.Models"
+                    xmlns:controls="using:UraniumUI.Material.Controls"
                     BindingContext="{uranium:Inject {Type dataGrids:CustomDataGridPageViewModel}}"
                     x:Class="UraniumUI.Material.Extensions.Samples.DataGrids.CustomDataGridPage"
                     x:Name="SamplePage"
@@ -53,7 +54,8 @@
                 </virtualized:VirtualizedDataGrid.EmptyView>
 
                 <virtualized:VirtualizedDataGrid.Columns>
-
+                    <material:DataGridColumn Width="*" x:DataType="models:CustomDataGridStudent" ValueBinding="{Binding Id}" Title="Id" />
+                    
                     <material:DataGridColumn Width="4*" Title="Student Name">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="models:CustomDataGridStudent">
@@ -65,19 +67,22 @@
                     <material:DataGridColumn Width="*" Title="Age">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="models:CustomDataGridStudent">
-                                <Border Padding="3" HorizontalOptions="Center" VerticalOptions="Center"
-                                            StrokeShape="RoundRectangle 6"
-                                            
-                                            >
-                                    <plain:EntryView HorizontalTextAlignment="End" Text="{Binding Age}" 
-                                                     
-                                                     HorizontalOptions="Center"/>
-                                </Border>
+                                <controls:NumericField 
+                                    Padding="3" 
+                                    Value="{Binding Age, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                                    BorderColor="MediumPurple"
+                                    NumberFormat="N0"
+                                    Min="0"
+                                    Max="100"
+                                    HorizontalOptions="Fill"
+                                    VerticalOptions="Center"  
+                                    HorizontalTextAlignment="End" 
+                                    AllowClear="True"
+                                    AllowSign="False"
+                                    AllowThousands="False" />
                             </DataTemplate>
                         </material:DataGridColumn.CellItemTemplate>
                     </material:DataGridColumn>
-
-                    <material:DataGridColumn Width="*" x:DataType="models:CustomDataGridStudent" ValueBinding="{Binding Id}" Title="Id" />
 
                     <material:DataGridColumn Width="*" Title="Actions"  >
                         <material:DataGridColumn.CellItemTemplate>

@@ -33,13 +33,9 @@
                 <material:DataGridColumn Width="*" Title="Age">
                     <material:DataGridColumn.CellItemTemplate >
                         <DataTemplate x:DataType="models:EditorStudent" >
-                            <!--<Border  Padding="3" HorizontalOptions="Center" VerticalOptions="Center" StrokeShape="RoundRectangle 6">
-                                <plain:EntryView HorizontalTextAlignment="End" Text="{Binding Age}" HorizontalOptions="Center"/>
-                            </Border>-->
-
-                            <controls:NumericField 
+                           <controls:NumericField 
                                     Padding="3" 
-                                    Value="{Binding Age, Mode=TwoWay}"
+                                    Value="{Binding Age, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
                                     BorderColor="MediumPurple"
                                     NumberFormat="N0"
                                     Min="0"
