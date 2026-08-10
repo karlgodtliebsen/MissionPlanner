@@ -113,11 +113,12 @@ public static class HudPainter
         canvas.RotateDegrees((float)roll);
 
         using SKPaint pointerPaint = new() { Color = SKColors.Yellow, Style = SKPaintStyle.Fill, IsAntialias = true };
-        using SKPath path = new();
-        path.MoveTo(0, -radius + 16);
-        path.LineTo(-7, -radius + 28);
-        path.LineTo(7, -radius + 28);
-        path.Close();
+        using SKPathBuilder pathBuilder = new();
+        pathBuilder.MoveTo(0, -radius + 16);
+        pathBuilder.LineTo(-7, -radius + 28);
+        pathBuilder.LineTo(7, -radius + 28);
+        pathBuilder.Close();
+        using SKPath path = pathBuilder.Detach();
         canvas.DrawPath(path, pointerPaint);
 
         canvas.Restore();
@@ -138,11 +139,12 @@ public static class HudPainter
         var normalizedHeading = ((int)Math.Round(heading) % 360 + 360) % 360;
         canvas.DrawText($"{normalizedHeading:000}°", centerX, top + 17, SKTextAlign.Center, font, textPaint);
 
-        using SKPath pointer = new();
-        pointer.MoveTo(centerX, top + boxHeight);
-        pointer.LineTo(centerX - 6, top + boxHeight + 8);
-        pointer.LineTo(centerX + 6, top + boxHeight + 8);
-        pointer.Close();
+        using SKPathBuilder pointerBuilder = new();
+        pointerBuilder.MoveTo(centerX, top + boxHeight);
+        pointerBuilder.LineTo(centerX - 6, top + boxHeight + 8);
+        pointerBuilder.LineTo(centerX + 6, top + boxHeight + 8);
+        pointerBuilder.Close();
+        using SKPath pointer = pointerBuilder.Detach();
         canvas.DrawPath(pointer, pointerPaint);
     }
 

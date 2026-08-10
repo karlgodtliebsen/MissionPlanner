@@ -50,6 +50,8 @@ HUD + tabset on the left, shared mission map on the right.
 ### Status
 
 * Implemented a responsive HUD (SkiaSharp-rendered)
+* HUD vector geometry uses `SKPathBuilder`, matching the current immutable
+  SkiaSharp path API while preserving the existing roll and heading indicators.
 
 ### Missing
 
