@@ -41,7 +41,9 @@ Use single selection by binding `SelectedItem` instead:
 `SelectedItem` and `SelectedItems` are kept synchronized. The command receives a
 `VirtualizedDataGridSelectionChangedEventArgs` containing `PreviousSelection`,
 `CurrentSelection`, and `SelectedItem`. The control also exposes a matching
-`SelectionChanged` event for code-behind consumers.
+`SelectionChanged` event for code-behind consumers. Selection visuals are also
+synchronized for both the standard UraniumUI `DataGridSelectionColumn` and
+`ExtendedSelectableDataGridColumn`.
 
 ## Files added in v2
 

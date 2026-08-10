@@ -1,6 +1,6 @@
 ﻿using UraniumUI.Extensions;
 using UraniumUI.Material.Controls;
-using CheckBox = Microsoft.Maui.Controls.CheckBox;
+using CheckBox = InputKit.Shared.Controls.CheckBox;
 
 namespace UraniumUI.Material.VirtualizedDataGrid.Controls;
 

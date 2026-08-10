@@ -148,6 +148,37 @@ public class VirtualizedDataGrid_Layout_Tests
     }
 
     [Fact]
+    public void ReplacingSingleSelection_ShouldUncheckPreviouslySelectedMaterialCell()
+    {
+        var first = new Row("First", false);
+        var second = new Row("Second", false);
+        var grid = new TestableVirtualizedDataGrid
+        {
+            SelectionMode = SelectionMode.Single,
+            Columns = [new DataGridSelectionColumn()]
+        };
+        var row = grid.CreateRow();
+        row.BindingContext = first;
+        var selectionCell = row.Children
+            .OfType<Grid>()
+            .Single()
+            .Children
+            .OfType<ContentView>()
+            .Single();
+        var checkBox = selectionCell.Content
+            .ShouldBeOfType<ContentView>()
+            .Content
+            .ShouldBeAssignableTo<InputKit.Shared.Controls.CheckBox>();
+
+        grid.SelectedItems = new ObservableCollection<object> { first };
+        checkBox.IsChecked.ShouldBeTrue();
+
+        grid.SelectedItems = new ObservableCollection<object> { second };
+
+        checkBox.IsChecked.ShouldBeFalse();
+    }
+
+    [Fact]
     public void RowsViewport_ShouldRemainBoundedForVirtualization()
     {
         var grid = new TestableVirtualizedDataGrid();
