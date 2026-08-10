@@ -12,7 +12,7 @@
     <uranium:UraniumContentPage.Content>
 
         <Grid HorizontalOptions="Fill" VerticalOptions="Fill" Margin="50" 
-              RowDefinitions="600,300" ColumnDefinitions="*,*" RowSpacing="10">
+              RowDefinitions="500,300" ColumnDefinitions="*,*" RowSpacing="10">
 
             <virtualized:VirtualizedDataGrid    Grid.RowSpan="1" 
                                                 ItemsSource="{Binding Items}" 

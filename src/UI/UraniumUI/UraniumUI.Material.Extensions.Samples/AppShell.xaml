@@ -94,13 +94,7 @@
     <FlyoutItem Title="Compare Data Grids" >
         <ShellContent Title="Compare Data Grids" ContentTemplate="{DataTemplate dataGridSamples:CompareDataGridsPage}" Route="CompareDataGridsPage" />
     </FlyoutItem>
-    <FlyoutItem Title="Simple Data Grid" >
-        <ShellContent Title="Simple Data Grid with AutoColumns" ContentTemplate="{DataTemplate dataGrids:SimpleDataGridPage}" Route="SimpleDataGridPage" />
-    </FlyoutItem>
-    <FlyoutItem Title="Data Grid with Search" >
-        <ShellContent Title="Data Grid with Search" ContentTemplate="{DataTemplate dataGrids:SearchDataGridPage}" Route="SearchDataGridPage" />
-    </FlyoutItem>
-    <FlyoutItem Title="Data Grid with Custom Title" >
+    <FlyoutItem Title="Custom Title Data Grid" >
         <ShellContent Title="Data Grid with Custom Title" ContentTemplate="{DataTemplate dataGrids:SimpleCustomTitleDataGridPage}" Route="SimpleCustomTitleDataGridPage" />
     </FlyoutItem>
     <FlyoutItem Title="Custom Data Grid" >
@@ -113,6 +107,12 @@
         <ShellContent Title="Pagination Data Grid 1" ContentTemplate="{DataTemplate paginationSamples:PaginationSamplePage}" Route="PaginationSamplePage1" />
         <ShellContent Title="Pagination Data Grid 2" ContentTemplate="{DataTemplate paginationSamples:PaginationSampleExtended1Page}" Route="PaginationSamplePage2" />
         <ShellContent Title="Pagination Data Grid 3" ContentTemplate="{DataTemplate paginationSamples:PaginationSampleExtended2Page}" Route="PaginationSamplePage3" />
+    </FlyoutItem>
+    <FlyoutItem Title="Simple Data Grid" >
+        <ShellContent Title="Simple Data Grid with AutoColumns" ContentTemplate="{DataTemplate dataGrids:SimpleDataGridPage}" Route="SimpleDataGridPage" />
+    </FlyoutItem>
+    <FlyoutItem Title="Search Data Grid" >
+        <ShellContent Title="Data Grid with Search" ContentTemplate="{DataTemplate dataGrids:SearchDataGridPage}" Route="SearchDataGridPage" />
     </FlyoutItem>
     <FlyoutItem Title="Selectable Data Grid" >
         <ShellContent Title="Multi Selection" ContentTemplate="{DataTemplate selectable:SelectableDataGridPage1}" Route="SelectableDataGridPage1" />
@@ -128,7 +128,7 @@
         <ShellContent Title="Sample 3" ContentTemplate="{DataTemplate virtualizedDataGridSample:VirtualizedDataGridSampleView3}" Route="VirtualizedDataGridView3" />
         <ShellContent Title="Sample 4" ContentTemplate="{DataTemplate virtualizedDataGridSample:VirtualizedDataGridSampleView4}" Route="VirtualizedDataGridView4" />
     </FlyoutItem>
-    <FlyoutItem Title="Data Grid with Complex Data" >
+    <FlyoutItem Title="Complex Data for Data Grid " >
         <ShellContent Title="Data Grid with Complex Data" ContentTemplate="{DataTemplate arduPilotSample:VirtualizedDataGridView}" Route="VirtualizedDataGridView" />
     </FlyoutItem>
 
