@@ -14,16 +14,22 @@
         <selectable:SelectableDataGridPageViewModel2 />
     </uranium:UraniumContentPage.BindingContext>
 
-    <Grid RowDefinitions="Auto,*" Margin="50" HorizontalOptions="Fill"  VerticalOptions="Fill">
+    <Grid RowDefinitions="Auto,Auto,*" 
+          RowSpacing="30"
+          Margin="50" HorizontalOptions="Fill"  VerticalOptions="Fill">
         <Button Text="Delete Selected" StyleClass="FilledTonalButton" Command="{Binding RemoveSelectedCommand}" 
                     Margin="30" HorizontalOptions="Center" />
-
-        <virtualized:VirtualizedDataGrid  
-                                    Grid.Row="1"
-                                    ItemsSource="{Binding Items}" 
-                                    ItemSizingStrategy= "MeasureFirstItem"
+        
+        <Label Grid.Row="1" Text="Multi Selections With ViewModel Support" HorizontalOptions="Center" FontSize="22"/>
                                     
-                                    FilterMemberPaths="Name,Id,Age"
+      <virtualized:VirtualizedDataGrid  
+                                    Grid.Row="2"
+                                    ItemsSource="{Binding Items}" 
+                                    SelectionMode="Multiple"
+                                    SelectionChangedCommand="{Binding SelectionChangedCommand}"
+
+                                    ItemSizingStrategy= "MeasureFirstItem"
+                                    FilterMemberPaths="Student.Name,Student.Id,Student.Age"
                                     ShowSearchBar="True"
 
                                     HorizontalOptions="Fill" 
@@ -31,28 +37,19 @@
                                 >
             <virtualized:VirtualizedDataGrid.EmptyView>
                 <VerticalStackLayout Margin="80,20">
-                    <Image
-                               WidthRequest="40"
-                               HeightRequest="40"
-                               HorizontalOptions="Center"
-                               VerticalOptions="Center"
-                               Source="{FontImageSource FontFamily=MaterialOutlined, Glyph={x:Static m:MaterialOutlined.Backup_table}, Color={AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}}"/>
                     <Label Text="No data available..." HorizontalOptions="Center"/>
                 </VerticalStackLayout>
             </virtualized:VirtualizedDataGrid.EmptyView>
 
             <virtualized:VirtualizedDataGrid.Columns>
-                <!--<virtualized:ExtendedSelectableDataGridColumn
-                    x:DataType="models:CustomDataGridStudent"
-                    Width="*"
-                    SelectionMemberPath="IsSelected" />-->
+ 
                 <virtualized:ExtendedSelectableDataGridColumn
                     SelectionMemberPath="IsSelected"
                     SelectionCommandMemberPath="SelectionChangedCommand" />
 
-                <material:DataGridColumn Width="*" x:DataType="selectable:SelectableCustomDataGridStudent" ValueBinding="{Binding Student.Id}" Title="Id" />
-                <material:DataGridColumn Width="3*" x:DataType="selectable:SelectableCustomDataGridStudent" ValueBinding="{Binding Student.Name}" Title="Name" />
-                <material:DataGridColumn Width="*" x:DataType="selectable:SelectableCustomDataGridStudent" ValueBinding="{Binding Student.Age}" Title="Age" />
+                <material:DataGridColumn Width="*" ValueBinding="{Binding Student.Id}" Title="Id" />
+                <material:DataGridColumn Width="3*" ValueBinding="{Binding Student.Name}" Title="Name" />
+                <material:DataGridColumn Width="*" ValueBinding="{Binding Student.Age}" Title="Age" />
             </virtualized:VirtualizedDataGrid.Columns>
         </virtualized:VirtualizedDataGrid>
     </Grid>

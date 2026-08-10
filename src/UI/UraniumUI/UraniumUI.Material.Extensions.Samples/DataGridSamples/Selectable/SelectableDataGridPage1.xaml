@@ -15,14 +15,20 @@
         <selectable:SelectableDataGridPageViewModel1 />
     </uranium:UraniumContentPage.BindingContext>
 
-    <Grid RowDefinitions="Auto,*" Margin="50" HorizontalOptions="Fill"  VerticalOptions="Fill">
-        <Button Text="Delete Selected" StyleClass="FilledTonalButton" Command="{Binding RemoveSelectedCommand}" 
-                    Margin="30" HorizontalOptions="Center" />
+    <Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="*,*" 
+          RowSpacing="30" ColumnSpacing="20"
+          Margin="50" HorizontalOptions="Fill"  VerticalOptions="Fill">
+        <Label Grid.Row="0" Text="Multi Selection" HorizontalOptions="Center" FontSize="22"/>
+        <Button Grid.Row="1" Text="Delete Multiple Selected" StyleClass="FilledTonalButton" Command="{Binding RemoveSelectedCommand}" 
+                     HorizontalOptions="Center" />
 
         <virtualized:VirtualizedDataGrid  
-                                    Grid.Row="1"
+                                    Grid.Row="2"
                                     ItemsSource="{Binding Items}" 
                                     SelectedItems="{Binding SelectedItems}" 
+                                    SelectionMode="Multiple"
+                                    SelectionChangedCommand="{Binding SelectionChangedCommand}"
+
                                     ItemSizingStrategy= "MeasureFirstItem"
                                     
                                     FilterMemberPaths="Name,Id,Age"
@@ -44,20 +50,55 @@
             </virtualized:VirtualizedDataGrid.EmptyView>
 
             <virtualized:VirtualizedDataGrid.Columns>
-                <!--
-                <virtualized:ExtendedSelectableDataGridColumn
-                    x:DataType="models:CustomDataGridStudent"
-                    Width="*"
-                    SelectionMemberPath="IsSelected" />-->
                 
                 <virtualized:ExtendedSelectableDataGridColumn
                     SelectionMemberPath="IsSelected"
                     SelectionCommandMemberPath="SelectionChangedCommand" />
 
-                <material:DataGridColumn Width="*" x:DataType="models:CustomDataGridStudent" ValueBinding="{Binding Id}" Title="Id" />
-                <material:DataGridColumn Width="3*" x:DataType="models:CustomDataGridStudent" ValueBinding="{Binding Name}" Title="Name" />
-                <material:DataGridColumn Width="*" x:DataType="models:CustomDataGridStudent" ValueBinding="{Binding Age}" Title="Age" />
+                <material:DataGridColumn Width="*"  ValueBinding="{Binding Id}" Title="Id" />
+                <material:DataGridColumn Width="3*"  ValueBinding="{Binding Name}" Title="Name" />
+                <material:DataGridColumn Width="*"  ValueBinding="{Binding Age}" Title="Age" />
             </virtualized:VirtualizedDataGrid.Columns>
         </virtualized:VirtualizedDataGrid>
+
+        <Label Grid.Row="0" Grid.Column="1" Text="Single Selection" HorizontalOptions="Center" FontSize="22"/>
+        <Button Grid.Row="1" Grid.Column="1"
+                Text="Delete Single Selected"
+                StyleClass="FilledTonalButton" Command="{Binding RemoveSelectedSingleCommand}" 
+                 HorizontalOptions="Center" />
+
+        <virtualized:VirtualizedDataGrid  
+            Grid.Column="1"
+            Grid.Row="2"
+            
+            ItemsSource="{Binding Items}" 
+            SelectionMode="Single"
+            SelectedItem="{Binding SelectedItem, Mode=TwoWay}"
+            SelectionChangedCommand="{Binding SelectionChangedCommand}"
+
+            ItemSizingStrategy= "MeasureFirstItem"
+            FilterMemberPaths="Name,Id,Age"
+            ShowSearchBar="True"
+            HorizontalOptions="Fill" 
+            VerticalOptions="Fill"
+        >
+            <virtualized:VirtualizedDataGrid.EmptyView>
+                <VerticalStackLayout Margin="80,20">
+                    <Label Text="No data available..." HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </virtualized:VirtualizedDataGrid.EmptyView>
+            <virtualized:VirtualizedDataGrid.Columns>
+                
+                <virtualized:ExtendedSelectableDataGridColumn
+                    SelectionMemberPath="IsSelected"
+                    SelectionCommandMemberPath="SelectionChangedCommand" />
+
+                <material:DataGridColumn Width="*"  ValueBinding="{Binding Id}" Title="Id" />
+                <material:DataGridColumn Width="3*"  ValueBinding="{Binding Name}" Title="Name" />
+                <material:DataGridColumn Width="*"  ValueBinding="{Binding Age}" Title="Age" />
+            </virtualized:VirtualizedDataGrid.Columns>
+        </virtualized:VirtualizedDataGrid>
+
     </Grid>
 </uranium:UraniumContentPage>
+            <!--x:DataType="selectable:SelectableCustomDataGridStudent"-->
