@@ -58,6 +58,7 @@ public partial class MessagesTabViewModel : ObservableObject, IDisposable
     /// <summary>Gets the filtered current-vehicle rows in arrival order.</summary>
     public ObservableCollection<MessageListItem> Items { get; } = [];
 
+    /// <summary>Gets the message rows currently selected in the grid.</summary>
     public ObservableCollection<MessageListItem> SelectedItems { get; } = [];
 
     /// <summary>Gets or sets the selected exact severity or origin filter.</summary>

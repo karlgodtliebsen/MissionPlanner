@@ -5,13 +5,49 @@ using MissionPlanner.Core.Vehicles.Models;
 namespace MissionPlanner.Core.FlightData.Telemetry;
 
 /// <summary>Groups promoted telemetry fields for presentation.</summary>
-public enum TelemetryFieldCategory { Flight, Position, Motion, Navigation, Gps, Power, Radio, Health, Environment }
+public enum TelemetryFieldCategory
+{
+    /// <summary>Flight-state telemetry.</summary>
+    Flight,
+    /// <summary>Geographic position and altitude telemetry.</summary>
+    Position,
+    /// <summary>Attitude and motion telemetry.</summary>
+    Motion,
+    /// <summary>Route and target-navigation telemetry.</summary>
+    Navigation,
+    /// <summary>Global positioning system telemetry.</summary>
+    Gps,
+    /// <summary>Electrical power telemetry.</summary>
+    Power,
+    /// <summary>Radio-link telemetry.</summary>
+    Radio,
+    /// <summary>Vehicle-health telemetry.</summary>
+    Health,
+    /// <summary>Environmental telemetry.</summary>
+    Environment
+}
 
 /// <summary>Describes whether projected telemetry is current.</summary>
-public enum TelemetryFreshness { Fresh, Stale, Unavailable }
+public enum TelemetryFreshness
+{
+    /// <summary>The value was observed within the freshness interval.</summary>
+    Fresh,
+    /// <summary>The last observation is older than the freshness interval.</summary>
+    Stale,
+    /// <summary>No value is currently available.</summary>
+    Unavailable
+}
 
 /// <summary>Recommends a presentation for one telemetry field.</summary>
-public enum TelemetryGaugeType { Numeric, Dial, Bar }
+public enum TelemetryGaugeType
+{
+    /// <summary>Displays the value as formatted text.</summary>
+    Numeric,
+    /// <summary>Displays the value on a circular dial.</summary>
+    Dial,
+    /// <summary>Displays the value on a linear bar.</summary>
+    Bar
+}
 
 /// <summary>Defines one explicit promoted-state projection.</summary>
 public sealed record TelemetryFieldDescriptor(
