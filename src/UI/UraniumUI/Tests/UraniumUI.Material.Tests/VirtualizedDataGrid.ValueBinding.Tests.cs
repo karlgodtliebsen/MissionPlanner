@@ -1,5 +1,6 @@
 ﻿#nullable enable
 
+using System.ComponentModel;
 using System.Globalization;
 using Shouldly;
 using UraniumUI.Material.Controls;
@@ -49,6 +50,40 @@ public class VirtualizedDataGrid_ValueBinding_Tests
             .ShouldContain(label => label.Text == expectedText);
     }
 
+    [Fact]
+    public void CompiledBindingClones_ShouldMaintainIndependentRowSubscriptions()
+    {
+        var firstItem = new ObservableRow("First");
+        var secondItem = new ObservableRow("Second");
+        var grid = new TestableVirtualizedDataGrid
+        {
+            Columns =
+            [
+                new DataGridColumn
+                {
+                    Title = "Name",
+                    ValueBinding = BindingBase.Create<ObservableRow, string>(static row => row.Name)
+                }
+            ]
+        };
+        var firstRow = grid.CreateRow();
+        var secondRow = grid.CreateRow();
+        firstRow.BindingContext = firstItem;
+        secondRow.BindingContext = secondItem;
+        var firstLabel = FindLabels(firstRow).Single();
+        var secondLabel = FindLabels(secondRow).Single();
+
+        firstItem.Name = "First updated";
+
+        firstLabel.Text.ShouldBe("First updated");
+        secondLabel.Text.ShouldBe("Second");
+
+        secondItem.Name = "Second updated";
+
+        firstLabel.Text.ShouldBe("First updated");
+        secondLabel.Text.ShouldBe("Second updated");
+    }
+
     private static IEnumerable<Label> FindLabels(Element element)
     {
         if (element is Label label)
@@ -85,6 +120,28 @@ public class VirtualizedDataGrid_ValueBinding_Tests
     }
 
     private sealed record Row(bool IsDone);
+
+    internal sealed class ObservableRow(string name) : INotifyPropertyChanged
+    {
+        private string name = name;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        public string Name
+        {
+            get => name;
+            set
+            {
+                if (name == value)
+                {
+                    return;
+                }
+
+                name = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Name)));
+            }
+        }
+    }
 
     private sealed class BooleanTextConverter(
         string trueText,

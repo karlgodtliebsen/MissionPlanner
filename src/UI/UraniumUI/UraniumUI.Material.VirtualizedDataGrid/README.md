@@ -9,6 +9,30 @@ This revision builds on the virtualized grid and adds four data-view features:
 
 The row renderer remains a platform `CollectionView`, so only viewport rows are realized.
 
+## Compiled column bindings
+
+`ValueBinding` supports both runtime `Binding` objects and MAUI compiled
+`TypedBinding<TSource, TProperty>` objects generated from `x:DataType` when
+`MauiXamlInflator` is `SourceGen`:
+
+```xml
+<material:DataGridColumn
+    x:DataType="models:CustomDataGridStudent"
+    Title="Id"
+    ValueBinding="{Binding Id}" />
+```
+
+Each realized row receives an independent clone through MAUI's binding clone
+implementation. This preserves the generated getter, setter, converter, and
+property-change subscription chain instead of sharing one stateful binding
+instance across rows.
+
+The control accesses MAUI's internal virtual `BindingBase.Clone()` through
+.NET's `UnsafeAccessor`, allowing MAUI to dispatch to the correct concrete clone
+implementation. If that internal entry point changes, runtime `Binding` and
+`MultiBinding` retain a public-API fallback; unsupported future binding types
+fail with an exception that identifies their concrete type.
+
 ## Selection
 
 Selection remains compatible with UraniumUI selection columns and defaults to

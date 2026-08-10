@@ -256,17 +256,7 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
             BindingBase? valueBinding = null;
             if (column.ValueBinding is { } configuredBinding)
             {
-                try
-                {
-                    valueBinding = configuredBinding.CopyAsClone();
-                }
-                catch (NotSupportedException)
-                {
-                    throw new NotSupportedException(
-                        "DataGridColumn.ValueBinding must be a reusable runtime Binding. " +
-                        "Remove x:DataType from DataGridColumn; MAUI compiled TypedBinding " +
-                        "instances cannot be cloned for virtualized rows.");
-                }
+                valueBinding = configuredBinding.SafeCopyAsClone();
             }
 
             var created =
@@ -316,7 +306,7 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
     {
         foreach (var entry in templateValueBindingCells)
         {
-            if (entry.BindingTemplate.CopyAsClone() is Binding binding)
+            if (entry.BindingTemplate.SafeCopyAsClone() is Binding binding)
             {
                 binding.Source = BindingContext;
                 entry.Cell.BindingContext = binding;
