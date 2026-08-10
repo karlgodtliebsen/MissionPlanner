@@ -61,12 +61,11 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
     /// </summary>
     public ObservableCollection<VehicleFileSystemEntryViewModel> Entries { get; } = [];
 
-    /// <summary>
-    /// Gets the collection of selected file system entries.
-    /// </summary>
-    public ObservableCollection<VehicleFileSystemEntryViewModel> SelectedEntries { get; } = [];
 
-    private VehicleFileSystemEntryViewModel? selectedEntry = null;
+    /// <summary>
+    /// Gets or sets the currently selected file system entry.
+    /// </summary>
+    public VehicleFileSystemEntryViewModel? SelectedEntry { get; set; }
 
     /// <summary>
     /// Gets a value indicating whether the user can navigate up in the file system.
@@ -147,12 +146,12 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
             HasConnection = false;
             HasEntries = false;
             Entries.Clear();
-            selectedEntry = null;
-            SelectedEntries.Clear();
+            SelectedEntry = null;
         });
         await ResetFilesystemService(evt.VehicleId, ct);
 
         SetConnectionStatus();
+        SelectionChanged();
     }
 
     private async Task OnVehicleConnected(VehicleConnected evt, CancellationToken ct)
@@ -250,6 +249,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
 
         RefreshAsync().FireAndForget();
         SetConnectionStatus();
+        SelectionChanged();
     }
 
     private void StopDelayedRefresh()
@@ -307,40 +307,39 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
 
 
     [RelayCommand]
-    private void SelectionChanged()
-    {
-    }
-
-    [RelayCommand]
     private async Task RefreshAsync()
     {
         await LoadDirectoryAsync(CurrentPath);
     }
 
+    [RelayCommand]
+    private void SelectionChanged()
+    {
+        DownloadSelectedCommand.NotifyCanExecuteChanged();
+        OpenSelectedCommand.NotifyCanExecuteChanged();
+    }
+
     private bool CanOpen()
     {
-        return SelectedEntries.Any() && SelectedEntries.First().IsDirectory;
+        return SelectedEntry is not null && SelectedEntry.IsDirectory;
     }
 
     private bool CanDownload()
     {
-        return SelectedEntries.Any() && !SelectedEntries.First().IsDirectory;
+        return SelectedEntry is not null && !SelectedEntry.IsDirectory;
     }
 
     [RelayCommand(CanExecute = nameof(CanOpen))]
     private async Task OpenSelectedAsync()
     {
-        selectedEntry = SelectedEntries.FirstOrDefault();
-        if (selectedEntry is not null)
+        if (SelectedEntry is not null)
         {
-            await OpenEntryAsync(selectedEntry);
+            await OpenEntryAsync(SelectedEntry);
         }
     }
 
-    //[RelayCommand(CanExecute = nameof(CanDownload))]
     private async Task OpenEntryAsync(VehicleFileSystemEntryViewModel entry)
     {
-        selectedEntry = entry;
         if (entry.IsDirectory)
         {
             await LoadDirectoryAsync(RemotePath.Join(CurrentPath, entry.Name));
@@ -391,8 +390,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
             dispatcher.Dispatch(() =>
             {
                 StatusText = "MAVFTP sessions reset.";
-                selectedEntry = null;
-                SelectedEntries.Clear();
+                SelectedEntry = null;
                 Entries.Clear();
                 HasEntries = false;
             });
@@ -402,23 +400,14 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
     [RelayCommand(CanExecute = nameof(CanDownload))]
     private async Task DownloadSelectedAsync()
     {
-        foreach (var vehicleFileSystemEntryViewModel in SelectedEntries.Where(x => !x.IsDirectory))
-        {
-            selectedEntry = vehicleFileSystemEntryViewModel;
-            await DownloadSelected();
-        }
-    }
-
-    private async Task DownloadSelected()
-    {
         var vehicle = ResolveActiveVehicle();
-        if (vehicle is null || selectedEntry is null || selectedEntry.IsDirectory)
+        if (vehicle is null || SelectedEntry is null || SelectedEntry.IsDirectory)
         {
             SetConnectionStatus();
             return;
         }
 
-        var remotePath = RemotePath.Join(CurrentPath, selectedEntry.Name);
+        var remotePath = RemotePath.Join(CurrentPath, SelectedEntry.Name);
         await RunAsync(async ct =>
         {
             var temporary = Path.Combine(FileSystem.CacheDirectory, $"mavftp-{Guid.NewGuid():N}.tmp");
@@ -445,7 +434,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
 
                 await activeFileSystem.DownloadFileAsync(vehicle.Id, remotePath, destination, progress, ct);
                 destination.Position = 0;
-                var saved = await fileSaver.SaveAsync(selectedEntry.Name, destination, ct);
+                var saved = await fileSaver.SaveAsync(SelectedEntry.Name, destination, ct);
                 dispatcher.Dispatch(() => StatusText = saved.IsSuccessful ? $"Downloaded to {saved.FilePath}." : "Download destination selection cancelled.");
             }
             finally
@@ -454,6 +443,8 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
                 {
                     File.Delete(temporary);
                 }
+
+                SelectionChanged();
             }
         });
     }
@@ -462,6 +453,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
     private void Cancel()
     {
         CancelActiveOperation();
+        SelectionChanged();
     }
 
     private async Task LoadDirectoryAsync(string path)
@@ -475,6 +467,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
         {
             dispatcher.Dispatch(() => Entries.Clear());
             SetConnectionStatus();
+            SelectionChanged();
             return;
         }
 
@@ -494,7 +487,6 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
             {
                 Message = $"Found {entries.Count} Remote Entries";
                 Entries.Clear();
-                SelectedEntries.Clear();
                 foreach (var entry in entries.OrderBy(x => x.Type).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase))
                 {
                     Entries.Add(new VehicleFileSystemEntryViewModel(entry.Name, entry.Type, entry.Size));
@@ -503,7 +495,8 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
                 HasEntries = Entries.Any();
                 CurrentPath = RemotePath.Normalize(path);
                 StatusText = Entries.Count == 0 ? "Directory is empty." : $"{Entries.Count} entries.";
-                selectedEntry = null;
+                SelectedEntry = null;
+                SelectionChanged();
             });
         });
     }

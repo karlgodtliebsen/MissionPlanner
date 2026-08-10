@@ -14,9 +14,4 @@ public partial class ParameterComparisonView : UraniumContentPage
         BindingContext = viewModel;
         this.viewModel = viewModel;
     }
-
-    private void ExtendedSelectableDataGridColumn_OnSelectionChanged(object? sender, bool e)
-    {
-        //viewModel.
-    }
 }
