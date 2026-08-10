@@ -288,6 +288,79 @@ public class VirtualizedDataGrid_Layout_Tests
     }
 
     [Fact]
+    public void FixedRowHeight_ShouldFillCellAreaForVerticalAlignment()
+    {
+        var grid = new TestableVirtualizedDataGrid
+        {
+            RowHeight = 100,
+            Columns =
+            [
+                new DataGridColumn
+                {
+                    CellItemTemplate = new DataTemplate(
+                        () => new Label { VerticalOptions = LayoutOptions.Center })
+                }
+            ]
+        };
+
+        var presenter = grid.CreateRow();
+        var cellsGrid = presenter.Children.OfType<Grid>().Single();
+        var cell = cellsGrid.Children.OfType<ContentView>().Single();
+
+        presenter.RowDefinitions[0].Height.ShouldBe(GridLength.Star);
+        cellsGrid.RowDefinitions[0].Height.ShouldBe(GridLength.Star);
+        cellsGrid.VerticalOptions.ShouldBe(LayoutOptions.Fill);
+        cell.VerticalOptions.ShouldBe(LayoutOptions.Fill);
+    }
+
+    [Fact]
+    public void ChangingFixedRowHeight_ShouldRecalculateEveryRowOffset()
+    {
+        var grid = new TestableVirtualizedDataGrid
+        {
+            EstimatedRowHeight = 80,
+            Columns = [new DataGridColumn { ValueBinding = new Binding(nameof(Row.Name)) }],
+            ItemsSource = new ObservableCollection<Row>(
+                Enumerable.Range(0, 3).Select(index => new Row($"Row {index}", false)))
+        };
+        grid.CalculateViewport(0, 400);
+
+        grid.RowHeight = 100;
+        grid.CalculateViewport(0, 400);
+
+        var bounds = grid.ExposedRowsView.Content
+            .ShouldBeOfType<AbsoluteLayout>()
+            .Children
+            .OfType<View>()
+            .Select(AbsoluteLayout.GetLayoutBounds)
+            .OrderBy(rectangle => rectangle.Y)
+            .ToArray();
+
+        bounds.Select(rectangle => rectangle.Y).ShouldBe([0d, 100d, 200d]);
+        bounds.ShouldAllBe(rectangle => rectangle.Height == 100);
+    }
+
+    [Fact]
+    public void MeasureFirstItem_ShouldAcceptItsFinalMeasuredHeight()
+    {
+        var grid = new TestableVirtualizedDataGrid
+        {
+            EstimatedRowHeight = 80,
+            ItemSizingStrategy = ItemSizingStrategy.MeasureFirstItem,
+            Columns = [new DataGridColumn { ValueBinding = new Binding(nameof(Row.Name)) }],
+            ItemsSource = new ObservableCollection<Row>(
+                Enumerable.Range(0, 3).Select(index => new Row($"Row {index}", false)))
+        };
+
+        grid.ReportHeight(0, 60);
+        grid.CalculateViewport(0, 400);
+        grid.ReportHeight(0, 100);
+        grid.CalculateViewport(0, 400);
+
+        grid.ExposedRowsExtentHeight.ShouldBe(300);
+    }
+
+    [Fact]
     public void TemplatedAutoColumns_ShouldNotBeMeasuredWhenRowsAreRecycled()
     {
         var grid = new TestableVirtualizedDataGrid

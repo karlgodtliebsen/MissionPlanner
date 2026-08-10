@@ -74,7 +74,13 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
 
         owner.ConfigureSelectionVisualStates(this);
 
-        cellsGrid = new Grid { HorizontalOptions = LayoutOptions.Fill, ColumnSpacing = Math.Max(0, owner.ColumnSpacing) };
+        cellsGrid = new Grid
+        {
+            HorizontalOptions = LayoutOptions.Fill,
+            VerticalOptions = LayoutOptions.Fill,
+            ColumnSpacing = Math.Max(0, owner.ColumnSpacing),
+            RowDefinitions = { new RowDefinition(GridLength.Star) }
+        };
 
         var columns = owner.GetColumnsSnapshot();
         var widths = owner.GetResolvedColumnWidths();
@@ -82,7 +88,11 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
         BuildColumnDefinitions(columns, widths);
         BuildCells(columns);
 
-        RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+        RowDefinitions.Add(
+            new RowDefinition(
+                owner.RowHeight > 0
+                    ? GridLength.Star
+                    : GridLength.Auto));
         Grid.SetColumn(cellsGrid, 0);
         Grid.SetRow(cellsGrid, 0);
         Children.Add(cellsGrid);
@@ -253,7 +263,13 @@ internal sealed class VirtualizedDataGridRowPresenter : Grid
                 ?? (valueBinding is not null ? owner.LabelFactory(valueBinding) : null)
                 ?? new Label();
 
-            var cell = new ContentView { Content = created, Padding = owner.GetCellPadding(column), IsVisible = column.IsVisible };
+            var cell = new ContentView
+            {
+                Content = created,
+                Padding = owner.GetCellPadding(column),
+                IsVisible = column.IsVisible,
+                VerticalOptions = LayoutOptions.Fill
+            };
 
             cell.SetBinding(IsVisibleProperty, new Binding(nameof(DataGridColumn.IsVisible), source: column));
 

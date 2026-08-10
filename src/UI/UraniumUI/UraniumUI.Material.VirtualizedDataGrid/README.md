@@ -33,6 +33,19 @@ implementation. If that internal entry point changes, runtime `Binding` and
 `MultiBinding` retain a public-API fallback; unsupported future binding types
 fail with an exception that identifies their concrete type.
 
+## Row sizing and alignment
+
+Set `RowHeight` to a positive value for fixed-height rows. The cell grid fills
+that height (less any row separator), so content with
+`VerticalOptions="Center"` is centered against the complete row rather than its
+natural content height. Changing `RowHeight` or `EstimatedRowHeight` also
+recalculates every virtual row offset.
+
+With `ItemSizingStrategy="MeasureFirstItem"`, the first row supplies a uniform
+height for the remaining rows. Intermediate `SizeChanged` measurements are
+accepted until that first row reaches its final arranged height, preventing an
+early provisional measurement from becoming the permanent row size.
+
 ## Selection
 
 Selection remains compatible with UraniumUI selection columns and defaults to

@@ -232,7 +232,7 @@ internal sealed class VirtualizedDataGridRowsHost : ScrollView
 
         if (owner.ItemSizingStrategy == ItemSizingStrategy.MeasureFirstItem)
         {
-            if (uniformMeasuredHeight > 0 || index != 0)
+            if (index != 0 || Math.Abs(uniformMeasuredHeight - height) <= 0.5)
             {
                 return;
             }

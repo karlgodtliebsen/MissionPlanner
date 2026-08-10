@@ -744,6 +744,12 @@ public partial class VirtualizedDataGrid : Border
         }
     }
 
+    private void OnRowMetricsChanged()
+    {
+        RefreshRealizedRows();
+        rowsView.RefreshRows();
+    }
+
     /// <summary>
     /// Resolves column widths for the current viewport and updates realized content.
     /// </summary>

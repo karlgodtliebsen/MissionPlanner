@@ -380,7 +380,7 @@ public partial class VirtualizedDataGrid
         typeof(VirtualizedDataGrid),
         -1d,
         propertyChanged: static (bindable, _, _) =>
-            ((VirtualizedDataGrid)bindable).RefreshRealizedRows());
+            ((VirtualizedDataGrid)bindable).OnRowMetricsChanged());
 
     /// <summary>
     /// Gets or sets the estimated height used for rows that have not yet been
@@ -400,7 +400,7 @@ public partial class VirtualizedDataGrid
         80d,
         validateValue: static (_, value) => (double)value > 0,
         propertyChanged: static (bindable, _, _) =>
-            ((VirtualizedDataGrid)bindable).RefreshRealizedRows());
+            ((VirtualizedDataGrid)bindable).OnRowMetricsChanged());
 
     /// <summary>
     /// Gets or sets the number of rows retained above and below the visible
