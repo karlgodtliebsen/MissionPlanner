@@ -1,21 +1,33 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<tabViews:TabViewLifecycleContent x:TypeArguments="tabs:StatusTabViewModel" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" x:Class="MissionPlanner.App.Views.FlightData.Tabs.StatusTabView" x:DataType="tabs:StatusTabViewModel">
-    <Grid Padding="12" RowDefinitions="Auto,*,100" RowSpacing="8">
-        <SearchBar Placeholder="Search promoted telemetry" Text="{Binding SearchText}" />
-        <CollectionView Grid.Row="1" ItemsSource="{Binding Items}">
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="tabs:StatusTelemetryItemViewModel">
-                    <Grid IsVisible="{Binding IsVisible}" Padding="5" ColumnDefinitions="120,180,120,70,100,*">
-                        <Label Text="{Binding Category}" />
-                        <Label Grid.Column="1" Text="{Binding Label}" />
-                        <Label Grid.Column="2" Text="{Binding Value}" />
-                        <Label Grid.Column="3" Text="{Binding Unit}" />
-                        <Label Grid.Column="4" Text="{Binding Freshness}" />
-                        <Label Grid.Column="5" Text="{Binding ObservedAt}" />
-                    </Grid>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-        <Editor Grid.Row="2" Text="{Binding ExportJson}" IsReadOnly="True" />
+<tabViews:TabViewLifecycleContent x:TypeArguments="tabs:StatusTabViewModel" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
+                                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+                                  xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs" 
+                                  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+                                  xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                                  x:Class="MissionPlanner.App.Views.FlightData.Tabs.StatusTabView" 
+                                  x:DataType="tabs:StatusTabViewModel">
+    <Grid Padding="12" RowDefinitions="400,*" RowSpacing="8" VerticalOptions="Fill" HorizontalOptions="Fill">
+
+        <controls:VirtualizedDataGrid 
+                                        ItemsSource="{Binding Items}" 
+                                        
+                                        ItemSizingStrategy= "MeasureFirstItem"
+                                        MinimumStarColumnWidth="60"
+                                        FilterMemberPaths="Label,Value,Unit"
+                                        ShowSearchBar="True"
+
+                                        HorizontalOptions="Fill"  
+                                        VerticalOptions="Fill"
+        >
+            <controls:VirtualizedDataGrid.Columns>
+                <material:DataGridColumn Width="2*" x:DataType="tabs:StatusTelemetryItemViewModel" IsVisible="{Binding IsVisible}"  ValueBinding="{Binding Category}" Title="Category" />
+                <material:DataGridColumn Width="3*" x:DataType="tabs:StatusTelemetryItemViewModel" IsVisible="{Binding IsVisible}"  ValueBinding="{Binding Value}" Title="Value" />
+                <material:DataGridColumn Width="*" x:DataType="tabs:StatusTelemetryItemViewModel"  IsVisible="{Binding IsVisible}"  ValueBinding="{Binding Unit}" Title="Unit" />
+                <material:DataGridColumn Width="2*" x:DataType="tabs:StatusTelemetryItemViewModel" IsVisible="{Binding IsVisible}"  ValueBinding="{Binding Freshness}" Title="Freshness" />
+                <material:DataGridColumn Width="2*" x:DataType="tabs:StatusTelemetryItemViewModel" IsVisible="{Binding IsVisible}"  ValueBinding="{Binding ObservedAt}" Title="Observed At" />
+            </controls:VirtualizedDataGrid.Columns>
+        </controls:VirtualizedDataGrid>
+        <Editor Grid.Row="1" Text="{Binding ExportJson}" IsReadOnly="True" />
     </Grid>
 </tabViews:TabViewLifecycleContent>

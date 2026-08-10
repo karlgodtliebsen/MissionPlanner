@@ -45,7 +45,6 @@
                         <Label Grid.Row="1" Text="Style" VerticalOptions="Center" />
                         <material:SelectField Grid.Row="1" Grid.Column="1" ItemsSource="{Binding MapStyles}" SelectedItem="{Binding SelectedMapStyle}" />
                         <Label Grid.Row="2" Text="Default zoom (1–22)" VerticalOptions="Center" />
-                        <!--<Entry Grid.Row="2" Grid.Column="1" Text="{Binding DefaultMapZoom}" Keyboard="Numeric" />-->
                         <controls:NumericField
                             Grid.Row="2"
                             Grid.Column="1"
@@ -126,7 +125,6 @@
                         <Label Text="Policy" VerticalOptions="Center" />
                         <material:SelectField Grid.Column="1" ItemsSource="{Binding ParameterCachePolicies}" SelectedItem="{Binding SelectedParameterCachePolicy}" />
                         <Label Grid.Row="1" Text="Maximum age (minutes)" VerticalOptions="Center" />
-                        <!--<Entry Grid.Row="1" Grid.Column="1" Text="{Binding ParameterCacheMaximumAgeMinutes}" Keyboard="Numeric" />-->
                         <controls:NumericField
                             Grid.Row="1" Grid.Column="1" 
                             Value="{Binding ParameterCacheMaximumAgeMinutes, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
@@ -169,8 +167,6 @@
                         <Label Text="Logging level" VerticalOptions="Center" />
                         <material:SelectField Grid.Column="1" ItemsSource="{Binding LoggingLevels}" SelectedItem="{Binding SelectedLoggingLevel}" />
                         <Label Grid.Row="1" Text="Log retention (days)" VerticalOptions="Center" />
-                        <!--<Entry Grid.Row="1" Grid.Column="1" Text="{Binding LogRetentionDays}" Keyboard="Numeric" />-->
-
                         <controls:NumericField
                             Grid.Row="1" Grid.Column="1" 
                             Value="{Binding LogRetentionDays, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
@@ -180,7 +176,6 @@
                         <Label Grid.Row="2" Text="Automatic update checks" VerticalOptions="Center" />
                         <Switch Grid.Row="2" Grid.Column="1" IsToggled="{Binding CheckUpdatesAutomatically}" HorizontalOptions="Start" />
                         <Label Grid.Row="3" Text="Check interval (days)" VerticalOptions="Center" />
-                        <!--<Entry Grid.Row="3" Grid.Column="1" Text="{Binding UpdateCheckIntervalDays}" Keyboard="Numeric" />-->
                         <controls:NumericField
                             Grid.Row="3" Grid.Column="1"
                             Value="{Binding UpdateCheckIntervalDays, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
@@ -209,7 +204,6 @@
                         <Label Grid.Row="1" Text="Reduce telemetry motion" VerticalOptions="Center" />
                         <Switch Grid.Row="1" Grid.Column="1" IsToggled="{Binding ReduceMotion}" />
                         <Label Grid.Row="2" Text="Text scale (0.8–2.0)" VerticalOptions="Center" />
-                        <!--<Entry Grid.Row="2" Grid.Column="1" WidthRequest="140" Text="{Binding TextScale}" Keyboard="Numeric" />-->
                         <controls:NumericField
                             Grid.Row="2" Grid.Column="1" 
                             WidthRequest="140"
@@ -251,7 +245,6 @@
                     <Label Text="Requested MAVLink stream rates in hertz. A value of zero disables the stream request." FontSize="12" />
                     <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="8">
                         <Label Text="Attitude" />
-                        <!--<Entry Grid.Column="1" Text="{Binding AttitudeRateHz}" Keyboard="Numeric" />-->
                         <controls:NumericField
                             Grid.Column="1" 
                             WidthRequest="140"
@@ -260,7 +253,6 @@
                             HorizontalOptions="Fill"
                             HorizontalTextAlignment="End" />
                         <Label Grid.Row="1" Text="Position" />
-                        <!--<Entry Grid.Row="1" Grid.Column="1" Text="{Binding PositionRateHz}" Keyboard="Numeric" />-->
                         <controls:NumericField
                             Grid.Row="1" Grid.Column="1" 
                             WidthRequest="140"
@@ -269,7 +261,6 @@
                             HorizontalOptions="Fill"
                             HorizontalTextAlignment="End" />
                         <Label Grid.Row="2" Text="Mode / status" />
-                        <!--<Entry Grid.Row="2" Grid.Column="1" Text="{Binding StatusRateHz}" Keyboard="Numeric" />-->
                         <controls:NumericField
                             Grid.Row="2" Grid.Column="1" 
                             WidthRequest="140"
@@ -278,7 +269,6 @@
                             HorizontalOptions="Fill"
                             HorizontalTextAlignment="End" />
                         <Label Grid.Row="3" Text="RC" />
-                        <!--<Entry Grid.Row="3" Grid.Column="1" Text="{Binding RcRateHz}" Keyboard="Numeric" />-->
                         <controls:NumericField
                             Grid.Row="3" Grid.Column="1" 
                             WidthRequest="140"
@@ -287,7 +277,6 @@
                             HorizontalOptions="Fill"
                             HorizontalTextAlignment="End" />
                         <Label Grid.Row="4" Text="Sensors" />
-                        <!--<Entry Grid.Row="4" Grid.Column="1" Text="{Binding SensorRateHz}" Keyboard="Numeric" />-->
                         <controls:NumericField
                             Grid.Row="4" Grid.Column="1" 
                             WidthRequest="140"
@@ -310,7 +299,6 @@
                         <Label Grid.Row="4" Text="No RC receiver" /><Switch Grid.Row="4" Grid.Column="1" IsToggled="{Binding NoRcReceiver}" />
                         <Label Grid.Row="5" Text="Slow computer mode" /><Switch Grid.Row="5" Grid.Column="1" IsToggled="{Binding SlowComputerMode}" />
                         <Label Grid.Row="6" Text="GCS system ID (0–255)" />
-                        <!--<Entry Grid.Row="6" Grid.Column="1" WidthRequest="140" Text="{Binding GcsSystemId}" Keyboard="Numeric" />-->
                         <controls:NumericField
                             Grid.Row="6" Grid.Column="1" 
                             Value="{Binding GcsSystemId, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
