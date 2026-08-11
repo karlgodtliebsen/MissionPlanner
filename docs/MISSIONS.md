@@ -359,6 +359,15 @@ terrain-relative altitude. Download, upload, and vehicle clear use the generic t
 transfer under the vehicle operation gate, with explicit conflict/destructive confirmations.
 Versioned `.mprally` JSON is offline/local until the operator uploads it.
 
+### Automatic waypoint generation
+
+Circle generators use spherical destination calculations at every bearing, including high
+latitudes, and support direction, point count, start altitude, and deterministic spline helical
+altitude progression. Text routes use an embedded cross-platform single-line stroke font rather
+than platform fonts or drawing APIs. Text is limited to 32 characters and every generator to 1000
+points. Candidate routes render as a preview and require Append or Replace before mission mutation;
+travel between disconnected glyph strokes is intentionally represented by ordinary route legs.
+
 ---
 
 ## Known gaps and next steps

@@ -74,6 +74,7 @@ public static class DomainConfigurator
         services.TryAddTransient<IAdvancedMissionItemService, AdvancedMissionItemService>();
         services.TryAddTransient<IPlanningPolygonService, PlanningPolygonService>();
         services.TryAddTransient<IGeospatialImportService, GeospatialImportService>();
+        services.TryAddSingleton<IAutoWaypointGenerator, AutoWaypointGenerator>();
         services.TryAddSingleton<IRallyProtocolMapper, RallyProtocolMapper>();
         services.TryAddSingleton<IRallyConfigurationService, RallyConfigurationService>();
         services.TryAddSingleton<IRallyPlanFileCodec, RallyPlanFileCodec>();

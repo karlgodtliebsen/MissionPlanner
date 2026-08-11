@@ -74,10 +74,10 @@
                     </MenuFlyoutSubItem>
 
                     <MenuFlyoutSubItem Text="Auto WP">
-                        <MenuFlyoutItem Text="Create WP Circle" Command="{Binding NotImplementedCommand}" CommandParameter="Create WP Circle" />
-                        <MenuFlyoutItem Text="Create Spline Circle" Command="{Binding NotImplementedCommand}" CommandParameter="Create Spline Circle" />
-                        <MenuFlyoutItem Text="Area" Command="{Binding NotImplementedCommand}" CommandParameter="Auto WP Area" />
-                        <MenuFlyoutItem Text="Text" Command="{Binding NotImplementedCommand}" CommandParameter="Auto WP Text" />
+                        <MenuFlyoutItem Text="Create WP Circle" Command="{Binding CreateWaypointCircleCommand}" />
+                        <MenuFlyoutItem Text="Create Spline Circle" Command="{Binding CreateSplineCircleCommand}" />
+                        <MenuFlyoutItem Text="Area" Command="{Binding AutoWaypointAreaCommand}" />
+                        <MenuFlyoutItem Text="Text" Command="{Binding AutoWaypointTextCommand}" />
                         <MenuFlyoutItem Text="Create Circle Survey" Command="{Binding NotImplementedCommand}" CommandParameter="Create Circle Survey" />
                         <MenuFlyoutItem Text="Survey (Grid)" Command="{Binding NotImplementedCommand}" CommandParameter="Survey (Grid)" />
                     </MenuFlyoutSubItem>

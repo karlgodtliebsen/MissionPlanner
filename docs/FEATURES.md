@@ -891,6 +891,8 @@ Completed
   destructive or lossy behavior.
 * Rally points have a separate active-vehicle aggregate, typed `MAV_MISSION_TYPE_RALLY` mapper,
   local/vehicle revisions, safe transfer commands, map overlay, and versioned offline files.
+* Auto-WP supports geodesic normal/spline circles, deterministic helical altitude progression,
+  polygon area delegation, and bounded cross-platform stroke-text routes with previewed merges.
 
 * A deterministic inventory resolves the pinned official `ardupilotmega` dialect and its
   transitive includes without network access during normal builds or tests.

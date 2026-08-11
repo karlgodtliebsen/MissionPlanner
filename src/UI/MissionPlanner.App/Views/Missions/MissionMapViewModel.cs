@@ -56,6 +56,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     private readonly IFencePlanFileCodec fenceFileCodec;
     private readonly IRallyConfigurationService rallyService;
     private readonly IRallyPlanFileCodec rallyFileCodec;
+    private readonly IAutoWaypointGenerator autoWaypointGenerator;
+    private IReadOnlyList<GeoPosition> generatedPreview = [];
     private MissionAltitude pendingRallyAltitude;
     private IReadOnlyList<ImportedPlanningOverlay> importedOverlays = [];
     private IDisposable? stateSubscription;
@@ -73,7 +75,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         IPlanningPolygonService polygonService, IFileOpenService fileOpenService, IFileSaveService fileSaveService,
         IUserChoiceService choiceService, IGeospatialImportService geospatialImportService,
         IFenceConfigurationService fenceService, IFencePlanFileCodec fenceFileCodec,
-        IRallyConfigurationService rallyService, IRallyPlanFileCodec rallyFileCodec)
+        IRallyConfigurationService rallyService, IRallyPlanFileCodec rallyFileCodec,
+        IAutoWaypointGenerator autoWaypointGenerator)
     {
         this.activeVehicle = activeVehicle;
         this.fileCodec = fileCodec;
@@ -96,6 +99,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         this.fenceFileCodec = fenceFileCodec;
         this.rallyService = rallyService;
         this.rallyFileCodec = rallyFileCodec;
+        this.autoWaypointGenerator = autoWaypointGenerator;
         pendingRallyAltitude = DefaultAltitude();
         polygonService.Changed += OnPolygonChanged;
         interactionService.Changed += OnInteractionChanged;
@@ -540,7 +544,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         var fence = activeVehicle.VehicleId is { } vehicleId ? FenceOutline(fenceService.GetSnapshot(vehicleId).LocalPlan) : [];
         var rally = activeVehicle.VehicleId is { } rallyVehicleId
             ? rallyService.GetSnapshot(rallyVehicleId).LocalPlan.Points.Select(point => point.Position).ToArray() : [];
-        PlanningOverlaySnapshot = overlay with { DrawnPolygon = vertices, FencePreview = fence, RallyPoints = rally, ImportedOverlays = importedOverlays };
+        PlanningOverlaySnapshot = overlay with { DrawnPolygon = vertices, FencePreview = fence, RallyPoints = rally,
+            ImportedOverlays = importedOverlays, SurveyPreview = generatedPreview };
     }
 
     /// <summary>Replaces the mission being edited (e.g. after downloading from a vehicle).</summary>
@@ -952,6 +957,58 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         using var reader = new StreamReader(file.Content, Encoding.UTF8, true, leaveOpen: true);
         try { rallyService.SetLocalPlan(vehicleId, rallyFileCodec.Deserialize(await reader.ReadToEndAsync(cancellationToken))); ShowStatus("Rally points loaded locally; upload to apply them."); }
         catch (InvalidDataException exception) { ShowStatus(exception.Message); }
+    }
+
+    [RelayCommand]
+    private async Task CreateWaypointCircleAsync(CancellationToken cancellationToken) => await CreateCircleAsync(false, cancellationToken);
+
+    [RelayCommand]
+    private async Task CreateSplineCircleAsync(CancellationToken cancellationToken) => await CreateCircleAsync(true, cancellationToken);
+
+    private async Task CreateCircleAsync(bool spline, CancellationToken cancellationToken)
+    {
+        if (TargetPosition() is not { } center) { ShowStatus("Select a map position for the circle center."); return; }
+        var radiusText = await promptService.PromptAsync("Generate circle", "Radius in metres", "100", cancellationToken);
+        var countText = await promptService.PromptAsync("Generate circle", "Number of points (3-1000)", "12", cancellationToken);
+        if (!double.TryParse(radiusText, NumberStyles.Float, CultureInfo.CurrentCulture, out var radius)
+            || !int.TryParse(countText, NumberStyles.Integer, CultureInfo.CurrentCulture, out var count)) { ShowStatus("Enter a valid radius and point count."); return; }
+        var direction = await choiceService.ChooseAsync("Circle direction", ["Clockwise", "Counter-clockwise"], cancellationToken);
+        if (direction is null) return;
+        double? endAltitude = null;
+        if (spline)
+        {
+            var endText = await promptService.PromptAsync("Spline circle", "End altitude in metres (for deterministic helical climb)", DefaultAltitudeMeters.ToString("F0", CultureInfo.CurrentCulture), cancellationToken);
+            if (!double.TryParse(endText, NumberStyles.Float, CultureInfo.CurrentCulture, out var parsed)) return;
+            endAltitude = parsed;
+        }
+        await PreviewAndApplyGeneratedAsync(autoWaypointGenerator.GenerateCircle(new(center, radius, count, direction == "Clockwise", 0,
+            DefaultAltitude(), endAltitude, spline, false)), cancellationToken);
+    }
+
+    [RelayCommand]
+    private void AutoWaypointArea() => ShowPolygonArea();
+
+    [RelayCommand]
+    private async Task AutoWaypointTextAsync(CancellationToken cancellationToken)
+    {
+        if (TargetPosition() is not { } origin) { ShowStatus("Select a map position for the text origin."); return; }
+        var text = await promptService.PromptAsync("Waypoint text", "Text (supported stroke-font letters/digits, maximum 32)", "HOME", cancellationToken);
+        var heightText = await promptService.PromptAsync("Waypoint text", "Character height in metres", "50", cancellationToken);
+        if (text is null || !double.TryParse(heightText, NumberStyles.Float, CultureInfo.CurrentCulture, out var height)) return;
+        await PreviewAndApplyGeneratedAsync(autoWaypointGenerator.GenerateText(new(text, origin, height, 0, .3, DefaultAltitude())), cancellationToken);
+    }
+
+    private async Task PreviewAndApplyGeneratedAsync(AutoWaypointGenerationResult result, CancellationToken cancellationToken)
+    {
+        if (!result.Succeeded) { ShowStatus(result.Message); return; }
+        generatedPreview = result.PreviewPositions; UpdatePlanningOverlay();
+        var choice = await choiceService.ChooseAsync($"Preview: {result.Items.Count} generated mission items", ["Append to mission", "Replace mission"], cancellationToken);
+        if (choice is not ("Append to mission" or "Replace mission")) { generatedPreview = []; UpdatePlanningOverlay(); return; }
+        var target = choice == "Replace mission" ? new Mission(MissionId.New(), "Generated mission") : Mission;
+        foreach (var item in result.Items) target.Add(item);
+        generatedPreview = []; UpdatePlanningOverlay();
+        if (ReferenceEquals(target, Mission)) OnMissionChanged($"Appended {result.Items.Count} generated mission items.");
+        else ReplaceMission(target, $"Mission replaced with {result.Items.Count} generated mission items.");
     }
 
     [RelayCommand]
