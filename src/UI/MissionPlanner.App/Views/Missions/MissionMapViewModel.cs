@@ -15,6 +15,7 @@ using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Files;
 using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Missions.Planning;
+using MissionPlanner.Core.Missions.Rally;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -53,6 +54,9 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     private readonly IGeospatialImportService geospatialImportService;
     private readonly IFenceConfigurationService fenceService;
     private readonly IFencePlanFileCodec fenceFileCodec;
+    private readonly IRallyConfigurationService rallyService;
+    private readonly IRallyPlanFileCodec rallyFileCodec;
+    private MissionAltitude pendingRallyAltitude;
     private IReadOnlyList<ImportedPlanningOverlay> importedOverlays = [];
     private IDisposable? stateSubscription;
     private bool disposed;
@@ -68,7 +72,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         IUserPromptService promptService, IUserConfirmationService confirmationService,
         IPlanningPolygonService polygonService, IFileOpenService fileOpenService, IFileSaveService fileSaveService,
         IUserChoiceService choiceService, IGeospatialImportService geospatialImportService,
-        IFenceConfigurationService fenceService, IFencePlanFileCodec fenceFileCodec)
+        IFenceConfigurationService fenceService, IFencePlanFileCodec fenceFileCodec,
+        IRallyConfigurationService rallyService, IRallyPlanFileCodec rallyFileCodec)
     {
         this.activeVehicle = activeVehicle;
         this.fileCodec = fileCodec;
@@ -89,9 +94,13 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         this.geospatialImportService = geospatialImportService;
         this.fenceService = fenceService;
         this.fenceFileCodec = fenceFileCodec;
+        this.rallyService = rallyService;
+        this.rallyFileCodec = rallyFileCodec;
+        pendingRallyAltitude = DefaultAltitude();
         polygonService.Changed += OnPolygonChanged;
         interactionService.Changed += OnInteractionChanged;
         fenceService.Changed += OnFenceChanged;
+        rallyService.Changed += OnRallyChanged;
         SelectedSourceId = settingsService.Current.Map.SelectedSourceId;
         MapSnapshot = MissionMapProjection.Create(Mission, HomePosition);
         SelectedMapStyle = "GEO";
@@ -137,6 +146,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         interactionService.Changed -= OnInteractionChanged;
         polygonService.Changed -= OnPolygonChanged;
         fenceService.Changed -= OnFenceChanged;
+        rallyService.Changed -= OnRallyChanged;
         disposed = true;
     }
 
@@ -479,6 +489,14 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
                 interactionService.Complete();
                 ShowStatus("Fence return location updated locally; upload to apply it.");
             }
+            else if (interactionMode == MissionMapInteractionMode.SetRallyPoint && activeVehicle.VehicleId is { } rallyVehicleId)
+            {
+                var snapshot = rallyService.GetSnapshot(rallyVehicleId);
+                var point = new RallyPoint(RallyPointId.New(), position, pendingRallyAltitude);
+                rallyService.SetLocalPlan(rallyVehicleId, new RallyPlan(snapshot.LocalPlan.Points.Append(point).ToArray()));
+                interactionService.Complete();
+                ShowStatus("Rally point added locally; upload to apply it.");
+            }
             return;
         }
 
@@ -511,6 +529,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
 
     private void OnPolygonChanged(object? sender, EventArgs args) => dispatcher.Dispatch(UpdatePlanningOverlay);
     private void OnFenceChanged(object? sender, EventArgs args) => dispatcher.Dispatch(UpdatePlanningOverlay);
+    private void OnRallyChanged(object? sender, EventArgs args) => dispatcher.Dispatch(UpdatePlanningOverlay);
 
     private void UpdatePlanningOverlay()
     {
@@ -519,7 +538,9 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
             ? overlay.DrawnPolygon
             : polygonService.Snapshot.Polygon?.Vertices ?? [];
         var fence = activeVehicle.VehicleId is { } vehicleId ? FenceOutline(fenceService.GetSnapshot(vehicleId).LocalPlan) : [];
-        PlanningOverlaySnapshot = overlay with { DrawnPolygon = vertices, FencePreview = fence, ImportedOverlays = importedOverlays };
+        var rally = activeVehicle.VehicleId is { } rallyVehicleId
+            ? rallyService.GetSnapshot(rallyVehicleId).LocalPlan.Points.Select(point => point.Position).ToArray() : [];
+        PlanningOverlaySnapshot = overlay with { DrawnPolygon = vertices, FencePreview = fence, RallyPoints = rally, ImportedOverlays = importedOverlays };
     }
 
     /// <summary>Replaces the mission being edited (e.g. after downloading from a vehicle).</summary>
@@ -872,6 +893,65 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
             var longitude = center.LongitudeDegrees + area.RadiusMeters * Math.Sin(angle) / (earthRadius * Math.Cos(center.LatitudeDegrees * Math.PI / 180d)) * 180d / Math.PI;
             return new GeoPosition(latitude, longitude);
         }).ToArray();
+    }
+
+    [RelayCommand]
+    private async Task SetRallyPointAsync(CancellationToken cancellationToken)
+    {
+        var altitudeText = await promptService.PromptAsync("Set rally point", "Altitude in metres", DefaultAltitudeMeters.ToString("F0", CultureInfo.CurrentCulture), cancellationToken);
+        if (!double.TryParse(altitudeText, NumberStyles.Float, CultureInfo.CurrentCulture, out var altitude)) { if (altitudeText is not null) ShowStatus("Enter a valid rally altitude."); return; }
+        var reference = await choiceService.ChooseAsync("Rally altitude reference", ["Relative to home", "Mean sea level", "Terrain"], cancellationToken);
+        if (reference is null) return;
+        pendingRallyAltitude = new MissionAltitude(altitude, reference switch { "Mean sea level" => MissionAltitudeReference.MeanSeaLevel, "Terrain" => MissionAltitudeReference.Terrain, _ => MissionAltitudeReference.Home });
+        BeginInteraction(MissionMapInteractionMode.SetRallyPoint, "Click the map to add the local rally point.");
+    }
+
+    [RelayCommand]
+    private async Task DownloadRallyAsync(CancellationToken cancellationToken)
+    {
+        if (activeVehicle.VehicleId is not { } vehicleId) { ShowStatus("Connect a vehicle first."); return; }
+        var snapshot = rallyService.GetSnapshot(vehicleId);
+        if (snapshot.IsDirty && !await confirmationService.ConfirmAsync("Replace local rally points", "Downloading replaces local rally edits.", "Download", cancellationToken)) return;
+        ShowStatus((await rallyService.DownloadAsync(vehicleId, true, cancellationToken)).Message);
+    }
+
+    [RelayCommand]
+    private async Task UploadRallyAsync(CancellationToken cancellationToken)
+    {
+        if (activeVehicle.VehicleId is not { } vehicleId) { ShowStatus("Connect a vehicle first."); return; }
+        var count = rallyService.GetSnapshot(vehicleId).LocalPlan.Points.Count;
+        if (await confirmationService.ConfirmAsync("Replace vehicle rally points", $"Upload {count} local rally points as a separate MAVLink rally plan?", "Upload", cancellationToken))
+            ShowStatus((await rallyService.UploadAsync(vehicleId, cancellationToken)).Message);
+    }
+
+    [RelayCommand]
+    private async Task ClearRallyAsync(CancellationToken cancellationToken)
+    {
+        if (activeVehicle.VehicleId is not { } vehicleId) { ShowStatus("Select a vehicle workspace first."); return; }
+        var choice = await choiceService.ChooseAsync("Clear rally points", ["Clear local plan only", "Clear vehicle rally points"], cancellationToken);
+        if (choice == "Clear local plan only") { rallyService.SetLocalPlan(vehicleId, RallyPlan.Empty); ShowStatus("Local rally points cleared; vehicle unchanged."); }
+        else if (choice == "Clear vehicle rally points" && await confirmationService.ConfirmAsync("Clear vehicle rally points", "This removes all rally points from the vehicle.", "Clear vehicle", cancellationToken))
+            ShowStatus((await rallyService.ClearVehicleAsync(vehicleId, cancellationToken)).Message);
+    }
+
+    [RelayCommand]
+    private async Task SaveRallyAsync(CancellationToken cancellationToken)
+    {
+        if (activeVehicle.VehicleId is not { } vehicleId) { ShowStatus("Select a vehicle workspace first."); return; }
+        await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(rallyFileCodec.Serialize(rallyService.GetSnapshot(vehicleId).LocalPlan, dateTimeProvider.UtcNow)));
+        var path = await fileSaveService.SaveAsync("rally-points.mprally", stream, cancellationToken);
+        ShowStatus(path is null ? "Rally save cancelled." : $"Rally points saved to {path}.");
+    }
+
+    [RelayCommand]
+    private async Task LoadRallyAsync(CancellationToken cancellationToken)
+    {
+        if (activeVehicle.VehicleId is not { } vehicleId) { ShowStatus("Select a vehicle workspace first."); return; }
+        using var file = await fileOpenService.OpenAsync("Open MissionPlanner rally plan", cancellationToken: cancellationToken);
+        if (file is null) return;
+        using var reader = new StreamReader(file.Content, Encoding.UTF8, true, leaveOpen: true);
+        try { rallyService.SetLocalPlan(vehicleId, rallyFileCodec.Deserialize(await reader.ReadToEndAsync(cancellationToken))); ShowStatus("Rally points loaded locally; upload to apply them."); }
+        catch (InvalidDataException exception) { ShowStatus(exception.Message); }
     }
 
     [RelayCommand]

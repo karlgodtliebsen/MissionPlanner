@@ -65,12 +65,12 @@
                     </MenuFlyoutSubItem>
 
                     <MenuFlyoutSubItem Text="Rally Points">
-                        <MenuFlyoutItem Text="Set Rally Point" Command="{Binding NotImplementedCommand}" CommandParameter="Set Rally Point" />
-                        <MenuFlyoutItem Text="Download" Command="{Binding NotImplementedCommand}" CommandParameter="Rally Points Download" />
-                        <MenuFlyoutItem Text="Upload" Command="{Binding NotImplementedCommand}" CommandParameter="Rally Points Upload" />
-                        <MenuFlyoutItem Text="Clear Rally Points" Command="{Binding NotImplementedCommand}" CommandParameter="Clear Rally Points" />
-                        <MenuFlyoutItem Text="Save Rally to File" Command="{Binding NotImplementedCommand}" CommandParameter="Save Rally to File" />
-                        <MenuFlyoutItem Text="Load Rally from File" Command="{Binding NotImplementedCommand}" CommandParameter="Load Rally from File" />
+                        <MenuFlyoutItem Text="Set Rally Point" Command="{Binding SetRallyPointCommand}" />
+                        <MenuFlyoutItem Text="Download" Command="{Binding DownloadRallyCommand}" />
+                        <MenuFlyoutItem Text="Upload" Command="{Binding UploadRallyCommand}" />
+                        <MenuFlyoutItem Text="Clear Local or Vehicle…" Command="{Binding ClearRallyCommand}" />
+                        <MenuFlyoutItem Text="Save Rally to File" Command="{Binding SaveRallyCommand}" />
+                        <MenuFlyoutItem Text="Load Rally from File" Command="{Binding LoadRallyCommand}" />
                     </MenuFlyoutSubItem>
 
                     <MenuFlyoutSubItem Text="Auto WP">

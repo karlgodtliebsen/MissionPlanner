@@ -889,6 +889,8 @@ Completed
 * Mission Map Geo-Fence commands share Config/Tuning's active-vehicle fence workspace and existing
   validated MAVLink fence transfer. Local/vehicle clear choices and versioned full-plan files avoid
   destructive or lossy behavior.
+* Rally points have a separate active-vehicle aggregate, typed `MAV_MISSION_TYPE_RALLY` mapper,
+  local/vehicle revisions, safe transfer commands, map overlay, and versioned offline files.
 
 * A deterministic inventory resolves the pinned official `ardupilotmega` dialect and its
   transitive includes without network access during normal builds or tests.

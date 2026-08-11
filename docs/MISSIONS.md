@@ -350,6 +350,15 @@ are transformed to WGS84; unknown CRS definitions are rejected. A missing PRJ re
 WGS84 confirmation in the UI. DBF companion discovery is bounded; richer DBF attribute/Z mapping
 remains a documented compatibility limitation.
 
+### Rally points
+
+Rally points use their own `RallyPlan` aggregate and `MAV_MISSION_TYPE_RALLY`; they are never added
+to the normal flight mission. Each active vehicle has shared local and synchronized revisions with
+dirty state. Map clicks create local points with an explicitly selected Global, home-relative, or
+terrain-relative altitude. Download, upload, and vehicle clear use the generic typed mission
+transfer under the vehicle operation gate, with explicit conflict/destructive confirmations.
+Versioned `.mprally` JSON is offline/local until the operator uploads it.
+
 ---
 
 ## Known gaps and next steps

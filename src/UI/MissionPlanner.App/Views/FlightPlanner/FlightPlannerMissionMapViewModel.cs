@@ -5,6 +5,7 @@ using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.ConfigTuning.Fences;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Planning;
+using MissionPlanner.Core.Missions.Rally;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
@@ -23,10 +24,11 @@ public partial class FlightPlannerMissionMapViewModel : MissionMapViewModel
         IUserPromptService promptService, IUserConfirmationService confirmationService,
         IPlanningPolygonService polygonService, IFileOpenService fileOpenService, IFileSaveService fileSaveService,
         IUserChoiceService choiceService, IGeospatialImportService geospatialImportService,
-        IFenceConfigurationService fenceService, IFencePlanFileCodec fenceFileCodec)
+        IFenceConfigurationService fenceService, IFencePlanFileCodec fenceFileCodec,
+        IRallyConfigurationService rallyService, IRallyPlanFileCodec rallyFileCodec)
         : base(activeVehicle, protocolMapper, fileSaver, settingsService, fileCodec, domainEventHub, dispatcher, dateTimeProvider, logger,
             interactionService, advancedMissionItems, promptService, confirmationService, polygonService, fileOpenService, fileSaveService,
-            choiceService, geospatialImportService, fenceService, fenceFileCodec)
+            choiceService, geospatialImportService, fenceService, fenceFileCodec, rallyService, rallyFileCodec)
     {
     }
 }
