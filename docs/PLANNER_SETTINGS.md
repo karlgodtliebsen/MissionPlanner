@@ -54,6 +54,8 @@ Map credentials follow the same rule. `PlannerMapSecretStoreAdapter` delegates m
 
 Custom map source definitions are non-secret Planner application data stored in a separate atomic JSON document. They may contain endpoint templates, source type, zoom limits, WMS/WMTS identifiers, attribution, cache preference, and only the declared credential type. Actual API keys, tokens, passwords, and credential-bearing URLs are rejected from this document and remain exclusively in secure storage. Removing the currently selected custom source selects the OpenStreetMap fallback.
 
+Optional Stadia, Thunderforest, and MapTiler sources appear disabled until the corresponding secure credential is configured. The settings presentation may show configured/not-configured state, reviewed policy/cache summary, attribution preview, and redacted last test result; it must never bind to or export the secret value.
+
 ## Live and restart-bound behavior
 
 Saved settings raise one observable change event containing previous/current immutable

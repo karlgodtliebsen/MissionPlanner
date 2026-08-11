@@ -55,3 +55,17 @@ Users can configure raster XYZ/TMS, WMS, and WMTS services without code changes;
 Validation requires absolute HTTP(S) endpoints, XYZ/TMS `{z}/{x}/{y}` placeholders, valid zooms, service-specific identifiers, and attribution. Plain HTTP produces a prominent warning. WMS/WMTS test-connection calls are bounded and cancellable, parse capabilities metadata, confirm the configured layer, redact failures, and record a presentation-ready status. Deleting the selected custom source returns the safe `osm-standard` fallback before renderer switching.
 
 The `UserControlled` policy permits interactive rendering and an optional protocol-aware HTTP cache. It does not assert offline-pack, export, proxy, or redistribution rights; the operator remains responsible for source terms and attribution. Custom vector sources remain unavailable because ADR-0006 did not approve a vector renderer.
+
+## Optional hosted providers
+
+Stadia Outdoors, Thunderforest Outdoors, and MapTiler Streets are catalogued raster sources but remain unselectable until their API key is present in secure storage. Keys are injected only while constructing an HTTP request: Stadia uses its authorization header; Thunderforest and MapTiler use their documented query parameter. Catalog JSON and diagnostics never contain the values. All rendering requests use the common bounded HTTP client, and the standard attribution service shows provider and underlying OpenStreetMap/OpenMapTiles credits.
+
+Policies were reviewed on 2026-08-11 against official sources:
+
+| Provider | Enabled operations | Explicitly unavailable | Review source |
+| --- | --- | --- | --- |
+| Stadia Maps | Interactive hosted use; HTTP-compliant local cache | General region downloader, proxy, redistributable pack, export. Limited mobile offline caching is not exposed because its subscription/device/100 MB conditions are not modeled. | [Stadia raster/authentication](https://docs.stadiamaps.com/raster/), [limited mobile offline guidance](https://docs.stadiamaps.com/tutorials/offline-maps-with-flutter-maplibre-gl/) |
+| Thunderforest | Interactive hosted use; on-device cache/retention | Generic bulk prefetch, caching proxy, redistribution, pack export | [Thunderforest terms](https://www.thunderforest.com/terms/), [tile API](https://www.thunderforest.com/docs/tile-numbering/) |
+| MapTiler Cloud | Interactive hosted use; temporary single-user cache following HTTP headers | Bulk tile download, export, proxy, redistribution without a custom agreement | [MapTiler Cloud terms](https://www.maptiler.com/terms/cloud/), [cache-header guidance](https://docs.maptiler.com/guides/maps-apis/maps-platform/how-are-the-tile-requests-cached-in-web-browser/) |
+
+Settings can present each source's credential state, attribution, and effective policy summary. Provider failures are categorized as missing credentials, authorization (401/403), rate/quota limit (429), network, or unexpected provider response, with secret-bearing transport details excluded.

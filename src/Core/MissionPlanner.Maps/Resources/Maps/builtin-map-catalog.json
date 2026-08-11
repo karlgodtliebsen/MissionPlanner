@@ -50,6 +50,24 @@
       "allowExport": false, "allowPrinting": false, "requiresVisibleAttribution": true
     },
     {
+      "id": "stadia-hosted-v1", "termsUri": "https://stadiamaps.com/terms/", "reviewedOn": "2026-08-11",
+      "reviewNotes": "Hosted interactive use and HTTP-compliant cache are enabled. General region downloads, proxying, and redistributable packs are not enabled; limited mobile offline terms require a separately modeled account/device flow.",
+      "allowInteractiveUse": true, "allowOfflineCache": true, "allowPackDownload": false,
+      "allowExport": false, "allowPrinting": false, "requiresVisibleAttribution": true
+    },
+    {
+      "id": "thunderforest-hosted-v1", "termsUri": "https://www.thunderforest.com/terms/", "reviewedOn": "2026-08-11",
+      "reviewNotes": "Hosted use and on-device cache are enabled. Generic bulk prefetch, caching proxies, and redistribution are not enabled.",
+      "allowInteractiveUse": true, "allowOfflineCache": true, "allowPackDownload": false,
+      "allowExport": false, "allowPrinting": false, "requiresVisibleAttribution": true
+    },
+    {
+      "id": "maptiler-cloud-v1", "termsUri": "https://www.maptiler.com/terms/cloud/", "reviewedOn": "2026-08-11",
+      "reviewNotes": "Interactive hosted use and temporary per-user HTTP cache are enabled. Bulk download, export, proxying, and redistribution require a separate contract.",
+      "allowInteractiveUse": true, "allowOfflineCache": true, "allowPackDownload": false,
+      "allowExport": false, "allowPrinting": false, "requiresVisibleAttribution": true
+    },
+    {
       "id": "future-review-required-v1", "reviewedOn": "2026-08-11",
       "reviewNotes": "Disabled candidate. Credentials, terms, attribution, and supported operations require review before enablement.",
       "allowInteractiveUse": false, "allowOfflineCache": false, "allowPackDownload": false,
@@ -59,6 +77,9 @@
   "attributions": [
     { "id": "osm", "text": "© OpenStreetMap contributors", "uri": "https://www.openstreetmap.org/copyright", "requiredOnMap": true, "requiredOnExport": true },
     { "id": "esri", "text": "Powered by Esri", "uri": "https://www.esri.com/", "requiredOnMap": true, "requiredOnExport": true },
+    { "id": "stadia", "text": "© Stadia Maps © OpenMapTiles © OpenStreetMap contributors", "uri": "https://stadiamaps.com/", "requiredOnMap": true, "requiredOnExport": true },
+    { "id": "thunderforest", "text": "Maps © Thunderforest, Data © OpenStreetMap contributors", "uri": "https://www.thunderforest.com/", "requiredOnMap": true, "requiredOnExport": true },
+    { "id": "maptiler", "text": "© MapTiler © OpenStreetMap contributors", "uri": "https://www.maptiler.com/", "requiredOnMap": true, "requiredOnExport": true },
     { "id": "provider-defined", "text": "Provider attribution required", "requiredOnMap": true, "requiredOnExport": true }
   ],
   "sources": [
@@ -119,25 +140,25 @@
       "isEnabledByDefault": false, "isFutureCandidate": true
     },
     {
-      "id": "stadia-template", "productId": "stadia-raster", "displayName": "Stadia Maps", "accessKind": "httpXyz",
-      "archiveFormat": "none", "contentFormat": "rasterPng", "uriTemplate": "https://tiles.stadiamaps.com/tiles/style/{z}/{x}/{y}.png", "minimumZoom": 0, "maximumZoom": 20,
-      "policyId": "future-review-required-v1", "attributionIds": ["provider-defined"], "credentialRequirement": "apiKey",
-      "capabilities": { "supportsInteractiveUse": false, "supportsOfflineCache": false, "supportsPackDownload": false, "supportsExport": false, "supportsPrinting": false },
-      "isEnabledByDefault": false, "isFutureCandidate": true
+      "id": "stadia-outdoors", "productId": "stadia-raster", "displayName": "Stadia Outdoors", "accessKind": "httpXyz",
+      "archiveFormat": "none", "contentFormat": "rasterPng", "uriTemplate": "https://tiles.stadiamaps.com/tiles/outdoors/{z}/{x}/{y}.png", "minimumZoom": 0, "maximumZoom": 20,
+      "policyId": "stadia-hosted-v1", "attributionIds": ["stadia"], "credentialRequirement": "apiKey",
+      "capabilities": { "supportsInteractiveUse": true, "supportsOfflineCache": true, "supportsPackDownload": false, "supportsExport": false, "supportsPrinting": false },
+      "isEnabledByDefault": false, "isFutureCandidate": false
     },
     {
-      "id": "thunderforest-template", "productId": "thunderforest-raster", "displayName": "Thunderforest", "accessKind": "httpXyz",
-      "archiveFormat": "none", "contentFormat": "rasterPng", "uriTemplate": "https://tile.thunderforest.com/style/{z}/{x}/{y}.png", "minimumZoom": 0, "maximumZoom": 22,
-      "policyId": "future-review-required-v1", "attributionIds": ["provider-defined"], "credentialRequirement": "apiKey",
-      "capabilities": { "supportsInteractiveUse": false, "supportsOfflineCache": false, "supportsPackDownload": false, "supportsExport": false, "supportsPrinting": false },
-      "isEnabledByDefault": false, "isFutureCandidate": true
+      "id": "thunderforest-outdoors", "productId": "thunderforest-raster", "displayName": "Thunderforest Outdoors", "accessKind": "httpXyz",
+      "archiveFormat": "none", "contentFormat": "rasterPng", "uriTemplate": "https://api.thunderforest.com/outdoors/{z}/{x}/{y}.png", "minimumZoom": 0, "maximumZoom": 22,
+      "policyId": "thunderforest-hosted-v1", "attributionIds": ["thunderforest", "osm"], "credentialRequirement": "apiKey",
+      "capabilities": { "supportsInteractiveUse": true, "supportsOfflineCache": true, "supportsPackDownload": false, "supportsExport": false, "supportsPrinting": false },
+      "isEnabledByDefault": false, "isFutureCandidate": false
     },
     {
-      "id": "maptiler-template", "productId": "maptiler-raster", "displayName": "MapTiler", "accessKind": "httpXyz",
-      "archiveFormat": "none", "contentFormat": "rasterPng", "uriTemplate": "https://api.maptiler.com/maps/style/{z}/{x}/{y}.png", "minimumZoom": 0, "maximumZoom": 22,
-      "policyId": "future-review-required-v1", "attributionIds": ["provider-defined"], "credentialRequirement": "apiKey",
-      "capabilities": { "supportsInteractiveUse": false, "supportsOfflineCache": false, "supportsPackDownload": false, "supportsExport": false, "supportsPrinting": false },
-      "isEnabledByDefault": false, "isFutureCandidate": true
+      "id": "maptiler-streets", "productId": "maptiler-raster", "displayName": "MapTiler Streets", "accessKind": "httpXyz",
+      "archiveFormat": "none", "contentFormat": "rasterPng", "uriTemplate": "https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png", "minimumZoom": 0, "maximumZoom": 22,
+      "policyId": "maptiler-cloud-v1", "attributionIds": ["maptiler", "osm"], "credentialRequirement": "apiKey",
+      "capabilities": { "supportsInteractiveUse": true, "supportsOfflineCache": true, "supportsPackDownload": false, "supportsExport": false, "supportsPrinting": false },
+      "isEnabledByDefault": false, "isFutureCandidate": false
     },
     {
       "id": "protomaps-pmtiles", "productId": "protomaps-basemap", "displayName": "Protomaps PMTiles", "accessKind": "localArchive",

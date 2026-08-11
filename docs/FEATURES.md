@@ -14,6 +14,8 @@ Production vector/PMTiles support is explicitly deferred by ADR-0006. The curren
 
 Custom map source APIs support add/edit/test/delete for raster XYZ/TMS and self-hosted WMS/WMTS, plus the existing local raster MBTiles pack path. Configuration validates templates and capabilities metadata, warns on HTTP, requires attribution, stores credentials separately, redacts diagnostics, uses a conservative user-controlled policy, and safely falls back when a selected source is deleted.
 
+Optional credential-gated raster sources now cover Stadia Outdoors, Thunderforest Outdoors, and MapTiler Streets. Their catalog metadata records reviewed policy dates and official endpoints, attribution and HTTP-cache rules; bulk prefetch, pack export, proxying, and redistribution remain denied. Request failures distinguish missing credentials, authorization, quota/rate limiting, network, and provider errors.
+
 
 
 ## MavLink
