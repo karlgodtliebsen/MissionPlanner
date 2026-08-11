@@ -10,6 +10,8 @@ The mission map now creates OpenStreetMap, all existing Esri choices, and No Map
 
 Offline map infrastructure supports user-imported raster MBTiles with versioned manifests, SHA-256/size/schema/payload validation, staged atomic installation, read-only access, inventory and removal guards, coverage/attribution/license metadata, and a Mapsui layer factory. Hosted providers are never scraped into packs, and vector MBTiles remains unsupported.
 
+Production vector/PMTiles support is explicitly deferred by ADR-0006. The current Mapsui vector path is experimental, archive conversion does not solve renderer/style requirements, and no supported alternative renderer currently spans all Mission Planner MAUI targets. Raster MBTiles remains the supported offline path.
+
 
 
 ## MavLink

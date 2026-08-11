@@ -143,6 +143,10 @@ Consequences:
 
 Map sources are represented by a validated, versioned catalog in the platform-neutral `MissionPlanner.Maps` project. Provider identity, products, access methods, policy, capabilities, attribution, and credential requirements are separate concepts. See [ADR-0005](adr/ADR-0005-map-source-architecture.md).
 
+## ADR-0006 - Defer vector/PMTiles
+
+Production vector/PMTiles support is deferred because the current Mapsui vector renderer is experimental and a supported MAUI alternative spanning Windows, Android, and Mac Catalyst is not established. Raster MBTiles remains the production offline path, and conditional Task 06 is not authorized. See [ADR-0006](adr/ADR-0006-defer-vector-pmtiles.md).
+
 ## Naming Conventions
 
 Transport

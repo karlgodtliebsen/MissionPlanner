@@ -43,3 +43,7 @@ Raster MBTiles is the first production offline format. Users may import archives
 Each pack has a manifest containing stable ID, version, display name, size, SHA-256, WGS84 bounds, zoom range, `EPSG:3857` projection, raster payload format, attribution, and license notice. Installation writes to an isolated staging directory, validates the manifest/hash/size and SQLite `metadata`/`tiles` schema plus a representative raster payload, then atomically renames to `Maps/Packs/<id>/<version>/`. Installed archives are opened read-only. A duplicate version is rejected, partial staging is removed on failure, and an active pack must be deselected before removal.
 
 `IOfflineMapPackRepository`, `IOfflineMapPackInstaller`, and `IOfflineMapPackValidator` provide list, find, install/import, verify, and remove APIs. `MapsuiMbTilesSourceFactory` exposes a validated installed pack as the same stable basemap layer used by the controller, so operation overlays remain independent and no network client is involved during tile reads.
+
+## Vector and PMTiles decision
+
+[ADR-0006](adr/ADR-0006-defer-vector-pmtiles.md) defers production vector/PMTiles support. PMTiles v3 archive access is feasible, but Mapsui's MVT renderer remains explicitly experimental and converting to vector MBTiles does not solve style/rendering compatibility. A separate MapLibre or WebView renderer would be a future migration with its own cross-platform lifecycle and overlay architecture. The disabled catalog candidate remains a placeholder only; conditional map Task 06 is not authorized.
