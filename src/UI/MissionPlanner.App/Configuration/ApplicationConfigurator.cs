@@ -114,6 +114,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<IMissionMapInteractionService, MissionMapInteractionService>();
         services.TryAddTransient<MauiMissionPlanningDialogService>();
         services.TryAddTransient<IUserPromptService>(services => services.GetRequiredService<MauiMissionPlanningDialogService>());
+        services.TryAddTransient<IMissionTerrainElevationProvider, MissionTerrainElevationProvider>();
         services.TryAddTransient<IUserChoiceService>(services => services.GetRequiredService<MauiMissionPlanningDialogService>());
         services.TryAddTransient<MauiMissionPlanningFileService>();
         services.TryAddTransient<IFileOpenService>(services => services.GetRequiredService<MauiMissionPlanningFileService>());

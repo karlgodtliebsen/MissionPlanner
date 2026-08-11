@@ -60,6 +60,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     private readonly IAutoWaypointGenerator autoWaypointGenerator;
     private readonly ISurveyMissionGenerator surveyMissionGenerator;
     private readonly IMapTilePrefetchService mapTilePrefetchService;
+    private readonly IMissionElevationProfileService elevationProfileService;
     private IReadOnlyList<GeoPosition> generatedPreview = [];
     private MissionAltitude pendingRallyAltitude;
     private IReadOnlyList<ImportedPlanningOverlay> importedOverlays = [];
@@ -80,7 +81,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         IFenceConfigurationService fenceService, IFencePlanFileCodec fenceFileCodec,
         IRallyConfigurationService rallyService, IRallyPlanFileCodec rallyFileCodec,
         IAutoWaypointGenerator autoWaypointGenerator, ISurveyMissionGenerator surveyMissionGenerator,
-        IMapTilePrefetchService mapTilePrefetchService)
+        IMapTilePrefetchService mapTilePrefetchService, IMissionElevationProfileService elevationProfileService)
     {
         this.activeVehicle = activeVehicle;
         this.fileCodec = fileCodec;
@@ -106,6 +107,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         this.autoWaypointGenerator = autoWaypointGenerator;
         this.surveyMissionGenerator = surveyMissionGenerator;
         this.mapTilePrefetchService = mapTilePrefetchService;
+        this.elevationProfileService = elevationProfileService;
         pendingRallyAltitude = DefaultAltitude();
         polygonService.Changed += OnPolygonChanged;
         interactionService.Changed += OnInteractionChanged;
@@ -369,6 +371,10 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     /// <summary>Gets the renderer-independent planning overlay state.</summary>
     [ObservableProperty]
     public partial MissionPlanningOverlaySnapshot PlanningOverlaySnapshot { get; private set; } = MissionPlanningOverlaySnapshot.Empty;
+    /// <summary>Gets the current generated elevation profile.</summary>
+    [ObservableProperty] public partial MissionElevationProfile? ElevationProfile { get; private set; }
+    /// <summary>Gets whether the elevation graph overlay is visible.</summary>
+    [ObservableProperty] public partial bool IsElevationProfileVisible { get; private set; }
 
     /// <summary>Gets the current planning interaction instruction.</summary>
     [ObservableProperty]
@@ -1098,6 +1104,20 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         var progress = new Progress<(int Completed, int Total)>(value => ShowStatus($"Prefetch: {value.Completed}/{value.Total}"));
         ShowStatus((await mapTilePrefetchService.PrefetchAsync(request, progress, cancellationToken)).Message);
     }
+
+    [RelayCommand]
+    private async Task ShowElevationGraphAsync(CancellationToken cancellationToken)
+    {
+        ShowStatus("Sampling mission terrain profile…");
+        ElevationProfile = await elevationProfileService.GenerateAsync(new(Mission, HomePosition, null), cancellationToken);
+        IsElevationProfileVisible = ElevationProfile.Samples.Count > 0;
+        ShowStatus(IsElevationProfileVisible
+            ? $"Elevation profile: {ElevationProfile.Samples.Count} samples, {ElevationProfile.UnavailableSamples} terrain gaps. Relative-to-home clearance requires home MSL altitude."
+            : "Add at least two geographic mission items to create an elevation profile.");
+    }
+
+    [RelayCommand]
+    private void CloseElevationGraph() => IsElevationProfileVisible = false;
 
     /// <summary>Calculates great-circle distance and initial bearing between two WGS84 positions.</summary>
     public static (double Distance, double Bearing) CalculateDistanceAndBearing(GeoPosition first, GeoPosition second)

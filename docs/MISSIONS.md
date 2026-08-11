@@ -384,6 +384,15 @@ initial bearing. Rotation is a session-only Mapsui viewport setting and is not m
 Visible-area and route-corridor prefetch use the central provider-policy and HTTP-cache pipeline;
 they never create or install offline map packs, and OSM Standard is explicitly denied.
 
+### Elevation profiles
+
+The Elevation Graph samples geographic navigation legs at a bounded interval through the existing
+SRTM terrain service and renders terrain and planned MSL lines in a lightweight MAUI `GraphicsView`.
+Missing tiles remain explicit graph gaps, never zero elevation. Global altitudes provide direct
+clearance; terrain-relative altitude uses sampled ground; home-relative altitude remains a relative
+profile unless a home MSL altitude is available. Samples retain cumulative distance, mission leg,
+sequence, reference, terrain status, and clearance when calculable.
+
 ---
 
 ## Known gaps and next steps

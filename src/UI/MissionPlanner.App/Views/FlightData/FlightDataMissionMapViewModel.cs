@@ -27,11 +27,12 @@ public partial class FlightDataMissionMapViewModel : MissionMapViewModel
         IUserChoiceService choiceService, IGeospatialImportService geospatialImportService,
         IFenceConfigurationService fenceService, IFencePlanFileCodec fenceFileCodec,
         IRallyConfigurationService rallyService, IRallyPlanFileCodec rallyFileCodec, IAutoWaypointGenerator autoWaypointGenerator,
-        ISurveyMissionGenerator surveyMissionGenerator, IMapTilePrefetchService mapTilePrefetchService)
+        ISurveyMissionGenerator surveyMissionGenerator, IMapTilePrefetchService mapTilePrefetchService,
+        IMissionElevationProfileService elevationProfileService)
         : base(activeVehicle, protocolMapper, fileSaver, settingsService, fileCodec, domainEventHub, dispatcher, dateTimeProvider, logger,
             interactionService, advancedMissionItems, promptService, confirmationService, polygonService, fileOpenService, fileSaveService,
             choiceService, geospatialImportService, fenceService, fenceFileCodec, rallyService, rallyFileCodec, autoWaypointGenerator,
-            surveyMissionGenerator, mapTilePrefetchService)
+            surveyMissionGenerator, mapTilePrefetchService, elevationProfileService)
     {
     }
 }

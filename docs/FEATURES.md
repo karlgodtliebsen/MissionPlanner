@@ -897,6 +897,8 @@ Completed
   support, route statistics, bounded previews, and explicit mission merge choices.
 * Mission-map tools include great-circle measurement, session-only rotation, and explicitly
   confirmed policy-aware visible/route cache warming with OSM/offline denial and hard limits.
+* A bounded mission elevation profiler reuses cached SRTM lookups and renders terrain/planned
+  profiles with explicit missing-data gaps and correct altitude-reference caveats.
 
 * A deterministic inventory resolves the pinned official `ardupilotmega` dialect and its
   transitive includes without network access during normal builds or tests.

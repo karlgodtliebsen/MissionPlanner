@@ -95,7 +95,7 @@
                         <MenuFlyoutItem Text="Prefetch WP Path" Command="{Binding PrefetchWaypointPathCommand}" />
                         <MenuFlyoutItem Text="KML Overlay" Command="{Binding KmlOverlayCommand}" />
                         <MenuFlyoutItem Text="Clear Imported Overlay" Command="{Binding ClearImportedOverlayCommand}" />
-                        <MenuFlyoutItem Text="Elevation Graph" Command="{Binding NotImplementedCommand}" CommandParameter="Elevation Graph" />
+                        <MenuFlyoutItem Text="Elevation Graph" Command="{Binding ShowElevationGraphCommand}" />
                     </MenuFlyoutSubItem>
 
                     <MenuFlyoutSubItem Text="File Load/Save">
@@ -120,6 +120,17 @@
                 </MenuFlyout>
             </FlyoutBase.ContextFlyout>
         </mapsui:MapView>
+
+        <Border Grid.Row="0" IsVisible="{Binding IsElevationProfileVisible}" HeightRequest="190"
+                VerticalOptions="End" Margin="12" Padding="6" BackgroundColor="#E6202024">
+            <Grid RowDefinitions="Auto,*">
+                <HorizontalStackLayout Spacing="12">
+                    <Label Text="Elevation profile — terrain / planned MSL" TextColor="White" />
+                    <Button Text="Close" Command="{Binding CloseElevationGraphCommand}" Padding="8,2" />
+                </HorizontalStackLayout>
+                <missions:MissionElevationProfileView Grid.Row="1" Profile="{Binding ElevationProfile}" />
+            </Grid>
+        </Border>
 
         <Button Grid.Row="0"
             HorizontalOptions="End"
