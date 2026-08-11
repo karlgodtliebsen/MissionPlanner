@@ -8,20 +8,38 @@ namespace UraniumUI.Material.Dialogs;
 /// </summary>
 public interface IExtendedDialogService : IDialogService
 {
+    /// <summary>Displays a right-aligned multiline text prompt.</summary>
+    /// <param name="title">Dialog title.</param>
+    /// <param name="message">Instruction displayed above the input field.</param>
+    /// <param name="initialValue">Initial text displayed in the editor.</param>
+    /// <param name="accept">Accept button text.</param>
+    /// <param name="cancel">Cancel button text.</param>
+    /// <param name="clear">Clear button text; empty hides the button.</param>
+    /// <returns>The edited text, or <see langword="null"/> on Cancel or Clear.</returns>
+    Task<string?> DisplayPromptAsync(
+        string title,
+        string message,
+        string initialValue,
+        string accept = "OK",
+        string cancel = "Cancel",
+        string clear = "Clear");
+
     /// <summary>
     /// Displays a prompt dialog for entering a TimeSpan value. 
     /// </summary>
     /// <param name="title"></param>
-    /// <param name="selectedDate"></param>
+    /// <param name="message"></param>
+    /// <param name="initialValue"></param>
     /// <param name="minimumTime"></param>
     /// <param name="maximumTime"></param>
     /// <param name="accept"></param>
     /// <param name="cancel"></param>
     /// <param name="clear"></param>
     /// <returns></returns>
-    Task<TimeSpan?> DisplayTimeSpanPromptAsync(
+    Task<TimeSpan?> DisplayPromptAsync(
         string title,
-        TimeSpan? selectedDate = null,
+        string message,
+        TimeSpan? initialValue = null,
         TimeSpan? minimumTime = null,
         TimeSpan? maximumTime = null,
         string accept = "OK",
@@ -32,16 +50,18 @@ public interface IExtendedDialogService : IDialogService
     /// Displays a prompt dialog for entering a double value. 
     /// </summary>
     /// <param name="title"></param>
-    /// <param name="selected"></param>
+    /// <param name="message"></param>
+    /// <param name="initialValue"></param>
     /// <param name="minimum"></param>
     /// <param name="maximum"></param>
     /// <param name="accept"></param>
     /// <param name="cancel"></param>
     /// <param name="clear"></param>
     /// <returns></returns>
-    Task<int?> DisplayIntegerPromptAsync(
+    Task<int?> DisplayPromptAsync(
         string title,
-        int? selected = null,
+        string message,
+        int? initialValue = null,
         int? minimum = null,
         int? maximum = null,
         string accept = "OK",
@@ -52,16 +72,18 @@ public interface IExtendedDialogService : IDialogService
     /// Displays a prompt dialog for entering a long value. 
     /// </summary>
     /// <param name="title"></param>
-    /// <param name="selected"></param>
+    /// <param name="message"></param>
+    /// <param name="initialValue"></param>
     /// <param name="minimum"></param>
     /// <param name="maximum"></param>
     /// <param name="accept"></param>
     /// <param name="cancel"></param>
     /// <param name="clear"></param>
     /// <returns></returns>
-    Task<long?> DisplayLongPromptAsync(
+    Task<long?> DisplayPromptAsync(
         string title,
-        long? selected = null,
+        string message,
+        long? initialValue = null,
         long? minimum = null,
         long? maximum = null,
         string accept = "OK",
@@ -72,16 +94,18 @@ public interface IExtendedDialogService : IDialogService
     /// Displays a prompt dialog for entering a float value. 
     /// </summary>
     /// <param name="title"></param>
-    /// <param name="selected"></param>
+    /// <param name="message"></param>
+    /// <param name="initialValue"></param>
     /// <param name="minimum"></param>
     /// <param name="maximum"></param>
     /// <param name="accept"></param>
     /// <param name="cancel"></param>
     /// <param name="clear"></param>
     /// <returns></returns>
-    Task<float?> DisplayFloatPromptAsync(
+    Task<float?> DisplayPromptAsync(
         string title,
-        float? selected = null,
+        string message,
+        float? initialValue = null,
         float? minimum = null,
         float? maximum = null,
         string accept = "OK",
@@ -92,14 +116,18 @@ public interface IExtendedDialogService : IDialogService
     /// Displays a prompt dialog for entering a double value. 
     /// </summary>
     /// <param name="title"></param>
-    /// <param name="selected"></param>
+    /// <param name="message"></param>
+    /// <param name="initialValue"></param>
     /// <param name="minimum"></param>
     /// <param name="maximum"></param>
     /// <param name="accept"></param>
     /// <param name="cancel"></param>
     /// <param name="clear"></param>
     /// <returns></returns>
-    Task<double?> DisplayDoublePromptAsync(string title, double? selected = null, double? minimum = null, double? maximum = null,
+    Task<double?> DisplayPromptAsync(
+        string title,
+        string message,
+        double? initialValue = null, double? minimum = null, double? maximum = null,
         string accept = "OK", string cancel = "Cancel",
         string clear = "Clear");
 

@@ -307,3 +307,21 @@ await Task.Delay(50);
 
 The essential behavior is to detach native teardown from the lifetime of the
 bound button command, then marshal teardown back through the dispatcher.
+
+## Typed UraniumUI Prompts
+
+`IExtendedDialogService` provides typed string, clock-time, `int`, `long`, `float`, and
+`double` prompts. Strings use an auto-sizing `AlignedEditorField` with end-aligned text;
+the other prompts use `TimePickerField` or the culture-aware `NumericField`. String
+prompts return `null` on Cancel or Clear so callers cannot mistake displayed initial
+text for accepted input. Numeric and time prompts retain the original nullable value
+on Cancel and return `null` on Clear. All prompts return the edited value on OK.
+The supplied message is rendered between the dialog header
+and input field when it is not empty. Numeric fields format after editing and clamp committed
+values to the supplied range. The time prompt represents a clock time and accepts
+values from `00:00:00` through the final tick before 24 hours.
+
+These prompts use the same detached, semaphore-gated close strategy described
+above. Button commands only request completion; modal teardown runs afterward
+through the UI dispatcher. New prompt implementations should reuse this pipeline
+instead of calling `PopModalAsync` directly from a button command.

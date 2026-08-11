@@ -25,7 +25,7 @@ public partial class FlightDataMissionMapViewModel : MissionMapViewModel
         IFileSaver fileSaver, IPlannerSettingsService settingsService, IMissionFileCodec fileCodec,
         IDomainEventHub domainEventHub, IDispatcher dispatcher, IDateTimeProvider dateTimeProvider, ILogger<MissionMapViewModel> logger,
         IMissionMapInteractionService interactionService, IAdvancedMissionItemService advancedMissionItems,
-        IUserPromptService promptService, IUserConfirmationService confirmationService,
+        IUserConfirmationService confirmationService,
         IPlanningPolygonService polygonService, IFileOpenService fileOpenService, IFileSaveService fileSaveService,
         IUserChoiceService choiceService, IGeospatialImportService geospatialImportService,
         IFenceConfigurationService fenceService, IFencePlanFileCodec fenceFileCodec,
@@ -34,7 +34,7 @@ public partial class FlightDataMissionMapViewModel : MissionMapViewModel
         IMissionElevationProfileService elevationProfileService, IPoiService poiService, ITrackerHomeService trackerHomeService,
         IGeodeticCoordinateConverter geodeticConverter, IReplaySessionManager replaySession, IExtendedDialogService dialogService)
         : base(activeVehicle, protocolMapper, fileSaver, settingsService, fileCodec, domainEventHub, dispatcher, dateTimeProvider, logger,
-            interactionService, advancedMissionItems, promptService, confirmationService, polygonService, fileOpenService, fileSaveService,
+            interactionService, advancedMissionItems, confirmationService, polygonService, fileOpenService, fileSaveService,
             choiceService, geospatialImportService, fenceService, fenceFileCodec, rallyService, rallyFileCodec, autoWaypointGenerator,
             surveyMissionGenerator, mapTilePrefetchService, elevationProfileService, poiService, trackerHomeService, geodeticConverter, replaySession, dialogService)
     {

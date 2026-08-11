@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using UraniumUI.Dialogs;
 using UraniumUI.Infrastructure;
+using UraniumUI.Material.Controls;
 using UraniumUI.Resources;
 
 namespace UraniumUI.Material.Dialogs;
@@ -30,79 +31,294 @@ public class ExtendedDialogService : DefaultDialogService, IExtendedDialogServic
     }
 
     /// <inheritdoc/>
-    public Task<TimeSpan?> DisplayTimeSpanPromptAsync(
+    public Task<string?> DisplayPromptAsync(
         string title,
-        TimeSpan? selectedDate = null,
+        string message,
+        string initialValue,
+        string accept = "OK",
+        string cancel = "Cancel",
+        string clear = "Clear")
+    {
+        var field = new AlignedEditorField
+        {
+            Title = title,
+            Text = initialValue,
+            HorizontalTextAlignment = TextAlignment.End,
+            VerticalTextAlignment = TextAlignment.Center,
+            AutoSize = EditorAutoSizeOption.TextChanges,
+            Margin = new Thickness(20)
+        };
+
+        return DisplayStringPromptFieldAsync(
+            title, message, field, () => field.Text, accept, cancel, clear);
+    }
+
+    /// <inheritdoc/>
+    public Task<TimeSpan?> DisplayPromptAsync(
+        string title,
+        string message,
+        TimeSpan? initialValue = null,
         TimeSpan? minimumTime = null,
         TimeSpan? maximumTime = null,
         string accept = "OK",
         string cancel = "Cancel",
         string clear = "Clear")
     {
-        //new TimeSpan(0,0,0)
+        ValidateRange(minimumTime, maximumTime);
+        if (new[] { initialValue, minimumTime, maximumTime }.Any(value => value is { } time && (time < TimeSpan.Zero || time >= TimeSpan.FromDays(1))))
+        {
+            throw new ArgumentOutOfRangeException(nameof(initialValue), "Time prompt values must be between 00:00:00 and 23:59:59.9999999.");
+        }
 
-        //use this to create a TimePickerField and display it in a dialog
-        //<material:TimePickerField   Title = "Pick time"
-        //Icon = "{FontImageSource FontFamily=MaterialSharp, Glyph={x:Static m:MaterialSharp.Access_time}}"
-        //>
+        var minimum = minimumTime ?? TimeSpan.Zero;
+        var maximum = maximumTime ?? (TimeSpan.FromDays(1) - TimeSpan.FromTicks(1));
+        var initial = Clamp(initialValue ?? minimum, minimum, maximum);
+        var field = new TimePickerField { Title = title, Time = initial, AllowClear = false, Margin = new Thickness(20) };
 
-        throw new NotImplementedException();
+        return DisplayPromptFieldAsync(title, message, field, () => field.Time < minimum || field.Time > maximum ? initial : field.Time, initialValue, accept, cancel, clear);
     }
 
     /// <inheritdoc/>
-    public Task<int?> DisplayIntegerPromptAsync(
+    public Task<int?> DisplayPromptAsync(
         string title,
-        int? selected = null,
+        string message,
+        int? initialValue = null,
         int? minimum = null,
         int? maximum = null,
         string accept = "OK",
         string cancel = "Cancel",
         string clear = "Clear")
     {
-        //use a NumericField and a float to-from integer (Int32) conversion (IntegerDoubleConverter) to display a float prompt dialog
-        throw new NotImplementedException();
+        ValidateRange(minimum, maximum);
+        var field = CreateNumericField(title, initialValue ?? 0, minimum ?? int.MinValue, maximum ?? int.MaxValue, "F0");
+        return DisplayPromptFieldAsync(title, message, field, () => checked((int)Math.Round(field.Value, MidpointRounding.AwayFromZero)), initialValue, accept, cancel, clear);
     }
 
     /// <inheritdoc/>
-    public Task<long?> DisplayLongPromptAsync(
+    public Task<long?> DisplayPromptAsync(
         string title,
-        long? selected = null,
+        string message,
+        long? initialValue = null,
         long? minimum = null,
         long? maximum = null,
         string accept = "OK",
         string cancel = "Cancel",
         string clear = "Clear")
     {
-        //use a NumericField and a float to-from long conversion (Similar to IntegerDoubleConverter) to display a float prompt dialog
-        throw new NotImplementedException();
+        ValidateRange(minimum, maximum);
+        var minimumValue = minimum ?? long.MinValue;
+        var maximumValue = maximum ?? long.MaxValue;
+        var field = CreateNumericField(title, initialValue ?? 0, minimumValue, maximumValue, "F0");
+        return DisplayPromptFieldAsync(title, message, field,
+            () => field.Value <= minimumValue ? minimumValue : field.Value >= maximumValue ? maximumValue : checked((long)Math.Round(field.Value, MidpointRounding.AwayFromZero)),
+            initialValue, accept, cancel, clear);
     }
 
     /// <inheritdoc/>
-    public Task<float?> DisplayFloatPromptAsync(
+    public Task<float?> DisplayPromptAsync(
         string title,
-        float? selected = null,
+        string message,
+        float? initialValue = null,
         float? minimum = null,
         float? maximum = null,
         string accept = "OK",
         string cancel = "Cancel",
         string clear = "Clear")
     {
-        //use a NumericField and a float to-from double conversion (Similar to IntegerDoubleConverter)  to display a float prompt dialog
-        throw new NotImplementedException();
+        ValidateRange(minimum, maximum);
+        ValidateFinite(initialValue, minimum, maximum);
+        var field = CreateNumericField(title, initialValue ?? 0, minimum ?? -float.MaxValue, maximum ?? float.MaxValue, "G9");
+        return DisplayPromptFieldAsync(title, message, field, () => (float)field.Value, initialValue, accept, cancel, clear);
     }
 
     /// <inheritdoc/>
-    public Task<double?> DisplayDoublePromptAsync(
+    public Task<double?> DisplayPromptAsync(
         string title,
-        double? selected = null,
+        string message,
+        double? initialValue = null,
         double? minimum = null,
         double? maximum = null,
         string accept = "OK",
         string cancel = "Cancel",
         string clear = "Clear")
     {
-        //use a NumericField  to display a float prompt dialog
-        throw new NotImplementedException();
+        ValidateRange(minimum, maximum);
+        ValidateFinite(initialValue, minimum, maximum);
+        var field = CreateNumericField(title, initialValue ?? 0, minimum ?? double.MinValue, maximum ?? double.MaxValue, "G15");
+        return DisplayPromptFieldAsync(title, message, field, () => field.Value, initialValue, accept, cancel, clear);
+    }
+
+    private static NumericField CreateNumericField(string title, double selected, double minimum, double maximum, string format)
+    {
+        return new NumericField
+        {
+            Title = title,
+            Min = minimum,
+            Max = maximum,
+            Value = Math.Clamp(selected, minimum, maximum),
+            NumberFormat = format,
+            AllowClear = false,
+            AllowThousands = true,
+            AllowSign = minimum < 0,
+            ClampOnCommit = true,
+            HorizontalOptions = LayoutOptions.Fill,
+            HorizontalTextAlignment = TextAlignment.End,
+            Margin = new Thickness(20)
+        };
+    }
+
+    private async Task<T?> DisplayPromptFieldAsync<T>(
+        string title,
+        string message,
+        View field,
+        Func<T> acceptedValue,
+        T? originalValue,
+        string accept,
+        string cancel,
+        string clear)
+        where T : struct
+    {
+        var completion = new TaskCompletionSource<T?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var closeRequested = 0;
+        var popupPage = new DefaultDialogAnimatedContentPage { BackgroundColor = GetBackdropColor() };
+
+        void RequestClose(T? result)
+        {
+            if (Interlocked.CompareExchange(ref closeRequested, 1, 0) != 0)
+            {
+                return;
+            }
+
+            _ = Task.Run(() => ClosePromptSafelyAsync(popupPage, completion, result), CancellationToken.None);
+        }
+
+        var buttons = new Dictionary<string, Command> { [accept] = new(() => RequestClose(acceptedValue())), [cancel] = new(() => RequestClose(originalValue)) };
+        if (!string.IsNullOrWhiteSpace(clear))
+        {
+            buttons[clear] = new Command(() => RequestClose(null));
+        }
+
+        popupPage.Content = GetFrame(Page.Width, CreatePromptLayout(title, message, field, buttons));
+
+        await dispatcher.DispatchAsync(async () => await Page.Navigation.PushModalAsync(ConfigurePopupPage(popupPage), false));
+
+        return await completion.Task.ConfigureAwait(false);
+    }
+
+    private async Task<string?> DisplayStringPromptFieldAsync(
+        string title,
+        string message,
+        View field,
+        Func<string?> acceptedValue,
+        string accept,
+        string cancel,
+        string clear)
+    {
+        var completion = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var closeRequested = 0;
+        var popupPage = new DefaultDialogAnimatedContentPage { BackgroundColor = GetBackdropColor() };
+
+        void RequestClose(string? result)
+        {
+            if (Interlocked.CompareExchange(ref closeRequested, 1, 0) != 0)
+            {
+                return;
+            }
+
+            _ = Task.Run(() => ClosePromptSafelyAsync(popupPage, completion, result), CancellationToken.None);
+        }
+
+        var buttons = new Dictionary<string, Command>
+        {
+            [accept] = new(() => RequestClose(acceptedValue())),
+            [cancel] = new(() => RequestClose(null))
+        };
+        if (!string.IsNullOrWhiteSpace(clear))
+        {
+            buttons[clear] = new(() => RequestClose(null));
+        }
+
+        var layout = CreatePromptLayout(title, message, field, buttons);
+        popupPage.Content = GetFrame(Page.Width, layout);
+        await dispatcher.DispatchAsync(async () => await Page.Navigation.PushModalAsync(
+            ConfigurePopupPage(popupPage), false));
+        return await completion.Task.ConfigureAwait(false);
+    }
+
+    private VerticalStackLayout CreatePromptLayout(
+        string title,
+        string message,
+        View field,
+        Dictionary<string, Command> buttons)
+    {
+        var layout = new VerticalStackLayout();
+        layout.Children.Add(GetHeader(title));
+        if (!string.IsNullOrWhiteSpace(message))
+        {
+            layout.Children.Add(new Label { Text = message, Margin = new Thickness(20, 20, 20, 0) });
+        }
+
+        layout.Children.Add(field);
+        layout.Children.Add(GetDivider());
+        layout.Children.Add(GetFooter(buttons));
+        return layout;
+    }
+
+    private async Task ClosePromptSafelyAsync<T>(DefaultDialogAnimatedContentPage popupPage, TaskCompletionSource<T> completion, T result)
+    {
+        await navigationGate.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+        try
+        {
+            await dispatcher.DispatchAsync(async () =>
+            {
+                if (Page.Navigation.ModalStack.LastOrDefault() != popupPage)
+                {
+                    completion.TrySetResult(default!);
+                    return;
+                }
+
+                await popupPage.CloseAsync();
+                completion.TrySetResult(result);
+            }).ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Failed to close the UraniumUI prompt dialog.");
+            completion.TrySetException(exception);
+        }
+        finally
+        {
+            navigationGate.Release();
+        }
+    }
+
+    private static void ValidateRange<T>(T? minimum, T? maximum) where T : struct, IComparable<T>
+    {
+        if (minimum is { } min && maximum is { } max && min.CompareTo(max) > 0)
+        {
+            throw new ArgumentException("The minimum prompt value cannot exceed the maximum value.");
+        }
+    }
+
+    private static void ValidateFinite(params float?[] values)
+    {
+        if (values.Any(value => value is { } number && !float.IsFinite(number)))
+        {
+            throw new ArgumentOutOfRangeException(nameof(values), "Prompt values must be finite numbers.");
+        }
+    }
+
+    private static void ValidateFinite(params double?[] values)
+    {
+        if (values.Any(value => value is { } number && !double.IsFinite(number)))
+        {
+            throw new ArgumentOutOfRangeException(nameof(values), "Prompt values must be finite numbers.");
+        }
+    }
+
+    private static TimeSpan Clamp(TimeSpan value, TimeSpan minimum, TimeSpan maximum)
+    {
+        return value < minimum ? minimum : value > maximum ? maximum : value;
     }
 
 

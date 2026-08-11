@@ -48,7 +48,6 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     private readonly ILogger<MissionMapViewModel> logger;
     private readonly IMissionMapInteractionService interactionService;
     private readonly IAdvancedMissionItemService advancedMissionItems;
-    private readonly IUserPromptService promptService;
     private readonly IUserConfirmationService confirmationService;
     private readonly IPlanningPolygonService polygonService;
     private readonly IFileOpenService fileOpenService;
@@ -82,7 +81,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         IMissionFileCodec fileCodec, IDomainEventHub domainEventHub, IDispatcher dispatcher,
         IDateTimeProvider dateTimeProvider, ILogger<MissionMapViewModel> logger,
         IMissionMapInteractionService interactionService, IAdvancedMissionItemService advancedMissionItems,
-        IUserPromptService promptService, IUserConfirmationService confirmationService,
+        IUserConfirmationService confirmationService,
         IPlanningPolygonService polygonService, IFileOpenService fileOpenService, IFileSaveService fileSaveService,
         IUserChoiceService choiceService, IGeospatialImportService geospatialImportService,
         IFenceConfigurationService fenceService, IFencePlanFileCodec fenceFileCodec,
@@ -102,7 +101,6 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         this.logger = logger;
         this.interactionService = interactionService;
         this.advancedMissionItems = advancedMissionItems;
-        this.promptService = promptService;
         this.confirmationService = confirmationService;
         this.polygonService = polygonService;
         this.fileOpenService = fileOpenService;
@@ -731,7 +729,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task JumpToWaypointAsync(CancellationToken cancellationToken)
     {
-        var targetText = await promptService.PromptAsync("Jump to waypoint", "Target mission row (1-based)", "1", cancellationToken);
+        var targetText = await dialogService.DisplayPromptAsync("Jump to waypoint", "Target mission row (1-based)", "1");
         if (!ushort.TryParse(targetText, NumberStyles.Integer, CultureInfo.CurrentCulture, out var displayTarget) || displayTarget == 0)
         {
             if (targetText is not null)
@@ -763,7 +761,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
 
     private async Task<int?> PromptRepeatCountAsync(CancellationToken cancellationToken)
     {
-        var text = await promptService.PromptAsync("DO_JUMP", "Repeat count (use -1 for infinite)", "1", cancellationToken);
+        var text = await dialogService.DisplayPromptAsync("DO_JUMP", "Repeat count (use -1 for infinite)", "1");
         if (!int.TryParse(text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var repeat) || repeat < -1)
         {
             if (text is not null)
@@ -841,7 +839,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task OffsetPolygonAsync(CancellationToken cancellationToken)
     {
-        var text = await promptService.PromptAsync("Offset polygon", "Signed offset distance in metres (positive outward)", "10", cancellationToken);
+        var text = await dialogService.DisplayPromptAsync("Offset polygon", "Signed offset distance in metres (positive outward)", "10");
         if (!double.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out var metres))
         {
             if (text is not null)
@@ -1211,7 +1209,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task SetRallyPointAsync(CancellationToken cancellationToken)
     {
-        var altitudeText = await promptService.PromptAsync("Set rally point", "Altitude in metres", DefaultAltitudeMeters.ToString("F0", CultureInfo.CurrentCulture), cancellationToken);
+        var altitudeText = await dialogService.DisplayPromptAsync("Set rally point", "Altitude in metres", DefaultAltitudeMeters.ToString("F0", CultureInfo.CurrentCulture));
         if (!double.TryParse(altitudeText, NumberStyles.Float, CultureInfo.CurrentCulture, out var altitude))
         {
             if (altitudeText is not null)
@@ -1345,8 +1343,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
             return;
         }
 
-        var radiusText = await promptService.PromptAsync("Generate circle", "Radius in metres", "100", cancellationToken);
-        var countText = await promptService.PromptAsync("Generate circle", "Number of points (3-1000)", "12", cancellationToken);
+        var radiusText = await dialogService.DisplayPromptAsync("Generate circle", "Radius in metres", "100");
+        var countText = await dialogService.DisplayPromptAsync("Generate circle", "Number of points (3-1000)", "12");
         if (!double.TryParse(radiusText, NumberStyles.Float, CultureInfo.CurrentCulture, out var radius)
             || !int.TryParse(countText, NumberStyles.Integer, CultureInfo.CurrentCulture, out var count))
         {
@@ -1363,7 +1361,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         double? endAltitude = null;
         if (spline)
         {
-            var endText = await promptService.PromptAsync("Spline circle", "End altitude in metres (for deterministic helical climb)", DefaultAltitudeMeters.ToString("F0", CultureInfo.CurrentCulture), cancellationToken);
+            var endText = await dialogService.DisplayPromptAsync("Spline circle", "End altitude in metres (for deterministic helical climb)", DefaultAltitudeMeters.ToString("F0", CultureInfo.CurrentCulture));
             if (!double.TryParse(endText, NumberStyles.Float, CultureInfo.CurrentCulture, out var parsed))
             {
                 return;
@@ -1391,8 +1389,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
             return;
         }
 
-        var text = await promptService.PromptAsync("Waypoint text", "Text (supported stroke-font letters/digits, maximum 32)", "HOME", cancellationToken);
-        var heightText = await promptService.PromptAsync("Waypoint text", "Character height in metres", "50", cancellationToken);
+        var text = await dialogService.DisplayPromptAsync("Waypoint text", "Text (supported stroke-font letters/digits, maximum 32)", "HOME");
+        var heightText = await dialogService.DisplayPromptAsync("Waypoint text", "Character height in metres", "50");
         if (text is null || !double.TryParse(heightText, NumberStyles.Float, CultureInfo.CurrentCulture, out var height))
         {
             return;
@@ -1446,8 +1444,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
             return;
         }
 
-        var outerText = await promptService.PromptAsync("Circle survey", "Outer radius in metres", "200", cancellationToken);
-        var spacingText = await promptService.PromptAsync("Circle survey", "Radial spacing in metres", "50", cancellationToken);
+        var outerText = await dialogService.DisplayPromptAsync("Circle survey", "Outer radius in metres", "200");
+        var spacingText = await dialogService.DisplayPromptAsync("Circle survey", "Radial spacing in metres", "50");
         if (!double.TryParse(outerText, NumberStyles.Float, CultureInfo.CurrentCulture, out var outer)
             || !double.TryParse(spacingText, NumberStyles.Float, CultureInfo.CurrentCulture, out var spacing))
         {
@@ -1467,8 +1465,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
             return;
         }
 
-        var spacingText = await promptService.PromptAsync("Grid survey", "Flight-line spacing in metres", "30", cancellationToken);
-        var angleText = await promptService.PromptAsync("Grid survey", "Flight-line angle in degrees", "0", cancellationToken);
+        var spacingText = await dialogService.DisplayPromptAsync("Grid survey", "Flight-line spacing in metres", "30");
+        var angleText = await dialogService.DisplayPromptAsync("Grid survey", "Flight-line angle in degrees", "0");
         if (!double.TryParse(spacingText, NumberStyles.Float, CultureInfo.CurrentCulture, out var spacing)
             || !double.TryParse(angleText, NumberStyles.Float, CultureInfo.CurrentCulture, out var angle))
         {
@@ -1504,7 +1502,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task RotateMapAsync(CancellationToken cancellationToken)
     {
-        var text = await promptService.PromptAsync("Rotate map", "Bearing degrees (0-359; 0 resets north)", "0", cancellationToken);
+        var text = await dialogService.DisplayPromptAsync("Rotate map", "Bearing degrees (0-359; 0 resets north)", "0");
         if (!double.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out var angle) || !double.IsFinite(angle))
         {
             if (text is not null)
@@ -1600,13 +1598,13 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
             return;
         }
 
-        var name = await promptService.PromptAsync("Add point of interest", "Name", $"POI {poiService.Snapshot.Items.Count + 1}", cancellationToken);
+        var name = await dialogService.DisplayPromptAsync("Add point of interest", "Name", $"POI {poiService.Snapshot.Items.Count + 1}");
         if (string.IsNullOrWhiteSpace(name))
         {
             return;
         }
 
-        var description = await promptService.PromptAsync("Add point of interest", "Optional description", null, cancellationToken);
+        var description = await dialogService.DisplayPromptAsync("Add point of interest", "Optional description", string.Empty);
         await poiService.AddAsync(name, position, PointerAltitude, description, null, cancellationToken);
         ShowStatus($"Local POI '{name}' saved.");
     }
@@ -1620,13 +1618,13 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
             return;
         }
 
-        var name = await promptService.PromptAsync("Edit nearest POI", $"Name ({item.Name})", item.Name, cancellationToken);
+        var name = await dialogService.DisplayPromptAsync("Edit nearest POI", $"Name ({item.Name})", item.Name);
         if (string.IsNullOrWhiteSpace(name))
         {
             return;
         }
 
-        var description = await promptService.PromptAsync("Edit nearest POI", "Description", item.Description, cancellationToken);
+        var description = await dialogService.DisplayPromptAsync("Edit nearest POI", "Description", item.Description ?? string.Empty);
         await poiService.UpdateAsync(item with { Name = name, Description = description }, cancellationToken);
         ShowStatus($"Local POI '{name}' updated.");
     }
@@ -1658,7 +1656,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
             return;
         }
 
-        var text = await promptService.PromptAsync("Tracker home", "Optional altitude in metres", PointerAltitude?.ToString("F1", CultureInfo.CurrentCulture), cancellationToken);
+        var text = await dialogService.DisplayPromptAsync("Tracker home", "Optional altitude in metres", PointerAltitude?.ToString("F1", CultureInfo.CurrentCulture) ?? string.Empty);
         double? altitude = null;
         if (!string.IsNullOrWhiteSpace(text))
         {
@@ -1678,7 +1676,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task EnterUtmCoordinateAsync(CancellationToken cancellationToken)
     {
-        var text = await promptService.PromptAsync("Enter UTM coordinate", "Format: zone+hemisphere easting northing (example: 32N 500000 6170000)", "32N 500000 6170000", cancellationToken);
+        var text = await dialogService.DisplayPromptAsync("Enter UTM coordinate", "Format: zone+hemisphere easting northing (example: 32N 500000 6170000)", "32N 500000 6170000");
         if (text is null)
         {
             return;
@@ -1782,19 +1780,19 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task LoiterTimeAsync()
     {
-        var seconds = await PromptAsync("Loiter Time", "Time to loiter (seconds)", "30");
-        if (seconds is null)
+        var input = await dialogService.DisplayPromptAsync("Loiter Time", "Time to loiter (seconds)", 30, 0, 24 * 60);
+        if (input is null)
         {
             return;
         }
 
-        AddLoiter(TimeSpan.FromSeconds(seconds.Value), null);
+        AddLoiter(TimeSpan.FromSeconds(input.Value), null);
     }
 
     [RelayCommand]
     private async Task LoiterCirclesAsync()
     {
-        var turns = await PromptAsync("Loiter Circles", "Number of circles", "3");
+        var turns = await dialogService.DisplayPromptAsync("Loiter Circles", "Number of circles", 3, 0, 100);
         if (turns is null)
         {
             return;
@@ -1826,7 +1824,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task AddTakeoffAsync()
     {
-        var altitude = await PromptAsync("Takeoff", "Takeoff altitude (meters)", DefaultAltitudeMeters.ToString(CultureInfo.CurrentCulture));
+        var altitude = await dialogService.DisplayPromptAsync("Takeoff", "Takeoff altitude (meters)", DefaultAltitudeMeters);
         if (altitude is null)
         {
             return;
@@ -1877,7 +1875,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task ModifyAltitudeAsync()
     {
-        var altitude = await PromptAsync("Modify Alt", "New altitude for all mission items (meters)", DefaultAltitudeMeters.ToString(CultureInfo.CurrentCulture));
+        var altitude = await dialogService.DisplayPromptAsync("Modify Alt", "New altitude for all mission items (meters)", DefaultAltitudeMeters);
         if (altitude is null)
         {
             return;
@@ -2404,41 +2402,4 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
             }
         });
     }
-
-    private static async Task<double?> PromptAsync(string title, string message, string initialValue)
-    {
-        var page = Application.Current?.Windows.FirstOrDefault()?.Page;
-        if (page is null)
-        {
-            return null;
-        }
-
-        var input = await page.DisplayPromptAsync(title, message, initialValue: initialValue, keyboard: Keyboard.Numeric);
-        return double.TryParse(input, NumberStyles.Float, CultureInfo.CurrentCulture, out var value) ? value : null;
-    }
-
-    //private static async Task<double?> PromptAsync(string title, string message, int initialValue)
-    //{ var page = Application.Current?.Windows.FirstOrDefault()?.Page;
-    //    if (page is null)
-    //    {
-    //        return null;
-    //    }
-
-    //    var input = await page.DisplayPromptAsync(title, message, initialValue: initialValue, keyboard: Keyboard.Numeric);
-    //    return double.TryParse(input, NumberStyles.Float, CultureInfo.CurrentCulture, out var value) ? value : null;
-    //}
-
-    //private static async Task<double?> PromptTimeAsync(string title, string message, string initialValue)
-    //{
-    //    //dialogService.DisplayTextPromptAsync()
-
-    //    var page = Application.Current?.Windows.FirstOrDefault()?.Page;
-    //    if (page is null)
-    //    {
-    //        return null;
-    //    }
-
-    //    var input = await page.DisplayPromptAsync(title, message, initialValue: initialValue, keyboard: Keyboard.Numeric);
-    //    return double.TryParse(input, NumberStyles.Float, CultureInfo.CurrentCulture, out var value) ? value : null;
-    //}
 }
