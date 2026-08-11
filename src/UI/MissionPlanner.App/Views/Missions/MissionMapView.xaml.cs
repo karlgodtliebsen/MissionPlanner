@@ -3,6 +3,8 @@ using Mapsui;
 using MissionPlanner.App.Navigation;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Library;
+using MissionPlanner.App.Maps;
+using MissionPlanner.Maps.Sources;
 
 namespace MissionPlanner.App.Views.Missions;
 
@@ -16,11 +18,11 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
     private bool disposed;
 
     /// <summary>Initializes a new instance of the <see cref="MissionMapView"/> class.</summary>
-    public MissionMapView(IPlannerSettingsService settingsService, MissionMapViewModel viewModel) : base(viewModel)
+    public MissionMapView(IPlannerSettingsService settingsService, IMapSourceResolver sourceResolver, IMapsuiBasemapFactory basemapFactory, MissionMapViewModel viewModel) : base(viewModel)
     {
         InitializeComponent();
         DomainException.ThrowIfNull(ViewModel);
-        presenter = new MissionMapPresenter(MissionMap, ViewModel, settingsService);
+        presenter = new MissionMapPresenter(MissionMap, ViewModel, settingsService, sourceResolver, basemapFactory);
 
         MissionMap.MapClicked += OnMapClicked;
         MissionMap.MapPointerMoved += OnMapPointerMoved;

@@ -2,6 +2,9 @@ using FluentAssertions;
 using Mapsui;
 using Mapsui.Layers;
 using MissionPlanner.App.Maps;
+using MissionPlanner.Maps.Catalog;
+using MissionPlanner.Maps.Credentials;
+using MissionPlanner.Maps.Sources;
 
 namespace MissionPlanner.Core.Tests.Maps;
 
@@ -17,7 +20,7 @@ public sealed class MapBasemapControllerTests
         map.Layers.Add(vehicle);
         map.Navigator.CenterOnAndZoomTo(new MPoint(123, 456), 25);
         var before = map.Navigator.Viewport;
-        using var controller = new MapBasemapController(map, new FakeFactory());
+        using var controller = new MapBasemapController(map, new FakeResolver(), new FakeFactory());
 
         (await controller.TrySwitchAsync("osm-standard", TestContext.Current.CancellationToken)).Should().BeTrue();
         (await controller.TrySwitchAsync("esri-world-topo", TestContext.Current.CancellationToken)).Should().BeTrue();
@@ -34,7 +37,7 @@ public sealed class MapBasemapControllerTests
     public async Task FailedSwitch_RetainsPreviousWorkingBasemap()
     {
         var map = new Mapsui.Map();
-        using var controller = new MapBasemapController(map, new FakeFactory());
+        using var controller = new MapBasemapController(map, new FakeResolver(), new FakeFactory());
         await controller.TrySwitchAsync("osm-standard", TestContext.Current.CancellationToken);
         var previous = map.Layers.Single();
 
@@ -56,12 +59,25 @@ public sealed class MapBasemapControllerTests
 
     private sealed class FakeFactory : IMapsuiBasemapFactory
     {
-        public ValueTask<ILayer> CreateAsync(string sourceId, CancellationToken cancellationToken = default)
+        public ValueTask<MapBasemapCreationResult> CreateAsync(ResolvedMapSource source, CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (sourceId == "fail")
-                throw new InvalidOperationException("Expected failure.");
-            return ValueTask.FromResult<ILayer>(new MemoryLayer { Name = MapsuiBasemapFactory.BasemapLayerName });
+            return ValueTask.FromResult(source.Id == "fail"
+                ? new MapBasemapCreationResult(MapBasemapCreationStatus.RendererFailure, null, "Expected failure.")
+                : new MapBasemapCreationResult(MapBasemapCreationStatus.Success, new MemoryLayer { Name = MapsuiBasemapFactory.BasemapLayerName }));
+        }
+    }
+
+    private sealed class FakeResolver : IMapSourceResolver
+    {
+        public ValueTask<MapSourceResolutionResult> ResolveAsync(string sourceId, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var capabilities = new MapSourceCapabilities(true, true, false, false, false);
+            var definition = new MapSourceDefinition(sourceId, "test", sourceId, MapAccessKind.HttpXyz, MapArchiveFormat.None, MapTileContentFormat.RasterPng, "https://example.test/{z}/{x}/{y}", 0, 18, "test", [], MapCredentialRequirement.None, capabilities, true, false);
+            var policy = new MapUsagePolicy("test", null, new DateOnly(2026, 1, 1), "Test", true, true, false, false, false, false);
+            var resolved = new ResolvedMapSource(sourceId, MapSourceOrigin.Catalog, new("test", "Test"), new("test", "test", "Test"), definition, policy, [], new(MapCredentialRequirement.None, true), definition.UriTemplate);
+            return ValueTask.FromResult(new MapSourceResolutionResult(MapSourceResolutionStatus.None, resolved));
         }
     }
 }

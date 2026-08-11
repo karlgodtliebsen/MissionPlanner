@@ -1,9 +1,10 @@
 using Mapsui.Layers;
+using MissionPlanner.Maps.Sources;
 
 namespace MissionPlanner.App.Maps;
 
 /// <summary>Atomically replaces the single Mapsui basemap slot while preserving operational layers.</summary>
-public sealed class MapBasemapController(Mapsui.Map map, IMapsuiBasemapFactory factory) : IDisposable
+public sealed class MapBasemapController(Mapsui.Map map, IMapSourceResolver resolver, IMapsuiBasemapFactory factory) : IDisposable
 {
     private ILayer? current;
     private bool disposed;
@@ -21,19 +22,13 @@ public sealed class MapBasemapController(Mapsui.Map map, IMapsuiBasemapFactory f
     public async ValueTask<bool> TrySwitchAsync(string sourceId, CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
-        ILayer replacement;
-        try
-        {
-            replacement = await factory.CreateAsync(sourceId, cancellationToken).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch
-        {
+        var resolution = await resolver.ResolveAsync(sourceId, cancellationToken).ConfigureAwait(false);
+        if (!resolution.IsSuccess)
             return false;
-        }
+        var creation = await factory.CreateAsync(resolution.Source!, cancellationToken).ConfigureAwait(false);
+        if (!creation.IsSuccess)
+            return false;
+        var replacement = creation.Layer!;
 
         var previous = current ?? map.Layers.FirstOrDefault(layer => layer.Name == MapsuiBasemapFactory.BasemapLayerName);
         map.Layers.Insert(0, replacement);

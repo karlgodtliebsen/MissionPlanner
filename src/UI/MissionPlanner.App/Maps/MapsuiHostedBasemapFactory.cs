@@ -4,6 +4,7 @@ using Mapsui.Layers;
 using Mapsui.Tiling.Layers;
 using MissionPlanner.Maps.Hosted;
 using MissionPlanner.Maps.Http;
+using MissionPlanner.Maps.Sources;
 
 namespace MissionPlanner.App.Maps;
 
@@ -11,13 +12,13 @@ namespace MissionPlanner.App.Maps;
 public sealed class MapsuiHostedBasemapFactory(HostedMapSourceService hostedSources, IMapHttpClientFactory httpClientFactory)
 {
     /// <summary>Creates a hosted layer only when its credential and policy gates pass.</summary>
-    public async ValueTask<ILayer> CreateAsync(string sourceId, CancellationToken cancellationToken = default)
+    public async ValueTask<ILayer> CreateAsync(ResolvedMapSource source, CancellationToken cancellationToken = default)
     {
-        var state = await hostedSources.GetStateAsync(sourceId, cancellationToken).ConfigureAwait(false);
+        var state = await hostedSources.GetStateAsync(source.Id, cancellationToken).ConfigureAwait(false);
         if (!state.IsSelectable)
             throw new HostedMapException(HostedMapFailureKind.MissingCredential, $"{state.Source.DisplayName} is disabled until its credential is configured.");
-        var source = new HostedTileSource(state, hostedSources, httpClientFactory.CreateClient());
-        return new TileLayer(source) { Name = MapsuiBasemapFactory.BasemapLayerName };
+        var tileSource = new HostedTileSource(state, hostedSources, httpClientFactory.CreateClient());
+        return new TileLayer(tileSource) { Name = CompositeMapsuiBasemapFactory.BasemapLayerName };
     }
 
     private sealed class HostedTileSource : ILocalTileSource, IDisposable

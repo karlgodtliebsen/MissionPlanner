@@ -140,6 +140,8 @@ public sealed class FlightDataInfrastructureTests
         var values = new Dictionary<string, string?> { ["ApplicationSettings:Channel"] = "UDP", ["ApplicationSettings:BaudRate"] = "115200", ["ApplicationSettings:Host"] = "127.0.0.1", ["ApplicationSettings:Port"] = "14550" };
         var configuration = new ConfigurationBuilder().AddInMemoryCollection(values).Build();
         var services = new ServiceCollection();
+        services.AddSingleton(Substitute.For<MissionPlanner.Maps.Offline.IOfflineMapPackRepository>());
+        services.AddSingleton(Substitute.For<MissionPlanner.Maps.Custom.ICustomMapSourceStore>());
         services.AddApplicationConfiguration(configuration);
         services.AddSingleton(Substitute.For<IDispatcher>());
         services.AddSingleton(Substitute.For<IFileSaver>());
@@ -150,6 +152,12 @@ public sealed class FlightDataInfrastructureTests
         provider.GetRequiredService<IApplicationNotificationStore>().Should().NotBeNull();
         provider.GetRequiredService<IVehicleMessageStore>().Should().NotBeNull();
         provider.GetRequiredService<ITextClipboardService>().Should().NotBeNull();
+        provider.GetRequiredService<MissionPlanner.Maps.Catalog.IMapCatalog>().Should().NotBeNull();
+        provider.GetRequiredService<MissionPlanner.Maps.Policy.IMapPolicyEvaluator>().Should().NotBeNull();
+        provider.GetRequiredService<MissionPlanner.Maps.Sources.IMapSourceResolver>().Should().NotBeNull();
+        provider.GetRequiredService<MissionPlanner.Maps.Custom.ICustomMapSourceStore>().Should().NotBeNull();
+        provider.GetRequiredService<MissionPlanner.Maps.Hosted.HostedMapSourceService>().Should().NotBeNull();
+        provider.GetRequiredService<MissionPlanner.App.Maps.IMapsuiBasemapFactory>().Should().BeOfType<MissionPlanner.App.Maps.CompositeMapsuiBasemapFactory>();
         provider.GetRequiredService<IUserConfirmationService>().Should().NotBeNull();
         provider.GetRequiredService<AsyncOperationRunner>().Should().NotBeNull();
         provider.GetRequiredService<FlightDataViewModel>().Should().NotBeNull();

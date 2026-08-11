@@ -4,6 +4,7 @@ using Mapsui.Layers;
 using Mapsui.Tiling.Layers;
 using Microsoft.Data.Sqlite;
 using MissionPlanner.Maps.Offline;
+using MissionPlanner.Maps.Sources;
 
 namespace MissionPlanner.App.Maps;
 
@@ -16,6 +17,30 @@ public sealed class MapsuiMbTilesSourceFactory
         ArgumentNullException.ThrowIfNull(pack);
         var layer = new TileLayer(new ReadOnlyMbTilesSource(pack)) { Name = MapsuiBasemapFactory.BasemapLayerName };
         return layer;
+    }
+
+    /// <summary>Creates a basemap layer from an already resolved installed-pack source.</summary>
+    public ILayer Create(ResolvedMapSource source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        if (string.IsNullOrWhiteSpace(source.Location) || !File.Exists(source.Location))
+            throw new FileNotFoundException("The resolved MBTiles archive is unavailable.", source.Location);
+        var parts = source.Id.Split(':', 3);
+        var manifest = new OfflineMapPackManifest(
+            parts.Length > 1 ? parts[1] : source.Id,
+            parts.Length > 2 ? parts[2] : "resolved",
+            source.Definition.DisplayName,
+            Path.GetFileName(source.Location),
+            string.Empty,
+            new FileInfo(source.Location).Length,
+            new(-180, -85, 180, 85),
+            source.Definition.MinimumZoom,
+            source.Definition.MaximumZoom,
+            "EPSG:3857",
+            source.Definition.ContentFormat switch { MissionPlanner.Maps.Catalog.MapTileContentFormat.RasterJpeg => "jpg", MissionPlanner.Maps.Catalog.MapTileContentFormat.RasterWebp => "webp", _ => "png" },
+            string.Join(" · ", source.Attribution.Select(item => item.Text)),
+            string.Empty);
+        return Create(new InstalledOfflineMapPack(manifest, Path.GetDirectoryName(source.Location)!, source.Location));
     }
 
     private sealed class ReadOnlyMbTilesSource : ILocalTileSource, IDisposable

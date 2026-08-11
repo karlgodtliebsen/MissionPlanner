@@ -32,9 +32,9 @@ Map HTTP clients use bounded timeouts, cancellation, and an honest User-Agent. T
 
 ## Mapsui basemap adapter
 
-`MapsuiBasemapFactory` is the only built-in source-to-Mapsui construction boundary for the mission map. It resolves stable catalog IDs, requires an enabled source and an affirmative interactive-use policy decision, and creates the existing OpenStreetMap and Esri BruTile layers or a blank `No Map` layer.
+`CompositeMapsuiBasemapFactory` is the single source-to-Mapsui construction boundary for the mission map. `IMapSourceResolver` first produces a renderer-neutral source, after which the composite dispatches by typed origin/access/archive/content fields to built-in raster, credentialed hosted raster, custom XYZ/TMS, raster MBTiles, or blank-map adapters. Expected configuration failures are typed and the previous map remains active. Custom WMS/WMTS definitions can currently be validated and connection-tested but are explicitly not runtime-rendered; vector/PMTiles remains deferred by ADR-0006.
 
-`MapBasemapController` owns one layer named `MissionPlanner.Basemap`. Switching creates the replacement before changing the map, inserts only that slot, preserves the navigator viewport and every operational layer, then disposes the previous source. Creation or policy failure leaves the prior working layer installed. A successful change event is the hook for refreshing the standard attribution snapshot.
+`MapBasemapController` owns one layer named `MissionPlanner.Basemap`. Its live path is stable selected ID → resolver → composite factory → basemap-slot replacement. Switching creates the replacement before changing the map, inserts only that slot, preserves the navigator viewport and every operational layer, then disposes the previous source. Resolution, creation, credential, policy, archive, or renderer failure leaves the prior working layer installed. A successful change event is the hook for refreshing the standard attribution snapshot.
 
 ## Offline raster MBTiles
 

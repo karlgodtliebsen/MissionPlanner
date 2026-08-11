@@ -6,7 +6,7 @@ Map provider metadata has a platform-neutral, versioned catalog with validation 
 
 Map operations now have fail-closed capability-and-policy evaluation. Attribution aggregation supports compact, expanded, export, and dynamic entries. Map credentials adapt the existing secure store, and HTTP/cache infrastructure provides bounded requests, namespace isolation, validators, disk budgets, and explicit clearing without treating cache data as offline packs.
 
-The mission map now creates OpenStreetMap, all existing Esri choices, and No Map through a catalog-aware Mapsui adapter. Repeated switching replaces one stable basemap slot and preserves viewport, mission route, markers, interaction state, and other operational layers; failures retain the previous basemap.
+The mission map now resolves stable source IDs and routes OpenStreetMap, all existing Esri choices, No Map, installed raster MBTiles, credentialed hosted raster, and custom XYZ/TMS through one production Mapsui composite. WMS/WMTS remains configuration/test-only until a production renderer adapter exists. Repeated switching replaces one stable basemap slot and preserves viewport, mission route, markers, interaction state, and other operational layers; typed resolution or creation failures retain the previous basemap.
 
 Offline map infrastructure supports user-imported raster MBTiles with versioned manifests, SHA-256/size/schema/payload validation, staged atomic installation, read-only access, inventory and removal guards, coverage/attribution/license metadata, and a Mapsui layer factory. Hosted providers are never scraped into packs, and vector MBTiles remains unsupported.
 

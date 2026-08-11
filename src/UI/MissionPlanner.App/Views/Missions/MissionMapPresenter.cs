@@ -6,6 +6,7 @@ using Mapsui.Projections;
 using Mapsui.UI.Maui;
 using MissionPlanner.App.Maps;
 using MissionPlanner.Core.ConfigTuning.Planner;
+using MissionPlanner.Maps.Sources;
 
 namespace MissionPlanner.App.Views.Missions;
 
@@ -28,12 +29,12 @@ internal sealed class MissionMapPresenter : IDisposable
     private bool disposed;
 
     /// <summary>Initializes a presenter for a map view and shared mission editor.</summary>
-    public MissionMapPresenter(MapView mapView, MissionMapViewModel viewModel, IPlannerSettingsService plannerSettings)
+    public MissionMapPresenter(MapView mapView, MissionMapViewModel viewModel, IPlannerSettingsService plannerSettings, IMapSourceResolver sourceResolver, IMapsuiBasemapFactory basemapFactory)
     {
         this.mapView = mapView;
         this.viewModel = viewModel;
         this.plannerSettings = plannerSettings;
-        basemapController = new MapBasemapController(map, new MapsuiBasemapFactory());
+        basemapController = new MapBasemapController(map, sourceResolver, basemapFactory);
         if (!basemapController.TrySwitchAsync(viewModel.SelectedSourceId).AsTask().GetAwaiter().GetResult())
         {
             throw new InvalidOperationException($"Unable to create initial map source '{viewModel.SelectedSourceId}'.");
