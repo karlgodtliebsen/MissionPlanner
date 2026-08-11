@@ -368,6 +368,15 @@ than platform fonts or drawing APIs. Text is limited to 32 characters and every 
 points. Candidate routes render as a preview and require Append or Replace before mission mutation;
 travel between disconnected glyph strokes is intentionally represented by ordinary route legs.
 
+### Survey generation
+
+Grid surveys clip rotated, metre-spaced flight lines to the shared planning polygon, including
+concave boundaries, and can add a perpendicular cross-grid. V1 inputs are explicit line spacing,
+angle, overshoot, altitude, and cross-grid selection; no camera model is inferred. Circle surveys
+use explicit inner/outer radius, radial spacing, points per ring, and direction. Both services are
+platform-neutral, enforce a 4000-point bound, calculate area/distance/line statistics, show the
+stable survey preview, and require Append or Replace before changing the mission.
+
 ---
 
 ## Known gaps and next steps

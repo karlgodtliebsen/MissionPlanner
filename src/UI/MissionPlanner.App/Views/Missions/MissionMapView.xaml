@@ -78,8 +78,8 @@
                         <MenuFlyoutItem Text="Create Spline Circle" Command="{Binding CreateSplineCircleCommand}" />
                         <MenuFlyoutItem Text="Area" Command="{Binding AutoWaypointAreaCommand}" />
                         <MenuFlyoutItem Text="Text" Command="{Binding AutoWaypointTextCommand}" />
-                        <MenuFlyoutItem Text="Create Circle Survey" Command="{Binding NotImplementedCommand}" CommandParameter="Create Circle Survey" />
-                        <MenuFlyoutItem Text="Survey (Grid)" Command="{Binding NotImplementedCommand}" CommandParameter="Survey (Grid)" />
+                        <MenuFlyoutItem Text="Create Circle Survey" Command="{Binding CreateCircleSurveyCommand}" />
+                        <MenuFlyoutItem Text="Survey (Grid)" Command="{Binding CreateGridSurveyCommand}" />
                     </MenuFlyoutSubItem>
 
                     <MenuFlyoutSubItem Text="Map Tool">

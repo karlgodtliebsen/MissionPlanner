@@ -57,6 +57,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     private readonly IRallyConfigurationService rallyService;
     private readonly IRallyPlanFileCodec rallyFileCodec;
     private readonly IAutoWaypointGenerator autoWaypointGenerator;
+    private readonly ISurveyMissionGenerator surveyMissionGenerator;
     private IReadOnlyList<GeoPosition> generatedPreview = [];
     private MissionAltitude pendingRallyAltitude;
     private IReadOnlyList<ImportedPlanningOverlay> importedOverlays = [];
@@ -76,7 +77,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         IUserChoiceService choiceService, IGeospatialImportService geospatialImportService,
         IFenceConfigurationService fenceService, IFencePlanFileCodec fenceFileCodec,
         IRallyConfigurationService rallyService, IRallyPlanFileCodec rallyFileCodec,
-        IAutoWaypointGenerator autoWaypointGenerator)
+        IAutoWaypointGenerator autoWaypointGenerator, ISurveyMissionGenerator surveyMissionGenerator)
     {
         this.activeVehicle = activeVehicle;
         this.fileCodec = fileCodec;
@@ -100,6 +101,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         this.rallyService = rallyService;
         this.rallyFileCodec = rallyFileCodec;
         this.autoWaypointGenerator = autoWaypointGenerator;
+        this.surveyMissionGenerator = surveyMissionGenerator;
         pendingRallyAltitude = DefaultAltitude();
         polygonService.Changed += OnPolygonChanged;
         interactionService.Changed += OnInteractionChanged;
@@ -1009,6 +1011,37 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         generatedPreview = []; UpdatePlanningOverlay();
         if (ReferenceEquals(target, Mission)) OnMissionChanged($"Appended {result.Items.Count} generated mission items.");
         else ReplaceMission(target, $"Mission replaced with {result.Items.Count} generated mission items.");
+    }
+
+    [RelayCommand]
+    private async Task CreateCircleSurveyAsync(CancellationToken cancellationToken)
+    {
+        if (TargetPosition() is not { } center) { ShowStatus("Select a circle-survey center."); return; }
+        var outerText = await promptService.PromptAsync("Circle survey", "Outer radius in metres", "200", cancellationToken);
+        var spacingText = await promptService.PromptAsync("Circle survey", "Radial spacing in metres", "50", cancellationToken);
+        if (!double.TryParse(outerText, NumberStyles.Float, CultureInfo.CurrentCulture, out var outer)
+            || !double.TryParse(spacingText, NumberStyles.Float, CultureInfo.CurrentCulture, out var spacing)) return;
+        var result = surveyMissionGenerator.GenerateCircle(new(center, spacing, outer, spacing, 24, true, DefaultAltitude()));
+        await PreviewAndApplySurveyAsync(result, cancellationToken);
+    }
+
+    [RelayCommand]
+    private async Task CreateGridSurveyAsync(CancellationToken cancellationToken)
+    {
+        if (polygonService.Snapshot.Polygon is not { } polygon) { ShowStatus("Create or load a planning polygon first."); return; }
+        var spacingText = await promptService.PromptAsync("Grid survey", "Flight-line spacing in metres", "30", cancellationToken);
+        var angleText = await promptService.PromptAsync("Grid survey", "Flight-line angle in degrees", "0", cancellationToken);
+        if (!double.TryParse(spacingText, NumberStyles.Float, CultureInfo.CurrentCulture, out var spacing)
+            || !double.TryParse(angleText, NumberStyles.Float, CultureInfo.CurrentCulture, out var angle)) return;
+        var cross = await confirmationService.ConfirmAsync("Cross-grid", "Add a perpendicular second grid?", "Cross-grid", cancellationToken);
+        await PreviewAndApplySurveyAsync(surveyMissionGenerator.GenerateGrid(new(polygon, angle, spacing, 0, DefaultAltitude(), cross)), cancellationToken);
+    }
+
+    private async Task PreviewAndApplySurveyAsync(SurveyMissionResult result, CancellationToken cancellationToken)
+    {
+        if (!result.Succeeded) { ShowStatus(result.Message); return; }
+        if (result.Statistics is { } statistics) ShowStatus($"Preview: {statistics.LineCount} legs, {statistics.PointCount} points, {statistics.DistanceMeters:F0} m, {statistics.AreaSquareMeters:F0} m².");
+        await PreviewAndApplyGeneratedAsync(new(true, result.Message, result.Items, result.Preview), cancellationToken);
     }
 
     [RelayCommand]
