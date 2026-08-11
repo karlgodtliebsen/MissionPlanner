@@ -12,6 +12,8 @@ public class ExtendedContentPage<TViewModel> : UraniumContentPage
     where TViewModel : class, IDisposable
 
 {
+    private readonly string? key;
+
     /// <summary>
     ///  
     /// </summary>
@@ -20,8 +22,9 @@ public class ExtendedContentPage<TViewModel> : UraniumContentPage
     /// <summary>
     /// Initializes a new instance of the <see cref="ExtendedContentPage{TViewModel}"/> class.
     /// </summary>
-    protected ExtendedContentPage()
+    protected ExtendedContentPage(string? k = null)
     {
+        key = k;
     }
 
     /// <inheritdoc />
@@ -50,7 +53,7 @@ public class ExtendedContentPage<TViewModel> : UraniumContentPage
         base.OnNavigatedTo(args);
         if (args.NavigationType is NavigationType.Replace or NavigationType.Remove)
         {
-            ViewModel = ServiceHelper.GetRequiredService<TViewModel>();
+            ViewModel = key is not null ? ServiceHelper.GetRequiredKeyedService<TViewModel>(key) : ServiceHelper.GetRequiredService<TViewModel>();
             BindingContext = ViewModel;
         }
     }

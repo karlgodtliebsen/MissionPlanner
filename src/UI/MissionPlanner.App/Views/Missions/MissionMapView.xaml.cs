@@ -10,6 +10,7 @@ using Mapsui.UI.Maui;
 using MissionPlanner.App.Helpers;
 using MissionPlanner.App.Navigation;
 using MissionPlanner.Core.ConfigTuning.Planner;
+using MissionPlanner.Library;
 
 namespace MissionPlanner.App.Views.Missions;
 
@@ -30,12 +31,10 @@ public partial class MissionMapView : ExtendedContentView<MissionItemListViewMod
     /// <summary>
     /// Initializes a new instance of the <see cref="MissionMapView"/> class.
     /// </summary>
-    public MissionMapView()
+    public MissionMapView(string? key) : base(key)
     {
         InitializeComponent();
         plannerSettings = ServiceHelper.GetRequiredService<IPlannerSettingsService>();
-        BindingContext = ServiceHelper.GetRequiredService<MissionItemListViewModel>();
-
         map = new Mapsui.Map();
         map.Layers.Add(CreateTileLayer(ViewModel!.SelectedMapType));
         MissionMap.Map = map;
@@ -62,6 +61,8 @@ public partial class MissionMapView : ExtendedContentView<MissionItemListViewMod
 
     private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        DomainException.ThrowIfNull(ViewModel);
+
         if (e.PropertyName is nameof(MissionItemListViewModel.VehicleLatitude) or nameof(MissionItemListViewModel.VehicleLongitude))
         {
             Position position = new(ViewModel.VehicleLatitude, ViewModel.VehicleLongitude);
@@ -90,6 +91,7 @@ public partial class MissionMapView : ExtendedContentView<MissionItemListViewMod
     private void OnFitToMissionRequested(object? sender, EventArgs e)
     {
         var positions = new List<(double Latitude, double Longitude)>();
+        DomainException.ThrowIfNull(ViewModel);
 
         if (ViewModel.HomePosition is { } home)
         {
@@ -157,6 +159,8 @@ public partial class MissionMapView : ExtendedContentView<MissionItemListViewMod
 
     private void RedrawMission()
     {
+        DomainException.ThrowIfNull(ViewModel);
+
         foreach (var pin in missionPins)
         {
             MissionMap.Pins.Remove(pin);
@@ -208,11 +212,15 @@ public partial class MissionMapView : ExtendedContentView<MissionItemListViewMod
 
     private void OnMapClicked(object? sender, MapClickedEventArgs e)
     {
+        DomainException.ThrowIfNull(ViewModel);
+
         ViewModel.HandleMapClick(e.Point.Latitude, e.Point.Longitude);
     }
 
     private void OnPointerMoved(object? sender, PointerEventArgs e)
     {
+        DomainException.ThrowIfNull(ViewModel);
+
         if (e.GetPosition(MissionMap) is not { } point)
         {
             return;
@@ -232,6 +240,7 @@ public partial class MissionMapView : ExtendedContentView<MissionItemListViewMod
     private async void OnFirstLoaded(object? sender, EventArgs e)
     {
         Loaded -= OnFirstLoaded;
+        DomainException.ThrowIfNull(ViewModel);
 
         // Without a vehicle fix, start the map near the user's own location.
         if (ViewModel.VehicleLatitude == 0 && ViewModel.VehicleLongitude == 0)
@@ -285,6 +294,7 @@ public partial class MissionMapView : ExtendedContentView<MissionItemListViewMod
 
     private void OnZoomToVehicleClicked(object? sender, EventArgs e)
     {
+        DomainException.ThrowIfNull(ViewModel);
         CenterMap(ViewModel.VehicleLatitude, ViewModel.VehicleLongitude, DefaultZoomResolution);
     }
 
@@ -295,15 +305,35 @@ public partial class MissionMapView : ExtendedContentView<MissionItemListViewMod
 
     private void OnToggleFollowVehicleClicked(object? sender, EventArgs e)
     {
+        DomainException.ThrowIfNull(ViewModel);
         ViewModel.FollowVehicle = !ViewModel.FollowVehicle;
     }
 
     /// <inheritdoc />
     public void Dispose()
     {
+        DomainException.ThrowIfNull(ViewModel);
         ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
         ViewModel.MissionChanged -= OnMissionChanged;
         ViewModel.FitToMissionRequested -= OnFitToMissionRequested;
         MissionMap.MapClicked -= OnMapClicked;
+    }
+}
+
+/// <inheritdoc />
+public partial class FlightDataMissionMapView : MissionMapView
+{
+    /// <inheritdoc />
+    public FlightDataMissionMapView() : base("FlightData")
+    {
+    }
+}
+
+/// <inheritdoc />
+public partial class FlightPlannerMissionMapView : MissionMapView
+{
+    /// <inheritdoc />
+    public FlightPlannerMissionMapView() : base("FlightPlanner")
+    {
     }
 }

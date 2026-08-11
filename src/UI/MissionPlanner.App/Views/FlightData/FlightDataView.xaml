@@ -92,7 +92,7 @@
         <!-- Right column: telemetry graph + map -->
         <Grid Grid.Column="2" RowDefinitions="*,Auto" RowSpacing="4">
 
-            <missions:MissionMapView  Grid.Row="0" />
+            <missions:FlightDataMissionMapView  Grid.Row="0" />
 
             <!-- Bottom status bar (mirrors Controls.Status) -->
             <Grid x:Name="StatusBar"

@@ -35,7 +35,7 @@ public partial class FlightPlannerViewModel : ObservableObject, IDisposable
     /// Initializes a new instance of the <see cref="FlightPlannerViewModel"/> class.
     /// </summary>
     public FlightPlannerViewModel(
-        MissionItemListViewModel map,
+        [FromKeyedServices("FlightPlanner")] MissionItemListViewModel map,
         IExtendedDialogService dialogService,
         IDomainFactory domainFactory,
         IDomainEventHub domainEventHub,

@@ -163,9 +163,9 @@ public static class ApplicationConfigurator
         services.TryAddTransient<AsyncOperationRunner>();
 
         services.TryAddTransient<HudViewModel>();
-        services.TryAddSingleton<MissionItemListViewModel>();
-
-        //services.TryAddTransient<MissionItemListDockViewModel>();
+        services.TryAddKeyedSingleton<MissionItemListViewModel>("FlightPlanner");
+        services.TryAddKeyedSingleton<MissionItemListViewModel>("FlightData");
+        //services.TryAddTransient<MissionItemListViewModel>();
 
         // Tabs on FlightDataView
         services.TryAddTransient<QuickTabViewModel>();
