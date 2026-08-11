@@ -46,6 +46,7 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
         this.fileSaver = fileSaver;
         this.logger = logger;
         SelectedMapType = MapType(settingsService.Current.Map);
+        MapSnapshot = MissionMapProjection.Create(Mission, HomePosition);
     }
 
     /// <inheritdoc />
@@ -60,6 +61,12 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
     [ObservableProperty] public partial double VehicleLatitude { get; set; }
 
     [ObservableProperty] public partial double VehicleLongitude { get; set; }
+
+    /// <summary>Gets the latitude currently under the map pointer.</summary>
+    [ObservableProperty] public partial double? PointerLatitude { get; private set; }
+
+    /// <summary>Gets the longitude currently under the map pointer.</summary>
+    [ObservableProperty] public partial double? PointerLongitude { get; private set; }
 
     [ObservableProperty] public partial double VehicleHeading { get; set; }
     // [ObservableProperty] public partial bool DirtyRows { get; set; }
@@ -169,6 +176,10 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
     /// </summary>
     public GeoPosition? ContextPosition { get; private set; }
 
+    /// <summary>Gets the UI-neutral presentation state consumed by mission map views.</summary>
+    [ObservableProperty]
+    public partial MissionMapSnapshot MapSnapshot { get; private set; }
+
     /// <summary>The mission plan being edited.</summary>
     public Mission Mission { get; private set; } = new(MissionId.New(), "New Mission");
 
@@ -182,6 +193,14 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
     public void SetContextPosition(double latitude, double longitude)
     {
         ContextPosition = new GeoPosition(latitude, longitude);
+    }
+
+    /// <summary>Updates the bindable geographic coordinate currently under the map pointer.</summary>
+    public void SetPointerPosition(double latitude, double longitude)
+    {
+        PointerLatitude = latitude;
+        PointerLongitude = longitude;
+        SetContextPosition(latitude, longitude);
     }
 
     /// <summary>Handles a primary map click according to the active map editing mode.</summary>
@@ -626,9 +645,21 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
     private void OnMissionChanged(string message)
     {
         RebuildRows();
+        UpdateMapSnapshot();
         MissionChanged?.Invoke(this, new MissionEventArgs(message));
         ShowStatus(message);
     }
+
+    private void UpdateMapSnapshot()
+    {
+        var snapshot = MissionMapProjection.Create(Mission, HomePosition);
+        if (!MapSnapshot.ContentEquals(snapshot))
+        {
+            MapSnapshot = snapshot;
+        }
+    }
+
+    partial void OnHomePositionChanged(GeoPosition? value) => UpdateMapSnapshot();
 
     private void RebuildRows()
     {

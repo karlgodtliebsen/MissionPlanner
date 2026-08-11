@@ -70,6 +70,11 @@ states, and update their needles without recreating the tab content.
 ### Status
 
 * Hosts the shared mission editor (`MissionMapView`, see PLAN section) — responsive Mapsui map, right-click menu, mission pins + route, follow vehicle, center on user GPS location
+* Mission geometry is projected into a UI-neutral `MissionMapSnapshot`; pure geographic
+  bounds calculations are separated from the view, while a view-scoped Mapsui presenter
+  owns layers, pins, navigation, redraw subscriptions, and cleanup.
+* Pointer movement publishes throttled `PointerLatitude` and `PointerLongitude` values on
+  `MissionItemListViewModel` for coordinate readouts without exposing Mapsui types.
 
 ### Missing
 

@@ -1,11 +1,3 @@
-﻿using System.ComponentModel;
-using BruTile.Predefined;
-using Mapsui;
-using Mapsui.Extensions;
-using Mapsui.Layers;
-using Mapsui.Projections;
-using Mapsui.Tiling;
-using Mapsui.Tiling.Layers;
 using Mapsui.UI.Maui;
 using MissionPlanner.App.Helpers;
 using MissionPlanner.App.Navigation;
@@ -15,237 +7,49 @@ using MissionPlanner.Library;
 namespace MissionPlanner.App.Views.Missions;
 
 /// <summary>
-/// Shared mission map editor control. Renders the mission plan (pins + route) on a Mapsui map and
-/// hosts the right-click context menu mirroring the classic MissionPlanner flight planner menu.
+/// Shared mission-map editor control. Native map events remain at the view boundary while
+/// <see cref="MissionMapPresenter"/> owns Mapsui rendering and navigation.
 /// </summary>
-public partial class MissionMapView : ExtendedContentView<MissionItemListViewModel>, IDisposable
+public partial class MissionMapView : ExtendedContentView<MissionItemListViewModel>
 {
-    private const double WebMercatorInitialResolution = 156543.03392804097;
-    private readonly Pin vehiclePin;
-    private Polyline routeLine;
-    private readonly List<Pin> missionPins = [];
-    private readonly Mapsui.Map map;
-    private readonly IPlannerSettingsService plannerSettings;
+    private readonly PointerGestureRecognizer pointerGestureRecognizer;
+    private readonly MissionMapPresenter presenter;
+    private bool disposed;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MissionMapView"/> class.
-    /// </summary>
+    /// <summary>Initializes a new instance of the <see cref="MissionMapView"/> class.</summary>
     public MissionMapView(IPlannerSettingsService settingsService, string? key) : base(key)
     {
         InitializeComponent();
-        plannerSettings = settingsService;
-        map = new Mapsui.Map();
-        map.Layers.Add(CreateTileLayer(ViewModel!.SelectedMapType));
-        MissionMap.Map = map;
-
-        vehiclePin = new Pin(MissionMap) { Label = "Vehicle", Type = PinType.Pin, Position = new Position(ViewModel.VehicleLatitude, ViewModel.VehicleLongitude) };
-        MissionMap.Pins.Add(vehiclePin);
-
-        routeLine = new Polyline { StrokeColor = Colors.OrangeRed, StrokeWidth = 3 };
-        MissionMap.Drawables.Add(routeLine);
+        DomainException.ThrowIfNull(ViewModel);
+        presenter = new MissionMapPresenter(MissionMap, ViewModel, settingsService);
 
         MissionMap.MapClicked += OnMapClicked;
-
-        var pointer = new PointerGestureRecognizer();
-        pointer.PointerMoved += OnPointerMoved;
-        GestureRecognizers.Add(pointer);
-
-        ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-        ViewModel.MissionChanged += OnMissionChanged;
-        ViewModel.FitToMissionRequested += OnFitToMissionRequested;
+        pointerGestureRecognizer = new PointerGestureRecognizer();
+        pointerGestureRecognizer.PointerMoved += OnPointerMoved;
+        GestureRecognizers.Add(pointerGestureRecognizer);
         Loaded += OnFirstLoaded;
-
-        RedrawMission();
     }
 
-    private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    private void OnMapClicked(object? sender, MapClickedEventArgs args) =>
+        presenter.HandleMapClick(args.Point.Latitude, args.Point.Longitude);
+
+    private void OnPointerMoved(object? sender, PointerEventArgs args)
     {
-        DomainException.ThrowIfNull(ViewModel);
-
-        if (e.PropertyName is nameof(MissionItemListViewModel.VehicleLatitude) or nameof(MissionItemListViewModel.VehicleLongitude))
+        if (args.GetPosition(MissionMap) is { } point)
         {
-            Position position = new(ViewModel.VehicleLatitude, ViewModel.VehicleLongitude);
-            vehiclePin.Position = position;
-
-            if (ViewModel.FollowVehicle)
-            {
-                CenterMap(position.Latitude, position.Longitude);
-            }
-        }
-        else if (e.PropertyName is nameof(MissionItemListViewModel.HomePosition))
-        {
-            RedrawMission();
-        }
-        else if (e.PropertyName is nameof(MissionItemListViewModel.SelectedMapType))
-        {
-            ApplyMapType(ViewModel.SelectedMapType);
+            presenter.UpdatePointerPosition(point.X, point.Y);
         }
     }
 
-    private void OnMissionChanged(object? sender, EventArgs e)
-    {
-        RedrawMission();
-    }
-
-    private void OnFitToMissionRequested(object? sender, EventArgs e)
-    {
-        var positions = new List<(double Latitude, double Longitude)>();
-        DomainException.ThrowIfNull(ViewModel);
-
-        if (ViewModel.HomePosition is { } home)
-        {
-            positions.Add((home.LatitudeDegrees, home.LongitudeDegrees));
-        }
-
-        foreach (var item in ViewModel.Mission.Items)
-        {
-            if (MissionItemListViewModel.PositionOf(item) is { } position)
-            {
-                positions.Add((position.LatitudeDegrees, position.LongitudeDegrees));
-            }
-        }
-
-        if (positions.Count == 0)
-        {
-            return;
-        }
-
-        if (positions.Count == 1)
-        {
-            CenterMap(positions[0].Latitude, positions[0].Longitude, DefaultZoomResolution);
-            return;
-        }
-
-        double minX = double.MaxValue, minY = double.MaxValue, maxX = double.MinValue, maxY = double.MinValue;
-        foreach (var (latitude, longitude) in positions)
-        {
-            var (x, y) = SphericalMercator.FromLonLat(longitude, latitude);
-            minX = Math.Min(minX, x);
-            minY = Math.Min(minY, y);
-            maxX = Math.Max(maxX, x);
-            maxY = Math.Max(maxY, y);
-        }
-
-        // 15% padding around the mission so pins are not glued to the viewport edge.
-        var paddingX = Math.Max((maxX - minX) * 0.15, 50);
-        var paddingY = Math.Max((maxY - minY) * 0.15, 50);
-        var box = new MRect(minX - paddingX, minY - paddingY, maxX + paddingX, maxY + paddingY);
-
-        map.Navigator.ZoomToBox(box);
-    }
-
-    private void ApplyMapType(string mapType)
-    {
-        var previous = map.Layers.FirstOrDefault();
-        map.Layers.Insert(0, CreateTileLayer(mapType));
-        if (previous is not null)
-        {
-            map.Layers.Remove(previous);
-        }
-    }
-
-    private static ILayer CreateTileLayer(string mapType)
-    {
-        return mapType switch
-        {
-            "Esri World Topo" => new TileLayer(KnownTileSources.Create(KnownTileSource.EsriWorldTopo)),
-            "Esri World Physical" => new TileLayer(KnownTileSources.Create(KnownTileSource.EsriWorldPhysical)),
-            "Esri Shaded Relief" => new TileLayer(KnownTileSources.Create(KnownTileSource.EsriWorldShadedRelief)),
-            "Esri Dark Gray" => new TileLayer(KnownTileSources.Create(KnownTileSource.EsriWorldDarkGrayBase)),
-            var _ => OpenStreetMap.CreateTileLayer()
-        };
-    }
-
-    private void RedrawMission()
-    {
-        DomainException.ThrowIfNull(ViewModel);
-
-        foreach (var pin in missionPins)
-        {
-            MissionMap.Pins.Remove(pin);
-        }
-
-        missionPins.Clear();
-
-        // The MapView only rebuilds its drawables layer on collection changes, so mutating
-        // the existing Polyline's positions never repaints. Replace the instance instead.
-        var newRouteLine = new Polyline { StrokeColor = Colors.OrangeRed, StrokeWidth = 3 };
-
-        if (ViewModel.HomePosition is { } home)
-        {
-            AddMissionPin("H: Home", home.LatitudeDegrees, home.LongitudeDegrees, Colors.Green);
-            newRouteLine.Positions.Add(new Position(home.LatitudeDegrees, home.LongitudeDegrees));
-        }
-
-        foreach (var item in ViewModel.Mission.Items)
-        {
-            if (MissionItemListViewModel.PositionOf(item) is not { } position)
-            {
-                continue;
-            }
-
-            AddMissionPin($"{item.Sequence + 1}: {item.Command}", position.LatitudeDegrees, position.LongitudeDegrees, Colors.DodgerBlue);
-            newRouteLine.Positions.Add(new Position(position.LatitudeDegrees, position.LongitudeDegrees));
-        }
-
-        MissionMap.Drawables.Remove(routeLine);
-        MissionMap.Drawables.Add(newRouteLine);
-        routeLine = newRouteLine;
-
-        MissionMap.RefreshGraphics();
-    }
-
-    private void AddMissionPin(string label, double latitude, double longitude, Color color)
-    {
-        var pin = new Pin(MissionMap)
-        {
-            Label = label,
-            Type = PinType.Pin,
-            Color = color,
-            Scale = 0.7f,
-            Position = new Position(latitude, longitude)
-        };
-        missionPins.Add(pin);
-        MissionMap.Pins.Add(pin);
-    }
-
-    private void OnMapClicked(object? sender, MapClickedEventArgs e)
-    {
-        DomainException.ThrowIfNull(ViewModel);
-
-        ViewModel.HandleMapClick(e.Point.Latitude, e.Point.Longitude);
-    }
-
-    private void OnPointerMoved(object? sender, PointerEventArgs e)
-    {
-        DomainException.ThrowIfNull(ViewModel);
-
-        if (e.GetPosition(MissionMap) is not { } point)
-        {
-            return;
-        }
-
-        var viewport = map.Navigator.Viewport;
-        if (viewport.Width <= 0 || viewport.Height <= 0)
-        {
-            return;
-        }
-
-        var world = viewport.ScreenToWorld(point.X, point.Y);
-        var (longitude, latitude) = SphericalMercator.ToLonLat(world.X, world.Y);
-        ViewModel.SetContextPosition(latitude, longitude);
-    }
-
-    private async void OnFirstLoaded(object? sender, EventArgs e)
+    private async void OnFirstLoaded(object? sender, EventArgs args)
     {
         Loaded -= OnFirstLoaded;
-        DomainException.ThrowIfNull(ViewModel);
-
-        // Without a vehicle fix, start the map near the user's own location.
-        if (ViewModel.VehicleLatitude == 0 && ViewModel.VehicleLongitude == 0)
+        if (ViewModel is not { VehicleLatitude: 0, VehicleLongitude: 0 })
         {
-            await CenterOnMyLocationAsync();
+            return;
         }
+
+        await CenterOnMyLocationAsync();
     }
 
     private async Task CenterOnMyLocationAsync()
@@ -253,86 +57,71 @@ public partial class MissionMapView : ExtendedContentView<MissionItemListViewMod
         try
         {
             var location = await Geolocation.Default.GetLastKnownLocationAsync()
-                           ?? await Geolocation.Default.GetLocationAsync(new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10)));
-            if (location is not null)
+                           ?? await Geolocation.Default.GetLocationAsync(
+                               new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10)));
+            if (location is not null && !disposed)
             {
-                CenterMap(location.Latitude, location.Longitude, DefaultZoomResolution);
+                presenter.CenterOn(location.Latitude, location.Longitude, true);
             }
         }
         catch (Exception)
         {
-            // Location permission missing or no provider available; the map keeps its current view.
+            // Location permission missing or no provider available; retain the current viewport.
         }
     }
 
-    private void CenterMap(double latitude, double longitude, double? resolution = null)
-    {
-        var (x, y) = SphericalMercator.FromLonLat(longitude, latitude);
-        if (resolution is { } r)
-        {
-            map.Navigator.CenterOnAndZoomTo(new MPoint(x, y), r);
-        }
-        else
-        {
-            map.Navigator.CenterOn(new MPoint(x, y));
-        }
-    }
+    private void OnZoomInClicked(object? sender, EventArgs args) => presenter.ZoomIn();
 
-    private double DefaultZoomResolution =>
-        WebMercatorInitialResolution / Math.Pow(2, plannerSettings.Current.Map.DefaultZoom);
+    private void OnZoomOutClicked(object? sender, EventArgs args) => presenter.ZoomOut();
 
-    private void OnZoomInClicked(object? sender, EventArgs e)
-    {
-        map.Navigator.ZoomIn();
-    }
+    private void OnZoomToVehicleClicked(object? sender, EventArgs args) => presenter.ZoomToVehicle();
 
-    private void OnZoomOutClicked(object? sender, EventArgs e)
-    {
-        map.Navigator.ZoomOut();
-    }
-
-    private void OnZoomToVehicleClicked(object? sender, EventArgs e)
-    {
-        DomainException.ThrowIfNull(ViewModel);
-        CenterMap(ViewModel.VehicleLatitude, ViewModel.VehicleLongitude, DefaultZoomResolution);
-    }
-
-    private async void OnCenterOnMyLocationClicked(object? sender, EventArgs e)
-    {
+    private async void OnCenterOnMyLocationClicked(object? sender, EventArgs args) =>
         await CenterOnMyLocationAsync();
-    }
 
-    private void OnToggleFollowVehicleClicked(object? sender, EventArgs e)
-    {
-        DomainException.ThrowIfNull(ViewModel);
-        ViewModel.FollowVehicle = !ViewModel.FollowVehicle;
-    }
+    private void OnToggleFollowVehicleClicked(object? sender, EventArgs args) =>
+        presenter.ToggleFollowVehicle();
 
     /// <inheritdoc />
-    public void Dispose()
+    public override void Dispose()
     {
-        DomainException.ThrowIfNull(ViewModel);
-        ViewModel.PropertyChanged -= ViewModel_PropertyChanged;
-        ViewModel.MissionChanged -= OnMissionChanged;
-        ViewModel.FitToMissionRequested -= OnFitToMissionRequested;
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
+        Loaded -= OnFirstLoaded;
         MissionMap.MapClicked -= OnMapClicked;
+        pointerGestureRecognizer.PointerMoved -= OnPointerMoved;
+        GestureRecognizers.Remove(pointerGestureRecognizer);
+        presenter.Dispose();
+
+        // The keyed mission editor is shared by the map and item-list views. Detach this view
+        // without disposing that DI-owned singleton; the service provider owns its lifetime.
+        BindingContext = null;
+        ViewModel = null;
     }
 }
 
-/// <inheritdoc />
+/// <summary>Hosts the mission map backed by the Flight Data mission editor.</summary>
 public class FlightDataMissionMapView : MissionMapView
 {
-    /// <inheritdoc />
-    public FlightDataMissionMapView() : base(ServiceHelper.GetRequiredService<IPlannerSettingsService>(), "FlightData")
+    /// <summary>Initializes a new instance of the <see cref="FlightDataMissionMapView"/> class.</summary>
+    public FlightDataMissionMapView() : base(
+        ServiceHelper.GetRequiredService<IPlannerSettingsService>(),
+        "FlightData")
     {
     }
 }
 
-/// <inheritdoc />
+/// <summary>Hosts the mission map backed by the Flight Planner mission editor.</summary>
 public class FlightPlannerMissionMapView : MissionMapView
 {
-    /// <inheritdoc />
-    public FlightPlannerMissionMapView() : base(ServiceHelper.GetRequiredService<IPlannerSettingsService>(), "FlightPlanner")
+    /// <summary>Initializes a new instance of the <see cref="FlightPlannerMissionMapView"/> class.</summary>
+    public FlightPlannerMissionMapView() : base(
+        ServiceHelper.GetRequiredService<IPlannerSettingsService>(),
+        "FlightPlanner")
     {
     }
 }
