@@ -2,51 +2,6 @@ using MissionPlanner.Maps.Catalog;
 
 namespace MissionPlanner.Maps.Settings;
 
-/// <summary>Identifies the user-facing group in which a map source is displayed.</summary>
-public enum MapSettingsSourceGroup
-{
-    /// <summary>An installed offline pack.</summary>
-    OfflinePacks,
-    /// <summary>A source controlled by the operator.</summary>
-    SelfHostedOrCustom,
-    /// <summary>A hosted online provider.</summary>
-    OnlineProviders,
-    /// <summary>The intentionally blank basemap.</summary>
-    BlankMap
-}
-
-/// <summary>Provides settings-page metadata for one selectable map source.</summary>
-/// <param name="Source">Catalog source definition.</param>
-/// <param name="Group">User-facing source group.</param>
-/// <param name="ProviderAndProduct">Provider and data-product display text.</param>
-/// <param name="Connectivity">Online or offline description.</param>
-/// <param name="Rendering">Raster or vector description.</param>
-/// <param name="CredentialState">Credential requirement and configured state.</param>
-/// <param name="AttributionPreview">Required attribution preview.</param>
-/// <param name="CacheBehavior">Allowed cache behavior.</param>
-/// <param name="OfflinePackAvailability">Offline-pack availability.</param>
-/// <param name="PolicyReviewDate">Policy review date.</param>
-/// <param name="TermsUri">Terms or source-details URI.</param>
-public sealed record MapSettingsSourceItem(
-    MapSourceDefinition Source,
-    MapSettingsSourceGroup Group,
-    string ProviderAndProduct,
-    string Connectivity,
-    string Rendering,
-    string CredentialState,
-    string AttributionPreview,
-    string CacheBehavior,
-    string OfflinePackAvailability,
-    DateOnly PolicyReviewDate,
-    Uri? TermsUri)
-{
-    /// <summary>Gets the user-facing source name.</summary>
-    public string DisplayName => Source.DisplayName;
-
-    /// <summary>Gets the stable source identifier.</summary>
-    public string Id => Source.Id;
-}
-
 /// <summary>Builds source settings metadata and resolves persisted selections safely.</summary>
 public static class MapSettingsSourceCatalog
 {
@@ -88,7 +43,10 @@ public static class MapSettingsSourceCatalog
         var values = sources.ToArray();
         var selected = values.FirstOrDefault(value => StringComparer.Ordinal.Equals(value.Id, selectedSourceId));
         if (selected is not null && IsAvailable(selected, isOnline))
+        {
             return selected;
+        }
+
         return values.FirstOrDefault(value => StringComparer.Ordinal.Equals(value.Id, fallbackSourceId) && IsAvailable(value, isOnline))
                ?? values.FirstOrDefault(value => value.Group == MapSettingsSourceGroup.OfflinePacks)
                ?? values.First(value => value.Group == MapSettingsSourceGroup.BlankMap);
@@ -101,7 +59,7 @@ public static class MapSettingsSourceCatalog
     {
         MapAccessKind.Blank => MapSettingsSourceGroup.BlankMap,
         MapAccessKind.LocalArchive or MapAccessKind.LocalDirectory => MapSettingsSourceGroup.OfflinePacks,
-        _ when source.PolicyId == "user-controlled-network-v1" => MapSettingsSourceGroup.SelfHostedOrCustom,
-        _ => MapSettingsSourceGroup.OnlineProviders
+        var _ when source.PolicyId == "user-controlled-network-v1" => MapSettingsSourceGroup.SelfHostedOrCustom,
+        var _ => MapSettingsSourceGroup.OnlineProviders
     };
 }

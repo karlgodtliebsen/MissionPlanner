@@ -37,9 +37,6 @@ public static class FirmwareConfigurator
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddFirmwareServices(this IServiceCollection services, IConfiguration configuration, Action<FirmwareOptions>? options = null)
     {
-        //services.Configure<FirmwareOptions>(configuration.GetSection(FirmwareOptions.SectionName));
-        //IOptions<FirmwareOptions> options,
-
         ArgumentNullException.ThrowIfNull(services);
 
         var firmwareOptions = services.AddOptions<FirmwareOptions>(); //as long as we are not using appsettings.json, we can use this to configure the options directly in code.

@@ -1,4 +1,4 @@
-using BruTile;
+﻿using BruTile;
 using BruTile.Predefined;
 using Mapsui.Layers;
 using Mapsui.Tiling.Layers;
@@ -16,7 +16,10 @@ public sealed class MapsuiHostedBasemapFactory(HostedMapSourceService hostedSour
     {
         var state = await hostedSources.GetStateAsync(source.Id, cancellationToken).ConfigureAwait(false);
         if (!state.IsSelectable)
+        {
             throw new HostedMapException(HostedMapFailureKind.MissingCredential, $"{state.Source.DisplayName} is disabled until its credential is configured.");
+        }
+
         var tileSource = new HostedTileSource(state, hostedSources, httpClientFactory.CreateClient());
         return new TileLayer(tileSource) { Name = CompositeMapsuiBasemapFactory.BasemapLayerName };
     }
@@ -46,14 +49,17 @@ public sealed class MapsuiHostedBasemapFactory(HostedMapSourceService hostedSour
             try
             {
                 using var response = await client.SendAsync(request, HttpCompletionOption.ResponseContentRead).ConfigureAwait(false);
-                if (!response.IsSuccessStatusCode)
-                    throw HostedMapSourceService.ClassifyFailure(new HttpRequestException(), response.StatusCode);
-                return await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+                return !response.IsSuccessStatusCode
+                    ? throw HostedMapSourceService.ClassifyFailure(new HttpRequestException(), response.StatusCode)
+                    : await response.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
             }
             catch (HostedMapException) { throw; }
             catch (Exception exception) { throw HostedMapSourceService.ClassifyFailure(exception); }
         }
 
-        public void Dispose() => client.Dispose();
+        public void Dispose()
+        {
+            client.Dispose();
+        }
     }
 }

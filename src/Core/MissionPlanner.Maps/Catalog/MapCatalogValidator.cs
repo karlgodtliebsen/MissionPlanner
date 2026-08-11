@@ -1,10 +1,5 @@
 namespace MissionPlanner.Maps.Catalog;
 
-/// <summary>Represents one map catalog validation error.</summary>
-/// <param name="Path">Logical catalog path.</param>
-/// <param name="Message">Validation message.</param>
-public sealed record MapCatalogValidationIssue(string Path, string Message);
-
 /// <summary>Validates map catalog structure and cross-references.</summary>
 public static class MapCatalogValidator
 {
@@ -16,9 +11,14 @@ public static class MapCatalogValidator
         ArgumentNullException.ThrowIfNull(catalog);
         var issues = new List<MapCatalogValidationIssue>();
         if (catalog.SchemaVersion != 1)
-            issues.Add(new("schemaVersion", $"Unsupported schema version {catalog.SchemaVersion}."));
+        {
+            issues.Add(new MapCatalogValidationIssue("schemaVersion", $"Unsupported schema version {catalog.SchemaVersion}."));
+        }
+
         if (string.IsNullOrWhiteSpace(catalog.CatalogVersion))
-            issues.Add(new("catalogVersion", "A catalog version is required."));
+        {
+            issues.Add(new MapCatalogValidationIssue("catalogVersion", "A catalog version is required."));
+        }
 
         ValidateUnique(catalog.Providers, item => item.Id, "providers", issues);
         ValidateUnique(catalog.Products, item => item.Id, "products", issues);
@@ -34,36 +34,62 @@ public static class MapCatalogValidator
         foreach (var product in catalog.Products)
         {
             if (!providerIds.Contains(product.ProviderId))
-                issues.Add(new($"products/{product.Id}/providerId", $"Unknown provider '{product.ProviderId}'."));
+            {
+                issues.Add(new MapCatalogValidationIssue($"products/{product.Id}/providerId", $"Unknown provider '{product.ProviderId}'."));
+            }
         }
 
         foreach (var source in catalog.Sources)
         {
             var path = $"sources/{source.Id}";
             if (!productIds.Contains(source.ProductId))
-                issues.Add(new($"{path}/productId", $"Unknown product '{source.ProductId}'."));
+            {
+                issues.Add(new MapCatalogValidationIssue($"{path}/productId", $"Unknown product '{source.ProductId}'."));
+            }
+
             if (!policyIds.Contains(source.PolicyId))
-                issues.Add(new($"{path}/policyId", $"Unknown policy '{source.PolicyId}'."));
+            {
+                issues.Add(new MapCatalogValidationIssue($"{path}/policyId", $"Unknown policy '{source.PolicyId}'."));
+            }
+
             foreach (var attributionId in source.AttributionIds.Distinct(StringComparer.Ordinal))
             {
                 if (!attributionIds.Contains(attributionId))
-                    issues.Add(new($"{path}/attributionIds", $"Unknown attribution '{attributionId}'."));
+                {
+                    issues.Add(new MapCatalogValidationIssue($"{path}/attributionIds", $"Unknown attribution '{attributionId}'."));
+                }
             }
 
             if (source.MinimumZoom < 0 || source.MaximumZoom < source.MinimumZoom)
-                issues.Add(new($"{path}/zoom", "Zoom limits must be non-negative and ordered."));
+            {
+                issues.Add(new MapCatalogValidationIssue($"{path}/zoom", "Zoom limits must be non-negative and ordered."));
+            }
 
             var isHttp = source.AccessKind is MapAccessKind.HttpXyz or MapAccessKind.HttpTms or MapAccessKind.Wms or MapAccessKind.Wmts;
             if (isHttp && !IsHttpTemplate(source.UriTemplate))
-                issues.Add(new($"{path}/uriTemplate", "Network sources require an absolute HTTP or HTTPS URI template."));
+            {
+                issues.Add(new MapCatalogValidationIssue($"{path}/uriTemplate", "Network sources require an absolute HTTP or HTTPS URI template."));
+            }
+
             if (!isHttp && source.UriTemplate is not null)
-                issues.Add(new($"{path}/uriTemplate", "Only network sources may define a URI template."));
+            {
+                issues.Add(new MapCatalogValidationIssue($"{path}/uriTemplate", "Only network sources may define a URI template."));
+            }
+
             if (source.AccessKind == MapAccessKind.LocalArchive && source.ArchiveFormat == MapArchiveFormat.None)
-                issues.Add(new($"{path}/archiveFormat", "Local archive sources require an archive format."));
+            {
+                issues.Add(new MapCatalogValidationIssue($"{path}/archiveFormat", "Local archive sources require an archive format."));
+            }
+
             if (source.AccessKind != MapAccessKind.LocalArchive && source.ArchiveFormat != MapArchiveFormat.None)
-                issues.Add(new($"{path}/archiveFormat", "Only local archive sources may define an archive format."));
+            {
+                issues.Add(new MapCatalogValidationIssue($"{path}/archiveFormat", "Only local archive sources may define an archive format."));
+            }
+
             if (source.AccessKind == MapAccessKind.Blank && source.CredentialRequirement != MapCredentialRequirement.None)
-                issues.Add(new($"{path}/credentialRequirement", "Blank sources cannot require credentials."));
+            {
+                issues.Add(new MapCatalogValidationIssue($"{path}/credentialRequirement", "Blank sources cannot require credentials."));
+            }
         }
 
         return issues;
@@ -75,7 +101,9 @@ public static class MapCatalogValidator
     {
         var issues = Validate(catalog);
         if (issues.Count != 0)
+        {
             throw new InvalidDataException("Invalid map catalog:" + Environment.NewLine + string.Join(Environment.NewLine, issues.Select(issue => $"- {issue.Path}: {issue.Message}")));
+        }
     }
 
     private static void ValidateUnique<T>(IEnumerable<T> values, Func<T, string> idSelector, string path, ICollection<MapCatalogValidationIssue> issues)
@@ -83,9 +111,13 @@ public static class MapCatalogValidator
         foreach (var group in values.GroupBy(idSelector, StringComparer.Ordinal))
         {
             if (string.IsNullOrWhiteSpace(group.Key))
-                issues.Add(new(path, "Identifiers cannot be empty."));
+            {
+                issues.Add(new MapCatalogValidationIssue(path, "Identifiers cannot be empty."));
+            }
             else if (group.Skip(1).Any())
-                issues.Add(new($"{path}/{group.Key}", $"Duplicate identifier '{group.Key}'."));
+            {
+                issues.Add(new MapCatalogValidationIssue($"{path}/{group.Key}", $"Duplicate identifier '{group.Key}'."));
+            }
         }
     }
 

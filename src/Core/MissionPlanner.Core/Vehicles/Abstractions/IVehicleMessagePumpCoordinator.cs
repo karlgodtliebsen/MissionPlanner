@@ -8,10 +8,3 @@ public interface IVehicleMessagePumpCoordinator
     /// <returns>A reference-counted message-pump lease.</returns>
     Task<IVehicleMessagePumpLease> AcquireAsync(CancellationToken cancellationToken = default);
 }
-
-/// <summary>Represents one connection's lease on the shared inbound MAVLink dispatcher.</summary>
-public interface IVehicleMessagePumpLease : IAsyncDisposable
-{
-    /// <summary>Gets the shared message pump.</summary>
-    IVehicleMessagePump Pump { get; }
-}

@@ -17,33 +17,3 @@ public sealed record UserNotification(
     UserNotificationSeverity Severity = UserNotificationSeverity.Information,
     UserNotificationPresentation Presentation = UserNotificationPresentation.Toast,
     VehicleId? VehicleId = null);
-
-/// <summary>
-/// Specifies the semantic severity of a user notification.
-/// </summary>
-public enum UserNotificationSeverity
-{
-    /// <summary>Indicates informational feedback.</summary>
-    Information,
-
-    /// <summary>Indicates a warning that may require attention.</summary>
-    Warning,
-
-    /// <summary>Indicates an operation failure.</summary>
-    Error
-}
-
-/// <summary>
-/// Specifies the preferred UI surface for a notification.
-/// </summary>
-public enum UserNotificationPresentation
-{
-    /// <summary>Requests short-lived toast feedback.</summary>
-    Toast,
-
-    /// <summary>Requests a persistent or actionable banner.</summary>
-    Banner,
-
-    /// <summary>Requests a modal dialog.</summary>
-    Dialog
-}

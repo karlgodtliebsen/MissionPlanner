@@ -2,7 +2,9 @@
 
 namespace MissionPlanner.App.Services;
 
-/// <summary>Persists the non-secret Planner settings document through MAUI Preferences.</summary>
+/// <summary>
+/// Persists the non-secret Planner settings document through MAUI Preferences.
+/// </summary>
 public sealed class PreferencesPlannerSettingsStore : IPlannerSettingsStore
 {
     private const string PreferenceKey = "planner.settings.v2";

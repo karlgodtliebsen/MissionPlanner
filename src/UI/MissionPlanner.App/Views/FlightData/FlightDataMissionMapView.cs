@@ -4,6 +4,7 @@ using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.App.Maps;
 using MissionPlanner.Maps.Sources;
 using MissionPlanner.Maps.Attribution;
+using MissionPlanner.Maps.Terrain;
 
 namespace MissionPlanner.App.Views.FlightData;
 
@@ -16,6 +17,7 @@ public partial class FlightDataMissionMapView : MissionMapView
         ServiceHelper.GetRequiredService<IMapSourceResolver>(),
         ServiceHelper.GetRequiredService<IMapsuiBasemapFactory>(),
         ServiceHelper.GetRequiredService<IMapAttributionCoordinator>(),
+        ServiceHelper.GetRequiredService<ITerrainElevationService>(),
         ServiceHelper.GetRequiredService<FlightDataMissionMapViewModel>())
     {
     }

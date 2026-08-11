@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MissionPlanner.App.Maps;
 using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Services;
@@ -38,17 +39,10 @@ using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Library;
 using MissionPlanner.Library.Configuration;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
+using MissionPlanner.Maps.Configuration;
 using MissionPlanner.Maps.Credentials;
-using MissionPlanner.Maps.Attribution;
-using MissionPlanner.Maps.Catalog;
-using MissionPlanner.Maps.Custom;
-using MissionPlanner.Maps.Hosted;
-using MissionPlanner.Maps.Esri;
 using MissionPlanner.Maps.Http;
 using MissionPlanner.Maps.Offline;
-using MissionPlanner.Maps.Policy;
-using MissionPlanner.Maps.Sources;
-using MissionPlanner.App.Maps;
 using MissionPlanner.MavLink.Configuration;
 using MissionPlanner.Simulation;
 using MissionPlanner.Simulation.Abstractions;
@@ -85,35 +79,18 @@ public static class ApplicationConfigurator
 
         services.TryAddTransient<IPlannerSettingsStore, PreferencesPlannerSettingsStore>();
         services.TryAddTransient<IPlannerSecretStore, SecurePlannerSecretStore>();
+
         services.TryAddTransient<IMapSecretStore, PlannerMapSecretStoreAdapter>();
-        services.TryAddSingleton<IMapCatalog, BuiltInMapCatalogService>();
-        services.TryAddSingleton(provider => provider.GetRequiredService<IMapCatalog>().Current);
-        services.TryAddSingleton<IMapPolicyEvaluator, MapPolicyEvaluator>();
-        services.TryAddSingleton<HttpMessageHandler>(_ => new SocketsHttpHandler());
-        services.TryAddSingleton(_ => new MapHttpOptions(
-            $"MissionPlanner/{typeof(App).Assembly.GetName().Version?.ToString(3) ?? "unknown"} (+https://ardupilot.org/planner/)",
-            TimeSpan.FromSeconds(20)));
-        services.TryAddSingleton<IMapHttpClientFactory, MapHttpClientFactory>();
-        services.TryAddSingleton<ICustomMapSourceStore>(_ => new JsonCustomMapSourceStore(Path.Combine(FileSystem.AppDataDirectory, "Maps", "custom-sources.json")));
-        services.TryAddSingleton<CustomMapSourceService>();
-        services.TryAddSingleton(_ => new FileOfflineMapPackRepository(FileSystem.AppDataDirectory));
-        services.TryAddSingleton<IOfflineMapPackRepository>(provider => provider.GetRequiredService<FileOfflineMapPackRepository>());
-        services.TryAddSingleton<IOfflineMapPackValidator, MbTilesOfflineMapPackValidator>();
-        services.TryAddSingleton<IOfflineMapPackInstaller, OfflineMapPackInstaller>();
         services.TryAddSingleton<IActiveMapSourceStore, PlannerActiveMapSourceStore>();
-        services.TryAddSingleton<IOfflineMapPackManager, OfflineMapPackManager>();
-        services.TryAddSingleton<HostedMapSourceService>();
-        services.TryAddSingleton<IMapSourceResolver, MapSourceResolver>();
         services.TryAddSingleton<MapsuiHostedBasemapFactory>();
         services.TryAddSingleton<MapsuiMbTilesSourceFactory>();
         services.TryAddSingleton<IMapsuiBasemapFactory, CompositeMapsuiBasemapFactory>();
-        services.TryAddSingleton(_ => new MapHttpDiskCache(Path.Combine(FileSystem.CacheDirectory, "Maps", "Http"), 256L * 1_048_576));
         services.TryAddSingleton<IPlannerSettingsService, PlannerSettingsService>();
         services.TryAddSingleton<IMapHttpRuntimeSettings, PlannerMapHttpRuntimeSettings>();
-        services.TryAddSingleton<IMapHttpResourceFetcher, MapHttpResourceFetcher>();
-        services.TryAddSingleton<IMapAttributionService, MapAttributionService>();
-        services.TryAddTransient<IMapDynamicAttributionResolver, EsriAttributionResolver>();
-        services.TryAddTransient<IMapAttributionCoordinator, MapAttributionCoordinator>();
+        services.TryAddSingleton(_ => new MapHttpOptions(
+            $"MissionPlanner/{typeof(App).Assembly.GetName().Version?.ToString(3) ?? "unknown"} (+https://ardupilot.org/planner/)",
+            TimeSpan.FromSeconds(20)));
+
         services.TryAddTransient<ISimulatorProfileStore, PreferencesSimulatorProfileStore>();
         services.TryAddTransient<ISimulatorProfileService, SimulatorProfileService>();
         services.TryAddTransient<ISimulationScenarioPresetStore, PreferencesSimulationScenarioPresetStore>();
@@ -124,7 +101,6 @@ public static class ApplicationConfigurator
         services.Replace(ServiceDescriptor.Singleton<ISimulatorOwnedProcessRecovery, LocalSimulatorOwnedProcessRecovery>());
         services.Replace(ServiceDescriptor.Singleton<ISimulatorRuntime, ArduPilotSitlRuntime>());
 
-        //services.TryAddSingleton<Views.Vehicles.Views.ModelMapper>();
         services.TryAddTransient<ApplicationStateService>();
         services.TryAddTransient<ParametersFileHandler>();
         services.TryAddTransient<PlannerSettingsRuntime>();
@@ -158,6 +134,7 @@ public static class ApplicationConfigurator
             .AddDomainServices(configuration)
             .AddMavLinkTransportServices(configuration)
             .AddFirmwareServices(configuration)
+            .AddMapServices(configuration)
             .AddSimulationServices(configuration)
             .AddMavLinkServices(configuration)
             .AddLogging(configuration, (s, l, c) =>

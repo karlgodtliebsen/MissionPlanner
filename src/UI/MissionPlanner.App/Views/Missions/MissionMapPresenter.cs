@@ -8,6 +8,7 @@ using MissionPlanner.App.Maps;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Maps.Sources;
 using MissionPlanner.Maps.Attribution;
+using MissionPlanner.Maps.Terrain;
 
 namespace MissionPlanner.App.Views.Missions;
 
@@ -24,21 +25,25 @@ internal sealed class MissionMapPresenter : IDisposable
     private readonly Mapsui.Map map = new();
     private readonly MapBasemapController basemapController;
     private readonly IMapAttributionCoordinator attributionCoordinator;
+    private readonly ITerrainElevationService terrainElevationService;
     private readonly Pin vehiclePin;
     private readonly List<Pin> missionPins = [];
     private Polyline routeLine;
     private long lastPointerUpdate;
+    private CancellationTokenSource? pointerElevationCancellation;
+    private long pointerGeneration;
     private CancellationTokenSource? lifecycleCancellation;
     private bool active;
     private bool disposed;
 
     /// <summary>Initializes a presenter for a map view and shared mission editor.</summary>
-    public MissionMapPresenter(MapView mapView, MissionMapViewModel viewModel, IPlannerSettingsService plannerSettings, IMapSourceResolver sourceResolver, IMapsuiBasemapFactory basemapFactory, IMapAttributionCoordinator attributionCoordinator)
+    public MissionMapPresenter(MapView mapView, MissionMapViewModel viewModel, IPlannerSettingsService plannerSettings, IMapSourceResolver sourceResolver, IMapsuiBasemapFactory basemapFactory, IMapAttributionCoordinator attributionCoordinator, ITerrainElevationService terrainElevationService)
     {
         this.mapView = mapView;
         this.viewModel = viewModel;
         this.plannerSettings = plannerSettings;
         this.attributionCoordinator = attributionCoordinator;
+        this.terrainElevationService = terrainElevationService;
         basemapController = new MapBasemapController(map, sourceResolver, basemapFactory, new MauiMapUiDispatcher(mapView.Dispatcher));
 
         attributionCoordinator.Changed += OnAttributionChanged;
@@ -71,6 +76,9 @@ internal sealed class MissionMapPresenter : IDisposable
         lifecycleCancellation?.Cancel();
         lifecycleCancellation?.Dispose();
         lifecycleCancellation = null;
+        pointerElevationCancellation?.Cancel();
+        pointerElevationCancellation?.Dispose();
+        pointerElevationCancellation = null;
     }
 
     /// <summary>Forwards a geographic primary click to the mission editor.</summary>
@@ -98,6 +106,7 @@ internal sealed class MissionMapPresenter : IDisposable
         var world = viewport.ScreenToWorld(x, y);
         var (longitude, latitude) = SphericalMercator.ToLonLat(world.X, world.Y);
         viewModel.SetPointerPosition(latitude, longitude, altitudeMeters: null);
+        RequestPointerElevation(latitude, longitude);
     }
 
     /// <summary>Centers the map on a geographic position.</summary>
@@ -162,6 +171,44 @@ internal sealed class MissionMapPresenter : IDisposable
     }
 
     private double DefaultZoomResolution => WebMercatorInitialResolution / Math.Pow(2, plannerSettings.Current.Map.DefaultZoom);
+
+    private void RequestPointerElevation(double latitude, double longitude)
+    {
+        var generation = ++pointerGeneration;
+        pointerElevationCancellation?.Cancel();
+        pointerElevationCancellation?.Dispose();
+        pointerElevationCancellation = new CancellationTokenSource();
+        _ = UpdatePointerElevationAsync(latitude, longitude, generation, pointerElevationCancellation.Token);
+    }
+
+    private async Task UpdatePointerElevationAsync(double latitude, double longitude, long generation, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(250, cancellationToken);
+            var elevation = await terrainElevationService.GetElevationMetersAsync(latitude, longitude, cancellationToken);
+            if (generation != pointerGeneration || disposed)
+                return;
+            await new MauiMapUiDispatcher(mapView.Dispatcher).InvokeAsync(
+                () => viewModel.SetPointerPosition(latitude, longitude, elevation), cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            // Pointer movement, view deactivation, or the bounded HTTP client cancelled the lookup.
+        }
+        catch (HttpRequestException)
+        {
+            // Terrain is optional; latitude and longitude remain available offline.
+        }
+        catch (InvalidDataException)
+        {
+            // Ignore an invalid terrain tile and retain the coordinate display.
+        }
+        catch (IOException)
+        {
+            // Terrain cache I/O is optional and must not affect map interaction.
+        }
+    }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs args)
     {

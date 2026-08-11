@@ -6,6 +6,7 @@ using MissionPlanner.Library;
 using MissionPlanner.App.Maps;
 using MissionPlanner.Maps.Sources;
 using MissionPlanner.Maps.Attribution;
+using MissionPlanner.Maps.Terrain;
 
 namespace MissionPlanner.App.Views.Missions;
 
@@ -19,11 +20,11 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
     private bool disposed;
 
     /// <summary>Initializes a new instance of the <see cref="MissionMapView"/> class.</summary>
-    public MissionMapView(IPlannerSettingsService settingsService, IMapSourceResolver sourceResolver, IMapsuiBasemapFactory basemapFactory, IMapAttributionCoordinator attributionCoordinator, MissionMapViewModel viewModel) : base(viewModel)
+    public MissionMapView(IPlannerSettingsService settingsService, IMapSourceResolver sourceResolver, IMapsuiBasemapFactory basemapFactory, IMapAttributionCoordinator attributionCoordinator, ITerrainElevationService terrainElevationService, MissionMapViewModel viewModel) : base(viewModel)
     {
         InitializeComponent();
         DomainException.ThrowIfNull(ViewModel);
-        presenter = new MissionMapPresenter(MissionMap, ViewModel, settingsService, sourceResolver, basemapFactory, attributionCoordinator);
+        presenter = new MissionMapPresenter(MissionMap, ViewModel, settingsService, sourceResolver, basemapFactory, attributionCoordinator, terrainElevationService);
 
         MissionMap.MapClicked += OnMapClicked;
         MissionMap.MapPointerMoved += OnMapPointerMoved;

@@ -5,11 +5,30 @@ using MissionPlanner.Maps.Catalog;
 using MissionPlanner.Maps.Credentials;
 using MissionPlanner.Maps.Http;
 using MissionPlanner.Maps.Policy;
+using MissionPlanner.Maps.Terrain;
 
 namespace MissionPlanner.Core.Tests.Maps;
 
 public sealed class MapPolicyAndInfrastructureTests
 {
+    [Fact]
+    public async Task SrtmReader_InterpolatesBigEndianTerrainGrid()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"mp-srtm-{Guid.NewGuid():N}.hgt");
+        try
+        {
+            short[] samples = [100, 110, 120, 50, 60, 70, 0, 10, 20];
+            var bytes = samples.SelectMany(value => new[] { (byte)(value >> 8), (byte)value }).ToArray();
+            await File.WriteAllBytesAsync(path, bytes, TestContext.Current.CancellationToken);
+
+            (await SrtmHgtReader.ReadAsync(path, 55.5, 12.5, 55, 12, TestContext.Current.CancellationToken)).Should().Be(60);
+        }
+        finally
+        {
+            if (File.Exists(path)) File.Delete(path);
+        }
+    }
+
     [Fact]
     public void PolicyEvaluator_IntersectsCapabilityAndPolicyAndRestrictsOsm()
     {

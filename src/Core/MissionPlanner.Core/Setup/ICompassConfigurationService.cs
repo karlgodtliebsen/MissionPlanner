@@ -48,8 +48,3 @@ public interface ICompassConfigurationService
     /// <returns>A task that completes after refresh requests are sent.</returns>
     Task RefreshAsync(VehicleId vehicleId, CancellationToken cancellationToken = default);
 }
-
-/// <summary>Represents the outcome of a confirmed compass parameter write.</summary>
-/// <param name="Success">Whether the vehicle confirmed the new value by readback.</param>
-/// <param name="Message">A user-facing explanation of the outcome.</param>
-public sealed record CompassParameterApplyResult(bool Success, string Message);

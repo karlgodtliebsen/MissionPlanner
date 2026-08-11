@@ -3,21 +3,6 @@ using MissionPlanner.Maps.Sources;
 
 namespace MissionPlanner.Maps.Attribution;
 
-/// <summary>Coordinates visible basemap attribution independently of a UI framework.</summary>
-public interface IMapAttributionCoordinator
-{
-    /// <summary>Gets the current display and export state.</summary>
-    MapAttributionOverlayState Current { get; }
-    /// <summary>Raised when current attribution changes.</summary>
-    event EventHandler<MapAttributionOverlayState>? Changed;
-    /// <summary>Tracks a committed resolved basemap.</summary>
-    ValueTask SetBasemapAsync(ResolvedMapSource? source, CancellationToken cancellationToken = default);
-    /// <summary>Refreshes dynamic metadata for the current basemap.</summary>
-    ValueTask RefreshAsync(CancellationToken cancellationToken = default);
-    /// <summary>Toggles compact and expanded presentation.</summary>
-    void ToggleExpanded();
-}
-
 /// <summary>Default deduplicating attribution coordinator.</summary>
 public sealed class MapAttributionCoordinator(
     IMapAttributionService attributionService,
@@ -44,7 +29,7 @@ public sealed class MapAttributionCoordinator(
         var wasExpanded = Current.IsExpanded;
         if (currentSource is null)
         {
-            Publish(new(new MapAttributionSnapshot([]), wasExpanded));
+            Publish(new MapAttributionOverlayState(new MapAttributionSnapshot([]), wasExpanded));
             return;
         }
 
@@ -52,7 +37,7 @@ public sealed class MapAttributionCoordinator(
         var snapshot = await attributionService.GetCurrentAsync([contributor], dynamicResolver, cancellationToken).ConfigureAwait(false);
         // Static reviewed entries are always retained, so mandatory attribution never disappears
         // when provider metadata is unavailable.
-        Publish(new(snapshot, wasExpanded, currentSource.EffectivePolicy.RequiresVisibleAttribution && snapshot.OnMap.Count == 0));
+        Publish(new MapAttributionOverlayState(snapshot, wasExpanded, currentSource.EffectivePolicy.RequiresVisibleAttribution && snapshot.OnMap.Count == 0));
     }
 
     /// <inheritdoc />

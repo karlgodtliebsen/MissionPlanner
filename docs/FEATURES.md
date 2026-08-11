@@ -26,6 +26,8 @@ Map exports have a renderer-independent aggregate attribution footer API; no scr
 
 The live mission map displays a single theme-aware attribution overlay shared by Plan and FlightData. It follows committed source switches, deduplicates static and dynamic provider credits, preserves mandatory reviewed fallback during metadata failures, toggles compact/expanded text accessibly, and exposes the same current snapshot to future exporters.
 
+Pointer status now resolves terrain elevation above mean sea level from cached SRTM HGT data after a short cancellable debounce. Coordinate display remains immediate and continues to work when terrain data is unavailable; stale elevation responses cannot overwrite a newer pointer position.
+
 
 
 ## MavLink

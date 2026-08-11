@@ -192,6 +192,10 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     public partial bool HasStatusMessage { get; set; }
 
+    /// <summary>Short feedback message for the last menu action.</summary>
+    [ObservableProperty]
+    public partial bool HasAltitueMessage { get; set; }
+
     /// <summary>The stable catalog, pack, or custom source identifier rendered by map views.</summary>
     [ObservableProperty]
     public partial string SelectedSourceId { get; set; } = "osm-standard";
@@ -223,6 +227,11 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     partial void OnStatusMessageChanged(string? value)
     {
         HasStatusMessage = value is not null;
+    }
+
+    partial void OnPointerAltitudeChanged(double? oldValue, double? newValue)
+    {
+        HasAltitueMessage = newValue is not null;
     }
 
     /// <summary>
