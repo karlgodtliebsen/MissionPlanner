@@ -1,4 +1,5 @@
 ﻿using Mapsui.UI.Maui;
+using Mapsui;
 using MissionPlanner.App.Navigation;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Library;
@@ -11,7 +12,6 @@ namespace MissionPlanner.App.Views.Missions;
 /// </summary>
 public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
 {
-    private readonly PointerGestureRecognizer pointerGestureRecognizer;
     private readonly MissionMapPresenter presenter;
     private bool disposed;
 
@@ -23,9 +23,7 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
         presenter = new MissionMapPresenter(MissionMap, ViewModel, settingsService);
 
         MissionMap.MapClicked += OnMapClicked;
-        pointerGestureRecognizer = new PointerGestureRecognizer();
-        pointerGestureRecognizer.PointerMoved += OnPointerMoved;
-        GestureRecognizers.Add(pointerGestureRecognizer);
+        MissionMap.MapPointerMoved += OnMapPointerMoved;
         Loaded += OnFirstLoaded;
     }
 
@@ -34,12 +32,9 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
         presenter.HandleMapClick(args.Point.Latitude, args.Point.Longitude);
     }
 
-    private void OnPointerMoved(object? sender, PointerEventArgs args)
+    private void OnMapPointerMoved(object? sender, MapEventArgs args)
     {
-        if (args.GetPosition(MissionMap) is { } point)
-        {
-            presenter.UpdatePointerPosition(point.X, point.Y);
-        }
+        presenter.UpdatePointerPosition(args.ScreenPosition.X, args.ScreenPosition.Y);
     }
 
     private async void OnFirstLoaded(object? sender, EventArgs args)
@@ -107,8 +102,7 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
         disposed = true;
         Loaded -= OnFirstLoaded;
         MissionMap.MapClicked -= OnMapClicked;
-        pointerGestureRecognizer.PointerMoved -= OnPointerMoved;
-        GestureRecognizers.Remove(pointerGestureRecognizer);
+        MissionMap.MapPointerMoved -= OnMapPointerMoved;
         presenter.Dispose();
 
         // The keyed mission editor is shared by the map and item-list views. Detach this view

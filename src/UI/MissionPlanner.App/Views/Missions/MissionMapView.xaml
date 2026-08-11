@@ -152,15 +152,15 @@
 
         <Label
             Grid.Column="5"
-            Text="{Binding PointerLatitude}"
+            Text="{Binding PointerLatitude, StringFormat='Lat: {0:F7}'}"
             VerticalOptions="Center" />
         <Label
             Grid.Column="6"
-            Text="{Binding PointerLongitude}"
+            Text="{Binding PointerLongitude, StringFormat='Lon: {0:F7}'}"
             VerticalOptions="Center" />
         <Label
             Grid.Column="7"
-            Text="{Binding PointerAltitude}"
+            Text="{Binding PointerAltitude, StringFormat='Alt: {0:F1} m'}"
             VerticalOptions="Center" />
 
     </Grid>

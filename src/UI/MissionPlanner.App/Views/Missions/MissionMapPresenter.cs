@@ -74,7 +74,7 @@ internal sealed class MissionMapPresenter : IDisposable
         lastPointerUpdate = now;
         var world = viewport.ScreenToWorld(x, y);
         var (longitude, latitude) = SphericalMercator.ToLonLat(world.X, world.Y);
-        viewModel.SetPointerPosition(latitude, longitude, 0); // Assuming altitude is 0 for now, adjust as needed
+        viewModel.SetPointerPosition(latitude, longitude, altitudeMeters: null);
     }
 
     /// <summary>Centers the map on a geographic position.</summary>

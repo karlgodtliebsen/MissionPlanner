@@ -281,11 +281,14 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>Updates the bindable geographic coordinate currently under the map pointer.</summary>
-    public void SetPointerPosition(double latitude, double longitude, double altitude)
+    /// <param name="latitude">Latitude in degrees.</param>
+    /// <param name="longitude">Longitude in degrees.</param>
+    /// <param name="altitudeMeters">Terrain altitude in metres, when supplied by an elevation service.</param>
+    public void SetPointerPosition(double latitude, double longitude, double? altitudeMeters)
     {
         PointerLatitude = latitude;
         PointerLongitude = longitude;
-        PointerAltitude = altitude;
+        PointerAltitude = altitudeMeters;
         SetContextPosition(latitude, longitude);
     }
 
