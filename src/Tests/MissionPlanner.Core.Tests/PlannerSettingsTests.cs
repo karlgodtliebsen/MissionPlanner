@@ -51,6 +51,29 @@ public sealed class PlannerSettingsTests
         store.Document.Should().Contain($"\"schemaVersion\": {PlannerSettings.CurrentSchemaVersion}");
     }
 
+    /// <summary>Verifies every legacy provider/style pair retains the equivalent stable source.</summary>
+    [Theory]
+    [InlineData("OpenStreetMap", "Standard", "osm-standard")]
+    [InlineData("Esri", "Topographic", "esri-world-topo")]
+    [InlineData("Esri", "Physical", "esri-world-physical")]
+    [InlineData("Esri", "ShadedRelief", "esri-world-shaded-relief")]
+    [InlineData("Esri", "DarkGray", "esri-world-dark-gray")]
+    public async Task InitializeMigratesLegacyMapSelection(string provider, string style, string expected)
+    {
+        var document = $"{{\"schemaVersion\":3,\"map\":{{\"provider\":\"{provider}\",\"style\":\"{style}\"}}}}";
+        var result = await CreateService(new MemoryStore(document)).InitializeAsync(TestContext.Current.CancellationToken);
+        result.Settings.Map.SelectedSourceId.Should().Be(expected);
+    }
+
+    /// <summary>Verifies an explicit modern source is never overwritten during schema migration.</summary>
+    [Fact]
+    public async Task InitializePreservesModernMapSelection()
+    {
+        const string document = """{"schemaVersion":3,"map":{"selectedSourceId":"custom:user","provider":"Esri","style":"Physical"}}""";
+        var result = await CreateService(new MemoryStore(document)).InitializeAsync(TestContext.Current.CancellationToken);
+        result.Settings.Map.SelectedSourceId.Should().Be("custom:user");
+    }
+
     /// <summary>Verifies invalid ranges and connection values block persistence.</summary>
     [Fact]
     public async Task SaveRejectsInvalidSettings()

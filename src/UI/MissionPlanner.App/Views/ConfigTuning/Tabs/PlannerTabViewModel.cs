@@ -67,12 +67,6 @@ public sealed partial class PlannerTabViewModel : ObservableObject
     /// <summary>Gets available unit systems.</summary>
     public IReadOnlyList<UnitSystem> UnitSystems { get; } = Enum.GetValues<UnitSystem>();
 
-    /// <summary>Gets available map providers.</summary>
-    public IReadOnlyList<PlannerMapProvider> MapProviders { get; } = Enum.GetValues<PlannerMapProvider>();
-
-    /// <summary>Gets available map styles.</summary>
-    public IReadOnlyList<PlannerMapStyle> MapStyles { get; } = Enum.GetValues<PlannerMapStyle>();
-
     /// <summary>Gets selectable built-in sources grouped for the settings UI.</summary>
     public IReadOnlyList<MapSettingsSourceItem> MapSources { get; private set; } = [];
 
@@ -148,14 +142,6 @@ public sealed partial class PlannerTabViewModel : ObservableObject
     /// <summary>Gets the selected unit system.</summary>
     [ObservableProperty]
     public partial UnitSystem SelectedUnitSystem { get; set; }
-
-    /// <summary>Gets the selected map provider.</summary>
-    [ObservableProperty]
-    public partial PlannerMapProvider SelectedMapProvider { get; set; }
-
-    /// <summary>Gets the selected map style.</summary>
-    [ObservableProperty]
-    public partial PlannerMapStyle SelectedMapStyle { get; set; }
 
     /// <summary>Gets the default map zoom level.</summary>
     [ObservableProperty]
@@ -630,8 +616,6 @@ public sealed partial class PlannerTabViewModel : ObservableObject
         try
         {
             SelectedUnitSystem = settings.Units.System;
-            SelectedMapProvider = settings.Map.Provider;
-            SelectedMapStyle = settings.Map.Style;
             DefaultMapZoom = settings.Map.DefaultZoom;
             SelectedMapSource ??= MapSettingsSourceCatalog.Resolve(MapSources, settings.Map.SelectedSourceId, isOnline: true);
             MapHttpCacheEnabled = settings.Map.HttpCacheEnabled;
@@ -707,8 +691,6 @@ public sealed partial class PlannerTabViewModel : ObservableObject
             Units = new PlannerUnitSettings { System = SelectedUnitSystem },
             Map = new PlannerMapSettings
             {
-                Provider = SelectedMapProvider,
-                Style = SelectedMapStyle,
                 DefaultZoom = DefaultMapZoom,
                 SelectedSourceId = selectedOfflineSourceId ?? SelectedMapSource?.Id ?? "osm-standard",
                 HttpCacheEnabled = MapHttpCacheEnabled,

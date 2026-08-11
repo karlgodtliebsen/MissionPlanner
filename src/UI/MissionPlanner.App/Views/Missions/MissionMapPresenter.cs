@@ -34,9 +34,9 @@ internal sealed class MissionMapPresenter : IDisposable
         this.viewModel = viewModel;
         this.plannerSettings = plannerSettings;
         basemapController = new MapBasemapController(map, new MapsuiBasemapFactory());
-        if (!basemapController.TrySwitchAsync(BuiltInMapSourceIds.Resolve(viewModel.SelectedMapType)).AsTask().GetAwaiter().GetResult())
+        if (!basemapController.TrySwitchAsync(viewModel.SelectedSourceId).AsTask().GetAwaiter().GetResult())
         {
-            throw new InvalidOperationException($"Unable to create initial map source '{viewModel.SelectedMapType}'.");
+            throw new InvalidOperationException($"Unable to create initial map source '{viewModel.SelectedSourceId}'.");
         }
 
         mapView.Map = map;
@@ -149,9 +149,9 @@ internal sealed class MissionMapPresenter : IDisposable
                 CenterOn(position.Latitude, position.Longitude);
             }
         }
-        else if (args.PropertyName == nameof(MissionMapViewModel.SelectedMapType))
+        else if (args.PropertyName == nameof(MissionMapViewModel.SelectedSourceId))
         {
-            ApplyMapType(viewModel.SelectedMapType);
+            ApplyMapType(viewModel.SelectedSourceId);
         }
         else if (args.PropertyName == nameof(MissionMapViewModel.MapSnapshot))
         {
@@ -221,6 +221,6 @@ internal sealed class MissionMapPresenter : IDisposable
 
     private async void ApplyMapType(string mapType)
     {
-        await basemapController.TrySwitchAsync(BuiltInMapSourceIds.Resolve(mapType));
+        await basemapController.TrySwitchAsync(mapType);
     }
 }

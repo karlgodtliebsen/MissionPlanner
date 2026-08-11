@@ -295,8 +295,32 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
         }
 
         var migrated = settings.SchemaVersion < PlannerSettings.CurrentSchemaVersion;
+        if (settings.SchemaVersion < 4 && !HasModernSelectedSourceId(document))
+        {
+            settings = settings with { Map = settings.Map with { SelectedSourceId = LegacySourceId(settings.Map.Provider, settings.Map.Style) } };
+        }
+
         return (settings with { SchemaVersion = PlannerSettings.CurrentSchemaVersion }, migrated);
     }
+
+    private static bool HasModernSelectedSourceId(string document)
+    {
+        using var parsed = JsonDocument.Parse(document);
+        return parsed.RootElement.TryGetProperty("map", out var map)
+               && map.TryGetProperty("selectedSourceId", out var selected)
+               && selected.ValueKind == JsonValueKind.String
+               && !string.IsNullOrWhiteSpace(selected.GetString());
+    }
+
+    private static string LegacySourceId(PlannerMapProvider provider, PlannerMapStyle style) => (provider, style) switch
+    {
+        (PlannerMapProvider.OpenStreetMap, PlannerMapStyle.Standard) => "osm-standard",
+        (PlannerMapProvider.Esri, PlannerMapStyle.Topographic) => "esri-world-topo",
+        (PlannerMapProvider.Esri, PlannerMapStyle.Physical) => "esri-world-physical",
+        (PlannerMapProvider.Esri, PlannerMapStyle.ShadedRelief) => "esri-world-shaded-relief",
+        (PlannerMapProvider.Esri, PlannerMapStyle.DarkGray) => "esri-world-dark-gray",
+        _ => "osm-standard"
+    };
 
     private async ValueTask PersistAsync(PlannerSettings settings, CancellationToken cancellationToken)
     {

@@ -42,8 +42,9 @@ replaced with safe defaults and reported to the page instead of preventing appli
 startup.
 
 Schema 4 adds `Map.SelectedSourceId`, `Map.HttpCacheEnabled`, and `Map.HttpCacheLimitBytes`.
-Older provider/style values remain readable for compatibility, while new source selection is
-stored as a stable catalog ID. Missing IDs migrate to `osm-standard`; the presentation resolver
+`Map.SelectedSourceId` is the sole writable and authoritative runtime basemap selection.
+Older provider/style values remain readable only for compatibility migration, while new source selection is
+stored as a stable catalog ID. The explicit migration preserves every supported OSM/Esri legacy style when the older document has no modern ID and never overwrites an ID already present. Unknown combinations migrate to `osm-standard`; the source resolver
 also handles deleted sources, offline operation, and missing credentials without persisting a
 secret or renderer-specific object.
 

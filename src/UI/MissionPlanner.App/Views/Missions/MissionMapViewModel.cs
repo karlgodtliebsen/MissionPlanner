@@ -56,7 +56,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         this.fileSaver = fileSaver;
         this.dateTimeProvider = dateTimeProvider;
         this.logger = logger;
-        SelectedMapType = MapType(settingsService.Current.Map);
+        SelectedSourceId = settingsService.Current.Map.SelectedSourceId;
         MapSnapshot = MissionMapProjection.Create(Mission, HomePosition);
         SelectedMapStyle = "GEO";
         UpdateVehicleStatus(activeVehicle.Current);
@@ -172,9 +172,9 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     public partial string? StatusMessage { get; set; }
 
-    /// <summary>The name of the tile source rendered by map views bound to this view model.</summary>
+    /// <summary>The stable catalog, pack, or custom source identifier rendered by map views.</summary>
     [ObservableProperty]
-    public partial string SelectedMapType { get; set; } = "OpenStreetMap";
+    public partial string SelectedSourceId { get; set; } = "osm-standard";
 
     /// <summary>When true, a primary map click appends a waypoint at the clicked position.</summary>
     [ObservableProperty]
@@ -196,24 +196,9 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     public partial string MissionSummary { get; set; } = "0 items";
 
-    /// <summary>The tile sources the map views can render.</summary>
-    public IReadOnlyList<string> AvailableMapTypes { get; } =
-        ["OpenStreetMap", "Esri World Topo", "Esri World Physical", "Esri Shaded Relief", "Esri Dark Gray", "No Map"];
-
-    private static string MapType(PlannerMapSettings settings)
-    {
-        return settings.Provider switch
-        {
-            PlannerMapProvider.OpenStreetMap => "OpenStreetMap",
-            var _ => settings.Style switch
-            {
-                PlannerMapStyle.Physical => "Esri World Physical",
-                PlannerMapStyle.ShadedRelief => "Esri Shaded Relief",
-                PlannerMapStyle.DarkGray => "Esri Dark Gray",
-                var _ => "Esri World Topo"
-            }
-        };
-    }
+    /// <summary>Gets the stable built-in source identifiers offered by the compact map selector.</summary>
+    public IReadOnlyList<string> AvailableSourceIds { get; } =
+        ["osm-standard", "esri-world-topo", "esri-world-physical", "esri-world-shaded-relief", "esri-world-dark-gray", "no-map"];
 
     /// <summary>
     /// Commands selectable in the waypoint editor. Names follow v1.38's mavcmd.xml; the set is

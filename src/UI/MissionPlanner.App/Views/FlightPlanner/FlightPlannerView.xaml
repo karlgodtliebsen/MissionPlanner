@@ -47,8 +47,8 @@
                     <Button Text="Editor" Command="{Binding EditCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
 
                     <Label Text="Map:" VerticalOptions="Center" Margin="0,0,4,4" />
-                    <material:SelectField ItemsSource="{Binding Map.AvailableMapTypes}"
-                                SelectedItem="{Binding Map.SelectedMapType}"
+                    <material:SelectField ItemsSource="{Binding Map.AvailableSourceIds}"
+                                SelectedItem="{Binding Map.SelectedSourceId}"
                                 WidthRequest="170"
                                 Margin="0,0,4,4" />
 
