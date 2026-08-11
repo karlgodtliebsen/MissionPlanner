@@ -48,6 +48,9 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     private readonly IPlanningPolygonService polygonService;
     private readonly IFileOpenService fileOpenService;
     private readonly IFileSaveService fileSaveService;
+    private readonly IUserChoiceService choiceService;
+    private readonly IGeospatialImportService geospatialImportService;
+    private IReadOnlyList<ImportedPlanningOverlay> importedOverlays = [];
     private IDisposable? stateSubscription;
     private bool disposed;
 
@@ -60,7 +63,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         IDateTimeProvider dateTimeProvider, ILogger<MissionMapViewModel> logger,
         IMissionMapInteractionService interactionService, IAdvancedMissionItemService advancedMissionItems,
         IUserPromptService promptService, IUserConfirmationService confirmationService,
-        IPlanningPolygonService polygonService, IFileOpenService fileOpenService, IFileSaveService fileSaveService)
+        IPlanningPolygonService polygonService, IFileOpenService fileOpenService, IFileSaveService fileSaveService,
+        IUserChoiceService choiceService, IGeospatialImportService geospatialImportService)
     {
         this.activeVehicle = activeVehicle;
         this.fileCodec = fileCodec;
@@ -77,6 +81,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         this.polygonService = polygonService;
         this.fileOpenService = fileOpenService;
         this.fileSaveService = fileSaveService;
+        this.choiceService = choiceService;
+        this.geospatialImportService = geospatialImportService;
         polygonService.Changed += OnPolygonChanged;
         interactionService.Changed += OnInteractionChanged;
         SelectedSourceId = settingsService.Current.Map.SelectedSourceId;
@@ -495,7 +501,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         var vertices = interactionService.State.Mode == MissionMapInteractionMode.DrawPolygon
             ? overlay.DrawnPolygon
             : polygonService.Snapshot.Polygon?.Vertices ?? [];
-        PlanningOverlaySnapshot = overlay with { DrawnPolygon = vertices };
+        PlanningOverlaySnapshot = overlay with { DrawnPolygon = vertices, ImportedOverlays = importedOverlays };
     }
 
     /// <summary>Replaces the mission being edited (e.g. after downloading from a vehicle).</summary>
@@ -676,6 +682,99 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         using var reader = new StreamReader(file.Content, Encoding.UTF8, true, leaveOpen: true);
         var result = polygonService.Deserialize(await reader.ReadToEndAsync(cancellationToken));
         ShowStatus(result.Message);
+    }
+
+    [RelayCommand]
+    private async Task KmlOverlayAsync(CancellationToken cancellationToken)
+    {
+        var imported = await OpenGeospatialAsync("Open KML overlay", false, cancellationToken);
+        if (imported is null) return;
+        importedOverlays = imported.Features.Where(feature => feature.Positions.Count > 0)
+            .Select(feature => new ImportedPlanningOverlay(feature.Name, feature.Positions, feature.Kind == GeospatialGeometryKind.Polygon)).ToArray();
+        UpdatePlanningOverlay();
+        ShowStatus($"Overlay replaced with {importedOverlays.Count} imported features.");
+    }
+
+    [RelayCommand]
+    private void ClearImportedOverlay()
+    {
+        importedOverlays = [];
+        UpdatePlanningOverlay();
+        ShowStatus("Imported overlay cleared.");
+    }
+
+    [RelayCommand]
+    private async Task LoadKmlFileAsync(CancellationToken cancellationToken) =>
+        await ImportMissionGeometryAsync(false, cancellationToken);
+
+    [RelayCommand]
+    private async Task LoadShapefileAsync(CancellationToken cancellationToken) =>
+        await ImportMissionGeometryAsync(true, cancellationToken);
+
+    [RelayCommand]
+    private async Task PolygonFromShapefileAsync(CancellationToken cancellationToken)
+    {
+        var imported = await OpenGeospatialAsync("Open polygon shapefile", true, cancellationToken);
+        if (imported is null) return;
+        var polygons = imported.Features.Where(feature => feature.Kind == GeospatialGeometryKind.Polygon).ToArray();
+        if (polygons.Length == 0) { ShowStatus("The shapefile contains no polygon geometry."); return; }
+        var selectedName = polygons.Length == 1 ? polygons[0].Name
+            : await choiceService.ChooseAsync("Choose planning polygon", polygons.Select(feature => feature.Name).ToArray(), cancellationToken);
+        var selected = polygons.FirstOrDefault(feature => feature.Name == selectedName);
+        if (selected is not null) ShowStatus(polygonService.Set(selected.Name, selected.Positions).Message);
+    }
+
+    private async Task ImportMissionGeometryAsync(bool shapefile, CancellationToken cancellationToken)
+    {
+        var imported = await OpenGeospatialAsync(shapefile ? "Open shapefile" : "Open KML/KMZ file", shapefile, cancellationToken);
+        if (imported is null) return;
+        var preview = imported.Preview;
+        var choice = await choiceService.ChooseAsync(
+            $"{preview.Points} points, {preview.LineStrings} lines, {preview.Polygons} polygons, {preview.MissionCandidates} waypoint candidates, {preview.Unsupported} unsupported",
+            ["Append waypoints", "Replace mission", "Use first polygon as planning polygon"], cancellationToken);
+        if (choice == "Use first polygon as planning polygon")
+        {
+            var polygon = imported.Features.FirstOrDefault(feature => feature.Kind == GeospatialGeometryKind.Polygon);
+            ShowStatus(polygon is null ? "No polygon geometry was found." : polygonService.Set(polygon.Name, polygon.Positions).Message);
+            return;
+        }
+        if (choice is not ("Append waypoints" or "Replace mission")) return;
+        var candidates = imported.Features.Where(feature => feature.Kind is GeospatialGeometryKind.Point or GeospatialGeometryKind.LineString)
+            .SelectMany(feature => feature.Positions.Select(position => (Position: position, feature.AltitudeMeters))).ToArray();
+        if (candidates.Length == 0) { ShowStatus("No point or line geometry can be imported as waypoints."); return; }
+        var target = choice == "Replace mission" ? new Mission(MissionId.New(), "Imported mission") : Mission;
+        foreach (var candidate in candidates)
+            target.Add(new WaypointMissionItem(MissionItemId.New(), 0, candidate.Position,
+                new MissionAltitude(candidate.AltitudeMeters ?? DefaultAltitudeMeters, MissionAltitudeReference.Home), TimeSpan.Zero, WaypointRadiusMeters));
+        if (!ReferenceEquals(target, Mission)) ReplaceMission(target, $"Mission replaced with {candidates.Length} imported waypoints.");
+        else OnMissionChanged($"Appended {candidates.Length} imported waypoints.");
+    }
+
+    private async Task<GeospatialImportResult?> OpenGeospatialAsync(string title, bool includeCompanions, CancellationToken cancellationToken)
+    {
+        using var file = await fileOpenService.OpenAsync(title, cancellationToken: cancellationToken);
+        if (file is null) return null;
+        await using var memory = new MemoryStream();
+        await file.Content.CopyToAsync(memory, cancellationToken);
+        var companions = new Dictionary<string, ReadOnlyMemory<byte>>(StringComparer.OrdinalIgnoreCase);
+        if (includeCompanions && file.FullPath is { } fullPath)
+        {
+            foreach (var extension in new[] { ".prj", ".dbf" })
+            {
+                var path = Path.ChangeExtension(fullPath, extension);
+                if (File.Exists(path) && new FileInfo(path).Length <= 16 * 1024 * 1024)
+                    companions[extension] = await File.ReadAllBytesAsync(path, cancellationToken);
+            }
+        }
+        if (includeCompanions && !companions.ContainsKey(".prj"))
+        {
+            var assume = await confirmationService.ConfirmAsync("Missing coordinate system", "No .prj file was found. Treat plausible coordinates as WGS84?", "Use WGS84", cancellationToken);
+            if (!assume) return null;
+            companions[".prj"] = Encoding.UTF8.GetBytes("GEOGCS[\"WGS 84\",DATUM[\"WGS_1984\"]]");
+        }
+        var result = geospatialImportService.Import(new GeospatialSource(file.FileName, memory.ToArray(), companions));
+        if (!result.Succeeded) { ShowStatus(result.Message); return null; }
+        return result;
     }
 
     [RelayCommand]

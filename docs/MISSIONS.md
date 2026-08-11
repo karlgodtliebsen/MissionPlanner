@@ -327,6 +327,21 @@ boundary from positioned mission items without changing the mission. Area and si
 local metre projection (including longitude-wrap handling), and offsets are previewed before
 replacement. Polygon files use bounded, versioned `.mppolygon` JSON with WGS84 coordinates.
 
+### Geospatial imports
+
+KML/KMZ overlays are independent from mission imports and survive basemap changes. Overlay import
+replaces the previous imported layer and can be cleared explicitly. KML mission import presents
+geometry counts and requires Append or Replace; polygon boundaries are converted only after an
+explicit planning-polygon choice. XML DTDs and external resources are disabled, while input,
+archive expansion, feature, and vertex counts are bounded.
+
+The built-in shapefile reader avoids a new GIS dependency (dependency audit: no maintained GIS
+package was already present in the central catalog). It supports point, polyline, and polygon SHP
+records with a same-base-name PRJ. Geographic WGS84, WGS84 Web Mercator, and WGS84 UTM projections
+are transformed to WGS84; unknown CRS definitions are rejected. A missing PRJ requires explicit
+WGS84 confirmation in the UI. DBF companion discovery is bounded; richer DBF attribute/Z mapping
+remains a documented compatibility limitation.
+
 ---
 
 ## Known gaps and next steps

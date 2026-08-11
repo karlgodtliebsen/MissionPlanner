@@ -20,9 +20,11 @@ public partial class FlightDataMissionMapViewModel : MissionMapViewModel
         IDomainEventHub domainEventHub, IDispatcher dispatcher, IDateTimeProvider dateTimeProvider, ILogger<MissionMapViewModel> logger,
         IMissionMapInteractionService interactionService, IAdvancedMissionItemService advancedMissionItems,
         IUserPromptService promptService, IUserConfirmationService confirmationService,
-        IPlanningPolygonService polygonService, IFileOpenService fileOpenService, IFileSaveService fileSaveService)
+        IPlanningPolygonService polygonService, IFileOpenService fileOpenService, IFileSaveService fileSaveService,
+        IUserChoiceService choiceService, IGeospatialImportService geospatialImportService)
         : base(activeVehicle, protocolMapper, fileSaver, settingsService, fileCodec, domainEventHub, dispatcher, dateTimeProvider, logger,
-            interactionService, advancedMissionItems, promptService, confirmationService, polygonService, fileOpenService, fileSaveService)
+            interactionService, advancedMissionItems, promptService, confirmationService, polygonService, fileOpenService, fileSaveService,
+            choiceService, geospatialImportService)
     {
     }
 }

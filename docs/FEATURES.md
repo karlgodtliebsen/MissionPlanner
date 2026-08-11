@@ -880,6 +880,13 @@ Completed
 
 # MAVLINK DIALECT COVERAGE
 
+## Mission map geospatial imports
+
+* KML and bounded KMZ can be loaded as a replaceable, non-mission overlay.
+* KML and SHP point/line geometry can be appended to or replace the mission after preview.
+* SHP polygon geometry can populate the shared planning polygon workspace explicitly.
+* WGS84, Web Mercator, and WGS84 UTM PRJ definitions are supported; unknown CRS is rejected.
+
 * A deterministic inventory resolves the pinned official `ardupilotmega` dialect and its
   transitive includes without network access during normal builds or tests.
 * A generated frozen registry now supplies names, CRC extras, payload bounds, dialect

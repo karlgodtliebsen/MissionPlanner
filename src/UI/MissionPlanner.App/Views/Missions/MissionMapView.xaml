@@ -49,7 +49,7 @@
                         <MenuFlyoutItem Text="Clear Polygon" Command="{Binding ClearPolygonCommand}" />
                         <MenuFlyoutItem Text="Save Polygon" Command="{Binding SavePolygonCommand}" />
                         <MenuFlyoutItem Text="Load Polygon" Command="{Binding LoadPolygonCommand}" />
-                        <MenuFlyoutItem Text="From SHP" Command="{Binding NotImplementedCommand}" CommandParameter="Polygon from SHP" />
+                        <MenuFlyoutItem Text="From SHP" Command="{Binding PolygonFromShapefileCommand}" />
                         <MenuFlyoutItem Text="From Current Waypoints" Command="{Binding PolygonFromWaypointsCommand}" />
                         <MenuFlyoutItem Text="Offset Polygon" Command="{Binding OffsetPolygonCommand}" />
                         <MenuFlyoutItem Text="Area" Command="{Binding ShowPolygonAreaCommand}" />
@@ -93,7 +93,8 @@
                         <MenuFlyoutItem Text="Rotate Map" Command="{Binding NotImplementedCommand}" CommandParameter="Rotate Map" />
                         <MenuFlyoutItem Text="Prefetch" Command="{Binding NotImplementedCommand}" CommandParameter="Prefetch" />
                         <MenuFlyoutItem Text="Prefetch WP Path" Command="{Binding NotImplementedCommand}" CommandParameter="Prefetch WP Path" />
-                        <MenuFlyoutItem Text="KML Overlay" Command="{Binding NotImplementedCommand}" CommandParameter="KML Overlay" />
+                        <MenuFlyoutItem Text="KML Overlay" Command="{Binding KmlOverlayCommand}" />
+                        <MenuFlyoutItem Text="Clear Imported Overlay" Command="{Binding ClearImportedOverlayCommand}" />
                         <MenuFlyoutItem Text="Elevation Graph" Command="{Binding NotImplementedCommand}" CommandParameter="Elevation Graph" />
                     </MenuFlyoutSubItem>
 
@@ -101,8 +102,8 @@
                         <MenuFlyoutItem Text="Load WP File" Command="{Binding LoadWpFileCommand}" />
                         <MenuFlyoutItem Text="Load and Append" Command="{Binding LoadAndAppendCommand}" />
                         <MenuFlyoutItem Text="Save WP File" Command="{Binding SaveWpFileCommand}" />
-                        <MenuFlyoutItem Text="Load KML File" Command="{Binding NotImplementedCommand}" CommandParameter="Load KML File" />
-                        <MenuFlyoutItem Text="Load SHP File" Command="{Binding NotImplementedCommand}" CommandParameter="Load SHP File" />
+                        <MenuFlyoutItem Text="Load KML File" Command="{Binding LoadKmlFileCommand}" />
+                        <MenuFlyoutItem Text="Load SHP File" Command="{Binding LoadShapefileCommand}" />
                     </MenuFlyoutSubItem>
 
                     <MenuFlyoutSubItem Text="POI">

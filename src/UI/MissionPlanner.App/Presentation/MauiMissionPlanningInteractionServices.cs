@@ -50,7 +50,7 @@ public sealed class MauiMissionPlanningFileService(IFileSaver fileSaver) : IFile
         if (file is null)
             return null;
         cancellationToken.ThrowIfCancellationRequested();
-        return new OpenedPlanningFile(Path.GetFileName(file.FileName), await file.OpenReadAsync());
+        return new OpenedPlanningFile(Path.GetFileName(file.FileName), await file.OpenReadAsync(), file.FullPath);
     }
 
     /// <inheritdoc />
