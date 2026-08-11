@@ -1,5 +1,4 @@
-using Mapsui.UI.Maui;
-using MissionPlanner.App.Helpers;
+﻿using Mapsui.UI.Maui;
 using MissionPlanner.App.Navigation;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Library;
@@ -10,14 +9,14 @@ namespace MissionPlanner.App.Views.Missions;
 /// Shared mission-map editor control. Native map events remain at the view boundary while
 /// <see cref="MissionMapPresenter"/> owns Mapsui rendering and navigation.
 /// </summary>
-public partial class MissionMapView : ExtendedContentView<MissionItemListViewModel>
+public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
 {
     private readonly PointerGestureRecognizer pointerGestureRecognizer;
     private readonly MissionMapPresenter presenter;
     private bool disposed;
 
     /// <summary>Initializes a new instance of the <see cref="MissionMapView"/> class.</summary>
-    public MissionMapView(IPlannerSettingsService settingsService, string? key) : base(key)
+    public MissionMapView(IPlannerSettingsService settingsService, MissionMapViewModel viewModel) : base(viewModel)
     {
         InitializeComponent();
         DomainException.ThrowIfNull(ViewModel);
@@ -30,8 +29,10 @@ public partial class MissionMapView : ExtendedContentView<MissionItemListViewMod
         Loaded += OnFirstLoaded;
     }
 
-    private void OnMapClicked(object? sender, MapClickedEventArgs args) =>
+    private void OnMapClicked(object? sender, MapClickedEventArgs args)
+    {
         presenter.HandleMapClick(args.Point.Latitude, args.Point.Longitude);
+    }
 
     private void OnPointerMoved(object? sender, PointerEventArgs args)
     {
@@ -70,17 +71,30 @@ public partial class MissionMapView : ExtendedContentView<MissionItemListViewMod
         }
     }
 
-    private void OnZoomInClicked(object? sender, EventArgs args) => presenter.ZoomIn();
+    private void OnZoomInClicked(object? sender, EventArgs args)
+    {
+        presenter.ZoomIn();
+    }
 
-    private void OnZoomOutClicked(object? sender, EventArgs args) => presenter.ZoomOut();
+    private void OnZoomOutClicked(object? sender, EventArgs args)
+    {
+        presenter.ZoomOut();
+    }
 
-    private void OnZoomToVehicleClicked(object? sender, EventArgs args) => presenter.ZoomToVehicle();
+    private void OnZoomToVehicleClicked(object? sender, EventArgs args)
+    {
+        presenter.ZoomToVehicle();
+    }
 
-    private async void OnCenterOnMyLocationClicked(object? sender, EventArgs args) =>
+    private async void OnCenterOnMyLocationClicked(object? sender, EventArgs args)
+    {
         await CenterOnMyLocationAsync();
+    }
 
-    private void OnToggleFollowVehicleClicked(object? sender, EventArgs args) =>
+    private void OnToggleFollowVehicleClicked(object? sender, EventArgs args)
+    {
         presenter.ToggleFollowVehicle();
+    }
 
     /// <inheritdoc />
     public override void Dispose()
@@ -101,27 +115,5 @@ public partial class MissionMapView : ExtendedContentView<MissionItemListViewMod
         // without disposing that DI-owned singleton; the service provider owns its lifetime.
         BindingContext = null;
         ViewModel = null;
-    }
-}
-
-/// <summary>Hosts the mission map backed by the Flight Data mission editor.</summary>
-public class FlightDataMissionMapView : MissionMapView
-{
-    /// <summary>Initializes a new instance of the <see cref="FlightDataMissionMapView"/> class.</summary>
-    public FlightDataMissionMapView() : base(
-        ServiceHelper.GetRequiredService<IPlannerSettingsService>(),
-        "FlightData")
-    {
-    }
-}
-
-/// <summary>Hosts the mission map backed by the Flight Planner mission editor.</summary>
-public class FlightPlannerMissionMapView : MissionMapView
-{
-    /// <summary>Initializes a new instance of the <see cref="FlightPlannerMissionMapView"/> class.</summary>
-    public FlightPlannerMissionMapView() : base(
-        ServiceHelper.GetRequiredService<IPlannerSettingsService>(),
-        "FlightPlanner")
-    {
     }
 }

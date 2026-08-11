@@ -5,7 +5,7 @@ namespace MissionPlanner.App.Views.Missions.DockView;
 /// <summary>
 /// Represents the view for the mission item list dock.
 /// </summary>
-public partial class MissionItemListDockView : ExtendedContentView<MissionItemListDockViewModel>, IDisposable
+public partial class MissionItemListDockView : ExtendedContentView<MissionItemListDockViewModel>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MissionItemListDockViewModel"/> class.
@@ -13,12 +13,5 @@ public partial class MissionItemListDockView : ExtendedContentView<MissionItemLi
     public MissionItemListDockView()
     {
         InitializeComponent();
-    }
-
-
-    /// <inheritdoc />
-    public override void Dispose()
-    {
-        // base.Dispose();
     }
 }

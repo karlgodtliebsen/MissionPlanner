@@ -1,11 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.Core.DomainEvents;
-using MissionPlanner.Core.Vehicles;
-using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
-using MissionPlanner.Library.DateTime.Domain;
-using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.App.Views.FlightData;
 
@@ -14,153 +8,19 @@ namespace MissionPlanner.App.Views.FlightData;
 /// </summary>
 public partial class FlightDataViewModel : ObservableObject, IDisposable
 {
-    private static readonly string[] tabKeys =
-    [
-        "Quick", "Actions", "Messages", "PreFlight", "Gauges", "Transponder", "Status",
-        "Servo/Relay", "Aux Function", "Scripts", "Payload Control", "Telemetry Logs", "DataFlash Logs"
-    ];
-
-    private readonly IActiveVehicleContext activeVehicle;
-    private readonly IDomainEventHub domainEventHub;
-    private readonly IDateTimeProvider clock;
-    private readonly IDispatcher dispatcher;
     private readonly ILogger<FlightDataViewModel> logger;
-
-    private IDisposable? stateSubscription;
-    private bool disposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FlightDataViewModel"/> class.
     /// </summary>
-    /// <param name="activeVehicle">The shared active-vehicle context.</param>
-    /// <param name="domainEventHub">The domain event hub used for live vehicle state.</param>
-    /// <param name="clock">The application clock.</param>
-    /// <param name="dispatcher">The UI dispatcher.</param>
     /// <param name="logger">The logger.</param>
-    public FlightDataViewModel(IActiveVehicleContext activeVehicle, IDomainEventHub domainEventHub, IDateTimeProvider clock, IDispatcher dispatcher, ILogger<FlightDataViewModel> logger)
+    public FlightDataViewModel(ILogger<FlightDataViewModel> logger)
     {
-        this.activeVehicle = activeVehicle;
-        this.domainEventHub = domainEventHub;
-        this.clock = clock;
-        this.dispatcher = dispatcher;
         this.logger = logger;
-        SelectedMapStyle = "GEO";
-        UpdateVehicleStatus(activeVehicle.Current);
-        Activate();
-    }
-
-    /// <summary>
-    /// Gets the coordinate display styles offered by the map status bar.
-    /// </summary>
-    public IReadOnlyList<string> MapStyles { get; } = ["GEO", "UTM", "MGRS"];
-
-    /// <summary>
-    /// Gets or sets the selected coordinate display style.
-    /// </summary>
-    [ObservableProperty]
-    public partial string SelectedMapStyle { get; set; }
-
-    /// <summary>
-    /// Gets the active vehicle display name.
-    /// </summary>
-    [ObservableProperty]
-    public partial string VehicleDisplayName { get; private set; } = "No vehicle";
-
-    /// <summary>
-    /// Gets the active vehicle connection status.
-    /// </summary>
-    [ObservableProperty]
-    public partial string ConnectionStatus { get; private set; } = "Offline";
-
-    /// <summary>
-    /// Gets the freshness of the latest general telemetry observation.
-    /// </summary>
-    [ObservableProperty]
-    public partial string TelemetryFreshness { get; private set; } = "Telemetry: unavailable";
-
-    /// <summary>
-    /// Gets the freshness of the latest map-position observation.
-    /// </summary>
-    [ObservableProperty]
-    public partial string MapFreshness { get; private set; } = "Map: no position";
-
-    /// <summary>
-    /// Activates the Flight Data page and its selected tab.
-    /// </summary>
-    private void Activate()
-    {
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        stateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
-        UpdateVehicleStatus(activeVehicle.Current);
-    }
-
-    /// <summary>
-    /// Deactivates the Flight Data page
-    /// </summary>
-    private void Deactivate()
-    {
-        if (disposed)
-        {
-            return;
-        }
-
-        activeVehicle.Changed -= OnActiveVehicleChanged;
-        stateSubscription?.Dispose();
-        stateSubscription = null;
     }
 
     /// <inheritdoc />
     public void Dispose()
     {
-        if (disposed)
-        {
-            return;
-        }
-
-        Deactivate();
-        disposed = true;
-    }
-
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs e)
-    {
-        dispatcher.Dispatch(() => UpdateVehicleStatus(e.Current));
-    }
-
-    private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
-    {
-        if (evt.VehicleId == activeVehicle.VehicleId)
-        {
-            dispatcher.Dispatch(() =>
-            {
-                if (evt.VehicleId == activeVehicle.VehicleId)
-                {
-                    UpdateVehicleStatus(new ActiveVehicleSnapshot(evt.VehicleId, evt.VehicleState));
-                }
-            });
-        }
-
-        return Task.CompletedTask;
-    }
-
-    private void UpdateVehicleStatus(ActiveVehicleSnapshot snapshot)
-    {
-        VehicleDisplayName = snapshot.DisplayName;
-        ConnectionStatus = snapshot.State?.ConnectionState.ToString() ?? "Offline";
-        TelemetryFreshness = snapshot.State is null
-            ? "Telemetry: unavailable"
-            : $"Telemetry: {FormatAge(snapshot.State.LastHeartbeatAt)}";
-        MapFreshness = snapshot.State?.Position.ObservedAt is { } observedAt
-            ? $"Map: {FormatAge(observedAt)}"
-            : "Map: no position";
-    }
-
-    private string FormatAge(DateTimeOffset observedAt)
-    {
-        var age = clock.UtcNow - observedAt;
-        return age <= TimeSpan.FromSeconds(2)
-            ? "live"
-            : age < TimeSpan.FromMinutes(1)
-                ? $"{Math.Max(0, (int)age.TotalSeconds)}s old"
-                : $"{Math.Max(0, (int)age.TotalMinutes)}m old";
     }
 }

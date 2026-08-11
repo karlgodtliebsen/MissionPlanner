@@ -9,10 +9,14 @@ using CommunityToolkit.Mvvm.Input;
 using ExCSS;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.ConfigTuning.Planner;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Files;
 using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Vehicles;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Missions;
 
@@ -21,52 +25,133 @@ namespace MissionPlanner.App.Views.Missions;
 /// <summary>
 /// Shared view model for the mission map editor. It tracks the vehicle, owns the mission plan being
 /// edited, and exposes the commands behind the map's right-click context menu. It is registered as a
-/// singleton so the FlightData map and the Plan screen edit the same mission.
+/// Keyed singleton so the FlightData map and the FlightPlanner screen does not edit the same mission.
 /// </summary>
-public partial class MissionItemListViewModel : ObservableObject, IDisposable
+public partial class MissionMapViewModel : ObservableObject, IDisposable
 {
+    private readonly IActiveVehicleContext activeVehicle;
     private readonly IMissionFileCodec fileCodec;
     private readonly IDomainEventHub domainEventHub;
     private readonly IDispatcher dispatcher;
     private readonly IMissionProtocolMapper protocolMapper;
     private readonly IFileSaver fileSaver;
-    private readonly ILogger<MissionItemListViewModel> logger;
+    private readonly IDateTimeProvider dateTimeProvider;
+    private readonly ILogger<MissionMapViewModel> logger;
+    private IDisposable? stateSubscription;
+    private bool disposed;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="MissionItemListViewModel"/> class.
+    /// Initializes a new instance of the <see cref="MissionMapViewModel"/> class.
     /// </summary>
-    public MissionItemListViewModel(
-        IMissionFileCodec fileCodec, IDomainEventHub domainEventHub, IDispatcher dispatcher, IMissionProtocolMapper protocolMapper, IFileSaver fileSaver,
-        IPlannerSettingsService settingsService, ILogger<MissionItemListViewModel> logger)
+    public MissionMapViewModel(IActiveVehicleContext activeVehicle, IMissionProtocolMapper protocolMapper,
+        IFileSaver fileSaver, IPlannerSettingsService settingsService,
+        IMissionFileCodec fileCodec, IDomainEventHub domainEventHub, IDispatcher dispatcher,
+        IDateTimeProvider dateTimeProvider, ILogger<MissionMapViewModel> logger)
     {
+        this.activeVehicle = activeVehicle;
         this.fileCodec = fileCodec;
         this.domainEventHub = domainEventHub;
         this.dispatcher = dispatcher;
         this.protocolMapper = protocolMapper;
         this.fileSaver = fileSaver;
+        this.dateTimeProvider = dateTimeProvider;
         this.logger = logger;
         SelectedMapType = MapType(settingsService.Current.Map);
         MapSnapshot = MissionMapProjection.Create(Mission, HomePosition);
+        SelectedMapStyle = "GEO";
+        UpdateVehicleStatus(activeVehicle.Current);
+        Activate();
+    }
+
+    /// <summary>
+    /// Activates the Flight Data page and its selected tab.
+    /// </summary>
+    private void Activate()
+    {
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        stateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
+        UpdateVehicleStatus(activeVehicle.Current);
+    }
+
+    /// <summary>
+    /// Deactivates the Flight Data page
+    /// </summary>
+    private void Deactivate()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        stateSubscription?.Dispose();
+        stateSubscription = null;
     }
 
     /// <inheritdoc />
     public void Dispose()
     {
+        Deactivate();
         foreach (var row in MissionItems)
         {
             row.Dispose();
         }
+
+        disposed = true;
     }
+
+    /// <summary>
+    /// Gets the coordinate display styles offered by the map status bar.
+    /// </summary>
+    public IReadOnlyList<string> MapStyles { get; } = ["GEO", "UTM", "MGRS"];
+
+    /// <summary>
+    /// Gets or sets the selected coordinate display style.
+    /// </summary>
+    [ObservableProperty]
+    public partial string SelectedMapStyle { get; set; }
+
+    /// <summary>
+    /// Gets the active vehicle display name.
+    /// </summary>
+    [ObservableProperty]
+    public partial string VehicleDisplayName { get; private set; } = "No vehicle";
+
+    /// <summary>
+    /// Gets the active vehicle connection status.
+    /// </summary>
+    [ObservableProperty]
+    public partial string ConnectionStatus { get; private set; } = "Offline";
+
+    /// <summary>
+    /// Gets the freshness of the latest general telemetry observation.
+    /// </summary>
+    [ObservableProperty]
+    public partial string TelemetryFreshness { get; private set; } = "Telemetry: unavailable";
+
+    /// <summary>
+    /// Gets the freshness of the latest map-position observation.
+    /// </summary>
+    [ObservableProperty]
+    public partial string MapFreshness { get; private set; } = "Map: no position";
 
     [ObservableProperty] public partial double VehicleLatitude { get; set; }
 
     [ObservableProperty] public partial double VehicleLongitude { get; set; }
 
     /// <summary>Gets the latitude currently under the map pointer.</summary>
-    [ObservableProperty] public partial double? PointerLatitude { get; private set; }
+    [ObservableProperty]
+    public partial double? PointerLatitude { get; private set; }
 
     /// <summary>Gets the longitude currently under the map pointer.</summary>
-    [ObservableProperty] public partial double? PointerLongitude { get; private set; }
+    [ObservableProperty]
+    public partial double? PointerLongitude { get; private set; }
+
+
+    /// <summary>Gets the altitude currently under the map pointer.</summary>
+    [ObservableProperty]
+    public partial double? PointerAltitude { get; private set; }
+
 
     [ObservableProperty] public partial double VehicleHeading { get; set; }
     // [ObservableProperty] public partial bool DirtyRows { get; set; }
@@ -196,11 +281,55 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>Updates the bindable geographic coordinate currently under the map pointer.</summary>
-    public void SetPointerPosition(double latitude, double longitude)
+    public void SetPointerPosition(double latitude, double longitude, double altitude)
     {
         PointerLatitude = latitude;
         PointerLongitude = longitude;
+        PointerAltitude = altitude;
         SetContextPosition(latitude, longitude);
+    }
+
+    private void UpdateVehicleStatus(ActiveVehicleSnapshot snapshot)
+    {
+        VehicleDisplayName = snapshot.DisplayName;
+        ConnectionStatus = snapshot.State?.ConnectionState.ToString() ?? "Offline";
+        TelemetryFreshness = snapshot.State is null
+            ? "Telemetry: unavailable"
+            : $"Telemetry: {FormatAge(snapshot.State.LastHeartbeatAt)}";
+        MapFreshness = snapshot.State?.Position.ObservedAt is { } observedAt
+            ? $"Map: {FormatAge(observedAt)}"
+            : "Map: no position";
+    }
+
+    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs e)
+    {
+        dispatcher.Dispatch(() => UpdateVehicleStatus(e.Current));
+    }
+
+    private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
+    {
+        if (evt.VehicleId == activeVehicle.VehicleId)
+        {
+            dispatcher.Dispatch(() =>
+            {
+                if (evt.VehicleId == activeVehicle.VehicleId)
+                {
+                    UpdateVehicleStatus(new ActiveVehicleSnapshot(evt.VehicleId, evt.VehicleState));
+                }
+            });
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private string FormatAge(DateTimeOffset observedAt)
+    {
+        var age = dateTimeProvider.UtcNow - observedAt;
+        return age <= TimeSpan.FromSeconds(2)
+            ? "live"
+            : age < TimeSpan.FromMinutes(1)
+                ? $"{Math.Max(0, (int)age.TotalSeconds)}s old"
+                : $"{Math.Max(0, (int)age.TotalMinutes)}m old";
     }
 
     /// <summary>Handles a primary map click according to the active map editing mode.</summary>
@@ -659,7 +788,10 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
         }
     }
 
-    partial void OnHomePositionChanged(GeoPosition? value) => UpdateMapSnapshot();
+    partial void OnHomePositionChanged(GeoPosition? value)
+    {
+        UpdateMapSnapshot();
+    }
 
     private void RebuildRows()
     {

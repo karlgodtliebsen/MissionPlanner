@@ -14,7 +14,7 @@ using UraniumUI.Material.Dialogs;
 namespace MissionPlanner.App.Views.FlightPlanner;
 
 /// <summary>
-/// View model for the Plan screen. Composes the shared <see cref="MissionItemListViewModel"/> (map,
+/// View model for the Plan screen. Composes the shared <see cref="MissionMapViewModel"/> (map,
 /// mission editing, file load/save) and adds vehicle transfer: Read, Write and Write Fast.
 /// </summary>
 public partial class FlightPlannerViewModel : ObservableObject, IDisposable
@@ -22,7 +22,6 @@ public partial class FlightPlannerViewModel : ObservableObject, IDisposable
     private readonly IExtendedDialogService dialogService;
 
     private readonly IDomainFactory domainFactory;
-    private readonly IDomainEventHub domainEventHub;
     private readonly IMissionTransferService transferService;
     private readonly IMissionProtocolMapper protocolMapper;
     private readonly IMissionValidator validator;
@@ -35,7 +34,7 @@ public partial class FlightPlannerViewModel : ObservableObject, IDisposable
     /// Initializes a new instance of the <see cref="FlightPlannerViewModel"/> class.
     /// </summary>
     public FlightPlannerViewModel(
-        [FromKeyedServices("FlightPlanner")] MissionItemListViewModel map,
+        FlightPlannerMissionMapViewModel map,
         IExtendedDialogService dialogService,
         IDomainFactory domainFactory,
         IDomainEventHub domainEventHub,
@@ -48,18 +47,16 @@ public partial class FlightPlannerViewModel : ObservableObject, IDisposable
         Map = map;
         this.dialogService = dialogService;
         this.domainFactory = domainFactory;
-        this.domainEventHub = domainEventHub;
         this.transferService = transferService;
         this.protocolMapper = protocolMapper;
         this.validator = validator;
         this.vehicleRegistry = vehicleRegistry;
         this.logger = logger;
-
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<EditorDisplayEvent>(ShowHideEditAsync));
     }
 
     /// <summary>The shared mission map editor (same instance as the FlightData map).</summary>
-    public MissionItemListViewModel Map { get; }
+    public MissionMapViewModel Map { get; }
 
     /// <summary>True while a vehicle transfer is running; disables the transfer buttons.</summary>
     [ObservableProperty]
@@ -150,7 +147,7 @@ public partial class FlightPlannerViewModel : ObservableObject, IDisposable
     {
         if (e.Name == "EditorOpen")
         {
-            var pageView = domainFactory.Create<MissionItemListViewPage, MissionItemListViewModel>(Map);
+            var pageView = domainFactory.Create<MissionItemListViewPage, MissionMapViewModel>(Map);
             await dialogService.ShowAsync(pageView, true, cancellationToken);
         }
         else if (e.Name == "EditorClose")

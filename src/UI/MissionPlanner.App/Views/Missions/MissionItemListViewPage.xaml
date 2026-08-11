@@ -5,7 +5,7 @@
                     xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
                     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                     x:Class="MissionPlanner.App.Views.Missions.MissionItemListViewPage"
-                    x:DataType="missions:MissionItemListViewModel"
+                    x:DataType="missions:MissionMapViewModel"
                     Padding="25"
                     BackgroundColor="Transparent"
                   >

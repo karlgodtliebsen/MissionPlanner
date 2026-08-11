@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics;
 using Mapsui;
 using Mapsui.Extensions;
@@ -9,13 +9,15 @@ using MissionPlanner.Core.ConfigTuning.Planner;
 
 namespace MissionPlanner.App.Views.Missions;
 
-/// <summary>Owns Mapsui rendering and navigation for a mission-map view.</summary>
+/// <summary>
+/// Owns Mapsui rendering and navigation for a mission-map view.
+/// </summary>
 internal sealed class MissionMapPresenter : IDisposable
 {
     private const double WebMercatorInitialResolution = 156543.03392804097;
-    private static readonly long PointerUpdateInterval = Stopwatch.Frequency / 30;
+    private static readonly long pointerUpdateInterval = Stopwatch.Frequency / 30;
     private readonly MapView mapView;
-    private readonly MissionItemListViewModel viewModel;
+    private readonly MissionMapViewModel viewModel;
     private readonly IPlannerSettingsService plannerSettings;
     private readonly Mapsui.Map map = new();
     private readonly MapBasemapController basemapController;
@@ -26,22 +28,20 @@ internal sealed class MissionMapPresenter : IDisposable
     private bool disposed;
 
     /// <summary>Initializes a presenter for a map view and shared mission editor.</summary>
-    public MissionMapPresenter(MapView mapView, MissionItemListViewModel viewModel, IPlannerSettingsService plannerSettings)
+    public MissionMapPresenter(MapView mapView, MissionMapViewModel viewModel, IPlannerSettingsService plannerSettings)
     {
         this.mapView = mapView;
         this.viewModel = viewModel;
         this.plannerSettings = plannerSettings;
         basemapController = new MapBasemapController(map, new MapsuiBasemapFactory());
         if (!basemapController.TrySwitchAsync(BuiltInMapSourceIds.Resolve(viewModel.SelectedMapType)).AsTask().GetAwaiter().GetResult())
+        {
             throw new InvalidOperationException($"Unable to create initial map source '{viewModel.SelectedMapType}'.");
+        }
+
         mapView.Map = map;
 
-        vehiclePin = new Pin(mapView)
-        {
-            Label = "Vehicle",
-            Type = PinType.Pin,
-            Position = new Position(viewModel.VehicleLatitude, viewModel.VehicleLongitude)
-        };
+        vehiclePin = new Pin(mapView) { Label = "Vehicle", Type = PinType.Pin, Position = new Position(viewModel.VehicleLatitude, viewModel.VehicleLongitude) };
         mapView.Pins.Add(vehiclePin);
         routeLine = new Polyline { StrokeColor = Colors.OrangeRed, StrokeWidth = 3 };
         mapView.Drawables.Add(routeLine);
@@ -51,14 +51,16 @@ internal sealed class MissionMapPresenter : IDisposable
     }
 
     /// <summary>Forwards a geographic primary click to the mission editor.</summary>
-    public void HandleMapClick(double latitude, double longitude) =>
+    public void HandleMapClick(double latitude, double longitude)
+    {
         viewModel.HandleMapClick(latitude, longitude);
+    }
 
     /// <summary>Updates the bindable pointer position from a Mapsui screen coordinate.</summary>
     public void UpdatePointerPosition(double x, double y)
     {
         var now = Stopwatch.GetTimestamp();
-        if (now - lastPointerUpdate < PointerUpdateInterval)
+        if (now - lastPointerUpdate < pointerUpdateInterval)
         {
             return;
         }
@@ -72,7 +74,7 @@ internal sealed class MissionMapPresenter : IDisposable
         lastPointerUpdate = now;
         var world = viewport.ScreenToWorld(x, y);
         var (longitude, latitude) = SphericalMercator.ToLonLat(world.X, world.Y);
-        viewModel.SetPointerPosition(latitude, longitude);
+        viewModel.SetPointerPosition(latitude, longitude, 0); // Assuming altitude is 0 for now, adjust as needed
     }
 
     /// <summary>Centers the map on a geographic position.</summary>
@@ -90,16 +92,28 @@ internal sealed class MissionMapPresenter : IDisposable
     }
 
     /// <summary>Zooms the map in by one navigator step.</summary>
-    public void ZoomIn() => map.Navigator.ZoomIn();
+    public void ZoomIn()
+    {
+        map.Navigator.ZoomIn();
+    }
 
     /// <summary>Zooms the map out by one navigator step.</summary>
-    public void ZoomOut() => map.Navigator.ZoomOut();
+    public void ZoomOut()
+    {
+        map.Navigator.ZoomOut();
+    }
 
     /// <summary>Centers and zooms the map on the current vehicle position.</summary>
-    public void ZoomToVehicle() => CenterOn(viewModel.VehicleLatitude, viewModel.VehicleLongitude, true);
+    public void ZoomToVehicle()
+    {
+        CenterOn(viewModel.VehicleLatitude, viewModel.VehicleLongitude, true);
+    }
 
     /// <summary>Toggles automatic map following of the current vehicle.</summary>
-    public void ToggleFollowVehicle() => viewModel.FollowVehicle = !viewModel.FollowVehicle;
+    public void ToggleFollowVehicle()
+    {
+        viewModel.FollowVehicle = !viewModel.FollowVehicle;
+    }
 
     /// <inheritdoc />
     public void Dispose()
@@ -122,12 +136,11 @@ internal sealed class MissionMapPresenter : IDisposable
         basemapController.Dispose();
     }
 
-    private double DefaultZoomResolution =>
-        WebMercatorInitialResolution / Math.Pow(2, plannerSettings.Current.Map.DefaultZoom);
+    private double DefaultZoomResolution => WebMercatorInitialResolution / Math.Pow(2, plannerSettings.Current.Map.DefaultZoom);
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs args)
     {
-        if (args.PropertyName is nameof(MissionItemListViewModel.VehicleLatitude) or nameof(MissionItemListViewModel.VehicleLongitude))
+        if (args.PropertyName is nameof(MissionMapViewModel.VehicleLatitude) or nameof(MissionMapViewModel.VehicleLongitude))
         {
             var position = new Position(viewModel.VehicleLatitude, viewModel.VehicleLongitude);
             vehiclePin.Position = position;
@@ -136,17 +149,20 @@ internal sealed class MissionMapPresenter : IDisposable
                 CenterOn(position.Latitude, position.Longitude);
             }
         }
-        else if (args.PropertyName == nameof(MissionItemListViewModel.SelectedMapType))
+        else if (args.PropertyName == nameof(MissionMapViewModel.SelectedMapType))
         {
             ApplyMapType(viewModel.SelectedMapType);
         }
-        else if (args.PropertyName == nameof(MissionItemListViewModel.MapSnapshot))
+        else if (args.PropertyName == nameof(MissionMapViewModel.MapSnapshot))
         {
             Render(viewModel.MapSnapshot);
         }
     }
 
-    private void OnFitToMissionRequested(object? sender, EventArgs args) => FitToMission();
+    private void OnFitToMissionRequested(object? sender, EventArgs args)
+    {
+        FitToMission();
+    }
 
     private void Render(MissionMapSnapshot snapshot)
     {
@@ -203,6 +219,8 @@ internal sealed class MissionMapPresenter : IDisposable
         map.Navigator.ZoomToBox(new MRect(minX, minY, maxX, maxY));
     }
 
-    private async void ApplyMapType(string mapType) =>
+    private async void ApplyMapType(string mapType)
+    {
         await basemapController.TrySwitchAsync(BuiltInMapSourceIds.Resolve(mapType));
+    }
 }

@@ -33,14 +33,14 @@ using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Connected;
-using MissionPlanner.Maps.Http;
-using MissionPlanner.Maps.Offline;
 using MissionPlanner.Firmware.Entry;
 using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Library;
 using MissionPlanner.Library.Configuration;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.Maps.Credentials;
+using MissionPlanner.Maps.Http;
+using MissionPlanner.Maps.Offline;
 using MissionPlanner.MavLink.Configuration;
 using MissionPlanner.Simulation;
 using MissionPlanner.Simulation.Abstractions;
@@ -172,9 +172,8 @@ public static class ApplicationConfigurator
         services.TryAddTransient<AsyncOperationRunner>();
 
         services.TryAddTransient<HudViewModel>();
-        services.TryAddKeyedSingleton<MissionItemListViewModel>("FlightPlanner");
-        services.TryAddKeyedSingleton<MissionItemListViewModel>("FlightData");
-        //services.TryAddTransient<MissionItemListViewModel>();
+        services.TryAddSingleton<FlightPlannerMissionMapViewModel>();
+        services.TryAddSingleton<FlightDataMissionMapViewModel>();
 
         // Tabs on FlightDataView
         services.TryAddTransient<QuickTabViewModel>();

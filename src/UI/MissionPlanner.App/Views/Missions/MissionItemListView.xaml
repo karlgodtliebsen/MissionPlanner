@@ -7,7 +7,7 @@
                     xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
                     xmlns:extended="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                     x:Class="MissionPlanner.App.Views.Missions.MissionItemListView"
-                    x:DataType="missions:MissionItemListViewModel"
+                    x:DataType="missions:MissionMapViewModel"
                     BackgroundColor="Transparent"
                     x:Name="Root">
 
@@ -92,7 +92,7 @@
                     <material:DataGridColumn Width="200" Title="Command" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="missions:MissionItemRow">
-                                <material:SelectField ItemsSource="{Binding CommandOptions, Source={RelativeSource AncestorType={x:Type missions:MissionItemListViewModel}}}"
+                                <material:SelectField ItemsSource="{Binding CommandOptions, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
                                         SelectedItem="{Binding SelectedCommand}"
                                         HorizontalTextAlignment="Center"
                                         VerticalOptions="Center" />
@@ -180,7 +180,7 @@
                     <material:DataGridColumn Width="125" Title="Frame" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
                         <material:DataGridColumn.CellItemTemplate>
                             <DataTemplate x:DataType="missions:MissionItemRow">
-                                <material:SelectField ItemsSource="{Binding FrameOptions, Source={RelativeSource AncestorType={x:Type missions:MissionItemListViewModel}}}"
+                                <material:SelectField ItemsSource="{Binding FrameOptions, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
                                     SelectedItem="{Binding SelectedFrame}" VerticalOptions="Center" HorizontalTextAlignment="Center" />
                             </DataTemplate>
                         </material:DataGridColumn.CellItemTemplate>
@@ -211,13 +211,13 @@
                             <DataTemplate x:DataType="missions:MissionItemRow">
                                 <HorizontalStackLayout Spacing="4" VerticalOptions="Center" HorizontalOptions="Center">
                                     <Button Text="▲" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
-                                      Command="{Binding MoveItemUpCommand, Source={RelativeSource AncestorType={x:Type missions:MissionItemListViewModel}}}"
+                                      Command="{Binding MoveItemUpCommand, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
                                       CommandParameter="{Binding .}" />
                                     <Button Text="▼" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
-                                      Command="{Binding MoveItemDownCommand, Source={RelativeSource AncestorType={x:Type missions:MissionItemListViewModel}}}"
+                                      Command="{Binding MoveItemDownCommand, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
                                       CommandParameter="{Binding .}" />
                                     <Button Text="✕" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
-                                      Command="{Binding RemoveItemCommand, Source={RelativeSource AncestorType={x:Type missions:MissionItemListViewModel}}}"
+                                      Command="{Binding RemoveItemCommand, Source={RelativeSource AncestorType={x:Type missions:MissionMapViewModel}}}"
                                       CommandParameter="{Binding .}" />
                                 </HorizontalStackLayout>
                             </DataTemplate>

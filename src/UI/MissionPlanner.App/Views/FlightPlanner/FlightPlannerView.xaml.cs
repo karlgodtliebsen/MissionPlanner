@@ -10,7 +10,7 @@ public partial class FlightPlannerView : ExtendedContentPage<FlightPlannerViewMo
     /// <summary>
     /// Initializes a new instance of the <see cref="FlightPlannerView"/> class.
     /// </summary>
-    public FlightPlannerView() //: base("FlightPlanner")
+    public FlightPlannerView()
     {
         InitializeComponent();
     }

@@ -9,20 +9,36 @@ namespace MissionPlanner.App.Navigation;
 /// <typeparam name="TViewModel"></typeparam>
 public class ExtendedContentView<TViewModel> : ContentView where TViewModel : class, IDisposable
 {
-    private readonly string? key;
-
     /// <summary>
     ///  
     /// </summary>
     protected TViewModel? ViewModel;
 
     /// <summary>
+    /// 
+    /// </summary>
+    protected ExtendedContentView()
+    {
+        ViewModel = ServiceHelper.GetRequiredService<TViewModel>();
+        BindingContext = ViewModel;
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ExtendedContentView{TViewModel}"/> class.
     /// </summary>
-    protected ExtendedContentView(string? k = null)
+    protected ExtendedContentView(string key)
     {
-        key = k;
-        ViewModel = key is not null ? ServiceHelper.GetRequiredKeyedService<TViewModel>(key) : ServiceHelper.GetRequiredService<TViewModel>();
+        ViewModel = ServiceHelper.GetRequiredKeyedService<TViewModel>(key);
+        BindingContext = ViewModel;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ExtendedContentView{TViewModel}"/> class with the specified view model.
+    /// </summary>
+    /// <param name="viewModel">The view model to associate with the view.</param>
+    protected ExtendedContentView(TViewModel viewModel)
+    {
+        ViewModel = viewModel;
         BindingContext = ViewModel;
     }
 

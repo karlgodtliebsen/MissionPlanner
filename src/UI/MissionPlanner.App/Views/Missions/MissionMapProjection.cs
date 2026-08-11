@@ -21,7 +21,7 @@ public static class MissionMapProjection
 
         foreach (var item in mission.Items)
         {
-            if (MissionItemListViewModel.PositionOf(item) is not { IsValid: true } position)
+            if (MissionMapViewModel.PositionOf(item) is not { IsValid: true } position)
             {
                 continue;
             }
