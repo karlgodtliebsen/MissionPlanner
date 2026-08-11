@@ -6,6 +6,8 @@ using Mapsui.Projections;
 using Mapsui.UI.Maui;
 using MissionPlanner.App.Maps;
 using MissionPlanner.Core.ConfigTuning.Planner;
+using MissionPlanner.Core.Missions.Models;
+using MissionPlanner.Core.Missions.Planning;
 using MissionPlanner.Maps.Sources;
 using MissionPlanner.Maps.Attribution;
 using MissionPlanner.Maps.Terrain;
@@ -29,6 +31,7 @@ internal sealed class MissionMapPresenter : IDisposable
     private readonly Pin vehiclePin;
     private readonly List<Pin> missionPins = [];
     private Polyline routeLine;
+    private readonly IReadOnlyDictionary<PlanningLayerKind, Polyline> planningLayers;
     private long lastPointerUpdate;
     private CancellationTokenSource? pointerElevationCancellation;
     private long pointerGeneration;
@@ -54,9 +57,13 @@ internal sealed class MissionMapPresenter : IDisposable
         mapView.Pins.Add(vehiclePin);
         routeLine = new Polyline { StrokeColor = Colors.OrangeRed, StrokeWidth = 3 };
         mapView.Drawables.Add(routeLine);
+        planningLayers = CreatePlanningLayers();
+        foreach (var layer in planningLayers.Values)
+            mapView.Drawables.Add(layer);
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
         viewModel.FitToMissionRequested += OnFitToMissionRequested;
         Render(viewModel.MapSnapshot);
+        RenderPlanningOverlays(viewModel.PlanningOverlaySnapshot);
     }
 
     /// <summary>Starts asynchronous map-source work while the view is visible.</summary>
@@ -106,6 +113,7 @@ internal sealed class MissionMapPresenter : IDisposable
         var world = viewport.ScreenToWorld(x, y);
         var (longitude, latitude) = SphericalMercator.ToLonLat(world.X, world.Y);
         viewModel.SetPointerPosition(latitude, longitude, altitudeMeters: null);
+        viewModel.HandleMapPointerMove(latitude, longitude);
         viewModel.SetPointerElevationStatus(TerrainElevationStatus.Loading);
         RequestPointerElevation(latitude, longitude);
     }
@@ -168,6 +176,8 @@ internal sealed class MissionMapPresenter : IDisposable
 
         missionPins.Clear();
         mapView.Drawables.Remove(routeLine);
+        foreach (var layer in planningLayers.Values)
+            mapView.Drawables.Remove(layer);
         basemapController.Dispose();
     }
 
@@ -238,6 +248,10 @@ internal sealed class MissionMapPresenter : IDisposable
         {
             Render(viewModel.MapSnapshot);
         }
+        else if (args.PropertyName == nameof(MissionMapViewModel.PlanningOverlaySnapshot))
+        {
+            RenderPlanningOverlays(viewModel.PlanningOverlaySnapshot);
+        }
     }
 
     private void OnFitToMissionRequested(object? sender, EventArgs args)
@@ -277,6 +291,55 @@ internal sealed class MissionMapPresenter : IDisposable
         mapView.Drawables.Add(replacement);
         routeLine = replacement;
         mapView.RefreshGraphics();
+    }
+
+    private IReadOnlyDictionary<PlanningLayerKind, Polyline> CreatePlanningLayers() =>
+        new Dictionary<PlanningLayerKind, Polyline>
+        {
+            [PlanningLayerKind.Polygon] = NewPlanningLine(Colors.DeepSkyBlue, 3),
+            [PlanningLayerKind.Measurement] = NewPlanningLine(Colors.Gold, 2),
+            [PlanningLayerKind.Fence] = NewPlanningLine(Colors.Red, 3),
+            [PlanningLayerKind.Rally] = NewPlanningLine(Colors.Orange, 3),
+            [PlanningLayerKind.Poi] = NewPlanningLine(Colors.MediumPurple, 3),
+            [PlanningLayerKind.Imported] = NewPlanningLine(Colors.Cyan, 2),
+            [PlanningLayerKind.Survey] = NewPlanningLine(Colors.LimeGreen, 2),
+            [PlanningLayerKind.TrackerHome] = NewPlanningLine(Colors.White, 3)
+        };
+
+    private static Polyline NewPlanningLine(Color color, float width) => new() { StrokeColor = color, StrokeWidth = width };
+
+    private void RenderPlanningOverlays(MissionPlanningOverlaySnapshot snapshot)
+    {
+        SetPositions(planningLayers[PlanningLayerKind.Polygon], snapshot.DrawnPolygon, close: snapshot.DrawnPolygon.Count >= 3);
+        SetPositions(planningLayers[PlanningLayerKind.Measurement], snapshot.TemporaryMeasurement);
+        SetPositions(planningLayers[PlanningLayerKind.Fence], snapshot.FencePreview, close: snapshot.FencePreview.Count >= 3);
+        SetPositions(planningLayers[PlanningLayerKind.Rally], snapshot.RallyPoints);
+        SetPositions(planningLayers[PlanningLayerKind.Poi], snapshot.PoiItems);
+        SetPositions(planningLayers[PlanningLayerKind.Imported], snapshot.ImportedOverlays.SelectMany(x => x.Positions).ToArray());
+        SetPositions(planningLayers[PlanningLayerKind.Survey], snapshot.SurveyPreview);
+        SetPositions(planningLayers[PlanningLayerKind.TrackerHome], snapshot.TrackerHome is { } home ? [home] : []);
+        mapView.RefreshGraphics();
+    }
+
+    private static void SetPositions(Polyline line, IReadOnlyList<GeoPosition> positions, bool close = false)
+    {
+        line.Positions.Clear();
+        foreach (var position in positions)
+            line.Positions.Add(new Position(position.LatitudeDegrees, position.LongitudeDegrees));
+        if (close && positions.Count > 0)
+            line.Positions.Add(new Position(positions[0].LatitudeDegrees, positions[0].LongitudeDegrees));
+    }
+
+    internal enum PlanningLayerKind
+    {
+        Polygon,
+        Measurement,
+        Fence,
+        Rally,
+        Poi,
+        Imported,
+        Survey,
+        TrackerHome
     }
 
     /// <summary>Fits the viewport to the current mission snapshot.</summary>

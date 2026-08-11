@@ -353,6 +353,12 @@ same control and the same mission plan, so edits made on either screen show up o
 
 Complete inventory of the `MissionMapView` context menu, mirroring v1.38.
 
+The menu now has a UI-neutral interaction and planning-overlay foundation. Typed interaction modes
+route map clicks without Mapsui dependencies in Core, immutable overlay snapshots survive basemap
+changes, command availability carries user-facing disabled reasons, and new workflows use injectable
+prompt/choice/file boundaries. Individual placeholder features remain listed below until their task
+slice implements them.
+
 ### Implemented
 
 * Delete WP (nearest to cursor, else last)

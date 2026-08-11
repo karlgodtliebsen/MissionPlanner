@@ -13,6 +13,7 @@ using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Files;
 using MissionPlanner.Core.Missions.Models;
+using MissionPlanner.Core.Missions.Planning;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -39,6 +40,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     private readonly IFileSaver fileSaver;
     private readonly IDateTimeProvider dateTimeProvider;
     private readonly ILogger<MissionMapViewModel> logger;
+    private readonly IMissionMapInteractionService interactionService;
     private IDisposable? stateSubscription;
     private bool disposed;
 
@@ -48,7 +50,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     public MissionMapViewModel(IActiveVehicleContext activeVehicle, IMissionProtocolMapper protocolMapper,
         IFileSaver fileSaver, IPlannerSettingsService settingsService,
         IMissionFileCodec fileCodec, IDomainEventHub domainEventHub, IDispatcher dispatcher,
-        IDateTimeProvider dateTimeProvider, ILogger<MissionMapViewModel> logger)
+        IDateTimeProvider dateTimeProvider, ILogger<MissionMapViewModel> logger,
+        IMissionMapInteractionService interactionService)
     {
         this.activeVehicle = activeVehicle;
         this.fileCodec = fileCodec;
@@ -58,6 +61,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         this.fileSaver = fileSaver;
         this.dateTimeProvider = dateTimeProvider;
         this.logger = logger;
+        this.interactionService = interactionService;
+        interactionService.Changed += OnInteractionChanged;
         SelectedSourceId = settingsService.Current.Map.SelectedSourceId;
         MapSnapshot = MissionMapProjection.Create(Mission, HomePosition);
         SelectedMapStyle = "GEO";
@@ -86,6 +91,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         }
 
         activeVehicle.Changed -= OnActiveVehicleChanged;
+        interactionService.Cancel();
         stateSubscription?.Dispose();
         stateSubscription = null;
     }
@@ -99,6 +105,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
             row.Dispose();
         }
 
+        interactionService.Changed -= OnInteractionChanged;
         disposed = true;
     }
 
@@ -304,6 +311,14 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     public partial MissionMapSnapshot MapSnapshot { get; private set; }
 
+    /// <summary>Gets the renderer-independent planning overlay state.</summary>
+    [ObservableProperty]
+    public partial MissionPlanningOverlaySnapshot PlanningOverlaySnapshot { get; private set; } = MissionPlanningOverlaySnapshot.Empty;
+
+    /// <summary>Gets the current planning interaction instruction.</summary>
+    [ObservableProperty]
+    public partial string PlanningInteractionPrompt { get; private set; } = string.Empty;
+
     /// <summary>The mission plan being edited.</summary>
     public Mission Mission { get; private set; } = new(MissionId.New(), "New Mission");
 
@@ -419,12 +434,36 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         var position = new GeoPosition(latitude, longitude);
         ContextPosition = position;
 
+        if (interactionService.AcceptClick(position))
+        {
+            return;
+        }
+
         if (!AddWaypointOnMapClick)
         {
             return;
         }
 
         AddWaypoint(position, "Waypoint added from map click.");
+    }
+
+    /// <summary>Routes map pointer movement to the active planning interaction.</summary>
+    public void HandleMapPointerMove(double latitude, double longitude) =>
+        interactionService.MovePointer(new GeoPosition(latitude, longitude));
+
+    /// <summary>Starts a renderer-independent planning interaction.</summary>
+    public void BeginInteraction(MissionMapInteractionMode mode, string prompt) => interactionService.Enter(mode, prompt);
+
+    /// <summary>Cancels the current planning interaction.</summary>
+    public void CancelInteraction() => interactionService.Cancel();
+
+    private void OnInteractionChanged(object? sender, EventArgs args)
+    {
+        dispatcher.Dispatch(() =>
+        {
+            PlanningOverlaySnapshot = interactionService.Overlay;
+            PlanningInteractionPrompt = interactionService.State.Prompt;
+        });
     }
 
     /// <summary>Replaces the mission being edited (e.g. after downloading from a vehicle).</summary>

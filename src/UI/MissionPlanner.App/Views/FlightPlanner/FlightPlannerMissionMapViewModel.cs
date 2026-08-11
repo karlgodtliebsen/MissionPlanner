@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Views.Missions;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Missions.Abstractions;
+using MissionPlanner.Core.Missions.Planning;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
@@ -15,8 +16,9 @@ public partial class FlightPlannerMissionMapViewModel : MissionMapViewModel
     /// <inheritdoc />
     public FlightPlannerMissionMapViewModel(IActiveVehicleContext activeVehicle, IMissionProtocolMapper protocolMapper, IFileSaver fileSaver,
         IPlannerSettingsService settingsService, IMissionFileCodec fileCodec,
-        IDomainEventHub domainEventHub, IDispatcher dispatcher, IDateTimeProvider dateTimeProvider, ILogger<MissionMapViewModel> logger)
-        : base(activeVehicle, protocolMapper, fileSaver, settingsService, fileCodec, domainEventHub, dispatcher, dateTimeProvider, logger)
+        IDomainEventHub domainEventHub, IDispatcher dispatcher, IDateTimeProvider dateTimeProvider, ILogger<MissionMapViewModel> logger,
+        IMissionMapInteractionService interactionService)
+        : base(activeVehicle, protocolMapper, fileSaver, settingsService, fileCodec, domainEventHub, dispatcher, dateTimeProvider, logger, interactionService)
     {
     }
 }

@@ -291,6 +291,25 @@ local plan intact for recovery.
 
 ---
 
+## Mission map interaction architecture
+
+Temporary planning tools are coordinated by `IMissionMapInteractionService`. Only one typed
+`MissionMapInteractionMode` can be active at a time; clicks and pointer movement are routed to
+that service before ordinary waypoint insertion. Cancellation removes temporary geometry while
+completed planning state remains available to subsequent polygon, survey, fence, rally, POI, and
+tracker workflows.
+
+Planning geometry is exposed as an immutable `MissionPlanningOverlaySnapshot`. It contains only
+domain `GeoPosition` values and never Mapsui objects. `MissionMapPresenter` owns stable drawables
+for each overlay category and updates their content independently from the basemap, so changing a
+map provider cannot discard operational planning layers.
+
+Menu commands remain thin view-model entry points and delegate stateful work to focused services.
+Native prompts, choices, file open/save, and notifications cross injectable application boundaries;
+Core planning and protocol services do not call MAUI dialogs or file pickers.
+
+---
+
 ## Known gaps and next steps
 
 See `FEATURES.md` for the complete inventory. High-value next steps are:
