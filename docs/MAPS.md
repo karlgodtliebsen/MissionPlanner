@@ -69,3 +69,9 @@ Policies were reviewed on 2026-08-11 against official sources:
 | MapTiler Cloud | Interactive hosted use; temporary single-user cache following HTTP headers | Bulk tile download, export, proxy, redistribution without a custom agreement | [MapTiler Cloud terms](https://www.maptiler.com/terms/cloud/), [cache-header guidance](https://docs.maptiler.com/guides/maps-apis/maps-platform/how-are-the-tile-requests-cached-in-web-browser/) |
 
 Settings can present each source's credential state, attribution, and effective policy summary. Provider failures are categorized as missing credentials, authorization (401/403), rate/quota limit (429), network, or unexpected provider response, with secret-bearing transport details excluded.
+
+## Esri integration
+
+The existing World Topographic, World Physical, World Shaded Relief, and World Dark Gray sources retain their established Mapsui/BruTile rendering. All four resolve through catalog IDs and the common Esri policy reviewed on 2026-08-11. That policy permits interactive hosted use and approved HTTP caching, and denies tile harvesting, MBTiles/PMTiles creation, bulk prefetch, proxying, and redistribution. Official ArcGIS offline workflows and packages are separate from this adapter; Mission Planner does not emulate them by scraping tiles. See [ArcGIS static basemap tiles](https://developers.arcgis.com/rest/static-basemap-tiles/) and [ArcGIS attribution guidance](https://developers.arcgis.com/documentation/glossary/data-attribution/).
+
+`EsriAttributionResolver` requests the current MapServer JSON metadata through the bounded HTTP client and merges `copyrightText` with the conservative “Powered by Esri” fallback. Network, parse, or empty-metadata failures retain the fallback. Public current endpoints require no credential; the optional Esri token helper exists for future secured services and appends a token only at the request boundary, while diagnostic rendering always redacts it.

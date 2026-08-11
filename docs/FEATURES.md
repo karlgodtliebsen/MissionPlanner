@@ -16,6 +16,8 @@ Custom map source APIs support add/edit/test/delete for raster XYZ/TMS and self-
 
 Optional credential-gated raster sources now cover Stadia Outdoors, Thunderforest Outdoors, and MapTiler Streets. Their catalog metadata records reviewed policy dates and official endpoints, attribution and HTTP-cache rules; bulk prefetch, pack export, proxying, and redistribution remain denied. Request failures distinguish missing credentials, authorization, quota/rate limiting, network, and provider errors.
 
+All four existing Esri raster basemaps now share the catalog/policy/cache boundary and dynamic MapServer attribution resolver. Current copyright metadata is merged with a conservative Esri fallback, optional service tokens are request-only and redacted, and unofficial offline scraping or pack creation remains denied.
+
 
 
 ## MavLink

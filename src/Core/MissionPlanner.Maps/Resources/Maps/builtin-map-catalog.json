@@ -44,8 +44,8 @@
       "allowExport": false, "allowPrinting": false, "requiresVisibleAttribution": true
     },
     {
-      "id": "esri-online-v1", "termsUri": "https://www.esri.com/en-us/legal/terms/full-master-agreement", "reviewedOn": "2026-08-11",
-      "reviewNotes": "Interactive online use only until an explicit product-specific review approves additional operations.",
+      "id": "esri-online-v1", "termsUri": "https://developers.arcgis.com/rest/static-basemap-tiles/", "reviewedOn": "2026-08-11",
+      "reviewNotes": "Interactive hosted use and approved client HTTP cache only. Mission Planner tile harvesting, pack creation, proxying, redistribution, and unofficial offline scraping are not enabled; official ArcGIS offline workflows are outside this adapter.",
       "allowInteractiveUse": true, "allowOfflineCache": true, "allowPackDownload": false,
       "allowExport": false, "allowPrinting": false, "requiresVisibleAttribution": true
     },
