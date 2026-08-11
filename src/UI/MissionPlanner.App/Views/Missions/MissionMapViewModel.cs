@@ -187,6 +187,11 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     public partial string? StatusMessage { get; set; }
 
+
+    /// <summary>Short feedback message for the last menu action.</summary>
+    [ObservableProperty]
+    public partial bool HasStatusMessage { get; set; }
+
     /// <summary>The stable catalog, pack, or custom source identifier rendered by map views.</summary>
     [ObservableProperty]
     public partial string SelectedSourceId { get; set; } = "osm-standard";
@@ -214,6 +219,11 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     /// <summary>Gets the stable built-in source identifiers offered by the compact map selector.</summary>
     public IReadOnlyList<string> AvailableSourceIds { get; } =
         ["osm-standard", "esri-world-topo", "esri-world-physical", "esri-world-shaded-relief", "esri-world-dark-gray", "no-map"];
+
+    partial void OnStatusMessageChanged(string? value)
+    {
+        HasStatusMessage = value is not null;
+    }
 
     /// <summary>
     /// Commands selectable in the waypoint editor. Names follow v1.38's mavcmd.xml; the set is

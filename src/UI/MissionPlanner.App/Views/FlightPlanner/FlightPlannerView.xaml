@@ -32,7 +32,8 @@
         >
         <controls:RightDockPanel.MainContent>
             <Grid RowDefinitions="Auto,*" RowSpacing="4" Padding="5"  HorizontalOptions="Fill" VerticalOptions="Fill">
-                <FlexLayout Grid.Row="0" Wrap="Wrap" AlignItems="Center" JustifyContent="Start" Margin="10,10,0,0">
+                <FlexLayout Grid.Row="0" Wrap="Wrap" VerticalOptions="Center" AlignItems="Center" JustifyContent="Start" 
+                            Margin="10,5,0,5">
 
                     <Button Text="Load File" Command="{Binding Map.LoadWpFileCommand}" Margin="0,0,4,4" />
                     <Button Text="Save File"  Command="{Binding Map.SaveWpFileCommand}" Margin="0,0,4,4" />
@@ -46,32 +47,31 @@
                     <Button Text="Write Fast" Command="{Binding WriteToVehicleFastCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
                     <Button Text="Editor" Command="{Binding EditCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}" Margin="0,0,4,4" />
 
-                    <Label Text="Map:" VerticalOptions="Center" Margin="0,0,4,4" />
-                    <material:SelectField ItemsSource="{Binding Map.AvailableSourceIds}"
+                    <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="4" VerticalOptions="Fill" Margin="0,0,4,4">
+                        <Label  Grid.Column="0" Text="Map:" VerticalOptions="Center" />
+
+                        <material:SelectField 
+                                Grid.Column="1"
+                                ItemsSource="{Binding Map.AvailableSourceIds}"
                                 SelectedItem="{Binding Map.SelectedSourceId}"
                                 WidthRequest="170"
                                 Margin="0,0,4,4" />
 
-                    <Label Text="Default Altitude (m):" VerticalOptions="Center" Margin="0,0,4,4" />
-                    <controls:NumericField
-                        WidthRequest="70"
-                        BorderThickness="0.1"
-                        Margin="0,0,4,4" 
-                        Value="{Binding Map.DefaultAltitudeMeters, Mode=TwoWay}"
-                        NumberFormat="F1"
-                        HorizontalOptions="Fill"
-                        HorizontalTextAlignment="End" />
+                        <Label  Grid.Column="2" Text="Default Altitude (m):" VerticalOptions="Center" />
+                        <controls:NumericField  Grid.Column="3"
+                                                WidthRequest="70"
+                                                BorderThickness="0.1"
+                                                Margin="0,0,4,4" 
+                                                Value="{Binding Map.DefaultAltitudeMeters, Mode=TwoWay}"
+                                                NumberFormat="F1"
+                                                HorizontalOptions="Fill"
+                                                HorizontalTextAlignment="End" />
 
-
-                    <Grid  ColumnDefinitions="30,Auto" Margin="0,0,4,4"  >
-                        <material:CheckBox Text="Click map to add WP" IsChecked="{Binding Map.AddWaypointOnMapClick}" />
+                        <material:CheckBox Grid.Column="4" Text="Click map to add WP" VerticalOptions="Center" IsChecked="{Binding Map.AddWaypointOnMapClick}" />
+                        <Label  Grid.Column="5" Text="{Binding TransferStatus}" VerticalOptions="Center"  />
                     </Grid>
-
-                    <Label Text="{Binding TransferStatus}" VerticalOptions="Center" Margin="0,0,8,4" />
-                    <Label Text="{Binding Map.StatusMessage}" VerticalOptions="Center" Opacity="0.7" Margin="0,0,0,4" />
-
                 </FlexLayout>
-                <vm:FlightPlannerMissionMapView Grid.Column="0" Grid.Row="1"  HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                <vm:FlightPlannerMissionMapView  Grid.Row="1"  HorizontalOptions="Fill" VerticalOptions="Fill"/>
             </Grid>
         </controls:RightDockPanel.MainContent>
 
