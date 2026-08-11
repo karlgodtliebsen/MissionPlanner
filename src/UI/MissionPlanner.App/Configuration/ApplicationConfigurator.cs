@@ -38,6 +38,7 @@ using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Library;
 using MissionPlanner.Library.Configuration;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
+using MissionPlanner.Maps.Credentials;
 using MissionPlanner.MavLink.Configuration;
 using MissionPlanner.Simulation;
 using MissionPlanner.Simulation.Abstractions;
@@ -74,6 +75,7 @@ public static class ApplicationConfigurator
 
         services.TryAddTransient<IPlannerSettingsStore, PreferencesPlannerSettingsStore>();
         services.TryAddTransient<IPlannerSecretStore, SecurePlannerSecretStore>();
+        services.TryAddTransient<IMapSecretStore, PlannerMapSecretStoreAdapter>();
         services.TryAddTransient<IPlannerSettingsService, PlannerSettingsService>();
         services.TryAddTransient<ISimulatorProfileStore, PreferencesSimulatorProfileStore>();
         services.TryAddTransient<ISimulatorProfileService, SimulatorProfileService>();

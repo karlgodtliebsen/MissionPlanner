@@ -4,6 +4,8 @@
 
 Map provider metadata has a platform-neutral, versioned catalog with validation and deterministic serialization. Existing map rendering remains unchanged; offline, custom, hosted, and vector candidates remain disabled until their dedicated implementation and policy tasks are complete. See [MAPS.md](MAPS.md).
 
+Map operations now have fail-closed capability-and-policy evaluation. Attribution aggregation supports compact, expanded, export, and dynamic entries. Map credentials adapt the existing secure store, and HTTP/cache infrastructure provides bounded requests, namespace isolation, validators, disk budgets, and explicit clearing without treating cache data as offline packs.
+
 
 
 ## MavLink

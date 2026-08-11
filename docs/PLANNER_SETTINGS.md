@@ -50,6 +50,8 @@ Credentials and tokens must use `IPlannerSecretStore`, whose MAUI adapter delega
 platform SecureStorage. They must not be added to `PlannerSettings`, Preferences, exports,
 or structured log properties.
 
+Map credentials follow the same rule. `PlannerMapSecretStoreAdapter` delegates map credential storage to `IPlannerSecretStore`; only a namespaced source key and configured/not-configured state may appear in normal application state. Map URLs and diagnostics redact known secrets and sensitive query parameters.
+
 ## Live and restart-bound behavior
 
 Saved settings raise one observable change event containing previous/current immutable
