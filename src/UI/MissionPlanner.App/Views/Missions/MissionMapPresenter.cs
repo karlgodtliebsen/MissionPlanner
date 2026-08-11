@@ -28,6 +28,8 @@ internal sealed class MissionMapPresenter : IDisposable
     private readonly List<Pin> missionPins = [];
     private Polyline routeLine;
     private long lastPointerUpdate;
+    private CancellationTokenSource? lifecycleCancellation;
+    private bool active;
     private bool disposed;
 
     /// <summary>Initializes a presenter for a map view and shared mission editor.</summary>
@@ -37,14 +39,9 @@ internal sealed class MissionMapPresenter : IDisposable
         this.viewModel = viewModel;
         this.plannerSettings = plannerSettings;
         this.attributionCoordinator = attributionCoordinator;
-        basemapController = new MapBasemapController(map, sourceResolver, basemapFactory);
-        if (!basemapController.TrySwitchAsync(viewModel.SelectedSourceId).AsTask().GetAwaiter().GetResult())
-        {
-            throw new InvalidOperationException($"Unable to create initial map source '{viewModel.SelectedSourceId}'.");
-        }
+        basemapController = new MapBasemapController(map, sourceResolver, basemapFactory, new MauiMapUiDispatcher(mapView.Dispatcher));
 
         attributionCoordinator.Changed += OnAttributionChanged;
-        _ = RefreshAttributionAsync();
 
         mapView.Map = map;
 
@@ -55,6 +52,25 @@ internal sealed class MissionMapPresenter : IDisposable
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
         viewModel.FitToMissionRequested += OnFitToMissionRequested;
         Render(viewModel.MapSnapshot);
+    }
+
+    /// <summary>Starts asynchronous map-source work while the view is visible.</summary>
+    public async Task ActivateAsync()
+    {
+        if (disposed || active)
+            return;
+        active = true;
+        lifecycleCancellation = new CancellationTokenSource();
+        await SwitchSourceAsync(viewModel.SelectedSourceId, lifecycleCancellation.Token);
+    }
+
+    /// <summary>Cancels map-source work when the view leaves the visual tree.</summary>
+    public void Deactivate()
+    {
+        active = false;
+        lifecycleCancellation?.Cancel();
+        lifecycleCancellation?.Dispose();
+        lifecycleCancellation = null;
     }
 
     /// <summary>Forwards a geographic primary click to the mission editor.</summary>
@@ -130,6 +146,7 @@ internal sealed class MissionMapPresenter : IDisposable
             return;
         }
 
+        Deactivate();
         disposed = true;
         viewModel.PropertyChanged -= OnViewModelPropertyChanged;
         viewModel.FitToMissionRequested -= OnFitToMissionRequested;
@@ -159,7 +176,7 @@ internal sealed class MissionMapPresenter : IDisposable
         }
         else if (args.PropertyName == nameof(MissionMapViewModel.SelectedSourceId))
         {
-            ApplyMapType(viewModel.SelectedSourceId);
+            _ = SwitchSourceAsync(viewModel.SelectedSourceId, lifecycleCancellation?.Token ?? CancellationToken.None);
         }
         else if (args.PropertyName == nameof(MissionMapViewModel.MapSnapshot))
         {
@@ -227,26 +244,24 @@ internal sealed class MissionMapPresenter : IDisposable
         map.Navigator.ZoomToBox(new MRect(minX, minY, maxX, maxY));
     }
 
-    private async void ApplyMapType(string mapType)
+    private async Task SwitchSourceAsync(string sourceId, CancellationToken cancellationToken)
     {
-        if (await basemapController.TrySwitchAsync(mapType))
-            await attributionCoordinator.SetBasemapAsync(basemapController.CurrentResolvedSource);
+        if (!active || disposed)
+            return;
+        try
+        {
+            var result = await basemapController.SwitchAsync(sourceId, cancellationToken);
+            if (result.IsSuccess && active && !disposed)
+                await attributionCoordinator.SetBasemapAsync(basemapController.CurrentResolvedSource, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // A newer selection or view deactivation owns the next map state.
+        }
     }
 
     /// <summary>Toggles compact and expanded map attribution.</summary>
     public void ToggleAttribution() => attributionCoordinator.ToggleExpanded();
-
-    private async Task RefreshAttributionAsync()
-    {
-        try
-        {
-            await attributionCoordinator.SetBasemapAsync(basemapController.CurrentResolvedSource);
-        }
-        catch (Exception)
-        {
-            // Reviewed static attribution remains on the source and is retried on the next switch.
-        }
-    }
 
     private void OnAttributionChanged(object? sender, MapAttributionOverlayState state) => viewModel.SetAttribution(state.DisplayText);
 }

@@ -27,8 +27,24 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
 
         MissionMap.MapClicked += OnMapClicked;
         MissionMap.MapPointerMoved += OnMapPointerMoved;
+        Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
         Loaded += OnFirstLoaded;
     }
+
+    private async void OnLoaded(object? sender, EventArgs args)
+    {
+        try
+        {
+            await presenter.ActivateAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            // Unloading the view cancels in-flight source and attribution work.
+        }
+    }
+
+    private void OnUnloaded(object? sender, EventArgs args) => presenter.Deactivate();
 
     private void OnMapClicked(object? sender, MapClickedEventArgs args)
     {
@@ -109,6 +125,8 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
 
         disposed = true;
         Loaded -= OnFirstLoaded;
+        Loaded -= OnLoaded;
+        Unloaded -= OnUnloaded;
         MissionMap.MapClicked -= OnMapClicked;
         MissionMap.MapPointerMoved -= OnMapPointerMoved;
         presenter.Dispose();
