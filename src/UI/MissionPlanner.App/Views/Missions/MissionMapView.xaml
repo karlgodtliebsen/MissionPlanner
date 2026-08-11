@@ -107,9 +107,9 @@
                     </MenuFlyoutSubItem>
 
                     <MenuFlyoutSubItem Text="POI">
-                        <MenuFlyoutItem Text="Add" Command="{Binding NotImplementedCommand}" CommandParameter="POI Add" />
-                        <MenuFlyoutItem Text="Delete" Command="{Binding NotImplementedCommand}" CommandParameter="POI Delete" />
-                        <MenuFlyoutItem Text="Edit" Command="{Binding NotImplementedCommand}" CommandParameter="POI Edit" />
+                        <MenuFlyoutItem Text="Add" Command="{Binding AddPoiCommand}" />
+                        <MenuFlyoutItem Text="Delete Nearest" Command="{Binding DeletePoiCommand}" />
+                        <MenuFlyoutItem Text="Edit Nearest" Command="{Binding EditPoiCommand}" />
                     </MenuFlyoutSubItem>
 
                     <MenuFlyoutItem Text="Tracker Home" Command="{Binding NotImplementedCommand}" CommandParameter="Tracker Home" />

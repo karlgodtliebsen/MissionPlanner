@@ -899,6 +899,8 @@ Completed
   confirmed policy-aware visible/route cache warming with OSM/offline denial and hard limits.
 * A bounded mission elevation profiler reuses cached SRTM lookups and renders terrain/planned
   profiles with explicit missing-data gaps and correct altitude-reference caveats.
+* Persistent local POIs support add/edit/delete, nearest-context targeting, atomic versioned JSON,
+  corrupt-file isolation, and a stable non-mission map overlay.
 
 * A deterministic inventory resolves the pinned official `ardupilotmega` dialect and its
   transitive includes without network access during normal builds or tests.

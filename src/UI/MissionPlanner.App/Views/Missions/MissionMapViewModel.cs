@@ -61,6 +61,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     private readonly ISurveyMissionGenerator surveyMissionGenerator;
     private readonly IMapTilePrefetchService mapTilePrefetchService;
     private readonly IMissionElevationProfileService elevationProfileService;
+    private readonly IPoiService poiService;
     private IReadOnlyList<GeoPosition> generatedPreview = [];
     private MissionAltitude pendingRallyAltitude;
     private IReadOnlyList<ImportedPlanningOverlay> importedOverlays = [];
@@ -81,7 +82,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         IFenceConfigurationService fenceService, IFencePlanFileCodec fenceFileCodec,
         IRallyConfigurationService rallyService, IRallyPlanFileCodec rallyFileCodec,
         IAutoWaypointGenerator autoWaypointGenerator, ISurveyMissionGenerator surveyMissionGenerator,
-        IMapTilePrefetchService mapTilePrefetchService, IMissionElevationProfileService elevationProfileService)
+        IMapTilePrefetchService mapTilePrefetchService, IMissionElevationProfileService elevationProfileService,
+        IPoiService poiService)
     {
         this.activeVehicle = activeVehicle;
         this.fileCodec = fileCodec;
@@ -108,11 +110,14 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         this.surveyMissionGenerator = surveyMissionGenerator;
         this.mapTilePrefetchService = mapTilePrefetchService;
         this.elevationProfileService = elevationProfileService;
+        this.poiService = poiService;
         pendingRallyAltitude = DefaultAltitude();
         polygonService.Changed += OnPolygonChanged;
         interactionService.Changed += OnInteractionChanged;
         fenceService.Changed += OnFenceChanged;
         rallyService.Changed += OnRallyChanged;
+        poiService.Changed += OnPoiChanged;
+        _ = poiService.InitializeAsync();
         SelectedSourceId = settingsService.Current.Map.SelectedSourceId;
         MapSnapshot = MissionMapProjection.Create(Mission, HomePosition);
         SelectedMapStyle = "GEO";
@@ -159,6 +164,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         polygonService.Changed -= OnPolygonChanged;
         fenceService.Changed -= OnFenceChanged;
         rallyService.Changed -= OnRallyChanged;
+        poiService.Changed -= OnPoiChanged;
         disposed = true;
     }
 
@@ -555,6 +561,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     private void OnPolygonChanged(object? sender, EventArgs args) => dispatcher.Dispatch(UpdatePlanningOverlay);
     private void OnFenceChanged(object? sender, EventArgs args) => dispatcher.Dispatch(UpdatePlanningOverlay);
     private void OnRallyChanged(object? sender, EventArgs args) => dispatcher.Dispatch(UpdatePlanningOverlay);
+    private void OnPoiChanged(object? sender, EventArgs args) => dispatcher.Dispatch(UpdatePlanningOverlay);
 
     private void UpdatePlanningOverlay()
     {
@@ -565,8 +572,9 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         var fence = activeVehicle.VehicleId is { } vehicleId ? FenceOutline(fenceService.GetSnapshot(vehicleId).LocalPlan) : [];
         var rally = activeVehicle.VehicleId is { } rallyVehicleId
             ? rallyService.GetSnapshot(rallyVehicleId).LocalPlan.Points.Select(point => point.Position).ToArray() : [];
+        var pois = poiService.Snapshot.Items.Select(item => item.Position).ToArray();
         PlanningOverlaySnapshot = overlay with { DrawnPolygon = vertices, FencePreview = fence, RallyPoints = rally,
-            ImportedOverlays = importedOverlays, SurveyPreview = generatedPreview };
+            PoiItems = pois, ImportedOverlays = importedOverlays, SurveyPreview = generatedPreview };
     }
 
     /// <summary>Replaces the mission being edited (e.g. after downloading from a vehicle).</summary>
@@ -1118,6 +1126,36 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
 
     [RelayCommand]
     private void CloseElevationGraph() => IsElevationProfileVisible = false;
+
+    [RelayCommand]
+    private async Task AddPoiAsync(CancellationToken cancellationToken)
+    {
+        if (TargetPosition() is not { } position) { ShowStatus("Select a map position for the POI."); return; }
+        var name = await promptService.PromptAsync("Add point of interest", "Name", $"POI {poiService.Snapshot.Items.Count + 1}", cancellationToken);
+        if (string.IsNullOrWhiteSpace(name)) return;
+        var description = await promptService.PromptAsync("Add point of interest", "Optional description", null, cancellationToken);
+        await poiService.AddAsync(name, position, PointerAltitude, description, null, cancellationToken);
+        ShowStatus($"Local POI '{name}' saved.");
+    }
+
+    [RelayCommand]
+    private async Task EditPoiAsync(CancellationToken cancellationToken)
+    {
+        if (TargetPosition() is not { } position || poiService.FindNearest(position) is not { } item) { ShowStatus("No POI is available to edit."); return; }
+        var name = await promptService.PromptAsync("Edit nearest POI", $"Name ({item.Name})", item.Name, cancellationToken);
+        if (string.IsNullOrWhiteSpace(name)) return;
+        var description = await promptService.PromptAsync("Edit nearest POI", "Description", item.Description, cancellationToken);
+        await poiService.UpdateAsync(item with { Name = name, Description = description }, cancellationToken);
+        ShowStatus($"Local POI '{name}' updated.");
+    }
+
+    [RelayCommand]
+    private async Task DeletePoiAsync(CancellationToken cancellationToken)
+    {
+        if (TargetPosition() is not { } position || poiService.FindNearest(position) is not { } item) { ShowStatus("No POI is available to delete."); return; }
+        if (!await confirmationService.ConfirmAsync("Delete nearest POI", $"Delete local POI '{item.Name}'?", "Delete", cancellationToken)) return;
+        await poiService.DeleteAsync(item.Id, cancellationToken); ShowStatus($"Local POI '{item.Name}' deleted.");
+    }
 
     /// <summary>Calculates great-circle distance and initial bearing between two WGS84 positions.</summary>
     public static (double Distance, double Bearing) CalculateDistanceAndBearing(GeoPosition first, GeoPosition second)

@@ -115,6 +115,8 @@ public static class ApplicationConfigurator
         services.TryAddTransient<MauiMissionPlanningDialogService>();
         services.TryAddTransient<IUserPromptService>(services => services.GetRequiredService<MauiMissionPlanningDialogService>());
         services.TryAddTransient<IMissionTerrainElevationProvider, MissionTerrainElevationProvider>();
+        services.TryAddSingleton<IPoiRepository>(_ => new JsonPoiRepository(Path.Combine(FileSystem.AppDataDirectory, "Planning", "points-of-interest.json")));
+        services.TryAddSingleton<IPoiService, PoiService>();
         services.TryAddTransient<IUserChoiceService>(services => services.GetRequiredService<MauiMissionPlanningDialogService>());
         services.TryAddTransient<MauiMissionPlanningFileService>();
         services.TryAddTransient<IFileOpenService>(services => services.GetRequiredService<MauiMissionPlanningFileService>());

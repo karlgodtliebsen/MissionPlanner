@@ -393,6 +393,14 @@ clearance; terrain-relative altitude uses sampled ground; home-relative altitude
 profile unless a home MSL altitude is available. Samples retain cumulative distance, mission leg,
 sequence, reference, terrain status, and clearance when calculable.
 
+### Points of interest
+
+POIs are local MissionPlanner planning records and are never included in MAVLink flight mission
+uploads. Typed records retain stable IDs, name, WGS84 position, optional altitude/description/category,
+and timestamps. The bounded versioned JSON repository saves atomically, isolates corrupt files, and
+reloads across application restarts. Add uses the context location; Edit and Delete explicitly target
+the nearest POI and deletion requires confirmation. The stable POI overlay survives basemap changes.
+
 ---
 
 ## Known gaps and next steps
