@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Views.Missions;
 using MissionPlanner.Core.ConfigTuning.Planner;
+using MissionPlanner.Core.ConfigTuning.Fences;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Planning;
 using MissionPlanner.App.Presentation;
@@ -21,10 +22,11 @@ public partial class FlightDataMissionMapViewModel : MissionMapViewModel
         IMissionMapInteractionService interactionService, IAdvancedMissionItemService advancedMissionItems,
         IUserPromptService promptService, IUserConfirmationService confirmationService,
         IPlanningPolygonService polygonService, IFileOpenService fileOpenService, IFileSaveService fileSaveService,
-        IUserChoiceService choiceService, IGeospatialImportService geospatialImportService)
+        IUserChoiceService choiceService, IGeospatialImportService geospatialImportService,
+        IFenceConfigurationService fenceService, IFencePlanFileCodec fenceFileCodec)
         : base(activeVehicle, protocolMapper, fileSaver, settingsService, fileCodec, domainEventHub, dispatcher, dateTimeProvider, logger,
             interactionService, advancedMissionItems, promptService, confirmationService, polygonService, fileOpenService, fileSaveService,
-            choiceService, geospatialImportService)
+            choiceService, geospatialImportService, fenceService, fenceFileCodec)
     {
     }
 }

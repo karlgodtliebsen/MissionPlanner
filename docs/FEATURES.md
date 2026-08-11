@@ -886,6 +886,9 @@ Completed
 * KML and SHP point/line geometry can be appended to or replace the mission after preview.
 * SHP polygon geometry can populate the shared planning polygon workspace explicitly.
 * WGS84, Web Mercator, and WGS84 UTM PRJ definitions are supported; unknown CRS is rejected.
+* Mission Map Geo-Fence commands share Config/Tuning's active-vehicle fence workspace and existing
+  validated MAVLink fence transfer. Local/vehicle clear choices and versioned full-plan files avoid
+  destructive or lossy behavior.
 
 * A deterministic inventory resolves the pinned official `ardupilotmega` dialect and its
   transitive includes without network access during normal builds or tests.

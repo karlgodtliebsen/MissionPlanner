@@ -289,6 +289,14 @@ local backup before replace/clear, and publishes a synchronized vehicle revision
 after a successful acknowledgement. Partial downloads and disconnects leave the existing
 local plan intact for recovery.
 
+The Mission Map and Config/Tuning GeoFence page share the same active-vehicle-scoped
+`IFenceConfigurationService` workspace. Map commands download and upload through that existing
+typed fence transfer, set a return point through the shared map interaction coordinator, and render
+the local plan as a stable overlay. Upload and vehicle clear require explicit confirmation. The
+ambiguous Clear menu asks whether to clear only local state or the acknowledged vehicle fence.
+Versioned `.mpfence` JSON preserves return points and inclusion/exclusion polygons and circles;
+offline load/save never changes vehicle state.
+
 ---
 
 ## Mission map interaction architecture

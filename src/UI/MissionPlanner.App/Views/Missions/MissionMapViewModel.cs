@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 using ExCSS;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.ConfigTuning.Planner;
+using MissionPlanner.Core.ConfigTuning.Fences;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Files;
@@ -50,6 +51,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     private readonly IFileSaveService fileSaveService;
     private readonly IUserChoiceService choiceService;
     private readonly IGeospatialImportService geospatialImportService;
+    private readonly IFenceConfigurationService fenceService;
+    private readonly IFencePlanFileCodec fenceFileCodec;
     private IReadOnlyList<ImportedPlanningOverlay> importedOverlays = [];
     private IDisposable? stateSubscription;
     private bool disposed;
@@ -64,7 +67,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         IMissionMapInteractionService interactionService, IAdvancedMissionItemService advancedMissionItems,
         IUserPromptService promptService, IUserConfirmationService confirmationService,
         IPlanningPolygonService polygonService, IFileOpenService fileOpenService, IFileSaveService fileSaveService,
-        IUserChoiceService choiceService, IGeospatialImportService geospatialImportService)
+        IUserChoiceService choiceService, IGeospatialImportService geospatialImportService,
+        IFenceConfigurationService fenceService, IFencePlanFileCodec fenceFileCodec)
     {
         this.activeVehicle = activeVehicle;
         this.fileCodec = fileCodec;
@@ -83,8 +87,11 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         this.fileSaveService = fileSaveService;
         this.choiceService = choiceService;
         this.geospatialImportService = geospatialImportService;
+        this.fenceService = fenceService;
+        this.fenceFileCodec = fenceFileCodec;
         polygonService.Changed += OnPolygonChanged;
         interactionService.Changed += OnInteractionChanged;
+        fenceService.Changed += OnFenceChanged;
         SelectedSourceId = settingsService.Current.Map.SelectedSourceId;
         MapSnapshot = MissionMapProjection.Create(Mission, HomePosition);
         SelectedMapStyle = "GEO";
@@ -129,6 +136,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
 
         interactionService.Changed -= OnInteractionChanged;
         polygonService.Changed -= OnPolygonChanged;
+        fenceService.Changed -= OnFenceChanged;
         disposed = true;
     }
 
@@ -461,8 +469,16 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         var position = new GeoPosition(latitude, longitude);
         ContextPosition = position;
 
+        var interactionMode = interactionService.State.Mode;
         if (interactionService.AcceptClick(position))
         {
+            if (interactionMode == MissionMapInteractionMode.SetFenceReturnLocation && activeVehicle.VehicleId is { } vehicleId)
+            {
+                var snapshot = fenceService.GetSnapshot(vehicleId);
+                fenceService.SetLocalPlan(vehicleId, snapshot.LocalPlan with { ReturnPoint = position });
+                interactionService.Complete();
+                ShowStatus("Fence return location updated locally; upload to apply it.");
+            }
             return;
         }
 
@@ -494,6 +510,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     }
 
     private void OnPolygonChanged(object? sender, EventArgs args) => dispatcher.Dispatch(UpdatePlanningOverlay);
+    private void OnFenceChanged(object? sender, EventArgs args) => dispatcher.Dispatch(UpdatePlanningOverlay);
 
     private void UpdatePlanningOverlay()
     {
@@ -501,7 +518,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         var vertices = interactionService.State.Mode == MissionMapInteractionMode.DrawPolygon
             ? overlay.DrawnPolygon
             : polygonService.Snapshot.Polygon?.Vertices ?? [];
-        PlanningOverlaySnapshot = overlay with { DrawnPolygon = vertices, ImportedOverlays = importedOverlays };
+        var fence = activeVehicle.VehicleId is { } vehicleId ? FenceOutline(fenceService.GetSnapshot(vehicleId).LocalPlan) : [];
+        PlanningOverlaySnapshot = overlay with { DrawnPolygon = vertices, FencePreview = fence, ImportedOverlays = importedOverlays };
     }
 
     /// <summary>Replaces the mission being edited (e.g. after downloading from a vehicle).</summary>
@@ -775,6 +793,85 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         var result = geospatialImportService.Import(new GeospatialSource(file.FileName, memory.ToArray(), companions));
         if (!result.Succeeded) { ShowStatus(result.Message); return null; }
         return result;
+    }
+
+    [RelayCommand]
+    private async Task DownloadFenceAsync(CancellationToken cancellationToken)
+    {
+        if (activeVehicle.VehicleId is not { } vehicleId) { ShowStatus("Connect a vehicle first."); return; }
+        var snapshot = fenceService.GetSnapshot(vehicleId);
+        if (snapshot.IsDirty && !await confirmationService.ConfirmAsync("Replace local fence", "Downloading replaces local fence edits and retains a backup.", "Download", cancellationToken)) return;
+        var report = await fenceService.DownloadAsync(vehicleId, true, FenceProgress(), cancellationToken);
+        ShowFenceReport(report);
+    }
+
+    [RelayCommand]
+    private async Task UploadFenceAsync(CancellationToken cancellationToken)
+    {
+        if (activeVehicle.VehicleId is not { } vehicleId) { ShowStatus("Connect a vehicle first."); return; }
+        var plan = fenceService.GetSnapshot(vehicleId).LocalPlan;
+        var inclusions = plan.Areas.Count(area => area.Kind is FenceAreaKind.PolygonInclusion or FenceAreaKind.CircleInclusion);
+        var exclusions = plan.Areas.Count - inclusions;
+        if (!await confirmationService.ConfirmAsync("Replace vehicle fence", $"Upload {inclusions} inclusion and {exclusions} exclusion areas{(plan.ReturnPoint is null ? string.Empty : " with a return point")}?", "Validate and upload", cancellationToken)) return;
+        var session = await fenceService.OpenParameterSessionAsync(vehicleId, cancellationToken);
+        ShowFenceReport(await fenceService.ApplyAsync(vehicleId, session, FenceProgress(), cancellationToken));
+    }
+
+    [RelayCommand]
+    private void SetFenceReturnLocation() => BeginInteraction(MissionMapInteractionMode.SetFenceReturnLocation, "Click the map to set the local fence return location.");
+
+    [RelayCommand]
+    private async Task SaveFenceAsync(CancellationToken cancellationToken)
+    {
+        if (activeVehicle.VehicleId is not { } vehicleId) { ShowStatus("Select a vehicle workspace first."); return; }
+        await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(fenceFileCodec.Serialize(fenceService.GetSnapshot(vehicleId).LocalPlan)));
+        var path = await fileSaveService.SaveAsync("mission-fence.mpfence", stream, cancellationToken);
+        ShowStatus(path is null ? "Fence save cancelled." : $"Fence saved to {path}.");
+    }
+
+    [RelayCommand]
+    private async Task LoadFenceAsync(CancellationToken cancellationToken)
+    {
+        if (activeVehicle.VehicleId is not { } vehicleId) { ShowStatus("Select a vehicle workspace first."); return; }
+        var current = fenceService.GetSnapshot(vehicleId);
+        if (current.IsDirty && !await confirmationService.ConfirmAsync("Replace local fence", "Loading replaces current local edits.", "Load", cancellationToken)) return;
+        using var file = await fileOpenService.OpenAsync("Open MissionPlanner fence", cancellationToken: cancellationToken);
+        if (file is null) return;
+        using var reader = new StreamReader(file.Content, Encoding.UTF8, true, leaveOpen: true);
+        try { fenceService.SetLocalPlan(vehicleId, fenceFileCodec.Deserialize(await reader.ReadToEndAsync(cancellationToken))); ShowStatus("Fence loaded locally; upload to apply it."); }
+        catch (InvalidDataException exception) { ShowStatus(exception.Message); }
+    }
+
+    [RelayCommand]
+    private async Task ClearFenceAsync(CancellationToken cancellationToken)
+    {
+        if (activeVehicle.VehicleId is not { } vehicleId) { ShowStatus("Select a vehicle workspace first."); return; }
+        var choice = await choiceService.ChooseAsync("Clear Geo-Fence", ["Clear local plan only", "Clear vehicle fence"], cancellationToken);
+        if (choice == "Clear local plan only") { fenceService.SetLocalPlan(vehicleId, FencePlan.Empty); ShowStatus("Local fence cleared; vehicle unchanged."); }
+        else if (choice == "Clear vehicle fence" && await confirmationService.ConfirmAsync("Clear vehicle fence", "This removes all fence geometry from the vehicle after retaining a backup.", "Clear vehicle", cancellationToken))
+            ShowFenceReport(await fenceService.ClearAsync(vehicleId, cancellationToken));
+    }
+
+    private IProgress<FenceTransferProgress> FenceProgress() => new Progress<FenceTransferProgress>(progress =>
+        ShowStatus($"{progress.Stage}: {progress.Completed}/{progress.Total}"));
+
+    private void ShowFenceReport(FenceOperationReport report) => ShowStatus(report.Validation.IsValid
+        ? report.Message : string.Join(Environment.NewLine, report.Validation.Issues.Select(issue => issue.Message)));
+
+    private static IReadOnlyList<GeoPosition> FenceOutline(FencePlan plan)
+    {
+        var area = plan.Areas.FirstOrDefault();
+        if (area is null) return plan.ReturnPoint is { } point ? [point] : [];
+        if (area.Vertices.Count > 0) return area.Vertices;
+        if (area.Center is not { } center || area.RadiusMeters <= 0) return [];
+        const double earthRadius = 6378137d;
+        return Enumerable.Range(0, 36).Select(index =>
+        {
+            var angle = index * Math.PI * 2d / 36d;
+            var latitude = center.LatitudeDegrees + area.RadiusMeters * Math.Cos(angle) / earthRadius * 180d / Math.PI;
+            var longitude = center.LongitudeDegrees + area.RadiusMeters * Math.Sin(angle) / (earthRadius * Math.Cos(center.LatitudeDegrees * Math.PI / 180d)) * 180d / Math.PI;
+            return new GeoPosition(latitude, longitude);
+        }).ToArray();
     }
 
     [RelayCommand]

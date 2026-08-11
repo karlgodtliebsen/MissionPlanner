@@ -56,12 +56,12 @@
                     </MenuFlyoutSubItem>
 
                     <MenuFlyoutSubItem Text="Geo-Fence">
-                        <MenuFlyoutItem Text="Upload" Command="{Binding NotImplementedCommand}" CommandParameter="Geo-Fence Upload" />
-                        <MenuFlyoutItem Text="Download" Command="{Binding NotImplementedCommand}" CommandParameter="Geo-Fence Download" />
-                        <MenuFlyoutItem Text="Set Return Location" Command="{Binding NotImplementedCommand}" CommandParameter="Geo-Fence Set Return Location" />
-                        <MenuFlyoutItem Text="Load from File" Command="{Binding NotImplementedCommand}" CommandParameter="Geo-Fence Load from File" />
-                        <MenuFlyoutItem Text="Save to File" Command="{Binding NotImplementedCommand}" CommandParameter="Geo-Fence Save to File" />
-                        <MenuFlyoutItem Text="Clear" Command="{Binding NotImplementedCommand}" CommandParameter="Geo-Fence Clear" />
+                        <MenuFlyoutItem Text="Upload" Command="{Binding UploadFenceCommand}" />
+                        <MenuFlyoutItem Text="Download" Command="{Binding DownloadFenceCommand}" />
+                        <MenuFlyoutItem Text="Set Return Location" Command="{Binding SetFenceReturnLocationCommand}" />
+                        <MenuFlyoutItem Text="Load from File" Command="{Binding LoadFenceCommand}" />
+                        <MenuFlyoutItem Text="Save to File" Command="{Binding SaveFenceCommand}" />
+                        <MenuFlyoutItem Text="Clear Local or Vehicle…" Command="{Binding ClearFenceCommand}" />
                     </MenuFlyoutSubItem>
 
                     <MenuFlyoutSubItem Text="Rally Points">

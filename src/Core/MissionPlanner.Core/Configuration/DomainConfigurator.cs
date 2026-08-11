@@ -75,6 +75,7 @@ public static class DomainConfigurator
         services.TryAddTransient<IGeospatialImportService, GeospatialImportService>();
         services.TryAddSingleton<IFenceProtocolMapper, FenceProtocolMapper>();
         services.TryAddSingleton<IFenceGeometryValidator, FenceGeometryValidator>();
+        services.TryAddSingleton<IFencePlanFileCodec, FencePlanFileCodec>();
         services.TryAddSingleton<IFenceConfigurationService, FenceConfigurationService>();
         services.TryAddSingleton<IBasicTuningProfileCatalog, BasicTuningProfileCatalog>();
         services.TryAddTransient<IBasicTuningService, BasicTuningService>();
