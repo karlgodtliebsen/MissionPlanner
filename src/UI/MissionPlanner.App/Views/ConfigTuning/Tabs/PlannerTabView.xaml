@@ -2,6 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
+             xmlns:mapSettings="clr-namespace:MissionPlanner.Maps.Settings;assembly=MissionPlanner.Maps"
+             xmlns:offline="clr-namespace:MissionPlanner.Maps.Offline;assembly=MissionPlanner.Maps"
              xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
              xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
              x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.PlannerTabView"
@@ -38,21 +40,92 @@
                         <Label Text="Map" FontSize="18" FontAttributes="Bold" VerticalOptions="Center" />
                         <Button  Grid.Column="1" Text="Reset section" Command="{Binding ResetSectionCommand}" CommandParameter="Map" />
                     </Grid>
-                    <Label Text="Provider and style changes require restart because map tile layers are created during view initialization." FontSize="12" />
+                    <Label Text="Choose by source purpose. Protocol details remain in the source definition; changing source requires restart." FontSize="12" />
+                    <Label Text="Offline packs" FontAttributes="Bold" />
+                    <CollectionView ItemsSource="{Binding OfflineMapSources}" EmptyView="No offline packs installed" HeightRequest="48" SelectionMode="None">
+                        <CollectionView.ItemsLayout><LinearItemsLayout Orientation="Horizontal" ItemSpacing="6" /></CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate><DataTemplate x:DataType="mapSettings:MapSettingsSourceItem"><Button Text="{Binding DisplayName}" Command="{Binding BindingContext.SelectMapSourceCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding .}" /></DataTemplate></CollectionView.ItemTemplate>
+                    </CollectionView>
+                    <Label Text="Self-hosted/custom" FontAttributes="Bold" />
+                    <CollectionView ItemsSource="{Binding CustomMapSources}" EmptyView="Add custom sources from the source editor" HeightRequest="48" SelectionMode="None">
+                        <CollectionView.ItemsLayout><LinearItemsLayout Orientation="Horizontal" ItemSpacing="6" /></CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate><DataTemplate x:DataType="mapSettings:MapSettingsSourceItem"><Button Text="{Binding DisplayName}" Command="{Binding BindingContext.SelectMapSourceCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding .}" /></DataTemplate></CollectionView.ItemTemplate>
+                    </CollectionView>
+                    <Label Text="Online providers" FontAttributes="Bold" />
+                    <CollectionView ItemsSource="{Binding OnlineMapSources}" HeightRequest="58" SelectionMode="None">
+                        <CollectionView.ItemsLayout><LinearItemsLayout Orientation="Horizontal" ItemSpacing="6" /></CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate><DataTemplate x:DataType="mapSettings:MapSettingsSourceItem"><Button Text="{Binding DisplayName}" Command="{Binding BindingContext.SelectMapSourceCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding .}" /></DataTemplate></CollectionView.ItemTemplate>
+                    </CollectionView>
+                    <Label Text="Blank map" FontAttributes="Bold" />
+                    <CollectionView ItemsSource="{Binding BlankMapSources}" HeightRequest="48" SelectionMode="None">
+                        <CollectionView.ItemsLayout><LinearItemsLayout Orientation="Horizontal" ItemSpacing="6" /></CollectionView.ItemsLayout>
+                        <CollectionView.ItemTemplate><DataTemplate x:DataType="mapSettings:MapSettingsSourceItem"><Button Text="{Binding DisplayName}" Command="{Binding BindingContext.SelectMapSourceCommand, Source={RelativeSource AncestorType={x:Type ContentPage}}}" CommandParameter="{Binding .}" /></DataTemplate></CollectionView.ItemTemplate>
+                    </CollectionView>
+
+                    <Border Padding="10">
+                        <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="4">
+                            <Label Text="Selected source" FontAttributes="Bold" /><Label Grid.Column="1" Text="{Binding SelectedMapSource.DisplayName}" />
+                            <Label Grid.Row="1" Text="Provider / product" /><Label Grid.Row="1" Grid.Column="1" Text="{Binding SelectedMapSource.ProviderAndProduct}" />
+                            <Label Grid.Row="2" Text="Access / rendering" /><Label Grid.Row="2" Grid.Column="1" Text="{Binding SelectedMapSource.Connectivity, StringFormat='{0}'}" />
+                            <Label Grid.Row="3" Text="Format" /><Label Grid.Row="3" Grid.Column="1" Text="{Binding SelectedMapSource.Rendering}" />
+                            <Label Grid.Row="4" Text="Credentials" /><Label Grid.Row="4" Grid.Column="1" Text="{Binding SelectedMapSource.CredentialState}" />
+                            <Label Grid.Row="5" Text="Attribution" /><Label Grid.Row="5" Grid.Column="1" Text="{Binding SelectedMapSource.AttributionPreview}" />
+                            <Label Grid.Row="6" Text="Cache / packs" /><Label Grid.Row="6" Grid.Column="1" Text="{Binding SelectedMapSource.CacheBehavior}" />
+                            <Label Grid.Row="7" Text="Pack availability" /><Label Grid.Row="7" Grid.Column="1" Text="{Binding SelectedMapSource.OfflinePackAvailability}" />
+                            <Label Grid.Row="8" Text="Policy reviewed" /><Label Grid.Row="8" Grid.Column="1" Text="{Binding SelectedMapSource.PolicyReviewDate}" />
+                        </Grid>
+                    </Border>
                     <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
-                        <Label Text="Provider" VerticalOptions="Center" />
-                        <material:SelectField Grid.Column="1" ItemsSource="{Binding MapProviders}" SelectedItem="{Binding SelectedMapProvider}" />
-                        <Label Grid.Row="1" Text="Style" VerticalOptions="Center" />
-                        <material:SelectField Grid.Row="1" Grid.Column="1" ItemsSource="{Binding MapStyles}" SelectedItem="{Binding SelectedMapStyle}" />
-                        <Label Grid.Row="2" Text="Default zoom (1–22)" VerticalOptions="Center" />
+                        <Label Text="Default zoom (1–22)" VerticalOptions="Center" />
                         <controls:NumericField
-                            Grid.Row="2"
                             Grid.Column="1"
                             Value="{Binding DefaultMapZoom, Mode=TwoWay}"
                             NumberFormat="F1"
                             HorizontalOptions="Fill"
                             HorizontalTextAlignment="End" />
+                        <Label Grid.Row="1" Text="HTTP cache enabled" /><Switch Grid.Row="1" Grid.Column="1" IsToggled="{Binding MapHttpCacheEnabled}" HorizontalOptions="Start" />
+                        <Label Grid.Row="2" Text="HTTP cache limit (MiB)" />
+                        <controls:NumericField Grid.Row="2" Grid.Column="1" Value="{Binding MapHttpCacheLimitMiB, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}" NumberFormat="F0" />
                     </Grid>
+                    <Label Text="Credentials" FontAttributes="Bold" />
+                    <Label Text="Secrets are written directly to secure storage and the input is cleared after save." FontSize="12" />
+                    <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="6">
+                        <Entry Text="{Binding MapCredentialInput}" IsPassword="True" Placeholder="Credential for selected source" />
+                        <Button Grid.Column="1" Text="Set" Command="{Binding SaveMapCredentialCommand}" />
+                        <Button Grid.Column="2" Text="Remove" Command="{Binding RemoveMapCredentialCommand}" />
+                        <Button Grid.Column="3" Text="Test" Command="{Binding TestMapCredentialCommand}" />
+                    </Grid>
+                    <Border Padding="10" StrokeThickness="1">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Offline pack manager" FontAttributes="Bold" />
+                            <Label Text="Installed packs are validated archives, not HTTP cache entries." FontSize="12" />
+                            <material:SelectField ItemsSource="{Binding InstalledMapPacks}" SelectedItem="{Binding SelectedMapPack}" />
+                            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="6">
+                                <Button Text="Import / install" Command="{Binding ImportMapPackCommand}" />
+                                <Button Grid.Column="1" Text="Select" Command="{Binding SelectMapPackCommand}" />
+                                <Button Grid.Column="2" Text="Verify" Command="{Binding VerifyMapPackCommand}" />
+                                <Button Grid.Column="3" Text="Remove" Command="{Binding RemoveMapPackCommand}" />
+                            </Grid>
+                            <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+                                <Label Text="Coverage" /><Label Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.Bounds}" />
+                                <Label Grid.Row="1" Text="Zoom" /><Label Grid.Row="1" Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.MinimumZoom, StringFormat='Minimum {0}'}" />
+                                <Label Grid.Row="2" Text="Size" /><Label Grid.Row="2" Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.SizeBytes, StringFormat='{0} bytes'}" />
+                                <Label Grid.Row="3" Text="Version / source" /><Label Grid.Row="3" Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.Version}" />
+                                <Label Grid.Row="4" Text="Attribution" /><Label Grid.Row="4" Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.Attribution}" />
+                                <Label Grid.Row="5" Text="License" /><Label Grid.Row="5" Grid.Column="1" Text="{Binding SelectedMapPack.Manifest.LicenseNotice}" />
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Padding="10" StrokeThickness="1">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="HTTP cache manager" FontAttributes="Bold" />
+                            <Label Text="{Binding MapHttpCacheSizeMiB, StringFormat='Current size: {0:F1} MiB'}" />
+                            <HorizontalStackLayout Spacing="6">
+                                <Button Text="Clear selected source" Command="{Binding ClearSelectedMapCacheCommand}" />
+                                <Button Text="Clear all HTTP cache" Command="{Binding ClearAllMapCacheCommand}" />
+                            </HorizontalStackLayout>
+                        </VerticalStackLayout>
+                    </Border>
                 </VerticalStackLayout>
             </Border>
 

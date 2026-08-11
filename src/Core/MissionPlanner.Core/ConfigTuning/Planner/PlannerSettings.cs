@@ -4,7 +4,7 @@
 public sealed record PlannerSettings
 {
     /// <summary>The current persisted settings schema.</summary>
-    public const int CurrentSchemaVersion = 3;
+    public const int CurrentSchemaVersion = 4;
 
     /// <summary>Gets the persisted schema version.</summary>
     public int SchemaVersion { get; init; } = CurrentSchemaVersion;

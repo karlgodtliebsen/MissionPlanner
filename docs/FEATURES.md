@@ -18,6 +18,8 @@ Optional credential-gated raster sources now cover Stadia Outdoors, Thunderfores
 
 All four existing Esri raster basemaps now share the catalog/policy/cache boundary and dynamic MapServer attribution resolver. Current copyright metadata is merged with a conservative Esri fallback, optional service tokens are request-only and redacted, and unofficial offline scraping or pack creation remains denied.
 
+Config > Planner now selects maps by stable source ID and groups choices as offline packs, self-hosted/custom, online providers, and blank map. It shows catalog policy and attribution details, secure credential state/actions, and bounded HTTP-cache preferences. Schema migration and fallback logic cover deleted sources, offline startup, and missing credentials without exposing secrets.
+
 
 
 ## MavLink

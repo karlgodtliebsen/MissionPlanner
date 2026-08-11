@@ -46,6 +46,8 @@ public sealed class PlannerSettingsTests
         result.WasMigrated.Should().BeTrue();
         result.Settings.Units.System.Should().Be(UnitSystem.Imperial);
         result.Settings.Accessibility.TextScale.Should().Be(1);
+        result.Settings.Map.SelectedSourceId.Should().Be("osm-standard");
+        result.Settings.Map.HttpCacheLimitBytes.Should().Be(268_435_456);
         store.Document.Should().Contain($"\"schemaVersion\": {PlannerSettings.CurrentSchemaVersion}");
     }
 
@@ -151,12 +153,19 @@ public sealed class PlannerSettingsTests
         var applicationState = new ApplicationStateService(context);
         using var runtime = new PlannerSettingsRuntime(service, applicationState);
         var fileSaver = Substitute.For<IFileSaver>();
+        var offlinePacks = Substitute.For<MissionPlanner.Maps.Offline.IOfflineMapPackRepository>();
+        offlinePacks.ListAsync(Arg.Any<CancellationToken>()).Returns([]);
         var viewModel = new PlannerTabViewModel(
             service,
             runtime,
             new ParametersFileHandler(fileSaver),
             Substitute.For<IUserConfirmationService>(),
-            NullLogger<PlannerTabViewModel>.Instance);
+            NullLogger<PlannerTabViewModel>.Instance,
+            Substitute.For<MissionPlanner.Maps.Credentials.IMapSecretStore>(),
+            offlinePacks,
+            Substitute.For<MissionPlanner.Maps.Offline.IOfflineMapPackInstaller>(),
+            Substitute.For<MissionPlanner.Maps.Offline.IOfflineMapPackValidator>(),
+            new MissionPlanner.Maps.Http.MapHttpDiskCache(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")), 1_048_576));
         await viewModel.ActivateAsync();
         viewModel.ConnectionChannel = "UDP";
         viewModel.ConnectionHost = "192.168.1.20";

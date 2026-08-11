@@ -55,6 +55,14 @@ public sealed class MapHttpDiskCache
     private readonly string root;
     private readonly long budgetBytes;
 
+    /// <summary>Gets the configured global disk budget.</summary>
+    public long BudgetBytes => budgetBytes;
+
+    /// <summary>Gets the current cache size in bytes.</summary>
+    public long SizeBytes => Directory.Exists(root)
+        ? new DirectoryInfo(root).EnumerateFiles("*.data", SearchOption.AllDirectories).Sum(file => file.Length)
+        : 0;
+
     /// <summary>Initializes a map HTTP disk cache.</summary>
     public MapHttpDiskCache(string root, long budgetBytes)
     {
@@ -99,6 +107,17 @@ public sealed class MapHttpDiskCache
         var path = GetNamespacePath(cacheNamespace);
         if (Directory.Exists(path))
             Directory.Delete(path, recursive: true);
+    }
+
+    /// <summary>Clears every cache namespace belonging to a source.</summary>
+    public void ClearSource(string sourceId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(sourceId);
+        if (!Directory.Exists(root))
+            return;
+        var prefix = new MapCacheNamespace(sourceId, string.Empty, string.Empty).Key.TrimEnd('_');
+        foreach (var directory in Directory.EnumerateDirectories(root).Where(path => Path.GetFileName(path).StartsWith(prefix + "_", StringComparison.Ordinal)))
+            Directory.Delete(directory, recursive: true);
     }
 
     /// <summary>Clears all HTTP cache entries.</summary>

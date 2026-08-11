@@ -41,6 +41,12 @@ and rewritten at the current version. Corrupt, unsupported, or invalid persisted
 replaced with safe defaults and reported to the page instead of preventing application
 startup.
 
+Schema 4 adds `Map.SelectedSourceId`, `Map.HttpCacheEnabled`, and `Map.HttpCacheLimitBytes`.
+Older provider/style values remain readable for compatibility, while new source selection is
+stored as a stable catalog ID. Missing IDs migrate to `osm-standard`; the presentation resolver
+also handles deleted sources, offline operation, and missing credentials without persisting a
+secret or renderer-specific object.
+
 Import is atomic: validation failure leaves the current snapshot unchanged. Export uses
 invariant JSON and contains only the typed non-secret sections. Unknown fields are ignored,
 which also prevents a `password`, token, or other secret-shaped import field from being
@@ -66,6 +72,8 @@ snapshots and the affected restart-bound sections.
   preferences never interrupts an active vehicle connection.
 * Map default zoom is used by point-centering actions. Provider/style is selected when a
   map view is created.
+* Map settings group sources as offline packs, self-hosted/custom, online providers, and blank
+  map, and expose reviewed policy, attribution, credential state, and cache behavior.
 * Map provider/style, logging changes, and update-channel changes are marked as requiring
   restart.
 * Telemetry rates, cache policy, confirmation policy, update checks, and accessibility are

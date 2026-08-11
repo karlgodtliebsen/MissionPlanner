@@ -124,6 +124,14 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
         }
 
         ValidateRange<double>(settings.Map.DefaultZoom, 1, 22, PlannerSettingsSection.Map, nameof(settings.Map.DefaultZoom), errors);
+        if (string.IsNullOrWhiteSpace(settings.Map.SelectedSourceId) || settings.Map.SelectedSourceId.Length > 160)
+        {
+            errors.Add(new PlannerSettingsValidationError(
+                PlannerSettingsSection.Map,
+                nameof(settings.Map.SelectedSourceId),
+                "A map source identifier is required and must not exceed 160 characters."));
+        }
+        ValidateRange(settings.Map.HttpCacheLimitBytes, 16L * 1_048_576, 8L * 1024 * 1_048_576, PlannerSettingsSection.Map, nameof(settings.Map.HttpCacheLimitBytes), errors);
         ValidateRange(settings.Telemetry.DisplayRateHz, 1, 30, PlannerSettingsSection.Telemetry, nameof(settings.Telemetry.DisplayRateHz), errors);
         ValidateRange(settings.Telemetry.ChartHistorySeconds, 10, 3600, PlannerSettingsSection.Telemetry, nameof(settings.Telemetry.ChartHistorySeconds), errors);
         ValidateEnum(settings.Appearance.Theme, PlannerSettingsSection.Appearance, nameof(settings.Appearance.Theme), errors);
@@ -178,7 +186,18 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
     {
         ArgumentNullException.ThrowIfNull(settings);
         await InitializeAsync(cancellationToken).ConfigureAwait(false);
-        var normalized = settings with { SchemaVersion = PlannerSettings.CurrentSchemaVersion, Connection = settings.Connection with { Channel = settings.Connection.Channel.Trim().ToUpperInvariant(), Host = settings.Connection.Host.Trim() }, Updates = settings.Updates with { Channel = NormalizeUpdateChannel(settings.Updates.Channel) } };
+        var normalized = settings with
+        {
+            SchemaVersion = PlannerSettings.CurrentSchemaVersion,
+            Map = settings.Map with
+            {
+                SelectedSourceId = string.IsNullOrWhiteSpace(settings.Map.SelectedSourceId)
+                    ? "osm-standard"
+                    : settings.Map.SelectedSourceId.Trim()
+            },
+            Connection = settings.Connection with { Channel = settings.Connection.Channel.Trim().ToUpperInvariant(), Host = settings.Connection.Host.Trim() },
+            Updates = settings.Updates with { Channel = NormalizeUpdateChannel(settings.Updates.Channel) }
+        };
         var errors = Validate(normalized);
         if (errors.Count != 0)
         {

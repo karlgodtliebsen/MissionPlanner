@@ -4,6 +4,11 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Services;
 using MissionPlanner.Core.ConfigTuning.Planner;
+using MissionPlanner.Maps.Catalog;
+using MissionPlanner.Maps.Credentials;
+using MissionPlanner.Maps.Http;
+using MissionPlanner.Maps.Offline;
+using MissionPlanner.Maps.Settings;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
@@ -15,8 +20,14 @@ public sealed partial class PlannerTabViewModel : ObservableObject
     private readonly ParametersFileHandler fileHandler;
     private readonly IUserConfirmationService confirmation;
     private readonly ILogger<PlannerTabViewModel> logger;
+    private readonly IMapSecretStore mapSecretStore;
+    private readonly IOfflineMapPackRepository offlinePacks;
+    private readonly IOfflineMapPackInstaller offlinePackInstaller;
+    private readonly IOfflineMapPackValidator offlinePackValidator;
+    private readonly MapHttpDiskCache mapCache;
     private readonly SemaphoreSlim operationGate = new(1, 1);
     private bool loading;
+    private string? selectedOfflineSourceId;
 
     /// <summary>Initializes the Planner preferences page.</summary>
     /// <param name="settingsService">The versioned settings service.</param>
@@ -24,18 +35,33 @@ public sealed partial class PlannerTabViewModel : ObservableObject
     /// <param name="fileHandler">The platform file helper.</param>
     /// <param name="confirmation">The confirmation service.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="mapSecretStore">The secure map credential store.</param>
+    /// <param name="offlinePacks">The installed offline-pack repository.</param>
+    /// <param name="offlinePackInstaller">The offline-pack installer.</param>
+    /// <param name="offlinePackValidator">The offline-pack validator.</param>
+    /// <param name="mapCache">The bounded map HTTP cache.</param>
     public PlannerTabViewModel(
         IPlannerSettingsService settingsService,
         PlannerSettingsRuntime runtime,
         ParametersFileHandler fileHandler,
         IUserConfirmationService confirmation,
-        ILogger<PlannerTabViewModel> logger)
+        ILogger<PlannerTabViewModel> logger,
+        IMapSecretStore mapSecretStore,
+        IOfflineMapPackRepository offlinePacks,
+        IOfflineMapPackInstaller offlinePackInstaller,
+        IOfflineMapPackValidator offlinePackValidator,
+        MapHttpDiskCache mapCache)
     {
         this.settingsService = settingsService;
         this.runtime = runtime;
         this.fileHandler = fileHandler;
         this.confirmation = confirmation;
         this.logger = logger;
+        this.mapSecretStore = mapSecretStore;
+        this.offlinePacks = offlinePacks;
+        this.offlinePackInstaller = offlinePackInstaller;
+        this.offlinePackValidator = offlinePackValidator;
+        this.mapCache = mapCache;
     }
 
     /// <summary>Gets available unit systems.</summary>
@@ -46,6 +72,33 @@ public sealed partial class PlannerTabViewModel : ObservableObject
 
     /// <summary>Gets available map styles.</summary>
     public IReadOnlyList<PlannerMapStyle> MapStyles { get; } = Enum.GetValues<PlannerMapStyle>();
+
+    /// <summary>Gets selectable built-in sources grouped for the settings UI.</summary>
+    public IReadOnlyList<MapSettingsSourceItem> MapSources { get; private set; } = [];
+
+    /// <summary>Gets selectable offline pack sources.</summary>
+    public IEnumerable<MapSettingsSourceItem> OfflineMapSources => MapSources.Where(value => value.Group == MapSettingsSourceGroup.OfflinePacks);
+
+    /// <summary>Gets selectable self-hosted and custom sources.</summary>
+    public IEnumerable<MapSettingsSourceItem> CustomMapSources => MapSources.Where(value => value.Group == MapSettingsSourceGroup.SelfHostedOrCustom);
+
+    /// <summary>Gets selectable online-provider sources.</summary>
+    public IEnumerable<MapSettingsSourceItem> OnlineMapSources => MapSources.Where(value => value.Group == MapSettingsSourceGroup.OnlineProviders);
+
+    /// <summary>Gets selectable blank-map sources.</summary>
+    public IEnumerable<MapSettingsSourceItem> BlankMapSources => MapSources.Where(value => value.Group == MapSettingsSourceGroup.BlankMap);
+
+    /// <summary>Gets installed offline packs shown by the pack manager.</summary>
+    [ObservableProperty]
+    public partial IReadOnlyList<InstalledOfflineMapPack> InstalledMapPacks { get; private set; } = [];
+
+    /// <summary>Gets or sets the pack selected in the pack manager.</summary>
+    [ObservableProperty]
+    public partial InstalledOfflineMapPack? SelectedMapPack { get; set; }
+
+    /// <summary>Gets the current HTTP-cache size in mebibytes.</summary>
+    [ObservableProperty]
+    public partial double MapHttpCacheSizeMiB { get; private set; }
 
     /// <summary>Gets available application themes.</summary>
     public IReadOnlyList<PlannerTheme> Themes { get; } = Enum.GetValues<PlannerTheme>();
@@ -107,6 +160,22 @@ public sealed partial class PlannerTabViewModel : ObservableObject
     /// <summary>Gets the default map zoom level.</summary>
     [ObservableProperty]
     public partial double DefaultMapZoom { get; set; }
+
+    /// <summary>Gets or sets the selected stable map source.</summary>
+    [ObservableProperty]
+    public partial MapSettingsSourceItem? SelectedMapSource { get; set; }
+
+    /// <summary>Gets or sets whether the bounded HTTP cache is enabled.</summary>
+    [ObservableProperty]
+    public partial bool MapHttpCacheEnabled { get; set; }
+
+    /// <summary>Gets or sets the HTTP cache disk limit in mebibytes.</summary>
+    [ObservableProperty]
+    public partial int MapHttpCacheLimitMiB { get; set; }
+
+    /// <summary>Gets or sets a transient credential entry; it is cleared immediately after use.</summary>
+    [ObservableProperty]
+    public partial string MapCredentialInput { get; set; } = string.Empty;
 
     /// <summary>Gets the telemetry display rate in hertz.</summary>
     [ObservableProperty]
@@ -254,9 +323,182 @@ public sealed partial class PlannerTabViewModel : ObservableObject
         return RunAsync(async cancellationToken =>
         {
             var result = await settingsService.InitializeAsync(cancellationToken);
+            await LoadMapSourcesAsync(result.Settings.Map.SelectedSourceId, cancellationToken);
+            await RefreshMapPacksAsync(cancellationToken);
+            RestoreOfflinePackSelection(result.Settings.Map.SelectedSourceId);
+            RefreshMapCacheSize();
             Load(result.Settings);
             StatusMessage = result.Message ?? "Planner preferences loaded. These settings are local and do not change the flight controller.";
         });
+    }
+
+    [RelayCommand]
+    private void SelectMapSource(MapSettingsSourceItem source)
+    {
+        selectedOfflineSourceId = null;
+        SelectedMapSource = source;
+    }
+
+    [RelayCommand]
+    private Task SaveMapCredentialAsync()
+    {
+        return RunAsync(async cancellationToken =>
+        {
+            if (SelectedMapSource is null || SelectedMapSource.Source.CredentialRequirement == MapCredentialRequirement.None)
+            {
+                StatusMessage = "The selected source does not require a credential.";
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(MapCredentialInput))
+            {
+                StatusMessage = "Enter a credential before saving.";
+                return;
+            }
+
+            await mapSecretStore.SetAsync($"maps.credentials.{SelectedMapSource.Id}", MapCredentialInput, cancellationToken);
+            MapCredentialInput = string.Empty;
+            await LoadMapSourcesAsync(SelectedMapSource.Id, cancellationToken);
+            StatusMessage = "Map credential saved securely. The stored value cannot be displayed.";
+        });
+    }
+
+    [RelayCommand]
+    private Task RemoveMapCredentialAsync()
+    {
+        return RunAsync(async cancellationToken =>
+        {
+            if (SelectedMapSource is null)
+                return;
+            await mapSecretStore.RemoveAsync($"maps.credentials.{SelectedMapSource.Id}", cancellationToken);
+            MapCredentialInput = string.Empty;
+            await LoadMapSourcesAsync(SelectedMapSource.Id, cancellationToken);
+            StatusMessage = "Map credential removed.";
+        });
+    }
+
+    [RelayCommand]
+    private Task TestMapCredentialAsync()
+    {
+        return RunAsync(async cancellationToken =>
+        {
+            if (SelectedMapSource is null)
+                return;
+            var configured = !string.IsNullOrEmpty(await mapSecretStore.GetAsync($"maps.credentials.{SelectedMapSource.Id}", cancellationToken));
+            StatusMessage = configured
+                ? "A credential is configured. Network validation occurs when the provider is first requested."
+                : "No credential is configured for this source.";
+        });
+    }
+
+    [RelayCommand]
+    private async Task ImportMapPackAsync()
+    {
+        await RunAsync(async cancellationToken =>
+        {
+            var manifestFile = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Select offline map pack manifest" });
+            if (manifestFile is null)
+                return;
+            var archiveFile = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Select the manifest's MBTiles archive" });
+            if (archiveFile is null)
+                return;
+            await using var manifestStream = await manifestFile.OpenReadAsync();
+            using var reader = new StreamReader(manifestStream);
+            var manifest = OfflineMapPackJson.Deserialize(await reader.ReadToEndAsync(cancellationToken));
+            await using var archive = await archiveFile.OpenReadAsync();
+            await offlinePackInstaller.InstallAsync(manifest, archive, cancellationToken);
+            await RefreshMapPacksAsync(cancellationToken);
+            StatusMessage = $"Offline pack '{manifest.DisplayName}' installed and verified.";
+        });
+    }
+
+    [RelayCommand]
+    private Task VerifyMapPackAsync()
+    {
+        return RunAsync(async cancellationToken =>
+        {
+            if (SelectedMapPack is null)
+                return;
+            await offlinePackValidator.ValidateAsync(SelectedMapPack.Manifest, SelectedMapPack.ArchivePath, cancellationToken);
+            StatusMessage = $"Offline pack '{SelectedMapPack.Manifest.DisplayName}' verified.";
+        });
+    }
+
+    [RelayCommand]
+    private Task RemoveMapPackAsync()
+    {
+        return RunAsync(async cancellationToken =>
+        {
+            if (SelectedMapPack is null)
+                return;
+            await offlinePacks.RemoveAsync(SelectedMapPack.Manifest.Id, SelectedMapPack.Manifest.Version, cancellationToken: cancellationToken);
+            await RefreshMapPacksAsync(cancellationToken);
+            StatusMessage = "Offline pack removed.";
+        });
+    }
+
+    [RelayCommand]
+    private void SelectMapPack()
+    {
+        if (SelectedMapPack is null)
+            return;
+        selectedOfflineSourceId = $"pack:{SelectedMapPack.Manifest.Id}:{SelectedMapPack.Manifest.Version}";
+        StatusMessage = $"Offline pack '{SelectedMapPack.Manifest.DisplayName}' selected. Save preferences to make it the active source.";
+    }
+
+    [RelayCommand]
+    private void ClearSelectedMapCache()
+    {
+        mapCache.ClearSource(SelectedMapSource?.Id ?? "osm-standard");
+        RefreshMapCacheSize();
+        StatusMessage = "Selected source HTTP cache cleared. Offline packs were not changed.";
+    }
+
+    [RelayCommand]
+    private void ClearAllMapCache()
+    {
+        mapCache.ClearAll();
+        RefreshMapCacheSize();
+        StatusMessage = "All HTTP cache entries cleared. Offline packs were not changed.";
+    }
+
+    private async Task RefreshMapPacksAsync(CancellationToken cancellationToken)
+    {
+        InstalledMapPacks = await offlinePacks.ListAsync(cancellationToken);
+        SelectedMapPack = InstalledMapPacks.FirstOrDefault();
+    }
+
+    private void RefreshMapCacheSize()
+    {
+        MapHttpCacheSizeMiB = mapCache.SizeBytes / 1_048_576d;
+    }
+
+    private void RestoreOfflinePackSelection(string sourceId)
+    {
+        var parts = sourceId.Split(':');
+        if (parts.Length != 3 || parts[0] != "pack")
+            return;
+        SelectedMapPack = InstalledMapPacks.FirstOrDefault(value => value.Manifest.Id == parts[1] && value.Manifest.Version == parts[2]);
+        selectedOfflineSourceId = SelectedMapPack is null ? null : sourceId;
+    }
+
+    private async Task LoadMapSourcesAsync(string selectedSourceId, CancellationToken cancellationToken)
+    {
+        var catalog = BuiltInMapCatalog.Load();
+        var configured = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var source in catalog.Sources.Where(value => value.CredentialRequirement != MapCredentialRequirement.None))
+        {
+            if (!string.IsNullOrEmpty(await mapSecretStore.GetAsync($"maps.credentials.{source.Id}", cancellationToken)))
+                configured.Add(source.Id);
+        }
+
+        MapSources = MapSettingsSourceCatalog.Create(catalog, configured);
+        OnPropertyChanged(nameof(MapSources));
+        OnPropertyChanged(nameof(OfflineMapSources));
+        OnPropertyChanged(nameof(CustomMapSources));
+        OnPropertyChanged(nameof(OnlineMapSources));
+        OnPropertyChanged(nameof(BlankMapSources));
+        SelectedMapSource = MapSettingsSourceCatalog.Resolve(MapSources, selectedSourceId, isOnline: true);
     }
 
     partial void OnSelectedThemeChanged(PlannerTheme value)
@@ -391,6 +633,9 @@ public sealed partial class PlannerTabViewModel : ObservableObject
             SelectedMapProvider = settings.Map.Provider;
             SelectedMapStyle = settings.Map.Style;
             DefaultMapZoom = settings.Map.DefaultZoom;
+            SelectedMapSource ??= MapSettingsSourceCatalog.Resolve(MapSources, settings.Map.SelectedSourceId, isOnline: true);
+            MapHttpCacheEnabled = settings.Map.HttpCacheEnabled;
+            MapHttpCacheLimitMiB = checked((int)(settings.Map.HttpCacheLimitBytes / 1_048_576));
             TelemetryDisplayRateHz = settings.Telemetry.DisplayRateHz;
             ChartHistorySeconds = settings.Telemetry.ChartHistorySeconds;
             SelectedTheme = settings.Appearance.Theme;
@@ -460,7 +705,15 @@ public sealed partial class PlannerTabViewModel : ObservableObject
         return new PlannerSettings
         {
             Units = new PlannerUnitSettings { System = SelectedUnitSystem },
-            Map = new PlannerMapSettings { Provider = SelectedMapProvider, Style = SelectedMapStyle, DefaultZoom = DefaultMapZoom },
+            Map = new PlannerMapSettings
+            {
+                Provider = SelectedMapProvider,
+                Style = SelectedMapStyle,
+                DefaultZoom = DefaultMapZoom,
+                SelectedSourceId = selectedOfflineSourceId ?? SelectedMapSource?.Id ?? "osm-standard",
+                HttpCacheEnabled = MapHttpCacheEnabled,
+                HttpCacheLimitBytes = Math.Max(16, MapHttpCacheLimitMiB) * 1_048_576L
+            },
             Telemetry = new PlannerTelemetrySettings { DisplayRateHz = TelemetryDisplayRateHz, ChartHistorySeconds = ChartHistorySeconds },
             Appearance = new PlannerAppearanceSettings { Theme = SelectedTheme },
             Logging = new PlannerLoggingSettings { Level = SelectedLoggingLevel, RetentionDays = LogRetentionDays, LogDirectory = LogDirectory },
