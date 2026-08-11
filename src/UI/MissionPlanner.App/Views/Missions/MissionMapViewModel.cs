@@ -19,6 +19,7 @@ using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Missions;
+using MissionPlanner.Maps.Coordinates;
 using MissionPlanner.Maps.Terrain;
 
 namespace MissionPlanner.App.Views.Missions;
@@ -111,6 +112,10 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     /// </summary>
     [ObservableProperty]
     public partial string SelectedMapStyle { get; set; }
+
+    /// <summary>Gets the pointer coordinate formatted in the selected coordinate style.</summary>
+    [ObservableProperty]
+    public partial string PointerCoordinateText { get; private set; } = "Position unavailable";
 
     /// <summary>
     /// Gets the active vehicle display name.
@@ -247,6 +252,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         HasAltitueMessage = newValue is not null;
     }
 
+    partial void OnSelectedMapStyleChanged(string value) => UpdatePointerCoordinateText();
+
     /// <summary>
     /// Commands selectable in the waypoint editor. Names follow v1.38's mavcmd.xml; the set is
     /// limited to the commands the mission domain supports.
@@ -320,8 +327,16 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     {
         PointerLatitude = latitude;
         PointerLongitude = longitude;
+        UpdatePointerCoordinateText();
         PointerAltitude = altitudeMeters;
         SetContextPosition(latitude, longitude);
+    }
+
+    private void UpdatePointerCoordinateText()
+    {
+        PointerCoordinateText = PointerLatitude is { } latitude && PointerLongitude is { } longitude
+            ? MapCoordinateFormatter.Format(SelectedMapStyle, latitude, longitude)
+            : "Position unavailable";
     }
 
     /// <summary>Updates the typed terrain status while a pointer lookup is in progress.</summary>

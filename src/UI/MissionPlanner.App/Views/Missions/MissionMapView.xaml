@@ -161,11 +161,8 @@
             <Label Text="•" FontSize="16"  VerticalOptions="Center"/>
 
             <Label
-            Text="{Binding PointerLatitude, StringFormat='Lat: {0:F7}'}"
-            VerticalOptions="Center" />
-            <Label
-            Text="{Binding PointerLongitude, StringFormat='Lon: {0:F7}'}"
-            VerticalOptions="Center" />
+                Text="{Binding PointerCoordinateText}"
+                VerticalOptions="Center" />
             <Label
                 IsVisible="{Binding HasAltitueMessage}"
             Text="{Binding PointerAltitude, StringFormat='Alt: {0:F1} m'}"
