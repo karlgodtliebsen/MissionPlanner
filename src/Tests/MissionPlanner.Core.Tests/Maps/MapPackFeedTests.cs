@@ -38,7 +38,7 @@ public sealed class MapPackFeedTests
         await action.Should().ThrowAsync<InvalidDataException>();
     }
 
-    /// <summary>Verifies partial artifact downloads never reach the installer.</summary>
+    /// <summary>Verifies a known partial response is rejected before installation.</summary>
     [Fact]
     public async Task InstallerRejectsPartialDownload()
     {
@@ -87,6 +87,7 @@ public sealed class MapPackFeedTests
 
         await service.InstallAsync(Entry(4), new Version(2, 0), new Version(5, 0), cancellationToken: TestContext.Current.CancellationToken);
 
+        await installer.Received().InstallAsync(Arg.Is<OfflineMapPackManifest>(manifest => manifest.InstallOrigin == OfflineMapPackInstallOrigin.ApprovedFeed && manifest.PolicyId == "local-user-content-v1" && manifest.SourceId == "raster-mbtiles-template"), Arg.Any<Stream>(), Arg.Any<CancellationToken>());
         await repository.Received().RemoveAsync("test-pack", "1.0", null, Arg.Any<CancellationToken>());
     }
 
@@ -108,7 +109,7 @@ public sealed class MapPackFeedTests
 
     private static MapPackFeedPayload Payload(params MapPackFeedEntry[] entries) => new(1, "1", DateTimeOffset.UnixEpoch, entries);
 
-    private static MapPackFeedEntry Entry(long size) => new(Manifest(size), "reviewed-source", "reviewed-product", new Uri("https://packs.example/test.mbtiles"), "2.0", "5.0", [new Uri("https://packs.example/notices/test")]);
+    private static MapPackFeedEntry Entry(long size) => new(Manifest(size), "raster-mbtiles-template", "raster-mbtiles", new Uri("https://packs.example/test.mbtiles"), "2.0", "5.0", [new Uri("https://packs.example/notices/test")]);
 
     private static OfflineMapPackManifest Manifest(long size) => new("test-pack", "2.0", "Test pack", "test.mbtiles", new string('0', 64), size, new(-10, -10, 10, 10), 1, 10, "EPSG:3857", "png", "Test attribution", "Test license");
 
@@ -145,4 +146,5 @@ public sealed class MapPackFeedTests
             }
         }
     }
+
 }

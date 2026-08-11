@@ -3,6 +3,7 @@ namespace MissionPlanner.Maps.Offline;
 /// <summary>Stores validated packs beneath Maps/Packs/&lt;id&gt;/&lt;version&gt;.</summary>
 public sealed class FileOfflineMapPackRepository : IOfflineMapPackRepository
 {
+    private readonly List<string> diagnostics = [];
     /// <summary>Manifest file name within an installed version.</summary>
     public const string ManifestFileName = "manifest.json";
     private readonly string root;
@@ -17,22 +18,34 @@ public sealed class FileOfflineMapPackRepository : IOfflineMapPackRepository
     /// <summary>Gets the repository root.</summary>
     public string RootPath => root;
 
+    /// <summary>Gets diagnostics for corrupt manifests skipped by the most recent enumeration.</summary>
+    public IReadOnlyList<string> LastDiagnostics => diagnostics;
+
     /// <inheritdoc />
     public async ValueTask<IReadOnlyList<InstalledOfflineMapPack>> ListAsync(CancellationToken cancellationToken = default)
     {
         if (!Directory.Exists(root))
             return [];
         var packs = new List<InstalledOfflineMapPack>();
+        diagnostics.Clear();
         foreach (var manifestPath in Directory.EnumerateFiles(root, ManifestFileName, SearchOption.AllDirectories))
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (manifestPath.Contains(Path.DirectorySeparatorChar + ".staging-", StringComparison.Ordinal))
                 continue;
-            var manifest = OfflineMapPackJson.Deserialize(await File.ReadAllTextAsync(manifestPath, cancellationToken).ConfigureAwait(false));
-            var directory = Path.GetDirectoryName(manifestPath)!;
-            var archive = Path.Combine(directory, manifest.ArchiveFileName);
-            if (File.Exists(archive))
-                packs.Add(new(manifest, directory, archive));
+            try
+            {
+                var manifest = OfflineMapPackJson.Deserialize(await File.ReadAllTextAsync(manifestPath, cancellationToken).ConfigureAwait(false));
+                var directory = Path.GetDirectoryName(manifestPath)!;
+                var archive = Path.Combine(directory, manifest.ArchiveFileName);
+                if (File.Exists(archive)) packs.Add(new(manifest, directory, archive));
+                else diagnostics.Add($"Pack manifest '{manifestPath}' references a missing archive.");
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) { throw; }
+            catch (Exception exception) when (exception is IOException or System.Text.Json.JsonException or InvalidDataException or NotSupportedException)
+            {
+                diagnostics.Add($"Pack manifest '{manifestPath}' was skipped: {exception.Message}");
+            }
         }
         return packs.OrderBy(item => item.Manifest.DisplayName, StringComparer.Ordinal).ThenBy(item => item.Manifest.Version, StringComparer.Ordinal).ToArray();
     }

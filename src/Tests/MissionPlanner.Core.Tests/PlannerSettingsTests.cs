@@ -186,7 +186,7 @@ public sealed class PlannerSettingsTests
             NullLogger<PlannerTabViewModel>.Instance,
             Substitute.For<MissionPlanner.Maps.Credentials.IMapSecretStore>(),
             offlinePacks,
-            Substitute.For<MissionPlanner.Maps.Offline.IOfflineMapPackInstaller>(),
+            Substitute.For<MissionPlanner.Maps.Offline.IOfflineMapPackManager>(),
             Substitute.For<MissionPlanner.Maps.Offline.IOfflineMapPackValidator>(),
             new MissionPlanner.Maps.Http.MapHttpDiskCache(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")), 1_048_576));
         await viewModel.ActivateAsync();

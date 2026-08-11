@@ -21,6 +21,15 @@ public sealed record OfflineMapBounds(double West, double South, double East, do
 /// <param name="RasterFormat">Declared png, jpg, jpeg, or webp payload.</param>
 /// <param name="Attribution">Required attribution text.</param>
 /// <param name="LicenseNotice">License or rights notice.</param>
+/// <param name="SourceId">Reviewed catalog source identifier, when known.</param>
+/// <param name="ProductId">Reviewed catalog product identifier, when known.</param>
+/// <param name="PolicyId">Policy identifier evaluated for this installation.</param>
+/// <param name="PolicyReviewedOn">Date on which that policy was reviewed.</param>
+/// <param name="InstallOrigin">How the pack entered the repository.</param>
+/// <param name="Provenance">Sanitized source provenance without credentials.</param>
+/// <param name="RetrievedAt">Time at which the artifact was retrieved.</param>
+/// <param name="AttributionIds">Attribution identifiers retained with the pack.</param>
+/// <param name="NoticeReferences">Required notice references retained with the pack.</param>
 public sealed record OfflineMapPackManifest(
     string Id,
     string Version,
@@ -34,7 +43,27 @@ public sealed record OfflineMapPackManifest(
     string Projection,
     string RasterFormat,
     string Attribution,
-    string LicenseNotice);
+    string LicenseNotice,
+    string? SourceId = null,
+    string? ProductId = null,
+    string? PolicyId = null,
+    DateOnly? PolicyReviewedOn = null,
+    OfflineMapPackInstallOrigin InstallOrigin = OfflineMapPackInstallOrigin.LegacyUnknown,
+    string? Provenance = null,
+    DateTimeOffset? RetrievedAt = null,
+    string[]? AttributionIds = null,
+    string[]? NoticeReferences = null);
+
+/// <summary>Identifies how an installed pack entered the repository.</summary>
+public enum OfflineMapPackInstallOrigin
+{
+    /// <summary>An older manifest has no recorded provenance.</summary>
+    LegacyUnknown,
+    /// <summary>The operator imported a local archive.</summary>
+    UserImported,
+    /// <summary>The archive came from an approved signed feed.</summary>
+    ApprovedFeed
+}
 
 /// <summary>Describes an installed offline map pack.</summary>
 /// <param name="Manifest">Validated pack manifest.</param>
@@ -65,4 +94,48 @@ public interface IOfflineMapPackInstaller
 {
     /// <summary>Installs an archive stream for a manifest.</summary>
     ValueTask<InstalledOfflineMapPack> InstallAsync(OfflineMapPackManifest manifest, Stream archive, CancellationToken cancellationToken = default);
+}
+
+/// <summary>Gets and changes the authoritative active map source ID.</summary>
+public interface IActiveMapSourceStore
+{
+    /// <summary>Gets the active stable source identifier.</summary>
+    string SelectedSourceId { get; }
+    /// <summary>Changes the active stable source identifier.</summary>
+    ValueTask SetSelectedSourceIdAsync(string sourceId, CancellationToken cancellationToken = default);
+}
+
+/// <summary>Owns pack installation and removal relative to the active source.</summary>
+public interface IOfflineMapPackManager
+{
+    /// <summary>Installs a user-imported pack through the common bounded primitive.</summary>
+    ValueTask<InstalledOfflineMapPack> InstallAsync(OfflineMapPackManifest manifest, Stream archive, CancellationToken cancellationToken = default);
+    /// <summary>Removes an inactive pack.</summary>
+    ValueTask RemoveAsync(string id, string version, CancellationToken cancellationToken = default);
+    /// <summary>Switches to fallback before explicitly removing an active pack.</summary>
+    ValueTask ForceRemoveAsync(string id, string version, string fallbackSourceId = "osm-standard", CancellationToken cancellationToken = default);
+}
+
+/// <summary>Default active-source-aware offline pack manager.</summary>
+public sealed class OfflineMapPackManager(IOfflineMapPackInstaller installer, IOfflineMapPackRepository repository, IActiveMapSourceStore activeSource) : IOfflineMapPackManager
+{
+    /// <inheritdoc />
+    public ValueTask<InstalledOfflineMapPack> InstallAsync(OfflineMapPackManifest manifest, Stream archive, CancellationToken cancellationToken = default) =>
+        installer.InstallAsync(manifest with { InstallOrigin = manifest.InstallOrigin == OfflineMapPackInstallOrigin.LegacyUnknown ? OfflineMapPackInstallOrigin.UserImported : manifest.InstallOrigin }, archive, cancellationToken);
+
+    /// <inheritdoc />
+    public ValueTask RemoveAsync(string id, string version, CancellationToken cancellationToken = default)
+    {
+        if (StringComparer.Ordinal.Equals(activeSource.SelectedSourceId, $"pack:{id}:{version}"))
+            throw new InvalidOperationException("The active offline map pack cannot be removed. Select another basemap first.");
+        return repository.RemoveAsync(id, version, cancellationToken: cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public async ValueTask ForceRemoveAsync(string id, string version, string fallbackSourceId = "osm-standard", CancellationToken cancellationToken = default)
+    {
+        if (StringComparer.Ordinal.Equals(activeSource.SelectedSourceId, $"pack:{id}:{version}"))
+            await activeSource.SetSelectedSourceIdAsync(fallbackSourceId, cancellationToken).ConfigureAwait(false);
+        await repository.RemoveAsync(id, version, cancellationToken: cancellationToken).ConfigureAwait(false);
+    }
 }

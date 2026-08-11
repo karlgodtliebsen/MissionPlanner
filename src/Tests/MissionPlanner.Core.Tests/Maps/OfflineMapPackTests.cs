@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using FluentAssertions;
 using Microsoft.Data.Sqlite;
 using MissionPlanner.Maps.Offline;
+using NSubstitute;
 
 namespace MissionPlanner.Core.Tests.Maps;
 
@@ -82,6 +83,62 @@ public sealed class OfflineMapPackTests
         finally { DeleteTree(context.Root); DeleteTree(installRoot); }
     }
 
+    /// <summary>Verifies the common installer rejects truncated and oversized streams before validation.</summary>
+    [Fact]
+    public async Task InstallerBoundsDeclaredSizeDuringStreaming()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"mp-pack-bounds-{Guid.NewGuid():N}");
+        try
+        {
+            var repository = new FileOfflineMapPackRepository(root);
+            var validator = Substitute.For<IOfflineMapPackValidator>();
+            var installer = new OfflineMapPackInstaller(repository, validator);
+            var manifest = new OfflineMapPackManifest("bounded", "1", "Bounded", "pack.mbtiles", Convert.ToHexString(SHA256.HashData([1, 2, 3])), 3, new(0, 0, 1, 1), 0, 1, "EPSG:3857", "png", "Attribution", "License");
+
+            await FluentActions.Awaiting(() => installer.InstallAsync(manifest, new MemoryStream([1, 2]), TestContext.Current.CancellationToken).AsTask()).Should().ThrowAsync<InvalidDataException>();
+            await FluentActions.Awaiting(() => installer.InstallAsync(manifest, new MemoryStream([1, 2, 3, 4]), TestContext.Current.CancellationToken).AsTask()).Should().ThrowAsync<InvalidDataException>();
+            Directory.EnumerateDirectories(repository.RootPath, ".staging-*", SearchOption.TopDirectoryOnly).Should().BeEmpty();
+            await validator.DidNotReceiveWithAnyArgs().ValidateAsync(default!, default!, TestContext.Current.CancellationToken);
+        }
+        finally { DeleteTree(root); }
+    }
+
+    /// <summary>Verifies one corrupt manifest is isolated while valid packs remain enumerable.</summary>
+    [Fact]
+    public async Task RepositorySkipsCorruptManifest()
+    {
+        var context = await CreateContextAsync();
+        var root = Path.Combine(Path.GetTempPath(), $"mp-pack-corrupt-{Guid.NewGuid():N}");
+        try
+        {
+            var repository = new FileOfflineMapPackRepository(root);
+            await using var stream = File.OpenRead(context.ArchivePath);
+            await new OfflineMapPackInstaller(repository, new MbTilesOfflineMapPackValidator()).InstallAsync(context.Manifest, stream, TestContext.Current.CancellationToken);
+            var corruptDirectory = Path.Combine(repository.RootPath, "corrupt", "1");
+            Directory.CreateDirectory(corruptDirectory);
+            await File.WriteAllTextAsync(Path.Combine(corruptDirectory, FileOfflineMapPackRepository.ManifestFileName), "{broken", TestContext.Current.CancellationToken);
+
+            (await repository.ListAsync(TestContext.Current.CancellationToken)).Should().ContainSingle();
+            repository.LastDiagnostics.Should().ContainSingle();
+        }
+        finally { DeleteTree(context.Root); DeleteTree(root); }
+    }
+
+    /// <summary>Verifies active ownership denies ordinary removal and explicit force switches first.</summary>
+    [Fact]
+    public async Task ManagerOwnsActivePackRemoval()
+    {
+        var repository = Substitute.For<IOfflineMapPackRepository>();
+        var active = new TestActiveSource("pack:test:1");
+        var manager = new OfflineMapPackManager(Substitute.For<IOfflineMapPackInstaller>(), repository, active);
+        await FluentActions.Awaiting(() => manager.RemoveAsync("test", "1", TestContext.Current.CancellationToken).AsTask()).Should().ThrowAsync<InvalidOperationException>();
+
+        await manager.ForceRemoveAsync("test", "1", cancellationToken: TestContext.Current.CancellationToken);
+
+        active.SelectedSourceId.Should().Be("osm-standard");
+        await repository.Received().RemoveAsync("test", "1", null, Arg.Any<CancellationToken>());
+    }
+
     private static async Task<TestContextData> CreateContextAsync()
     {
         var root = Path.Combine(Path.GetTempPath(), $"mp-mbtiles-{Guid.NewGuid():N}");
@@ -108,4 +165,14 @@ public sealed class OfflineMapPackTests
     }
 
     private sealed record TestContextData(string Root, string ArchivePath, OfflineMapPackManifest Manifest);
+
+    private sealed class TestActiveSource(string sourceId) : IActiveMapSourceStore
+    {
+        public string SelectedSourceId { get; private set; } = sourceId;
+        public ValueTask SetSelectedSourceIdAsync(string sourceId, CancellationToken cancellationToken = default)
+        {
+            SelectedSourceId = sourceId;
+            return ValueTask.CompletedTask;
+        }
+    }
 }

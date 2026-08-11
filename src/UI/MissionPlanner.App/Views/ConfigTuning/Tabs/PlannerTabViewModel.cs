@@ -22,7 +22,7 @@ public sealed partial class PlannerTabViewModel : ObservableObject
     private readonly ILogger<PlannerTabViewModel> logger;
     private readonly IMapSecretStore mapSecretStore;
     private readonly IOfflineMapPackRepository offlinePacks;
-    private readonly IOfflineMapPackInstaller offlinePackInstaller;
+    private readonly IOfflineMapPackManager offlinePackManager;
     private readonly IOfflineMapPackValidator offlinePackValidator;
     private readonly MapHttpDiskCache mapCache;
     private readonly SemaphoreSlim operationGate = new(1, 1);
@@ -37,7 +37,7 @@ public sealed partial class PlannerTabViewModel : ObservableObject
     /// <param name="logger">The logger.</param>
     /// <param name="mapSecretStore">The secure map credential store.</param>
     /// <param name="offlinePacks">The installed offline-pack repository.</param>
-    /// <param name="offlinePackInstaller">The offline-pack installer.</param>
+    /// <param name="offlinePackManager">The active-source-aware offline-pack manager.</param>
     /// <param name="offlinePackValidator">The offline-pack validator.</param>
     /// <param name="mapCache">The bounded map HTTP cache.</param>
     public PlannerTabViewModel(
@@ -48,7 +48,7 @@ public sealed partial class PlannerTabViewModel : ObservableObject
         ILogger<PlannerTabViewModel> logger,
         IMapSecretStore mapSecretStore,
         IOfflineMapPackRepository offlinePacks,
-        IOfflineMapPackInstaller offlinePackInstaller,
+        IOfflineMapPackManager offlinePackManager,
         IOfflineMapPackValidator offlinePackValidator,
         MapHttpDiskCache mapCache)
     {
@@ -59,7 +59,7 @@ public sealed partial class PlannerTabViewModel : ObservableObject
         this.logger = logger;
         this.mapSecretStore = mapSecretStore;
         this.offlinePacks = offlinePacks;
-        this.offlinePackInstaller = offlinePackInstaller;
+        this.offlinePackManager = offlinePackManager;
         this.offlinePackValidator = offlinePackValidator;
         this.mapCache = mapCache;
     }
@@ -392,7 +392,7 @@ public sealed partial class PlannerTabViewModel : ObservableObject
             using var reader = new StreamReader(manifestStream);
             var manifest = OfflineMapPackJson.Deserialize(await reader.ReadToEndAsync(cancellationToken));
             await using var archive = await archiveFile.OpenReadAsync();
-            await offlinePackInstaller.InstallAsync(manifest, archive, cancellationToken);
+            await offlinePackManager.InstallAsync(manifest, archive, cancellationToken);
             await RefreshMapPacksAsync(cancellationToken);
             StatusMessage = $"Offline pack '{manifest.DisplayName}' installed and verified.";
         });
@@ -417,7 +417,7 @@ public sealed partial class PlannerTabViewModel : ObservableObject
         {
             if (SelectedMapPack is null)
                 return;
-            await offlinePacks.RemoveAsync(SelectedMapPack.Manifest.Id, SelectedMapPack.Manifest.Version, cancellationToken: cancellationToken);
+            await offlinePackManager.RemoveAsync(SelectedMapPack.Manifest.Id, SelectedMapPack.Manifest.Version, cancellationToken);
             await RefreshMapPacksAsync(cancellationToken);
             StatusMessage = "Offline pack removed.";
         });

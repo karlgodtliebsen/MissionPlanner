@@ -100,6 +100,8 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<IOfflineMapPackRepository>(provider => provider.GetRequiredService<FileOfflineMapPackRepository>());
         services.TryAddSingleton<IOfflineMapPackValidator, MbTilesOfflineMapPackValidator>();
         services.TryAddSingleton<IOfflineMapPackInstaller, OfflineMapPackInstaller>();
+        services.TryAddSingleton<IActiveMapSourceStore, PlannerActiveMapSourceStore>();
+        services.TryAddSingleton<IOfflineMapPackManager, OfflineMapPackManager>();
         services.TryAddSingleton<HostedMapSourceService>();
         services.TryAddSingleton<IMapSourceResolver, MapSourceResolver>();
         services.TryAddSingleton<MapsuiHostedBasemapFactory>();

@@ -1,5 +1,7 @@
 namespace MissionPlanner.Maps.Offline;
 
+using System.Security.Cryptography;
+
 /// <summary>Installs offline map packs through isolated staging and atomic directory promotion.</summary>
 public sealed class OfflineMapPackInstaller(FileOfflineMapPackRepository repository, IOfflineMapPackValidator validator) : IOfflineMapPackInstaller
 {
@@ -18,8 +20,26 @@ public sealed class OfflineMapPackInstaller(FileOfflineMapPackRepository reposit
         try
         {
             var archivePath = Path.Combine(staging, manifest.ArchiveFileName);
-            await using (var output = new FileStream(archivePath, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, FileOptions.Asynchronous))
-                await archive.CopyToAsync(output, cancellationToken).ConfigureAwait(false);
+            await using (var output = new FileStream(archivePath, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, FileOptions.Asynchronous | FileOptions.SequentialScan))
+            {
+                using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+                var buffer = new byte[81_920];
+                long total = 0;
+                while (true)
+                {
+                    var read = await archive.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
+                    if (read == 0) break;
+                    total += read;
+                    if (total > manifest.SizeBytes)
+                        throw new InvalidDataException("Offline map pack exceeds its declared size.");
+                    hash.AppendData(buffer, 0, read);
+                    await output.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
+                }
+                if (total != manifest.SizeBytes)
+                    throw new InvalidDataException("Offline map pack is truncated.");
+                if (!Convert.ToHexString(hash.GetHashAndReset()).Equals(manifest.Sha256, StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException("Offline map pack SHA-256 does not match its manifest.");
+            }
             await validator.ValidateAsync(manifest, archivePath, cancellationToken).ConfigureAwait(false);
             await File.WriteAllTextAsync(Path.Combine(staging, FileOfflineMapPackRepository.ManifestFileName), OfflineMapPackJson.Serialize(manifest), cancellationToken).ConfigureAwait(false);
 
