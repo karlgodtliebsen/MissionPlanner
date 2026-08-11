@@ -83,3 +83,11 @@ Config > Planner presents sources by operator purpose: Offline packs, Self-hoste
 The selected source is persisted by stable `SelectedSourceId`. A deleted source falls back to `osm-standard`; offline startup prefers an installed pack and otherwise uses the blank map; a credential-gated source without a configured secret is not selected. HTTP cache enablement and its bounded disk limit are non-secret settings. The cache remains visually and operationally separate from installed offline packs.
 
 Credential entry is transient: Set writes directly to secure storage and clears the field, Remove deletes it, and Test reports only state/provider validation. Stored values are never read back into a bindable property. The pack APIs expose list/import/install/select/remove/verify operations and manifest coverage, zoom, size, version, attribution, and license details for the settings presentation.
+
+## Approved pack feeds and updates
+
+Managed pack installation accepts only a versioned, signed feed retrieved over HTTPS. Every entry names a reviewed source and data product, complete artifact URI, manifest coverage/format/zoom/size/SHA-256, notice links, and minimum Mission Planner and renderer versions. Artifact URIs must be complete HTTPS files and cannot contain tile-template placeholders; they are never derived from a hosted provider endpoint.
+
+Feed size and artifact size are bounded, requests use the common timeout/cancellation infrastructure, and progress is reported against the signed size. Compatibility and downgrade checks happen before download. The existing pack installer then performs checksum and MBTiles validation in staging and atomically activates the new version. Older versions are removed only after successful activation, so cancellation, partial content, hash/validation failure, disk-full errors, and incompatible renderers retain the previous working pack.
+
+No Protomaps feed is included because ADR-0006 deferred the vector renderer and Task 06 was not authorized. A future vector feed must include every offline style/font/sprite asset and reviewed notice before it can be added.

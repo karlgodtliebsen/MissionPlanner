@@ -20,6 +20,8 @@ All four existing Esri raster basemaps now share the catalog/policy/cache bounda
 
 Config > Planner now selects maps by stable source ID and groups choices as offline packs, self-hosted/custom, online providers, and blank map. It shows catalog policy and attribution details, secure credential state/actions, and bounded HTTP-cache preferences. Schema migration and fallback logic cover deleted sources, offline startup, and missing credentials without exposing secrets.
 
+Approved offline-pack updates use a signed HTTPS feed of complete reviewed artifacts. Downloads are bounded, cancellable, progress-aware, compatibility-checked, checksum/pack-validated, staged, and atomically activated; downgrade, partial, disk, or validation failures retain the working version. Hosted tile URLs are never converted into pack downloads, and no Protomaps feed exists while vector support remains deferred.
+
 
 
 ## MavLink
