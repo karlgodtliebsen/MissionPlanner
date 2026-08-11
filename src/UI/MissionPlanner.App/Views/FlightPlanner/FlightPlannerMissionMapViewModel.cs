@@ -19,9 +19,10 @@ public partial class FlightPlannerMissionMapViewModel : MissionMapViewModel
         IPlannerSettingsService settingsService, IMissionFileCodec fileCodec,
         IDomainEventHub domainEventHub, IDispatcher dispatcher, IDateTimeProvider dateTimeProvider, ILogger<MissionMapViewModel> logger,
         IMissionMapInteractionService interactionService, IAdvancedMissionItemService advancedMissionItems,
-        IUserPromptService promptService, IUserConfirmationService confirmationService)
+        IUserPromptService promptService, IUserConfirmationService confirmationService,
+        IPlanningPolygonService polygonService, IFileOpenService fileOpenService, IFileSaveService fileSaveService)
         : base(activeVehicle, protocolMapper, fileSaver, settingsService, fileCodec, domainEventHub, dispatcher, dateTimeProvider, logger,
-            interactionService, advancedMissionItems, promptService, confirmationService)
+            interactionService, advancedMissionItems, promptService, confirmationService, polygonService, fileOpenService, fileSaveService)
     {
     }
 }

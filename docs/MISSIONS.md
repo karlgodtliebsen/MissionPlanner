@@ -318,6 +318,15 @@ rows does not silently retarget a jump: mission validation reports a stale, miss
 The UI presents one-based row numbers, requires confirmation for repeat `-1`, and enforces
 ArduPilot's practical limit of 15 `DO_JUMP` commands.
 
+### Planning polygon workspace
+
+The planning polygon is stable local workspace state and is deliberately separate from both the
+flight mission and `FencePlan`. Drawing is an explicit interaction with Finish and Cancel actions.
+The workspace validates unique vertices, minimum area, and self-intersection; it can derive a
+boundary from positioned mission items without changing the mission. Area and signed offsets use a
+local metre projection (including longitude-wrap handling), and offsets are previewed before
+replacement. Polygon files use bounded, versioned `.mppolygon` JSON with WGS84 coordinates.
+
 ---
 
 ## Known gaps and next steps

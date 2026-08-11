@@ -45,6 +45,9 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     private readonly IAdvancedMissionItemService advancedMissionItems;
     private readonly IUserPromptService promptService;
     private readonly IUserConfirmationService confirmationService;
+    private readonly IPlanningPolygonService polygonService;
+    private readonly IFileOpenService fileOpenService;
+    private readonly IFileSaveService fileSaveService;
     private IDisposable? stateSubscription;
     private bool disposed;
 
@@ -56,7 +59,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         IMissionFileCodec fileCodec, IDomainEventHub domainEventHub, IDispatcher dispatcher,
         IDateTimeProvider dateTimeProvider, ILogger<MissionMapViewModel> logger,
         IMissionMapInteractionService interactionService, IAdvancedMissionItemService advancedMissionItems,
-        IUserPromptService promptService, IUserConfirmationService confirmationService)
+        IUserPromptService promptService, IUserConfirmationService confirmationService,
+        IPlanningPolygonService polygonService, IFileOpenService fileOpenService, IFileSaveService fileSaveService)
     {
         this.activeVehicle = activeVehicle;
         this.fileCodec = fileCodec;
@@ -70,6 +74,10 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         this.advancedMissionItems = advancedMissionItems;
         this.promptService = promptService;
         this.confirmationService = confirmationService;
+        this.polygonService = polygonService;
+        this.fileOpenService = fileOpenService;
+        this.fileSaveService = fileSaveService;
+        polygonService.Changed += OnPolygonChanged;
         interactionService.Changed += OnInteractionChanged;
         SelectedSourceId = settingsService.Current.Map.SelectedSourceId;
         MapSnapshot = MissionMapProjection.Create(Mission, HomePosition);
@@ -114,6 +122,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         }
 
         interactionService.Changed -= OnInteractionChanged;
+        polygonService.Changed -= OnPolygonChanged;
         disposed = true;
     }
 
@@ -473,9 +482,20 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     {
         dispatcher.Dispatch(() =>
         {
-            PlanningOverlaySnapshot = interactionService.Overlay;
+            UpdatePlanningOverlay();
             PlanningInteractionPrompt = interactionService.State.Prompt;
         });
+    }
+
+    private void OnPolygonChanged(object? sender, EventArgs args) => dispatcher.Dispatch(UpdatePlanningOverlay);
+
+    private void UpdatePlanningOverlay()
+    {
+        var overlay = interactionService.Overlay;
+        var vertices = interactionService.State.Mode == MissionMapInteractionMode.DrawPolygon
+            ? overlay.DrawnPolygon
+            : polygonService.Snapshot.Polygon?.Vertices ?? [];
+        PlanningOverlaySnapshot = overlay with { DrawnPolygon = vertices };
     }
 
     /// <summary>Replaces the mission being edited (e.g. after downloading from a vehicle).</summary>
@@ -576,6 +596,86 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
             return;
         }
         OnMissionChanged(successMessage);
+    }
+
+    [RelayCommand]
+    private void DrawPolygon() => BeginInteraction(MissionMapInteractionMode.DrawPolygon, "Click at least three polygon vertices, then choose Finish Polygon.");
+
+    [RelayCommand]
+    private void FinishPolygon()
+    {
+        if (interactionService.State.Mode != MissionMapInteractionMode.DrawPolygon)
+        {
+            ShowStatus("Polygon drawing is not active.");
+            return;
+        }
+        var result = polygonService.Set("Planning polygon", interactionService.State.Positions);
+        if (!result.Succeeded) { ShowStatus(result.Message); return; }
+        interactionService.Complete();
+        ShowStatus(result.Message);
+    }
+
+    [RelayCommand]
+    private void CancelPolygon()
+    {
+        interactionService.Cancel();
+        ShowStatus("Polygon drawing cancelled.");
+    }
+
+    [RelayCommand]
+    private void ClearPolygon()
+    {
+        polygonService.Clear();
+        interactionService.Cancel();
+        ShowStatus("Planning polygon cleared.");
+    }
+
+    [RelayCommand]
+    private void PolygonFromWaypoints()
+    {
+        var result = polygonService.FromMission(Mission);
+        ShowStatus(result.Message);
+    }
+
+    [RelayCommand]
+    private async Task OffsetPolygonAsync(CancellationToken cancellationToken)
+    {
+        var text = await promptService.PromptAsync("Offset polygon", "Signed offset distance in metres (positive outward)", "10", cancellationToken);
+        if (!double.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out var metres))
+        {
+            if (text is not null) ShowStatus("Enter a valid offset distance.");
+            return;
+        }
+        var result = polygonService.PreviewOffset(metres);
+        if (!result.Succeeded || result.Preview is null) { ShowStatus(result.Message); return; }
+        if (await confirmationService.ConfirmAsync("Apply polygon offset", $"Replace the polygon with the {metres:F1} m offset preview?", "Apply", cancellationToken))
+            ShowStatus(polygonService.ApplyPreview(result.Preview).Message);
+    }
+
+    [RelayCommand]
+    private void ShowPolygonArea()
+    {
+        var area = polygonService.CalculateArea();
+        ShowStatus(area is null ? "Create a polygon first." : $"Area: {area.SquareMeters:F1} m² • {area.Hectares:F3} ha • {area.SquareKilometers:F4} km² • {area.Acres:F3} acres • {area.SquareFeet:F0} ft²");
+    }
+
+    [RelayCommand]
+    private async Task SavePolygonAsync(CancellationToken cancellationToken)
+    {
+        if (polygonService.Snapshot.Polygon is null) { ShowStatus("Create a polygon first."); return; }
+        await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(polygonService.Serialize(dateTimeProvider.UtcNow)));
+        var path = await fileSaveService.SaveAsync("planning-polygon.mppolygon", stream, cancellationToken);
+        ShowStatus(path is null ? "Polygon save cancelled." : $"Polygon saved to {path}.");
+    }
+
+    [RelayCommand]
+    private async Task LoadPolygonAsync(CancellationToken cancellationToken)
+    {
+        using var file = await fileOpenService.OpenAsync("Open MissionPlanner polygon", cancellationToken: cancellationToken);
+        if (file is null) return;
+        using var reader = new StreamReader(file.Content, Encoding.UTF8, true, leaveOpen: true);
+        var result = polygonService.Deserialize(await reader.ReadToEndAsync(cancellationToken));
+        ShowStatus(result.Message);
     }
 
     [RelayCommand]

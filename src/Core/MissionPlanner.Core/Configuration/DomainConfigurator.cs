@@ -71,6 +71,7 @@ public static class DomainConfigurator
         services.TryAddTransient<IMissionValidator, MissionValidator>();
         services.TryAddTransient<IMissionFileCodec, MissionFileCodec>();
         services.TryAddTransient<IAdvancedMissionItemService, AdvancedMissionItemService>();
+        services.TryAddTransient<IPlanningPolygonService, PlanningPolygonService>();
         services.TryAddSingleton<IFenceProtocolMapper, FenceProtocolMapper>();
         services.TryAddSingleton<IFenceGeometryValidator, FenceGeometryValidator>();
         services.TryAddSingleton<IFenceConfigurationService, FenceConfigurationService>();

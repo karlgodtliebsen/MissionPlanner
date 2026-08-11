@@ -43,14 +43,16 @@
                     <MenuFlyoutSeparator />
 
                     <MenuFlyoutSubItem Text="Polygon">
-                        <MenuFlyoutItem Text="Draw a Polygon" Command="{Binding NotImplementedCommand}" CommandParameter="Draw a Polygon" />
-                        <MenuFlyoutItem Text="Clear Polygon" Command="{Binding NotImplementedCommand}" CommandParameter="Clear Polygon" />
-                        <MenuFlyoutItem Text="Save Polygon" Command="{Binding NotImplementedCommand}" CommandParameter="Save Polygon" />
-                        <MenuFlyoutItem Text="Load Polygon" Command="{Binding NotImplementedCommand}" CommandParameter="Load Polygon" />
+                        <MenuFlyoutItem Text="Draw a Polygon" Command="{Binding DrawPolygonCommand}" />
+                        <MenuFlyoutItem Text="Finish Polygon" Command="{Binding FinishPolygonCommand}" />
+                        <MenuFlyoutItem Text="Cancel Drawing" Command="{Binding CancelPolygonCommand}" />
+                        <MenuFlyoutItem Text="Clear Polygon" Command="{Binding ClearPolygonCommand}" />
+                        <MenuFlyoutItem Text="Save Polygon" Command="{Binding SavePolygonCommand}" />
+                        <MenuFlyoutItem Text="Load Polygon" Command="{Binding LoadPolygonCommand}" />
                         <MenuFlyoutItem Text="From SHP" Command="{Binding NotImplementedCommand}" CommandParameter="Polygon from SHP" />
-                        <MenuFlyoutItem Text="From Current Waypoints" Command="{Binding NotImplementedCommand}" CommandParameter="Polygon from Current Waypoints" />
-                        <MenuFlyoutItem Text="Offset Polygon" Command="{Binding NotImplementedCommand}" CommandParameter="Offset Polygon" />
-                        <MenuFlyoutItem Text="Area" Command="{Binding NotImplementedCommand}" CommandParameter="Polygon Area" />
+                        <MenuFlyoutItem Text="From Current Waypoints" Command="{Binding PolygonFromWaypointsCommand}" />
+                        <MenuFlyoutItem Text="Offset Polygon" Command="{Binding OffsetPolygonCommand}" />
+                        <MenuFlyoutItem Text="Area" Command="{Binding ShowPolygonAreaCommand}" />
                     </MenuFlyoutSubItem>
 
                     <MenuFlyoutSubItem Text="Geo-Fence">

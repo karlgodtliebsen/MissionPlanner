@@ -371,10 +371,11 @@ slice implements them.
 * Modify Alt (all items + default)
 * Set Home Here
 * Insert Spline WP; Jump to Start / WP #; Set ROI Here. These use typed spline, DO_JUMP, and modern ROI-location mission items and retain file/wire semantics.
+* Polygon → Draw/Finish/Cancel, Clear, Save/Load `.mppolygon`, From Current Waypoints, signed metre Offset with confirmation, and Area in metric/imperial units. Planning polygons remain independent from missions and fences.
 
 ### Missing (stubbed — menu item present, shows "not implemented yet" toast)
 
-* Polygon → Draw / Clear / Save / Load / From SHP / From Current Waypoints / Offset / Area
+* Polygon → From SHP
 * Geo-Fence → Upload / Download / Set Return Location / Load from File / Save to File / Clear
 * Rally Points → Set / Download / Upload / Clear / Save to File / Load from File
 * Auto WP → Create WP Circle / Create Spline Circle / Area / Text / Create Circle Survey / Survey (Grid)
