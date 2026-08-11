@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": "1.0.0",
+  "providers": [
+    { "id": "missionplanner", "displayName": "Mission Planner" },
+    { "id": "openstreetmap", "displayName": "OpenStreetMap", "organizationUri": "https://www.openstreetmap.org/" },
+    { "id": "esri", "displayName": "Esri", "organizationUri": "https://www.esri.com/" },
+    { "id": "stadia", "displayName": "Stadia Maps", "organizationUri": "https://stadiamaps.com/" },
+    { "id": "thunderforest", "displayName": "Thunderforest", "organizationUri": "https://www.thunderforest.com/" },
+    { "id": "maptiler", "displayName": "MapTiler", "organizationUri": "https://www.maptiler.com/" },
+    { "id": "protomaps", "displayName": "Protomaps", "organizationUri": "https://protomaps.com/" }
+  ],
+  "products": [
+    { "id": "blank", "providerId": "missionplanner", "displayName": "No map" },
+    { "id": "custom-raster", "providerId": "missionplanner", "displayName": "Custom raster source" },
+    { "id": "raster-mbtiles", "providerId": "missionplanner", "displayName": "Raster MBTiles" },
+    { "id": "osm-standard", "providerId": "openstreetmap", "displayName": "OpenStreetMap Standard" },
+    { "id": "esri-world-topo", "providerId": "esri", "displayName": "World Topographic Map" },
+    { "id": "esri-world-physical", "providerId": "esri", "displayName": "World Physical Map" },
+    { "id": "esri-world-shaded-relief", "providerId": "esri", "displayName": "World Shaded Relief" },
+    { "id": "esri-world-dark-gray", "providerId": "esri", "displayName": "World Dark Gray Base" },
+    { "id": "stadia-raster", "providerId": "stadia", "displayName": "Stadia raster maps" },
+    { "id": "thunderforest-raster", "providerId": "thunderforest", "displayName": "Thunderforest raster maps" },
+    { "id": "maptiler-raster", "providerId": "maptiler", "displayName": "MapTiler raster maps" },
+    { "id": "protomaps-basemap", "providerId": "protomaps", "displayName": "Protomaps basemap" }
+  ],
+  "policies": [
+    {
+      "id": "local-user-content-v1", "reviewedOn": "2026-08-11",
+      "reviewNotes": "The operator is responsible for rights to locally configured content.",
+      "allowInteractiveUse": true, "allowOfflineCache": true, "allowPackDownload": true,
+      "allowExport": true, "allowPrinting": true, "requiresVisibleAttribution": false
+    },
+    {
+      "id": "osm-standard-v1", "termsUri": "https://operations.osmfoundation.org/policies/tiles/", "reviewedOn": "2026-08-11",
+      "reviewNotes": "Interactive use and a bounded client cache only; bulk/offline pack download is not enabled.",
+      "allowInteractiveUse": true, "allowOfflineCache": true, "allowPackDownload": false,
+      "allowExport": false, "allowPrinting": false, "requiresVisibleAttribution": true
+    },
+    {
+      "id": "esri-online-v1", "termsUri": "https://www.esri.com/en-us/legal/terms/full-master-agreement", "reviewedOn": "2026-08-11",
+      "reviewNotes": "Interactive online use only until an explicit product-specific review approves additional operations.",
+      "allowInteractiveUse": true, "allowOfflineCache": true, "allowPackDownload": false,
+      "allowExport": false, "allowPrinting": false, "requiresVisibleAttribution": true
+    },
+    {
+      "id": "future-review-required-v1", "reviewedOn": "2026-08-11",
+      "reviewNotes": "Disabled candidate. Credentials, terms, attribution, and supported operations require review before enablement.",
+      "allowInteractiveUse": false, "allowOfflineCache": false, "allowPackDownload": false,
+      "allowExport": false, "allowPrinting": false, "requiresVisibleAttribution": true
+    }
+  ],
+  "attributions": [
+    { "id": "osm", "text": "© OpenStreetMap contributors", "uri": "https://www.openstreetmap.org/copyright", "requiredOnMap": true, "requiredOnExport": true },
+    { "id": "esri", "text": "Powered by Esri", "uri": "https://www.esri.com/", "requiredOnMap": true, "requiredOnExport": true },
+    { "id": "provider-defined", "text": "Provider attribution required", "requiredOnMap": true, "requiredOnExport": true }
+  ],
+  "sources": [
+    {
+      "id": "no-map", "productId": "blank", "displayName": "No map", "accessKind": "blank",
+      "archiveFormat": "none", "contentFormat": "rasterPng", "minimumZoom": 0, "maximumZoom": 24,
+      "policyId": "local-user-content-v1", "attributionIds": [], "credentialRequirement": "none",
+      "capabilities": { "supportsInteractiveUse": true, "supportsOfflineCache": false, "supportsPackDownload": false, "supportsExport": true, "supportsPrinting": true },
+      "isEnabledByDefault": true, "isFutureCandidate": false
+    },
+    {
+      "id": "osm-standard", "productId": "osm-standard", "displayName": "OpenStreetMap", "accessKind": "httpXyz",
+      "archiveFormat": "none", "contentFormat": "rasterPng", "uriTemplate": "https://tile.openstreetmap.org/{z}/{x}/{y}.png", "minimumZoom": 0, "maximumZoom": 19,
+      "policyId": "osm-standard-v1", "attributionIds": ["osm"], "credentialRequirement": "none",
+      "capabilities": { "supportsInteractiveUse": true, "supportsOfflineCache": true, "supportsPackDownload": false, "supportsExport": false, "supportsPrinting": false },
+      "isEnabledByDefault": true, "isFutureCandidate": false
+    },
+    {
+      "id": "esri-world-topo", "productId": "esri-world-topo", "displayName": "Esri World Topographic", "accessKind": "httpXyz",
+      "archiveFormat": "none", "contentFormat": "rasterJpeg", "uriTemplate": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}", "minimumZoom": 0, "maximumZoom": 23,
+      "policyId": "esri-online-v1", "attributionIds": ["esri"], "credentialRequirement": "none",
+      "capabilities": { "supportsInteractiveUse": true, "supportsOfflineCache": true, "supportsPackDownload": false, "supportsExport": false, "supportsPrinting": false },
+      "isEnabledByDefault": true, "isFutureCandidate": false
+    },
+    {
+      "id": "esri-world-physical", "productId": "esri-world-physical", "displayName": "Esri World Physical", "accessKind": "httpXyz",
+      "archiveFormat": "none", "contentFormat": "rasterJpeg", "uriTemplate": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Physical_Map/MapServer/tile/{z}/{y}/{x}", "minimumZoom": 0, "maximumZoom": 8,
+      "policyId": "esri-online-v1", "attributionIds": ["esri"], "credentialRequirement": "none",
+      "capabilities": { "supportsInteractiveUse": true, "supportsOfflineCache": true, "supportsPackDownload": false, "supportsExport": false, "supportsPrinting": false },
+      "isEnabledByDefault": true, "isFutureCandidate": false
+    },
+    {
+      "id": "esri-world-shaded-relief", "productId": "esri-world-shaded-relief", "displayName": "Esri World Shaded Relief", "accessKind": "httpXyz",
+      "archiveFormat": "none", "contentFormat": "rasterJpeg", "uriTemplate": "https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}", "minimumZoom": 0, "maximumZoom": 13,
+      "policyId": "esri-online-v1", "attributionIds": ["esri"], "credentialRequirement": "none",
+      "capabilities": { "supportsInteractiveUse": true, "supportsOfflineCache": true, "supportsPackDownload": false, "supportsExport": false, "supportsPrinting": false },
+      "isEnabledByDefault": true, "isFutureCandidate": false
+    },
+    {
+      "id": "esri-world-dark-gray", "productId": "esri-world-dark-gray", "displayName": "Esri World Dark Gray", "accessKind": "httpXyz",
+      "archiveFormat": "none", "contentFormat": "rasterJpeg", "uriTemplate": "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}", "minimumZoom": 0, "maximumZoom": 16,
+      "policyId": "esri-online-v1", "attributionIds": ["esri"], "credentialRequirement": "none",
+      "capabilities": { "supportsInteractiveUse": true, "supportsOfflineCache": true, "supportsPackDownload": false, "supportsExport": false, "supportsPrinting": false },
+      "isEnabledByDefault": true, "isFutureCandidate": false
+    },
+    {
+      "id": "custom-raster-template", "productId": "custom-raster", "displayName": "Custom raster template", "accessKind": "httpXyz",
+      "archiveFormat": "none", "contentFormat": "rasterPng", "uriTemplate": "https://example.invalid/{z}/{x}/{y}.png", "minimumZoom": 0, "maximumZoom": 24,
+      "policyId": "local-user-content-v1", "attributionIds": [], "credentialRequirement": "none",
+      "capabilities": { "supportsInteractiveUse": true, "supportsOfflineCache": true, "supportsPackDownload": false, "supportsExport": true, "supportsPrinting": true },
+      "isEnabledByDefault": false, "isFutureCandidate": true
+    },
+    {
+      "id": "raster-mbtiles-template", "productId": "raster-mbtiles", "displayName": "Raster MBTiles", "accessKind": "localArchive",
+      "archiveFormat": "mbTiles", "contentFormat": "rasterPng", "minimumZoom": 0, "maximumZoom": 24,
+      "policyId": "local-user-content-v1", "attributionIds": [], "credentialRequirement": "none",
+      "capabilities": { "supportsInteractiveUse": true, "supportsOfflineCache": true, "supportsPackDownload": true, "supportsExport": true, "supportsPrinting": true },
+      "isEnabledByDefault": false, "isFutureCandidate": true
+    },
+    {
+      "id": "stadia-template", "productId": "stadia-raster", "displayName": "Stadia Maps", "accessKind": "httpXyz",
+      "archiveFormat": "none", "contentFormat": "rasterPng", "uriTemplate": "https://tiles.stadiamaps.com/tiles/style/{z}/{x}/{y}.png", "minimumZoom": 0, "maximumZoom": 20,
+      "policyId": "future-review-required-v1", "attributionIds": ["provider-defined"], "credentialRequirement": "apiKey",
+      "capabilities": { "supportsInteractiveUse": false, "supportsOfflineCache": false, "supportsPackDownload": false, "supportsExport": false, "supportsPrinting": false },
+      "isEnabledByDefault": false, "isFutureCandidate": true
+    },
+    {
+      "id": "thunderforest-template", "productId": "thunderforest-raster", "displayName": "Thunderforest", "accessKind": "httpXyz",
+      "archiveFormat": "none", "contentFormat": "rasterPng", "uriTemplate": "https://tile.thunderforest.com/style/{z}/{x}/{y}.png", "minimumZoom": 0, "maximumZoom": 22,
+      "policyId": "future-review-required-v1", "attributionIds": ["provider-defined"], "credentialRequirement": "apiKey",
+      "capabilities": { "supportsInteractiveUse": false, "supportsOfflineCache": false, "supportsPackDownload": false, "supportsExport": false, "supportsPrinting": false },
+      "isEnabledByDefault": false, "isFutureCandidate": true
+    },
+    {
+      "id": "maptiler-template", "productId": "maptiler-raster", "displayName": "MapTiler", "accessKind": "httpXyz",
+      "archiveFormat": "none", "contentFormat": "rasterPng", "uriTemplate": "https://api.maptiler.com/maps/style/{z}/{x}/{y}.png", "minimumZoom": 0, "maximumZoom": 22,
+      "policyId": "future-review-required-v1", "attributionIds": ["provider-defined"], "credentialRequirement": "apiKey",
+      "capabilities": { "supportsInteractiveUse": false, "supportsOfflineCache": false, "supportsPackDownload": false, "supportsExport": false, "supportsPrinting": false },
+      "isEnabledByDefault": false, "isFutureCandidate": true
+    },
+    {
+      "id": "protomaps-pmtiles", "productId": "protomaps-basemap", "displayName": "Protomaps PMTiles", "accessKind": "localArchive",
+      "archiveFormat": "pmTiles", "contentFormat": "vectorMvt", "minimumZoom": 0, "maximumZoom": 15,
+      "policyId": "future-review-required-v1", "attributionIds": ["osm", "provider-defined"], "credentialRequirement": "none",
+      "capabilities": { "supportsInteractiveUse": false, "supportsOfflineCache": false, "supportsPackDownload": false, "supportsExport": false, "supportsPrinting": false },
+      "isEnabledByDefault": false, "isFutureCandidate": true
+    }
+  ]
+}

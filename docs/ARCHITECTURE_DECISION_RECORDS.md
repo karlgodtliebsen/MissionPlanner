@@ -139,6 +139,10 @@ Consequences:
 - Tests configure the same mapping and service provider behavior as production.
 
 
+## ADR-0005 - Catalog-driven map source architecture
+
+Map sources are represented by a validated, versioned catalog in the platform-neutral `MissionPlanner.Maps` project. Provider identity, products, access methods, policy, capabilities, attribution, and credential requirements are separate concepts. See [ADR-0005](adr/ADR-0005-map-source-architecture.md).
+
 ## Naming Conventions
 
 Transport

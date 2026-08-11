@@ -1,5 +1,9 @@
 # Domain
 
+## Map source architecture
+
+Map provider metadata has a platform-neutral, versioned catalog with validation and deterministic serialization. Existing map rendering remains unchanged; offline, custom, hosted, and vector candidates remain disabled until their dedicated implementation and policy tasks are complete. See [MAPS.md](MAPS.md).
+
 
 
 ## MavLink

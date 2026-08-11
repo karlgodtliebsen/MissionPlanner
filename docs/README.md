@@ -12,6 +12,7 @@ Documentation lives in `docs/` and is organized into three categories: core docu
 | [DESIGN_CONCEPTS.md](DESIGN_CONCEPTS.md) | Architecture philosophy: layers, DDD, pipeline, immutable state, UI patterns |
 | [ARCHITECTURE_DECISION_RECORDS.md](ARCHITECTURE_DECISION_RECORDS.md) | ADRs, naming conventions, data flow, future direction |
 | [FEATURES.md](FEATURES.md) | Feature status per area (domain, UI screens): implemented vs missing |
+| [MAPS.md](MAPS.md) | Map catalog, policy, attribution, offline, and renderer architecture |
 
 ## Subsystem references
 
