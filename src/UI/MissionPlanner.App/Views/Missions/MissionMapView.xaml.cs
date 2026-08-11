@@ -17,7 +17,6 @@ namespace MissionPlanner.App.Views.Missions;
 /// <summary>
 /// Shared mission map editor control. Renders the mission plan (pins + route) on a Mapsui map and
 /// hosts the right-click context menu mirroring the classic MissionPlanner flight planner menu.
-/// Bound to the singleton <see cref="MissionItemListViewModel"/>, so every instance edits the same plan.
 /// </summary>
 public partial class MissionMapView : ExtendedContentView<MissionItemListViewModel>, IDisposable
 {
@@ -31,10 +30,10 @@ public partial class MissionMapView : ExtendedContentView<MissionItemListViewMod
     /// <summary>
     /// Initializes a new instance of the <see cref="MissionMapView"/> class.
     /// </summary>
-    public MissionMapView(string? key) : base(key)
+    public MissionMapView(IPlannerSettingsService settingsService, string? key) : base(key)
     {
         InitializeComponent();
-        plannerSettings = ServiceHelper.GetRequiredService<IPlannerSettingsService>();
+        plannerSettings = settingsService;
         map = new Mapsui.Map();
         map.Layers.Add(CreateTileLayer(ViewModel!.SelectedMapType));
         MissionMap.Map = map;
@@ -321,19 +320,19 @@ public partial class MissionMapView : ExtendedContentView<MissionItemListViewMod
 }
 
 /// <inheritdoc />
-public partial class FlightDataMissionMapView : MissionMapView
+public class FlightDataMissionMapView : MissionMapView
 {
     /// <inheritdoc />
-    public FlightDataMissionMapView() : base("FlightData")
+    public FlightDataMissionMapView() : base(ServiceHelper.GetRequiredService<IPlannerSettingsService>(), "FlightData")
     {
     }
 }
 
 /// <inheritdoc />
-public partial class FlightPlannerMissionMapView : MissionMapView
+public class FlightPlannerMissionMapView : MissionMapView
 {
     /// <inheritdoc />
-    public FlightPlannerMissionMapView() : base("FlightPlanner")
+    public FlightPlannerMissionMapView() : base(ServiceHelper.GetRequiredService<IPlannerSettingsService>(), "FlightPlanner")
     {
     }
 }

@@ -1,6 +1,8 @@
 ﻿namespace MissionPlanner.Core.ConfigTuning.Planner;
 
-/// <summary>Loads, validates, migrates, persists, and observes local Planner settings.</summary>
+/// <summary>
+/// Loads, validates, migrates, persists, and observes local Planner settings.
+/// </summary>
 public interface IPlannerSettingsService
 {
     /// <summary>Gets the current in-memory settings.</summary>
@@ -23,17 +25,13 @@ public interface IPlannerSettingsService
     /// <param name="settings">The candidate settings.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The save result.</returns>
-    ValueTask<PlannerSettingsSaveResult> SaveAsync(
-        PlannerSettings settings,
-        CancellationToken cancellationToken = default);
+    ValueTask<PlannerSettingsSaveResult> SaveAsync(PlannerSettings settings, CancellationToken cancellationToken = default);
 
     /// <summary>Resets one section to defaults.</summary>
     /// <param name="section">The section to reset.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The save result.</returns>
-    ValueTask<PlannerSettingsSaveResult> ResetSectionAsync(
-        PlannerSettingsSection section,
-        CancellationToken cancellationToken = default);
+    ValueTask<PlannerSettingsSaveResult> ResetSectionAsync(PlannerSettingsSection section, CancellationToken cancellationToken = default);
 
     /// <summary>Resets all settings to defaults.</summary>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -48,7 +46,5 @@ public interface IPlannerSettingsService
     /// <param name="document">The JSON document.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The import result.</returns>
-    ValueTask<PlannerSettingsImportResult> ImportAsync(
-        string document,
-        CancellationToken cancellationToken = default);
+    ValueTask<PlannerSettingsImportResult> ImportAsync(string document, CancellationToken cancellationToken = default);
 }
