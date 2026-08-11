@@ -22,6 +22,8 @@ Config > Planner now selects maps by stable source ID and groups choices as offl
 
 Approved offline-pack updates use a signed HTTPS feed of complete reviewed artifacts. Downloads are bounded, cancellable, progress-aware, compatibility-checked, checksum/pack-validated, staged, and atomically activated; downgrade, partial, disk, or validation failures retain the working version. Hosted tile URLs are never converted into pack downloads, and no Protomaps feed exists while vector support remains deferred.
 
+Map exports have a renderer-independent aggregate attribution footer API; no screenshot/static-image/PDF map exporter currently exists. Sanitized map diagnostics include source, policy, attribution, cache, pack, renderer, platform, and redacted failure context. The cross-platform interactive verification matrix is documented separately and left visibly pending where a supported host/device run has not occurred.
+
 
 
 ## MavLink

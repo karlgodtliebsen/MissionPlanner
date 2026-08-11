@@ -62,6 +62,8 @@ Custom map source definitions are non-secret Planner application data stored in 
 
 Optional Stadia, Thunderforest, and MapTiler sources appear disabled until the corresponding secure credential is configured. The settings presentation may show configured/not-configured state, reviewed policy/cache summary, attribution preview, and redacted last test result; it must never bind to or export the secret value.
 
+Map support diagnostics are separate from exported Planner settings. They contain stable source and policy metadata, cache size, active pack/version, renderer/platform versions, and a redacted last error. They contain only a credential-configured flag, never the credential itself or a signed URL.
+
 ## Live and restart-bound behavior
 
 Saved settings raise one observable change event containing previous/current immutable

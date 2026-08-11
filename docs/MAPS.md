@@ -91,3 +91,15 @@ Managed pack installation accepts only a versioned, signed feed retrieved over H
 Feed size and artifact size are bounded, requests use the common timeout/cancellation infrastructure, and progress is reported against the signed size. Compatibility and downgrade checks happen before download. The existing pack installer then performs checksum and MBTiles validation in staging and atomically activates the new version. Older versions are removed only after successful activation, so cancellation, partial content, hash/validation failure, disk-full errors, and incompatible renderers retain the previous working pack.
 
 No Protomaps feed is included because ADR-0006 deferred the vector renderer and Task 06 was not authorized. A future vector feed must include every offline style/font/sprite asset and reviewed notice before it can be added.
+
+## Export attribution and diagnostics
+
+The current `src/` application has no map screenshot, static-image, or PDF export path. `MapExportAttribution.CreateFooter` is therefore the required future integration point: an exporter must request the current aggregate snapshot and render its `OnExport` footer into the image or document whenever provider content is present. This API deduplicates display text and excludes screen-only entries.
+
+`MapDiagnosticSnapshotFactory` produces shareable JSON containing the selected source/provider/product, access/archive/payload formats, connectivity, credential-configured flag, policy ID/review date, attribution IDs, HTTP-cache size, active pack/version, Mapsui version, platform, and last source error. Error text passes through the standard secret/query redactor. Diagnostics never contain a credential, signed URL, or raw authorization response.
+
+## Verification and known limitations
+
+Automated map tests cover catalog validation, policy intersection, attribution aggregation/export, stable provider switching with overlay and viewport preservation, credential redaction, cache isolation, raster MBTiles offline operation, custom-source validation, hosted-provider offline denial, Esri attribution fallback, pack validation, signed-feed compatibility, and rollback.
+
+The manual Windows, Android, and Mac Catalyst verification checklist is maintained in [MAPS_PLATFORM_VERIFICATION.md](MAPS_PLATFORM_VERIFICATION.md). Windows compilation and deterministic tests are part of this change; interactive device checks remain explicitly pending until each target is run on its supported host/device. Vector/PMTiles is excluded under ADR-0006. WMS/WMTS support depends on server capabilities and remains raster-only. Mission Planner does not create packs from hosted providers, and HTTP cache is not a guaranteed offline pack.

@@ -13,6 +13,7 @@ Documentation lives in `docs/` and is organized into three categories: core docu
 | [ARCHITECTURE_DECISION_RECORDS.md](ARCHITECTURE_DECISION_RECORDS.md) | ADRs, naming conventions, data flow, future direction |
 | [FEATURES.md](FEATURES.md) | Feature status per area (domain, UI screens): implemented vs missing |
 | [MAPS.md](MAPS.md) | Map catalog, policy, attribution, offline, and renderer architecture |
+| [MAPS_PLATFORM_VERIFICATION.md](MAPS_PLATFORM_VERIFICATION.md) | Manual Windows, Android, and Mac Catalyst map verification matrix |
 
 ## Subsystem references
 
