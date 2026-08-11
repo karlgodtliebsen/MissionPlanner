@@ -14,6 +14,7 @@ Documentation lives in `docs/` and is organized into three categories: core docu
 | [FEATURES.md](FEATURES.md) | Feature status per area (domain, UI screens): implemented vs missing |
 | [MAPS.md](MAPS.md) | Map catalog, policy, attribution, offline, and renderer architecture |
 | [MAPS_PLATFORM_VERIFICATION.md](MAPS_PLATFORM_VERIFICATION.md) | Manual Windows, Android, and Mac Catalyst map verification matrix |
+| [MISSIONS.md](MISSIONS.md#mission-map-menu-feature-guide) | Mission-map menu ownership, safety, formats, and known limitations |
 
 ## Subsystem references
 

@@ -16,6 +16,7 @@ using MissionPlanner.Core.Missions.Files;
 using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Missions.Planning;
 using MissionPlanner.Core.Missions.Rally;
+using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -64,6 +65,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     private readonly IPoiService poiService;
     private readonly ITrackerHomeService trackerHomeService;
     private readonly IGeodeticCoordinateConverter geodeticConverter;
+    private readonly IReplaySessionManager replaySession;
     private IReadOnlyList<GeoPosition> generatedPreview = [];
     private MissionAltitude pendingRallyAltitude;
     private IReadOnlyList<ImportedPlanningOverlay> importedOverlays = [];
@@ -85,7 +87,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         IRallyConfigurationService rallyService, IRallyPlanFileCodec rallyFileCodec,
         IAutoWaypointGenerator autoWaypointGenerator, ISurveyMissionGenerator surveyMissionGenerator,
         IMapTilePrefetchService mapTilePrefetchService, IMissionElevationProfileService elevationProfileService,
-        IPoiService poiService, ITrackerHomeService trackerHomeService, IGeodeticCoordinateConverter geodeticConverter)
+        IPoiService poiService, ITrackerHomeService trackerHomeService, IGeodeticCoordinateConverter geodeticConverter,
+        IReplaySessionManager replaySession)
     {
         this.activeVehicle = activeVehicle;
         this.fileCodec = fileCodec;
@@ -115,6 +118,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         this.poiService = poiService;
         this.trackerHomeService = trackerHomeService;
         this.geodeticConverter = geodeticConverter;
+        this.replaySession = replaySession;
         pendingRallyAltitude = DefaultAltitude();
         polygonService.Changed += OnPolygonChanged;
         interactionService.Changed += OnInteractionChanged;
@@ -122,6 +126,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         rallyService.Changed += OnRallyChanged;
         poiService.Changed += OnPoiChanged;
         trackerHomeService.Changed += OnTrackerHomeChanged;
+        replaySession.Changed += OnReplaySessionChanged;
         _ = poiService.InitializeAsync();
         SelectedSourceId = settingsService.Current.Map.SelectedSourceId;
         MapSnapshot = MissionMapProjection.Create(Mission, HomePosition);
@@ -171,6 +176,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         rallyService.Changed -= OnRallyChanged;
         poiService.Changed -= OnPoiChanged;
         trackerHomeService.Changed -= OnTrackerHomeChanged;
+        replaySession.Changed -= OnReplaySessionChanged;
         disposed = true;
     }
 
@@ -374,7 +380,28 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     /// The map position the context menu actions operate on (where the user right-clicked/tapped).
     /// Updated by the view before the menu opens.
     /// </summary>
-    public GeoPosition? ContextPosition { get; private set; }
+    public GeoPosition? ContextPosition => MapContext?.Position;
+
+    /// <summary>Gets whether the current mission contains at least one item.</summary>
+    public bool HasMissionItems => Mission.Items.Count > 0;
+
+    /// <summary>Gets whether a polygon-dependent command has valid local input.</summary>
+    public bool HasPlanningPolygon => polygonService.Snapshot.Polygon is not null;
+
+    /// <summary>Gets whether a route-dependent command has at least two geographic mission items.</summary>
+    public bool HasMissionRoute => Mission.Items.Select(PositionOf).Count(position => position is not null) >= 2;
+
+    /// <summary>Gets whether an imported overlay can be cleared.</summary>
+    public bool HasImportedOverlay => importedOverlays.Count > 0;
+
+    /// <summary>Gets whether outbound fence and rally commands are safe to offer.</summary>
+    public bool CanUseVehicleCommands => activeVehicle.Current.IsOnline && !replaySession.Snapshot.IsTransmissionProhibited;
+
+    /// <summary>
+    /// Gets the explicit context snapshot used by location-sensitive commands. Pointer hover does
+    /// not replace this value; mouse context clicks and ordinary touch taps do.
+    /// </summary>
+    public MissionMapContext? MapContext { get; private set; }
 
     /// <summary>Gets the UI-neutral presentation state consumed by mission map views.</summary>
     [ObservableProperty]
@@ -408,7 +435,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     /// <summary>Records the map position the next context-menu action should apply to.</summary>
     public void SetContextPosition(double latitude, double longitude)
     {
-        ContextPosition = new GeoPosition(latitude, longitude);
+        MapContext = new(new GeoPosition(latitude, longitude), MissionMapContextSource.ContextClick, dateTimeProvider.UtcNow);
     }
 
     /// <summary>Updates the bindable geographic coordinate currently under the map pointer.</summary>
@@ -421,7 +448,6 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         PointerLongitude = longitude;
         UpdatePointerCoordinateText();
         PointerAltitude = altitudeMeters;
-        SetContextPosition(latitude, longitude);
     }
 
     private void UpdatePointerCoordinateText()
@@ -476,8 +502,15 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
 
     private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs e)
     {
-        dispatcher.Dispatch(() => UpdateVehicleStatus(e.Current));
+        dispatcher.Dispatch(() =>
+        {
+            UpdateVehicleStatus(e.Current);
+            OnPropertyChanged(nameof(CanUseVehicleCommands));
+        });
     }
+
+    private void OnReplaySessionChanged(object? sender, ReplaySessionChangedEventArgs args) =>
+        dispatcher.Dispatch(() => OnPropertyChanged(nameof(CanUseVehicleCommands)));
 
     private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
     {
@@ -509,7 +542,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     public void HandleMapClick(double latitude, double longitude)
     {
         var position = new GeoPosition(latitude, longitude);
-        ContextPosition = position;
+        MapContext = new(position, MissionMapContextSource.Tap, dateTimeProvider.UtcNow);
 
         var interactionMode = interactionService.State.Mode;
         if (interactionService.AcceptClick(position))
@@ -566,7 +599,11 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         });
     }
 
-    private void OnPolygonChanged(object? sender, EventArgs args) => dispatcher.Dispatch(UpdatePlanningOverlay);
+    private void OnPolygonChanged(object? sender, EventArgs args) => dispatcher.Dispatch(() =>
+    {
+        UpdatePlanningOverlay();
+        OnPropertyChanged(nameof(HasPlanningPolygon));
+    });
     private void OnFenceChanged(object? sender, EventArgs args) => dispatcher.Dispatch(UpdatePlanningOverlay);
     private void OnRallyChanged(object? sender, EventArgs args) => dispatcher.Dispatch(UpdatePlanningOverlay);
     private void OnPoiChanged(object? sender, EventArgs args) => dispatcher.Dispatch(UpdatePlanningOverlay);
@@ -775,6 +812,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         importedOverlays = imported.Features.Where(feature => feature.Positions.Count > 0)
             .Select(feature => new ImportedPlanningOverlay(feature.Name, feature.Positions, feature.Kind == GeospatialGeometryKind.Polygon)).ToArray();
         UpdatePlanningOverlay();
+        OnPropertyChanged(nameof(HasImportedOverlay));
         ShowStatus($"Overlay replaced with {importedOverlays.Count} imported features.");
     }
 
@@ -783,6 +821,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     {
         importedOverlays = [];
         UpdatePlanningOverlay();
+        OnPropertyChanged(nameof(HasImportedOverlay));
         ShowStatus("Imported overlay cleared.");
     }
 
@@ -1189,7 +1228,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         if (text is null) return;
         GeographicCoordinate geographic; try { geographic = geodeticConverter.ToGeographic(geodeticConverter.ParseUtm(text)); }
         catch (Exception exception) when (exception is FormatException or ArgumentOutOfRangeException) { ShowStatus(exception.Message); return; }
-        var position = new GeoPosition(geographic.Latitude, geographic.Longitude); ContextPosition = position;
+        var position = new GeoPosition(geographic.Latitude, geographic.Longitude);
+        MapContext = new(position, MissionMapContextSource.CoordinateEntry, dateTimeProvider.UtcNow);
         var choice = await choiceService.ChooseAsync($"Converted to {geographic.Latitude:F7}, {geographic.Longitude:F7}", ["Add waypoint here", "Center map here"], cancellationToken);
         if (choice == "Add waypoint here") AddWaypoint(position, "Waypoint added from UTM coordinate.");
         else if (choice == "Center map here") { MapCenterRequested?.Invoke(this, position); ShowStatus("Map centered on converted UTM coordinate."); }
@@ -1451,12 +1491,6 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private void NotImplemented(string feature)
-    {
-        ShowStatus($"{feature} is not implemented yet.");
-    }
-
-    [RelayCommand]
     private async Task CloseAsync(CancellationToken cancellationToken)
     {
         await domainEventHub.PublishDomainEventAsync(new EditorDisplayEvent("EditorClose"), cancellationToken);
@@ -1612,6 +1646,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         UpdateMapSnapshot();
         MissionChanged?.Invoke(this, new MissionEventArgs(message));
         ShowStatus(message);
+        OnPropertyChanged(nameof(HasMissionItems));
+        OnPropertyChanged(nameof(HasMissionRoute));
     }
 
     private void UpdateMapSnapshot()

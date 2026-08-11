@@ -27,7 +27,6 @@ public interface IAutoWaypointGenerator
 public sealed class AutoWaypointGenerator : IAutoWaypointGenerator
 {
     private const double EarthRadius = 6378137d;
-    private const int MaxGeneratedPoints = 1000;
     private static readonly IReadOnlyDictionary<char, (double X, double Y)[]> Glyphs = new Dictionary<char, (double, double)[]>
     {
         ['A'] = [(0,0),(0.5,1),(1,0),(0.75,0.5),(0.25,0.5)], ['B'] = [(0,0),(0,1),(0.7,1),(1,0.75),(0.7,0.5),(0,0.5),(0.7,0.5),(1,0.25),(0.7,0),(0,0)],
@@ -43,7 +42,7 @@ public sealed class AutoWaypointGenerator : IAutoWaypointGenerator
     /// <inheritdoc />
     public AutoWaypointGenerationResult GenerateCircle(CircleWaypointRequest request)
     {
-        if (!request.Center.IsValid || !double.IsFinite(request.RadiusMeters) || request.RadiusMeters <= 0 || request.PointCount is < 3 or > MaxGeneratedPoints)
+        if (!request.Center.IsValid || !double.IsFinite(request.RadiusMeters) || request.RadiusMeters <= 0 || request.PointCount is < 3 or > MissionPlanningLimits.MaximumGeneratedMissionItems)
             return Failure("Circle requires a valid center, positive radius, and 3-1000 points.");
         var positions = Enumerable.Range(0, request.PointCount).Select(index => Destination(request.Center, request.RadiusMeters,
             request.StartAngleDegrees + (request.Clockwise ? 1 : -1) * index * 360d / request.PointCount)).ToArray();
@@ -72,7 +71,7 @@ public sealed class AutoWaypointGenerator : IAutoWaypointGenerator
             if (!Glyphs.TryGetValue(character, out var glyph)) return Failure($"Character '{character}' is not supported by the stroke font.");
             local.AddRange(glyph.Select(point => (offset + point.X, point.Y))); offset += 1 + request.LetterSpacing;
         }
-        if (local.Count > MaxGeneratedPoints) return Failure("Generated text exceeds the 1000-point mission limit.");
+        if (local.Count > MissionPlanningLimits.MaximumTextGeneratorPoints) return Failure("Generated text exceeds the 1000-point mission limit.");
         var rotation = request.RotationDegrees * Math.PI / 180d;
         var positions = local.Select(point => Offset(request.Origin,
             request.HeightMeters * (point.X * Math.Cos(rotation) - point.Y * Math.Sin(rotation)),

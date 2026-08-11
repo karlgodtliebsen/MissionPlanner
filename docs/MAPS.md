@@ -114,6 +114,14 @@ Automated map tests cover catalog validation, policy intersection, attribution a
 
 The manual Windows, Android, and Mac Catalyst verification checklist is maintained in [MAPS_PLATFORM_VERIFICATION.md](MAPS_PLATFORM_VERIFICATION.md). Windows compilation and deterministic tests are part of this change; interactive device checks remain explicitly pending until each target is run on its supported host/device. Vector/PMTiles is excluded under ADR-0006. WMS/WMTS support depends on server capabilities and remains raster-only. Mission Planner does not create packs from hosted providers, and HTTP cache is not a guaranteed offline pack.
 
+Mission-map location commands consume an immutable `MissionMapContext` captured by a mouse context
+click or a primary touch tap. Pointer hover is presentation-only and cannot retarget a later menu
+operation. Vehicle-changing fence and rally entries are dynamically disabled when the active vehicle
+is offline or telemetry-log replay prohibits transmission; Core transfer policy remains the final
+safety boundary. Polygon, measurement, rotation, imports, POIs, coordinate conversion, and elevation
+analysis remain local operations. Central safety limits bound geospatial input/expansion, polygon and
+generated-route sizes, terrain samples, and provider-approved cache prefetch requests.
+
 The mission-map status-bar selector formats the pointer position as WGS84 geographic degrees (`GEO`), WGS84 UTM, or five-digit MGRS. UTM and MGRS cover 80°S through 84°N; outside that range the status bar reports that the selected notation is outside coverage.
 
 Mission-map pointer coordinates use Mapsui's `MapPointerMoved` event from the native map surface and are converted from its screen position through the active viewport. Latitude and longitude updates are throttled to 30 Hz and exposed immediately by the shared mission-map view model. Terrain elevation is resolved independently from cached SRTM HGT tiles: lookup starts only after the pointer rests for 250 ms, a newer movement cancels the older presentation result, downloads are coalesced and size-bounded, and files are cached below `Maps/Terrain/Srtm`. The view model exposes `Idle`, `Loading`, `Available`, `OutsideCoverage`, `NetworkUnavailable`, and `InvalidData` as typed states and the map status bar displays their readable form. Debug builds write the pointer generation, SRTM tile ID, state, and available elevation through `Debug.WriteLine`; Release builds omit those calls. Elevation is metres above mean sea level; unavailable, ocean, network, void, or corrupt data leaves the nullable altitude blank. Vehicle terrain telemetry is intentionally not reused because it describes only the vehicle's current location. The terrain dataset is sourced from the [AWS Open Data Terrain Tiles collection](https://registry.opendata.aws/terrain-tiles/) and retains its upstream SRTM/NASA provenance.

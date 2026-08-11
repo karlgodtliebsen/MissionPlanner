@@ -904,6 +904,25 @@ Completed
 * Tracker Home provides truthful session-local overlay state without a fake hardware path; typed
   UTM parsing/inverse conversion previews and supports waypoint insertion or map centering.
 
+### Mission Map menu parity audit
+
+All menu entries present in the new Mission Map XAML now bind to implemented behavior; no legacy
+WinForms-only features were added. “Implemented” means the service and command path exists,
+“runtime integrated” means the MAUI/Mapsui menu invokes it, and manual platform status remains in
+[MAPS_PLATFORM_VERIFICATION.md](MAPS_PLATFORM_VERIFICATION.md).
+
+| Menu item/group | Owner/service | Status | Tests | Known limitations |
+| --- | --- | --- | --- | --- |
+| Mission Items (WP, spline, loiter, jump, RTL, land, takeoff, ROI) | Mission aggregate and `IAdvancedMissionItemService` | Runtime integrated | Mission item, validator, file and protocol tests | Capability-aware spline enablement can be refined per firmware |
+| Polygon | `IPlanningPolygonService` | Runtime integrated | `PlanningPolygonServiceTests` | Session workspace; no global undo stack |
+| Geo-Fence | `IFenceConfigurationService` | Runtime integrated | fence geometry/configuration/codec tests | Vehicle operations unavailable offline and during replay |
+| Rally Points | `IRallyConfigurationService` | Runtime integrated | rally codec/protocol/workspace tests | Vehicle operations unavailable offline and during replay |
+| Auto WP / Survey | `IAutoWaypointGenerator`, `ISurveyMissionGenerator` | Runtime integrated | generator and survey tests | Preview uses explicit V1 inputs; camera inference deferred |
+| Map Tools | interaction, elevation and prefetch services | Runtime integrated | measurement, elevation, provider-policy tests | Visible prefetch uses a bounded context area pending viewport-boundary exposure |
+| Import / Overlay | `IGeospatialImportService` and mission codecs | Runtime integrated | KML/KMZ/SHP and mission-file tests | SHP CRS limited to documented WGS84 projections |
+| POI | `IPoiService` | Runtime integrated | `PoiServiceTests` | Edit/delete selects nearest context POI |
+| Location | tracker-home and geodetic services | Runtime integrated | `GeodeticCoordinateConverterTests` | Tracker home is session-local, not hardware control |
+
 * A deterministic inventory resolves the pinned official `ardupilotmega` dialect and its
   transitive includes without network access during normal builds or tests.
 * A generated frozen registry now supplies names, CRC extras, payload bounds, dialect

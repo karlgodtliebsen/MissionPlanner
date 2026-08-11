@@ -6,7 +6,6 @@ namespace MissionPlanner.Core.Missions.Planning;
 /// <summary>In-memory planning polygon workspace using local metre geometry.</summary>
 public sealed class PlanningPolygonService : IPlanningPolygonService
 {
-    private const int MaximumVertices = 20_000;
     private const int MaximumDocumentLength = 4 * 1024 * 1024;
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true };
 
@@ -122,7 +121,7 @@ public sealed class PlanningPolygonService : IPlanningPolygonService
     private static string? Validate(IReadOnlyList<GeoPosition> points)
     {
         if (points.Count < 3) return "A polygon requires at least three unique vertices.";
-        if (points.Count > MaximumVertices) return $"A polygon cannot exceed {MaximumVertices} vertices.";
+        if (points.Count > MissionPlanningLimits.MaximumPolygonVertices) return $"A polygon cannot exceed {MissionPlanningLimits.MaximumPolygonVertices} vertices.";
         if (points.Any(point => !point.IsValid)) return "Polygon coordinates must be finite and valid.";
         var origin = Centroid(points);
         var projected = points.Select(point => Project(point, origin)).ToArray();

@@ -12,6 +12,10 @@ This checklist records manual verification separately from deterministic automat
 | Plan mission editing and context actions | Not run | Not run | Not run |
 | Flight Data map and follow vehicle | Not run | Not run | Not run |
 | Pan, zoom, pointer/touch gestures | Not run | Not run | Not run |
+| Mission-map context menu with mouse/trackpad | Not run | N/A | Not run |
+| Mission-map location actions with primary touch tap | N/A | Not run | N/A |
+| Polygon, survey, fence, rally, POI, and UTM menu workflows | Not run | Not run | Not run |
+| Cancel import, profile, prefetch, and transfer operations | Not run | Not run | Not run |
 | Light and dark theme attribution/settings | Not run | Not run | Not run |
 | Network loss and source fallback | Not run | Not run | Not run |
 

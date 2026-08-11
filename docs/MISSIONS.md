@@ -410,6 +410,39 @@ standard ranges, converts through a typed WGS84 geodesy service, previews latitu
 explicitly adds a waypoint or centers the map. Northern and southern hemisphere round trips are
 covered by reference tests.
 
+## Mission-map menu feature guide
+
+The context menu is grouped by operator intent: **Mission Items**, **Polygon**, **Geo-Fence**,
+**Rally Points**, **Auto WP / Survey**, **Map Tools**, **Import / Overlay**, **POI**, and
+**Location**. A mouse context click or an ordinary touch tap captures one immutable
+`MissionMapContext`; pointer hover updates the status bar but cannot silently move the target of a
+later command. UTM coordinate entry creates its own explicit context after conversion.
+
+| Area | Implementation state | Runtime integration | Automated coverage | Important limits or safety rule |
+| --- | --- | --- | --- | --- |
+| Typed mission items, spline, jump, ROI | Implemented | Mission editor and file/protocol mappings | Item, validation, file and transfer tests | Vehicle capability validation remains conservative |
+| Planning polygon | Implemented | Stable local overlay | Polygon geometry/serialization tests | 20,000 vertices; local state only |
+| Geo-Fence | Implemented | Shared with Config/Tuning | Geometry, codec and fake-transfer tests | Vehicle writes require connection, confirmation, operation gate; replay writes denied |
+| Rally points | Implemented | Active-vehicle workspace | Codec, protocol and workspace tests | Separate `MAV_MISSION_TYPE_RALLY`; replay writes denied |
+| Auto WP and surveys | Implemented | Preview then Append/Replace | Circle, text and survey tests | 1,000 automatic items; 4,000 survey points |
+| KML/KMZ/SHP | Implemented | Mission, polygon, POI and overlay workflows | Deterministic import fixtures | 16 MiB input, 64 MiB expanded, 10,000 features, 500,000 vertices |
+| Measure, rotate, prefetch | Implemented | Mapsui presenter and provider-policy pipeline | Measurement and policy/prefetch tests | Prefetch is cancellable HTTP cache warming, at most 10,000 tiles; never creates a pack |
+| Elevation profile | Implemented | In-map graph using SRTM provider | Sampling/reference tests | At most 10,000 samples; missing terrain remains a gap |
+| POIs | Implemented | Persistent local overlay | Repository/service tests | Local only; nearest context target used for edit/delete |
+| Tracker Home and UTM | Implemented | Session overlay and coordinate-entry workflow | North/south UTM and state tests | Tracker Home does not command physical tracker hardware |
+
+Supported local files are `.waypoints`, `.txt`, `.mission`, `.mppolygon`, `.mpfence`,
+`.mprally`, `.kml`, `.kmz`, and `.shp` with a matching `.prj` (and optional `.dbf`). Mission,
+polygon, fence, rally, generated-route, and import mutations report dirty/local state through the
+existing status and workspace revisions. There is no general multi-feature undo stack yet:
+generated/imported mission replacement is previewed and confirmed, but operators should save a
+mission before a large replacement when reversible history is required.
+
+Implementation and deterministic runtime composition are verified by automated tests. Interactive
+Windows, Android, and Mac Catalyst checks are tracked separately in
+[MAPS_PLATFORM_VERIFICATION.md](MAPS_PLATFORM_VERIFICATION.md); unrun checks are not described as
+manually verified.
+
 ---
 
 ## Known gaps and next steps

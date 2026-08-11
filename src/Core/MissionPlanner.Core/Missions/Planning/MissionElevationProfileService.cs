@@ -38,7 +38,7 @@ public sealed class MissionElevationProfileService(IMissionTerrainElevationProvi
     /// <inheritdoc />
     public async Task<MissionElevationProfile> GenerateAsync(MissionElevationProfileRequest request, CancellationToken cancellationToken = default)
     {
-        if (request.SampleIntervalMeters <= 0 || request.MaximumSamples is < 2 or > 10000) throw new ArgumentOutOfRangeException(nameof(request));
+        if (request.SampleIntervalMeters <= 0 || request.MaximumSamples is < 2 or > MissionPlanningLimits.MaximumTerrainSamples) throw new ArgumentOutOfRangeException(nameof(request));
         var positioned = request.Mission.Items.Select(item => (Item: item, Position: Position(item), Altitude: Altitude(item))).Where(x => x.Position is not null && x.Altitude is not null).ToArray();
         if (positioned.Length < 2) return new([], [], 0, 0);
         var samples = new List<MissionElevationSample>(); var legs = new List<MissionElevationLeg>(); var cumulative = 0d;

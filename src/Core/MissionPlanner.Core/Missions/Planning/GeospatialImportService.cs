@@ -10,15 +10,10 @@ namespace MissionPlanner.Core.Missions.Planning;
 /// <summary>Bounded built-in KML/KMZ and common-CRS shapefile importer.</summary>
 public sealed class GeospatialImportService : IGeospatialImportService
 {
-    private const int MaxCompressedBytes = 16 * 1024 * 1024;
-    private const int MaxExpandedBytes = 64 * 1024 * 1024;
-    private const int MaxFeatures = 10_000;
-    private const int MaxVertices = 500_000;
-
     /// <inheritdoc />
     public GeospatialImportResult Import(GeospatialSource source)
     {
-        if (source.Content.Length > MaxCompressedBytes) return Failure("File exceeds the 16 MiB input limit.");
+        if (source.Content.Length > MissionPlanningLimits.MaximumImportedFileBytes) return Failure("File exceeds the 16 MiB input limit.");
         try
         {
             var extension = Path.GetExtension(source.FileName).ToLowerInvariant();
@@ -29,7 +24,7 @@ public sealed class GeospatialImportService : IGeospatialImportService
                 ".shp" => ReadShapefile(source),
                 _ => throw new InvalidDataException("Select a .kml, .kmz, or .shp file.")
             };
-            if (features.Count > MaxFeatures || features.Sum(feature => feature.Positions.Count) > MaxVertices)
+            if (features.Count > MissionPlanningLimits.MaximumGeospatialFeatures || features.Sum(feature => feature.Positions.Count) > MissionPlanningLimits.MaximumGeospatialVertices)
                 return Failure("Imported content exceeds feature or vertex limits.");
             var preview = new GeospatialImportPreview(features.Count(x => x.Kind == GeospatialGeometryKind.Point),
                 features.Count(x => x.Kind == GeospatialGeometryKind.LineString), features.Count(x => x.Kind == GeospatialGeometryKind.Polygon),
@@ -46,7 +41,7 @@ public sealed class GeospatialImportService : IGeospatialImportService
     private static List<GeospatialFeature> ReadKml(ReadOnlyMemory<byte> content)
     {
         using var stream = new MemoryStream(content.ToArray(), false);
-        using var reader = XmlReader.Create(stream, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null, MaxCharactersInDocument = MaxExpandedBytes });
+        using var reader = XmlReader.Create(stream, new XmlReaderSettings { DtdProcessing = DtdProcessing.Prohibit, XmlResolver = null, MaxCharactersInDocument = MissionPlanningLimits.MaximumExpandedGeospatialBytes });
         var document = XDocument.Load(reader, LoadOptions.None);
         XNamespace ns = "http://www.opengis.net/kml/2.2";
         var features = new List<GeospatialFeature>();
@@ -68,7 +63,7 @@ public sealed class GeospatialImportService : IGeospatialImportService
     {
         using var archive = new ZipArchive(new MemoryStream(content.ToArray(), false), ZipArchiveMode.Read);
         var entries = archive.Entries.Where(entry => entry.FullName.EndsWith(".kml", StringComparison.OrdinalIgnoreCase)).ToArray();
-        if (entries.Length != 1 || entries[0].Length > MaxExpandedBytes || entries[0].FullName.Contains("..", StringComparison.Ordinal))
+        if (entries.Length != 1 || entries[0].Length > MissionPlanningLimits.MaximumExpandedGeospatialBytes || entries[0].FullName.Contains("..", StringComparison.Ordinal))
             throw new InvalidDataException("KMZ must contain one bounded KML document without path traversal.");
         using var stream = entries[0].Open(); using var memory = new MemoryStream(); stream.CopyTo(memory);
         return ReadKml(memory.ToArray());

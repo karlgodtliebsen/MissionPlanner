@@ -27,7 +27,6 @@ public interface ISurveyMissionGenerator
 /// <summary>Local-tangent-plane grid and concentric survey generator.</summary>
 public sealed class SurveyMissionGenerator(IAutoWaypointGenerator circles) : ISurveyMissionGenerator
 {
-    private const int MaxPoints = 4000;
     /// <inheritdoc />
     public SurveyMissionResult GenerateGrid(GridSurveyRequest request)
     {
@@ -36,7 +35,7 @@ public sealed class SurveyMissionGenerator(IAutoWaypointGenerator circles) : ISu
         var routes = GenerateGridPass(request, request.AngleDegrees).ToList();
         if (request.CrossGrid) routes.AddRange(GenerateGridPass(request, request.AngleDegrees + 90));
         var preview = routes.SelectMany((leg, index) => index % 2 == 0 ? new[] { leg.Start, leg.End } : new[] { leg.End, leg.Start }).ToArray();
-        if (preview.Length is 0 or > MaxPoints) return Failure("Survey is empty or exceeds the 4000-point limit.");
+        if (preview.Length is 0 or > MissionPlanningLimits.MaximumSurveyPoints) return Failure("Survey is empty or exceeds the 4000-point limit.");
         var items = preview.Select(position => (MissionItem)new WaypointMissionItem(MissionItemId.New(), 0, position, request.Altitude, TimeSpan.Zero)).ToArray();
         var distance = preview.Zip(preview.Skip(1), Distance).Sum();
         var area = PolygonArea(request.Area.Vertices);
@@ -56,7 +55,7 @@ public sealed class SurveyMissionGenerator(IAutoWaypointGenerator circles) : ISu
             all.AddRange(ring.Items); preview.AddRange(ring.PreviewPositions);
             legs.AddRange(ring.PreviewPositions.Zip(ring.PreviewPositions.Skip(1).Append(ring.PreviewPositions[0]), (a, b) => new SurveyLeg(a, b)));
         }
-        if (all.Count > MaxPoints) return Failure("Circle survey exceeds the 4000-point limit.");
+        if (all.Count > MissionPlanningLimits.MaximumSurveyPoints) return Failure("Circle survey exceeds the 4000-point limit.");
         var distance = legs.Sum(leg => Distance(leg.Start, leg.End));
         return new(true, $"Generated {legs.Count / request.PointsPerRing} survey rings.", all, preview, legs,
             new(distance, all.Count, legs.Count, Math.PI * request.OuterRadiusMeters * request.OuterRadiusMeters));

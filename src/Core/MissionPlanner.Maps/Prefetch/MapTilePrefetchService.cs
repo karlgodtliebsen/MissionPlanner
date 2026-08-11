@@ -25,7 +25,6 @@ public interface IMapTilePrefetchService
 /// <summary>Default policy-aware XYZ cache warmer.</summary>
 public sealed class MapTilePrefetchService(IMapSourceResolver resolver, IMapPolicyEvaluator policies, IMapHttpResourceFetcher fetcher) : IMapTilePrefetchService
 {
-    private const int HardTileLimit = 10_000;
     /// <inheritdoc />
     public async ValueTask<MapPrefetchEstimate> EstimateAsync(MapPrefetchRequest request, CancellationToken cancellationToken = default)
     {
@@ -35,8 +34,8 @@ public sealed class MapTilePrefetchService(IMapSourceResolver resolver, IMapPoli
         var decision = policies.Evaluate(source.Definition, source.EffectivePolicy, MapOperation.BulkPrefetch);
         if (!decision.IsAllowed || source.Definition.AccessKind is not MapAccessKind.HttpXyz || string.Equals(source.Id, "osm-standard", StringComparison.OrdinalIgnoreCase))
             return new(false, decision.IsAllowed ? "This source is not an approved online XYZ bulk-prefetch source." : decision.Reason, 0, request.MinimumZoom, request.MaximumZoom);
-        var count = Enumerate(request).Take(HardTileLimit + 1).Count();
-        return count > HardTileLimit ? new(false, $"Request exceeds the {HardTileLimit} tile safety limit.", count, request.MinimumZoom, request.MaximumZoom)
+        var count = Enumerate(request).Take(MapPrefetchLimits.MaximumTiles + 1).Count();
+        return count > MapPrefetchLimits.MaximumTiles ? new(false, $"Request exceeds the {MapPrefetchLimits.MaximumTiles} tile safety limit.", count, request.MinimumZoom, request.MaximumZoom)
             : new(true, $"Provider policy '{decision.PolicyId}' allows online HTTP cache warming.", count, request.MinimumZoom, request.MaximumZoom);
     }
     /// <inheritdoc />
