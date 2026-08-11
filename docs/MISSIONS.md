@@ -308,6 +308,16 @@ Menu commands remain thin view-model entry points and delegate stateful work to 
 Native prompts, choices, file open/save, and notifications cross injectable application boundaries;
 Core planning and protocol services do not call MAUI dialogs or file pickers.
 
+### Advanced mission items
+
+Spline waypoints, `DO_JUMP`, and location ROI are typed mission items and round-trip through
+MAVLink mission transfer, QGC WPL, and MissionPlanner JSON files. New ROI locations use
+`MAV_CMD_DO_SET_ROI_LOCATION`; compatible legacy `DO_SET_ROI` location records are decoded and
+preserved. Jump targets are stored as explicit zero-based MAVLink sequences. Reordering or deleting
+rows does not silently retarget a jump: mission validation reports a stale, missing, or self target.
+The UI presents one-based row numbers, requires confirmation for repeat `-1`, and enforces
+ArduPilot's practical limit of 15 `DO_JUMP` commands.
+
 ---
 
 ## Known gaps and next steps

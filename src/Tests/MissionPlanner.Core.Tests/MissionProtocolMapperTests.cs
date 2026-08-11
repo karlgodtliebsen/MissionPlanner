@@ -35,7 +35,15 @@ public class MissionProtocolMapperTests
         new TakeoffMissionItem(MissionItemId.New(), 9, new GeoPosition(55.7, 10.7),
             new MissionAltitude(40, MissionAltitudeReference.Home)),
         new ChangeSpeedMissionItem(MissionItemId.New(), 10, MissionSpeedType.GroundSpeed, 12.5),
-        new ChangeSpeedMissionItem(MissionItemId.New(), 11, MissionSpeedType.Airspeed, 18, 75)
+        new ChangeSpeedMissionItem(MissionItemId.New(), 11, MissionSpeedType.Airspeed, 18, 75),
+        new SplineWaypointMissionItem(MissionItemId.New(), 12, new GeoPosition(55.8, 10.8),
+            new MissionAltitude(75, MissionAltitudeReference.Home), TimeSpan.FromSeconds(2)),
+        new JumpMissionItem(MissionItemId.New(), 13, 2, 4),
+        new JumpMissionItem(MissionItemId.New(), 14, 0, -1),
+        new RoiLocationMissionItem(MissionItemId.New(), 15, new GeoPosition(55.9, 10.9),
+            new MissionAltitude(60, MissionAltitudeReference.Home)),
+        new RoiLocationMissionItem(MissionItemId.New(), 16, new GeoPosition(56, 11),
+            new MissionAltitude(65, MissionAltitudeReference.MeanSeaLevel), true)
     };
 
     /// <summary>
@@ -64,7 +72,7 @@ public class MissionProtocolMapperTests
     {
         var waypoint = new WaypointMissionItem(MissionItemId.New(), 1, new GeoPosition(55, 10),
             new MissionAltitude(100, MissionAltitudeReference.Home), TimeSpan.Zero);
-        var protocol = mapper.ToProtocol(waypoint, MissionPlanType.FlightMission) with { Command = 177 };
+        var protocol = mapper.ToProtocol(waypoint, MissionPlanType.FlightMission) with { Command = 999 };
 
         var act = () => mapper.FromProtocol(protocol);
 

@@ -30,6 +30,12 @@ public sealed class MissionProtocolMapper : IMissionProtocolMapper
                 x.Time is not null ? (float)x.Time.Value.TotalSeconds : (float)(x.Turns ?? 0), 0,
                 (float)(x.RadiusMeters ?? 0), (float)(x.DesiredYawDegrees ?? float.NaN),
                 x.Position, (float)x.Altitude.Meters, missionType),
+            SplineWaypointMissionItem x => New(x, (float)x.HoldTime.TotalSeconds, 0, 0, float.NaN,
+                x.Position, (float)x.Altitude.Meters, missionType),
+            JumpMissionItem x => New(x, x.TargetSequence, x.RepeatCount, 0, 0,
+                new GeoPosition(0, 0), 0, missionType),
+            RoiLocationMissionItem x => New(x, x.UseLegacyCommand ? 3 : 0, 0, 0, 0,
+                x.Position, (float)x.Altitude.Meters, missionType),
             var _ => throw new NotSupportedException(item.GetType().Name)
         };
     }
@@ -39,7 +45,9 @@ public sealed class MissionProtocolMapper : IMissionProtocolMapper
     {
         var id = MissionItemId.New();
         var position = new GeoPosition(item.X / 1e7, item.Y / 1e7);
-        var altitude = new MissionAltitude(item.Z, Frame(item).ToAltitudeReference());
+        var altitude = (MissionCommand)item.Command == MissionCommand.Jump
+            ? default
+            : new MissionAltitude(item.Z, Frame(item).ToAltitudeReference());
 
         return (MissionCommand)item.Command switch
         {
@@ -62,6 +70,14 @@ public sealed class MissionProtocolMapper : IMissionProtocolMapper
             MissionCommand.ChangeSpeed => new ChangeSpeedMissionItem(id, item.Sequence,
                 (MissionSpeedType)(byte)item.Param1, item.Param2,
                 item.Param3 < 0 ? null : item.Param3, item.AutoContinue),
+            MissionCommand.SplineWaypoint => new SplineWaypointMissionItem(id, item.Sequence, position, altitude,
+                TimeSpan.FromSeconds(item.Param1), item.AutoContinue),
+            MissionCommand.Jump => new JumpMissionItem(id, item.Sequence, checked((ushort)item.Param1),
+                checked((int)item.Param2), item.AutoContinue),
+            MissionCommand.SetRoiLocation => new RoiLocationMissionItem(id, item.Sequence, position, altitude,
+                false, item.AutoContinue),
+            MissionCommand.SetRoi when item.Param1 == 3 => new RoiLocationMissionItem(id, item.Sequence, position,
+                altitude, true, item.AutoContinue),
             var _ => throw new NotSupportedException($"Mission command {item.Command} is not supported.")
         };
     }

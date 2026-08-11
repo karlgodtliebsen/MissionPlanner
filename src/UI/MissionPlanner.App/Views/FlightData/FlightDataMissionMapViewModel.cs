@@ -4,6 +4,7 @@ using MissionPlanner.App.Views.Missions;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Planning;
+using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
@@ -17,8 +18,10 @@ public partial class FlightDataMissionMapViewModel : MissionMapViewModel
     public FlightDataMissionMapViewModel(IActiveVehicleContext activeVehicle, IMissionProtocolMapper protocolMapper,
         IFileSaver fileSaver, IPlannerSettingsService settingsService, IMissionFileCodec fileCodec,
         IDomainEventHub domainEventHub, IDispatcher dispatcher, IDateTimeProvider dateTimeProvider, ILogger<MissionMapViewModel> logger,
-        IMissionMapInteractionService interactionService)
-        : base(activeVehicle, protocolMapper, fileSaver, settingsService, fileCodec, domainEventHub, dispatcher, dateTimeProvider, logger, interactionService)
+        IMissionMapInteractionService interactionService, IAdvancedMissionItemService advancedMissionItems,
+        IUserPromptService promptService, IUserConfirmationService confirmationService)
+        : base(activeVehicle, protocolMapper, fileSaver, settingsService, fileCodec, domainEventHub, dispatcher, dateTimeProvider, logger,
+            interactionService, advancedMissionItems, promptService, confirmationService)
     {
     }
 }

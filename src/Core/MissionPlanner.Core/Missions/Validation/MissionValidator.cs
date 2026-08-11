@@ -49,8 +49,26 @@ public sealed class MissionValidator : IMissionValidator
                     when !o.Position.IsValid:
                     issues.Add(new MissionValidationIssue(MissionValidationSeverity.Error, o.Id, "loiter.position", "Loiter coordinates are invalid."));
                     break;
+                case SplineWaypointMissionItem spline when !spline.Position.IsValid:
+                    issues.Add(new MissionValidationIssue(MissionValidationSeverity.Error, spline.Id, "spline.position", "Spline waypoint coordinates are invalid."));
+                    break;
+                case RoiLocationMissionItem roi when !roi.Position.IsValid:
+                    issues.Add(new MissionValidationIssue(MissionValidationSeverity.Error, roi.Id, "roi.position", "ROI coordinates are invalid."));
+                    break;
+                case JumpMissionItem jump when jump.TargetSequence >= mission.Items.Count:
+                    issues.Add(new MissionValidationIssue(MissionValidationSeverity.Error, jump.Id, "jump.target", "DO_JUMP target does not exist after mission editing."));
+                    break;
+                case JumpMissionItem jump when jump.TargetSequence == jump.Sequence:
+                    issues.Add(new MissionValidationIssue(MissionValidationSeverity.Error, jump.Id, "jump.self", "DO_JUMP cannot target itself."));
+                    break;
+                case JumpMissionItem jump when jump.RepeatCount < -1:
+                    issues.Add(new MissionValidationIssue(MissionValidationSeverity.Error, jump.Id, "jump.repeat", "DO_JUMP repeat count must be -1, zero, or positive."));
+                    break;
             }
         }
+
+        if (mission.Items.Count(item => item is JumpMissionItem) > JumpMissionItem.ArduPilotCommandLimit)
+            issues.Add(new MissionValidationIssue(MissionValidationSeverity.Error, null, "jump.limit", $"ArduPilot supports at most {JumpMissionItem.ArduPilotCommandLimit} DO_JUMP commands."));
 
         return new MissionValidationResult(issues);
     }

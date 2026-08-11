@@ -22,6 +22,7 @@ using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Missions;
 using MissionPlanner.Maps.Coordinates;
 using MissionPlanner.Maps.Terrain;
+using MissionPlanner.App.Presentation;
 
 namespace MissionPlanner.App.Views.Missions;
 
@@ -41,6 +42,9 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     private readonly IDateTimeProvider dateTimeProvider;
     private readonly ILogger<MissionMapViewModel> logger;
     private readonly IMissionMapInteractionService interactionService;
+    private readonly IAdvancedMissionItemService advancedMissionItems;
+    private readonly IUserPromptService promptService;
+    private readonly IUserConfirmationService confirmationService;
     private IDisposable? stateSubscription;
     private bool disposed;
 
@@ -51,7 +55,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         IFileSaver fileSaver, IPlannerSettingsService settingsService,
         IMissionFileCodec fileCodec, IDomainEventHub domainEventHub, IDispatcher dispatcher,
         IDateTimeProvider dateTimeProvider, ILogger<MissionMapViewModel> logger,
-        IMissionMapInteractionService interactionService)
+        IMissionMapInteractionService interactionService, IAdvancedMissionItemService advancedMissionItems,
+        IUserPromptService promptService, IUserConfirmationService confirmationService)
     {
         this.activeVehicle = activeVehicle;
         this.fileCodec = fileCodec;
@@ -62,6 +67,9 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         this.dateTimeProvider = dateTimeProvider;
         this.logger = logger;
         this.interactionService = interactionService;
+        this.advancedMissionItems = advancedMissionItems;
+        this.promptService = promptService;
+        this.confirmationService = confirmationService;
         interactionService.Changed += OnInteractionChanged;
         SelectedSourceId = settingsService.Current.Map.SelectedSourceId;
         MapSnapshot = MissionMapProjection.Create(Mission, HomePosition);
@@ -274,13 +282,17 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         ("RETURN_TO_LAUNCH", 20),
         ("LAND", 21),
         ("TAKEOFF", 22),
-        ("DO_CHANGE_SPEED", 178)
+        ("SPLINE_WAYPOINT", 82),
+        ("DO_JUMP", 177),
+        ("DO_CHANGE_SPEED", 178),
+        ("DO_SET_ROI_LOCATION", 195)
     ];
 
     /// <summary>Altitude frames selectable in the waypoint editor (v1.38 altmode naming).</summary>
     private static readonly (string Name, byte Id)[] frameDefinitions =
     [
         ("Absolute", 0),
+        ("Mission", 2),
         ("Relative", 3),
         ("Terrain", 10)
     ];
@@ -498,6 +510,75 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
+    private void InsertSplineWaypoint()
+    {
+        if (TargetPosition() is not { } position)
+        {
+            ShowStatus("No map position selected.");
+            return;
+        }
+        ApplyAdvancedResult(advancedMissionItems.AddSplineWaypoint(Mission, position, DefaultAltitude()), "Spline waypoint added.");
+    }
+
+    [RelayCommand]
+    private async Task JumpToStartAsync(CancellationToken cancellationToken)
+    {
+        var repeat = await PromptRepeatCountAsync(cancellationToken);
+        if (repeat is not null)
+            ApplyAdvancedResult(advancedMissionItems.AddJumpToStart(Mission, repeat.Value), "DO_JUMP to mission start added.");
+    }
+
+    [RelayCommand]
+    private async Task JumpToWaypointAsync(CancellationToken cancellationToken)
+    {
+        var targetText = await promptService.PromptAsync("Jump to waypoint", "Target mission row (1-based)", "1", cancellationToken);
+        if (!ushort.TryParse(targetText, NumberStyles.Integer, CultureInfo.CurrentCulture, out var displayTarget) || displayTarget == 0)
+        {
+            if (targetText is not null)
+                ShowStatus("Enter an existing mission row number.");
+            return;
+        }
+        var repeat = await PromptRepeatCountAsync(cancellationToken);
+        if (repeat is not null)
+            ApplyAdvancedResult(advancedMissionItems.AddJump(Mission, (ushort)(displayTarget - 1), repeat.Value), $"DO_JUMP to row {displayTarget} added.");
+    }
+
+    [RelayCommand]
+    private void SetRoiHere()
+    {
+        if (TargetPosition() is not { } position)
+        {
+            ShowStatus("No map position selected.");
+            return;
+        }
+        ApplyAdvancedResult(advancedMissionItems.AddRoiLocation(Mission, position, DefaultAltitude()), "ROI location added.");
+    }
+
+    private async Task<int?> PromptRepeatCountAsync(CancellationToken cancellationToken)
+    {
+        var text = await promptService.PromptAsync("DO_JUMP", "Repeat count (use -1 for infinite)", "1", cancellationToken);
+        if (!int.TryParse(text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var repeat) || repeat < -1)
+        {
+            if (text is not null)
+                ShowStatus("Repeat count must be -1, zero, or positive.");
+            return null;
+        }
+        if (repeat == -1 && !await confirmationService.ConfirmAsync("Infinite DO_JUMP", "This jump repeats indefinitely until the flight mode changes. Add it?", "Add", cancellationToken))
+            return null;
+        return repeat;
+    }
+
+    private void ApplyAdvancedResult(MissionMapCommandAvailability result, string successMessage)
+    {
+        if (!result.IsEnabled)
+        {
+            ShowStatus(result.Reason ?? "The mission item could not be added.");
+            return;
+        }
+        OnMissionChanged(successMessage);
+    }
+
+    [RelayCommand]
     private void InsertWaypointAtVehicle()
     {
         var position = new GeoPosition(VehicleLatitude, VehicleLongitude);
@@ -666,6 +747,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
                 WaypointMissionItem x => x with { Altitude = newAltitude },
                 TakeoffMissionItem x => x with { Altitude = newAltitude },
                 LoiterMissionItem x => x with { Altitude = newAltitude },
+                SplineWaypointMissionItem x => x with { Altitude = newAltitude },
+                RoiLocationMissionItem x => x with { Altitude = newAltitude },
                 var _ => null
             };
             if (replacement is not null)
@@ -868,6 +951,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
             LandMissionItem x => x.Position,
             LoiterMissionItem x => x.Position,
             TakeoffMissionItem x => x.Position,
+            SplineWaypointMissionItem x => x.Position,
+            RoiLocationMissionItem x => x.Position,
             var _ => null
         };
     }
@@ -880,6 +965,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
             LandMissionItem x => x.Altitude,
             LoiterMissionItem x => x.Altitude,
             TakeoffMissionItem x => x.Altitude,
+            SplineWaypointMissionItem x => x.Altitude,
+            RoiLocationMissionItem x => x.Altitude,
             var _ => null
         };
     }

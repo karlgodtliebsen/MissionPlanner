@@ -370,12 +370,10 @@ slice implements them.
 * File Load/Save → Load WP File, Load and Append, Save WP File (.waypoints/.txt QGC WPL, .mission JSON)
 * Modify Alt (all items + default)
 * Set Home Here
+* Insert Spline WP; Jump to Start / WP #; Set ROI Here. These use typed spline, DO_JUMP, and modern ROI-location mission items and retain file/wire semantics.
 
 ### Missing (stubbed — menu item present, shows "not implemented yet" toast)
 
-* Insert Spline WP (needs spline command in `MissionCommand` + domain item)
-* Jump → Start / WP # (needs DO_JUMP=177 in `MissionCommand`)
-* DO_SET_ROI (needs ROI command in `MissionCommand`)
 * Polygon → Draw / Clear / Save / Load / From SHP / From Current Waypoints / Offset / Area
 * Geo-Fence → Upload / Download / Set Return Location / Load from File / Save to File / Clear
 * Rally Points → Set / Download / Upload / Clear / Save to File / Load from File

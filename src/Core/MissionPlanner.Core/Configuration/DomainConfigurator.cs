@@ -14,6 +14,7 @@ using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Missions;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Files;
+using MissionPlanner.Core.Missions.Planning;
 using MissionPlanner.Core.Missions.Transfer;
 using MissionPlanner.Core.Missions.Validation;
 using MissionPlanner.Core.Notifications;
@@ -69,6 +70,7 @@ public static class DomainConfigurator
         services.TryAddTransient<IMissionProtocolMapper, MissionProtocolMapper>();
         services.TryAddTransient<IMissionValidator, MissionValidator>();
         services.TryAddTransient<IMissionFileCodec, MissionFileCodec>();
+        services.TryAddTransient<IAdvancedMissionItemService, AdvancedMissionItemService>();
         services.TryAddSingleton<IFenceProtocolMapper, FenceProtocolMapper>();
         services.TryAddSingleton<IFenceGeometryValidator, FenceGeometryValidator>();
         services.TryAddSingleton<IFenceConfigurationService, FenceConfigurationService>();

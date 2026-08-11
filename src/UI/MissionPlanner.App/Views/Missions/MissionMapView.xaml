@@ -21,7 +21,7 @@
                         <MenuFlyoutItem Text="Here" Command="{Binding InsertWaypointCommand}" />
                         <MenuFlyoutItem Text="At Current Position" Command="{Binding InsertWaypointAtVehicleCommand}" />
                     </MenuFlyoutSubItem>
-                    <MenuFlyoutItem Text="Insert Spline WP" Command="{Binding NotImplementedCommand}" CommandParameter="Insert Spline WP" />
+                    <MenuFlyoutItem Text="Insert Spline WP" Command="{Binding InsertSplineWaypointCommand}" />
 
                     <MenuFlyoutSubItem Text="Loiter">
                         <MenuFlyoutItem Text="Forever" Command="{Binding LoiterForeverCommand}" />
@@ -30,14 +30,14 @@
                     </MenuFlyoutSubItem>
 
                     <MenuFlyoutSubItem Text="Jump">
-                        <MenuFlyoutItem Text="Start" Command="{Binding NotImplementedCommand}" CommandParameter="Jump to Start" />
-                        <MenuFlyoutItem Text="WP #" Command="{Binding NotImplementedCommand}" CommandParameter="Jump to WP #" />
+                        <MenuFlyoutItem Text="Start" Command="{Binding JumpToStartCommand}" />
+                        <MenuFlyoutItem Text="WP #" Command="{Binding JumpToWaypointCommand}" />
                     </MenuFlyoutSubItem>
 
                     <MenuFlyoutItem Text="RTL" Command="{Binding AddReturnToLaunchCommand}" />
                     <MenuFlyoutItem Text="Land" Command="{Binding AddLandCommand}" />
                     <MenuFlyoutItem Text="Takeoff" Command="{Binding AddTakeoffCommand}" />
-                    <MenuFlyoutItem Text="DO_SET_ROI" Command="{Binding NotImplementedCommand}" CommandParameter="DO_SET_ROI" />
+                    <MenuFlyoutItem Text="Set ROI Here" Command="{Binding SetRoiHereCommand}" />
                     <MenuFlyoutItem Text="Clear Mission" Command="{Binding ClearMissionCommand}" />
 
                     <MenuFlyoutSeparator />

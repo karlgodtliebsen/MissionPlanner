@@ -33,10 +33,18 @@ public enum MissionCommand : ushort
     /// Provides the public API for Takeoff.
     /// </summary>
     Takeoff = 22,
+    /// <summary>Follows a spline path through the waypoint.</summary>
+    SplineWaypoint = 82,
+    /// <summary>Jumps mission execution to another sequence.</summary>
+    Jump = 177,
     /// <summary>
     /// Provides the public API for ChangeSpeed.
     /// </summary>
     ChangeSpeed = 178,
+    /// <summary>Points a region of interest at a geographic location.</summary>
+    SetRoiLocation = 195,
+    /// <summary>Legacy region-of-interest command retained for compatible decoding.</summary>
+    SetRoi = 201,
     /// <summary>
     /// Provides the public API for SetRelay.
     /// </summary>

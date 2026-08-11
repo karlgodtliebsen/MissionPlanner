@@ -153,6 +153,9 @@ public sealed class Mission
             ReturnToLaunchMissionItem x => x with { Sequence = sequence },
             ChangeSpeedMissionItem x => x with { Sequence = sequence },
             LoiterMissionItem x => x with { Sequence = sequence },
+            SplineWaypointMissionItem x => x with { Sequence = sequence },
+            JumpMissionItem x => x with { Sequence = sequence },
+            RoiLocationMissionItem x => x with { Sequence = sequence },
             var _ => throw new NotSupportedException(item.GetType().Name)
         };
     }

@@ -21,6 +21,11 @@ public class MissionFileCodecTests
         mission.Add(new LoiterMissionItem(MissionItemId.New(), 0, new GeoPosition(55.2, 10.8),
             new MissionAltitude(80, MissionAltitudeReference.Home), Time: TimeSpan.FromSeconds(30)));
         mission.Add(new ReturnToLaunchMissionItem(MissionItemId.New(), 0));
+        mission.Add(new SplineWaypointMissionItem(MissionItemId.New(), 0, new GeoPosition(55.3, 10.9),
+            new MissionAltitude(90, MissionAltitudeReference.Home), TimeSpan.Zero));
+        mission.Add(new JumpMissionItem(MissionItemId.New(), 0, 1, 2));
+        mission.Add(new RoiLocationMissionItem(MissionItemId.New(), 0, new GeoPosition(55.4, 11),
+            new MissionAltitude(70, MissionAltitudeReference.Home)));
         return mission;
     }
 
@@ -94,7 +99,7 @@ public class MissionFileCodecTests
             { "sequence": 0, "command": 16, "frame": 3, "autoContinue": true,
               "param1": 0, "param2": 0, "param3": 0, "param4": 0,
               "latitude": 55.0, "longitude": 10.0, "altitudeMeters": 50 },
-            { "sequence": 1, "command": 177, "frame": 3, "autoContinue": true,
+            { "sequence": 1, "command": 999, "frame": 3, "autoContinue": true,
               "param1": 0, "param2": 0, "param3": 0, "param4": 0,
               "latitude": 0, "longitude": 0, "altitudeMeters": 0 }
           ]

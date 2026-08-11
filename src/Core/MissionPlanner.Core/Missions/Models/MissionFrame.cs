@@ -9,6 +9,8 @@ public enum MissionFrame : byte
     /// Provides the public API for Global.
     /// </summary>
     Global = 0,
+    /// <summary>Mission-command frame for commands without a geographic position.</summary>
+    Mission = 2,
     /// <summary>
     /// Provides the public API for GlobalRelativeAltitude.
     /// </summary>

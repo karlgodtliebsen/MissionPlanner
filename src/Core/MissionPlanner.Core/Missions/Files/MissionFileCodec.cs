@@ -201,6 +201,8 @@ public sealed class MissionFileCodec(IMissionProtocolMapper protocolMapper) : IM
             LandMissionItem x => x.Position,
             LoiterMissionItem x => x.Position,
             TakeoffMissionItem x => x.Position,
+            SplineWaypointMissionItem x => x.Position,
+            RoiLocationMissionItem x => x.Position,
             var _ => null
         };
     }
