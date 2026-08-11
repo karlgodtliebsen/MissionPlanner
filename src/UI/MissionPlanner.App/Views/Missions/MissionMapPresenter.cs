@@ -76,9 +76,9 @@ internal sealed class MissionMapPresenter : IDisposable
         lifecycleCancellation?.Cancel();
         lifecycleCancellation?.Dispose();
         lifecycleCancellation = null;
-        pointerElevationCancellation?.Cancel();
-        pointerElevationCancellation?.Dispose();
+        var elevationCancellation = pointerElevationCancellation;
         pointerElevationCancellation = null;
+        elevationCancellation?.Cancel();
     }
 
     /// <summary>Forwards a geographic primary click to the mission editor.</summary>
@@ -106,6 +106,7 @@ internal sealed class MissionMapPresenter : IDisposable
         var world = viewport.ScreenToWorld(x, y);
         var (longitude, latitude) = SphericalMercator.ToLonLat(world.X, world.Y);
         viewModel.SetPointerPosition(latitude, longitude, altitudeMeters: null);
+        viewModel.SetPointerElevationStatus(TerrainElevationStatus.Loading);
         RequestPointerElevation(latitude, longitude);
     }
 
@@ -175,38 +176,46 @@ internal sealed class MissionMapPresenter : IDisposable
     private void RequestPointerElevation(double latitude, double longitude)
     {
         var generation = ++pointerGeneration;
-        pointerElevationCancellation?.Cancel();
-        pointerElevationCancellation?.Dispose();
-        pointerElevationCancellation = new CancellationTokenSource();
-        _ = UpdatePointerElevationAsync(latitude, longitude, generation, pointerElevationCancellation.Token);
+        Debug.WriteLine($"[Terrain] generation={generation} status=Loading latitude={latitude:F7} longitude={longitude:F7}");
+        _ = UpdatePointerElevationAsync(latitude, longitude, generation);
     }
 
-    private async Task UpdatePointerElevationAsync(double latitude, double longitude, long generation, CancellationToken cancellationToken)
+    private async Task UpdatePointerElevationAsync(double latitude, double longitude, long generation)
     {
+        CancellationTokenSource? lookupCancellation = null;
         try
         {
-            await Task.Delay(250, cancellationToken);
-            var elevation = await terrainElevationService.GetElevationMetersAsync(latitude, longitude, cancellationToken);
+            // Generation-based debounce avoids a first-chance TaskCanceledException for every pointer event.
+            await Task.Delay(250);
             if (generation != pointerGeneration || disposed)
+            {
+                Debug.WriteLine($"[Terrain] generation={generation} status=SupersededBeforeLookup");
                 return;
+            }
+
+            pointerElevationCancellation?.Cancel();
+            lookupCancellation = new CancellationTokenSource();
+            pointerElevationCancellation = lookupCancellation;
+            var result = await terrainElevationService.GetElevationAsync(latitude, longitude, lookupCancellation.Token);
+            if (generation != pointerGeneration || disposed)
+            {
+                Debug.WriteLine($"[Terrain] generation={generation} tile={result.TileId ?? "none"} status=Superseded");
+                return;
+            }
+            Debug.WriteLine($"[Terrain] generation={generation} tile={result.TileId ?? "none"} status={result.Status} elevation={result.ElevationMeters?.ToString("F1") ?? "null"}");
             await new MauiMapUiDispatcher(mapView.Dispatcher).InvokeAsync(
-                () => viewModel.SetPointerPosition(latitude, longitude, elevation), cancellationToken);
+                () => viewModel.SetPointerElevation(result), lookupCancellation.Token);
         }
         catch (OperationCanceledException)
         {
+            Debug.WriteLine($"[Terrain] generation={generation} status=Cancelled");
             // Pointer movement, view deactivation, or the bounded HTTP client cancelled the lookup.
         }
-        catch (HttpRequestException)
+        finally
         {
-            // Terrain is optional; latitude and longitude remain available offline.
-        }
-        catch (InvalidDataException)
-        {
-            // Ignore an invalid terrain tile and retain the coordinate display.
-        }
-        catch (IOException)
-        {
-            // Terrain cache I/O is optional and must not affect map interaction.
+            if (ReferenceEquals(pointerElevationCancellation, lookupCancellation))
+                pointerElevationCancellation = null;
+            lookupCancellation?.Dispose();
         }
     }
 

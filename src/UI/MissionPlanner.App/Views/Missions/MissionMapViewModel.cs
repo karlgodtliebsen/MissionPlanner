@@ -19,6 +19,7 @@ using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Missions;
+using MissionPlanner.Maps.Terrain;
 
 namespace MissionPlanner.App.Views.Missions;
 
@@ -151,6 +152,18 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     /// <summary>Gets the altitude currently under the map pointer.</summary>
     [ObservableProperty]
     public partial double? PointerAltitude { get; private set; }
+
+    /// <summary>Gets the typed state of the current pointer terrain lookup.</summary>
+    [ObservableProperty]
+    public partial TerrainElevationStatus PointerAltitudeStatus { get; private set; } = TerrainElevationStatus.Idle;
+
+    /// <summary>Gets the user-facing pointer terrain status.</summary>
+    [ObservableProperty]
+    public partial string PointerAltitudeStatusText { get; private set; } = string.Empty;
+
+    /// <summary>Gets whether pointer terrain status should be displayed.</summary>
+    [ObservableProperty]
+    public partial bool HasPointerAltitudeStatus { get; private set; }
 
     /// <summary>Gets the compact or expanded attribution displayed over the map.</summary>
     [ObservableProperty]
@@ -309,6 +322,37 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         PointerLongitude = longitude;
         PointerAltitude = altitudeMeters;
         SetContextPosition(latitude, longitude);
+    }
+
+    /// <summary>Updates the typed terrain status while a pointer lookup is in progress.</summary>
+    public void SetPointerElevationStatus(TerrainElevationStatus status)
+    {
+        PointerAltitude = null;
+        ApplyPointerElevationStatus(status, null);
+    }
+
+    /// <summary>Applies a completed typed terrain result to the pointer presentation.</summary>
+    public void SetPointerElevation(TerrainElevationResult result)
+    {
+        PointerAltitude = result.ElevationMeters;
+        ApplyPointerElevationStatus(result.Status, result.Message);
+    }
+
+    private void ApplyPointerElevationStatus(TerrainElevationStatus status, string? message)
+    {
+        PointerAltitudeStatus = status;
+        PointerAltitudeStatusText = status switch
+        {
+            TerrainElevationStatus.Loading => "Terrain: loading",
+            TerrainElevationStatus.Available => "Terrain: available",
+            TerrainElevationStatus.OutsideCoverage => "Terrain: outside coverage",
+            TerrainElevationStatus.NetworkUnavailable => "Terrain: network unavailable",
+            TerrainElevationStatus.InvalidData => "Terrain: invalid data",
+            _ => string.Empty
+        };
+        if (!string.IsNullOrWhiteSpace(message) && status is not TerrainElevationStatus.Available)
+            PointerAltitudeStatusText += $" ({message})";
+        HasPointerAltitudeStatus = status != TerrainElevationStatus.Idle;
     }
 
     private void UpdateVehicleStatus(ActiveVehicleSnapshot snapshot)

@@ -170,6 +170,10 @@
                 IsVisible="{Binding HasAltitueMessage}"
             Text="{Binding PointerAltitude, StringFormat='Alt: {0:F1} m'}"
             VerticalOptions="Center" />
+            <Label
+                IsVisible="{Binding HasPointerAltitudeStatus}"
+                Text="{Binding PointerAltitudeStatusText}"
+                VerticalOptions="Center" />
 
             <Label Text="•" FontSize="16"  VerticalOptions="Center" IsVisible="{Binding HasStatusMessage}"/>
 

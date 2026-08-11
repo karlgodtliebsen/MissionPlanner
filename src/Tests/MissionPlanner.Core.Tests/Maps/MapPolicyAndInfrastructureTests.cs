@@ -1,4 +1,5 @@
 using System.Net;
+using System.IO.Compression;
 using FluentAssertions;
 using MissionPlanner.Maps.Attribution;
 using MissionPlanner.Maps.Catalog;
@@ -6,6 +7,7 @@ using MissionPlanner.Maps.Credentials;
 using MissionPlanner.Maps.Http;
 using MissionPlanner.Maps.Policy;
 using MissionPlanner.Maps.Terrain;
+using NSubstitute;
 
 namespace MissionPlanner.Core.Tests.Maps;
 
@@ -26,6 +28,49 @@ public sealed class MapPolicyAndInfrastructureTests
         finally
         {
             if (File.Exists(path)) File.Delete(path);
+        }
+    }
+
+    [Fact]
+    public async Task TerrainService_ReturnsTypedOutsideCoverageWithoutNetworkRequest()
+    {
+        var factory = Substitute.For<IMapHttpClientFactory>();
+        var service = new SrtmTerrainElevationService(factory, Path.GetTempPath());
+
+        var result = await service.GetElevationAsync(91, 12, TestContext.Current.CancellationToken);
+
+        result.Status.Should().Be(TerrainElevationStatus.OutsideCoverage);
+        result.ElevationMeters.Should().BeNull();
+        factory.DidNotReceive().CreateClient();
+    }
+
+    [Fact]
+    public async Task TerrainService_ClosesStagingFileBeforeAtomicPromotion()
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"mp-srtm-download-{Guid.NewGuid():N}");
+        try
+        {
+            short[] samples = [100, 110, 120, 50, 60, 70, 0, 10, 20];
+            var hgt = samples.SelectMany(value => new[] { (byte)(value >> 8), (byte)value }).ToArray();
+            byte[] compressed;
+            using (var target = new MemoryStream())
+            {
+                using (var gzip = new GZipStream(target, CompressionMode.Compress, leaveOpen: true))
+                    gzip.Write(hgt);
+                compressed = target.ToArray();
+            }
+            var service = new SrtmTerrainElevationService(new StaticHttpFactory(compressed), root);
+
+            var result = await service.GetElevationAsync(55.5, 12.5, TestContext.Current.CancellationToken);
+
+            result.Status.Should().Be(TerrainElevationStatus.Available);
+            result.ElevationMeters.Should().Be(60);
+            File.Exists(Path.Combine(root, "N55E012.hgt")).Should().BeTrue();
+            Directory.EnumerateFiles(root, "*.tmp-*").Should().BeEmpty();
+        }
+        finally
+        {
+            if (Directory.Exists(root)) Directory.Delete(root, true);
         }
     }
 
@@ -131,6 +176,17 @@ public sealed class MapPolicyAndInfrastructureTests
         {
             cancellationToken.ThrowIfCancellationRequested();
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        }
+    }
+
+    private sealed class StaticHttpFactory(byte[] content) : IMapHttpClientFactory
+    {
+        public HttpClient CreateClient() => new(new StaticHandler(content));
+
+        private sealed class StaticHandler(byte[] content) : HttpMessageHandler
+        {
+            protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
+                Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(content) });
         }
     }
 }

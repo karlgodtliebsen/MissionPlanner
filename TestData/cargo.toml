@@ -1,8 +1,0 @@
-[workspace]
-members = [
-    "crates/core_lib",
-    "crates/cli_app",
-    "crates/gui_app"
-]
-
-resolver = "2"
