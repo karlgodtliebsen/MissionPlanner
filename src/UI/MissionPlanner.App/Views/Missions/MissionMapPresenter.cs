@@ -1,13 +1,10 @@
 using System.ComponentModel;
 using System.Diagnostics;
-using BruTile.Predefined;
 using Mapsui;
 using Mapsui.Extensions;
-using Mapsui.Layers;
 using Mapsui.Projections;
-using Mapsui.Tiling;
-using Mapsui.Tiling.Layers;
 using Mapsui.UI.Maui;
+using MissionPlanner.App.Maps;
 using MissionPlanner.Core.ConfigTuning.Planner;
 
 namespace MissionPlanner.App.Views.Missions;
@@ -21,6 +18,7 @@ internal sealed class MissionMapPresenter : IDisposable
     private readonly MissionItemListViewModel viewModel;
     private readonly IPlannerSettingsService plannerSettings;
     private readonly Mapsui.Map map = new();
+    private readonly MapBasemapController basemapController;
     private readonly Pin vehiclePin;
     private readonly List<Pin> missionPins = [];
     private Polyline routeLine;
@@ -33,7 +31,9 @@ internal sealed class MissionMapPresenter : IDisposable
         this.mapView = mapView;
         this.viewModel = viewModel;
         this.plannerSettings = plannerSettings;
-        map.Layers.Add(CreateTileLayer(viewModel.SelectedMapType));
+        basemapController = new MapBasemapController(map, new MapsuiBasemapFactory());
+        if (!basemapController.TrySwitchAsync(BuiltInMapSourceIds.Resolve(viewModel.SelectedMapType)).AsTask().GetAwaiter().GetResult())
+            throw new InvalidOperationException($"Unable to create initial map source '{viewModel.SelectedMapType}'.");
         mapView.Map = map;
 
         vehiclePin = new Pin(mapView)
@@ -119,6 +119,7 @@ internal sealed class MissionMapPresenter : IDisposable
 
         missionPins.Clear();
         mapView.Drawables.Remove(routeLine);
+        basemapController.Dispose();
     }
 
     private double DefaultZoomResolution =>
@@ -202,22 +203,6 @@ internal sealed class MissionMapPresenter : IDisposable
         map.Navigator.ZoomToBox(new MRect(minX, minY, maxX, maxY));
     }
 
-    private void ApplyMapType(string mapType)
-    {
-        var previous = map.Layers.FirstOrDefault();
-        map.Layers.Insert(0, CreateTileLayer(mapType));
-        if (previous is not null)
-        {
-            map.Layers.Remove(previous);
-        }
-    }
-
-    private static ILayer CreateTileLayer(string mapType) => mapType switch
-    {
-        "Esri World Topo" => new TileLayer(KnownTileSources.Create(KnownTileSource.EsriWorldTopo)),
-        "Esri World Physical" => new TileLayer(KnownTileSources.Create(KnownTileSource.EsriWorldPhysical)),
-        "Esri Shaded Relief" => new TileLayer(KnownTileSources.Create(KnownTileSource.EsriWorldShadedRelief)),
-        "Esri Dark Gray" => new TileLayer(KnownTileSources.Create(KnownTileSource.EsriWorldDarkGrayBase)),
-        _ => OpenStreetMap.CreateTileLayer()
-    };
+    private async void ApplyMapType(string mapType) =>
+        await basemapController.TrySwitchAsync(BuiltInMapSourceIds.Resolve(mapType));
 }

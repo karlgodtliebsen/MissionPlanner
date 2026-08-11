@@ -29,3 +29,9 @@ Visible layers contribute stable attribution entries to one deduplicated snapsho
 Catalog entries declare only a credential type. Real values use the existing Planner secure-storage abstraction through a map adapter and never enter the catalog, ordinary settings, export, URL diagnostics, or logs. The credential service exposes configured state plus set, remove, and test operations without returning the secret to presentation code.
 
 Map HTTP clients use bounded timeouts, cancellation, and an honest User-Agent. Their disk cache stores HTTP responses by source, product, and style namespace, retains standard expiry and validator metadata, enforces a disk budget, and supports clearing one namespace or all namespaces. It is not an offline-pack repository.
+
+## Mapsui basemap adapter
+
+`MapsuiBasemapFactory` is the only built-in source-to-Mapsui construction boundary for the mission map. It resolves stable catalog IDs, requires an enabled source and an affirmative interactive-use policy decision, and creates the existing OpenStreetMap and Esri BruTile layers or a blank `No Map` layer.
+
+`MapBasemapController` owns one layer named `MissionPlanner.Basemap`. Switching creates the replacement before changing the map, inserts only that slot, preserves the navigator viewport and every operational layer, then disposes the previous source. Creation or policy failure leaves the prior working layer installed. A successful change event is the hook for refreshing the standard attribution snapshot.

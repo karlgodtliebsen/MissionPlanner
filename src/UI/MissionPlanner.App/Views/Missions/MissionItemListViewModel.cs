@@ -113,7 +113,7 @@ public partial class MissionItemListViewModel : ObservableObject, IDisposable
 
     /// <summary>The tile sources the map views can render.</summary>
     public IReadOnlyList<string> AvailableMapTypes { get; } =
-        ["OpenStreetMap", "Esri World Topo", "Esri World Physical", "Esri Shaded Relief", "Esri Dark Gray"];
+        ["OpenStreetMap", "Esri World Topo", "Esri World Physical", "Esri Shaded Relief", "Esri Dark Gray", "No Map"];
 
     private static string MapType(PlannerMapSettings settings)
     {

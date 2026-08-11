@@ -6,6 +6,8 @@ Map provider metadata has a platform-neutral, versioned catalog with validation 
 
 Map operations now have fail-closed capability-and-policy evaluation. Attribution aggregation supports compact, expanded, export, and dynamic entries. Map credentials adapt the existing secure store, and HTTP/cache infrastructure provides bounded requests, namespace isolation, validators, disk budgets, and explicit clearing without treating cache data as offline packs.
 
+The mission map now creates OpenStreetMap, all existing Esri choices, and No Map through a catalog-aware Mapsui adapter. Repeated switching replaces one stable basemap slot and preserves viewport, mission route, markers, interaction state, and other operational layers; failures retain the previous basemap.
+
 
 
 ## MavLink
