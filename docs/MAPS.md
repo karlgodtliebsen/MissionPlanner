@@ -35,3 +35,11 @@ Map HTTP clients use bounded timeouts, cancellation, and an honest User-Agent. T
 `MapsuiBasemapFactory` is the only built-in source-to-Mapsui construction boundary for the mission map. It resolves stable catalog IDs, requires an enabled source and an affirmative interactive-use policy decision, and creates the existing OpenStreetMap and Esri BruTile layers or a blank `No Map` layer.
 
 `MapBasemapController` owns one layer named `MissionPlanner.Basemap`. Switching creates the replacement before changing the map, inserts only that slot, preserves the navigator viewport and every operational layer, then disposes the previous source. Creation or policy failure leaves the prior working layer installed. A successful change event is the hook for refreshing the standard attribution snapshot.
+
+## Offline raster MBTiles
+
+Raster MBTiles is the first production offline format. Users may import archives for which they hold the necessary rights; managed downloads are limited to explicitly approved pack feeds. Mission Planner never scrapes hosted tile services into MBTiles, and vector MBTiles is not claimed as supported.
+
+Each pack has a manifest containing stable ID, version, display name, size, SHA-256, WGS84 bounds, zoom range, `EPSG:3857` projection, raster payload format, attribution, and license notice. Installation writes to an isolated staging directory, validates the manifest/hash/size and SQLite `metadata`/`tiles` schema plus a representative raster payload, then atomically renames to `Maps/Packs/<id>/<version>/`. Installed archives are opened read-only. A duplicate version is rejected, partial staging is removed on failure, and an active pack must be deselected before removal.
+
+`IOfflineMapPackRepository`, `IOfflineMapPackInstaller`, and `IOfflineMapPackValidator` provide list, find, install/import, verify, and remove APIs. `MapsuiMbTilesSourceFactory` exposes a validated installed pack as the same stable basemap layer used by the controller, so operation overlays remain independent and no network client is involved during tile reads.
