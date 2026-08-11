@@ -29,6 +29,7 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
         MissionMap.MapClicked += OnMapClicked;
         MissionMap.MapPointerMoved += OnMapPointerMoved;
         ViewModel.MapRotationRequested += OnMapRotationRequested;
+        ViewModel.MapCenterRequested += OnMapCenterRequested;
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
         Loaded += OnFirstLoaded;
@@ -59,6 +60,7 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
     }
 
     private void OnMapRotationRequested(object? sender, double degrees) => presenter.RotateTo(degrees);
+    private void OnMapCenterRequested(object? sender, MissionPlanner.Core.Missions.Models.GeoPosition position) => presenter.CenterOn(position.LatitudeDegrees, position.LongitudeDegrees, false);
 
     private async void OnFirstLoaded(object? sender, EventArgs args)
     {
@@ -133,7 +135,7 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
         Unloaded -= OnUnloaded;
         MissionMap.MapClicked -= OnMapClicked;
         MissionMap.MapPointerMoved -= OnMapPointerMoved;
-        if (ViewModel is not null) ViewModel.MapRotationRequested -= OnMapRotationRequested;
+        if (ViewModel is not null) { ViewModel.MapRotationRequested -= OnMapRotationRequested; ViewModel.MapCenterRequested -= OnMapCenterRequested; }
         presenter.Dispose();
 
         // The keyed mission editor is shared by the map and item-list views. Detach this view

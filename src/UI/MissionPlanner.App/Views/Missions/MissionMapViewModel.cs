@@ -62,6 +62,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     private readonly IMapTilePrefetchService mapTilePrefetchService;
     private readonly IMissionElevationProfileService elevationProfileService;
     private readonly IPoiService poiService;
+    private readonly ITrackerHomeService trackerHomeService;
+    private readonly IGeodeticCoordinateConverter geodeticConverter;
     private IReadOnlyList<GeoPosition> generatedPreview = [];
     private MissionAltitude pendingRallyAltitude;
     private IReadOnlyList<ImportedPlanningOverlay> importedOverlays = [];
@@ -83,7 +85,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         IRallyConfigurationService rallyService, IRallyPlanFileCodec rallyFileCodec,
         IAutoWaypointGenerator autoWaypointGenerator, ISurveyMissionGenerator surveyMissionGenerator,
         IMapTilePrefetchService mapTilePrefetchService, IMissionElevationProfileService elevationProfileService,
-        IPoiService poiService)
+        IPoiService poiService, ITrackerHomeService trackerHomeService, IGeodeticCoordinateConverter geodeticConverter)
     {
         this.activeVehicle = activeVehicle;
         this.fileCodec = fileCodec;
@@ -111,12 +113,15 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         this.mapTilePrefetchService = mapTilePrefetchService;
         this.elevationProfileService = elevationProfileService;
         this.poiService = poiService;
+        this.trackerHomeService = trackerHomeService;
+        this.geodeticConverter = geodeticConverter;
         pendingRallyAltitude = DefaultAltitude();
         polygonService.Changed += OnPolygonChanged;
         interactionService.Changed += OnInteractionChanged;
         fenceService.Changed += OnFenceChanged;
         rallyService.Changed += OnRallyChanged;
         poiService.Changed += OnPoiChanged;
+        trackerHomeService.Changed += OnTrackerHomeChanged;
         _ = poiService.InitializeAsync();
         SelectedSourceId = settingsService.Current.Map.SelectedSourceId;
         MapSnapshot = MissionMapProjection.Create(Mission, HomePosition);
@@ -165,6 +170,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         fenceService.Changed -= OnFenceChanged;
         rallyService.Changed -= OnRallyChanged;
         poiService.Changed -= OnPoiChanged;
+        trackerHomeService.Changed -= OnTrackerHomeChanged;
         disposed = true;
     }
 
@@ -396,6 +402,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     public event EventHandler? FitToMissionRequested;
     /// <summary>Raised when the session-only map rotation should change.</summary>
     public event EventHandler<double>? MapRotationRequested;
+    /// <summary>Raised when the map should center on a converted coordinate.</summary>
+    public event EventHandler<GeoPosition>? MapCenterRequested;
 
     /// <summary>Records the map position the next context-menu action should apply to.</summary>
     public void SetContextPosition(double latitude, double longitude)
@@ -562,6 +570,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     private void OnFenceChanged(object? sender, EventArgs args) => dispatcher.Dispatch(UpdatePlanningOverlay);
     private void OnRallyChanged(object? sender, EventArgs args) => dispatcher.Dispatch(UpdatePlanningOverlay);
     private void OnPoiChanged(object? sender, EventArgs args) => dispatcher.Dispatch(UpdatePlanningOverlay);
+    private void OnTrackerHomeChanged(object? sender, EventArgs args) => dispatcher.Dispatch(UpdatePlanningOverlay);
 
     private void UpdatePlanningOverlay()
     {
@@ -574,7 +583,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
             ? rallyService.GetSnapshot(rallyVehicleId).LocalPlan.Points.Select(point => point.Position).ToArray() : [];
         var pois = poiService.Snapshot.Items.Select(item => item.Position).ToArray();
         PlanningOverlaySnapshot = overlay with { DrawnPolygon = vertices, FencePreview = fence, RallyPoints = rally,
-            PoiItems = pois, ImportedOverlays = importedOverlays, SurveyPreview = generatedPreview };
+            PoiItems = pois, ImportedOverlays = importedOverlays, SurveyPreview = generatedPreview,
+            TrackerHome = trackerHomeService.Snapshot?.Position };
     }
 
     /// <summary>Replaces the mission being edited (e.g. after downloading from a vehicle).</summary>
@@ -1155,6 +1165,34 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         if (TargetPosition() is not { } position || poiService.FindNearest(position) is not { } item) { ShowStatus("No POI is available to delete."); return; }
         if (!await confirmationService.ConfirmAsync("Delete nearest POI", $"Delete local POI '{item.Name}'?", "Delete", cancellationToken)) return;
         await poiService.DeleteAsync(item.Id, cancellationToken); ShowStatus($"Local POI '{item.Name}' deleted.");
+    }
+
+    [RelayCommand]
+    private async Task SetTrackerHomeAsync(CancellationToken cancellationToken)
+    {
+        if (TargetPosition() is not { } position) { ShowStatus("Select a map position for tracker home."); return; }
+        var text = await promptService.PromptAsync("Tracker home", "Optional altitude in metres", PointerAltitude?.ToString("F1", CultureInfo.CurrentCulture), cancellationToken);
+        double? altitude = null;
+        if (!string.IsNullOrWhiteSpace(text))
+        {
+            if (!double.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out var parsed)) { ShowStatus("Enter a valid altitude or leave it empty."); return; }
+            altitude = parsed;
+        }
+        trackerHomeService.Set(position, altitude, dateTimeProvider.UtcNow, "Mission map context");
+        ShowStatus("Local tracker home updated. No antenna-tracker hardware command was sent.");
+    }
+
+    [RelayCommand]
+    private async Task EnterUtmCoordinateAsync(CancellationToken cancellationToken)
+    {
+        var text = await promptService.PromptAsync("Enter UTM coordinate", "Format: zone+hemisphere easting northing (example: 32N 500000 6170000)", "32N 500000 6170000", cancellationToken);
+        if (text is null) return;
+        GeographicCoordinate geographic; try { geographic = geodeticConverter.ToGeographic(geodeticConverter.ParseUtm(text)); }
+        catch (Exception exception) when (exception is FormatException or ArgumentOutOfRangeException) { ShowStatus(exception.Message); return; }
+        var position = new GeoPosition(geographic.Latitude, geographic.Longitude); ContextPosition = position;
+        var choice = await choiceService.ChooseAsync($"Converted to {geographic.Latitude:F7}, {geographic.Longitude:F7}", ["Add waypoint here", "Center map here"], cancellationToken);
+        if (choice == "Add waypoint here") AddWaypoint(position, "Waypoint added from UTM coordinate.");
+        else if (choice == "Center map here") { MapCenterRequested?.Invoke(this, position); ShowStatus("Map centered on converted UTM coordinate."); }
     }
 
     /// <summary>Calculates great-circle distance and initial bearing between two WGS84 positions.</summary>

@@ -11,6 +11,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Maps.Prefetch;
+using MissionPlanner.Maps.Coordinates;
 
 namespace MissionPlanner.App.Views.FlightPlanner;
 
@@ -28,11 +29,12 @@ public partial class FlightPlannerMissionMapViewModel : MissionMapViewModel
         IFenceConfigurationService fenceService, IFencePlanFileCodec fenceFileCodec,
         IRallyConfigurationService rallyService, IRallyPlanFileCodec rallyFileCodec, IAutoWaypointGenerator autoWaypointGenerator,
         ISurveyMissionGenerator surveyMissionGenerator, IMapTilePrefetchService mapTilePrefetchService,
-        IMissionElevationProfileService elevationProfileService, IPoiService poiService)
+        IMissionElevationProfileService elevationProfileService, IPoiService poiService, ITrackerHomeService trackerHomeService,
+        IGeodeticCoordinateConverter geodeticConverter)
         : base(activeVehicle, protocolMapper, fileSaver, settingsService, fileCodec, domainEventHub, dispatcher, dateTimeProvider, logger,
             interactionService, advancedMissionItems, promptService, confirmationService, polygonService, fileOpenService, fileSaveService,
             choiceService, geospatialImportService, fenceService, fenceFileCodec, rallyService, rallyFileCodec, autoWaypointGenerator,
-            surveyMissionGenerator, mapTilePrefetchService, elevationProfileService, poiService)
+            surveyMissionGenerator, mapTilePrefetchService, elevationProfileService, poiService, trackerHomeService, geodeticConverter)
     {
     }
 }

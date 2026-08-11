@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.Maps.Attribution;
 using MissionPlanner.Maps.Catalog;
+using MissionPlanner.Maps.Coordinates;
 using MissionPlanner.Maps.Custom;
 using MissionPlanner.Maps.Esri;
 using MissionPlanner.Maps.Hosted;
@@ -35,6 +36,7 @@ public static class MapsConfigurator
         services.TryAddSingleton(provider => provider.GetRequiredService<IMapCatalog>().Current);
         services.TryAddSingleton<IMapPolicyEvaluator, MapPolicyEvaluator>();
         services.TryAddSingleton<IMapTilePrefetchService, MapTilePrefetchService>();
+        services.TryAddSingleton<IGeodeticCoordinateConverter, GeodeticCoordinateConverter>();
         services.TryAddSingleton<HttpMessageHandler>(_ => new SocketsHttpHandler());
         services.TryAddSingleton<IMapHttpClientFactory, MapHttpClientFactory>();
         services.TryAddSingleton<CustomMapSourceService>();

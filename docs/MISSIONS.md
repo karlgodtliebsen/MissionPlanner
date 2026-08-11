@@ -401,6 +401,15 @@ and timestamps. The bounded versioned JSON repository saves atomically, isolates
 reloads across application restarts. Add uses the context location; Edit and Delete explicitly target
 the nearest POI and deletion requires confirmation. The stable POI overlay survives basemap changes.
 
+### Tracker home and UTM entry
+
+Tracker Home is honest session-local antenna-planning state: position, optional altitude, update
+time, and source are shown on a stable overlay, but no physical tracker command is claimed or sent.
+UTM entry accepts explicit `32N 500000 6170000` zone/hemisphere/easting/northing form, validates
+standard ranges, converts through a typed WGS84 geodesy service, previews latitude/longitude, then
+explicitly adds a waypoint or centers the map. Northern and southern hemisphere round trips are
+covered by reference tests.
+
 ---
 
 ## Known gaps and next steps

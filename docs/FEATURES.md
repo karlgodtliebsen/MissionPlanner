@@ -901,6 +901,8 @@ Completed
   profiles with explicit missing-data gaps and correct altitude-reference caveats.
 * Persistent local POIs support add/edit/delete, nearest-context targeting, atomic versioned JSON,
   corrupt-file isolation, and a stable non-mission map overlay.
+* Tracker Home provides truthful session-local overlay state without a fake hardware path; typed
+  UTM parsing/inverse conversion previews and supports waypoint insertion or map centering.
 
 * A deterministic inventory resolves the pinned official `ardupilotmega` dialect and its
   transitive includes without network access during normal builds or tests.
