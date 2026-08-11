@@ -10,6 +10,7 @@ using MissionPlanner.Maps.Hosted;
 using MissionPlanner.Maps.Http;
 using MissionPlanner.Maps.Offline;
 using MissionPlanner.Maps.Policy;
+using MissionPlanner.Maps.Prefetch;
 using MissionPlanner.Maps.Sources;
 using MissionPlanner.Maps.Terrain;
 
@@ -33,6 +34,7 @@ public static class MapsConfigurator
         services.TryAddSingleton<IMapCatalog, BuiltInMapCatalogService>();
         services.TryAddSingleton(provider => provider.GetRequiredService<IMapCatalog>().Current);
         services.TryAddSingleton<IMapPolicyEvaluator, MapPolicyEvaluator>();
+        services.TryAddSingleton<IMapTilePrefetchService, MapTilePrefetchService>();
         services.TryAddSingleton<HttpMessageHandler>(_ => new SocketsHttpHandler());
         services.TryAddSingleton<IMapHttpClientFactory, MapHttpClientFactory>();
         services.TryAddSingleton<CustomMapSourceService>();

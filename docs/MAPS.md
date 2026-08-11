@@ -117,3 +117,11 @@ The manual Windows, Android, and Mac Catalyst verification checklist is maintain
 The mission-map status-bar selector formats the pointer position as WGS84 geographic degrees (`GEO`), WGS84 UTM, or five-digit MGRS. UTM and MGRS cover 80°S through 84°N; outside that range the status bar reports that the selected notation is outside coverage.
 
 Mission-map pointer coordinates use Mapsui's `MapPointerMoved` event from the native map surface and are converted from its screen position through the active viewport. Latitude and longitude updates are throttled to 30 Hz and exposed immediately by the shared mission-map view model. Terrain elevation is resolved independently from cached SRTM HGT tiles: lookup starts only after the pointer rests for 250 ms, a newer movement cancels the older presentation result, downloads are coalesced and size-bounded, and files are cached below `Maps/Terrain/Srtm`. The view model exposes `Idle`, `Loading`, `Available`, `OutsideCoverage`, `NetworkUnavailable`, and `InvalidData` as typed states and the map status bar displays their readable form. Debug builds write the pointer generation, SRTM tile ID, state, and available elevation through `Debug.WriteLine`; Release builds omit those calls. Elevation is metres above mean sea level; unavailable, ocean, network, void, or corrupt data leaves the nullable altitude blank. Vehicle terrain telemetry is intentionally not reused because it describes only the vehicle's current location. The terrain dataset is sourced from the [AWS Open Data Terrain Tiles collection](https://registry.opendata.aws/terrain-tiles/) and retains its upstream SRTM/NASA provenance.
+# Cache prefetch
+
+Mission-map prefetch is policy-controlled online HTTP cache warming, not offline-pack creation.
+Only resolved online XYZ sources whose technical capability and reviewed policy both allow bulk
+prefetch can run. OSM Standard, local archives/directories, vector/deferred sources, and denied
+providers are rejected. Requests show a tile/zoom estimate, require confirmation, use bounded
+concurrency, support cancellation, and stop above the 10,000-tile safety limit. Route prefetch uses
+segment corridors rather than one large route bounding box.

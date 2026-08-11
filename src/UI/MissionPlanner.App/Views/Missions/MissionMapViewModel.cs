@@ -24,6 +24,7 @@ using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Missions;
 using MissionPlanner.Maps.Coordinates;
 using MissionPlanner.Maps.Terrain;
+using MissionPlanner.Maps.Prefetch;
 using MissionPlanner.App.Presentation;
 
 namespace MissionPlanner.App.Views.Missions;
@@ -58,6 +59,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     private readonly IRallyPlanFileCodec rallyFileCodec;
     private readonly IAutoWaypointGenerator autoWaypointGenerator;
     private readonly ISurveyMissionGenerator surveyMissionGenerator;
+    private readonly IMapTilePrefetchService mapTilePrefetchService;
     private IReadOnlyList<GeoPosition> generatedPreview = [];
     private MissionAltitude pendingRallyAltitude;
     private IReadOnlyList<ImportedPlanningOverlay> importedOverlays = [];
@@ -77,7 +79,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         IUserChoiceService choiceService, IGeospatialImportService geospatialImportService,
         IFenceConfigurationService fenceService, IFencePlanFileCodec fenceFileCodec,
         IRallyConfigurationService rallyService, IRallyPlanFileCodec rallyFileCodec,
-        IAutoWaypointGenerator autoWaypointGenerator, ISurveyMissionGenerator surveyMissionGenerator)
+        IAutoWaypointGenerator autoWaypointGenerator, ISurveyMissionGenerator surveyMissionGenerator,
+        IMapTilePrefetchService mapTilePrefetchService)
     {
         this.activeVehicle = activeVehicle;
         this.fileCodec = fileCodec;
@@ -102,6 +105,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         this.rallyFileCodec = rallyFileCodec;
         this.autoWaypointGenerator = autoWaypointGenerator;
         this.surveyMissionGenerator = surveyMissionGenerator;
+        this.mapTilePrefetchService = mapTilePrefetchService;
         pendingRallyAltitude = DefaultAltitude();
         polygonService.Changed += OnPolygonChanged;
         interactionService.Changed += OnInteractionChanged;
@@ -378,6 +382,8 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
 
     /// <summary>Raised when the map should pan/zoom to show the whole mission (after load or vehicle read).</summary>
     public event EventHandler? FitToMissionRequested;
+    /// <summary>Raised when the session-only map rotation should change.</summary>
+    public event EventHandler<double>? MapRotationRequested;
 
     /// <summary>Records the map position the next context-menu action should apply to.</summary>
     public void SetContextPosition(double latitude, double longitude)
@@ -502,6 +508,13 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
                 rallyService.SetLocalPlan(rallyVehicleId, new RallyPlan(snapshot.LocalPlan.Points.Append(point).ToArray()));
                 interactionService.Complete();
                 ShowStatus("Rally point added locally; upload to apply it.");
+            }
+            else if (interactionMode == MissionMapInteractionMode.MeasureDistance && interactionService.State.Positions.Count >= 2)
+            {
+                var first = interactionService.State.Positions[0]; var second = interactionService.State.Positions[1];
+                var (distance, bearing) = CalculateDistanceAndBearing(first, second);
+                interactionService.Complete();
+                ShowStatus($"Distance {distance:F1} m • initial bearing {bearing:F1}°.");
             }
             return;
         }
@@ -1042,6 +1055,59 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         if (!result.Succeeded) { ShowStatus(result.Message); return; }
         if (result.Statistics is { } statistics) ShowStatus($"Preview: {statistics.LineCount} legs, {statistics.PointCount} points, {statistics.DistanceMeters:F0} m, {statistics.AreaSquareMeters:F0} m².");
         await PreviewAndApplyGeneratedAsync(new(true, result.Message, result.Items, result.Preview), cancellationToken);
+    }
+
+    [RelayCommand]
+    private void MeasureDistance() => BeginInteraction(MissionMapInteractionMode.MeasureDistance, "Click two map points to measure geodesic distance and initial bearing.");
+
+    [RelayCommand]
+    private async Task RotateMapAsync(CancellationToken cancellationToken)
+    {
+        var text = await promptService.PromptAsync("Rotate map", "Bearing degrees (0-359; 0 resets north)", "0", cancellationToken);
+        if (!double.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out var angle) || !double.IsFinite(angle)) { if (text is not null) ShowStatus("Enter a valid bearing."); return; }
+        angle = ((angle % 360) + 360) % 360; MapRotationRequested?.Invoke(this, angle); ShowStatus($"Map rotation set to {angle:F0}° for this session.");
+    }
+
+    [RelayCommand]
+    private async Task PrefetchVisibleAsync(CancellationToken cancellationToken)
+    {
+        var center = TargetPosition() ?? HomePosition;
+        if (center is null) { ShowStatus("Select a map position before visible-area prefetch."); return; }
+        await RunPrefetchAsync([new(center.Value.LatitudeDegrees - .02, center.Value.LongitudeDegrees - .03, center.Value.LatitudeDegrees + .02, center.Value.LongitudeDegrees + .03)], cancellationToken);
+    }
+
+    [RelayCommand]
+    private async Task PrefetchWaypointPathAsync(CancellationToken cancellationToken)
+    {
+        var positions = Mission.Items.Select(PositionOf).OfType<GeoPosition>().ToArray();
+        if (positions.Length == 0) { ShowStatus("The mission has no positioned route to prefetch."); return; }
+        const double corridor = .005;
+        var areas = positions.Zip(positions.Skip(1), (a, b) => new MapPrefetchBounds(Math.Min(a.LatitudeDegrees, b.LatitudeDegrees) - corridor,
+            Math.Min(a.LongitudeDegrees, b.LongitudeDegrees) - corridor, Math.Max(a.LatitudeDegrees, b.LatitudeDegrees) + corridor,
+            Math.Max(a.LongitudeDegrees, b.LongitudeDegrees) + corridor)).ToArray();
+        if (areas.Length == 0) areas = [new(positions[0].LatitudeDegrees - corridor, positions[0].LongitudeDegrees - corridor, positions[0].LatitudeDegrees + corridor, positions[0].LongitudeDegrees + corridor)];
+        await RunPrefetchAsync(areas, cancellationToken);
+    }
+
+    private async Task RunPrefetchAsync(IReadOnlyList<MapPrefetchBounds> areas, CancellationToken cancellationToken)
+    {
+        var request = new MapPrefetchRequest(SelectedSourceId, areas, 12, 15);
+        var estimate = await mapTilePrefetchService.EstimateAsync(request, cancellationToken);
+        if (!estimate.IsAllowed) { ShowStatus(estimate.Message); return; }
+        if (!await confirmationService.ConfirmAsync("Warm online map cache", $"Fetch {estimate.TileCount} tiles at zoom {estimate.MinimumZoom}-{estimate.MaximumZoom}? This does not create an offline pack.", "Start", cancellationToken)) return;
+        var progress = new Progress<(int Completed, int Total)>(value => ShowStatus($"Prefetch: {value.Completed}/{value.Total}"));
+        ShowStatus((await mapTilePrefetchService.PrefetchAsync(request, progress, cancellationToken)).Message);
+    }
+
+    /// <summary>Calculates great-circle distance and initial bearing between two WGS84 positions.</summary>
+    public static (double Distance, double Bearing) CalculateDistanceAndBearing(GeoPosition first, GeoPosition second)
+    {
+        const double radius = 6371008.8; var lat1 = first.LatitudeDegrees * Math.PI / 180d; var lat2 = second.LatitudeDegrees * Math.PI / 180d;
+        var deltaLat = lat2 - lat1; var deltaLon = (second.LongitudeDegrees - first.LongitudeDegrees) * Math.PI / 180d;
+        var a = Math.Sin(deltaLat / 2) * Math.Sin(deltaLat / 2) + Math.Cos(lat1) * Math.Cos(lat2) * Math.Sin(deltaLon / 2) * Math.Sin(deltaLon / 2);
+        var distance = radius * 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+        var bearing = (Math.Atan2(Math.Sin(deltaLon) * Math.Cos(lat2), Math.Cos(lat1) * Math.Sin(lat2) - Math.Sin(lat1) * Math.Cos(lat2) * Math.Cos(deltaLon)) * 180d / Math.PI + 360d) % 360d;
+        return (distance, bearing);
     }
 
     [RelayCommand]

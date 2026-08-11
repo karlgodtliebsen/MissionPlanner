@@ -293,6 +293,9 @@ internal sealed class MissionMapPresenter : IDisposable
         mapView.RefreshGraphics();
     }
 
+    /// <summary>Applies a session-only viewport rotation in degrees.</summary>
+    public void RotateTo(double degrees) => map.Navigator.RotateTo(degrees);
+
     private IReadOnlyDictionary<PlanningLayerKind, Polyline> CreatePlanningLayers() =>
         new Dictionary<PlanningLayerKind, Polyline>
         {

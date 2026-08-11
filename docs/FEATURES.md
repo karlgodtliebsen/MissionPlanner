@@ -895,6 +895,8 @@ Completed
   polygon area delegation, and bounded cross-platform stroke-text routes with previewed merges.
 * Grid and concentric-circle surveys provide platform-neutral clipped geometry, concave/cross-grid
   support, route statistics, bounded previews, and explicit mission merge choices.
+* Mission-map tools include great-circle measurement, session-only rotation, and explicitly
+  confirmed policy-aware visible/route cache warming with OSM/offline denial and hard limits.
 
 * A deterministic inventory resolves the pinned official `ardupilotmega` dialect and its
   transitive includes without network access during normal builds or tests.

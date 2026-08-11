@@ -377,6 +377,13 @@ use explicit inner/outer radius, radial spacing, points per ring, and direction.
 platform-neutral, enforce a 4000-point bound, calculate area/distance/line statistics, show the
 stable survey preview, and require Append or Replace before changing the mission.
 
+### Map measurement, rotation, and prefetch
+
+Distance measurement is an explicit two-click interaction and reports great-circle distance plus
+initial bearing. Rotation is a session-only Mapsui viewport setting and is not mission state.
+Visible-area and route-corridor prefetch use the central provider-policy and HTTP-cache pipeline;
+they never create or install offline map packs, and OSM Standard is explicitly denied.
+
 ---
 
 ## Known gaps and next steps

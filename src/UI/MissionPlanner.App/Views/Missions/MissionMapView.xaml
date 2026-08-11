@@ -89,10 +89,10 @@
                         <MenuFlyoutItem Text="Center on My Location" Clicked="OnCenterOnMyLocationClicked" />
                         <MenuFlyoutItem Text="Follow Vehicle (on/off)" Clicked="OnToggleFollowVehicleClicked" />
                         <MenuFlyoutItem Text="Reverse WPs" Command="{Binding ReverseWaypointsCommand}" />
-                        <MenuFlyoutItem Text="Measure Distance" Command="{Binding NotImplementedCommand}" CommandParameter="Measure Distance" />
-                        <MenuFlyoutItem Text="Rotate Map" Command="{Binding NotImplementedCommand}" CommandParameter="Rotate Map" />
-                        <MenuFlyoutItem Text="Prefetch" Command="{Binding NotImplementedCommand}" CommandParameter="Prefetch" />
-                        <MenuFlyoutItem Text="Prefetch WP Path" Command="{Binding NotImplementedCommand}" CommandParameter="Prefetch WP Path" />
+                        <MenuFlyoutItem Text="Measure Distance" Command="{Binding MeasureDistanceCommand}" />
+                        <MenuFlyoutItem Text="Rotate Map" Command="{Binding RotateMapCommand}" />
+                        <MenuFlyoutItem Text="Prefetch" Command="{Binding PrefetchVisibleCommand}" />
+                        <MenuFlyoutItem Text="Prefetch WP Path" Command="{Binding PrefetchWaypointPathCommand}" />
                         <MenuFlyoutItem Text="KML Overlay" Command="{Binding KmlOverlayCommand}" />
                         <MenuFlyoutItem Text="Clear Imported Overlay" Command="{Binding ClearImportedOverlayCommand}" />
                         <MenuFlyoutItem Text="Elevation Graph" Command="{Binding NotImplementedCommand}" CommandParameter="Elevation Graph" />

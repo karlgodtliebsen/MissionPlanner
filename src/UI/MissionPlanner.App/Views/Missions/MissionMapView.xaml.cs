@@ -28,6 +28,7 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
 
         MissionMap.MapClicked += OnMapClicked;
         MissionMap.MapPointerMoved += OnMapPointerMoved;
+        ViewModel.MapRotationRequested += OnMapRotationRequested;
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
         Loaded += OnFirstLoaded;
@@ -56,6 +57,8 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
     {
         presenter.UpdatePointerPosition(args.ScreenPosition.X, args.ScreenPosition.Y);
     }
+
+    private void OnMapRotationRequested(object? sender, double degrees) => presenter.RotateTo(degrees);
 
     private async void OnFirstLoaded(object? sender, EventArgs args)
     {
@@ -130,6 +133,7 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
         Unloaded -= OnUnloaded;
         MissionMap.MapClicked -= OnMapClicked;
         MissionMap.MapPointerMoved -= OnMapPointerMoved;
+        if (ViewModel is not null) ViewModel.MapRotationRequested -= OnMapRotationRequested;
         presenter.Dispose();
 
         // The keyed mission editor is shared by the map and item-list views. Detach this view

@@ -10,6 +10,7 @@ using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.Maps.Prefetch;
 
 namespace MissionPlanner.App.Views.FlightPlanner;
 
@@ -26,11 +27,11 @@ public partial class FlightPlannerMissionMapViewModel : MissionMapViewModel
         IUserChoiceService choiceService, IGeospatialImportService geospatialImportService,
         IFenceConfigurationService fenceService, IFencePlanFileCodec fenceFileCodec,
         IRallyConfigurationService rallyService, IRallyPlanFileCodec rallyFileCodec, IAutoWaypointGenerator autoWaypointGenerator,
-        ISurveyMissionGenerator surveyMissionGenerator)
+        ISurveyMissionGenerator surveyMissionGenerator, IMapTilePrefetchService mapTilePrefetchService)
         : base(activeVehicle, protocolMapper, fileSaver, settingsService, fileCodec, domainEventHub, dispatcher, dateTimeProvider, logger,
             interactionService, advancedMissionItems, promptService, confirmationService, polygonService, fileOpenService, fileSaveService,
             choiceService, geospatialImportService, fenceService, fenceFileCodec, rallyService, rallyFileCodec, autoWaypointGenerator,
-            surveyMissionGenerator)
+            surveyMissionGenerator, mapTilePrefetchService)
     {
     }
 }
