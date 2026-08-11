@@ -24,6 +24,8 @@ Approved offline-pack updates use a signed HTTPS feed of complete reviewed artif
 
 Map exports have a renderer-independent aggregate attribution footer API; no screenshot/static-image/PDF map exporter currently exists. Sanitized map diagnostics include source, policy, attribution, cache, pack, renderer, platform, and redacted failure context. The cross-platform interactive verification matrix is documented separately and left visibly pending where a supported host/device run has not occurred.
 
+The live mission map displays a single theme-aware attribution overlay shared by Plan and FlightData. It follows committed source switches, deduplicates static and dynamic provider credits, preserves mandatory reviewed fallback during metadata failures, toggles compact/expanded text accessibly, and exposes the same current snapshot to future exporters.
+
 
 
 ## MavLink

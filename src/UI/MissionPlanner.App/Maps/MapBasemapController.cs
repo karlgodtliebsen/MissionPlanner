@@ -12,6 +12,9 @@ public sealed class MapBasemapController(Mapsui.Map map, IMapSourceResolver reso
     /// <summary>Gets the stable identifier of the active source.</summary>
     public string? CurrentSourceId { get; private set; }
 
+    /// <summary>Gets the renderer-neutral source committed to the basemap slot.</summary>
+    public ResolvedMapSource? CurrentResolvedSource { get; private set; }
+
     /// <summary>Raised after a source has been successfully replaced.</summary>
     public event EventHandler? BasemapChanged;
 
@@ -36,6 +39,7 @@ public sealed class MapBasemapController(Mapsui.Map map, IMapSourceResolver reso
             map.Layers.Remove(previous);
         current = replacement;
         CurrentSourceId = sourceId;
+        CurrentResolvedSource = resolution.Source;
         if (previous is IDisposable disposable)
             disposable.Dispose();
         BasemapChanged?.Invoke(this, EventArgs.Empty);
@@ -51,5 +55,6 @@ public sealed class MapBasemapController(Mapsui.Map map, IMapSourceResolver reso
         if (current is IDisposable disposable)
             disposable.Dispose();
         current = null;
+        CurrentResolvedSource = null;
     }
 }

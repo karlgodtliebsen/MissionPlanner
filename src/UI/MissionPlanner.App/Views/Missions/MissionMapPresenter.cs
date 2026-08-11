@@ -7,6 +7,7 @@ using Mapsui.UI.Maui;
 using MissionPlanner.App.Maps;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Maps.Sources;
+using MissionPlanner.Maps.Attribution;
 
 namespace MissionPlanner.App.Views.Missions;
 
@@ -22,6 +23,7 @@ internal sealed class MissionMapPresenter : IDisposable
     private readonly IPlannerSettingsService plannerSettings;
     private readonly Mapsui.Map map = new();
     private readonly MapBasemapController basemapController;
+    private readonly IMapAttributionCoordinator attributionCoordinator;
     private readonly Pin vehiclePin;
     private readonly List<Pin> missionPins = [];
     private Polyline routeLine;
@@ -29,16 +31,20 @@ internal sealed class MissionMapPresenter : IDisposable
     private bool disposed;
 
     /// <summary>Initializes a presenter for a map view and shared mission editor.</summary>
-    public MissionMapPresenter(MapView mapView, MissionMapViewModel viewModel, IPlannerSettingsService plannerSettings, IMapSourceResolver sourceResolver, IMapsuiBasemapFactory basemapFactory)
+    public MissionMapPresenter(MapView mapView, MissionMapViewModel viewModel, IPlannerSettingsService plannerSettings, IMapSourceResolver sourceResolver, IMapsuiBasemapFactory basemapFactory, IMapAttributionCoordinator attributionCoordinator)
     {
         this.mapView = mapView;
         this.viewModel = viewModel;
         this.plannerSettings = plannerSettings;
+        this.attributionCoordinator = attributionCoordinator;
         basemapController = new MapBasemapController(map, sourceResolver, basemapFactory);
         if (!basemapController.TrySwitchAsync(viewModel.SelectedSourceId).AsTask().GetAwaiter().GetResult())
         {
             throw new InvalidOperationException($"Unable to create initial map source '{viewModel.SelectedSourceId}'.");
         }
+
+        attributionCoordinator.Changed += OnAttributionChanged;
+        _ = RefreshAttributionAsync();
 
         mapView.Map = map;
 
@@ -127,6 +133,7 @@ internal sealed class MissionMapPresenter : IDisposable
         disposed = true;
         viewModel.PropertyChanged -= OnViewModelPropertyChanged;
         viewModel.FitToMissionRequested -= OnFitToMissionRequested;
+        attributionCoordinator.Changed -= OnAttributionChanged;
         foreach (var pin in missionPins)
         {
             mapView.Pins.Remove(pin);
@@ -222,6 +229,24 @@ internal sealed class MissionMapPresenter : IDisposable
 
     private async void ApplyMapType(string mapType)
     {
-        await basemapController.TrySwitchAsync(mapType);
+        if (await basemapController.TrySwitchAsync(mapType))
+            await attributionCoordinator.SetBasemapAsync(basemapController.CurrentResolvedSource);
     }
+
+    /// <summary>Toggles compact and expanded map attribution.</summary>
+    public void ToggleAttribution() => attributionCoordinator.ToggleExpanded();
+
+    private async Task RefreshAttributionAsync()
+    {
+        try
+        {
+            await attributionCoordinator.SetBasemapAsync(basemapController.CurrentResolvedSource);
+        }
+        catch (Exception)
+        {
+            // Reviewed static attribution remains on the source and is retried on the next switch.
+        }
+    }
+
+    private void OnAttributionChanged(object? sender, MapAttributionOverlayState state) => viewModel.SetAttribution(state.DisplayText);
 }

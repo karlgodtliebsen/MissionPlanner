@@ -152,6 +152,21 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     public partial double? PointerAltitude { get; private set; }
 
+    /// <summary>Gets the compact or expanded attribution displayed over the map.</summary>
+    [ObservableProperty]
+    public partial string AttributionText { get; private set; } = string.Empty;
+
+    /// <summary>Gets whether the map attribution overlay has content.</summary>
+    [ObservableProperty]
+    public partial bool IsAttributionVisible { get; private set; }
+
+    /// <summary>Updates the shared attribution overlay presentation.</summary>
+    public void SetAttribution(string text)
+    {
+        AttributionText = text;
+        IsAttributionVisible = !string.IsNullOrWhiteSpace(text);
+    }
+
 
     [ObservableProperty] public partial double VehicleHeading { get; set; }
     // [ObservableProperty] public partial bool DirtyRows { get; set; }

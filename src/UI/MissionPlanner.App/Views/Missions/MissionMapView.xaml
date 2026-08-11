@@ -118,6 +118,20 @@
         </FlyoutBase.ContextFlyout>
     </mapsui:MapView>
 
+    <Button Grid.Row="0"
+            HorizontalOptions="End"
+            VerticalOptions="End"
+            Margin="8"
+            Padding="8,4"
+            MaximumWidthRequest="520"
+            FontSize="11"
+            Text="{Binding AttributionText}"
+            IsVisible="{Binding IsAttributionVisible}"
+            BackgroundColor="{AppThemeBinding Light=#DFFFFFFF, Dark=#D9222222}"
+            TextColor="{AppThemeBinding Light=#202020, Dark=#F5F5F5}"
+            Clicked="OnAttributionClicked"
+            SemanticProperties.Hint="Map attribution. Activate to toggle expanded details." />
+
     <!-- Bottom status bar (mirrors Controls.Status) -->
     <Grid x:Name="StatusBar"
           Grid.Row="1"

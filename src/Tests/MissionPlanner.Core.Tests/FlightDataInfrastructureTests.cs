@@ -159,6 +159,7 @@ public sealed class FlightDataInfrastructureTests
         provider.GetRequiredService<MissionPlanner.Maps.Custom.ICustomMapSourceStore>().Should().NotBeNull();
         provider.GetRequiredService<MissionPlanner.Maps.Hosted.HostedMapSourceService>().Should().NotBeNull();
         provider.GetRequiredService<MissionPlanner.App.Maps.IMapsuiBasemapFactory>().Should().BeOfType<MissionPlanner.App.Maps.CompositeMapsuiBasemapFactory>();
+        provider.GetRequiredService<MissionPlanner.Maps.Attribution.IMapAttributionCoordinator>().Should().NotBeNull();
         provider.GetRequiredService<IUserConfirmationService>().Should().NotBeNull();
         provider.GetRequiredService<AsyncOperationRunner>().Should().NotBeNull();
         provider.GetRequiredService<FlightDataViewModel>().Should().NotBeNull();

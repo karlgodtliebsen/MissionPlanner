@@ -4,6 +4,9 @@ using MissionPlanner.Maps.Catalog;
 using MissionPlanner.Maps.Esri;
 using MissionPlanner.Maps.Http;
 using MissionPlanner.Maps.Policy;
+using MissionPlanner.Maps.Sources;
+using MissionPlanner.Maps.Credentials;
+using NSubstitute;
 
 namespace MissionPlanner.Core.Tests.Maps;
 
@@ -51,12 +54,19 @@ public sealed class EsriMapSourceTests
         EsriRequestUriBuilder.ToDiagnosticString(authenticated).Should().NotContain("top-secret");
     }
 
-    private static EsriAttributionResolver Resolver(string content, HttpStatusCode status) => new(
-        BuiltInMapCatalog.Load(), new MapHttpClientFactory(new StubHandler(content, status), MapHttpOptions.Default));
-
-    private sealed class StubHandler(string content, HttpStatusCode status) : HttpMessageHandler
+    private static EsriAttributionResolver Resolver(string content, HttpStatusCode status)
     {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
-            Task.FromResult(new HttpResponseMessage(status) { Content = new StringContent(content) });
+        var catalog = BuiltInMapCatalog.Load();
+        var definition = catalog.Sources.Single(item => item.Id == "esri-world-topo");
+        var product = catalog.Products.Single(item => item.Id == definition.ProductId);
+        var resolved = new ResolvedMapSource(definition.Id, MapSourceOrigin.Catalog, catalog.Providers.Single(item => item.Id == product.ProviderId), product, definition, catalog.Policies.Single(item => item.Id == definition.PolicyId), [catalog.Attributions.Single(item => item.Id == "esri")], new(MapCredentialRequirement.None, true), definition.UriTemplate);
+        var sourceResolver = Substitute.For<IMapSourceResolver>();
+        sourceResolver.ResolveAsync(definition.Id, Arg.Any<CancellationToken>()).Returns(new MapSourceResolutionResult(MapSourceResolutionStatus.None, resolved));
+        var fetcher = Substitute.For<IMapHttpResourceFetcher>();
+        fetcher.FetchAsync(Arg.Any<MapHttpFetchRequest>(), Arg.Any<CancellationToken>()).Returns(
+            status == HttpStatusCode.OK
+                ? new MapHttpFetchResult(MapHttpFetchStatus.Success, System.Text.Encoding.UTF8.GetBytes(content), false)
+                : new MapHttpFetchResult(MapHttpFetchStatus.NetworkFailure, null, false));
+        return new(catalog, sourceResolver, fetcher);
     }
 }
