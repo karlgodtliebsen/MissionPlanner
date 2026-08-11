@@ -47,3 +47,11 @@ Each pack has a manifest containing stable ID, version, display name, size, SHA-
 ## Vector and PMTiles decision
 
 [ADR-0006](adr/ADR-0006-defer-vector-pmtiles.md) defers production vector/PMTiles support. PMTiles v3 archive access is feasible, but Mapsui's MVT renderer remains explicitly experimental and converting to vector MBTiles does not solve style/rendering compatibility. A separate MapLibre or WebView renderer would be a future migration with its own cross-platform lifecycle and overlay architecture. The disabled catalog candidate remains a placeholder only; conditional map Task 06 is not authorized.
+
+## Custom and self-hosted sources
+
+Users can configure raster XYZ/TMS, WMS, and WMTS services without code changes; local raster MBTiles continues through the pack API. Non-secret settings include stable ID, display name, endpoint/template, zooms, WMS/WMTS layer/style/matrix values, credential type, attribution, and technical cache preference. The JSON store uses staged atomic replacement. Credentials are stored separately through secure storage and source URLs containing secret query values are rejected.
+
+Validation requires absolute HTTP(S) endpoints, XYZ/TMS `{z}/{x}/{y}` placeholders, valid zooms, service-specific identifiers, and attribution. Plain HTTP produces a prominent warning. WMS/WMTS test-connection calls are bounded and cancellable, parse capabilities metadata, confirm the configured layer, redact failures, and record a presentation-ready status. Deleting the selected custom source returns the safe `osm-standard` fallback before renderer switching.
+
+The `UserControlled` policy permits interactive rendering and an optional protocol-aware HTTP cache. It does not assert offline-pack, export, proxy, or redistribution rights; the operator remains responsible for source terms and attribution. Custom vector sources remain unavailable because ADR-0006 did not approve a vector renderer.

@@ -12,6 +12,8 @@ Offline map infrastructure supports user-imported raster MBTiles with versioned 
 
 Production vector/PMTiles support is explicitly deferred by ADR-0006. The current Mapsui vector path is experimental, archive conversion does not solve renderer/style requirements, and no supported alternative renderer currently spans all Mission Planner MAUI targets. Raster MBTiles remains the supported offline path.
 
+Custom map source APIs support add/edit/test/delete for raster XYZ/TMS and self-hosted WMS/WMTS, plus the existing local raster MBTiles pack path. Configuration validates templates and capabilities metadata, warns on HTTP, requires attribution, stores credentials separately, redacts diagnostics, uses a conservative user-controlled policy, and safely falls back when a selected source is deleted.
+
 
 
 ## MavLink

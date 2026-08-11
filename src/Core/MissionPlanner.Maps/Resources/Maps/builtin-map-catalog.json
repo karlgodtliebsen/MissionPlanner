@@ -38,6 +38,12 @@
       "allowExport": false, "allowPrinting": false, "requiresVisibleAttribution": true
     },
     {
+      "id": "user-controlled-network-v1", "reviewedOn": "2026-08-11",
+      "reviewNotes": "Mission Planner can provide interactive access and a technical HTTP cache but does not claim the operator has offline-pack, export, proxy, or redistribution rights.",
+      "allowInteractiveUse": true, "allowOfflineCache": true, "allowPackDownload": false,
+      "allowExport": false, "allowPrinting": false, "requiresVisibleAttribution": true
+    },
+    {
       "id": "esri-online-v1", "termsUri": "https://www.esri.com/en-us/legal/terms/full-master-agreement", "reviewedOn": "2026-08-11",
       "reviewNotes": "Interactive online use only until an explicit product-specific review approves additional operations.",
       "allowInteractiveUse": true, "allowOfflineCache": true, "allowPackDownload": false,
@@ -101,8 +107,8 @@
     {
       "id": "custom-raster-template", "productId": "custom-raster", "displayName": "Custom raster template", "accessKind": "httpXyz",
       "archiveFormat": "none", "contentFormat": "rasterPng", "uriTemplate": "https://example.invalid/{z}/{x}/{y}.png", "minimumZoom": 0, "maximumZoom": 24,
-      "policyId": "local-user-content-v1", "attributionIds": [], "credentialRequirement": "none",
-      "capabilities": { "supportsInteractiveUse": true, "supportsOfflineCache": true, "supportsPackDownload": false, "supportsExport": true, "supportsPrinting": true },
+      "policyId": "user-controlled-network-v1", "attributionIds": [], "credentialRequirement": "none",
+      "capabilities": { "supportsInteractiveUse": true, "supportsOfflineCache": true, "supportsPackDownload": false, "supportsExport": false, "supportsPrinting": false },
       "isEnabledByDefault": false, "isFutureCandidate": true
     },
     {
