@@ -6,11 +6,15 @@ Mission Planner separates map product identity, access, policy, attribution, and
 
 The embedded catalog is stored at `src/Core/MissionPlanner.Maps/Resources/Maps/builtin-map-catalog.json`. It distinguishes provider, product, concrete source, technical capability, reviewed policy, attribution, and credential requirement. Stable string identifiers are persisted instead of display names or renderer types. `schemaVersion` governs file compatibility; `catalogVersion` identifies catalog content. Serialization is deterministic so changes remain reviewable.
 
+## Implementation status
+
+- **Infrastructure implemented:** versioned catalog, typed policy, secure credential boundary, central HTTP/cache fetcher, attribution aggregation, offline-pack repository, and renderer-neutral resolution.
+- **Runtime integrated:** built-in raster, blank map, installed raster MBTiles, credentialed hosted raster, custom XYZ/TMS, live attribution, and asynchronous source switching all use the production mission-map path.
+- **Manually verified:** no current platform has been recorded as interactively verified for this commit; see the explicit Not run matrix in [MAPS_PLATFORM_VERIFICATION.md](MAPS_PLATFORM_VERIFICATION.md).
+
 ## Built-in sources
 
-The initial catalog represents the existing OpenStreetMap, Esri World Topographic, World Physical, World Shaded Relief, World Dark Gray, and No Map choices. Their current UI behavior is unchanged in this architecture step.
-
-Custom raster sources, raster MBTiles, credentialed hosted providers, and vector PMTiles are present only as disabled future candidates. Presence in the catalog is not approval to enable a provider. A source becomes selectable only after its adapter, policy, attribution, credential, and test work is complete.
+The catalog represents OpenStreetMap, Esri World Topographic, World Physical, World Shaded Relief, World Dark Gray, and No Map choices. These built-ins, supported custom raster sources, installed raster MBTiles, and credentialed hosted providers have production adapters. A catalog entry is selectable only when its adapter, policy, attribution, credential, and tests are complete. Vector/PMTiles alone remains a disabled future candidate.
 
 ## Validation and boundaries
 
@@ -18,7 +22,7 @@ Catalog loading fails closed when identifiers are duplicated, references are mis
 
 ## Policy guardrails
 
-Every operation is evaluated as the intersection of a source's technical capability and its reviewed policy. Decisions are typed, carry the policy identifier, and explain denials. Interactive use, client cache, offline area download, bulk prefetch, proxying, redistribution, and static export are separate decisions. Unknown operations, proxying, and redistribution fail closed.
+Every operation is evaluated as the intersection of a source's technical capability and its reviewed policy. Decisions are typed, carry the policy identifier, and explain denials. Interactive use, client cache, offline area download, bulk prefetch, proxying, redistribution, static export, and printing each have independent capability and policy flags. Unknown operations fail closed; current reviewed hosted policies deny proxying and redistribution.
 
 OpenStreetMap Standard is configured conservatively: interactive use, visible attribution, an honest MissionPlanner User-Agent, and an HTTP-compliant bounded client cache are allowed. Bulk prefetch and offline pack creation are denied. Policy metadata is an application guardrail, not legal advice or a live terms parser.
 
@@ -50,7 +54,7 @@ Each pack has a manifest containing stable ID, version, display name, size, SHA-
 
 ## Vector and PMTiles decision
 
-[ADR-0006](adr/ADR-0006-defer-vector-pmtiles.md) defers production vector/PMTiles support. PMTiles v3 archive access is feasible, but Mapsui's MVT renderer remains explicitly experimental and converting to vector MBTiles does not solve style/rendering compatibility. A separate MapLibre or WebView renderer would be a future migration with its own cross-platform lifecycle and overlay architecture. The disabled catalog candidate remains a placeholder only; conditional map Task 06 is not authorized.
+[ADR-0006](adr/ADR-0006-defer-vector-pmtiles.md) defers production vector/PMTiles support. PMTiles v3 archive access is feasible, but Mapsui's MVT renderer remains explicitly experimental and converting to vector MBTiles does not solve style/rendering compatibility. A separate MapLibre or WebView renderer would be a future migration with its own cross-platform lifecycle and overlay architecture. PMTiles/vector support is deferred, not rejected. The catalog, policy, attribution, and pack architecture remains format-neutral so vector support can be added later without redesigning the raster path. Current production offline support is raster MBTiles. The ADR's conditional vector implementation task remains unauthorized; the unrelated runtime-hardening task numbered 06 does not alter that decision.
 
 ## Custom and self-hosted sources
 
@@ -96,7 +100,7 @@ Managed pack installation accepts only a versioned, signed feed retrieved over H
 
 Feed size and artifact size are bounded, requests use the common timeout/cancellation infrastructure, and progress is reported against the signed size. Compatibility, reviewed catalog source/product, raster-MBTiles format, offline policy, required notices, and downgrade checks happen before download. The response stream is passed to the same bounded installer used by local imports; no complete archive is buffered in memory. Installed manifests retain the source, product, policy review, sanitized feed origin, retrieval time, attribution IDs, and notice references. Older versions are removed only after successful activation; if the old version is selected, the authoritative source ID is first moved to the new version. Cancellation, partial content, hash/validation failure, disk-full errors, and incompatible renderers retain the previous working pack.
 
-No Protomaps feed is included because ADR-0006 deferred the vector renderer and Task 06 was not authorized. A future vector feed must include every offline style/font/sprite asset and reviewed notice before it can be added.
+No Protomaps feed is included because ADR-0006 deferred the vector renderer and its conditional implementation task was not authorized. A future vector feed must include every offline style/font/sprite asset and reviewed notice before it can be added.
 
 ## Export attribution and diagnostics
 

@@ -2,7 +2,7 @@
 
 ## Map source architecture
 
-Map provider metadata has a platform-neutral, versioned catalog with validation and deterministic serialization. Existing map rendering remains unchanged; offline, custom, hosted, and vector candidates remain disabled until their dedicated implementation and policy tasks are complete. See [MAPS.md](MAPS.md).
+Map subsystem status is tracked separately as **Infrastructure implemented**, **Runtime integrated**, and **Manually verified**. Catalog, policy, credentials, cache, attribution, pack, and resolution infrastructure is implemented. Built-in raster, blank, installed raster MBTiles, supported hosted raster, and custom XYZ/TMS are runtime integrated. Interactive platform verification remains Not run unless recorded in [MAPS_PLATFORM_VERIFICATION.md](MAPS_PLATFORM_VERIFICATION.md). Vector/PMTiles remains deferred under ADR-0006. See [MAPS.md](MAPS.md).
 
 Map operations now have fail-closed capability-and-policy evaluation. Attribution aggregation supports compact, expanded, export, and dynamic entries. Map credentials adapt the existing secure store. All supported online raster tiles share the runtime policy/authentication/HTTP cache fetcher, with assembly-version identity, cancellation/timeouts, exact namespace isolation, freshness and validators, `no-store`, dynamic Planner cache settings, coalesced requests, atomic writes, and bounded threshold eviction without treating cache data as offline packs.
 

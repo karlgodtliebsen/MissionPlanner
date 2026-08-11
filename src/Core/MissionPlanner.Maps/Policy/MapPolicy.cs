@@ -18,7 +18,9 @@ public enum MapOperation
     /// <summary>Redistributing a generated or downloaded pack.</summary>
     RedistributedPack,
     /// <summary>Including content in a static export.</summary>
-    StaticExport
+    StaticExport,
+    /// <summary>Printing map content.</summary>
+    Printing
 }
 
 /// <summary>Describes the effective decision for one map operation.</summary>
@@ -54,18 +56,24 @@ public sealed class MapPolicyEvaluator : IMapPolicyEvaluator
         {
             MapOperation.InteractiveUse => source.Capabilities.SupportsInteractiveUse,
             MapOperation.ClientDiskCache => source.Capabilities.SupportsOfflineCache,
-            MapOperation.OfflineAreaDownload or MapOperation.BulkPrefetch => source.Capabilities.SupportsPackDownload,
+            MapOperation.OfflineAreaDownload => source.Capabilities.SupportsPackDownload,
+            MapOperation.BulkPrefetch => source.Capabilities.SupportsBulkPrefetch,
             MapOperation.StaticExport => source.Capabilities.SupportsExport,
-            MapOperation.Proxy or MapOperation.RedistributedPack => false,
+            MapOperation.Printing => source.Capabilities.SupportsPrinting,
+            MapOperation.Proxy => source.Capabilities.SupportsProxy,
+            MapOperation.RedistributedPack => source.Capabilities.SupportsRedistribution,
             _ => false
         };
         var permitted = operation switch
         {
             MapOperation.InteractiveUse => policy.AllowInteractiveUse,
             MapOperation.ClientDiskCache => policy.AllowOfflineCache,
-            MapOperation.OfflineAreaDownload or MapOperation.BulkPrefetch => policy.AllowPackDownload,
+            MapOperation.OfflineAreaDownload => policy.AllowPackDownload,
+            MapOperation.BulkPrefetch => policy.AllowBulkPrefetch,
             MapOperation.StaticExport => policy.AllowExport,
-            MapOperation.Proxy or MapOperation.RedistributedPack => false,
+            MapOperation.Printing => policy.AllowPrinting,
+            MapOperation.Proxy => policy.AllowProxy,
+            MapOperation.RedistributedPack => policy.AllowRedistribution,
             _ => false
         };
 

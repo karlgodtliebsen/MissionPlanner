@@ -88,12 +88,18 @@ public sealed record MapDataProductDefinition(string Id, string ProviderId, stri
 /// <param name="SupportsPackDownload">Whether bounded pack download is supported.</param>
 /// <param name="SupportsExport">Whether imagery may be included in exports.</param>
 /// <param name="SupportsPrinting">Whether imagery may be printed.</param>
+/// <param name="SupportsBulkPrefetch">Whether bulk prefetch is technically supported.</param>
+/// <param name="SupportsProxy">Whether proxying to other clients is technically supported.</param>
+/// <param name="SupportsRedistribution">Whether pack redistribution is technically supported.</param>
 public sealed record MapSourceCapabilities(
     bool SupportsInteractiveUse,
     bool SupportsOfflineCache,
     bool SupportsPackDownload,
     bool SupportsExport,
-    bool SupportsPrinting);
+    bool SupportsPrinting,
+    bool SupportsBulkPrefetch = false,
+    bool SupportsProxy = false,
+    bool SupportsRedistribution = false);
 
 /// <summary>Records reviewed usage constraints for a map product.</summary>
 /// <param name="Id">Stable policy identifier.</param>
@@ -106,6 +112,9 @@ public sealed record MapSourceCapabilities(
 /// <param name="AllowExport">Whether imagery may be exported.</param>
 /// <param name="AllowPrinting">Whether imagery may be printed.</param>
 /// <param name="RequiresVisibleAttribution">Whether attribution must remain visible.</param>
+/// <param name="AllowBulkPrefetch">Whether reviewed policy allows bulk prefetch.</param>
+/// <param name="AllowProxy">Whether reviewed policy allows proxying to other clients.</param>
+/// <param name="AllowRedistribution">Whether reviewed policy allows pack redistribution.</param>
 public sealed record MapUsagePolicy(
     string Id,
     Uri? TermsUri,
@@ -116,7 +125,10 @@ public sealed record MapUsagePolicy(
     bool AllowPackDownload,
     bool AllowExport,
     bool AllowPrinting,
-    bool RequiresVisibleAttribution);
+    bool RequiresVisibleAttribution,
+    bool AllowBulkPrefetch = false,
+    bool AllowProxy = false,
+    bool AllowRedistribution = false);
 
 /// <summary>Describes an attribution requirement.</summary>
 /// <param name="Id">Stable attribution identifier.</param>
@@ -143,7 +155,7 @@ public sealed record MapAttributionEntry(string Id, string Text, Uri? Uri, bool 
 /// <param name="IsEnabledByDefault">Whether the source is initially enabled.</param>
 /// <param name="IsFutureCandidate">Whether the source is catalogued for later work.</param>
 /// <param name="AuthenticationStrategy">Reviewed request authentication strategy.</param>
-/// <param name="AuthenticationName">Reviewed query parameter or header name.</param>
+/// <param name="AuthenticationName">Reviewed query parameter, header name, or authorization scheme.</param>
 public sealed record MapSourceDefinition(
     string Id,
     string ProductId,

@@ -145,7 +145,7 @@
       "policyId": "stadia-hosted-v1", "attributionIds": ["stadia"], "credentialRequirement": "apiKey",
       "capabilities": { "supportsInteractiveUse": true, "supportsOfflineCache": true, "supportsPackDownload": false, "supportsExport": false, "supportsPrinting": false },
       "isEnabledByDefault": false, "isFutureCandidate": false,
-      "authenticationStrategy": "headerApiKey", "authenticationName": "Stadia-Auth"
+      "authenticationStrategy": "authorizationBearer", "authenticationName": "Stadia-Auth"
     },
     {
       "id": "thunderforest-outdoors", "productId": "thunderforest-raster", "displayName": "Thunderforest Outdoors", "accessKind": "httpXyz",

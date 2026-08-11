@@ -26,6 +26,22 @@ public sealed class MapPolicyAndInfrastructureTests
     }
 
     [Fact]
+    public void PolicyEvaluator_UsesIndependentCapabilityAndPolicyFlags()
+    {
+        var capabilities = new MapSourceCapabilities(true, true, true, true, true, SupportsBulkPrefetch: true, SupportsProxy: true, SupportsRedistribution: true);
+        var source = new MapSourceDefinition("source", "product", "Source", MapAccessKind.HttpXyz, MapArchiveFormat.None, MapTileContentFormat.RasterPng, "https://example.test/{z}/{x}/{y}", 0, 18, "policy", [], MapCredentialRequirement.None, capabilities, true, false);
+        var policy = new MapUsagePolicy("policy", null, new DateOnly(2026, 8, 11), "Test", true, true, true, true, true, true, AllowBulkPrefetch: false, AllowProxy: true, AllowRedistribution: false);
+        var evaluator = new MapPolicyEvaluator();
+
+        evaluator.Evaluate(source, policy, MapOperation.OfflineAreaDownload).IsAllowed.Should().BeTrue();
+        evaluator.Evaluate(source, policy, MapOperation.BulkPrefetch).IsAllowed.Should().BeFalse();
+        evaluator.Evaluate(source, policy, MapOperation.Proxy).IsAllowed.Should().BeTrue();
+        evaluator.Evaluate(source, policy, MapOperation.RedistributedPack).IsAllowed.Should().BeFalse();
+        evaluator.Evaluate(source, policy, MapOperation.StaticExport).IsAllowed.Should().BeTrue();
+        evaluator.Evaluate(source, policy, MapOperation.Printing).IsAllowed.Should().BeTrue();
+    }
+
+    [Fact]
     public async Task AttributionService_UsesVisibleContributorsAndDeduplicates()
     {
         var entry = new MapAttributionEntry("osm", "© OpenStreetMap contributors", null, true, true);

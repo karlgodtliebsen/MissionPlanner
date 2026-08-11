@@ -185,7 +185,7 @@ public sealed class MapHttpResourceFetcher(
                 request.RequestUri = builder.Uri;
                 break;
             case MapAuthenticationStrategy.AuthorizationBearer:
-                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", credential);
+                request.Headers.Authorization = new AuthenticationHeaderValue(source.Definition.AuthenticationName ?? "Bearer", credential);
                 break;
             case MapAuthenticationStrategy.HeaderApiKey:
                 request.Headers.TryAddWithoutValidation(source.Definition.AuthenticationName!, credential);
