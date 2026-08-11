@@ -1,18 +1,19 @@
 ﻿using CommunityToolkit.Maui.Storage;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.Missions;
-using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.ConfigTuning.Fences;
+using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Planning;
 using MissionPlanner.Core.Missions.Rally;
-using MissionPlanner.App.Presentation;
+using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
-using MissionPlanner.Maps.Prefetch;
 using MissionPlanner.Maps.Coordinates;
-using MissionPlanner.Core.Replay;
+using MissionPlanner.Maps.Prefetch;
+using UraniumUI.Material.Dialogs;
 
 namespace MissionPlanner.App.Views.FlightPlanner;
 
@@ -31,11 +32,11 @@ public partial class FlightPlannerMissionMapViewModel : MissionMapViewModel
         IRallyConfigurationService rallyService, IRallyPlanFileCodec rallyFileCodec, IAutoWaypointGenerator autoWaypointGenerator,
         ISurveyMissionGenerator surveyMissionGenerator, IMapTilePrefetchService mapTilePrefetchService,
         IMissionElevationProfileService elevationProfileService, IPoiService poiService, ITrackerHomeService trackerHomeService,
-        IGeodeticCoordinateConverter geodeticConverter, IReplaySessionManager replaySession)
+        IGeodeticCoordinateConverter geodeticConverter, IReplaySessionManager replaySession, IExtendedDialogService dialogService)
         : base(activeVehicle, protocolMapper, fileSaver, settingsService, fileCodec, domainEventHub, dispatcher, dateTimeProvider, logger,
             interactionService, advancedMissionItems, promptService, confirmationService, polygonService, fileOpenService, fileSaveService,
             choiceService, geospatialImportService, fenceService, fenceFileCodec, rallyService, rallyFileCodec, autoWaypointGenerator,
-            surveyMissionGenerator, mapTilePrefetchService, elevationProfileService, poiService, trackerHomeService, geodeticConverter, replaySession)
+            surveyMissionGenerator, mapTilePrefetchService, elevationProfileService, poiService, trackerHomeService, geodeticConverter, replaySession, dialogService)
     {
     }
 }

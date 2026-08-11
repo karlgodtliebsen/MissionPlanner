@@ -182,7 +182,7 @@
                 Text="{Binding PointerCoordinateText}"
                 VerticalOptions="Center" />
             <Label
-                IsVisible="{Binding HasAltitueMessage}"
+                IsVisible="{Binding HasAltitudeMessage}"
             Text="{Binding PointerAltitude, StringFormat='Alt: {0:F1} m'}"
             VerticalOptions="Center" />
             <Label

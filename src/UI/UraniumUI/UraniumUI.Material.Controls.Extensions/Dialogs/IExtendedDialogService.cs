@@ -9,6 +9,101 @@ namespace UraniumUI.Material.Dialogs;
 public interface IExtendedDialogService : IDialogService
 {
     /// <summary>
+    /// Displays a prompt dialog for entering a TimeSpan value. 
+    /// </summary>
+    /// <param name="title"></param>
+    /// <param name="selectedDate"></param>
+    /// <param name="minimumTime"></param>
+    /// <param name="maximumTime"></param>
+    /// <param name="accept"></param>
+    /// <param name="cancel"></param>
+    /// <param name="clear"></param>
+    /// <returns></returns>
+    Task<TimeSpan?> DisplayTimeSpanPromptAsync(
+        string title,
+        TimeSpan? selectedDate = null,
+        TimeSpan? minimumTime = null,
+        TimeSpan? maximumTime = null,
+        string accept = "OK",
+        string cancel = "Cancel",
+        string clear = "Clear");
+
+    /// <summary>
+    /// Displays a prompt dialog for entering a double value. 
+    /// </summary>
+    /// <param name="title"></param>
+    /// <param name="selected"></param>
+    /// <param name="minimum"></param>
+    /// <param name="maximum"></param>
+    /// <param name="accept"></param>
+    /// <param name="cancel"></param>
+    /// <param name="clear"></param>
+    /// <returns></returns>
+    Task<int?> DisplayIntegerPromptAsync(
+        string title,
+        int? selected = null,
+        int? minimum = null,
+        int? maximum = null,
+        string accept = "OK",
+        string cancel = "Cancel",
+        string clear = "Clear");
+
+    /// <summary>
+    /// Displays a prompt dialog for entering a long value. 
+    /// </summary>
+    /// <param name="title"></param>
+    /// <param name="selected"></param>
+    /// <param name="minimum"></param>
+    /// <param name="maximum"></param>
+    /// <param name="accept"></param>
+    /// <param name="cancel"></param>
+    /// <param name="clear"></param>
+    /// <returns></returns>
+    Task<long?> DisplayLongPromptAsync(
+        string title,
+        long? selected = null,
+        long? minimum = null,
+        long? maximum = null,
+        string accept = "OK",
+        string cancel = "Cancel",
+        string clear = "Clear");
+
+    /// <summary>
+    /// Displays a prompt dialog for entering a float value. 
+    /// </summary>
+    /// <param name="title"></param>
+    /// <param name="selected"></param>
+    /// <param name="minimum"></param>
+    /// <param name="maximum"></param>
+    /// <param name="accept"></param>
+    /// <param name="cancel"></param>
+    /// <param name="clear"></param>
+    /// <returns></returns>
+    Task<float?> DisplayFloatPromptAsync(
+        string title,
+        float? selected = null,
+        float? minimum = null,
+        float? maximum = null,
+        string accept = "OK",
+        string cancel = "Cancel",
+        string clear = "Clear");
+
+    /// <summary>
+    /// Displays a prompt dialog for entering a double value. 
+    /// </summary>
+    /// <param name="title"></param>
+    /// <param name="selected"></param>
+    /// <param name="minimum"></param>
+    /// <param name="maximum"></param>
+    /// <param name="accept"></param>
+    /// <param name="cancel"></param>
+    /// <param name="clear"></param>
+    /// <returns></returns>
+    Task<double?> DisplayDoublePromptAsync(string title, double? selected = null, double? minimum = null, double? maximum = null,
+        string accept = "OK", string cancel = "Cancel",
+        string clear = "Clear");
+
+    /// <summary>
     /// Displays a modal page of the specified type.
     /// </summary>
     /// <param name="animated">Indicates whether the display should be animated.</param>

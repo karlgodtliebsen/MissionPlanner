@@ -29,10 +29,85 @@ public class ExtendedDialogService : DefaultDialogService, IExtendedDialogServic
         this.serviceProvider = serviceProvider;
     }
 
+    /// <inheritdoc/>
+    public Task<TimeSpan?> DisplayTimeSpanPromptAsync(
+        string title,
+        TimeSpan? selectedDate = null,
+        TimeSpan? minimumTime = null,
+        TimeSpan? maximumTime = null,
+        string accept = "OK",
+        string cancel = "Cancel",
+        string clear = "Clear")
+    {
+        //new TimeSpan(0,0,0)
+
+        //use this to create a TimePickerField and display it in a dialog
+        //<material:TimePickerField   Title = "Pick time"
+        //Icon = "{FontImageSource FontFamily=MaterialSharp, Glyph={x:Static m:MaterialSharp.Access_time}}"
+        //>
+
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public Task<int?> DisplayIntegerPromptAsync(
+        string title,
+        int? selected = null,
+        int? minimum = null,
+        int? maximum = null,
+        string accept = "OK",
+        string cancel = "Cancel",
+        string clear = "Clear")
+    {
+        //use a NumericField and a float to-from integer (Int32) conversion (IntegerDoubleConverter) to display a float prompt dialog
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public Task<long?> DisplayLongPromptAsync(
+        string title,
+        long? selected = null,
+        long? minimum = null,
+        long? maximum = null,
+        string accept = "OK",
+        string cancel = "Cancel",
+        string clear = "Clear")
+    {
+        //use a NumericField and a float to-from long conversion (Similar to IntegerDoubleConverter) to display a float prompt dialog
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public Task<float?> DisplayFloatPromptAsync(
+        string title,
+        float? selected = null,
+        float? minimum = null,
+        float? maximum = null,
+        string accept = "OK",
+        string cancel = "Cancel",
+        string clear = "Clear")
+    {
+        //use a NumericField and a float to-from double conversion (Similar to IntegerDoubleConverter)  to display a float prompt dialog
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    public Task<double?> DisplayDoublePromptAsync(
+        string title,
+        double? selected = null,
+        double? minimum = null,
+        double? maximum = null,
+        string accept = "OK",
+        string cancel = "Cancel",
+        string clear = "Clear")
+    {
+        //use a NumericField  to display a float prompt dialog
+        throw new NotImplementedException();
+    }
+
 
     /// <inheritdoc />
-    public Task ShowAsync<TPage>(bool animated = true, CancellationToken cancellationToken = default)
-        where TPage : Page
+    public Task ShowAsync<TPage>(bool animated = true, CancellationToken cancellationToken = default) where TPage : Page
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -188,11 +263,7 @@ public class ExtendedDialogService : DefaultDialogService, IExtendedDialogServic
         return DisplayLightweightViewAsync(title, content, okText, cancelText);
     }
 
-    private async Task<bool> DisplayLightweightViewAsync(
-        string title,
-        View content,
-        string okText,
-        string? cancelText)
+    private async Task<bool> DisplayLightweightViewAsync(string title, View content, string okText, string? cancelText)
     {
         ArgumentNullException.ThrowIfNull(content);
 
