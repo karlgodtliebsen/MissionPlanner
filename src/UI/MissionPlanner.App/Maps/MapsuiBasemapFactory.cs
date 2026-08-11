@@ -1,10 +1,8 @@
 using BruTile;
 using BruTile.Predefined;
 using Mapsui.Layers;
-using Mapsui.Tiling;
 using Mapsui.Tiling.Layers;
 using MissionPlanner.Maps.Catalog;
-using MissionPlanner.Maps.Hosted;
 using MissionPlanner.Maps.Http;
 using MissionPlanner.Maps.Sources;
 
@@ -50,9 +48,8 @@ public interface IMapsuiBasemapFactory
 
 /// <summary>Routes supported raster sources to the appropriate production adapter.</summary>
 public sealed class CompositeMapsuiBasemapFactory(
-    MapsuiHostedBasemapFactory hostedFactory,
     MapsuiMbTilesSourceFactory mbTilesFactory,
-    IMapHttpClientFactory httpClientFactory) : IMapsuiBasemapFactory
+    IMapHttpResourceFetcher resourceFetcher) : IMapsuiBasemapFactory
 {
     /// <summary>Stable identity assigned to the single basemap slot.</summary>
     public const string BasemapLayerName = "MissionPlanner.Basemap";
@@ -70,13 +67,11 @@ public sealed class CompositeMapsuiBasemapFactory(
             else if (source.Definition.ArchiveFormat == MapArchiveFormat.MbTiles && source.Origin == MapSourceOrigin.InstalledPack)
                 layer = mbTilesFactory.Create(source);
             else if (source.Origin == MapSourceOrigin.Custom && source.Definition.AccessKind is MapAccessKind.HttpXyz or MapAccessKind.HttpTms)
-                layer = CreateHttpRaster(source, httpClientFactory.CreateClient());
+                layer = CreateHttpRaster(source, resourceFetcher);
             else if (source.Origin == MapSourceOrigin.Custom)
                 return Unsupported(source, "Custom WMS/WMTS rendering is not production-integrated.");
-            else if (source.Definition.CredentialRequirement != MapCredentialRequirement.None)
-                layer = await hostedFactory.CreateAsync(source, cancellationToken).ConfigureAwait(false);
-            else if (source.Origin == MapSourceOrigin.Catalog && source.Definition.AccessKind == MapAccessKind.HttpXyz)
-                layer = CreateBuiltIn(source);
+            else if (source.Origin == MapSourceOrigin.Catalog && source.Definition.AccessKind is MapAccessKind.HttpXyz or MapAccessKind.HttpTms)
+                layer = CreateHttpRaster(source, resourceFetcher);
             else
                 return Unsupported(source, "The source access or archive format has no Mapsui raster adapter.");
 
@@ -86,10 +81,6 @@ public sealed class CompositeMapsuiBasemapFactory(
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             return new(MapBasemapCreationStatus.Cancelled, null, "Basemap creation was cancelled.");
-        }
-        catch (HostedMapException exception) when (exception.Kind == HostedMapFailureKind.MissingCredential)
-        {
-            return new(MapBasemapCreationStatus.CredentialMissing, null, exception.Message);
         }
         catch (FileNotFoundException exception)
         {
@@ -101,31 +92,21 @@ public sealed class CompositeMapsuiBasemapFactory(
         }
     }
 
-    private static ILayer CreateBuiltIn(ResolvedMapSource source) => source.Id switch
-    {
-        "osm-standard" => OpenStreetMap.CreateTileLayer(),
-        "esri-world-topo" => new TileLayer(KnownTileSources.Create(KnownTileSource.EsriWorldTopo)),
-        "esri-world-physical" => new TileLayer(KnownTileSources.Create(KnownTileSource.EsriWorldPhysical)),
-        "esri-world-shaded-relief" => new TileLayer(KnownTileSources.Create(KnownTileSource.EsriWorldShadedRelief)),
-        "esri-world-dark-gray" => new TileLayer(KnownTileSources.Create(KnownTileSource.EsriWorldDarkGrayBase)),
-        _ => throw new NotSupportedException($"Built-in map source '{source.Id}' has no Mapsui adapter.")
-    };
-
-    private static ILayer CreateHttpRaster(ResolvedMapSource source, HttpClient client) =>
-        new TileLayer(new ResolvedHttpTileSource(source, client));
+    private static ILayer CreateHttpRaster(ResolvedMapSource source, IMapHttpResourceFetcher fetcher) =>
+        new TileLayer(new ResolvedHttpTileSource(source, fetcher));
 
     private static MapBasemapCreationResult Unsupported(ResolvedMapSource source, string detail) =>
         new(MapBasemapCreationStatus.Unsupported, null, $"Map source '{source.Id}' is unsupported. {detail}");
 
-    private sealed class ResolvedHttpTileSource : ILocalTileSource, IDisposable
+    private sealed class ResolvedHttpTileSource : ILocalTileSource
     {
         private readonly ResolvedMapSource source;
-        private readonly HttpClient client;
+        private readonly IMapHttpResourceFetcher fetcher;
 
-        public ResolvedHttpTileSource(ResolvedMapSource source, HttpClient client)
+        public ResolvedHttpTileSource(ResolvedMapSource source, IMapHttpResourceFetcher fetcher)
         {
             this.source = source;
-            this.client = client;
+            this.fetcher = fetcher;
             Schema = new GlobalSphericalMercator(source.Definition.DisplayName,
                 source.Definition.AccessKind == MapAccessKind.HttpTms ? YAxis.TMS : YAxis.OSM,
                 source.Definition.MinimumZoom,
@@ -139,16 +120,15 @@ public sealed class CompositeMapsuiBasemapFactory(
         public string Name { get; }
         public Attribution Attribution { get; }
 
-        public Task<byte[]?> GetTileAsync(TileInfo tileInfo)
+        public async Task<byte[]?> GetTileAsync(TileInfo tileInfo)
         {
             var endpoint = source.Location!
                 .Replace("{z}", tileInfo.Index.Level.ToString(System.Globalization.CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase)
                 .Replace("{x}", tileInfo.Index.Col.ToString(System.Globalization.CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase)
                 .Replace("{y}", tileInfo.Index.Row.ToString(System.Globalization.CultureInfo.InvariantCulture), StringComparison.OrdinalIgnoreCase);
-            return client.GetByteArrayAsync(endpoint).ContinueWith<byte[]?>(task => task.Result, TaskScheduler.Default);
+            var result = await fetcher.FetchAsync(new MapHttpFetchRequest(source, new Uri(endpoint), MapHttpResourceKind.RasterTile, $"{tileInfo.Index.Level}/{tileInfo.Index.Col}/{tileInfo.Index.Row}")).ConfigureAwait(false);
+            return result.Content;
         }
-
-        public void Dispose() => client.Dispose();
     }
 }
 

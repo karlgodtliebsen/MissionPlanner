@@ -28,7 +28,7 @@ Visible layers contribute stable attribution entries to one deduplicated snapsho
 
 Catalog entries declare only a credential type. Real values use the existing Planner secure-storage abstraction through a map adapter and never enter the catalog, ordinary settings, export, URL diagnostics, or logs. The credential service exposes configured state plus set, remove, and test operations without returning the secret to presentation code.
 
-Map HTTP clients use bounded timeouts, cancellation, and an honest User-Agent. Their disk cache stores HTTP responses by source, product, and style namespace, retains standard expiry and validator metadata, enforces a disk budget, and supports clearing one namespace or all namespaces. It is not an offline-pack repository.
+Every supported online raster tile now uses `IMapHttpResourceFetcher`; built-in convenience sources no longer bypass the common path. The fetcher enforces interactive/cache policy, injects reviewed typed authentication from secure storage, uses bounded cancellation-aware clients and an honest assembly-version User-Agent, and returns typed authorization/rate/network outcomes. It honors freshness, `ETag`, `Last-Modified`, `304`, `Cache-Control`, `Expires`, and `no-store`. The disk cache uses exact encoded source/product/resource namespaces, atomic replacement, coalesced same-key work, a maintained byte count, and threshold eviction instead of scanning the complete cache after every write. `Map.HttpCacheEnabled` and `Map.HttpCacheLimitBytes` are read at request time. This transient HTTP cache remains physically and logically separate from durable offline packs.
 
 ## Mapsui basemap adapter
 

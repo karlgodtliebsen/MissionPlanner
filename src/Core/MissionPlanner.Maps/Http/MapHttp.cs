@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
+using System.Collections.Concurrent;
 using MissionPlanner.Maps.Policy;
 
 namespace MissionPlanner.Maps.Http;
@@ -11,7 +12,9 @@ namespace MissionPlanner.Maps.Http;
 public sealed record MapHttpOptions(string UserAgent, TimeSpan Timeout)
 {
     /// <summary>Gets safe default map HTTP options.</summary>
-    public static MapHttpOptions Default { get; } = new("MissionPlanner/2.0 (+https://ardupilot.org/planner/)", TimeSpan.FromSeconds(20));
+    public static MapHttpOptions Default { get; } = new(
+        $"MissionPlanner/{typeof(MapHttpOptions).Assembly.GetName().Version?.ToString(3) ?? "unknown"} (+https://ardupilot.org/planner/)",
+        TimeSpan.FromSeconds(20));
 }
 
 /// <summary>Creates centrally configured map HTTP clients.</summary>
@@ -53,15 +56,25 @@ public sealed record MapHttpCacheMetadata(DateTimeOffset? ExpiresAt, string? Ent
 public sealed class MapHttpDiskCache
 {
     private readonly string root;
-    private readonly long budgetBytes;
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> keyGates = new(StringComparer.Ordinal);
+    private readonly object evictionGate = new();
+    private long budgetBytes;
+    private long sizeBytes;
 
     /// <summary>Gets the configured global disk budget.</summary>
-    public long BudgetBytes => budgetBytes;
+    public long BudgetBytes
+    {
+        get => Interlocked.Read(ref budgetBytes);
+        set
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(value);
+            Interlocked.Exchange(ref budgetBytes, value);
+            EnforceBudget();
+        }
+    }
 
     /// <summary>Gets the current cache size in bytes.</summary>
-    public long SizeBytes => Directory.Exists(root)
-        ? new DirectoryInfo(root).EnumerateFiles("*.data", SearchOption.AllDirectories).Sum(file => file.Length)
-        : 0;
+    public long SizeBytes => Interlocked.Read(ref sizeBytes);
 
     /// <summary>Initializes a map HTTP disk cache.</summary>
     public MapHttpDiskCache(string root, long budgetBytes)
@@ -70,6 +83,9 @@ public sealed class MapHttpDiskCache
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(budgetBytes);
         this.root = Path.GetFullPath(root);
         this.budgetBytes = budgetBytes;
+        sizeBytes = Directory.Exists(this.root)
+            ? new DirectoryInfo(this.root).EnumerateFiles("*.data", SearchOption.AllDirectories).Sum(file => file.Length)
+            : 0;
     }
 
     /// <summary>Writes an entry and enforces the global disk budget.</summary>
@@ -79,11 +95,37 @@ public sealed class MapHttpDiskCache
         ArgumentException.ThrowIfNullOrWhiteSpace(requestKey);
         ArgumentNullException.ThrowIfNull(content);
         var directory = GetNamespacePath(cacheNamespace);
-        Directory.CreateDirectory(directory);
         var key = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(requestKey)));
-        await File.WriteAllBytesAsync(Path.Combine(directory, key + ".data"), content, cancellationToken).ConfigureAwait(false);
-        await File.WriteAllTextAsync(Path.Combine(directory, key + ".json"), JsonSerializer.Serialize(metadata), cancellationToken).ConfigureAwait(false);
-        EnforceBudget();
+        var dataPath = Path.Combine(directory, key + ".data");
+        var metadataPath = Path.Combine(directory, key + ".json");
+        var gate = keyGates.GetOrAdd(dataPath, static _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            Directory.CreateDirectory(directory);
+            var previousLength = File.Exists(dataPath) ? new FileInfo(dataPath).Length : 0;
+            var dataStaging = dataPath + $".tmp-{Guid.NewGuid():N}";
+            var metadataStaging = metadataPath + $".tmp-{Guid.NewGuid():N}";
+            try
+            {
+                await File.WriteAllBytesAsync(dataStaging, content, cancellationToken).ConfigureAwait(false);
+                await File.WriteAllTextAsync(metadataStaging, JsonSerializer.Serialize(metadata), cancellationToken).ConfigureAwait(false);
+                File.Move(dataStaging, dataPath, true);
+                File.Move(metadataStaging, metadataPath, true);
+                Interlocked.Add(ref sizeBytes, content.LongLength - previousLength);
+            }
+            finally
+            {
+                if (File.Exists(dataStaging)) File.Delete(dataStaging);
+                if (File.Exists(metadataStaging)) File.Delete(metadataStaging);
+            }
+        }
+        finally
+        {
+            gate.Release();
+        }
+        if (SizeBytes > BudgetBytes)
+            EnforceBudget();
     }
 
     /// <summary>Reads an entry when present.</summary>
@@ -93,12 +135,19 @@ public sealed class MapHttpDiskCache
         var key = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(requestKey)));
         var dataPath = Path.Combine(directory, key + ".data");
         var metadataPath = Path.Combine(directory, key + ".json");
-        if (!File.Exists(dataPath) || !File.Exists(metadataPath))
+        if (!File.Exists(dataPath) || !File.Exists(metadataPath)) return null;
+        try
+        {
+            File.SetLastAccessTimeUtc(dataPath, DateTime.UtcNow);
+            var content = await File.ReadAllBytesAsync(dataPath, cancellationToken).ConfigureAwait(false);
+            var metadata = JsonSerializer.Deserialize<MapHttpCacheMetadata>(await File.ReadAllTextAsync(metadataPath, cancellationToken).ConfigureAwait(false));
+            return metadata is null ? null : (content, metadata);
+        }
+        catch (Exception exception) when (exception is IOException or JsonException)
+        {
+            RemoveEntry(dataPath, metadataPath);
             return null;
-        File.SetLastAccessTimeUtc(dataPath, DateTime.UtcNow);
-        var content = await File.ReadAllBytesAsync(dataPath, cancellationToken).ConfigureAwait(false);
-        var metadata = JsonSerializer.Deserialize<MapHttpCacheMetadata>(await File.ReadAllTextAsync(metadataPath, cancellationToken).ConfigureAwait(false));
-        return metadata is null ? null : (content, metadata);
+        }
     }
 
     /// <summary>Clears one source/product/style namespace.</summary>
@@ -106,7 +155,10 @@ public sealed class MapHttpDiskCache
     {
         var path = GetNamespacePath(cacheNamespace);
         if (Directory.Exists(path))
+        {
+            Interlocked.Add(ref sizeBytes, -new DirectoryInfo(path).EnumerateFiles("*.data", SearchOption.AllDirectories).Sum(file => file.Length));
             Directory.Delete(path, recursive: true);
+        }
     }
 
     /// <summary>Clears every cache namespace belonging to a source.</summary>
@@ -115,9 +167,10 @@ public sealed class MapHttpDiskCache
         ArgumentException.ThrowIfNullOrWhiteSpace(sourceId);
         if (!Directory.Exists(root))
             return;
-        var prefix = new MapCacheNamespace(sourceId, string.Empty, string.Empty).Key.TrimEnd('_');
-        foreach (var directory in Directory.EnumerateDirectories(root).Where(path => Path.GetFileName(path).StartsWith(prefix + "_", StringComparison.Ordinal)))
-            Directory.Delete(directory, recursive: true);
+        var directory = Path.Combine(root, EncodeSegment(sourceId));
+        if (!Directory.Exists(directory)) return;
+        Interlocked.Add(ref sizeBytes, -new DirectoryInfo(directory).EnumerateFiles("*.data", SearchOption.AllDirectories).Sum(file => file.Length));
+        Directory.Delete(directory, recursive: true);
     }
 
     /// <summary>Clears all HTTP cache entries.</summary>
@@ -125,6 +178,7 @@ public sealed class MapHttpDiskCache
     {
         if (Directory.Exists(root))
             Directory.Delete(root, recursive: true);
+        Interlocked.Exchange(ref sizeBytes, 0);
     }
 
     /// <summary>Creates cache metadata from standard HTTP headers.</summary>
@@ -151,23 +205,31 @@ public sealed class MapHttpDiskCache
             request.Headers.IfModifiedSince = metadata.LastModified;
     }
 
-    private string GetNamespacePath(MapCacheNamespace value) => Path.Combine(root, value.Key);
+    private string GetNamespacePath(MapCacheNamespace value) => Path.Combine(root, EncodeSegment(value.SourceId), EncodeSegment(value.ProductId), EncodeSegment(value.StyleId));
+
+    private static string EncodeSegment(string value) => Convert.ToHexString(System.Text.Encoding.UTF8.GetBytes(value));
 
     private void EnforceBudget()
     {
-        if (!Directory.Exists(root))
-            return;
-        var files = new DirectoryInfo(root).EnumerateFiles("*.data", SearchOption.AllDirectories).OrderBy(file => file.LastAccessTimeUtc).ToList();
-        var size = files.Sum(file => file.Length);
-        foreach (var file in files)
+        lock (evictionGate)
         {
-            if (size <= budgetBytes)
-                break;
-            size -= file.Length;
-            file.Delete();
-            var metadata = Path.ChangeExtension(file.FullName, ".json");
-            if (File.Exists(metadata))
-                File.Delete(metadata);
+            if (!Directory.Exists(root) || SizeBytes <= BudgetBytes) return;
+            foreach (var file in new DirectoryInfo(root).EnumerateFiles("*.data", SearchOption.AllDirectories).OrderBy(file => file.LastAccessTimeUtc))
+            {
+                if (SizeBytes <= BudgetBytes) break;
+                RemoveEntry(file.FullName, Path.ChangeExtension(file.FullName, ".json"));
+            }
         }
+    }
+
+    private void RemoveEntry(string dataPath, string metadataPath)
+    {
+        if (File.Exists(dataPath))
+        {
+            var length = new FileInfo(dataPath).Length;
+            File.Delete(dataPath);
+            Interlocked.Add(ref sizeBytes, -length);
+        }
+        if (File.Exists(metadataPath)) File.Delete(metadataPath);
     }
 }

@@ -74,12 +74,12 @@ public sealed class HostedMapSourceService(MapCatalog catalog, IMapSecretStore s
             .Replace("{x}", column.ToString(System.Globalization.CultureInfo.InvariantCulture), StringComparison.Ordinal)
             .Replace("{y}", row.ToString(System.Globalization.CultureInfo.InvariantCulture), StringComparison.Ordinal);
         var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
-        if (source.Id.StartsWith("stadia-", StringComparison.Ordinal))
-            request.Headers.Authorization = new AuthenticationHeaderValue("Stadia-Auth", credential);
-        else if (source.Id.StartsWith("thunderforest-", StringComparison.Ordinal))
-            request.RequestUri = AppendSecret(request.RequestUri!, "apikey", credential!);
-        else if (source.Id.StartsWith("maptiler-", StringComparison.Ordinal))
-            request.RequestUri = AppendSecret(request.RequestUri!, "key", credential!);
+        if (source.AuthenticationStrategy == MapAuthenticationStrategy.HeaderApiKey)
+            request.Headers.TryAddWithoutValidation(source.AuthenticationName!, credential);
+        else if (source.AuthenticationStrategy == MapAuthenticationStrategy.AuthorizationBearer)
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", credential);
+        else if (source.AuthenticationStrategy == MapAuthenticationStrategy.QueryApiKey)
+            request.RequestUri = AppendSecret(request.RequestUri!, source.AuthenticationName!, credential!);
         return request;
     }
 

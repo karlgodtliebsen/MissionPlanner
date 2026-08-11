@@ -4,7 +4,7 @@
 
 Map provider metadata has a platform-neutral, versioned catalog with validation and deterministic serialization. Existing map rendering remains unchanged; offline, custom, hosted, and vector candidates remain disabled until their dedicated implementation and policy tasks are complete. See [MAPS.md](MAPS.md).
 
-Map operations now have fail-closed capability-and-policy evaluation. Attribution aggregation supports compact, expanded, export, and dynamic entries. Map credentials adapt the existing secure store, and HTTP/cache infrastructure provides bounded requests, namespace isolation, validators, disk budgets, and explicit clearing without treating cache data as offline packs.
+Map operations now have fail-closed capability-and-policy evaluation. Attribution aggregation supports compact, expanded, export, and dynamic entries. Map credentials adapt the existing secure store. All supported online raster tiles share the runtime policy/authentication/HTTP cache fetcher, with assembly-version identity, cancellation/timeouts, exact namespace isolation, freshness and validators, `no-store`, dynamic Planner cache settings, coalesced requests, atomic writes, and bounded threshold eviction without treating cache data as offline packs.
 
 The mission map now resolves stable source IDs and routes OpenStreetMap, all existing Esri choices, No Map, installed raster MBTiles, credentialed hosted raster, and custom XYZ/TMS through one production Mapsui composite. WMS/WMTS remains configuration/test-only until a production renderer adapter exists. Repeated switching replaces one stable basemap slot and preserves viewport, mission route, markers, interaction state, and other operational layers; typed resolution or creation failures retain the previous basemap.
 

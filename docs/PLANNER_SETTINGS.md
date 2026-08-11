@@ -59,6 +59,8 @@ or structured log properties.
 
 Map credentials follow the same rule. `PlannerMapSecretStoreAdapter` delegates map credential storage to `IPlannerSecretStore`; only a namespaced source key and configured/not-configured state may appear in normal application state. Map URLs and diagnostics redact known secrets and sensitive query parameters.
 
+`Map.HttpCacheEnabled` and `Map.HttpCacheLimitBytes` feed the live online-map fetch pipeline on every request. Disabling it prevents cache reads and writes; changing the limit updates bounded eviction. This protocol-aware transient cache follows provider policy and HTTP validators and is never used as, exported as, or mixed with an installed offline pack.
+
 Custom map source definitions are non-secret Planner application data stored in a separate atomic JSON document. They may contain endpoint templates, source type, zoom limits, WMS/WMTS identifiers, attribution, cache preference, and only the declared credential type. Actual API keys, tokens, passwords, and credential-bearing URLs are rejected from this document and remain exclusively in secure storage. Removing the currently selected custom source selects the OpenStreetMap fallback.
 
 Optional Stadia, Thunderforest, and MapTiler sources appear disabled until the corresponding secure credential is configured. The settings presentation may show configured/not-configured state, reviewed policy/cache summary, attribution preview, and redacted last test result; it must never bind to or export the secret value.

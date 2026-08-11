@@ -2,7 +2,6 @@ using FluentAssertions;
 using MissionPlanner.App.Maps;
 using MissionPlanner.Maps.Catalog;
 using MissionPlanner.Maps.Credentials;
-using MissionPlanner.Maps.Hosted;
 using MissionPlanner.Maps.Http;
 using MissionPlanner.Maps.Policy;
 using MissionPlanner.Maps.Sources;
@@ -81,9 +80,7 @@ public sealed class CompositeMapsuiBasemapFactoryTests
     private static CompositeMapsuiBasemapFactory Factory(IMapSecretStore? secrets = null)
     {
         secrets ??= Substitute.For<IMapSecretStore>();
-        var catalog = BuiltInMapCatalog.Load();
-        var http = new MapHttpClientFactory(new HttpClientHandler(), MapHttpOptions.Default);
-        return new(new MapsuiHostedBasemapFactory(new HostedMapSourceService(catalog, secrets, new MapPolicyEvaluator()), http), new MapsuiMbTilesSourceFactory(), http);
+        return new(new MapsuiMbTilesSourceFactory(), Substitute.For<IMapHttpResourceFetcher>());
     }
 
     private static MapSourceResolver Resolver(IMapSecretStore? secrets = null)

@@ -56,6 +56,19 @@ public enum MapCredentialRequirement
     UserNamePassword
 }
 
+/// <summary>Identifies how a reviewed provider credential is attached to a request.</summary>
+public enum MapAuthenticationStrategy
+{
+    /// <summary>No authentication is added.</summary>
+    None,
+    /// <summary>An API key is added as a query parameter.</summary>
+    QueryApiKey,
+    /// <summary>A bearer token is added to the Authorization header.</summary>
+    AuthorizationBearer,
+    /// <summary>An API key is added to a reviewed request header.</summary>
+    HeaderApiKey
+}
+
 /// <summary>Describes a map provider organization.</summary>
 /// <param name="Id">Stable provider identifier.</param>
 /// <param name="DisplayName">User-facing provider name.</param>
@@ -129,6 +142,8 @@ public sealed record MapAttributionEntry(string Id, string Text, Uri? Uri, bool 
 /// <param name="Capabilities">Supported operations.</param>
 /// <param name="IsEnabledByDefault">Whether the source is initially enabled.</param>
 /// <param name="IsFutureCandidate">Whether the source is catalogued for later work.</param>
+/// <param name="AuthenticationStrategy">Reviewed request authentication strategy.</param>
+/// <param name="AuthenticationName">Reviewed query parameter or header name.</param>
 public sealed record MapSourceDefinition(
     string Id,
     string ProductId,
@@ -144,7 +159,9 @@ public sealed record MapSourceDefinition(
     MapCredentialRequirement CredentialRequirement,
     MapSourceCapabilities Capabilities,
     bool IsEnabledByDefault,
-    bool IsFutureCandidate);
+    bool IsFutureCandidate,
+    MapAuthenticationStrategy AuthenticationStrategy = MapAuthenticationStrategy.None,
+    string? AuthenticationName = null);
 
 /// <summary>Contains versioned map provider, product, policy, attribution, and source definitions.</summary>
 /// <param name="SchemaVersion">Catalog schema version.</param>

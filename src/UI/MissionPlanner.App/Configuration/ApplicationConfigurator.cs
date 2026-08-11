@@ -88,7 +88,9 @@ public static class ApplicationConfigurator
         services.TryAddSingleton(provider => provider.GetRequiredService<IMapCatalog>().Current);
         services.TryAddSingleton<IMapPolicyEvaluator, MapPolicyEvaluator>();
         services.TryAddSingleton<HttpMessageHandler>(_ => new SocketsHttpHandler());
-        services.TryAddSingleton(MapHttpOptions.Default);
+        services.TryAddSingleton(_ => new MapHttpOptions(
+            $"MissionPlanner/{typeof(App).Assembly.GetName().Version?.ToString(3) ?? "unknown"} (+https://ardupilot.org/planner/)",
+            TimeSpan.FromSeconds(20)));
         services.TryAddSingleton<IMapHttpClientFactory, MapHttpClientFactory>();
         services.TryAddSingleton<ICustomMapSourceStore>(_ => new JsonCustomMapSourceStore(Path.Combine(FileSystem.AppDataDirectory, "Maps", "custom-sources.json")));
         services.TryAddSingleton<CustomMapSourceService>();
@@ -102,7 +104,9 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<MapsuiMbTilesSourceFactory>();
         services.TryAddSingleton<IMapsuiBasemapFactory, CompositeMapsuiBasemapFactory>();
         services.TryAddSingleton(_ => new MapHttpDiskCache(Path.Combine(FileSystem.CacheDirectory, "Maps", "Http"), 256L * 1_048_576));
-        services.TryAddTransient<IPlannerSettingsService, PlannerSettingsService>();
+        services.TryAddSingleton<IPlannerSettingsService, PlannerSettingsService>();
+        services.TryAddSingleton<IMapHttpRuntimeSettings, PlannerMapHttpRuntimeSettings>();
+        services.TryAddSingleton<IMapHttpResourceFetcher, MapHttpResourceFetcher>();
         services.TryAddTransient<ISimulatorProfileStore, PreferencesSimulatorProfileStore>();
         services.TryAddTransient<ISimulatorProfileService, SimulatorProfileService>();
         services.TryAddTransient<ISimulationScenarioPresetStore, PreferencesSimulationScenarioPresetStore>();

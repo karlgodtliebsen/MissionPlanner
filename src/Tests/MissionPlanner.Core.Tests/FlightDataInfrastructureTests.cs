@@ -142,6 +142,7 @@ public sealed class FlightDataInfrastructureTests
         var services = new ServiceCollection();
         services.AddSingleton(Substitute.For<MissionPlanner.Maps.Offline.IOfflineMapPackRepository>());
         services.AddSingleton(Substitute.For<MissionPlanner.Maps.Custom.ICustomMapSourceStore>());
+        services.AddSingleton(new MissionPlanner.Maps.Http.MapHttpDiskCache(Path.Combine(Path.GetTempPath(), $"map-di-{Guid.NewGuid():N}"), 1_048_576));
         services.AddApplicationConfiguration(configuration);
         services.AddSingleton(Substitute.For<IDispatcher>());
         services.AddSingleton(Substitute.For<IFileSaver>());
