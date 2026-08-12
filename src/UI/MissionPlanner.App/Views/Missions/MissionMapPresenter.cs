@@ -119,6 +119,7 @@ internal sealed class MissionMapPresenter : IDisposable
         }
 
         missionPins.Clear();
+        mapView.Pins.Remove(vehiclePin);
         mapView.Drawables.Remove(routeLine);
         foreach (var layer in planningLayers.Values)
         {

@@ -25,6 +25,9 @@ public partial class MissionMapView : ContentView, IDisposable //ExtendedContent
 
     public async Task Activate(MissionMapViewModel viewModel)
     {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        Deactivate();
+
         ViewModel = viewModel;
         presenter = domainFactory.Create<MissionMapPresenter, MapView, MissionMapViewModel>(MissionMap, viewModel);
         MissionMap.MapClicked += OnMapClicked;
@@ -50,11 +53,12 @@ public partial class MissionMapView : ContentView, IDisposable //ExtendedContent
             return;
         }
 
-        presenter?.Deactivate();
         MissionMap.MapClicked -= OnMapClicked;
         MissionMap.MapPointerMoved -= OnMapPointerMoved;
         ViewModel?.MapRotationRequested -= OnMapRotationRequested;
         ViewModel?.MapCenterRequested -= OnMapCenterRequested;
+        presenter?.Dispose();
+        presenter = null;
         ViewModel = null;
         BindingContext = null;
     }
@@ -69,12 +73,6 @@ public partial class MissionMapView : ContentView, IDisposable //ExtendedContent
 
         Deactivate();
         disposed = true;
-        presenter?.Dispose();
-        ViewModel?.Dispose();
-        ViewModel = null;
-        presenter = null;
-        BindingContext = null;
-        ViewModel = null;
     }
 
     private void OnMapClicked(object? sender, MapClickedEventArgs args)
