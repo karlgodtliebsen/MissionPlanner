@@ -30,8 +30,8 @@ using MissionPlanner.Core.ConfigTuning.Comparison;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Configuration;
 using MissionPlanner.Core.Firmware;
-using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Missions.Planning;
+using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Connected;
@@ -86,8 +86,8 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<MapsuiHostedBasemapFactory>();
         services.TryAddSingleton<MapsuiMbTilesSourceFactory>();
         services.TryAddSingleton<IMapsuiBasemapFactory, CompositeMapsuiBasemapFactory>();
-        services.TryAddSingleton<IPlannerSettingsService, PlannerSettingsService>();
-        services.TryAddSingleton<IMapHttpRuntimeSettings, PlannerMapHttpRuntimeSettings>();
+        services.TryAddTransient<IPlannerSettingsService, PlannerSettingsService>();
+        services.TryAddTransient<IMapHttpRuntimeSettings, PlannerMapHttpRuntimeSettings>();
         services.TryAddSingleton(_ => new MapHttpOptions(
             $"MissionPlanner/{typeof(App).Assembly.GetName().Version?.ToString(3) ?? "unknown"} (+https://ardupilot.org/planner/)",
             TimeSpan.FromSeconds(20)));
@@ -99,31 +99,30 @@ public static class ApplicationConfigurator
         services.TryAddTransient<ISitlPlatformService, LocalSitlPlatformService>();
         services.TryAddTransient<ISimulatorProcessHost, LocalSimulatorProcessHost>();
 
-        services.Replace(ServiceDescriptor.Singleton<ISimulatorOwnedProcessRecovery, LocalSimulatorOwnedProcessRecovery>());
-        services.Replace(ServiceDescriptor.Singleton<ISimulatorRuntime, ArduPilotSitlRuntime>());
+        services.TryAddSingleton<ISimulatorOwnedProcessRecovery, LocalSimulatorOwnedProcessRecovery>();
+        services.TryAddSingleton<ISimulatorRuntime, ArduPilotSitlRuntime>();
 
         services.TryAddTransient<ApplicationStateService>();
         services.TryAddTransient<ParametersFileHandler>();
         services.TryAddTransient<PlannerSettingsRuntime>();
         services.TryAddTransient<MissionItemListViewPage>();
         services.TryAddTransient<MissionItemListDockViewModel>();
+        services.TryAddTransient<MissionMapPresenter>();
 
         services.TryAddTransient<IExtendedDialogService, ExtendedDialogService>();
         services.TryAddTransient<IUserNotificationService, UserNotificationService>();
         services.TryAddTransient<IUserConfirmationService, UserConfirmationService>();
         services.TryAddTransient<IMissionMapInteractionService, MissionMapInteractionService>();
-        services.TryAddTransient<MauiMissionPlanningDialogService>();
-        services.TryAddTransient<IUserPromptService>(services => services.GetRequiredService<MauiMissionPlanningDialogService>());
+
+        services.TryAddTransient<IUserPromptService, MauiMissionPlanningDialogService>();
         services.TryAddTransient<IMissionTerrainElevationProvider, MissionTerrainElevationProvider>();
         services.TryAddSingleton<IPoiRepository>(_ => new JsonPoiRepository(Path.Combine(FileSystem.AppDataDirectory, "Planning", "points-of-interest.json")));
         services.TryAddSingleton<IPoiService, PoiService>();
-        services.TryAddTransient<IUserChoiceService>(services => services.GetRequiredService<MauiMissionPlanningDialogService>());
-        services.TryAddTransient<MauiMissionPlanningFileService>();
-        services.TryAddTransient<IFileOpenService>(services => services.GetRequiredService<MauiMissionPlanningFileService>());
-        services.TryAddTransient<IFileSaveService>(services => services.GetRequiredService<MauiMissionPlanningFileService>());
+        services.TryAddTransient<IUserChoiceService, MauiMissionPlanningDialogService>();
+        services.TryAddTransient<IFileOpenService, MauiMissionPlanningFileService>();
+        services.TryAddTransient<IFileSaveService, MauiMissionPlanningFileService>();
         services.TryAddTransient<IFirmwareConnectionGateway, FirmwareConnectionGateway>();
         services.TryAddTransient<IConnectedVehicleFirmwareGateway, ConnectedVehicleFirmwareGateway>();
-        services.TryAddTransient<FirmwareInteractionService>();
         services.TryAddTransient<IFirmwareFilePicker, MauiFirmwareFilePicker>();
 
         services.TryAddTransient<IFirmwareUserInteraction, FirmwareInteractionService>();
@@ -135,6 +134,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<IFirmwarePackageCache, FirmwarePackageCache>();
         services.TryAddTransient<IParameterComparisonService, ParameterComparisonService>();
         services.TryAddTransient<IParameterValueEquivalence, ParameterValueEquivalence>();
+
         services.TryAddSingleton<IFirmwareSupportLinkProvider, FirmwareSupportLinkProvider>();
         services.TryAddSingleton<IExternalLinkLauncher, ExternalLinkLauncher>();
         services.TryAddSingleton<IDeviceManagerLauncher, DeviceManagerLauncher>();
@@ -156,16 +156,6 @@ public static class ApplicationConfigurator
         return services;
     }
 
-    private static IServiceProvider UseApplicationServices(this IServiceProvider services)
-    {
-        var domainFactory = services.GetRequiredService<IDomainFactory>();
-        domainFactory.Add<ErrorViewModel>();
-        domainFactory.Add<ErrorView>();
-        domainFactory.Add<ParameterComparisonViewModel>();
-        domainFactory.Add<ParameterComparisonView>();
-        domainFactory.Add<MissionItemListViewPage>();
-        return services;
-    }
 
     private static IServiceCollection AddViewsModelsConfiguration(this IServiceCollection services)
     {
@@ -183,15 +173,18 @@ public static class ApplicationConfigurator
         services.TryAddTransient<ErrorView>();
 
         services.TryAddTransient<HelpViewModel>();
+        services.TryAddTransient<IntroductionViewModel>();
         services.TryAddTransient<ConnectPopupViewModel>();
         services.TryAddTransient<ConnectPopupView>();
         services.TryAddTransient<StatisticsViewModel>();
 
         services.TryAddTransient<AsyncOperationRunner>();
+        services.TryAddTransient<FlightDataMissionMapView>();
+        services.TryAddTransient<FlightPlannerMissionMapView>();
+        services.TryAddTransient<FlightPlannerMissionMapViewModel>();
+        services.TryAddTransient<FlightDataMissionMapViewModel>();
 
         services.TryAddTransient<HudViewModel>();
-        services.TryAddSingleton<FlightPlannerMissionMapViewModel>();
-        services.TryAddSingleton<FlightDataMissionMapViewModel>();
 
         // Tabs on FlightDataView
         services.TryAddTransient<QuickTabViewModel>();
@@ -242,6 +235,21 @@ public static class ApplicationConfigurator
         services.TryAddTransient<OptionalHardwareSetupViewModel>();
         services.TryAddTransient<SafetySetupViewModel>();
         services.TryAddTransient<SetupSummaryViewModel>();
+
+        return services;
+    }
+
+    private static IServiceProvider UseApplicationServices(this IServiceProvider services)
+    {
+        var domainFactory = services.GetRequiredService<IDomainFactory>();
+        domainFactory.Add<ErrorViewModel>();
+        domainFactory.Add<ErrorView>();
+        domainFactory.Add<ParameterComparisonViewModel>();
+        domainFactory.Add<ParameterComparisonView>();
+        domainFactory.Add<MissionItemListViewPage>();
+        domainFactory.Add<MissionMapPresenter>();
+        domainFactory.Add<FlightPlannerMissionMapViewModel>();
+        domainFactory.Add<FlightPlannerMissionMapView>();
 
         return services;
     }

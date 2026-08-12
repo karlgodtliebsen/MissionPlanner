@@ -9,9 +9,7 @@ namespace MissionPlanner.App.Services;
 public sealed class LocalSimulatorOwnedProcessRecovery : ISimulatorOwnedProcessRecovery
 {
     /// <inheritdoc />
-    public async Task<SimulationOrphanRecoveryResult> RecoverAsync(
-        SimulationOwnedProcess ownedProcess,
-        CancellationToken cancellationToken = default)
+    public async Task<SimulationOrphanRecoveryResult> RecoverAsync(SimulationOwnedProcess ownedProcess, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ownedProcess);
         cancellationToken.ThrowIfCancellationRequested();

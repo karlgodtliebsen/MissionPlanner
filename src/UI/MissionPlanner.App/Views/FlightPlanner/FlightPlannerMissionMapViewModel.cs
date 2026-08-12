@@ -1,19 +1,7 @@
-﻿using CommunityToolkit.Maui.Storage;
-using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Presentation;
+﻿using Microsoft.Extensions.Logging;
+using MissionPlanner.App.Views.FlightData;
 using MissionPlanner.App.Views.Missions;
-using MissionPlanner.Core.ConfigTuning.Fences;
-using MissionPlanner.Core.ConfigTuning.Planner;
-using MissionPlanner.Core.Missions.Abstractions;
-using MissionPlanner.Core.Missions.Planning;
-using MissionPlanner.Core.Missions.Rally;
-using MissionPlanner.Core.Replay;
-using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Library.DateTime.Domain;
-using MissionPlanner.Library.EventHub.Abstractions;
-using MissionPlanner.Maps.Coordinates;
-using MissionPlanner.Maps.Prefetch;
-using UraniumUI.Material.Dialogs;
+using MissionPlanner.Library.Factory.Domain.Abstractions;
 
 namespace MissionPlanner.App.Views.FlightPlanner;
 
@@ -21,22 +9,7 @@ namespace MissionPlanner.App.Views.FlightPlanner;
 public partial class FlightPlannerMissionMapViewModel : MissionMapViewModel
 {
     /// <inheritdoc />
-    public FlightPlannerMissionMapViewModel(IActiveVehicleContext activeVehicle, IMissionProtocolMapper protocolMapper, IFileSaver fileSaver,
-        IPlannerSettingsService settingsService, IMissionFileCodec fileCodec,
-        IDomainEventHub domainEventHub, IDispatcher dispatcher, IDateTimeProvider dateTimeProvider, ILogger<MissionMapViewModel> logger,
-        IMissionMapInteractionService interactionService, IAdvancedMissionItemService advancedMissionItems,
-        IUserConfirmationService confirmationService,
-        IPlanningPolygonService polygonService, IFileOpenService fileOpenService, IFileSaveService fileSaveService,
-        IUserChoiceService choiceService, IGeospatialImportService geospatialImportService,
-        IFenceConfigurationService fenceService, IFencePlanFileCodec fenceFileCodec,
-        IRallyConfigurationService rallyService, IRallyPlanFileCodec rallyFileCodec, IAutoWaypointGenerator autoWaypointGenerator,
-        ISurveyMissionGenerator surveyMissionGenerator, IMapTilePrefetchService mapTilePrefetchService,
-        IMissionElevationProfileService elevationProfileService, IPoiService poiService, ITrackerHomeService trackerHomeService,
-        IGeodeticCoordinateConverter geodeticConverter, IReplaySessionManager replaySession, IExtendedDialogService dialogService)
-        : base(activeVehicle, protocolMapper, fileSaver, settingsService, fileCodec, domainEventHub, dispatcher, dateTimeProvider, logger,
-            interactionService, advancedMissionItems, confirmationService, polygonService, fileOpenService, fileSaveService,
-            choiceService, geospatialImportService, fenceService, fenceFileCodec, rallyService, rallyFileCodec, autoWaypointGenerator,
-            surveyMissionGenerator, mapTilePrefetchService, elevationProfileService, poiService, trackerHomeService, geodeticConverter, replaySession, dialogService)
+    public FlightPlannerMissionMapViewModel(IServiceFactory factory, ILogger<FlightDataMissionMapViewModel> logger) : base(factory, logger)
     {
     }
 }

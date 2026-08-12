@@ -13,9 +13,7 @@ public sealed class PlannerSettingsRuntime : IDisposable
     /// <summary>Initializes and subscribes the runtime settings bridge.</summary>
     /// <param name="settingsService">The observable settings service.</param>
     /// <param name="applicationState">The shared connection UI state.</param>
-    public PlannerSettingsRuntime(
-        IPlannerSettingsService settingsService,
-        ApplicationStateService applicationState)
+    public PlannerSettingsRuntime(IPlannerSettingsService settingsService, ApplicationStateService applicationState)
     {
         this.settingsService = settingsService;
         this.applicationState = applicationState;

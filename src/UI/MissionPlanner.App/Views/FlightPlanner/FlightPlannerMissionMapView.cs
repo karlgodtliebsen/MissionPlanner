@@ -1,10 +1,6 @@
 ﻿using MissionPlanner.App.Helpers;
 using MissionPlanner.App.Views.Missions;
-using MissionPlanner.Core.ConfigTuning.Planner;
-using MissionPlanner.App.Maps;
-using MissionPlanner.Maps.Sources;
-using MissionPlanner.Maps.Attribution;
-using MissionPlanner.Maps.Terrain;
+using MissionPlanner.Library.Factory.Domain.Abstractions;
 
 namespace MissionPlanner.App.Views.FlightPlanner;
 
@@ -12,13 +8,11 @@ namespace MissionPlanner.App.Views.FlightPlanner;
 public class FlightPlannerMissionMapView : MissionMapView
 {
     /// <summary>Initializes a new instance of the <see cref="FlightPlannerMissionMapView"/> class.</summary>
-    public FlightPlannerMissionMapView() : base(
-        ServiceHelper.GetRequiredService<IPlannerSettingsService>(),
-        ServiceHelper.GetRequiredService<IMapSourceResolver>(),
-        ServiceHelper.GetRequiredService<IMapsuiBasemapFactory>(),
-        ServiceHelper.GetRequiredService<IMapAttributionCoordinator>(),
-        ServiceHelper.GetRequiredService<ITerrainElevationService>(),
-        ServiceHelper.GetRequiredService<FlightPlannerMissionMapViewModel>())
+    //public FlightPlannerMissionMapView() : base(
+    //    ServiceHelper.GetRequiredService<IDomainFactory>(), ServiceHelper.GetRequiredService<FlightPlannerMissionMapViewModel>())
+    //{
+    //}
+    public FlightPlannerMissionMapView(FlightPlannerMissionMapViewModel map) : base(ServiceHelper.GetRequiredService<IDomainFactory>(), map)
     {
     }
 }

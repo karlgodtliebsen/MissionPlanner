@@ -71,7 +71,7 @@
                         <Label  Grid.Column="5" Text="{Binding TransferStatus}" VerticalOptions="Center"  />
                     </Grid>
                 </FlexLayout>
-                <vm:FlightPlannerMissionMapView  Grid.Row="1"  HorizontalOptions="Fill" VerticalOptions="Fill"/>
+                <Grid  x:Name="MapView" Grid.Row="1"  HorizontalOptions="Fill" VerticalOptions="Fill" ></Grid>
             </Grid>
         </controls:RightDockPanel.MainContent>
 

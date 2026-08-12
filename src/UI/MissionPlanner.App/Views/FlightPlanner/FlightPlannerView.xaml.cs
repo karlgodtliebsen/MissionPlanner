@@ -1,4 +1,8 @@
-﻿using MissionPlanner.App.Navigation;
+﻿using MissionPlanner.App.Helpers;
+using MissionPlanner.App.Navigation;
+using MissionPlanner.Library;
+using MissionPlanner.Library.Factory.Domain.Abstractions;
+using UraniumUI.Extensions;
 
 namespace MissionPlanner.App.Views.FlightPlanner;
 
@@ -7,25 +11,45 @@ namespace MissionPlanner.App.Views.FlightPlanner;
 /// </summary>
 public partial class FlightPlannerView : ExtendedContentPage<FlightPlannerViewModel>
 {
+    private FlightPlannerMissionMapView? mapView;
+    private readonly Layout? host = null;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="FlightPlannerView"/> class.
     /// </summary>
     public FlightPlannerView()
     {
         InitializeComponent();
+        host = FindByName("MapView") as Layout;
     }
 
     /// <inheritdoc/>
     protected override void OnNavigatedTo(NavigatedToEventArgs args)
     {
         base.OnNavigatedTo(args);
-        ItemListView.BindingContext = ViewModel!.Map;
+        if (args.NavigationType is NavigationType.Replace or NavigationType.Remove)
+        {
+            DomainException.ThrowIfNull(ViewModel);
+            var factory = ServiceHelper.GetRequiredService<IDomainFactory>();
+            var map = ViewModel.Map as FlightPlannerMissionMapViewModel;
+            DomainException.ThrowIfNull(map);
+            mapView = factory.Create<FlightPlannerMissionMapView, FlightPlannerMissionMapViewModel>(map);
+            host?.Children.Add(mapView);
+            ItemListView.BindingContext = map;
+            mapView.Initialize().FireAndForget();
+        }
     }
 
     /// <inheritdoc />
-    protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
+    protected override void OnNavigatingFrom(NavigatingFromEventArgs args)
     {
-        base.OnNavigatedFrom(args);
-        ItemListView.BindingContext = null;
+        base.OnNavigatingFrom(args);
+        if (args.NavigationType is NavigationType.Replace or NavigationType.Remove)
+        {
+            host?.Children.Clear();
+            mapView?.Dispose();
+            mapView = null;
+            ItemListView.BindingContext = null;
+        }
     }
 }

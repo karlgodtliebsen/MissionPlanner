@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<uranium:UraniumContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                            xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                            x:Class="MissionPlanner.App.Views.Help.Introduction">
+    <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Fill">
+        <Label 
+            Text="Introduction to Next Generation MissionPlanner"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center" />
+    </VerticalStackLayout>
+</uranium:UraniumContentPage>

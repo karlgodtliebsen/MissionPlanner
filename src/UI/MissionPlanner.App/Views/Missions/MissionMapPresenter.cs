@@ -8,8 +8,8 @@ using MissionPlanner.App.Maps;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Missions.Planning;
-using MissionPlanner.Maps.Sources;
 using MissionPlanner.Maps.Attribution;
+using MissionPlanner.Maps.Sources;
 using MissionPlanner.Maps.Terrain;
 
 namespace MissionPlanner.App.Views.Missions;
@@ -20,7 +20,7 @@ namespace MissionPlanner.App.Views.Missions;
 internal sealed class MissionMapPresenter : IDisposable
 {
     private const double WebMercatorInitialResolution = 156543.03392804097;
-    private static readonly long pointerUpdateInterval = Stopwatch.Frequency / 30;
+    private static readonly long PointerUpdateInterval = Stopwatch.Frequency / 30;
     private readonly MapView mapView;
     private readonly MissionMapViewModel viewModel;
     private readonly IPlannerSettingsService plannerSettings;
@@ -59,25 +59,32 @@ internal sealed class MissionMapPresenter : IDisposable
         mapView.Drawables.Add(routeLine);
         planningLayers = CreatePlanningLayers();
         foreach (var layer in planningLayers.Values)
+        {
             mapView.Drawables.Add(layer);
+        }
+
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
         viewModel.FitToMissionRequested += OnFitToMissionRequested;
         Render(viewModel.MapSnapshot);
         RenderPlanningOverlays(viewModel.PlanningOverlaySnapshot);
+        // ActivateAsync().FireAndForget();
     }
 
     /// <summary>Starts asynchronous map-source work while the view is visible.</summary>
     public async Task ActivateAsync()
     {
         if (disposed || active)
+        {
             return;
+        }
+
         active = true;
         lifecycleCancellation = new CancellationTokenSource();
         await SwitchSourceAsync(viewModel.SelectedSourceId, lifecycleCancellation.Token);
     }
 
     /// <summary>Cancels map-source work when the view leaves the visual tree.</summary>
-    public void Deactivate()
+    private void Deactivate()
     {
         active = false;
         lifecycleCancellation?.Cancel();
@@ -87,6 +94,35 @@ internal sealed class MissionMapPresenter : IDisposable
         pointerElevationCancellation = null;
         elevationCancellation?.Cancel();
     }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        Deactivate();
+        disposed = true;
+        viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        viewModel.FitToMissionRequested -= OnFitToMissionRequested;
+        attributionCoordinator.Changed -= OnAttributionChanged;
+        foreach (var pin in missionPins)
+        {
+            mapView.Pins.Remove(pin);
+        }
+
+        missionPins.Clear();
+        mapView.Drawables.Remove(routeLine);
+        foreach (var layer in planningLayers.Values)
+        {
+            mapView.Drawables.Remove(layer);
+        }
+
+        basemapController.Dispose();
+    }
+
 
     /// <summary>Forwards a geographic primary click to the mission editor.</summary>
     public void HandleMapClick(double latitude, double longitude)
@@ -98,7 +134,7 @@ internal sealed class MissionMapPresenter : IDisposable
     public void UpdatePointerPosition(double x, double y)
     {
         var now = Stopwatch.GetTimestamp();
-        if (now - lastPointerUpdate < pointerUpdateInterval)
+        if (now - lastPointerUpdate < PointerUpdateInterval)
         {
             return;
         }
@@ -112,7 +148,7 @@ internal sealed class MissionMapPresenter : IDisposable
         lastPointerUpdate = now;
         var world = viewport.ScreenToWorld(x, y);
         var (longitude, latitude) = SphericalMercator.ToLonLat(world.X, world.Y);
-        viewModel.SetPointerPosition(latitude, longitude, altitudeMeters: null);
+        viewModel.SetPointerPosition(latitude, longitude, null);
         viewModel.HandleMapPointerMove(latitude, longitude);
         viewModel.SetPointerElevationStatus(TerrainElevationStatus.Loading);
         RequestPointerElevation(latitude, longitude);
@@ -156,30 +192,6 @@ internal sealed class MissionMapPresenter : IDisposable
         viewModel.FollowVehicle = !viewModel.FollowVehicle;
     }
 
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        if (disposed)
-        {
-            return;
-        }
-
-        Deactivate();
-        disposed = true;
-        viewModel.PropertyChanged -= OnViewModelPropertyChanged;
-        viewModel.FitToMissionRequested -= OnFitToMissionRequested;
-        attributionCoordinator.Changed -= OnAttributionChanged;
-        foreach (var pin in missionPins)
-        {
-            mapView.Pins.Remove(pin);
-        }
-
-        missionPins.Clear();
-        mapView.Drawables.Remove(routeLine);
-        foreach (var layer in planningLayers.Values)
-            mapView.Drawables.Remove(layer);
-        basemapController.Dispose();
-    }
 
     private double DefaultZoomResolution => WebMercatorInitialResolution / Math.Pow(2, plannerSettings.Current.Map.DefaultZoom);
 
@@ -212,6 +224,7 @@ internal sealed class MissionMapPresenter : IDisposable
                 Debug.WriteLine($"[Terrain] generation={generation} tile={result.TileId ?? "none"} status=Superseded");
                 return;
             }
+
             Debug.WriteLine($"[Terrain] generation={generation} tile={result.TileId ?? "none"} status={result.Status} elevation={result.ElevationMeters?.ToString("F1") ?? "null"}");
             await new MauiMapUiDispatcher(mapView.Dispatcher).InvokeAsync(
                 () => viewModel.SetPointerElevation(result), lookupCancellation.Token);
@@ -224,7 +237,10 @@ internal sealed class MissionMapPresenter : IDisposable
         finally
         {
             if (ReferenceEquals(pointerElevationCancellation, lookupCancellation))
+            {
                 pointerElevationCancellation = null;
+            }
+
             lookupCancellation?.Dispose();
         }
     }
@@ -294,10 +310,14 @@ internal sealed class MissionMapPresenter : IDisposable
     }
 
     /// <summary>Applies a session-only viewport rotation in degrees.</summary>
-    public void RotateTo(double degrees) => map.Navigator.RotateTo(degrees);
+    public void RotateTo(double degrees)
+    {
+        map.Navigator.RotateTo(degrees);
+    }
 
-    private IReadOnlyDictionary<PlanningLayerKind, Polyline> CreatePlanningLayers() =>
-        new Dictionary<PlanningLayerKind, Polyline>
+    private IReadOnlyDictionary<PlanningLayerKind, Polyline> CreatePlanningLayers()
+    {
+        return new Dictionary<PlanningLayerKind, Polyline>
         {
             [PlanningLayerKind.Polygon] = NewPlanningLine(Colors.DeepSkyBlue, 3),
             [PlanningLayerKind.Measurement] = NewPlanningLine(Colors.Gold, 2),
@@ -308,14 +328,18 @@ internal sealed class MissionMapPresenter : IDisposable
             [PlanningLayerKind.Survey] = NewPlanningLine(Colors.LimeGreen, 2),
             [PlanningLayerKind.TrackerHome] = NewPlanningLine(Colors.White, 3)
         };
+    }
 
-    private static Polyline NewPlanningLine(Color color, float width) => new() { StrokeColor = color, StrokeWidth = width };
+    private static Polyline NewPlanningLine(Color color, float width)
+    {
+        return new Polyline { StrokeColor = color, StrokeWidth = width };
+    }
 
     private void RenderPlanningOverlays(MissionPlanningOverlaySnapshot snapshot)
     {
-        SetPositions(planningLayers[PlanningLayerKind.Polygon], snapshot.DrawnPolygon, close: snapshot.DrawnPolygon.Count >= 3);
+        SetPositions(planningLayers[PlanningLayerKind.Polygon], snapshot.DrawnPolygon, snapshot.DrawnPolygon.Count >= 3);
         SetPositions(planningLayers[PlanningLayerKind.Measurement], snapshot.TemporaryMeasurement);
-        SetPositions(planningLayers[PlanningLayerKind.Fence], snapshot.FencePreview, close: snapshot.FencePreview.Count >= 3);
+        SetPositions(planningLayers[PlanningLayerKind.Fence], snapshot.FencePreview, snapshot.FencePreview.Count >= 3);
         SetPositions(planningLayers[PlanningLayerKind.Rally], snapshot.RallyPoints);
         SetPositions(planningLayers[PlanningLayerKind.Poi], snapshot.PoiItems);
         SetPositions(planningLayers[PlanningLayerKind.Imported], snapshot.ImportedOverlays.SelectMany(x => x.Positions).ToArray());
@@ -328,9 +352,14 @@ internal sealed class MissionMapPresenter : IDisposable
     {
         line.Positions.Clear();
         foreach (var position in positions)
+        {
             line.Positions.Add(new Position(position.LatitudeDegrees, position.LongitudeDegrees));
+        }
+
         if (close && positions.Count > 0)
+        {
             line.Positions.Add(new Position(positions[0].LatitudeDegrees, positions[0].LongitudeDegrees));
+        }
     }
 
     internal enum PlanningLayerKind
@@ -369,12 +398,17 @@ internal sealed class MissionMapPresenter : IDisposable
     private async Task SwitchSourceAsync(string sourceId, CancellationToken cancellationToken)
     {
         if (!active || disposed)
+        {
             return;
+        }
+
         try
         {
             var result = await basemapController.SwitchAsync(sourceId, cancellationToken);
             if (result.IsSuccess && active && !disposed)
+            {
                 await attributionCoordinator.SetBasemapAsync(basemapController.CurrentResolvedSource, cancellationToken);
+            }
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -383,7 +417,13 @@ internal sealed class MissionMapPresenter : IDisposable
     }
 
     /// <summary>Toggles compact and expanded map attribution.</summary>
-    public void ToggleAttribution() => attributionCoordinator.ToggleExpanded();
+    public void ToggleAttribution()
+    {
+        attributionCoordinator.ToggleExpanded();
+    }
 
-    private void OnAttributionChanged(object? sender, MapAttributionOverlayState state) => viewModel.SetAttribution(state.DisplayText);
+    private void OnAttributionChanged(object? sender, MapAttributionOverlayState state)
+    {
+        viewModel.SetAttribution(state.DisplayText);
+    }
 }

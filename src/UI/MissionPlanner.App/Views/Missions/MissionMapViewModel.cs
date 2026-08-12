@@ -23,6 +23,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.Maps.Coordinates;
 using MissionPlanner.Maps.Prefetch;
 using MissionPlanner.Maps.Terrain;
@@ -45,7 +46,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     private readonly IMissionProtocolMapper protocolMapper;
     private readonly IFileSaver fileSaver;
     private readonly IDateTimeProvider dateTimeProvider;
-    private readonly ILogger<MissionMapViewModel> logger;
+    private readonly ILogger logger;
     private readonly IMissionMapInteractionService interactionService;
     private readonly IAdvancedMissionItemService advancedMissionItems;
     private readonly IUserConfirmationService confirmationService;
@@ -67,6 +68,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     private readonly IGeodeticCoordinateConverter geodeticConverter;
     private readonly IReplaySessionManager replaySession;
     private readonly IExtendedDialogService dialogService;
+
     private IReadOnlyList<GeoPosition> generatedPreview = [];
     private MissionAltitude pendingRallyAltitude;
     private IReadOnlyList<ImportedPlanningOverlay> importedOverlays = [];
@@ -76,62 +78,40 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     /// <summary>
     /// Initializes a new instance of the <see cref="MissionMapViewModel"/> class.
     /// </summary>
-    public MissionMapViewModel(IActiveVehicleContext activeVehicle, IMissionProtocolMapper protocolMapper,
-        IFileSaver fileSaver, IPlannerSettingsService settingsService,
-        IMissionFileCodec fileCodec, IDomainEventHub domainEventHub, IDispatcher dispatcher,
-        IDateTimeProvider dateTimeProvider, ILogger<MissionMapViewModel> logger,
-        IMissionMapInteractionService interactionService, IAdvancedMissionItemService advancedMissionItems,
-        IUserConfirmationService confirmationService,
-        IPlanningPolygonService polygonService, IFileOpenService fileOpenService, IFileSaveService fileSaveService,
-        IUserChoiceService choiceService, IGeospatialImportService geospatialImportService,
-        IFenceConfigurationService fenceService, IFencePlanFileCodec fenceFileCodec,
-        IRallyConfigurationService rallyService, IRallyPlanFileCodec rallyFileCodec,
-        IAutoWaypointGenerator autoWaypointGenerator, ISurveyMissionGenerator surveyMissionGenerator,
-        IMapTilePrefetchService mapTilePrefetchService, IMissionElevationProfileService elevationProfileService,
-        IPoiService poiService, ITrackerHomeService trackerHomeService, IGeodeticCoordinateConverter geodeticConverter,
-        IReplaySessionManager replaySession, IExtendedDialogService dialogService)
+    public MissionMapViewModel(IServiceFactory factory, ILogger logger)
     {
-        this.activeVehicle = activeVehicle;
-        this.fileCodec = fileCodec;
-        this.domainEventHub = domainEventHub;
-        this.dispatcher = dispatcher;
-        this.protocolMapper = protocolMapper;
-        this.fileSaver = fileSaver;
-        this.dateTimeProvider = dateTimeProvider;
         this.logger = logger;
-        this.interactionService = interactionService;
-        this.advancedMissionItems = advancedMissionItems;
-        this.confirmationService = confirmationService;
-        this.polygonService = polygonService;
-        this.fileOpenService = fileOpenService;
-        this.fileSaveService = fileSaveService;
-        this.choiceService = choiceService;
-        this.geospatialImportService = geospatialImportService;
-        this.fenceService = fenceService;
-        this.fenceFileCodec = fenceFileCodec;
-        this.rallyService = rallyService;
-        this.rallyFileCodec = rallyFileCodec;
-        this.autoWaypointGenerator = autoWaypointGenerator;
-        this.surveyMissionGenerator = surveyMissionGenerator;
-        this.mapTilePrefetchService = mapTilePrefetchService;
-        this.elevationProfileService = elevationProfileService;
-        this.poiService = poiService;
-        this.trackerHomeService = trackerHomeService;
-        this.geodeticConverter = geodeticConverter;
-        this.replaySession = replaySession;
-        this.dialogService = dialogService;
-        pendingRallyAltitude = DefaultAltitude();
-        polygonService.Changed += OnPolygonChanged;
-        interactionService.Changed += OnInteractionChanged;
-        fenceService.Changed += OnFenceChanged;
-        rallyService.Changed += OnRallyChanged;
-        poiService.Changed += OnPoiChanged;
-        trackerHomeService.Changed += OnTrackerHomeChanged;
-        replaySession.Changed += OnReplaySessionChanged;
-        _ = poiService.InitializeAsync();
+        activeVehicle = factory.Create<IActiveVehicleContext>();
+        fileCodec = factory.Create<IMissionFileCodec>();
+        domainEventHub = factory.Create<IDomainEventHub>();
+        dispatcher = factory.Create<IDispatcher>();
+        protocolMapper = factory.Create<IMissionProtocolMapper>();
+        fileSaver = factory.Create<IFileSaver>();
+        dateTimeProvider = factory.Create<IDateTimeProvider>();
+
+        interactionService = factory.Create<IMissionMapInteractionService>();
+        advancedMissionItems = factory.Create<IAdvancedMissionItemService>();
+        confirmationService = factory.Create<IUserConfirmationService>();
+        polygonService = factory.Create<IPlanningPolygonService>();
+        fileOpenService = factory.Create<IFileOpenService>();
+        fileSaveService = factory.Create<IFileSaveService>();
+        choiceService = factory.Create<IUserChoiceService>();
+        geospatialImportService = factory.Create<IGeospatialImportService>();
+        fenceService = factory.Create<IFenceConfigurationService>();
+        fenceFileCodec = factory.Create<IFencePlanFileCodec>();
+        rallyService = factory.Create<IRallyConfigurationService>();
+        rallyFileCodec = factory.Create<IRallyPlanFileCodec>();
+        autoWaypointGenerator = factory.Create<IAutoWaypointGenerator>();
+        surveyMissionGenerator = factory.Create<ISurveyMissionGenerator>();
+        mapTilePrefetchService = factory.Create<IMapTilePrefetchService>();
+        elevationProfileService = factory.Create<IMissionElevationProfileService>();
+        poiService = factory.Create<IPoiService>();
+        trackerHomeService = factory.Create<ITrackerHomeService>();
+        geodeticConverter = factory.Create<IGeodeticCoordinateConverter>();
+        replaySession = factory.Create<IReplaySessionManager>();
+        dialogService = factory.Create<IExtendedDialogService>();
+        var settingsService = factory.Create<IPlannerSettingsService>();
         SelectedSourceId = settingsService.Current.Map.SelectedSourceId;
-        MapSnapshot = MissionMapProjection.Create(Mission, HomePosition);
-        SelectedMapStyle = "GEO";
         UpdateVehicleStatus(activeVehicle.Current);
         Activate();
     }
@@ -141,6 +121,19 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     /// </summary>
     private void Activate()
     {
+        pendingRallyAltitude = DefaultAltitude();
+        polygonService.Changed += OnPolygonChanged;
+        interactionService.Changed += OnInteractionChanged;
+        fenceService.Changed += OnFenceChanged;
+        rallyService.Changed += OnRallyChanged;
+        poiService.Changed += OnPoiChanged;
+        trackerHomeService.Changed += OnTrackerHomeChanged;
+        replaySession.Changed += OnReplaySessionChanged;
+
+        _ = poiService.InitializeAsync();
+        MapSnapshot = MissionMapProjection.Create(Mission, HomePosition);
+        SelectedMapStyle = "GEO";
+
         activeVehicle.Changed += OnActiveVehicleChanged;
         stateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
         UpdateVehicleStatus(activeVehicle.Current);
@@ -157,6 +150,13 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         }
 
         activeVehicle.Changed -= OnActiveVehicleChanged;
+        interactionService.Changed -= OnInteractionChanged;
+        polygonService.Changed -= OnPolygonChanged;
+        fenceService.Changed -= OnFenceChanged;
+        rallyService.Changed -= OnRallyChanged;
+        poiService.Changed -= OnPoiChanged;
+        trackerHomeService.Changed -= OnTrackerHomeChanged;
+        replaySession.Changed -= OnReplaySessionChanged;
         interactionService.Cancel();
         stateSubscription?.Dispose();
         stateSubscription = null;
@@ -171,13 +171,6 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
             row.Dispose();
         }
 
-        interactionService.Changed -= OnInteractionChanged;
-        polygonService.Changed -= OnPolygonChanged;
-        fenceService.Changed -= OnFenceChanged;
-        rallyService.Changed -= OnRallyChanged;
-        poiService.Changed -= OnPoiChanged;
-        trackerHomeService.Changed -= OnTrackerHomeChanged;
-        replaySession.Changed -= OnReplaySessionChanged;
         disposed = true;
     }
 
@@ -1141,7 +1134,10 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
             fenceService.SetLocalPlan(vehicleId, fenceFileCodec.Deserialize(await reader.ReadToEndAsync(cancellationToken)));
             ShowStatus("Fence loaded locally; upload to apply it.");
         }
-        catch (InvalidDataException exception) { ShowStatus(exception.Message); }
+        catch (InvalidDataException exception)
+        {
+            ShowStatus(exception.Message);
+        }
     }
 
     [RelayCommand]
@@ -1320,7 +1316,10 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
             rallyService.SetLocalPlan(vehicleId, rallyFileCodec.Deserialize(await reader.ReadToEndAsync(cancellationToken)));
             ShowStatus("Rally points loaded locally; upload to apply them.");
         }
-        catch (InvalidDataException exception) { ShowStatus(exception.Message); }
+        catch (InvalidDataException exception)
+        {
+            ShowStatus(exception.Message);
+        }
     }
 
     [RelayCommand]
