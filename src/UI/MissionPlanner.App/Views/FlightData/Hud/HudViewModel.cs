@@ -17,7 +17,7 @@ public partial class HudViewModel : ObservableObject, IDisposable
     /// Initializes a new instance of the <see cref="HudViewModel"/> class.
     /// </summary>
     /// <param name="hudDataService">The service providing HUD-specific vehicle data.</param>
-    /// <param name="dispatcher">The dispatcher for UI thread operations.</param>
+    /// <param name="dispatcher">The Dispatcher for UI thread operations.</param>
     public HudViewModel(IVehicleHudDataService hudDataService, IDispatcher dispatcher)
     {
         this.hudDataService = hudDataService ?? throw new ArgumentNullException(nameof(hudDataService));

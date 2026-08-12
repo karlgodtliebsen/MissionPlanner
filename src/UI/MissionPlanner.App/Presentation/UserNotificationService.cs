@@ -18,7 +18,7 @@ public sealed class UserNotificationService : IUserNotificationService
     /// <summary>
     /// Initializes a new instance of the <see cref="UserNotificationService"/> class.
     /// </summary>
-    /// <param name="dispatcher">The UI dispatcher.</param>
+    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="dialogService"></param>
     /// <param name="notificationStore">The bounded local-notification history.</param>
     /// <param name="clock">The application clock.</param>

@@ -34,7 +34,7 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ObservableObject, I
     /// <param name="adapter">The isolated CubeLAN vendor-device adapter.</param>
     /// <param name="fileHandler">The Config file helper.</param>
     /// <param name="confirmation">The apply confirmation service.</param>
-    /// <param name="dispatcher">The UI dispatcher.</param>
+    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public CubeLan8PortSwitchTabViewModel(
         IActiveVehicleContext activeVehicle,

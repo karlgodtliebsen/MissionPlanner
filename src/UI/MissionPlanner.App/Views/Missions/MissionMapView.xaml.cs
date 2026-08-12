@@ -1,4 +1,5 @@
-﻿using Mapsui;
+﻿using System.Diagnostics;
+using Mapsui;
 using Mapsui.UI.Maui;
 using MissionPlanner.App.Navigation;
 using MissionPlanner.Library;
@@ -25,14 +26,29 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
         MissionMap.MapPointerMoved += OnMapPointerMoved;
         ViewModel.MapRotationRequested += OnMapRotationRequested;
         ViewModel.MapCenterRequested += OnMapCenterRequested;
-        Loaded += OnFirstLoaded;
+        Loaded += OnLoaded;
     }
 
-    private async void OnFirstLoaded(object? sender, EventArgs args)
+    private async void OnLoaded(object? sender, EventArgs args)
     {
-        Loaded -= OnFirstLoaded;
-        await Initialize();
+        if (presenter is null || disposed)
+        {
+            return;
+        }
+
+        try
+        {
+            // Install the basemap before applying the initial viewport. Mapsui derives its
+            // resolutions from the layers and can otherwise replace an earlier navigation.
+            await presenter.ActivateAsync();
+            await Initialize();
+        }
+        catch (OperationCanceledException)
+        {
+            // Removing the view cancels activation work owned by this visual lifetime.
+        }
     }
+
 
     private async Task Initialize()
     {
@@ -42,10 +58,6 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
         }
 
         await CenterOnMyLocationAsync();
-        if (presenter is not null)
-        {
-            await presenter.ActivateAsync();
-        }
     }
 
     /// <inheritdoc />
@@ -57,7 +69,8 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
         }
 
         disposed = true;
-        Loaded -= OnFirstLoaded;
+        Loaded -= OnLoaded;
+        presenter?.Dispose();
         MissionMap.MapClicked -= OnMapClicked;
         MissionMap.MapPointerMoved -= OnMapPointerMoved;
         if (ViewModel is not null)
@@ -67,7 +80,6 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
             ViewModel.Dispose();
         }
 
-        presenter?.Dispose();
         presenter = null;
         BindingContext = null;
         ViewModel = null;
@@ -106,9 +118,11 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
                 presenter?.CenterOn(location.Latitude, location.Longitude, true);
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             // Location permission missing or no provider available; retain the current viewport.
+            Debug.Print(ex.Message);
+            Debug.Print("On Windows: Ensure geolocation service is running");
         }
     }
 

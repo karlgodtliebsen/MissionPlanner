@@ -24,7 +24,7 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="actuatorService">The actuator-test service.</param>
     /// <param name="confirmation">The shared confirmation service.</param>
-    /// <param name="dispatcher">The UI dispatcher.</param>
+    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public EscMotorSetupViewModel(
         ISetupWorkflowCatalog workflowCatalog,

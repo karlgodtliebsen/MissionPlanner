@@ -34,7 +34,7 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
     /// <param name="workflowCatalog">The Setup workflow catalog.</param>
     /// <param name="confirmation">The shared confirmation service.</param>
     /// <param name="clock">The application clock.</param>
-    /// <param name="dispatcher">The UI dispatcher.</param>
+    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public AccelerometerSetupViewModel(
         IActiveVehicleContext activeVehicle,

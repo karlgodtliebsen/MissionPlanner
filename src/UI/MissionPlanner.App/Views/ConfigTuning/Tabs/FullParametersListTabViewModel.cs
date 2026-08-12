@@ -49,7 +49,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     /// <param name="connectionSession">The current connection-scoped services.</param>
     /// <param name="activeVehicle">The application active-vehicle context.</param>
     /// <param name="editSessionFactory">The shared parameter editing-session factory.</param>
-    /// <param name="dispatcher">The UI dispatcher.</param>
+    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="dialogService">The extended dialog service.</param>
     /// <param name="domainFactory">The domain view factory.</param>
     /// <param name="parametersFileHandler">The parameter import/export adapter.</param>

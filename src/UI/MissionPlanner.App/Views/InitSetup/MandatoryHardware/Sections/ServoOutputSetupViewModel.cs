@@ -30,7 +30,7 @@ public sealed partial class ServoOutputSetupViewModel : Models.SetupWorkflowDeta
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="servoService">The servo output configuration service.</param>
     /// <param name="domainEventHub">The domain event hub used for live servo output state.</param>
-    /// <param name="dispatcher">The UI dispatcher.</param>
+    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public ServoOutputSetupViewModel(
         ISetupWorkflowCatalog workflowCatalog,

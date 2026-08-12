@@ -55,7 +55,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     /// <param name="scenarioRunner">The exact-target scenario runner.</param>
     /// <param name="scenarioReportExporter">The machine/readable report exporter.</param>
     /// <param name="fileHandler">The platform file helper.</param>
-    /// <param name="dispatcher">The UI dispatcher.</param>
+    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="logger">The logger.</param>
     /// <param name="fleetManager">Optional multi-instance fleet coordinator.</param>
     public SimulationViewModel(

@@ -42,7 +42,7 @@ public partial class ActionsTabViewModel : ObservableObject, IDisposable
     /// <param name="modeCatalog">The firmware-specific mode catalog.</param>
     /// <param name="confirmationService">The hazardous-action confirmation service.</param>
     /// <param name="notificationService">The separate application-notification stream.</param>
-    /// <param name="dispatcher">The UI dispatcher.</param>
+    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="domainEventHub">The domain event hub used for active-vehicle state updates.</param>
     /// <param name="logger">The logger.</param>
     /// <param name="replaySessionManager">Optional application-wide replay safety state.</param>

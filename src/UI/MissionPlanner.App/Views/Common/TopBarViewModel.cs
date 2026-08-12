@@ -53,7 +53,7 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
     /// </summary>
     /// <param name="stateService">The application state service.</param>
     /// <param name="serviceFactory">The service factory.</param>
-    /// <param name="dispatcher">The dispatcher.</param>
+    /// <param name="dispatcher">The Dispatcher.</param>
     /// <param name="domainEventHub">The domain event hub.</param>
     /// <param name="logger">The logger instance.</param>
     /// <param name="replaySessionManager">Application-wide replay safety state.</param>

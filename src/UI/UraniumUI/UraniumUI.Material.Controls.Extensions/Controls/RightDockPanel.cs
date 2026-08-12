@@ -438,15 +438,28 @@ public class RightDockPanel : ContentView
 
     private void ApplyHostedContent()
     {
-        mainHost.Children.Clear();
-
-        if (MainContent != null)
+        if (MainContent is null)
         {
+            if (mainHost.Children.Count != 0)
+            {
+                mainHost.Children.Clear();
+            }
+        }
+        else if (mainHost.Children.Count != 1 || !ReferenceEquals(mainHost.Children[0], MainContent))
+        {
+            mainHost.Children.Clear();
             mainHost.Children.Add(MainContent);
         }
 
-        dockHost.Content = DockContent;
-        headerHost.Content = HeaderContent;
+        if (!ReferenceEquals(dockHost.Content, DockContent))
+        {
+            dockHost.Content = DockContent;
+        }
+
+        if (!ReferenceEquals(headerHost.Content, HeaderContent))
+        {
+            headerHost.Content = HeaderContent;
+        }
     }
 
     private void ApplyStyling()

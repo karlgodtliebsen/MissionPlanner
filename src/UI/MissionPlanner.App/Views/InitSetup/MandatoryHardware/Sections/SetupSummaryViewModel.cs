@@ -22,7 +22,7 @@ public sealed partial class SetupSummaryViewModel : SetupWorkflowDetailViewModel
     /// <param name="descriptor">The summary workflow descriptor.</param>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="summaryService">The setup summary service.</param>
-    /// <param name="dispatcher">The UI dispatcher.</param>
+    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public SetupSummaryViewModel(
         SetupWorkflowDescriptor descriptor,

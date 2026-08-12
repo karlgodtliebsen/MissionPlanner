@@ -134,7 +134,7 @@ public sealed class SimulationFleetTests
             Arg.Any<CancellationToken>());
     }
 
-    /// <summary>Verifies concurrent transports share one inbound dispatcher subscription.</summary>
+    /// <summary>Verifies concurrent transports share one inbound Dispatcher subscription.</summary>
     [Fact]
     public async Task MessagePumpCoordinatorReferenceCountsOneSharedDispatcher()
     {

@@ -30,7 +30,7 @@ public sealed partial class BatterySetupViewModel : Models.SetupWorkflowDetailVi
     /// <param name="batteryService">The battery configuration service.</param>
     /// <param name="workflowCatalog">The Setup workflow catalog.</param>
     /// <param name="domainEventHub">The domain event hub used for live battery state.</param>
-    /// <param name="dispatcher">The UI dispatcher.</param>
+    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public BatterySetupViewModel(
         IActiveVehicleContext activeVehicle,

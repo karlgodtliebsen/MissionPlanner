@@ -36,6 +36,8 @@ internal sealed class MissionMapPresenter : IDisposable
     private CancellationTokenSource? pointerElevationCancellation;
     private long pointerGeneration;
     private CancellationTokenSource? lifecycleCancellation;
+    private Action? pendingNavigation;
+    private bool basemapRefreshPending;
     private bool active;
     private bool disposed;
 
@@ -52,6 +54,7 @@ internal sealed class MissionMapPresenter : IDisposable
         attributionCoordinator.Changed += OnAttributionChanged;
 
         mapView.Map = map;
+        mapView.SizeChanged += OnMapViewSizeChanged;
 
         vehiclePin = new Pin(mapView) { Label = "Vehicle", Type = PinType.Pin, Position = new Position(viewModel.VehicleLatitude, viewModel.VehicleLongitude) };
         mapView.Pins.Add(vehiclePin);
@@ -67,7 +70,6 @@ internal sealed class MissionMapPresenter : IDisposable
         viewModel.FitToMissionRequested += OnFitToMissionRequested;
         Render(viewModel.MapSnapshot);
         RenderPlanningOverlays(viewModel.PlanningOverlaySnapshot);
-        //ActivateAsync().FireAndForget();
     }
 
     /// <summary>Starts asynchronous map-source work while the view is visible.</summary>
@@ -84,7 +86,7 @@ internal sealed class MissionMapPresenter : IDisposable
     }
 
     /// <summary>Cancels map-source work when the view leaves the visual tree.</summary>
-    private void Deactivate()
+    public void Deactivate()
     {
         active = false;
         lifecycleCancellation?.Cancel();
@@ -108,6 +110,8 @@ internal sealed class MissionMapPresenter : IDisposable
         viewModel.PropertyChanged -= OnViewModelPropertyChanged;
         viewModel.FitToMissionRequested -= OnFitToMissionRequested;
         attributionCoordinator.Changed -= OnAttributionChanged;
+        mapView.SizeChanged -= OnMapViewSizeChanged;
+        pendingNavigation = null;
         foreach (var pin in missionPins)
         {
             mapView.Pins.Remove(pin);
@@ -154,18 +158,23 @@ internal sealed class MissionMapPresenter : IDisposable
         RequestPointerElevation(latitude, longitude);
     }
 
-    /// <summary>Centers the map on a geographic position.</summary>
+    /// <summary>
+    /// Centers the map on a geographic position.
+    /// </summary>
     public void CenterOn(double latitude, double longitude, bool useDefaultZoom = false)
     {
         var (x, y) = SphericalMercator.FromLonLat(longitude, latitude);
-        if (useDefaultZoom)
+        Navigate(() =>
         {
-            map.Navigator.CenterOnAndZoomTo(new MPoint(x, y), DefaultZoomResolution);
-        }
-        else
-        {
-            map.Navigator.CenterOn(new MPoint(x, y));
-        }
+            if (useDefaultZoom)
+            {
+                map.Navigator.CenterOnAndZoomTo(new MPoint(x, y), DefaultZoomResolution);
+            }
+            else
+            {
+                map.Navigator.CenterOn(new MPoint(x, y));
+            }
+        });
     }
 
     /// <summary>Zooms the map in by one navigator step.</summary>
@@ -272,6 +281,7 @@ internal sealed class MissionMapPresenter : IDisposable
 
     private void OnFitToMissionRequested(object? sender, EventArgs args)
     {
+        Debug.WriteLine($"[MissionMap] Fit requested: route={viewModel.MapSnapshot.Route.Count}, bounds={viewModel.MapSnapshot.Bounds}, viewport={map.Navigator.Viewport.Width}x{map.Navigator.Viewport.Height}, resolution={map.Navigator.Viewport.Resolution}");
         FitToMission();
     }
 
@@ -381,18 +391,92 @@ internal sealed class MissionMapPresenter : IDisposable
         if (snapshot.Route.Count == 1)
         {
             var position = snapshot.Route[0];
+            Debug.WriteLine($"[MissionMap] Fitting single position: latitude={position.LatitudeDegrees}, longitude={position.LongitudeDegrees}");
             CenterOn(position.LatitudeDegrees, position.LongitudeDegrees, true);
             return;
         }
 
         if (snapshot.Bounds is not { } bounds)
         {
+            Debug.WriteLine("[MissionMap] Fit ignored because the mission snapshot has no bounds.");
             return;
         }
 
         var (minX, minY) = SphericalMercator.FromLonLat(bounds.West, bounds.South);
         var (maxX, maxY) = SphericalMercator.FromLonLat(bounds.East, bounds.North);
-        map.Navigator.ZoomToBox(new MRect(minX, minY, maxX, maxY));
+        Debug.WriteLine($"[MissionMap] Fitting projected bounds: minX={minX}, minY={minY}, maxX={maxX}, maxY={maxY}");
+        Navigate(() =>
+        {
+            map.Navigator.ZoomToBox(new MRect(minX, minY, maxX, maxY));
+            Debug.WriteLine($"[MissionMap] Fit applied: center=({map.Navigator.Viewport.CenterX},{map.Navigator.Viewport.CenterY}), resolution={map.Navigator.Viewport.Resolution}");
+        });
+    }
+
+    /// <summary>
+    /// Runs viewport changes on the map UI thread and lets Mapsui retain changes requested
+    /// before its native control has initialized a usable viewport.
+    /// </summary>
+    private void Navigate(Action navigation)
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        if (mapView.Dispatcher.IsDispatchRequired)
+        {
+            mapView.Dispatcher.Dispatch(() => Navigate(navigation));
+            return;
+        }
+
+        var viewport = map.Navigator.Viewport;
+        if (viewport.Width <= 0 || viewport.Height <= 0)
+        {
+            // Only the latest requested viewport is relevant (for example, fitting a newly
+            // loaded mission should supersede the initial geolocation request).
+            pendingNavigation = navigation;
+            Debug.WriteLine($"[MissionMap] Navigation queued because viewport is {viewport.Width}x{viewport.Height}.");
+            return;
+        }
+
+        pendingNavigation = null;
+        navigation();
+    }
+
+    private void OnMapViewSizeChanged(object? sender, EventArgs args)
+    {
+        RefreshBasemapForCurrentViewport();
+
+        if (pendingNavigation is not { } navigation || disposed)
+        {
+            return;
+        }
+
+        var viewport = map.Navigator.Viewport;
+        if (viewport.Width <= 0 || viewport.Height <= 0)
+        {
+            return;
+        }
+
+        pendingNavigation = null;
+        navigation();
+    }
+
+    private void RefreshBasemapForCurrentViewport()
+    {
+        if (!basemapRefreshPending || disposed || !active)
+        {
+            return;
+        }
+
+        var viewport = map.Navigator.Viewport;
+        if (viewport.Width <= 0 || viewport.Height <= 0)
+        {
+            return;
+        }
+
+        basemapRefreshPending = false;
+        map.Refresh(ChangeType.Discrete);
     }
 
     private async Task SwitchSourceAsync(string sourceId, CancellationToken cancellationToken)
@@ -407,6 +491,9 @@ internal sealed class MissionMapPresenter : IDisposable
             var result = await basemapController.SwitchAsync(sourceId, cancellationToken);
             if (result.IsSuccess && active && !disposed)
             {
+                basemapRefreshPending = true;
+                await new MauiMapUiDispatcher(mapView.Dispatcher).InvokeAsync(
+                    RefreshBasemapForCurrentViewport, cancellationToken);
                 await attributionCoordinator.SetBasemapAsync(basemapController.CurrentResolvedSource, cancellationToken);
             }
         }

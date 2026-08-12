@@ -23,7 +23,7 @@ public sealed partial class OptionalHardwareSetupViewModel : SetupWorkflowDetail
     /// <param name="workflowCatalog">The setup workflow catalog.</param>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="hardwareService">The optional-hardware service.</param>
-    /// <param name="dispatcher">The UI dispatcher.</param>
+    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public OptionalHardwareSetupViewModel(
         ISetupWorkflowCatalog workflowCatalog,

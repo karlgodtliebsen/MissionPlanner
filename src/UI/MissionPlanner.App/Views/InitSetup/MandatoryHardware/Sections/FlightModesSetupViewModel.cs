@@ -23,7 +23,7 @@ public sealed partial class FlightModesSetupViewModel : SetupWorkflowDetailViewM
     /// <param name="workflowCatalog">The Setup workflow catalog.</param>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="modeService">The flight-mode configuration service.</param>
-    /// <param name="dispatcher">The UI dispatcher.</param>
+    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public FlightModesSetupViewModel(
         ISetupWorkflowCatalog workflowCatalog,

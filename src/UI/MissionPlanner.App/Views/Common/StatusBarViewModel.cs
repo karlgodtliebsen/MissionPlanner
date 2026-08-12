@@ -38,7 +38,7 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
     /// Initializes a new instance of the <see cref="StatusBarViewModel"/> class.
     /// </summary>
     /// <param name="stateService">The application state service.</param>
-    /// <param name="dispatcher">The dispatcher for UI thread operations.</param>
+    /// <param name="dispatcher">The Dispatcher for UI thread operations.</param>
     /// <param name="domainEventHub">The domain event hub.</param>
     /// <param name="logger">The logger instance.</param>
     public StatusBarViewModel(ApplicationStateService stateService, IDispatcher dispatcher, IDomainEventHub domainEventHub, ILogger<StatusBarViewModel> logger) : this()

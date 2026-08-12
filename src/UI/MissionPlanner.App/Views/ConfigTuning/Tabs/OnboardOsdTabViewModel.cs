@@ -207,7 +207,7 @@ public sealed partial class OnboardOsdTabViewModel : ObservableObject, IDisposab
     /// <param name="osdService">The OSD configuration service.</param>
     /// <param name="fileHandler">The Config file helper.</param>
     /// <param name="confirmation">The overlap/write confirmation service.</param>
-    /// <param name="dispatcher">The UI dispatcher.</param>
+    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public OnboardOsdTabViewModel(
         IActiveVehicleContext activeVehicle,

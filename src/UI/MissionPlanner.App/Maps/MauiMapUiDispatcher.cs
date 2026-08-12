@@ -2,7 +2,7 @@ using Microsoft.Maui.Dispatching;
 
 namespace MissionPlanner.App.Maps;
 
-/// <summary>Adapts a MAUI dispatcher for map-layer commits.</summary>
+/// <summary>Adapts a MAUI Dispatcher for map-layer commits.</summary>
 public sealed class MauiMapUiDispatcher(IDispatcher dispatcher) : IMapUiDispatcher
 {
     /// <inheritdoc />
@@ -20,11 +20,21 @@ public sealed class MauiMapUiDispatcher(IDispatcher dispatcher) : IMapUiDispatch
         if (!dispatcher.Dispatch(() =>
             {
                 if (completion.Task.IsCompleted)
+                {
                     return;
-                try { action(); completion.TrySetResult(); }
+                }
+
+                try
+                {
+                    action();
+                    completion.TrySetResult();
+                }
                 catch (Exception exception) { completion.TrySetException(exception); }
             }))
-            completion.TrySetException(new InvalidOperationException("The map UI dispatcher rejected the operation."));
+        {
+            completion.TrySetException(new InvalidOperationException("The map UI Dispatcher rejected the operation."));
+        }
+
         return new ValueTask(completion.Task);
     }
 }

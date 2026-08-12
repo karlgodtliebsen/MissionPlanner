@@ -34,7 +34,7 @@ public partial class MessagesTabViewModel : ObservableObject, IDisposable
     /// <param name="applicationMessages">The separate local application-notification history.</param>
     /// <param name="clipboard">The platform-neutral clipboard adapter.</param>
     /// <param name="fileSaver">The platform file saver.</param>
-    /// <param name="dispatcher">The UI dispatcher.</param>
+    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public MessagesTabViewModel(IActiveVehicleContext activeVehicle, IVehicleMessageStore vehicleMessages, IApplicationNotificationStore applicationMessages,
         ITextClipboardService clipboard, IFileSaver fileSaver, IDispatcher dispatcher, ILogger<MessagesTabViewModel> logger)

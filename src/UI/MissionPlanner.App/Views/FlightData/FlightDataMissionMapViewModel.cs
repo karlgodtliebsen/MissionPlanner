@@ -19,7 +19,7 @@ public partial class FlightDataMissionMapViewModel : MissionMapViewModel
 
 //IActiveVehicleContext activeVehicle, IMissionProtocolMapper protocolMapper,
 //IFileSaver fileSaver, IPlannerSettingsService settingsService,
-//IMissionFileCodec fileCodec, IDomainEventHub domainEventHub, IDispatcher dispatcher,
+//IMissionFileCodec fileCodec, IDomainEventHub domainEventHub, IDispatcher Dispatcher,
 //IDateTimeProvider dateTimeProvider, ILogger<MissionMapViewModel> logger,
 //IMissionMapInteractionService interactionService, IAdvancedMissionItemService advancedMissionItems,
 //IUserConfirmationService confirmationService,
@@ -35,7 +35,7 @@ public partial class FlightDataMissionMapViewModel : MissionMapViewModel
 
 //IActiveVehicleContext activeVehicle, IMissionProtocolMapper protocolMapper,
 //IFileSaver fileSaver, IPlannerSettingsService settingsService, IMissionFileCodec fileCodec,
-//IDomainEventHub domainEventHub, IDispatcher dispatcher, IDateTimeProvider dateTimeProvider, ILogger<MissionMapViewModel> logger,
+//IDomainEventHub domainEventHub, IDispatcher Dispatcher, IDateTimeProvider dateTimeProvider, ILogger<MissionMapViewModel> logger,
 //IMissionMapInteractionService interactionService, IAdvancedMissionItemService advancedMissionItems,
 //IUserConfirmationService confirmationService,
 //IPlanningPolygonService polygonService, IFileOpenService fileOpenService, IFileSaveService fileSaveService,
@@ -47,7 +47,7 @@ public partial class FlightDataMissionMapViewModel : MissionMapViewModel
 //IGeodeticCoordinateConverter geodeticConverter, IReplaySessionManager replaySession, IExtendedDialogService dialogService
 
 
-//activeVehicle, protocolMapper, fileSaver, settingsService, fileCodec, domainEventHub, dispatcher, dateTimeProvider, logger,
+//activeVehicle, protocolMapper, fileSaver, settingsService, fileCodec, domainEventHub, Dispatcher, dateTimeProvider, logger,
 //interactionService, advancedMissionItems, confirmationService, polygonService, fileOpenService, fileSaveService,
 //choiceService, geospatialImportService, fenceService, fenceFileCodec, rallyService, rallyFileCodec, autoWaypointGenerator,
 //surveyMissionGenerator, mapTilePrefetchService, elevationProfileService, poiService, trackerHomeService, geodeticConverter, replaySession, dialogService

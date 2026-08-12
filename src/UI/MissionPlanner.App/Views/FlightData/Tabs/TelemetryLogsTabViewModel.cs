@@ -19,7 +19,7 @@ public sealed partial class TelemetryLogsTabViewModel : ObservableObject, IDispo
     /// <summary>Initializes the telemetry-log playback view model.</summary>
     /// <param name="replaySessionManager">Read-only replay session coordinator.</param>
     /// <param name="activeVehicle">Active-vehicle context used by the shared tab lifecycle.</param>
-    /// <param name="dispatcher">UI dispatcher.</param>
+    /// <param name="dispatcher">UI Dispatcher.</param>
     /// <param name="logger">Structured workflow logger.</param>
     public TelemetryLogsTabViewModel(IReplaySessionManager replaySessionManager, IActiveVehicleContext activeVehicle, IDispatcher dispatcher, ILogger<TelemetryLogsTabViewModel> logger)
     {
