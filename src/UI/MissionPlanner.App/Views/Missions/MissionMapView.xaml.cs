@@ -25,11 +25,16 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
         MissionMap.MapPointerMoved += OnMapPointerMoved;
         ViewModel.MapRotationRequested += OnMapRotationRequested;
         ViewModel.MapCenterRequested += OnMapCenterRequested;
-
-        //Initialize().FireAndForget();
+        Loaded += OnFirstLoaded;
     }
 
-    public async Task Initialize()
+    private async void OnFirstLoaded(object? sender, EventArgs args)
+    {
+        Loaded -= OnFirstLoaded;
+        await Initialize();
+    }
+
+    private async Task Initialize()
     {
         if (ViewModel is not { VehicleLatitude: 0, VehicleLongitude: 0 })
         {
@@ -52,6 +57,7 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
         }
 
         disposed = true;
+        Loaded -= OnFirstLoaded;
         MissionMap.MapClicked -= OnMapClicked;
         MissionMap.MapPointerMoved -= OnMapPointerMoved;
         if (ViewModel is not null)

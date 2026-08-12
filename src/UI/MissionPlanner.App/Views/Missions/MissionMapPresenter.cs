@@ -67,7 +67,7 @@ internal sealed class MissionMapPresenter : IDisposable
         viewModel.FitToMissionRequested += OnFitToMissionRequested;
         Render(viewModel.MapSnapshot);
         RenderPlanningOverlays(viewModel.PlanningOverlaySnapshot);
-        // ActivateAsync().FireAndForget();
+        //ActivateAsync().FireAndForget();
     }
 
     /// <summary>Starts asynchronous map-source work while the view is visible.</summary>

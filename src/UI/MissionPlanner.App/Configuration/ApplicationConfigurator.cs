@@ -80,12 +80,13 @@ public static class ApplicationConfigurator
 
         services.TryAddTransient<IPlannerSettingsStore, PreferencesPlannerSettingsStore>();
         services.TryAddTransient<IPlannerSecretStore, SecurePlannerSecretStore>();
-
         services.TryAddTransient<IMapSecretStore, PlannerMapSecretStoreAdapter>();
-        services.TryAddSingleton<IActiveMapSourceStore, PlannerActiveMapSourceStore>();
-        services.TryAddSingleton<MapsuiHostedBasemapFactory>();
-        services.TryAddSingleton<MapsuiMbTilesSourceFactory>();
-        services.TryAddSingleton<IMapsuiBasemapFactory, CompositeMapsuiBasemapFactory>();
+
+        services.TryAddTransient<IActiveMapSourceStore, PlannerActiveMapSourceStore>();
+        services.TryAddTransient<MapsuiHostedBasemapFactory>();
+        services.TryAddTransient<MapsuiMbTilesSourceFactory>();
+        services.TryAddTransient<IMapsuiBasemapFactory, CompositeMapsuiBasemapFactory>();
+
         services.TryAddTransient<IPlannerSettingsService, PlannerSettingsService>();
         services.TryAddTransient<IMapHttpRuntimeSettings, PlannerMapHttpRuntimeSettings>();
         services.TryAddSingleton(_ => new MapHttpOptions(
@@ -114,10 +115,11 @@ public static class ApplicationConfigurator
         services.TryAddTransient<IUserConfirmationService, UserConfirmationService>();
         services.TryAddTransient<IMissionMapInteractionService, MissionMapInteractionService>();
 
-        services.TryAddTransient<IUserPromptService, MauiMissionPlanningDialogService>();
-        services.TryAddTransient<IMissionTerrainElevationProvider, MissionTerrainElevationProvider>();
         services.TryAddSingleton<IPoiRepository>(_ => new JsonPoiRepository(Path.Combine(FileSystem.AppDataDirectory, "Planning", "points-of-interest.json")));
         services.TryAddSingleton<IPoiService, PoiService>();
+
+        services.TryAddTransient<IUserPromptService, MauiMissionPlanningDialogService>();
+        services.TryAddTransient<IMissionTerrainElevationProvider, MissionTerrainElevationProvider>();
         services.TryAddTransient<IUserChoiceService, MauiMissionPlanningDialogService>();
         services.TryAddTransient<IFileOpenService, MauiMissionPlanningFileService>();
         services.TryAddTransient<IFileSaveService, MauiMissionPlanningFileService>();

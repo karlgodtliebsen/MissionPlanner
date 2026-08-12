@@ -81,14 +81,15 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     public MissionMapViewModel(IServiceFactory factory, ILogger logger)
     {
         this.logger = logger;
-        activeVehicle = factory.Create<IActiveVehicleContext>();
-        fileCodec = factory.Create<IMissionFileCodec>();
         domainEventHub = factory.Create<IDomainEventHub>();
         dispatcher = factory.Create<IDispatcher>();
+        dateTimeProvider = factory.Create<IDateTimeProvider>();
+        dialogService = factory.Create<IExtendedDialogService>();
+
+        activeVehicle = factory.Create<IActiveVehicleContext>();
+        fileCodec = factory.Create<IMissionFileCodec>();
         protocolMapper = factory.Create<IMissionProtocolMapper>();
         fileSaver = factory.Create<IFileSaver>();
-        dateTimeProvider = factory.Create<IDateTimeProvider>();
-
         interactionService = factory.Create<IMissionMapInteractionService>();
         advancedMissionItems = factory.Create<IAdvancedMissionItemService>();
         confirmationService = factory.Create<IUserConfirmationService>();
@@ -109,7 +110,6 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         trackerHomeService = factory.Create<ITrackerHomeService>();
         geodeticConverter = factory.Create<IGeodeticCoordinateConverter>();
         replaySession = factory.Create<IReplaySessionManager>();
-        dialogService = factory.Create<IExtendedDialogService>();
         var settingsService = factory.Create<IPlannerSettingsService>();
         SelectedSourceId = settingsService.Current.Map.SelectedSourceId;
         UpdateVehicleStatus(activeVehicle.Current);
@@ -138,6 +138,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         stateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
         UpdateVehicleStatus(activeVehicle.Current);
     }
+
 
     /// <summary>
     /// Deactivates the Flight Data page

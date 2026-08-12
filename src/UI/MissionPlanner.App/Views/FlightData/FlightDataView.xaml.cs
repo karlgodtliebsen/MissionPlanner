@@ -1,6 +1,5 @@
 ﻿using MissionPlanner.App.Helpers;
 using MissionPlanner.App.Navigation;
-using UraniumUI.Extensions;
 
 namespace MissionPlanner.App.Views.FlightData;
 
@@ -29,7 +28,7 @@ public partial class FlightDataView : ExtendedContentPage<FlightDataViewModel>
         {
             mapView = ServiceHelper.GetRequiredService<FlightDataMissionMapView>();
             host?.Children.Add(mapView);
-            mapView.Initialize().FireAndForget();
+            //mapView.Initialize().FireAndForget();
         }
     }
 
