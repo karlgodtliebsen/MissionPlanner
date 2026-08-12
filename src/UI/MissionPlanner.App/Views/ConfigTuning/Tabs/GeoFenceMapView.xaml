@@ -2,7 +2,9 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:mapsui="clr-namespace:Mapsui.UI.Maui;assembly=Mapsui.UI.Maui"
-             x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.GeoFenceMapView">
+             x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.GeoFenceMapView"
+             
+             >
     <Grid>
         <mapsui:MapView x:Name="FenceMap" />
         <Border Margin="12"
