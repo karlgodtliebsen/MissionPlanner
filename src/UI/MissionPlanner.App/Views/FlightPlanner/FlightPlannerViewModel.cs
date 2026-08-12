@@ -56,7 +56,7 @@ public partial class FlightPlannerViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>The shared mission map editor (same instance as the FlightData map).</summary>
-    public MissionMapViewModel Map { get; }
+    public MissionMapViewModel? Map { get; private set; }
 
     /// <summary>True while a vehicle transfer is running; disables the transfer buttons.</summary>
     [ObservableProperty]
@@ -230,6 +230,7 @@ public partial class FlightPlannerViewModel : ObservableObject, IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
+        Map = null;
         foreach (var disposable in disposables)
         {
             disposable.Dispose();

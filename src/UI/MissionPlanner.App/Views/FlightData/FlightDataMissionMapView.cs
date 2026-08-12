@@ -8,7 +8,7 @@ namespace MissionPlanner.App.Views.FlightData;
 public partial class FlightDataMissionMapView : MissionMapView
 {
     /// <summary>Initializes a new instance of the <see cref="FlightDataMissionMapView"/> class.</summary>
-    public FlightDataMissionMapView() : base(ServiceHelper.GetRequiredService<IDomainFactory>(), ServiceHelper.GetRequiredService<FlightDataMissionMapViewModel>())
+    public FlightDataMissionMapView() : base(ServiceHelper.GetRequiredService<IDomainFactory>())
     {
     }
 }

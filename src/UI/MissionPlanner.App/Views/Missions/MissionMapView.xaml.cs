@@ -1,8 +1,6 @@
 ﻿using System.Diagnostics;
 using Mapsui;
 using Mapsui.UI.Maui;
-using MissionPlanner.App.Navigation;
-using MissionPlanner.Library;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 
 namespace MissionPlanner.App.Views.Missions;
@@ -11,47 +9,32 @@ namespace MissionPlanner.App.Views.Missions;
 /// Shared mission-map editor control. Native map events remain at the view boundary while
 /// <see cref="MissionMapPresenter"/> owns Mapsui rendering and navigation.
 /// </summary>
-public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
+public partial class MissionMapView : ContentView, IDisposable //ExtendedContentView<MissionMapViewModel>
 {
+    private MissionMapViewModel? ViewModel;
+    private readonly IDomainFactory domainFactory;
     private MissionMapPresenter? presenter;
     private bool disposed;
 
     /// <summary>Initializes a new instance of the <see cref="MissionMapView"/> class.</summary>
-    public MissionMapView(IDomainFactory domainFactory, MissionMapViewModel viewModel) : base(viewModel)
+    public MissionMapView(IDomainFactory domainFactory)
     {
+        this.domainFactory = domainFactory;
         InitializeComponent();
-        DomainException.ThrowIfNull(ViewModel);
+    }
+
+    public async Task Activate(MissionMapViewModel viewModel)
+    {
+        ViewModel = viewModel;
         presenter = domainFactory.Create<MissionMapPresenter, MapView, MissionMapViewModel>(MissionMap, viewModel);
         MissionMap.MapClicked += OnMapClicked;
         MissionMap.MapPointerMoved += OnMapPointerMoved;
-        ViewModel.MapRotationRequested += OnMapRotationRequested;
-        ViewModel.MapCenterRequested += OnMapCenterRequested;
-        Loaded += OnLoaded;
-    }
-
-    private async void OnLoaded(object? sender, EventArgs args)
-    {
-        if (presenter is null || disposed)
-        {
-            return;
-        }
-
-        try
-        {
-            // Install the basemap before applying the initial viewport. Mapsui derives its
-            // resolutions from the layers and can otherwise replace an earlier navigation.
-            await presenter.ActivateAsync();
-            await Initialize();
-        }
-        catch (OperationCanceledException)
-        {
-            // Removing the view cancels activation work owned by this visual lifetime.
-        }
-    }
-
-
-    private async Task Initialize()
-    {
+        viewModel.MapRotationRequested += OnMapRotationRequested;
+        viewModel.MapCenterRequested += OnMapCenterRequested;
+        //Loaded += OnLoaded;
+        BindingContext = viewModel;
+        // resolutions from the layers and can otherwise replace an earlier navigation.
+        await presenter.ActivateAsync();
         if (ViewModel is not { VehicleLatitude: 0, VehicleLongitude: 0 })
         {
             return;
@@ -60,31 +43,39 @@ public partial class MissionMapView : ExtendedContentView<MissionMapViewModel>
         await CenterOnMyLocationAsync();
     }
 
-    /// <inheritdoc />
-    public override void Dispose()
+    public void Deactivate()
     {
         if (disposed)
         {
             return;
         }
 
-        disposed = true;
-        Loaded -= OnLoaded;
-        presenter?.Dispose();
+        presenter?.Deactivate();
         MissionMap.MapClicked -= OnMapClicked;
         MissionMap.MapPointerMoved -= OnMapPointerMoved;
-        if (ViewModel is not null)
+        ViewModel?.MapRotationRequested -= OnMapRotationRequested;
+        ViewModel?.MapCenterRequested -= OnMapCenterRequested;
+        ViewModel = null;
+        BindingContext = null;
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        if (disposed)
         {
-            ViewModel.MapRotationRequested -= OnMapRotationRequested;
-            ViewModel.MapCenterRequested -= OnMapCenterRequested;
-            ViewModel.Dispose();
+            return;
         }
 
+        Deactivate();
+        disposed = true;
+        presenter?.Dispose();
+        ViewModel?.Dispose();
+        ViewModel = null;
         presenter = null;
         BindingContext = null;
         ViewModel = null;
     }
-
 
     private void OnMapClicked(object? sender, MapClickedEventArgs args)
     {

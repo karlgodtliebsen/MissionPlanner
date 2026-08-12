@@ -46,6 +46,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     private readonly IMissionProtocolMapper protocolMapper;
     private readonly IFileSaver fileSaver;
     private readonly IDateTimeProvider dateTimeProvider;
+    private readonly IServiceFactory factory;
     private readonly ILogger logger;
     private readonly IMissionMapInteractionService interactionService;
     private readonly IAdvancedMissionItemService advancedMissionItems;
@@ -74,12 +75,14 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     private IReadOnlyList<ImportedPlanningOverlay> importedOverlays = [];
     private IDisposable? stateSubscription;
     private bool disposed;
+    private readonly IPlannerSettingsService settingsService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MissionMapViewModel"/> class.
     /// </summary>
     public MissionMapViewModel(IServiceFactory factory, ILogger logger)
     {
+        this.factory = factory;
         this.logger = logger;
         domainEventHub = factory.Create<IDomainEventHub>();
         dispatcher = factory.Create<IDispatcher>();
@@ -106,13 +109,11 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         surveyMissionGenerator = factory.Create<ISurveyMissionGenerator>();
         mapTilePrefetchService = factory.Create<IMapTilePrefetchService>();
         elevationProfileService = factory.Create<IMissionElevationProfileService>();
+        settingsService = factory.Create<IPlannerSettingsService>();
         poiService = factory.Create<IPoiService>();
         trackerHomeService = factory.Create<ITrackerHomeService>();
         geodeticConverter = factory.Create<IGeodeticCoordinateConverter>();
         replaySession = factory.Create<IReplaySessionManager>();
-        var settingsService = factory.Create<IPlannerSettingsService>();
-        SelectedSourceId = settingsService.Current.Map.SelectedSourceId;
-        UpdateVehicleStatus(activeVehicle.Current);
         Activate();
     }
 
@@ -121,6 +122,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     /// </summary>
     private void Activate()
     {
+        SelectedSourceId = settingsService.Current.Map.SelectedSourceId;
         pendingRallyAltitude = DefaultAltitude();
         polygonService.Changed += OnPolygonChanged;
         interactionService.Changed += OnInteractionChanged;
@@ -158,7 +160,6 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         poiService.Changed -= OnPoiChanged;
         trackerHomeService.Changed -= OnTrackerHomeChanged;
         replaySession.Changed -= OnReplaySessionChanged;
-        interactionService.Cancel();
         stateSubscription?.Dispose();
         stateSubscription = null;
     }
@@ -167,6 +168,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     public void Dispose()
     {
         Deactivate();
+        interactionService.Cancel();
         foreach (var row in MissionItems)
         {
             row.Dispose();

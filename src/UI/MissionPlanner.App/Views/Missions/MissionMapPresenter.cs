@@ -42,7 +42,8 @@ internal sealed class MissionMapPresenter : IDisposable
     private bool disposed;
 
     /// <summary>Initializes a presenter for a map view and shared mission editor.</summary>
-    public MissionMapPresenter(MapView mapView, MissionMapViewModel viewModel, IPlannerSettingsService plannerSettings, IMapSourceResolver sourceResolver, IMapsuiBasemapFactory basemapFactory, IMapAttributionCoordinator attributionCoordinator, ITerrainElevationService terrainElevationService)
+    public MissionMapPresenter(MapView mapView, MissionMapViewModel viewModel, IPlannerSettingsService plannerSettings, IMapSourceResolver sourceResolver,
+        IMapsuiBasemapFactory basemapFactory, IMapAttributionCoordinator attributionCoordinator, ITerrainElevationService terrainElevationService)
     {
         this.mapView = mapView;
         this.viewModel = viewModel;

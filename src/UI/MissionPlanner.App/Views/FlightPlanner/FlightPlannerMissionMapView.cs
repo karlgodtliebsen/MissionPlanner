@@ -10,7 +10,7 @@ public class FlightPlannerMissionMapView : MissionMapView
     /// <summary>
     /// Initializes a new instance of the <see cref="FlightPlannerMissionMapView"/> class.
     /// </summary>
-    public FlightPlannerMissionMapView(FlightPlannerMissionMapViewModel map) : base(ServiceHelper.GetRequiredService<IDomainFactory>(), map)
+    public FlightPlannerMissionMapView() : base(ServiceHelper.GetRequiredService<IDomainFactory>())
     {
     }
 }
