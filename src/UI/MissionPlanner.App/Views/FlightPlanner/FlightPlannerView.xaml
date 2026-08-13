@@ -74,7 +74,15 @@
                 <!--<Grid  x:Name="MapView" Grid.Row="1"  HorizontalOptions="Fill" VerticalOptions="Fill" ></Grid>-->
 
                 <vm:FlightPlannerMissionMapView x:Name="MapView" Grid.Row="1"  HorizontalOptions="Fill" VerticalOptions="Fill"/>
-
+                <ActivityIndicator x:Name="MapLoadingIndicator"
+                                   Color="Black"
+                                   MinimumWidthRequest="100"
+                                   MinimumHeightRequest="100"
+                                   Grid.Row="1"
+                                   IsRunning="False"
+                                   IsVisible="False"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center" />
             </Grid>
         </controls:RightDockPanel.MainContent>
 

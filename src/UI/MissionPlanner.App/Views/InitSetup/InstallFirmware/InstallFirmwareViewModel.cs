@@ -82,10 +82,12 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     }
 
     /// <summary>Gets catalogue choices.</summary>
-    public ObservableCollection<FirmwareCatalogItemViewModel> FirmwareChoices { get; } = [];
+    [ObservableProperty]
+    public partial IReadOnlyList<FirmwareCatalogItemViewModel> FirmwareChoices { get; private set; } = [];
 
     /// <summary>Gets discovered serial devices.</summary>
-    public ObservableCollection<FirmwareDeviceItemViewModel> DetectedDevices { get; } = [];
+    [ObservableProperty]
+    public partial IReadOnlyList<FirmwareDeviceItemViewModel> DetectedDevices { get; private set; } = [];
 
     /// <summary>Gets release channels.</summary>
     public IReadOnlyList<FirmwareReleaseChannel> Channels { get; } =
@@ -437,6 +439,9 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             var devices = await devicesTask.ConfigureAwait(false);
             var entries = catalog.Entries.Where(entry => entry.Target.VehicleType != FirmwareVehicleType.Unknown &&
                                                          entry.Artifact.Format is FirmwareImageFormat.Apj or FirmwareImageFormat.Px4).ToArray();
+            var deviceItems = await Task.Run(
+                () => CreateDeviceItems(entries, devices),
+                refreshToken).ConfigureAwait(false);
             refreshToken.ThrowIfCancellationRequested();
             await DispatchAsync(() =>
             {
@@ -452,19 +457,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
                 CustomPackage = null;
                 OnPropertyChanged(nameof(HasCustomFirmware));
 
-                DetectedDevices.Clear();
-                foreach (var device in devices)
-                {
-                    var usbMatch = FirmwareChoices.Any(choice => choice.Entry.Target.UsbIdentifiers.Contains(device.UsbIdentifier ?? default));
-                    var hintMatch = FirmwareChoices.Any(choice => choice.Entry.Target.BootloaderNames.Any(hint =>
-                        (!string.IsNullOrWhiteSpace(device.ProductName) && device.ProductName.Contains(hint, StringComparison.OrdinalIgnoreCase)) ||
-                        device.BoardHints.Any(value => value.Contains(hint, StringComparison.OrdinalIgnoreCase))));
-                    var recommended = usbMatch || hintMatch;
-                    DetectedDevices.Add(new FirmwareDeviceItemViewModel(
-                        device,
-                        recommended,
-                        usbMatch ? "Exact catalogue USB match" : hintMatch ? "Bootloader/board hint match" : "Manual device selection"));
-                }
+                DetectedDevices = deviceItems;
 
                 var recommendedDevices = DetectedDevices.Where(item => item.IsRecommended).ToArray();
                 SelectedDevice = recommendedDevices.Length == 1 ? recommendedDevices[0] : null;
@@ -509,16 +502,29 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         var recommendations = FirmwareTargetSelector.Query(availableEntries,
             new FirmwareTargetQuery(ReleaseChannel: showingAllOptions ? null : SelectedChannel, SearchText: TargetSearchText),
             availableDevices, SelectedFirmware?.BoardId);
-        FirmwareChoices.Clear();
-        foreach (var recommendation in recommendations)
-        {
-            FirmwareChoices.Add(new FirmwareCatalogItemViewModel(recommendation));
-        }
+        FirmwareChoices = recommendations.Select(recommendation => new FirmwareCatalogItemViewModel(recommendation)).ToArray();
 
         var retained = previousEntry is null ? null : FirmwareChoices.FirstOrDefault(item => SameEntry(item.Entry, previousEntry));
         var automatic = FirmwareTargetSelector.UnambiguousHighConfidence(recommendations);
         SelectedFirmware = retained ?? (automatic is null ? null : FirmwareChoices.Single(item => ReferenceEquals(item.Entry, automatic.Entry)));
         InstallCommand.NotifyCanExecuteChanged();
+    }
+
+    private static IReadOnlyList<FirmwareDeviceItemViewModel> CreateDeviceItems(
+        IReadOnlyList<FirmwareManifestEntry> entries,
+        IReadOnlyList<SerialDeviceDescriptor> devices)
+    {
+        return devices.Select(device =>
+        {
+            var usbMatch = entries.Any(entry => entry.Target.UsbIdentifiers.Contains(device.UsbIdentifier ?? default));
+            var hintMatch = entries.Any(entry => entry.Target.BootloaderNames.Any(hint =>
+                (!string.IsNullOrWhiteSpace(device.ProductName) && device.ProductName.Contains(hint, StringComparison.OrdinalIgnoreCase)) ||
+                device.BoardHints.Any(value => value.Contains(hint, StringComparison.OrdinalIgnoreCase))));
+            return new FirmwareDeviceItemViewModel(
+                device,
+                usbMatch || hintMatch,
+                usbMatch ? "Exact catalogue USB match" : hintMatch ? "Bootloader/board hint match" : "Manual device selection");
+        }).ToArray();
     }
 
     private (long Version, CancellationToken Token) BeginRefresh(CancellationToken cancellationToken)

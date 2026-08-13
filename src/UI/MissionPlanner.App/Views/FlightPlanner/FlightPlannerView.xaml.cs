@@ -22,14 +22,28 @@ public partial class FlightPlannerView : ExtendedContentPage<FlightPlannerViewMo
         DomainException.ThrowIfNull(viewModel);
         var map = viewModel.Map as FlightPlannerMissionMapViewModel; //To share the Map it is brought over
         DomainException.ThrowIfNull(map);
-        await MapView.Activate(map);
-        ItemListView.BindingContext = map;
+        MapLoadingIndicator.IsVisible = true;
+        MapLoadingIndicator.IsRunning = true;
+        try
+        {
+            // Allow the indicator to render before map initialization starts.
+            await Task.Yield();
+            await MapView.Activate(map);
+            ItemListView.BindingContext = map;
+        }
+        finally
+        {
+            MapLoadingIndicator.IsRunning = false;
+            MapLoadingIndicator.IsVisible = false;
+        }
     }
 
 
     /// <inheritdoc />
     protected override void OnDestroyingModel(FlightPlannerViewModel viewModel)
     {
+        MapLoadingIndicator.IsRunning = false;
+        MapLoadingIndicator.IsVisible = false;
         MapView.Deactivate();
         ItemListView.BindingContext = null;
     }
