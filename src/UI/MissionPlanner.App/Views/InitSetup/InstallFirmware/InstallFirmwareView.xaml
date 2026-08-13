@@ -227,7 +227,7 @@
                         <VerticalStackLayout>
                             <Label Text="Validated package" FontAttributes="Bold" FontSize="22" />
 
-                            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                            <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
                                 <Label Grid.Row="0" Text="Package board ID" />
                                 <Label Grid.Row="0" Grid.Column="1" Text="{Binding PreparedFirmware.PackageBoardId,FallbackValue='', TargetNullValue=''}" />
 

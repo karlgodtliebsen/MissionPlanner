@@ -47,9 +47,9 @@ public sealed class FirmwareDeviceMonitorTests
         await using var enumerator = monitor.WatchAsync(cancellation.Token).GetAsyncEnumerator(cancellation.Token);
 
         cancellation.Cancel();
-        var act = async () => await enumerator.MoveNextAsync().AsTask();
+        var hasChange = await enumerator.MoveNextAsync().AsTask();
 
-        await act.Should().ThrowAsync<OperationCanceledException>();
+        hasChange.Should().BeFalse();
     }
 
     [Fact]

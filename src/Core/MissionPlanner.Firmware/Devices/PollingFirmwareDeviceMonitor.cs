@@ -11,11 +11,27 @@ public sealed class PollingFirmwareDeviceMonitor(IFirmwareSerialDeviceCatalog ca
     /// <inheritdoc />
     public async IAsyncEnumerable<FirmwareDeviceChange> WatchAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var previous = Index(await catalog.GetDevicesAsync(cancellationToken).ConfigureAwait(false));
-        while (true)
+        var initial = await TryGetDevicesAsync(cancellationToken).ConfigureAwait(false);
+        if (initial is null)
         {
-            await Task.Delay(pollInterval, timeProvider, cancellationToken).ConfigureAwait(false);
-            var current = Index(await catalog.GetDevicesAsync(cancellationToken).ConfigureAwait(false));
+            yield break;
+        }
+
+        var previous = Index(initial);
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            if (!await WaitForNextPollAsync(cancellationToken).ConfigureAwait(false))
+            {
+                yield break;
+            }
+
+            var snapshot = await TryGetDevicesAsync(cancellationToken).ConfigureAwait(false);
+            if (snapshot is null)
+            {
+                yield break;
+            }
+
+            var current = Index(snapshot);
             var now = timeProvider.GetUtcNow();
             foreach (var pair in previous.Where(pair => !current.TryGetValue(pair.Key, out var replacement) || !SameDeviceMode(pair.Value, replacement)).OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase))
             {
@@ -28,6 +44,31 @@ public sealed class PollingFirmwareDeviceMonitor(IFirmwareSerialDeviceCatalog ca
             }
 
             previous = current;
+        }
+    }
+
+    private async Task<bool> WaitForNextPollAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Task.Delay(pollInterval, timeProvider, cancellationToken).ConfigureAwait(false);
+            return true;
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            return false;
+        }
+    }
+
+    private async Task<IReadOnlyList<SerialDeviceDescriptor>?> TryGetDevicesAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await catalog.GetDevicesAsync(cancellationToken).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            return null;
         }
     }
 
