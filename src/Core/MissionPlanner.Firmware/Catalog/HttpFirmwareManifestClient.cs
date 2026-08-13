@@ -1,3 +1,4 @@
+﻿using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Options;
@@ -10,10 +11,7 @@ namespace MissionPlanner.Firmware.Catalog;
 public sealed class HttpFirmwareManifestClient(HttpClient httpClient, IOptions<FirmwareOptions> options) : IFirmwareManifestClient
 {
     /// <inheritdoc />
-    public async Task<FirmwareManifestResponse> GetAsync(
-        Uri uri,
-        CachedFirmwareManifest? cached,
-        CancellationToken cancellationToken = default)
+    public async Task<FirmwareManifestResponse> GetAsync(Uri uri, CachedFirmwareManifest? cached, CancellationToken cancellationToken = default)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get, uri);
         if (EntityTagHeaderValue.TryParse(cached?.ETag, out var etag))
@@ -33,6 +31,8 @@ public sealed class HttpFirmwareManifestClient(HttpClient httpClient, IOptions<F
         var limit = options.Value.MaximumManifestDownloadBytes;
         if (response.Content.Headers.ContentLength > limit)
         {
+            Debug.Print("Firmware manifest download exceeds the configured size limit. {0}", limit);
+
             throw new FirmwareManifestException("Firmware manifest download exceeds the configured size limit.");
         }
 
@@ -44,6 +44,8 @@ public sealed class HttpFirmwareManifestClient(HttpClient httpClient, IOptions<F
         {
             if (content.Length + read > limit)
             {
+                Debug.Print("Firmware manifest download exceeds the configured size limit. {0}", limit);
+
                 throw new FirmwareManifestException("Firmware manifest download exceeds the configured size limit.");
             }
 

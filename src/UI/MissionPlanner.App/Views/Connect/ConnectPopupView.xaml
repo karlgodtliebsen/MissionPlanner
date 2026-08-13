@@ -4,24 +4,16 @@
               xmlns:connect="clr-namespace:MissionPlanner.App.Views.Connect"
               xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
               xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
-              xmlns:validations="clr-namespace:InputKit.Shared.Validations;assembly=InputKit.Maui"
-              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
               xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
               x:Class="MissionPlanner.App.Views.Connect.ConnectPopupView"
               x:DataType="connect:ConnectPopupViewModel"
               BackgroundColor="#80000000">
 
-    <!--<validations:RequiredValidation />
-        <validations:RegexValidation Pattern="{x:Static input:AdvancedEntry.REGEX_EMAIL}" Message="Invalid email address" />-->
 
-    <!--
-        <material:TextField.Behaviors>
-            <uranium:DataAnnotationsBehavior Binding="{Binding Ip}" />
-        </material:TextField.Behaviors>
-        -->
     <Grid>
 
         <VerticalStackLayout Spacing="12" Margin="25" 
+                             IsEnabled="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
                              IsVisible="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}">
             <material:SelectField
                 Title="Channel"
@@ -38,8 +30,10 @@
                 />
 
 
-            <controls:AlignedEditorField Title="Host" Text="{Binding SelectedHost}" IsVisible="{Binding ShowSelectedHost}" />
-            <controls:AlignedEditorField Title="Port" Text="{Binding SelectedPort}" IsVisible="{Binding ShowSelectedHost}" />
+            <controls:AlignedEditorField Title="Host" Text="{Binding SelectedHost}" 
+                                         IsVisible="{Binding ShowSelectedHost}" />
+            <controls:AlignedEditorField Title="Port" Text="{Binding SelectedPort}" 
+                                         IsVisible="{Binding ShowSelectedHost}" />
 
             <Label Text="{Binding StatusMessage}"
                        TextColor="LightGray"
@@ -47,9 +41,10 @@
                        HorizontalOptions="Center"
                        Margin="0,4,0,0" />
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8" >
 
                 <Button Grid.Column="0"
+                        IsVisible="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
                     ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Find_replace}, FontFamily=MaterialSharp}"
                     FontSize="20"
                     Padding="5"
@@ -57,6 +52,7 @@
                     Command="{Binding RefreshCommand}" />
 
                 <Button Grid.Column="1"
+                        IsVisible="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
                     ImageSource="{Binding IsConnectedImage}"
                     FontSize="20"
                     Padding="5"

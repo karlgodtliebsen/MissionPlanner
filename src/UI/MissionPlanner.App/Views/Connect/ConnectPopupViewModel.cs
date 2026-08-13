@@ -6,10 +6,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.Core.DomainEvents;
-using MissionPlanner.Core.Services.Abstractions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Shared.Models.Services.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
@@ -189,6 +187,8 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
             IsConnectedImage = stateService.IsConnected ? ConnectImage : DisConnectImage;
             VehicleId = stateService.VehicleId;
             VehicleName = stateService.VehicleName;
+            IsConnecting = false;
+            Task.Yield();
         });
     }
 
@@ -294,7 +294,7 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
 
         IsConnecting = true;
         StatusMessage = "Connecting...";
-
+        await Task.Yield();
         try
 
         {
@@ -345,7 +345,6 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
         }
         finally
         {
-            IsConnecting = false;
             UpdateConnectionStatus();
         }
     }
@@ -366,6 +365,7 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
 
                 VehicleName = stateService.VehicleName;
                 StatusMessage = $"Connected to {VehicleName ?? vehicleId.ToString()}";
+                Task.Yield();
                 logger.LogInformation("Successfully connected to vehicle {VehicleId} ({VehicleName})", vehicleId, VehicleName);
             }
         );

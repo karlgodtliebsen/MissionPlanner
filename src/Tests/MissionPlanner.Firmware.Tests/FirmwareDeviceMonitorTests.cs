@@ -1,3 +1,4 @@
+﻿using System.Diagnostics;
 using FluentAssertions;
 using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Model;
@@ -24,7 +25,10 @@ public sealed class FirmwareDeviceMonitorTests
         await foreach (var change in monitor.WatchAsync(TestContext.Current.CancellationToken))
         {
             changes.Add(change);
-            if (changes.Count == 4) break;
+            if (changes.Count == 4)
+            {
+                break;
+            }
         }
 
         changes.Select(change => (change.Kind, change.Device.PortName)).Should().Equal(
@@ -62,7 +66,10 @@ public sealed class FirmwareDeviceMonitorTests
         await foreach (var change in monitor.WatchAsync(TestContext.Current.CancellationToken))
         {
             changes.Add(change);
-            if (changes.Count == 2) break;
+            if (changes.Count == 2)
+            {
+                break;
+            }
         }
 
         changes.Select(change => (change.Kind, change.Device.ProductName)).Should().Equal(
@@ -80,15 +87,19 @@ public sealed class FirmwareDeviceMonitorTests
         before.PortName.Should().NotBe(after.PortName);
     }
 
-    private static SerialDeviceDescriptor Device(string port, string id) =>
-        new(port, id, new UsbIdentifier(0x2dae, 0x1016), "serial", "Cube", "CubePilot");
+    private static SerialDeviceDescriptor Device(string port, string id)
+    {
+        return new SerialDeviceDescriptor(port, id, new UsbIdentifier(0x2dae, 0x1016), "serial", "Cube", "CubePilot");
+    }
 
     private sealed class ScriptedCatalog(params IReadOnlyList<SerialDeviceDescriptor>[] snapshots) : IFirmwareSerialDeviceCatalog
     {
         private int index;
+
         public Task<IReadOnlyList<SerialDeviceDescriptor>> GetDevicesAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
+            Debug.Print("GetDevicesAsync");
             var selected = snapshots[Math.Min(index, snapshots.Length - 1)];
             index++;
             return Task.FromResult(selected);

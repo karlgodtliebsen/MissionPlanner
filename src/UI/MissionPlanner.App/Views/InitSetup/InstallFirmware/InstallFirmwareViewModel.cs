@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -102,17 +102,31 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     /// <summary>Gets curated official and fallback support destinations.</summary>
     public IReadOnlyList<FirmwareSupportLink> SupportLinks { get; }
 
-    /// <summary>Gets whether this host can open Windows Device Manager.</summary>
-    public bool CanOpenDeviceManager => deviceManagerLauncher.IsAvailable;
-
     [ObservableProperty] public partial FirmwareReleaseChannel SelectedChannel { get; set; } = FirmwareReleaseChannel.Stable;
     [ObservableProperty] public partial FirmwareCatalogItemViewModel? SelectedFirmware { get; set; }
     [ObservableProperty] public partial FirmwareDeviceItemViewModel? SelectedDevice { get; set; }
     [ObservableProperty] public partial string? TargetSearchText { get; set; }
     [ObservableProperty] public partial FirmwarePreparationResult? PreparedFirmware { get; private set; }
 
+    /// <summary>Gets whether this host can open Windows Device Manager.</summary>
+    public bool CanOpenDeviceManager => deviceManagerLauncher.IsAvailable;
+
     /// <summary>Gets whether a validated downloadable artifact is ready.</summary>
     public bool HasPreparedFirmware => PreparedFirmware is not null;
+
+    /// <summary>Gets whether parsed custom metadata is available.</summary>
+    public bool HasCustomFirmware => CustomPackage is not null;
+
+    /// <summary>Gets whether the current non-terminal work accepts a cancellation request.</summary>
+    public bool CanRequestCancellation => IsCatalogRefreshRunning || IsOperationInProgress;
+
+    /// <summary>Gets whether Shell navigation may safely leave this page.</summary>
+    public bool CanNavigateAway => !IsOperationInProgress;
+
+    /// <summary>Gets whether a terminal diagnostic report can be copied.</summary>
+    public bool HasDiagnosticReport => !string.IsNullOrWhiteSpace(LastDiagnosticReport);
+
+    [ObservableProperty] public partial bool IsHelpVisible { get; private set; }
 
     [ObservableProperty] public partial ApjFirmwarePackage? CustomPackage { get; private set; }
     [ObservableProperty] public partial string? CustomFirmwareName { get; private set; }
@@ -122,27 +136,20 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     [ObservableProperty] public partial int CustomFirmwareBoardId { get; private set; }
     [ObservableProperty] public partial long CustomFirmwareImageSize { get; private set; }
 
-    /// <summary>Gets whether parsed custom metadata is available.</summary>
-    public bool HasCustomFirmware => CustomPackage is not null;
 
     [ObservableProperty] public partial bool IsConnectedMode { get; private set; }
+
     [ObservableProperty] public partial bool IsDisconnectedMode { get; private set; }
     [ObservableProperty] public partial bool IsUnsupportedMode { get; private set; }
     [ObservableProperty] public partial bool IsOperationInProgress { get; private set; }
     [ObservableProperty] public partial bool IsCatalogRefreshRunning { get; private set; }
     [ObservableProperty] public partial bool IsCancellationDeferred { get; private set; }
     [ObservableProperty] public partial FirmwareOperationState? CurrentOperationState { get; private set; }
-    [ObservableProperty] public partial bool IsHelpVisible { get; private set; }
 
     [ObservableProperty]
     public partial FirmwareContextHelp ContextHelp { get; private set; } =
         FirmwareContextHelpResolver.Resolve(new FirmwareSupportContext(SerialDevicePresent: false));
 
-    /// <summary>Gets whether the current non-terminal work accepts a cancellation request.</summary>
-    public bool CanRequestCancellation => IsCatalogRefreshRunning || IsOperationInProgress;
-
-    /// <summary>Gets whether Shell navigation may safely leave this page.</summary>
-    public bool CanNavigateAway => !IsOperationInProgress;
 
     [ObservableProperty] public partial bool CanUpdateBootloader { get; private set; }
     [ObservableProperty] public partial bool CanInstall { get; private set; }
@@ -150,8 +157,6 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     [ObservableProperty] public partial string DeviceStatus { get; private set; } = "No flight controller detected";
     [ObservableProperty] public partial string? LastDiagnosticReport { get; private set; }
 
-    /// <summary>Gets whether a terminal diagnostic report can be copied.</summary>
-    public bool HasDiagnosticReport => !string.IsNullOrWhiteSpace(LastDiagnosticReport);
 
     /// <summary>Starts observing connection state and refreshes disconnected data.</summary>
     public Task ActivateAsync()
@@ -330,10 +335,13 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
                     SelectedDevice?.Descriptor),
                 prepared is null ? SelectedFirmware?.Entry.Artifact : null,
                 CustomPackage ?? prepared?.Package);
+
             var progress = new Progress<FirmwareProgress>(UpdateProgress);
             var result = await installationService.InstallAsync(request, progress, ownedCancellation.Token);
             LastDiagnosticReport = result.DiagnosticReport?.CreateReport();
             OnPropertyChanged(nameof(HasDiagnosticReport));
+
+
             StatusMessage = result.State == FirmwareOperationState.Completed
                 ? result.ApplicationDevice is null
                     ? "Firmware installation completed; reconnect was not detected. Reconnect the flight controller manually."
@@ -342,6 +350,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         }
         catch (Exception exception)
         {
+            Debug.Print("Firmware installation failed.\n{0}", exception.ToString());
             logger.LogError(exception, "Firmware installation failed.");
             StatusMessage = exception.Message;
         }
@@ -414,6 +423,8 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             return;
         }
 
+        Debug.Print("RefreshAsync");
+
         var (version, refreshToken) = BeginRefresh(cancellationToken);
         try
         {
@@ -423,36 +434,42 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
                 StatusMessage = "Loading firmware catalogue…";
             });
             var channel = SelectedChannel;
+
             // Both manifest parsing and Windows device discovery can perform substantial
             // synchronous work before their returned tasks complete. Run them away from the
             // UI context and concurrently so opening the Connect dialog remains responsive.
-            var catalogTask = Task.Run(
-                () => catalogService.GetCatalogAsync(
-                    new FirmwareCatalogRequest(Channel: allOptions ? null : channel, ForceRefresh: forceRefresh),
-                    refreshToken),
-                refreshToken);
-            var devicesTask = Task.Run(
-                () => deviceCatalog.GetDevicesAsync(refreshToken),
-                refreshToken);
+            var catalogTask = Task.Run(() => catalogService.GetCatalogAsync(new FirmwareCatalogRequest(Channel: allOptions ? null : channel, ForceRefresh: forceRefresh), refreshToken), refreshToken);
+            var devicesTask = Task.Run(() => deviceCatalog.GetDevicesAsync(refreshToken), refreshToken);
+
             await Task.WhenAll(catalogTask, devicesTask).ConfigureAwait(false);
+
             var catalog = await catalogTask.ConfigureAwait(false);
             var devices = await devicesTask.ConfigureAwait(false);
-            var entries = catalog.Entries.Where(entry => entry.Target.VehicleType != FirmwareVehicleType.Unknown &&
-                                                         entry.Artifact.Format is FirmwareImageFormat.Apj or FirmwareImageFormat.Px4).ToArray();
-            var deviceItems = await Task.Run(
-                () => CreateDeviceItems(entries, devices),
-                refreshToken).ConfigureAwait(false);
+            Debug.Print("RefreshAsync Completed task 1 & 2");
+
+
+            var entries = catalog.Entries.Where(entry =>
+                entry.Target.VehicleType != FirmwareVehicleType.Unknown
+                &&
+                entry.Artifact.Format is FirmwareImageFormat.Apj or FirmwareImageFormat.Px4).ToArray();
+
+            var deviceItems = await Task.Run(() => CreateDeviceItems(entries, devices), refreshToken).ConfigureAwait(false);
+
+            Debug.Print($"RefreshAsync Completed task 3 with entries count: {entries.Length}");
+
+
             refreshToken.ThrowIfCancellationRequested();
+            if (!IsLatestRefresh(version))
+            {
+                return;
+            }
+
+            availableEntries = entries;
+            availableDevices = devices;
+            showingAllOptions = allOptions;
+
             await DispatchAsync(() =>
             {
-                if (!IsLatestRefresh(version))
-                {
-                    return;
-                }
-
-                availableEntries = entries;
-                availableDevices = devices;
-                showingAllOptions = allOptions;
                 ApplyTargetQuery();
                 CustomPackage = null;
                 OnPropertyChanged(nameof(HasCustomFirmware));
@@ -475,6 +492,8 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         catch (OperationCanceledException) when (refreshToken.IsCancellationRequested) { }
         catch (Exception exception)
         {
+            Debug.Print("Firmware catalogue refresh failed.\n" + exception.Message);
+
             logger.LogError(exception, "Firmware catalogue refresh failed.");
             await DispatchAsync(() =>
             {
@@ -499,10 +518,16 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     private void ApplyTargetQuery()
     {
         var previousEntry = SelectedFirmware?.Entry;
-        var recommendations = FirmwareTargetSelector.Query(availableEntries,
-            new FirmwareTargetQuery(ReleaseChannel: showingAllOptions ? null : SelectedChannel, SearchText: TargetSearchText),
-            availableDevices, SelectedFirmware?.BoardId);
-        FirmwareChoices = recommendations.Select(recommendation => new FirmwareCatalogItemViewModel(recommendation)).ToArray();
+        var recommendations =
+            FirmwareTargetSelector.Query(availableEntries,
+                new FirmwareTargetQuery(ReleaseChannel: showingAllOptions ? null : SelectedChannel, SearchText: TargetSearchText),
+                availableDevices, SelectedFirmware?.BoardId);
+
+        FirmwareChoices = recommendations.Select(recommendation => new FirmwareCatalogItemViewModel(recommendation))
+            //   .Take(100)
+            .ToArray();
+        Debug.Print($"ApplyTargetQuery with FirmwareChoices count: {FirmwareChoices.Count}");
+
 
         var retained = previousEntry is null ? null : FirmwareChoices.FirstOrDefault(item => SameEntry(item.Entry, previousEntry));
         var automatic = FirmwareTargetSelector.UnambiguousHighConfidence(recommendations);
@@ -510,25 +535,32 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         InstallCommand.NotifyCanExecuteChanged();
     }
 
-    private static IReadOnlyList<FirmwareDeviceItemViewModel> CreateDeviceItems(
-        IReadOnlyList<FirmwareManifestEntry> entries,
-        IReadOnlyList<SerialDeviceDescriptor> devices)
+    private static IReadOnlyList<FirmwareDeviceItemViewModel> CreateDeviceItems(IReadOnlyList<FirmwareManifestEntry> entries, IReadOnlyList<SerialDeviceDescriptor> devices)
     {
-        return devices.Select(device =>
+        Debug.Print("CreateDeviceItems");
+
+        var deviceItems = devices.Select(device =>
         {
             var usbMatch = entries.Any(entry => entry.Target.UsbIdentifiers.Contains(device.UsbIdentifier ?? default));
             var hintMatch = entries.Any(entry => entry.Target.BootloaderNames.Any(hint =>
-                (!string.IsNullOrWhiteSpace(device.ProductName) && device.ProductName.Contains(hint, StringComparison.OrdinalIgnoreCase)) ||
-                device.BoardHints.Any(value => value.Contains(hint, StringComparison.OrdinalIgnoreCase))));
-            return new FirmwareDeviceItemViewModel(
-                device,
-                usbMatch || hintMatch,
-                usbMatch ? "Exact catalogue USB match" : hintMatch ? "Bootloader/board hint match" : "Manual device selection");
+                (
+                    !string.IsNullOrWhiteSpace(device.ProductName)
+                    && device.ProductName.Contains(hint, StringComparison.OrdinalIgnoreCase))
+                ||
+                device.BoardHints.Any(value => value.Contains(hint, StringComparison.OrdinalIgnoreCase)))
+            );
+
+
+            return new FirmwareDeviceItemViewModel(device, usbMatch || hintMatch, usbMatch ? "Exact catalogue USB match" : hintMatch ? "Bootloader/board hint match" : "Manual device selection");
         }).ToArray();
+
+        Debug.Print($"CreateDeviceItems found {deviceItems.Length} items");
+        return deviceItems;
     }
 
     private (long Version, CancellationToken Token) BeginRefresh(CancellationToken cancellationToken)
     {
+        Debug.Print("BeginRefresh");
         lock (refreshSync)
         {
             refreshCancellation?.Cancel();
@@ -540,6 +572,8 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
 
     private void CancelRefresh()
     {
+        Debug.Print("CancelRefresh");
+
         lock (refreshSync)
         {
             refreshVersion++;

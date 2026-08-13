@@ -3,226 +3,303 @@
     x:Class="MissionPlanner.App.Views.InitSetup.InstallFirmware.InstallFirmwareView"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:pages="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
     xmlns:local="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
     xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
-    xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+    xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
-    xmlns:controls1="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
     x:DataType="local:InstallFirmwareViewModel"
     Title="Install Firmware">
-    <ScrollView>
-        <VerticalStackLayout Padding="32" Spacing="20" MaximumWidthRequest="1100" HorizontalOptions="Center">
-            <Label Text="Firmware" FontSize="30" FontAttributes="Bold" />
 
-            <Border IsVisible="{Binding IsConnectedMode}" Padding="24" StrokeShape="RoundRectangle 10">
-                <VerticalStackLayout Spacing="14">
-                    <Label Text="A vehicle is connected" FontSize="22" FontAttributes="Bold" />
-                    <Label Text="Application firmware cannot be installed while Mission Planner owns the active connection. Disconnect the vehicle first to browse or install firmware." />
-                    <Label Text="Embedded bootloader update is available only for a supported, disarmed ArduPilot vehicle. Keep power connected and reboot after an accepted update." />
-                    <Button Text="Update Bootloader" Command="{Binding UpdateBootloaderCommand}" IsEnabled="{Binding CanUpdateBootloader}" HorizontalOptions="Start" />
-                </VerticalStackLayout>
-            </Border>
+    <Grid RowDefinitions="*,32">
 
-            <VerticalStackLayout IsVisible="{Binding IsDisconnectedMode}" Spacing="16">
-                <HorizontalStackLayout Spacing="10">
-                    <Label Text="Release:" VerticalOptions="Center" />
-                    <material:SelectField ItemsSource="{Binding Channels}" SelectedItem="{Binding SelectedChannel}" WidthRequest="180" />
-                    <Button Text="Refresh catalogue" Command="{Binding RefreshCatalogCommand}" />
-                    <Button Text="All Options" Command="{Binding ShowAllOptionsCommand}" />
-                    <Button Text="Load Custom Firmware" Command="{Binding LoadCustomFirmwareCommand}" />
-                </HorizontalStackLayout>
 
-                <controls1:AlignedEditorField Title="Search platform, manufacturer, brand, or board ID" Text="{Binding TargetSearchText}" />
+        <ScrollView Grid.Row="0" HorizontalOptions="Fill" VerticalOptions="Fill">
+            <VerticalStackLayout Padding="32" Spacing="20" MaximumWidthRequest="1100" HorizontalOptions="Center">
+                <Label Text="Firmware" FontSize="30" FontAttributes="Bold" />
 
-                <controls:VirtualizedDataGrid 
-                          ItemsSource="{Binding FirmwareChoices}" 
-                          ItemSizingStrategy= "MeasureFirstItem"
-                          ShowSearchBar="False"
-                          HorizontalOptions="Fill" 
-                          VerticalOptions="Fill" 
-                          BackgroundColor="Transparent"
-      >
-                    <controls:VirtualizedDataGrid.EmptyView>
-                        <Label HorizontalOptions="Center" Text="No releases are available for this channel."
+                <Border IsVisible="{Binding IsConnectedMode}" Padding="24" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                    <VerticalStackLayout Spacing="14">
+                        <Label Text="A vehicle is connected" FontSize="22" FontAttributes="Bold" />
+                        <Label Text="Application firmware cannot be installed while Mission Planner owns the active connection. Disconnect the vehicle first to browse or install firmware." />
+                        <Label Text="Embedded bootloader update is available only for a supported, disarmed ArduPilot vehicle. Keep power connected and reboot after an accepted update." />
+                        <Button Text="Update Bootloader" Command="{Binding UpdateBootloaderCommand}" IsEnabled="{Binding CanUpdateBootloader}" HorizontalOptions="Start" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Grid  IsVisible="{Binding IsDisconnectedMode}" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="16">
+                    <HorizontalStackLayout Spacing="10" Grid.Row="0" >
+                        <Label Text="Release:" VerticalOptions="Center" />
+                        <material:SelectField ItemsSource="{Binding Channels}" SelectedItem="{Binding SelectedChannel}" WidthRequest="180" />
+                        <Button Text="Refresh catalogue" Command="{Binding RefreshCatalogCommand}" />
+                        <Button Text="All Options" Command="{Binding ShowAllOptionsCommand}" />
+                        <Button Text="Load Custom Firmware" Command="{Binding LoadCustomFirmwareCommand}" />
+                    </HorizontalStackLayout>
+
+                    <virtualized:VirtualizedDataGrid  MaximumHeightRequest="600"
+                                                      Grid.Row="1" 
+                                                      ItemsSource="{Binding FirmwareChoices}" 
+                                                      ItemSizingStrategy= "MeasureFirstItem"
+                                                      HorizontalOptions="Fill"
+                                                      FilterMemberPaths="VehicleType,Version,Manufacturer,BoardId,"
+                                                      ShowSearchBar="True"
+                                                      VerticalOptions="Fill" 
+                                                      BackgroundColor="Transparent"
+
+                                                      EnablePaging="True"
+                                                      PageSize="50"
+                                                      CurrentPage="1"
+                                                      ShowPager="True"
+
+                    >
+                        <virtualized:VirtualizedDataGrid.EmptyView>
+                            <Label HorizontalOptions="Center" Text="No releases are available for this channel."
                         FontSize="12" Opacity="0.6" Margin="0,20" />
-                    </controls:VirtualizedDataGrid.EmptyView>
+                        </virtualized:VirtualizedDataGrid.EmptyView>
 
-                    <controls:VirtualizedDataGrid.Columns>
+                        <virtualized:VirtualizedDataGrid.Columns>
 
-                        <material:DataGridColumn Width="*" Title="VehicleType">
-                            <material:DataGridColumn.CellItemTemplate>
-                                <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
-                                    <Label Text="{Binding VehicleType}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
-                                </DataTemplate>
-                            </material:DataGridColumn.CellItemTemplate>
-                        </material:DataGridColumn>
+                            <material:DataGridColumn Width="*" Title="VehicleType">
+                                <material:DataGridColumn.CellItemTemplate>
+                                    <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
+                                        <Label Text="{Binding VehicleType}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                                    </DataTemplate>
+                                </material:DataGridColumn.CellItemTemplate>
+                            </material:DataGridColumn>
 
-                        <material:DataGridColumn Width="*" Title="Version">
-                            <material:DataGridColumn.CellItemTemplate>
-                                <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
-                                    <Label Text="{Binding Version}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
-                                </DataTemplate>
-                            </material:DataGridColumn.CellItemTemplate>
-                        </material:DataGridColumn>
+                            <material:DataGridColumn Width="*" Title="Version">
+                                <material:DataGridColumn.CellItemTemplate>
+                                    <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
+                                        <Label Text="{Binding Version}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                                    </DataTemplate>
+                                </material:DataGridColumn.CellItemTemplate>
+                            </material:DataGridColumn>
+                            <material:DataGridColumn Width="*" Title="Platform">
+                                <material:DataGridColumn.CellItemTemplate>
+                                    <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
+                                        <Label Text="{Binding Platform}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                                    </DataTemplate>
+                                </material:DataGridColumn.CellItemTemplate>
+                            </material:DataGridColumn>
+                            <material:DataGridColumn Width="*" Title="Manufacturer">
+                                <material:DataGridColumn.CellItemTemplate>
+                                    <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
+                                        <Label Text="{Binding Manufacturer}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                                    </DataTemplate>
+                                </material:DataGridColumn.CellItemTemplate>
+                            </material:DataGridColumn>
+                            <material:DataGridColumn Width="*" Title="BoardId">
+                                <material:DataGridColumn.CellItemTemplate>
+                                    <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
+                                        <Label Text="{Binding BoardId, StringFormat='Board ID {0}'}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                                    </DataTemplate>
+                                </material:DataGridColumn.CellItemTemplate>
+                            </material:DataGridColumn>
+                            <material:DataGridColumn Width="*" Title="MatchReason">
+                                <material:DataGridColumn.CellItemTemplate>
+                                    <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
+                                        <Label Text="{Binding MatchReason}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                                    </DataTemplate>
+                                </material:DataGridColumn.CellItemTemplate>
+                            </material:DataGridColumn>
+                        </virtualized:VirtualizedDataGrid.Columns>
+                    </virtualized:VirtualizedDataGrid>
 
-                        <material:DataGridColumn Width="*" Title="Platform">
-                            <material:DataGridColumn.CellItemTemplate>
-                                <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
-                                    <Label Text="{Binding Platform}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
-                                </DataTemplate>
-                            </material:DataGridColumn.CellItemTemplate>
-                        </material:DataGridColumn>
-                        <material:DataGridColumn Width="*" Title="Manufacturer">
-                            <material:DataGridColumn.CellItemTemplate>
-                                <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
-                                    <Label Text="{Binding Manufacturer}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
-                                </DataTemplate>
-                            </material:DataGridColumn.CellItemTemplate>
-                        </material:DataGridColumn>
-                        <material:DataGridColumn Width="*" Title="BoardId">
-                            <material:DataGridColumn.CellItemTemplate>
-                                <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
-                                    <Label Text="{Binding BoardId, StringFormat='Board ID {0}'}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
-                                </DataTemplate>
-                            </material:DataGridColumn.CellItemTemplate>
-                        </material:DataGridColumn>
-                        <material:DataGridColumn Width="*" Title="MatchReason">
-                            <material:DataGridColumn.CellItemTemplate>
-                                <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
-                                    <Label Text="{Binding MatchReason}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
-                                </DataTemplate>
-                            </material:DataGridColumn.CellItemTemplate>
-                        </material:DataGridColumn>
-                    </controls:VirtualizedDataGrid.Columns>
-                </controls:VirtualizedDataGrid>
- 
-                <Border IsVisible="{Binding HasCustomFirmware}" Padding="16" StrokeShape="RoundRectangle 8">
-                    <VerticalStackLayout Spacing="4">
-                        <Label Text="Custom firmware" FontAttributes="Bold" />
-                        <Label Text="{Binding CustomFirmwareName}" />
-                        <Label Text="{Binding CustomFirmwareDescription}" />
-                        <Label Text="{Binding CustomFirmwarePlatform, StringFormat='Platform: {0}'}" />
-                        <Label Text="{Binding CustomFirmwareBoardId, StringFormat='Board ID: {0}'}" />
-                        <Label Text="{Binding CustomFirmwareImageSize, StringFormat='Image size: {0:N0} bytes'}" />
-                        <Label Text="{Binding CustomFirmwareBuild, StringFormat='Build: {0}'}" />
-                    </VerticalStackLayout>
-                </Border>
-
-                <Border Padding="16" StrokeShape="RoundRectangle 8">
-                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
-                        <Label Text="Selected firmware" FontAttributes="Bold" />
-                        <Label Grid.Row="1" Text="{Binding SelectedFirmware.Platform, StringFormat='Platform: {0}'}" />
-                        <Label Grid.Row="2" Text="{Binding SelectedFirmware.BoardId, StringFormat='Firmware board ID: {0}'}" />
-                        <Label Grid.Row="3" Text="{Binding SelectedFirmware.Version, StringFormat='Version: {0}'}" />
-                        <Label Grid.Row="4" Text="{Binding SelectedFirmware.Channel, StringFormat='Channel: {0}'}" />
-                        <Label Grid.Row="5" Text="{Binding SelectedFirmware.VehicleType, StringFormat='Vehicle: {0}'}" />
-                        <Label Grid.Row="6" Text="{Binding SelectedFirmware.Manufacturer, StringFormat='Manufacturer: {0}'}" />
-                        <Label Grid.Row="7" Text="{Binding SelectedFirmware.GitSha, StringFormat='Git SHA: {0}'}" />
-                        <Label Grid.Row="8" Text="{Binding SelectedFirmware.Format, StringFormat='Format: {0}'}" />
-                        <Label Grid.Row="9" Text="{Binding SelectedFirmware.ArtifactUrl, StringFormat='Source: {0}'}" LineBreakMode="CharacterWrap" />
-                        <Label Grid.Row="10" Text="{Binding SelectedFirmware.UsbIdentifiers, StringFormat='USB IDs: {0}'}" />
-                        <Label Grid.Row="11" Text="{Binding SelectedFirmware.BootloaderAliases, StringFormat='Bootloader aliases: {0}'}" />
-                        <VerticalStackLayout Grid.Column="1" Grid.RowSpan="12" VerticalOptions="Center" Spacing="6">
-                            <Button Text="Download &amp; Validate" Command="{Binding DownloadAndValidateCommand}" />
-                            <Button Text="Install Validated Firmware" Command="{Binding InstallCommand}" IsEnabled="{Binding CanInstall}" />
-                            <Button Text="Copy Download URL" Command="{Binding CopyDownloadUrlCommand}" />
+                    <Border Grid.Row="2" IsVisible="{Binding HasCustomFirmware}" Padding="16" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="Custom firmware" FontAttributes="Bold" />
+                            <Label Text="{Binding CustomFirmwareName}" />
+                            <Label Text="{Binding CustomFirmwareDescription}" />
+                            <Label Text="{Binding CustomFirmwarePlatform, StringFormat='Platform: {0}'}" />
+                            <Label Text="{Binding CustomFirmwareBoardId, StringFormat='Board ID: {0}'}" />
+                            <Label Text="{Binding CustomFirmwareImageSize, StringFormat='Image size: {0:N0} bytes'}" />
+                            <Label Text="{Binding CustomFirmwareBuild, StringFormat='Build: {0}'}" />
                         </VerticalStackLayout>
-                    </Grid>
+                    </Border>
+
+                    <Border Grid.Row="3" Padding="16" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                            <Label Text="Selected firmware" FontAttributes="Bold" />
+                            <Label Grid.Row="1" x:DataType="local:InstallFirmwareViewModel" 
+                                   Text="{Binding SelectedFirmware.Platform,
+                                               StringFormat='Platform: {0}',
+                                               FallbackValue='Platform: -',
+                                               TargetNullValue='Platform: -'}" />
+
+
+                            <Label Grid.Row="2" Text="{Binding SelectedFirmware.BoardId, StringFormat='Firmware board ID: {0}', 
+                                FallbackValue='Firmware board ID: -', TargetNullValue='Firmware board ID: -'}" />
+
+                            <Label Grid.Row="3" Text="{Binding SelectedFirmware.Version, StringFormat='Version: {0}', 
+                                FallbackValue='Version: -', TargetNullValue='Version: -'}" />
+                            <Label Grid.Row="4" Text="{Binding SelectedFirmware.Channel, StringFormat='Channel: {0}', 
+                                FallbackValue='Channel: -', TargetNullValue='Channel: -'}" />
+                            <Label Grid.Row="5" Text="{Binding SelectedFirmware.VehicleType, StringFormat='Vehicle: {0}', 
+                                FallbackValue='Vehicle: -', TargetNullValue='Vehicle: -'}" />
+                            <Label Grid.Row="6" Text="{Binding SelectedFirmware.Manufacturer, StringFormat='Manufacturer: {0}', 
+                                FallbackValue='Manufacturer: -', TargetNullValue='Manufacturer: -'}" />
+                            <Label Grid.Row="7" Text="{Binding SelectedFirmware.GitSha, StringFormat='Git SHA: {0}', 
+                                FallbackValue='Git SHA: -', TargetNullValue='Git SHA: -'}" />
+                            <Label Grid.Row="8" Text="{Binding SelectedFirmware.Format, StringFormat='Format: {0}', 
+                                FallbackValue='Format: -', TargetNullValue='Format: -'}" />
+                            <Label Grid.Row="9" Text="{Binding SelectedFirmware.ArtifactUrl, StringFormat='Source: {0}', 
+                                FallbackValue='Source: -', TargetNullValue='Source: -'}" LineBreakMode="CharacterWrap" />
+                            <Label Grid.Row="10" Text="{Binding SelectedFirmware.UsbIdentifiers, StringFormat='USB IDs: {0}', 
+                                FallbackValue='USB IDs: -', TargetNullValue='USB IDs: -'}" />
+                            <Label Grid.Row="11" Text="{Binding SelectedFirmware.BootloaderAliases, StringFormat='Bootloader aliases: {0}', 
+                                FallbackValue='Bootloader aliases: -', TargetNullValue='Bootloader aliases: -'}" />
+                            <VerticalStackLayout Grid.Column="1" Grid.RowSpan="12" VerticalOptions="Center" Spacing="6">
+                                <Button Text="Download &amp; Validate" Command="{Binding DownloadAndValidateCommand}" />
+                                <Button Text="Install Validated Firmware" Command="{Binding InstallCommand}" IsEnabled="{Binding CanInstall}" />
+                                <Button Text="Copy Download URL" Command="{Binding CopyDownloadUrlCommand}" />
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Border>
+
+                    <Border Grid.Row="4" IsVisible="{Binding HasPreparedFirmware}" Padding="12" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                        <VerticalStackLayout>
+                            <Label Text="Validated package" FontAttributes="Bold" />
+                            <Label Text="{Binding PreparedFirmware.PackageBoardId, StringFormat='Package board ID: {0}', 
+                                FallbackValue='Package board ID: -', TargetNullValue='Package board ID: -'}" />
+                            <Label Text="{Binding PreparedFirmware.Package.Description, StringFormat='Description: {0}', 
+                                FallbackValue='Description: -', TargetNullValue='Description: -'}" />
+                            <Label Text="{Binding PreparedFirmware.Package.Summary, StringFormat='Platform summary: {0}', 
+                                FallbackValue='Platform summary: -', TargetNullValue='Platform summary: -'}" />
+                            <Label Text="{Binding PreparedFirmware.Package.Version, StringFormat='Package version: {0}', 
+                                FallbackValue='Package version: -', TargetNullValue='Package version: -'}" />
+                            <Label Text="{Binding PreparedFirmware.Package.GitIdentity, StringFormat='Package build: {0}', 
+                                FallbackValue='Package build: -', TargetNullValue='Package build: -'}" />
+                            <Label Text="{Binding PreparedFirmware.InternalImageSize, StringFormat='Internal image: {0:N0} bytes', 
+                                FallbackValue='Internal image: -', TargetNullValue='Internal image: -'}" />
+                            <Label Text="{Binding PreparedFirmware.ExternalImageSize, StringFormat='External image: {0:N0} bytes', 
+                                FallbackValue='External image: -', TargetNullValue='External image: -'}" />
+                            <Label Text="{Binding PreparedFirmware.Sha256, StringFormat='SHA-256: {0}', 
+                                FallbackValue='SHA-256: -', TargetNullValue='SHA-256: -'}" />
+                            <Label Text="{Binding PreparedFirmware.ArtifactMetadata.Size, StringFormat='Downloaded bytes: {0:N0}', 
+                                FallbackValue='Downloaded bytes: -', TargetNullValue='Downloaded bytes: -'}" />
+                            <Label Text="{Binding PreparedFirmware.ArtifactMetadata.DownloadedAt, StringFormat='Downloaded at: {0:u}', 
+                                FallbackValue='Downloaded at: -', TargetNullValue='Downloaded at: -'}" />
+                            <Label Text="{Binding PreparedFirmware.ArtifactMetadata.SourceUri, StringFormat='Source: {0}', 
+                                FallbackValue='Source: -', TargetNullValue='Source: -'}" LineBreakMode="CharacterWrap" />
+                            <Label Text="{Binding PreparedFirmware.CacheIdentity, StringFormat='Cache ID: {0}', 
+                                FallbackValue='Cache ID: -', TargetNullValue='Cache ID: -'}" LineBreakMode="CharacterWrap" />
+                            <Label Text="{Binding PreparedFirmware.WasCacheHit, StringFormat='Cache hit: {0}', 
+                                FallbackValue='Cache hit: -', TargetNullValue='Cache hit: -'}" />
+
+                            <virtualized:VirtualizedDataGrid 
+                                ItemsSource="{Binding PreparedFirmware.Warnings}" 
+                                ItemSizingStrategy= "MeasureFirstItem"
+                                ShowSearchBar="False"
+                                MaximumHeightRequest="200"
+                                HorizontalOptions="Fill" 
+                                VerticalOptions="Fill" 
+                                BackgroundColor="Transparent"
+            >
+                                <virtualized:VirtualizedDataGrid.EmptyView>
+                                    <Label HorizontalOptions="Center" Text="No validation warnings."
+                                           FontSize="12" Opacity="0.6" Margin="0,20" />
+                                </virtualized:VirtualizedDataGrid.EmptyView>
+                                <virtualized:VirtualizedDataGrid.Columns>
+                                    <material:DataGridColumn Width="*" Title="VehicleType">
+                                        <material:DataGridColumn.CellItemTemplate>
+                                            <DataTemplate x:DataType="x:String">
+                                                <Label Text="{Binding ., StringFormat='Warning: {0}'}" />
+                                            </DataTemplate>
+                                        </material:DataGridColumn.CellItemTemplate>
+                                    </material:DataGridColumn>
+                                </virtualized:VirtualizedDataGrid.Columns>
+                            </virtualized:VirtualizedDataGrid>
+
+
+                        </VerticalStackLayout>
+                    </Border>
+                    <Label Grid.Row="5" Text="Detected device" FontAttributes="Bold" />
+                    <material:SelectField Grid.Row="6" ItemsSource="{Binding DetectedDevices}" SelectedItem="{Binding SelectedDevice}" Title="Select flight controller" />
+                    <Label Grid.Row="7" Text="{Binding DeviceStatus}" />
+                </Grid>
+
+                <Border IsVisible="{Binding IsUnsupportedMode}" Padding="24" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                    <Label Text="Direct firmware installation is not available on this platform." />
                 </Border>
-                <Border IsVisible="{Binding HasPreparedFirmware}" Padding="12" StrokeShape="RoundRectangle 8">
-                    <VerticalStackLayout>
-                        <Label Text="Validated package" FontAttributes="Bold" />
-                        <Label Text="{Binding PreparedFirmware.PackageBoardId, StringFormat='Package board ID: {0}'}" />
-                        <Label Text="{Binding PreparedFirmware.Package.Description, StringFormat='Description: {0}'}" />
-                        <Label Text="{Binding PreparedFirmware.Package.Summary, StringFormat='Platform summary: {0}'}" />
-                        <Label Text="{Binding PreparedFirmware.Package.Version, StringFormat='Package version: {0}'}" />
-                        <Label Text="{Binding PreparedFirmware.Package.GitIdentity, StringFormat='Package build: {0}'}" />
-                        <Label Text="{Binding PreparedFirmware.InternalImageSize, StringFormat='Internal image: {0:N0} bytes'}" />
-                        <Label Text="{Binding PreparedFirmware.ExternalImageSize, StringFormat='External image: {0:N0} bytes'}" />
-                        <Label Text="{Binding PreparedFirmware.Sha256, StringFormat='SHA-256: {0}'}" />
-                        <Label Text="{Binding PreparedFirmware.ArtifactMetadata.Size, StringFormat='Downloaded bytes: {0:N0}'}" />
-                        <Label Text="{Binding PreparedFirmware.ArtifactMetadata.DownloadedAt, StringFormat='Downloaded at: {0:u}'}" />
-                        <Label Text="{Binding PreparedFirmware.ArtifactMetadata.SourceUri, StringFormat='Source: {0}'}" LineBreakMode="CharacterWrap" />
-                        <Label Text="{Binding PreparedFirmware.CacheIdentity, StringFormat='Cache ID: {0}'}" LineBreakMode="CharacterWrap" />
-                        <Label Text="{Binding PreparedFirmware.WasCacheHit, StringFormat='Cache hit: {0}'}" />
-                        <CollectionView ItemsSource="{Binding PreparedFirmware.Warnings}" EmptyView="No validation warnings.">
-                            <CollectionView.ItemTemplate>
-                                <DataTemplate x:DataType="x:String">
-                                    <Label Text="{Binding ., StringFormat='Warning: {0}'}" />
-                                </DataTemplate>
-                            </CollectionView.ItemTemplate>
-                        </CollectionView>
+
+                <Border IsVisible="{Binding IsOperationInProgress}" Padding="20" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                    <VerticalStackLayout Spacing="10">
+                        <ProgressBar Progress="{Binding OperationProgress.Progress}" IsVisible="{Binding OperationProgress.HasPercentage}" />
+                        <Button Text="Cancel" Command="{Binding CancelCommand}" HorizontalOptions="Start" />
                     </VerticalStackLayout>
                 </Border>
-                <Label Text="Detected device" FontAttributes="Bold" />
-                <material:SelectField ItemsSource="{Binding DetectedDevices}" SelectedItem="{Binding SelectedDevice}" Title="Select flight controller" />
-                <Label Text="{Binding DeviceStatus}" />
-            </VerticalStackLayout>
-
-            <Border IsVisible="{Binding IsUnsupportedMode}" Padding="24" StrokeShape="RoundRectangle 10">
-                <Label Text="Direct firmware installation is not available on this platform." />
-            </Border>
-
-            <Border IsVisible="{Binding IsOperationInProgress}" Padding="20" StrokeShape="RoundRectangle 10">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="{Binding OperationProgress.Stage}" FontSize="20" FontAttributes="Bold" />
-                    <Label Text="{Binding OperationProgress.TechnicalDetail}" />
-                    <ProgressBar Progress="{Binding OperationProgress.Progress}" IsVisible="{Binding OperationProgress.HasPercentage}" />
-                    <Label Text="Do not disconnect power while flash memory is being changed." TextColor="OrangeRed" IsVisible="{Binding OperationProgress.IsPowerCritical}" />
-                    <Button Text="Cancel" Command="{Binding CancelCommand}" HorizontalOptions="Start" />
-                    <Label Text="Cancellation is deferred until verification and reboot reach a safe boundary. Keep power connected."
-                           TextColor="OrangeRed" IsVisible="{Binding IsCancellationDeferred}" />
+                <Button Text="Cancel" Command="{Binding CancelCommand}" IsVisible="{Binding IsCatalogRefreshRunning}" HorizontalOptions="Start" />
+                <Border Padding="14" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="{Binding ContextHelp.Title}" FontAttributes="Bold" />
+                        <Label Text="{Binding ContextHelp.Content}" />
+                    </VerticalStackLayout>
+                </Border>
+                <VerticalStackLayout IsVisible="{Binding HasDiagnosticReport}" Spacing="6">
+                    <Label Text="Diagnostic report" FontAttributes="Bold" />
+                    <Editor Text="{Binding LastDiagnosticReport}" IsReadOnly="True" AutoSize="TextChanges" />
+                    <Button Text="Copy diagnostic report" Command="{Binding CopyDiagnosticReportCommand}" HorizontalOptions="Start" />
                 </VerticalStackLayout>
-            </Border>
-            <Button Text="Cancel" Command="{Binding CancelCommand}" IsVisible="{Binding IsCatalogRefreshRunning}" HorizontalOptions="Start" />
-            <Label Text="{Binding StatusMessage}" />
-            <Border Padding="14" StrokeShape="RoundRectangle 8">
-                <VerticalStackLayout Spacing="4">
-                    <Label Text="{Binding ContextHelp.Title}" FontAttributes="Bold" />
-                    <Label Text="{Binding ContextHelp.Content}" />
-                </VerticalStackLayout>
-            </Border>
-            <VerticalStackLayout IsVisible="{Binding HasDiagnosticReport}" Spacing="6">
-                <Label Text="Diagnostic report" FontAttributes="Bold" />
-                <Editor Text="{Binding LastDiagnosticReport}" IsReadOnly="True" AutoSize="TextChanges" />
-                <Button Text="Copy diagnostic report" Command="{Binding CopyDiagnosticReportCommand}" HorizontalOptions="Start" />
-            </VerticalStackLayout>
 
-            <Button Text="Help &amp; Support" Command="{Binding ToggleHelpCommand}" HorizontalOptions="Start"
+                <Button Text="Help &amp; Support" Command="{Binding ToggleHelpCommand}" HorizontalOptions="Start"
                     SemanticProperties.Hint="Show offline firmware selection, installation, DFU, driver, and recovery guidance" />
-            <Border IsVisible="{Binding IsHelpVisible}" Padding="20" StrokeShape="RoundRectangle 10">
-                <VerticalStackLayout Spacing="14">
-                    <Label Text="Firmware Help &amp; Support" FontSize="24" FontAttributes="Bold" />
-                    <Label Text="These essential instructions are embedded and remain available offline. External links provide additional official detail." />
-                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding SupportSections}" Spacing="12">
-                        <BindableLayout.ItemTemplate>
-                            <DataTemplate x:DataType="local:FirmwareSupportSection">
-                                <VerticalStackLayout Spacing="4">
-                                    <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold" />
-                                    <Label Text="{Binding Content}" />
-                                </VerticalStackLayout>
-                            </DataTemplate>
-                        </BindableLayout.ItemTemplate>
-                    </VerticalStackLayout>
-                    <Label Text="Official documentation and tools" FontSize="20" FontAttributes="Bold" />
-                    <VerticalStackLayout BindableLayout.ItemsSource="{Binding SupportLinks}" Spacing="8">
-                        <BindableLayout.ItemTemplate>
-                            <DataTemplate x:DataType="local:FirmwareSupportLink">
-                                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12">
-                                    <Label Text="{Binding Title}" FontAttributes="Bold" />
-                                    <Label Grid.Row="1" Text="{Binding Description}" />
-                                    <Button Grid.Column="1" Grid.RowSpan="2" Text="Open"
+                <Border IsVisible="{Binding IsHelpVisible}" Padding="20" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                    <VerticalStackLayout Spacing="14">
+                        <Label Text="Firmware Help &amp; Support" FontSize="24" FontAttributes="Bold" />
+                        <Label Text="These essential instructions are embedded and remain available offline. External links provide additional official detail." />
+
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding SupportSections}" Spacing="12">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="local:FirmwareSupportSection">
+                                    <VerticalStackLayout Spacing="4">
+                                        <Label Text="{Binding Title}" FontSize="18" FontAttributes="Bold" />
+                                        <Label Text="{Binding Content}" />
+                                    </VerticalStackLayout>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+
+                        <Label Text="Official documentation and tools" FontSize="20" FontAttributes="Bold" />
+
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding SupportLinks}" Spacing="8">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="local:FirmwareSupportLink">
+                                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="12">
+                                        <Label Text="{Binding Title}" FontAttributes="Bold" />
+                                        <Label Grid.Row="1" Text="{Binding Description}" />
+                                        <Button Grid.Column="1" Grid.RowSpan="2" Text="Open"
                                             Command="{Binding Source={RelativeSource AncestorType={x:Type local:InstallFirmwareViewModel}}, Path=OpenSupportLinkCommand}"
                                             CommandParameter="{Binding .}" />
-                                </Grid>
-                            </DataTemplate>
-                        </BindableLayout.ItemTemplate>
-                    </VerticalStackLayout>
-                    <Button Text="Open Windows Device Manager" Command="{Binding OpenDeviceManagerCommand}"
+                                    </Grid>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+
+                        <Button Text="Open Windows Device Manager" Command="{Binding OpenDeviceManagerCommand}"
                             IsVisible="{Binding CanOpenDeviceManager}" HorizontalOptions="Start" />
-                </VerticalStackLayout>
-            </Border>
-        </VerticalStackLayout>
-    </ScrollView>
+                    </VerticalStackLayout>
+                </Border>
+            </VerticalStackLayout>
+        </ScrollView>
+
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto,Auto,Auto" 
+              HorizontalOptions="Fill" VerticalOptions="Fill"
+              Padding="12,6"
+              BackgroundColor="#2d2d30">
+
+            <Label Grid.Column="0"
+               Text="{Binding StatusMessage}"
+               VerticalOptions="Center"
+               FontSize="12"
+               TextColor="LightGray"/>
+
+            <Label Grid.Column="1" Text="Cancellation is deferred until verification and reboot reach a safe boundary. Keep power connected."
+                   TextColor="OrangeRed" IsVisible="{Binding IsCancellationDeferred}" />
+
+            <Label Grid.Column="2" Text="{Binding OperationProgress.Stage}" FontSize="20" FontAttributes="Bold" />
+            <Label Grid.Column="3" Text="{Binding OperationProgress.TechnicalDetail}" />
+            <Label Grid.Column="4" Text="Do not disconnect power while flash memory is being changed." TextColor="OrangeRed" IsVisible="{Binding OperationProgress.IsPowerCritical}" />
+        </Grid>
+
+    </Grid>
 </navigation:ExtendedContentPage>
