@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -81,9 +82,36 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         this.logger = logger;
     }
 
-    /// <summary>Gets catalogue choices.</summary>
+    /// <summary>
+    /// Gets whether an operation is running.
+    /// </summary>
     [ObservableProperty]
-    public partial IReadOnlyList<FirmwareCatalogItemViewModel> FirmwareChoices { get; private set; } = [];
+    public partial bool IsBusy { get; private set; }
+
+    ///
+    /// <summary>Gets catalogue choices.
+    /// </summary>
+    [ObservableProperty]
+    public partial ObservableRangeCollection<FirmwareCatalogItemViewModel> FirmwareChoices { get; private set; } = [];
+
+    /// <summary>
+    /// Gets catalogue choices.
+    /// </summary>
+    [ObservableProperty]
+    public partial ObservableRangeCollection<FirmwareCatalogItemViewModel> FilteredFirmwareChoices { get; private set; } = [];
+
+    /// <summary>
+    /// Gets the distinct firmware versions available in the catalogue.
+    /// </summary>
+    [ObservableProperty]
+    public partial ObservableRangeCollection<FirmwareVersion> Versions { get; private set; } = [];
+
+    /// <summary>
+    /// Gets or sets the selected firmware version for filtering the catalogue.
+    /// </summary>
+    [ObservableProperty]
+    public partial FirmwareVersion? SelectedVersion { get; set; }
+
 
     /// <summary>Gets discovered serial devices.</summary>
     [ObservableProperty]
@@ -102,10 +130,12 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     /// <summary>Gets curated official and fallback support destinations.</summary>
     public IReadOnlyList<FirmwareSupportLink> SupportLinks { get; }
 
+
     [ObservableProperty] public partial FirmwareReleaseChannel SelectedChannel { get; set; } = FirmwareReleaseChannel.Stable;
+
     [ObservableProperty] public partial FirmwareCatalogItemViewModel? SelectedFirmware { get; set; }
     [ObservableProperty] public partial FirmwareDeviceItemViewModel? SelectedDevice { get; set; }
-    [ObservableProperty] public partial string? TargetSearchText { get; set; }
+
     [ObservableProperty] public partial FirmwarePreparationResult? PreparedFirmware { get; private set; }
 
     /// <summary>Gets whether this host can open Windows Device Manager.</summary>
@@ -157,6 +187,12 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     [ObservableProperty] public partial string DeviceStatus { get; private set; } = "No flight controller detected";
     [ObservableProperty] public partial string? LastDiagnosticReport { get; private set; }
 
+    [RelayCommand]
+    private void SelectionChanged()
+    {
+        //RemoveSelectedSingleCommand.NotifyCanExecuteChanged();
+    }
+
 
     /// <summary>Starts observing connection state and refreshes disconnected data.</summary>
     public Task ActivateAsync()
@@ -173,7 +209,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         }
 
         lifetime = new CancellationTokenSource();
-
+        IsBusy = true;
         activeVehicle.Changed += OnActiveVehicleChanged;
         StatusMessage = "Ready";
         OperationProgress.Stage = "Ready";
@@ -191,6 +227,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
 
     private async Task RefreshSafelyAsync(bool forceRefresh, CancellationToken cancellationToken, bool allOptions = false)
     {
+        IsBusy = true;
         try
         {
             await RefreshAsync(forceRefresh, cancellationToken, allOptions);
@@ -202,6 +239,8 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         {
             logger.LogError(ex, "Refresh failed");
         }
+
+        IsBusy = false;
     }
 
     /// <summary>Stops page-owned observation without cancelling an unsafe firmware operation.</summary>
@@ -232,10 +271,6 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         }
     }
 
-    partial void OnTargetSearchTextChanged(string? value)
-    {
-        ApplyTargetQuery();
-    }
 
     partial void OnIsCatalogRefreshRunningChanged(bool value)
     {
@@ -515,19 +550,38 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         }
     }
 
+    partial void OnSelectedVersionChanged(FirmwareVersion? value)
+    {
+        var choices = FirmwareChoices.Where(x => x.FirmwareVersion == value);
+        FilteredFirmwareChoices.Clear();
+        FilteredFirmwareChoices.AddRange(choices);
+    }
+
     private void ApplyTargetQuery()
     {
         var previousEntry = SelectedFirmware?.Entry;
         var recommendations =
-            FirmwareTargetSelector.Query(availableEntries,
-                new FirmwareTargetQuery(ReleaseChannel: showingAllOptions ? null : SelectedChannel, SearchText: TargetSearchText),
+            FirmwareTargetSelector.Query(availableEntries, new FirmwareTargetQuery(ReleaseChannel: showingAllOptions ? null : SelectedChannel),
                 availableDevices, SelectedFirmware?.BoardId);
 
-        FirmwareChoices = recommendations.Select(recommendation => new FirmwareCatalogItemViewModel(recommendation))
-            //   .Take(100)
+        var choices = recommendations.Select(recommendation => new FirmwareCatalogItemViewModel(recommendation))
             .ToArray();
-        Debug.Print($"ApplyTargetQuery with FirmwareChoices count: {FirmwareChoices.Count}");
 
+        FirmwareChoices.Clear();
+        FirmwareChoices.AddRange(choices);
+        FilteredFirmwareChoices.Clear();
+
+        var versions = choices
+            .Select(x => x.FirmwareVersion)
+            .Distinct()
+            .OrderByDescending(v => v.SemanticVersion ?? new System.Version(0, 0))
+            .ThenByDescending(v => v.Value, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        Versions.Clear();
+        Versions.AddRange(versions);
+        SelectedVersion = versions.FirstOrDefault();
+        Debug.Print($"ApplyTargetQuery with FirmwareChoices count: {FirmwareChoices.Count}");
 
         var retained = previousEntry is null ? null : FirmwareChoices.FirstOrDefault(item => SameEntry(item.Entry, previousEntry));
         var automatic = FirmwareTargetSelector.UnambiguousHighConfidence(recommendations);

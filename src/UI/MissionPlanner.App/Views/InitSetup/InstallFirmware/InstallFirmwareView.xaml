@@ -7,6 +7,7 @@
     xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
     xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+    xmlns:m="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
     x:DataType="local:InstallFirmwareViewModel"
     Title="Install Firmware">
 
@@ -14,7 +15,7 @@
 
 
         <ScrollView Grid.Row="0" HorizontalOptions="Fill" VerticalOptions="Fill">
-            <VerticalStackLayout Padding="32" Spacing="20" MaximumWidthRequest="1100" HorizontalOptions="Center">
+            <VerticalStackLayout Padding="32" Spacing="20" MaximumWidthRequest="1200" HorizontalOptions="Center">
                 <Label Text="Firmware" FontSize="30" FontAttributes="Bold" />
 
                 <Border IsVisible="{Binding IsConnectedMode}" Padding="24" StyleClass="SurfaceContainer,Rounded,Elevation1">
@@ -26,18 +27,30 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <Grid  IsVisible="{Binding IsDisconnectedMode}" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="16">
+                <Grid  IsVisible="{Binding IsDisconnectedMode}" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="16">
                     <HorizontalStackLayout Spacing="10" Grid.Row="0" >
                         <Label Text="Release:" VerticalOptions="Center" />
-                        <material:SelectField ItemsSource="{Binding Channels}" SelectedItem="{Binding SelectedChannel}" WidthRequest="180" />
+                        <material:SelectField 
+                            ItemsSource="{Binding Channels}" 
+                            SelectedItem="{Binding SelectedChannel}" 
+                            WidthRequest="180" />
                         <Button Text="Refresh catalogue" Command="{Binding RefreshCatalogCommand}" />
                         <Button Text="All Options" Command="{Binding ShowAllOptionsCommand}" />
                         <Button Text="Load Custom Firmware" Command="{Binding LoadCustomFirmwareCommand}" />
                     </HorizontalStackLayout>
+                    <HorizontalStackLayout Spacing="10" Grid.Row="1" >
+                        <material:SelectField ItemsSource="{Binding Versions}"
+                                              SelectedItem="{Binding SelectedVersion}" WidthRequest="250" 
+                                              ></material:SelectField>
+                    </HorizontalStackLayout>
+                    <ActivityIndicator  Grid.Row="2" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
 
-                    <virtualized:VirtualizedDataGrid  MaximumHeightRequest="600"
-                                                      Grid.Row="1" 
-                                                      ItemsSource="{Binding FirmwareChoices}" 
+
+                    <virtualized:VirtualizedDataGrid  
+                                                      IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
+                                                      MaximumHeightRequest="600"
+                                                      Grid.Row="3" 
+                                                      ItemsSource="{Binding FilteredFirmwareChoices}" 
                                                       ItemSizingStrategy= "MeasureFirstItem"
                                                       HorizontalOptions="Fill"
                                                       FilterMemberPaths="VehicleType,Version,Manufacturer,BoardId,"
@@ -49,62 +62,89 @@
                                                       PageSize="50"
                                                       CurrentPage="1"
                                                       ShowPager="True"
+                                                      SelectionTrigger="SelectionColumnAndRowClick"
+                                                      SelectionMode="Single"
+                                                      SelectedItem="{Binding SelectedFirmware, Mode=TwoWay}"
+                                                      SelectionChangedCommand="{Binding SelectionChangedCommand}"
+
 
                     >
                         <virtualized:VirtualizedDataGrid.EmptyView>
-                            <Label HorizontalOptions="Center" Text="No releases are available for this channel."
-                        FontSize="12" Opacity="0.6" Margin="0,20" />
-                        </virtualized:VirtualizedDataGrid.EmptyView>
+                   
 
+                            <VerticalStackLayout
+                                Padding="40"
+                                Spacing="8"
+                                HorizontalOptions="Center"
+                                VerticalOptions="Center">
+                                <Image
+                                    WidthRequest="40"
+                                    HeightRequest="40"
+                                    HorizontalOptions="Center"
+                                    VerticalOptions="Center"
+                                    Source="{FontImageSource FontFamily=MaterialOutlined, Glyph={x:Static m:MaterialOutlined.Backup_table}, 
+                                    Color={AppThemeBinding Light={StaticResource OnSurface}, 
+                                    Dark={StaticResource OnSurfaceDark}}}"/>
+                                <Label HorizontalOptions="Center" Text="No releases are available for this channel."
+                                       FontSize="12" Opacity="0.6" Margin="0,20" />
+                            </VerticalStackLayout>
+                        </virtualized:VirtualizedDataGrid.EmptyView>
                         <virtualized:VirtualizedDataGrid.Columns>
+                            <virtualized:ExtendedSelectableDataGridColumn Width="50"
+                                SelectionMemberPath="IsSelected"
+                                SelectionCommandMemberPath="SelectionChangedCommand" />
 
                             <material:DataGridColumn Width="*" Title="VehicleType">
                                 <material:DataGridColumn.CellItemTemplate>
                                     <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
-                                        <Label Text="{Binding VehicleType}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                                        <Label Text="{Binding VehicleType}" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
                             </material:DataGridColumn>
 
-                            <material:DataGridColumn Width="*" Title="Version">
+                            <material:DataGridColumn Width="200" Title="Version Information">
                                 <material:DataGridColumn.CellItemTemplate>
                                     <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
-                                        <Label Text="{Binding Version}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+
+                                        <VerticalStackLayout>
+                                            <Label Text="{Binding FirmwareVersion.Value, StringFormat='Version: {0}'}" HorizontalOptions="Start" VerticalOptions="Center"  />
+                                            <Label Text="{Binding FirmwareVersion.SemanticVersion, StringFormat='SemanticVersion: {0}'}"  HorizontalOptions="Start" VerticalOptions="Center"  />
+                                        </VerticalStackLayout>
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
                             </material:DataGridColumn>
                             <material:DataGridColumn Width="*" Title="Platform">
                                 <material:DataGridColumn.CellItemTemplate>
                                     <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
-                                        <Label Text="{Binding Platform}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                                        <Label Text="{Binding Platform}"  HorizontalOptions="Start" VerticalOptions="Center" Margin="0" />
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
                             </material:DataGridColumn>
                             <material:DataGridColumn Width="*" Title="Manufacturer">
                                 <material:DataGridColumn.CellItemTemplate>
                                     <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
-                                        <Label Text="{Binding Manufacturer}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                                        <Label Text="{Binding Manufacturer}" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
                             </material:DataGridColumn>
                             <material:DataGridColumn Width="*" Title="BoardId">
                                 <material:DataGridColumn.CellItemTemplate>
                                     <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
-                                        <Label Text="{Binding BoardId, StringFormat='Board ID {0}'}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                                        <Label Text="{Binding BoardId}"  HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
                             </material:DataGridColumn>
                             <material:DataGridColumn Width="*" Title="MatchReason">
                                 <material:DataGridColumn.CellItemTemplate>
                                     <DataTemplate x:DataType="local:FirmwareCatalogItemViewModel">
-                                        <Label Text="{Binding MatchReason}" FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
+                                        <Label Text="{Binding MatchReason}"  HorizontalOptions="Center" VerticalOptions="Center" Margin="0" />
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
                             </material:DataGridColumn>
                         </virtualized:VirtualizedDataGrid.Columns>
                     </virtualized:VirtualizedDataGrid>
 
-                    <Border Grid.Row="2" IsVisible="{Binding HasCustomFirmware}" Padding="16" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                    <Border Grid.Row="4" IsVisible="{Binding HasCustomFirmware}" Padding="16" StyleClass="SurfaceContainer,Rounded,Elevation1">
                         <VerticalStackLayout Spacing="4">
                             <Label Text="Custom firmware" FontAttributes="Bold" />
                             <Label Text="{Binding CustomFirmwareName}" />
@@ -116,38 +156,46 @@
                         </VerticalStackLayout>
                     </Border>
 
-                    <Border Grid.Row="3" Padding="16" StyleClass="SurfaceContainer,Rounded,Elevation1">
-                        <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
-                            <Label Text="Selected firmware" FontAttributes="Bold" />
-                            <Label Grid.Row="1" x:DataType="local:InstallFirmwareViewModel" 
-                                   Text="{Binding SelectedFirmware.Platform,
-                                               StringFormat='Platform: {0}',
-                                               FallbackValue='Platform: -',
-                                               TargetNullValue='Platform: -'}" />
+                    <Border Grid.Row="5" Padding="16" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                        <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                            <Label Text="Selected firmware" FontAttributes="Bold" FontSize="22" />
 
 
-                            <Label Grid.Row="2" Text="{Binding SelectedFirmware.BoardId, StringFormat='Firmware board ID: {0}', 
-                                FallbackValue='Firmware board ID: -', TargetNullValue='Firmware board ID: -'}" />
+                            <Label Grid.Row="1" Text="Platform" />
+                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding SelectedFirmware.Platform,FallbackValue='', TargetNullValue=''}" />
+                            <Label Grid.Row="1" Text="Platform" />
+                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding SelectedFirmware.Platform,FallbackValue='', TargetNullValue=''}" />
 
-                            <Label Grid.Row="3" Text="{Binding SelectedFirmware.Version, StringFormat='Version: {0}', 
-                                FallbackValue='Version: -', TargetNullValue='Version: -'}" />
-                            <Label Grid.Row="4" Text="{Binding SelectedFirmware.Channel, StringFormat='Channel: {0}', 
-                                FallbackValue='Channel: -', TargetNullValue='Channel: -'}" />
-                            <Label Grid.Row="5" Text="{Binding SelectedFirmware.VehicleType, StringFormat='Vehicle: {0}', 
-                                FallbackValue='Vehicle: -', TargetNullValue='Vehicle: -'}" />
-                            <Label Grid.Row="6" Text="{Binding SelectedFirmware.Manufacturer, StringFormat='Manufacturer: {0}', 
-                                FallbackValue='Manufacturer: -', TargetNullValue='Manufacturer: -'}" />
-                            <Label Grid.Row="7" Text="{Binding SelectedFirmware.GitSha, StringFormat='Git SHA: {0}', 
-                                FallbackValue='Git SHA: -', TargetNullValue='Git SHA: -'}" />
-                            <Label Grid.Row="8" Text="{Binding SelectedFirmware.Format, StringFormat='Format: {0}', 
-                                FallbackValue='Format: -', TargetNullValue='Format: -'}" />
-                            <Label Grid.Row="9" Text="{Binding SelectedFirmware.ArtifactUrl, StringFormat='Source: {0}', 
-                                FallbackValue='Source: -', TargetNullValue='Source: -'}" LineBreakMode="CharacterWrap" />
-                            <Label Grid.Row="10" Text="{Binding SelectedFirmware.UsbIdentifiers, StringFormat='USB IDs: {0}', 
-                                FallbackValue='USB IDs: -', TargetNullValue='USB IDs: -'}" />
-                            <Label Grid.Row="11" Text="{Binding SelectedFirmware.BootloaderAliases, StringFormat='Bootloader aliases: {0}', 
-                                FallbackValue='Bootloader aliases: -', TargetNullValue='Bootloader aliases: -'}" />
-                            <VerticalStackLayout Grid.Column="1" Grid.RowSpan="12" VerticalOptions="Center" Spacing="6">
+                            <Label Grid.Row="2" Text="Firmware board ID" />
+                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding SelectedFirmware.BoardId,FallbackValue='', TargetNullValue=''}" />
+
+                            <Label Grid.Row="3" Text="Version" />
+                            <Label Grid.Row="3" Grid.Column="1" Text="{Binding SelectedFirmware.Version,FallbackValue='', TargetNullValue=''}" />
+
+                            <Label Grid.Row="4" Text="Channel" />
+                            <Label Grid.Row="4" Grid.Column="1" Text="{Binding SelectedFirmware.Channel,FallbackValue='', TargetNullValue=''}" />
+
+                            <Label Grid.Row="5" Text="Vehicle" />
+                            <Label Grid.Row="5" Grid.Column="1" Text="{Binding SelectedFirmware.VehicleType,FallbackValue='', TargetNullValue=''}" />
+
+                            <Label Grid.Row="6" Text="Manufacturer" />
+                            <Label Grid.Row="6" Grid.Column="1" Text="{Binding SelectedFirmware.Manufacturer,FallbackValue='', TargetNullValue=''}" />
+
+                            <Label Grid.Row="7" Text="Git SHA" />
+                            <Label Grid.Row="7" Grid.Column="1" Text="{Binding SelectedFirmware.GitSha,FallbackValue='', TargetNullValue=''}" />
+
+                            <Label Grid.Row="8" Text="Format" />
+                            <Label Grid.Row="8" Grid.Column="1" Text="{Binding SelectedFirmware.Format,FallbackValue='', TargetNullValue=''}" />
+
+                            <Label Grid.Row="9" Text="Source" />
+                            <Label Grid.Row="9" Grid.Column="1" Text="{Binding SelectedFirmware.ArtifactUrl,FallbackValue='', TargetNullValue=''}" LineBreakMode="CharacterWrap" />
+
+                            <Label Grid.Row="10" Text="USB IDs" />
+                            <Label Grid.Row="10" Grid.Column="1" Text="{Binding SelectedFirmware.UsbIdentifiers,FallbackValue='', TargetNullValue=''}" />
+
+                            <Label Grid.Row="11" Text="Bootloader aliases" />
+                            <Label Grid.Row="11" Grid.Column="1" Text="{Binding SelectedFirmware.BootloaderAliases,FallbackValue='', TargetNullValue=''}" />
+                            <VerticalStackLayout Grid.Column="2" Grid.RowSpan="12" VerticalOptions="Center" Spacing="6">
                                 <Button Text="Download &amp; Validate" Command="{Binding DownloadAndValidateCommand}" />
                                 <Button Text="Install Validated Firmware" Command="{Binding InstallCommand}" IsEnabled="{Binding CanInstall}" />
                                 <Button Text="Copy Download URL" Command="{Binding CopyDownloadUrlCommand}" />
@@ -155,36 +203,50 @@
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="4" IsVisible="{Binding HasPreparedFirmware}" Padding="12" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                    <Border Grid.Row="6" IsVisible="{Binding HasPreparedFirmware}" Padding="12" StyleClass="SurfaceContainer,Rounded,Elevation1">
                         <VerticalStackLayout>
                             <Label Text="Validated package" FontAttributes="Bold" />
-                            <Label Text="{Binding PreparedFirmware.PackageBoardId, StringFormat='Package board ID: {0}', 
-                                FallbackValue='Package board ID: -', TargetNullValue='Package board ID: -'}" />
-                            <Label Text="{Binding PreparedFirmware.Package.Description, StringFormat='Description: {0}', 
-                                FallbackValue='Description: -', TargetNullValue='Description: -'}" />
-                            <Label Text="{Binding PreparedFirmware.Package.Summary, StringFormat='Platform summary: {0}', 
-                                FallbackValue='Platform summary: -', TargetNullValue='Platform summary: -'}" />
-                            <Label Text="{Binding PreparedFirmware.Package.Version, StringFormat='Package version: {0}', 
-                                FallbackValue='Package version: -', TargetNullValue='Package version: -'}" />
-                            <Label Text="{Binding PreparedFirmware.Package.GitIdentity, StringFormat='Package build: {0}', 
-                                FallbackValue='Package build: -', TargetNullValue='Package build: -'}" />
-                            <Label Text="{Binding PreparedFirmware.InternalImageSize, StringFormat='Internal image: {0:N0} bytes', 
-                                FallbackValue='Internal image: -', TargetNullValue='Internal image: -'}" />
-                            <Label Text="{Binding PreparedFirmware.ExternalImageSize, StringFormat='External image: {0:N0} bytes', 
-                                FallbackValue='External image: -', TargetNullValue='External image: -'}" />
-                            <Label Text="{Binding PreparedFirmware.Sha256, StringFormat='SHA-256: {0}', 
-                                FallbackValue='SHA-256: -', TargetNullValue='SHA-256: -'}" />
-                            <Label Text="{Binding PreparedFirmware.ArtifactMetadata.Size, StringFormat='Downloaded bytes: {0:N0}', 
-                                FallbackValue='Downloaded bytes: -', TargetNullValue='Downloaded bytes: -'}" />
-                            <Label Text="{Binding PreparedFirmware.ArtifactMetadata.DownloadedAt, StringFormat='Downloaded at: {0:u}', 
-                                FallbackValue='Downloaded at: -', TargetNullValue='Downloaded at: -'}" />
-                            <Label Text="{Binding PreparedFirmware.ArtifactMetadata.SourceUri, StringFormat='Source: {0}', 
-                                FallbackValue='Source: -', TargetNullValue='Source: -'}" LineBreakMode="CharacterWrap" />
-                            <Label Text="{Binding PreparedFirmware.CacheIdentity, StringFormat='Cache ID: {0}', 
-                                FallbackValue='Cache ID: -', TargetNullValue='Cache ID: -'}" LineBreakMode="CharacterWrap" />
-                            <Label Text="{Binding PreparedFirmware.WasCacheHit, StringFormat='Cache hit: {0}', 
-                                FallbackValue='Cache hit: -', TargetNullValue='Cache hit: -'}" />
 
+                            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                                <Label Grid.Row="0" Text="Package board ID" />
+                                <Label Grid.Row="0" Grid.Column="1" Text="{Binding PreparedFirmware.PackageBoardId,FallbackValue='', TargetNullValue=''}" />
+
+                                <Label Grid.Row="1" Text="Description" />
+                                <Label Grid.Row="1" Grid.Column="1" Text="{Binding PreparedFirmware.Package.Description,FallbackValue='', TargetNullValue=''}" />
+
+                                <Label Grid.Row="2" Text="Platform summary" />
+                                <Label Grid.Row="2" Grid.Column="1" Text="{Binding PreparedFirmware.Package.Summary,FallbackValue='', TargetNullValue=''}" />
+
+                                <Label Grid.Row="3" Text="Package version" />
+                                <Label Grid.Row="3" Grid.Column="1" Text="{Binding PreparedFirmware.Package.Version,FallbackValue='', TargetNullValue=''}" />
+
+                                <Label Grid.Row="4" Text="Package build" />
+                                <Label Grid.Row="4" Grid.Column="1" Text="{Binding PreparedFirmware.Package.GitIdentity,FallbackValue='', TargetNullValue=''}" />
+
+                                <Label Grid.Row="5" Text="Internal image" />
+                                <Label Grid.Row="5" Grid.Column="1" Text="{Binding PreparedFirmware.InternalImageSize,FallbackValue='', TargetNullValue=''}" />
+
+                                <Label Grid.Row="6" Text="External image" />
+                                <Label Grid.Row="6" Grid.Column="1" Text="{Binding PreparedFirmware.ExternalImageSize,FallbackValue='', TargetNullValue=''}" />
+
+                                <Label Grid.Row="7" Text="SHA-256" />
+                                <Label Grid.Row="7" Grid.Column="1" Text="{Binding PreparedFirmware.Sha256,FallbackValue='', TargetNullValue=''}" />
+
+                                <Label Grid.Row="8" Text="Downloaded bytes" />
+                                <Label Grid.Row="8" Grid.Column="1" Text="{Binding PreparedFirmware.ArtifactMetadata.Size,FallbackValue='', TargetNullValue=''}" />
+
+                                <Label Grid.Row="9" Text="Downloaded at" />
+                                <Label Grid.Row="9" Grid.Column="1" Text="{Binding PreparedFirmware.ArtifactMetadata.DownloadedAt,FallbackValue='', TargetNullValue=''}" />
+
+                                <Label Grid.Row="10" Text="Source" />
+                                <Label Grid.Row="10" Grid.Column="1" Text="{Binding PreparedFirmware.ArtifactMetadata.SourceUri,FallbackValue='', TargetNullValue=''}" LineBreakMode="CharacterWrap" />
+
+                                <Label Grid.Row="11" Text="Cache ID" />
+                                <Label Grid.Row="11" Grid.Column="1" Text="{Binding PreparedFirmware.CacheIdentity,FallbackValue='', TargetNullValue=''}" LineBreakMode="CharacterWrap" />
+
+                                <Label Grid.Row="12" Text="Cache hit" />
+                                <Label Grid.Row="12" Grid.Column="1" Text="{Binding PreparedFirmware.WasCacheHit,FallbackValue='', TargetNullValue=''}" />
+                            </Grid>
                             <virtualized:VirtualizedDataGrid 
                                 ItemsSource="{Binding PreparedFirmware.Warnings}" 
                                 ItemSizingStrategy= "MeasureFirstItem"
@@ -212,9 +274,9 @@
 
                         </VerticalStackLayout>
                     </Border>
-                    <Label Grid.Row="5" Text="Detected device" FontAttributes="Bold" />
-                    <material:SelectField Grid.Row="6" ItemsSource="{Binding DetectedDevices}" SelectedItem="{Binding SelectedDevice}" Title="Select flight controller" />
-                    <Label Grid.Row="7" Text="{Binding DeviceStatus}" />
+                    <Label Grid.Row="7" Text="Detected device" FontAttributes="Bold" />
+                    <material:SelectField Grid.Row="8" ItemsSource="{Binding DetectedDevices}" SelectedItem="{Binding SelectedDevice}" Title="Select flight controller" />
+                    <Label Grid.Row="98" Text="{Binding DeviceStatus}" />
                 </Grid>
 
                 <Border IsVisible="{Binding IsUnsupportedMode}" Padding="24" StyleClass="SurfaceContainer,Rounded,Elevation1">

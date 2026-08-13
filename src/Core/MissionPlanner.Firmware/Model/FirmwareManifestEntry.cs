@@ -6,13 +6,7 @@ namespace MissionPlanner.Firmware.Model;
 public sealed record FirmwareManifestEntry
 {
     /// <summary>Initializes a manifest entry.</summary>
-    public FirmwareManifestEntry(
-        FirmwareVersion version,
-        FirmwareReleaseChannel channel,
-        FirmwareBoardTarget target,
-        FirmwareArtifact artifact,
-        string? gitSha = null,
-        IReadOnlyDictionary<string, string>? rawMetadata = null)
+    public FirmwareManifestEntry(FirmwareVersion version, FirmwareReleaseChannel channel, FirmwareBoardTarget target, FirmwareArtifact artifact, string? gitSha = null, IReadOnlyDictionary<string, string>? rawMetadata = null)
     {
         Version = version ?? throw new ArgumentNullException(nameof(version));
         Target = target ?? throw new ArgumentNullException(nameof(target));

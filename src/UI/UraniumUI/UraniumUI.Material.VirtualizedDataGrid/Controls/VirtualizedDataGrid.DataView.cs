@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Reflection;
 using System.Windows.Input;
 
@@ -136,7 +137,10 @@ public partial class VirtualizedDataGrid
         }
     }
 
-    private void OnRemoteTotalItemCountChanged() => RefreshDataView(false);
+    private void OnRemoteTotalItemCountChanged()
+    {
+        RefreshDataView(false);
+    }
 
     private void OnCurrentPageChanged()
     {
@@ -257,11 +261,19 @@ public partial class VirtualizedDataGrid
             SetValue(TotalItemCountPropertyKey, totalItemCount);
             SetValue(FilteredItemCountPropertyKey, filteredItemCount);
             SetValue(PageItemCountPropertyKey, pageItemCount);
-            SetValue(TotalPageCountPropertyKey, totalPageCount);
             SetValue(HasPreviousPagePropertyKey, EnablePaging && totalPageCount > 0 && currentPage > 1);
             SetValue(HasNextPagePropertyKey, EnablePaging && totalPageCount > 0 && currentPage < totalPageCount);
             SetValue(IsEmptyPropertyKey, isEmpty);
             SetValue(HasItemsPropertyKey, !isEmpty);
+            try
+            {
+                SetValue(TotalPageCountPropertyKey, totalPageCount);
+            }
+            catch (Exception ex)
+            {
+                Debug.Print(ex.Message);
+                //TODO:{"PlatformView cannot be null here"} needs to be handled
+            }
 
             // Empty/null is a release boundary. Drop the realized cell trees
             // before detaching the native source so navigation and ViewModel

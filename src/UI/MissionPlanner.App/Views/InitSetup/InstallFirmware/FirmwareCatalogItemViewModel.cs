@@ -4,11 +4,29 @@ using MissionPlanner.Firmware.Model;
 
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
-/// <summary>One data-driven firmware choice displayed by the install page.</summary>
-public sealed partial class FirmwareCatalogItemViewModel(FirmwareTargetRecommendation recommendation) : ObservableObject
+/// <summary>One data-driven firmware choice displayed by the installation page.</summary>
+public sealed partial class FirmwareCatalogItemViewModel : ObservableObject
 {
+    private readonly FirmwareTargetRecommendation recommendation;
+
+    [ObservableProperty] public partial bool IsSelected { get; set; }
+
+    /// <summary>
+    /// One data-driven firmware choice displayed by the install page.
+    /// </summary>
+    public FirmwareCatalogItemViewModel(FirmwareTargetRecommendation recommendation)
+    {
+        this.recommendation = recommendation;
+        Entry = recommendation.Entry;
+    }
+
+    /// <summary>
+    /// Gets the firmware version.
+    /// </summary>
+    public FirmwareVersion FirmwareVersion => Entry.Version;
+
     /// <summary>Gets the normalized release.</summary>
-    public FirmwareManifestEntry Entry { get; } = recommendation.Entry;
+    public FirmwareManifestEntry Entry { get; }
 
     /// <summary>Gets the target match explanation.</summary>
     public string MatchReason => recommendation.Reason switch
@@ -16,7 +34,7 @@ public sealed partial class FirmwareCatalogItemViewModel(FirmwareTargetRecommend
         FirmwareTargetMatchReason.ExactUsbMatch => "Exact USB match",
         FirmwareTargetMatchReason.ExactBootloaderAliasMatch => "Exact bootloader alias match",
         FirmwareTargetMatchReason.PreviouslySelectedTarget => "Previously selected target",
-        _ => "Manual selection"
+        var _ => "Manual selection"
     };
 
     /// <summary>Gets whether hardware evidence supports automatic selection.</summary>
