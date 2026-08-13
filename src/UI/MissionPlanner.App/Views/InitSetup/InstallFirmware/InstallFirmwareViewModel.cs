@@ -13,9 +13,8 @@ using MissionPlanner.Firmware.Entry;
 using MissionPlanner.Firmware.Images;
 using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Firmware.Model;
-using MissionPlanner.Firmware.Presentation;
 using MissionPlanner.Firmware.Preparation;
-using UraniumUI.Extensions;
+using MissionPlanner.Firmware.Presentation;
 
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
@@ -45,6 +44,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     private IReadOnlyList<FirmwareManifestEntry> availableEntries = [];
     private IReadOnlyList<SerialDeviceDescriptor> availableDevices = [];
     private bool showingAllOptions;
+    private bool active;
 
     /// <summary>Initializes the firmware page.</summary>
     public InstallFirmwareViewModel(
@@ -79,8 +79,6 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         this.deviceManagerLauncher = deviceManagerLauncher;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        ActivateAsync().FireAndForget();
-        ApplyMode();
     }
 
     /// <summary>Gets catalogue choices.</summary>
@@ -154,14 +152,21 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     public bool HasDiagnosticReport => !string.IsNullOrWhiteSpace(LastDiagnosticReport);
 
     /// <summary>Starts observing connection state and refreshes disconnected data.</summary>
-    private async Task ActivateAsync()
+    public Task ActivateAsync()
     {
+        if (active)
+        {
+            return Task.CompletedTask;
+        }
+
+        active = true;
         if (lifetime is not null)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         lifetime = new CancellationTokenSource();
+
         activeVehicle.Changed += OnActiveVehicleChanged;
         StatusMessage = "Ready";
         OperationProgress.Stage = "Ready";
@@ -172,24 +177,43 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         LastDiagnosticReport = null;
         OnPropertyChanged(nameof(HasDiagnosticReport));
         ApplyMode();
-        if (IsDisconnectedMode)
+        return IsDisconnectedMode
+            ? RefreshSafelyAsync(false, lifetime.Token)
+            : Task.CompletedTask;
+    }
+
+    private async Task RefreshSafelyAsync(bool forceRefresh, CancellationToken cancellationToken, bool allOptions = false)
+    {
+        try
         {
-            await RefreshAsync(false, lifetime.Token);
+            await RefreshAsync(forceRefresh, cancellationToken, allOptions);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Refresh failed");
         }
     }
 
     /// <summary>Stops page-owned observation without cancelling an unsafe firmware operation.</summary>
     private void Deactivate()
     {
-        activeVehicle.Changed -= OnActiveVehicleChanged;
-        CancelRefresh();
-        if (!IsOperationInProgress)
+        if (!active && lifetime is null)
         {
-            lifetime?.Cancel();
+            return;
         }
 
-        lifetime?.Dispose();
+        active = false;
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        CancelRefresh();
+
+        var current = lifetime;
         lifetime = null;
+
+        current?.Cancel();
+        current?.Dispose();
     }
 
     partial void OnSelectedChannelChanged(FirmwareReleaseChannel value)
@@ -197,7 +221,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         UpdateContextHelp();
         if (lifetime is not null && IsDisconnectedMode)
         {
-            _ = RefreshAsync(false, lifetime.Token);
+            _ = RefreshSafelyAsync(false, lifetime.Token);
         }
     }
 
@@ -215,13 +239,13 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     [RelayCommand]
     private Task RefreshCatalogAsync()
     {
-        return RefreshAsync(true, lifetime?.Token ?? CancellationToken.None);
+        return RefreshSafelyAsync(true, lifetime?.Token ?? CancellationToken.None);
     }
 
     [RelayCommand]
     private Task ShowAllOptionsAsync()
     {
-        return RefreshAsync(true, lifetime?.Token ?? CancellationToken.None, true);
+        return RefreshSafelyAsync(true, lifetime?.Token ?? CancellationToken.None, true);
     }
 
     [RelayCommand]
@@ -397,10 +421,20 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
                 StatusMessage = "Loading firmware catalogue…";
             });
             var channel = SelectedChannel;
-            var catalog = await catalogService.GetCatalogAsync(
-                new FirmwareCatalogRequest(Channel: allOptions ? null : channel, ForceRefresh: forceRefresh),
+            // Both manifest parsing and Windows device discovery can perform substantial
+            // synchronous work before their returned tasks complete. Run them away from the
+            // UI context and concurrently so opening the Connect dialog remains responsive.
+            var catalogTask = Task.Run(
+                () => catalogService.GetCatalogAsync(
+                    new FirmwareCatalogRequest(Channel: allOptions ? null : channel, ForceRefresh: forceRefresh),
+                    refreshToken),
                 refreshToken);
-            var devices = await deviceCatalog.GetDevicesAsync(refreshToken);
+            var devicesTask = Task.Run(
+                () => deviceCatalog.GetDevicesAsync(refreshToken),
+                refreshToken);
+            await Task.WhenAll(catalogTask, devicesTask).ConfigureAwait(false);
+            var catalog = await catalogTask.ConfigureAwait(false);
+            var devices = await devicesTask.ConfigureAwait(false);
             var entries = catalog.Entries.Where(entry => entry.Target.VehicleType != FirmwareVehicleType.Unknown &&
                                                          entry.Artifact.Format is FirmwareImageFormat.Apj or FirmwareImageFormat.Px4).ToArray();
             refreshToken.ThrowIfCancellationRequested();
@@ -629,7 +663,22 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
 
     private void OnActiveVehicleChanged(object? sender, Core.Vehicles.ActiveVehicleChangedEventArgs e)
     {
-        dispatcher.Dispatch(() => ApplyMode());
+        if (e.Current.IsOnline)
+        {
+            // The disconnected catalogue/device scan is no longer relevant once a vehicle
+            // becomes active. Cancel it before queuing UI work for the connected mode.
+            CancelRefresh();
+        }
+
+        dispatcher.Dispatch(() =>
+        {
+            if (!active)
+            {
+                return;
+            }
+
+            ApplyMode();
+        });
     }
 
     private void SetOperation(bool active, FirmwareOperationState? stage)

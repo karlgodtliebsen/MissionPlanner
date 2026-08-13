@@ -47,19 +47,57 @@ public class ExtendedContentPage<TViewModel> : UraniumContentPage
         }
     }
 
-    /// <inheritdoc />
-    protected override void OnNavigatedTo(NavigatedToEventArgs args)
+    /// <inheritdoc/>
+    protected override async void OnNavigatedTo(NavigatedToEventArgs args)
     {
         base.OnNavigatedTo(args);
-        if (args.NavigationType is NavigationType.Replace or NavigationType.Remove)
+
+        if (args.NavigationType is not (NavigationType.Replace or NavigationType.Remove))
         {
-            ViewModel = key is not null ? ServiceHelper.GetRequiredKeyedService<TViewModel>(key) : ServiceHelper.GetRequiredService<TViewModel>();
-            BindingContext = ViewModel;
+            return;
         }
+
+        ViewModel = key is not null
+            ? ServiceHelper.GetRequiredKeyedService<TViewModel>(key)
+            : ServiceHelper.GetRequiredService<TViewModel>();
+
+        BindingContext = ViewModel;
+        try
+        {
+            await OnModelCreatedAsync(ViewModel);
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected if navigation deactivates the model during activation.
+        }
+    }
+
+    /// <summary>
+    /// Called when the view model is created.
+    /// </summary>
+    /// <param name="viewModel">The created view model.</param>
+    protected virtual Task OnModelCreatedAsync(TViewModel viewModel)
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Called when the view model is being destroyed.
+    /// </summary>
+    /// <param name="viewModel">The view model being destroyed.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    protected virtual Task OnDestroyingModel(TViewModel viewModel)
+    {
+        return Task.CompletedTask;
     }
 
     private void DeactivateViewModel()
     {
+        if (ViewModel is not null)
+        {
+            OnDestroyingModel(ViewModel);
+        }
+
         BindingContext = null;
         ViewModel?.Dispose();
         ViewModel = null;

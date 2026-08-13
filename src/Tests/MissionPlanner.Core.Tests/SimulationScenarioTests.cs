@@ -1,8 +1,9 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Missions.Abstractions;
+using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Missions.Transfer;
 using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles;
@@ -31,9 +32,9 @@ public sealed class SimulationScenarioTests
         var parser = CreateParser();
         var document = Document(
                 TakeoffStep(new SimulationScenarioValue(SimulationScenarioValueKind.Number, Variable: "altitude"))) with
-            {
-                Variables = new Dictionary<string, SimulationScenarioValue> { ["altitude"] = new(SimulationScenarioValueKind.Number, NumberValue: 12) }
-            };
+        {
+            Variables = new Dictionary<string, SimulationScenarioValue> { ["altitude"] = new(SimulationScenarioValueKind.Number, NumberValue: 12) }
+        };
 
         var json = parser.Serialize(document);
         parser.Parse(json).Should().BeEquivalentTo(document);
@@ -119,7 +120,7 @@ public sealed class SimulationScenarioTests
         await fixture.Missions.Received(1).UploadItemsAsync(
             vehicleId,
             Arg.Is<IReadOnlyList<MavLinkMissionItem>>(items => ContainsSingleFirstSequence(items)),
-            Missions.Models.MissionPlanType.FlightMission,
+            MissionPlanType.FlightMission,
             null,
             Arg.Any<CancellationToken>());
         await fixture.Controls.Received(1).ApplyAsync("rc-failure", 1, TimeSpan.FromSeconds(5), true, Arg.Any<CancellationToken>());
@@ -303,19 +304,19 @@ public sealed class SimulationScenarioTests
                 0,
                 90,
                 12) with
-            {
-                Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
+        {
+            Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
                     LandedState: VehicleLandedState.OnGround, ObservedAt: now),
-                Position = VehiclePositionState.Empty with
-                {
-                    LatitudeDegrees = 55,
-                    LongitudeDegrees = 12,
-                    AltitudeMslMeters = 10,
-                    RelativeAltitudeMeters = 0,
-                    ObservedAt = now
-                },
-                Motion = VehicleMotionState.Empty with { GroundSpeedMetersPerSecond = 0, ObservedAt = now }
-            };
+            Position = VehiclePositionState.Empty with
+            {
+                LatitudeDegrees = 55,
+                LongitudeDegrees = 12,
+                AltitudeMslMeters = 10,
+                RelativeAltitudeMeters = 0,
+                ObservedAt = now
+            },
+            Motion = VehicleMotionState.Empty with { GroundSpeedMetersPerSecond = 0, ObservedAt = now }
+        };
         state = state with { Identity = state.Identity with { Firmware = state.Identity.Firmware with { Family = FirmwareFamily.ArduCopter } } };
         var session = new VehicleSession(state, new TransportEndPoint("scenario-test"), clock);
         var registry = Substitute.For<IVehicleRegistry>();
@@ -350,7 +351,7 @@ public sealed class SimulationScenarioTests
         missions.UploadItemsAsync(
                 vehicleId,
                 Arg.Any<IReadOnlyList<MavLinkMissionItem>>(),
-                Arg.Any<MissionPlanner.Core.Missions.Models.MissionPlanType>(),
+                Arg.Any<MissionPlanType>(),
                 Arg.Any<IProgress<MissionUploadProgress>?>(),
                 Arg.Any<CancellationToken>())
             .Returns(upload);

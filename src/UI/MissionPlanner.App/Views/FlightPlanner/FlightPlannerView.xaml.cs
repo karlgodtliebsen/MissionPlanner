@@ -17,27 +17,21 @@ public partial class FlightPlannerView : ExtendedContentPage<FlightPlannerViewMo
     }
 
     /// <inheritdoc/>
-    protected override async void OnNavigatedTo(NavigatedToEventArgs args)
+    protected override async Task OnModelCreatedAsync(FlightPlannerViewModel viewModel)
     {
-        base.OnNavigatedTo(args);
-        if (args.NavigationType is NavigationType.Replace or NavigationType.Remove)
-        {
-            DomainException.ThrowIfNull(ViewModel);
-            var map = ViewModel.Map as FlightPlannerMissionMapViewModel; //To share the Map it is brought over
-            DomainException.ThrowIfNull(map);
-            await MapView.Activate(map);
-            ItemListView.BindingContext = map;
-        }
+        DomainException.ThrowIfNull(viewModel);
+        var map = viewModel.Map as FlightPlannerMissionMapViewModel; //To share the Map it is brought over
+        DomainException.ThrowIfNull(map);
+        await MapView.Activate(map);
+        ItemListView.BindingContext = map;
     }
 
+
     /// <inheritdoc />
-    protected override async void OnNavigatingFrom(NavigatingFromEventArgs args)
+    protected override Task OnDestroyingModel(FlightPlannerViewModel viewModel)
     {
-        base.OnNavigatingFrom(args);
-        if (args.NavigationType is NavigationType.Replace or NavigationType.Remove)
-        {
-            MapView.Deactivate();
-            ItemListView.BindingContext = null;
-        }
+        MapView.Deactivate();
+        ItemListView.BindingContext = null;
+        return base.OnDestroyingModel(viewModel);
     }
 }

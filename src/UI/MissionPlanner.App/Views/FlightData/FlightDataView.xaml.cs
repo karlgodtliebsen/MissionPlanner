@@ -17,25 +17,18 @@ public partial class FlightDataView : ExtendedContentPage<FlightDataViewModel>
     }
 
     /// <inheritdoc />
-    protected override async void OnNavigatedTo(NavigatedToEventArgs args)
+    protected override async Task OnModelCreatedAsync(FlightDataViewModel viewModel)
     {
-        base.OnNavigatedTo(args);
-        if (args.NavigationType is NavigationType.Replace or NavigationType.Remove)
-        {
-            DomainException.ThrowIfNull(ViewModel);
-            var map = ViewModel.Map as FlightDataMissionMapViewModel; //To share the Map it is brought over
-            DomainException.ThrowIfNull(map);
-            await MapView.Activate(map);
-        }
+        DomainException.ThrowIfNull(viewModel);
+        var map = viewModel.Map as FlightDataMissionMapViewModel; //To share the Map it is brought over
+        DomainException.ThrowIfNull(map);
+        await MapView.Activate(map);
     }
 
     /// <inheritdoc />
-    protected override async void OnNavigatingFrom(NavigatingFromEventArgs args)
+    protected override Task OnDestroyingModel(FlightDataViewModel viewModel)
     {
-        base.OnNavigatingFrom(args);
-        if (args.NavigationType is NavigationType.Replace or NavigationType.Remove)
-        {
-            MapView.Deactivate();
-        }
+        MapView.Deactivate();
+        return base.OnDestroyingModel(viewModel);
     }
 }
