@@ -1,19 +1,15 @@
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using MissionPlanner.Firmware.Model;
 
 namespace MissionPlanner.Firmware.Devices;
 
 /// <summary>Provides cancellable, deduplicated device monitoring through bounded polling.</summary>
-public sealed class PollingFirmwareDeviceMonitor(
-    IFirmwareSerialDeviceCatalog catalog,
-    TimeProvider timeProvider,
-    TimeSpan? interval = null) : IFirmwareDeviceMonitor
+public sealed class PollingFirmwareDeviceMonitor(IFirmwareSerialDeviceCatalog catalog, TimeProvider timeProvider, TimeSpan? interval = null) : IFirmwareDeviceMonitor
 {
     private readonly TimeSpan pollInterval = interval ?? TimeSpan.FromMilliseconds(250);
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<FirmwareDeviceChange> WatchAsync(
-        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    public async IAsyncEnumerable<FirmwareDeviceChange> WatchAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
         var previous = Index(await catalog.GetDevicesAsync(cancellationToken).ConfigureAwait(false));
         while (true)
@@ -22,22 +18,35 @@ public sealed class PollingFirmwareDeviceMonitor(
             var current = Index(await catalog.GetDevicesAsync(cancellationToken).ConfigureAwait(false));
             var now = timeProvider.GetUtcNow();
             foreach (var pair in previous.Where(pair => !current.TryGetValue(pair.Key, out var replacement) || !SameDeviceMode(pair.Value, replacement)).OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase))
+            {
                 yield return new FirmwareDeviceChange(FirmwareDeviceChangeKind.Removed, pair.Value, now);
+            }
+
             foreach (var pair in current.Where(pair => !previous.TryGetValue(pair.Key, out var replaced) || !SameDeviceMode(replaced, pair.Value)).OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase))
+            {
                 yield return new FirmwareDeviceChange(FirmwareDeviceChangeKind.Arrived, pair.Value, now);
+            }
+
             previous = current;
         }
     }
 
-    private static Dictionary<string, SerialDeviceDescriptor> Index(IEnumerable<SerialDeviceDescriptor> devices) =>
-        devices.GroupBy(DeviceKey, StringComparer.OrdinalIgnoreCase).ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+    private static Dictionary<string, SerialDeviceDescriptor> Index(IEnumerable<SerialDeviceDescriptor> devices)
+    {
+        return devices.GroupBy(DeviceKey, StringComparer.OrdinalIgnoreCase).ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+    }
 
-    private static string DeviceKey(SerialDeviceDescriptor device) => device.StableIdentity ?? $"transient:{device.PortName}";
+    private static string DeviceKey(SerialDeviceDescriptor device)
+    {
+        return device.StableIdentity ?? $"transient:{device.PortName}";
+    }
 
-    private static bool SameDeviceMode(SerialDeviceDescriptor left, SerialDeviceDescriptor right) =>
-        string.Equals(left.PortName, right.PortName, StringComparison.OrdinalIgnoreCase) &&
-        left.UsbIdentifier == right.UsbIdentifier &&
-        string.Equals(left.ProductName, right.ProductName, StringComparison.OrdinalIgnoreCase) &&
-        string.Equals(left.Manufacturer, right.Manufacturer, StringComparison.OrdinalIgnoreCase) &&
-        left.BoardHints.SequenceEqual(right.BoardHints, StringComparer.OrdinalIgnoreCase);
+    private static bool SameDeviceMode(SerialDeviceDescriptor left, SerialDeviceDescriptor right)
+    {
+        return string.Equals(left.PortName, right.PortName, StringComparison.OrdinalIgnoreCase) &&
+               left.UsbIdentifier == right.UsbIdentifier &&
+               string.Equals(left.ProductName, right.ProductName, StringComparison.OrdinalIgnoreCase) &&
+               string.Equals(left.Manufacturer, right.Manufacturer, StringComparison.OrdinalIgnoreCase) &&
+               left.BoardHints.SequenceEqual(right.BoardHints, StringComparer.OrdinalIgnoreCase);
+    }
 }

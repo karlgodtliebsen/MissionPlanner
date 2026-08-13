@@ -1,15 +1,12 @@
-namespace MissionPlanner.Firmware.Model;
+﻿namespace MissionPlanner.Firmware.Model;
 
-/// <summary>Describes the hardware target declared by a firmware release.</summary>
+/// <summary>
+/// Describes the hardware target declared by a firmware release.
+/// </summary>
 public sealed record FirmwareBoardTarget
 {
     /// <summary>Initializes a board target.</summary>
-    public FirmwareBoardTarget(
-        int boardId,
-        string platform,
-        FirmwareVehicleType vehicleType,
-        IEnumerable<UsbIdentifier>? usbIdentifiers = null,
-        IEnumerable<string>? bootloaderNames = null)
+    public FirmwareBoardTarget(int boardId, string platform, FirmwareVehicleType vehicleType, IEnumerable<UsbIdentifier>? usbIdentifiers = null, IEnumerable<string>? bootloaderNames = null)
     {
         if (boardId <= 0)
         {

@@ -29,19 +29,38 @@
 
                 <Grid  IsVisible="{Binding IsDisconnectedMode}" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="16">
                     <HorizontalStackLayout Spacing="10" Grid.Row="0" >
-                        <Label Text="Release:" VerticalOptions="Center" />
                         <material:SelectField 
+                            WidthRequest="250" 
+                            Title="Release"
                             ItemsSource="{Binding Channels}" 
                             SelectedItem="{Binding SelectedChannel}" 
-                            WidthRequest="180" />
+                            />
                         <Button Text="Refresh catalogue" Command="{Binding RefreshCatalogCommand}" />
                         <Button Text="All Options" Command="{Binding ShowAllOptionsCommand}" />
                         <Button Text="Load Custom Firmware" Command="{Binding LoadCustomFirmwareCommand}" />
                     </HorizontalStackLayout>
+
                     <HorizontalStackLayout Spacing="10" Grid.Row="1" >
                         <material:SelectField ItemsSource="{Binding Versions}"
+                                              AllowClear="True"
+                                              
+                                              Title="Version"
                                               SelectedItem="{Binding SelectedVersion}" WidthRequest="250" 
-                                              ></material:SelectField>
+                        />
+
+                        <material:SelectField ItemsSource="{Binding FrameTypes}"
+                                                  AllowClear="True"
+                                                  Title="Frame"
+                                                  SelectedItem="{Binding SelectedFrameType}" WidthRequest="250" 
+                            />
+
+                        <material:SelectField ItemsSource="{Binding Manufacturers}"
+                                                  AllowClear="True"
+                                                  Title="Manufacturer"
+                                                  SelectedItem="{Binding SelectedManufacturer}" WidthRequest="250" 
+                            />
+
+
                     </HorizontalStackLayout>
                     <ActivityIndicator  Grid.Row="2" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
 
@@ -70,7 +89,7 @@
 
                     >
                         <virtualized:VirtualizedDataGrid.EmptyView>
-                   
+
 
                             <VerticalStackLayout
                                 Padding="40"
@@ -203,9 +222,10 @@
                         </Grid>
                     </Border>
 
-                    <Border Grid.Row="6" IsVisible="{Binding HasPreparedFirmware}" Padding="12" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                    <Border Grid.Row="6" IsVisible="{Binding HasPreparedFirmware}" 
+                            Padding="12" StyleClass="SurfaceContainer,Rounded,Elevation1">
                         <VerticalStackLayout>
-                            <Label Text="Validated package" FontAttributes="Bold" />
+                            <Label Text="Validated package" FontAttributes="Bold" FontSize="22" />
 
                             <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
                                 <Label Grid.Row="0" Text="Package board ID" />
@@ -247,11 +267,13 @@
                                 <Label Grid.Row="12" Text="Cache hit" />
                                 <Label Grid.Row="12" Grid.Column="1" Text="{Binding PreparedFirmware.WasCacheHit,FallbackValue='', TargetNullValue=''}" />
                             </Grid>
+                            <Grid  MaximumHeightRequest="250">
                             <virtualized:VirtualizedDataGrid 
                                 ItemsSource="{Binding PreparedFirmware.Warnings}" 
                                 ItemSizingStrategy= "MeasureFirstItem"
                                 ShowSearchBar="False"
-                                MaximumHeightRequest="200"
+                                Margin="0,10,0,10"
+                                MaximumHeightRequest="250"
                                 HorizontalOptions="Fill" 
                                 VerticalOptions="Fill" 
                                 BackgroundColor="Transparent"
@@ -270,7 +292,7 @@
                                     </material:DataGridColumn>
                                 </virtualized:VirtualizedDataGrid.Columns>
                             </virtualized:VirtualizedDataGrid>
-
+                            </Grid>
 
                         </VerticalStackLayout>
                     </Border>

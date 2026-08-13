@@ -54,6 +54,6 @@ public sealed record FirmwareVersion
     /// <inheritdoc />
     public override string ToString()
     {
-        return $"Ver: {Value}- SemVer: {SemanticVersion}";
+        return $"Ver: {Value} - SemVer: {SemanticVersion}";
     }
 }

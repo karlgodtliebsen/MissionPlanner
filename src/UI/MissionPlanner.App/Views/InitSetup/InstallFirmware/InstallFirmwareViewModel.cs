@@ -104,13 +104,38 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     /// Gets the distinct firmware versions available in the catalogue.
     /// </summary>
     [ObservableProperty]
-    public partial ObservableRangeCollection<FirmwareVersion> Versions { get; private set; } = [];
+    public partial ObservableRangeCollection<string> Versions { get; private set; } = [];
 
     /// <summary>
     /// Gets or sets the selected firmware version for filtering the catalogue.
     /// </summary>
     [ObservableProperty]
-    public partial FirmwareVersion? SelectedVersion { get; set; }
+    public partial string? SelectedVersion { get; set; }
+
+    /// <summary>
+    ///  Gets the distinct FrameTypes available in the catalogue.
+    /// </summary>
+    [ObservableProperty]
+    public partial ObservableRangeCollection<string> FrameTypes { get; private set; } = [];
+
+    /// <summary>
+    /// Gets or sets the selected FrameType for filtering the catalogue.
+    /// </summary>
+    [ObservableProperty]
+    public partial string? SelectedFrameType { get; set; }
+
+
+    /// <summary>
+    ///  Gets the distinct Manufacturer available in the catalogue.
+    /// </summary>
+    [ObservableProperty]
+    public partial ObservableRangeCollection<string> Manufacturers { get; private set; } = [];
+
+    /// <summary>
+    ///  Gets or sets the selected Manufacturer for filtering the catalogue.
+    /// </summary>
+    [ObservableProperty]
+    public partial string? SelectedManufacturer { get; set; }
 
 
     /// <summary>Gets discovered serial devices.</summary>
@@ -550,15 +575,51 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         }
     }
 
-    partial void OnSelectedVersionChanged(FirmwareVersion? value)
+    partial void OnSelectedVersionChanged(string? value)
     {
-        var choices = FirmwareChoices.Where(x => x.FirmwareVersion == value);
+        FilterData(SelectedVersion, SelectedFrameType, SelectedManufacturer);
+    }
+
+    partial void OnSelectedFrameTypeChanged(string? value)
+    {
+        FilterData(SelectedVersion, SelectedFrameType, SelectedManufacturer);
+    }
+
+    partial void OnSelectedManufacturerChanged(string? value)
+    {
+        FilterData(SelectedVersion, SelectedFrameType, SelectedManufacturer);
+    }
+
+
+    private void FilterData(string? version, string? vehicleType, string? manufacturer)
+    {
+        var choices = FirmwareChoices.ToList();
+
+        if (!string.IsNullOrEmpty(version))
+        {
+            choices = choices.Where(x => x.FirmwareVersion.ToString() == version).ToList();
+        }
+
+        if (!string.IsNullOrEmpty(vehicleType))
+        {
+            choices = choices.Where(x => x.VehicleType == vehicleType).ToList();
+        }
+
+        if (!string.IsNullOrEmpty(manufacturer))
+        {
+            choices = choices.Where(x => x.Manufacturer == manufacturer).ToList();
+        }
+
         FilteredFirmwareChoices.Clear();
         FilteredFirmwareChoices.AddRange(choices);
     }
 
     private void ApplyTargetQuery()
     {
+        SelectedVersion = null;
+        SelectedFrameType = null;
+        SelectedManufacturer = null;
+
         var previousEntry = SelectedFirmware?.Entry;
         var recommendations =
             FirmwareTargetSelector.Query(availableEntries, new FirmwareTargetQuery(ReleaseChannel: showingAllOptions ? null : SelectedChannel),
@@ -569,18 +630,41 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
 
         FirmwareChoices.Clear();
         FirmwareChoices.AddRange(choices);
-        FilteredFirmwareChoices.Clear();
+
 
         var versions = choices
             .Select(x => x.FirmwareVersion)
             .Distinct()
             .OrderByDescending(v => v.SemanticVersion ?? new System.Version(0, 0))
             .ThenByDescending(v => v.Value, StringComparer.OrdinalIgnoreCase)
+            .Select(x => x.ToString())
             .ToList();
 
         Versions.Clear();
         Versions.AddRange(versions);
-        SelectedVersion = versions.FirstOrDefault();
+
+        //FirmwareManifestEntry -> FirmwareBoardTarget Target  -> FirmwareVehicleType VehicleType 
+        var frameTypes = choices
+            .Select(x => x.VehicleType)
+            .Distinct()
+            .Order()
+            .ToList();
+
+        FrameTypes.Clear();
+        FrameTypes.AddRange(frameTypes);
+
+        var manufacturers = choices
+            .Select(x => x.Manufacturer)
+            .Distinct()
+            .Order()
+            .ToList();
+
+        Manufacturers.Clear();
+        Manufacturers.AddRange(manufacturers);
+
+        FilteredFirmwareChoices.Clear();
+        FilteredFirmwareChoices.AddRange(choices);
+
         Debug.Print($"ApplyTargetQuery with FirmwareChoices count: {FirmwareChoices.Count}");
 
         var retained = previousEntry is null ? null : FirmwareChoices.FirstOrDefault(item => SameEntry(item.Entry, previousEntry));
