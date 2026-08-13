@@ -28,10 +28,9 @@ public partial class FlightPlannerView : ExtendedContentPage<FlightPlannerViewMo
 
 
     /// <inheritdoc />
-    protected override Task OnDestroyingModel(FlightPlannerViewModel viewModel)
+    protected override void OnDestroyingModel(FlightPlannerViewModel viewModel)
     {
         MapView.Deactivate();
         ItemListView.BindingContext = null;
-        return base.OnDestroyingModel(viewModel);
     }
 }

@@ -26,9 +26,8 @@ public partial class FlightDataView : ExtendedContentPage<FlightDataViewModel>
     }
 
     /// <inheritdoc />
-    protected override Task OnDestroyingModel(FlightDataViewModel viewModel)
+    protected override void OnDestroyingModel(FlightDataViewModel viewModel)
     {
         MapView.Deactivate();
-        return base.OnDestroyingModel(viewModel);
     }
 }

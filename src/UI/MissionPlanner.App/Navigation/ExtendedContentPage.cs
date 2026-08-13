@@ -86,20 +86,30 @@ public class ExtendedContentPage<TViewModel> : UraniumContentPage
     /// </summary>
     /// <param name="viewModel">The view model being destroyed.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    protected virtual Task OnDestroyingModel(TViewModel viewModel)
+    protected virtual void OnDestroyingModel(TViewModel viewModel)
     {
-        return Task.CompletedTask;
     }
 
     private void DeactivateViewModel()
     {
-        if (ViewModel is not null)
+        var viewModel = ViewModel;
+        if (viewModel is null)
         {
-            OnDestroyingModel(ViewModel);
+            return;
         }
 
-        BindingContext = null;
-        ViewModel?.Dispose();
+        // Claim the model immediately. OnNavigatedFrom will then be a no-op
+        // if OnNavigatingFrom already performed cleanup.
         ViewModel = null;
+        BindingContext = null;
+
+        try
+        {
+            OnDestroyingModel(viewModel);
+        }
+        finally
+        {
+            viewModel.Dispose();
+        }
     }
 }
