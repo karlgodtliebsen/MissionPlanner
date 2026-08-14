@@ -17,7 +17,6 @@ public sealed class FirmwareInstallationService(
     IFirmwareConnectionGateway connectionGateway,
     IFirmwareArtifactDownloader downloader,
     IBootloaderEntryService entryService,
-    IBootloaderDiscoveryService discovery,
     IFirmwareCompatibilityService compatibility,
     IFirmwareUserInteraction interaction,
     IFirmwareApplicationDiscoveryService applicationDiscovery,
@@ -37,6 +36,7 @@ public sealed class FirmwareInstallationService(
         string? firmwareSource = request.Artifact?.DownloadUri.AbsoluteUri ?? (request.Package is null ? null : "custom");
         BootloaderIdentity? diagnosticBootloader = null;
         SerialDeviceDescriptor? diagnosticBootloaderDevice = null;
+        long? bytesProgrammed = null;
         string? verificationResult = null;
         using var logScope = logger.BeginScope(new Dictionary<string, object?> { ["FirmwareOperationId"] = operation.OperationId });
         try
@@ -77,8 +77,11 @@ public sealed class FirmwareInstallationService(
             if (entry is { Outcome: BootloaderEntryOutcome.BootloaderIdentified, Bootloader: not null }) found = entry.Bootloader;
             else
             {
-                Transition(FirmwareOperationState.WaitingForDevice, "installation.waiting-for-bootloader");
-                found = await discovery.FindAsync(request.EntryContext.DiscoveryRequest, progress, cancellationToken).ConfigureAwait(false);
+                // EntryService already performs discovery after every strategy that can cause a
+                // device transition. A final blind discovery here merely repeats the full timeout
+                // and loses the strategy that actually failed.
+                throw new FirmwareDeviceNotFoundException(
+                    $"Bootloader entry failed ({entry.Code}). {entry.TechnicalDetail ?? "No ArduPilot serial bootloader was protocol-confirmed."}");
             }
 
             var bootloaderDevice = found.Device;
@@ -113,6 +116,7 @@ public sealed class FirmwareInstallationService(
                 await found.Client.EraseAsync(destructiveToken).ConfigureAwait(false);
                 Transition(FirmwareOperationState.Programming, "installation.programming");
                 await found.Client.ProgramAsync(package, progress, destructiveToken).ConfigureAwait(false);
+                bytesProgrammed = package.Image.Length + package.ExternalImage.Length;
                 Transition(FirmwareOperationState.Verifying, "installation.verifying");
                 var verification = await found.Client.VerifyAsync(package, destructiveToken).ConfigureAwait(false);
                 verificationResult = verification.Succeeded ? "Succeeded" : $"Failed (expected 0x{verification.ExpectedChecksum:X8}, actual 0x{verification.ActualChecksum:X8})";
@@ -161,7 +165,7 @@ public sealed class FirmwareInstallationService(
                 Transition(FirmwareOperationState.Failed, "installation.cancelled-after-destructive-stage");
             return new FirmwareOperationResult(operation.OperationId, operation.Kind, operation.State,
                 new FirmwareOperationFailure("installation.cancelled", failureStage, exception.Message, exception.GetType().Name),
-                DiagnosticReport: CreateDiagnostic(operation.State, failureCode: "installation.cancelled"));
+                DiagnosticReport: CreateDiagnostic(operation.State, failureCode: "installation.cancelled", failureStage: failureStage, failureDetail: exception.Message));
         }
         catch (Exception exception)
         {
@@ -171,7 +175,7 @@ public sealed class FirmwareInstallationService(
             logger.LogError(exception, "Firmware operation {OperationId} failed in state {FailureStage} with {FailureCode}.", operation.OperationId, failureStage, FailureCode(exception));
             return new FirmwareOperationResult(operation.OperationId, operation.Kind, operation.State,
                 new FirmwareOperationFailure(FailureCode(exception), failureStage, exception.Message, exception.GetType().Name),
-                DiagnosticReport: CreateDiagnostic(operation.State, failureCode: FailureCode(exception)));
+                DiagnosticReport: CreateDiagnostic(operation.State, failureCode: FailureCode(exception), failureStage: failureStage, failureDetail: exception.Message));
         }
         finally
         {
@@ -189,7 +193,9 @@ public sealed class FirmwareInstallationService(
         FirmwareDiagnosticReport CreateDiagnostic(
             FirmwareOperationState resultState,
             SerialDeviceDescriptor? applicationDevice = null,
-            string? failureCode = null) => new(
+            string? failureCode = null,
+            FirmwareOperationState? failureStage = null,
+            string? failureDetail = null) => new(
                 operation.OperationId,
                 resultState,
                 firmwareSource,
@@ -199,10 +205,12 @@ public sealed class FirmwareInstallationService(
                 request.EntryContext.ApplicationDevice?.StableIdentity ?? request.EntryContext.ApplicationDevice?.PortName,
                 diagnosticBootloaderDevice?.StableIdentity ?? diagnosticBootloaderDevice?.PortName,
                 applicationDevice?.StableIdentity ?? applicationDevice?.PortName,
-                diagnosticPackage?.Image.Length,
+                bytesProgrammed,
                 verificationResult,
                 failureCode,
-                DateTimeOffset.UtcNow - startedAt);
+                DateTimeOffset.UtcNow - startedAt,
+                failureStage,
+                failureDetail);
     }
 
     private static string FailureCode(Exception exception) => exception switch

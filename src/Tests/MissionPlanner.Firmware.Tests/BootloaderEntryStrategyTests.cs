@@ -25,6 +25,19 @@ public sealed class BootloaderEntryStrategyTests
     }
 
     [Fact]
+    public async Task KnownApplicationDeviceIsNotProbedWithBootloaderProtocol()
+    {
+        var discovery = new CountingDiscovery();
+        var strategy = new AlreadyInBootloaderEntryStrategy(discovery);
+
+        var result = await strategy.TryEnterAsync(Context(applicationDevice: Device()), TestContext.Current.CancellationToken);
+
+        result.Outcome.Should().Be(BootloaderEntryOutcome.NotApplicable);
+        result.Code.Should().Be("entry.application-device-not-probed-as-bootloader");
+        discovery.CallCount.Should().Be(0);
+    }
+
+    [Fact]
     public async Task TemporaryMavLinkReleasesOwnershipBeforeDiscoveryContinues()
     {
         var gateway = new FakeTemporaryGateway();
@@ -142,6 +155,19 @@ public sealed class BootloaderEntryStrategyTests
     {
         public Task<DiscoveredBootloader> FindAsync(BootloaderDiscoveryRequest request, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default) =>
             result is null ? Task.FromException<DiscoveredBootloader>(new FirmwareDeviceNotFoundException("not found")) : Task.FromResult(result);
+    }
+    private sealed class CountingDiscovery : IBootloaderDiscoveryService
+    {
+        public int CallCount { get; private set; }
+
+        public Task<DiscoveredBootloader> FindAsync(
+            BootloaderDiscoveryRequest request,
+            IProgress<FirmwareProgress>? progress = null,
+            CancellationToken cancellationToken = default)
+        {
+            CallCount++;
+            throw new InvalidOperationException("The known application port must not be probed as a bootloader.");
+        }
     }
     private sealed class FakeTemporaryGateway : ITemporaryMavLinkBootloaderGateway
     {

@@ -195,7 +195,6 @@ public sealed class FirmwareInstallationServiceTests
                 new FakeConnection(connected),
                 new FailureDownloader(downloadFailure),
                 new FixedEntry(found, entryFailure),
-                new UnusedDiscovery(),
                 new FirmwareCompatibilityService(),
                 Interaction,
                 ApplicationDiscovery,

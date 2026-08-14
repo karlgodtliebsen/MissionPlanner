@@ -35,6 +35,7 @@ using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Connected;
+using MissionPlanner.Firmware.Dfu;
 using MissionPlanner.Firmware.Entry;
 using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Library;
@@ -129,6 +130,7 @@ public static class ApplicationConfigurator
 
         services.TryAddTransient<IFirmwareUserInteraction, FirmwareInteractionService>();
         services.TryAddTransient<IBootloaderEntryInteraction, FirmwareInteractionService>();
+        services.TryAddTransient<IDfuUserInteraction, FirmwareInteractionService>();
 
         services.TryAddTransient<ITemporaryMavLinkBootloaderGateway, TemporaryMavLinkBootloaderGateway>();
         services.TryAddTransient<ITextClipboardService, TextClipboardService>();

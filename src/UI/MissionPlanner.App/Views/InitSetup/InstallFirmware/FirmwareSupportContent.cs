@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using MissionPlanner.Firmware.Model;
 
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
@@ -8,20 +8,28 @@ public enum FirmwareSupportTopic
 {
     /// <summary>Exact hardware target selection.</summary>
     ChoosingFirmware,
+
     /// <summary>Release stability and risk.</summary>
     ReleaseChannels,
+
     /// <summary>Supported package and programming file formats.</summary>
     FileTypes,
+
     /// <summary>Serial installation compared with USB DFU.</summary>
     InstallationModes,
+
     /// <summary>Board-specific bootloader entry.</summary>
     EnteringBootMode,
+
     /// <summary>Windows enumeration evidence.</summary>
     WindowsDevices,
+
     /// <summary>Driver and programming-tool guidance.</summary>
     DriverTools,
+
     /// <summary>Host-platform feature boundaries.</summary>
     PlatformLimitations,
+
     /// <summary>Safe recovery and evidence collection.</summary>
     Recovery
 }
@@ -51,24 +59,39 @@ public static class FirmwareContextHelpResolver
     {
         ArgumentNullException.ThrowIfNull(context);
         if (context.PackageBoardMismatch)
-            return new("Firmware target does not match", "Compare the manifest and package board IDs, then select the exact hardware platform. Compatibility cannot be overridden before erase.", FirmwareSupportCategory.ArduPilot);
+        {
+            return new FirmwareContextHelp("Firmware target does not match", "Compare the manifest and package board IDs, then select the exact hardware platform. Compatibility cannot be overridden before erase.", FirmwareSupportCategory.ArduPilot);
+        }
+
         if (context.WrongDfuDriver)
-            return new("DFU driver needs attention", "Verify the STM32 BOOTLOADER VID/PID in Device Manager. Install STM32CubeProgrammer and its bundled driver first; use Zadig only as a clearly identified fallback.", FirmwareSupportCategory.DriverFallback);
+        {
+            return new FirmwareContextHelp("DFU driver needs attention", "Verify the STM32 BOOTLOADER VID/PID in Device Manager. Install STM32CubeProgrammer and its bundled driver first; use Zadig only as a clearly identified fallback.", FirmwareSupportCategory.DriverFallback);
+        }
+
         if (context.DfuDevicePresent && !context.CubeProgrammerAvailable)
-            return new("STM32 DFU device detected", "Install STM32CubeProgrammer before continuing. For initial ArduPilot installation, confirm the exact target and choose its *_with_bl.hex image.", FirmwareSupportCategory.StMicroelectronics);
+        {
+            return new FirmwareContextHelp("STM32 DFU device detected", "Install STM32CubeProgrammer before continuing. For initial ArduPilot installation, confirm the exact target and choose its *_with_bl.hex image.", FirmwareSupportCategory.StMicroelectronics);
+        }
+
         if (context.DfuDevicePresent)
-            return new("STM32 DFU device detected", "Use the DFU workflow rather than serial APJ installation. Confirm the exact target before selecting *_with_bl.hex.", FirmwareSupportCategory.StMicroelectronics);
+        {
+            return new FirmwareContextHelp("STM32 DFU device detected", "Use the DFU workflow rather than serial APJ installation. Confirm the exact target before selecting *_with_bl.hex.", FirmwareSupportCategory.StMicroelectronics);
+        }
+
         if (context.TargetAmbiguous)
-            return new("Identify the exact hardware target", "Vehicle family is not sufficient. Search the printed board/platform name and compare board ID, USB identity, and bootloader aliases before selecting firmware.", FirmwareSupportCategory.ArduPilot);
-        if (context.CustomPackageSelected)
-            return new("Custom firmware provenance", "Confirm the package source, board ID, features, and build identity. Compatibility and provenance are your responsibility.", FirmwareSupportCategory.ArduPilot);
-        if (context.Channel == FirmwareReleaseChannel.Latest)
-            return new("Latest is a development build", "Use Latest only for experienced testing. Prefer Stable for normal operation and preserve a recovery path.", FirmwareSupportCategory.ArduPilot);
-        if (context.Channel == FirmwareReleaseChannel.Beta)
-            return new("Beta may contain defects", "Beta supports wider pre-release testing. Prefer Stable unless you intend to test and report issues.", FirmwareSupportCategory.ArduPilot);
-        if (!context.SerialDevicePresent)
-            return new("No serial flight controller detected", "Check a data-capable cable, power, boot mode, and Device Manager. STM32 ROM DFU is a USB device and normally is not a COM port.");
-        return new("Standard serial installation", "Confirm the exact board target, use Download & Validate first, and keep power connected through erase, programming, verification, and reboot.");
+        {
+            return new FirmwareContextHelp("Identify the exact hardware target", "Vehicle family is not sufficient. Search the printed board/platform name and compare board ID, USB identity, and bootloader aliases before selecting firmware.", FirmwareSupportCategory.ArduPilot);
+        }
+
+        return context.CustomPackageSelected
+            ? new FirmwareContextHelp("Custom firmware provenance", "Confirm the package source, board ID, features, and build identity. Compatibility and provenance are your responsibility.", FirmwareSupportCategory.ArduPilot)
+            : context.Channel == FirmwareReleaseChannel.Latest
+            ? new FirmwareContextHelp("Latest is a development build", "Use Latest only for experienced testing. Prefer Stable for normal operation and preserve a recovery path.", FirmwareSupportCategory.ArduPilot)
+            : context.Channel == FirmwareReleaseChannel.Beta
+                ? new FirmwareContextHelp("Beta may contain defects", "Beta supports wider pre-release testing. Prefer Stable unless you intend to test and report issues.", FirmwareSupportCategory.ArduPilot)
+                : !context.SerialDevicePresent
+                    ? new FirmwareContextHelp("No serial flight controller detected", "Check a data-capable cable, power, boot mode, and Device Manager. STM32 ROM DFU is a USB device and normally is not a COM port.")
+                    : new FirmwareContextHelp("Standard serial installation", "Confirm the exact board target, use Download & Validate first, and keep power connected through erase, programming, verification, and reboot.");
     }
 }
 
@@ -104,6 +127,7 @@ public interface IDeviceManagerLauncher
 {
     /// <summary>Gets whether Device Manager is available on this host.</summary>
     bool IsAvailable { get; }
+
     /// <summary>Opens Device Manager.</summary>
     Task OpenAsync(CancellationToken cancellationToken = default);
 }
@@ -119,7 +143,9 @@ public sealed class DeviceManagerLauncher : IDeviceManagerLauncher
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (!IsAvailable)
+        {
             throw new PlatformNotSupportedException("Device Manager is available only on Windows.");
+        }
 
         Process.Start(new ProcessStartInfo("devmgmt.msc") { UseShellExecute = true });
         return Task.CompletedTask;

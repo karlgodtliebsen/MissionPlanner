@@ -22,6 +22,10 @@ public sealed class ArduPilotBootloaderClient(
     /// <inheritdoc />
     public async Task<BootloaderIdentity> IdentifyAsync(CancellationToken cancellationToken = default)
     {
+        // A port that has just changed from application firmware to bootloader mode may still
+        // contain MAVLink bytes queued by the Windows CDC driver. They are not bootloader
+        // replies. Mission Planner's established uploader clears them before GET_SYNC.
+        port.DiscardInBuffer();
         await SynchronizeAsync(cancellationToken).ConfigureAwait(false);
         var identifyTimeout = options.Value.BootloaderSynchronizationTimeout;
         var revision = checked((int)await GetInfoAsync(ArduPilotBootloaderProtocol.InfoBootloaderRevision, identifyTimeout, cancellationToken).ConfigureAwait(false));

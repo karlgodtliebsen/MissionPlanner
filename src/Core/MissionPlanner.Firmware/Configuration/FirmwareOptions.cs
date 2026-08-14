@@ -36,7 +36,7 @@ public sealed class FirmwareOptions
     public TimeSpan BootloaderCommandTimeout { get; set; } = TimeSpan.FromSeconds(2);
 
     /// <summary>Gets or sets the short timeout used while synchronizing a bootloader candidate.</summary>
-    public TimeSpan BootloaderSynchronizationTimeout { get; set; } = TimeSpan.FromMilliseconds(50);
+    public TimeSpan BootloaderSynchronizationTimeout { get; set; } = TimeSpan.FromMilliseconds(500);
 
     /// <summary>Gets or sets the longer chip erase timeout.</summary>
     public TimeSpan BootloaderEraseTimeout { get; set; } = TimeSpan.FromSeconds(30);

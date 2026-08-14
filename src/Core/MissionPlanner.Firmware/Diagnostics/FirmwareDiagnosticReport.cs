@@ -17,7 +17,9 @@ public sealed record FirmwareDiagnosticReport(
     long? BytesProgrammed = null,
     string? VerificationResult = null,
     string? FailureCode = null,
-    TimeSpan? Elapsed = null)
+    TimeSpan? Elapsed = null,
+    FirmwareOperationState? FailureStage = null,
+    string? FailureDetail = null)
 {
     /// <summary>Creates a copyable multiline diagnostic report.</summary>
     public string CreateReport()
@@ -35,6 +37,8 @@ public sealed record FirmwareDiagnosticReport(
         Add("Bytes programmed", BytesProgrammed);
         Add("Verification", VerificationResult);
         Add("Failure", FailureCode);
+        Add("Failure stage", FailureStage);
+        Add("Failure detail", FailureDetail);
         Add("Elapsed", Elapsed);
         return text.ToString().TrimEnd();
 

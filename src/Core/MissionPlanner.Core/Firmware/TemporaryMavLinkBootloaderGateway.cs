@@ -48,29 +48,16 @@ public sealed class TemporaryMavLinkBootloaderGateway(
 
         await port.Stream.WriteAsync(packet, cancellationToken).ConfigureAwait(false);
         await port.Stream.FlushAsync(cancellationToken).ConfigureAwait(false);
-        var acknowledgement =
-            await ReadMessageAsync<CommandAckMessage>(
-                    port.Stream,
-                    endpoint,
-                    options.Value.TemporaryMavLinkCommandAckTimeout,
-                    cancellationToken,
-                    message => message.SystemId == heartbeat.SystemId && message.Command == MavLinkCommandIds.PreflightRebootShutdown
-                )
-                .ConfigureAwait(false);
-        if (acknowledgement is null)
-        {
-            // ArduPilot may reset the serial device before its ACK reaches the host. The command
-            // was transmitted successfully; release ownership and let bootloader discovery prove
-            // whether the transition occurred.
-            logger.LogInformation("Bootloader reboot command was sent to system {SystemId} on {PortName}; no ACK arrived before the device transition timeout.",
-                heartbeat.SystemId, applicationDevice.PortName);
-            return true;
-        }
-
-        var result = (MavResult)acknowledgement.Result;
-        var accepted = result is MavResult.Accepted or MavResult.InProgress;
-        logger.LogInformation("Temporary bootloader reboot command on {PortName} returned {AckResult}.", applicationDevice.PortName, result);
-        return accepted;
+        // Do not wait for COMMAND_ACK here. ArduPilot commonly resets the USB serial device
+        // before sending it, and SerialPort.BaseStream.ReadAsync can leave a native Windows read
+        // pending after a managed timeout. That pending read retains exclusive ownership of the
+        // COM port and prevents the bootloader discovery service from opening it. A successful
+        // protocol handshake by discovery is the authoritative confirmation of the reboot.
+        logger.LogInformation(
+            "Bootloader reboot command was sent to system {SystemId} on {PortName}; releasing the temporary port immediately for discovery.",
+            heartbeat.SystemId,
+            applicationDevice.PortName);
+        return true;
     }
 
     private async Task<TMessage?> ReadMessageAsync<TMessage>(Stream stream, TransportEndPoint endpoint, TimeSpan timeout, CancellationToken cancellationToken, Func<TMessage, bool>? predicate = null)

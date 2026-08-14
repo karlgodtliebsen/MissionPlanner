@@ -31,6 +31,7 @@ public sealed class SystemFirmwareSerialPortFactory : IFirmwareSerialPortFactory
         public string PortName => port.PortName;
         public Stream Stream => port.BaseStream;
         public bool IsOpen => port.IsOpen;
+        public void DiscardInBuffer() => port.DiscardInBuffer();
         public ValueTask DisposeAsync()
         {
             port.Dispose();

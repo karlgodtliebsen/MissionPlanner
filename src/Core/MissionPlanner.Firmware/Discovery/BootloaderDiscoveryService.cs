@@ -27,12 +27,13 @@ public sealed class BootloaderDiscoveryService(
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         deadline.CancelAfter(request.Timeout ?? options.Value.BootloaderDiscoveryTimeout);
         var probed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var probeFailures = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         try
         {
             var baseline = await catalog.GetDevicesAsync(deadline.Token).ConfigureAwait(false);
             foreach (var candidate in Rank(baseline, request, false))
             {
-                var found = await ProbeAsync(candidate, request, probed, deadline.Token).ConfigureAwait(false);
+                var found = await ProbeAsync(candidate, request, probed, probeFailures, deadline.Token).ConfigureAwait(false);
                 if (found is not null)
                 {
                     return found;
@@ -66,7 +67,7 @@ public sealed class BootloaderDiscoveryService(
                             continue;
 
                         progress?.Report(new FirmwareProgress(FirmwareOperationState.WaitingForDevice, null, "discovery.device-arrived", technicalDetail: change.Device.PortName));
-                        var arrived = await ProbeAsync(change.Device, request, probed, deadline.Token).ConfigureAwait(false);
+                        var arrived = await ProbeAsync(change.Device, request, probed, probeFailures, deadline.Token).ConfigureAwait(false);
                         if (arrived is not null)
                             return arrived;
                         continue;
@@ -79,7 +80,7 @@ public sealed class BootloaderDiscoveryService(
                     var current = await catalog.GetDevicesAsync(deadline.Token).ConfigureAwait(false);
                     foreach (var candidate in Rank(current, request, false))
                     {
-                        var found = await ProbeAsync(candidate, request, probed, deadline.Token).ConfigureAwait(false);
+                        var found = await ProbeAsync(candidate, request, probed, probeFailures, deadline.Token).ConfigureAwait(false);
                         if (found is not null)
                             return found;
                     }
@@ -104,7 +105,7 @@ public sealed class BootloaderDiscoveryService(
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            throw new FirmwareDeviceNotFoundException("No protocol-compatible bootloader appeared before the discovery deadline.");
+            throw new FirmwareDeviceNotFoundException(CreateFailureMessage(probeFailures));
         }
 
         throw new FirmwareDeviceNotFoundException("Bootloader monitoring ended without identifying a device.");
@@ -114,6 +115,7 @@ public sealed class BootloaderDiscoveryService(
         SerialDeviceDescriptor candidate,
         BootloaderDiscoveryRequest request,
         ISet<string> probed,
+        IDictionary<string, string> probeFailures,
         CancellationToken cancellationToken)
     {
         // A controller may leave application mode and return as a bootloader on
@@ -140,10 +142,12 @@ public sealed class BootloaderDiscoveryService(
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
+            probeFailures[CandidateName(candidate)] = "port open timed out";
             logger.LogDebug("Timed out opening firmware candidate {PortName}.", candidate.PortName);
         }
         catch (Exception exception) when (exception is FirmwareBootloaderException or TimeoutException or IOException or UnauthorizedAccessException or InvalidOperationException)
         {
+            probeFailures[CandidateName(candidate)] = exception.Message;
             logger.LogDebug(exception, "Rejected non-bootloader serial candidate {PortName}.", candidate.PortName);
         }
 
@@ -158,6 +162,20 @@ public sealed class BootloaderDiscoveryService(
 
         return null;
     }
+
+    private static string CreateFailureMessage(IReadOnlyDictionary<string, string> failures)
+    {
+        if (failures.Count == 0)
+        {
+            return "No serial candidates appeared before the bootloader discovery deadline.";
+        }
+
+        var detail = string.Join("; ", failures.OrderBy(pair => pair.Key).Select(pair => $"{pair.Key}: {pair.Value}"));
+        return $"No protocol-compatible bootloader appeared before the discovery deadline. Probes: {detail}";
+    }
+
+    private static string CandidateName(SerialDeviceDescriptor candidate) =>
+        $"{candidate.PortName} ({candidate.ProductName ?? candidate.UsbIdentifier?.ToString() ?? "unknown device"})";
 
     private static IEnumerable<SerialDeviceDescriptor> Rank(IEnumerable<SerialDeviceDescriptor> devices, BootloaderDiscoveryRequest request, bool newlyArrived)
     {

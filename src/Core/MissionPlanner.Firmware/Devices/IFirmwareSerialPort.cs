@@ -11,4 +11,9 @@ public interface IFirmwareSerialPort : IAsyncDisposable
 
     /// <summary>Gets whether the serial port remains open.</summary>
     bool IsOpen { get; }
+
+    /// <summary>Discards bytes received before the current protocol conversation begins.</summary>
+    void DiscardInBuffer()
+    {
+    }
 }

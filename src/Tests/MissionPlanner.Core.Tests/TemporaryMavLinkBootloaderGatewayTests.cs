@@ -18,11 +18,11 @@ namespace MissionPlanner.Core.Tests;
 public sealed class TemporaryMavLinkBootloaderGatewayTests
 {
     [Theory]
-    [InlineData(MavResult.Accepted, true)]
-    [InlineData(MavResult.InProgress, true)]
-    [InlineData(MavResult.Denied, false)]
-    [InlineData(MavResult.Unsupported, false)]
-    public async Task UsesIsolatedStreamAndMapsRebootAcknowledgement(MavResult ack, bool expected)
+    [InlineData(MavResult.Accepted)]
+    [InlineData(MavResult.InProgress)]
+    [InlineData(MavResult.Denied)]
+    [InlineData(MavResult.Unsupported)]
+    public async Task UsesIsolatedStreamAndReleasesPortAfterSendingReboot(MavResult ack)
     {
         var stream = new ScriptedStream([1], [2]);
         var factory = new FakePortFactory(stream);
@@ -39,7 +39,7 @@ public sealed class TemporaryMavLinkBootloaderGatewayTests
             new SerialDeviceDescriptor("COM7"),
             TestContext.Current.CancellationToken);
 
-        result.Should().Be(expected);
+        result.Should().BeTrue();
         factory.PortDisposed.Should().BeTrue();
         encoder.Parameters.Should().NotBeNull();
         encoder.Parameters![0].Should().Be((float)RebootShutdownAction.RebootToBootloader);

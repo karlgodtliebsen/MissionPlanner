@@ -6,12 +6,14 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Firmware.Catalog;
 using MissionPlanner.Firmware.Connected;
 using MissionPlanner.Firmware.Devices;
+using MissionPlanner.Firmware.Dfu;
 using MissionPlanner.Firmware.Images;
 using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Presentation;
 using MissionPlanner.Firmware.Preparation;
 using NSubstitute;
+using UraniumUI.Material.Dialogs;
 
 namespace MissionPlanner.Core.Tests;
 
@@ -246,10 +248,20 @@ public sealed class FirmwarePresentationTests
     {
         var resolver = Substitute.For<IFirmwarePageModeResolver>();
         resolver.Resolve(Arg.Any<FirmwarePageContext>()).Returns(state);
+        var dialogService = Substitute.For<IExtendedDialogService>();
+        dialogService.DisplayProgressCancellableAsync(
+                Arg.Any<string>(),
+                Arg.Any<Func<string>>(),
+                Arg.Any<string>(),
+                Arg.Any<CancellationTokenSource?>())
+            .Returns(Task.FromResult(Substitute.For<IDisposable>()));
         return new InstallFirmwareViewModel(
             catalogService ?? Substitute.For<IFirmwareCatalogService>(),
             installationService ?? Substitute.For<IFirmwareInstallationService>(),
             preparationService ?? Substitute.For<IFirmwarePreparationService>(),
+            Substitute.For<IDfuInstallationService>(),
+            Substitute.For<IDfuDeviceCatalog>(),
+            Substitute.For<IDfuToolLocator>(),
             Substitute.For<IEmbeddedBootloaderUpdateService>(),
             Substitute.For<IFirmwareSerialDeviceCatalog>(),
             resolver,
@@ -261,6 +273,7 @@ public sealed class FirmwarePresentationTests
             Substitute.For<IExternalLinkLauncher>(),
             Substitute.For<IDeviceManagerLauncher>(),
             ImmediateDispatcher(),
+            dialogService,
             NullLogger<InstallFirmwareViewModel>.Instance);
     }
 
