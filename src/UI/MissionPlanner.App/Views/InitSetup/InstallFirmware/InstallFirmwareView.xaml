@@ -82,7 +82,7 @@
                                                       SelectionTrigger="SelectionColumnAndRowClick"
                                                       SelectionMode="Single"
                                                       SelectedItem="{Binding SelectedFirmware, Mode=TwoWay}"
-                                                      SelectionChangedCommand="{Binding SelectionChangedCommand}"
+                                                      
 
 
                     >
@@ -101,8 +101,7 @@
                         </virtualized:VirtualizedDataGrid.EmptyView>
                         <virtualized:VirtualizedDataGrid.Columns>
                             <virtualized:ExtendedSelectableDataGridColumn Width="50"
-                                SelectionMemberPath="IsSelected"
-                                SelectionCommandMemberPath="SelectionChangedCommand" />
+                                SelectionMemberPath="IsSelected" />
 
                             <material:DataGridColumn Width="*" Title="VehicleType">
                                 <material:DataGridColumn.CellItemTemplate>
