@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -59,6 +59,7 @@ public partial class IntroductionViewModel(IIntroductionContentLoader contentLoa
         }
         catch (Exception ex)
         {
+            Debug.Print(ex.ToString());
             logger.LogError(ex, "Could not initialize the MissionPlanner Introduction page.");
             ErrorMessage =
                 "MissionPlanner could not load the Introduction content. " +
@@ -85,18 +86,6 @@ public partial class IntroductionViewModel(IIntroductionContentLoader contentLoa
         }
 
         SelectedTopic = topic;
-        return true;
-    }
-
-    private new bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string? propertyName = null)
-    {
-        if (EqualityComparer<T>.Default.Equals(storage, value))
-        {
-            return false;
-        }
-
-        storage = value;
-        OnPropertyChanged(propertyName);
         return true;
     }
 

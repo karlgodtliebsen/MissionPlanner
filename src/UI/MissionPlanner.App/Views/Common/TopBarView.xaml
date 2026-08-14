@@ -56,7 +56,7 @@
                     FontSize="20"
                     Padding="5"
                     VerticalOptions="Center"
-                    Command="{Binding OpenSettingsCommand}"
+                    Command="{Binding OpenPreferencesCommand}"
                     ></Button>
     </Grid>
 </ContentView>

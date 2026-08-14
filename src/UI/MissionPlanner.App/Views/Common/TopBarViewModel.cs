@@ -167,7 +167,7 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
-    private Task OpenSettingsAsync()
+    private Task OpenPreferencesAsync()
     {
         return navigationService.OpenPageAsync("Preferences");
     }

@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Views.Introduction.Models;
@@ -6,12 +7,12 @@ using MissionPlanner.App.Views.Introduction.Models;
 namespace MissionPlanner.App.Views.Introduction.Services;
 
 /// <summary>
-/// 
+/// Loads the Introduction content from JSON and Markdown files. 
 /// </summary>
 /// <param name="logger"></param>
 public sealed class IntroductionContentLoader(ILogger<IntroductionContentLoader> logger) : IIntroductionContentLoader
 {
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web) { PropertyNameCaseInsensitive = true, Converters = { new JsonStringEnumConverter() } };
+    private static readonly JsonSerializerOptions jsonOptions = new(JsonSerializerDefaults.Web) { PropertyNameCaseInsensitive = true, Converters = { new JsonStringEnumConverter() } };
 
     /// <summary>
     /// Loads the Introduction document asynchronously.
@@ -21,11 +22,13 @@ public sealed class IntroductionContentLoader(ILogger<IntroductionContentLoader>
     /// <exception cref="InvalidDataException">Thrown if the Introduction document is invalid.</exception>
     public async Task<IntroductionDocument> LoadAsync(CancellationToken cancellationToken = default)
     {
+        Debug.Print("Loading Content");
+
         var json = await IntroductionAssetLoader
             .ReadTextAsync("Content/Introduction.json", cancellationToken)
             .ConfigureAwait(false);
 
-        var document = JsonSerializer.Deserialize<IntroductionDocument>(json, JsonOptions)
+        var document = JsonSerializer.Deserialize<IntroductionDocument>(json, jsonOptions)
                        ?? throw new InvalidDataException("Introduction.json did not contain a valid document.");
 
         if (document.SchemaVersion != 1)
@@ -43,6 +46,7 @@ public sealed class IntroductionContentLoader(ILogger<IntroductionContentLoader>
 
         var loadTasks = document.Topics.Select(topic => LoadMarkdownAsync(topic, cancellationToken));
         await Task.WhenAll(loadTasks).ConfigureAwait(false);
+        Debug.Print("Successfully Loaded Content");
 
         return document;
     }
@@ -63,6 +67,8 @@ public sealed class IntroductionContentLoader(ILogger<IntroductionContentLoader>
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
+            Debug.Print("Could not load Introduction markdown file " + topic.MarkdownFile + " for topic " + topic.Id + "\n" + ex.Message);
+
             logger.LogWarning(
                 ex,
                 "Could not load Introduction markdown file {MarkdownFile} for topic {TopicId}.",

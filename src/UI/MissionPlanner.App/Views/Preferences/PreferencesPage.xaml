@@ -13,7 +13,7 @@
                                 Padding="5">
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="14" MaximumWidthRequest="1050" HorizontalOptions="Center">
-            <Label Text="Planner application preferences" FontSize="24" FontAttributes="Bold" />
+            <Label Text="MissionPlanner preferences" FontSize="24" FontAttributes="Bold" />
             <Label Text="These settings belong to MissionPlanner on this device. They never write flight-controller parameters. Credentials and tokens are stored separately in platform secure storage and are never exported." />
 
             <Border Padding="14" StyleClass="SurfaceContainer,Rounded,Elevation1">

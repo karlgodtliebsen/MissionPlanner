@@ -1,7 +1,6 @@
-﻿using MissionPlanner.App.Views.Introduction.Models;
-using MissionPlanner.App.Views.Introduction.Views;
+﻿using MissionPlanner.App.Views.Introduction.Views;
 
-namespace MissionPlanner.App.Views.Introduction;
+namespace MissionPlanner.App.Views.Introduction.Models;
 
 /// <summary>
 /// Provides data for the <see cref="IntroductionTopicView.ActionRequested"/> event.    
@@ -9,5 +8,8 @@ namespace MissionPlanner.App.Views.Introduction;
 /// <param name="action"></param>
 public sealed class IntroductionActionRequestedEventArgs(IntroductionAction action) : EventArgs
 {
+    /// <summary>
+    /// Gets the <see cref="IntroductionAction"/> associated with the event.
+    /// </summary>
     public IntroductionAction Action { get; } = action;
 }

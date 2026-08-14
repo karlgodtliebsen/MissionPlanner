@@ -11,7 +11,7 @@
       "markdownFile": "welcome.md",
       "images": [
         {
-          "path": "Images/introduction-overview.jpg",
+          "path": "Images/introduction-overview.png",
           "caption": "MissionPlanner overview: Flyout navigation, persistent Top Bar, main working area, and Status Bar.",
           "height": 520
         }
@@ -24,18 +24,33 @@
         },
         {
           "number": 2,
-          "title": "Top Bar",
-          "text": "Connect to the vehicle and open MissionPlanner Preferences."
+          "title": "Connect + Preferences",
+          "text": "Connect to the vehicle or open MissionPlanner Preferences."
         },
         {
           "number": 3,
+          "title": "Top Bar",
+          "text": "Status for connected vehicle."
+        },
+        {
+          "number": 4,
           "title": "Main content",
           "text": "The selected page owns the central working area."
         },
         {
-          "number": 4,
+          "number": 5,
           "title": "Status Bar",
           "text": "Persistent GCS status, location, and unit information."
+        },
+        {
+          "number": 6,
+          "title": "Flight Data Tabset",
+          "text": "A set of Tabs for detailed views."
+        },
+        {
+          "number": 7,
+          "title": "Slider",
+          "text": "Expand/contract the view."
         }
       ],
       "actions": [
@@ -54,6 +69,11 @@
       "markdownFile": "flyout.md",
       "images": [
         {
+          "path": "Images/flyout-button.png",
+          "caption": "This button shows the Flyout menu.",
+          "height": 120
+        },
+        {
           "path": "Images/flyout.png",
           "caption": "The Flyout is the primary navigation surface.",
           "height": 520
@@ -67,6 +87,7 @@
         }
       ]
     },
+
     {
       "id": "topbar",
       "order": 30,
@@ -77,7 +98,7 @@
         {
           "path": "Images/topbar.png",
           "caption": "Connection and application-level controls remain accessible while navigating.",
-          "height": 240
+          "height": 140
         }
       ],
       "actions": [
@@ -98,7 +119,17 @@
         {
           "path": "Images/topbar.png",
           "caption": "Use the Top Bar connection control to establish or end the active vehicle connection.",
-          "height": 240
+          "height": 140
+        },
+        {
+          "path": "Images/connect.png",
+          "caption": "Use the popup view to establish the active vehicle connection.",
+          "height": 520
+        },
+        {
+          "path": "Images/connected.png",
+          "caption": "Use the popup view to end the active vehicle connection.",
+          "height": 520
         }
       ],
       "actions": [
@@ -119,7 +150,7 @@
         {
           "path": "Images/statusbar.png",
           "caption": "The Status Bar keeps GCS information and display-unit selection visible.",
-          "height": 220
+          "height": 120
         }
       ],
       "actions": [
@@ -240,7 +271,7 @@
       "markdownFile": "setup.md",
       "images": [
         {
-          "path": "Images/config-1.jpg",
+          "path": "Images/setup.jpg",
           "caption": "Configuration entry point.",
           "height": 520
         },
@@ -287,6 +318,63 @@
       ],
       "actions": [
         {
+          "label": "Next: Configuration",
+          "kind": "Topic",
+          "target": "config"
+        }
+      ]
+    },
+    {
+      "id": "config",
+      "order": 110,
+      "title": "Vehicle Configuration",
+      "shortTitle": "Configuration",
+      "markdownFile": "configuration.md",
+      "images": [
+        {
+          "path": "Images/config.png",
+          "caption": "Configuration Views",
+          "height": 520
+        },
+        {
+          "path": "Images/config-gf.png",
+          "caption": "Geo Fence",
+          "height": 480
+        },
+        {
+          "path": "Images/config-bt.png",
+          "caption": "Basic Tuning.",
+          "height": 480
+        },
+        {
+          "path": "Images/config-et.png",
+          "caption": "Extended Tuning.",
+          "height": 480
+        },
+        {
+          "path": "Images/config-osd.png",
+          "caption": "Onboard OSD.",
+          "height": 480
+        },
+        {
+          "path": "Images/config-ftp.png",
+          "caption": "Mav FTP.",
+          "height": 480
+        },
+        {
+          "path": "Images/config-param.png",
+          "caption": "Full Parameters List",
+          "height": 480
+        },
+        {
+          "path": "Images/config-cl8.png",
+          "caption": "CubeLan 8 Ports Switch",
+          "height": 480
+        }
+
+      ],
+      "actions": [
+        {
           "label": "Next: Preferences",
           "kind": "Topic",
           "target": "preferences"
@@ -295,15 +383,20 @@
     },
     {
       "id": "preferences",
-      "order": 110,
+      "order": 120,
       "title": "MissionPlanner Preferences",
       "shortTitle": "Preferences",
       "markdownFile": "preferences.md",
       "images": [
         {
-          "path": "Images/topbar.png",
+          "path": "Images/preferences-button.png",
           "caption": "Open MissionPlanner Preferences from the persistent Top Bar.",
-          "height": 240
+          "height": 140
+        },
+        {
+          "path": "Images/preferences.png",
+          "caption": " MissionPlanner Preferences.",
+          "height": 500
         }
       ],
       "actions": [

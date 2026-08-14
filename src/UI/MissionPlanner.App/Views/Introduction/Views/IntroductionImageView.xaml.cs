@@ -9,6 +9,8 @@ namespace MissionPlanner.App.Views.Introduction.Views;
 public partial class IntroductionImageView : ContentView, IDisposable
 {
     private CancellationTokenSource? loadCancellation;
+    private int loadVersion;
+    private bool disposed;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="IntroductionImageView"/> class.
@@ -16,42 +18,70 @@ public partial class IntroductionImageView : ContentView, IDisposable
     public IntroductionImageView()
     {
         InitializeComponent();
-        loadCancellation = new CancellationTokenSource();
         BindingContextChanged += OnBindingContextChanged;
+        Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
     }
 
     /// <inheritdoc />
     public void Dispose()
     {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
         BindingContextChanged -= OnBindingContextChanged;
+        Loaded -= OnLoaded;
+        Unloaded -= OnUnloaded;
+        CancelPendingLoad();
+        ScreenshotImage.Source = null;
     }
 
-    private async void OnBindingContextChanged(object? sender, EventArgs e)
+    private void OnBindingContextChanged(object? sender, EventArgs e)
     {
-        if (loadCancellation is null)
-        {
-            return;
-        }
-
-        loadCancellation?.Cancel();
-        loadCancellation?.Dispose();
-        loadCancellation = new CancellationTokenSource();
-
+        CancelPendingLoad();
         ScreenshotImage.Source = null;
+        SetLoading(false);
 
-        if (BindingContext is not IntroductionImage image || string.IsNullOrWhiteSpace(image.Path))
+        if (IsLoaded)
+        {
+            StartImageLoad();
+        }
+    }
+
+    private void OnLoaded(object? sender, EventArgs e) => StartImageLoad();
+
+    private void OnUnloaded(object? sender, EventArgs e)
+    {
+        CancelPendingLoad();
+        ScreenshotImage.Source = null;
+        SetLoading(false);
+    }
+
+    private void StartImageLoad()
+    {
+        if (disposed || !IsLoaded || BindingContext is not IntroductionImage image || string.IsNullOrWhiteSpace(image.Path))
         {
             return;
         }
 
-        LoadingIndicator.IsVisible = true;
-        LoadingIndicator.IsRunning = true;
+        CancelPendingLoad();
+        var cancellation = new CancellationTokenSource();
+        loadCancellation = cancellation;
+        var version = ++loadVersion;
+        SetLoading(true);
+        _ = LoadImageAsync(image.Path, cancellation, version);
+    }
 
+    private async Task LoadImageAsync(string path, CancellationTokenSource cancellation, int version)
+    {
         try
         {
-            var source = await IntroductionAssetLoader.LoadImageSourceAsync(image.Path, loadCancellation.Token);
+            var source = await IntroductionAssetLoader.LoadImageSourceAsync(path, cancellation.Token);
 
-            if (!loadCancellation.IsCancellationRequested)
+            if (CanApply(cancellation, version))
             {
                 ScreenshotImage.Source = source;
             }
@@ -67,11 +97,39 @@ public partial class IntroductionImageView : ContentView, IDisposable
         }
         finally
         {
-            if (!loadCancellation.IsCancellationRequested)
+            if (ReferenceEquals(loadCancellation, cancellation))
             {
-                LoadingIndicator.IsRunning = false;
-                LoadingIndicator.IsVisible = false;
+                loadCancellation = null;
+                cancellation.Dispose();
+                if (!disposed && IsLoaded)
+                {
+                    SetLoading(false);
+                }
             }
         }
+    }
+
+    private bool CanApply(CancellationTokenSource cancellation, int version) =>
+        !disposed && IsLoaded && !cancellation.IsCancellationRequested &&
+        version == loadVersion && ReferenceEquals(loadCancellation, cancellation);
+
+    private void CancelPendingLoad()
+    {
+        loadVersion++;
+        var cancellation = loadCancellation;
+        loadCancellation = null;
+        if (cancellation is null)
+        {
+            return;
+        }
+
+        cancellation.Cancel();
+        cancellation.Dispose();
+    }
+
+    private void SetLoading(bool value)
+    {
+        LoadingIndicator.IsRunning = value;
+        LoadingIndicator.IsVisible = value;
     }
 }

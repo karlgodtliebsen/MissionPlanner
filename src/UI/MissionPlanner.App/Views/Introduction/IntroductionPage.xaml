@@ -50,10 +50,12 @@
                 <Grid RowDefinitions="Auto,*">
                     <Label Text="QUICK GUIDE" Padding="10,8,10,6" FontSize="11" FontAttributes="Bold" Opacity="0.65" />
 
+
                     <CollectionView Grid.Row="1"
                                     ItemsSource="{Binding Topics}"
                                     SelectedItem="{Binding SelectedTopic, Mode=TwoWay}"
                                     SelectionMode="Single">
+
                         <CollectionView.ItemTemplate>
                             <DataTemplate x:DataType="models:IntroductionTopic">
                                 <Grid Padding="10,9">
@@ -73,11 +75,13 @@
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
+
                 </Grid>
             </Border>
 
             <Grid x:Name="TopicHost" Grid.Column="1">
-                <views:IntroductionTopicView x:Name="TopicView" BindingContext="{Binding SelectedTopic}" ActionRequested="OnActionRequested" />
+                <views:IntroductionTopicView x:Name="TopicView"
+                                             ActionRequested="OnActionRequested" />
 
                 <ActivityIndicator IsRunning="{Binding IsBusy}"
                                    IsVisible="{Binding IsBusy}"

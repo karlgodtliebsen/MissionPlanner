@@ -132,7 +132,7 @@
         <ShellContent Title="CubeLan 8 Port Switch" Route="ConfigCubeLan8PortSwitch" ContentTemplate="{DataTemplate tabs:CubeLan8PortSwitchTabView}"/>
     </FlyoutItem>
     <FlyoutItem Title="Preferences" Icon="Resources/Images/x_light_simulation_icon_x.png" >
-        <ShellContent Title="" Route="Preferences" ContentTemplate="{DataTemplate preferences:PreferencesPage}"/>
+        <ShellContent Title="" ContentTemplate="{DataTemplate preferences:PreferencesPage}" Route="Preferences"/>
     </FlyoutItem>
     <FlyoutItem Title="Simulation" Icon="Resources/Images/x_light_simulation_icon_x.png" >
         <ShellContent
