@@ -23,6 +23,7 @@ using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
 using MissionPlanner.App.Views.InitSetup.OptionalHardware;
 using MissionPlanner.App.Views.Introduction;
+using MissionPlanner.App.Views.Introduction.Services;
 using MissionPlanner.App.Views.Missions;
 using MissionPlanner.App.Views.Missions.DockView;
 using MissionPlanner.App.Views.Simulation;
@@ -144,6 +145,8 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<IExternalLinkLauncher, ExternalLinkLauncher>();
         services.TryAddSingleton<IDeviceManagerLauncher, DeviceManagerLauncher>();
 
+        services.AddSingleton<IIntroductionContentLoader, IntroductionContentLoader>();
+
         services
             .AddLibraryServices()
             .AddEventHubServices()
@@ -188,6 +191,8 @@ public static class ApplicationConfigurator
         services.TryAddTransient<FlightPlannerMissionMapView>();
         services.TryAddTransient<FlightPlannerMissionMapViewModel>();
         services.TryAddTransient<FlightDataMissionMapViewModel>();
+
+        services.TryAddTransient<IntroductionViewModel>();
 
         services.TryAddTransient<HudViewModel>();
 

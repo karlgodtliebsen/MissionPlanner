@@ -5,11 +5,95 @@
                                 xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                                 xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                                 xmlns:introduction="clr-namespace:MissionPlanner.App.Views.Introduction"
+                                xmlns:views="clr-namespace:MissionPlanner.App.Views.Introduction.Views"
+                                xmlns:models="clr-namespace:MissionPlanner.App.Views.Introduction.Models"
                                 x:Class="MissionPlanner.App.Views.Introduction.IntroductionPage">
-    <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Fill">
-        <Label 
-            Text="IntroductionPage to Next Generation MissionPlanner"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+    <Grid RowDefinitions="Auto,*"
+          BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
+
+        <Grid Grid.Row="0"
+              Padding="20,14"
+              ColumnDefinitions="*,Auto"
+              RowDefinitions="Auto,Auto"
+              ColumnSpacing="16">
+            <Label Text="{Binding Title}"
+                   FontSize="26"
+                   FontAttributes="Bold" />
+
+            <Label Grid.Row="1"
+                   Text="{Binding Subtitle}"
+                   FontSize="13"
+                   Opacity="0.7" />
+
+            <Picker x:Name="MobileTopicPicker"
+                    Grid.Column="1"
+                    Grid.RowSpan="2"
+                    WidthRequest="240"
+                    Title="Section"
+                    ItemsSource="{Binding Topics}"
+                    SelectedItem="{Binding SelectedTopic, Mode=TwoWay}"
+                    ItemDisplayBinding="{Binding DisplayTitle}"
+                    IsVisible="False"
+                    VerticalOptions="Center" />
+        </Grid>
+
+        <Grid Grid.Row="1"
+              x:Name="MainGrid"
+              ColumnDefinitions="250,*">
+
+            <Border x:Name="ContentsBorder"
+                    Grid.Column="0"
+                    Margin="12,0,0,12"
+                    Padding="6"
+                    StyleClass="SurfaceContainer,Rounded,Elevation1">
+     
+                <Grid RowDefinitions="Auto,*">
+                    <Label Text="QUICK GUIDE" Padding="10,8,10,6" FontSize="11" FontAttributes="Bold" Opacity="0.65" />
+
+                    <CollectionView Grid.Row="1"
+                                    ItemsSource="{Binding Topics}"
+                                    SelectedItem="{Binding SelectedTopic, Mode=TwoWay}"
+                                    SelectionMode="Single">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="models:IntroductionTopic">
+                                <Grid Padding="10,9">
+                                    <VisualStateManager.VisualStateGroups>
+                                        <VisualStateGroup Name="CommonStates">
+                                            <VisualState Name="Normal" />
+                                            <VisualState Name="Selected">
+                                                <VisualState.Setters>
+                                                    <Setter Property="BackgroundColor"
+                                                            Value="{AppThemeBinding Light=#E8EEF5, Dark=#3B4652}" />
+                                                </VisualState.Setters>
+                                            </VisualState>
+                                        </VisualStateGroup>
+                                    </VisualStateManager.VisualStateGroups>
+                                    <Label Text="{Binding DisplayTitle}" FontSize="14" LineBreakMode="TailTruncation" />
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Grid>
+            </Border>
+
+            <Grid x:Name="TopicHost" Grid.Column="1">
+                <views:IntroductionTopicView x:Name="TopicView" BindingContext="{Binding SelectedTopic}" ActionRequested="OnActionRequested" />
+
+                <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                   IsVisible="{Binding IsBusy}"
+                                   HorizontalOptions="Center"
+                                   VerticalOptions="Center" />
+
+                <Border IsVisible="{Binding HasError}"
+                        StyleClass="SurfaceContainer,Rounded,Elevation1"
+                        Margin="24"
+                        Padding="16"
+                        VerticalOptions="Start"
+                        >
+                
+                    <Label Text="{Binding ErrorMessage}" LineBreakMode="WordWrap" />
+                </Border>
+            </Grid>
+        </Grid>
+    </Grid>
 </navigation:ExtendedContentPage>

@@ -1,9 +1,13 @@
-namespace MissionPlanner.App.Views.Introduction.Views;
+﻿namespace MissionPlanner.App.Views.Introduction.Views;
 
+/// <summary>
+/// 
+/// </summary>
 public partial class IntroductionCalloutView : ContentView
 {
-	public IntroductionCalloutView()
-	{
-		InitializeComponent();
-	}
+    /// <inheritdoc />
+    public IntroductionCalloutView()
+    {
+        InitializeComponent();
+    }
 }

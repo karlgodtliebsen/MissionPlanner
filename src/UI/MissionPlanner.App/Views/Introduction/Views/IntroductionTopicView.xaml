@@ -1,11 +1,54 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="MissionPlanner.App.Views.Introduction.Views.IntroductionTopicView">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+             xmlns:models="clr-namespace:MissionPlanner.App.Views.Introduction.Models"
+             xmlns:views="clr-namespace:MissionPlanner.App.Views.Introduction.Views"
+             x:Class="MissionPlanner.App.Views.Introduction.Views.IntroductionTopicView"
+             x:DataType="models:IntroductionTopic">
+    <ScrollView>
+        <VerticalStackLayout Padding="24,18,28,32"
+                             Spacing="18"
+                             MaximumWidthRequest="1180"
+                             HorizontalOptions="Center">
+            <Label Text="{Binding Title}"
+                   FontSize="30"
+                   FontAttributes="Bold"
+                   LineBreakMode="WordWrap" />
+
+            <views:IntroductionMarkdownView Markdown="{Binding Markdown}" />
+
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Images}"
+                                 Spacing="18">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:IntroductionImage">
+                        <views:IntroductionImageView />
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Callouts}"
+                                 Spacing="8">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:IntroductionCallout">
+                        <views:IntroductionCalloutView />
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <FlexLayout BindableLayout.ItemsSource="{Binding Actions}"
+                        Direction="Row"
+                        Wrap="Wrap"
+                        JustifyContent="Start"
+                        AlignItems="Center">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="models:IntroductionAction">
+                        <Button Text="{Binding Label}"
+                                Margin="0,0,8,8"
+                                Padding="14,8"
+                                Clicked="OnActionClicked" />
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </FlexLayout>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentView>
