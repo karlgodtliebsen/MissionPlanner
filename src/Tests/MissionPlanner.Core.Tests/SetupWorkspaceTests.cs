@@ -10,6 +10,7 @@ using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
+using MissionPlanner.App.Views.Preferences;
 using MissionPlanner.App.Views.Simulation;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Fences;
@@ -219,7 +220,7 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<IPlannerSettingsStore>().Should().NotBeNull();
         provider.GetRequiredService<IPlannerSecretStore>().Should().NotBeNull();
         provider.GetRequiredService<IPlannerSettingsService>().Should().NotBeNull();
-        provider.GetRequiredService<PlannerTabViewModel>().Should().NotBeNull();
+        provider.GetRequiredService<PreferencesViewModel>().Should().NotBeNull();
         provider.GetRequiredService<IMavLinkWireMessageEncoder>().Should().NotBeNull();
         provider.GetRequiredService<IDeviceOperationClient>().Should().NotBeNull();
         provider.GetRequiredService<ICubeLanConfigurationCodec>().Should().NotBeNull();

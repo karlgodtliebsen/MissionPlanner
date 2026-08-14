@@ -7,6 +7,7 @@ using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Services;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
+using MissionPlanner.App.Views.Preferences;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -178,12 +179,12 @@ public sealed class PlannerSettingsTests
         var fileSaver = Substitute.For<IFileSaver>();
         var offlinePacks = Substitute.For<MissionPlanner.Maps.Offline.IOfflineMapPackRepository>();
         offlinePacks.ListAsync(Arg.Any<CancellationToken>()).Returns([]);
-        var viewModel = new PlannerTabViewModel(
+        var viewModel = new PreferencesViewModel(
             service,
             runtime,
             new ParametersFileHandler(fileSaver),
             Substitute.For<IUserConfirmationService>(),
-            NullLogger<PlannerTabViewModel>.Instance,
+            NullLogger<PreferencesViewModel>.Instance,
             Substitute.For<MissionPlanner.Maps.Credentials.IMapSecretStore>(),
             offlinePacks,
             Substitute.For<MissionPlanner.Maps.Offline.IOfflineMapPackManager>(),

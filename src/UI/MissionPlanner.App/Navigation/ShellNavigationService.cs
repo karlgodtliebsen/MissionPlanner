@@ -4,7 +4,7 @@
 public sealed class ShellNavigationService(IDispatcher dispatch) : INavigationService
 {
     /// <inheritdoc />
-    public Task OpenConfigAsync(string destination)
+    public Task OpenPageAsync(string destination)
     {
         return dispatch.DispatchAsync(() =>
         {

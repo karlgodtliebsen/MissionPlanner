@@ -3,7 +3,9 @@ using MissionPlanner.Core.Setup;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
 
-/// <summary>Persists setup-completion evidence in the application's local preferences.</summary>
+/// <summary>
+/// Persists setup-completion evidence in the application's local preferences.
+/// </summary>
 public sealed class PreferencesSetupCompletionStore : ISetupCompletionStore
 {
     private const string PreferenceKey = "MissionPlanner.Setup.CompletionEvidence.v1";
@@ -14,7 +16,7 @@ public sealed class PreferencesSetupCompletionStore : ISetupCompletionStore
     {
         lock (sync)
         {
-            var value = Preferences.Default.Get(PreferenceKey, string.Empty);
+            var value = Microsoft.Maui.Storage.Preferences.Default.Get(PreferenceKey, string.Empty);
             if (string.IsNullOrWhiteSpace(value))
             {
                 return [];
@@ -26,7 +28,7 @@ public sealed class PreferencesSetupCompletionStore : ISetupCompletionStore
             }
             catch (JsonException)
             {
-                Preferences.Default.Remove(PreferenceKey);
+                Microsoft.Maui.Storage.Preferences.Default.Remove(PreferenceKey);
                 return [];
             }
         }
@@ -39,7 +41,7 @@ public sealed class PreferencesSetupCompletionStore : ISetupCompletionStore
         {
             var values = GetAll().Where(item => item.VehicleKey != evidence.VehicleKey || item.Workflow != evidence.Workflow).ToList();
             values.Add(evidence);
-            Preferences.Default.Set(PreferenceKey, JsonSerializer.Serialize(values));
+            Microsoft.Maui.Storage.Preferences.Default.Set(PreferenceKey, JsonSerializer.Serialize(values));
         }
     }
 
@@ -49,7 +51,7 @@ public sealed class PreferencesSetupCompletionStore : ISetupCompletionStore
         lock (sync)
         {
             var values = GetAll().Where(item => item.VehicleKey != vehicleKey || item.Workflow != workflow).ToList();
-            Preferences.Default.Set(PreferenceKey, JsonSerializer.Serialize(values));
+            Microsoft.Maui.Storage.Preferences.Default.Set(PreferenceKey, JsonSerializer.Serialize(values));
         }
     }
 }

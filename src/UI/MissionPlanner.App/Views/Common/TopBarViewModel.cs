@@ -169,7 +169,7 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private Task OpenSettingsAsync()
     {
-        return navigationService.OpenConfigAsync("Planner");
+        return navigationService.OpenPageAsync("Preferences");
     }
 
     /// <inheritdoc />

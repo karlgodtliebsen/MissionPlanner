@@ -19,8 +19,7 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
             "WS"
         };
 
-    private static readonly HashSet<string> allowedUpdateChannels =
-        new(StringComparer.OrdinalIgnoreCase) { "Stable", "Beta", "Development" };
+    private static readonly HashSet<string> allowedUpdateChannels = new(StringComparer.OrdinalIgnoreCase) { "Stable", "Beta", "Development" };
 
     private readonly IPlannerSettingsStore store;
     private readonly ILogger<PlannerSettingsService> logger;
@@ -114,8 +113,7 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
         ValidateEnum(settings.Units.System, PlannerSettingsSection.Units, nameof(settings.Units.System), errors);
         ValidateEnum(settings.Map.Provider, PlannerSettingsSection.Map, nameof(settings.Map.Provider), errors);
         ValidateEnum(settings.Map.Style, PlannerSettingsSection.Map, nameof(settings.Map.Style), errors);
-        if (settings.Map.Provider == PlannerMapProvider.OpenStreetMap !=
-            (settings.Map.Style == PlannerMapStyle.Standard))
+        if (settings.Map.Provider == PlannerMapProvider.OpenStreetMap != (settings.Map.Style == PlannerMapStyle.Standard))
         {
             errors.Add(new PlannerSettingsValidationError(
                 PlannerSettingsSection.Map,
@@ -131,6 +129,7 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
                 nameof(settings.Map.SelectedSourceId),
                 "A map source identifier is required and must not exceed 160 characters."));
         }
+
         ValidateRange(settings.Map.HttpCacheLimitBytes, 16L * 1_048_576, 8L * 1024 * 1_048_576, PlannerSettingsSection.Map, nameof(settings.Map.HttpCacheLimitBytes), errors);
         ValidateRange(settings.Telemetry.DisplayRateHz, 1, 30, PlannerSettingsSection.Telemetry, nameof(settings.Telemetry.DisplayRateHz), errors);
         ValidateRange(settings.Telemetry.ChartHistorySeconds, 10, 3600, PlannerSettingsSection.Telemetry, nameof(settings.Telemetry.ChartHistorySeconds), errors);
@@ -180,9 +179,7 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
     }
 
     /// <inheritdoc />
-    public async ValueTask<PlannerSettingsSaveResult> SaveAsync(
-        PlannerSettings settings,
-        CancellationToken cancellationToken = default)
+    public async ValueTask<PlannerSettingsSaveResult> SaveAsync(PlannerSettings settings, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(settings);
         await InitializeAsync(cancellationToken).ConfigureAwait(false);
@@ -214,9 +211,7 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
     }
 
     /// <inheritdoc />
-    public ValueTask<PlannerSettingsSaveResult> ResetSectionAsync(
-        PlannerSettingsSection section,
-        CancellationToken cancellationToken = default)
+    public ValueTask<PlannerSettingsSaveResult> ResetSectionAsync(PlannerSettingsSection section, CancellationToken cancellationToken = default)
     {
         var defaults = new PlannerSettings();
         var reset = section switch
@@ -250,9 +245,7 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
     }
 
     /// <inheritdoc />
-    public async ValueTask<PlannerSettingsImportResult> ImportAsync(
-        string document,
-        CancellationToken cancellationToken = default)
+    public async ValueTask<PlannerSettingsImportResult> ImportAsync(string document, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(document))
         {
@@ -312,15 +305,18 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
                && !string.IsNullOrWhiteSpace(selected.GetString());
     }
 
-    private static string LegacySourceId(PlannerMapProvider provider, PlannerMapStyle style) => (provider, style) switch
+    private static string LegacySourceId(PlannerMapProvider provider, PlannerMapStyle style)
     {
-        (PlannerMapProvider.OpenStreetMap, PlannerMapStyle.Standard) => "osm-standard",
-        (PlannerMapProvider.Esri, PlannerMapStyle.Topographic) => "esri-world-topo",
-        (PlannerMapProvider.Esri, PlannerMapStyle.Physical) => "esri-world-physical",
-        (PlannerMapProvider.Esri, PlannerMapStyle.ShadedRelief) => "esri-world-shaded-relief",
-        (PlannerMapProvider.Esri, PlannerMapStyle.DarkGray) => "esri-world-dark-gray",
-        _ => "osm-standard"
-    };
+        return (provider, style) switch
+        {
+            (PlannerMapProvider.OpenStreetMap, PlannerMapStyle.Standard) => "osm-standard",
+            (PlannerMapProvider.Esri, PlannerMapStyle.Topographic) => "esri-world-topo",
+            (PlannerMapProvider.Esri, PlannerMapStyle.Physical) => "esri-world-physical",
+            (PlannerMapProvider.Esri, PlannerMapStyle.ShadedRelief) => "esri-world-shaded-relief",
+            (PlannerMapProvider.Esri, PlannerMapStyle.DarkGray) => "esri-world-dark-gray",
+            var _ => "osm-standard"
+        };
+    }
 
     private async ValueTask PersistAsync(PlannerSettings settings, CancellationToken cancellationToken)
     {
@@ -328,9 +324,7 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
         await store.WriteAsync(document, cancellationToken).ConfigureAwait(false);
     }
 
-    private static IReadOnlyList<PlannerSettingsSection> GetRestartRequiredSections(
-        PlannerSettings previous,
-        PlannerSettings current)
+    private static IReadOnlyList<PlannerSettingsSection> GetRestartRequiredSections(PlannerSettings previous, PlannerSettings current)
     {
         var sections = new List<PlannerSettingsSection>();
         if (previous.Map.Provider != current.Map.Provider || previous.Map.Style != current.Map.Style)

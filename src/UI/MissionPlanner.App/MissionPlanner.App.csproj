@@ -35,10 +35,6 @@
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 		<!-- NOTE: MauiIcon has no effect in a class library; each platform head project declares it. -->
 	</ItemGroup>
-
-	<ItemGroup>
-
-	</ItemGroup>
 	<ItemGroup>
 	  <Content Include="appsettings.json">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -142,6 +138,9 @@
 	  </Compile>
 	  <Compile Update="Views\Missions\MissionItemListViewPage.xaml.cs">
 	    <DependentUpon>MissionItemListViewPage.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Views\Preferences\PreferencesPage.xaml.cs">
+	    <DependentUpon>PreferencesPage.xaml</DependentUpon>
 	  </Compile>
 	  <Compile Update="Views\Simulation\SimulationPage.xaml.cs">
 	    <DependentUpon>SimulationPage.xaml</DependentUpon>
@@ -275,7 +274,7 @@
 	  <MauiXaml Update="Views\ConfigTuning\Tabs\OnboardOSDTabView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Views\ConfigTuning\Tabs\PlannerTabView.xaml">
+	  <MauiXaml Update="Views\Preferences\PreferencesPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\Connect\StatisticsView.xaml">

@@ -66,25 +66,6 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
     /// <summary>Gets the relevant workflows in dependency order.</summary>
     public ObservableCollection<SetupWorkflowItemViewModel> Workflows { get; } = [];
 
-    ///// <summary>
-    ///// Gets the tab headers.
-    ///// </summary>
-    //public TabHeaderModel[] TabHeaders { get; } =
-    //[
-    //    new() { Title = "Firmware", Content = "Confirm firmware, board identity, and protocol capabilities." },
-    //    new() { Title = "Frame", Content = "Choose the vehicle frame and actuator layout." },
-    //    new() { Title = "Accelerometer", Content = "Calibrate level and orientation sensors." },
-    //    new() { Title = "Compass", Content = "Calibrate compass instances and orientation." },
-    //    new() { Title = "Radio", Content = "Calibrate pilot input channels and ranges." },
-    //    new() { Title = "Flight Modes", Content = "Assign flight modes to pilot controls." },
-    //    new() { Title = "Battery", Content = "Configure voltage, current, and capacity monitoring." },
-    //    new() { Title = "ESC", Content = "Configure and calibrate electronic speed controllers." },
-    //    new() { Title = "Servo Output", Content = "Review actuator functions, limits, and reversal." },
-    //    new() { Title = "Optional Hardware", Content = "Configure supported serial, CAN, rangefinder, and other peripherals." },
-    //    new() { Title = "Safety", Content = "Review arming, failsafe, and mandatory preflight settings." },
-    //    new() { Title = "Summary", Content = "Review completion, warnings, and links to advanced configuration." }
-    //];
-
     /// <summary>Gets or sets the selected workflow.</summary>
     [ObservableProperty]
     public partial SetupWorkflowItemViewModel? SelectedWorkflow { get; set; }
@@ -226,7 +207,7 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
 
         try
         {
-            await navigation.OpenConfigAsync(destination);
+            await navigation.OpenPageAsync(destination);
             Error = null;
         }
         catch (Exception exception)

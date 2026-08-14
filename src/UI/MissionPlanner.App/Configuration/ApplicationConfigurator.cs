@@ -26,6 +26,7 @@ using MissionPlanner.App.Views.Introduction;
 using MissionPlanner.App.Views.Introduction.Services;
 using MissionPlanner.App.Views.Missions;
 using MissionPlanner.App.Views.Missions.DockView;
+using MissionPlanner.App.Views.Preferences;
 using MissionPlanner.App.Views.Simulation;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Comparison;
@@ -229,7 +230,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<BasicTuningTabViewModel>();
         services.TryAddTransient<ExtendedTuningTabViewModel>();
         services.TryAddTransient<OnboardOsdTabViewModel>();
-        services.TryAddTransient<PlannerTabViewModel>();
+        services.TryAddTransient<PreferencesViewModel>();
         services.TryAddTransient<CubeLan8PortSwitchTabViewModel>();
 
         // Workflow Tabs on Setup Mandatory Hardware View

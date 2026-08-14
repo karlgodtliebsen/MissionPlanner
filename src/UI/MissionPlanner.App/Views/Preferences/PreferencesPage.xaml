@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
-             xmlns:mapSettings="clr-namespace:MissionPlanner.Maps.Settings;assembly=MissionPlanner.Maps"
-             xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
-             xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
-             x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.PlannerTabView"
-             x:DataType="tabs:PlannerTabViewModel"
-             Padding="5">
+<navigation:ExtendedContentPage x:TypeArguments="preferences:PreferencesViewModel" 
+                                xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                                xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
+                                xmlns:mapSettings="clr-namespace:MissionPlanner.Maps.Settings;assembly=MissionPlanner.Maps"
+                                xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                                xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                                xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
+                                xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                                x:Class="MissionPlanner.App.Views.Preferences.PreferencesPage"
+                                x:DataType="preferences:PreferencesViewModel"
+                                Padding="5">
     <ScrollView>
         <VerticalStackLayout Padding="20" Spacing="14" MaximumWidthRequest="1050" HorizontalOptions="Center">
             <Label Text="Planner application preferences" FontSize="24" FontAttributes="Bold" />
@@ -504,4 +507,4 @@
             </FlexLayout>
         </VerticalStackLayout>
     </ScrollView>
-</ContentPage>
+</navigation:ExtendedContentPage>
