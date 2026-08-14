@@ -209,6 +209,15 @@
 	  <MauiXaml Update="Views\InitSetup\OptionalHardware\OptionalHardwareView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Views\Introduction\Views\IntroductionCalloutView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\Introduction\Views\IntroductionImageView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\Introduction\Views\IntroductionTopicView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\Missions\DockView\MissionItemListDockView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
