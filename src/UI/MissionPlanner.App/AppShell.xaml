@@ -18,6 +18,7 @@
     xmlns:installFirmware="clr-namespace:MissionPlanner.App.Views.InitSetup.InstallFirmware"
     xmlns:optionalHardware="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware"
     xmlns:advanced="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced"
+    xmlns:introduction="clr-namespace:MissionPlanner.App.Views.Introduction"
     Title="MissionPlanner"
     x:Name="thisShell"
     FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
@@ -86,22 +87,22 @@
         </Grid>
     </Shell.FlyoutContent>
 
-    <FlyoutItem Title="Introduction" Icon="Resources/Images/x_light_help_icon_x.png">
+    <FlyoutItem Title="IntroductionPage" Icon="Resources/Images/x_light_help_icon_x.png">
         <ShellContent
             Title=""
-            ContentTemplate="{DataTemplate help:Introduction}" Route="Introduction" />
+            ContentTemplate="{DataTemplate introduction:IntroductionPage}" Route="IntroductionPage" />
     </FlyoutItem>
 
     <FlyoutItem Title="Flight Data"  Icon="Resources/Images/x_light_flightdata_icon_x.png">
         <ShellContent
             Title=""
-            ContentTemplate="{DataTemplate flightData:FlightDataView}" Route="FlightData" />
+            ContentTemplate="{DataTemplate flightData:FlightDataPage}" Route="FlightData" />
     </FlyoutItem>
 
     <FlyoutItem Title="Flight Plan" Icon="Resources/Images/x_light_flightplan_icon_x.png">
         <ShellContent
             Title=""
-            ContentTemplate="{DataTemplate flightPlanner:FlightPlannerView}" Route="FlightPlanner" />
+            ContentTemplate="{DataTemplate flightPlanner:FlightPlannerPage}" Route="FlightPlanner" />
     </FlyoutItem>
     <FlyoutItem Title="Setup" Icon="Resources/Images/x_light_initialsetup_icon_x.png">
         <ShellContent
@@ -134,13 +135,13 @@
     <FlyoutItem Title="Simulation" Icon="Resources/Images/x_light_simulation_icon_x.png" >
         <ShellContent
             Title=""
-            ContentTemplate="{DataTemplate simulation:SimulationView}" Route="Simulation" />
+            ContentTemplate="{DataTemplate simulation:SimulationPage}" Route="Simulation" />
     </FlyoutItem>
 
     <FlyoutItem Title="Help" Icon="Resources/Images/x_light_help_icon_x.png">
         <ShellContent
             Title=""
-            ContentTemplate="{DataTemplate help:HelpView}" Route="Help" />
+            ContentTemplate="{DataTemplate help:HelpPage}" Route="Help" />
     </FlyoutItem>
     <FlyoutItem Title="Exit" >
         <ShellContent

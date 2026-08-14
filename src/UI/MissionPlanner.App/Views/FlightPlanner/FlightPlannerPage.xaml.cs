@@ -1,26 +1,27 @@
-﻿using MissionPlanner.App.Navigation;
+﻿using Mapsui.UI.Maui;
+using MissionPlanner.App.Navigation;
 using MissionPlanner.Library;
 
-namespace MissionPlanner.App.Views.FlightData;
+namespace MissionPlanner.App.Views.FlightPlanner;
 
 /// <summary>
-/// Represents the view for displaying flight data.
+/// Represents the view for flight planning.
 /// </summary>
-public partial class FlightDataView : ExtendedContentPage<FlightDataViewModel>
+public partial class FlightPlannerPage : ExtendedContentPage<FlightPlannerViewModel>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="FlightDataView"/> class.
+    /// Initializes a new instance of the <see cref="FlightPlannerPage"/> class.
     /// </summary>
-    public FlightDataView()
+    public FlightPlannerPage()
     {
         InitializeComponent();
     }
 
-    /// <inheritdoc />
-    protected override async Task OnModelCreatedAsync(FlightDataViewModel viewModel)
+    /// <inheritdoc/>
+    protected override async Task OnModelCreatedAsync(FlightPlannerViewModel viewModel)
     {
         DomainException.ThrowIfNull(viewModel);
-        var map = viewModel.Map as FlightDataMissionMapViewModel; //To share the Map it is brought over
+        var map = viewModel.Map as FlightPlannerMissionMapViewModel; //To share the Map it is brought over
         DomainException.ThrowIfNull(map);
         MapLoadingIndicator.IsVisible = true;
         MapLoadingIndicator.IsRunning = true;
@@ -29,6 +30,7 @@ public partial class FlightDataView : ExtendedContentPage<FlightDataViewModel>
             // Allow the indicator to render before map initialization starts.
             await Task.Yield();
             await MapView.Activate(map);
+            ItemListView.BindingContext = map;
         }
         finally
         {
@@ -37,11 +39,13 @@ public partial class FlightDataView : ExtendedContentPage<FlightDataViewModel>
         }
     }
 
+
     /// <inheritdoc />
-    protected override void OnDestroyingModel(FlightDataViewModel viewModel)
+    protected override void OnDestroyingModel(FlightPlannerViewModel viewModel)
     {
         MapLoadingIndicator.IsRunning = false;
         MapLoadingIndicator.IsVisible = false;
         MapView.Deactivate();
+        ItemListView.BindingContext = null;
     }
 }

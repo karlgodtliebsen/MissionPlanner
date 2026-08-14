@@ -22,6 +22,7 @@ using MissionPlanner.App.Views.InitSetup.MandatoryHardware;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
 using MissionPlanner.App.Views.InitSetup.OptionalHardware;
+using MissionPlanner.App.Views.Introduction;
 using MissionPlanner.App.Views.Missions;
 using MissionPlanner.App.Views.Missions.DockView;
 using MissionPlanner.App.Views.Simulation;
@@ -190,7 +191,7 @@ public static class ApplicationConfigurator
 
         services.TryAddTransient<HudViewModel>();
 
-        // Tabs on FlightDataView
+        // Tabs on FlightDataPage
         services.TryAddTransient<QuickTabViewModel>();
         services.TryAddTransient<ActionsTabViewModel>();
         services.TryAddTransient<MessagesTabViewModel>();

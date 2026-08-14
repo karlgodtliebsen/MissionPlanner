@@ -5,6 +5,10 @@ namespace MissionPlanner.App.Views.Help;
 /// <summary>
 /// Provides the public API for HelpViewModel.
 /// </summary>
-public partial class HelpViewModel : ObservableObject
+public partial class HelpViewModel : ObservableObject, IDisposable
 {
+    /// <inheritdoc />
+    public void Dispose()
+    {
+    }
 }

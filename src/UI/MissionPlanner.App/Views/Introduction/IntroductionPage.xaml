@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<navigation:ExtendedContentPage x:TypeArguments="introduction:IntroductionViewModel" 
+                                xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                                xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                                xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                                xmlns:introduction="clr-namespace:MissionPlanner.App.Views.Introduction"
+                                x:Class="MissionPlanner.App.Views.Introduction.IntroductionPage">
+    <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Fill">
+        <Label 
+            Text="IntroductionPage to Next Generation MissionPlanner"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center" />
+    </VerticalStackLayout>
+</navigation:ExtendedContentPage>

@@ -8,7 +8,7 @@
                          xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                          xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                          xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
-                         x:Class="MissionPlanner.App.Views.FlightPlanner.FlightPlannerView"
+                         x:Class="MissionPlanner.App.Views.FlightPlanner.FlightPlannerPage"
                          x:DataType="vm:FlightPlannerViewModel">
 
 

@@ -2,14 +2,13 @@
 <navigation:ExtendedContentPage x:TypeArguments="vm:SimulationViewModel" 
                             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                            xmlns:simulation="clr-namespace:MissionPlanner.Core.Simulation;assembly=MissionPlanner.Core"
                             xmlns:vm="clr-namespace:MissionPlanner.App.Views.Simulation"
                             xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                             xmlns:simulation1="clr-namespace:MissionPlanner.Simulation;assembly=MissionPlanner.Simulation"
                             xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
                             xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                             xmlns:controls1="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
-                            x:Class="MissionPlanner.App.Views.Simulation.SimulationView"
+                            x:Class="MissionPlanner.App.Views.Simulation.SimulationPage"
                             x:DataType="vm:SimulationViewModel"
                             Title="Simulation">
 
@@ -40,7 +39,7 @@
                         </VerticalStackLayout>
                     </Border>
 
-                    <Border Padding="12">
+                    <Border Padding="12" StyleClass="SurfaceContainer,Rounded,Elevation1">
                         <VerticalStackLayout Spacing="8">
                             <Label Text="Multi-vehicle fleet" FontSize="18" FontAttributes="Bold" />
                             <Label Text="Each member receives an isolated process, MAVLink channel, SystemId, port set, home offset, and artifact directory." />
@@ -84,30 +83,52 @@
                                 <Button Text="Stop all" Command="{Binding StopAllCommand}" />
                             </HorizontalStackLayout>
                             <Label Text="{Binding FleetStatus}" />
-                            <CollectionView ItemsSource="{Binding FleetSessions}"
-                                            SelectedItem="{Binding SelectedFleetSession}"
-                                            SelectionMode="Single"
-                                            HeightRequest="150">
-                                <CollectionView.EmptyView>
-                                    <Label Text="No fleet sessions are allocated." Padding="8" />
-                                </CollectionView.EmptyView>
-                                <CollectionView.ItemTemplate>
-                                    <DataTemplate x:DataType="simulation1:SimulationFleetSessionSnapshot">
-                                        <Grid Padding="5" ColumnDefinitions="1.2*,Auto,Auto" ColumnSpacing="8">
-                                            <VerticalStackLayout>
-                                                <Label Text="{Binding Allocation.Profile.Name}" FontAttributes="Bold" />
-                                                <Label Text="{Binding VehicleId, StringFormat='Vehicle {0}'}" FontSize="12" />
-                                            </VerticalStackLayout>
-                                            <Label Grid.Column="1" Text="{Binding Session.State}" VerticalOptions="Center" />
-                                            <Label Grid.Column="2" Text="{Binding Allocation.Profile.EffectiveLaunchSettings.SystemId, StringFormat='SysId {0}'}" VerticalOptions="Center" />
-                                        </Grid>
-                                    </DataTemplate>
-                                </CollectionView.ItemTemplate>
-                            </CollectionView>
+
+                            <controls:VirtualizedDataGrid Grid.Row="1" 
+                                                  ItemsSource="{Binding FleetSessions}" 
+                                                  SelectedItem="{Binding SelectedFleetSession}"
+                                                  ItemSizingStrategy= "MeasureFirstItem"
+                                                  SelectionMode="Single"
+                                                  ShowSearchBar="False"
+                                                  HorizontalOptions="Fill" 
+                                                  VerticalOptions="Fill" 
+                                                  HeightRequest="150"
+                                                  BackgroundColor="Transparent"
+                    >
+                                <controls:VirtualizedDataGrid.EmptyView>
+                                    <Label HorizontalOptions="Center" Text="No fleet sessions are allocated." FontSize="12" Opacity="0.6" Margin="0,20" />
+                                </controls:VirtualizedDataGrid.EmptyView>
+                                <controls:VirtualizedDataGrid.Columns>
+                                    <material:DataGridColumn Width="*" Title="Timestamp">
+                                        <material:DataGridColumn.CellItemTemplate>
+                                            <DataTemplate x:DataType="simulation1:SimulationFleetSessionSnapshot">
+                                                <VerticalStackLayout>
+                                                    <Label Text="{Binding Allocation.Profile.Name}" FontAttributes="Bold" />
+                                                    <Label Text="{Binding VehicleId, StringFormat='Vehicle {0}'}" FontSize="12" />
+                                                </VerticalStackLayout>
+                                            </DataTemplate>
+                                        </material:DataGridColumn.CellItemTemplate>
+                                    </material:DataGridColumn>
+                                    <material:DataGridColumn Width="*" Title="Stream">
+                                        <material:DataGridColumn.CellItemTemplate>
+                                            <DataTemplate x:DataType="simulation1:SimulationFleetSessionSnapshot">
+                                                <Label Text="{Binding Session.State}" VerticalOptions="Center" />
+                                            </DataTemplate>
+                                        </material:DataGridColumn.CellItemTemplate>
+                                    </material:DataGridColumn>
+                                    <material:DataGridColumn Width="5*" Title="Text">
+                                        <material:DataGridColumn.CellItemTemplate>
+                                            <DataTemplate x:DataType="simulation1:SimulationFleetSessionSnapshot">
+                                                <Label Text="{Binding Allocation.Profile.EffectiveLaunchSettings.SystemId, StringFormat='SysId {0}'}" VerticalOptions="Center" />
+                                            </DataTemplate>
+                                        </material:DataGridColumn.CellItemTemplate>
+                                    </material:DataGridColumn>
+                                </controls:VirtualizedDataGrid.Columns>
+                            </controls:VirtualizedDataGrid>
                         </VerticalStackLayout>
                     </Border>
 
-                    <Border Padding="12">
+                    <Border Padding="12" StyleClass="SurfaceContainer,Rounded,Elevation1">
                         <VerticalStackLayout Spacing="8">
                             <Label Text="SITL installations" FontSize="18" FontAttributes="Bold" />
                             <Label Text="{Binding PlatformCapability}" />
@@ -143,7 +164,7 @@
                         </VerticalStackLayout>
                     </Border>
 
-                    <Border Padding="12">
+                    <Border Padding="12" StyleClass="SurfaceContainer,Rounded,Elevation1">
                         <VerticalStackLayout Spacing="8">
                             <Label Text="Launch profile" FontSize="18" FontAttributes="Bold" />
                             <Label Text="Name" />
@@ -272,7 +293,7 @@
                         </VerticalStackLayout>
                     </Border>
 
-                    <Border Padding="12">
+                    <Border Padding="12" StyleClass="SurfaceContainer,Rounded,Elevation1">
                         <VerticalStackLayout Spacing="8">
                             <Label Text="Declarative scenario runner" FontSize="18" FontAttributes="Bold" />
                             <Label Text="Closed schema only. Every step has a timeout; dry-run checks the exact vehicle and required capabilities." />
@@ -316,7 +337,7 @@
                     </Grid>
                 </Border>
 
-                <Border Grid.Row="1" Padding="12">
+                <Border Grid.Row="1" Padding="12" StyleClass="SurfaceContainer,Rounded,Elevation1">
                     <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="6">
                         <Label Text="Elapsed" FontAttributes="Bold" />
                         <Label Grid.Column="1" Text="{Binding Elapsed}" />
@@ -327,7 +348,7 @@
                     </Grid>
                 </Border>
 
-                <Border Grid.Row="2" Padding="12">
+                <Border Grid.Row="2" Padding="12" StyleClass="SurfaceContainer,Rounded,Elevation1">
                     <VerticalStackLayout Spacing="7">
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                             <Label Text="Environment, sensors, and bounded faults" FontSize="18" FontAttributes="Bold" />

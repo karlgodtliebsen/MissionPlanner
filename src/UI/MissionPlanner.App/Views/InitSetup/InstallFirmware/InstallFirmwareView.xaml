@@ -313,7 +313,7 @@
                                     Command="{Binding InstallInitialDfuFirmwareCommand}"
                                     IsEnabled="{Binding CanInstallInitialDfuFirmware}"
                                     HorizontalOptions="Start" />
-                            <Label Text="Warning: this erases the current Betaflight firmware. Keep USB power connected until programming and verification complete."
+                            <Label Text="Warning: this erases the current BetaFlight firmware. Keep USB power connected until programming and verification complete."
                                    TextColor="OrangeRed" />
                         </VerticalStackLayout>
                     </Border>

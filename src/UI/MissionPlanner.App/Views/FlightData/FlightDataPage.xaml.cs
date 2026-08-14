@@ -1,26 +1,26 @@
 ﻿using MissionPlanner.App.Navigation;
 using MissionPlanner.Library;
 
-namespace MissionPlanner.App.Views.FlightPlanner;
+namespace MissionPlanner.App.Views.FlightData;
 
 /// <summary>
-/// Represents the view for flight planning.
+/// Represents the view for displaying flight data.
 /// </summary>
-public partial class FlightPlannerView : ExtendedContentPage<FlightPlannerViewModel>
+public partial class FlightDataPage : ExtendedContentPage<FlightDataViewModel>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="FlightPlannerView"/> class.
+    /// Initializes a new instance of the <see cref="FlightDataPage"/> class.
     /// </summary>
-    public FlightPlannerView()
+    public FlightDataPage()
     {
         InitializeComponent();
     }
 
-    /// <inheritdoc/>
-    protected override async Task OnModelCreatedAsync(FlightPlannerViewModel viewModel)
+    /// <inheritdoc />
+    protected override async Task OnModelCreatedAsync(FlightDataViewModel viewModel)
     {
         DomainException.ThrowIfNull(viewModel);
-        var map = viewModel.Map as FlightPlannerMissionMapViewModel; //To share the Map it is brought over
+        var map = viewModel.Map as FlightDataMissionMapViewModel; //To share the Map it is brought over
         DomainException.ThrowIfNull(map);
         MapLoadingIndicator.IsVisible = true;
         MapLoadingIndicator.IsRunning = true;
@@ -29,7 +29,6 @@ public partial class FlightPlannerView : ExtendedContentPage<FlightPlannerViewMo
             // Allow the indicator to render before map initialization starts.
             await Task.Yield();
             await MapView.Activate(map);
-            ItemListView.BindingContext = map;
         }
         finally
         {
@@ -38,13 +37,11 @@ public partial class FlightPlannerView : ExtendedContentPage<FlightPlannerViewMo
         }
     }
 
-
     /// <inheritdoc />
-    protected override void OnDestroyingModel(FlightPlannerViewModel viewModel)
+    protected override void OnDestroyingModel(FlightDataViewModel viewModel)
     {
         MapLoadingIndicator.IsRunning = false;
         MapLoadingIndicator.IsVisible = false;
         MapView.Deactivate();
-        ItemListView.BindingContext = null;
     }
 }
