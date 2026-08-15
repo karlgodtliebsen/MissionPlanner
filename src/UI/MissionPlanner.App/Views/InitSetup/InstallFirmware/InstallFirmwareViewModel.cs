@@ -1025,16 +1025,26 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
 
     private void ApplyMode(FirmwareOperationState? stage = null)
     {
+        var directInstallationSupported = OperatingSystem.IsWindows();
+        var vehicleConnected = activeVehicle.IsOnline;
         var state = modeResolver.Resolve(new FirmwarePageContext(
-            OperatingSystem.IsWindows(),
-            activeVehicle.IsOnline,
-            activeVehicle.State?.IsArmed == true,
-            activeVehicle.State is not null && activeVehicle.State.Identity.Firmware.Family != FirmwareFamily.Unknown,
-            IsOperationInProgress,
-            stage));
-        IsConnectedMode = state.Mode == FirmwarePageMode.Connected;
-        IsDisconnectedMode = state.Mode == FirmwarePageMode.Disconnected;
-        IsUnsupportedMode = state.Mode == FirmwarePageMode.UnsupportedPlatform;
+            directInstallationSupported, vehicleConnected, activeVehicle.State?.IsArmed == true,
+            activeVehicle.State is not null && activeVehicle.State.Identity.Firmware.Family != FirmwareFamily.Unknown, IsOperationInProgress, stage));
+
+        // OperationInProgress is a capability/progress state, not a different page layout.
+        // Keep the existing visual tree mounted so starting or completing an operation does
+        // not reset ScrollView position, focus, selections, or expensive child controls.
+        var visibleMode = state.Mode == FirmwarePageMode.OperationInProgress
+            ? !directInstallationSupported
+                ? FirmwarePageMode.UnsupportedPlatform
+                : vehicleConnected
+                    ? FirmwarePageMode.Connected
+                    : FirmwarePageMode.Disconnected
+            : state.Mode;
+
+        IsConnectedMode = visibleMode == FirmwarePageMode.Connected;
+        IsDisconnectedMode = visibleMode == FirmwarePageMode.Disconnected;
+        IsUnsupportedMode = visibleMode == FirmwarePageMode.UnsupportedPlatform;
         CanInstall = state.CanInstallApplicationFirmware;
         CanUpdateBootloader = state.CanUpdateEmbeddedBootloader;
         InstallCommand.NotifyCanExecuteChanged();
