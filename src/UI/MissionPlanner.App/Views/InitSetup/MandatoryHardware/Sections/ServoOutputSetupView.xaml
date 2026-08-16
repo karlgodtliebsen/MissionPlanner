@@ -5,34 +5,133 @@
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                                  xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
+                                  xmlns:controls1="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.ServoOutputSetupView"
                                   x:DataType="sections:ServoOutputSetupViewModel">
-    <ScrollView VerticalScrollBarVisibility="Always">
+    <ScrollView VerticalScrollBarVisibility="Always" Margin="0,10,0,10">
         <VerticalStackLayout Spacing="10">
-        <ProgressBar Progress="{Binding Progress}" />
-        <Label Text="{Binding Error}" TextColor="Red" />
-        <Label Text="Servo output functions" FontSize="18" FontAttributes="Bold" />
-        <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
-        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Outputs}" Spacing="6">
-            <BindableLayout.ItemTemplate>
-                <DataTemplate x:DataType="sections:ServoOutputItemViewModel">
-                    <Border Padding="10" StrokeThickness="1">
-                        <Grid ColumnDefinitions="100,*,120" ColumnSpacing="8">
-                            <Label Text="{Binding Header}" FontAttributes="Bold" VerticalOptions="Center" />
-                            <material:SelectField Grid.Column="1"
-                                    Title="Function"
-                                    ItemsSource="{Binding Functions}"
-                                    SelectedItem="{Binding SelectedFunction}"
-                                    ItemDisplayBinding="{Binding Name}" />
-                            <Label Grid.Column="2" Text="{Binding LiveDescription}" VerticalOptions="Center" />
-                        </Grid>
-                    </Border>
-                </DataTemplate>
-            </BindableLayout.ItemTemplate>
-        </VerticalStackLayout>
-        <Button Text="Refresh servo outputs"
-                Command="{Binding RefreshCommand}"
-                HorizontalOptions="Start" />
+            <ProgressBar Progress="{Binding Progress}" />
+            <Label Text="{Binding Error}" TextColor="Red" />
+            <Label Text="Servo output functions" FontSize="18" FontAttributes="Bold" />
+            <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
+            <Grid MaximumWidthRequest="1200" RowDefinitions="Auto,*" HorizontalOptions="Center"  Padding="10">
+
+                <HorizontalStackLayout Spacing="10" HorizontalOptions="Fill" Margin="0,10,0,10"
+                            
+                            >
+                    <Button Text="Refresh servo outputs"
+                        Command="{Binding RefreshCommand}"
+                        HorizontalOptions="Start" />
+                    <Button Text="Write"
+                        Command="{Binding WriteCommand}"
+                        HorizontalOptions="Start" />
+
+                </HorizontalStackLayout>
+
+                <controls:VirtualizedDataGrid 
+                    Grid.Row="1"
+                    ItemsSource="{Binding Outputs}" 
+                    ItemSizingStrategy= "MeasureFirstItem"
+                    ShowSearchBar="False"
+                    RowHeight="80"
+                        
+                    HorizontalOptions="Fill"
+                    VerticalOptions="Fill" 
+                    BackgroundColor="Transparent">
+
+                    <controls:VirtualizedDataGrid.Columns>
+                        <material:DataGridColumn Width="75" x:DataType="sections:ServoOutputItemViewModel" 
+                                             ValueBinding="{Binding Header}" Title="" />
+
+                        <material:DataGridColumn Title="Position" Width="160">
+                            <material:DataGridColumn.CellItemTemplate >
+                                <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
+                                    <BoxView HeightRequest="35" WidthRequest="50"  HorizontalOptions="Center" VerticalOptions="Center" 
+                                             BackgroundColor="BurlyWood"/>
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
+
+                        <material:DataGridColumn Title="Reverse" Width="120">
+                            <material:DataGridColumn.CellItemTemplate >
+                                <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
+                                    <material:CheckBox  HorizontalOptions="Center"></material:CheckBox>
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
+                        <material:DataGridColumn Title="Function" Width="200">
+                            <material:DataGridColumn.CellItemTemplate >
+                                <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
+                                    <material:SelectField VerticalOptions="Center"
+                                                          HorizontalOptions="Fill"
+                                                          BorderColor="Aqua"
+                                                      Title="Function"
+                                                      ItemsSource="{Binding Functions}"
+                                                      SelectedItem="{Binding SelectedFunction}"
+                                                      ItemDisplayBinding="{Binding Name}" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
+                        <material:DataGridColumn Title="Min" Width="160">
+                            <material:DataGridColumn.CellItemTemplate >
+                                <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
+                                    <controls1:NumericUpDownField
+                                        Value="{Binding Min, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                                        NumberFormat="F0"
+                                        BorderColor="Aqua"
+                                        VerticalOptions="Center"
+                                        MinimumWidthRequest="150"
+                                        HorizontalOptions="Fill"
+                                        ButtonOrientation="Vertical"
+                                        HorizontalTextAlignment="End" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
+
+                        <material:DataGridColumn Title="Trim" Width="160">
+                            <material:DataGridColumn.CellItemTemplate >
+                                <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
+                                    <controls1:NumericUpDownField
+                                        Value="{Binding Trim, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                                        NumberFormat="F0"
+                                        BorderColor="Aqua"
+                                        VerticalOptions="Center"
+                                        MinimumWidthRequest="150"
+                                        HorizontalOptions="Fill"
+                                        ButtonOrientation="Vertical"
+                                        HorizontalTextAlignment="End" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
+                        <material:DataGridColumn Title="Max" Width="160">
+                            <material:DataGridColumn.CellItemTemplate >
+                                <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
+                                    <controls1:NumericUpDownField
+                                        Value="{Binding Max, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                                        NumberFormat="F0"
+                                        BorderColor="Aqua"
+                                        VerticalOptions="Center"
+                                        MinimumWidthRequest="150"
+                                        HorizontalOptions="Fill"
+                                        ButtonOrientation="Vertical"
+                                        HorizontalTextAlignment="End" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
+                        <!--<material:DataGridColumn Width="*" x:DataType="sections:ServoOutputItemViewModel"  ValueBinding="{Binding LiveDescription}" Title="Live Description" />-->
+                    </controls:VirtualizedDataGrid.Columns>
+                </controls:VirtualizedDataGrid>
+
+            </Grid>
+
+
         </VerticalStackLayout>
     </ScrollView>
 </tabViews:TabViewLifecycleContent>

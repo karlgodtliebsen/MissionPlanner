@@ -157,7 +157,15 @@ public sealed class SetupWorkflowCatalog : ISetupWorkflowCatalog
     private static string CreateParameterSignature(IReadOnlyDictionary<string, VehicleParameter> parameters)
     {
         var builder = new StringBuilder();
-        foreach (var parameter in parameters.OrderBy(item => item.Key, StringComparer.Ordinal))
+
+        var snapshot = new List<KeyValuePair<string, VehicleParameter>>();
+        foreach (var parameter in parameters)
+        {
+            snapshot.Add(parameter);
+        }
+
+        snapshot.Sort((left, right) => StringComparer.Ordinal.Compare(left.Key, right.Key));
+        foreach (var parameter in snapshot)
         {
             builder.Append(parameter.Key).Append('=').Append(parameter.Value.Value.ToString("R", CultureInfo.InvariantCulture)).Append(';');
         }

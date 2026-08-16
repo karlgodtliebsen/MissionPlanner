@@ -221,21 +221,6 @@
                                                                        VerticalTextAlignment="Center" />
 
 
-                                        <!--<controls:NumericField
-                                            IsVisible="{Binding HasNumericRangeData}" 
-                                            Value="{Binding Value, Mode=TwoWay}"
-                                            BorderColor="Aqua"
-                                            NumberFormat="N7"
-                                            WidthRequest="200" 
-                                            Min="{Binding Min}"
-                                            Max="{Binding Max}"
-                                            HorizontalOptions="Fill"
-                                            VerticalOptions="Center"  
-                                            HorizontalTextAlignment="End" 
-                                            AllowClear="True"
-                                            AllowSign="True"
-                                            AllowThousands="True" />-->
-
                                     </VerticalStackLayout>
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
@@ -248,7 +233,6 @@
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
                         </material:DataGridColumn>
-                        <!--<material:DataGridColumn Width="100"  ValueBinding="{Binding StepSize}" Title="Step Size"  />-->
                         <material:DataGridColumn Width="100" Title="Default">
                             <material:DataGridColumn.CellItemTemplate>
                                 <DataTemplate x:DataType="configTuning:ParameterItemViewModel">

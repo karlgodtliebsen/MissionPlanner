@@ -6,7 +6,6 @@ using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using UraniumUI.Extensions;
@@ -24,6 +23,17 @@ public sealed partial class ServoOutputSetupViewModel : Models.SetupWorkflowDeta
     private CancellationTokenSource? operationCancellation;
     private IDisposable? vehicleStateSubscription;
     private DateTimeOffset? observedServoAt;
+
+    /// <summary>Gets the discovered servo outputs.</summary>
+    public ObservableCollection<ServoOutputItemViewModel> Outputs { get; } = [];
+
+    /// <summary>Gets the workflow status.</summary>
+    [ObservableProperty]
+    public partial string Status { get; private set; } = "Load the connected vehicle's servo output functions.";
+
+    /// <summary>Gets whether any servo outputs were discovered.</summary>
+    [ObservableProperty]
+    public partial bool HasOutputs { get; private set; }
 
     /// <summary>Initializes the servo output Setup workflow.</summary>
     /// <param name="workflowCatalog">The setup workflow catalog.</param>
@@ -52,15 +62,6 @@ public sealed partial class ServoOutputSetupViewModel : Models.SetupWorkflowDeta
         LoadAsync().FireAndForget();
     }
 
-    /// <summary>Gets the discovered servo outputs.</summary>
-    public ObservableCollection<ServoOutputItemViewModel> Outputs { get; } = [];
-
-    /// <summary>Gets the workflow status.</summary>
-    [ObservableProperty]
-    public partial string Status { get; private set; } = "Load the connected vehicle's servo output functions.";
-
-    /// <summary>Gets whether any servo outputs were discovered.</summary>
-    public bool HasOutputs => Outputs.Count > 0;
 
     /// <summary>Loads the servo output configuration for the active vehicle.</summary>
     /// <returns>A task that completes after the configuration is projected.</returns>
@@ -94,6 +95,7 @@ public sealed partial class ServoOutputSetupViewModel : Models.SetupWorkflowDeta
         operationCancellation?.Cancel();
         operationCancellation?.Dispose();
         operationCancellation = null;
+        WriteCommand.NotifyCanExecuteChanged();
     }
 
     /// <inheritdoc />
@@ -141,6 +143,24 @@ public sealed partial class ServoOutputSetupViewModel : Models.SetupWorkflowDeta
     private Task RefreshAsync()
     {
         return LoadAsync();
+        WriteCommand.NotifyCanExecuteChanged();
+    }
+
+    private bool CanWrite()
+    {
+        return Outputs.Any(o => o.IsDirty);
+    }
+
+    [RelayCommand(CanExecute = nameof(CanWrite))]
+    private async Task WriteAsync()
+    {
+        foreach (var model in Outputs)
+        {
+            await ApplyAsync(model);
+            model.Reset();
+        }
+
+        WriteCommand.NotifyCanExecuteChanged();
     }
 
     private CancellationToken StartOperation()
@@ -158,6 +178,7 @@ public sealed partial class ServoOutputSetupViewModel : Models.SetupWorkflowDeta
         {
             observedServoAt = args.Current.State?.Radio.ServoObservedAt;
             _ = LoadAsync();
+            WriteCommand.NotifyCanExecuteChanged();
         });
     }
 
@@ -200,6 +221,8 @@ public sealed partial class ServoOutputSetupViewModel : Models.SetupWorkflowDeta
                 {
                     Outputs.FirstOrDefault(item => item.Output == output.Output)?.UpdateLive(output);
                 }
+
+                WriteCommand.NotifyCanExecuteChanged();
             });
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
@@ -223,7 +246,7 @@ public sealed partial class ServoOutputSetupViewModel : Models.SetupWorkflowDeta
             Outputs.Clear();
             foreach (var output in configuration.Outputs)
             {
-                Outputs.Add(new ServoOutputItemViewModel(output, configuration.FunctionOptions, this));
+                Outputs.Add(new ServoOutputItemViewModel(output, configuration.FunctionOptions));
             }
         }
 
@@ -234,60 +257,7 @@ public sealed partial class ServoOutputSetupViewModel : Models.SetupWorkflowDeta
                 : "Review or reassign servo output functions. Live PWM updates from telemetry.";
         }
 
-        OnPropertyChanged(nameof(HasOutputs));
-    }
-}
-
-/// <summary>Presents one servo output with a function picker and live PWM.</summary>
-public sealed partial class ServoOutputItemViewModel : ObservableObject
-{
-    private readonly ServoOutputSetupViewModel parent;
-    private readonly bool suppressApply;
-
-    /// <summary>Initializes a servo output row.</summary>
-    /// <param name="info">The output projection.</param>
-    /// <param name="options">The available functions.</param>
-    /// <param name="parent">The owning servo workflow.</param>
-    public ServoOutputItemViewModel(ServoOutputInfo info, IReadOnlyList<ServoFunctionOption> options, ServoOutputSetupViewModel parent)
-    {
-        this.parent = parent;
-        Output = info.Output;
-        Functions = options;
-        UpdateLive(info);
-        suppressApply = true;
-        SelectedFunction = options.FirstOrDefault(option => option.Value == info.FunctionValue);
-        suppressApply = false;
-    }
-
-    /// <summary>Gets the one-based output number.</summary>
-    public int Output { get; }
-
-    /// <summary>Gets the available function options.</summary>
-    public IReadOnlyList<ServoFunctionOption> Functions { get; }
-
-    /// <summary>Gets the output header.</summary>
-    public string Header => $"Output {Output}";
-
-    /// <summary>Gets the live PWM description.</summary>
-    [ObservableProperty]
-    public partial string LiveDescription { get; private set; } = string.Empty;
-
-    /// <summary>Gets or sets the selected function.</summary>
-    [ObservableProperty]
-    public partial ServoFunctionOption? SelectedFunction { get; set; }
-
-    /// <summary>Updates the live PWM from a new projection.</summary>
-    /// <param name="info">The output projection.</param>
-    public void UpdateLive(ServoOutputInfo info)
-    {
-        LiveDescription = info.LivePwm is { } pwm ? $"{pwm} us{(info.IsStale ? " (stale)" : string.Empty)}" : "—";
-    }
-
-    partial void OnSelectedFunctionChanged(ServoFunctionOption? value)
-    {
-        if (!suppressApply && value is not null)
-        {
-            _ = parent.ApplyAsync(this);
-        }
+        HasOutputs = Outputs.Any();
+        WriteCommand.NotifyCanExecuteChanged();
     }
 }

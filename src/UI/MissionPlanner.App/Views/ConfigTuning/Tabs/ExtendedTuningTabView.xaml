@@ -67,33 +67,6 @@
                             <material:DataGridColumn Width="*" x:DataType="tabs:ControlResponseMetricViewModel" ValueBinding="{Binding Error}" Title="Error" />
                         </controls:VirtualizedDataGrid.Columns>
                     </controls:VirtualizedDataGrid>
-
-
-                    <!--
-                    
-                    x:DataType="tabs:ControlResponseMetricViewModel"
-                    x:DataType="tabs:ControlResponseMetricViewModel"
-                    x:DataType="tabs:ControlResponseMetricViewModel"
-                    x:DataType="tabs:ControlResponseMetricViewModel"
-                    
-                    <CollectionView 
-                                    ItemsSource="{Binding ResponseMetrics}"
-                                    ItemsLayout="HorizontalList"
-                                    HeightRequest="54"
-                                    EmptyView="No PID response telemetry received.">
-                        <CollectionView.ItemTemplate>
-                            <DataTemplate x:DataType="tabs:ControlResponseMetricViewModel">
-                                <Grid ColumnDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="8" Padding="4">
-                                    <Label Text="{Binding Axis, StringFormat='Axis {0}'}" FontAttributes="Bold" />
-                                    <Label Grid.Column="1" Text="{Binding Desired, StringFormat='Desired {0:G4}'}" />
-                                    <Label Grid.Column="2" Text="{Binding Achieved, StringFormat='Achieved {0:G4}'}" />
-                                    <Label Grid.Column="3" Text="{Binding Error, StringFormat='Error {0:G4}'}" />
-                                </Grid>
-                            </DataTemplate>
-                        </CollectionView.ItemTemplate>
-                    </CollectionView>-->
-
-
                 </VerticalStackLayout>
             </Border>
         </Grid>
