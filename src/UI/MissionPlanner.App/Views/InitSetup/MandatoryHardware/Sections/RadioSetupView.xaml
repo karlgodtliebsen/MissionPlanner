@@ -6,7 +6,8 @@
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.RadioSetupView"
-                                  x:DataType="sections:RadioSetupViewModel">
+                                  x:DataType="sections:RadioSetupViewModel"
+                                  Margin="100,0,100,0">
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Padding="16" Spacing="14">
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
@@ -24,9 +25,7 @@
             </Grid>
 
             <Border Padding="14"
-                    Stroke="{AppThemeBinding Light={StaticResource Outline}, Dark={StaticResource OutlineDark}}"
-                    BackgroundColor="{AppThemeBinding Light=#FFF5DE, Dark=#493C22}"
-                    StrokeShape="RoundRectangle 10">
+                    StyleClass="SurfaceContainer,Rounded,Elevation1">
                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                     <Label Text="!" FontSize="22" FontAttributes="Bold" VerticalOptions="Start" />
                     <VerticalStackLayout Grid.Column="1" Spacing="2">
@@ -38,9 +37,7 @@
             </Border>
 
             <Border Padding="14"
-                    Stroke="{AppThemeBinding Light={StaticResource Outline}, Dark={StaticResource OutlineDark}}"
-                    BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}"
-                    StrokeShape="RoundRectangle 10">
+                    StyleClass="SurfaceContainer,Rounded,Elevation1">
                 <VerticalStackLayout Spacing="9">
                     <Label Text="Receiver" FontSize="17" FontAttributes="Bold" />
                     <FlexLayout Direction="Row" Wrap="Wrap" AlignItems="Center">
@@ -53,7 +50,13 @@
                     <Label Text="{Binding ChannelMapSummary, StringFormat='Pilot map: {0}'}" />
                 </VerticalStackLayout>
             </Border>
-
+            <FlexLayout Direction="Row" Wrap="Wrap" JustifyContent="Start">
+                <Button Text="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCommand}" Margin="0,0,8,8" />
+                <Button Text="Finish endpoint capture" IsEnabled="{Binding CanFinishCapture}" Command="{Binding FinishCaptureCommand}" Margin="0,0,8,8" />
+                <Button Text="Confirm and write" IsEnabled="{Binding CanWrite}" Command="{Binding ConfirmAndWriteCommand}" Margin="0,0,8,8" />
+                <Button Text="Cancel" IsEnabled="{Binding CanCancelCalibration}" Command="{Binding CancelCalibrationCommand}" Margin="0,0,8,8" />
+                <Button Text="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" Margin="0,0,8,8" />
+            </FlexLayout>
             <Label IsVisible="{Binding IsStale}"
                    Text="RC telemetry is stale. The last values remain visible, but calibration cannot start or write until fresh input returns."
                    FontAttributes="Bold"
@@ -63,8 +66,7 @@
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="sections:RadioChannelDisplayViewModel">
                         <Border Padding="10,8"
-                                Stroke="{AppThemeBinding Light={StaticResource Outline}, Dark={StaticResource OutlineDark}}"
-                                StrokeShape="RoundRectangle 8">
+                                StyleClass="SurfaceContainer,Rounded,Elevation1">
                             <Grid RowDefinitions="Auto,32,Auto,Auto" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
                                 <Label Text="{Binding Number, StringFormat='CH {0}'}"
                                        FontAttributes="Bold"
@@ -111,9 +113,7 @@
             </VerticalStackLayout>
 
             <Border Padding="14"
-                    Stroke="{AppThemeBinding Light={StaticResource Outline}, Dark={StaticResource OutlineDark}}"
-                    BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}"
-                    StrokeShape="RoundRectangle 10">
+                    StyleClass="SurfaceContainer,Rounded,Elevation1">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="Next step" FontAttributes="Bold" />
                     <Label Text="{Binding Instruction}" FontSize="16" LineBreakMode="WordWrap" />
@@ -131,13 +131,7 @@
                 </BindableLayout.ItemTemplate>
             </VerticalStackLayout>
 
-            <FlexLayout Direction="Row" Wrap="Wrap" JustifyContent="Start">
-                <Button Text="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCommand}" Margin="0,0,8,8" />
-                <Button Text="Finish endpoint capture" IsEnabled="{Binding CanFinishCapture}" Command="{Binding FinishCaptureCommand}" Margin="0,0,8,8" />
-                <Button Text="Confirm and write" IsEnabled="{Binding CanWrite}" Command="{Binding ConfirmAndWriteCommand}" Margin="0,0,8,8" />
-                <Button Text="Cancel" IsEnabled="{Binding CanCancelCalibration}" Command="{Binding CancelCalibrationCommand}" Margin="0,0,8,8" />
-                <Button Text="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" Margin="0,0,8,8" />
-            </FlexLayout>
+
         </VerticalStackLayout>
     </ScrollView>
 </tabViews:TabViewLifecycleContent>

@@ -12,44 +12,17 @@
                             x:DataType="mandatoryHardware:MandatoryHardwareViewModel"
                             Title="Initial Setup">
 
-    <Grid Padding="20" RowDefinitions="Auto,Auto,*,Auto" RowSpacing="14">
-        <VerticalStackLayout Spacing="4">
+    <Grid Padding="20" RowDefinitions="Auto,Auto,*" RowSpacing="14" HorizontalOptions="Center">
+        <VerticalStackLayout Grid.Row="0" Spacing="8">
             <Label Text="Initial Setup" FontSize="26" FontAttributes="Bold" />
-            <Label Text="{Binding VehicleHeading}" FontSize="16" />
-            <Label Text="{Binding SummaryReport}" Opacity="0.75" />
-            <Label Text="{Binding Error}" TextColor="Red" />
+            <Label Text="{Binding VehicleHeading}" VerticalOptions="Center" FontSize="16" />
+            <Label Text="{Binding SummaryReport}" VerticalOptions="Center" Opacity="0.75" />
+            <Label Text="{Binding Error}"  VerticalOptions="Center" TextColor="Orange" />
+            <Label Text="Completion is stored locally and automatically requires review when firmware or parameters change. Prerequisites are guidance, not a rigid wizard."
+                   LineBreakMode="WordWrap" Opacity="0.7" />
         </VerticalStackLayout>
 
-        <Button Grid.Row="1" Text="Re-evaluate vehicle" Command="{Binding RefreshCommand}" HorizontalOptions="Start" />
-                                  <!--
-                                    HeaderItemsSource="{Binding Workflows}"
-                                   SelectedHeaderItem="{Binding SelectedWorkflow, Mode=TwoWay}"-->
-
-        <tabViews:ExtendedTabView Grid.Row="2"
-                                  HeaderItemsSource="{Binding Workflows}"
-                                  TabHeaderItemColumnWidth="290"
-                                  CachingStrategy="CacheOnLayout"
-                                  UseAnimation="False">
-            <material:TabView.TabHeaderItemTemplate>
-                <DataTemplate>
-                    <tabsUtils:TabHeaderView />
-                </DataTemplate>
-            </material:TabView.TabHeaderItemTemplate>
-            <material:TabItem Title="Firmware"><sections:FirmwareSetupView /></material:TabItem>
-            <material:TabItem Title="Frame"><sections:FrameSetupView /></material:TabItem>
-            <material:TabItem Title="Accelerometer"><sections:AccelerometerSetupView /></material:TabItem>
-            <material:TabItem Title="Compass"><sections:CompassSetupView /></material:TabItem>
-            <material:TabItem Title="Radio"><sections:RadioSetupView /></material:TabItem>
-            <material:TabItem Title="Flight Modes"><sections:FlightModesSetupView /></material:TabItem>
-            <material:TabItem Title="Battery"><sections:BatterySetupView /></material:TabItem>
-            <material:TabItem Title="ESC / Motors"><sections:EscMotorSetupView /></material:TabItem>
-            <material:TabItem Title="Servo Output"><sections:ServoOutputSetupView /></material:TabItem>
-            <material:TabItem Title="Optional Hardware"><sections:OptionalHardwareSetupView /></material:TabItem>
-            <material:TabItem Title="Safety"><sections:SafetySetupView /></material:TabItem>
-            <material:TabItem Title="Summary"><sections:SetupSummaryView /></material:TabItem>
-        </tabViews:ExtendedTabView>
-
-        <VerticalStackLayout Grid.Row="3" Spacing="8">
+        <VerticalStackLayout Grid.Row="1" Spacing="8">
             <HorizontalStackLayout Spacing="10">
                 <Button Text="Record reviewed"
                         IsEnabled="{Binding SelectedWorkflow.CanOpen}"
@@ -58,9 +31,64 @@
                 <Button Text="Open related Config page"
                         IsVisible="{Binding HasConfigDestination}"
                         Command="{Binding OpenConfigCommand}" />
+                <Button Grid.Row="2" Text="Re-evaluate vehicle" Command="{Binding RefreshCommand}" HorizontalOptions="Start" />
             </HorizontalStackLayout>
-            <Label Text="Completion is stored locally and automatically requires review when firmware or parameters change. Prerequisites are guidance, not a rigid wizard."
-                   LineBreakMode="WordWrap" Opacity="0.7" />
         </VerticalStackLayout>
+
+
+
+        <tabViews:ExtendedTabView Grid.Row="2" 
+                                  HorizontalOptions="Fill"
+                                  HeaderItemsSource="{Binding Workflows}"
+                                  SelectedHeaderItem="{Binding SelectedWorkflow, Mode=TwoWay}"
+                                  CachingStrategy="CacheOnLayout"
+                                  UseAnimation="False"
+                                  TabPlacement="Start"
+                                  Padding="0"
+                                  >
+
+            <material:TabView.TabHeaderItemTemplate>
+                <DataTemplate>
+                    <tabsUtils:SlimTabHeaderView />
+                </DataTemplate>
+            </material:TabView.TabHeaderItemTemplate>
+            <material:TabItem Title="Firmware" >
+                <sections:FirmwareSetupView />
+            </material:TabItem>
+            <material:TabItem Title="Frame">
+                <sections:FrameSetupView />
+            </material:TabItem>
+            <material:TabItem Title="Accelerometer">
+                <sections:AccelerometerSetupView />
+            </material:TabItem>
+            <material:TabItem Title="Compass">
+                <sections:CompassSetupView />
+            </material:TabItem>
+            <material:TabItem Title="Radio">
+                <sections:RadioSetupView />
+            </material:TabItem>
+            <material:TabItem Title="Flight Modes">
+                <sections:FlightModesSetupView />
+            </material:TabItem>
+            <material:TabItem Title="Battery">
+                <sections:BatterySetupView />
+            </material:TabItem>
+            <material:TabItem Title="ESC / Motors">
+                <sections:EscMotorSetupView />
+            </material:TabItem>
+            <material:TabItem Title="Servo Output">
+                <sections:ServoOutputSetupView />
+            </material:TabItem>
+            <material:TabItem Title="Optional Hardware">
+                <sections:OptionalHardwareSetupView />
+            </material:TabItem>
+            <material:TabItem Title="Safety">
+                <sections:SafetySetupView />
+            </material:TabItem>
+            <material:TabItem Title="Summary">
+                <sections:SetupSummaryView />
+            </material:TabItem>
+        </tabViews:ExtendedTabView>
+
     </Grid>
 </navigation:ExtendedContentPage>

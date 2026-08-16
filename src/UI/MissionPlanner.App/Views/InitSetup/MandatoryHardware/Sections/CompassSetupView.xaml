@@ -6,7 +6,8 @@
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.CompassSetupView"
-                                  x:DataType="sections:CompassSetupViewModel">
+                                  x:DataType="sections:CompassSetupViewModel"
+                                  Margin="100,0,100,0">
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Spacing="10">
             <ProgressBar Progress="{Binding Progress}" />
@@ -26,7 +27,7 @@
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Compasses}" Spacing="8">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="sections:CompassInstanceViewModel">
-                        <Border Padding="10" StrokeThickness="1">
+                        <Border Padding="10"  StyleClass="SurfaceContainer,Rounded,Elevation1">
                             <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="8">
                                 <Label Text="{Binding Header}" FontAttributes="Bold" />
                                 <Label Grid.Column="1" Text="{Binding HealthLabel}" />

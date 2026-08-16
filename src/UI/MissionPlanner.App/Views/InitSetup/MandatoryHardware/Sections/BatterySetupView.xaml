@@ -6,13 +6,18 @@
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.BatterySetupView"
-                                  x:DataType="sections:BatterySetupViewModel">
+                                  x:DataType="sections:BatterySetupViewModel"
+                                  Margin="100,0,100,0">
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Spacing="10">
             <ProgressBar Progress="{Binding Progress}" />
             <Label Text="{Binding Error}" TextColor="Red" />
             <Label Text="Battery monitors and failsafe" FontSize="18" FontAttributes="Bold" />
             <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
+            <Button 
+                Text="Refresh battery values"
+                Command="{Binding RefreshCommand}"
+                HorizontalOptions="Start" />    
             <VerticalStackLayout IsVisible="{Binding HasIssues}" BindableLayout.ItemsSource="{Binding Issues}">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="x:String">
@@ -23,7 +28,7 @@
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Instances}" Spacing="10">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="sections:BatteryInstanceViewModel">
-                        <Border Padding="12" StrokeThickness="1">
+                        <Border Padding="12"  StyleClass="SurfaceContainer,Rounded,Elevation1">
                             <VerticalStackLayout Spacing="6">
                                 <Label Text="{Binding Header}" FontAttributes="Bold" FontSize="16" />
                                 <Label Text="{Binding LiveReadings}" />
@@ -114,10 +119,7 @@
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>
             </VerticalStackLayout>
-            <Button 
-                Text="Refresh battery values"
-                Command="{Binding RefreshCommand}"
-                HorizontalOptions="Start" />
+
         </VerticalStackLayout>
     </ScrollView>
 </tabViews:TabViewLifecycleContent>

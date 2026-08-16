@@ -6,67 +6,100 @@
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                                  xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.OptionalHardwareSetupView"
-                                  x:DataType="sections:OptionalHardwareSetupViewModel">
-    <ScrollView VerticalScrollBarVisibility="Always">
-        <VerticalStackLayout Spacing="10">
-        <ProgressBar Progress="{Binding Progress}" />
-        <Label Text="{Binding Error}" TextColor="Red" />
-        <Label Text="Optional hardware" FontSize="18" FontAttributes="Bold" />
-        <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
-        <Label IsVisible="{Binding RebootRequired}"
-               Text="Reboot required. Reconnect, then refresh to confirm the persisted configuration."
-               TextColor="OrangeRed"
-               FontAttributes="Bold"
-               LineBreakMode="WordWrap" />
-        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Modules}" Spacing="10">
-            <BindableLayout.ItemTemplate>
-                <DataTemplate x:DataType="sections:OptionalHardwareModuleViewModel">
-                    <Border Padding="12" StrokeThickness="1">
-                        <VerticalStackLayout Spacing="6">
-                            <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="16" />
-                            <Label Text="{Binding Description}" Opacity="0.75" LineBreakMode="WordWrap" />
-                            <VerticalStackLayout IsVisible="{Binding HasIssues}" BindableLayout.ItemsSource="{Binding Issues}">
-                                <BindableLayout.ItemTemplate>
-                                    <DataTemplate x:DataType="x:String">
-                                        <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
-                                    </DataTemplate>
-                                </BindableLayout.ItemTemplate>
-                            </VerticalStackLayout>
-                            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}" Spacing="4">
-                                <BindableLayout.ItemTemplate>
-                                    <DataTemplate x:DataType="sections:PeripheralSettingViewModel">
-                                        <Grid ColumnDefinitions="200,*,Auto" ColumnSpacing="8">
-                                            <Label Text="{Binding DisplayName}" VerticalOptions="Center" />
-                                            <material:SelectField Grid.Column="1"
-                                                    Title="Value"
-                                                    IsVisible="{Binding HasOptions}"
-                                                    ItemsSource="{Binding Options}"
-                                                    SelectedItem="{Binding SelectedOption}"
-                                                    ItemDisplayBinding="{Binding Name}" />
-                                            <controls:NumericField
-                                                Grid.Column="1" 
-                                                IsVisible="{Binding IsNumeric}"
-                                                Text="{Binding NumericValue,Mode=TwoWay}"
-                                                NumberFormat="F1"
-                                                HorizontalOptions="Fill"
-                                                HorizontalTextAlignment="End" />
+                                  x:DataType="sections:OptionalHardwareSetupViewModel"
+                                  Margin="100,0,100,0">
 
-                                            <Button Grid.Column="2"
-                                                    Text="Write"
-                                                    Command="{Binding ApplyCommand}" />
-                                        </Grid>
+
+    <Grid  RowDefinitions="*" HorizontalOptions="Center"  Padding="10" >
+        <ScrollView VerticalScrollBarVisibility="Always">
+            <VerticalStackLayout Spacing="10">
+                <ProgressBar Progress="{Binding Progress}" />
+                <Label Text="{Binding Error}" TextColor="Red" />
+                <Label Text="Optional hardware" FontSize="18" FontAttributes="Bold" />
+                <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
+                <Label IsVisible="{Binding RebootRequired}" 
+                       Text="Reboot required. Reconnect, then refresh to confirm the persisted configuration." TextColor="OrangeRed" FontAttributes="Bold" LineBreakMode="WordWrap" />
+                <Grid RowDefinitions="Auto,*" HorizontalOptions="Center"  Padding="10">
+                    <HorizontalStackLayout Spacing="10" HorizontalOptions="Fill" Margin="0,10,0,10">
+                        <Button Text="Refresh optional hardware"
+                            Command="{Binding RefreshCommand}"
+                            HorizontalOptions="Start" />
+
+                    </HorizontalStackLayout>
+                    <virtualized:VirtualizedDataGrid 
+                                 Grid.Row="1"
+                                 ItemsSource="{Binding Modules}" 
+                                 ItemSizingStrategy= "MeasureFirstItem"
+                                 ShowSearchBar="False"
+                                 RowHeight="80"
+                                     
+                                 HorizontalOptions="Fill"
+                                 VerticalOptions="Fill" 
+                                 BackgroundColor="Transparent">
+
+                        <virtualized:VirtualizedDataGrid.Columns>
+                            <material:DataGridColumn Width="*" x:DataType="sections:OptionalHardwareModuleViewModel"  
+                                                 ValueBinding="{Binding Title}" Title="Title" />
+                            <material:DataGridColumn Width="*" x:DataType="sections:OptionalHardwareModuleViewModel"  
+                                                ValueBinding="{Binding Description}" Title="Description" />
+
+                            <!--<material:DataGridColumn Title="Issues" Width="160" 
+                                                 x:DataType="sections:OptionalHardwareModuleViewModel" 
+                                                 IsVisible="{Binding HasIssues}">
+                                <material:DataGridColumn.CellItemTemplate >
+                                    <DataTemplate x:DataType="sections:OptionalHardwareModuleViewModel" >
+                                        <VerticalStackLayout IsVisible="{Binding HasIssues}" 
+                                                     BindableLayout.ItemsSource="{Binding Issues}">
+                                            <BindableLayout.ItemTemplate>
+                                                <DataTemplate x:DataType="x:String">
+                                                    <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
+                                                </DataTemplate>
+                                            </BindableLayout.ItemTemplate>
+                                        </VerticalStackLayout>
                                     </DataTemplate>
-                                </BindableLayout.ItemTemplate>
-                            </VerticalStackLayout>
-                        </VerticalStackLayout>
-                    </Border>
-                </DataTemplate>
-            </BindableLayout.ItemTemplate>
-        </VerticalStackLayout>
-        <Button Text="Refresh optional hardware"
-                Command="{Binding RefreshCommand}"
-                HorizontalOptions="Start" />
-        </VerticalStackLayout>
-    </ScrollView>
+                                </material:DataGridColumn.CellItemTemplate>
+                            </material:DataGridColumn>
+
+                            <material:DataGridColumn Title="Settings" Width="160">
+                                <material:DataGridColumn.CellItemTemplate >
+                                    <DataTemplate x:DataType="sections:OptionalHardwareModuleViewModel" >
+                                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}">
+                                            <BindableLayout.ItemTemplate>
+                                                <DataTemplate x:DataType="sections:PeripheralSettingViewModel">
+                                                    <Grid ColumnDefinitions="200,*,Auto" ColumnSpacing="8">
+                                                        <Label Text="{Binding DisplayName}" VerticalOptions="Center" />
+                                                        <material:SelectField Grid.Column="1"
+                                                                          Title="Value"
+                                                                          IsVisible="{Binding HasOptions}"
+                                                                          ItemsSource="{Binding Options}"
+                                                                          SelectedItem="{Binding SelectedOption}"
+                                                                          ItemDisplayBinding="{Binding Name}" />
+                                                        <controls:NumericField
+                                                        Grid.Column="1" 
+                                                        IsVisible="{Binding IsNumeric}"
+                                                        Text="{Binding NumericValue,Mode=TwoWay}"
+                                                        NumberFormat="F1"
+                                                        HorizontalOptions="Fill"
+                                                        HorizontalTextAlignment="End" />
+
+                                                        <Button Grid.Column="2"
+                                                            Text="Write"
+                                                            Command="{Binding ApplyCommand}" />
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </BindableLayout.ItemTemplate>
+                                        </VerticalStackLayout>
+                                    </DataTemplate>
+                                </material:DataGridColumn.CellItemTemplate>
+                            </material:DataGridColumn>-->
+
+
+                        </virtualized:VirtualizedDataGrid.Columns>
+                    </virtualized:VirtualizedDataGrid>
+                </Grid>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
 </tabViews:TabViewLifecycleContent>

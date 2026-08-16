@@ -9,19 +9,6 @@
     Margin="10,0,0,0"
     BorderStyleClass="SurfaceContainer,Rounded,Elevation1"
     >
-
-    <!--<VerticalStackLayout Margin="10"
-                         Spacing="20"
-                         BackgroundColor="Transparent"
-                         MinimumHeightRequest="50"
-                         VerticalOptions="Fill">-->
-        <!--<Label Text="{Binding Title}"
-               VerticalOptions="Center"
-               HorizontalOptions="Start" />
-        <Label Text="{Binding Content}"
-               VerticalOptions="Center"
-               HorizontalOptions="Start" />-->
-
             <Grid ColumnDefinitions="4,*" >
                 <BoxView BackgroundColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
                          Opacity="0.2"
@@ -42,9 +29,4 @@
                     <Label Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding StatusText}" Opacity="0.72" LineBreakMode="WordWrap" />
                 </Grid>
             </Grid>
-      
-
-    <!--</VerticalStackLayout>-->
-
-
 </tabViews:ExtendedTabHeaderView>

@@ -1,6 +1,6 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
 using MissionPlanner.Core.Setup;
@@ -43,7 +43,7 @@ public sealed partial class OptionalHardwareSetupViewModel : SetupWorkflowDetail
     }
 
     /// <summary>Gets the discovered optional-hardware modules.</summary>
-    public ObservableCollection<OptionalHardwareModuleViewModel> Modules { get; } = [];
+    public ObservableRangeCollection<OptionalHardwareModuleViewModel> Modules { get; } = [];
 
     /// <summary>Gets the workflow status.</summary>
     [ObservableProperty]
@@ -180,12 +180,10 @@ public sealed partial class OptionalHardwareSetupViewModel : SetupWorkflowDetail
 
     private void Show(IReadOnlyList<OptionalHardwareModuleView> modules, bool preserveStatus = false)
     {
+        var models = modules.Select(x =>
+            new OptionalHardwareModuleViewModel(x, (tuple) => ApplyAsync(tuple.Item1, tuple.Item2).FireAndForget()));
         Modules.Clear();
-        foreach (var module in modules)
-        {
-            Modules.Add(new OptionalHardwareModuleViewModel(module, this));
-        }
-
+        Modules.AddRange(models);
         if (!preserveStatus)
         {
             Status = Modules.Count == 0
@@ -194,89 +192,5 @@ public sealed partial class OptionalHardwareSetupViewModel : SetupWorkflowDetail
         }
 
         OnPropertyChanged(nameof(HasModules));
-    }
-}
-
-/// <summary>Presents one optional-hardware module as an independent group of settings.</summary>
-public sealed class OptionalHardwareModuleViewModel
-{
-    /// <summary>Initializes a module group.</summary>
-    /// <param name="module">The module projection.</param>
-    /// <param name="parent">The owning workflow.</param>
-    public OptionalHardwareModuleViewModel(OptionalHardwareModuleView module, OptionalHardwareSetupViewModel parent)
-    {
-        Title = module.Title;
-        Description = module.Description;
-        Issues = module.Issues.Select(issue => $"[{issue.Severity}] {issue.Message}").ToArray();
-        Settings = module.Settings.Select(setting => new PeripheralSettingViewModel(setting, parent)).ToArray();
-    }
-
-    /// <summary>Gets the module title.</summary>
-    public string Title { get; }
-
-    /// <summary>Gets the module description.</summary>
-    public string Description { get; }
-
-    /// <summary>Gets the module configuration issues.</summary>
-    public IReadOnlyList<string> Issues { get; }
-
-    /// <summary>Gets whether the module has issues.</summary>
-    public bool HasIssues => Issues.Count > 0;
-
-    /// <summary>Gets the module settings.</summary>
-    public IReadOnlyList<PeripheralSettingViewModel> Settings { get; }
-}
-
-/// <summary>Presents one editable peripheral setting with either options or numeric entry.</summary>
-public sealed partial class PeripheralSettingViewModel : ObservableObject
-{
-    private readonly OptionalHardwareSetupViewModel parent;
-    private readonly PeripheralSetting setting;
-
-    /// <summary>Initializes a peripheral setting row.</summary>
-    /// <param name="setting">The setting projection.</param>
-    /// <param name="parent">The owning workflow.</param>
-    public PeripheralSettingViewModel(PeripheralSetting setting, OptionalHardwareSetupViewModel parent)
-    {
-        this.setting = setting;
-        this.parent = parent;
-        NumericValue = setting.CurrentValue;
-        SelectedOption = setting.Options.FirstOrDefault(option => Math.Abs(option.Value - setting.CurrentValue) <= 0.0005);
-    }
-
-    /// <summary>Gets the parameter display name.</summary>
-    public string DisplayName => setting.DisplayName;
-
-    /// <summary>Gets the parameter name.</summary>
-    public string Name => setting.Name;
-
-    /// <summary>Gets the metadata options.</summary>
-    public IReadOnlyList<PeripheralSettingOption> Options => setting.Options;
-
-    /// <summary>Gets whether the setting exposes discrete options.</summary>
-    public bool HasOptions => setting.Options.Count > 0;
-
-    /// <summary>Gets whether the setting is free numeric entry.</summary>
-    public bool IsNumeric => setting.Options.Count == 0;
-
-    /// <summary>Gets whether the setting is sensitive.</summary>
-    public bool IsSecret => setting.IsSecret;
-
-    /// <summary>Gets whether a reboot is required after changing this setting.</summary>
-    public bool RebootRequired => setting.RebootRequired;
-
-    /// <summary>Gets or sets the selected discrete option.</summary>
-    [ObservableProperty]
-    public partial PeripheralSettingOption? SelectedOption { get; set; }
-
-    /// <summary>Gets or sets the free numeric value.</summary>
-    [ObservableProperty]
-    public partial double NumericValue { get; set; }
-
-    [RelayCommand]
-    private Task Apply()
-    {
-        var value = HasOptions ? SelectedOption?.Value ?? setting.CurrentValue : NumericValue;
-        return parent.ApplyAsync(setting.Name, value);
     }
 }

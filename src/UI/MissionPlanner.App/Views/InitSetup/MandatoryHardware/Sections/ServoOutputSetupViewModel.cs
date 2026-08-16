@@ -157,6 +157,10 @@ public sealed partial class ServoOutputSetupViewModel : Models.SetupWorkflowDeta
         foreach (var model in Outputs)
         {
             await ApplyAsync(model);
+        }
+
+        foreach (var model in Outputs)
+        {
             model.Reset();
         }
 
@@ -246,7 +250,7 @@ public sealed partial class ServoOutputSetupViewModel : Models.SetupWorkflowDeta
             Outputs.Clear();
             foreach (var output in configuration.Outputs)
             {
-                Outputs.Add(new ServoOutputItemViewModel(output, configuration.FunctionOptions));
+                Outputs.Add(new ServoOutputItemViewModel(output, configuration.FunctionOptions, (x) => WriteCommand.NotifyCanExecuteChanged()));
             }
         }
 

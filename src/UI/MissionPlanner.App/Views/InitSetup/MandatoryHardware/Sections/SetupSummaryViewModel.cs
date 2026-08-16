@@ -19,18 +19,18 @@ public sealed partial class SetupSummaryViewModel : SetupWorkflowDetailViewModel
     private SetupSummary? current;
 
     /// <summary>Initializes the summary Setup workflow.</summary>
-    /// <param name="descriptor">The summary workflow descriptor.</param>
+    /// <param name="workflowCatalog">The setup workflow catalog.</param>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="summaryService">The setup summary service.</param>
     /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public SetupSummaryViewModel(
-        SetupWorkflowDescriptor descriptor,
+        ISetupWorkflowCatalog workflowCatalog,
         IActiveVehicleContext activeVehicle,
         ISetupSummaryService summaryService,
         IDispatcher dispatcher,
         ILogger<SetupSummaryViewModel> logger)
-        : base(descriptor)
+        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Summary))
     {
         this.activeVehicle = activeVehicle;
         this.summaryService = summaryService;

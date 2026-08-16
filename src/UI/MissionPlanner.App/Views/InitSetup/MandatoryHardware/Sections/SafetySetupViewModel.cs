@@ -31,7 +31,7 @@ public sealed partial class SafetySetupViewModel : SetupWorkflowDetailViewModel
         ISafetyAssessmentService safetyService,
         IVehicleParameterRegistry parameterRegistry,
         IDispatcher dispatcher, ILogger<SafetySetupViewModel> logger)
-        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.OptionalHardware))
+        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Safety))
     {
         this.activeVehicle = activeVehicle;
         this.safetyService = safetyService;

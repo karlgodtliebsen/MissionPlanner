@@ -229,7 +229,9 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
         var parameters = snapshot.VehicleId is { } id
             ? parameterRegistry.GetAllParameters(id)
             : new Dictionary<string, MavLink.Parameters.VehicleParameter>();
-        var evaluations = catalog.Evaluate(snapshot, parameters, completionStore.GetAll()).Where(item => item.IsVisible).ToArray();
+        // ExtendedTabView uses an index-aligned header collection with fixed tab content.
+        // Retain unsupported workflows so removing a header cannot shift it onto another tab.
+        var evaluations = catalog.Evaluate(snapshot, parameters, completionStore.GetAll()).ToArray();
         Workflows.Clear();
         foreach (var evaluation in evaluations)
         {

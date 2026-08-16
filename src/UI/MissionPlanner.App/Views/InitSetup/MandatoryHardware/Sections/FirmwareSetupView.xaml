@@ -6,7 +6,9 @@
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.FirmwareSetupView"
-                                  x:DataType="sections:FirmwareSetupViewModel">
+                                  x:DataType="sections:FirmwareSetupViewModel"
+                                  Margin="100,0,100,0"
+                                  >
     <ScrollView VerticalScrollBarVisibility="Always">
 
         <VerticalStackLayout Spacing="10">
@@ -47,9 +49,11 @@
                     Command="{Binding DiscoverCommand}" />
             </HorizontalStackLayout>
             <material:SelectField Title="Compatible release (exact board IDs)"
+                                 
                 ItemsSource="{Binding Releases}"
                 SelectedItem="{Binding SelectedRelease}"
                 ItemDisplayBinding="{Binding Version}" />
+
             <Label Text="{Binding SelectedBoardTarget, StringFormat='Technical board target: {0}'}" FontAttributes="Bold" />
             <Label Text="{Binding SelectedReleaseNotes}" LineBreakMode="WordWrap" />
             <HorizontalStackLayout Spacing="10">

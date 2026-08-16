@@ -6,7 +6,8 @@
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SafetySetupView"
-                                  x:DataType="sections:SafetySetupViewModel">
+                                  x:DataType="sections:SafetySetupViewModel"
+                                  Margin="100,0,100,0">
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Spacing="10">
         <ProgressBar Progress="{Binding Progress}" />

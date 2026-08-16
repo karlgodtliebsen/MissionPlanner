@@ -62,7 +62,7 @@
                         </controls:VirtualizedDataGrid.EmptyView>
                         <controls:VirtualizedDataGrid.Columns>
                             <material:DataGridColumn Width="*" x:DataType="tabs:ControlResponseMetricViewModel" ValueBinding="{Binding Axis}" Title="Axis" />
-                            <material:DataGridColumn Width="*" x:DataType="tabs:ControlResponseMetricViewModel"  ValueBinding="{Binding Desired}" Title="Desired" />
+                            <material:DataGridColumn Width="*" x:DataType="tabs:ControlResponseMetricViewModel" ValueBinding="{Binding Desired}" Title="Desired" />
                             <material:DataGridColumn Width="*" x:DataType="tabs:ControlResponseMetricViewModel" ValueBinding="{Binding Achieved}" Title="Achieved" />
                             <material:DataGridColumn Width="*" x:DataType="tabs:ControlResponseMetricViewModel" ValueBinding="{Binding Error}" Title="Error" />
                         </controls:VirtualizedDataGrid.Columns>
