@@ -72,6 +72,11 @@ public sealed class RadioChannelMeterView : GraphicsView
     /// <summary>Identifies <see cref="CapturedMaximum"/>.</summary>
     public static readonly BindableProperty CapturedMaximumProperty = MeterProperty<int?>(nameof(CapturedMaximum), null);
 
+    /// <summary>Gets or sets the fresh Review-stage trim candidate.</summary>
+    public int? CandidateTrim { get => (int?)GetValue(CandidateTrimProperty); set => SetValue(CandidateTrimProperty, value); }
+    /// <summary>Identifies <see cref="CandidateTrim"/>.</summary>
+    public static readonly BindableProperty CandidateTrimProperty = MeterProperty<int?>(nameof(CandidateTrim), null);
+
     /// <summary>Gets or sets whether captured endpoint markers are displayed.</summary>
     public bool IsCapturing { get => (bool)GetValue(IsCapturingProperty); set => SetValue(IsCapturingProperty, value); }
     /// <summary>Identifies <see cref="IsCapturing"/>.</summary>
@@ -127,6 +132,7 @@ public sealed class RadioChannelMeterView : GraphicsView
         private static readonly Color TrimColor = Color.FromArgb("#F0B44D");
         private static readonly Color CaptureColor = Color.FromArgb("#56C7A5");
         private static readonly Color CurrentColor = Color.FromArgb("#67B7E8");
+        private static readonly Color CandidateColor = Color.FromArgb("#D98ED5");
         private static readonly Color StaleColor = Color.FromArgb("#9AA4AD");
 
         public void Draw(ICanvas canvas, RectF dirtyRect)
@@ -171,6 +177,14 @@ public sealed class RadioChannelMeterView : GraphicsView
                 {
                     DrawTick(canvas, Position(capturedMaximum, horizontalPadding, width), centerY, 13, CaptureColor, 2.5f);
                 }
+            }
+
+            if (view.CandidateTrim is { } candidateTrim)
+            {
+                var candidateX = Position(candidateTrim, horizontalPadding, width);
+                canvas.StrokeColor = CandidateColor;
+                canvas.StrokeSize = 2;
+                canvas.DrawCircle(candidateX, centerY, 8);
             }
 
             if (view.HasSignal)

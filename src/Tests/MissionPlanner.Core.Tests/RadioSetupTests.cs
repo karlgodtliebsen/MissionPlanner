@@ -41,6 +41,65 @@ public sealed class RadioSetupTests
         throttle.Normalized.Should().BeApproximately(-0.8, 0.001);
     }
 
+    /// <summary>Verifies default pilot assignments produce an honest AETR summary.</summary>
+    [Fact]
+    public void DefaultMapSummaryIsAetr()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var context = new TestActiveVehicleContext(StateWithChannels([1500, 1500, 1500, 1500], now));
+        var service = CreateService(context, new VehicleParameterRegistry(), now);
+
+        service.GetLiveChannels(vehicleId).ChannelMapSummary.Should().Be("AETR");
+    }
+
+    /// <summary>Verifies RCMAP assignments, rather than channel-number assumptions, produce TAER.</summary>
+    [Fact]
+    public void RemappedPilotFunctionsProduceTaer()
+    {
+        var registry = new VehicleParameterRegistry();
+        Store(registry, "RCMAP_THROTTLE", 1);
+        Store(registry, "RCMAP_ROLL", 2);
+        Store(registry, "RCMAP_PITCH", 3);
+        Store(registry, "RCMAP_YAW", 4);
+        var now = DateTimeOffset.UtcNow;
+        var context = new TestActiveVehicleContext(StateWithChannels([1000, 1500, 1500, 1500], now));
+        var view = CreateService(context, registry, now).GetLiveChannels(vehicleId);
+
+        view.ChannelMapSummary.Should().Be("TAER");
+        view.Channels.Single(channel => channel.Number == 1).FunctionName.Should().Be("Throttle");
+        view.Channels.Single(channel => channel.Number == 2).FunctionName.Should().Be("Roll");
+    }
+
+    /// <summary>Verifies a noncompact map falls back to explicit assignments.</summary>
+    [Fact]
+    public void NonstandardMapUsesExplicitSummary()
+    {
+        var registry = new VehicleParameterRegistry();
+        Store(registry, "RCMAP_ROLL", 6);
+        var now = DateTimeOffset.UtcNow;
+        var context = new TestActiveVehicleContext(StateWithChannels([1500, 1500, 1500, 1500, 1500, 1500], now));
+
+        var summary = CreateService(context, registry, now).GetLiveChannels(vehicleId).ChannelMapSummary;
+
+        summary.Should().Contain("Roll CH6").And.Contain("Pitch CH2");
+    }
+
+    /// <summary>Verifies dead zone follows the mapped centered function.</summary>
+    [Fact]
+    public void DeadZoneFollowsMappedPilotChannel()
+    {
+        var registry = new VehicleParameterRegistry();
+        Store(registry, "RCMAP_ROLL", 6);
+        Store(registry, "RC6_DZ", 35);
+        Store(registry, "RC1_DZ", 99);
+        var now = DateTimeOffset.UtcNow;
+        var context = new TestActiveVehicleContext(StateWithChannels([1500, 1500, 1500, 1500, 1500, 1500], now));
+        var view = CreateService(context, registry, now).GetLiveChannels(vehicleId);
+
+        view.Channels.Single(channel => channel.Number == 6).DeadZone.Should().Be(35);
+        view.Channels.Single(channel => channel.Number == 1).DeadZone.Should().Be(0);
+    }
+
     /// <summary>Verifies stale RC telemetry is reported and cannot be mistaken for live input.</summary>
     [Fact]
     public void StaleTelemetryIsReported()
@@ -50,6 +109,19 @@ public sealed class RadioSetupTests
         var service = CreateService(context, new VehicleParameterRegistry(), now);
 
         service.GetLiveChannels(vehicleId).IsStale.Should().BeTrue();
+    }
+
+    /// <summary>Verifies unavailable RC RSSI remains unknown instead of becoming a false zero.</summary>
+    [Fact]
+    public void UnknownReceiverRssiRemainsUnknown()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var context = new TestActiveVehicleContext(StateWithChannels([1500], now));
+
+        var view = CreateService(context, new VehicleParameterRegistry(), now).GetLiveChannels(vehicleId);
+
+        view.RssiPercent.Should().BeNull();
+        view.SignalState.Should().Be(RadioSignalState.Live);
     }
 
     /// <summary>Verifies capture, Review trim sampling, and confirmed writes are distinct.</summary>

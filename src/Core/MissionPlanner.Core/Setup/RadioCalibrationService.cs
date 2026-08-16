@@ -101,13 +101,31 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
             var maximum = ReadInt(parameters, $"RC{number}_MAX", 2000);
             var trim = ReadInt(parameters, $"RC{number}_TRIM", 1500);
             var reversed = ReadBool(parameters, $"RC{number}_REVERSED");
+            var function = functions.GetValueOrDefault(number);
+            var kind = function switch
+            {
+                "Roll" or "Pitch" or "Yaw" => RadioChannelKind.CenteredAxis,
+                "Throttle" => RadioChannelKind.Throttle,
+                _ => RadioChannelKind.Auxiliary
+            };
+            var deadZone = kind == RadioChannelKind.CenteredAxis
+                ? ReadInt(parameters, $"RC{number}_DZ", 0)
+                : 0;
             channels.Add(new RadioChannelInfo(
                 number, pwm, Normalize(pwm, minimum, maximum, trim, reversed),
-                minimum, maximum, trim, reversed, functions.GetValueOrDefault(number)));
+                minimum, maximum, trim, reversed, function, deadZone, kind));
         }
 
         var stale = state.Radio.IsStale(clock.UtcNow, staleWindow);
-        return new RadioChannelsView(vehicleId, channels, stale, DetectStaticIssues(parameters, functions));
+        return new RadioChannelsView(
+            vehicleId,
+            channels,
+            stale,
+            DetectStaticIssues(parameters, functions),
+            state.Radio.RssiPercent,
+            state.IsArmed,
+            BuildChannelMapSummary(parameters),
+            state.Radio.ChannelCount ?? channels.Count);
     }
 
     /// <inheritdoc />
@@ -170,6 +188,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
             ApplyChannelSemantics(parameters, activeVehicle.State);
             var snapshot = SnapshotCaptures();
             var issues = ValidateCaptures(snapshot, ResolveFunctions(parameters));
+            snapshot = AttachIssues(snapshot, issues);
             if (issues.Any(issue => issue.Severity == RadioIssueSeverity.Hazard))
             {
                 next = Current with
@@ -233,6 +252,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
         var parameters = parameterRegistry.GetAllParameters(vehicleId);
         var functions = ResolveFunctions(parameters);
         var issues = ValidateTrimCandidates(snapshot, functions);
+        snapshot = AttachIssues(snapshot, issues);
         if (issues.Any(issue => issue.Severity == RadioIssueSeverity.Hazard))
         {
             Transition(new RadioCalibrationSnapshot(vehicleId, RadioCalibrationState.Review, snapshot,
@@ -564,6 +584,18 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
         return issues;
     }
 
+    private static IReadOnlyList<RadioChannelCapture> AttachIssues(
+        IReadOnlyList<RadioChannelCapture> captures,
+        IReadOnlyList<RadioValidationIssue> issues)
+    {
+        return captures.Select(capture => capture with
+        {
+            Issues = issues
+                .Where(issue => issue.Message.StartsWith($"Channel {capture.Number}", StringComparison.Ordinal))
+                .ToArray()
+        }).ToArray();
+    }
+
     private static IReadOnlyList<RadioParameterWrite> BuildWritePlan(IReadOnlyList<RadioChannelCapture> captures)
     {
         var writes = new List<RadioParameterWrite>();
@@ -636,6 +668,26 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
         return pilotFunctions
             .Select(item => new PilotAssignment(item.Parameter, ReadInt(parameters, item.Parameter, item.Default), item.Function))
             .ToArray();
+    }
+
+    private static string BuildChannelMapSummary(IReadOnlyDictionary<string, VehicleParameter> parameters)
+    {
+        var assignments = ResolvePilotAssignments(parameters);
+        if (assignments.Select(assignment => assignment.Channel).Distinct().Count() == assignments.Count &&
+            assignments.All(assignment => assignment.Channel is >= 1 and <= 4))
+        {
+            var byChannel = assignments.ToDictionary(assignment => assignment.Channel, assignment => assignment.Function);
+            return string.Concat(Enumerable.Range(1, 4).Select(channel => byChannel[channel] switch
+            {
+                "Roll" => "A",
+                "Pitch" => "E",
+                "Throttle" => "T",
+                "Yaw" => "R",
+                _ => "?"
+            }));
+        }
+
+        return string.Join(" · ", assignments.Select(assignment => $"{assignment.Function} CH{assignment.Channel}"));
     }
 
     private async Task<bool> WriteAndConfirmAsync(VehicleId vehicleId, string name, int value, CancellationToken cancellationToken)

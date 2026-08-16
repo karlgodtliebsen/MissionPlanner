@@ -9,6 +9,8 @@ namespace MissionPlanner.Core.Setup;
 /// <param name="Trim">The configured trim (center) value.</param>
 /// <param name="Reversed">Whether the channel is reversed.</param>
 /// <param name="FunctionName">The mapped pilot function, when known.</param>
+/// <param name="DeadZone">The configured dead zone for a centered pilot axis.</param>
+/// <param name="Kind">The operational channel presentation.</param>
 public sealed record RadioChannelInfo(
     int Number,
     int Pwm,
@@ -17,4 +19,6 @@ public sealed record RadioChannelInfo(
     int Maximum,
     int Trim,
     bool Reversed,
-    string? FunctionName);
+    string? FunctionName,
+    int DeadZone = 0,
+    RadioChannelKind Kind = RadioChannelKind.Auxiliary);

@@ -1,53 +1,143 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<tabViews:TabViewLifecycleContent x:TypeArguments="sections:RadioSetupViewModel" 
+<tabViews:TabViewLifecycleContent x:TypeArguments="sections:RadioSetupViewModel"
                                   xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                                  xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.RadioSetupView"
                                   x:DataType="sections:RadioSetupViewModel">
     <ScrollView VerticalScrollBarVisibility="Always">
+        <VerticalStackLayout Padding="16" Spacing="14">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <VerticalStackLayout Spacing="2">
+                    <Label Text="Radio calibration" FontSize="24" FontAttributes="Bold" />
+                    <Label Text="Live receiver input and verified ArduPilot endpoint calibration"
+                           Opacity="0.7" />
+                </VerticalStackLayout>
+                <Label Grid.Column="1"
+                       Text="{Binding CalibrationState}"
+                       Padding="12,6"
+                       VerticalOptions="Center"
+                       FontAttributes="Bold"
+                       BackgroundColor="{AppThemeBinding Light={StaticResource PrimaryContainer}, Dark={StaticResource PrimaryContainerDark}}" />
+            </Grid>
 
-        <VerticalStackLayout Spacing="10">
-        <ProgressBar Progress="{Binding Progress}" />
-        <Label Text="{Binding Error}" TextColor="Red" />
-        <Label Text="Radio calibration" FontSize="18" FontAttributes="Bold" />
-        <Label Text="Remove propellers and keep the vehicle disarmed. Turn on the transmitter before calibrating."
-               TextColor="OrangeRed"
-               FontAttributes="Bold"
-               LineBreakMode="WordWrap" />
-        <Label IsVisible="{Binding IsStale}"
-               Text="RC telemetry is stale — values shown may not reflect live stick positions."
-               TextColor="OrangeRed"
-               LineBreakMode="WordWrap" />
-        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Channels}" Spacing="4">
-            <BindableLayout.ItemTemplate>
-                <DataTemplate x:DataType="sections:RadioChannelDisplayViewModel">
-                    <Grid ColumnDefinitions="150,90,*" ColumnSpacing="8">
-                        <Label Text="{Binding Title}" FontAttributes="Bold" />
-                        <Label Grid.Column="1" Text="{Binding Pwm, StringFormat='{0} us'}" />
-                        <Label Grid.Column="2" Text="{Binding Range}" Opacity="0.75" />
-                    </Grid>
-                </DataTemplate>
-            </BindableLayout.ItemTemplate>
-        </VerticalStackLayout>
-        <Label Text="{Binding CalibrationState, StringFormat='State: {0}'}" FontAttributes="Bold" />
-        <Label Text="{Binding Instruction}" FontSize="16" LineBreakMode="WordWrap" />
-        <Label Text="{Binding CaptureSummary}" LineBreakMode="WordWrap" />
-        <VerticalStackLayout IsVisible="{Binding HasIssues}" BindableLayout.ItemsSource="{Binding Issues}">
-            <BindableLayout.ItemTemplate>
-                <DataTemplate x:DataType="x:String">
-                    <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
-                </DataTemplate>
-            </BindableLayout.ItemTemplate>
-        </VerticalStackLayout>
-        <HorizontalStackLayout Spacing="10">
-            <Button Text="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCommand}" />
-            <Button Text="Finish endpoint capture" IsEnabled="{Binding CanFinishCapture}" Command="{Binding FinishCaptureCommand}" />
-            <Button Text="Confirm and write" IsEnabled="{Binding CanWrite}" Command="{Binding ConfirmAndWriteCommand}" />
-            <Button Text="Cancel" IsEnabled="{Binding CanCancelCalibration}" Command="{Binding CancelCalibrationCommand}" />
-            <Button Text="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" />
-        </HorizontalStackLayout>
+            <Border Padding="14"
+                    Stroke="{AppThemeBinding Light={StaticResource Outline}, Dark={StaticResource OutlineDark}}"
+                    BackgroundColor="{AppThemeBinding Light=#FFF5DE, Dark=#493C22}"
+                    StrokeShape="RoundRectangle 10">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                    <Label Text="!" FontSize="22" FontAttributes="Bold" VerticalOptions="Start" />
+                    <VerticalStackLayout Grid.Column="1" Spacing="2">
+                        <Label Text="Calibration safety" FontAttributes="Bold" />
+                        <Label Text="Remove propellers and keep the vehicle disarmed. Turn on the transmitter before calibrating."
+                               LineBreakMode="WordWrap" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <Border Padding="14"
+                    Stroke="{AppThemeBinding Light={StaticResource Outline}, Dark={StaticResource OutlineDark}}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}"
+                    StrokeShape="RoundRectangle 10">
+                <VerticalStackLayout Spacing="9">
+                    <Label Text="Receiver" FontSize="17" FontAttributes="Bold" />
+                    <FlexLayout Direction="Row" Wrap="Wrap" AlignItems="Center">
+                        <Label Text="●" FontSize="18" Margin="0,0,5,0" />
+                        <Label Text="{Binding SignalStatus}" FontAttributes="Bold" Margin="0,0,20,0" />
+                        <Label Text="{Binding ChannelCount, StringFormat='{0} channels'}" Margin="0,0,20,0" />
+                        <Label Text="{Binding RssiText}" Margin="0,0,20,0" />
+                        <Label Text="{Binding VehicleSafetyStatus}" FontAttributes="Bold" />
+                    </FlexLayout>
+                    <Label Text="{Binding ChannelMapSummary, StringFormat='Pilot map: {0}'}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Label IsVisible="{Binding IsStale}"
+                   Text="RC telemetry is stale. The last values remain visible, but calibration cannot start or write until fresh input returns."
+                   FontAttributes="Bold"
+                   LineBreakMode="WordWrap" />
+
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Channels}" Spacing="7">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="sections:RadioChannelDisplayViewModel">
+                        <Border Padding="10,8"
+                                Stroke="{AppThemeBinding Light={StaticResource Outline}, Dark={StaticResource OutlineDark}}"
+                                StrokeShape="RoundRectangle 8">
+                            <Grid RowDefinitions="Auto,32,Auto,Auto" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                <Label Text="{Binding Number, StringFormat='CH {0}'}"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center" />
+                                <Label Grid.Column="1"
+                                       Text="{Binding RoleLabel}"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center" />
+                                <HorizontalStackLayout Grid.Column="2" Spacing="8">
+                                    <Label Text="REV" IsVisible="{Binding IsReversed}" FontAttributes="Bold" />
+                                    <Label Text="{Binding AuxiliaryState}" Opacity="0.7" />
+                                    <Label Text="{Binding Pwm, StringFormat='{0} µs'}"
+                                           FontAttributes="Bold"
+                                           HorizontalTextAlignment="End" />
+                                </HorizontalStackLayout>
+
+                                <common:RadioChannelMeterView Grid.Row="1" Grid.ColumnSpan="3"
+                                                              ChannelNumber="{Binding Number}"
+                                                              FunctionName="{Binding FunctionName}"
+                                                              Pwm="{Binding Pwm}"
+                                                              ConfiguredMinimum="{Binding Minimum}"
+                                                              ConfiguredMaximum="{Binding Maximum}"
+                                                              Trim="{Binding Trim}"
+                                                              DeadZone="{Binding DeadZone}"
+                                                              CapturedMinimum="{Binding CapturedMinimum}"
+                                                              CapturedMaximum="{Binding CapturedMaximum}"
+                                                              CandidateTrim="{Binding CandidateTrim}"
+                                                              IsCapturing="{Binding ShowCapturedRange}"
+                                                              IsStale="{Binding IsStale}"
+                                                              HasSignal="{Binding HasSignal}"
+                                                              PresentationKind="{Binding PresentationKind}"
+                                                              IsReversed="{Binding IsReversed}" />
+
+                                <Label Grid.Row="2" Grid.ColumnSpan="3"
+                                       Text="{Binding Range, StringFormat='Stored MIN / TRIM / MAX   {0}'}"
+                                       FontSize="12" Opacity="0.72" />
+                                <Label Grid.Row="3" Grid.ColumnSpan="3"
+                                       Text="{Binding CalibrationIssue}"
+                                       FontSize="12" LineBreakMode="WordWrap" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <Border Padding="14"
+                    Stroke="{AppThemeBinding Light={StaticResource Outline}, Dark={StaticResource OutlineDark}}"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}"
+                    StrokeShape="RoundRectangle 10">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Next step" FontAttributes="Bold" />
+                    <Label Text="{Binding Instruction}" FontSize="16" LineBreakMode="WordWrap" />
+                    <Label Text="{Binding CaptureSummary}" FontSize="12" Opacity="0.75" LineBreakMode="WordWrap" />
+                    <Label Text="{Binding Error}" FontAttributes="Bold" LineBreakMode="WordWrap" />
+                    <ActivityIndicator IsVisible="{Binding IsWriting}" IsRunning="{Binding IsWriting}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <VerticalStackLayout IsVisible="{Binding HasIssues}" BindableLayout.ItemsSource="{Binding Issues}" Spacing="4">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                        <Label Text="{Binding .}" FontAttributes="Bold" LineBreakMode="WordWrap" />
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <FlexLayout Direction="Row" Wrap="Wrap" JustifyContent="Start">
+                <Button Text="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCommand}" Margin="0,0,8,8" />
+                <Button Text="Finish endpoint capture" IsEnabled="{Binding CanFinishCapture}" Command="{Binding FinishCaptureCommand}" Margin="0,0,8,8" />
+                <Button Text="Confirm and write" IsEnabled="{Binding CanWrite}" Command="{Binding ConfirmAndWriteCommand}" Margin="0,0,8,8" />
+                <Button Text="Cancel" IsEnabled="{Binding CanCancelCalibration}" Command="{Binding CancelCalibrationCommand}" Margin="0,0,8,8" />
+                <Button Text="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" Margin="0,0,8,8" />
+            </FlexLayout>
         </VerticalStackLayout>
     </ScrollView>
 </tabViews:TabViewLifecycleContent>
