@@ -7,10 +7,10 @@ public sealed class MauiFirmwareFilePicker : IFirmwareFilePicker
     public async Task<FirmwareFileSelection?> PickAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var file = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Select ArduPilot firmware (.apj or .px4)" });
+        var file = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Select ArduPilot firmware (.apj, .px4, or *_with_bl.hex)" });
         cancellationToken.ThrowIfCancellationRequested();
         return file is null
             ? null
-            : new FirmwareFileSelection(file.FileName, _ => file.OpenReadAsync());
+            : new FirmwareFileSelection(file.FileName, _ => file.OpenReadAsync(), file.FullPath);
     }
 }

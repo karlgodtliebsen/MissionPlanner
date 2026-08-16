@@ -197,7 +197,6 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     /// <summary>Gets curated official and fallback support destinations.</summary>
     public IReadOnlyList<FirmwareSupportLink> SupportLinks { get; }
 
-
     [ObservableProperty] public partial FirmwareReleaseChannel SelectedChannel { get; set; } = FirmwareReleaseChannel.Stable;
 
     [ObservableProperty] public partial FirmwareCatalogItemViewModel? SelectedFirmware { get; set; }
@@ -217,6 +216,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     /// <summary>Gets whether parsed custom metadata is available.</summary>
     public bool HasCustomFirmware => CustomPackage is not null;
 
+
     /// <summary>Gets whether the current non-terminal work accepts a cancellation request.</summary>
     public bool CanRequestCancellation => IsCatalogRefreshRunning || IsOperationInProgress;
 
@@ -226,11 +226,15 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     /// <summary>Gets whether a terminal diagnostic report can be copied.</summary>
     public bool HasDiagnosticReport => !string.IsNullOrWhiteSpace(LastDiagnosticReport);
 
-    /// <summary>Gets whether the selected official target can be installed through STM32 ROM DFU.</summary>
-    public bool CanInstallInitialDfuFirmware => SelectedFirmware is not null &&
-                                                SelectedDfuDevice?.Descriptor.DriverState == DfuDriverState.PresentReady && !IsOperationInProgress;
+    /// <summary>Gets whether a local combined application-and-bootloader HEX file is selected.</summary>
+    public bool HasLocalDfuFirmware => !string.IsNullOrWhiteSpace(LocalDfuFirmwarePath);
 
-    [ObservableProperty] public partial bool IsHelpVisible { get; private set; }
+    [ObservableProperty] public partial bool HasDevice { get; private set; }
+    [ObservableProperty] public partial bool HasDfuBootLoader { get; private set; }
+
+    /// <summary>Gets whether a firmware release from the catalogue is selected.</summary>
+    [ObservableProperty]
+    public partial bool HasSelectedFirmware { get; set; }
 
     [ObservableProperty] public partial ApjFirmwarePackage? CustomPackage { get; private set; }
     [ObservableProperty] public partial string? CustomFirmwareName { get; private set; }
@@ -239,10 +243,10 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     [ObservableProperty] public partial string? CustomFirmwareBuild { get; private set; }
     [ObservableProperty] public partial int CustomFirmwareBoardId { get; private set; }
     [ObservableProperty] public partial long CustomFirmwareImageSize { get; private set; }
-
-
+    [ObservableProperty] public partial string? LocalDfuFirmwarePath { get; private set; }
+    [ObservableProperty] public partial string? LocalDfuFirmwareName { get; private set; }
+    [ObservableProperty] public partial string? LocalDfuPlatform { get; set; }
     [ObservableProperty] public partial bool IsConnectedMode { get; private set; }
-
     [ObservableProperty] public partial bool IsDisconnectedMode { get; private set; }
     [ObservableProperty] public partial bool IsUnsupportedMode { get; private set; }
     [ObservableProperty] public partial bool IsOperationInProgress { get; private set; }
@@ -346,7 +350,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     partial void OnIsCatalogRefreshRunningChanged(bool value)
     {
         OnPropertyChanged(nameof(CanRequestCancellation));
-        CancelCommand.NotifyCanExecuteChanged();
+        NotifyAll();
     }
 
     [RelayCommand]
@@ -369,10 +373,11 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         OnPropertyChanged(nameof(HasPreparedFirmware));
         CustomPackage = null;
         OnPropertyChanged(nameof(HasCustomFirmware));
-        InstallCommand.NotifyCanExecuteChanged();
+        NotifyAll();
     }
 
-    [RelayCommand]
+
+    [RelayCommand(CanExecute = nameof(HasDevice))]
     private async Task LoadCustomFirmwareAsync(CancellationToken cancellationToken)
     {
         try
@@ -384,11 +389,6 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             }
 
             var extension = Path.GetExtension(file.FileName);
-            if (extension.Equals(".hex", StringComparison.OrdinalIgnoreCase))
-            {
-                throw new NotSupportedException(".hex firmware requires a future DFU/legacy workflow. Select a GCS-loadable .apj or .px4 package.");
-            }
-
             if (!extension.Equals(".apj", StringComparison.OrdinalIgnoreCase) && !extension.Equals(".px4", StringComparison.OrdinalIgnoreCase))
             {
                 throw new NotSupportedException("Only .apj and .px4 firmware packages are supported by the modern bootloader workflow.");
@@ -397,6 +397,8 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             await using var stream = await file.OpenReadAsync(cancellationToken);
             var package = await packageReader.ReadAsync(stream, cancellationToken);
             CustomPackage = package;
+            LocalDfuFirmwarePath = null;
+            LocalDfuFirmwareName = null;
             CustomFirmwareName = file.FileName;
             CustomFirmwareDescription = package.Description ?? "Custom ArduPilot firmware";
             CustomFirmwarePlatform = package.Summary ?? "Platform declared by board ID";
@@ -405,9 +407,11 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             CustomFirmwareImageSize = package.Image.Length;
             SelectedFirmware = null;
             selectedFirmwareTarget = null;
+            OnPropertyChanged(nameof(HasSelectedFirmware));
             OnPropertyChanged(nameof(HasCustomFirmware));
-            InstallCommand.NotifyCanExecuteChanged();
-            StatusMessage = "Custom firmware parsed and validated. Connect the target in bootloader mode to install.";
+            OnPropertyChanged(nameof(HasLocalDfuFirmware));
+            NotifyAll();
+            StatusMessage = "Local firmware parsed and validated. Verify its board ID, then install it using the custom firmware panel.";
             UpdateContextHelp();
         }
         catch (Exception exception)
@@ -415,9 +419,103 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             logger.LogWarning(exception, "Custom firmware selection failed.");
             CustomPackage = null;
             OnPropertyChanged(nameof(HasCustomFirmware));
-            InstallCommand.NotifyCanExecuteChanged();
+            NotifyAll();
             StatusMessage = exception.Message;
         }
+    }
+
+    [RelayCommand(CanExecute = nameof(HasDfuBootLoader))]
+    private async Task LoadCustomBlWithFirmwareAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var file = await filePicker.PickAsync(cancellationToken);
+            if (file is null)
+            {
+                return;
+            }
+
+            var extension = Path.GetExtension(file.FileName);
+
+            if (!extension.Equals(".hex", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new NotSupportedException("Only .hex firmware packages are supported by the modern bootloader workflow.");
+            }
+
+            if (!file.FileName.EndsWith("_with_bl.hex", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new NotSupportedException("For STM32 DFU installation, select a combined application-and-bootloader file named *_with_bl.hex.");
+            }
+
+            if (string.IsNullOrWhiteSpace(file.LocalPath) || !File.Exists(file.LocalPath))
+            {
+                throw new NotSupportedException("The selected HEX file does not expose a local path required by STM32CubeProgrammer.");
+            }
+
+            LocalDfuFirmwarePath = Path.GetFullPath(file.LocalPath);
+            LocalDfuFirmwareName = file.FileName;
+            CustomPackage = null;
+            SelectedFirmware = null;
+            selectedFirmwareTarget = null;
+            OnPropertyChanged(nameof(HasCustomFirmware));
+            OnPropertyChanged(nameof(HasSelectedFirmware));
+            OnPropertyChanged(nameof(HasLocalDfuFirmware));
+            OnPropertyChanged(nameof(CanInstallDfuFirmware));
+            NotifyAll();
+            StatusMessage = "Local *_with_bl.hex selected. Enter its exact ArduPilot platform and select the detected STM32 DFU device.";
+        }
+        catch (Exception exception)
+        {
+            logger.LogWarning(exception, "Custom firmware selection failed.");
+            CustomPackage = null;
+            OnPropertyChanged(nameof(HasCustomFirmware));
+            NotifyAll();
+            StatusMessage = exception.Message;
+        }
+    }
+
+    private void NotifyAll()
+    {
+        InstallDfuFirmwareCommand.NotifyCanExecuteChanged();
+        InstallCommand.NotifyCanExecuteChanged();
+        CancelCommand.NotifyCanExecuteChanged();
+        UpdateBootloaderCommand.NotifyCanExecuteChanged();
+        LoadCustomFirmwareCommand.NotifyCanExecuteChanged();
+        CopyDownloadUrlCommand.NotifyCanExecuteChanged();
+        ClearCustomFirmwareCommand.NotifyCanExecuteChanged();
+        DownloadAndValidateCommand.NotifyCanExecuteChanged();
+        LoadCustomBlWithFirmwareCommand.NotifyCanExecuteChanged();
+        RefreshCatalogCommand.NotifyCanExecuteChanged();
+        ShowAllOptionsCommand.NotifyCanExecuteChanged();
+        ClearLocalDfuFirmwareCommand.NotifyCanExecuteChanged();
+    }
+
+    [RelayCommand]
+    private void ClearCustomFirmware()
+    {
+        CustomPackage = null;
+        CustomFirmwareName = null;
+        CustomFirmwareDescription = null;
+        CustomFirmwarePlatform = null;
+        CustomFirmwareBuild = null;
+        CustomFirmwareBoardId = 0;
+        CustomFirmwareImageSize = 0;
+        OnPropertyChanged(nameof(HasCustomFirmware));
+        NotifyAll();
+        StatusMessage = "Local firmware selection cleared.";
+        UpdateContextHelp();
+    }
+
+    [RelayCommand]
+    private void ClearLocalDfuFirmware()
+    {
+        LocalDfuFirmwarePath = null;
+        LocalDfuFirmwareName = null;
+        LocalDfuPlatform = null;
+        OnPropertyChanged(nameof(HasLocalDfuFirmware));
+        OnPropertyChanged(nameof(CanInstallDfuFirmware));
+        NotifyAll();
+        StatusMessage = "Local STM32 DFU firmware selection cleared.";
     }
 
     [RelayCommand(CanExecute = nameof(CanStartInstall), AllowConcurrentExecutions = false)]
@@ -479,24 +577,47 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
 
     private bool CanStartInstall()
     {
-        return CanInstall && (SelectedFirmware is not null || CustomPackage is not null) && !IsOperationInProgress;
+        return SelectedDevice is not null && CanInstall && (SelectedFirmware is not null || CustomPackage is not null) && !IsOperationInProgress;
     }
 
-    [RelayCommand(CanExecute = nameof(CanInstallInitialDfuFirmware), AllowConcurrentExecutions = false)]
-    private async Task InstallInitialDfuFirmwareAsync(CancellationToken cancellationToken)
+    /// <summary>Gets whether the selected official target can be installed through STM32 ROM DFU.</summary>
+    public bool CanInstallDfuFirmware()
     {
-        if (SelectedFirmware is null || SelectedDfuDevice is null ||
+        return
+            (!string.IsNullOrWhiteSpace(LocalDfuFirmwarePath) ? !string.IsNullOrWhiteSpace(LocalDfuPlatform) : SelectedFirmware is not null)
+            &&
+            SelectedDfuDevice?.Descriptor.DriverState == DfuDriverState.PresentReady && !IsOperationInProgress;
+    }
+
+
+    [RelayCommand(CanExecute = nameof(CanInstallDfuFirmware), AllowConcurrentExecutions = false)]
+    private async Task InstallDfuFirmwareAsync(CancellationToken cancellationToken)
+    {
+        var hasLocalHex = !string.IsNullOrWhiteSpace(LocalDfuFirmwarePath);
+        if ((!hasLocalHex && SelectedFirmware is null) || SelectedDfuDevice is null ||
             Interlocked.CompareExchange(ref operationRunning, 1, 0) != 0)
         {
             return;
         }
 
-        var selectedFirmware = SelectedFirmware;
+        // An explicitly loaded local image must always take precedence over a catalogue
+        // row that may have been restored or automatically selected during refresh.
+        var selectedFirmware = hasLocalHex ? null : SelectedFirmware;
         var selectedDfuDevice = SelectedDfuDevice;
-        var requiredPhrase = $"FLASH {selectedFirmware.Platform}";
+        var platform = hasLocalHex ? LocalDfuPlatform?.Trim() : selectedFirmware?.Platform;
+        var boardId = selectedFirmware?.BoardId;
+        var localHexPath = hasLocalHex ? LocalDfuFirmwarePath : null;
+        if (string.IsNullOrWhiteSpace(platform))
+        {
+            StatusMessage = "Enter the exact ArduPilot platform for the selected local HEX file.";
+            Interlocked.Exchange(ref operationRunning, 0);
+            return;
+        }
+
+        var requiredPhrase = $"FLASH {platform}";
         var phrase = await dialogService.DisplayPromptAsync(
             "Confirm initial ArduPilot installation",
-            $"This replaces Betaflight and installs ArduPilot plus its bootloader for {selectedFirmware.Platform} (board ID {selectedFirmware.BoardId}). Type exactly: {requiredPhrase}",
+            $"This replaces Betaflight and installs ArduPilot plus its bootloader for {platform}{(boardId is int id ? $" (board ID {id})" : string.Empty)}. Type exactly: {requiredPhrase}",
             string.Empty,
             "Continue");
         if (!string.Equals(phrase?.Trim(), requiredPhrase, StringComparison.Ordinal))
@@ -518,17 +639,18 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             }));
             var result = await dfuInstallationService.InstallAsync(
                 new DfuInstallationRequest(
-                    selectedFirmware.Platform,
-                    selectedFirmware.BoardId,
+                    platform,
+                    boardId,
                     selectedDfuDevice.Descriptor,
                     ConfirmationPhrase: requiredPhrase,
-                    ManifestEntry: selectedFirmware.Entry),
+                    ManifestEntry: selectedFirmware?.Entry,
+                    LocalHexPath: localHexPath),
                 progress,
                 ownedCancellation.Token);
 
             await RefreshDfuDevicesAsync(CancellationToken.None);
 
-            LastDiagnosticReport = BuildDfuDiagnosticReport(result, selectedFirmware, selectedDfuDevice.Descriptor);
+            LastDiagnosticReport = BuildDfuDiagnosticReport(result, platform, boardId, selectedDfuDevice.Descriptor);
             OnPropertyChanged(nameof(HasDiagnosticReport));
             StatusMessage = result.State == DfuOperationState.Completed
                 ? result.ApplicationRediscovered
@@ -812,7 +934,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         var retained = previousEntry is null ? null : FirmwareChoices.FirstOrDefault(item => SameEntry(item.Entry, previousEntry));
         var automatic = FirmwareTargetSelector.UnambiguousHighConfidence(recommendations);
         SelectedFirmware = retained ?? (automatic is null ? null : FirmwareChoices.Single(item => ReferenceEquals(item.Entry, automatic.Entry)));
-        InstallCommand.NotifyCanExecuteChanged();
+        NotifyAll();
     }
 
     private static IReadOnlyList<FirmwareDeviceItemViewModel> CreateDeviceItems(IReadOnlyList<FirmwareManifestEntry> entries, IReadOnlyList<SerialDeviceDescriptor> devices)
@@ -950,13 +1072,12 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             return;
         }
 
-        IsCancellationDeferred = CurrentOperationState is FirmwareOperationState.Erasing or
-            FirmwareOperationState.Programming or FirmwareOperationState.Verifying or FirmwareOperationState.Rebooting;
+        IsCancellationDeferred = CurrentOperationState is FirmwareOperationState.Erasing or FirmwareOperationState.Programming or FirmwareOperationState.Verifying or FirmwareOperationState.Rebooting;
         StatusMessage = IsCancellationDeferred
             ? "Cancellation requested. The flash will continue through verify and reboot before stopping at a safe boundary. Do not disconnect power."
             : "Cancelling firmware operation…";
         cancellation.Cancel();
-        CancelCommand.NotifyCanExecuteChanged();
+        NotifyAll();
     }
 
     [RelayCommand]
@@ -975,12 +1096,6 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     private Task OpenDeviceManagerAsync(CancellationToken cancellationToken)
     {
         return deviceManagerLauncher.OpenAsync(cancellationToken);
-    }
-
-    [RelayCommand]
-    private void ToggleHelp()
-    {
-        IsHelpVisible = !IsHelpVisible;
     }
 
     private void OnActiveVehicleChanged(object? sender, Core.Vehicles.ActiveVehicleChangedEventArgs e)
@@ -1016,11 +1131,8 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         OnPropertyChanged(nameof(CanNavigateAway));
         OnPropertyChanged(nameof(CanRequestCancellation));
         ApplyMode(stage);
-        InstallCommand.NotifyCanExecuteChanged();
-        OnPropertyChanged(nameof(CanInstallInitialDfuFirmware));
-        InstallInitialDfuFirmwareCommand.NotifyCanExecuteChanged();
-        UpdateBootloaderCommand.NotifyCanExecuteChanged();
-        CancelCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(CanInstallDfuFirmware));
+        NotifyAll();
     }
 
     private void ApplyMode(FirmwareOperationState? stage = null)
@@ -1047,8 +1159,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         IsUnsupportedMode = visibleMode == FirmwarePageMode.UnsupportedPlatform;
         CanInstall = state.CanInstallApplicationFirmware;
         CanUpdateBootloader = state.CanUpdateEmbeddedBootloader;
-        InstallCommand.NotifyCanExecuteChanged();
-        UpdateBootloaderCommand.NotifyCanExecuteChanged();
+        NotifyAll();
     }
 
     private void UpdateProgress(FirmwareProgress progress)
@@ -1069,14 +1180,29 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             selectedFirmwareTarget = value.Entry;
         }
 
-        OnPropertyChanged(nameof(CanInstallInitialDfuFirmware));
-        InstallInitialDfuFirmwareCommand.NotifyCanExecuteChanged();
+        HasSelectedFirmware = value is not null;
+        OnPropertyChanged(nameof(CanInstallDfuFirmware));
+        NotifyAll();
     }
+
+    partial void OnSelectedDeviceChanged(FirmwareDeviceItemViewModel? value)
+    {
+        HasDevice = value is not null;
+        NotifyAll();
+    }
+
 
     partial void OnSelectedDfuDeviceChanged(DfuDeviceItemViewModel? value)
     {
-        OnPropertyChanged(nameof(CanInstallInitialDfuFirmware));
-        InstallInitialDfuFirmwareCommand.NotifyCanExecuteChanged();
+        HasDfuBootLoader = value is not null;
+        OnPropertyChanged(nameof(CanInstallDfuFirmware));
+        NotifyAll();
+    }
+
+    partial void OnLocalDfuPlatformChanged(string? value)
+    {
+        OnPropertyChanged(nameof(CanInstallDfuFirmware));
+        NotifyAll();
     }
 
     private IProgress<FirmwareProgress> CreateProgress()
@@ -1127,7 +1253,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             operationCancellation = null;
         }
 
-        CancelCommand.NotifyCanExecuteChanged();
+        NotifyAll();
     }
 
     private void UpdateContextHelp(bool packageBoardMismatch = false)
@@ -1223,14 +1349,15 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
 
     private static string BuildDfuDiagnosticReport(
         DfuProgrammingResult result,
-        FirmwareCatalogItemViewModel firmware,
+        string platform,
+        int? boardId,
         DfuDeviceDescriptor device)
     {
         var warnings = result.Warnings is { Count: > 0 } ? string.Join(", ", result.Warnings) : "None";
         return $"Operation: {result.OperationId}\n" +
                $"State: {result.State}\n" +
-               $"Platform: {firmware.Platform}\n" +
-               $"Firmware board ID: {firmware.BoardId}\n" +
+               $"Platform: {platform}\n" +
+               $"Firmware board ID: {boardId?.ToString() ?? "Not available for local HEX"}\n" +
                $"DFU device: VID_{device.VendorId:X4}&PID_{device.ProductId:X4}\n" +
                $"Programming succeeded: {result.ProgrammingSucceeded}\n" +
                $"Verification succeeded: {result.VerificationSucceeded}\n" +
