@@ -75,7 +75,7 @@
                     <virtualized:VirtualizedDataGrid  Grid.Row="3" 
                                                         IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
                                                         MaximumHeightRequest="600"
-                                                    
+                                                        SearchDelayMilliseconds="1000"
                                                         ItemsSource="{Binding FilteredFirmwareChoices}" 
                                                         ItemSizingStrategy= "MeasureFirstItem"
                                                         HorizontalOptions="Fill"

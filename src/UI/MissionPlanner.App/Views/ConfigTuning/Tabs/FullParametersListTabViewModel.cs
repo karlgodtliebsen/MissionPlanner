@@ -7,10 +7,12 @@ using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.Common;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Profiles;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
+using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using UraniumUI.Material.Dialogs;
@@ -23,6 +25,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     private const string DefaultStatusMessage = "Connect a vehicle, then refresh parameters.";
     private readonly IVehicleConnectionSession connectionSession;
     private readonly IVehicleParameterRegistry parameterRegistry;
+    private readonly IVehicleParameterLoadStatusContext parameterLoadStatus;
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IParameterEditSessionFactory editSessionFactory;
     private readonly IDispatcher dispatcher;
@@ -33,6 +36,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     private readonly IParameterProfileRepository profiles;
     private readonly IParameterProfileService profileWorkflow;
     private readonly ILogger<FullParametersListTabViewModel> logger;
+    private readonly IDisposable parameterLoadStatusSubscription;
     private CancellationTokenSource? loadCancellation;
     private CancellationTokenSource? cachedLoadCancellation;
     private IParameterEditSession? editSession;
@@ -68,6 +72,8 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         IUserConfirmationService confirmation,
         IParameterProfileRepository profiles,
         IParameterProfileService profileWorkflow,
+        IVehicleParameterLoadStatusContext parameterLoadStatus,
+        IDomainEventHub domainEventHub,
         ILogger<FullParametersListTabViewModel> logger)
     {
         this.connectionSession = connectionSession;
@@ -81,7 +87,9 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         this.confirmation = confirmation;
         this.profiles = profiles;
         this.profileWorkflow = profileWorkflow;
+        this.parameterLoadStatus = parameterLoadStatus;
         this.logger = logger;
+        parameterLoadStatusSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleParameterLoadStatusChanged>(OnParameterLoadStatusChanged);
         InitializeView();
     }
 
@@ -128,6 +136,11 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     [NotifyCanExecuteChangedFor(nameof(SaveToJsonFileCommand))]
     [NotifyCanExecuteChangedFor(nameof(RetryFailedCommand))]
     public partial bool IsBusy { get; set; }
+
+    /// <summary>Gets whether the connection-owned background parameter download is active.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
+    public partial bool IsBackgroundParameterLoadInProgress { get; set; }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
@@ -185,6 +198,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
         if (activeVehicle.VehicleId is { } vehicleId && HasConnection)
         {
+            ApplyParameterLoadStatus(parameterLoadStatus.Get(vehicleId));
             ScheduleCachedParameterLoad(vehicleId);
         }
     }
@@ -224,9 +238,67 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
             if (changed && vehicleChangedEventArgs.Current.VehicleId is { } vehicleId)
             {
+                ApplyParameterLoadStatus(parameterLoadStatus.Get(vehicleId));
                 ScheduleCachedParameterLoad(vehicleId);
             }
         });
+    }
+
+    private Task OnParameterLoadStatusChanged(VehicleParameterLoadStatusChanged evt, CancellationToken cancellationToken)
+    {
+        var status = evt.Status;
+        if (disposed || activeVehicle.VehicleId != status.VehicleId)
+        {
+            return Task.CompletedTask;
+        }
+
+        dispatcher.Dispatch(() =>
+        {
+            var latest = parameterLoadStatus.Get(status.VehicleId);
+            if (latest != status)
+            {
+                return;
+            }
+
+            ApplyParameterLoadStatus(latest);
+        });
+        return Task.CompletedTask;
+    }
+
+    private void ApplyParameterLoadStatus(ParameterLoadStatus? status)
+    {
+        if (status is null || activeVehicle.VehicleId != status.VehicleId)
+        {
+            return;
+        }
+
+        IsBackgroundParameterLoadInProgress = status.IsInProgress;
+        ShowLoadingProgress = status.IsInProgress;
+        ProgressMessage = status.Message;
+
+        switch (status.State)
+        {
+            case ParameterLoadState.Starting:
+            case ParameterLoadState.Downloading:
+                ShowLoadingCompletedWithError = false;
+                ShowLoadingCancelled = false;
+                SetMessages(status.Message);
+                break;
+            case ParameterLoadState.Completed:
+                ShowLoadingCompletedWithError = false;
+                ShowLoadingCancelled = false;
+                SetMessages(status.Message);
+                ScheduleCachedParameterLoad(status.VehicleId);
+                break;
+            case ParameterLoadState.Failed:
+                ShowLoadingCompletedWithError = true;
+                SetMessages(errorMessage: status.Message);
+                break;
+            case ParameterLoadState.Cancelled:
+                ShowLoadingCancelled = true;
+                SetMessages(errorMessage: status.Message);
+                break;
+        }
     }
 
     private void OnParameterRegistryChanged(
@@ -379,7 +451,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     private async Task RefreshParametersAsync()
     {
         SetMessages();
-        if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
+        if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline || IsBackgroundParameterLoadInProgress)
         {
             return;
         }
@@ -699,7 +771,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
 
     private bool CanRefreshParameters()
     {
-        return HasConnection && !IsBusy;
+        return HasConnection && !IsBusy && !IsBackgroundParameterLoadInProgress;
     }
 
     private bool CanRevertChanges()
@@ -883,6 +955,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         Interlocked.Exchange(ref sessionRefreshScheduled, 0);
         activeVehicle.Changed -= OnActiveVehicleChanged;
         parameterRegistry.Changed -= OnParameterRegistryChanged;
+        parameterLoadStatusSubscription.Dispose();
         CancelCachedParameterLoad();
         CancelLoadOperation();
         CloseProgressDialog();

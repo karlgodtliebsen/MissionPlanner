@@ -156,6 +156,7 @@ public static class DomainConfigurator
         services.TryAddSingleton<IVehicleRegistry, VehicleRegistry>();
         services.TryAddSingleton<IActiveVehicleContext, ActiveVehicleContext>();
         services.TryAddSingleton<IVehicleParameterRegistry, VehicleParameterRegistry>();
+        services.TryAddSingleton<IVehicleParameterLoadStatusContext, VehicleParameterLoadStatusContext>();
 
         services.TryAddTransient<ISerialPortDiscoveryService, SerialPortDiscoveryService>();
 

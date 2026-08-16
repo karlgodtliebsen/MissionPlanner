@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.Core.DomainEvents;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.App.Views.Common;
@@ -41,7 +43,12 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
     /// <param name="dispatcher">The Dispatcher for UI thread operations.</param>
     /// <param name="domainEventHub">The domain event hub.</param>
     /// <param name="logger">The logger instance.</param>
-    public StatusBarViewModel(ApplicationStateService stateService, IDispatcher dispatcher, IDomainEventHub domainEventHub, ILogger<StatusBarViewModel> logger) : this()
+    public StatusBarViewModel(
+        ApplicationStateService stateService,
+        IDispatcher dispatcher,
+        IDomainEventHub domainEventHub,
+        IVehicleParameterLoadStatusContext parameterLoadStatus,
+        ILogger<StatusBarViewModel> logger) : this()
     {
         this.logger = logger;
         this.stateService = stateService;
@@ -61,6 +68,18 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
 
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected));
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
+        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleParameterLoadStatusChanged>((evt, _) =>
+        {
+            dispatcher.Dispatch(() =>
+            {
+                var latest = parameterLoadStatus.Get(evt.Status.VehicleId);
+                if (stateService.VehicleId == evt.Status.VehicleId && latest == evt.Status)
+                {
+                    StatusMessage = FormatParameterLoadStatus(latest);
+                }
+            });
+            return Task.CompletedTask;
+        }));
 
 
         // Start clock timer
@@ -68,7 +87,13 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
 
         // Initial state
         UpdateConnectionStatus();
+        if (stateService.VehicleId is { } vehicleId && parameterLoadStatus.Get(vehicleId) is { } status)
+        {
+            StatusMessage = FormatParameterLoadStatus(status);
+        }
     }
+
+    private static string FormatParameterLoadStatus(ParameterLoadStatus status) => status.Message;
 
 
     private void StartClock()

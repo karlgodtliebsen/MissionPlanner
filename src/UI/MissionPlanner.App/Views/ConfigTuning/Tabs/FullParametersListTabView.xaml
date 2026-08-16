@@ -85,8 +85,23 @@
             </HorizontalStackLayout>
 
             <HorizontalStackLayout Grid.Row="1" Padding="18,4" Spacing="12" Margin="0,10,0,10">
+                <ActivityIndicator
+                    IsRunning="{Binding IsBackgroundParameterLoadInProgress}"
+                    IsVisible="{Binding IsBackgroundParameterLoadInProgress}"
+                    WidthRequest="20"
+                    HeightRequest="20" />
+                <Label
+                    Text="{Binding ProgressMessage}"
+                    IsVisible="{Binding IsBackgroundParameterLoadInProgress}"
+                    LineBreakMode="WordWrap"
+                    VerticalOptions="Center" />
+
                 <Label TextColor="OrangeRed" Text="{Binding ErrorMessage}" LineBreakMode="WordWrap" VerticalOptions="Center" />
-                <Label Text="{Binding StatusMessage}" LineBreakMode="WordWrap" VerticalOptions="Center" />
+                
+                <Label Text="{Binding StatusMessage}" 
+                       IsVisible="{Binding IsBackgroundParameterLoadInProgress, Converter={StaticResource InvertedBoolConverter}}"
+                       LineBreakMode="WordWrap" VerticalOptions="Center" />
+
                 <Label Text="Reboot required after confirmed changes"
                        IsVisible="{Binding RebootRequired}"
                        TextColor="OrangeRed"

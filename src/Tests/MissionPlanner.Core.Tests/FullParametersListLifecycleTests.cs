@@ -6,10 +6,12 @@ using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Profiles;
+using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
+using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using NSubstitute;
 using UraniumUI.Material.Dialogs;
@@ -44,6 +46,52 @@ public sealed class FullParametersListLifecycleTests
         fixture.ViewModel.HasConnection.Should().BeFalse();
         fixture.ViewModel.ShowVehicleDisconnected.Should().BeTrue();
         fixture.ViewModel.StatusMessage.Should().Be("Connect a vehicle, then refresh parameters.");
+    }
+
+    /// <summary>Verifies navigation during the connection-owned preload immediately presents retained progress.</summary>
+    [Fact]
+    public void NavigationDuringBackgroundLoadShowsRetainedProgressAndDisablesRefresh()
+    {
+        var vehicleId = new VehicleId(1, 1);
+        var statusContext = new VehicleParameterLoadStatusContext();
+        statusContext.Update(new ParameterLoadStatus(
+            vehicleId,
+            ParameterLoadState.Downloading,
+            250,
+            1000,
+            25,
+            "Downloading parameters… 250/1000 (25%)",
+            DateTimeOffset.UtcNow));
+
+        using var fixture = CreateFixture(true, parameterLoadStatus: statusContext);
+
+        fixture.ViewModel.IsBackgroundParameterLoadInProgress.Should().BeTrue();
+        fixture.ViewModel.ShowLoadingProgress.Should().BeTrue();
+        fixture.ViewModel.ProgressMessage.Should().Be("Downloading parameters… 250/1000 (25%)");
+        fixture.ViewModel.RefreshParametersCommand.CanExecute(null).Should().BeFalse();
+    }
+
+    /// <summary>Verifies a live completion event releases refresh coordination and updates page status.</summary>
+    [Fact]
+    public async Task BackgroundLoadCompletionUpdatesVisiblePage()
+    {
+        var statusContext = new VehicleParameterLoadStatusContext();
+        using var fixture = CreateFixture(true, parameterLoadStatus: statusContext);
+        var status = new ParameterLoadStatus(
+            new VehicleId(1, 1),
+            ParameterLoadState.Completed,
+            1000,
+            1000,
+            100,
+            "Loaded 1000 vehicle parameters.",
+            DateTimeOffset.UtcNow);
+
+        await fixture.PublishAsync(status);
+
+        fixture.ViewModel.IsBackgroundParameterLoadInProgress.Should().BeFalse();
+        fixture.ViewModel.ShowLoadingProgress.Should().BeFalse();
+        fixture.ViewModel.StatusMessage.Should().Be(status.Message);
+        fixture.ViewModel.RefreshParametersCommand.CanExecute(null).Should().BeTrue();
     }
 
     /// <summary>Verifies page deactivation releases its large parameter projection.</summary>
@@ -221,7 +269,8 @@ public sealed class FullParametersListLifecycleTests
         IVehicleParameterStreamService? streamService = null,
         IExtendedDialogService? extendedDialogService = null,
         IParameterEditSessionFactory? editSessionFactory = null,
-        IVehicleParameterRegistry? parameterRegistry = null)
+        IVehicleParameterRegistry? parameterRegistry = null,
+        IVehicleParameterLoadStatusContext? parameterLoadStatus = null)
     {
         var now = DateTimeOffset.UtcNow;
         var vehicleId = new VehicleId(1, 1);
@@ -280,6 +329,16 @@ public sealed class FullParametersListLifecycleTests
             call.Arg<Action>()!();
             return true;
         });
+        parameterLoadStatus ??= new VehicleParameterLoadStatusContext();
+        Func<VehicleParameterLoadStatusChanged, CancellationToken, Task>? statusHandler = null;
+        var eventHub = Substitute.For<IDomainEventHub>();
+        eventHub.SubscribeDomainEventAsync<VehicleParameterLoadStatusChanged>(
+                Arg.Any<Func<VehicleParameterLoadStatusChanged, CancellationToken, Task>>())
+            .Returns(call =>
+            {
+                statusHandler = call.Arg<Func<VehicleParameterLoadStatusChanged, CancellationToken, Task>>();
+                return Substitute.For<IDisposable>();
+            });
         var viewModel = new FullParametersListTabViewModel(
             connectionSession,
             activeVehicle,
@@ -291,8 +350,10 @@ public sealed class FullParametersListLifecycleTests
             Substitute.For<IUserConfirmationService>(),
             Substitute.For<IParameterProfileRepository>(),
             Substitute.For<IParameterProfileService>(),
+            parameterLoadStatus,
+            eventHub,
             NullLogger<FullParametersListTabViewModel>.Instance);
-        return new Fixture(viewModel, connectionLifetime);
+        return new Fixture(viewModel, connectionLifetime, parameterLoadStatus, () => statusHandler);
     }
 
     private static async Task WaitForAsync(Func<bool> predicate, CancellationToken cancellationToken)
@@ -306,8 +367,18 @@ public sealed class FullParametersListLifecycleTests
         predicate().Should().BeTrue();
     }
 
-    private sealed record Fixture(FullParametersListTabViewModel ViewModel, CancellationTokenSource ConnectionLifetime) : IDisposable
+    private sealed record Fixture(
+        FullParametersListTabViewModel ViewModel,
+        CancellationTokenSource ConnectionLifetime,
+        IVehicleParameterLoadStatusContext ParameterLoadStatus,
+        Func<Func<VehicleParameterLoadStatusChanged, CancellationToken, Task>?> StatusHandler) : IDisposable
     {
+        public Task PublishAsync(ParameterLoadStatus status)
+        {
+            ParameterLoadStatus.Update(status);
+            return StatusHandler()?.Invoke(new VehicleParameterLoadStatusChanged(status), CancellationToken.None) ?? Task.CompletedTask;
+        }
+
         public void Dispose()
         {
             ViewModel.Dispose();

@@ -61,7 +61,7 @@ public partial class VirtualizedDataGrid
         nameof(SearchDelayMilliseconds),
         typeof(int),
         typeof(VirtualizedDataGrid),
-        250,
+        1000,
         coerceValue: static (_, value) => Math.Max(0, (int)value),
         propertyChanged: static (bindable, _, _) =>
             ((VirtualizedDataGrid)bindable).OnSearchDelayChanged());

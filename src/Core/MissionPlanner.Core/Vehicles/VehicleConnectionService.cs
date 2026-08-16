@@ -25,6 +25,7 @@ public class VehicleConnectionService(
     IDomainFactory domainFactory,
     IVehicleRegistry vehicleRegistry,
     IPlannerSettingsService plannerSettings,
+    IVehicleParameterLoadStatusContext parameterLoadStatus,
     ILogger<VehicleConnectionService> logger)
     : IVehicleConnectionService
 {
@@ -33,6 +34,7 @@ public class VehicleConnectionService(
     private readonly SemaphoreSlim connectionLock = new(1, 1);
     private CancellationTokenSource? parameterPreloadCancellation;
     private Task? parameterPreloadTask;
+    private int lastPublishedParameterPercent = -1;
 
     /// <inheritdoc/>
     public bool IsConnected => activeConnection != null;
@@ -460,15 +462,65 @@ public class VehicleConnectionService(
                 "Preloading parameters for connected vehicle {VehicleId}.",
                 vehicleId);
 
+            lastPublishedParameterPercent = -1;
+            await PublishParameterLoadStatusAsync(
+                vehicleId,
+                ParameterLoadState.Starting,
+                message: "Preparing to download vehicle parameters…",
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+
+            var progress = new CallbackProgress<ParameterStreamProgress>(value =>
+            {
+                var percent = Math.Clamp(value.PercentComplete, 0, 100);
+                if (value.Message is null && !value.IsComplete &&
+                    Interlocked.Exchange(ref lastPublishedParameterPercent, percent) == percent)
+                {
+                    return;
+                }
+
+                var message = value.Message ?? (value.TotalCount > 0
+                    ? $"Downloading parameters… {value.ReceivedCount}/{value.TotalCount} ({percent}%)"
+                    : "Waiting for parameter data…");
+                PublishParameterLoadStatus(
+                    new ParameterLoadStatus(
+                        vehicleId,
+                        ParameterLoadState.Downloading,
+                        value.ReceivedCount,
+                        value.TotalCount,
+                        percent,
+                        message,
+                        dateTimeProvider.UtcNow));
+            });
+
             var result = await connectionSession.ParameterStreamService
                 .StreamAllParametersWithRetryAsync(
                     vehicleId,
+                    progress,
                     maxRetries: 3,
                     cancellationToken: cancellationToken)
                 .ConfigureAwait(false);
 
+            if (cancellationToken.IsCancellationRequested)
+            {
+                await PublishParameterLoadStatusAsync(
+                    vehicleId,
+                    ParameterLoadState.Cancelled,
+                    result.Parameters.Count,
+                    result.TotalCount,
+                    result.TotalCount > 0 ? result.Parameters.Count * 100 / result.TotalCount : 0,
+                    "Parameter loading was cancelled.").ConfigureAwait(false);
+                return;
+            }
+
             if (result.Success)
             {
+                await PublishParameterLoadStatusAsync(
+                    vehicleId,
+                    ParameterLoadState.Completed,
+                    result.Parameters.Count,
+                    result.TotalCount,
+                    100,
+                    $"Loaded {result.Parameters.Count} vehicle parameters.").ConfigureAwait(false);
                 logger.LogInformation(
                     "Preloaded {Count} parameters for {VehicleId}.",
                     result.Parameters.Count,
@@ -476,6 +528,13 @@ public class VehicleConnectionService(
             }
             else if (!cancellationToken.IsCancellationRequested)
             {
+                await PublishParameterLoadStatusAsync(
+                    vehicleId,
+                    ParameterLoadState.Failed,
+                    result.Parameters.Count,
+                    result.TotalCount,
+                    result.TotalCount > 0 ? result.Parameters.Count * 100 / result.TotalCount : 0,
+                    result.ErrorMessage ?? "Parameter loading failed.").ConfigureAwait(false);
                 logger.LogWarning(
                     "Parameter preload for {VehicleId} was incomplete: {Error}",
                     vehicleId,
@@ -484,15 +543,62 @@ public class VehicleConnectionService(
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            await PublishParameterLoadStatusAsync(
+                vehicleId,
+                ParameterLoadState.Cancelled,
+                message: "Parameter loading was cancelled.").ConfigureAwait(false);
             logger.LogDebug("Parameter preload cancelled for {VehicleId}.", vehicleId);
         }
         catch (Exception exception)
         {
+            await PublishParameterLoadStatusAsync(
+                vehicleId,
+                ParameterLoadState.Failed,
+                message: $"Parameter loading failed: {exception.Message}").ConfigureAwait(false);
             logger.LogWarning(
                 exception,
                 "Background parameter preload failed for {VehicleId}.",
                 vehicleId);
         }
+    }
+
+    private Task PublishParameterLoadStatusAsync(
+        VehicleId vehicleId,
+        ParameterLoadState state,
+        int receivedCount = 0,
+        int totalCount = 0,
+        int percentComplete = 0,
+        string? message = null,
+        CancellationToken cancellationToken = default)
+    {
+        var status = new ParameterLoadStatus(
+            vehicleId,
+            state,
+            receivedCount,
+            totalCount,
+            percentComplete,
+            message ?? state.ToString(),
+            dateTimeProvider.UtcNow);
+        parameterLoadStatus.Update(status);
+        return domainEventHub.PublishDomainEventAsync(
+            new VehicleParameterLoadStatusChanged(status),
+            cancellationToken);
+    }
+
+    private void PublishParameterLoadStatus(ParameterLoadStatus status)
+    {
+        parameterLoadStatus.Update(status);
+        _ = domainEventHub.PublishDomainEventAsync(new VehicleParameterLoadStatusChanged(status))
+            .ContinueWith(
+                task => logger.LogWarning(task.Exception, "Could not publish parameter loading progress for {VehicleId}.", status.VehicleId),
+                CancellationToken.None,
+                TaskContinuationOptions.OnlyOnFaulted,
+                TaskScheduler.Default);
+    }
+
+    private sealed class CallbackProgress<T>(Action<T> callback) : IProgress<T>
+    {
+        public void Report(T value) => callback(value);
     }
 
     private async Task CancelParameterPreloadAsync()
