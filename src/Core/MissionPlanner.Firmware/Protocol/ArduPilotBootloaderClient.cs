@@ -3,6 +3,7 @@ using System.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Firmware.Configuration;
+using MissionPlanner.Firmware.Compatibility;
 using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Exceptions;
 using MissionPlanner.Firmware.Images;
@@ -54,11 +55,15 @@ public sealed class ArduPilotBootloaderClient(
     }
 
     /// <inheritdoc />
-    public async Task ProgramAsync(ApjFirmwarePackage package, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default)
+    public Task ProgramAsync(ApjFirmwarePackage package, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default) =>
+        ProgramAsync(package, FirmwareCompatibilityPolicy.Strict, progress, cancellationToken);
+
+    /// <inheritdoc />
+    public async Task ProgramAsync(ApjFirmwarePackage package, FirmwareCompatibilityPolicy compatibilityPolicy, IProgress<FirmwareProgress>? progress = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(package);
         var device = RequireIdentity();
-        ValidatePackage(device, package);
+        ValidatePackage(device, package, compatibilityPolicy);
         if (!package.ExternalImage.IsEmpty)
         {
             var size = new byte[4];
@@ -71,11 +76,15 @@ public sealed class ArduPilotBootloaderClient(
     }
 
     /// <inheritdoc />
-    public async Task<FirmwareVerificationResult> VerifyAsync(ApjFirmwarePackage package, CancellationToken cancellationToken = default)
+    public Task<FirmwareVerificationResult> VerifyAsync(ApjFirmwarePackage package, CancellationToken cancellationToken = default) =>
+        VerifyAsync(package, FirmwareCompatibilityPolicy.Strict, cancellationToken);
+
+    /// <inheritdoc />
+    public async Task<FirmwareVerificationResult> VerifyAsync(ApjFirmwarePackage package, FirmwareCompatibilityPolicy compatibilityPolicy, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(package);
         var device = RequireIdentity();
-        ValidatePackage(device, package);
+        ValidatePackage(device, package, compatibilityPolicy);
         var actual = await GetChecksumAsync(ArduPilotBootloaderProtocol.GetCrc, cancellationToken).ConfigureAwait(false);
         var expected = ArduPilotFirmwareChecksum.Calculate(package.Image.Span, checked((int)device.FlashSize));
         uint? externalActual = null;
@@ -257,9 +266,10 @@ public sealed class ArduPilotBootloaderClient(
 
     private BootloaderIdentity RequireIdentity() => identity ?? throw new FirmwareBootloaderException("Bootloader identity must be read before destructive operations.");
 
-    private static void ValidatePackage(BootloaderIdentity device, ApjFirmwarePackage package)
+    private static void ValidatePackage(BootloaderIdentity device, ApjFirmwarePackage package, FirmwareCompatibilityPolicy? policy)
     {
-        if (device.BoardId != package.BoardId && !(device.BoardId == 33 && package.BoardId == 9)) throw new FirmwareCompatibilityException($"Firmware board {package.BoardId} does not match bootloader board {device.BoardId}.");
+        policy ??= FirmwareCompatibilityPolicy.Strict;
+        if (!policy.AllowBoardIdMismatch && device.BoardId != package.BoardId && !(device.BoardId == 33 && package.BoardId == 9)) throw new FirmwareCompatibilityException($"Firmware board {package.BoardId} does not match bootloader board {device.BoardId}.");
         if (package.Image.Length > device.FlashSize) throw new FirmwareCompatibilityException("Firmware image exceeds application flash capacity.");
         if (package.ExternalImage.Length > device.ExternalFlashSize) throw new FirmwareCompatibilityException("External image exceeds external flash capacity.");
     }

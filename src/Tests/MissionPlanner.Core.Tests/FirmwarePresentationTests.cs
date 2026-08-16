@@ -72,10 +72,16 @@ public sealed class FirmwarePresentationTests
             FirmwareReleaseChannel.Beta,
             FirmwareReleaseChannel.Latest);
         viewModel.HasCustomFirmware.Should().BeTrue();
+        viewModel.RequireExactBoardIdMatch.Should().BeTrue();
         viewModel.CustomFirmwareBoardId.Should().Be(50);
         viewModel.CustomFirmwarePlatform.Should().Be("CubeOrange");
         viewModel.InstallCommand.CanExecute(null).Should().BeTrue();
         selectedStream.WasDisposed.Should().BeTrue();
+
+        viewModel.RequireExactBoardIdMatch = false;
+        viewModel.ClearCustomFirmwareCommand.Execute(null);
+        viewModel.RequireExactBoardIdMatch.Should().BeTrue();
+        viewModel.HasCustomFirmware.Should().BeFalse();
     }
 
     [Fact]

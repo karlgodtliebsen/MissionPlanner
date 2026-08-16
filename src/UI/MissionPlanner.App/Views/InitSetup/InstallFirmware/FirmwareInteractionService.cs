@@ -13,12 +13,25 @@ public sealed class FirmwareInteractionService(IUserConfirmationService confirma
     IDfuUserInteraction
 {
     /// <inheritdoc />
-    public Task<bool> ConfirmInstallationAsync(FirmwareInstallationConfirmation request, CancellationToken cancellationToken = default) =>
-        confirmation.ConfirmAsync(
-            "Confirm firmware installation",
-            $"Detected bootloader board ID {request.DetectedBoardId}. The selected firmware targets board ID {request.FirmwareBoardId} and will write {request.ImageSize:N0} bytes. Keep power connected during erase, programming, and verification.",
-            "Erase and Install",
-            cancellationToken);
+    public Task<bool> ConfirmInstallationAsync(FirmwareInstallationConfirmation request, CancellationToken cancellationToken = default)
+    {
+        var message = $"Firmware source: {request.Source}\n" +
+                      $"Firmware package board ID: {request.FirmwareBoardId}\n" +
+                      $"Detected bootloader board ID: {request.DetectedBoardId}\n" +
+                      $"Application image size: {request.ImageSize:N0} bytes\n" +
+                      $"Detected bootloader revision: {request.BootloaderRevision}\n\n" +
+                      "Keep power connected during erase, programming, and verification.";
+        if (request.BoardIdMismatchOverrideUsed && request.RequiredPhrase is { Length: > 0 } phrase)
+        {
+            return confirmation.ConfirmPhraseAsync(
+                "Board identity mismatch — advanced firmware override",
+                $"{message}\n\nThe selected local firmware target does not match the detected controller identity. An incompatible image may make the controller unbootable.",
+                phrase,
+                cancellationToken);
+        }
+
+        return confirmation.ConfirmAsync("Confirm firmware installation", message, "Erase and Install", cancellationToken);
+    }
 
     /// <inheritdoc />
     public Task<bool> AcknowledgeManualActionAsync(FirmwareManualAction action, CancellationToken cancellationToken = default) =>

@@ -6,4 +6,6 @@ public sealed record FirmwareInstallationConfirmation(
     int DetectedBoardId,
     int BootloaderRevision,
     long ImageSize,
-    string Source);
+    string Source,
+    bool BoardIdMismatchOverrideUsed = false,
+    string? RequiredPhrase = null);

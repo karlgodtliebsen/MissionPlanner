@@ -6,5 +6,5 @@ namespace MissionPlanner.Firmware.Compatibility;
 public interface IFirmwareCompatibilityService
 {
     /// <summary>Checks a validated package against protocol-confirmed hardware.</summary>
-    FirmwareCompatibilityResult Check(ApjFirmwarePackage firmware, BootloaderIdentity bootloader);
+    FirmwareCompatibilityResult Check(ApjFirmwarePackage firmware, BootloaderIdentity bootloader, FirmwareCompatibilityPolicy? policy = null);
 }

@@ -32,8 +32,18 @@ public sealed class FirmwareInstallationService(
         var operation = operationCoordinator.Begin(FirmwareOperationKind.InstallApplicationFirmware);
         var startedAt = DateTimeOffset.UtcNow;
         var stage = FirmwareOperationState.Idle;
+        var isLocalCustom = request.Source == FirmwareInstallationSource.LocalCustom;
+        var requestedPolicy = request.CompatibilityPolicy ?? FirmwareCompatibilityPolicy.Strict;
+        var effectivePolicy = isLocalCustom
+            ? requestedPolicy
+            : FirmwareCompatibilityPolicy.Strict;
+        var boardIdOverride = requestedPolicy.AllowBoardIdMismatch
+            ? FirmwareBoardIdOverrideState.RequestedNotUsed
+            : FirmwareBoardIdOverrideState.NotRequested;
         ApjFirmwarePackage? diagnosticPackage = request.Package;
-        string? firmwareSource = request.Artifact?.DownloadUri.AbsoluteUri ?? (request.Package is null ? null : "custom");
+        string? firmwareSource = request.Artifact?.DownloadUri.AbsoluteUri ?? (isLocalCustom
+            ? request.LocalFileName ?? "local/custom"
+            : request.Package is null ? null : "official/catalogue (prepared package)");
         BootloaderIdentity? diagnosticBootloader = null;
         SerialDeviceDescriptor? diagnosticBootloaderDevice = null;
         long? bytesProgrammed = null;
@@ -62,7 +72,9 @@ public sealed class FirmwareInstallationService(
             }
             else if (package is not null)
             {
-                source = "custom";
+                source = isLocalCustom
+                    ? request.LocalFileName ?? "local/custom"
+                    : "official/catalogue (prepared package)";
             }
             else
             {
@@ -94,11 +106,18 @@ public sealed class FirmwareInstallationService(
                     "installation.bootloader-identified",
                     $"Device: {found.Device.PortName}; board ID: {found.Identity.BoardId}; bootloader revision: {found.Identity.BootloaderRevision}");
                 Transition(FirmwareOperationState.CheckingCompatibility, "installation.checking-compatibility");
-                var decision = compatibility.Check(package, found.Identity);
+                var decision = compatibility.Check(package, found.Identity, effectivePolicy);
                 if (!decision.IsCompatible) throw new FirmwareCompatibilityException($"{decision.Code}: {decision.TechnicalDetail}");
 
+                var mismatchOverrideUsed = effectivePolicy.AllowBoardIdMismatch &&
+                                           package.BoardId != found.Identity.BoardId &&
+                                           !(found.Identity.BoardId == 33 && package.BoardId == 9);
+                if (mismatchOverrideUsed) boardIdOverride = FirmwareBoardIdOverrideState.Used;
+                var requiredPhrase = mismatchOverrideUsed ? $"FLASH {package.BoardId} ON {found.Identity.BoardId}" : null;
+
                 var confirmed = await interaction.ConfirmInstallationAsync(new FirmwareInstallationConfirmation(
-                    package.BoardId, found.Identity.BoardId, found.Identity.BootloaderRevision, package.Image.Length, source), cancellationToken).ConfigureAwait(false);
+                    package.BoardId, found.Identity.BoardId, found.Identity.BootloaderRevision, package.Image.Length, source,
+                    mismatchOverrideUsed, requiredPhrase), cancellationToken).ConfigureAwait(false);
                 if (!confirmed)
                 {
                     Transition(FirmwareOperationState.Cancelled, "installation.not-confirmed");
@@ -115,10 +134,10 @@ public sealed class FirmwareInstallationService(
                     operation.RequestCancellation("installation.cancellation-deferred"));
                 await found.Client.EraseAsync(destructiveToken).ConfigureAwait(false);
                 Transition(FirmwareOperationState.Programming, "installation.programming");
-                await found.Client.ProgramAsync(package, progress, destructiveToken).ConfigureAwait(false);
+                await found.Client.ProgramAsync(package, effectivePolicy, progress, destructiveToken).ConfigureAwait(false);
                 bytesProgrammed = package.Image.Length + package.ExternalImage.Length;
                 Transition(FirmwareOperationState.Verifying, "installation.verifying");
-                var verification = await found.Client.VerifyAsync(package, destructiveToken).ConfigureAwait(false);
+                var verification = await found.Client.VerifyAsync(package, effectivePolicy, destructiveToken).ConfigureAwait(false);
                 verificationResult = verification.Succeeded ? "Succeeded" : $"Failed (expected 0x{verification.ExpectedChecksum:X8}, actual 0x{verification.ActualChecksum:X8})";
                 if (!verification.Succeeded)
                     throw new FirmwareVerificationException($"Expected checksum 0x{verification.ExpectedChecksum:X8}; received 0x{verification.ActualChecksum:X8}.");
@@ -210,7 +229,8 @@ public sealed class FirmwareInstallationService(
                 failureCode,
                 DateTimeOffset.UtcNow - startedAt,
                 failureStage,
-                failureDetail);
+                failureDetail,
+                boardIdOverride);
     }
 
     private static string FailureCode(Exception exception) => exception switch

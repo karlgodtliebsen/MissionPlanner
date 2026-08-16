@@ -27,6 +27,32 @@ public sealed class FirmwareCompatibilityServiceTests
         result.TechnicalDetail.Should().Contain("Firmware board ID: 50").And.Contain("Detected board ID: 9");
     }
 
+    [Fact]
+    public void ExplicitPolicyAllowsOnlyBoardIdMismatch()
+    {
+        var policy = new FirmwareCompatibilityPolicy(AllowBoardIdMismatch: true);
+
+        service.Check(Package(boardId: 50), Bootloader(boardId: 9), policy).IsCompatible.Should().BeTrue();
+        service.Check(Package(boardId: 50, boardRevision: 3), Bootloader(boardId: 9, boardRevision: 2), policy)
+            .Code.Should().Be("compatibility.board-revision-too-old");
+        service.Check(Package(boardId: 50, imageSize: 17), Bootloader(boardId: 9, flashSize: 16), policy)
+            .Code.Should().Be("compatibility.internal-image-too-large");
+        service.Check(Package(boardId: 50, externalSize: 5), Bootloader(boardId: 9, externalSize: 4), policy)
+            .Code.Should().Be("compatibility.external-flash-insufficient");
+        service.Check(Package(boardId: 50, minimumBootloader: 5), Bootloader(boardId: 9, revision: 4), policy)
+            .Code.Should().Be("compatibility.bootloader-too-old");
+        service.Check(Package(boardId: 50, requiresSecure: true), Bootloader(boardId: 9, isSecure: false), policy)
+            .Code.Should().Be("compatibility.secure-boot-required");
+        service.Check(Package(boardId: 50, isSigned: false), Bootloader(boardId: 9, isSecure: true), policy)
+            .Code.Should().Be("compatibility.signed-image-required");
+    }
+
+    [Fact]
+    public void HistoricalBoard33Firmware9CompatibilityRemainsAccepted()
+    {
+        service.Check(Package(boardId: 9), Bootloader(boardId: 33)).IsCompatible.Should().BeTrue();
+    }
+
     [Theory]
     [InlineData(5, 4, null, "compatibility.board-revision-too-old")]
     [InlineData(1, 4, 3, "compatibility.board-revision-too-new")]

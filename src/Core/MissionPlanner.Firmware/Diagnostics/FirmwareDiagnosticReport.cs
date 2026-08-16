@@ -19,7 +19,8 @@ public sealed record FirmwareDiagnosticReport(
     string? FailureCode = null,
     TimeSpan? Elapsed = null,
     FirmwareOperationState? FailureStage = null,
-    string? FailureDetail = null)
+    string? FailureDetail = null,
+    FirmwareBoardIdOverrideState? BoardIdOverride = null)
 {
     /// <summary>Creates a copyable multiline diagnostic report.</summary>
     public string CreateReport()
@@ -30,6 +31,7 @@ public sealed record FirmwareDiagnosticReport(
         Add("Firmware source", FirmwareSource);
         Add("Firmware board ID", FirmwareBoardId);
         Add("Detected board ID", DetectedBoardId);
+        Add("Board ID override", BoardIdOverride);
         Add("Bootloader revision", BootloaderRevision);
         Add("Original device", OriginalDevice);
         Add("Bootloader device", BootloaderDevice);

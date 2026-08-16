@@ -12,4 +12,7 @@ public interface IUserConfirmationService
     /// <param name="cancellationToken">A token that cancels the prompt.</param>
     /// <returns><see langword="true"/> only when the user explicitly accepts.</returns>
     Task<bool> ConfirmAsync(string title, string message, string acceptText, CancellationToken cancellationToken = default);
+
+    /// <summary>Requires the operator to type an exact phrase before accepting a hazardous action.</summary>
+    Task<bool> ConfirmPhraseAsync(string title, string message, string requiredPhrase, CancellationToken cancellationToken = default);
 }

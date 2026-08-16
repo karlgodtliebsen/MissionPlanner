@@ -19,4 +19,17 @@ public sealed class UserConfirmationService(IDispatcher dispatcher, IExtendedDia
         cancellationToken.ThrowIfCancellationRequested();
         return accepted;
     }
+
+    /// <inheritdoc />
+    public async Task<bool> ConfirmPhraseAsync(string title, string message, string requiredPhrase, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        string? entered = null;
+        await dispatcher.DispatchAsync(async () =>
+        {
+            entered = await dialogService.DisplayPromptAsync(title, $"{message}\n\nType exactly: {requiredPhrase}", string.Empty, "Continue");
+        });
+        cancellationToken.ThrowIfCancellationRequested();
+        return string.Equals(entered?.Trim(), requiredPhrase, StringComparison.Ordinal);
+    }
 }

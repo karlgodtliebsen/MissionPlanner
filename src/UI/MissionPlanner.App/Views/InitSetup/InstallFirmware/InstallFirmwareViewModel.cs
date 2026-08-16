@@ -7,6 +7,7 @@ using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Firmware;
 using MissionPlanner.Firmware.Catalog;
+using MissionPlanner.Firmware.Compatibility;
 using MissionPlanner.Firmware.Connected;
 using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Dfu;
@@ -243,6 +244,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     [ObservableProperty] public partial string? CustomFirmwareBuild { get; private set; }
     [ObservableProperty] public partial int CustomFirmwareBoardId { get; private set; }
     [ObservableProperty] public partial long CustomFirmwareImageSize { get; private set; }
+    [ObservableProperty] public partial bool RequireExactBoardIdMatch { get; set; } = true;
     [ObservableProperty] public partial string? LocalDfuFirmwarePath { get; private set; }
     [ObservableProperty] public partial string? LocalDfuFirmwareName { get; private set; }
     [ObservableProperty] public partial string? LocalDfuPlatform { get; set; }
@@ -391,11 +393,12 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             var extension = Path.GetExtension(file.FileName);
             if (!extension.Equals(".apj", StringComparison.OrdinalIgnoreCase) && !extension.Equals(".px4", StringComparison.OrdinalIgnoreCase))
             {
-                throw new NotSupportedException("Only .apj and .px4 firmware packages are supported by the modern bootloader workflow.");
+                throw new NotSupportedException("Only .apj and .px4 application packages are supported here. Use the separate DFU/legacy workflow for *_with_bl.hex.");
             }
 
             await using var stream = await file.OpenReadAsync(cancellationToken);
             var package = await packageReader.ReadAsync(stream, cancellationToken);
+            RequireExactBoardIdMatch = true;
             CustomPackage = package;
             LocalDfuFirmwarePath = null;
             LocalDfuFirmwareName = null;
@@ -500,6 +503,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         CustomFirmwareBuild = null;
         CustomFirmwareBoardId = 0;
         CustomFirmwareImageSize = 0;
+        RequireExactBoardIdMatch = true;
         OnPropertyChanged(nameof(HasCustomFirmware));
         NotifyAll();
         StatusMessage = "Local firmware selection cleared.";
@@ -540,7 +544,12 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
                         target?.BootloaderNames),
                     SelectedDevice?.Descriptor),
                 prepared is null ? SelectedFirmware?.Entry.Artifact : null,
-                CustomPackage ?? prepared?.Package);
+                CustomPackage ?? prepared?.Package,
+                CustomPackage is not null ? FirmwareInstallationSource.LocalCustom : FirmwareInstallationSource.OfficialCatalogue,
+                CustomPackage is not null
+                    ? new FirmwareCompatibilityPolicy(AllowBoardIdMismatch: !RequireExactBoardIdMatch)
+                    : FirmwareCompatibilityPolicy.Strict,
+                CustomPackage is not null ? CustomFirmwareName : null);
 
             var progress = CreateProgress();
             var result = await installationService.InstallAsync(request, progress, ownedCancellation.Token);

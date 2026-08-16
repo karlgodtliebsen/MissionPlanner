@@ -11,7 +11,7 @@ public static class FirmwareContextHelpResolver
         ArgumentNullException.ThrowIfNull(context);
         if (context.PackageBoardMismatch)
         {
-            return new FirmwareContextHelp("Firmware target does not match", "Compare the manifest and package board IDs, then select the exact hardware platform. Compatibility cannot be overridden before erase.", FirmwareSupportCategory.ArduPilot);
+            return new FirmwareContextHelp("Firmware target does not match", "Select the exact hardware platform. Only a deliberately selected local APJ/PX4 may use the expert board-ID override; all other compatibility checks remain mandatory.", FirmwareSupportCategory.ArduPilot);
         }
 
         if (context.WrongDfuDriver)

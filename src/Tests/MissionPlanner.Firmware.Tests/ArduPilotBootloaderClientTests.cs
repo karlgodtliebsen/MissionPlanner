@@ -3,6 +3,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Firmware.Configuration;
+using MissionPlanner.Firmware.Compatibility;
 using MissionPlanner.Firmware.Devices;
 using MissionPlanner.Firmware.Exceptions;
 using MissionPlanner.Firmware.Images;
@@ -102,6 +103,39 @@ public sealed class ArduPilotBootloaderClientTests
 
         await wrongBoard.Should().ThrowAsync<FirmwareCompatibilityException>();
         await tooLarge.Should().ThrowAsync<FirmwareCompatibilityException>();
+        stream.Commands.Should().NotContain(command => command[0] == 0x27);
+    }
+
+    [Fact]
+    public async Task ApprovedBoardMismatchUsesSamePolicyForProgrammingAndVerification()
+    {
+        var package = new ApjFirmwarePackage(51, new byte[] { 1, 2, 3 }, 16);
+        var expectedCrc = ArduPilotFirmwareChecksum.Calculate(package.Image.Span, 16);
+        var stream = new ScriptedBootloaderStream(command => Reply(command, expectedCrc));
+        await using var client = CreateClient(stream);
+        _ = await client.IdentifyAsync(TestContext.Current.CancellationToken);
+        var policy = new FirmwareCompatibilityPolicy(AllowBoardIdMismatch: true);
+
+        await client.ProgramAsync(package, policy, cancellationToken: TestContext.Current.CancellationToken);
+        var verification = await client.VerifyAsync(package, policy, TestContext.Current.CancellationToken);
+
+        verification.Succeeded.Should().BeTrue();
+        stream.Commands.Should().Contain(command => command[0] == 0x27);
+    }
+
+    [Fact]
+    public async Task ApprovedBoardMismatchStillRejectsInsufficientFlash()
+    {
+        var stream = new ScriptedBootloaderStream(command => Reply(command, 0));
+        await using var client = CreateClient(stream);
+        _ = await client.IdentifyAsync(TestContext.Current.CancellationToken);
+
+        var act = async () => await client.ProgramAsync(
+            new ApjFirmwarePackage(51, new byte[17], 32),
+            new FirmwareCompatibilityPolicy(AllowBoardIdMismatch: true),
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        await act.Should().ThrowAsync<FirmwareCompatibilityException>();
         stream.Commands.Should().NotContain(command => command[0] == 0x27);
     }
 

@@ -216,6 +216,13 @@
                                 <Label Margin="0,8,0,0"
                                    Text="Custom builds are not matched against the catalogue. Confirm that the package board ID is correct for the flight controller before installing."
                                    LineBreakMode="WordWrap" />
+                                <CheckBox IsChecked="{Binding RequireExactBoardIdMatch, Mode=TwoWay}" />
+                                <Label Text="Require exact board ID match" />
+                                <Border IsVisible="{Binding RequireExactBoardIdMatch, Converter={StaticResource InvertedBoolConverter}}"
+                                        Margin="0,8,0,0" Padding="12" Stroke="OrangeRed">
+                                    <Label Text="Advanced override: board-ID mismatch will be allowed for this local firmware only. Use this only when you know the firmware target is electrically and bootloader compatible with this controller. Flash-size, revision, bootloader and secure-boot checks still apply."
+                                           TextColor="OrangeRed" FontAttributes="Bold" LineBreakMode="WordWrap" />
+                                </Border>
                             </VerticalStackLayout>
                         </Grid>
                     </Border>

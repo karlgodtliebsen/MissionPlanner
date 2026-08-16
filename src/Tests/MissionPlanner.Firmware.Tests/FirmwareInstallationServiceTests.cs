@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using MissionPlanner.Firmware.Compatibility;
 using MissionPlanner.Firmware.Discovery;
+using MissionPlanner.Firmware.Diagnostics;
 using MissionPlanner.Firmware.Downloads;
 using MissionPlanner.Firmware.Entry;
 using MissionPlanner.Firmware.Exceptions;
@@ -51,6 +52,66 @@ public sealed class FirmwareInstallationServiceTests
         result.Failure.Code.Should().Be("installation.compatibility-failed");
         fixture.Interaction.ConfirmCalls.Should().Be(0);
         fixture.Client.Calls.Should().Equal("dispose");
+    }
+
+    [Fact]
+    public async Task LocalMismatchOverrideRequiresStrongConfirmationAndRecordsDiagnostics()
+    {
+        var fixture = new Fixture(bootloader: new BootloaderIdentity(9, 4, 16));
+        var request = fixture.Request with
+        {
+            Source = FirmwareInstallationSource.LocalCustom,
+            LocalFileName = "custom.apj",
+            CompatibilityPolicy = new FirmwareCompatibilityPolicy(AllowBoardIdMismatch: true)
+        };
+
+        var result = await fixture.Service.InstallAsync(request, cancellationToken: TestContext.Current.CancellationToken);
+
+        result.State.Should().Be(FirmwareOperationState.Completed);
+        fixture.Interaction.LastConfirmation.Should().NotBeNull();
+        fixture.Interaction.LastConfirmation!.BoardIdMismatchOverrideUsed.Should().BeTrue();
+        fixture.Interaction.LastConfirmation.RequiredPhrase.Should().Be("FLASH 50 ON 9");
+        fixture.Interaction.LastConfirmation.Source.Should().Be("custom.apj");
+        result.DiagnosticReport!.FirmwareBoardId.Should().Be(50);
+        result.DiagnosticReport.DetectedBoardId.Should().Be(9);
+        result.DiagnosticReport.BoardIdOverride.Should().Be(FirmwareBoardIdOverrideState.Used);
+        result.DiagnosticReport.FirmwareSource.Should().Be("custom.apj");
+        fixture.Client.Calls.Should().ContainInOrder("erase", "program", "verify", "reboot");
+    }
+
+    [Fact]
+    public async Task DeclinedLocalMismatchOverrideNeverErases()
+    {
+        var fixture = new Fixture(confirm: false, bootloader: new BootloaderIdentity(9, 4, 16));
+        var request = fixture.Request with
+        {
+            Source = FirmwareInstallationSource.LocalCustom,
+            CompatibilityPolicy = new FirmwareCompatibilityPolicy(AllowBoardIdMismatch: true),
+            LocalFileName = "custom.apj"
+        };
+
+        var result = await fixture.Service.InstallAsync(request, cancellationToken: TestContext.Current.CancellationToken);
+
+        result.State.Should().Be(FirmwareOperationState.Cancelled);
+        fixture.Client.Calls.Should().Equal("dispose");
+    }
+
+    [Fact]
+    public async Task OfficialRequestCannotEnableBoardMismatchOverride()
+    {
+        var fixture = new Fixture(bootloader: new BootloaderIdentity(9, 4, 16));
+        var request = fixture.Request with
+        {
+            Source = FirmwareInstallationSource.OfficialCatalogue,
+            CompatibilityPolicy = new FirmwareCompatibilityPolicy(AllowBoardIdMismatch: true)
+        };
+
+        var result = await fixture.Service.InstallAsync(request, cancellationToken: TestContext.Current.CancellationToken);
+
+        result.State.Should().Be(FirmwareOperationState.Failed);
+        fixture.Interaction.ConfirmCalls.Should().Be(0);
+        fixture.Client.Calls.Should().Equal("dispose");
+        result.DiagnosticReport!.BoardIdOverride.Should().Be(FirmwareBoardIdOverrideState.RequestedNotUsed);
     }
 
     [Fact]
@@ -225,7 +286,8 @@ public sealed class FirmwareInstallationServiceTests
     {
         public int ConfirmCalls { get; private set; }
         public int ManualCalls { get; private set; }
-        public Task<bool> ConfirmInstallationAsync(FirmwareInstallationConfirmation confirmation, CancellationToken cancellationToken = default) { ConfirmCalls++; return Task.FromResult(confirm); }
+        public FirmwareInstallationConfirmation? LastConfirmation { get; private set; }
+        public Task<bool> ConfirmInstallationAsync(FirmwareInstallationConfirmation confirmation, CancellationToken cancellationToken = default) { ConfirmCalls++; LastConfirmation = confirmation; return Task.FromResult(confirm); }
         public Task<bool> AcknowledgeManualActionAsync(FirmwareManualAction action, CancellationToken cancellationToken = default) { ManualCalls++; return Task.FromResult(confirm); }
     }
     private sealed class FixedEntry(DiscoveredBootloader found, Exception? failure) : IBootloaderEntryService

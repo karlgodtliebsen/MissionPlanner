@@ -6,11 +6,12 @@ namespace MissionPlanner.Firmware.Compatibility;
 public sealed class FirmwareCompatibilityService : IFirmwareCompatibilityService
 {
     /// <inheritdoc />
-    public FirmwareCompatibilityResult Check(ApjFirmwarePackage firmware, BootloaderIdentity bootloader)
+    public FirmwareCompatibilityResult Check(ApjFirmwarePackage firmware, BootloaderIdentity bootloader, FirmwareCompatibilityPolicy? policy = null)
     {
         ArgumentNullException.ThrowIfNull(firmware);
         ArgumentNullException.ThrowIfNull(bootloader);
-        if (firmware.BoardId != bootloader.BoardId && !(bootloader.BoardId == 33 && firmware.BoardId == 9))
+        policy ??= FirmwareCompatibilityPolicy.Strict;
+        if (!policy.AllowBoardIdMismatch && firmware.BoardId != bootloader.BoardId && !(bootloader.BoardId == 33 && firmware.BoardId == 9))
             return Blocked("compatibility.board-id-mismatch", $"Firmware board ID: {firmware.BoardId}; Detected board ID: {bootloader.BoardId}");
         if (firmware.BoardRevision > 0 && bootloader.BoardRevision < firmware.BoardRevision)
             return Blocked("compatibility.board-revision-too-old", $"Required board revision: {firmware.BoardRevision}; Detected board revision: {bootloader.BoardRevision}");
