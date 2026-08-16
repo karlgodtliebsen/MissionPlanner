@@ -43,6 +43,7 @@ public partial class VirtualizedDataGrid
         }
 
         ResumeRowsPresentation();
+        RefreshDataView(false);
     }
 
     private void VirtualizedDataGrid_Unloaded(object? sender, EventArgs args)
@@ -53,6 +54,7 @@ public partial class VirtualizedDataGrid
             Diagnostics.LastGridUnloadedAt = DateTimeOffset.UtcNow;
         }
 
+        CancelPendingFilterTextRefresh();
         SuspendRowsPresentation();
     }
 

@@ -44,7 +44,27 @@ public partial class VirtualizedDataGrid
         null,
         BindingMode.TwoWay,
         propertyChanged: static (bindable, _, _) =>
-            ((VirtualizedDataGrid)bindable).OnFilterSettingsChanged());
+            ((VirtualizedDataGrid)bindable).OnFilterTextChanged());
+
+    /// <summary>
+    /// Gets or sets the delay, in milliseconds, between the latest text change and local filtering.
+    /// Set to zero to apply text filtering immediately.
+    /// </summary>
+    public int SearchDelayMilliseconds
+    {
+        get => (int)GetValue(SearchDelayMillisecondsProperty);
+        set => SetValue(SearchDelayMillisecondsProperty, value);
+    }
+
+    /// <summary>Identifies the <see cref="SearchDelayMilliseconds"/> bindable property.</summary>
+    public static readonly BindableProperty SearchDelayMillisecondsProperty = BindableProperty.Create(
+        nameof(SearchDelayMilliseconds),
+        typeof(int),
+        typeof(VirtualizedDataGrid),
+        250,
+        coerceValue: static (_, value) => Math.Max(0, (int)value),
+        propertyChanged: static (bindable, _, _) =>
+            ((VirtualizedDataGrid)bindable).OnSearchDelayChanged());
 
     /// <summary>
     /// Gets or sets a comma- or semicolon-separated list of property paths searched by
@@ -64,7 +84,7 @@ public partial class VirtualizedDataGrid
         typeof(VirtualizedDataGrid),
         null,
         propertyChanged: static (bindable, _, _) =>
-            ((VirtualizedDataGrid)bindable).OnFilterSettingsChanged());
+            ((VirtualizedDataGrid)bindable).OnFilterMemberPathsChanged());
 
     /// <summary>
     /// Gets or sets the comparison used for built-in text filtering.

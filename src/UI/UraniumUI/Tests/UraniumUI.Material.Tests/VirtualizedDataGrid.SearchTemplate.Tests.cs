@@ -78,6 +78,7 @@ public class VirtualizedDataGrid_SearchTemplate_Tests
         return new TestableGrid
         {
             ShowSearchBar = true,
+            SearchDelayMilliseconds = 0,
             SearchTemplate = searchTemplate,
             Columns =
             [

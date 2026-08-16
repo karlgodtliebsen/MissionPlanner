@@ -190,6 +190,7 @@ public partial class VirtualizedDataGrid : Border
     {
         if (args.NewHandler is null)
         {
+            CancelPendingFilterTextRefresh();
             DeactivateSubscriptions();
 
             // A MAUI handler can be removed temporarily while the managed page and

@@ -148,8 +148,14 @@ Bind the grid to the complete unpaged collection and specify the searchable prop
 <virtualized:VirtualizedDataGrid
     ItemsSource="{Binding Parameters}"
     FilterText="{Binding SearchText}"
+    SearchDelayMilliseconds="250"
     FilterMemberPaths="Name,DisplayName,Description" />
 ```
+
+Text filtering is debounced by 250 milliseconds by default so typing does not rebuild
+the complete local view for every character. Set `SearchDelayMilliseconds="0"` when
+immediate filtering is required. The delay applies only to changes in `FilterText`;
+source, predicate, member-path, and comparison changes continue to refresh immediately.
 
 `FilterMemberPaths` accepts comma- or semicolon-separated public property paths. Nested paths are supported:
 
@@ -185,6 +191,7 @@ Enable the default search area:
 ```xml
 <virtualized:VirtualizedDataGrid
     ShowSearchBar="True"
+    SearchDelayMilliseconds="250"
     FilterMemberPaths="Name,DisplayName,Description" />
 ```
 

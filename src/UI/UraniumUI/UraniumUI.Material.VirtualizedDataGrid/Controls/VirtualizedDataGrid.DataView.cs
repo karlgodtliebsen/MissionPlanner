@@ -23,6 +23,8 @@ public partial class VirtualizedDataGrid
     private bool updatingDataView;
     private bool dataViewRefreshPending;
     private bool updatingPagingProperties;
+    private CancellationTokenSource? filterTextDebounceCancellation;
+    private IReadOnlyList<string> parsedFilterMemberPaths = Array.Empty<string>();
 
     /// <summary>
     /// Occurs when remote paging needs a page to be loaded.
@@ -32,7 +34,7 @@ public partial class VirtualizedDataGrid
     private void InitializeDataView()
     {
         clearSearchCommand = new Command(
-            () => FilterText = string.Empty,
+            ClearSearch,
             () => HasSearchText);
 
         ClearSearchCommand = clearSearchCommand;
@@ -68,6 +70,7 @@ public partial class VirtualizedDataGrid
     /// </summary>
     public void RefreshView()
     {
+        CancelPendingFilterTextRefresh();
         RefreshDataView(false);
     }
 
@@ -102,7 +105,87 @@ public partial class VirtualizedDataGrid
 
     private void OnFilterSettingsChanged()
     {
+        CancelPendingFilterTextRefresh();
         RefreshDataView(ResetPageOnFilterChange);
+    }
+
+    private void OnFilterMemberPathsChanged()
+    {
+        parsedFilterMemberPaths = ParseFilterMemberPaths(FilterMemberPaths);
+        OnFilterSettingsChanged();
+    }
+
+    private void OnSearchDelayChanged()
+    {
+        OnFilterTextChanged();
+    }
+
+    private void OnFilterTextChanged()
+    {
+        UpdateSearchTextState();
+        CancelPendingFilterTextRefresh();
+
+        if (string.IsNullOrWhiteSpace(FilterText) || SearchDelayMilliseconds == 0)
+        {
+            RefreshDataView(ResetPageOnFilterChange);
+            return;
+        }
+
+        var cancellation = new CancellationTokenSource();
+        filterTextDebounceCancellation = cancellation;
+        _ = ApplyFilterTextAfterDelayAsync(cancellation, SearchDelayMilliseconds);
+    }
+
+    private async Task ApplyFilterTextAfterDelayAsync(CancellationTokenSource cancellation, int delayMilliseconds)
+    {
+        try
+        {
+            await Task.Delay(delayMilliseconds, cancellation.Token).ConfigureAwait(false);
+            if (cancellation.IsCancellationRequested || !ReferenceEquals(filterTextDebounceCancellation, cancellation))
+            {
+                return;
+            }
+
+            Dispatcher.Dispatch(() =>
+            {
+                if (!cancellation.IsCancellationRequested &&
+                    ReferenceEquals(filterTextDebounceCancellation, cancellation) &&
+                    !visualResourcesReleased)
+                {
+                    filterTextDebounceCancellation = null;
+                    RefreshDataView(ResetPageOnFilterChange);
+                    cancellation.Dispose();
+                }
+            });
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+        }
+    }
+
+    private void ClearSearch()
+    {
+        CancelPendingFilterTextRefresh();
+        FilterText = string.Empty;
+    }
+
+    private void UpdateSearchTextState()
+    {
+        SetValue(HasSearchTextPropertyKey, !string.IsNullOrWhiteSpace(FilterText));
+        UpdateSearchBarVisibility();
+        RaiseSearchCanExecuteChanged();
+    }
+
+    private void CancelPendingFilterTextRefresh()
+    {
+        var cancellation = Interlocked.Exchange(ref filterTextDebounceCancellation, null);
+        if (cancellation is null)
+        {
+            return;
+        }
+
+        cancellation.Cancel();
+        cancellation.Dispose();
     }
 
     private void OnPagingSettingsChanged(bool resetCurrentPage)
@@ -184,6 +267,10 @@ public partial class VirtualizedDataGrid
                 ? RemoteTotalItemCount
                 : source?.Count ?? 0;
             var filteringActive = !remotePaging && IsFilteringActive();
+            var filterPredicate = FilterPredicate;
+            var filterText = FilterText?.Trim();
+            var filterMemberPaths = parsedFilterMemberPaths;
+            var filterStringComparison = FilterStringComparison;
 
             List<object>? filteredItems = null;
             var filteredItemCount = totalItemCount;
@@ -194,7 +281,7 @@ public partial class VirtualizedDataGrid
                                     .Cast<object?>()
                                     .Where(item => item is not null)
                                     .Cast<object>()
-                                    .Where(MatchesCurrentFilter)
+                                    .Where(item => MatchesCurrentFilter(item, filterPredicate, filterText, filterMemberPaths, filterStringComparison))
                                     .ToList()
                                 ?? [];
 
@@ -257,7 +344,6 @@ public partial class VirtualizedDataGrid
             var pageItemCount = displayedItems?.Count ?? 0;
             var isEmpty = pageItemCount == 0;
 
-            SetValue(HasSearchTextPropertyKey, !string.IsNullOrWhiteSpace(FilterText));
             SetValue(TotalItemCountPropertyKey, totalItemCount);
             SetValue(FilteredItemCountPropertyKey, filteredItemCount);
             SetValue(PageItemCountPropertyKey, pageItemCount);
@@ -331,25 +417,26 @@ public partial class VirtualizedDataGrid
         return FilterPredicate is not null || !string.IsNullOrWhiteSpace(FilterText);
     }
 
-    private bool MatchesCurrentFilter(object item)
+    private static bool MatchesCurrentFilter(
+        object item,
+        Func<object, bool>? filterPredicate,
+        string? filterText,
+        IReadOnlyList<string> paths,
+        StringComparison filterStringComparison)
     {
-        if (FilterPredicate is not null && !FilterPredicate(item))
+        if (filterPredicate is not null && !filterPredicate(item))
         {
             return false;
         }
-
-        var filterText = FilterText?.Trim();
 
         if (string.IsNullOrEmpty(filterText))
         {
             return true;
         }
 
-        var paths = ParseFilterMemberPaths();
-
         if (paths.Count == 0)
         {
-            return item.ToString()?.Contains(filterText, FilterStringComparison) == true;
+            return item.ToString()?.Contains(filterText, filterStringComparison) == true;
         }
 
         foreach (var path in paths)
@@ -360,7 +447,7 @@ public partial class VirtualizedDataGrid
 
             var value = accessor(item);
 
-            if (value?.ToString()?.Contains(filterText, FilterStringComparison) == true)
+            if (value?.ToString()?.Contains(filterText, filterStringComparison) == true)
             {
                 return true;
             }
@@ -369,11 +456,11 @@ public partial class VirtualizedDataGrid
         return false;
     }
 
-    private IReadOnlyList<string> ParseFilterMemberPaths()
+    private static IReadOnlyList<string> ParseFilterMemberPaths(string? memberPaths)
     {
-        return string.IsNullOrWhiteSpace(FilterMemberPaths)
+        return string.IsNullOrWhiteSpace(memberPaths)
             ? Array.Empty<string>()
-            : FilterMemberPaths
+            : memberPaths
                 .Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .Distinct(StringComparer.Ordinal)
                 .ToArray();

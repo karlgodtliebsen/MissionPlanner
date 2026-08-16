@@ -133,6 +133,123 @@ public class VirtualizedDataGridDataViewTests
     }
 
     [Fact]
+    public async Task NonzeroSearchDelay_ShouldApplyOnlyLatestTextOnce()
+    {
+        var rows = new ObservableCollection<Row>
+        {
+            new("ALPHA", "First"),
+            new("ALPINE", "Second"),
+            new("BETA", "Third")
+        };
+        var control = AnimationReadyHandler.Prepare(CreateGrid(rows));
+        control.FilterMemberPaths = nameof(Row.Name);
+        control.SearchDelayMilliseconds = 20;
+        var refreshCount = control.Diagnostics.DataViewRefreshCount;
+
+        control.FilterText = "A";
+        control.FilterText = "AL";
+        control.FilterText = "ALP";
+
+        control.FilteredItemCount.ShouldBe(3);
+        control.HasSearchText.ShouldBeTrue();
+        await WaitUntilAsync(() => control.FilteredItemCount == 2);
+        control.Diagnostics.DataViewRefreshCount.ShouldBe(refreshCount + 1);
+        control.ExposedDisplayedItemsSource!.Cast<Row>().Select(row => row.Name)
+            .ShouldBe(["ALPHA", "ALPINE"]);
+    }
+
+    [Fact]
+    public async Task ClearSearch_ShouldCancelPendingFilterAndRestoreImmediately()
+    {
+        var rows = new ObservableCollection<Row> { new("ALPHA", "First"), new("BETA", "Second") };
+        var control = AnimationReadyHandler.Prepare(CreateGrid(rows));
+        control.FilterMemberPaths = nameof(Row.Name);
+        control.SearchDelayMilliseconds = 30;
+
+        control.FilterText = "ALPHA";
+        control.ClearSearchCommand.Execute(null);
+
+        control.FilterText.ShouldBe(string.Empty);
+        control.FilteredItemCount.ShouldBe(2);
+        var refreshCount = control.Diagnostics.DataViewRefreshCount;
+        await Task.Delay(60, TestContext.Current.CancellationToken);
+        control.Diagnostics.DataViewRefreshCount.ShouldBe(refreshCount);
+    }
+
+    [Fact]
+    public async Task WhitespaceFilter_ShouldRestoreImmediatelyAndCancelPendingFilter()
+    {
+        var rows = new ObservableCollection<Row> { new("ALPHA", "First"), new("BETA", "Second") };
+        var control = AnimationReadyHandler.Prepare(CreateGrid(rows));
+        control.FilterMemberPaths = nameof(Row.Name);
+        control.SearchDelayMilliseconds = 30;
+
+        control.FilterText = "ALPHA";
+        control.FilterText = "   ";
+
+        control.FilteredItemCount.ShouldBe(2);
+        control.HasSearchText.ShouldBeFalse();
+        var refreshCount = control.Diagnostics.DataViewRefreshCount;
+        await Task.Delay(60, TestContext.Current.CancellationToken);
+        control.Diagnostics.DataViewRefreshCount.ShouldBe(refreshCount);
+    }
+
+    [Fact]
+    public async Task FilterMemberPathsChange_ShouldCancelPendingWorkAndApplyCurrentSemantics()
+    {
+        var rows = new ObservableCollection<Row>
+        {
+            new("MATCH", "Other"),
+            new("Other", "MATCH")
+        };
+        var control = AnimationReadyHandler.Prepare(CreateGrid(rows));
+        control.FilterMemberPaths = nameof(Row.Name);
+        control.SearchDelayMilliseconds = 30;
+        control.FilterText = "MATCH";
+
+        control.FilterMemberPaths = nameof(Row.Description);
+
+        control.ExposedDisplayedItemsSource!.Cast<Row>().Single().Name.ShouldBe("Other");
+        var refreshCount = control.Diagnostics.DataViewRefreshCount;
+        await Task.Delay(60, TestContext.Current.CancellationToken);
+        control.Diagnostics.DataViewRefreshCount.ShouldBe(refreshCount);
+    }
+
+    [Fact]
+    public async Task FilterComparisonChange_ShouldCancelPendingWorkAndApplyCurrentSemantics()
+    {
+        var rows = new ObservableCollection<Row> { new("ALPHA", "First") };
+        var control = AnimationReadyHandler.Prepare(CreateGrid(rows));
+        control.FilterMemberPaths = nameof(Row.Name);
+        control.SearchDelayMilliseconds = 30;
+        control.FilterText = "alpha";
+
+        control.FilterStringComparison = StringComparison.Ordinal;
+
+        control.FilteredItemCount.ShouldBe(0);
+        var refreshCount = control.Diagnostics.DataViewRefreshCount;
+        await Task.Delay(60, TestContext.Current.CancellationToken);
+        control.Diagnostics.DataViewRefreshCount.ShouldBe(refreshCount);
+    }
+
+    [Fact]
+    public async Task HandlerLoss_ShouldCancelPendingFilterWithoutLateRefresh()
+    {
+        var rows = new ObservableCollection<Row> { new("ALPHA", "First"), new("BETA", "Second") };
+        var control = AnimationReadyHandler.Prepare(CreateGrid(rows));
+        control.FilterMemberPaths = nameof(Row.Name);
+        control.SearchDelayMilliseconds = 30;
+        control.FilterText = "ALPHA";
+        var refreshCount = control.Diagnostics.DataViewRefreshCount;
+
+        control.DetachForTest();
+        await Task.Delay(60, TestContext.Current.CancellationToken);
+
+        control.Diagnostics.DataViewRefreshCount.ShouldBe(refreshCount);
+        control.FilteredItemCount.ShouldBe(2);
+    }
+
+    [Fact]
     public void RemotePaging_ShouldDisplayFetchedPageWithoutSlicingItAgain()
     {
         var rows = new ObservableCollection<Row>(
@@ -248,6 +365,7 @@ public class VirtualizedDataGridDataViewTests
         return new TestableVirtualizedDataGrid
         {
             ItemsSource = rows,
+            SearchDelayMilliseconds = 0,
             EmptyView = new Label { Text = "No rows" },
             Columns =
             [
@@ -278,6 +396,19 @@ public class VirtualizedDataGridDataViewTests
         }
 
         public void CalculateViewport() => UpdateRowsViewport(0, 400);
+
+        public void DetachForTest() =>
+            OnHandlerChanging(new HandlerChangingEventArgs(Handler, null));
+    }
+
+    private static async Task WaitUntilAsync(Func<bool> condition)
+    {
+        for (var attempt = 0; attempt < 50 && !condition(); attempt++)
+        {
+            await Task.Delay(5, TestContext.Current.CancellationToken);
+        }
+
+        condition().ShouldBeTrue();
     }
 
     private sealed record Row(string Name, string Description);
