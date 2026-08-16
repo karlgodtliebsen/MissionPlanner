@@ -20,7 +20,7 @@ namespace MissionPlanner.Core.Tests;
 public sealed class FirmwarePresentationTests
 {
     [Fact]
-    public void ConnectedAndUnsupportedModesExposeOnlyTheirAllowedActions()
+    public async Task ConnectedAndUnsupportedModesExposeOnlyTheirAllowedActions()
     {
         var connected = CreateViewModel(new FirmwarePageState(
             FirmwarePageMode.Connected,
@@ -34,6 +34,9 @@ public sealed class FirmwarePresentationTests
             false, false, false, true, null),
             Substitute.For<IFirmwareFilePicker>(),
             Substitute.For<IFirmwarePackageReader>());
+
+        await connected.ActivateAsync();
+        await unsupported.ActivateAsync();
 
         connected.IsConnectedMode.Should().BeTrue();
         connected.IsDisconnectedMode.Should().BeFalse();
@@ -63,6 +66,8 @@ public sealed class FirmwarePresentationTests
         var reader = Substitute.For<IFirmwarePackageReader>();
         reader.ReadAsync(Arg.Any<Stream>(), Arg.Any<CancellationToken>()).Returns(package);
         var viewModel = CreateViewModel(DisconnectedState(), picker, reader);
+        await viewModel.ActivateAsync();
+        viewModel.SelectedDevice = TestDevice();
 
         await viewModel.LoadCustomFirmwareCommand.ExecuteAsync(null);
 
@@ -93,6 +98,7 @@ public sealed class FirmwarePresentationTests
             new FirmwareFileSelection("legacy.hex", _ => { opened = true; return Task.FromResult<Stream>(new MemoryStream()); }));
         var reader = Substitute.For<IFirmwarePackageReader>();
         var viewModel = CreateViewModel(DisconnectedState(), picker, reader);
+        viewModel.SelectedDevice = TestDevice();
 
         await viewModel.LoadCustomFirmwareCommand.ExecuteAsync(null);
 
@@ -129,6 +135,8 @@ public sealed class FirmwarePresentationTests
                     FirmwareOperationState.Completed));
             });
         var viewModel = CreateViewModel(DisconnectedState(), picker, reader, installer);
+        await viewModel.ActivateAsync();
+        viewModel.SelectedDevice = TestDevice();
 
         await viewModel.LoadCustomFirmwareCommand.ExecuteAsync(null);
         await viewModel.InstallCommand.ExecuteAsync(null);
@@ -180,7 +188,7 @@ public sealed class FirmwarePresentationTests
             Substitute.For<IFirmwarePackageReader>(),
             catalogService: catalogService);
 
-        var stableRefresh = viewModel.RefreshCatalogCommand.ExecuteAsync(null);
+        var stableRefresh = viewModel.ActivateAsync();
         await WaitUntilAsync(() => viewModel.IsCatalogRefreshRunning);
         viewModel.SelectedChannel = FirmwareReleaseChannel.Beta;
         await WaitUntilAsync(() => catalogService.ReceivedCalls().Count(call => call.GetMethodInfo().Name == nameof(IFirmwareCatalogService.GetCatalogAsync)) >= 2);
@@ -209,6 +217,7 @@ public sealed class FirmwarePresentationTests
             Substitute.For<IFirmwarePackageReader>(),
             catalogService: catalogService);
 
+        await viewModel.ActivateAsync();
         await viewModel.RefreshCatalogCommand.ExecuteAsync(null);
         viewModel.SelectFirmwareCommand.Execute(viewModel.FirmwareChoices.Single(item => item.BoardId == selected.Target.BoardId));
         await viewModel.RefreshCatalogCommand.ExecuteAsync(null);
@@ -231,6 +240,7 @@ public sealed class FirmwarePresentationTests
             Substitute.For<IFirmwarePackageReader>(),
             catalogService: catalogService,
             preparationService: preparation);
+        await viewModel.ActivateAsync();
         await viewModel.RefreshCatalogCommand.ExecuteAsync(null);
         viewModel.SelectFirmwareCommand.Execute(viewModel.FirmwareChoices.Single());
 
@@ -261,15 +271,27 @@ public sealed class FirmwarePresentationTests
                 Arg.Any<string>(),
                 Arg.Any<CancellationTokenSource?>())
             .Returns(Task.FromResult(Substitute.For<IDisposable>()));
+        var dfuCatalog = Substitute.For<IDfuDeviceCatalog>();
+        dfuCatalog.GetDevicesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<DfuDeviceDescriptor>>([]));
+        var dfuTool = Substitute.For<IDfuToolLocator>();
+        dfuTool.LocateAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult(new DfuToolStatus(DfuToolAvailability.NotInstalled)));
+        var serialCatalog = Substitute.For<IFirmwareSerialDeviceCatalog>();
+        serialCatalog.GetDevicesAsync(Arg.Any<CancellationToken>()).Returns(Task.FromResult<IReadOnlyList<SerialDeviceDescriptor>>([]));
+        var effectiveCatalog = catalogService ?? Substitute.For<IFirmwareCatalogService>();
+        if (catalogService is null)
+        {
+            effectiveCatalog.GetCatalogAsync(Arg.Any<FirmwareCatalogRequest>(), Arg.Any<CancellationToken>())
+                .Returns(Task.FromResult(Catalog()));
+        }
         return new InstallFirmwareViewModel(
-            catalogService ?? Substitute.For<IFirmwareCatalogService>(),
+            effectiveCatalog,
             installationService ?? Substitute.For<IFirmwareInstallationService>(),
             preparationService ?? Substitute.For<IFirmwarePreparationService>(),
             Substitute.For<IDfuInstallationService>(),
-            Substitute.For<IDfuDeviceCatalog>(),
-            Substitute.For<IDfuToolLocator>(),
+            dfuCatalog,
+            dfuTool,
             Substitute.For<IEmbeddedBootloaderUpdateService>(),
-            Substitute.For<IFirmwareSerialDeviceCatalog>(),
+            serialCatalog,
             resolver,
             reader,
             picker,
@@ -296,6 +318,9 @@ public sealed class FirmwarePresentationTests
 
     private static FirmwareCatalog Catalog(params FirmwareManifestEntry[] entries) =>
         new(entries, DateTimeOffset.UtcNow, false);
+
+    private static FirmwareDeviceItemViewModel TestDevice() =>
+        new(new SerialDeviceDescriptor("COM1", "test-device"), true, "Test device");
 
     private static FirmwareManifestEntry Release(FirmwareReleaseChannel channel, int boardId) =>
         new(
