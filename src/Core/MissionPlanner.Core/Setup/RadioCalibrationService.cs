@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.DomainEvents;
+using MissionPlanner.Firmware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -40,7 +41,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
     private readonly Dictionary<int, RadioChannelCapture> captures = [];
     private IDisposable? operationLease;
     private IDisposable? stateSubscription;
-    private bool capturing;
+    private bool workflowActive;
     private bool disposed;
 
     /// <summary>Initializes the radio calibration service.</summary>
@@ -137,8 +138,8 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
             }
 
             captures.Clear();
-            SeedCaptures(state);
-            capturing = true;
+            SeedCaptures(state, parameterRegistry.GetAllParameters(vehicleId));
+            workflowActive = true;
         }
 
         StartObservingVehicle();
@@ -146,74 +147,135 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
             vehicleId,
             RadioCalibrationState.Capturing,
             SnapshotCaptures(),
-            "Move every stick and switch to its full travel, then select Finish to review and write endpoints.",
+            "Move every stick and control through its full travel, then finish endpoint capture. No parameters are written at that point.",
             []));
         logger.LogInformation("Started radio calibration capture for {VehicleId}.", vehicleId);
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    public async Task<RadioWriteResult> CompleteAsync(CancellationToken cancellationToken = default)
+    public Task<RadioCalibrationSnapshot> FinishCaptureAsync(CancellationToken cancellationToken = default)
     {
-        VehicleId vehicleId;
-        IReadOnlyList<RadioChannelCapture> snapshot;
+        cancellationToken.ThrowIfCancellationRequested();
+        ThrowIfDisposed();
+        RadioCalibrationSnapshot next;
         lock (sync)
         {
             if (Current.State != RadioCalibrationState.Capturing || Current.VehicleId is not { } target)
             {
-                throw new InvalidOperationException("Start radio calibration capture before finishing.");
+                throw new InvalidOperationException("Start radio calibration capture before finishing endpoint discovery.");
+            }
+
+            var parameters = parameterRegistry.GetAllParameters(target);
+            ApplyChannelSemantics(parameters, activeVehicle.State);
+            var snapshot = SnapshotCaptures();
+            var issues = ValidateCaptures(snapshot, ResolveFunctions(parameters));
+            if (issues.Any(issue => issue.Severity == RadioIssueSeverity.Hazard))
+            {
+                next = Current with
+                {
+                    Captures = snapshot,
+                    Instruction = "Endpoint capture is incomplete. Move every listed control through its full travel, then try again.",
+                    Issues = issues,
+                    FailureReason = "One or more channels failed endpoint validation."
+                };
+            }
+            else
+            {
+                next = new RadioCalibrationSnapshot(
+                    target,
+                    RadioCalibrationState.Review,
+                    snapshot,
+                    ReviewInstruction(snapshot),
+                    issues);
+            }
+        }
+
+        Transition(next);
+        return Task.FromResult(next);
+    }
+
+    /// <inheritdoc />
+    public async Task<RadioWriteResult> CompleteAsync(CancellationToken cancellationToken = default)
+    {
+        ThrowIfDisposed();
+        VehicleId vehicleId;
+        IReadOnlyList<RadioChannelCapture> snapshot;
+        VehicleState state;
+        lock (sync)
+        {
+            if (Current.State != RadioCalibrationState.Review || Current.VehicleId is not { } target)
+            {
+                throw new InvalidOperationException("Finish endpoint capture and review the fresh trim positions before writing.");
+            }
+
+            if (!activeVehicle.IsOnline || activeVehicle.VehicleId != target || activeVehicle.State is not { } currentState)
+            {
+                return Fail(target, SnapshotCaptures(), Current.Issues, "The target vehicle is no longer connected.");
+            }
+
+            if (currentState.IsArmed)
+            {
+                return Fail(target, SnapshotCaptures(), Current.Issues, "Disarm the vehicle before writing radio calibration.");
+            }
+
+            if (currentState.Radio.IsStale(clock.UtcNow, staleWindow))
+            {
+                return Fail(target, SnapshotCaptures(), Current.Issues, "Fresh RC input is required before writing calibration.");
             }
 
             vehicleId = target;
+            state = currentState;
+            SampleReviewTrims(state);
             snapshot = SnapshotCaptures();
-            capturing = false;
         }
 
-        StopObservingVehicle();
         var parameters = parameterRegistry.GetAllParameters(vehicleId);
         var functions = ResolveFunctions(parameters);
-        var issues = ValidateCaptures(snapshot, functions);
+        var issues = ValidateTrimCandidates(snapshot, functions);
         if (issues.Any(issue => issue.Severity == RadioIssueSeverity.Hazard))
         {
-            ReleaseLease();
-            Transition(new RadioCalibrationSnapshot(vehicleId, RadioCalibrationState.Failed, snapshot,
-                "Calibration values were rejected. Resolve the listed issues and recalibrate.", issues,
-                "One or more channels failed endpoint validation."));
-            return new RadioWriteResult(false, "Calibration values failed validation and were not written.");
+            Transition(new RadioCalibrationSnapshot(vehicleId, RadioCalibrationState.Review, snapshot,
+                ReviewInstruction(snapshot), issues,
+                "One or more fresh trim candidates failed validation."));
+            return new RadioWriteResult(false, "Trim candidates failed validation and no parameters were written.");
         }
 
         Transition(new RadioCalibrationSnapshot(vehicleId, RadioCalibrationState.Writing, snapshot,
-            "Writing and confirming endpoints…", issues));
-        var throttle = functions.FirstOrDefault(pair => pair.Value == "Throttle").Key;
+            "Writing and confirming radio endpoints and trims…", issues));
         try
         {
-            foreach (var capture in snapshot.Where(item => item.Range >= MinimumTravel))
+            var writes = BuildWritePlan(snapshot);
+            foreach (var write in writes)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                if (!await WriteAndConfirmAsync(vehicleId, $"RC{capture.Number}_MIN", capture.Minimum, cancellationToken).ConfigureAwait(false) ||
-                    !await WriteAndConfirmAsync(vehicleId, $"RC{capture.Number}_MAX", capture.Maximum, cancellationToken).ConfigureAwait(false))
+                EnsureVehicleSafeForWrite(vehicleId);
+                if (!await WriteAndConfirmAsync(vehicleId, write.Name, write.Value, cancellationToken).ConfigureAwait(false))
                 {
-                    return Fail(vehicleId, snapshot, issues, $"Readback did not confirm endpoints for channel {capture.Number}.");
-                }
-
-                // Throttle trim is left untouched; sticks trim to their captured centre position.
-                if (capture.Number != throttle && !await WriteAndConfirmAsync(vehicleId, $"RC{capture.Number}_TRIM", capture.Current, cancellationToken).ConfigureAwait(false))
-                {
-                    return Fail(vehicleId, snapshot, issues, $"Readback did not confirm trim for channel {capture.Number}.");
+                    return Fail(vehicleId, snapshot, issues, $"Readback did not confirm {write.Name}={write.Value}.");
                 }
             }
         }
         catch (OperationCanceledException)
         {
+            workflowActive = false;
+            StopObservingVehicle();
             ReleaseLease();
             Transition(new RadioCalibrationSnapshot(vehicleId, RadioCalibrationState.Cancelled, snapshot,
                 "Calibration was cancelled during the write. Refresh values before flying.", issues));
             return new RadioWriteResult(false, "Calibration write was cancelled.");
         }
+        catch (Exception exception)
+        {
+            logger.LogWarning(exception, "Radio calibration write failed for {VehicleId}.", vehicleId);
+            return Fail(vehicleId, snapshot, issues, exception.Message);
+        }
 
         ReleaseLease();
+        workflowActive = false;
+        StopObservingVehicle();
         Transition(new RadioCalibrationSnapshot(vehicleId, RadioCalibrationState.Success, snapshot,
-            "Endpoints written and confirmed by readback.", issues));
+            "Radio endpoints and trims written and confirmed by readback.", issues));
         logger.LogInformation("Radio calibration confirmed for {VehicleId}.", vehicleId);
         return new RadioWriteResult(true, "Endpoints written and confirmed by readback.");
     }
@@ -221,14 +283,14 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
     /// <inheritdoc />
     public Task CancelAsync(CancellationToken cancellationToken = default)
     {
-        if (Current.State != RadioCalibrationState.Capturing)
+        if (Current.State is not (RadioCalibrationState.Capturing or RadioCalibrationState.Review))
         {
             return Task.CompletedTask;
         }
 
         lock (sync)
         {
-            capturing = false;
+            workflowActive = false;
         }
 
         StopObservingVehicle();
@@ -241,7 +303,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
     /// <inheritdoc />
     public void Reset()
     {
-        if (Current.State == RadioCalibrationState.Capturing)
+        if (Current.State is RadioCalibrationState.Capturing or RadioCalibrationState.Review or RadioCalibrationState.Writing)
         {
             throw new InvalidOperationException("Cancel the active radio calibration before resetting it.");
         }
@@ -269,7 +331,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
 
     private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
     {
-        if (!capturing || Current.VehicleId is not { } vehicleId)
+        if (!workflowActive || Current.VehicleId is not { } vehicleId)
         {
             return;
         }
@@ -278,7 +340,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
         {
             lock (sync)
             {
-                capturing = false;
+                workflowActive = false;
             }
 
             StopObservingVehicle();
@@ -295,12 +357,23 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
         RadioCalibrationSnapshot next;
         lock (sync)
         {
-            if (!capturing || Current.VehicleId != evt.VehicleId)
+            if (!workflowActive || Current.VehicleId != evt.VehicleId)
             {
                 return Task.CompletedTask;
             }
 
-            UpdateCaptures(evt.VehicleState);
+            if (Current.State == RadioCalibrationState.Capturing)
+            {
+                UpdateCaptures(evt.VehicleState);
+            }
+            else if (Current.State == RadioCalibrationState.Review)
+            {
+                UpdateReviewValues(evt.VehicleState);
+            }
+            else
+            {
+                return Task.CompletedTask;
+            }
             next = Current with { Captures = SnapshotCaptures() };
         }
 
@@ -322,7 +395,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
         stateSubscription = null;
     }
 
-    private void SeedCaptures(VehicleState state)
+    private void SeedCaptures(VehicleState state, IReadOnlyDictionary<string, VehicleParameter> parameters)
     {
         var raw = state.Radio.ChannelsRaw;
         for (var index = 0; index < raw.Count; index++)
@@ -330,9 +403,12 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
             var pwm = raw[index];
             if (pwm != 0)
             {
-                captures[index + 1] = new RadioChannelCapture(index + 1, pwm, pwm, pwm);
+                var number = index + 1;
+                captures[number] = new RadioChannelCapture(number, pwm, pwm, pwm);
             }
         }
+
+        ApplyChannelSemantics(parameters, state);
     }
 
     private void UpdateCaptures(VehicleState state)
@@ -358,6 +434,57 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
         }
     }
 
+    private void UpdateReviewValues(VehicleState state)
+    {
+        var raw = state.Radio.ChannelsRaw;
+        foreach (var number in captures.Keys.ToArray())
+        {
+            if (number <= raw.Count && raw[number - 1] != 0)
+            {
+                var pwm = raw[number - 1];
+                captures[number] = captures[number] with { Current = pwm, CandidateTrim = pwm };
+            }
+        }
+    }
+
+    private void SampleReviewTrims(VehicleState state)
+    {
+        UpdateReviewValues(state);
+    }
+
+    private void ApplyChannelSemantics(IReadOnlyDictionary<string, VehicleParameter> parameters, VehicleState? state)
+    {
+        var functions = ResolveFunctions(parameters);
+        var reversibleThrottle = state?.Identity.Firmware.Family is FirmwareFamily.ArduPlane or FirmwareFamily.Rover &&
+                                 ReadInt(parameters, "THR_MIN", 0) < 0;
+        foreach (var number in captures.Keys.ToArray())
+        {
+            var function = functions.GetValueOrDefault(number);
+            var policy = function switch
+            {
+                "Roll" or "Pitch" or "Yaw" => RadioTrimPolicy.Centered,
+                "Throttle" when reversibleThrottle => RadioTrimPolicy.Centered,
+                "Throttle" => RadioTrimPolicy.Low,
+                _ => RadioTrimPolicy.Current
+            };
+            captures[number] = captures[number] with
+            {
+                FunctionName = function,
+                TrimPolicy = policy,
+                CandidateTrim = null,
+                Issues = []
+            };
+        }
+    }
+
+    private static string ReviewInstruction(IReadOnlyList<RadioChannelCapture> snapshot)
+    {
+        var throttleInstruction = snapshot.Any(capture => capture.FunctionName == "Throttle" && capture.TrimPolicy == RadioTrimPolicy.Centered)
+            ? "Center the reversible throttle at neutral."
+            : "Place conventional throttle fully low.";
+        return $"Endpoint capture is complete. Center Roll, Pitch, and Yaw with transmitter trims neutral. {throttleInstruction} Review the live trim candidates, then confirm and write.";
+    }
+
     private IReadOnlyList<RadioChannelCapture> SnapshotCaptures()
     {
         lock (sync)
@@ -368,6 +495,8 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
 
     private RadioWriteResult Fail(VehicleId vehicleId, IReadOnlyList<RadioChannelCapture> snapshot, IReadOnlyList<RadioValidationIssue> issues, string reason)
     {
+        workflowActive = false;
+        StopObservingVehicle();
         ReleaseLease();
         Transition(new RadioCalibrationSnapshot(vehicleId, RadioCalibrationState.Failed, snapshot,
             reason, issues, reason));
@@ -402,6 +531,70 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
         return issues;
     }
 
+    private static IReadOnlyList<RadioValidationIssue> ValidateTrimCandidates(
+        IReadOnlyList<RadioChannelCapture> captures,
+        IReadOnlyDictionary<int, string> functions)
+    {
+        var issues = new List<RadioValidationIssue>();
+        foreach (var capture in captures.Where(item => item.Range >= MinimumTravel))
+        {
+            if (capture.CandidateTrim is not { } trim || trim < capture.Minimum || trim > capture.Maximum)
+            {
+                issues.Add(new RadioValidationIssue(RadioIssueSeverity.Hazard,
+                    $"Channel {capture.Number}{Label(functions.GetValueOrDefault(capture.Number))} trim is outside its captured range."));
+                continue;
+            }
+
+            if (capture.TrimPolicy == RadioTrimPolicy.Centered)
+            {
+                var minimumDistance = Math.Max(50, capture.Range / 10);
+                if (trim - capture.Minimum < minimumDistance || capture.Maximum - trim < minimumDistance)
+                {
+                    issues.Add(new RadioValidationIssue(RadioIssueSeverity.Hazard,
+                        $"Channel {capture.Number}{Label(functions.GetValueOrDefault(capture.Number))} is too close to an endpoint to use as a centered trim."));
+                }
+            }
+            else if (capture.TrimPolicy == RadioTrimPolicy.Low && trim > capture.Minimum + capture.Range / 4)
+            {
+                issues.Add(new RadioValidationIssue(RadioIssueSeverity.Hazard,
+                    $"Channel {capture.Number} (Throttle) is not at the low end of its captured travel."));
+            }
+        }
+
+        return issues;
+    }
+
+    private static IReadOnlyList<RadioParameterWrite> BuildWritePlan(IReadOnlyList<RadioChannelCapture> captures)
+    {
+        var writes = new List<RadioParameterWrite>();
+        foreach (var capture in captures.Where(item => item.Range >= MinimumTravel))
+        {
+            if (capture.CandidateTrim is not { } trim)
+            {
+                throw new InvalidOperationException($"Channel {capture.Number} has no Review-stage trim candidate.");
+            }
+
+            writes.Add(new RadioParameterWrite($"RC{capture.Number}_MIN", capture.Minimum));
+            writes.Add(new RadioParameterWrite($"RC{capture.Number}_MAX", capture.Maximum));
+            writes.Add(new RadioParameterWrite($"RC{capture.Number}_TRIM", trim));
+        }
+
+        return writes;
+    }
+
+    private void EnsureVehicleSafeForWrite(VehicleId vehicleId)
+    {
+        if (!activeVehicle.IsOnline || activeVehicle.VehicleId != vehicleId)
+        {
+            throw new InvalidOperationException("The vehicle disconnected during radio calibration write.");
+        }
+
+        if (activeVehicle.State?.IsArmed != false)
+        {
+            throw new InvalidOperationException("The vehicle armed during radio calibration write.");
+        }
+    }
+
     private IReadOnlyList<RadioValidationIssue> DetectStaticIssues(IReadOnlyDictionary<string, VehicleParameter> parameters, IReadOnlyDictionary<int, string> functions)
     {
         var issues = new List<RadioValidationIssue>();
@@ -412,8 +605,8 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
                 $"The throttle channel ({throttle}) is reversed. Confirm this is intended before flight."));
         }
 
-        var duplicates = functions
-            .GroupBy(pair => pair.Key)
+        var duplicates = ResolvePilotAssignments(parameters)
+            .GroupBy(assignment => assignment.Channel)
             .Where(group => group.Count() > 1)
             .Select(group => group.Key);
         foreach (var channel in duplicates)
@@ -428,13 +621,21 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
     private static IReadOnlyDictionary<int, string> ResolveFunctions(IReadOnlyDictionary<string, VehicleParameter> parameters)
     {
         var functions = new Dictionary<int, string>();
-        foreach (var (parameter, defaultChannel, function) in pilotFunctions)
+        foreach (var assignment in ResolvePilotAssignments(parameters))
         {
-            var channel = ReadInt(parameters, parameter, defaultChannel);
-            functions[channel] = functions.TryGetValue(channel, out var existing) ? $"{existing}/{function}" : function;
+            functions[assignment.Channel] = functions.TryGetValue(assignment.Channel, out var existing)
+                ? $"{existing}/{assignment.Function}"
+                : assignment.Function;
         }
 
         return functions;
+    }
+
+    private static IReadOnlyList<PilotAssignment> ResolvePilotAssignments(IReadOnlyDictionary<string, VehicleParameter> parameters)
+    {
+        return pilotFunctions
+            .Select(item => new PilotAssignment(item.Parameter, ReadInt(parameters, item.Parameter, item.Default), item.Function))
+            .ToArray();
     }
 
     private async Task<bool> WriteAndConfirmAsync(VehicleId vehicleId, string name, int value, CancellationToken cancellationToken)
@@ -525,4 +726,8 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
     {
         return parameters.TryGetValue(name, out var parameter) && parameter.Value != 0;
     }
+
+    private sealed record PilotAssignment(string Parameter, int Channel, string Function);
+
+    private sealed record RadioParameterWrite(string Name, int Value);
 }

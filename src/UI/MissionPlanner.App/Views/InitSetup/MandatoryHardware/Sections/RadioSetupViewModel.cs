@@ -103,13 +103,19 @@ public sealed partial class RadioSetupViewModel : Models.SetupWorkflowDetailView
     public bool CanStart => CalibrationState is RadioCalibrationState.NotStarted or RadioCalibrationState.Success or
         RadioCalibrationState.Failed or RadioCalibrationState.Cancelled or RadioCalibrationState.Disconnected;
 
-    /// <summary>Gets whether calibration capture is active.</summary>
-    public bool CanFinish => CalibrationState == RadioCalibrationState.Capturing;
+    /// <summary>Gets whether endpoint capture can finish and enter Review.</summary>
+    public bool CanFinishCapture => CalibrationState == RadioCalibrationState.Capturing;
+
+    /// <summary>Gets whether reviewed values can be confirmed and written.</summary>
+    public bool CanWrite => CalibrationState == RadioCalibrationState.Review;
+
+    /// <summary>Gets whether the active non-destructive workflow can be cancelled.</summary>
+    public bool CanCancelCalibration => CalibrationState is RadioCalibrationState.Capturing or RadioCalibrationState.Review;
 
     /// <inheritdoc />
     public override void Cancel()
     {
-        if (CanFinish)
+        if (CanCancelCalibration)
         {
             _ = radioService.CancelAsync();
         }
@@ -166,14 +172,42 @@ public sealed partial class RadioSetupViewModel : Models.SetupWorkflowDetailView
         }
     }
 
-    private bool CanFinishCommand()
+    private bool CanFinishCaptureCommand()
     {
-        return CanFinish;
+        return CanFinishCapture;
     }
 
-    [RelayCommand(CanExecute = nameof(CanFinishCommand))]
-    private async Task FinishAsync()
+    [RelayCommand(CanExecute = nameof(CanFinishCaptureCommand))]
+    private async Task FinishCaptureAsync()
     {
+        try
+        {
+            await radioService.FinishCaptureAsync(activeVehicle.ConnectionCancellationToken);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            logger.LogError(exception, "Finishing radio endpoint capture failed.");
+            Error = exception.Message;
+        }
+    }
+
+    private bool CanWriteCommand()
+    {
+        return CanWrite;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanWriteCommand))]
+    private async Task ConfirmAndWriteAsync()
+    {
+        var accepted = await confirmation.ConfirmAsync(
+            "Write radio calibration",
+            "Confirm the vehicle is disarmed, centered controls are neutral, and conventional throttle is fully low. The displayed MIN, TRIM, and MAX values will be written and verified.",
+            "Write and verify");
+        if (!accepted)
+        {
+            return;
+        }
+
         operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
         try
         {
@@ -190,7 +224,7 @@ public sealed partial class RadioSetupViewModel : Models.SetupWorkflowDetailView
         }
     }
 
-    [RelayCommand(CanExecute = nameof(CanFinishCommand))]
+    [RelayCommand(CanExecute = nameof(CanCancelCalibrationCommand))]
     private async Task CancelCalibrationAsync()
     {
         try
@@ -203,6 +237,8 @@ public sealed partial class RadioSetupViewModel : Models.SetupWorkflowDetailView
             Error = exception.Message;
         }
     }
+
+    private bool CanCancelCalibrationCommand() => CanCancelCalibration;
 
     [RelayCommand]
     private void Reset()
@@ -298,9 +334,12 @@ public sealed partial class RadioSetupViewModel : Models.SetupWorkflowDetailView
         }
 
         OnPropertyChanged(nameof(CanStart));
-        OnPropertyChanged(nameof(CanFinish));
+        OnPropertyChanged(nameof(CanFinishCapture));
+        OnPropertyChanged(nameof(CanWrite));
+        OnPropertyChanged(nameof(CanCancelCalibration));
         StartCommand.NotifyCanExecuteChanged();
-        FinishCommand.NotifyCanExecuteChanged();
+        FinishCaptureCommand.NotifyCanExecuteChanged();
+        ConfirmAndWriteCommand.NotifyCanExecuteChanged();
         CancelCalibrationCommand.NotifyCanExecuteChanged();
 
         if (snapshot.State == RadioCalibrationState.Success && snapshot.VehicleId is { } vehicleId &&

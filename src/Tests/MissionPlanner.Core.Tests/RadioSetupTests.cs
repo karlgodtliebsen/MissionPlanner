@@ -52,9 +52,9 @@ public sealed class RadioSetupTests
         service.GetLiveChannels(vehicleId).IsStale.Should().BeTrue();
     }
 
-    /// <summary>Verifies capture records extremes and writes confirmed endpoints.</summary>
+    /// <summary>Verifies capture, Review trim sampling, and confirmed writes are distinct.</summary>
     [Fact]
-    public async Task CalibrationCapturesExtremesAndWritesEndpoints()
+    public async Task CalibrationCapturesExtremesReviewsFreshTrimAndWritesAllValues()
     {
         var registry = new VehicleParameterRegistry();
         var now = DateTimeOffset.UtcNow;
@@ -66,13 +66,20 @@ public sealed class RadioSetupTests
         service.Current.State.Should().Be(RadioCalibrationState.Capturing);
         context.SetState(StateWithChannels([1000, 1000, 1000, 1000], now));
         context.SetState(StateWithChannels([2000, 2000, 2000, 2000], now));
+        var review = await service.FinishCaptureAsync(TestContext.Current.CancellationToken);
+
+        review.State.Should().Be(RadioCalibrationState.Review);
+        written.Should().BeEmpty("entering Review must not write parameters");
+        context.SetState(StateWithChannels([1500, 1500, 1000, 1500], now));
         var result = await service.CompleteAsync(TestContext.Current.CancellationToken);
 
         result.Success.Should().BeTrue();
         service.Current.State.Should().Be(RadioCalibrationState.Success);
         written.Should().Contain("RC1_MIN").And.Contain("RC1_MAX").And.Contain("RC3_MIN").And.Contain("RC3_MAX");
-        written.Should().Contain("RC1_TRIM", "sticks trim to the captured centre");
-        written.Should().NotContain("RC3_TRIM", "throttle trim is left untouched");
+        written.Should().Contain("RC1_TRIM", "centered sticks use the fresh Review sample");
+        written.Should().Contain("RC3_TRIM", "conventional throttle records the fresh low-throttle Review sample");
+        registry.GetParameter(vehicleId, "RC1_TRIM")!.Value.Should().Be(1500);
+        registry.GetParameter(vehicleId, "RC3_TRIM")!.Value.Should().Be(1000);
     }
 
     /// <summary>Verifies insufficient stick movement blocks a confirmed write.</summary>
@@ -87,12 +94,204 @@ public sealed class RadioSetupTests
 
         await service.StartAsync(vehicleId, TestContext.Current.CancellationToken);
         context.SetState(StateWithChannels([1520, 1520, 1520, 1520], now));
+        var review = await service.FinishCaptureAsync(TestContext.Current.CancellationToken);
+
+        review.State.Should().Be(RadioCalibrationState.Capturing);
+        service.Current.State.Should().Be(RadioCalibrationState.Capturing);
+        service.Current.Issues.Should().Contain(issue => issue.Severity == RadioIssueSeverity.Hazard);
+        written.Should().BeEmpty();
+    }
+
+    /// <summary>Verifies endpoint extrema freeze while live candidate trims continue updating in Review.</summary>
+    [Fact]
+    public async Task ReviewFreezesEndpointsAndUpdatesLiveCandidateTrim()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var context = new TestActiveVehicleContext(StateWithChannels([1500, 1500, 1500, 1500], now));
+        var service = CreateService(context, new VehicleParameterRegistry(), now);
+        await service.StartAsync(vehicleId, TestContext.Current.CancellationToken);
+        context.SetState(StateWithChannels([1000, 1000, 1000, 1000], now));
+        context.SetState(StateWithChannels([2000, 2000, 2000, 2000], now));
+        await service.FinishCaptureAsync(TestContext.Current.CancellationToken);
+
+        context.SetState(StateWithChannels([1500, 1500, 1000, 1500], now));
+
+        var roll = service.Current.Captures.Single(capture => capture.Number == 1);
+        roll.Minimum.Should().Be(1000);
+        roll.Maximum.Should().Be(2000);
+        roll.Current.Should().Be(1500);
+        roll.CandidateTrim.Should().Be(1500);
+    }
+
+    /// <summary>Verifies writing rejects stale Review telemetry without sending parameters.</summary>
+    [Fact]
+    public async Task StaleReviewSampleCannotWrite()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var context = new TestActiveVehicleContext(StateWithChannels([1500, 1500, 1500, 1500], now));
+        var written = new List<string>();
+        var service = CreateService(context, new VehicleParameterRegistry(), now, written);
+        await CaptureValidEndpointsAsync(service, context, now);
+        context.SetState(StateWithChannels([1500, 1500, 1000, 1500], now - TimeSpan.FromSeconds(5)));
+
         var result = await service.CompleteAsync(TestContext.Current.CancellationToken);
 
         result.Success.Should().BeFalse();
-        service.Current.State.Should().Be(RadioCalibrationState.Failed);
-        service.Current.Issues.Should().Contain(issue => issue.Severity == RadioIssueSeverity.Hazard);
+        result.Message.Should().Contain("Fresh RC input");
         written.Should().BeEmpty();
+    }
+
+    /// <summary>Verifies a centered trim at an endpoint is rejected before any write.</summary>
+    [Fact]
+    public async Task CenteredAxisTrimNearEndpointCannotWrite()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var context = new TestActiveVehicleContext(StateWithChannels([1500, 1500, 1500, 1500], now));
+        var written = new List<string>();
+        var service = CreateService(context, new VehicleParameterRegistry(), now, written);
+        await CaptureValidEndpointsAsync(service, context, now);
+        context.SetState(StateWithChannels([1000, 1500, 1000, 1500], now));
+
+        var result = await service.CompleteAsync(TestContext.Current.CancellationToken);
+
+        result.Success.Should().BeFalse();
+        service.Current.State.Should().Be(RadioCalibrationState.Review);
+        written.Should().BeEmpty();
+    }
+
+    /// <summary>Verifies armed state prevents entering the destructive stage.</summary>
+    [Fact]
+    public async Task ArmedVehicleCannotWriteReview()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var context = new TestActiveVehicleContext(StateWithChannels([1500, 1500, 1500, 1500], now));
+        var written = new List<string>();
+        var service = CreateService(context, new VehicleParameterRegistry(), now, written);
+        await CaptureValidEndpointsAsync(service, context, now);
+        context.SetState(StateWithChannels([1500, 1500, 1000, 1500], now) with
+        {
+            Flight = context.State!.Flight with { IsArmed = true }
+        });
+
+        var result = await service.CompleteAsync(TestContext.Current.CancellationToken);
+
+        result.Success.Should().BeFalse();
+        result.Message.Should().Contain("Disarm");
+        written.Should().BeEmpty();
+    }
+
+    /// <summary>Verifies a fresh trim outside captured travel is rejected before writing.</summary>
+    [Fact]
+    public async Task CandidateTrimOutsideCapturedRangeCannotWrite()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var context = new TestActiveVehicleContext(StateWithChannels([1500, 1500, 1500, 1500], now));
+        var written = new List<string>();
+        var service = CreateService(context, new VehicleParameterRegistry(), now, written);
+        await CaptureValidEndpointsAsync(service, context, now);
+        context.SetState(StateWithChannels([2200, 1500, 1000, 1500], now));
+
+        var result = await service.CompleteAsync(TestContext.Current.CancellationToken);
+
+        result.Success.Should().BeFalse();
+        result.Message.Should().Contain("Trim candidates");
+        written.Should().BeEmpty();
+    }
+
+    /// <summary>Verifies cancellation from Review preserves the no-write guarantee.</summary>
+    [Fact]
+    public async Task CancellingReviewWritesNothing()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var context = new TestActiveVehicleContext(StateWithChannels([1500, 1500, 1500, 1500], now));
+        var written = new List<string>();
+        var service = CreateService(context, new VehicleParameterRegistry(), now, written);
+        await CaptureValidEndpointsAsync(service, context, now);
+
+        await service.CancelAsync(TestContext.Current.CancellationToken);
+
+        service.Current.State.Should().Be(RadioCalibrationState.Cancelled);
+        written.Should().BeEmpty();
+    }
+
+    /// <summary>Verifies a disconnect in Review prevents the destructive stage.</summary>
+    [Fact]
+    public async Task DisconnectInReviewPreventsWrite()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var context = new TestActiveVehicleContext(StateWithChannels([1500, 1500, 1500, 1500], now));
+        var written = new List<string>();
+        var service = CreateService(context, new VehicleParameterRegistry(), now, written);
+        await CaptureValidEndpointsAsync(service, context, now);
+        context.SetOnline(false);
+
+        var action = () => service.CompleteAsync(TestContext.Current.CancellationToken);
+
+        await action.Should().ThrowAsync<InvalidOperationException>();
+        service.Current.State.Should().Be(RadioCalibrationState.Disconnected);
+        written.Should().BeEmpty();
+    }
+
+    /// <summary>Verifies failed parameter confirmation retains the exact failed parameter diagnostic.</summary>
+    [Fact]
+    public async Task FailedReadbackReportsParameter()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var context = new TestActiveVehicleContext(StateWithChannels([1500, 1500, 1500, 1500], now));
+        var service = CreateService(context, new VehicleParameterRegistry(), now, confirmWrites: false);
+        await CaptureValidEndpointsAsync(service, context, now);
+        context.SetState(StateWithChannels([1500, 1500, 1000, 1500], now));
+
+        var result = await service.CompleteAsync(TestContext.Current.CancellationToken);
+
+        result.Success.Should().BeFalse();
+        result.Message.Should().Contain("RC1_MIN");
+    }
+
+    /// <summary>Verifies reverse-capable throttle uses centered trim instead of conventional low trim.</summary>
+    [Fact]
+    public async Task ReversibleThrottleUsesCenteredPolicy()
+    {
+        var registry = new VehicleParameterRegistry();
+        Store(registry, "THR_MIN", -100);
+        var now = DateTimeOffset.UtcNow;
+        var rover = StateWithChannels([1500, 1500, 1500, 1500], now);
+        rover = rover with { Identity = rover.Identity with { Firmware = rover.Identity.Firmware with { Family = MissionPlanner.Firmware.FirmwareFamily.Rover } } };
+        var context = new TestActiveVehicleContext(rover);
+        var service = CreateService(context, registry, now);
+        await service.StartAsync(vehicleId, TestContext.Current.CancellationToken);
+        context.SetState(rover with { Radio = rover.Radio with { ChannelsRaw = [1000, 1000, 1000, 1000] } });
+        context.SetState(rover with { Radio = rover.Radio with { ChannelsRaw = [2000, 2000, 2000, 2000] } });
+
+        var review = await service.FinishCaptureAsync(TestContext.Current.CancellationToken);
+
+        review.Captures.Single(capture => capture.Number == 3).TrimPolicy.Should().Be(RadioTrimPolicy.Centered);
+        review.Instruction.Should().Contain("reversible throttle");
+    }
+
+    /// <summary>Verifies duplicate RCMAP assignments are detected before calibration.</summary>
+    [Fact]
+    public void DuplicatePilotMappingIsReportedFromSourceAssignments()
+    {
+        var registry = new VehicleParameterRegistry();
+        Store(registry, "RCMAP_ROLL", 1);
+        Store(registry, "RCMAP_PITCH", 1);
+        var now = DateTimeOffset.UtcNow;
+        var context = new TestActiveVehicleContext(StateWithChannels([1500, 1500, 1500, 1500], now));
+        var service = CreateService(context, registry, now);
+
+        service.GetLiveChannels(vehicleId).Issues.Should().Contain(issue => issue.Message.Contains("Multiple pilot functions"));
+    }
+
+    /// <summary>Verifies the ordinary default AETR assignment has no duplicate warning.</summary>
+    [Fact]
+    public void DefaultPilotMappingHasNoDuplicateIssue()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var context = new TestActiveVehicleContext(StateWithChannels([1500, 1500, 1500, 1500], now));
+        var service = CreateService(context, new VehicleParameterRegistry(), now);
+
+        service.GetLiveChannels(vehicleId).Issues.Should().NotContain(issue => issue.Message.Contains("Multiple pilot functions"));
     }
 
     /// <summary>Verifies a disconnect during capture leaves a recoverable state.</summary>
@@ -111,7 +310,12 @@ public sealed class RadioSetupTests
         service.Current.State.Should().Be(RadioCalibrationState.NotStarted);
     }
 
-    private static RadioCalibrationService CreateService(TestActiveVehicleContext context, VehicleParameterRegistry registry, DateTimeOffset now, List<string>? written = null)
+    private static RadioCalibrationService CreateService(
+        TestActiveVehicleContext context,
+        VehicleParameterRegistry registry,
+        DateTimeOffset now,
+        List<string>? written = null,
+        bool confirmWrites = true)
     {
         var clock = Substitute.For<IDateTimeProvider>();
         clock.UtcNow.Returns(now);
@@ -122,6 +326,11 @@ public sealed class RadioSetupTests
                 var name = call.ArgAt<string>(1);
                 var value = call.ArgAt<float>(2);
                 written?.Add(name);
+                if (!confirmWrites)
+                {
+                    return Task.FromResult(false);
+                }
+
                 registry.StoreParameter(vehicleId, new VehicleParameter(name, value, MavParamType.Int16, 0, 1), CancellationToken.None);
                 return Task.FromResult(true);
             });
@@ -132,6 +341,14 @@ public sealed class RadioSetupTests
             .Returns(Substitute.For<IDisposable>());
         return new RadioCalibrationService(context, registry, parameterService, new VehicleOperationGate(), eventHub, clock,
             Substitute.For<ILogger<RadioCalibrationService>>());
+    }
+
+    private static async Task CaptureValidEndpointsAsync(RadioCalibrationService service, TestActiveVehicleContext context, DateTimeOffset now)
+    {
+        await service.StartAsync(vehicleId, TestContext.Current.CancellationToken);
+        context.SetState(StateWithChannels([1000, 1000, 1000, 1000], now));
+        context.SetState(StateWithChannels([2000, 2000, 2000, 2000], now));
+        await service.FinishCaptureAsync(TestContext.Current.CancellationToken);
     }
 
     private static void Store(VehicleParameterRegistry registry, string name, float value)

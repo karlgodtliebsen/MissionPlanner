@@ -549,6 +549,14 @@ The Setup screen replaces v1.38's Initial Setup (`src-v.1.38/GCSViews/InitialSet
   projected with live PWM and reassigned with readback-confirmed writes. Motor testing is
   only exposed for rotorcraft-style families.
 
+* Radio calibration review workflow strengthened (2026-08-16): endpoint discovery now ends
+  in a non-destructive Review stage. Users center Roll/Pitch/Yaw, place conventional throttle
+  fully low, and then explicitly write and read back `RCx_MIN/MAX/TRIM` from a fresh RC sample.
+  Reverse-capable Plane/Rover throttle (`THR_MIN < 0`) is treated as centered and must be at
+  neutral instead. Auxiliary channels retain their fresh current position without centered-axis
+  validation. Stale input, arming, disconnects, invalid ranges, and duplicate `RCMAP_*`
+  assignments block or warn before writes.
+
 * Optional-hardware workflow implemented (2026-07-22): peripherals are discovered through a
   plugin-style module catalog (`IOptionalHardwareModule` registered via DI, no central switch),
   each with a parameter-presence availability predicate. First-wave modules cover serial ports

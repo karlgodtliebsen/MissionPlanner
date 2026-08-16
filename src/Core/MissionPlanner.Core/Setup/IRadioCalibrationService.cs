@@ -23,12 +23,17 @@ public interface IRadioCalibrationService : IDisposable
     /// <returns>A task that completes once capture has started.</returns>
     Task StartAsync(VehicleId vehicleId, CancellationToken cancellationToken = default);
 
-    /// <summary>Validates and writes the captured endpoints, confirming each by readback.</summary>
+    /// <summary>Stops endpoint discovery, validates travel, and enters Review without writing parameters.</summary>
+    /// <param name="cancellationToken">A token that cancels the transition.</param>
+    /// <returns>The resulting Review or recoverable Capturing snapshot.</returns>
+    Task<RadioCalibrationSnapshot> FinishCaptureAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Samples fresh Review-stage trims, then writes and confirms the complete calibration.</summary>
     /// <param name="cancellationToken">A connection-scoped cancellation token.</param>
     /// <returns>The confirmed or failed write result.</returns>
     Task<RadioWriteResult> CompleteAsync(CancellationToken cancellationToken = default);
 
-    /// <summary>Cancels capture without writing any endpoints.</summary>
+    /// <summary>Cancels capture or review without writing any endpoints.</summary>
     /// <param name="cancellationToken">A token that cancels cancellation work.</param>
     /// <returns>A task that completes once cancellation is stable.</returns>
     Task CancelAsync(CancellationToken cancellationToken = default);

@@ -43,8 +43,9 @@
         </VerticalStackLayout>
         <HorizontalStackLayout Spacing="10">
             <Button Text="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCommand}" />
-            <Button Text="Finish and write" IsEnabled="{Binding CanFinish}" Command="{Binding FinishCommand}" />
-            <Button Text="Cancel" IsEnabled="{Binding CanFinish}" Command="{Binding CancelCalibrationCommand}" />
+            <Button Text="Finish endpoint capture" IsEnabled="{Binding CanFinishCapture}" Command="{Binding FinishCaptureCommand}" />
+            <Button Text="Confirm and write" IsEnabled="{Binding CanWrite}" Command="{Binding ConfirmAndWriteCommand}" />
+            <Button Text="Cancel" IsEnabled="{Binding CanCancelCalibration}" Command="{Binding CancelCalibrationCommand}" />
             <Button Text="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" />
         </HorizontalStackLayout>
         </VerticalStackLayout>
