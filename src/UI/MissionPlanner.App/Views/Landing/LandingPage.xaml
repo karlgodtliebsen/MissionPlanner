@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<navigation:ExtendedContentPage 
+                                x:TypeArguments="local:LandingPageViewModel" 
+                                x:Class="MissionPlanner.App.Views.Landing.LandingPage"
+                                xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                                xmlns:local="clr-namespace:MissionPlanner.App.Views.Landing"
+                                xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                                x:DataType="local:LandingPageViewModel"
+                                >
+
+    
+    <Grid ColumnDefinitions="Auto,Auto" HorizontalOptions="Center" VerticalOptions="Center">
+        <Button Grid.Column="0" Text="MissionPlanner" Command="{Binding OpenFlightDataCommand}" />
+        <Button Grid.Column="1" Text="Tutorial" Command="{Binding OpenTutorialCommand}" />
+    </Grid>
+
+
+</navigation:ExtendedContentPage>

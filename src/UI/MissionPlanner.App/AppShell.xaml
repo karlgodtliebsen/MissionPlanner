@@ -20,6 +20,7 @@
     xmlns:advanced="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced"
     xmlns:introduction="clr-namespace:MissionPlanner.App.Views.Introduction"
     xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
+    xmlns:landing="clr-namespace:MissionPlanner.App.Views.Landing"
     Title="MissionPlanner"
     x:Name="thisShell"
     FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
@@ -87,6 +88,12 @@
             </CollectionView>
         </Grid>
     </Shell.FlyoutContent>
+   
+    <FlyoutItem Title="MissionPlanner Next Gen" Icon="Resources/Images/x_light_help_icon_x.png">
+        <ShellContent
+            Title=""
+            ContentTemplate="{DataTemplate landing:LandingPage}" Route="LandingPage" />
+    </FlyoutItem>
 
     <FlyoutItem Title="Flight Data"  Icon="Resources/Images/x_light_flightdata_icon_x.png">
         <ShellContent

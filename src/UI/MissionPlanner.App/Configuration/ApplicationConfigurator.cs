@@ -24,6 +24,7 @@ using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
 using MissionPlanner.App.Views.InitSetup.OptionalHardware;
 using MissionPlanner.App.Views.Introduction;
 using MissionPlanner.App.Views.Introduction.Services;
+using MissionPlanner.App.Views.Landing;
 using MissionPlanner.App.Views.Missions;
 using MissionPlanner.App.Views.Missions.DockView;
 using MissionPlanner.App.Views.Preferences;
@@ -182,10 +183,11 @@ public static class ApplicationConfigurator
         services.TryAddTransient<ErrorView>();
 
         services.TryAddTransient<HelpViewModel>();
-        services.TryAddTransient<IntroductionViewModel>();
         services.TryAddTransient<ConnectPopupViewModel>();
         services.TryAddTransient<ConnectPopupView>();
         services.TryAddTransient<StatisticsViewModel>();
+        services.TryAddTransient<LandingPageViewModel>();
+        services.TryAddTransient<IntroductionViewModel>();
 
         services.TryAddTransient<AsyncOperationRunner>();
         services.TryAddTransient<FlightDataMissionMapView>();
@@ -193,7 +195,6 @@ public static class ApplicationConfigurator
         services.TryAddTransient<FlightPlannerMissionMapViewModel>();
         services.TryAddTransient<FlightDataMissionMapViewModel>();
 
-        services.TryAddTransient<IntroductionViewModel>();
 
         services.TryAddTransient<HudViewModel>();
 
