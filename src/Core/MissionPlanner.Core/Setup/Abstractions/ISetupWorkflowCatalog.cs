@@ -1,7 +1,8 @@
-﻿using MissionPlanner.Core.Vehicles.Models;
+﻿using MissionPlanner.Core.Setup.Definitions;
+using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.Parameters;
 
-namespace MissionPlanner.Core.Setup;
+namespace MissionPlanner.Core.Setup.Abstractions;
 
 /// <summary>Evaluates the setup workflow catalog for the current vehicle.</summary>
 public interface ISetupWorkflowCatalog

@@ -1,12 +1,13 @@
 ﻿using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware;
 using MissionPlanner.MavLink.Generated;
 using MissionPlanner.MavLink.Parameters;
 
-namespace MissionPlanner.Core.Setup;
+namespace MissionPlanner.Core.Setup.Definitions;
 
 /// <summary>Provides the ordered, vehicle-aware initial-setup workflow catalog.</summary>
 public sealed class SetupWorkflowCatalog : ISetupWorkflowCatalog
@@ -23,18 +24,18 @@ public sealed class SetupWorkflowCatalog : ISetupWorkflowCatalog
     /// <inheritdoc />
     public IReadOnlyList<SetupWorkflowDescriptor> Workflows { get; } =
     [
-        Descriptor(SetupWorkflowKey.Firmware, "Firmware", "Confirm firmware, board identity, and protocol capabilities."),
-        Descriptor(SetupWorkflowKey.Frame, "Frame", "Choose the vehicle frame and actuator layout.", activeFamilies, [SetupWorkflowKey.Firmware], "Full Parameters List"),
+        // Descriptor(SetupWorkflowKey.Firmware, "Firmware", "Confirm firmware, board identity, and protocol capabilities."),
+        Descriptor(SetupWorkflowKey.Frame, "Frame", "Choose the vehicle frame and actuator layout.", activeFamilies, configDestination: "Config|Full Parameters List"),
         Descriptor(SetupWorkflowKey.Accelerometer, "Accelerometer", "Calibrate level and orientation sensors.", activeFamilies, [SetupWorkflowKey.Frame]),
         Descriptor(SetupWorkflowKey.Compass, "Compass", "Calibrate compass instances and orientation.", activeFamilies, [SetupWorkflowKey.Accelerometer]),
-        Descriptor(SetupWorkflowKey.Radio, "Radio", "Calibrate pilot input channels and ranges.", activeFamilies, [SetupWorkflowKey.Firmware]),
-        Descriptor(SetupWorkflowKey.FlightModes, "Flight Modes", "Assign flight modes to pilot controls.", activeFamilies, [SetupWorkflowKey.Frame, SetupWorkflowKey.Radio], "Full Parameters List"),
-        Descriptor(SetupWorkflowKey.Battery, "Battery", "Configure voltage, current, and capacity monitoring.", activeFamilies, [SetupWorkflowKey.Firmware], "Full Parameters List"),
-        Descriptor(SetupWorkflowKey.Esc, "ESC", "Configure and calibrate electronic speed controllers.", activeFamilies, [SetupWorkflowKey.Battery]),
-        Descriptor(SetupWorkflowKey.ServoOutput, "Servo Output", "Review actuator functions, limits, and reversal.", activeFamilies, [SetupWorkflowKey.Frame], "Full Parameters List"),
-        Descriptor(SetupWorkflowKey.OptionalHardware, "Optional Hardware", "Configure supported serial, CAN, rangefinder, and other peripherals.", null, [SetupWorkflowKey.Firmware], "Full Parameters List"),
-        Descriptor(SetupWorkflowKey.Safety, "Safety", "Review arming, failsafe, and mandatory preflight settings.", activeFamilies, [SetupWorkflowKey.Accelerometer, SetupWorkflowKey.Compass, SetupWorkflowKey.Radio], "Full Parameters List"),
-        Descriptor(SetupWorkflowKey.Summary, "Summary", "Review completion, warnings, and links to advanced configuration.", null, [], "Full Parameters List")
+        Descriptor(SetupWorkflowKey.Radio, "Radio", "Calibrate pilot input channels and ranges.", activeFamilies),
+        Descriptor(SetupWorkflowKey.ServoOutput, "Servo Output", "Review actuator functions, limits, and reversal.", activeFamilies, [SetupWorkflowKey.Frame], "Config|Full Parameters List"),
+        Descriptor(SetupWorkflowKey.Esc, "ESC", "Configure and calibrate electronic speed controllers.", activeFamilies, [SetupWorkflowKey.Frame]),
+        Descriptor(SetupWorkflowKey.FlightModes, "Flight Modes", "Assign flight modes to pilot controls.", activeFamilies, [SetupWorkflowKey.Frame, SetupWorkflowKey.Radio], "Config|Full Parameters List")
+        //Descriptor(SetupWorkflowKey.Battery, "Battery", "Configure voltage, current, and capacity monitoring.", activeFamilies, [SetupWorkflowKey.Firmware], "Config|Full Parameters List"),
+        //Descriptor(SetupWorkflowKey.OptionalHardware, "Optional Hardware", "Configure supported serial, CAN, rangefinder, and other peripherals.", null, [SetupWorkflowKey.Firmware], "Config|Full Parameters List"),
+        //Descriptor(SetupWorkflowKey.Safety, "Safety", "Review arming, failsafe, and mandatory preflight settings.", activeFamilies, [SetupWorkflowKey.Accelerometer, SetupWorkflowKey.Compass, SetupWorkflowKey.Radio], "Config|Full Parameters List"),
+        //Descriptor(SetupWorkflowKey.Summary, "Summary", "Review completion, warnings, and links to advanced configuration.", null, [], "Config|Full Parameters List")
     ];
 
     /// <inheritdoc />
@@ -124,14 +125,16 @@ public sealed class SetupWorkflowCatalog : ISetupWorkflowCatalog
     {
         return descriptor.SupportedFamilies.Count > 0 && !descriptor.SupportedFamilies.Contains(state.Identity.Firmware.Family)
             ? false
-            : descriptor.Key != SetupWorkflowKey.OptionalHardware ||
-              state.Identity.Firmware.Supports(MavProtocolCapability.Ftp) ||
-              parameters.Keys.Any(IsOptionalHardwareParameter);
+            : //descriptor.Key != SetupWorkflowKey.OptionalHardware ||
+            state.Identity.Firmware.Supports(MavProtocolCapability.Ftp) ||
+            parameters.Keys.Any(IsOptionalHardwareParameter);
     }
 
     private static bool IsVisible(SetupWorkflowDescriptor descriptor, VehicleState state, IReadOnlyDictionary<string, VehicleParameter> parameters)
     {
-        return IsSupported(descriptor, state, parameters) || descriptor.Key is SetupWorkflowKey.Firmware or SetupWorkflowKey.Summary;
+        return IsSupported(descriptor, state, parameters)
+            //|| descriptor.Key is SetupWorkflowKey.Firmware or SetupWorkflowKey.Summary
+            ;
     }
 
     private static bool IsOptionalHardwareParameter(string name)

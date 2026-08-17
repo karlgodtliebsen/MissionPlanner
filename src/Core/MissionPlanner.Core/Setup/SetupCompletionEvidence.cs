@@ -1,3 +1,5 @@
+﻿using MissionPlanner.Core.Setup.Definitions;
+
 namespace MissionPlanner.Core.Setup;
 
 /// <summary>Represents locally persisted evidence that a setup workflow was completed.</summary>

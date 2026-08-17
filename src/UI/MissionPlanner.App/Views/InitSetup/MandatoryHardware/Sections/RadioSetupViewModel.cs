@@ -3,13 +3,15 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
+using MissionPlanner.App.Views.Common;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Setup.Abstractions;
+using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
-using MissionPlanner.App.Views.Common;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -129,8 +131,8 @@ public sealed partial class RadioSetupViewModel : Models.SetupWorkflowDetailView
 
     /// <summary>Gets whether calibration capture can start.</summary>
     public bool CanStart =>
-        CalibrationState is (RadioCalibrationState.NotStarted or RadioCalibrationState.Success or
-            RadioCalibrationState.Failed or RadioCalibrationState.Cancelled or RadioCalibrationState.Disconnected) &&
+        CalibrationState is RadioCalibrationState.NotStarted or RadioCalibrationState.Success or
+            RadioCalibrationState.Failed or RadioCalibrationState.Cancelled or RadioCalibrationState.Disconnected &&
         SignalState == RadioSignalState.Live && !IsArmed;
 
     /// <summary>Gets whether parameter writes are currently in progress.</summary>
@@ -271,7 +273,10 @@ public sealed partial class RadioSetupViewModel : Models.SetupWorkflowDetailView
         }
     }
 
-    private bool CanCancelCalibrationCommand() => CanCancelCalibration;
+    private bool CanCancelCalibrationCommand()
+    {
+        return CanCancelCalibration;
+    }
 
     [RelayCommand]
     private void Reset()
@@ -333,7 +338,7 @@ public sealed partial class RadioSetupViewModel : Models.SetupWorkflowDetailView
         {
             RadioSignalState.Live => "RC input live",
             RadioSignalState.Stale => "RC input stale",
-            _ => "No RC signal"
+            var _ => "No RC signal"
         };
         ChannelCount = view.ReportedChannelCount;
         RssiText = view.RssiPercent is { } rssi ? $"RSSI {rssi}%" : "RSSI —";
@@ -396,6 +401,7 @@ public sealed partial class RadioSetupViewModel : Models.SetupWorkflowDetailView
         {
             channel.ApplyCalibration(captures.GetValueOrDefault(channel.Number), snapshot.State);
         }
+
         if (snapshot.Issues.Count > 0 && snapshot.State is RadioCalibrationState.Failed or RadioCalibrationState.Success or RadioCalibrationState.Writing)
         {
             Issues.Clear();
@@ -433,6 +439,8 @@ public sealed partial class RadioChannelDisplayViewModel : ObservableObject
     /// <summary>Initializes a live channel row.</summary>
     /// <param name="info">The channel projection.</param>
     /// <param name="stale">Whether the channel telemetry is stale.</param>
+    /// <param name="capture"></param>
+    /// <param name="calibrationState"></param>
     public RadioChannelDisplayViewModel(
         RadioChannelInfo info,
         bool stale,
@@ -467,43 +475,56 @@ public sealed partial class RadioChannelDisplayViewModel : ObservableObject
     public partial double Normalized { get; private set; }
 
     /// <summary>Gets the configured minimum endpoint.</summary>
-    [ObservableProperty] public partial int Minimum { get; private set; }
+    [ObservableProperty]
+    public partial int Minimum { get; private set; }
 
     /// <summary>Gets the configured maximum endpoint.</summary>
-    [ObservableProperty] public partial int Maximum { get; private set; }
+    [ObservableProperty]
+    public partial int Maximum { get; private set; }
 
     /// <summary>Gets the configured trim.</summary>
-    [ObservableProperty] public partial int Trim { get; private set; }
+    [ObservableProperty]
+    public partial int Trim { get; private set; }
 
     /// <summary>Gets the centered-axis dead zone.</summary>
-    [ObservableProperty] public partial int DeadZone { get; private set; }
+    [ObservableProperty]
+    public partial int DeadZone { get; private set; }
 
     /// <summary>Gets whether the channel is reversed.</summary>
-    [ObservableProperty] public partial bool IsReversed { get; private set; }
+    [ObservableProperty]
+    public partial bool IsReversed { get; private set; }
 
     /// <summary>Gets whether a live PWM value is available.</summary>
-    [ObservableProperty] public partial bool HasSignal { get; private set; }
+    [ObservableProperty]
+    public partial bool HasSignal { get; private set; }
 
     /// <summary>Gets the meter presentation kind.</summary>
-    [ObservableProperty] public partial RadioChannelPresentationKind PresentationKind { get; private set; }
+    [ObservableProperty]
+    public partial RadioChannelPresentationKind PresentationKind { get; private set; }
 
     /// <summary>Gets the captured minimum endpoint.</summary>
-    [ObservableProperty] public partial int? CapturedMinimum { get; private set; }
+    [ObservableProperty]
+    public partial int? CapturedMinimum { get; private set; }
 
     /// <summary>Gets the captured maximum endpoint.</summary>
-    [ObservableProperty] public partial int? CapturedMaximum { get; private set; }
+    [ObservableProperty]
+    public partial int? CapturedMaximum { get; private set; }
 
     /// <summary>Gets the fresh Review-stage trim candidate.</summary>
-    [ObservableProperty] public partial int? CandidateTrim { get; private set; }
+    [ObservableProperty]
+    public partial int? CandidateTrim { get; private set; }
 
     /// <summary>Gets whether captured markers should be rendered.</summary>
-    [ObservableProperty] public partial bool ShowCapturedRange { get; private set; }
+    [ObservableProperty]
+    public partial bool ShowCapturedRange { get; private set; }
 
     /// <summary>Gets an optional honest auxiliary-position interpretation.</summary>
-    [ObservableProperty] public partial string? AuxiliaryState { get; private set; }
+    [ObservableProperty]
+    public partial string? AuxiliaryState { get; private set; }
 
     /// <summary>Gets the channel-specific validation message.</summary>
-    [ObservableProperty] public partial string? CalibrationIssue { get; private set; }
+    [ObservableProperty]
+    public partial string? CalibrationIssue { get; private set; }
 
     /// <summary>Gets the endpoint and reversal summary.</summary>
     [ObservableProperty]
@@ -516,6 +537,9 @@ public sealed partial class RadioChannelDisplayViewModel : ObservableObject
     /// <summary>Updates the live values from a new projection.</summary>
     /// <param name="info">The channel projection.</param>
     /// <param name="stale">Whether the channel telemetry is stale.</param>
+    /// <param name="hasSignal"></param>
+    /// <param name="capture"></param>
+    /// <param name="calibrationState"></param>
     public void Update(
         RadioChannelInfo info,
         bool stale,
@@ -537,7 +561,7 @@ public sealed partial class RadioChannelDisplayViewModel : ObservableObject
         {
             RadioChannelKind.CenteredAxis => RadioChannelPresentationKind.CenteredAxis,
             RadioChannelKind.Throttle => RadioChannelPresentationKind.Throttle,
-            _ => RadioChannelPresentationKind.Auxiliary
+            var _ => RadioChannelPresentationKind.Auxiliary
         };
         AuxiliaryState = info.Kind == RadioChannelKind.Auxiliary ? DescribeAuxiliary(info.Pwm) : null;
         Range = $"{info.Minimum}/{info.Trim}/{info.Maximum}{(info.Reversed ? " · reversed" : string.Empty)}";
@@ -562,11 +586,14 @@ public sealed partial class RadioChannelDisplayViewModel : ObservableObject
     }
 
     /// <summary>Returns an optional stepped label without coercing intermediate auxiliary values.</summary>
-    public static string DescribeAuxiliary(int pwm) => pwm switch
+    public static string DescribeAuxiliary(int pwm)
     {
-        <= 1100 => "LOW",
-        >= 1450 and <= 1550 => "MID",
-        >= 1900 => "HIGH",
-        _ => "Variable"
-    };
+        return pwm switch
+        {
+            <= 1100 => "LOW",
+            >= 1450 and <= 1550 => "MID",
+            >= 1900 => "HIGH",
+            var _ => "Variable"
+        };
+    }
 }

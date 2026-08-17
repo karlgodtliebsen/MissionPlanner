@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Setup.Definitions;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
 

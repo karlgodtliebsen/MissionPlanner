@@ -1,3 +1,5 @@
+﻿using MissionPlanner.Core.Setup.Definitions;
+
 namespace MissionPlanner.Core.Setup;
 
 /// <summary>Stores local setup-completion evidence without treating it as vehicle truth.</summary>

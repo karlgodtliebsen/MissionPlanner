@@ -88,12 +88,6 @@
         </Grid>
     </Shell.FlyoutContent>
 
-    <FlyoutItem Title="Introduction" Icon="Resources/Images/x_light_help_icon_x.png">
-        <ShellContent
-            Title=""
-            ContentTemplate="{DataTemplate introduction:IntroductionPage}" Route="IntroductionPage" />
-    </FlyoutItem>
-
     <FlyoutItem Title="Flight Data"  Icon="Resources/Images/x_light_flightdata_icon_x.png">
         <ShellContent
             Title=""
@@ -138,6 +132,12 @@
         <ShellContent
             Title=""
             ContentTemplate="{DataTemplate simulation:SimulationPage}" Route="Simulation" />
+    </FlyoutItem>
+    
+    <FlyoutItem Title="Tutorial" Icon="Resources/Images/x_light_help_icon_x.png">
+        <ShellContent
+            Title=""
+            ContentTemplate="{DataTemplate introduction:IntroductionPage}" Route="IntroductionPage" />
     </FlyoutItem>
 
     <FlyoutItem Title="Help" Icon="Resources/Images/x_light_help_icon_x.png">

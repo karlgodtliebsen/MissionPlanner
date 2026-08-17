@@ -19,7 +19,7 @@
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}" Spacing="8">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="sections:FrameParameterSettingViewModel">
-                        <Border Padding="10" StrokeThickness="1">
+                        <Border Padding="10"  StyleClass="SurfaceContainer,Rounded,Elevation1">
                             <Grid ColumnDefinitions="180,*,*" RowDefinitions="Auto,Auto" RowSpacing="4" ColumnSpacing="8">
                                 <Label Text="{Binding DisplayName}" FontAttributes="Bold" />
                                 <Label Grid.Column="1" Text="{Binding CurrentDisplay, StringFormat='Current: {0}'}" />

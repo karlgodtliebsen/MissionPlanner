@@ -52,9 +52,9 @@
                     <tabsUtils:SlimTabHeaderView />
                 </DataTemplate>
             </material:TabView.TabHeaderItemTemplate>
-            <material:TabItem Title="Firmware" >
+            <!--<material:TabItem Title="Firmware" >
                 <sections:FirmwareSetupView />
-            </material:TabItem>
+            </material:TabItem>-->
             <material:TabItem Title="Frame">
                 <sections:FrameSetupView />
             </material:TabItem>
@@ -67,19 +67,39 @@
             <material:TabItem Title="Radio">
                 <sections:RadioSetupView />
             </material:TabItem>
-            <material:TabItem Title="Flight Modes">
-                <sections:FlightModesSetupView />
-            </material:TabItem>
-            <material:TabItem Title="Battery">
-                <sections:BatterySetupView />
-            </material:TabItem>
-            <material:TabItem Title="ESC / Motors">
-                <sections:EscMotorSetupView />
-            </material:TabItem>
             <material:TabItem Title="Servo Output">
                 <sections:ServoOutputSetupView />
             </material:TabItem>
-            <material:TabItem Title="Optional Hardware">
+            <!--<material:TabItem Title="Serial Ports">
+                <sections:BatterySetupView />
+            </material:TabItem>-->
+            <material:TabItem Title="ESC Calibration">
+                <sections:EscMotorSetupView />
+            </material:TabItem>  
+            
+            <material:TabItem Title="Flight Modes">
+                <sections:FlightModesSetupView />
+            </material:TabItem>
+            <!--<material:TabItem Title="Failsafe">
+                <sections:View />
+            </material:TabItem>-->
+            <!--<material:TabItem Title="Initial Tune Parameters">
+                <sections: ItpSetupView/>
+            </material:TabItem>-->
+            <!--<material:TabItem Title="HW ID">
+                <sections:HwIdSetupView />
+            </material:TabItem>-->
+            <!--<material:TabItem Title="ADSB">
+                <sections:AdsbSetupView />
+            </material:TabItem>-->
+
+
+            <!--<material:TabItem Title="Battery">
+                <sections:BatterySetupView />
+            </material:TabItem>-->
+  
+
+            <!--<material:TabItem Title="Optional Hardware">
                 <sections:OptionalHardwareSetupView />
             </material:TabItem>
             <material:TabItem Title="Safety">
@@ -87,7 +107,7 @@
             </material:TabItem>
             <material:TabItem Title="Summary">
                 <sections:SetupSummaryView />
-            </material:TabItem>
+            </material:TabItem>-->
         </tabViews:ExtendedTabView>
 
     </Grid>

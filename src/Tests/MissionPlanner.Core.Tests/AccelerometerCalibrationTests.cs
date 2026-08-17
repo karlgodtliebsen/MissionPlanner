@@ -6,6 +6,7 @@ using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -276,10 +277,10 @@ public sealed class AccelerometerCalibrationTests
         var now = DateTimeOffset.UtcNow;
         return new VehicleState(vehicleId, 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online, now,
                 VehicleMode.Stabilize, false, null, null, null, null, null, null, null, null) with
-            {
-                Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
+        {
+            Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
                     LandedState: VehicleLandedState.OnGround, ObservedAt: now)
-            };
+        };
     }
 
     private static IDispatcher ImmediateDispatcher()

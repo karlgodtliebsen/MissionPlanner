@@ -22,6 +22,8 @@ using MissionPlanner.Core.ConfigTuning.VendorDevices.CubeLan;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Setup.Abstractions;
+using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Simulation.Abstractions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;

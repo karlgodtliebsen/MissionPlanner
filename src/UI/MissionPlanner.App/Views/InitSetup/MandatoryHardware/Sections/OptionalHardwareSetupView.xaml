@@ -33,19 +33,19 @@
                                  ItemsSource="{Binding Modules}" 
                                  ItemSizingStrategy= "MeasureFirstItem"
                                  ShowSearchBar="False"
-                                 RowHeight="80"
+                                 
                                      
                                  HorizontalOptions="Fill"
                                  VerticalOptions="Fill" 
                                  BackgroundColor="Transparent">
 
                         <virtualized:VirtualizedDataGrid.Columns>
-                            <material:DataGridColumn Width="*" x:DataType="sections:OptionalHardwareModuleViewModel"  
+                            <material:DataGridColumn Width="160" x:DataType="sections:OptionalHardwareModuleViewModel"  
                                                  ValueBinding="{Binding Title}" Title="Title" />
-                            <material:DataGridColumn Width="*" x:DataType="sections:OptionalHardwareModuleViewModel"  
+                            <material:DataGridColumn Width="160" x:DataType="sections:OptionalHardwareModuleViewModel"  
                                                 ValueBinding="{Binding Description}" Title="Description" />
 
-                            <!--<material:DataGridColumn Title="Issues" Width="160" 
+                            <material:DataGridColumn Title="Issues" Width="*" 
                                                  x:DataType="sections:OptionalHardwareModuleViewModel" 
                                                  IsVisible="{Binding HasIssues}">
                                 <material:DataGridColumn.CellItemTemplate >
@@ -61,40 +61,54 @@
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
                             </material:DataGridColumn>
-
-                            <material:DataGridColumn Title="Settings" Width="160">
+                            
+                            <material:DataGridColumn Title="Settings Name" Width="*">
                                 <material:DataGridColumn.CellItemTemplate >
                                     <DataTemplate x:DataType="sections:OptionalHardwareModuleViewModel" >
                                         <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}">
                                             <BindableLayout.ItemTemplate>
                                                 <DataTemplate x:DataType="sections:PeripheralSettingViewModel">
-                                                    <Grid ColumnDefinitions="200,*,Auto" ColumnSpacing="8">
-                                                        <Label Text="{Binding DisplayName}" VerticalOptions="Center" />
-                                                        <material:SelectField Grid.Column="1"
-                                                                          Title="Value"
-                                                                          IsVisible="{Binding HasOptions}"
-                                                                          ItemsSource="{Binding Options}"
-                                                                          SelectedItem="{Binding SelectedOption}"
-                                                                          ItemDisplayBinding="{Binding Name}" />
-                                                        <controls:NumericField
-                                                        Grid.Column="1" 
-                                                        IsVisible="{Binding IsNumeric}"
-                                                        Text="{Binding NumericValue,Mode=TwoWay}"
-                                                        NumberFormat="F1"
-                                                        HorizontalOptions="Fill"
-                                                        HorizontalTextAlignment="End" />
+                                                    
+                                                        <Label MaxLines="5" Text="{Binding DisplayName}" VerticalOptions="Center" />
+                                                    
+                                                </DataTemplate>
+                                            </BindableLayout.ItemTemplate>
+                                        </VerticalStackLayout>
+                                    </DataTemplate>
+                                </material:DataGridColumn.CellItemTemplate>
+                            </material:DataGridColumn>
 
-                                                        <Button Grid.Column="2"
-                                                            Text="Write"
-                                                            Command="{Binding ApplyCommand}" />
+                            <material:DataGridColumn Title="Settings" Width="*">
+                                <material:DataGridColumn.CellItemTemplate >
+                                    <DataTemplate x:DataType="sections:OptionalHardwareModuleViewModel" >
+                                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}">
+                                            <BindableLayout.ItemTemplate>
+                                                <DataTemplate x:DataType="sections:PeripheralSettingViewModel">
+                                                    <Grid ColumnDefinitions="250,Auto" ColumnSpacing="8" MinimumHeightRequest="90" >
+                                                        <material:SelectField Grid.Column="0"
+                                                               Title="Value" VerticalOptions="Center"
+                                                               IsVisible="{Binding HasOptions}"
+                                                               ItemsSource="{Binding Options}"
+                                                               SelectedItem="{Binding SelectedOption}"
+                                                               ItemDisplayBinding="{Binding Name}" />
+                                                        <controls:NumericField
+                                                             Grid.Column="0" VerticalOptions="Center"
+                                                             IsVisible="{Binding IsNumeric}"
+                                                             Text="{Binding NumericValue,Mode=TwoWay}"
+                                                             NumberFormat="F1"
+                                                             HorizontalOptions="Fill"
+                                                             HorizontalTextAlignment="End" />
+
+                                                        <Button Grid.Column="1"
+                                                             Text="Write" VerticalOptions="Center"
+                                                             Command="{Binding ApplyCommand}" />
                                                     </Grid>
                                                 </DataTemplate>
                                             </BindableLayout.ItemTemplate>
                                         </VerticalStackLayout>
                                     </DataTemplate>
                                 </material:DataGridColumn.CellItemTemplate>
-                            </material:DataGridColumn>-->
-
+                            </material:DataGridColumn>
 
                         </virtualized:VirtualizedDataGrid.Columns>
                     </virtualized:VirtualizedDataGrid>

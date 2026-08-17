@@ -6,6 +6,8 @@ using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
 using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Setup.Abstractions;
+using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
@@ -73,6 +75,21 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
     /// <summary>Gets whether Firmware is selected.</summary>
     public bool IsFirmwareSelected => IsSelected(SetupWorkflowKey.Firmware);
 
+    /// <summary>Gets whether Flight Modes is selected.</summary>
+    public bool IsFlightModesSelected => IsSelected(SetupWorkflowKey.FlightModes);
+
+    /// <summary>Gets whether Battery is selected.</summary>
+    public bool IsBatterySelected => IsSelected(SetupWorkflowKey.Battery);
+
+    public bool IsOptionalHardwareSelected => IsSelected(SetupWorkflowKey.OptionalHardware);
+
+    /// <summary>Gets whether Safety is selected.</summary>
+    public bool IsSafetySelected => IsSelected(SetupWorkflowKey.Safety);
+
+    /// <summary>Gets whether Summary is selected.</summary>
+    public bool IsSummarySelected => IsSelected(SetupWorkflowKey.Summary);
+
+
     /// <summary>Gets whether Frame is selected.</summary>
     public bool IsFrameSelected => IsSelected(SetupWorkflowKey.Frame);
 
@@ -85,11 +102,6 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
     /// <summary>Gets whether Radio is selected.</summary>
     public bool IsRadioSelected => IsSelected(SetupWorkflowKey.Radio);
 
-    /// <summary>Gets whether Flight Modes is selected.</summary>
-    public bool IsFlightModesSelected => IsSelected(SetupWorkflowKey.FlightModes);
-
-    /// <summary>Gets whether Battery is selected.</summary>
-    public bool IsBatterySelected => IsSelected(SetupWorkflowKey.Battery);
 
     /// <summary>Gets whether ESC is selected.</summary>
     public bool IsEscSelected => IsSelected(SetupWorkflowKey.Esc);
@@ -98,14 +110,6 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
     public bool IsServoOutputSelected => IsSelected(SetupWorkflowKey.ServoOutput);
 
     /// <summary>Gets whether Optional Hardware is selected.</summary>
-    public bool IsOptionalHardwareSelected => IsSelected(SetupWorkflowKey.OptionalHardware);
-
-    /// <summary>Gets whether Safety is selected.</summary>
-    public bool IsSafetySelected => IsSelected(SetupWorkflowKey.Safety);
-
-    /// <summary>Gets whether Summary is selected.</summary>
-    public bool IsSummarySelected => IsSelected(SetupWorkflowKey.Summary);
-
     /// <summary>Gets whether the selected workflow links to a Config page.</summary>
     public bool HasConfigDestination => SelectedWorkflow?.Descriptor.ConfigDestination is not null;
 
@@ -143,18 +147,19 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
 
     partial void OnSelectedWorkflowChanged(SetupWorkflowItemViewModel? value)
     {
-        OnPropertyChanged(nameof(IsFirmwareSelected));
+        //  OnPropertyChanged(nameof(IsFirmwareSelected));
+        //OnPropertyChanged(nameof(IsFlightModesSelected));
+        //OnPropertyChanged(nameof(IsBatterySelected));
+        //OnPropertyChanged(nameof(IsOptionalHardwareSelected));
+        //OnPropertyChanged(nameof(IsSafetySelected));
+        //OnPropertyChanged(nameof(IsSummarySelected));   
+
         OnPropertyChanged(nameof(IsFrameSelected));
         OnPropertyChanged(nameof(IsAccelerometerSelected));
         OnPropertyChanged(nameof(IsCompassSelected));
         OnPropertyChanged(nameof(IsRadioSelected));
-        OnPropertyChanged(nameof(IsFlightModesSelected));
-        OnPropertyChanged(nameof(IsBatterySelected));
         OnPropertyChanged(nameof(IsEscSelected));
         OnPropertyChanged(nameof(IsServoOutputSelected));
-        OnPropertyChanged(nameof(IsOptionalHardwareSelected));
-        OnPropertyChanged(nameof(IsSafetySelected));
-        OnPropertyChanged(nameof(IsSummarySelected));
         OnPropertyChanged(nameof(HasConfigDestination));
         OnPropertyChanged(nameof(CanRecordSelectedWorkflowManually));
     }
@@ -207,7 +212,10 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
 
         try
         {
-            await navigation.OpenPageAsync(destination);
+            var parts = destination.Split('|');
+            var root = parts[0];
+            var config = parts[1];
+            await navigation.OpenSubViewAsync(root, config);
             Error = null;
         }
         catch (Exception exception)
