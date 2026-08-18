@@ -558,7 +558,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
                 CustomPackage ?? prepared?.Package,
                 CustomPackage is not null ? FirmwareInstallationSource.LocalCustom : FirmwareInstallationSource.OfficialCatalogue,
                 CustomPackage is not null
-                    ? new FirmwareCompatibilityPolicy(AllowBoardIdMismatch: !RequireExactBoardIdMatch)
+                    ? new FirmwareCompatibilityPolicy(!RequireExactBoardIdMatch)
                     : FirmwareCompatibilityPolicy.Strict,
                 CustomPackage is not null ? CustomFirmwareName : null);
 
@@ -656,15 +656,8 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
                 StatusMessage = ProgressMessage;
             }));
             var result = await dfuInstallationService.InstallAsync(
-                new DfuInstallationRequest(
-                    platform,
-                    boardId,
-                    selectedDfuDevice.Descriptor,
-                    ConfirmationPhrase: requiredPhrase,
-                    ManifestEntry: selectedFirmware?.Entry,
-                    LocalHexPath: localHexPath),
-                progress,
-                ownedCancellation.Token);
+                new DfuInstallationRequest(platform, boardId, selectedDfuDevice.Descriptor, ConfirmationPhrase: requiredPhrase,
+                    ManifestEntry: selectedFirmware?.Entry, LocalHexPath: localHexPath), progress, ownedCancellation.Token);
 
             await RefreshDfuDevicesAsync(CancellationToken.None);
 

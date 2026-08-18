@@ -1,16 +1,15 @@
 ﻿namespace MissionPlanner.Core.ConfigTuning.Planner;
 
-/// <summary>Provides data for observable Planner settings changes.</summary>
+/// <summary>
+/// Provides data for observable Planner settings changes.
+/// </summary>
 public sealed class PlannerSettingsChangedEventArgs : EventArgs
 {
     /// <summary>Initializes settings-change event data.</summary>
     /// <param name="previous">The previous settings.</param>
     /// <param name="current">The current settings.</param>
     /// <param name="restartRequiredSections">Changed sections that take effect after restart.</param>
-    public PlannerSettingsChangedEventArgs(
-        PlannerSettings previous,
-        PlannerSettings current,
-        IReadOnlyList<PlannerSettingsSection> restartRequiredSections)
+    public PlannerSettingsChangedEventArgs(PlannerSettings previous, PlannerSettings current, IReadOnlyList<PlannerSettingsSection> restartRequiredSections)
     {
         Previous = previous;
         Current = current;

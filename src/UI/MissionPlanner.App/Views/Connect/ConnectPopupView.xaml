@@ -7,7 +7,7 @@
               xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
               x:Class="MissionPlanner.App.Views.Connect.ConnectPopupView"
               x:DataType="connect:ConnectPopupViewModel"
-              BackgroundColor="#80000000">
+              BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}">
 
 
     <Grid>
@@ -36,8 +36,7 @@
                                          IsVisible="{Binding ShowSelectedHost}" />
 
             <Label Text="{Binding StatusMessage}"
-                       TextColor="LightGray"
-                       FontSize="12"
+                       FontSize="20"
                        HorizontalOptions="Center"
                        Margin="0,4,0,0" />
 
@@ -45,26 +44,27 @@
 
                 <Button Grid.Column="0"
                         IsVisible="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
-                    ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Find_replace}, FontFamily=MaterialSharp}"
-                    FontSize="20"
-                    Padding="5"
-                    VerticalOptions="Center"
-                    Command="{Binding RefreshCommand}" />
+                        ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Find_replace}, FontFamily=MaterialSharp}"
+                        FontSize="20"
+                        Padding="5"
+                        HorizontalOptions="Fill"
+                        VerticalOptions="Center"
+                        Command="{Binding RefreshCommand}" />
 
                 <Button Grid.Column="1"
                         IsVisible="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
-                    ImageSource="{Binding IsConnectedImage}"
-                    FontSize="20"
-                    Padding="5"
-                    VerticalOptions="Center"
-                    Command="{Binding ConnectCommand}" />
+                        ImageSource="{Binding IsConnectedImage}"
+                        FontSize="20"
+                        Padding="5"
+                        HorizontalOptions="Fill"
+                        VerticalOptions="Center"
+                        Command="{Binding ConnectCommand}" />
 
             </Grid>
         </VerticalStackLayout>
         <VerticalStackLayout Spacing="12" Margin="25" IsVisible="{Binding IsConnected}">
             <Label Text="{Binding StatusMessage}"
-                       TextColor="LightGray"
-                       FontSize="12"
+                      FontSize="20"
                        HorizontalOptions="Center"
                        Margin="0,4,0,0" />
 
@@ -74,6 +74,8 @@
                     ImageSource="{Binding IsConnectedImage}"
                     FontSize="20"
                     Padding="5"
+                    MinimumWidthRequest="100"
+                    HorizontalOptions="Fill"
                     VerticalOptions="Center"
                     Command="{Binding ConnectCommand}" />
 

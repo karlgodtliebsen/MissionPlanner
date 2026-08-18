@@ -146,6 +146,25 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
     /// </summary>
     public IReadOnlyList<string> LayoutModes { get; } = ["Basic", "Advanced", "Custom"];
 
+    /// <summary>
+    /// Application preferences that are not persisted in the settings file, but are used to control the UI and behavior of the application.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool PreferDarkTheme { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the flyout menu is currently presented in the UI.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsFlyoutPresented { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the flyout menu is locked in the UI.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsFlyoutLocked { get; set; }
+
+
     /// <summary>Gets the selected unit system.</summary>
     [ObservableProperty]
     public partial UnitSystem SelectedUnitSystem { get; set; }
@@ -539,6 +558,18 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
     }
 
     [RelayCommand]
+    private Task ResetApplicationAsync(string sectionName)
+    {
+        return RunAsync(async cancellationToken =>
+        {
+            settingsService.Current.Appearance = new PlannerAppearanceSettings();
+            var result = await settingsService.SaveAsync(settingsService.Current, cancellationToken);
+            Load(settingsService.Current);
+            ShowSaveResult(result, $"Appearance settings reset to defaults.");
+        });
+    }
+
+    [RelayCommand]
     private Task ResetSectionAsync(string sectionName)
     {
         return RunAsync(async cancellationToken =>
@@ -642,6 +673,10 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
         loading = true;
         try
         {
+            PreferDarkTheme = settings.Appearance.PreferDarkTheme;
+            IsFlyoutLocked = settings.Appearance.IsFlyoutLocked;
+            IsFlyoutPresented = settings.Appearance.IsFlyoutPresented;
+
             SelectedUnitSystem = settings.Units.System;
             DefaultMapZoom = settings.Map.DefaultZoom;
             SelectedMapSource ??= MapSettingsSourceCatalog.Resolve(MapSources, settings.Map.SelectedSourceId, true);
@@ -718,7 +753,7 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
             Units = new PlannerUnitSettings { System = SelectedUnitSystem },
             Map = new PlannerMapSettings { DefaultZoom = DefaultMapZoom, SelectedSourceId = selectedOfflineSourceId ?? SelectedMapSource?.Id ?? "osm-standard", HttpCacheEnabled = MapHttpCacheEnabled, HttpCacheLimitBytes = Math.Max(16, MapHttpCacheLimitMiB) * 1_048_576L },
             Telemetry = new PlannerTelemetrySettings { DisplayRateHz = TelemetryDisplayRateHz, ChartHistorySeconds = ChartHistorySeconds },
-            Appearance = new PlannerAppearanceSettings { Theme = SelectedTheme },
+            Appearance = new PlannerAppearanceSettings { Theme = SelectedTheme, PreferDarkTheme = true, IsFlyoutPresented = true, IsFlyoutLocked = false },
             Logging = new PlannerLoggingSettings { Level = SelectedLoggingLevel, RetentionDays = LogRetentionDays, LogDirectory = LogDirectory },
             Connection = new PlannerConnectionSettings { Channel = ConnectionChannel, Host = ConnectionHost, Port = ConnectionPort, BaudRate = ConnectionBaudRate },
             ParameterCache = new PlannerParameterCacheSettings { Policy = SelectedParameterCachePolicy, MaximumAgeMinutes = ParameterCacheMaximumAgeMinutes },

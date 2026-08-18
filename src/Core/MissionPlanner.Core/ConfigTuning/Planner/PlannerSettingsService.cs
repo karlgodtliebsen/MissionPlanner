@@ -211,6 +211,37 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
     }
 
     /// <inheritdoc />
+    public ValueTask<PlannerSettingsSaveResult> SaveTheme(PlannerSettings settings, PlannerTheme theme, bool preferDarkTheme, CancellationToken cancellationToken = default)
+    {
+        var appearance = new PlannerAppearanceSettings
+        {
+            PreferDarkTheme = preferDarkTheme,
+            IsFlyoutPresented = settings.Appearance.IsFlyoutPresented,
+            IsFlyoutLocked = settings.Appearance.IsFlyoutLocked,
+            IsTutorialPresented = settings.Appearance.IsTutorialPresented,
+            Theme = theme
+        };
+        settings.Appearance = appearance;
+        return SaveAsync(settings, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public ValueTask<PlannerSettingsSaveResult> SaveFlyout(PlannerSettings settings, bool isFlyoutPresented, bool isFlyoutLocked, bool isTutorialPresented, CancellationToken cancellationToken = default)
+    {
+        var appearance = new PlannerAppearanceSettings
+        {
+            PreferDarkTheme = settings.Appearance.PreferDarkTheme,
+            IsFlyoutPresented = isFlyoutPresented,
+            IsFlyoutLocked = isFlyoutLocked,
+            IsTutorialPresented = isTutorialPresented,
+            Theme = settings.Appearance.Theme
+        };
+        settings.Appearance = appearance;
+        return SaveAsync(settings, cancellationToken);
+    }
+
+
+    /// <inheritdoc />
     public ValueTask<PlannerSettingsSaveResult> ResetSectionAsync(PlannerSettingsSection section, CancellationToken cancellationToken = default)
     {
         var defaults = new PlannerSettings();

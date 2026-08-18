@@ -1,4 +1,7 @@
-﻿namespace MissionPlanner.App;
+﻿using MissionPlanner.App.AppViewModels;
+using MissionPlanner.App.Helpers;
+
+namespace MissionPlanner.App;
 
 /// <summary>The main application Shell and guarded workspace navigation host.</summary>
 public partial class AppShell : Shell
@@ -7,5 +10,9 @@ public partial class AppShell : Shell
     public AppShell()
     {
         InitializeComponent();
+        BindingContext = ServiceHelper.GetRequiredService<AppShellContentViewModel>();
+
+        //var element = FindByName("Tutorial") as FlyoutItem;
+        //thisShell.RemoveLogicalChild(element);
     }
 }

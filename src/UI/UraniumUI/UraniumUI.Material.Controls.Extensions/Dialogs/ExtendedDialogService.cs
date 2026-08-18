@@ -4,6 +4,7 @@ using CommunityToolkit.Maui.Extensions;
 using CommunityToolkit.Maui.Views;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using UraniumUI.Controls;
 using UraniumUI.Dialogs;
 using UraniumUI.Infrastructure;
 using UraniumUI.Material.Controls;
@@ -228,34 +229,26 @@ public class ExtendedDialogService : DefaultDialogService, IExtendedDialogServic
             _ = Task.Run(() => ClosePromptSafelyAsync(popupPage, completion, result), CancellationToken.None);
         }
 
-        var buttons = new Dictionary<string, Command>
-        {
-            [accept] = new(() => RequestClose(acceptedValue())),
-            [cancel] = new(() => RequestClose(null))
-        };
+        var buttons = new Dictionary<string, Command> { [accept] = new(() => RequestClose(acceptedValue())), [cancel] = new(() => RequestClose(null)) };
         if (!string.IsNullOrWhiteSpace(clear))
         {
-            buttons[clear] = new(() => RequestClose(null));
+            buttons[clear] = new Command(() => RequestClose(null));
         }
 
         var layout = CreatePromptLayout(title, message, field, buttons);
         popupPage.Content = GetFrame(Page.Width, layout);
-        await dispatcher.DispatchAsync(async () => await Page.Navigation.PushModalAsync(
-            ConfigurePopupPage(popupPage), false));
+        await dispatcher.DispatchAsync(async () =>
+            await Page.Navigation.PushModalAsync(ConfigurePopupPage(popupPage), false));
         return await completion.Task.ConfigureAwait(false);
     }
 
-    private VerticalStackLayout CreatePromptLayout(
-        string title,
-        string message,
-        View field,
-        Dictionary<string, Command> buttons)
+    private VerticalStackLayout CreatePromptLayout(string title, string message, View field, Dictionary<string, Command> buttons)
     {
         var layout = new VerticalStackLayout();
         layout.Children.Add(GetHeader(title));
         if (!string.IsNullOrWhiteSpace(message))
         {
-            layout.Children.Add(new Label { Text = message, Margin = new Thickness(20, 20, 20, 0) });
+            layout.Children.Add(new SelectableLabel { Text = message, Margin = new Thickness(20, 20, 20, 0) });
         }
 
         layout.Children.Add(field);
@@ -351,12 +344,10 @@ public class ExtendedDialogService : DefaultDialogService, IExtendedDialogServic
         });
     }
 
-    //private readonly SemaphoreSlim navigationGate = new(1, 1);
     private int closeRequested;
 
     /// <summary>
     /// Requests closure of the current modal page.
-    ///
     /// The returned task represents acceptance of the close request, not
     /// completion of the modal navigation operation.
     /// </summary>
@@ -485,9 +476,7 @@ public class ExtendedDialogService : DefaultDialogService, IExtendedDialogServic
 
         if (content.Parent is not null)
         {
-            throw new InvalidOperationException(
-                "The dialog content already has a parent. " +
-                "Create a new view for each dialog opening.");
+            throw new InvalidOperationException("The dialog content already has a parent. Create a new view for each dialog opening.");
         }
 
         var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -497,10 +486,7 @@ public class ExtendedDialogService : DefaultDialogService, IExtendedDialogServic
 
         void RequestClose(bool accepted)
         {
-            if (Interlocked.CompareExchange(
-                    ref closeRequested,
-                    1,
-                    0) != 0)
+            if (Interlocked.CompareExchange(ref closeRequested, 1, 0) != 0)
             {
                 return;
             }
@@ -514,17 +500,12 @@ public class ExtendedDialogService : DefaultDialogService, IExtendedDialogServic
 
         if (!string.IsNullOrWhiteSpace(cancelText))
         {
-            footerButtons[cancelText] =
-                new Command(() => RequestClose(false));
+            footerButtons[cancelText] = new Command(() => RequestClose(false));
         }
 
-        popupPage.Content = GetFrame(
-            Page.Width,
-            new VerticalStackLayout { Children = { GetHeader(title), content, GetDivider(), GetFooter(footerButtons) } });
+        popupPage.Content = GetFrame(Page.Width, new VerticalStackLayout { Children = { GetHeader(title), content, GetDivider(), GetFooter(footerButtons) } });
 
-        await dispatcher.DispatchAsync(async () => await Page.Navigation.PushModalAsync(
-            ConfigurePopupPage(popupPage),
-            false));
+        await dispatcher.DispatchAsync(async () => await Page.Navigation.PushModalAsync(ConfigurePopupPage(popupPage), false));
 
         return await completion.Task.ConfigureAwait(false);
     }
@@ -664,13 +645,7 @@ public class ExtendedDialogService : DefaultDialogService, IExtendedDialogServic
 
 
     /// <inheritdoc />
-    public async Task<bool> DisplayViewExtendedAsync(
-        Page page,
-        string title,
-        View content,
-        ViewDialogOptions? options = null,
-        string okText = "OK",
-        CancellationToken cancellationToken = default)
+    public async Task<bool> DisplayViewExtendedAsync(Page page, string title, View content, ViewDialogOptions? options = null, string okText = "OK", CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(page);
         ArgumentNullException.ThrowIfNull(content);
@@ -696,9 +671,7 @@ public class ExtendedDialogService : DefaultDialogService, IExtendedDialogServic
          * continuation from running inline inside Command.Execute and therefore
          * avoids removing the button while its native Click event is executing.
          */
-        var closeRequest =
-            new TaskCompletionSource<ViewDialogCloseReason>(
-                TaskCreationOptions.RunContinuationsAsynchronously);
+        var closeRequest = new TaskCompletionSource<ViewDialogCloseReason>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         var popup = new Popup<bool>
         {
@@ -713,11 +686,7 @@ public class ExtendedDialogService : DefaultDialogService, IExtendedDialogServic
         };
 
         var footer = GetFooter(
-            new Dictionary<string, Command>
-            {
-                [okText] = new(() => closeRequest.TrySetResult(
-                    ViewDialogCloseReason.Accepted))
-            });
+            new Dictionary<string, Command> { [okText] = new(() => closeRequest.TrySetResult(ViewDialogCloseReason.Accepted)) });
 
         ScrollView? contentScrollView = null;
 

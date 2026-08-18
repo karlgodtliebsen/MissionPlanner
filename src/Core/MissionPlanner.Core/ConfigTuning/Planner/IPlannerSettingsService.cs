@@ -21,11 +21,36 @@ public interface IPlannerSettingsService
     /// <returns>All validation errors.</returns>
     IReadOnlyList<PlannerSettingsValidationError> Validate(PlannerSettings settings);
 
-    /// <summary>Persists a complete validated settings snapshot.</summary>
+    /// <summary>
+    /// Persists a complete validated settings snapshot.
+    /// </summary>
     /// <param name="settings">The candidate settings.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The save result.</returns>
     ValueTask<PlannerSettingsSaveResult> SaveAsync(PlannerSettings settings, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Persists a complete validated settings snapshot with updated Theme.
+    /// This is a convenience method that updates the Theme section and saves the settings.
+    /// </summary>
+    /// <param name="settings"></param>
+    /// <param name="theme"></param>
+    /// <param name="preferDarkTheme"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    ValueTask<PlannerSettingsSaveResult> SaveTheme(PlannerSettings settings, PlannerTheme theme, bool preferDarkTheme, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Persists a complete validated settings snapshot with updated Flyout.
+    /// This is a convenience method that updates the Flyout section and saves the settings.
+    /// </summary>
+    /// <param name="settings"></param>
+    /// <param name="isFlyoutPresented"></param>
+    /// <param name="isFlyoutLocked"></param>
+    /// <param name="isTutorialPresented"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    ValueTask<PlannerSettingsSaveResult> SaveFlyout(PlannerSettings settings, bool isFlyoutPresented, bool isFlyoutLocked, bool isTutorialPresented, CancellationToken cancellationToken = default);
 
     /// <summary>Resets one section to defaults.</summary>
     /// <param name="section">The section to reset.</param>

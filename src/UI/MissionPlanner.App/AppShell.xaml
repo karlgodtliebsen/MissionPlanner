@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Shell
     x:Class="MissionPlanner.App.AppShell"
+    x:DataType="appViewModels:AppShellContentViewModel"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
     xmlns:controls="clr-namespace:InputKit.Shared.Controls;assembly=InputKit.Maui"
-    xmlns:controls1="clr-namespace:Plainer.Maui.Controls;assembly=Plainer.Maui"
     xmlns:appViewModels="clr-namespace:MissionPlanner.App.AppViewModels"
     xmlns:flightData="clr-namespace:MissionPlanner.App.Views.FlightData"
     xmlns:flightPlanner="clr-namespace:MissionPlanner.App.Views.FlightPlanner"
@@ -21,17 +21,20 @@
     xmlns:introduction="clr-namespace:MissionPlanner.App.Views.Introduction"
     xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
     xmlns:landing="clr-namespace:MissionPlanner.App.Views.Landing"
-    Title="MissionPlanner"
+    xmlns:app="clr-namespace:MissionPlanner.App"
+    xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+    Title="MissionPlanner Next Gen"
     x:Name="thisShell"
     FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
-    Shell.FlyoutBehavior="Flyout"
-    FlyoutIsPresented="False"
+    FlyoutBehavior="{Binding FlyoutBehavior,Mode=TwoWay}"
+    FlyoutIsPresented="{Binding IsFlyoutPresented,Mode=TwoWay}"
     >
 
     <!-- Persistent Top Bar (visible on all pages) -->
     <Shell.TitleView>
         <common:TopBarView />
     </Shell.TitleView>
+
 
     <Shell.Resources>
         <Style TargetType="HorizontalStackLayout" ApplyToDerivedTypes="True" CanCascade="True">
@@ -51,16 +54,23 @@
         </Style>
     </Shell.Resources>
 
-
     <Shell.FlyoutHeader>
-        <VerticalStackLayout StyleClass="PrimaryContainer" Padding="20">
+        <VerticalStackLayout StyleClass="PrimaryContainer" Padding="20" Spacing="20">
             <Label Text="MissionPlanner Next Gen" FontSize="Large" HorizontalTextAlignment="Center" Margin="10" />
-            <VerticalStackLayout BindingContext="{uranium:Inject Type={Type appViewModels:ThemeChangeViewModel}}" x:DataType="appViewModels:ThemeChangeViewModel">
-                <Label Text="App Theme" HorizontalOptions="Center"/>
+            <VerticalStackLayout  >
+
+                <Label Text="App Theme" HorizontalOptions="Center" Margin="10" />
+
                 <controls:SelectionView HorizontalOptions="Center"
-                 ItemsSource="{Binding AppThemeList}" SelectedItem="{Binding SelectedTheme}" 
-                 ColumnNumber="2" ColumnSpacing="-2" Color="{StaticResource Tertiary}" >
+                                        ItemsSource="{Binding AppThemeList}" 
+                                        SelectedItem="{Binding SelectedTheme,Mode=TwoWay}" 
+                                        ColumnNumber="2" ColumnSpacing="-2" Color="{StaticResource Tertiary}" >
                 </controls:SelectionView>
+
+                <material:CheckBox Text="Always Dark Mode" Type="Regular" IsChecked="{Binding PreferDarkTheme,Mode=TwoWay}" />
+                <material:CheckBox Text="Lock Flyout" Type="Regular" IsChecked="{Binding IsFlyoutLocked,Mode=TwoWay}" />
+                <material:CheckBox Text="Flyout at Startup" Type="Regular" IsChecked="{Binding IsFlyoutPresented,Mode=TwoWay}" />
+                <material:CheckBox Text="Tutorial at Startup" Type="Regular" IsChecked="{Binding IsTutorialPresented,Mode=TwoWay}" />
             </VerticalStackLayout>
         </VerticalStackLayout>
     </Shell.FlyoutHeader>
@@ -70,12 +80,6 @@
             <Grid.BindingContext>
                 <appViewModels:AppShellContentViewModel CurrentShell="{x:Reference thisShell}"/>
             </Grid.BindingContext>
-            <VerticalStackLayout>
-                <VerticalStackLayout Margin="8,8,8,0" BackgroundColor="{AppThemeBinding Light={StaticResource OnSurfaceDark}, Dark={StaticResource OnSurface}}" StyleClass="Elevation1">
-                    <controls1:EntryView Margin="{OnPlatform Default=0, Android='8,0', iOS='8', MacCatalyst='8'}" Placeholder="Search" Text="{Binding SearchText}" PlaceholderColor="{AppThemeBinding Light={StaticResource OnSurface}, Dark={StaticResource OnSurfaceDark}}" ClearButtonVisibility="WhileEditing"/>
-                </VerticalStackLayout>
-                <BoxView StyleClass="Divider" />
-            </VerticalStackLayout>
             <CollectionView Grid.Row="1" SelectedItem="{Binding SelectedItem}" SelectionMode="Single" ItemsSource="{Binding Items}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
@@ -88,8 +92,10 @@
             </CollectionView>
         </Grid>
     </Shell.FlyoutContent>
-   
-    <FlyoutItem Title="MissionPlanner Next Gen" Icon="Resources/Images/x_light_help_icon_x.png">
+
+    <FlyoutItem 
+        x:Name="Landing"
+        Title="MissionPlanner Next Gen" Icon="Resources/Images/x_light_help_icon_x.png">
         <ShellContent
             Title=""
             ContentTemplate="{DataTemplate landing:LandingPage}" Route="LandingPage" />
@@ -135,13 +141,15 @@
     <FlyoutItem Title="Preferences" Icon="Resources/Images/x_light_simulation_icon_x.png" >
         <ShellContent Title="" ContentTemplate="{DataTemplate preferences:PreferencesPage}" Route="Preferences"/>
     </FlyoutItem>
-    <FlyoutItem Title="Simulation" Icon="Resources/Images/x_light_simulation_icon_x.png" >
+    <FlyoutItem
+        Title="Simulation" Icon="Resources/Images/x_light_simulation_icon_x.png" >
         <ShellContent
             Title=""
             ContentTemplate="{DataTemplate simulation:SimulationPage}" Route="Simulation" />
     </FlyoutItem>
-    
-    <FlyoutItem Title="Tutorial" Icon="Resources/Images/x_light_help_icon_x.png">
+
+    <FlyoutItem 
+                Title="Tutorial" Icon="Resources/Images/x_light_help_icon_x.png">
         <ShellContent
             Title=""
             ContentTemplate="{DataTemplate introduction:IntroductionPage}" Route="IntroductionPage" />

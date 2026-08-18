@@ -1,7 +1,9 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using CommunityToolkit.Maui.Storage;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MissionPlanner.App.AppViewModels;
 using MissionPlanner.App.Maps;
 using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Presentation;
@@ -79,12 +81,16 @@ public static class ApplicationConfigurator
         services.AddSingleton(Options.Create(applicationOptions));
         services.TryAddSingleton(new CancellationTokenSource());
 
+        services.AddSingleton<IFileSaver>(FileSaver.Default);
+        services.AddSingleton<AppShellContentViewModel>();
+
         // Register shared state service as singleton for runtime state management
         services.TryAddTransient<INavigationService, ShellNavigationService>();
         services.TryAddTransient<IConfigNavigationGuard, ConfigNavigationGuard>();
 
-        services.TryAddTransient<IPlannerSettingsStore, PreferencesPlannerSettingsStore>();
-        services.TryAddTransient<IPlannerSecretStore, SecurePlannerSecretStore>();
+        services.TryAddSingleton<IPlannerSettingsService, PlannerSettingsService>();
+        services.TryAddSingleton<IPlannerSettingsStore, PreferencesPlannerSettingsStore>();
+        services.TryAddSingleton<IPlannerSecretStore, SecurePlannerSecretStore>();
         services.TryAddTransient<IMapSecretStore, PlannerMapSecretStoreAdapter>();
 
         services.TryAddTransient<IActiveMapSourceStore, PlannerActiveMapSourceStore>();
@@ -92,7 +98,6 @@ public static class ApplicationConfigurator
         services.TryAddTransient<MapsuiMbTilesSourceFactory>();
         services.TryAddTransient<IMapsuiBasemapFactory, CompositeMapsuiBasemapFactory>();
 
-        services.TryAddTransient<IPlannerSettingsService, PlannerSettingsService>();
         services.TryAddTransient<IMapHttpRuntimeSettings, PlannerMapHttpRuntimeSettings>();
         services.TryAddSingleton(_ => new MapHttpOptions(
             $"MissionPlanner/{typeof(App).Assembly.GetName().Version?.ToString(3) ?? "unknown"} (+https://ardupilot.org/planner/)",

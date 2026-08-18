@@ -7,7 +7,7 @@
     xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
     xmlns:virtualized="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
-    xmlns:m="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
     x:DataType="local:InstallFirmwareViewModel"
     Title="Install Firmware">
 
@@ -102,7 +102,7 @@
                                              HeightRequest="40"
                                              HorizontalOptions="Center"
                                              VerticalOptions="Center"
-                                             Source="{FontImageSource FontFamily=MaterialOutlined, Glyph={x:Static m:MaterialOutlined.Backup_table}, 
+                                             Source="{FontImageSource FontFamily=MaterialOutlined, Glyph={x:Static uranium:MaterialOutlined.Backup_table}, 
                                     Color={AppThemeBinding Light={StaticResource OnSurface}, 
                                     Dark={StaticResource OnSurfaceDark}}}"/>
                                 <Label HorizontalOptions="Center" Text="No releases are available for this channel." FontSize="12" Opacity="0.6" Margin="0,20" />
@@ -209,7 +209,7 @@
                                 <Label Text="Local / custom firmware" FontAttributes="Bold" FontSize="18"/>
                                 <Label Text="{Binding CustomFirmwareName}" />
                                 <Label Text="{Binding CustomFirmwareDescription}" />
-                                <Label Text="{Binding CustomFirmwarePlatform, StringFormat='Platform: {0}'}" />
+                                <Label Text="{Binding CustomFirmwarePlatform, StringFormat='Platforuranium: {0}'}" />
                                 <Label Text="{Binding CustomFirmwareBoardId, StringFormat='Board ID: {0}'}" />
                                 <Label Text="{Binding CustomFirmwareImageSize, StringFormat='Image size: {0:N0} bytes'}" />
                                 <Label Text="{Binding CustomFirmwareBuild, StringFormat='Build: {0}'}" />
@@ -218,7 +218,7 @@
                                    LineBreakMode="WordWrap" />
                                 <CheckBox IsChecked="{Binding RequireExactBoardIdMatch, Mode=TwoWay}" />
                                 <Label Text="Require exact board ID match" />
-                                <Border IsVisible="{Binding RequireExactBoardIdMatch, Converter={StaticResource InvertedBoolConverter}}"
+                                <Border StyleClass="SurfaceContainer,Rounded,Elevation1" IsVisible="{Binding RequireExactBoardIdMatch, Converter={StaticResource InvertedBoolConverter}}"
                                         Margin="0,8,0,0" Padding="12" Stroke="OrangeRed">
                                     <Label Text="Advanced override: board-ID mismatch will be allowed for this local firmware only. Use this only when you know the firmware target is electrically and bootloader compatible with this controller. Flash-size, revision, bootloader and secure-boot checks still apply."
                                            TextColor="OrangeRed" FontAttributes="Bold" LineBreakMode="WordWrap" />
@@ -300,11 +300,11 @@
                         </VerticalStackLayout>
                     </Border>
 
-                    <m:ExpanderView Grid.Row="7" HorizontalOptions="Fill" VerticalOptions="Fill"
+                    <uranium:ExpanderView Grid.Row="7" HorizontalOptions="Fill" VerticalOptions="Fill"
                                     IsExpanded="{Binding HasDevice}">
-                        <m:ExpanderView.Header>
+                        <uranium:ExpanderView.Header>
                             <Label Text="Flash Firmware" Padding="10" />
-                        </m:ExpanderView.Header>
+                        </uranium:ExpanderView.Header>
                         <Grid  HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions="*" RowSpacing="10">
 
                             <Border Grid.Row="0" Padding="14" StyleClass="SurfaceContainer,Rounded,Elevation1">
@@ -330,12 +330,12 @@
                                 </Grid>
                             </Border>
                         </Grid>
-                    </m:ExpanderView>
+                    </uranium:ExpanderView>
 
-                    <m:ExpanderView Grid.Row="8" HorizontalOptions="Fill" VerticalOptions="Fill" IsExpanded="{Binding HasDfuBootLoader}">
-                        <m:ExpanderView.Header>
+                    <uranium:ExpanderView Grid.Row="8" HorizontalOptions="Fill" VerticalOptions="Fill" IsExpanded="{Binding HasDfuBootLoader}">
+                        <uranium:ExpanderView.Header>
                             <Label Text="STM32 Bootloader" Padding="10" />
-                        </m:ExpanderView.Header>
+                        </uranium:ExpanderView.Header>
                         <Grid  HorizontalOptions="Fill" VerticalOptions="Fill" RowDefinitions="*" RowSpacing="10">
                             <Border Grid.Row="0" Padding="16" StyleClass="SurfaceContainer,Rounded,Elevation1">
 
@@ -393,14 +393,14 @@
 
                             </Border>
                         </Grid>
-                    </m:ExpanderView>
+                    </uranium:ExpanderView>
 
-                    <m:ExpanderView Grid.Row="9" HorizontalOptions="Fill" VerticalOptions="Fill" 
+                    <uranium:ExpanderView Grid.Row="9" HorizontalOptions="Fill" VerticalOptions="Fill" 
                                     IsVisible="{Binding HasDiagnosticReport}"
                                     IsExpanded="{Binding HasDiagnosticReport}">
-                        <m:ExpanderView.Header>
+                        <uranium:ExpanderView.Header>
                             <Label Text="Diagnostics" Padding="10" />
-                        </m:ExpanderView.Header>
+                        </uranium:ExpanderView.Header>
                         <Grid  HorizontalOptions="Fill" VerticalOptions="Fill">
                             <VerticalStackLayout IsVisible="{Binding HasDiagnosticReport}" Spacing="6">
                                 <Border Padding="14" StyleClass="SurfaceContainer,Rounded,Elevation1">
@@ -412,13 +412,13 @@
                                 <Button Text="Copy diagnostic report" Command="{Binding CopyDiagnosticReportCommand}" HorizontalOptions="Start" />
                             </VerticalStackLayout>
                         </Grid>
-                    </m:ExpanderView>
+                    </uranium:ExpanderView>
 
 
-                    <m:ExpanderView Grid.Row="10" HorizontalOptions="Fill" VerticalOptions="Fill"  SemanticProperties.Hint="Show offline firmware selection, installation, DFU, driver, and recovery guidance">
-                        <m:ExpanderView.Header>
+                    <uranium:ExpanderView Grid.Row="10" HorizontalOptions="Fill" VerticalOptions="Fill"  SemanticProperties.Hint="Show offline firmware selection, installation, DFU, driver, and recovery guidance">
+                        <uranium:ExpanderView.Header>
                             <Label Text="Help &amp; Support" Padding="10" />
-                        </m:ExpanderView.Header>
+                        </uranium:ExpanderView.Header>
                         <Border  Padding="20" StyleClass="SurfaceContainer,Rounded,Elevation1">
                             <VerticalStackLayout Spacing="14">
                                 <Label Text="Firmware Help &amp; Support" FontSize="18" FontAttributes="Bold" />
@@ -455,7 +455,7 @@
                           IsVisible="{Binding CanOpenDeviceManager}" HorizontalOptions="Start" />
                             </VerticalStackLayout>
                         </Border>
-                    </m:ExpanderView>
+                    </uranium:ExpanderView>
                 </Grid>
 
             </VerticalStackLayout>

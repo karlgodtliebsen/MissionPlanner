@@ -1,10 +1,8 @@
 ﻿using CommunityToolkit.Maui;
-using CommunityToolkit.Maui.Storage;
 using InputKit.Handlers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.AppViewModels;
 using MissionPlanner.App.Configuration;
 using Mopups.Hosting;
 using Serilog;
@@ -73,9 +71,6 @@ public static class MauiProgramExtensions
                 fonts.AddMaterialSymbolsFonts();
                 //fonts.AddFluentIconFonts();
             });
-        builder.Services.AddSingleton<IFileSaver>(FileSaver.Default);
-        builder.Services.AddSingleton<ThemeChangeViewModel>();
-        builder.Services.AddSingleton<AppShellContentViewModel>();
         builder.Services
             .AddApplicationConfiguration(builder.Configuration)
             .AddCommunityToolkitDialogs()

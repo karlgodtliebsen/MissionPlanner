@@ -1,6 +1,8 @@
 ﻿namespace MissionPlanner.Core.ConfigTuning.Planner;
 
-/// <summary>Contains all local MissionPlanner application preferences.</summary>
+/// <summary>
+/// Contains all local MissionPlanner application preferences.
+/// </summary>
 public sealed record PlannerSettings
 {
     /// <summary>The current persisted settings schema.</summary>
@@ -19,7 +21,7 @@ public sealed record PlannerSettings
     public PlannerTelemetrySettings Telemetry { get; init; } = new();
 
     /// <summary>Gets appearance settings.</summary>
-    public PlannerAppearanceSettings Appearance { get; init; } = new();
+    public PlannerAppearanceSettings Appearance { get; set; } = new();
 
     /// <summary>Gets logging settings.</summary>
     public PlannerLoggingSettings Logging { get; init; } = new();

@@ -50,7 +50,7 @@
                 <Button  Grid.Column="1" Text="Reboot Autopilot" Command="{Binding RebootCommand}" IsEnabled="{Binding CanReboot}" />
             </Grid>
 
-            <Border Padding="10">
+            <Border Padding="10" StyleClass="SurfaceContainer,Rounded,Elevation1">
                 <VerticalStackLayout Spacing="5">
                     <Label Text="Command status" FontAttributes="Bold" />
                     <Label Text="{Binding PendingCommand, StringFormat='Pending: {0}'}" />

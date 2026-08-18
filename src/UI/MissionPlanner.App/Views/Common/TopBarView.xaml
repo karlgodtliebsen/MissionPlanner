@@ -2,15 +2,20 @@
 
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+             xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
              xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
              x:DataType="common:TopBarViewModel"
-             x:Class="MissionPlanner.App.Views.Common.TopBarView">
+             x:Class="MissionPlanner.App.Views.Common.TopBarView"
+             
+             BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
+             >
 
-    <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" 
+    <Grid ColumnDefinitions="Auto,*,Auto,75,75" 
           HorizontalOptions="Fill"
           Padding="8,0" 
-          BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
-          HeightRequest="50">
+          HeightRequest="50"
+          >
 
         <Label Grid.Column="0"
                Text="{Binding DataSourceMode}"
@@ -46,17 +51,19 @@
                 ImageSource="{Binding IsConnectedImage}"
                 FontSize="20"
                 Padding="5"
+                HorizontalOptions="Fill"
                 VerticalOptions="Center"
                 IsEnabled="{Binding CanOpenConnection}"
                 Command="{Binding ConnectCommand}" />
 
         <!-- Settings/Options -->
         <Button Grid.Column="4"
-                    Text="⚙"
-                    FontSize="20"
-                    Padding="5"
-                    VerticalOptions="Center"
-                    Command="{Binding OpenPreferencesCommand}"
-                    ></Button>
+                Text="⚙"
+                FontSize="20"
+                Padding="5"
+                HorizontalOptions="Fill"
+                VerticalOptions="Center"
+                Command="{Binding OpenPreferencesCommand}"
+                ></Button>
     </Grid>
 </ContentView>
