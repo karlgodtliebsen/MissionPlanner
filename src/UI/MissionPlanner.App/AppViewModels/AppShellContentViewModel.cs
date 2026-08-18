@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Services;
 using MissionPlanner.Core.ConfigTuning.Planner;
@@ -111,6 +112,40 @@ public partial class AppShellContentViewModel() : ObservableObject
         }
     }
 
+
+    partial void OnIsFlyoutLockedChanged(bool value)
+    {
+        if (synchronizing)
+        {
+            return;
+        }
+
+        Current.Appearance.IsFlyoutLocked = value;
+        _ = PersistAsync();
+    }
+
+    partial void OnIsTutorialPresentedChanged(bool value)
+    {
+        if (synchronizing)
+        {
+            return;
+        }
+
+        Current.Appearance.IsTutorialPresented = value;
+        _ = PersistAsync();
+    }
+
+    partial void OnIsFlyoutPresentedChanged(bool value)
+    {
+        if (synchronizing)
+        {
+            return;
+        }
+
+        Current.Appearance.IsFlyoutPresented = value;
+        _ = PersistAsync();
+    }
+
     partial void OnSelectedThemeChanged(AppTheme value)
     {
         runtime.PreviewTheme(ToPlannerTheme(value));
@@ -160,18 +195,6 @@ public partial class AppShellContentViewModel() : ObservableObject
         }
     }
 
-    private async Task PersistThemeAsync(PlannerTheme theme)
-    {
-        try
-        {
-            await settingsService.SaveTheme(Current, theme, PreferDarkTheme);
-        }
-        catch (Exception exception)
-        {
-            Debug.Print(exception.Message);
-            logger.LogError(exception, "Could not persist the application theme preference.");
-        }
-    }
 
     private AppTheme ToAppTheme(PlannerTheme theme)
     {
@@ -209,34 +232,17 @@ public partial class AppShellContentViewModel() : ObservableObject
         disposed = true;
     }
 
-    partial void OnIsFlyoutLockedChanged(bool value)
+    private async Task PersistThemeAsync(PlannerTheme theme)
     {
-        if (synchronizing)
+        try
         {
-            return;
+            await settingsService.SaveTheme(Current, theme, PreferDarkTheme);
         }
-
-        Current.Appearance.IsFlyoutLocked = value;
-    }
-
-    partial void OnIsTutorialPresentedChanged(bool value)
-    {
-        if (synchronizing)
+        catch (Exception exception)
         {
-            return;
+            Debug.Print(exception.Message);
+            logger.LogError(exception, "Could not persist the application theme preference.");
         }
-
-        Current.Appearance.IsTutorialPresented = value;
-    }
-
-    partial void OnIsFlyoutPresentedChanged(bool value)
-    {
-        if (synchronizing)
-        {
-            return;
-        }
-
-        Current.Appearance.IsFlyoutPresented = value;
     }
 
     private async Task PersistAsync()
@@ -272,6 +278,18 @@ public partial class AppShellContentViewModel() : ObservableObject
         Items = new ReadOnlyObservableCollection<ShellItem>(new ObservableCollection<ShellItem>(CurrentShell.Items));
         CurrentShell.CurrentItem = Items.FirstOrDefault();
         SelectedItem = CurrentShell.CurrentItem;
+    }
+
+    [RelayCommand]
+    private void CloseFlyout()
+    {
+        IsFlyoutPresented = false;
+    }
+
+    [RelayCommand]
+    private void ExpandFlyout()
+    {
+        IsFlyoutPresented = true;
     }
 
     partial void OnSelectedItemChanged(ShellItem? value)

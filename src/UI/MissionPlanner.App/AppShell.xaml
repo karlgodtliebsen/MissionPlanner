@@ -21,7 +21,6 @@
     xmlns:introduction="clr-namespace:MissionPlanner.App.Views.Introduction"
     xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
     xmlns:landing="clr-namespace:MissionPlanner.App.Views.Landing"
-    xmlns:app="clr-namespace:MissionPlanner.App"
     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
     Title="MissionPlanner Next Gen"
     x:Name="thisShell"
@@ -55,9 +54,42 @@
     </Shell.Resources>
 
     <Shell.FlyoutHeader>
-        <VerticalStackLayout StyleClass="PrimaryContainer" Padding="20" Spacing="20">
-            <Label Text="MissionPlanner Next Gen" FontSize="Large" HorizontalTextAlignment="Center" Margin="10" />
-            <VerticalStackLayout  >
+
+
+        <VerticalStackLayout Grid.Row="1" StyleClass="PrimaryContainer" Padding="0" Spacing="20">
+            <HorizontalStackLayout HorizontalOptions="Start" 
+                                   MinimumHeightRequest="50"
+
+                                   IsVisible="{Binding IsFlyoutPresented, Converter={StaticResource InvertedBoolConverter}}">
+                <Button 
+                        BorderColor="Transparent"
+                        BorderWidth="0"
+                        BackgroundColor="Transparent"
+                        IsVisible="{Binding IsFlyoutLocked}"  
+                        FontSize="8" 
+                        MinimumHeightRequest="50"
+                        ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Arrow_circle_right}, FontFamily=MaterialSharp}"
+                        Command="{Binding ExpandFlyoutCommand}">
+
+                   
+                </Button>
+            </HorizontalStackLayout>
+            <HorizontalStackLayout HorizontalOptions="End" 
+                                   MinimumHeightRequest="50"
+                                   IsVisible="{Binding IsFlyoutPresented}">
+                <Button
+                        BorderColor="Transparent"
+                        BorderWidth="0"
+                        BackgroundColor="Transparent"
+                        IsVisible="{Binding IsFlyoutLocked}"  
+                        FontSize="8"
+                        MinimumHeightRequest="50"
+                        ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Arrow_circle_left}, FontFamily=MaterialSharp}"
+                        Command="{Binding CloseFlyoutCommand}"></Button>
+            </HorizontalStackLayout>
+
+            <Label Text="MissionPlanner Next Gen" FontSize="Large" HorizontalTextAlignment="Center" Padding="20" Margin="10" />
+            <VerticalStackLayout   Padding="20" >
 
                 <Label Text="App Theme" HorizontalOptions="Center" Margin="10" />
 
@@ -67,12 +99,21 @@
                                         ColumnNumber="2" ColumnSpacing="-2" Color="{StaticResource Tertiary}" >
                 </controls:SelectionView>
 
-                <material:CheckBox Text="Always Dark Mode" Type="Regular" IsChecked="{Binding PreferDarkTheme,Mode=TwoWay}" />
-                <material:CheckBox Text="Lock Flyout" Type="Regular" IsChecked="{Binding IsFlyoutLocked,Mode=TwoWay}" />
-                <material:CheckBox Text="Flyout at Startup" Type="Regular" IsChecked="{Binding IsFlyoutPresented,Mode=TwoWay}" />
-                <material:CheckBox Text="Tutorial at Startup" Type="Regular" IsChecked="{Binding IsTutorialPresented,Mode=TwoWay}" />
+                <material:CheckBox Text="Always Use Dark Mode" Type="Regular" 
+                                   IsVisible="{Binding IsFlyoutPresented}"
+                                   IsChecked="{Binding PreferDarkTheme,Mode=TwoWay}" />
+                <material:CheckBox Text="Lock Flyout (Requires Restart)" Type="Regular" 
+                                   IsVisible="{Binding IsFlyoutPresented}"
+                                   IsChecked="{Binding IsFlyoutLocked,Mode=TwoWay}" />
+                <material:CheckBox Text="Show Flyout at Startup" Type="Regular" 
+                                   IsVisible="{Binding IsFlyoutPresented}"
+                                   IsChecked="{Binding IsFlyoutPresented,Mode=TwoWay}" />
+                <material:CheckBox Text="Show Tutorial at Startup" Type="Regular" 
+                                   IsVisible="{Binding IsFlyoutPresented}"
+                                   IsChecked="{Binding IsTutorialPresented,Mode=TwoWay}" />
             </VerticalStackLayout>
         </VerticalStackLayout>
+
     </Shell.FlyoutHeader>
 
     <Shell.FlyoutContent>
