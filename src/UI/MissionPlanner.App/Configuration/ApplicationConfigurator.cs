@@ -287,13 +287,12 @@ public static class ApplicationConfigurator
         //services.TryAddTransient<OsdViewModel>();
         //services.TryAddTransient<CameraGimbalViewModel>();
         services.TryAddTransient<MotorTestViewModel>();
+        services.TryAddSingleton<MotorLayoutResolver>();
         //services.TryAddTransient<BluetoothViewModel>();
         services.TryAddTransient<ParachuteViewModel>();
         //services.TryAddTransient<Esp8266SetupViewModel>();
         //services.TryAddTransient<AntennaTrackerViewModel>();
         //services.TryAddTransient<FFTSetupViewModel>();
-        //??????
-        services.TryAddSingleton<MotorLayoutResolver>();
 
         return services;
     }
