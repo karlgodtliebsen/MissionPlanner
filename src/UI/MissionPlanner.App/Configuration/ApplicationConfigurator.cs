@@ -270,7 +270,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<SafetySetupViewModel>();
         services.TryAddTransient<SetupSummaryViewModel>();
 
-        // Workflow Tabs on Setup Mandatory Hardware View
+        // Tabs on Setup Optional Hardware View
         services.TryAddTransient<RtkGpsInjectViewModel>();
         //services.TryAddTransient<CubeIdUpdateViewModel>();
         //services.TryAddTransient<SikRadioViewModel>();
