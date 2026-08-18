@@ -136,6 +136,8 @@ public static class DomainConfigurator
         services.TryAddTransient<IServoOutputConfigurationService, ServoOutputConfigurationService>();
 
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, SerialPortsModule>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, OpticalFlowModule>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, ParachuteModule>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, GpsModule>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, RangefinderModule>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, AirspeedModule>());
