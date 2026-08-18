@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<tabViews:TabViewLifecycleContent x:TypeArguments="sections:MotorTestViewModel" 
+                                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                                  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
+                                  xmlns:optionalHardware="clr-namespace:MissionPlanner.Core.Setup.OptionalHardware;assembly=MissionPlanner.Core"
+                                  x:DataType="sections:MotorTestViewModel"
+                                  x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.MotorTestView"
+                                  x:Name="Root">
+    <ScrollView VerticalScrollBarVisibility="Always">
+        <VerticalStackLayout Padding="16" Spacing="10">
+
+
+            <HorizontalStackLayout  Padding="18,4" Spacing="12" Margin="0,10,0,10">
+                <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding ProgressMessage}" />
+
+                <ActivityIndicator
+                    IsRunning="{Binding IsBackgroundParameterLoadInProgress}"
+                    IsVisible="{Binding IsBackgroundParameterLoadInProgress}"
+                    WidthRequest="20"
+                    HeightRequest="20" />
+
+                <Label
+                    Text="{Binding ProgressMessage}"
+                    IsVisible="{Binding IsBackgroundParameterLoadInProgress}"
+                    LineBreakMode="WordWrap"
+                    VerticalOptions="Center" />
+
+                <Label TextColor="OrangeRed" Text="{Binding ErrorMessage}" LineBreakMode="WordWrap" VerticalOptions="Center" />
+
+                <Label Text="{Binding StatusMessage}" 
+                       IsVisible="{Binding IsBackgroundParameterLoadInProgress, Converter={StaticResource InvertedBoolConverter}}"
+                       LineBreakMode="WordWrap" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+
+
+            <Label
+                Text="Motor Test"
+                FontSize="20"
+                FontAttributes="Bold" />
+
+            <Label
+                Text="Remove ALL propellers. Motors will spin."
+                TextColor="OrangeRed"
+                FontAttributes="Bold" />
+
+            <Label
+                Text="{Binding FrameDisplay}"
+                FontAttributes="Bold" />
+
+            <Label Text="{Binding Status}" />
+
+            <VerticalStackLayout
+                BindableLayout.ItemsSource="{Binding Motors}"
+                Spacing="6">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="optionalHardware:MotorLayoutMotor">
+                        <Button
+                            Text="{Binding Label}"
+                            Command="{Binding Source={x:Reference Root}, Path=BindingContext.TestMotorCommand}"
+                            CommandParameter="{Binding .}" />
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <HorizontalStackLayout Spacing="8">
+                <Button
+                    Text="Test all in sequence"
+                    Command="{Binding TestSequenceCommand}" />
+                <Button
+                    Text="STOP"
+                    TextColor="OrangeRed"
+                    Command="{Binding StopCommand}" />
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</tabViews:TabViewLifecycleContent>

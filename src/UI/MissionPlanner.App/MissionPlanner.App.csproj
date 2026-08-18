@@ -329,6 +329,9 @@
 	  <MauiXaml Update="Views\InitSetup\MandatoryHardware\Sections\TabsUtils\SlimTabHeaderView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Views\InitSetup\OptionalHardware\Sections\MotorTestView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\InitSetup\OptionalHardware\Sections\RtkGpsInjectView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
