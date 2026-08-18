@@ -121,7 +121,11 @@ public sealed class RangefinderViewModel(IActiveVehicleContext v, IOptionalHardw
 
 public sealed class AirspeedViewModel(IActiveVehicleContext v, IOptionalHardwareService s) : ParameterHardwareViewModel("airspeed", v, s);
 
-public sealed class OpticalFlowViewModel(IActiveVehicleContext v, IOptionalHardwareService s) : ParameterHardwareViewModel("optical-flow", v, s);
+public sealed class OpticalFlowViewModel(IActiveVehicleContext v, IOptionalHardwareService s) : ParameterHardwareViewModel("optical-flow", v, s)
+{
+    /// <summary>Gets the focus/image capability status.</summary>
+    public string FocusCapabilityStatus => "PX4Flow focus imagery requires a compatible image handshake stream. Focus mode remains unavailable until that stream is detected; parameter configuration is independent.";
+}
 
 public sealed class ParachuteViewModel(IActiveVehicleContext v, IOptionalHardwareService s) : ParameterHardwareViewModel("parachute", v, s);
 
@@ -159,6 +163,17 @@ public sealed class RangefinderView : ParameterHardwareView<RangefinderViewModel
 
 public sealed class AirspeedView : ParameterHardwareView<AirspeedViewModel>;
 
-public sealed class OpticalFlowView : ParameterHardwareView<OpticalFlowViewModel>;
+public sealed class OpticalFlowView : ParameterHardwareView<OpticalFlowViewModel>
+{
+    public OpticalFlowView()
+    {
+        if (Content is ScrollView { Content: VerticalStackLayout layout })
+        {
+            var focus = new Label { TextColor = Colors.Orange };
+            focus.SetBinding(Label.TextProperty, "FocusCapabilityStatus");
+            layout.Insert(1, focus);
+        }
+    }
+}
 
 public sealed class ParachuteView : ParameterHardwareView<ParachuteViewModel>;

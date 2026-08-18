@@ -70,7 +70,7 @@
                     <sections:CanGpsOrderView/>
                 </material:TabItem>
                 <material:TabItem Title="Compass / Motor Calibration">
-                    <local:OptionalHardwarePlaceholderView/>
+                    <sections:CompassMotorCalibrationView/>
                 </material:TabItem>
                 <material:TabItem Title="Rangefinder">
                     <sections:RangefinderView/>

@@ -279,7 +279,7 @@ public static class ApplicationConfigurator
         //services.TryAddTransient<BatterySetup2ViewModel>();
         //services.TryAddTransient<DroneCanUavCanViewModel>();
         //services.TryAddTransient<JoystickViewModel>();
-        //services.TryAddTransient<CompassMotorCalibrationViewModel>();
+        services.TryAddTransient<CompassMotorCalibrationViewModel>();
         services.TryAddTransient<RangefinderViewModel>();
         services.TryAddTransient<AirspeedViewModel>();
         //services.TryAddTransient<Px4FlowViewModel>();
