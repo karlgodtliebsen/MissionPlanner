@@ -1,15 +1,14 @@
-﻿namespace MissionPlanner.App.Views.InitSetup.OptionalHardware;
+using MissionPlanner.App.Helpers;
 
-/// <summary>
-/// Interaction logic for OptionalHardwareView.xaml
-/// </summary>
+namespace MissionPlanner.App.Views.InitSetup.OptionalHardware;
+
+/// <summary>Hosts the Optional Hardware workspace.</summary>
 public partial class OptionalHardwareView : UraniumUI.Pages.UraniumContentPage
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OptionalHardwareView"/> class.
-    /// </summary>
+    /// <summary>Initializes the page.</summary>
     public OptionalHardwareView()
     {
         InitializeComponent();
+        BindingContext = ServiceHelper.GetRequiredService<OptionalHardwareViewModel>();
     }
 }
