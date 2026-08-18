@@ -16,6 +16,22 @@ public sealed class OptionalHardwareTabCatalogTests
     }
 
     [Fact]
+    public void CatalogOrderMatchesTheFixedWorkspaceContract()
+    {
+        new OptionalHardwareTabCatalog().Tabs.Select(item => item.Key).Should().Equal(
+            OptionalHardwareTabKey.RtkGpsInject, OptionalHardwareTabKey.SikRadio,
+            OptionalHardwareTabKey.DroneCan, OptionalHardwareTabKey.Joystick,
+            OptionalHardwareTabKey.BatteryMonitors, OptionalHardwareTabKey.CanGpsOrder,
+            OptionalHardwareTabKey.CompassMotorCalibration, OptionalHardwareTabKey.Rangefinder,
+            OptionalHardwareTabKey.Airspeed, OptionalHardwareTabKey.OpticalFlow,
+            OptionalHardwareTabKey.OnboardOsd, OptionalHardwareTabKey.CameraGimbal,
+            OptionalHardwareTabKey.MotorTest, OptionalHardwareTabKey.BluetoothSetup,
+            OptionalHardwareTabKey.Parachute, OptionalHardwareTabKey.Esp8266Setup,
+            OptionalHardwareTabKey.CubeIdUpdate, OptionalHardwareTabKey.AntennaTracker,
+            OptionalHardwareTabKey.FftSetup);
+    }
+
+    [Fact]
     public void DisconnectedCatalogExposesOnlyStandaloneTools()
     {
         var states = new OptionalHardwareTabCatalog().Evaluate(false, null, new Dictionary<string, VehicleParameter>());

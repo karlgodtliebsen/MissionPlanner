@@ -53,58 +53,58 @@
                 <material:TabItem Title="RTK/GPS Inject">
                     <sections:RtkGpsInjectView/>
                 </material:TabItem>
+                <material:TabItem Title="SiK Radio">
+                    <local:OptionalHardwarePlaceholderView/>
+                </material:TabItem>
+                <material:TabItem Title="DroneCAN / UAVCAN">
+                    <local:OptionalHardwarePlaceholderView/>
+                </material:TabItem>
+                <material:TabItem Title="Joystick">
+                    <local:OptionalHardwarePlaceholderView/>
+                </material:TabItem>
+                <material:TabItem Title="Battery Monitors">
+                    <local:OptionalHardwarePlaceholderView/>
+                </material:TabItem>
+                <material:TabItem Title="CAN GPS Order">
+                    <local:OptionalHardwarePlaceholderView/>
+                </material:TabItem>
+                <material:TabItem Title="Compass / Motor Calibration">
+                    <local:OptionalHardwarePlaceholderView/>
+                </material:TabItem>
+                <material:TabItem Title="Rangefinder">
+                    <local:OptionalHardwarePlaceholderView/>
+                </material:TabItem>
+                <material:TabItem Title="Airspeed">
+                    <local:OptionalHardwarePlaceholderView/>
+                </material:TabItem>
+                <material:TabItem Title="Optical Flow">
+                    <local:OptionalHardwarePlaceholderView/>
+                </material:TabItem>
+                <material:TabItem Title="Onboard OSD">
+                    <local:OptionalHardwarePlaceholderView/>
+                </material:TabItem>
+                <material:TabItem Title="Camera / Gimbal">
+                    <local:OptionalHardwarePlaceholderView/>
+                </material:TabItem>
+                <material:TabItem Title="Motor Test">
+                    <local:OptionalHardwarePlaceholderView/>
+                </material:TabItem>
+                <material:TabItem Title="Bluetooth Setup">
+                    <local:OptionalHardwarePlaceholderView/>
+                </material:TabItem>
+                <material:TabItem Title="Parachute">
+                    <local:OptionalHardwarePlaceholderView/>
+                </material:TabItem>
+                <material:TabItem Title="ESP8266 Setup">
+                    <local:OptionalHardwarePlaceholderView/>
+                </material:TabItem>
                 <material:TabItem Title="CubeID Update">
                     <local:OptionalHardwarePlaceholderView/>
                 </material:TabItem>
-                <material:TabItem Title="Sik Radio">
+                <material:TabItem Title="Antenna Tracker">
                     <local:OptionalHardwarePlaceholderView/>
                 </material:TabItem>
-                <material:TabItem Title="Page 1">
-                    <local:OptionalHardwarePlaceholderView/>
-                </material:TabItem>
-                <material:TabItem Title="Page 1">
-                    <local:OptionalHardwarePlaceholderView/>
-                </material:TabItem>
-                <material:TabItem Title="Page 1">
-                    <local:OptionalHardwarePlaceholderView/>
-                </material:TabItem>
-                <material:TabItem Title="Page 1">
-                    <local:OptionalHardwarePlaceholderView/>
-                </material:TabItem>
-                <material:TabItem Title="Page 1">
-                    <local:OptionalHardwarePlaceholderView/>
-                </material:TabItem>
-                <material:TabItem Title="Page 1">
-                    <local:OptionalHardwarePlaceholderView/>
-                </material:TabItem>
-                <material:TabItem Title="Page 1">
-                    <local:OptionalHardwarePlaceholderView/>
-                </material:TabItem>
-                <material:TabItem Title="Page 1">
-                    <local:OptionalHardwarePlaceholderView/>
-                </material:TabItem>
-                <material:TabItem Title="Page 1">
-                    <local:OptionalHardwarePlaceholderView/>
-                </material:TabItem>
-                <material:TabItem Title="Page 1">
-                    <local:OptionalHardwarePlaceholderView/>
-                </material:TabItem>
-                <material:TabItem>
-                    <local:OptionalHardwarePlaceholderView/>
-                </material:TabItem>
-                <material:TabItem Title="Page 1">
-                    <local:OptionalHardwarePlaceholderView/>
-                </material:TabItem>
-                <material:TabItem Title="Page 1">
-                    <local:OptionalHardwarePlaceholderView/>
-                </material:TabItem>
-                <material:TabItem Title="Page 1">
-                    <local:OptionalHardwarePlaceholderView/>
-                </material:TabItem>
-                <material:TabItem Title="Page 1">
-                    <local:OptionalHardwarePlaceholderView/>
-                </material:TabItem>
-                <material:TabItem Title="Page 1">
+                <material:TabItem Title="FFT Setup">
                     <local:OptionalHardwarePlaceholderView/>
                 </material:TabItem>
             </tabs:ExtendedTabView>
