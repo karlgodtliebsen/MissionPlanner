@@ -265,6 +265,8 @@ public static class ApplicationConfigurator
         services.TryAddTransient<AirspeedViewModel>();
         services.TryAddTransient<OpticalFlowViewModel>();
         services.TryAddTransient<ParachuteViewModel>();
+        services.TryAddTransient<MotorTestViewModel>();
+        services.TryAddSingleton<MotorLayoutResolver>();
 
         return services;
     }
