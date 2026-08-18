@@ -7,6 +7,7 @@ using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
+using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 

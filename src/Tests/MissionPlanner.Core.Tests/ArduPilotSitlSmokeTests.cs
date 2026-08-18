@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware;

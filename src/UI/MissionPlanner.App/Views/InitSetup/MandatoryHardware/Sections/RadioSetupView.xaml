@@ -10,6 +10,7 @@
                                   Margin="100,0,100,0">
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Padding="16" Spacing="14">
+            <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                 <VerticalStackLayout Spacing="2">
                     <Label Text="Radio calibration" FontSize="24" FontAttributes="Bold" />

@@ -1,7 +1,7 @@
-using MissionPlanner.Core.Vehicles.Models;
+﻿using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
-namespace MissionPlanner.Core.Setup;
+namespace MissionPlanner.Core.Setup.Abstractions;
 
 /// <summary>Discovers compass instances and applies guarded, readback-confirmed compass parameter edits.</summary>
 public interface ICompassConfigurationService

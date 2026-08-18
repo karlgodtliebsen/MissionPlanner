@@ -24,6 +24,8 @@ using MissionPlanner.Core.Services;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
+using MissionPlanner.Core.Setup.MandatoryHardware;
+using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Simulation.Abstractions;
 using MissionPlanner.Core.Vehicles;

@@ -1,5 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Setup.MandatoryHardware;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 

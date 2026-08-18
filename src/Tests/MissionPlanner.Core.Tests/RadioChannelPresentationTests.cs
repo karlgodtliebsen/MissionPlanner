@@ -1,7 +1,7 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using MissionPlanner.App.Views.Common;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
-using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Setup.MandatoryHardware;
 
 namespace MissionPlanner.Core.Tests;
 

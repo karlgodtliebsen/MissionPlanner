@@ -1,6 +1,7 @@
 ﻿using MissionPlanner.Core.Setup.Definitions;
+using MissionPlanner.Core.Setup.MandatoryHardware;
 
-namespace MissionPlanner.Core.Setup;
+namespace MissionPlanner.Core.Setup.Abstractions;
 
 /// <summary>Stores local setup-completion evidence without treating it as vehicle truth.</summary>
 public interface ISetupCompletionStore

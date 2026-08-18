@@ -24,6 +24,7 @@ using MissionPlanner.App.Views.InitSetup.MandatoryHardware;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Services;
 using MissionPlanner.App.Views.InitSetup.OptionalHardware;
+using MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 using MissionPlanner.App.Views.Introduction;
 using MissionPlanner.App.Views.Introduction.Services;
 using MissionPlanner.App.Views.Landing;
@@ -38,7 +39,8 @@ using MissionPlanner.Core.Configuration;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Missions.Planning;
 using MissionPlanner.Core.Notifications;
-using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Setup.Abstractions;
+using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Connected;
 using MissionPlanner.Firmware.Dfu;
@@ -205,7 +207,7 @@ public static class ApplicationConfigurator
 
         services.TryAddTransient<HudViewModel>();
 
-        // Tabs on FlightDataPage
+        // Tabs on FlightData Page
         services.TryAddTransient<QuickTabViewModel>();
         services.TryAddTransient<ActionsTabViewModel>();
         services.TryAddTransient<MessagesTabViewModel>();
@@ -230,6 +232,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<SimulationViewModel>();
         services.TryAddTransient<ExitViewModel>();
 
+        // Tabs on Config View
         services.TryAddTransient<FullParametersListTabViewModel>();
         services.TryAddTransient<ParameterComparisonViewModel>();
         services.TryAddTransient<MavFtpTabViewModel>();
@@ -252,9 +255,11 @@ public static class ApplicationConfigurator
         services.TryAddTransient<BatterySetupViewModel>();
         services.TryAddTransient<EscMotorSetupViewModel>();
         services.TryAddTransient<ServoOutputSetupViewModel>();
-        services.TryAddTransient<OptionalHardwareSetupViewModel>();
         services.TryAddTransient<SafetySetupViewModel>();
         services.TryAddTransient<SetupSummaryViewModel>();
+
+        // Workflow Tabs on Setup Mandatory Hardware View
+        services.TryAddTransient<RtkGpsInjectViewModel>();
 
         return services;
     }

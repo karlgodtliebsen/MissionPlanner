@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<navigation:ExtendedContentPage x:TypeArguments="mandatoryHardware:MandatoryHardwareViewModel"
+<navigation:ExtendedContentPage 
+                            x:TypeArguments="mandatoryHardware:MandatoryHardwareViewModel"
                             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                             xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
@@ -35,9 +36,9 @@
             </HorizontalStackLayout>
         </VerticalStackLayout>
 
+        <Border Grid.Row="2"  StyleClass="SurfaceContainer,Rounded,Elevation1" BackgroundColor="Transparent" Padding="10">
 
-
-        <tabViews:ExtendedTabView Grid.Row="2" 
+            <tabViews:ExtendedTabView Grid.Row="2" 
                                   HorizontalOptions="Fill"
                                   HeaderItemsSource="{Binding Workflows}"
                                   SelectedHeaderItem="{Binding SelectedWorkflow, Mode=TwoWay}"
@@ -47,59 +48,59 @@
                                   Padding="0"
                                   >
 
-            <material:TabView.TabHeaderItemTemplate>
-                <DataTemplate>
-                    <tabsUtils:SlimTabHeaderView />
-                </DataTemplate>
-            </material:TabView.TabHeaderItemTemplate>
-            <!--<material:TabItem Title="Firmware" >
+                <material:TabView.TabHeaderItemTemplate>
+                    <DataTemplate>
+                        <tabsUtils:SlimTabHeaderView />
+                    </DataTemplate>
+                </material:TabView.TabHeaderItemTemplate>
+                <!--<material:TabItem Title="Firmware" >
                 <sections:FirmwareSetupView />
             </material:TabItem>-->
-            <material:TabItem Title="Frame">
-                <sections:FrameSetupView />
-            </material:TabItem>
-            <material:TabItem Title="Accelerometer">
-                <sections:AccelerometerSetupView />
-            </material:TabItem>
-            <material:TabItem Title="Compass">
-                <sections:CompassSetupView />
-            </material:TabItem>
-            <material:TabItem Title="Radio">
-                <sections:RadioSetupView />
-            </material:TabItem>
-            <material:TabItem Title="Servo Output">
-                <sections:ServoOutputSetupView />
-            </material:TabItem>
-            <!--<material:TabItem Title="Serial Ports">
+                <material:TabItem Title="Frame">
+                    <sections:FrameSetupView />
+                </material:TabItem>
+                <material:TabItem Title="Accelerometer">
+                    <sections:AccelerometerSetupView />
+                </material:TabItem>
+                <material:TabItem Title="Compass">
+                    <sections:CompassSetupView />
+                </material:TabItem>
+                <material:TabItem Title="Radio">
+                    <sections:RadioSetupView />
+                </material:TabItem>
+                <material:TabItem Title="Servo Output">
+                    <sections:ServoOutputSetupView />
+                </material:TabItem>
+                <!--<material:TabItem Title="Serial Ports">
                 <sections:BatterySetupView />
             </material:TabItem>-->
-            <material:TabItem Title="ESC Calibration">
-                <sections:EscMotorSetupView />
-            </material:TabItem>  
-            
-            <material:TabItem Title="Flight Modes">
-                <sections:FlightModesSetupView />
-            </material:TabItem>
-            <!--<material:TabItem Title="Failsafe">
+                <material:TabItem Title="ESC Calibration">
+                    <sections:EscMotorSetupView />
+                </material:TabItem>
+
+                <material:TabItem Title="Flight Modes">
+                    <sections:FlightModesSetupView />
+                </material:TabItem>
+                <!--<material:TabItem Title="Failsafe">
                 <sections:View />
             </material:TabItem>-->
-            <!--<material:TabItem Title="Initial Tune Parameters">
+                <!--<material:TabItem Title="Initial Tune Parameters">
                 <sections: ItpSetupView/>
             </material:TabItem>-->
-            <!--<material:TabItem Title="HW ID">
+                <!--<material:TabItem Title="HW ID">
                 <sections:HwIdSetupView />
             </material:TabItem>-->
-            <!--<material:TabItem Title="ADSB">
+                <!--<material:TabItem Title="ADSB">
                 <sections:AdsbSetupView />
             </material:TabItem>-->
 
 
-            <!--<material:TabItem Title="Battery">
+                <!--<material:TabItem Title="Battery">
                 <sections:BatterySetupView />
             </material:TabItem>-->
-  
 
-            <!--<material:TabItem Title="Optional Hardware">
+
+                <!--<material:TabItem Title="Optional Hardware">
                 <sections:OptionalHardwareSetupView />
             </material:TabItem>
             <material:TabItem Title="Safety">
@@ -108,7 +109,7 @@
             <material:TabItem Title="Summary">
                 <sections:SetupSummaryView />
             </material:TabItem>-->
-        </tabViews:ExtendedTabView>
-
+            </tabViews:ExtendedTabView>
+        </Border>
     </Grid>
 </navigation:ExtendedContentPage>

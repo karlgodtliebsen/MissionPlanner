@@ -1,7 +1,7 @@
-using MissionPlanner.Core.Vehicles.Models;
+﻿using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
-namespace MissionPlanner.Core.Setup;
+namespace MissionPlanner.Core.Setup.Abstractions;
 
 /// <summary>Discovers available optional-hardware modules and applies guarded peripheral edits.</summary>
 public interface IOptionalHardwareService

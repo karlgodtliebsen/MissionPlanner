@@ -1,7 +1,7 @@
-using MissionPlanner.Core.Vehicles.Models;
+﻿using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
-namespace MissionPlanner.Core.Setup;
+namespace MissionPlanner.Core.Setup.Abstractions;
 
 /// <summary>Assesses arming, failsafe, and safety configuration from live parameters and state.</summary>
 public interface ISafetyAssessmentService

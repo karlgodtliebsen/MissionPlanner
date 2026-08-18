@@ -1,7 +1,7 @@
-using MissionPlanner.Core.Vehicles.Models;
+﻿using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
-namespace MissionPlanner.Core.Setup;
+namespace MissionPlanner.Core.Setup.Abstractions;
 
 /// <summary>Projects firmware flight-mode slot configuration and applies guarded slot writes.</summary>
 public interface IFlightModeConfigurationService

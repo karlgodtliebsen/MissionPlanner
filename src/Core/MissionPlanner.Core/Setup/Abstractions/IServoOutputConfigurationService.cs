@@ -1,7 +1,7 @@
-using MissionPlanner.Core.Vehicles.Models;
+﻿using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
-namespace MissionPlanner.Core.Setup;
+namespace MissionPlanner.Core.Setup.Abstractions;
 
 /// <summary>Projects servo output functions with live PWM and applies confirmed function writes.</summary>
 public interface IServoOutputConfigurationService

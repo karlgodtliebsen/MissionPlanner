@@ -24,6 +24,7 @@ using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
+using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Simulation.Abstractions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -205,7 +206,6 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<BatterySetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Battery);
         provider.GetRequiredService<EscMotorSetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Esc);
         provider.GetRequiredService<ServoOutputSetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.ServoOutput);
-        provider.GetRequiredService<OptionalHardwareSetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.OptionalHardware);
         provider.GetRequiredService<SafetySetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Safety);
         provider.GetRequiredService<SetupSummaryViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Summary);
         provider.GetRequiredService<IParameterEditSessionFactory>().Should().NotBeNull();

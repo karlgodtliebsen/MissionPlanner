@@ -1,6 +1,7 @@
+﻿using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.MavLink.Parameters;
 
-namespace MissionPlanner.Core.Setup;
+namespace MissionPlanner.Core.Setup.Abstractions;
 
 /// <summary>
 /// Defines one optional-hardware setup module. Modules are discovered from parameter presence so

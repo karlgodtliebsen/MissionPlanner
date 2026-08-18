@@ -12,7 +12,7 @@
     <ScrollView VerticalScrollBarVisibility="Always">
 
         <VerticalStackLayout Spacing="10">
-            <ProgressBar Progress="{Binding Progress}" />
+            <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
             <Label Text="{Binding Error}" TextColor="Red" />
             <Label Text="Connected identity" FontSize="18" FontAttributes="Bold" />
             <Grid ColumnDefinitions="180,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="5">

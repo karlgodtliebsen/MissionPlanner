@@ -2,6 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using MissionPlanner.Core.Setup.Abstractions;
+using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware;
 using MissionPlanner.MavLink.Generated;

@@ -6,12 +6,13 @@
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:models="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models"
+                                  xmlns:mandatoryHardware="clr-namespace:MissionPlanner.Core.Setup.MandatoryHardware;assembly=MissionPlanner.Core"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SetupSummaryView"
                                   x:DataType="sections:SetupSummaryViewModel"
                                   Margin="100,0,100,0">
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Spacing="10">
-            <ProgressBar Progress="{Binding Progress}" />
+            <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
             <Label Text="{Binding Error}" TextColor="Red" />
             <Label Text="Setup summary" FontSize="18" FontAttributes="Bold" />
             <Label Text="{Binding Heading}" FontAttributes="Bold" LineBreakMode="WordWrap" />
@@ -26,7 +27,7 @@
                                 <Label Text="{Binding Title}" FontAttributes="Bold" FontSize="15" />
                                 <VerticalStackLayout BindableLayout.ItemsSource="{Binding Entries}">
                                     <BindableLayout.ItemTemplate>
-                                        <DataTemplate x:DataType="setup:SetupSummaryEntry">
+                                        <DataTemplate x:DataType="mandatoryHardware:SetupSummaryEntry">
                                             <Grid ColumnDefinitions="200,*,120" ColumnSpacing="8">
                                                 <Label Text="{Binding Label}" />
                                                 <Label Grid.Column="1" Text="{Binding Value}" LineBreakMode="WordWrap" Opacity="0.8" />

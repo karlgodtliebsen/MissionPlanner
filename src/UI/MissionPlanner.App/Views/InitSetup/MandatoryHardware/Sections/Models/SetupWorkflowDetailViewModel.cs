@@ -27,6 +27,11 @@ public partial class SetupWorkflowDetailViewModel : ObservableObject, IDisposabl
 
     /// <summary>Gets or sets the current operation progress from zero to one.</summary>
     [ObservableProperty]
+    public partial bool IsBusy { get; set; }
+
+
+    /// <summary>Gets or sets the current operation progress from zero to one.</summary>
+    [ObservableProperty]
     public partial double Progress { get; set; }
 
     /// <summary>Gets or sets the latest workflow error.</summary>

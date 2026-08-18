@@ -1,4 +1,4 @@
-using UraniumUI.Material.Controls;
+﻿using UraniumUI.Material.Controls;
 
 namespace UraniumUI.Material.TabViews;
 
@@ -44,7 +44,11 @@ public class LifecycleTabView : TabView
 
     private void OnLoaded(object? sender, EventArgs e)
     {
-        if (isLoaded) return;
+        if (isLoaded)
+        {
+            return;
+        }
+
         isLoaded = true;
         currentContent ??= SelectedTab?.Content;
         if (currentContent is not null)
@@ -56,7 +60,11 @@ public class LifecycleTabView : TabView
 
     private void OnUnloaded(object? sender, EventArgs e)
     {
-        if (!isLoaded) return;
+        if (!isLoaded)
+        {
+            return;
+        }
+
         isLoaded = false;
         if (currentContent is not null)
         {

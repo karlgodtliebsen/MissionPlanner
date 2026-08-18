@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -119,10 +119,10 @@ public sealed class FlightModeSetupTests
         var now = DateTimeOffset.UtcNow;
         var state = new VehicleState(vehicleId, 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online, now,
                 VehicleMode.Stabilize, false, null, null, null, null, null, null, null, null) with
-        {
-            Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
+            {
+                Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
                     LandedState: VehicleLandedState.OnGround, ObservedAt: now)
-        };
+            };
         var firmware = new VehicleFirmwareIdentity(
             family, state.VehicleType, state.Autopilot,
             new FirmwareSemanticVersion(4, 5, 0, FirmwareReleaseType.Official),

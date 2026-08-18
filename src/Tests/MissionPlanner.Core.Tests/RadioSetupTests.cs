@@ -2,7 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.DomainEvents;
-using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -240,10 +240,7 @@ public sealed class RadioSetupTests
         var written = new List<string>();
         var service = CreateService(context, new VehicleParameterRegistry(), now, written);
         await CaptureValidEndpointsAsync(service, context, now);
-        context.SetState(StateWithChannels([1500, 1500, 1000, 1500], now) with
-        {
-            Flight = context.State!.Flight with { IsArmed = true }
-        });
+        context.SetState(StateWithChannels([1500, 1500, 1000, 1500], now) with { Flight = context.State!.Flight with { IsArmed = true } });
 
         var result = await service.CompleteAsync(TestContext.Current.CancellationToken);
 

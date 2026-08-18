@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MissionPlanner.Core.Setup;
+using MissionPlanner.Core.Setup.MandatoryHardware;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 

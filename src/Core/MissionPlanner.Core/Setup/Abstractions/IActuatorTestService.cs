@@ -1,8 +1,9 @@
-using MissionPlanner.Core.Vehicles.Models;
+﻿using MissionPlanner.Core.Setup.MandatoryHardware;
+using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Firmware;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
-namespace MissionPlanner.Core.Setup;
+namespace MissionPlanner.Core.Setup.Abstractions;
 
 /// <summary>Runs bounded, safety-gated motor tests and reports ESC calibration guidance.</summary>
 public interface IActuatorTestService : IDisposable

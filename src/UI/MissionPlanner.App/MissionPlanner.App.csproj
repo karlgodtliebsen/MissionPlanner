@@ -137,6 +137,9 @@
 	  <Compile Update="Views\InitSetup\MandatoryHardware\MandatoryHardwareView.xaml.cs">
 	    <DependentUpon>MandatoryHardwareView.xaml</DependentUpon>
 	  </Compile>
+	  <Compile Update="Views\InitSetup\OptionalHardware\Sections\RTKGPSInjectView.xaml.cs">
+	    <DependentUpon>RtkGpsInjectView.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\Introduction\IntroductionPage.xaml.cs">
 	    <DependentUpon>IntroductionPage.xaml</DependentUpon>
 	  </Compile>
@@ -324,6 +327,12 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\InitSetup\MandatoryHardware\Sections\TabsUtils\SlimTabHeaderView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\InitSetup\OptionalHardware\Sections\RtkGpsInjectView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\InitSetup\OptionalHardware\TabsUtils\SlimTabHeaderView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\Landing\LandingPage.xaml">

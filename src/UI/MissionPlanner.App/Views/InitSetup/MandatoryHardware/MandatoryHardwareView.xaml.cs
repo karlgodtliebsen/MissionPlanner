@@ -10,16 +10,4 @@ public partial class MandatoryHardwareView : ExtendedContentPage<MandatoryHardwa
     {
         InitializeComponent();
     }
-
-    ///// <inheritdoc />
-    //protected override void OnNavigatedTo(NavigatedToEventArgs args)
-    //{
-    //    base.OnNavigatedTo(args);
-    //    if (ViewModel is null)
-    //    {
-    //        ViewModel = ServiceHelper.GetRequiredService<MandatoryHardwareViewModel>();
-    //        BindingContext = ViewModel;
-    //    }
-    //    ViewModel?.Activate();
-    //}
 }

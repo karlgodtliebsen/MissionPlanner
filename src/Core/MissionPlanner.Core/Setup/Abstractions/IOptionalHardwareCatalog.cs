@@ -1,6 +1,6 @@
 using MissionPlanner.MavLink.Parameters;
 
-namespace MissionPlanner.Core.Setup;
+namespace MissionPlanner.Core.Setup.Abstractions;
 
 /// <summary>Aggregates the registered optional-hardware modules.</summary>
 public interface IOptionalHardwareCatalog

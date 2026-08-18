@@ -9,7 +9,7 @@
                                   Margin="100,0,100,0">
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Spacing="10">
-            <ProgressBar Progress="{Binding Progress}" />
+            <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
             <Label Text="{Binding Error}" TextColor="Red" />
             <Label Text="Accelerometer and level calibration" FontSize="18" FontAttributes="Bold" />
             <Label Text="Remove propellers. Keep the vehicle disarmed and clear of people before calibration."

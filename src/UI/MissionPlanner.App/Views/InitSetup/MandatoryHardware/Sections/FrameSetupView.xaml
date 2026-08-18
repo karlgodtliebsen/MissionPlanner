@@ -10,7 +10,7 @@
                                   Margin="100,0,100,0">
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Spacing="10">
-            <ProgressBar Progress="{Binding Progress}" />
+            <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
             <Label Text="{Binding Error}" TextColor="Red" />
             <Label Text="Supported frame configuration" FontSize="18" FontAttributes="Bold" />
             <Label Text="{Binding FirmwareFamily, StringFormat='Firmware family: {0}'}" />

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<tabViews:ExtendedTabHeaderView
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+    xmlns:models="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Models"
+    x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.TabsUtils.SlimTabHeaderView"
+    x:DataType="models:TabItemViewModel"
+    Margin="0,0,0,0"
+    BorderStyleClass="SurfaceContainer,Rounded,Elevation1"
+    Padding="5"
+    >
+    <Grid ColumnDefinitions="4,*" Margin="5" >
+        <BoxView BackgroundColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                         Opacity="0.2"
+                         IsVisible="False">
+            <BoxView.Triggers>
+                <DataTrigger TargetType="BoxView"
+                                     Binding="{Binding Source={RelativeSource Self}, 
+                    Path=(tabViews:ExtendedTabView.IsHeaderSelected)}"
+                                     Value="True">
+                    <Setter Property="IsVisible" Value="True" />
+                </DataTrigger>
+            </BoxView.Triggers>
+        </BoxView>
+        <Grid Grid.Column="1" 
+                      RowDefinitions="Auto,Auto"  RowSpacing="5">
+            <Label Grid.Row="0" Text="{Binding Title}" FontAttributes="Bold" FontSize="16" />
+        </Grid>
+    </Grid>
+</tabViews:ExtendedTabHeaderView>

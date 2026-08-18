@@ -18,7 +18,7 @@
             <VerticalStackLayout Spacing="10">
                 <Grid RowDefinitions="Auto,*" HorizontalOptions="Center"  Padding="10">
                     <VerticalStackLayout Spacing="10">
-                        <ProgressBar Progress="{Binding Progress}" />
+                        <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
                         <Label Text="{Binding Error}" TextColor="Red" />
                         <Label Text="Servo output functions" FontSize="18" FontAttributes="Bold" />
                         <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />

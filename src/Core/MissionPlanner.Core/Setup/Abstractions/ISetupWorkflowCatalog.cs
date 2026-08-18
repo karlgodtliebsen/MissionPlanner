@@ -1,4 +1,5 @@
 ﻿using MissionPlanner.Core.Setup.Definitions;
+using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.Parameters;
 
