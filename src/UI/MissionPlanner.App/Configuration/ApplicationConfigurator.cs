@@ -193,6 +193,8 @@ public static class ApplicationConfigurator
         services.TryAddTransient<StatisticsViewModel>();
         services.TryAddTransient<LandingPageViewModel>();
         services.TryAddTransient<IntroductionViewModel>();
+        services.TryAddTransient<ParametersEditorView>();
+        services.TryAddTransient<ParametersEditorViewModel>();
 
         services.TryAddTransient<AsyncOperationRunner>();
         services.TryAddTransient<FlightDataMissionMapView>();
@@ -267,7 +269,8 @@ public static class ApplicationConfigurator
         domainFactory.Add<MissionMapPresenter>();
         domainFactory.Add<FlightPlannerMissionMapViewModel>();
         domainFactory.Add<FlightPlannerMissionMapView>();
-
+        domainFactory.Add<ParametersEditorViewModel>();
+        domainFactory.Add<ParametersEditorView>();
         return services;
     }
 

@@ -1,5 +1,4 @@
-﻿using MissionPlanner.Core.Vehicles.Models;
-using MissionPlanner.Shared.Models.Vehicles.Models;
+﻿using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.ConfigTuning;
 
@@ -79,16 +78,10 @@ public interface IParameterEditSession : IDisposable
     /// <summary>
     /// Revalidates and applies an explicitly confirmed write-plan snapshot.
     /// </summary>
-    Task<ParameterApplyReport> ApplyAsync(
-        ParameterWritePlan plan,
-        IProgress<ParameterApplyProgress>? progress = null,
-        CancellationToken cancellationToken = default);
+    Task<ParameterApplyReport> ApplyAsync(ParameterWritePlan plan, IProgress<ParameterApplyProgress>? progress = null, CancellationToken cancellationToken = default);
 
     /// <summary>Retries only retryable failures from an earlier report.</summary>
-    Task<ParameterApplyReport> RetryFailedAsync(
-        ParameterApplyReport previousReport,
-        IProgress<ParameterApplyProgress>? progress = null,
-        CancellationToken cancellationToken = default);
+    Task<ParameterApplyReport> RetryFailedAsync(ParameterApplyReport previousReport, IProgress<ParameterApplyProgress>? progress = null, CancellationToken cancellationToken = default);
 
     /// <summary>Requests refreshed live values for the given names, or all loaded fields.</summary>
     /// <param name="names">The names to refresh, or null for all loaded fields.</param>

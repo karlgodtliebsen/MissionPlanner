@@ -29,7 +29,7 @@
                 SelectedItem="{Binding Filter}" />
             <Button HorizontalOptions="End"
                 Grid.Column="5" Text="Close" WidthRequest="100" Command="{Binding CloseCommand}">
-              
+             
             </Button>
         </Grid>
 

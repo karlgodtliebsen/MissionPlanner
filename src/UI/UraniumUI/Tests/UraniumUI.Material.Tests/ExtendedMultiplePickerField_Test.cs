@@ -111,12 +111,7 @@ public class ExtendedMultiplePickerField_Test
     [Fact]
     public async Task Picker_ShouldUseExtendedDialogService()
     {
-        dialogService.DisplayViewExtendedAsync(
-                Arg.Any<string>(),
-                Arg.Any<View>(),
-                "OK",
-                "Cancel")
-            .Returns(true);
+        dialogService.DisplayViewExtendedAsync(Arg.Any<string>(), Arg.Any<View>(), "OK", "Cancel").Returns(true);
         var selectedItems =
             new ObservableCollection<object> { "Logging" };
         var control = new TestableExtendedMultiplePickerField { Title = "Flags", ItemsSource = new[] { "Logging", "GPS" }, SelectedItems = selectedItems };

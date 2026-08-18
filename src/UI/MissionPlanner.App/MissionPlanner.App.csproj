@@ -320,6 +320,9 @@
 	  <MauiXaml Update="Views\ConfigTuning\Tabs\OnboardOSDTabView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Views\ConfigTuning\Tabs\ParametersEditorView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\InitSetup\MandatoryHardware\Sections\TabsUtils\SlimTabHeaderView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<uranium:UraniumContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
+                    x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.ParametersEditorView"
+                    MaximumWidthRequest="800"
+>
+    <Grid
+        Margin="25"
+       HorizontalOptions="Fill"
+        VerticalOptions="Fill"
+        RowDefinitions="Auto,*"
+        RowSpacing="10"
+        Padding="12">
+
+        <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto" ColumnSpacing="8">
+            <Button HorizontalOptions="End"
+                Grid.Column="5" Text="Close" WidthRequest="100" Command="{Binding CloseCommand}">
+            </Button>
+        </Grid>
+
+        <Border Grid.Row="1" Margin="25" HorizontalOptions="Fill" VerticalOptions="Fill" StyleClass="SurfaceContainer,Rounded,Elevation1">
+
+            <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Spacing="20" Margin="30">
+
+                <Label FontSize="Medium" Text="Add a List of Parameters and Values"
+                       HorizontalOptions="Center" VerticalOptions="Center"></Label>
+                <Label FontSize="Small" Text="Format: (name=value) or (name=value//comment)"
+                       HorizontalOptions="Center" VerticalOptions="Center"></Label>
+
+                <Editor 
+                    Text="{Binding Text}" HorizontalOptions="Center" VerticalOptions="Center" AutoSize="TextChanges" 
+                       Margin="10"></Editor>
+
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+
+</uranium:UraniumContentPage>

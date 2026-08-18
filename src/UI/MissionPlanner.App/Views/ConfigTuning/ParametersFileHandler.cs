@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using CommunityToolkit.Maui.Storage;
@@ -79,17 +79,7 @@ public sealed class ParametersFileHandler(IFileSaver fileSaver)
     /// <returns>The fields loaded from the selected file.</returns>
     public async Task<IList<ParameterItemViewModel>> LoadParametersFromJsonFileAsync(CancellationToken cancellationToken)
     {
-        var result = await FilePicker.Default.PickAsync(new PickOptions
-        {
-            PickerTitle = "Select a Parameters file",
-            FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
-            {
-                [DevicePlatform.iOS] = ["public.json"],
-                [DevicePlatform.Android] = ["application/json"],
-                [DevicePlatform.WinUI] = [".json"],
-                [DevicePlatform.MacCatalyst] = ["public.json"]
-            })
-        });
+        var result = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Select a Parameters file", FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>> { [DevicePlatform.iOS] = ["public.json"], [DevicePlatform.Android] = ["application/json"], [DevicePlatform.WinUI] = [".json"], [DevicePlatform.MacCatalyst] = ["public.json"] }) });
         if (result is null)
         {
             return [];
@@ -104,9 +94,7 @@ public sealed class ParametersFileHandler(IFileSaver fileSaver)
     /// <param name="existingParameters">The live parameters that imported values are allowed to target.</param>
     /// <param name="cancellationToken">The cancellation token to cancel the operation.</param>
     /// <returns>The matching imported parameter values.</returns>
-    public async Task<IList<VehicleParameter>> LoadParametersFromFileAsync(
-        IList<VehicleParameter> existingParameters,
-        CancellationToken cancellationToken)
+    public async Task<IList<VehicleParameter>> LoadParametersFromFileAsync(IList<VehicleParameter> existingParameters, CancellationToken cancellationToken)
     {
         var parameters = new List<VehicleParameter>();
         var result = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Select a Parameters file" });

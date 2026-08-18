@@ -11,8 +11,8 @@ using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
-using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using UraniumUI.Material.Dialogs;
@@ -60,6 +60,8 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
     /// <param name="confirmation">The hazardous-action confirmation service.</param>
     /// <param name="profiles">The named profile repository.</param>
     /// <param name="profileWorkflow">The profile compatibility and staging workflow.</param>
+    /// <param name="parameterLoadStatus"></param>
+    /// <param name="domainEventHub"></param>
     /// <param name="logger">The logger.</param>
     public FullParametersListTabViewModel(
         IVehicleConnectionSession connectionSession,
@@ -301,9 +303,7 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
         }
     }
 
-    private void OnParameterRegistryChanged(
-        object? sender,
-        VehicleParameterChangedEventArgs args)
+    private void OnParameterRegistryChanged(object? sender, VehicleParameterChangedEventArgs args)
     {
         if (disposed ||
             !activeVehicle.IsOnline ||
@@ -337,15 +337,12 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
                parameterRegistry.GetAllParameters(vehicleId).Count >= expectedCount.Value;
     }
 
-    private async Task LoadCachedParametersAsync(
-        VehicleId vehicleId,
-        CancellationTokenSource cancellation)
+    private async Task LoadCachedParametersAsync(VehicleId vehicleId, CancellationTokenSource cancellation)
     {
         try
         {
             var session = editSessionFactory.Create(vehicleId);
-            await session.LoadAsync(cancellationToken: cancellation.Token)
-                .ConfigureAwait(false);
+            await session.LoadAsync(cancellationToken: cancellation.Token).ConfigureAwait(false);
             cancellation.Token.ThrowIfCancellationRequested();
 
             await dispatcher.DispatchAsync(() =>
@@ -530,6 +527,46 @@ public partial class FullParametersListTabViewModel : ObservableObject, IDisposa
             loadCancellation = null;
             HasRows = Parameters.Count > 0;
         }
+    }
+
+    [RelayCommand]
+    private async Task LoadFromEditorAsync(CancellationToken cancellationToken)
+    {
+        if (editSession is null)
+        {
+            SetMessages(errorMessage: "Refresh vehicle parameters before importing parameters.");
+            return;
+        }
+
+        try
+        {
+            var viewModel = domainFactory.Create<ParametersEditorViewModel>();
+            var pageView = domainFactory.Create<ParametersEditorView, ParametersEditorViewModel>(viewModel);
+
+            await dialogService.ShowAsync(pageView, true, cancellationToken);
+
+            //var result = await dialogService.DisplayViewExtendedAsync("Parameters Editor", view, "Add", "Cancel");
+            //if (!result)
+            //{
+            //    SetMessages($"Cancelled");
+            //    return;
+            //}
+
+            var fullList = editSession.Fields.Select(ToVehicleParameter).ToList();
+            var parameters = viewModel.UpdateParameters(fullList);
+            foreach (var parameter in parameters)
+            {
+                editSession.TrySetPending(parameter.Name, parameter.Value, out var _);
+            }
+
+            SetMessages($"Imported {parameters.Count} matching values as unapplied edits.");
+        }
+        catch (Exception exception)
+        {
+            await dialogService.ConfirmAsync("Load failed", exception.Message, "OK");
+        }
+
+        HasRows = Parameters.Count > 0;
     }
 
     [RelayCommand]

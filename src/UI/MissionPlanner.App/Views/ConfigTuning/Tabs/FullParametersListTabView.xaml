@@ -24,9 +24,15 @@
 
             <HorizontalStackLayout Grid.Row="0" HeightRequest="50" HorizontalOptions="Fill" VerticalOptions="Center" Padding="8,0" Spacing="12" >
                 <Button 
+                Text="Load from editor"
+                    VerticalOptions="Center"
+                    Command="{Binding LoadFromEditorCommand}" />
+
+                <Button 
                 Text="Load from file"
                     VerticalOptions="Center"
                     Command="{Binding LoadFromFileCommand}" />
+
 
                 <Button 
                 Text="Save to file"
