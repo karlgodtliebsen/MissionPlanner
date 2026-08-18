@@ -78,7 +78,6 @@ public partial class ParametersViewModel : ObservableObject, IDisposable
         this.parameterLoadStatus = parameterLoadStatus;
         this.logger = logger;
         parameterLoadStatusSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleParameterLoadStatusChanged>(OnParameterLoadStatusChanged);
-        InitializeView();
     }
 
     /// <summary>Gets the currently visible parameter rows.</summary>
@@ -154,7 +153,7 @@ public partial class ParametersViewModel : ObservableObject, IDisposable
     public partial string? ErrorMessage { get; set; }
 
     /// <summary>Activates vehicle lifecycle tracking while the tab is visible.</summary>
-    private void InitializeView()
+    protected void InitializeParameters()
     {
         if (disposed)
         {
@@ -200,7 +199,6 @@ public partial class ParametersViewModel : ObservableObject, IDisposable
             editSessionFactory?.DiscardPendingChanges();
             CancelCachedParameterLoad();
             editSession?.Changed -= OnEditSessionChanged;
-            editSession = null;
             editSession = null;
             Parameters.Clear();
             HasParameters = false;
@@ -500,9 +498,16 @@ public partial class ParametersViewModel : ObservableObject, IDisposable
             await session.LoadAsync(cancellationToken: cancellationToken);
 
             cancellationToken.ThrowIfCancellationRequested();
-            AttachSession(session);
             await dispatcher.DispatchAsync(() =>
             {
+                if (disposed ||
+                    !activeVehicle.IsOnline ||
+                    activeVehicle.VehicleId != vehicleId)
+                {
+                    return;
+                }
+
+                AttachSession(session);
                 CompleteBusyState();
                 SetMessages($"Loaded {session.Fields.Count} parameters for {session.Scope.FirmwareIdentity.Family}.");
             });
@@ -597,7 +602,13 @@ public partial class ParametersViewModel : ObservableObject, IDisposable
             return;
         }
 
+        editSession?.Changed -= OnEditSessionChanged;
         editSession = session;
+        editSession.Changed += OnEditSessionChanged;
+
+        // Loading a session does not raise Changed. Notify the derived view model
+        // explicitly so it can create its initial UI projection.
+        OnEditSessionChanged(editSession, EventArgs.Empty);
     }
 
     /// <summary>

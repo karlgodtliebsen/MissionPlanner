@@ -1,19 +1,24 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
+using MissionPlanner.App.Views.Common;
+using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
+using MissionPlanner.Library.Factory.Domain.Abstractions;
+using UraniumUI.Material.Dialogs;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
 /// <summary>
 /// Runs frame-derived, bounded motor tests for the active vehicle.
 /// </summary>
-public sealed partial class MotorTestViewModel : OptionalHardwareBaseViewModel
+public sealed partial class MotorTestViewModel : ParametersViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleParameterRegistry parameters;
@@ -35,16 +40,43 @@ public sealed partial class MotorTestViewModel : OptionalHardwareBaseViewModel
     /// <summary>
     /// 
     /// </summary>
+    /// <param name="connectionSession"></param>
     /// <param name="activeVehicle"></param>
+    /// <param name="parameterLoadStatus"></param>
     /// <param name="domainEventHub"></param>
+    /// <param name="logger"></param>
     /// <param name="parameters"></param>
     /// <param name="service"></param>
     /// <param name="resolver"></param>
     /// <param name="confirmation"></param>
+    /// <param name="editSessionFactory"></param>
     /// <param name="dispatcher"></param>
-    public MotorTestViewModel(IActiveVehicleContext activeVehicle,
+    /// <param name="dialogService"></param>
+    /// <param name="domainFactory"></param>
+    public MotorTestViewModel(
+        IVehicleConnectionSession connectionSession,
+        IActiveVehicleContext activeVehicle,
+        IParameterEditSessionFactory editSessionFactory,
+        IDispatcher dispatcher,
+        IExtendedDialogService dialogService,
+        IDomainFactory domainFactory,
+        IVehicleParameterLoadStatusContext parameterLoadStatus,
         IDomainEventHub domainEventHub,
-        IVehicleParameterRegistry parameters, IActuatorTestService service, MotorLayoutResolver resolver, IUserConfirmationService confirmation, IDispatcher dispatcher)
+        ILogger<MotorTestViewModel> logger,
+        IVehicleParameterRegistry parameters,
+        IActuatorTestService service,
+        MotorLayoutResolver resolver,
+        IUserConfirmationService confirmation)
+        : base(
+            connectionSession,
+            activeVehicle,
+            editSessionFactory,
+            dispatcher,
+            dialogService,
+            domainFactory,
+            parameterLoadStatus,
+            domainEventHub,
+            logger)
     {
         this.activeVehicle = activeVehicle;
         this.parameters = parameters;
@@ -53,9 +85,9 @@ public sealed partial class MotorTestViewModel : OptionalHardwareBaseViewModel
         this.confirmation = confirmation;
         this.dispatcher = dispatcher;
         activeVehicle.Changed += Changed;
-        parameters.Changed += ParameterChanged;
         service.StateChanged += StateChanged;
 
+        InitializeParameters();
         QueueRefresh();
     }
 
@@ -140,26 +172,39 @@ public sealed partial class MotorTestViewModel : OptionalHardwareBaseViewModel
         });
     }
 
-    private void ParameterChanged(object? s, VehicleParameterChangedEventArgs e)
-    {
-        if (e.VehicleId == activeVehicle.VehicleId)
-        {
-            QueueRefresh();
-        }
-    }
-
     private void StateChanged(object? s, MotorTestStateChangedEventArgs e)
     {
-        dispatcher.Dispatch(() => Status = e.Snapshot.Instruction);
+        if (disposed)
+        {
+            return;
+        }
+
+        dispatcher.Dispatch(() =>
+        {
+            if (!disposed)
+            {
+                Status = e.Snapshot.Instruction;
+            }
+        });
+    }
+
+    /// <inheritdoc />
+    protected override void OnEditSessionChanged(object? sender, EventArgs e)
+    {
+        QueueRefresh();
     }
 
     /// <inheritdoc />
     public override void Dispose()
     {
-        base.Dispose();
+        if (disposed)
+        {
+            return;
+        }
+
         disposed = true;
         activeVehicle.Changed -= Changed;
-        parameters.Changed -= ParameterChanged;
         service.StateChanged -= StateChanged;
+        base.Dispose();
     }
 }

@@ -1,5 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.ComponentModel;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.Common;
@@ -69,20 +70,9 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         this.profiles = profiles;
         this.profileWorkflow = profileWorkflow;
         this.logger = logger;
+        PropertyChanged += OnViewModelPropertyChanged;
+        InitializeParameters();
     }
-
-    /// <summary>Gets whether a load or apply operation is active.</summary>
-    [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
-    [NotifyCanExecuteChangedFor(nameof(CancelLoadCommand))]
-    [NotifyCanExecuteChangedFor(nameof(WriteParametersCommand))]
-    [NotifyCanExecuteChangedFor(nameof(CompareParametersCommand))]
-    [NotifyCanExecuteChangedFor(nameof(RevertChangesCommand))]
-    [NotifyCanExecuteChangedFor(nameof(SaveToFileCommand))]
-    [NotifyCanExecuteChangedFor(nameof(SaveToJsonFileCommand))]
-    //[NotifyCanExecuteChangedFor(nameof(ClearParametersCommand))]
-    //[NotifyCanExecuteChangedFor(nameof(RetryFailedCommand))]
-    public new partial bool IsBusy { get; set; }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
@@ -371,6 +361,20 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         return HasConnection && !IsBusy && editSession is { IsDirty: true, IsValid: true };
     }
 
+    private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName is not (nameof(IsBusy) or nameof(HasConnection) or nameof(HasParameters)))
+        {
+            return;
+        }
+
+        WriteParametersCommand.NotifyCanExecuteChanged();
+        CompareParametersCommand.NotifyCanExecuteChanged();
+        RevertChangesCommand.NotifyCanExecuteChanged();
+        SaveToFileCommand.NotifyCanExecuteChanged();
+        SaveToJsonFileCommand.NotifyCanExecuteChanged();
+    }
+
     private static string BuildResultSummary(ParameterApplyReport report)
     {
         return string.Join(
@@ -467,6 +471,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             return;
         }
 
+        PropertyChanged -= OnViewModelPropertyChanged;
         base.Dispose();
         disposed = true;
 
