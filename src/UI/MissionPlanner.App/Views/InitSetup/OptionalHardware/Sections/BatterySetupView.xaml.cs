@@ -1,6 +1,6 @@
 ﻿using UraniumUI.Material.TabViews;
 
-namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
+namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
 /// <summary>Displays battery monitor, failsafe, and calibration controls.</summary>
 public partial class BatterySetupView : TabViewLifecycleContent<BatterySetupViewModel>

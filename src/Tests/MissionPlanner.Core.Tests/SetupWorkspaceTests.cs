@@ -203,7 +203,6 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<CompassSetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Compass);
         provider.GetRequiredService<RadioSetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Radio);
         provider.GetRequiredService<FlightModesSetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.FlightModes);
-        provider.GetRequiredService<BatterySetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Battery);
         provider.GetRequiredService<EscMotorSetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Esc);
         provider.GetRequiredService<ServoOutputSetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.ServoOutput);
         provider.GetRequiredService<SafetySetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Safety);

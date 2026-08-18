@@ -4,7 +4,6 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Setup.Abstractions;
-using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -13,10 +12,10 @@ using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using UraniumUI.Extensions;
 
-namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
+namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
 /// <summary>Projects battery monitor discovery, live readings, calibration, and failsafe editing into Setup controls.</summary>
-public sealed partial class BatterySetupViewModel : Models.SetupWorkflowDetailViewModel
+public sealed partial class BatterySetupViewModel : OptionalHardwareBaseViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IBatteryConfigurationService batteryService;
@@ -30,18 +29,16 @@ public sealed partial class BatterySetupViewModel : Models.SetupWorkflowDetailVi
     /// <summary>Initializes the battery Setup workflow.</summary>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="batteryService">The battery configuration service.</param>
-    /// <param name="workflowCatalog">The Setup workflow catalog.</param>
     /// <param name="domainEventHub">The domain event hub used for live battery state.</param>
     /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public BatterySetupViewModel(
         IActiveVehicleContext activeVehicle,
         IBatteryConfigurationService batteryService,
-        ISetupWorkflowCatalog workflowCatalog,
         IDomainEventHub domainEventHub,
         IDispatcher dispatcher,
         ILogger<BatterySetupViewModel> logger)
-        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Battery))
+
     {
         this.activeVehicle = activeVehicle;
         this.batteryService = batteryService;
@@ -97,7 +94,7 @@ public sealed partial class BatterySetupViewModel : Models.SetupWorkflowDetailVi
     }
 
     /// <inheritdoc />
-    public override void Cancel()
+    public void Cancel()
     {
         operationCancellation?.Cancel();
         operationCancellation?.Dispose();
@@ -107,6 +104,7 @@ public sealed partial class BatterySetupViewModel : Models.SetupWorkflowDetailVi
     /// <inheritdoc />
     public override void Dispose()
     {
+        Cancel();
         activeVehicle.Changed -= OnActiveVehicleChanged;
         vehicleStateSubscription?.Dispose();
         vehicleStateSubscription = null;

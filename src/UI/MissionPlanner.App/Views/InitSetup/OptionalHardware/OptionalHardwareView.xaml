@@ -64,7 +64,7 @@
                     <local:OptionalHardwarePlaceholderView/>
                 </material:TabItem>
                 <material:TabItem Title="Battery Monitors">
-                    <mandatorySections:BatterySetupView/>
+                    <sections:BatterySetupView/>
                 </material:TabItem>
                 <material:TabItem Title="CAN GPS Order">
                     <sections:CanGpsOrderView/>

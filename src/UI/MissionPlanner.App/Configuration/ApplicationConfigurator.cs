@@ -60,6 +60,7 @@ using MissionPlanner.Simulation.ArduPilot;
 using MissionPlanner.Simulation.Configuration;
 using MissionPlanner.Transport.Configuration;
 using UraniumUI.Material.Dialogs;
+using BatterySetupViewModel = MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.BatterySetupViewModel;
 
 namespace MissionPlanner.App.Configuration;
 
@@ -227,6 +228,10 @@ public static class ApplicationConfigurator
         services.TryAddTransient<OptionalHardwareViewModel>();
         services.TryAddSingleton<OptionalHardwareTabCatalog>();
 
+        //Temp
+        services.TryAddTransient<OptionalHardwarePlaceholderViewModel>();
+
+
         services.TryAddTransient<FlightDataViewModel>();
         services.TryAddTransient<FlightPlannerViewModel>();
         services.TryAddTransient<SimulationViewModel>();
@@ -245,27 +250,49 @@ public static class ApplicationConfigurator
         services.TryAddTransient<PreferencesViewModel>();
         services.TryAddTransient<CubeLan8PortSwitchTabViewModel>();
 
-        // Workflow Tabs on Setup Mandatory Hardware View
+        //remove
         services.TryAddTransient<FirmwareSetupViewModel>();
+
+        // Workflow Tabs on Setup Mandatory Hardware View
         services.TryAddTransient<FrameSetupViewModel>();
         services.TryAddTransient<AccelerometerSetupViewModel>();
         services.TryAddTransient<CompassSetupViewModel>();
         services.TryAddTransient<RadioSetupViewModel>();
-        services.TryAddTransient<FlightModesSetupViewModel>();
-        services.TryAddTransient<BatterySetupViewModel>();
-        services.TryAddTransient<EscMotorSetupViewModel>();
         services.TryAddTransient<ServoOutputSetupViewModel>();
+        //services.TryAddTransient<SerialPortsViewModel>();
+        services.TryAddTransient<EscMotorSetupViewModel>();
+        services.TryAddTransient<FlightModesSetupViewModel>();
+        services.TryAddTransient<SafetySetupViewModel>(); //FailSafe
+        //services.TryAddTransient<InitialTuneParametersViewModel>();
+        //services.TryAddTransient<HwIdViewModel>();
+        //services.TryAddTransient<AdsbViewModel>();
+
         services.TryAddTransient<SafetySetupViewModel>();
         services.TryAddTransient<SetupSummaryViewModel>();
 
         // Workflow Tabs on Setup Mandatory Hardware View
         services.TryAddTransient<RtkGpsInjectViewModel>();
+        //services.TryAddTransient<CubeIdUpdateViewModel>();
+        //services.TryAddTransient<SikRadioViewModel>();
         services.TryAddTransient<CanGpsOrderViewModel>();
+        services.TryAddTransient<BatterySetupViewModel>();
+        //services.TryAddTransient<BatterySetup2ViewModel>();
+        //services.TryAddTransient<DroneCanUavCanViewModel>();
+        //services.TryAddTransient<JoystickViewModel>();
+        //services.TryAddTransient<CompassMotorCalibrationViewModel>();
         services.TryAddTransient<RangefinderViewModel>();
         services.TryAddTransient<AirspeedViewModel>();
+        //services.TryAddTransient<Px4FlowViewModel>();
         services.TryAddTransient<OpticalFlowViewModel>();
-        services.TryAddTransient<ParachuteViewModel>();
+        //services.TryAddTransient<OsdViewModel>();
+        //services.TryAddTransient<CameraGimbalViewModel>();
         services.TryAddTransient<MotorTestViewModel>();
+        //services.TryAddTransient<BluetoothViewModel>();
+        services.TryAddTransient<ParachuteViewModel>();
+        //services.TryAddTransient<Esp8266SetupViewModel>();
+        //services.TryAddTransient<AntennaTrackerViewModel>();
+        //services.TryAddTransient<FFTSetupViewModel>();
+        //??????
         services.TryAddSingleton<MotorLayoutResolver>();
 
         return services;
