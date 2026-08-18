@@ -9,6 +9,7 @@
                     xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
                     xmlns:tabsUtils="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.TabsUtils"
                     xmlns:models="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Models"
+                    xmlns:mandatorySections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                     x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.OptionalHardwareView"
                     x:DataType="local:OptionalHardwareViewModel" 
                     Title="Optional Hardware"
@@ -63,22 +64,22 @@
                     <local:OptionalHardwarePlaceholderView/>
                 </material:TabItem>
                 <material:TabItem Title="Battery Monitors">
-                    <local:OptionalHardwarePlaceholderView/>
+                    <mandatorySections:BatterySetupView/>
                 </material:TabItem>
                 <material:TabItem Title="CAN GPS Order">
-                    <local:OptionalHardwarePlaceholderView/>
+                    <sections:CanGpsOrderView/>
                 </material:TabItem>
                 <material:TabItem Title="Compass / Motor Calibration">
                     <local:OptionalHardwarePlaceholderView/>
                 </material:TabItem>
                 <material:TabItem Title="Rangefinder">
-                    <local:OptionalHardwarePlaceholderView/>
+                    <sections:RangefinderView/>
                 </material:TabItem>
                 <material:TabItem Title="Airspeed">
-                    <local:OptionalHardwarePlaceholderView/>
+                    <sections:AirspeedView/>
                 </material:TabItem>
                 <material:TabItem Title="Optical Flow">
-                    <local:OptionalHardwarePlaceholderView/>
+                    <sections:OpticalFlowView/>
                 </material:TabItem>
                 <material:TabItem Title="Onboard OSD">
                     <local:OptionalHardwarePlaceholderView/>
@@ -93,7 +94,7 @@
                     <local:OptionalHardwarePlaceholderView/>
                 </material:TabItem>
                 <material:TabItem Title="Parachute">
-                    <local:OptionalHardwarePlaceholderView/>
+                    <sections:ParachuteView/>
                 </material:TabItem>
                 <material:TabItem Title="ESP8266 Setup">
                     <local:OptionalHardwarePlaceholderView/>

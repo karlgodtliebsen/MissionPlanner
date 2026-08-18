@@ -144,6 +144,7 @@ public static class DomainConfigurator
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, RangefinderModule>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, AirspeedModule>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, CanBusModule>());
+        services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, CanGpsOrderModule>());
 
         services.AddHttpClient("Firmware");
         services.AddHttpClient("SITL");

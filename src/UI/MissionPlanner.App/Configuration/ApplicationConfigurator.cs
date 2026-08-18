@@ -260,6 +260,11 @@ public static class ApplicationConfigurator
 
         // Workflow Tabs on Setup Mandatory Hardware View
         services.TryAddTransient<RtkGpsInjectViewModel>();
+        services.TryAddTransient<CanGpsOrderViewModel>();
+        services.TryAddTransient<RangefinderViewModel>();
+        services.TryAddTransient<AirspeedViewModel>();
+        services.TryAddTransient<OpticalFlowViewModel>();
+        services.TryAddTransient<ParachuteViewModel>();
 
         return services;
     }
