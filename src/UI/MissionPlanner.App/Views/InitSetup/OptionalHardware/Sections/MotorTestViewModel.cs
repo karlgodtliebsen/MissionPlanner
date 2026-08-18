@@ -6,10 +6,13 @@ using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
-/// <summary>Runs frame-derived, bounded motor tests for the active vehicle.</summary>
+/// <summary>
+/// Runs frame-derived, bounded motor tests for the active vehicle.
+/// </summary>
 public sealed partial class MotorTestViewModel : OptionalHardwareBaseViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
@@ -18,8 +21,30 @@ public sealed partial class MotorTestViewModel : OptionalHardwareBaseViewModel
     private readonly MotorLayoutResolver resolver;
     private readonly IUserConfirmationService confirmation;
     private readonly IDispatcher dispatcher;
+    private bool disposed;
 
-    public MotorTestViewModel(IActiveVehicleContext activeVehicle, IVehicleParameterRegistry parameters, IActuatorTestService service, MotorLayoutResolver resolver, IUserConfirmationService confirmation, IDispatcher dispatcher)
+    private MotorLayout? layout;
+
+
+    public ObservableCollection<MotorLayoutMotor> Motors { get; } = [];
+    [ObservableProperty] public partial string FrameDisplay { get; private set; } = "Frame layout unavailable.";
+    [ObservableProperty] public partial string Status { get; private set; } = "Remove all propellers before testing.";
+    [ObservableProperty] public partial double ThrottlePercent { get; set; } = 10;
+    [ObservableProperty] public partial double DurationSeconds { get; set; } = 2;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="activeVehicle"></param>
+    /// <param name="domainEventHub"></param>
+    /// <param name="parameters"></param>
+    /// <param name="service"></param>
+    /// <param name="resolver"></param>
+    /// <param name="confirmation"></param>
+    /// <param name="dispatcher"></param>
+    public MotorTestViewModel(IActiveVehicleContext activeVehicle,
+        IDomainEventHub domainEventHub,
+        IVehicleParameterRegistry parameters, IActuatorTestService service, MotorLayoutResolver resolver, IUserConfirmationService confirmation, IDispatcher dispatcher)
     {
         this.activeVehicle = activeVehicle;
         this.parameters = parameters;
@@ -30,15 +55,10 @@ public sealed partial class MotorTestViewModel : OptionalHardwareBaseViewModel
         activeVehicle.Changed += Changed;
         parameters.Changed += ParameterChanged;
         service.StateChanged += StateChanged;
-        Refresh();
+
+        QueueRefresh();
     }
 
-    public ObservableCollection<MotorLayoutMotor> Motors { get; } = [];
-    [ObservableProperty] public partial string FrameDisplay { get; private set; } = "Frame layout unavailable.";
-    [ObservableProperty] public partial string Status { get; private set; } = "Remove all propellers before testing.";
-    [ObservableProperty] public partial double ThrottlePercent { get; set; } = 10;
-    [ObservableProperty] public partial double DurationSeconds { get; set; } = 2;
-    private MotorLayout? layout;
 
     [RelayCommand]
     private async Task TestMotorAsync(MotorLayoutMotor motor)
@@ -77,11 +97,13 @@ public sealed partial class MotorTestViewModel : OptionalHardwareBaseViewModel
 
     private void Refresh()
     {
-        Motors.Clear();
-        layout = activeVehicle.VehicleId is
+        if (disposed)
         {
+            return;
         }
-            id
+
+        Motors.Clear();
+        layout = activeVehicle.VehicleId is { } id
             ? resolver.Resolve(parameters.GetAllParameters(id))
             : null;
         if (layout is null)
@@ -99,14 +121,30 @@ public sealed partial class MotorTestViewModel : OptionalHardwareBaseViewModel
 
     private void Changed(object? s, ActiveVehicleChangedEventArgs e)
     {
-        dispatcher.Dispatch(Refresh);
+        QueueRefresh();
+    }
+
+    private void QueueRefresh()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        dispatcher.Dispatch(() =>
+        {
+            if (!disposed)
+            {
+                Refresh();
+            }
+        });
     }
 
     private void ParameterChanged(object? s, VehicleParameterChangedEventArgs e)
     {
         if (e.VehicleId == activeVehicle.VehicleId)
         {
-            dispatcher.Dispatch(Refresh);
+            QueueRefresh();
         }
     }
 
@@ -118,9 +156,10 @@ public sealed partial class MotorTestViewModel : OptionalHardwareBaseViewModel
     /// <inheritdoc />
     public override void Dispose()
     {
+        base.Dispose();
+        disposed = true;
         activeVehicle.Changed -= Changed;
         parameters.Changed -= ParameterChanged;
         service.StateChanged -= StateChanged;
-        _ = service.EmergencyStopAsync();
     }
 }

@@ -29,12 +29,24 @@ public sealed class MotorLayoutResolver
         }
 
         var type = parameters.TryGetValue(typeName, out var frameType) ? (int)Math.Round(frameType.Value) : 0;
-        var motors = Enumerable.Range(1, count).Select(order => new MotorLayoutMotor(order, order, $"Test {(char)('A' + order - 1)} — Motor {order}")).ToArray();
+        var motors = Enumerable.Range(1, count)
+            .Select(order => new MotorLayoutMotor(order, order, $"Test {(char)('A' + order - 1)} — Motor {order}")).ToArray();
         return new MotorLayout(value, type, $"{ClassName(value)} / type {type}", motors);
     }
 
     private static string ClassName(int value)
     {
-        return value switch { 1 => "Quad", 2 => "Hexa", 3 => "Octa", 4 => "OctaQuad", 5 => "Y6", 7 => "Tri", 12 => "DodecaHexa", 13 => "Deca", var _ => "Unsupported" };
+        return value switch
+        {
+            1 => "Quad", //
+            2 => "Hexa",
+            3 => "Octa",
+            4 => "OctaQuad",
+            5 => "Y6",
+            7 => "Tri",
+            12 => "DodecaHexa",
+            13 => "Deca",
+            var _ => "Unsupported"
+        };
     }
 }

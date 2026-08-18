@@ -89,7 +89,7 @@ public sealed partial class BatterySetupViewModel : OptionalHardwareBaseViewMode
         catch (Exception exception)
         {
             logger.LogError(exception, "Loading battery configuration failed for {VehicleId}.", vehicleId);
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
         }
     }
 
@@ -141,7 +141,7 @@ public sealed partial class BatterySetupViewModel : OptionalHardwareBaseViewMode
         catch (Exception exception)
         {
             logger.LogError(exception, "Applying battery setting failed for {VehicleId}.", vehicleId);
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
         }
     }
 
@@ -177,7 +177,7 @@ public sealed partial class BatterySetupViewModel : OptionalHardwareBaseViewMode
         catch (Exception exception)
         {
             logger.LogError(exception, "Battery calibration failed for {VehicleId}.", vehicleId);
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
         }
     }
 
@@ -207,7 +207,7 @@ public sealed partial class BatterySetupViewModel : OptionalHardwareBaseViewMode
         catch (Exception exception)
         {
             logger.LogError(exception, "Refreshing battery configuration failed for {VehicleId}.", vehicleId);
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
         }
     }
 
@@ -222,7 +222,7 @@ public sealed partial class BatterySetupViewModel : OptionalHardwareBaseViewMode
         operationCancellation?.Cancel();
         operationCancellation?.Dispose();
         operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
-        Error = null;
+        ErrorMessage = null;
         return operationCancellation.Token;
     }
 

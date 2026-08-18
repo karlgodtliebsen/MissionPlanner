@@ -1,5 +1,4 @@
-﻿using MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
-using UraniumUI.Material.TabViews;
+﻿using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware;
 
@@ -13,11 +12,3 @@ public sealed class OptionalHardwarePlaceholderView : TabViewLifecycleContent<Op
     }
 }
 //
-
-public partial class OptionalHardwarePlaceholderViewModel : OptionalHardwareBaseViewModel
-{
-    /// <inheritdoc />
-    public override void Dispose()
-    {
-    }
-}

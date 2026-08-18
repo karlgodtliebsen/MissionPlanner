@@ -29,8 +29,20 @@ public class TabViewLifecycleContent<TViewModel> : ContentView, ITabViewLifecycl
     /// </summary>
     public virtual void Deactivate()
     {
+        if (Dispatcher.IsDispatchRequired)
+        {
+            Dispatcher.Dispatch(Deactivate);
+            return;
+        }
+
+        var viewModel = ViewModel;
+        if (viewModel is null)
+        {
+            return;
+        }
+
+        ViewModel = null; // Claim it before invoking binding/disposal code.
         BindingContext = null;
-        ViewModel?.Dispose();
-        ViewModel = null;
+        viewModel.Dispose();
     }
 }

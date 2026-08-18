@@ -2,7 +2,9 @@
 
 namespace UraniumUI.Material.TabViews;
 
-/// <summary>Represents a tab view control that owns the lifecycle of its selected content.</summary>
+/// <summary>
+/// Represents a tab view control that owns the lifecycle of its selected content.
+/// </summary>
 public class LifecycleTabView : TabView
 {
     private View? currentContent;
@@ -18,6 +20,12 @@ public class LifecycleTabView : TabView
     /// <inheritdoc />
     protected override async Task OnSelectedTabChanged(TabItem oldValue, TabItem newValue)
     {
+        if (Dispatcher.IsDispatchRequired)
+        {
+            await Dispatcher.DispatchAsync(async () => await OnSelectedTabChanged(oldValue, newValue));
+            return;
+        }
+
         // RecreateAlways clears oldValue.Content inside the base implementation. Capture
         // and deactivate it before that happens rather than using SelectedTabChanged.
         var oldContent = oldValue?.Content ?? currentContent;
@@ -49,6 +57,12 @@ public class LifecycleTabView : TabView
             return;
         }
 
+        if (Dispatcher.IsDispatchRequired)
+        {
+            OnLoaded(sender, e);
+            return;
+        }
+
         isLoaded = true;
         currentContent ??= SelectedTab?.Content;
         if (currentContent is not null)
@@ -62,6 +76,12 @@ public class LifecycleTabView : TabView
     {
         if (!isLoaded)
         {
+            return;
+        }
+
+        if (Dispatcher.IsDispatchRequired)
+        {
+            OnUnloaded(sender, e);
             return;
         }
 
