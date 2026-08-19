@@ -57,6 +57,20 @@ public sealed class OptionalHardwareTests
         view.Settings.Select(setting => setting.Name).Should().NotContain("RNGFND2_TYPE");
     }
 
+    /// <summary>Verifies camera/gimbal setup is presence-driven and excludes unrelated parameters.</summary>
+    [Fact]
+    public void CameraGimbalModuleProjectsReportedFamiliesOnly()
+    {
+        var module = new CameraGimbalModule();
+        var parameters = Parameters(("MNT1_TYPE", 1), ("CAM1_TYPE", 2), ("SERVO1_FUNCTION", 6));
+
+        module.IsAvailable(parameters).Should().BeTrue();
+        var view = module.Build(parameters, Metadata());
+
+        view.Settings.Select(setting => setting.Name)
+            .Should().BeEquivalentTo("MNT1_TYPE", "CAM1_TYPE");
+    }
+
     /// <summary>Verifies only settings belonging to an available module can be written.</summary>
     [Fact]
     public async Task ServiceRejectsUnknownParameterAndWritesKnownOne()

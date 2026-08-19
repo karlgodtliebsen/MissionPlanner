@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<tabViews:TabViewLifecycleContent
+    x:TypeArguments="sections:CameraGimbalViewModel"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
+    xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+    x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.CameraGimbalView"
+    x:Name="Root"
+    x:DataType="sections:CameraGimbalViewModel">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="10">
+            <Label Text="Camera / Gimbal Configuration" FontSize="20" FontAttributes="Bold" />
+            <Label Text="{Binding Status}" LineBreakMode="WordWrap" />
+            <Label Text="Changes are explicit and confirmed by parameter readback. Live movement and capture commands remain in Payload Control." Opacity="0.75" LineBreakMode="WordWrap" />
+            <Button Text="Open Payload Control" Command="{Binding OpenPayloadControlCommand}" HorizontalOptions="Start" />
+            <Label Text="Reboot required after confirmed changes." IsVisible="{Binding RebootRequired}" TextColor="OrangeRed" FontAttributes="Bold" />
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}" Spacing="8">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="sections:ParameterSettingViewModel">
+                        <Grid ColumnDefinitions="220,*,Auto" ColumnSpacing="8">
+                            <Label Text="{Binding DisplayName}" VerticalOptions="Center" LineBreakMode="WordWrap" />
+                            <Entry Grid.Column="1" Text="{Binding PendingValue, Mode=TwoWay}" Keyboard="Numeric" />
+                            <Button Grid.Column="2" Text="Apply" Command="{Binding ApplyCommand}" />
+                        </Grid>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</tabViews:TabViewLifecycleContent>

@@ -76,10 +76,10 @@
                     <sections:OpticalFlowView/>
                 </material:TabItem>
                 <material:TabItem Title="Onboard OSD">
-                    <local:OptionalHardwarePlaceholderView/>
+                    <sections:OnboardOsdBridgeView/>
                 </material:TabItem>
                 <material:TabItem Title="Camera / Gimbal">
-                    <local:OptionalHardwarePlaceholderView/>
+                    <sections:CameraGimbalView/>
                 </material:TabItem>
                 <material:TabItem Title="Motor Test">
                     <sections:MotorTestView/>

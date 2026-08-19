@@ -285,7 +285,8 @@ public static class ApplicationConfigurator
         //services.TryAddTransient<Px4FlowViewModel>();
         services.TryAddTransient<OpticalFlowViewModel>();
         //services.TryAddTransient<OsdViewModel>();
-        //services.TryAddTransient<CameraGimbalViewModel>();
+        services.TryAddTransient<OnboardOsdBridgeViewModel>();
+        services.TryAddTransient<CameraGimbalViewModel>();
         services.TryAddTransient<MotorTestViewModel>();
         services.TryAddSingleton<MotorLayoutResolver>();
         //services.TryAddTransient<BluetoothViewModel>();
