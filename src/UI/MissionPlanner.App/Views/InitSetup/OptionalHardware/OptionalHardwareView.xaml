@@ -52,7 +52,7 @@
                     <sections:SikRadioView/>
                 </material:TabItem>
                 <material:TabItem Title="DroneCAN / UAVCAN">
-                    <local:OptionalHardwarePlaceholderView/>
+                    <sections:DroneCanUavCanView/>
                 </material:TabItem>
                 <material:TabItem Title="Joystick">
                     <local:OptionalHardwarePlaceholderView/>
@@ -91,10 +91,10 @@
                     <sections:ParachuteView/>
                 </material:TabItem>
                 <material:TabItem Title="ESP8266 Setup">
-                    <local:OptionalHardwarePlaceholderView/>
+                    <sections:Esp8266SetupView/>
                 </material:TabItem>
                 <material:TabItem Title="CubeID Update">
-                    <local:OptionalHardwarePlaceholderView/>
+                    <sections:CubeIdUpdateView/>
                 </material:TabItem>
                 <material:TabItem Title="Antenna Tracker">
                     <local:OptionalHardwarePlaceholderView/>

@@ -141,6 +141,8 @@ public static class DomainConfigurator
         services.TryAddTransient<IBluetoothSerialConfigurator, BluetoothSerialConfigurator>();
         services.TryAddTransient<IRtkCorrectionSourceFactory, RtkCorrectionSourceFactory>();
         services.TryAddTransient<IRtkInjectionService, RtkInjectionService>();
+        services.TryAddSingleton<IDroneCanTransportFactory, UnsupportedDroneCanTransportFactory>();
+        services.TryAddTransient<IDroneCanService, DroneCanService>();
         services.TryAddTransient<IServoOutputConfigurationService, ServoOutputConfigurationService>();
 
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, SerialPortsModule>());
