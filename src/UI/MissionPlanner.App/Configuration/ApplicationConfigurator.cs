@@ -229,7 +229,6 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<OptionalHardwareTabCatalog>();
 
         //Temp
-        services.TryAddTransient<OptionalHardwarePlaceholderViewModel>();
 
 
         services.TryAddTransient<FlightDataViewModel>();
@@ -273,25 +272,20 @@ public static class ApplicationConfigurator
         // Tabs on Setup Optional Hardware View
         services.TryAddTransient<RtkGpsInjectViewModel>();
         services.TryAddTransient<CubeIdUpdateViewModel>();
-        //services.TryAddTransient<SikRadioViewModel>();
         services.TryAddTransient<CanGpsOrderViewModel>();
         services.TryAddTransient<BatterySetupViewModel>();
-        //services.TryAddTransient<BatterySetup2ViewModel>();
         services.TryAddTransient<DroneCanUavCanViewModel>();
         services.TryAddTransient<JoystickViewModel>();
         services.TryAddTransient<CompassMotorCalibrationViewModel>();
         services.TryAddTransient<RangefinderViewModel>();
         services.TryAddTransient<AirspeedViewModel>();
-        //services.TryAddTransient<Px4FlowViewModel>();
         services.TryAddTransient<OpticalFlowViewModel>();
-        //services.TryAddTransient<OsdViewModel>();
         services.TryAddTransient<OnboardOsdBridgeViewModel>();
         services.TryAddTransient<CameraGimbalViewModel>();
         services.TryAddTransient<SikRadioViewModel>();
         services.TryAddTransient<BluetoothSetupViewModel>();
         services.TryAddTransient<MotorTestViewModel>();
         services.TryAddSingleton<MotorLayoutResolver>();
-        //services.TryAddTransient<BluetoothViewModel>();
         services.TryAddTransient<ParachuteViewModel>();
         services.TryAddTransient<Esp8266SetupViewModel>();
         services.TryAddTransient<AntennaTrackerViewModel>();
