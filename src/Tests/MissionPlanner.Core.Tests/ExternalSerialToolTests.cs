@@ -46,6 +46,7 @@ public sealed class ExternalSerialToolTests
         public string PortName => "test";
         public List<string> Writes { get; } = [];
         public Task WriteAsync(string value, CancellationToken cancellationToken = default) { Writes.Add(value); return Task.CompletedTask; }
+        public Task<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) => Task.FromResult(0);
         public Task<string> ReadLineAsync(TimeSpan timeout, CancellationToken cancellationToken = default) => Task.FromResult(responses.Dequeue());
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
     }

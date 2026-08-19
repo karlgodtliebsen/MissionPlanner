@@ -10,6 +10,7 @@ public interface IDirectSerialSession : IAsyncDisposable
 {
     string PortName { get; }
     Task WriteAsync(string value, CancellationToken cancellationToken = default);
+    Task<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default);
     Task<string> ReadLineAsync(TimeSpan timeout, CancellationToken cancellationToken = default);
 }
 
@@ -48,6 +49,9 @@ public sealed class DirectSerialSessionFactory(
             await port.Stream.WriteAsync(bytes, cancellationToken).ConfigureAwait(false);
             await port.Stream.FlushAsync(cancellationToken).ConfigureAwait(false);
         }
+
+        public async Task<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default) =>
+            await port.Stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
 
         public async Task<string> ReadLineAsync(TimeSpan timeout, CancellationToken cancellationToken = default)
         {

@@ -1,18 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<tabViews:TabViewLifecycleContent x:TypeArguments="sections:RtkGpsInjectViewModel" 
-                                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-                                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                                  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
-                                  xmlns:optionalHardware="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware"
-                                  xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
-                                  x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.RtkGpsInjectView"
-                                  x:DataType="sections:RtkGpsInjectViewModel"
-                                  >
-    <VerticalStackLayout>
-        <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
-        <Label 
-            Text="Welcome to RTK GPS Inject!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+<tabViews:TabViewLifecycleContent x:TypeArguments="sections:RtkGpsInjectViewModel" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.RtkGpsInjectView" x:DataType="sections:RtkGpsInjectViewModel">
+    <ScrollView><VerticalStackLayout Padding="16" Spacing="10">
+        <Label Text="RTK / GPS Correction Injection" FontSize="20" FontAttributes="Bold"/><Label Text="RTCM3 source → active vehicle via MAVLink GPS_RTCM_DATA" Opacity="0.75"/>
+        <Picker Title="Source" ItemsSource="{Binding SourceKinds}" SelectedItem="{Binding SourceKind}"/><Entry Placeholder="Serial port or caster host" Text="{Binding Endpoint}"/><Entry Placeholder="Baud or caster port" Text="{Binding PortOrBaud}" Keyboard="Numeric"/><Entry Placeholder="NTRIP mount point" Text="{Binding MountPoint}"/><Entry Placeholder="NTRIP username" Text="{Binding Username}"/><Entry Placeholder="NTRIP password" Text="{Binding Password}" IsPassword="True"/><HorizontalStackLayout><CheckBox IsChecked="{Binding UseTls}"/><Label Text="Use TLS" VerticalOptions="Center"/></HorizontalStackLayout>
+        <HorizontalStackLayout Spacing="8"><Button Text="Refresh serial devices" Command="{Binding RefreshPortsCommand}"/><Button Text="Connect source" Command="{Binding ConnectCommand}"/><Button Text="Disconnect" Command="{Binding DisconnectCommand}"/></HorizontalStackLayout>
+        <Label Text="{Binding ErrorMessage}" TextColor="OrangeRed"/><Label Text="{Binding SourceStatus}" FontAttributes="Bold"/><Label Text="{Binding TargetStatus}"/><Label Text="{Binding Statistics}"/>
+    </VerticalStackLayout></ScrollView>
 </tabViews:TabViewLifecycleContent>
