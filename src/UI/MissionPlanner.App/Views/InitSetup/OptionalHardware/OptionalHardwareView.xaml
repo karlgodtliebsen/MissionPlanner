@@ -49,7 +49,7 @@
                     <sections:RtkGpsInjectView/>
                 </material:TabItem>
                 <material:TabItem Title="SiK Radio">
-                    <local:OptionalHardwarePlaceholderView/>
+                    <sections:SikRadioView/>
                 </material:TabItem>
                 <material:TabItem Title="DroneCAN / UAVCAN">
                     <local:OptionalHardwarePlaceholderView/>
@@ -85,7 +85,7 @@
                     <sections:MotorTestView/>
                 </material:TabItem>
                 <material:TabItem Title="Bluetooth Setup">
-                    <local:OptionalHardwarePlaceholderView/>
+                    <sections:BluetoothSetupView/>
                 </material:TabItem>
                 <material:TabItem Title="Parachute">
                     <sections:ParachuteView/>

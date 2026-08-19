@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<tabViews:TabViewLifecycleContent x:TypeArguments="sections:SikRadioViewModel" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.SikRadioView" x:DataType="sections:SikRadioViewModel">
+    <ScrollView><VerticalStackLayout Padding="16" Spacing="10">
+        <Label Text="SiK / RFD Radio" FontSize="20" FontAttributes="Bold" />
+        <Label Text="Direct serial configuration. Disconnect any vehicle using the selected port." TextColor="Orange" />
+        <HorizontalStackLayout Spacing="8"><Picker Title="Serial device" ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}" WidthRequest="180"/><Entry Text="{Binding BaudRate}" Keyboard="Numeric" WidthRequest="110"/><Button Text="Refresh ports" Command="{Binding RefreshPortsCommand}"/><Button Text="Connect / Read" Command="{Binding ConnectCommand}"/></HorizontalStackLayout>
+        <Label Text="{Binding Identity}" FontAttributes="Bold"/><Label Text="{Binding Status}"/><Editor Text="{Binding SettingsText}" HeightRequest="260" Placeholder="S0=value, one setting per line"/><Button Text="Apply, save and reboot" Command="{Binding ApplyCommand}" HorizontalOptions="Start"/>
+    </VerticalStackLayout></ScrollView>
+</tabViews:TabViewLifecycleContent>

@@ -136,6 +136,9 @@ public static class DomainConfigurator
         services.TryAddTransient<IBatteryConfigurationService, BatteryConfigurationService>();
         services.TryAddTransient<IActuatorTestService, ActuatorTestService>();
         services.TryAddTransient<ICompassMotorCalibrationService, CompassMotorCalibrationService>();
+        services.TryAddTransient<IDirectSerialSessionFactory, DirectSerialSessionFactory>();
+        services.TryAddTransient<ISikRadioConfigurator, SikRadioConfigurator>();
+        services.TryAddTransient<IBluetoothSerialConfigurator, BluetoothSerialConfigurator>();
         services.TryAddTransient<IServoOutputConfigurationService, ServoOutputConfigurationService>();
 
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, SerialPortsModule>());

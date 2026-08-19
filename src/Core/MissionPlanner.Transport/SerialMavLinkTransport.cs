@@ -63,6 +63,9 @@ public sealed class SerialMavLinkTransport : ISerialMavLinkTransport
     public bool IsConnected => serialPort.IsOpen;
 
     /// <inheritdoc />
+    public string PortName => serialPort.PortName;
+
+    /// <inheritdoc />
     public async Task ConnectAsync(CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
