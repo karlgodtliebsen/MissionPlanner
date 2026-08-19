@@ -61,10 +61,13 @@ public partial class AppShellContentViewModel : ObservableObject
     [ObservableProperty]
     public partial bool PreferDarkTheme { get; set; }
 
+    private readonly IDispatcher dispatcher;
 
     /// <inheritdoc />
     public AppShellContentViewModel()
     {
+        dispatcher = ServiceHelper.GetRequiredService<IDispatcher>();
+
         settingsService = ServiceHelper.GetRequiredService<IPlannerSettingsService>();
         runtime = ServiceHelper.GetRequiredService<PlannerSettingsRuntime>();
         logger = ServiceHelper.GetRequiredService<ILogger<AppShellContentViewModel>>();
@@ -279,17 +282,27 @@ public partial class AppShellContentViewModel : ObservableObject
     {
         CurrentShell.Loaded -= CurrentShell_Loaded;
         Items = new ReadOnlyObservableCollection<ShellItem>(new ObservableCollection<ShellItem>(CurrentShell.Items));
-        //if (settingsService.Current.Appearance.IsTutorialPresented)
-        //{
-        //    var pendingNavigation = "Tutorial";
-        //    var item = CurrentShell.Items.FirstOrDefault(i => i.Title == pendingNavigation) ?? CurrentShell.Items.FirstOrDefault();
-        //    SelectedItem = item ?? CurrentShell.Items.FirstOrDefault();
-        //}
-        //else
-        //{
-        //    SelectedItem = CurrentShell.Items.FirstOrDefault();
-        //}
-        SelectedItem = CurrentShell.Items.FirstOrDefault();
+        if (settingsService.Current.Appearance.IsTutorialPresented)
+        {
+            var pendingNavigation = "Tutorial";
+            var item = CurrentShell.Items.FirstOrDefault(i => i.Title == pendingNavigation) ?? CurrentShell.Items.FirstOrDefault();
+            var selectedItem = item ?? CurrentShell.Items.FirstOrDefault();
+            _ = Task.Run(() => SetItem(selectedItem));
+        }
+        else
+        {
+            var selectedItem = CurrentShell.Items.FirstOrDefault();
+            _ = Task.Run(() => SetItem(selectedItem));
+        }
+        //SelectedItem = CurrentShell.Items.FirstOrDefault();
+    }
+
+    private void SetItem(ShellItem? item)
+    {
+        if (item is not null)
+        {
+            dispatcher.Dispatch(() => SelectedItem = item);
+        }
     }
 
     [RelayCommand]
