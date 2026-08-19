@@ -55,7 +55,7 @@
                     <sections:DroneCanUavCanView/>
                 </material:TabItem>
                 <material:TabItem Title="Joystick">
-                    <local:OptionalHardwarePlaceholderView/>
+                    <sections:JoystickView/>
                 </material:TabItem>
                 <material:TabItem Title="Battery Monitors">
                     <sections:BatterySetupView/>

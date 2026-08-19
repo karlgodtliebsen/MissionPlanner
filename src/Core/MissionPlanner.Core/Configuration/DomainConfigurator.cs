@@ -143,6 +143,8 @@ public static class DomainConfigurator
         services.TryAddTransient<IRtkInjectionService, RtkInjectionService>();
         services.TryAddSingleton<IDroneCanTransportFactory, UnsupportedDroneCanTransportFactory>();
         services.TryAddTransient<IDroneCanService, DroneCanService>();
+        services.TryAddSingleton<IJoystickProvider, UnsupportedJoystickProvider>();
+        services.TryAddSingleton<IJoystickVehicleOutput, DisabledJoystickVehicleOutput>();
         services.TryAddTransient<IServoOutputConfigurationService, ServoOutputConfigurationService>();
 
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, SerialPortsModule>());
