@@ -1,4 +1,25 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <tabViews:TabViewLifecycleContent x:TypeArguments="sections:DroneCanUavCanViewModel" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.DroneCanUavCanView" x:DataType="sections:DroneCanUavCanViewModel">
-  <VerticalStackLayout Padding="20" Spacing="10"><Label Text="DroneCAN / UAVCAN v0" FontSize="24" FontAttributes="Bold"/><Picker Title="Transport" ItemsSource="{Binding TransportKinds}" SelectedItem="{Binding TransportKind}"/><HorizontalStackLayout><Button Text="Connect" Command="{Binding ConnectCommand}"/><Button Text="Refresh nodes" Command="{Binding RefreshCommand}"/></HorizontalStackLayout><Label Text="{Binding StatusMessage}"/><Label Text="{Binding ErrorMessage}" TextColor="Red"/><CollectionView ItemsSource="{Binding Nodes}" SelectionMode="Single" SelectedItem="{Binding SelectedNode}"><CollectionView.ItemTemplate><DataTemplate><Grid ColumnDefinitions="50,*,100,100" Padding="4"><Label Text="{Binding NodeId}"/><Label Grid.Column="1" Text="{Binding Name}"/><Label Grid.Column="2" Text="{Binding Health}"/><Label Grid.Column="3" Text="{Binding Version}"/></Grid></DataTemplate></CollectionView.ItemTemplate></CollectionView></VerticalStackLayout>
+    <VerticalStackLayout Padding="20" Spacing="10">
+        <Label Text="DroneCAN / UAVCAN v0" FontSize="24" FontAttributes="Bold"/>
+        <Picker Title="Transport" ItemsSource="{Binding TransportKinds}" SelectedItem="{Binding TransportKind}"/>
+        <HorizontalStackLayout>
+            <Button Text="Connect" Command="{Binding ConnectCommand}"/>
+            <Button Text="Refresh nodes" Command="{Binding RefreshCommand}"/>
+        </HorizontalStackLayout>
+        <Label Text="{Binding StatusMessage}"/>
+        <Label Text="{Binding ErrorMessage}" TextColor="Red"/>
+        <CollectionView ItemsSource="{Binding Nodes}" SelectionMode="Single" SelectedItem="{Binding SelectedNode}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid ColumnDefinitions="50,*,100,100" Padding="4">
+                        <Label Text="{Binding NodeId}"/>
+                        <Label Grid.Column="1" Text="{Binding Name}"/>
+                        <Label Grid.Column="2" Text="{Binding Health}"/>
+                        <Label Grid.Column="3" Text="{Binding Version}"/>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </VerticalStackLayout>
 </tabViews:TabViewLifecycleContent>

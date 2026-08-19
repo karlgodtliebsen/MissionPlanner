@@ -1,8 +1,20 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <tabViews:TabViewLifecycleContent x:TypeArguments="sections:BluetoothSetupViewModel" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.BluetoothSetupView" x:DataType="sections:BluetoothSetupViewModel">
-    <ScrollView><VerticalStackLayout Padding="16" Spacing="10">
-        <Label Text="Classic Serial Bluetooth Setup" FontSize="20" FontAttributes="Bold"/><Label Text="For HC-05/HC-06 style AT modules; this is not Bluetooth LE configuration." Opacity="0.75"/>
-        <HorizontalStackLayout Spacing="8"><Picker Title="Serial device" ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}" WidthRequest="180"/><Button Text="Refresh ports" Command="{Binding RefreshPortsCommand}"/><Button Text="Probe module" Command="{Binding ProbeCommand}"/></HorizontalStackLayout>
-        <Label Text="{Binding ModuleIdentity}" FontAttributes="Bold"/><Label Text="{Binding Status}"/><Entry Placeholder="Module name" Text="{Binding Name}"/><Entry Placeholder="PIN" Text="{Binding Pin}" IsPassword="True"/><Entry Placeholder="Baud" Text="{Binding BaudRate}" Keyboard="Numeric"/><Button Text="Apply supported settings" Command="{Binding ApplyCommand}" HorizontalOptions="Start"/>
-    </VerticalStackLayout></ScrollView>
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="10">
+            <Label Text="Classic Serial Bluetooth Setup" FontSize="20" FontAttributes="Bold"/>
+            <Label Text="For HC-05/HC-06 style AT modules; this is not Bluetooth LE configuration." Opacity="0.75"/>
+            <HorizontalStackLayout Spacing="8">
+                <Picker Title="Serial device" ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}" WidthRequest="180"/>
+                <Button Text="Refresh ports" Command="{Binding RefreshPortsCommand}"/>
+                <Button Text="Probe module" Command="{Binding ProbeCommand}"/>
+            </HorizontalStackLayout>
+            <Label Text="{Binding ModuleIdentity}" FontAttributes="Bold"/>
+            <Label Text="{Binding Status}"/>
+            <Entry Placeholder="Module name" Text="{Binding Name}"/>
+            <Entry Placeholder="PIN" Text="{Binding Pin}" IsPassword="True"/>
+            <Entry Placeholder="Baud" Text="{Binding BaudRate}" Keyboard="Numeric"/>
+            <Button Text="Apply supported settings" Command="{Binding ApplyCommand}" HorizontalOptions="Start"/>
+        </VerticalStackLayout>
+    </ScrollView>
 </tabViews:TabViewLifecycleContent>

@@ -11,13 +11,18 @@
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Spacing="10">
             <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
+            <HorizontalStackLayout  Padding="18,4" Spacing="12" Margin="0,10,0,10">
+                <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
+   
+            </HorizontalStackLayout>
+
             <Label Text="{Binding Error}" TextColor="Red" />
             <Label Text="Battery monitors and failsafe" FontSize="18" FontAttributes="Bold" />
             <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
             <Button 
                 Text="Refresh battery values"
                 Command="{Binding RefreshCommand}"
-                HorizontalOptions="Start" />    
+                HorizontalOptions="Start" />
             <VerticalStackLayout IsVisible="{Binding HasIssues}" BindableLayout.ItemsSource="{Binding Issues}">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="x:String">

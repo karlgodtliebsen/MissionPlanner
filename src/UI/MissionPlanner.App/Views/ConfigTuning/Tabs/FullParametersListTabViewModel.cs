@@ -94,7 +94,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     [RelayCommand]
     private async Task LoadFromEditorAsync(CancellationToken cancellationToken)
     {
-        if (editSession is null)
+        if (EditSession is null)
         {
             SetMessages(errorMessage: "Refresh vehicle parameters before importing parameters.");
             return;
@@ -105,11 +105,11 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             var viewModel = domainFactory.Create<ParametersEditorViewModel>();
             var pageView = domainFactory.Create<ParametersEditorView, ParametersEditorViewModel>(viewModel);
             await dialogService.ShowAsync(pageView, true, cancellationToken);
-            var fullList = editSession.Fields.Select(ToVehicleParameter).ToList();
+            var fullList = EditSession.Fields.Select(ToVehicleParameter).ToList();
             var parameters = viewModel.UpdateParameters(fullList);
             foreach (var parameter in parameters)
             {
-                editSession.TrySetPending(parameter.Name, parameter.Value, out var _);
+                EditSession.TrySetPending(parameter.Name, parameter.Value, out var _);
             }
 
             SetMessages($"Imported {parameters.Count} matching values as unapplied edits.");
@@ -125,7 +125,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     [RelayCommand]
     private async Task LoadFromFileAsync()
     {
-        if (editSession is null)
+        if (EditSession is null)
         {
             SetMessages(errorMessage: "Refresh vehicle parameters before importing a parameter file.");
             return;
@@ -134,11 +134,11 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         try
         {
             var loaded = await parametersFileHandler.LoadParametersFromFileAsync(
-                editSession.Fields.Select(ToVehicleParameter).ToList(),
+                EditSession.Fields.Select(ToVehicleParameter).ToList(),
                 activeVehicle.ConnectionCancellationToken);
             foreach (var parameter in loaded)
             {
-                editSession.TrySetPending(parameter.Name, parameter.Value, out var _);
+                EditSession.TrySetPending(parameter.Name, parameter.Value, out var _);
             }
 
             SetMessages($"Imported {loaded.Count} matching values as unapplied edits.");
@@ -154,7 +154,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     [RelayCommand]
     private async Task LoadFromJsonFileAsync()
     {
-        if (editSession is null)
+        if (EditSession is null)
         {
             SetMessages(errorMessage: "Refresh vehicle parameters before importing a parameter file.");
             return;
@@ -165,7 +165,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             var loaded = await parametersFileHandler.LoadParametersFromJsonFileAsync(activeVehicle.ConnectionCancellationToken);
             foreach (var parameter in loaded)
             {
-                editSession.TrySetPending(parameter.Name, parameter.Value, out var _);
+                EditSession.TrySetPending(parameter.Name, parameter.Value, out var _);
             }
 
             SetMessages($"Imported {loaded.Count} matching values as unapplied edits.");
@@ -183,7 +183,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     {
         try
         {
-            var parameters = editSession?.Fields.Select(ToVehicleParameter).ToList() ?? [];
+            var parameters = EditSession?.Fields.Select(ToVehicleParameter).ToList() ?? [];
             var result = await parametersFileHandler.SaveParametersToFile(parameters, CancellationToken.None);
             await dialogService.ConfirmAsync("Saved", $"File saved to:\n{result}", "OK");
         }
@@ -210,7 +210,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     [RelayCommand(CanExecute = nameof(CanWriteParameters))]
     private async Task WriteParametersAsync(CancellationToken cancellationToken)
     {
-        if (editSession is null)
+        if (EditSession is null)
         {
             return;
         }
@@ -218,7 +218,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         try
         {
             using var connectionCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, activeVehicle.ConnectionCancellationToken);
-            var plan = editSession.CreateWritePlan();
+            var plan = EditSession.CreateWritePlan();
             var preview = string.Join(Environment.NewLine, plan.Entries.Select(entry => $"{entry.DisplayName} ({entry.Name}): {entry.LiveValue:R} → {entry.PendingValue:R} {entry.Units}".TrimEnd()));
 
             var rebootCount = plan.Entries.Count(entry => entry.RebootRequired);
@@ -229,7 +229,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
                 connectionCancellation.Token);
             if (!accepted)
             {
-                logger.LogInformation("Parameter write plan was cancelled for {VehicleId}.", editSession.VehicleId);
+                logger.LogInformation("Parameter write plan was cancelled for {VehicleId}.", EditSession.VehicleId);
                 SetMessages("Parameter write cancelled. No values were sent.");
                 return;
             }
@@ -240,7 +240,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
                 dispatcher.Dispatch(() => ProgressMessage = $"{value.Index}/{value.Total}: {value.Name} — {value.Message}"));
 
 
-            var report = await editSession.ApplyAsync(plan, progress, connectionCancellation.Token);
+            var report = await EditSession.ApplyAsync(plan, progress, connectionCancellation.Token);
 
             lastApplyReport = report;
             RebootRequired |= report.RebootRequired;
@@ -267,12 +267,12 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     [RelayCommand(CanExecute = nameof(CanCompareParameters))]
     private async Task CompareParametersAsync(CancellationToken cancellationToken)
     {
-        if (editSession is null)
+        if (EditSession is null)
         {
             return;
         }
 
-        var viewModel = domainFactory.Create<ParameterComparisonViewModel, IParameterEditSession>(editSession);
+        var viewModel = domainFactory.Create<ParameterComparisonViewModel, IParameterEditSession>(EditSession);
         var pageView = domainFactory.Create<ParameterComparisonView, ParameterComparisonViewModel>(viewModel);
         await dialogService.ShowAsync(pageView, true, cancellationToken);
     }
@@ -286,9 +286,9 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     private async Task LoadPreSavedAsync(CancellationToken cancellationToken)
     {
         var saved = await profiles.GetAllAsync(cancellationToken);
-        if (saved.Count == 1 && editSession is not null)
+        if (saved.Count == 1 && EditSession is not null)
         {
-            var review = profileWorkflow.Review(saved[0], editSession);
+            var review = profileWorkflow.Review(saved[0], EditSession);
             var safe = review.Comparison.Rows.Where(row => row.CanStage).Select(row => row.Name).ToArray();
             var warning = review.Warnings.Count == 0
                 ? string.Empty
@@ -300,7 +300,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
                 cancellationToken);
             if (accepted)
             {
-                var staged = profileWorkflow.Stage(review, editSession, safe);
+                var staged = profileWorkflow.Stage(review, EditSession, safe);
                 SetMessages($"Staged {staged.Count} profile values as unapplied edits. Review and apply them separately.");
             }
 
@@ -315,7 +315,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     [RelayCommand(CanExecute = nameof(CanRetryFailed))]
     private async Task RetryFailedAsync(CancellationToken cancellationToken)
     {
-        if (editSession is null || lastApplyReport is null)
+        if (EditSession is null || lastApplyReport is null)
         {
             return;
         }
@@ -323,7 +323,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         IsBusy = true;
         try
         {
-            var retry = await editSession.RetryFailedAsync(lastApplyReport, cancellationToken: cancellationToken);
+            var retry = await EditSession.RetryFailedAsync(lastApplyReport, cancellationToken: cancellationToken);
             lastApplyReport = retry;
             RebootRequired |= retry.RebootRequired;
             SetMessages(retry.Success ? $"Confirmed {retry.Confirmed.Count} retried changes." : null, retry.Success ? null : BuildResultSummary(retry));
@@ -337,13 +337,13 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     [RelayCommand(CanExecute = nameof(CanRevertChanges))]
     private void RevertChanges()
     {
-        editSession?.RevertAll();
+        EditSession?.RevertAll();
         SetMessages("All unapplied values were reverted to current live values.");
     }
 
     private bool CanRevertChanges()
     {
-        return HasConnection && HasRows && editSession is { IsDirty: true, IsValid: true };
+        return HasConnection && HasRows && EditSession is { IsDirty: true, IsValid: true };
     }
 
     private bool CanCompareParameters()
@@ -358,7 +358,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
 
     private bool CanWriteParameters()
     {
-        return HasConnection && !IsBusy && editSession is { IsDirty: true, IsValid: true };
+        return HasConnection && !IsBusy && EditSession is { IsDirty: true, IsValid: true };
     }
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -398,15 +398,15 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             {
                 Interlocked.Exchange(ref sessionRefreshScheduled, 0);
 
-                if (disposed || editSession is null)
+                if (disposed || EditSession is null)
                 {
                     return;
                 }
 
                 SynchronizeParameterItems();
-                if (!editSession.IsValid)
+                if (!EditSession.IsValid)
                 {
-                    var m = editSession.InvalidReason ?? "This parameter session is stale.";
+                    var m = EditSession.InvalidReason ?? "This parameter session is stale.";
                     SetMessages(m);
                 }
             }))
@@ -417,12 +417,12 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
 
     private void SynchronizeParameterItems(IProgress<ParameterStreamProgress>? progress = null)
     {
-        if (editSession is null)
+        if (EditSession is null)
         {
             return;
         }
 
-        var fields = editSession.Fields;
+        var fields = EditSession.Fields;
         progress?.Report(new ParameterStreamProgress(Message: $"Creating data grid for {fields.Count} parameters"));
 
         var itemsByName = Parameters.ToDictionary(item => item.Name, StringComparer.Ordinal);
@@ -439,7 +439,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             }
             else
             {
-                nextItems.Add(new ParameterItemViewModel(editSession, field));
+                nextItems.Add(new ParameterItemViewModel(EditSession, field));
                 structureChanged = true;
             }
         }

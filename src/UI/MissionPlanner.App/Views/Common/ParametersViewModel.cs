@@ -36,7 +36,7 @@ public partial class ParametersViewModel : ObservableObject, IDisposable
     /// <summary>
     /// The shared parameter editing session.
     /// </summary>
-    protected IParameterEditSession? editSession;
+    protected IParameterEditSession? EditSession;
 
     private ParameterApplyReport? lastApplyReport;
     private IDisposable? progressDialog;
@@ -57,7 +57,7 @@ public partial class ParametersViewModel : ObservableObject, IDisposable
     /// <param name="parameterLoadStatus"></param>
     /// <param name="domainEventHub"></param>
     /// <param name="logger">The logger.</param>
-    public ParametersViewModel(
+    protected ParametersViewModel(
         IVehicleConnectionSession connectionSession,
         IActiveVehicleContext activeVehicle,
         IParameterEditSessionFactory editSessionFactory,
@@ -202,8 +202,8 @@ public partial class ParametersViewModel : ObservableObject, IDisposable
         {
             editSessionFactory?.DiscardPendingChanges();
             CancelCachedParameterLoad();
-            editSession?.Changed -= OnEditSessionChanged;
-            editSession = null;
+            EditSession?.Changed -= OnEditSessionChanged;
+            EditSession = null;
             Parameters.Clear();
             HasParameters = false;
             TotalParameterCount = 0;
@@ -591,7 +591,7 @@ public partial class ParametersViewModel : ObservableObject, IDisposable
     /// <returns><c>true</c> if the view model can retry failed operations; otherwise, <c>false</c>.</returns>
     protected virtual bool CanRetryFailed()
     {
-        return HasConnection && !IsBusy && editSession is { IsValid: true } && lastApplyReport?.Retryable.Count > 0;
+        return HasConnection && !IsBusy && EditSession is { IsValid: true } && lastApplyReport?.Retryable.Count > 0;
     }
 
 
@@ -601,18 +601,18 @@ public partial class ParametersViewModel : ObservableObject, IDisposable
     /// <param name="session">The parameter edit session to attach.</param>
     protected virtual void AttachSession(IParameterEditSession session)
     {
-        if (ReferenceEquals(editSession, session))
+        if (ReferenceEquals(EditSession, session))
         {
             return;
         }
 
-        editSession?.Changed -= OnEditSessionChanged;
-        editSession = session;
-        editSession.Changed += OnEditSessionChanged;
+        EditSession?.Changed -= OnEditSessionChanged;
+        EditSession = session;
+        EditSession.Changed += OnEditSessionChanged;
 
         // Loading a session does not raise Changed. Notify the derived view model
         // explicitly so it can create its initial UI projection.
-        OnEditSessionChanged(editSession, EventArgs.Empty);
+        OnEditSessionChanged(EditSession, EventArgs.Empty);
     }
 
     /// <summary>
@@ -680,8 +680,8 @@ public partial class ParametersViewModel : ObservableObject, IDisposable
         CancelCachedParameterLoad();
         CancelLoadOperation();
         CloseProgressDialog();
-        editSession?.Changed -= OnEditSessionChanged;
-        editSession = null;
+        EditSession?.Changed -= OnEditSessionChanged;
+        EditSession = null;
 
         // The page is retained by Shell even though this view model is transient.
         // Release the large row graph immediately so recycled editor controls and

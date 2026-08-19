@@ -1,2 +1,19 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<tabViews:TabViewLifecycleContent x:TypeArguments="sections:JoystickViewModel" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.JoystickView" x:DataType="sections:JoystickViewModel"><VerticalStackLayout Padding="20" Spacing="10"><Label Text="Joystick Setup" FontSize="24" FontAttributes="Bold"/><Label Text="{Binding PlatformStatus}"/><HorizontalStackLayout><Picker Title="Local device" ItemsSource="{Binding Devices}" ItemDisplayBinding="{Binding Name}" SelectedItem="{Binding SelectedDevice}" WidthRequest="300"/><Button Text="Refresh" Command="{Binding RefreshCommand}"/></HorizontalStackLayout><Label Text="Local calibration is separate from vehicle RC calibration."/><HorizontalStackLayout><CheckBox IsChecked="{Binding VehicleOutputEnabled}" IsEnabled="False"/><Label Text="Vehicle MANUAL_CONTROL output (disabled by default)" VerticalOptions="Center"/></HorizontalStackLayout><Button Text="Disable and release vehicle control" Command="{Binding DisableCommand}" HorizontalOptions="Start"/><Label Text="{Binding StatusMessage}"/><Label Text="{Binding ErrorMessage}" TextColor="Red"/></VerticalStackLayout></tabViews:TabViewLifecycleContent>
+<tabViews:TabViewLifecycleContent x:TypeArguments="sections:JoystickViewModel" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.JoystickView" x:DataType="sections:JoystickViewModel">
+    <VerticalStackLayout Padding="20" Spacing="10">
+        <Label Text="Joystick Setup" FontSize="24" FontAttributes="Bold"/>
+        <Label Text="{Binding PlatformStatus}"/>
+        <HorizontalStackLayout>
+            <Picker Title="Local device" ItemsSource="{Binding Devices}" ItemDisplayBinding="{Binding Name}" SelectedItem="{Binding SelectedDevice}" WidthRequest="300"/>
+            <Button Text="Refresh" Command="{Binding RefreshCommand}"/>
+        </HorizontalStackLayout>
+        <Label Text="Local calibration is separate from vehicle RC calibration."/>
+        <HorizontalStackLayout>
+            <CheckBox IsChecked="{Binding VehicleOutputEnabled}" IsEnabled="False"/>
+            <Label Text="Vehicle MANUAL_CONTROL output (disabled by default)" VerticalOptions="Center"/>
+        </HorizontalStackLayout>
+        <Button Text="Disable and release vehicle control" Command="{Binding DisableCommand}" HorizontalOptions="Start"/>
+        <Label Text="{Binding StatusMessage}"/>
+        <Label Text="{Binding ErrorMessage}" TextColor="Red"/>
+    </VerticalStackLayout>
+</tabViews:TabViewLifecycleContent>

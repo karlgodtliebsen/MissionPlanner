@@ -1,4 +1,4 @@
-using UraniumUI.Material.TabViews;
+﻿using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
@@ -12,6 +12,7 @@ public partial class RtkGpsInjectView : TabViewLifecycleContent<RtkGpsInjectView
     /// </summary>
     public RtkGpsInjectView()
     {
+        //
         InitializeComponent();
     }
 }

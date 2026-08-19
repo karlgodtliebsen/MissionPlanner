@@ -42,7 +42,11 @@ public class TabViewLifecycleContent<TViewModel> : ContentView, ITabViewLifecycl
         }
 
         ViewModel = null; // Claim it before invoking binding/disposal code.
-        BindingContext = null;
+        if (BindingContext is not null)
+        {
+            BindingContext = null;
+        }
+
         viewModel.Dispose();
     }
 }

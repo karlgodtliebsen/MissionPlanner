@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<tabViews:TabViewLifecycleContent x:TypeArguments="sections:ParachuteViewModel" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.ParachuteView" x:DataType="sections:ParachuteViewModel">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="10">
+            <Label Text="Parachute" FontSize="20" FontAttributes="Bold"/>
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+            <Label Text="{Binding Status}"/>
+            <Label Text="Reboot required" TextColor="Orange" IsVisible="{Binding RebootRequired}"/>
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}" Spacing="8">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="sections:ParameterSettingViewModel">
+                        <Grid ColumnDefinitions="220,*,90">
+                            <Label Text="{Binding DisplayName}" VerticalOptions="Center"/>
+                            <Entry Grid.Column="1" Text="{Binding PendingValue}" Keyboard="Numeric"/>
+                            <Button Grid.Column="2" Text="Apply" Command="{Binding ApplyCommand}"/>
+                        </Grid>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</tabViews:TabViewLifecycleContent>

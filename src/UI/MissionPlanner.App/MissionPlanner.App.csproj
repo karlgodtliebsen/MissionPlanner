@@ -137,7 +137,7 @@
 	  <Compile Update="Views\InitSetup\MandatoryHardware\MandatoryHardwareView.xaml.cs">
 	    <DependentUpon>MandatoryHardwareView.xaml</DependentUpon>
 	  </Compile>
-	  <Compile Update="Views\InitSetup\OptionalHardware\Sections\RTKGPSInjectView.xaml.cs">
+	  <Compile Update="Views\InitSetup\OptionalHardware\Sections\RtkGpsInjectView.cs">
 	    <DependentUpon>RtkGpsInjectView.xaml</DependentUpon>
 	  </Compile>
 	  <Compile Update="Views\Introduction\IntroductionPage.xaml.cs">

@@ -1,2 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<tabViews:TabViewLifecycleContent x:TypeArguments="sections:AntennaTrackerViewModel" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.AntennaTrackerView" x:DataType="sections:AntennaTrackerViewModel"><VerticalStackLayout Padding="20" Spacing="10"><Label Text="Antenna Tracker Configuration" FontSize="24" FontAttributes="Bold"/><Label Text="{Binding TargetStatus}"/><Label Text="Configuration and live tracker operation are deliberately separate."/><Label Text="{Binding SafetyStatus}" Opacity="0.75"/></VerticalStackLayout></tabViews:TabViewLifecycleContent>
+<tabViews:TabViewLifecycleContent x:TypeArguments="sections:AntennaTrackerViewModel" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.AntennaTrackerView" x:DataType="sections:AntennaTrackerViewModel">
+    <VerticalStackLayout Padding="20" Spacing="10">
+        <Label Text="Antenna Tracker Configuration" FontSize="24" FontAttributes="Bold"/>
+        <Label Text="{Binding TargetStatus}"/>
+        <Label Text="Configuration and live tracker operation are deliberately separate."/>
+        <Label Text="{Binding SafetyStatus}" Opacity="0.75"/>
+    </VerticalStackLayout>
+</tabViews:TabViewLifecycleContent>

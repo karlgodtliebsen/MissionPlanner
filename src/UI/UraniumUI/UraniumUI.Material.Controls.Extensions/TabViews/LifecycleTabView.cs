@@ -26,12 +26,12 @@ public class LifecycleTabView : TabView
             return;
         }
 
-        // RecreateAlways clears oldValue.Content inside the base implementation. Capture
+        // RecreateAlways clears oldValue.Content inside the base implementation.
+        // Capture
         // and deactivate it before that happens rather than using SelectedTabChanged.
         var oldContent = oldValue?.Content ?? currentContent;
         if (oldContent is not null && oldValue != newValue)
         {
-            oldContent.IsEnabled = false;
             (oldContent as ITabViewLifecycleContent)?.Deactivate();
         }
 
