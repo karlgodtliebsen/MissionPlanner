@@ -294,8 +294,8 @@ public static class ApplicationConfigurator
         //services.TryAddTransient<BluetoothViewModel>();
         services.TryAddTransient<ParachuteViewModel>();
         services.TryAddTransient<Esp8266SetupViewModel>();
-        //services.TryAddTransient<AntennaTrackerViewModel>();
-        //services.TryAddTransient<FFTSetupViewModel>();
+        services.TryAddTransient<AntennaTrackerViewModel>();
+        services.TryAddTransient<FftSetupViewModel>();
 
         return services;
     }

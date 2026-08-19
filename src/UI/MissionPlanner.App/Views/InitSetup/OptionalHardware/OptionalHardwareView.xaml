@@ -97,10 +97,10 @@
                     <sections:CubeIdUpdateView/>
                 </material:TabItem>
                 <material:TabItem Title="Antenna Tracker">
-                    <local:OptionalHardwarePlaceholderView/>
+                    <sections:AntennaTrackerView/>
                 </material:TabItem>
                 <material:TabItem Title="FFT Setup">
-                    <local:OptionalHardwarePlaceholderView/>
+                    <sections:FftSetupView/>
                 </material:TabItem>
             </tabs:ExtendedTabView>
         </Border>

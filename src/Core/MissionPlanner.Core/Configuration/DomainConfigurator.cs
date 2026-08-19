@@ -145,6 +145,7 @@ public static class DomainConfigurator
         services.TryAddTransient<IDroneCanService, DroneCanService>();
         services.TryAddSingleton<IJoystickProvider, UnsupportedJoystickProvider>();
         services.TryAddSingleton<IJoystickVehicleOutput, DisabledJoystickVehicleOutput>();
+        services.TryAddSingleton<IFftAnalysisService, FftAnalysisService>();
         services.TryAddTransient<IServoOutputConfigurationService, ServoOutputConfigurationService>();
 
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, SerialPortsModule>());
