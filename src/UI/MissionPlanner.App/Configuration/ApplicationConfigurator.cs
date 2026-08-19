@@ -228,9 +228,6 @@ public static class ApplicationConfigurator
         services.TryAddTransient<OptionalHardwareViewModel>();
         services.TryAddSingleton<OptionalHardwareTabCatalog>();
 
-        //Temp
-
-
         services.TryAddTransient<FlightDataViewModel>();
         services.TryAddTransient<FlightPlannerViewModel>();
         services.TryAddTransient<SimulationViewModel>();

@@ -121,7 +121,8 @@
             <Grid.BindingContext>
                 <appViewModels:AppShellContentViewModel CurrentShell="{x:Reference thisShell}"/>
             </Grid.BindingContext>
-            <CollectionView Grid.Row="1" SelectedItem="{Binding SelectedItem}" SelectionMode="Single" ItemsSource="{Binding Items}">
+            <CollectionView Grid.Row="1" SelectedItem="{Binding SelectedItem}" SelectionMode="Single" 
+                            ItemsSource="{Binding Items}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <HorizontalStackLayout Padding="20,12" Spacing="12">
@@ -134,13 +135,13 @@
         </Grid>
     </Shell.FlyoutContent>
 
-    <FlyoutItem 
+    <!--<FlyoutItem 
         x:Name="Landing"
         Title="MissionPlanner Next Gen" Icon="Resources/Images/x_light_help_icon_x.png">
         <ShellContent
             Title=""
             ContentTemplate="{DataTemplate landing:LandingPage}" Route="LandingPage" />
-    </FlyoutItem>
+    </FlyoutItem>-->
 
     <FlyoutItem Title="Flight Data"  Icon="Resources/Images/x_light_flightdata_icon_x.png">
         <ShellContent

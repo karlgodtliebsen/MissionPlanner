@@ -3,6 +3,7 @@ using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.App.Helpers;
 using MissionPlanner.App.Services;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using ShellItem = Microsoft.Maui.Controls.ShellItem;
@@ -12,7 +13,7 @@ namespace MissionPlanner.App.AppViewModels;
 /// <summary>
 /// ViewModel for the application's shell content.
 /// </summary>
-public partial class AppShellContentViewModel() : ObservableObject
+public partial class AppShellContentViewModel : ObservableObject
 {
     private readonly IPlannerSettingsService settingsService = null!;
     private readonly ILogger<AppShellContentViewModel> logger = null!;
@@ -60,25 +61,20 @@ public partial class AppShellContentViewModel() : ObservableObject
     [ObservableProperty]
     public partial bool PreferDarkTheme { get; set; }
 
-    /// <summary>
-    /// Gets the current Planner settings.
-    /// </summary>
-    public PlannerSettings Current { get; set; } = null!;
 
     /// <inheritdoc />
-    public AppShellContentViewModel(IPlannerSettingsService settingsService, PlannerSettingsRuntime runtime, ILogger<AppShellContentViewModel> logger) : this()
+    public AppShellContentViewModel()
     {
-        this.logger = logger;
-        this.settingsService = settingsService;
-        this.runtime = runtime;
+        settingsService = ServiceHelper.GetRequiredService<IPlannerSettingsService>();
+        runtime = ServiceHelper.GetRequiredService<PlannerSettingsRuntime>();
+        logger = ServiceHelper.GetRequiredService<ILogger<AppShellContentViewModel>>();
         synchronizing = true;
-        Current = settingsService.Current;
-        IsFlyoutLocked = Current.Appearance.IsFlyoutLocked;
-        IsFlyoutPresented = Current.Appearance.IsFlyoutPresented;
-        IsTutorialPresented = Current.Appearance.IsTutorialPresented;
+        IsFlyoutLocked = settingsService.Current.Appearance.IsFlyoutLocked;
+        IsFlyoutPresented = settingsService.Current.Appearance.IsFlyoutPresented;
+        IsTutorialPresented = settingsService.Current.Appearance.IsTutorialPresented;
         FlyoutBehavior = settingsService.Current.Appearance.IsFlyoutLocked ? FlyoutBehavior.Locked : FlyoutBehavior.Flyout;
-        PreferDarkTheme = Current.Appearance.PreferDarkTheme;
-        SelectedTheme = ToAppTheme(Current.Appearance.Theme);
+        PreferDarkTheme = settingsService.Current.Appearance.PreferDarkTheme;
+        SelectedTheme = ToAppTheme(settingsService.Current.Appearance.Theme);
         synchronizing = false;
         settingsService.SettingsChanged += OnSettingsChanged;
     }
@@ -91,14 +87,14 @@ public partial class AppShellContentViewModel() : ObservableObject
             return;
         }
 
-        if (value != Current.Appearance.PreferDarkTheme)
+        if (value != settingsService.Current.Appearance.PreferDarkTheme)
         {
             AppTheme selected;
             synchronizing = true;
             try
             {
-                Current.Appearance.PreferDarkTheme = value;
-                selected = ToAppTheme(Current.Appearance.Theme);
+                settingsService.Current.Appearance.PreferDarkTheme = value;
+                selected = ToAppTheme(settingsService.Current.Appearance.Theme);
             }
             finally
             {
@@ -120,7 +116,7 @@ public partial class AppShellContentViewModel() : ObservableObject
             return;
         }
 
-        Current.Appearance.IsFlyoutLocked = value;
+        settingsService.Current.Appearance.IsFlyoutLocked = value;
         _ = PersistAsync();
     }
 
@@ -131,7 +127,7 @@ public partial class AppShellContentViewModel() : ObservableObject
             return;
         }
 
-        Current.Appearance.IsTutorialPresented = value;
+        settingsService.Current.Appearance.IsTutorialPresented = value;
         _ = PersistAsync();
     }
 
@@ -142,7 +138,7 @@ public partial class AppShellContentViewModel() : ObservableObject
             return;
         }
 
-        Current.Appearance.IsFlyoutPresented = value;
+        settingsService.Current.Appearance.IsFlyoutPresented = value;
         _ = PersistAsync();
     }
 
@@ -236,7 +232,7 @@ public partial class AppShellContentViewModel() : ObservableObject
     {
         try
         {
-            await settingsService.SaveTheme(Current, theme, PreferDarkTheme);
+            await settingsService.SaveTheme(settingsService.Current, theme, PreferDarkTheme);
         }
         catch (Exception exception)
         {
@@ -268,16 +264,32 @@ public partial class AppShellContentViewModel() : ObservableObject
         }
     }
 
+
     partial void OnCurrentShellChanged(Shell value)
     {
-        CurrentShell.Loaded += CurrentShell_Loaded;
+        if (synchronizing)
+        {
+            return;
+        }
+
+        value.Loaded += CurrentShell_Loaded;
     }
 
     private void CurrentShell_Loaded(object? sender, EventArgs e)
     {
+        CurrentShell.Loaded -= CurrentShell_Loaded;
         Items = new ReadOnlyObservableCollection<ShellItem>(new ObservableCollection<ShellItem>(CurrentShell.Items));
-        CurrentShell.CurrentItem = Items.FirstOrDefault();
-        SelectedItem = CurrentShell.CurrentItem;
+        //if (settingsService.Current.Appearance.IsTutorialPresented)
+        //{
+        //    var pendingNavigation = "Tutorial";
+        //    var item = CurrentShell.Items.FirstOrDefault(i => i.Title == pendingNavigation) ?? CurrentShell.Items.FirstOrDefault();
+        //    SelectedItem = item ?? CurrentShell.Items.FirstOrDefault();
+        //}
+        //else
+        //{
+        //    SelectedItem = CurrentShell.Items.FirstOrDefault();
+        //}
+        SelectedItem = CurrentShell.Items.FirstOrDefault();
     }
 
     [RelayCommand]
@@ -294,17 +306,10 @@ public partial class AppShellContentViewModel() : ObservableObject
 
     partial void OnSelectedItemChanged(ShellItem? value)
     {
-        if (CurrentShell.CurrentItem == value)
+        if (CurrentShell.CurrentItem != value)
         {
+            CurrentShell.CurrentItem = value;
             return;
         }
-
-        CurrentShell.CurrentItem = value;
-        if (CurrentShell.FlyoutBehavior == FlyoutBehavior.Flyout)
-        {
-            CurrentShell.FlyoutIsPresented = false;
-        }
-
-        SelectedItem = CurrentShell.CurrentItem;
     }
 }

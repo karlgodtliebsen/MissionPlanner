@@ -28,10 +28,10 @@ public static class MauiProgramExtensions
             if (e.ExceptionObject is Exception ex)
             {
                 // Log the exception using your preferred logging framework
+                System.Diagnostics.Debug.WriteLine($"Unhandled exception: {ex.Message}");
                 Console.WriteLine($"Unhandled exception: {ex.Message}");
                 Console.WriteLine(ex.StackTrace);
                 Log.Logger.Error(ex, "Unhandled exception");
-                System.Diagnostics.Debug.WriteLine($"Unhandled exception: {ex.Message}");
             }
         };
 

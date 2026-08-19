@@ -11,8 +11,5 @@ public partial class AppShell : Shell
     {
         InitializeComponent();
         BindingContext = ServiceHelper.GetRequiredService<AppShellContentViewModel>();
-
-        //var element = FindByName("Tutorial") as FlyoutItem;
-        //thisShell.RemoveLogicalChild(element);
     }
 }
