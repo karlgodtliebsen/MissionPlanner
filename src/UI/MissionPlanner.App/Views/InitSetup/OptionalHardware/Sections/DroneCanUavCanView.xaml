@@ -1,11 +1,19 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<tabViews:TabViewLifecycleContent x:TypeArguments="sections:DroneCanUavCanViewModel" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.DroneCanUavCanView" x:DataType="sections:DroneCanUavCanViewModel">
-    <VerticalStackLayout Padding="20" Spacing="10">
+<tabViews:TabViewLifecycleContent x:TypeArguments="sections:DroneCanUavCanViewModel" 
+                                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
+                                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+                                  xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" 
+                                  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" 
+                                  x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.DroneCanUavCanView" 
+                                  x:DataType="sections:DroneCanUavCanViewModel">
+
+    <VerticalStackLayout Padding="20" Spacing="25" HorizontalOptions="Center">
         <Label Text="DroneCAN / UAVCAN v0" FontSize="24" FontAttributes="Bold"/>
         <Picker Title="Transport" ItemsSource="{Binding TransportKinds}" SelectedItem="{Binding TransportKind}"/>
-        <HorizontalStackLayout>
-            <Button Text="Connect" Command="{Binding ConnectCommand}"/>
-            <Button Text="Refresh nodes" Command="{Binding RefreshCommand}"/>
+
+        <HorizontalStackLayout HorizontalOptions="Fill">
+            <Button Text="Connect" Command="{Binding ConnectCommand}" HorizontalOptions="Start"/>
+            <Button Text="Refresh nodes" Command="{Binding RefreshCommand}" HorizontalOptions="End"/>
         </HorizontalStackLayout>
         <Label Text="{Binding StatusMessage}"/>
         <Label Text="{Binding ErrorMessage}" TextColor="Red"/>

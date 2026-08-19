@@ -15,6 +15,7 @@ using MissionPlanner.MavLink.Generated;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.MavLink.Services;
+using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Transport;
 using NSubstitute;
@@ -71,6 +72,27 @@ public sealed class ActuatorSetupTests
         await fixture.Service.EmergencyStopAsync(TestContext.Current.CancellationToken);
         fixture.Service.Current.State.Should().Be(MotorTestState.Stopped);
         fixture.CommandParameters.Last()[2].Should().Be(0, "the stop command drives zero throttle");
+    }
+
+    /// <summary>Verifies all motors use independent ACTUATOR_TEST functions with a shared timeout.</summary>
+    [Fact]
+    public async Task TestAllStartsMotorFunctionsSimultaneouslyAndReleasesThem()
+    {
+        using var fixture = CreateFixture();
+        var test = fixture.Service.TestAllAsync(vehicleId, 20, 2, 4, TestContext.Current.CancellationToken);
+        await fixture.CommandSent.Task;
+        for (var index = 0; index < 4; index++)
+        {
+            await fixture.PublishAckAsync(MavResult.Accepted, MavCmd.ActuatorTest);
+        }
+
+        var result = await test;
+        result.Success.Should().BeTrue();
+        fixture.CommandParameters.Take(4).Select(parameters => parameters[4]).Should().Equal(1, 2, 3, 4);
+        fixture.CommandParameters.Take(4).Should().OnlyContain(parameters => parameters[0] == .2f && parameters[1] == 2);
+
+        await fixture.Service.EmergencyStopAsync(TestContext.Current.CancellationToken);
+        fixture.CommandParameters.TakeLast(4).Should().OnlyContain(parameters => float.IsNaN(parameters[0]) && parameters[1] == 0);
     }
 
     /// <summary>Verifies a rejected acknowledgement fails the test.</summary>
@@ -153,7 +175,8 @@ public sealed class ActuatorSetupTests
         var vehicleRegistry = Substitute.For<IVehicleRegistry>();
         vehicleRegistry.GetRequired(vehicleId).Returns(new VehicleSession(state, endPoint, clock));
         var eventHub = new EventHub(Substitute.For<ILogger<EventHub>>());
-        var session = Substitute.For<IMavLinkConnectionSession>();
+        var session = Substitute.For<IVehicleConnectionSession>();
+        session.Connection.Returns(Substitute.For<IMavLinkConnection>());
 
         var commandSent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var captured = new List<IReadOnlyList<float>>();
@@ -188,11 +211,11 @@ public sealed class ActuatorSetupTests
         TaskCompletionSource CommandSent,
         List<IReadOnlyList<float>> CommandParameters) : IDisposable
     {
-        public Task PublishAckAsync(MavResult result)
+        public Task PublishAckAsync(MavResult result, MavCmd command = MavCmd.DoMotorTest)
         {
             return EventHub.PublishAsync<MavLinkMessage>(
                 MavLinkEventTopics.ReceivedMessage,
-                new CommandAckMessage(1, 1, endPoint, (ushort)MavCmd.DoMotorTest, (byte)result, DateTimeOffset.UtcNow),
+                new CommandAckMessage(1, 1, endPoint, (ushort)command, (byte)result, DateTimeOffset.UtcNow),
                 TestContext.Current.CancellationToken);
         }
 

@@ -20,6 +20,7 @@ namespace MissionPlanner.Core.Setup.OptionalHardware;
 public sealed class ActuatorTestService : IActuatorTestService
 {
     private const ushort MotorTestCommand = (ushort)MavCmd.DoMotorTest;
+    private const ushort ActuatorTestCommand = (ushort)MavCmd.ActuatorTest;
     private const int MaximumLogEntries = 50;
     private static readonly TimeSpan ackTimeout = TimeSpan.FromSeconds(3);
     private readonly Lock sync = new();
@@ -34,6 +35,7 @@ public sealed class ActuatorTestService : IActuatorTestService
     private readonly List<ActuatorTestLogEntry> log = [];
     private IDisposable? operationLease;
     private CancellationTokenSource? autoStopCancellation;
+    private IReadOnlyList<ActuatorOutputFunction> activeActuatorFunctions = [];
     private bool disposed;
     private readonly IVehicleConnectionSession session;
 
@@ -143,7 +145,15 @@ public sealed class ActuatorTestService : IActuatorTestService
     /// <inheritdoc />
     public Task<MotorTestResult> TestAllAsync(VehicleId vehicleId, double throttlePercent, double durationSecondsPerMotor, int motorCount, CancellationToken cancellationToken = default)
     {
-        throw new NotSupportedException("The MAV_CMD_DO_MOTOR_TEST command does not support testing all motors simultaneously. Use TestSequenceAsync instead.");
+        return motorCount < 1
+            ? Task.FromResult(new MotorTestResult(false, "Motor count must be one or greater."))
+            : motorCount > 16
+                ? Task.FromResult(new MotorTestResult(false, "MAV_CMD_ACTUATOR_TEST supports Motor1 through Motor16."))
+                : !TryNormalizeThrottle(MotorThrottleType.Percent, throttlePercent, out _, out var throttleValue, out var throttleError)
+                    ? Task.FromResult(new MotorTestResult(false, throttleError))
+                    : durationSecondsPerMotor is <= 0 or > 3
+                        ? Task.FromResult(new MotorTestResult(false, "Simultaneous motor-test duration must be between 0 and 3 seconds."))
+                        : RunAllAsync(vehicleId, throttleValue / 100f, durationSecondsPerMotor, motorCount, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -167,8 +177,18 @@ public sealed class ActuatorTestService : IActuatorTestService
         {
             try
             {
-                // Re-issue the motor test at zero throttle for zero seconds to halt output immediately.
-                await SendCommandAsync(target, [motor ?? 1, (float)MotorTestThrottleType.MotorTestThrottlePercent, 0, 0, 1, (float)MotorTestOrder.Board, 0], cancellationToken).ConfigureAwait(false);
+                if (activeActuatorFunctions.Count > 0)
+                {
+                    foreach (var function in activeActuatorFunctions)
+                    {
+                        await SendCommandAsync(target, ActuatorTestCommand, [float.NaN, 0, 0, 0, (float)function, 0, 0], cancellationToken).ConfigureAwait(false);
+                    }
+                }
+                else
+                {
+                    // Re-issue the motor test at zero throttle for zero seconds to halt output immediately.
+                    await SendCommandAsync(target, MotorTestCommand, [motor ?? 1, (float)MotorTestThrottleType.MotorTestThrottlePercent, 0, 0, 1, (float)MotorTestOrder.Board, 0], cancellationToken).ConfigureAwait(false);
+                }
             }
             catch (Exception exception) when (exception is not OperationCanceledException)
             {
@@ -233,7 +253,7 @@ public sealed class ActuatorTestService : IActuatorTestService
         });
         try
         {
-            await SendCommandAsync(vehicleId, parameters, cancellationToken).ConfigureAwait(false);
+            await SendCommandAsync(vehicleId, MotorTestCommand, parameters, cancellationToken).ConfigureAwait(false);
             var result = await ackSignal.Task.WaitAsync(ackTimeout, cancellationToken).ConfigureAwait(false);
             if (result is not (MavResult.Accepted or MavResult.InProgress))
             {
@@ -257,6 +277,90 @@ public sealed class ActuatorTestService : IActuatorTestService
         Transition(vehicleId, MotorTestState.Running, activeMotor, $"Running: {description}. Release or stop to halt.", description, "Started");
         ScheduleAutoStop(vehicleId, totalDuration);
         logger.LogInformation("Started actuator test for {VehicleId}: {Description}.", vehicleId, description);
+        return new MotorTestResult(true, $"Started: {description}.");
+    }
+
+    private async Task<MotorTestResult> RunAllAsync(VehicleId vehicleId, float normalizedThrottle, double duration, int motorCount, CancellationToken cancellationToken)
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        var description = $"Simultaneous test of {motorCount} motors at {normalizedThrottle * 100:0.#}% for {duration:0.#}s";
+        var state = activeVehicle.State;
+        if (!activeVehicle.IsOnline || activeVehicle.VehicleId != vehicleId || state is null)
+        {
+            return new MotorTestResult(false, "The target vehicle is no longer the active online vehicle.");
+        }
+
+        if (state.IsArmed)
+        {
+            return Reject(vehicleId, description, "Disarm the vehicle before testing actuators.");
+        }
+
+        lock (sync)
+        {
+            if (Current.State == MotorTestState.Running)
+            {
+                return new MotorTestResult(false, "An actuator test is already running. Stop it before starting another.");
+            }
+
+            if (!operationGate.TryAcquire(vehicleId, "motor test", out operationLease))
+            {
+                return new MotorTestResult(false, $"Cannot start a motor test while {operationGate.GetCurrentOperation(vehicleId)} is active.");
+            }
+        }
+
+        var acknowledgementSignal = new TaskCompletionSource<MavResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var acceptedCount = 0;
+        using var subscription = eventHub.SubscribeAsync<MavLinkMessage>(MavLinkEventTopics.ReceivedMessage, (message, _) =>
+        {
+            if (message is CommandAckMessage acknowledgement && acknowledgement.Command == ActuatorTestCommand &&
+                message.SystemId == vehicleId.SystemId && message.ComponentId == vehicleId.ComponentId)
+            {
+                var result = (MavResult)acknowledgement.Result;
+                if (result is not (MavResult.Accepted or MavResult.InProgress))
+                {
+                    acknowledgementSignal.TrySetResult(result);
+                }
+                else if (Interlocked.Increment(ref acceptedCount) >= motorCount)
+                {
+                    acknowledgementSignal.TrySetResult(MavResult.Accepted);
+                }
+            }
+
+            return Task.CompletedTask;
+        });
+
+        var functions = Enumerable.Range(1, motorCount).Select(value => (ActuatorOutputFunction)value).ToArray();
+        try
+        {
+            foreach (var function in functions)
+            {
+                await SendCommandAsync(vehicleId, ActuatorTestCommand,
+                    [normalizedThrottle, (float)duration, 0, 0, (float)function, 0, 0], cancellationToken).ConfigureAwait(false);
+            }
+
+            var result = await acknowledgementSignal.Task.WaitAsync(ackTimeout, cancellationToken).ConfigureAwait(false);
+            if (result is not (MavResult.Accepted or MavResult.InProgress))
+            {
+                return Reject(vehicleId, description, $"The vehicle rejected the actuator test with MAV_RESULT {result}.");
+            }
+        }
+        catch (TimeoutException)
+        {
+            return Reject(vehicleId, description, "The vehicle did not acknowledge every actuator test in time.");
+        }
+        catch (OperationCanceledException)
+        {
+            return Reject(vehicleId, description, "The motor test was cancelled before it started.");
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Simultaneous motor test failed for {VehicleId}.", vehicleId);
+            return Reject(vehicleId, description, exception.Message);
+        }
+
+        activeActuatorFunctions = functions;
+        Transition(vehicleId, MotorTestState.Running, null, $"Running: {description}. Release or stop to halt.", description, "Started");
+        ScheduleAutoStop(vehicleId, duration);
         return new MotorTestResult(true, $"Started: {description}.");
     }
 
@@ -297,16 +401,17 @@ public sealed class ActuatorTestService : IActuatorTestService
         }
     }
 
-    private async Task SendCommandAsync(VehicleId vehicleId, IReadOnlyList<float> parameters, CancellationToken cancellationToken)
+    private async Task SendCommandAsync(VehicleId vehicleId, ushort command, IReadOnlyList<float> parameters, CancellationToken cancellationToken)
     {
         var vehicleSession = vehicleRegistry.GetRequired(vehicleId) ?? throw new InvalidOperationException("The target vehicle session is unavailable.");
-        var packet = encoder.EncodeCommandLong(vehicleId.SystemId, vehicleId.ComponentId, MotorTestCommand, parameters);
+        var packet = encoder.EncodeCommandLong(vehicleId.SystemId, vehicleId.ComponentId, command, parameters);
         await session.Connection.SendRawAsync(packet, vehicleSession.EndPoint, cancellationToken).ConfigureAwait(false);
     }
 
     private void Finish(MotorTestState state, string instruction, string description, string outcome)
     {
         Transition(Current.VehicleId, state, null, instruction, description, outcome);
+        activeActuatorFunctions = [];
         ReleaseLease();
     }
 

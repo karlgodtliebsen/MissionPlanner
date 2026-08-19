@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<tabViews:TabViewLifecycleContent x:TypeArguments="sections:CubeIdUpdateViewModel" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.CubeIdUpdateView" x:DataType="sections:CubeIdUpdateViewModel">
-    <VerticalStackLayout Padding="20" Spacing="10">
+<tabViews:TabViewLifecycleContent x:TypeArguments="sections:CubeIdUpdateViewModel" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                                  x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.CubeIdUpdateView" x:DataType="sections:CubeIdUpdateViewModel">
+    
+    
+    <VerticalStackLayout Padding="20" Spacing="25" HorizontalOptions="Center">
         <Label Text="CubeID Firmware Update" FontSize="24" FontAttributes="Bold"/>
         <Label Text="The target component identity is retained; an autopilot component cannot consume CubeID acknowledgements."/>
-        <Entry Placeholder="Local firmware .bin path" Text="{Binding FirmwarePath}"/>
-        <Button Text="Inspect firmware" Command="{Binding InspectCommand}" HorizontalOptions="Start"/>
+        <controls:AlignedEditorField Title="Local firmware .bin path" HorizontalTextAlignment="End" Text="{Binding FirmwarePath}"/>
+
+
+        <Button Text="Inspect firmware" Command="{Binding InspectCommand}" HorizontalOptions="Center"/>
         <Label Text="{Binding FirmwareSummary}"/>
         <Label Text="{Binding ErrorMessage}" TextColor="Red"/>
     </VerticalStackLayout>

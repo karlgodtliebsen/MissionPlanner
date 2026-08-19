@@ -9,7 +9,7 @@
                                   x:DataType="sections:MotorTestViewModel"
                                   x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.MotorTestView"
                                   x:Name="Root">
-    <ScrollView VerticalScrollBarVisibility="Always" HorizontalOptions="Fill">
+    <ScrollView VerticalScrollBarVisibility="Always" HorizontalOptions="Center">
         <VerticalStackLayout Padding="16" Spacing="10"  HorizontalOptions="Center" >
 
 

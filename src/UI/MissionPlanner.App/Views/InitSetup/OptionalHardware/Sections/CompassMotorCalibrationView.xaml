@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<tabViews:TabViewLifecycleContent
+    x:TypeArguments="sections:CompassMotorCalibrationViewModel"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+    xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
+    xmlns:optionalHardware="clr-namespace:MissionPlanner.Core.Setup.OptionalHardware;assembly=MissionPlanner.Core"
+    x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.CompassMotorCalibrationView"
+    x:DataType="sections:CompassMotorCalibrationViewModel">
+
+    <ScrollView VerticalScrollBarVisibility="Always">
+        <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
+            <Label Text="Compass / Motor Calibration" FontSize="20" FontAttributes="Bold" />
+            <Label Text="Remove ALL propellers. CompassMot may spin motors." TextColor="OrangeRed" FontAttributes="Bold" />
+            <Label Text="{Binding Instruction}" LineBreakMode="WordWrap" />
+            <Label Text="{Binding Compensation}" LineBreakMode="WordWrap" />
+
+            <HorizontalStackLayout Spacing="8">
+                <Button Text="Start CompassMot" Command="{Binding StartCommand}" />
+                <Button Text="Stop" TextColor="OrangeRed" Command="{Binding StopCommand}" />
+            </HorizontalStackLayout>
+
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Samples}" Spacing="6">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="optionalHardware:CompassMotorCalibrationSample">
+                        <Label Text="{Binding ThrottlePercent, StringFormat='Throttle {0:0.0}%'}" />
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+        </VerticalStackLayout>
+    </ScrollView>
+</tabViews:TabViewLifecycleContent>

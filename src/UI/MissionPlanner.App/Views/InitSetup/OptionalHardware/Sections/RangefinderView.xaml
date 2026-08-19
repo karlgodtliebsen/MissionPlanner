@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<tabViews:TabViewLifecycleContent x:TypeArguments="sections:RangefinderViewModel" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.RangefinderView" x:DataType="sections:RangefinderViewModel">
+<tabViews:TabViewLifecycleContent x:TypeArguments="sections:RangefinderViewModel" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
+                                  xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                                  x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.RangefinderView" x:DataType="sections:RangefinderViewModel">
     <ScrollView>
-        <VerticalStackLayout Padding="16" Spacing="10">
+        <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
             <Label Text="Rangefinder" FontSize="20" FontAttributes="Bold"/>
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
             <Label Text="{Binding Status}"/>
@@ -9,9 +11,12 @@
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}" Spacing="8">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="sections:ParameterSettingViewModel">
-                        <Grid ColumnDefinitions="220,*,90">
+                        <Grid ColumnDefinitions="175,150,90" ColumnSpacing="25">
                             <Label Text="{Binding DisplayName}" VerticalOptions="Center"/>
-                            <Entry Grid.Column="1" Text="{Binding PendingValue}" Keyboard="Numeric"/>
+                            <controls:NumericField Grid.Column="1" Text="{Binding PendingValue}" 
+                                                   Min="0"     
+                                                   HorizontalTextAlignment="End"
+                                                   Keyboard="Numeric"/>
                             <Button Grid.Column="2" Text="Apply" Command="{Binding ApplyCommand}"/>
                         </Grid>
                     </DataTemplate>
