@@ -13,7 +13,7 @@
 
 
             <HorizontalStackLayout  Padding="18,4" Spacing="12" Margin="0,10,0,10">
-                <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding ProgressMessage}" />
+                <!--<ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />-->
 
                 <ActivityIndicator
                     IsRunning="{Binding IsBackgroundParameterLoadInProgress}"

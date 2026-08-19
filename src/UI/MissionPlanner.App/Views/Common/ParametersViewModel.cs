@@ -118,7 +118,7 @@ public partial class ParametersViewModel : ObservableObject, IDisposable
     public partial int TotalParameterCount { get; set; }
 
     /// <summary>
-    /// Gets whether a load or apply opertion is active.
+    /// Gets whether a load or apply operation is active.
     /// </summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
@@ -151,6 +151,10 @@ public partial class ParametersViewModel : ObservableObject, IDisposable
     /// <summary>Gets the latest error message.</summary>
     [ObservableProperty]
     public partial string? ErrorMessage { get; set; }
+
+    /// <summary>Gets or sets the current operation progress from zero to one.</summary>
+    [ObservableProperty]
+    public partial double Progress { get; set; }
 
     /// <summary>Activates vehicle lifecycle tracking while the tab is visible.</summary>
     protected void InitializeParameters()

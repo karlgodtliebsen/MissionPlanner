@@ -35,14 +35,8 @@
                               UseAnimation="False"
                               HeaderItemsSource="{Binding Tabs}" 
                               SelectedHeaderItem="{Binding SelectedTab,Mode=TwoWay}"
-                              
+                             
                               >
-
-                <!--
-                HeaderItemsSource="{Binding Tabs}" 
-                SelectedHeaderItem="{Binding SelectedTab,Mode=TwoWay}"
-                -->
-
                 <material:TabView.TabHeaderItemTemplate>
                     <DataTemplate x:DataType="models:TabItemViewModel">
                         <tabsUtils:SlimTabHeaderView IsVisible="{Binding IsAvailable}"
