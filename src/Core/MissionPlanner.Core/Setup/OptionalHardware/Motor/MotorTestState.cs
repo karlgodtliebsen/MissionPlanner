@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Setup.OptionalHardware;
+﻿namespace MissionPlanner.Core.Setup.OptionalHardware.Motor;
 
 /// <summary>Identifies the state of the actuator-test workflow.</summary>
 public enum MotorTestState

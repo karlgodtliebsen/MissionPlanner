@@ -9,14 +9,14 @@ public sealed record PlannerAppearanceSettings
     public bool PreferDarkTheme { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether the flyout menu is currently presented in the UI.
+    /// Gets or sets a value indicating whether the flyout menu is presented at startup in the UI.
     /// </summary>
-    public bool IsFlyoutPresented { get; set; }
+    public bool IsFlyoutVisibleAtStartup { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the tutorial is currently presented in the UI.
     /// </summary>
-    public bool IsTutorialPresented { get; set; }
+    public bool IsTutorialVisibleAtStartup { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the flyout menu is locked in the UI.

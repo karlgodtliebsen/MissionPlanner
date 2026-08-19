@@ -2,6 +2,7 @@
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
+using MissionPlanner.Core.Setup.OptionalHardware.Motor;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Firmware;
@@ -11,7 +12,6 @@ using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.Generated;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Services;
-using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Setup.OptionalHardware;
@@ -26,7 +26,6 @@ public sealed class ActuatorTestService : IActuatorTestService
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleRegistry vehicleRegistry;
     private readonly IEventHub eventHub;
-    private readonly IMavLinkConnection connection;
     private readonly IMavLinkCommandEncoder encoder;
     private readonly IVehicleOperationGate operationGate;
     private readonly IVehicleParameterRegistry parameterRegistry;
@@ -36,12 +35,13 @@ public sealed class ActuatorTestService : IActuatorTestService
     private IDisposable? operationLease;
     private CancellationTokenSource? autoStopCancellation;
     private bool disposed;
+    private readonly IVehicleConnectionSession session;
 
     /// <summary>Initializes the actuator-test service.</summary>
     /// <param name="activeVehicle">The active vehicle boundary.</param>
     /// <param name="vehicleRegistry">The vehicle registry used to resolve the endpoint.</param>
     /// <param name="eventHub">The decoded MAVLink event stream.</param>
-    /// <param name="connection">The MAVLink connection used for protocol commands.</param>
+    /// <param name="session"></param>
     /// <param name="encoder">The MAVLink command encoder.</param>
     /// <param name="operationGate">The shared vehicle operation gate.</param>
     /// <param name="parameterRegistry">The live parameter registry.</param>
@@ -51,7 +51,7 @@ public sealed class ActuatorTestService : IActuatorTestService
         IActiveVehicleContext activeVehicle,
         IVehicleRegistry vehicleRegistry,
         IEventHub eventHub,
-        IMavLinkConnection connection,
+        IVehicleConnectionSession session,
         IMavLinkCommandEncoder encoder,
         IVehicleOperationGate operationGate,
         IVehicleParameterRegistry parameterRegistry,
@@ -60,8 +60,8 @@ public sealed class ActuatorTestService : IActuatorTestService
     {
         this.activeVehicle = activeVehicle;
         this.vehicleRegistry = vehicleRegistry;
+        this.session = session;
         this.eventHub = eventHub;
-        this.connection = connection;
         this.encoder = encoder;
         this.operationGate = operationGate;
         this.parameterRegistry = parameterRegistry;
@@ -94,71 +94,56 @@ public sealed class ActuatorTestService : IActuatorTestService
         var parameters = parameterRegistry.GetAllParameters(vehicleId);
         var pwmType = parameters.TryGetValue("MOT_PWM_TYPE", out var parameter) ? (int)Math.Round(parameter.Value) : 0;
         // MOT_PWM_TYPE 0/1 are analog PWM/OneShot that require throttle-endpoint calibration; DShot variants do not.
-        if (pwmType is 0 or 1)
-        {
-            return new EscCalibrationGuidance(true, pwmType == 0 ? "Normal PWM" : "OneShot",
+        return pwmType is 0 or 1
+            ? new EscCalibrationGuidance(true, pwmType == 0 ? "Normal PWM" : "OneShot",
                 "Analog ESCs learn their throttle endpoints during a manual all-at-once calibration.",
                 [
                     "Remove all propellers and disconnect the flight battery.",
                     "Set the throttle stick to maximum, then connect the battery.",
                     "Wait for the ESC tones, then lower the throttle to minimum.",
                     "Confirm the completion tones, then disconnect and reconnect power."
-                ]);
-        }
-
-        return new EscCalibrationGuidance(false, $"Digital protocol ({pwmType})",
-            "Digital ESC protocols such as DShot use fixed throttle endpoints and do not require calibration.",
-            []);
+                ])
+            : new EscCalibrationGuidance(false, $"Digital protocol ({pwmType})",
+                "Digital ESC protocols such as DShot use fixed throttle endpoints and do not require calibration.",
+                []);
     }
 
     /// <inheritdoc />
     public Task<MotorTestResult> TestMotorAsync(VehicleId vehicleId, MotorTestRequest request, CancellationToken cancellationToken = default)
     {
-        if (request.MotorIndex < 1)
-        {
-            return Task.FromResult(new MotorTestResult(false, "Motor index must be one or greater."));
-        }
-
-        if (!TryNormalizeThrottle(request.ThrottleType, request.ThrottleValue, out var throttleType, out var throttleValue, out var throttleError))
-        {
-            return Task.FromResult(new MotorTestResult(false, throttleError));
-        }
-
-        if (!TryBoundDuration(request.DurationSeconds, out var duration, out var durationError))
-        {
-            return Task.FromResult(new MotorTestResult(false, durationError));
-        }
-
-        return RunAsync(vehicleId,
-            [request.MotorIndex, (float)throttleType, throttleValue, (float)duration, 1, (float)MotorTestOrder.Board, 0],
-            request.MotorIndex, duration,
-            $"Motor {request.MotorIndex} at {request.ThrottleValue:0.#} {(request.ThrottleType == MotorThrottleType.Percent ? "%" : "us")} for {duration:0.#}s",
-            cancellationToken);
+        return request.MotorIndex < 1
+            ? Task.FromResult(new MotorTestResult(false, "Motor index must be one or greater."))
+            : !TryNormalizeThrottle(request.ThrottleType, request.ThrottleValue, out var throttleType, out var throttleValue, out var throttleError)
+                ? Task.FromResult(new MotorTestResult(false, throttleError))
+                : !TryBoundDuration(request.DurationSeconds, out var duration, out var durationError)
+                    ? Task.FromResult(new MotorTestResult(false, durationError))
+                    : RunAsync(vehicleId,
+                        [request.MotorIndex, (float)throttleType, throttleValue, (float)duration, 1, (float)MotorTestOrder.Board, 0],
+                        request.MotorIndex, duration,
+                        $"Motor {request.MotorIndex} at {request.ThrottleValue:0.#} {(request.ThrottleType == MotorThrottleType.Percent ? "%" : "us")} for {duration:0.#}s",
+                        cancellationToken);
     }
 
     /// <inheritdoc />
     public Task<MotorTestResult> TestSequenceAsync(VehicleId vehicleId, double throttlePercent, double durationSecondsPerMotor, int motorCount, CancellationToken cancellationToken = default)
     {
-        if (motorCount < 1)
-        {
-            return Task.FromResult(new MotorTestResult(false, "Motor count must be one or greater."));
-        }
+        return motorCount < 1
+            ? Task.FromResult(new MotorTestResult(false, "Motor count must be one or greater."))
+            : !TryNormalizeThrottle(MotorThrottleType.Percent, throttlePercent, out var throttleType, out var throttleValue, out var throttleError)
+                ? Task.FromResult(new MotorTestResult(false, throttleError))
+                : !TryBoundDuration(durationSecondsPerMotor, out var duration, out var durationError)
+                    ? Task.FromResult(new MotorTestResult(false, durationError))
+                    : RunAsync(vehicleId,
+                        [1, (float)throttleType, throttleValue, (float)duration, motorCount, (float)MotorTestOrder.Sequence, 0],
+                        null, duration * motorCount,
+                        $"Sequence test of {motorCount} motors at {throttlePercent:0.#}% for {duration:0.#}s each",
+                        cancellationToken);
+    }
 
-        if (!TryNormalizeThrottle(MotorThrottleType.Percent, throttlePercent, out var throttleType, out var throttleValue, out var throttleError))
-        {
-            return Task.FromResult(new MotorTestResult(false, throttleError));
-        }
-
-        if (!TryBoundDuration(durationSecondsPerMotor, out var duration, out var durationError))
-        {
-            return Task.FromResult(new MotorTestResult(false, durationError));
-        }
-
-        return RunAsync(vehicleId,
-            [1, (float)throttleType, throttleValue, (float)duration, motorCount, (float)MotorTestOrder.Sequence, 0],
-            null, duration * motorCount,
-            $"Sequence test of {motorCount} motors at {throttlePercent:0.#}% for {duration:0.#}s each",
-            cancellationToken);
+    /// <inheritdoc />
+    public Task<MotorTestResult> TestAllAsync(VehicleId vehicleId, double throttlePercent, double durationSecondsPerMotor, int motorCount, CancellationToken cancellationToken = default)
+    {
+        throw new NotSupportedException("The MAV_CMD_DO_MOTOR_TEST command does not support testing all motors simultaneously. Use TestSequenceAsync instead.");
     }
 
     /// <inheritdoc />
@@ -246,7 +231,6 @@ public sealed class ActuatorTestService : IActuatorTestService
 
             return Task.CompletedTask;
         });
-
         try
         {
             await SendCommandAsync(vehicleId, parameters, cancellationToken).ConfigureAwait(false);
@@ -315,9 +299,9 @@ public sealed class ActuatorTestService : IActuatorTestService
 
     private async Task SendCommandAsync(VehicleId vehicleId, IReadOnlyList<float> parameters, CancellationToken cancellationToken)
     {
-        var session = vehicleRegistry.GetRequired(vehicleId) ?? throw new InvalidOperationException("The target vehicle session is unavailable.");
+        var vehicleSession = vehicleRegistry.GetRequired(vehicleId) ?? throw new InvalidOperationException("The target vehicle session is unavailable.");
         var packet = encoder.EncodeCommandLong(vehicleId.SystemId, vehicleId.ComponentId, MotorTestCommand, parameters);
-        await connection.SendRawAsync(packet, session.EndPoint, cancellationToken).ConfigureAwait(false);
+        await session.Connection.SendRawAsync(packet, vehicleSession.EndPoint, cancellationToken).ConfigureAwait(false);
     }
 
     private void Finish(MotorTestState state, string instruction, string description, string outcome)
@@ -390,7 +374,7 @@ public sealed class ActuatorTestService : IActuatorTestService
         else
         {
             throttleType = MotorTestThrottleType.MotorTestThrottlePwm;
-            if (value < 1000 || value > 2000)
+            if (value is < 1000 or > 2000)
             {
                 error = "Throttle PWM must be between 1000 and 2000 microseconds.";
                 return false;

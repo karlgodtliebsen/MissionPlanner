@@ -1,6 +1,5 @@
-using FluentAssertions;
-using MissionPlanner.Core.Setup;
-using MissionPlanner.Core.Setup.OptionalHardware;
+﻿using FluentAssertions;
+using MissionPlanner.Core.Setup.OptionalHardware.Motor;
 using MissionPlanner.MavLink.Parameters;
 
 namespace MissionPlanner.Core.Tests;

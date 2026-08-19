@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Setup.OptionalHardware;
+﻿namespace MissionPlanner.Core.Setup.OptionalHardware.Motor;
 
 /// <summary>Represents the outcome of a motor-test request.</summary>
 /// <param name="Success">Whether the vehicle accepted the bounded test.</param>

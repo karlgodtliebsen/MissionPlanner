@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Setup.OptionalHardware;
+﻿namespace MissionPlanner.Core.Setup.OptionalHardware.Motor;
 
 /// <summary>Identifies how a motor-test throttle value is expressed.</summary>
 public enum MotorThrottleType

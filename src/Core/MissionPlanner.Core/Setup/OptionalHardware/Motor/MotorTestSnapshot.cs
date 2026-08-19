@@ -1,6 +1,6 @@
-using MissionPlanner.Shared.Models.Vehicles.Models;
+﻿using MissionPlanner.Shared.Models.Vehicles.Models;
 
-namespace MissionPlanner.Core.Setup.OptionalHardware;
+namespace MissionPlanner.Core.Setup.OptionalHardware.Motor;
 
 /// <summary>Represents the immutable state projected by the actuator-test UI.</summary>
 /// <param name="VehicleId">The target vehicle, when a run exists.</param>

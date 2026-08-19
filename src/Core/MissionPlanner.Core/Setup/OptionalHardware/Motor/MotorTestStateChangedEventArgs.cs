@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Setup.OptionalHardware;
+﻿namespace MissionPlanner.Core.Setup.OptionalHardware.Motor;
 
 /// <summary>Provides an actuator-test state transition to observers.</summary>
 /// <param name="snapshot">The new immutable state.</param>

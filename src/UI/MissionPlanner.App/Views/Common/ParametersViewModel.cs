@@ -551,6 +551,9 @@ public partial class ParametersViewModel : ObservableObject, IDisposable
     }
 
 
+    /// <summary>
+    /// 
+    /// </summary>
     [RelayCommand(CanExecute = nameof(CanCancelLoad))]
     protected virtual void CancelLoad()
     {

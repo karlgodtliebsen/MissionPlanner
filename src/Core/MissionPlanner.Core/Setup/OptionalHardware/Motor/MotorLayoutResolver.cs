@@ -1,12 +1,6 @@
 ﻿using MissionPlanner.MavLink.Parameters;
 
-namespace MissionPlanner.Core.Setup.OptionalHardware;
-
-/// <summary>One frame-derived motor test position.</summary>
-public sealed record MotorLayoutMotor(int MotorNumber, int TestOrder, string Label);
-
-/// <summary>A safely resolved matrix-motor layout.</summary>
-public sealed record MotorLayout(int FrameClass, int FrameType, string DisplayName, IReadOnlyList<MotorLayoutMotor> Motors);
+namespace MissionPlanner.Core.Setup.OptionalHardware.Motor;
 
 /// <summary>Resolves supported matrix layouts from active frame parameters.</summary>
 public sealed class MotorLayoutResolver

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Setup.OptionalHardware;
+using MissionPlanner.Core.Setup.OptionalHardware.Motor;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -14,7 +15,6 @@ using MissionPlanner.MavLink.Generated;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.MavLink.Services;
-using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Transport;
 using NSubstitute;
@@ -153,7 +153,8 @@ public sealed class ActuatorSetupTests
         var vehicleRegistry = Substitute.For<IVehicleRegistry>();
         vehicleRegistry.GetRequired(vehicleId).Returns(new VehicleSession(state, endPoint, clock));
         var eventHub = new EventHub(Substitute.For<ILogger<EventHub>>());
-        var connection = Substitute.For<IMavLinkConnection>();
+        var session = Substitute.For<IMavLinkConnectionSession>();
+
         var commandSent = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var captured = new List<IReadOnlyList<float>>();
         var encoder = Substitute.For<IMavLinkCommandEncoder>();
@@ -164,7 +165,7 @@ public sealed class ActuatorSetupTests
                 commandSent.TrySetResult();
                 return [1, 2, 3];
             });
-        var service = new ActuatorTestService(context, vehicleRegistry, eventHub, connection, encoder,
+        var service = new ActuatorTestService(context, vehicleRegistry, eventHub, session, encoder,
             new VehicleOperationGate(), registry, clock, Substitute.For<ILogger<ActuatorTestService>>());
         return new ActuatorFixture(service, eventHub, commandSent, captured);
     }
@@ -174,10 +175,10 @@ public sealed class ActuatorSetupTests
         var timestamp = now ?? DateTimeOffset.UtcNow;
         var state = new VehicleState(vehicleId, 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online, timestamp,
                 VehicleMode.Stabilize, false, null, null, null, null, null, null, null, null) with
-            {
-                Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, armed,
+        {
+            Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, armed,
                     LandedState: VehicleLandedState.OnGround, ObservedAt: timestamp)
-            };
+        };
         return state with { Radio = VehicleRadioState.Empty with { ServoOutputsRaw = [1500, 1500, 1500], ServoObservedAt = timestamp } };
     }
 

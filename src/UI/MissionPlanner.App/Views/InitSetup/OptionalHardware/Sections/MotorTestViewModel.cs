@@ -1,12 +1,12 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.Common;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.Setup.Abstractions;
-using MissionPlanner.Core.Setup.OptionalHardware;
+using MissionPlanner.Core.Setup.OptionalHardware.Motor;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
@@ -31,11 +31,21 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     private MotorLayout? layout;
 
 
-    public ObservableCollection<MotorLayoutMotor> Motors { get; } = [];
+    public ObservableRangeCollection<MotorLayoutMotor> Motors { get; } = [];
     [ObservableProperty] public partial string FrameDisplay { get; private set; } = "Frame layout unavailable.";
     [ObservableProperty] public partial string Status { get; private set; } = "Remove all propellers before testing.";
     [ObservableProperty] public partial double ThrottlePercent { get; set; } = 10;
     [ObservableProperty] public partial double DurationSeconds { get; set; } = 2;
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SetMotorSpinMinCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SetMotorSpinArmCommand))]
+    [NotifyCanExecuteChangedFor(nameof(TestMotorCommand))]
+    [NotifyCanExecuteChangedFor(nameof(TestSequenceCommand))]
+    [NotifyCanExecuteChangedFor(nameof(TestAllCommand))]
+    [NotifyCanExecuteChangedFor(nameof(StopCommand))]
+    public partial bool IsReady { get; set; }
+
 
     /// <summary>
     /// 
@@ -91,20 +101,38 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         QueueRefresh();
     }
 
+    private bool canExecute = false;
 
-    [RelayCommand]
-    private async Task TestMotorAsync(MotorLayoutMotor motor)
+    private bool CanExecuteCommand()
+    {
+        return canExecute;
+    }
+
+    [RelayCommand(CanExecute = nameof(CanExecuteCommand))]
+    private async Task SetMotorSpinMin()
+    {
+    }
+
+    [RelayCommand(CanExecute = nameof(CanExecuteCommand))]
+    private async Task SetMotorSpinArm()
+    {
+    }
+
+    [RelayCommand(CanExecute = nameof(CanExecuteCommand))]
+    private async Task TestMotor(MotorLayoutMotor motor)
     {
         if (layout is null || activeVehicle.VehicleId is not { } id || !await ConfirmAsync())
         {
             return;
         }
 
-        var result = await service.TestMotorAsync(id, new MotorTestRequest(motor.TestOrder, MotorThrottleType.Percent, ThrottlePercent, DurationSeconds), activeVehicle.ConnectionCancellationToken);
+        var result = await service.TestMotorAsync(id,
+            new MotorTestRequest(motor.TestOrder, MotorThrottleType.Percent, ThrottlePercent, DurationSeconds),
+            activeVehicle.ConnectionCancellationToken);
         Status = result.Message;
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanExecuteCommand))]
     private async Task TestSequenceAsync()
     {
         if (layout is null || activeVehicle.VehicleId is not { } id || !await ConfirmAsync())
@@ -116,7 +144,21 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         Status = result.Message;
     }
 
-    [RelayCommand]
+
+    [RelayCommand(CanExecute = nameof(CanExecuteCommand))]
+    private async Task TestAllAsync()
+    {
+        if (layout is null || activeVehicle.VehicleId is not { } id || !await ConfirmAsync())
+        {
+            return;
+        }
+
+        var result = await service.TestAllAsync(id, ThrottlePercent, DurationSeconds, layout.Motors.Count, activeVehicle.ConnectionCancellationToken);
+        Status = result.Message;
+    }
+
+
+    [RelayCommand(CanExecute = nameof(CanExecuteCommand))]
     private Task StopAsync()
     {
         return service.EmergencyStopAsync();
@@ -134,7 +176,8 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
             return;
         }
 
-        Motors.Clear();
+        canExecute = false;
+        //IsBusy = true;
         layout = activeVehicle.VehicleId is { } id
             ? resolver.Resolve(parameters.GetAllParameters(id))
             : null;
@@ -145,10 +188,13 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         }
 
         FrameDisplay = $"Frame: {layout.DisplayName} · {layout.Motors.Count} test positions";
-        foreach (var motor in layout.Motors)
-        {
-            Motors.Add(motor);
-        }
+
+        Motors.ReplaceRange(layout.Motors);
+        //Motors.Clear();
+        //Motors.AddRange(layout.Motors);
+
+        canExecute = true;
+        IsReady = true;
     }
 
     private void Changed(object? s, ActiveVehicleChangedEventArgs e)

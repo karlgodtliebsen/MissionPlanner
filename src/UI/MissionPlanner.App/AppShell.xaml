@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<Shell
+<Shell  
+
     x:Class="MissionPlanner.App.AppShell"
     x:DataType="appViewModels:AppShellContentViewModel"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -20,10 +21,8 @@
     xmlns:advanced="clr-namespace:MissionPlanner.App.Views.InitSetup.Advanced"
     xmlns:introduction="clr-namespace:MissionPlanner.App.Views.Introduction"
     xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
-    xmlns:landing="clr-namespace:MissionPlanner.App.Views.Landing"
     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
     Title="MissionPlanner Next Gen"
-    x:Name="thisShell"
     FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
     FlyoutBehavior="{Binding FlyoutBehavior,Mode=TwoWay}"
     FlyoutIsPresented="{Binding IsFlyoutPresented,Mode=TwoWay}"
@@ -33,7 +32,6 @@
     <Shell.TitleView>
         <common:TopBarView />
     </Shell.TitleView>
-
 
     <Shell.Resources>
         <Style TargetType="HorizontalStackLayout" ApplyToDerivedTypes="True" CanCascade="True">
@@ -59,13 +57,11 @@
         <VerticalStackLayout Grid.Row="1" StyleClass="PrimaryContainer" Padding="0" Spacing="20">
             <HorizontalStackLayout HorizontalOptions="Start" 
                                    MinimumHeightRequest="50"
-
-                                   IsVisible="{Binding IsFlyoutPresented, Converter={StaticResource InvertedBoolConverter}}">
+                                   IsVisible="{Binding IsFlyoutExpandButtonVisible}">
                 <Button 
                         BorderColor="Transparent"
                         BorderWidth="0"
                         BackgroundColor="Transparent"
-                        IsVisible="{Binding IsFlyoutLocked}"  
                         FontSize="8" 
                         MinimumHeightRequest="50"
                         ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Arrow_circle_right}, FontFamily=MaterialSharp}"
@@ -76,12 +72,11 @@
             </HorizontalStackLayout>
             <HorizontalStackLayout HorizontalOptions="End" 
                                    MinimumHeightRequest="50"
-                                   IsVisible="{Binding IsFlyoutPresented}">
+                                   IsVisible="{Binding IsFlyoutCollapseButtonVisible}">
                 <Button
                         BorderColor="Transparent"
                         BorderWidth="0"
                         BackgroundColor="Transparent"
-                        IsVisible="{Binding IsFlyoutLocked}"  
                         FontSize="8"
                         MinimumHeightRequest="50"
                         ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Arrow_circle_left}, FontFamily=MaterialSharp}"
@@ -107,10 +102,10 @@
                                    IsChecked="{Binding IsFlyoutLocked,Mode=TwoWay}" />
                 <material:CheckBox Text="Show Flyout at Startup" Type="Regular" 
                                    IsVisible="{Binding IsFlyoutPresented}"
-                                   IsChecked="{Binding IsFlyoutPresented,Mode=TwoWay}" />
+                                   IsChecked="{Binding IsFlyoutVisibleAtStartup,Mode=TwoWay}" />
                 <material:CheckBox Text="Show Tutorial at Startup" Type="Regular" 
                                    IsVisible="{Binding IsFlyoutPresented}"
-                                   IsChecked="{Binding IsTutorialPresented,Mode=TwoWay}" />
+                                   IsChecked="{Binding IsTutorialVisibleAtStartup,Mode=TwoWay}" />
             </VerticalStackLayout>
         </VerticalStackLayout>
 
@@ -118,9 +113,6 @@
 
     <Shell.FlyoutContent>
         <Grid RowDefinitions="Auto,*">
-            <Grid.BindingContext>
-                <appViewModels:AppShellContentViewModel CurrentShell="{x:Reference thisShell}"/>
-            </Grid.BindingContext>
             <CollectionView Grid.Row="1" SelectedItem="{Binding SelectedItem}" SelectionMode="Single" 
                             ItemsSource="{Binding Items}">
                 <CollectionView.ItemTemplate>

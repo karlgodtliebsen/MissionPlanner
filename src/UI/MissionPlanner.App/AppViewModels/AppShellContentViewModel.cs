@@ -3,7 +3,6 @@ using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Helpers;
 using MissionPlanner.App.Services;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using ShellItem = Microsoft.Maui.Controls.ShellItem;
@@ -33,16 +32,35 @@ public partial class AppShellContentViewModel : ObservableObject
     public partial bool IsFlyoutPresented { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the flyout menu is presented at startup in the UI.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsFlyoutVisibleAtStartup { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether the tutorial is currently presented in the UI.
     /// </summary>
     [ObservableProperty]
-    public partial bool IsTutorialPresented { get; set; }
+    public partial bool IsTutorialVisibleAtStartup { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the flyout menu is locked in the UI.
     /// </summary>
     [ObservableProperty]
     public partial bool IsFlyoutLocked { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the flyout menu is locked in the UI.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsFlyoutCollapseButtonVisible { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the flyout menu is locked in the UI.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsFlyoutExpandButtonVisible { get; set; }
+
 
     /// <summary>
     /// Gets the system, light, and dark theme choices.
@@ -61,27 +79,51 @@ public partial class AppShellContentViewModel : ObservableObject
     [ObservableProperty]
     public partial bool PreferDarkTheme { get; set; }
 
-    private readonly IDispatcher dispatcher;
+    private readonly IDispatcher dispatcher = null!;
 
     /// <inheritdoc />
-    public AppShellContentViewModel()
+    public AppShellContentViewModel(IDispatcher dispatcher, IPlannerSettingsService settingsService, PlannerSettingsRuntime runtime, ILogger<AppShellContentViewModel> logger)
     {
-        dispatcher = ServiceHelper.GetRequiredService<IDispatcher>();
-
-        settingsService = ServiceHelper.GetRequiredService<IPlannerSettingsService>();
-        runtime = ServiceHelper.GetRequiredService<PlannerSettingsRuntime>();
-        logger = ServiceHelper.GetRequiredService<ILogger<AppShellContentViewModel>>();
-        synchronizing = true;
-        IsFlyoutLocked = settingsService.Current.Appearance.IsFlyoutLocked;
-        IsFlyoutPresented = settingsService.Current.Appearance.IsFlyoutPresented;
-        IsTutorialPresented = settingsService.Current.Appearance.IsTutorialPresented;
-        FlyoutBehavior = settingsService.Current.Appearance.IsFlyoutLocked ? FlyoutBehavior.Locked : FlyoutBehavior.Flyout;
-        PreferDarkTheme = settingsService.Current.Appearance.PreferDarkTheme;
-        SelectedTheme = ToAppTheme(settingsService.Current.Appearance.Theme);
-        synchronizing = false;
+        this.dispatcher = dispatcher;
+        this.settingsService = settingsService;
+        this.runtime = runtime;
+        this.logger = logger;
+        SetState(settingsService.Current.Appearance);
         settingsService.SettingsChanged += OnSettingsChanged;
     }
 
+    private void SetState(PlannerAppearanceSettings currentAppearance)
+    {
+        if (synchronizing)
+        {
+            return;
+        }
+
+        synchronizing = true;
+        IsFlyoutLocked = currentAppearance.IsFlyoutLocked;
+        IsFlyoutVisibleAtStartup = currentAppearance.IsFlyoutVisibleAtStartup;
+        if (IsFlyoutVisibleAtStartup)
+        {
+            IsFlyoutPresented = true;
+        }
+
+        IsTutorialVisibleAtStartup = currentAppearance.IsTutorialVisibleAtStartup;
+        FlyoutBehavior = currentAppearance.IsFlyoutLocked ? FlyoutBehavior.Locked : FlyoutBehavior.Flyout;
+        IsFlyoutCollapseButtonVisible = FlyoutBehavior == FlyoutBehavior.Locked && IsFlyoutPresented;
+        IsFlyoutExpandButtonVisible = FlyoutBehavior == FlyoutBehavior.Locked && !IsFlyoutPresented;
+        synchronizing = false;
+        var prefer = currentAppearance.PreferDarkTheme;
+        if (prefer != PreferDarkTheme)
+        {
+            PreferDarkTheme = prefer;
+        }
+
+        var selected = ToAppTheme(currentAppearance.Theme);
+        if (SelectedTheme != selected)
+        {
+            SelectedTheme = selected;
+        }
+    }
 
     partial void OnPreferDarkThemeChanged(bool value)
     {
@@ -111,7 +153,6 @@ public partial class AppShellContentViewModel : ObservableObject
         }
     }
 
-
     partial void OnIsFlyoutLockedChanged(bool value)
     {
         if (synchronizing)
@@ -121,17 +162,8 @@ public partial class AppShellContentViewModel : ObservableObject
 
         settingsService.Current.Appearance.IsFlyoutLocked = value;
         _ = PersistAsync();
-    }
-
-    partial void OnIsTutorialPresentedChanged(bool value)
-    {
-        if (synchronizing)
-        {
-            return;
-        }
-
-        settingsService.Current.Appearance.IsTutorialPresented = value;
-        _ = PersistAsync();
+        IsFlyoutCollapseButtonVisible = FlyoutBehavior == FlyoutBehavior.Locked && IsFlyoutPresented;
+        IsFlyoutExpandButtonVisible = FlyoutBehavior == FlyoutBehavior.Locked && !IsFlyoutPresented;
     }
 
     partial void OnIsFlyoutPresentedChanged(bool value)
@@ -141,7 +173,40 @@ public partial class AppShellContentViewModel : ObservableObject
             return;
         }
 
-        settingsService.Current.Appearance.IsFlyoutPresented = value;
+        IsFlyoutCollapseButtonVisible = FlyoutBehavior == FlyoutBehavior.Locked && IsFlyoutPresented;
+        IsFlyoutExpandButtonVisible = FlyoutBehavior == FlyoutBehavior.Locked && !IsFlyoutPresented;
+    }
+
+    partial void OnFlyoutBehaviorChanged(FlyoutBehavior value)
+    {
+        if (synchronizing)
+        {
+            return;
+        }
+
+        IsFlyoutCollapseButtonVisible = FlyoutBehavior == FlyoutBehavior.Locked && IsFlyoutPresented;
+        IsFlyoutExpandButtonVisible = FlyoutBehavior == FlyoutBehavior.Locked && !IsFlyoutPresented;
+    }
+
+    partial void OnIsTutorialVisibleAtStartupChanged(bool value)
+    {
+        if (synchronizing)
+        {
+            return;
+        }
+
+        settingsService.Current.Appearance.IsTutorialVisibleAtStartup = value;
+        _ = PersistAsync();
+    }
+
+    partial void OnIsFlyoutVisibleAtStartupChanged(bool value)
+    {
+        if (synchronizing)
+        {
+            return;
+        }
+
+        settingsService.Current.Appearance.IsFlyoutVisibleAtStartup = value;
         _ = PersistAsync();
     }
 
@@ -161,39 +226,20 @@ public partial class AppShellContentViewModel : ObservableObject
             return;
         }
 
-        synchronizing = true;
-        try
-        {
-            var flock = e.Current.Appearance.IsFlyoutLocked;
-            var fpres = e.Current.Appearance.IsFlyoutPresented;
-            var isTut = e.Current.Appearance.IsTutorialPresented;
-            if (flock != IsFlyoutLocked || fpres != IsFlyoutPresented || isTut != IsTutorialPresented)
-            {
-                IsFlyoutLocked = flock;
-                IsFlyoutPresented = fpres;
-                FlyoutBehavior = settingsService.Current.Appearance.IsFlyoutLocked ? FlyoutBehavior.Locked : FlyoutBehavior.Flyout;
-                IsTutorialPresented = isTut;
-                _ = PersistAsync();
-            }
-
-            var prefer = e.Current.Appearance.PreferDarkTheme;
-            if (prefer != PreferDarkTheme)
-            {
-                PreferDarkTheme = prefer;
-            }
-
-            var selected = ToAppTheme(e.Current.Appearance.Theme);
-            if (SelectedTheme != selected)
-            {
-                SelectedTheme = selected;
-            }
-        }
-        finally
-        {
-            synchronizing = false;
-        }
+        SetState(e.Current.Appearance);
     }
 
+    [RelayCommand]
+    private void CloseFlyout()
+    {
+        IsFlyoutPresented = false;
+    }
+
+    [RelayCommand]
+    private void ExpandFlyout()
+    {
+        IsFlyoutPresented = true;
+    }
 
     private AppTheme ToAppTheme(PlannerTheme theme)
     {
@@ -254,7 +300,7 @@ public partial class AppShellContentViewModel : ObservableObject
         try
         {
             synchronizing = true;
-            await settingsService.SaveFlyout(settingsService.Current, IsFlyoutPresented, IsFlyoutLocked, IsTutorialPresented);
+            await settingsService.SaveFlyout(settingsService.Current, IsFlyoutVisibleAtStartup, IsFlyoutLocked, IsTutorialVisibleAtStartup);
         }
         catch (Exception exception)
         {
@@ -282,7 +328,7 @@ public partial class AppShellContentViewModel : ObservableObject
     {
         CurrentShell.Loaded -= CurrentShell_Loaded;
         Items = new ReadOnlyObservableCollection<ShellItem>(new ObservableCollection<ShellItem>(CurrentShell.Items));
-        if (settingsService.Current.Appearance.IsTutorialPresented)
+        if (settingsService.Current.Appearance.IsTutorialVisibleAtStartup)
         {
             var pendingNavigation = "Tutorial";
             var item = CurrentShell.Items.FirstOrDefault(i => i.Title == pendingNavigation) ?? CurrentShell.Items.FirstOrDefault();
@@ -294,7 +340,6 @@ public partial class AppShellContentViewModel : ObservableObject
             var selectedItem = CurrentShell.Items.FirstOrDefault();
             _ = Task.Run(() => SetItem(selectedItem));
         }
-        //SelectedItem = CurrentShell.Items.FirstOrDefault();
     }
 
     private void SetItem(ShellItem? item)
@@ -305,17 +350,6 @@ public partial class AppShellContentViewModel : ObservableObject
         }
     }
 
-    [RelayCommand]
-    private void CloseFlyout()
-    {
-        IsFlyoutPresented = false;
-    }
-
-    [RelayCommand]
-    private void ExpandFlyout()
-    {
-        IsFlyoutPresented = true;
-    }
 
     partial void OnSelectedItemChanged(ShellItem? value)
     {

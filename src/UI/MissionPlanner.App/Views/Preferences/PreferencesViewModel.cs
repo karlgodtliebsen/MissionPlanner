@@ -153,10 +153,16 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
     public partial bool PreferDarkTheme { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets a value indicating whether the flyout menu is currently presented in the UI.
+    /// Gets or sets a value indicating whether the flyout menu is visible at startup.
     /// </summary>
     [ObservableProperty]
-    public partial bool IsFlyoutPresented { get; set; }
+    public partial bool IsFlyoutVisibleAtStartup { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the flyout menu is visible at startup.
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsTutorialVisibleAtStartup { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether the flyout menu is locked in the UI.
@@ -675,7 +681,8 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
         {
             PreferDarkTheme = settings.Appearance.PreferDarkTheme;
             IsFlyoutLocked = settings.Appearance.IsFlyoutLocked;
-            IsFlyoutPresented = settings.Appearance.IsFlyoutPresented;
+            IsFlyoutVisibleAtStartup = settings.Appearance.IsFlyoutVisibleAtStartup;
+            IsTutorialVisibleAtStartup = settings.Appearance.IsTutorialVisibleAtStartup;
 
             SelectedUnitSystem = settings.Units.System;
             DefaultMapZoom = settings.Map.DefaultZoom;
@@ -753,7 +760,7 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
             Units = new PlannerUnitSettings { System = SelectedUnitSystem },
             Map = new PlannerMapSettings { DefaultZoom = DefaultMapZoom, SelectedSourceId = selectedOfflineSourceId ?? SelectedMapSource?.Id ?? "osm-standard", HttpCacheEnabled = MapHttpCacheEnabled, HttpCacheLimitBytes = Math.Max(16, MapHttpCacheLimitMiB) * 1_048_576L },
             Telemetry = new PlannerTelemetrySettings { DisplayRateHz = TelemetryDisplayRateHz, ChartHistorySeconds = ChartHistorySeconds },
-            Appearance = new PlannerAppearanceSettings { Theme = SelectedTheme, PreferDarkTheme = true, IsFlyoutPresented = true, IsFlyoutLocked = false },
+            Appearance = new PlannerAppearanceSettings { Theme = SelectedTheme, PreferDarkTheme = true, IsFlyoutVisibleAtStartup = true, IsFlyoutLocked = false },
             Logging = new PlannerLoggingSettings { Level = SelectedLoggingLevel, RetentionDays = LogRetentionDays, LogDirectory = LogDirectory },
             Connection = new PlannerConnectionSettings { Channel = ConnectionChannel, Host = ConnectionHost, Port = ConnectionPort, BaudRate = ConnectionBaudRate },
             ParameterCache = new PlannerParameterCacheSettings { Policy = SelectedParameterCachePolicy, MaximumAgeMinutes = ParameterCacheMaximumAgeMinutes },

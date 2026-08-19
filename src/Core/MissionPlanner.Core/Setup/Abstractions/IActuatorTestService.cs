@@ -1,5 +1,5 @@
 ﻿using MissionPlanner.Core.Setup.MandatoryHardware;
-using MissionPlanner.Core.Setup.OptionalHardware;
+using MissionPlanner.Core.Setup.OptionalHardware.Motor;
 using MissionPlanner.Firmware;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
@@ -45,6 +45,17 @@ public interface IActuatorTestService : IDisposable
     /// <param name="cancellationToken">A connection-scoped cancellation token.</param>
     /// <returns>The accepted or rejected result.</returns>
     Task<MotorTestResult> TestSequenceAsync(VehicleId vehicleId, double throttlePercent, double durationSecondsPerMotor, int motorCount, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Starts a bounded test across all motors simultaneously.
+    /// </summary>
+    /// <param name="vehicleId">The active target vehicle.</param>
+    /// <param name="throttlePercent">The throttle percentage per motor.</param>
+    /// <param name="durationSecondsPerMotor">The bounded per-motor duration.</param>
+    /// <param name="motorCount">The number of motors to test.</param>
+    /// <param name="cancellationToken">A connection-scoped cancellation token.</param>
+    /// <returns>The accepted or rejected result.</returns>
+    Task<MotorTestResult> TestAllAsync(VehicleId vehicleId, double throttlePercent, double durationSecondsPerMotor, int motorCount, CancellationToken cancellationToken = default);
 
     /// <summary>Immediately stops any running actuator test.</summary>
     /// <param name="cancellationToken">A token that cancels the stop transmission.</param>

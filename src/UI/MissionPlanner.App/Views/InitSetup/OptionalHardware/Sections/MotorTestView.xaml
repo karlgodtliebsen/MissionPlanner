@@ -4,17 +4,16 @@
                                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
-                                  xmlns:optionalHardware="clr-namespace:MissionPlanner.Core.Setup.OptionalHardware;assembly=MissionPlanner.Core"
+                                  xmlns:motor="clr-namespace:MissionPlanner.Core.Setup.OptionalHardware.Motor;assembly=MissionPlanner.Core"
+                                  xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                                   x:DataType="sections:MotorTestViewModel"
                                   x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.MotorTestView"
                                   x:Name="Root">
-    <ScrollView VerticalScrollBarVisibility="Always">
-        <VerticalStackLayout Padding="16" Spacing="10">
+    <ScrollView VerticalScrollBarVisibility="Always" HorizontalOptions="Fill">
+        <VerticalStackLayout Padding="16" Spacing="10"  HorizontalOptions="Center" >
 
 
             <HorizontalStackLayout  Padding="18,4" Spacing="12" Margin="0,10,0,10">
-                <!--<ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />-->
-
                 <ActivityIndicator
                     IsRunning="{Binding IsBackgroundParameterLoadInProgress}"
                     IsVisible="{Binding IsBackgroundParameterLoadInProgress}"
@@ -34,45 +33,106 @@
                        LineBreakMode="WordWrap" VerticalOptions="Center" />
             </HorizontalStackLayout>
 
-
-            <Label
+            <VerticalStackLayout Spacing="10">
+                <Label
                 Text="Motor Test"
                 FontSize="20"
                 FontAttributes="Bold" />
 
-            <Label
+                <Label
                 Text="Remove ALL propellers. Motors will spin."
                 TextColor="OrangeRed"
                 FontAttributes="Bold" />
+            </VerticalStackLayout>
 
             <Label
                 Text="{Binding FrameDisplay}"
                 FontAttributes="Bold" />
 
-            <Label Text="{Binding Status}" />
 
-            <VerticalStackLayout
-                BindableLayout.ItemsSource="{Binding Motors}"
-                Spacing="6">
-                <BindableLayout.ItemTemplate>
-                    <DataTemplate x:DataType="optionalHardware:MotorLayoutMotor">
-                        <Button
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" 
+                  ColumnSpacing="50" 
+                  RowSpacing="10">
+
+                <HorizontalStackLayout 
+                    Grid.Row="1"
+                    HorizontalOptions="Fill" VerticalOptions="Fill" Spacing="10" Margin="0,20,0,20">
+
+                    <controls:NumericField
+                    Title="Throttle Percent"
+                    NumberFormat="F0"
+                    HorizontalOptions="Fill"
+                    HorizontalTextAlignment="End"
+                    Min="5"
+                    Max="25"
+                    Value="{Binding ThrottlePercent, Mode=TwoWay}"
+                    >
+                    </controls:NumericField>
+
+                    <controls:NumericField
+                    Title="Duration (seconds)"
+                    Value="{Binding DurationSeconds, Mode=TwoWay}"
+                    NumberFormat="F0"
+                    Min="2"
+                    Max="10"
+                    HorizontalOptions="Fill"
+                    HorizontalTextAlignment="End" >
+                    </controls:NumericField>
+
+                </HorizontalStackLayout>
+
+                <VerticalStackLayout
+                    Grid.Row="2"
+                    BindableLayout.ItemsSource="{Binding Motors}"
+                    Spacing="6">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="motor:MotorLayoutMotor">
+                            <Button
+                                HorizontalOptions="Start"
+                            MaximumWidthRequest="150"
                             Text="{Binding Label}"
                             Command="{Binding Source={x:Reference Root}, Path=BindingContext.TestMotorCommand}"
                             CommandParameter="{Binding .}" />
-                    </DataTemplate>
-                </BindableLayout.ItemTemplate>
-            </VerticalStackLayout>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+                <VerticalStackLayout Grid.Row="3" Spacing="25">
+                    <HorizontalStackLayout Grid.Row="3" Spacing="8" Margin="0,35,0,0">
+                        <Button
+                        Text="Test all Motors"
+                        Command="{Binding TestAllCommand}" />
 
-            <HorizontalStackLayout Spacing="8">
-                <Button
-                    Text="Test all in sequence"
-                    Command="{Binding TestSequenceCommand}" />
-                <Button
-                    Text="STOP"
-                    TextColor="OrangeRed"
-                    Command="{Binding StopCommand}" />
-            </HorizontalStackLayout>
+                        <Button
+                        Text="Test all in sequence"
+                        Command="{Binding TestSequenceCommand}" />
+                    </HorizontalStackLayout>
+                    <Button
+                        Text="STOP All Motors"
+                        TextColor="OrangeRed"
+                        Command="{Binding StopCommand}" />
+                </VerticalStackLayout>
+                <Grid Grid.Column="1" RowDefinitions="Auto,*" 
+                      ColumnSpacing="25"
+                      RowSpacing="25"
+                      ColumnDefinitions="Auto,*" Grid.RowSpan="4" 
+                      VerticalOptions="Center" HorizontalOptions="Fill">
+                    <Button  VerticalOptions="Center"
+                            Text="Set Motor Spin Arm"
+                            Command="{Binding SetMotorSpinArmCommand}" />
+                    <Label VerticalOptions="Center" Grid.Column="1" 
+                           Text="Set the Minimum % that will be output when armed, but still on the ground" HorizontalOptions="Fill"></Label>
+
+                    <Button VerticalOptions="Center"
+                            Grid.Row="1"
+                            Text="Set Motor Spin Min"
+                            Command="{Binding SetMotorSpinMinCommand}" />
+
+                    <Label VerticalOptions="Center" Grid.Row="1" Grid.Column="1"  
+                           Text="Set the Minimum % that will be output when flying" HorizontalOptions="Fill"></Label>
+
+                </Grid>
+            </Grid>
+
         </VerticalStackLayout>
     </ScrollView>
 </tabViews:TabViewLifecycleContent>

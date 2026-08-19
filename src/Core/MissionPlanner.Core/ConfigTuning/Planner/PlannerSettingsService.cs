@@ -216,9 +216,9 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
         var appearance = new PlannerAppearanceSettings
         {
             PreferDarkTheme = preferDarkTheme,
-            IsFlyoutPresented = settings.Appearance.IsFlyoutPresented,
+            IsFlyoutVisibleAtStartup = settings.Appearance.IsFlyoutVisibleAtStartup,
             IsFlyoutLocked = settings.Appearance.IsFlyoutLocked,
-            IsTutorialPresented = settings.Appearance.IsTutorialPresented,
+            IsTutorialVisibleAtStartup = settings.Appearance.IsTutorialVisibleAtStartup,
             Theme = theme
         };
         settings.Appearance = appearance;
@@ -226,14 +226,14 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
     }
 
     /// <inheritdoc />
-    public ValueTask<PlannerSettingsSaveResult> SaveFlyout(PlannerSettings settings, bool isFlyoutPresented, bool isFlyoutLocked, bool isTutorialPresented, CancellationToken cancellationToken = default)
+    public ValueTask<PlannerSettingsSaveResult> SaveFlyout(PlannerSettings settings, bool isFlyoutVisibleAtStartup, bool isFlyoutLocked, bool isTutorialVisibleAtStartup, CancellationToken cancellationToken = default)
     {
         var appearance = new PlannerAppearanceSettings
         {
             PreferDarkTheme = settings.Appearance.PreferDarkTheme,
-            IsFlyoutPresented = isFlyoutPresented,
+            IsFlyoutVisibleAtStartup = isFlyoutVisibleAtStartup,
             IsFlyoutLocked = isFlyoutLocked,
-            IsTutorialPresented = isTutorialPresented,
+            IsTutorialVisibleAtStartup = isTutorialVisibleAtStartup,
             Theme = settings.Appearance.Theme
         };
         settings.Appearance = appearance;

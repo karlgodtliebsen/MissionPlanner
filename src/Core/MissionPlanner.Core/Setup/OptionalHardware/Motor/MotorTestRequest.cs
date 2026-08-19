@@ -1,4 +1,4 @@
-namespace MissionPlanner.Core.Setup.OptionalHardware;
+namespace MissionPlanner.Core.Setup.OptionalHardware.Motor;
 
 /// <summary>Describes a bounded motor-test request.</summary>
 /// <param name="MotorIndex">The one-based motor index.</param>

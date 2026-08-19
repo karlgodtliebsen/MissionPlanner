@@ -41,6 +41,7 @@ using MissionPlanner.Core.Missions.Planning;
 using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.OptionalHardware;
+using MissionPlanner.Core.Setup.OptionalHardware.Motor;
 using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Firmware.Connected;
 using MissionPlanner.Firmware.Dfu;
