@@ -133,7 +133,7 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
         ValidateRange(settings.Map.HttpCacheLimitBytes, 16L * 1_048_576, 8L * 1024 * 1_048_576, PlannerSettingsSection.Map, nameof(settings.Map.HttpCacheLimitBytes), errors);
         ValidateRange(settings.Telemetry.DisplayRateHz, 1, 30, PlannerSettingsSection.Telemetry, nameof(settings.Telemetry.DisplayRateHz), errors);
         ValidateRange(settings.Telemetry.ChartHistorySeconds, 10, 3600, PlannerSettingsSection.Telemetry, nameof(settings.Telemetry.ChartHistorySeconds), errors);
-        ValidateEnum(settings.Appearance.Theme, PlannerSettingsSection.Appearance, nameof(settings.Appearance.Theme), errors);
+        ValidateThemeId(settings.Appearance.ThemeId, errors);
         ValidateEnum(settings.Logging.Level, PlannerSettingsSection.Logging, nameof(settings.Logging.Level), errors);
         ValidateRange(settings.Logging.RetentionDays, 1, 90, PlannerSettingsSection.Logging, nameof(settings.Logging.RetentionDays), errors);
 
@@ -393,6 +393,22 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
         if (!Enum.IsDefined(value))
         {
             errors.Add(new PlannerSettingsValidationError(section, property, $"{property} has an unsupported value."));
+        }
+    }
+
+    private static void ValidateThemeId(
+        string? themeId,
+        ICollection<PlannerSettingsValidationError> errors)
+    {
+        const int maximumLength = 64;
+        if (string.IsNullOrWhiteSpace(themeId) ||
+            themeId.Length > maximumLength ||
+            !System.Text.RegularExpressions.Regex.IsMatch(themeId, "^[a-z0-9][a-z0-9-]*$"))
+        {
+            errors.Add(new PlannerSettingsValidationError(
+                PlannerSettingsSection.Appearance,
+                nameof(PlannerAppearanceSettings.ThemeId),
+                "ThemeId must be a lowercase identifier containing letters, numbers, and hyphens."));
         }
     }
 

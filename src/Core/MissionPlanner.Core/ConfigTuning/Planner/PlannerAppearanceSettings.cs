@@ -3,9 +3,17 @@
 /// <summary>Configures application appearance.</summary>
 public sealed record PlannerAppearanceSettings
 {
+    /// <summary>The default persisted application theme selection policy.</summary>
+    public const string DefaultThemeId = "system";
+
+    /// <summary>Gets the stable persisted theme or selection-policy identifier.</summary>
+    public string ThemeId { get; init; } = DefaultThemeId;
+
     /// <summary>
     /// Application preferences that are not persisted in the settings file, but are used to control the UI and behavior of the application.
     /// </summary>
+    [Obsolete("Use ThemeId. This compatibility property is removed after all UI callers migrate.")]
+    [System.Text.Json.Serialization.JsonIgnore]
     public bool PreferDarkTheme { get; set; } = true;
 
     /// <summary>
@@ -27,5 +35,7 @@ public sealed record PlannerAppearanceSettings
     /// <summary>
     /// Gets the application theme.
     /// </summary>
+    [Obsolete("Use ThemeId. This compatibility property exists only while schema-v4 callers migrate.")]
+    [System.Text.Json.Serialization.JsonIgnore]
     public PlannerTheme Theme { get; init; } = PlannerTheme.System;
 }
