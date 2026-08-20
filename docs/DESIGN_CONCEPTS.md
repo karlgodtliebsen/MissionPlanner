@@ -860,15 +860,7 @@ Examples
 
 ```
 
-IMavLinkTransport
-
-
-
-IMavLinkClient
-
-
-
-IMavLinkConnection
+IVehicleConnectionSession
 
 
 
@@ -879,6 +871,12 @@ IVehicleService
 IMissionTransferService
 
 ```
+
+Application UI, view models, and feature/domain services must inject
+`IVehicleConnectionSession` when they need the existing active MAVLink connection. They must
+not inject `IMavLinkClient`, `IMavLinkConnection`, or `IMavLinkConnectionSession` directly;
+those interfaces belong to the low-level connection composition. See
+[VEHICLE_CONNECTION.md](VEHICLE_CONNECTION.md#existing-connection-access-boundary).
 
 
 

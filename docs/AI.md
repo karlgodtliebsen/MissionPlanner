@@ -198,6 +198,12 @@ Avoid service locators outside approved UI construction patterns.
 
 Prefer constructor injection.
 
+UI, view models, and feature/domain services that need the existing active MAVLink connection
+must constructor-inject `IVehicleConnectionSession`. Never inject `IMavLinkClient`,
+`IMavLinkConnection`, or `IMavLinkConnectionSession` into those consumers. The ownership and
+exception boundary is defined in
+[VEHICLE_CONNECTION.md](VEHICLE_CONNECTION.md#existing-connection-access-boundary).
+
 When a domain service constructor combines one or more values created in the local runtime
 context with dependencies already registered in DI, use `IDomainFactory`. Register the
 service-to-implementation mapping once in `UseDomainServices`:

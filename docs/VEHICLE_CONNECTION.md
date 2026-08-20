@@ -48,6 +48,46 @@ The message-pump and connection tasks are stored as instance fields and linked t
 service-level `CancellationTokenSource`, so they live for the duration of the connection
 (not the method call) and are cancelled/awaited on disconnect and `DisposeAsync`.
 
+### Existing connection access boundary
+
+`IMavLinkClient`, `IMavLinkConnection`, and `IMavLinkConnectionSession` collectively form
+the low-level connection implementation. They are created and owned by the connection
+infrastructure and must not be independently injected into application UI, view models, or
+feature/domain services.
+
+The single application-facing access point to the existing connection is
+`IVehicleConnectionSession`:
+
+```text
+UI / ViewModel / feature service
+    -> IVehicleConnectionSession
+        -> IMavLinkConnectionSession / IMavLinkConnection / IMavLinkClient
+```
+
+Any UI view model or service that needs the current active MAVLink connection must receive
+`IVehicleConnectionSession` through constructor injection and use its `Connection`,
+`MessagePump`, `ParameterService`, `ParameterRegistry`, `Transport`, or `Client` property as
+appropriate. It must not resolve or inject any of these low-level interfaces directly:
+
+```csharp
+// Correct: reuse the application-owned connection session.
+public VehicleCommandService(IVehicleConnectionSession vehicleConnectionSession)
+{
+    this.vehicleConnectionSession = vehicleConnectionSession;
+}
+
+// Incorrect in UI, view models, and feature/domain services.
+public VehicleCommandService(
+    IMavLinkClient client,
+    IMavLinkConnection connection,
+    IMavLinkConnectionSession connectionSession)
+```
+
+This rule prevents parallel clients, connections, message subscriptions, and transport
+lifetimes from being created accidentally. Direct use of the low-level interfaces is limited
+to the connection infrastructure that constructs and implements
+`IVehicleConnectionSession` itself.
+
 ### Consumer connection lifetime
 
 `ActiveVehicleContext` follows `VehicleConnected`, `VehicleStateUpdated`, `VehicleDisconnected`,
