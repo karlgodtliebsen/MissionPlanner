@@ -128,11 +128,18 @@ public sealed class SetupWorkflowCatalog : ISetupWorkflowCatalog
 
     private static bool IsSupported(SetupWorkflowDescriptor descriptor, VehicleState state, IReadOnlyDictionary<string, VehicleParameter> parameters)
     {
-        return descriptor.SupportedFamilies.Count > 0 && !descriptor.SupportedFamilies.Contains(state.Identity.Firmware.Family)
-            ? false
-            : //descriptor.Key != SetupWorkflowKey.OptionalHardware ||
-            state.Identity.Firmware.Supports(MavProtocolCapability.Ftp) ||
-            parameters.Keys.Any(IsOptionalHardwareParameter);
+        if (descriptor.SupportedFamilies.Count > 0 && !descriptor.SupportedFamilies.Contains(state.Identity.Firmware.Family))
+        {
+            return false;
+        }
+
+        return descriptor.Key switch
+        {
+            SetupWorkflowKey.FailSafe => parameters.Keys.Any(IsFailSafeParameter),
+            SetupWorkflowKey.InitTuneParameters => IsInitialTuneSupported(state, parameters),
+            SetupWorkflowKey.Adsb => parameters.Keys.Any(IsAdsbParameter),
+            _ => true
+        };
     }
 
     private static bool IsVisible(SetupWorkflowDescriptor descriptor, VehicleState state, IReadOnlyDictionary<string, VehicleParameter> parameters)
@@ -142,11 +149,23 @@ public sealed class SetupWorkflowCatalog : ISetupWorkflowCatalog
             ;
     }
 
-    private static bool IsOptionalHardwareParameter(string name)
+    private static bool IsFailSafeParameter(string name)
     {
-        return name.StartsWith("SERIAL", StringComparison.Ordinal) ||
-               name.StartsWith("CAN_", StringComparison.Ordinal) ||
-               name.StartsWith("RNGFND", StringComparison.Ordinal);
+        return name.StartsWith("FS_", StringComparison.Ordinal) ||
+            name.StartsWith("BATT_FS_", StringComparison.Ordinal) ||
+            name is "THR_FAILSAFE" or "THR_FS_VALUE" or "THR_FS_ACTION";
+    }
+
+    private static bool IsInitialTuneSupported(VehicleState state, IReadOnlyDictionary<string, VehicleParameter> parameters)
+    {
+        return state.Identity.Firmware.Family == FirmwareFamily.ArduCopter ||
+            state.Identity.Firmware.Family == FirmwareFamily.ArduPlane &&
+            parameters.Keys.Any(name => name.StartsWith("Q_A_", StringComparison.Ordinal) || name.StartsWith("Q_M_", StringComparison.Ordinal));
+    }
+
+    private static bool IsAdsbParameter(string name)
+    {
+        return name.StartsWith("ADSB_", StringComparison.Ordinal) || name.StartsWith("AVD_", StringComparison.Ordinal);
     }
 
     private static string CreateVehicleKey(VehicleState state)

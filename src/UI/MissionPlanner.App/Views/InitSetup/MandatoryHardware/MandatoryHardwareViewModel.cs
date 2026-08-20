@@ -267,9 +267,10 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
             : snapshot.VehicleId is null
                 ? "No vehicle connected"
                 : $"{snapshot.DisplayName} · disconnected";
-        var completed = evaluations.Count(item => item.State == SetupWorkflowState.Completed);
-        var warnings = evaluations.Count(item => item.State is SetupWorkflowState.Warning or SetupWorkflowState.Failed);
-        SummaryReport = $"{completed} of {evaluations.Length} relevant workflows completed; {warnings} require attention.";
+        var relevant = evaluations.Where(item => item.State != SetupWorkflowState.Unsupported).ToArray();
+        var completed = relevant.Count(item => item.State == SetupWorkflowState.Completed);
+        var warnings = relevant.Count(item => item.State is SetupWorkflowState.Warning or SetupWorkflowState.Failed);
+        SummaryReport = $"{completed} of {relevant.Length} relevant workflows completed; {warnings} require attention.";
         SelectedWorkflow = Workflows.FirstOrDefault(item => item.Descriptor.Key == selectedKey) ?? Workflows.FirstOrDefault();
     }
 
