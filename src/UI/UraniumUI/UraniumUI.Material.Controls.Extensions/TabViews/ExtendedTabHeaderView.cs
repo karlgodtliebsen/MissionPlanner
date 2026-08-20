@@ -118,26 +118,20 @@ public class ExtendedTabHeaderView : ContentView
 
     private void UpdateSelectionVisuals()
     {
-        var primaryLight = SelectionColor ?? ColorResource.GetColor("Primary", Colors.Green);
-        var primaryDark = SelectionColor ?? ColorResource.GetColor("PrimaryDark", Colors.LightGreen);
-        var surfaceLight = ColorResource.GetColor("Surface", Colors.White);
-        var surfaceDark = ColorResource.GetColor("SurfaceDark", Colors.Black);
-        var outlineLight = ColorResource.GetColor("OutlineVariant", Colors.Gray);
-        var outlineDark = ColorResource.GetColor("OutlineVariantDark", Colors.DarkGray);
+        if (SelectionColor is { } selectionColor)
+        {
+            selectionIndicator.Color = selectionColor;
+            border.BackgroundColor = IsHeaderSelected ? selectionColor.WithAlpha(.2f) : null;
+            border.Stroke = new SolidColorBrush(selectionColor);
+        }
+        else
+        {
+            selectionIndicator.SetDynamicResource(BoxView.ColorProperty, "Primary");
+            border.SetDynamicResource(BackgroundColorProperty, IsHeaderSelected ? "PrimaryContainer" : "Surface");
+            border.SetDynamicResource(Border.StrokeProperty, IsHeaderSelected ? "Primary" : "OutlineVariant");
+        }
 
-        selectionIndicator.SetAppThemeColor(
-            BoxView.ColorProperty,
-            primaryLight.WithAlpha(.2f),
-            primaryDark.WithAlpha(.2f));
         selectionIndicator.IsVisible = IsHeaderSelected;
-        border.SetAppThemeColor(
-            BackgroundColorProperty,
-            IsHeaderSelected ? primaryLight.WithAlpha(.2f) : surfaceLight,
-            IsHeaderSelected ? primaryDark.WithAlpha(.2f) : surfaceDark);
-        border.SetAppTheme(
-            Border.StrokeProperty,
-            new SolidColorBrush(IsHeaderSelected ? primaryLight : outlineLight),
-            new SolidColorBrush(IsHeaderSelected ? primaryDark : outlineDark));
         border.StrokeThickness = IsHeaderSelected ? SelectedStrokeThickness : 1;
         contentHost.Opacity = IsHeaderSelected ? 1 : .5;
     }

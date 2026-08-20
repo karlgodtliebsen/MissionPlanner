@@ -551,9 +551,9 @@ public class ExtendedDialogService : DefaultDialogService, IExtendedDialogServic
             IsRunning = true,
             IsVisible = true,
             HorizontalOptions = LayoutOptions.Center,
-            Color = ColorResource.GetColor("Primary", "PrimaryDark", Colors.Blue),
             Margin = 20
         };
+        progress.SetDynamicResource(ActivityIndicator.ColorProperty, "Primary");
         var label = new Label { Text = message(), Margin = 20 };
         var verticalStackLayout = new VerticalStackLayout { Children = { GetHeader(title), label, progress } };
 

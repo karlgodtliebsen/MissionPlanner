@@ -65,10 +65,9 @@ public class ExtendedSelectableDataGridColumn : DataGridColumn, IDataGridSelecti
         };
 
         checkBox.Children.Remove(checkBox.Children.FirstOrDefault(child => child is Label));
-        checkBox.SetAppThemeColor(
+        checkBox.SetDynamicResource(
             InputKit.Shared.Controls.CheckBox.BorderColorProperty,
-            ColorResource.GetColor("OnBackground"),
-            ColorResource.GetColor("OnBackgroundDark"));
+            "OnBackground");
 
         if (!string.IsNullOrWhiteSpace(SelectionMemberPath))
         {

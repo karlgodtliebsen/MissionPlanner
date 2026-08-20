@@ -51,42 +51,6 @@
     <Color x:Key="DisabledText">#BA919191</Color>
     <Color x:Key="DisabledBackground">#80919191</Color>
 
-    <!-- Temporary migration compatibility. Removed after all XAML uses semantic keys. -->
-    <Color x:Key="PrimaryDark">#A8EAC0</Color>
-    <Color x:Key="OnPrimaryDark">#1C783D</Color>
-    <Color x:Key="PrimaryContainerDark">#1A6C37</Color>
-    <Color x:Key="OnPrimaryContainerDark">#BAEFCD</Color>
-    <Color x:Key="SecondaryDark">#DAFFBE</Color>
-    <Color x:Key="OnSecondaryDark">#245900</Color>
-    <Color x:Key="SecondaryContainerDark">#193900</Color>
-    <Color x:Key="OnSecondaryContainerDark">#E1FFCB</Color>
-    <Color x:Key="TertiaryDark">#FEED9D</Color>
-    <Color x:Key="OnTertiaryDark">#564500</Color>
-    <Color x:Key="TertiaryContainerDark">#8B7301</Color>
-    <Color x:Key="OnTertiaryContainerDark">#FEF1B0</Color>
-    <Color x:Key="SurfaceDark">#2C3639</Color>
-    <Color x:Key="OnSurfaceDark">#F6F4E6</Color>
-    <Color x:Key="SurfaceVariantDark">#49454F</Color>
-    <Color x:Key="OnSurfaceVariantDark">#DCD7C9</Color>
-    <Color x:Key="BackgroundDark">#1C1B1F</Color>
-    <Color x:Key="OnBackgroundDark">#E6E1E5</Color>
-    <Color x:Key="WarningDark">#FFB95C</Color>
-    <Color x:Key="ErrorDark">#F2B8B5</Color>
-    <Color x:Key="ErrorContainerDark">#8C1D18</Color>
-    <Color x:Key="OnErrorDark">#601410</Color>
-    <Color x:Key="OnErrorContainerDark">#F9DEDC</Color>
-    <Color x:Key="OutlineDark">#938F99</Color>
-    <Color x:Key="OutlineVariantDark">#444746</Color>
-    <Color x:Key="ShadowDark">#000000</Color>
-    <Color x:Key="InverseSurfaceDark">#E6E1E5</Color>
-    <Color x:Key="InverseOnSurfaceDark">#313033</Color>
-    <Color x:Key="InversePrimaryDark">#6750A4</Color>
-    <Color x:Key="ScrimDark">#000000</Color>
-    <Color x:Key="DisabledTextLight">#7A8580</Color>
-    <Color x:Key="DisabledBackgroundLight">#DCE2DF</Color>
-    <Color x:Key="DisabledTextDark">#BA919191</Color>
-    <Color x:Key="DisabledBackgroundDark">#80919191</Color>
-
     <Color x:Key="Transparent">Transparent</Color>
     <Color x:Key="White">White</Color>
     <Color x:Key="Black">Black</Color>
