@@ -105,6 +105,32 @@ public sealed class ThemeManagerTests
         Assert.True(fixture.Environment.IsDisposed);
     }
 
+    /// <summary>Verifies the regression switching sequence does not accumulate resources or subscriptions.</summary>
+    [Fact]
+    public async Task RepeatedSwitchingKeepsResourceAndSubscriptionCountsStable()
+    {
+        using var fixture = new ThemeManagerFixture();
+        fixture.Initialize();
+        var sequence = new[]
+        {
+            ThemeIds.MissionDark,
+            ThemeIds.MissionLight,
+            ThemeIds.MissionBlue,
+            ThemeIds.MissionDark,
+            ThemeIds.MissionBlue,
+            ThemeIds.MissionLight
+        };
+
+        foreach (var themeId in sequence)
+        {
+            await fixture.Manager.ApplyAsync(themeId, TestContext.Current.CancellationToken);
+            Assert.Equal(ThemeResourceKeys.RequiredColorKeys.Count, fixture.ActiveResources.Count);
+            Assert.Equal(1, fixture.Environment.SubscriberCount);
+        }
+
+        Assert.Equal(sequence.Length, fixture.Loader.LoadCount);
+    }
+
     private sealed class ThemeManagerFixture : IDisposable
     {
         public ThemeManagerFixture()
@@ -144,8 +170,11 @@ public sealed class ThemeManagerTests
     {
         public bool ReturnMalformed { get; set; }
 
+        public int LoadCount { get; private set; }
+
         public ResourceDictionary Load(ThemeDescriptor theme)
         {
+            LoadCount++;
             var dictionary = new ResourceDictionary();
             var seed = theme.Id switch
             {
