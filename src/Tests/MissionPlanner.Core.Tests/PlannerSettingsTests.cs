@@ -5,6 +5,7 @@ using MissionPlanner.App.Configuration;
 using MissionPlanner.App.Helpers;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Services;
+using MissionPlanner.App.Theming;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.App.Views.Preferences;
@@ -75,6 +76,55 @@ public sealed class PlannerSettingsTests
         result.Settings.Map.SelectedSourceId.Should().Be("custom:user");
     }
 
+    /// <summary>Verifies schema-four theme names migrate to stable schema-five identifiers.</summary>
+    [Theory]
+    [InlineData("System", "system")]
+    [InlineData("Light", "mission-light")]
+    [InlineData("Dark", "mission-dark")]
+    public async Task InitializeMigratesLegacyTheme(string legacyTheme, string expectedThemeId)
+    {
+        var store = new MemoryStore($"{{\"schemaVersion\":4,\"appearance\":{{\"theme\":\"{legacyTheme}\",\"preferDarkTheme\":true}}}}");
+
+        var result = await CreateService(store).InitializeAsync(TestContext.Current.CancellationToken);
+
+        result.WasMigrated.Should().BeTrue();
+        result.Settings.SchemaVersion.Should().Be(5);
+        result.Settings.Appearance.ThemeId.Should().Be(expectedThemeId);
+        store.WriteCount.Should().Be(1);
+        store.Document.Should().Contain($"\"themeId\": \"{expectedThemeId}\"");
+        store.Document.Should().NotContain("preferDarkTheme");
+    }
+
+    /// <summary>Verifies malformed legacy appearance uses PreferDarkTheme only as fallback.</summary>
+    [Theory]
+    [InlineData("{}", "system")]
+    [InlineData("{\"theme\":\"invalid\",\"preferDarkTheme\":true}", "mission-dark")]
+    [InlineData("{\"theme\":42,\"preferDarkTheme\":false}", "system")]
+    public async Task InitializeUsesDocumentedLegacyThemeFallback(string appearance, string expectedThemeId)
+    {
+        var document = $"{{\"schemaVersion\":4,\"appearance\":{appearance}}}";
+        var result = await CreateService(new MemoryStore(document)).InitializeAsync(TestContext.Current.CancellationToken);
+
+        result.Settings.Appearance.ThemeId.Should().Be(expectedThemeId);
+    }
+
+    /// <summary>Verifies arbitrary valid identifiers, including Mission Blue, survive save and reload.</summary>
+    [Theory]
+    [InlineData("mission-blue")]
+    [InlineData("extension-night-vision")]
+    public async Task ThemeIdentifierRoundTripsWithoutFiniteEnum(string themeId)
+    {
+        var store = new MemoryStore();
+        var service = CreateService(store);
+        await service.InitializeAsync(TestContext.Current.CancellationToken);
+        await service.SaveTheme(service.Current, themeId, TestContext.Current.CancellationToken);
+
+        var reloaded = await CreateService(store).InitializeAsync(TestContext.Current.CancellationToken);
+
+        reloaded.Settings.Appearance.ThemeId.Should().Be(themeId);
+        reloaded.WasMigrated.Should().BeFalse();
+    }
+
     /// <summary>Verifies invalid ranges and connection values block persistence.</summary>
     [Fact]
     public async Task SaveRejectsInvalidSettings()
@@ -124,13 +174,13 @@ public sealed class PlannerSettingsTests
         await service.InitializeAsync(cancellationToken);
         PlannerSettingsChangedEventArgs? changed = null;
         service.SettingsChanged += (_, args) => changed = args;
-        var updated = service.Current with { Appearance = new PlannerAppearanceSettings { Theme = PlannerTheme.Dark }, Logging = new PlannerLoggingSettings { Level = PlannerLogLevel.Warning, RetentionDays = 14 } };
+        var updated = service.Current with { Appearance = new PlannerAppearanceSettings { ThemeId = ThemeIds.MissionDark }, Logging = new PlannerLoggingSettings { Level = PlannerLogLevel.Warning, RetentionDays = 14 } };
 
         var result = await service.SaveAsync(updated, cancellationToken);
 
         result.Success.Should().BeTrue();
         changed.Should().NotBeNull();
-        changed!.Current.Appearance.Theme.Should().Be(PlannerTheme.Dark);
+        changed!.Current.Appearance.ThemeId.Should().Be(ThemeIds.MissionDark);
         result.RestartRequiredSections.Should().Contain(PlannerSettingsSection.Logging);
         result.RestartRequiredSections.Should().NotContain(PlannerSettingsSection.Appearance);
     }
@@ -175,13 +225,25 @@ public sealed class PlannerSettingsTests
         var context = Substitute.For<IActiveVehicleContext>();
         context.Current.Returns(new ActiveVehicleSnapshot(null, null));
         var applicationState = new ApplicationStateService(context);
-        using var runtime = new PlannerSettingsRuntime(service, applicationState);
+        var themeManager = Substitute.For<IThemeManager>();
+        themeManager.AvailableThemes.Returns(
+        [
+            new ThemeOption(ThemeIds.System, "System"),
+            new ThemeOption(ThemeIds.MissionLight, "Mission Light"),
+            new ThemeOption(ThemeIds.MissionDark, "Mission Dark"),
+            new ThemeOption(ThemeIds.MissionBlue, "Mission Blue")
+        ]);
+        using var runtime = new PlannerSettingsRuntime(
+            service,
+            applicationState,
+            themeManager,
+            NullLogger<PlannerSettingsRuntime>.Instance);
         var fileSaver = Substitute.For<IFileSaver>();
         var offlinePacks = Substitute.For<MissionPlanner.Maps.Offline.IOfflineMapPackRepository>();
         offlinePacks.ListAsync(Arg.Any<CancellationToken>()).Returns([]);
         var viewModel = new PreferencesViewModel(
             service,
-            runtime,
+            themeManager,
             new ParametersFileHandler(fileSaver),
             Substitute.For<IUserConfirmationService>(),
             NullLogger<PreferencesViewModel>.Instance,
@@ -227,6 +289,8 @@ public sealed class PlannerSettingsTests
     {
         public string? Document { get; private set; } = document;
 
+        public int WriteCount { get; private set; }
+
         public ValueTask<string?> ReadAsync(CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -237,6 +301,7 @@ public sealed class PlannerSettingsTests
         {
             cancellationToken.ThrowIfCancellationRequested();
             Document = value;
+            WriteCount++;
             return ValueTask.CompletedTask;
         }
 
