@@ -262,6 +262,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<FailSafeViewModel>();
         services.TryAddTransient<InitTuneParametersViewModel>();
         services.TryAddTransient<HwIdViewModel>();
+        services.TryAddTransient<AdsbViewModel>();
         services.TryAddTransient<SafetySetupViewModel>(); //FailSafe
         //services.TryAddTransient<InitialTuneParametersViewModel>();
         //services.TryAddTransient<HwIdViewModel>();

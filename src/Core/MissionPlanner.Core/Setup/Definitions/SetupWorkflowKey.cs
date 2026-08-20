@@ -36,7 +36,8 @@ public enum SetupWorkflowKey
     /// <summary>Hardware and peripheral identification.</summary>
     HwId,
 
-    ADSB,
+    /// <summary>ADS-B configuration and avoidance settings.</summary>
+    Adsb,
 
     /// <summary>Flight-mode configuration.</summary>
     FlightModes,

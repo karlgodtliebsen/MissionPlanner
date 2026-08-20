@@ -35,7 +35,8 @@ public sealed class SetupWorkflowCatalog : ISetupWorkflowCatalog
         Descriptor(SetupWorkflowKey.FlightModes, "Flight Modes", "Assign flight modes to pilot controls.", activeFamilies, [SetupWorkflowKey.Frame, SetupWorkflowKey.Radio], "Config|Full Parameters List"),
         Descriptor(SetupWorkflowKey.FailSafe, "Failsafe", "Configure supported vehicle failsafe actions and thresholds.", activeFamilies, [SetupWorkflowKey.Radio], "Config|Full Parameters List"),
         Descriptor(SetupWorkflowKey.InitTuneParameters, "Initial Tune Parameters", "Calculate and review initial vehicle tuning values.", activeFamilies, [SetupWorkflowKey.Frame], "Config|Full Parameters List"),
-        Descriptor(SetupWorkflowKey.HwId, "HW ID", "Inspect reported autopilot and peripheral hardware identifiers.", activeFamilies)
+        Descriptor(SetupWorkflowKey.HwId, "HW ID", "Inspect reported autopilot and peripheral hardware identifiers.", activeFamilies),
+        Descriptor(SetupWorkflowKey.Adsb, "ADSB", "Configure supported ADS-B identity and avoidance behavior.", activeFamilies, [], "Config|Full Parameters List")
         //Descriptor(SetupWorkflowKey.Battery, "Battery", "Configure voltage, current, and capacity monitoring.", activeFamilies, [SetupWorkflowKey.Firmware], "Config|Full Parameters List"),
         //Descriptor(SetupWorkflowKey.OptionalHardware, "Optional Hardware", "Configure supported serial, CAN, rangefinder, and other peripherals.", null, [SetupWorkflowKey.Firmware], "Config|Full Parameters List"),
         //Descriptor(SetupWorkflowKey.Safety, "Safety", "Review arming, failsafe, and mandatory preflight settings.", activeFamilies, [SetupWorkflowKey.Accelerometer, SetupWorkflowKey.Compass, SetupWorkflowKey.Radio], "Config|Full Parameters List"),

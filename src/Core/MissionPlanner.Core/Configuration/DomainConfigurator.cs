@@ -150,6 +150,7 @@ public static class DomainConfigurator
         services.TryAddTransient<IFailSafeService, FailSafeService>();
         services.TryAddTransient<IInitTuneParametersService, InitTuneParametersService>();
         services.TryAddTransient<IHwIdService, HwIdService>();
+        services.TryAddTransient<IAdsbService, AdsbService>();
 
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, SerialPortsModule>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, OpticalFlowModule>());
