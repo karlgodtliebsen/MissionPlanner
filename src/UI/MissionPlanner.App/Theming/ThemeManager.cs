@@ -8,10 +8,10 @@ public sealed class ThemeManager : IThemeManager
     private readonly IThemeCatalog catalog;
     private readonly IThemePaletteLoader paletteLoader;
     private readonly IDispatcher dispatcher;
+    private readonly IThemeEnvironment environment;
     private readonly ILogger<ThemeManager> logger;
     private readonly SemaphoreSlim applyLock = new(1, 1);
     private ResourceDictionary? activeResources;
-    private Application? application;
     private bool assigningNativeAppearance;
     private bool disposed;
 
@@ -20,11 +20,13 @@ public sealed class ThemeManager : IThemeManager
         IThemeCatalog catalog,
         IThemePaletteLoader paletteLoader,
         IDispatcher dispatcher,
+        IThemeEnvironment environment,
         ILogger<ThemeManager> logger)
     {
         this.catalog = catalog;
         this.paletteLoader = paletteLoader;
         this.dispatcher = dispatcher;
+        this.environment = environment;
         this.logger = logger;
         ActiveTheme = catalog.ConcreteThemes.First(theme => theme.Id == ThemeIds.MissionDark);
     }
@@ -46,12 +48,9 @@ public sealed class ThemeManager : IThemeManager
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         this.activeResources = activeResources ?? throw new ArgumentNullException(nameof(activeResources));
-        application = Application.Current;
-        if (application is not null)
-        {
-            application.RequestedThemeChanged -= OnRequestedThemeChanged;
-            application.RequestedThemeChanged += OnRequestedThemeChanged;
-        }
+        environment.RequestedThemeChanged -= OnRequestedThemeChanged;
+        environment.RequestedThemeChanged += OnRequestedThemeChanged;
+        environment.Attach();
     }
 
     /// <inheritdoc />
@@ -75,11 +74,8 @@ public sealed class ThemeManager : IThemeManager
         }
 
         disposed = true;
-        if (application is not null)
-        {
-            application.RequestedThemeChanged -= OnRequestedThemeChanged;
-            application = null;
-        }
+        environment.RequestedThemeChanged -= OnRequestedThemeChanged;
+        environment.Dispose();
 
         applyLock.Dispose();
     }
@@ -149,21 +145,18 @@ public sealed class ThemeManager : IThemeManager
         }
 
         SelectedThemeId = selectedThemeId;
-        if (application is not null)
+        assigningNativeAppearance = true;
+        try
         {
-            assigningNativeAppearance = true;
-            try
-            {
-                application.UserAppTheme = usesSystemPolicy
-                    ? AppTheme.Unspecified
-                    : theme.BaseAppearance == ThemeBaseAppearance.Dark
-                        ? AppTheme.Dark
-                        : AppTheme.Light;
-            }
-            finally
-            {
-                assigningNativeAppearance = false;
-            }
+            environment.SetUserTheme(usesSystemPolicy
+                ? AppTheme.Unspecified
+                : theme.BaseAppearance == ThemeBaseAppearance.Dark
+                    ? AppTheme.Dark
+                    : AppTheme.Light);
+        }
+        finally
+        {
+            assigningNativeAppearance = false;
         }
 
         ActiveTheme = theme;
@@ -173,12 +166,12 @@ public sealed class ThemeManager : IThemeManager
 
     private string ResolveSystemThemeId()
     {
-        return application?.RequestedTheme == AppTheme.Dark
+        return environment.RequestedTheme == AppTheme.Dark
             ? ThemeIds.MissionDark
             : ThemeIds.MissionLight;
     }
 
-    private void OnRequestedThemeChanged(object? sender, AppThemeChangedEventArgs args)
+    private void OnRequestedThemeChanged(object? sender, AppTheme requestedTheme)
     {
         if (assigningNativeAppearance || !string.Equals(SelectedThemeId, ThemeIds.System, StringComparison.Ordinal))
         {
