@@ -26,20 +26,20 @@ public sealed class PlannerSettingsRuntime : IDisposable
         this.themeManager = themeManager;
         this.logger = logger;
         settingsService.SettingsChanged += OnSettingsChanged;
-        Apply(settingsService.Current);
     }
 
     /// <summary>Applies a temporary theme preview without persisting it.</summary>
     /// <param name="themeId">The theme or selection-policy identifier to preview.</param>
     public void PreviewTheme(string themeId)
     {
-        _ = ApplyThemeAsync(themeId, true);
+        _ = ApplyThemeSafelyAsync(themeId, true);
     }
 
-    /// <summary>Reapplies the current safe live settings after MAUI application creation.</summary>
-    public void ApplyCurrent()
+    /// <summary>Applies the current safe live settings after MAUI application creation.</summary>
+    /// <returns>A task that completes after the initial theme is fully applied.</returns>
+    public Task ApplyCurrentAsync()
     {
-        Apply(settingsService.Current);
+        return ApplyAsync(settingsService.Current);
     }
 
     /// <inheritdoc />
@@ -56,12 +56,11 @@ public sealed class PlannerSettingsRuntime : IDisposable
 
     private void OnSettingsChanged(object? sender, PlannerSettingsChangedEventArgs e)
     {
-        Apply(e.Current);
+        _ = ApplySafelyAsync(e.Current);
     }
 
-    private void Apply(PlannerSettings settings)
+    private async Task ApplyAsync(PlannerSettings settings)
     {
-        _ = ApplyThemeAsync(settings.Appearance.ThemeId, false);
         if (!applicationState.IsConnected)
         {
             applicationState.SelectedChannel = settings.Connection.Channel;
@@ -69,9 +68,23 @@ public sealed class PlannerSettingsRuntime : IDisposable
             applicationState.SelectedPort = settings.Connection.Port.ToString(System.Globalization.CultureInfo.InvariantCulture);
             applicationState.SelectedBaudRate = settings.Connection.BaudRate.ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
+
+        await themeManager.ApplyAsync(settings.Appearance.ThemeId).ConfigureAwait(false);
     }
 
-    private async Task ApplyThemeAsync(string themeId, bool preview)
+    private async Task ApplySafelyAsync(PlannerSettings settings)
+    {
+        try
+        {
+            await ApplyAsync(settings).ConfigureAwait(false);
+        }
+        catch (Exception exception)
+        {
+            logger.LogError(exception, "Applying Planner runtime settings failed.");
+        }
+    }
+
+    private async Task ApplyThemeSafelyAsync(string themeId, bool preview)
     {
         try
         {
