@@ -14,6 +14,7 @@
         <Grid ColumnDefinitions="Auto,*,Auto,75,75" 
           HorizontalOptions="Fill"
           VerticalOptions="Center"
+          Padding="2,0,2,0"
           >
             <!-- Data Source Mode {AppThemeBinding Light=#9A6700, Dark=#F0B429} -->
             <Label Grid.Column="0"
@@ -63,7 +64,7 @@
                 HorizontalOptions="Fill"
                 VerticalOptions="Center"
                 Command="{Binding OpenPreferencesCommand}"
-                ></Button>
+                />
         </Grid>
     </Border>
 </ContentView>

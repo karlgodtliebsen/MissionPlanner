@@ -353,7 +353,7 @@ public partial class VirtualizedDataGrid
             SetValue(HasItemsPropertyKey, !isEmpty);
             try
             {
-                SetValue(TotalPageCountPropertyKey, totalPageCount);
+                //SetValue(TotalPageCountPropertyKey, totalPageCount);
             }
             catch (Exception ex)
             {
