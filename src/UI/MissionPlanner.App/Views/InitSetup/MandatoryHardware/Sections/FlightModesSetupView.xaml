@@ -28,7 +28,7 @@
                     <DataTemplate x:DataType="sections:FlightModeSlotViewModel">
                         <Border Padding="10" StyleClass="SurfaceContainer,Rounded,Elevation1" HorizontalOptions="Fill">
                             <Grid ColumnDefinitions="Auto,*,*" ColumnSpacing="8">
-                                <Label Text="●" TextColor="{DynamicResource Primary}" IsVisible="{Binding IsActive}" VerticalOptions="Center" />
+                                <Label Text="●" TextColor="{DynamicResource Info}" IsVisible="{Binding IsActive}" VerticalOptions="Center" />
                                 <Label Grid.Column="1" Text="{Binding BandDescription}" VerticalOptions="Center" />
                                 <material:SelectField Grid.Column="2"
                                     Title="Mode"

@@ -102,7 +102,7 @@
                     LineBreakMode="WordWrap"
                     VerticalOptions="Center" />
 
-                <Label TextColor="{DynamicResource Warning}" Text="{Binding ErrorMessage}" LineBreakMode="WordWrap" VerticalOptions="Center" />
+                <Label TextColor="{DynamicResource Error}" Text="{Binding ErrorMessage}" LineBreakMode="WordWrap" VerticalOptions="Center" />
                 
                 <Label Text="{Binding StatusMessage}" 
                        IsVisible="{Binding IsBackgroundParameterLoadInProgress, Converter={StaticResource InvertedBoolConverter}}"

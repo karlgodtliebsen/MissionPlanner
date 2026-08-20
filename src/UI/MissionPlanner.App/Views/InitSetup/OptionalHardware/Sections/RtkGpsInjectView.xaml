@@ -36,7 +36,7 @@
                 <Button Text="Disconnect" Command="{Binding DisconnectCommand}"/>
             </HorizontalStackLayout>
             <Label Text="{Binding ErrorMessage}" 
-                   TextColor="{DynamicResource Warning}"/>
+                   TextColor="{DynamicResource Error}"/>
             <Label Text="{Binding SourceStatus}" FontAttributes="Bold"/>
             <Label Text="{Binding TargetStatus}"/>
             <Label Text="{Binding Statistics}"/>
