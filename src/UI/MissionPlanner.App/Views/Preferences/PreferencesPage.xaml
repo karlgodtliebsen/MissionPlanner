@@ -25,7 +25,6 @@
                         </HorizontalStackLayout>
                     </Grid>
                     <VerticalStackLayout Spacing="8">
-                        <material:CheckBox Text="Always use Dark Mode" Type="Regular" IsChecked="{Binding PreferDarkTheme,Mode=TwoWay}" />
                         <material:CheckBox Text="Lock Flyout Menu" Type="Regular" IsChecked="{Binding IsFlyoutLocked,Mode=TwoWay}" />
                         <material:CheckBox Text="Show Flyout Menu at Startup" Type="Regular" IsChecked="{Binding IsFlyoutVisibleAtStartup,Mode=TwoWay}" />
                         <material:CheckBox Text="Show Tutorial at Startup" Type="Regular" IsChecked="{Binding IsTutorialVisibleAtStartup,Mode=TwoWay}" />

@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Services;
+using MissionPlanner.App.Theming;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Maps.Catalog;
@@ -19,7 +20,7 @@ namespace MissionPlanner.App.Views.Preferences;
 public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
 {
     private readonly IPlannerSettingsService settingsService;
-    private readonly PlannerSettingsRuntime runtime;
+    private readonly IThemeManager themeManager;
     private readonly ParametersFileHandler fileHandler;
     private readonly IUserConfirmationService confirmation;
     private readonly ILogger<PreferencesViewModel> logger;
@@ -36,7 +37,7 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
     /// Initializes the Planner preferences page.
     /// </summary>
     /// <param name="settingsService">The versioned settings service.</param>
-    /// <param name="runtime">The live settings bridge.</param>
+    /// <param name="themeManager">The application theme manager.</param>
     /// <param name="fileHandler">The platform file helper.</param>
     /// <param name="confirmation">The confirmation service.</param>
     /// <param name="logger">The logger.</param>
@@ -47,7 +48,7 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
     /// <param name="mapCache">The bounded map HTTP cache.</param>
     public PreferencesViewModel(
         IPlannerSettingsService settingsService,
-        PlannerSettingsRuntime runtime,
+        IThemeManager themeManager,
         ParametersFileHandler fileHandler,
         IUserConfirmationService confirmation,
         ILogger<PreferencesViewModel> logger,
@@ -58,7 +59,7 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
         MapHttpDiskCache mapCache)
     {
         this.settingsService = settingsService;
-        this.runtime = runtime;
+        this.themeManager = themeManager;
         this.fileHandler = fileHandler;
         this.confirmation = confirmation;
         this.logger = logger;
@@ -102,7 +103,7 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
     public partial double MapHttpCacheSizeMiB { get; private set; }
 
     /// <summary>Gets available application themes.</summary>
-    public IReadOnlyList<PlannerTheme> Themes { get; } = Enum.GetValues<PlannerTheme>();
+    public IReadOnlyList<ThemeOption> Themes => themeManager.AvailableThemes;
 
     /// <summary>Gets available logging levels.</summary>
     public IReadOnlyList<PlannerLogLevel> LoggingLevels { get; } = Enum.GetValues<PlannerLogLevel>();
@@ -145,12 +146,6 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
     /// 
     /// </summary>
     public IReadOnlyList<string> LayoutModes { get; } = ["Basic", "Advanced", "Custom"];
-
-    /// <summary>
-    /// Application preferences that are not persisted in the settings file, but are used to control the UI and behavior of the application.
-    /// </summary>
-    [ObservableProperty]
-    public partial bool PreferDarkTheme { get; set; } = true;
 
     /// <summary>
     /// Gets or sets a value indicating whether the flyout menu is visible at startup.
@@ -205,7 +200,7 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
 
     /// <summary>Gets the selected application theme.</summary>
     [ObservableProperty]
-    public partial PlannerTheme SelectedTheme { get; set; }
+    public partial ThemeOption? SelectedTheme { get; set; }
 
     /// <summary>Gets the selected logging level.</summary>
     [ObservableProperty]
@@ -545,16 +540,11 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
         SelectedMapSource = MapSettingsSourceCatalog.Resolve(MapSources, selectedSourceId, true);
     }
 
-    partial void OnSelectedThemeChanged(PlannerTheme value)
+    partial void OnSelectedThemeChanged(ThemeOption? value)
     {
-        if (!loading)
+        if (!loading && value is not null)
         {
-            runtime.PreviewTheme(value switch
-            {
-                PlannerTheme.Light => "mission-light",
-                PlannerTheme.Dark => "mission-dark",
-                _ => "system"
-            });
+            _ = themeManager.PreviewAsync(value.Id);
         }
     }
 
@@ -684,7 +674,6 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
         loading = true;
         try
         {
-            PreferDarkTheme = settings.Appearance.PreferDarkTheme;
             IsFlyoutLocked = settings.Appearance.IsFlyoutLocked;
             IsFlyoutVisibleAtStartup = settings.Appearance.IsFlyoutVisibleAtStartup;
             IsTutorialVisibleAtStartup = settings.Appearance.IsTutorialVisibleAtStartup;
@@ -696,7 +685,9 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
             MapHttpCacheLimitMiB = checked((int)(settings.Map.HttpCacheLimitBytes / 1_048_576));
             TelemetryDisplayRateHz = settings.Telemetry.DisplayRateHz;
             ChartHistorySeconds = settings.Telemetry.ChartHistorySeconds;
-            SelectedTheme = settings.Appearance.Theme;
+            SelectedTheme = Themes.FirstOrDefault(theme =>
+                string.Equals(theme.Id, settings.Appearance.ThemeId, StringComparison.Ordinal))
+                ?? Themes.First(theme => theme.Id == ThemeIds.System);
             SelectedLoggingLevel = settings.Logging.Level;
             LogRetentionDays = settings.Logging.RetentionDays;
             LogDirectory = settings.Logging.LogDirectory;
@@ -755,7 +746,7 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
             loading = false;
         }
 
-        runtime.PreviewTheme(settings.Appearance.ThemeId);
+        _ = themeManager.PreviewAsync(settings.Appearance.ThemeId);
     }
 
     private PlannerSettings CreateSettings()
@@ -765,7 +756,13 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
             Units = new PlannerUnitSettings { System = SelectedUnitSystem },
             Map = new PlannerMapSettings { DefaultZoom = DefaultMapZoom, SelectedSourceId = selectedOfflineSourceId ?? SelectedMapSource?.Id ?? "osm-standard", HttpCacheEnabled = MapHttpCacheEnabled, HttpCacheLimitBytes = Math.Max(16, MapHttpCacheLimitMiB) * 1_048_576L },
             Telemetry = new PlannerTelemetrySettings { DisplayRateHz = TelemetryDisplayRateHz, ChartHistorySeconds = ChartHistorySeconds },
-            Appearance = new PlannerAppearanceSettings { Theme = SelectedTheme, PreferDarkTheme = true, IsFlyoutVisibleAtStartup = true, IsFlyoutLocked = false },
+            Appearance = new PlannerAppearanceSettings
+            {
+                ThemeId = SelectedTheme?.Id ?? ThemeIds.System,
+                IsFlyoutVisibleAtStartup = IsFlyoutVisibleAtStartup,
+                IsTutorialVisibleAtStartup = IsTutorialVisibleAtStartup,
+                IsFlyoutLocked = IsFlyoutLocked
+            },
             Logging = new PlannerLoggingSettings { Level = SelectedLoggingLevel, RetentionDays = LogRetentionDays, LogDirectory = LogDirectory },
             Connection = new PlannerConnectionSettings { Channel = ConnectionChannel, Host = ConnectionHost, Port = ConnectionPort, BaudRate = ConnectionBaudRate },
             ParameterCache = new PlannerParameterCacheSettings { Policy = SelectedParameterCachePolicy, MaximumAgeMinutes = ParameterCacheMaximumAgeMinutes },
