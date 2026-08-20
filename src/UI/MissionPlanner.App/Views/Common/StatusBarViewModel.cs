@@ -24,7 +24,7 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
 
     [ObservableProperty] public partial string ConnectionStatus { get; set; } = "Disconnected";
 
-    [ObservableProperty] public partial Color ConnectionDotColor { get; set; } = Colors.Gray;
+    [ObservableProperty] public partial bool IsConnectedStatus { get; set; }
 
     [ObservableProperty] public partial string CurrentTime { get; set; } = DateTime.Now.ToString("HH:mm:ss");
     private readonly IList<IDisposable> disposables = [];
@@ -112,12 +112,12 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
         if (stateService.IsConnected)
         {
             ConnectionStatus = "Connected";
-            ConnectionDotColor = Colors.LimeGreen;
+            IsConnectedStatus = true;
         }
         else
         {
             ConnectionStatus = "Disconnected";
-            ConnectionDotColor = Colors.Gray;
+            IsConnectedStatus = false;
         }
     }
 
@@ -126,7 +126,7 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
         dispatcher.Dispatch(() =>
         {
             ConnectionStatus = $"Disconnected: {evt.VehicleId}";
-            ConnectionDotColor = Colors.Gray;
+            IsConnectedStatus = false;
             StatusMessage = $"Vehicle {evt.VehicleId} disconnected";
         });
         return Task.CompletedTask;
@@ -137,7 +137,7 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
         dispatcher.Dispatch(() =>
         {
             ConnectionStatus = $"Connected: {evt.VehicleId}";
-            ConnectionDotColor = Colors.LimeGreen;
+            IsConnectedStatus = true;
             StatusMessage = $"Vehicle {evt.VehicleId} connected via {evt.ConnectionType}";
         });
         return Task.CompletedTask;

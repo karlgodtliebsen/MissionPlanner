@@ -20,7 +20,7 @@
             <Label Grid.Column="0"
                Text="{Binding DataSourceMode}"
                FontAttributes="Bold"
-               TextColor="{DynamicResource Primary}"
+               TextColor="{DynamicResource Warning}"
                VerticalOptions="Center" />
             <!-- App Title/Logo -->
             <Image Grid.Column="1" 

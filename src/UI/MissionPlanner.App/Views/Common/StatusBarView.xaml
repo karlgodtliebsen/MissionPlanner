@@ -19,19 +19,28 @@
                Text="{Binding StatusMessage}"
                VerticalOptions="Center"
                FontSize="12"
-               TextColor="LightGray"/>
+               TextColor="{DynamicResource OnSurfaceVariant}"/>
 
             <!-- Connection Info (Center-Right) -->
             <HorizontalStackLayout Grid.Column="1" 
                                Spacing="8"
                                VerticalOptions="Center"
                                Margin="0,0,16,0">
-                <Label Text="●" 
-                   TextColor="{Binding ConnectionDotColor}"
-                   FontSize="14"/>
+                <Label Text="●"
+                       TextColor="{DynamicResource DisabledText}"
+                       FontSize="14">
+                    <Label.Triggers>
+                        <DataTrigger TargetType="Label"
+                                     Binding="{Binding IsConnectedStatus}"
+                                     Value="True">
+                            <Setter Property="TextColor"
+                                    Value="{DynamicResource Success}" />
+                        </DataTrigger>
+                    </Label.Triggers>
+                </Label>
                 <Label Text="{Binding ConnectionStatus}"
                    FontSize="12"
-                   TextColor="LightGray"/>
+                   TextColor="{DynamicResource OnSurfaceVariant}"/>
             </HorizontalStackLayout>
 
             <!-- Clock (Right) -->
@@ -39,7 +48,7 @@
                Text="{Binding CurrentTime}"
                VerticalOptions="Center"
                FontSize="12"
-               TextColor="LightGray"/>
+               TextColor="{DynamicResource OnSurfaceVariant}"/>
         </Grid>
     </Border>
 
