@@ -5,6 +5,30 @@ MAUI Shell navigation. These patterns make ViewModel ownership explicit and ensu
 subscriptions, cancellation sources, and other resources are released when a view is no
 longer active.
 
+## MAUI view file structure
+
+When creating a .NET MAUI view, component, or control, prefer the standard three-file
+structure:
+
+```text
+NewView.xaml
+NewView.xaml.cs
+NewViewModel.cs
+```
+
+Declare the visual tree in XAML and keep the code-behind focused on view-specific lifecycle,
+event wiring, and calls to `InitializeComponent`. Presentation state and behavior belong in
+the ViewModel. Do not construct an entire visual tree imperatively in the code-behind when
+the same component can be expressed as ordinary XAML.
+
+Use a code-only control only when its behavior genuinely requires runtime visual-tree
+construction or XAML cannot express the implementation cleanly. Treat that as an exception,
+not as the default view pattern.
+
+Format both XAML and code-behind for review. Put attributes, nested controls, bindings, and
+statements on readable lines; do not compress a complete control, layout, method, or class
+onto one line. The examples in this guide demonstrate the expected layout.
+
 ## Choosing the navigation pattern
 
 - Use `LifecycleTabView` for several child views that share one screen and are selected by
@@ -269,6 +293,8 @@ semantics; callers must preserve that distinction rather than bypassing
 
 ## Review checklist
 
+- New MAUI components normally have `.xaml`, `.xaml.cs`, and `ViewModel.cs` files.
+- XAML and code-behind are formatted as readable multiline markup and code.
 - The chosen control matches the navigation level: child tab or Shell destination.
 - The view is parameterless and XAML-constructible.
 - The ViewModel is transient, implements `IDisposable`, and owns its subscriptions and

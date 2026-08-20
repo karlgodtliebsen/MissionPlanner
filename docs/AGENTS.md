@@ -44,8 +44,13 @@ Do not duplicate those documents here.
 - Retain and dispose every EventHub subscription according to the subscriber's lifetime.
 - Avoid blocking, per-message allocations, and verbose logging in telemetry hot paths.
 - Follow `src/.editorconfig`; do not restate or override its formatting and naming rules.
+- Format C# and XAML as readable multiline source; do not compress classes, methods, or
+  visual trees into one-liners. Always use braces for control-flow blocks.
+- Prefer `.xaml`, `.xaml.cs`, and `ViewModel.cs` files for new MAUI views, components, and
+  controls. See `docs/UI_VIEW_LIFECYCLE_AND_NAVIGATION.md` for the canonical pattern.
 - Write comments and developer documentation in English.
-- Always add XML Comments where relevant.  Use build and check for CS1591/CS1587 warnings.
+- Add meaningful XML comments to all public types and public/protected members. Run the
+  relevant build, inspect `CS1591`/`CS1587` warnings, and fix missing or misplaced comments.
 
 ## Verification
 

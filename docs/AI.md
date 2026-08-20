@@ -225,6 +225,41 @@ DI-resolvable.
 
 ---
 
+# Formatting and Public API Documentation
+
+Prefer readable multiline code and markup. Do not write complete classes, methods, control
+layouts, or XAML visual trees as one-liners.
+
+Always use braces for control-flow blocks, including single-statement `if`, `else`, `for`,
+`foreach`, `while`, and `using` blocks. Place opening and closing braces on their own lines:
+
+```csharp
+if (condition)
+{
+    HandleCondition();
+}
+
+foreach (var item in items)
+{
+    Process(item);
+}
+```
+
+All public types and public or protected members must have meaningful XML documentation,
+including constructors, properties, events, methods, parameters, return values, and enum
+members where applicable. Do not suppress missing-documentation diagnostics as a substitute
+for documenting the API.
+
+After changes, run the relevant build and inspect its complete warning output for `CS1591`
+and `CS1587`. Add or correct the XML comments responsible for those warnings before treating
+the change as complete. Also fix documentation warnings in directly affected files that the
+build exposes, even when they predate the current edit.
+
+For the canonical .NET MAUI view structure and lifecycle examples, follow
+[UI_VIEW_LIFECYCLE_AND_NAVIGATION.md](UI_VIEW_LIFECYCLE_AND_NAVIGATION.md#maui-view-file-structure).
+
+---
+
 # Event Selection
 
 Choose the event mechanism according to its scope and semantics:
@@ -247,11 +282,6 @@ direct object reference merely to subscribe to a broad cross-component event.
 
 ---
 
-# Code Comments
-Remember to add xml comments to all public types/members etc. 
-Use build and check for CS1591/CS1587 warnings.
-
----
 # Testing
 
 Whenever practical:
