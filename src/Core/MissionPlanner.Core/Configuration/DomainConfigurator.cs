@@ -148,6 +148,7 @@ public static class DomainConfigurator
         services.TryAddSingleton<IFftAnalysisService, FftAnalysisService>();
         services.TryAddTransient<IServoOutputConfigurationService, ServoOutputConfigurationService>();
         services.TryAddTransient<IFailSafeService, FailSafeService>();
+        services.TryAddTransient<IInitTuneParametersService, InitTuneParametersService>();
 
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, SerialPortsModule>());
         services.TryAddEnumerable(ServiceDescriptor.Transient<IOptionalHardwareModule, OpticalFlowModule>());
