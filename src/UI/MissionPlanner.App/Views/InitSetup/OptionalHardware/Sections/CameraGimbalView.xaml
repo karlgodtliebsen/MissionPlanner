@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <tabViews:TabViewLifecycleContent
     x:TypeArguments="sections:CameraGimbalViewModel"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -15,7 +15,7 @@
             <Label Text="{Binding Status}" LineBreakMode="WordWrap" />
             <Label Text="Changes are explicit and confirmed by parameter readback. Live movement and capture commands remain in Payload Control." Opacity="0.75" LineBreakMode="WordWrap" />
             <Button Text="Open Payload Control" Command="{Binding OpenPayloadControlCommand}" HorizontalOptions="Start" />
-            <Label Text="Reboot required after confirmed changes." IsVisible="{Binding RebootRequired}" TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}" FontAttributes="Bold" />
+            <Label Text="Reboot required after confirmed changes." IsVisible="{Binding RebootRequired}" TextColor="{DynamicResource Warning}" FontAttributes="Bold" />
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}" Spacing="8">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="sections:ParameterSettingViewModel">

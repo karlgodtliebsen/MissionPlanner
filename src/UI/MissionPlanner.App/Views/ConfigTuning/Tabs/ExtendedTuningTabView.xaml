@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <navigation:ExtendedContentPage x:TypeArguments="tabs:ExtendedTuningTabViewModel"
                             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -26,11 +26,11 @@
             <VerticalStackLayout Spacing="4">
                 <Label Text="{Binding StatusMessage}" LineBreakMode="WordWrap" />
                 <Label Text="Expert page: changes to controllers, estimators, and filters can destabilize a vehicle. Autotune execution is intentionally not available here."
-                       TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
+                       TextColor="{DynamicResource Warning}"
                        FontAttributes="Bold"
                        IsVisible="{Binding HasSupportedProfile}" />
                 <Label Text="This connected firmware has no supported advanced profile."
-                       TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
+                       TextColor="{DynamicResource Warning}"
                        IsVisible="{Binding IsUnsupported}" />
             </VerticalStackLayout>
         </Border>
@@ -96,15 +96,15 @@
                             </Grid>
 
                             <Label Text="{Binding ExpertWarning}"
-                                   TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
+                                   TextColor="{DynamicResource Warning}"
                                    FontAttributes="Bold"
                                    LineBreakMode="WordWrap" />
                             <Label Text="{Binding ValidationMessage}"
-                                   TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
+                                   TextColor="{DynamicResource Warning}"
                                    IsVisible="{Binding HasValidationError}"
                                    LineBreakMode="WordWrap" />
                             <Label Text="This group has pending changes."
-                                   TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
+                                   TextColor="{DynamicResource Warning}"
                                    IsVisible="{Binding IsModified}" />
 
                             <VerticalStackLayout IsVisible="{Binding IsExpanded}" Spacing="8">
@@ -183,7 +183,7 @@
                                                     <Label Grid.Row="2" Grid.Column="1" Text="Normalized magnitude across axes" FontSize="11" />
                                                     <Label Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2"
                                                            Text="{Binding Editor.ValidationError}"
-                                                           TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
+                                                           TextColor="{DynamicResource Warning}"
                                                            FontSize="12" />
                                                 </Grid>
                                             </Border>

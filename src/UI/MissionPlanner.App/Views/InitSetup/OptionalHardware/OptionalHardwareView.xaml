@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <navigation:ExtendedContentPage
                     x:TypeArguments="local:OptionalHardwareViewModel" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -12,7 +12,7 @@
                     xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
                     x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.OptionalHardwareView"
                     x:DataType="local:OptionalHardwareViewModel" 
-                    BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
+                    BackgroundColor="{DynamicResource Surface}"
                     Title="Optional Hardware"
     >
     <Grid Padding="20"

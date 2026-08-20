@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <navigation:ExtendedContentPage x:TypeArguments="tabs:GeoFenceTabViewModel"
                             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -37,10 +37,10 @@
                             <Label Text="{Binding VehicleRevisionText}" />
                             <Label Text="{Binding ReturnPointText}" />
                             <Label Text="Local geometry has unapplied changes"
-                                   TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
+                                   TextColor="{DynamicResource Warning}"
                                    IsVisible="{Binding IsGeometryDirty}" />
                             <Label Text="Typed geometry is not advertised by this firmware."
-                                   TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
+                                   TextColor="{DynamicResource Warning}"
                                    IsVisible="{Binding IsTypedGeometryUnsupported}" />
                         </VerticalStackLayout>
                     </Border>
@@ -62,7 +62,7 @@
                                                 HorizontalTextAlignment="End" />
                                                 <Label Grid.Row="1" Grid.ColumnSpan="2"
                                                    Text="{Binding ValidationError}"
-                                                   TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
+                                                   TextColor="{DynamicResource Warning}"
                                                    FontSize="12" />
                                         </Grid>
                                     </DataTemplate>

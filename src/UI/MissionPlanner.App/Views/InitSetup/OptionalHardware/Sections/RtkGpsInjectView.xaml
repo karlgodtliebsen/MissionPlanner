@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <tabViews:TabViewLifecycleContent 
     x:TypeArguments="sections:RtkGpsInjectViewModel" 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
@@ -36,7 +36,7 @@
                 <Button Text="Disconnect" Command="{Binding DisconnectCommand}"/>
             </HorizontalStackLayout>
             <Label Text="{Binding ErrorMessage}" 
-                   TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"/>
+                   TextColor="{DynamicResource Warning}"/>
             <Label Text="{Binding SourceStatus}" FontAttributes="Bold"/>
             <Label Text="{Binding TargetStatus}"/>
             <Label Text="{Binding Statistics}"/>

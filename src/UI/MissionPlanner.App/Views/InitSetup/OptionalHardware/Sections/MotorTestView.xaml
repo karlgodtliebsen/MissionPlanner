@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <tabViews:TabViewLifecycleContent x:TypeArguments="sections:MotorTestViewModel" 
                                   xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -27,7 +27,7 @@
                     VerticalOptions="Center" />
 
                 <Label 
-                    TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}" Text="{Binding ErrorMessage}" 
+                    TextColor="{DynamicResource Warning}" Text="{Binding ErrorMessage}" 
                     LineBreakMode="WordWrap" VerticalOptions="Center" />
 
                 <Label Text="{Binding StatusMessage}" 
@@ -43,7 +43,7 @@
 
                 <Label
                 Text="Remove ALL propellers. Motors will spin."
-                TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
+                TextColor="{DynamicResource Warning}"
                 FontAttributes="Bold" />
             </VerticalStackLayout>
 
@@ -110,7 +110,7 @@
                     </HorizontalStackLayout>
                     <Button
                         Text="STOP All Motors"
-                        TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
+                        TextColor="{DynamicResource Warning}"
                         Command="{Binding StopCommand}" />
                 </VerticalStackLayout>
                 <Grid Grid.Column="1" RowDefinitions="Auto,*" 

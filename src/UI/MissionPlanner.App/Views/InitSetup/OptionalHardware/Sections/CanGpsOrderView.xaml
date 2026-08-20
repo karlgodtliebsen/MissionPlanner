@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <tabViews:TabViewLifecycleContent x:TypeArguments="sections:CanGpsOrderViewModel" 
                                   xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
                                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
@@ -11,7 +11,7 @@
             <Label Text="CAN GPS Order" FontSize="20" FontAttributes="Bold"/>
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
             <Label Text="{Binding Status}"/>
-            <Label Text="Reboot required" TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}" IsVisible="{Binding RebootRequired}"/>
+            <Label Text="Reboot required" TextColor="{DynamicResource Error}" IsVisible="{Binding RebootRequired}"/>
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}" Spacing="8">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="sections:ParameterSettingViewModel">

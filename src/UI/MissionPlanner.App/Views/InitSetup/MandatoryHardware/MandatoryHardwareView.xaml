@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <navigation:ExtendedContentPage 
                             x:TypeArguments="mandatoryHardware:MandatoryHardwareViewModel"
                             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -13,7 +13,7 @@
                             x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.MandatoryHardwareView"
                             x:DataType="mandatoryHardware:MandatoryHardwareViewModel"
                             Title="Initial Setup"
-                            BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
+                            BackgroundColor="{DynamicResource Surface}"
                             >
 
     <Grid Padding="20" RowDefinitions="Auto,Auto,*"
@@ -25,7 +25,7 @@
             <Label Text="Initial Setup" FontSize="26" FontAttributes="Bold" />
             <Label Text="{Binding VehicleHeading}" VerticalOptions="Center" FontSize="16" />
             <Label Text="{Binding SummaryReport}" VerticalOptions="Center" Opacity="0.75" />
-            <Label Text="{Binding Error}"  VerticalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}" />
+            <Label Text="{Binding Error}"  VerticalOptions="Center" TextColor="{DynamicResource Error}" />
             <Label Text="Completion is stored locally and automatically requires review when firmware or parameters change. Prerequisites are guidance, not a rigid wizard."
                    LineBreakMode="WordWrap" Opacity="0.7" />
         </VerticalStackLayout>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <navigation:ExtendedContentPage x:TypeArguments="tabs:OnboardOsdTabViewModel" 
                             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -27,7 +27,7 @@
             <VerticalStackLayout Spacing="3">
                 <Label Text="{Binding StatusMessage}" LineBreakMode="WordWrap" />
                 <Label Text="{Binding ValidationMessage}"
-                       TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
+                       TextColor="{DynamicResource Warning}"
                        IsVisible="{Binding HasValidationIssues}"
                        LineBreakMode="WordWrap" />
                 <Label Text="Font upload is not offered because no font-transfer service is registered."
@@ -35,7 +35,7 @@
                        Opacity="0.75"
                        IsVisible="{Binding HasOsdConfiguration}" />
                 <Label Text="The connected firmware exposes no discoverable OSD screens/items."
-                       TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
+                       TextColor="{DynamicResource Warning}"
                        IsVisible="{Binding IsUnsupported}" />
             </VerticalStackLayout>
         </Border>
@@ -165,7 +165,7 @@
                             <Button  Grid.Column="2" Text="↓ Down" Command="{Binding MoveDownCommand}" />
                             <Button  Grid.Column="3" Text="Right →" Command="{Binding MoveRightCommand}" />
                         </Grid>
-                        <Label Text="{Binding SelectedItem.ValidationError}" TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}" FontSize="12" />
+                        <Label Text="{Binding SelectedItem.ValidationError}" TextColor="{DynamicResource Warning}" FontSize="12" />
                         <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedItem.AdditionalParameters}" Spacing="4">
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate x:DataType="config:ParameterItemViewModel">

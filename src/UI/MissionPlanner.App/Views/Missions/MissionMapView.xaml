@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentView 
                 xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -7,7 +7,7 @@
                 xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                 x:Class="MissionPlanner.App.Views.Missions.MissionMapView"
                 x:DataType="missions:MissionMapViewModel"
-                BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
+                BackgroundColor="{DynamicResource Surface}"
                 >
 
     <Grid RowDefinitions="*,Auto">
@@ -149,8 +149,7 @@
             SemanticProperties.Hint="Map attribution. Activate to toggle expanded details." />
 
 
-            <!--BackgroundColor="{AppThemeBinding Light=#DFFFFFFF, Dark=#D9222222}"
-            TextColor="{AppThemeBinding Light=#202020, Dark=#F5F5F5}"-->
+            <!-- Application chrome colors come from semantic DynamicResource values. -->
 
 
         <!-- Bottom status bar (mirrors Controls.Status) -->

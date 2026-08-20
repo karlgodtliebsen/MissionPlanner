@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <navigation:ExtendedContentPage x:TypeArguments="tabs:BasicTuningTabViewModel"
                             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -26,11 +26,11 @@
             <VerticalStackLayout Spacing="4">
                 <Label Text="{Binding StatusMessage}" LineBreakMode="WordWrap" />
                 <Label Text="Basic Tuning intentionally hides expert control-loop fields. Use Extended Tuning or Full Parameters only when you understand the stability risks."
-                       TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
+                       TextColor="{DynamicResource Warning}"
                        FontAttributes="Bold"
                        IsVisible="{Binding HasSupportedProfile}" />
                 <Label Text="This connected firmware has no supported Basic Tuning profile."
-                       TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
+                       TextColor="{DynamicResource Warning}"
                        IsVisible="{Binding IsUnsupported}" />
             </VerticalStackLayout>
         </Border>
@@ -54,16 +54,16 @@
                                 </Grid>
 
                                 <Label Text="{Binding Warning}"
-                                       TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
+                                       TextColor="{DynamicResource Warning}"
                                        FontAttributes="Bold"
                                        LineBreakMode="WordWrap"
                                        IsVisible="{Binding HasWarning}" />
                                 <Label Text="{Binding ValidationMessage}"
-                                       TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
+                                       TextColor="{DynamicResource Warning}"
                                        LineBreakMode="WordWrap"
                                        IsVisible="{Binding HasValidationError}" />
                                 <Label Text="This group has pending changes."
-                                       TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
+                                       TextColor="{DynamicResource Warning}"
                                        IsVisible="{Binding IsModified}" />
 
                                 <VerticalStackLayout BindableLayout.ItemsSource="{Binding Parameters}" Spacing="8">
@@ -120,10 +120,10 @@
                                                                FontSize="12" />
                                                         <Label Text="{Binding Warning}"
                                                                IsVisible="{Binding HasWarning}"
-                                                               TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
+                                                               TextColor="{DynamicResource Warning}"
                                                                FontSize="12" />
                                                         <Label Text="{Binding Editor.ValidationError}"
-                                                               TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
+                                                               TextColor="{DynamicResource Warning}"
                                                                FontSize="12" />
                                                         <Label Text="{Binding Editor.WriteMessage}"
                                                                FontSize="12" />

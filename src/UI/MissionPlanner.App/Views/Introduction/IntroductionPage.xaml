@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <navigation:ExtendedContentPage x:TypeArguments="introduction:IntroductionViewModel" 
                                 xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -11,7 +11,7 @@
                                 x:Class="MissionPlanner.App.Views.Introduction.IntroductionPage"
                                 x:DataType="introduction:IntroductionViewModel"
                                 Padding="50" 
-                                BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
+                                BackgroundColor="{DynamicResource Surface}"
                                 >
     <Grid RowDefinitions="Auto,*">
         <Grid Grid.Row="0"
@@ -68,7 +68,7 @@
                                             <VisualState Name="Selected">
                                                 <VisualState.Setters>
                                                     <Setter Property="BackgroundColor"
-                                                            Value="{AppThemeBinding Light=#E8EEF5, Dark=#3B4652}" />
+                                                            Value="{DynamicResource PrimaryContainer}" />
                                                 </VisualState.Setters>
                                             </VisualState>
                                         </VisualStateGroup>

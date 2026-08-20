@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <navigation:ExtendedContentPage x:TypeArguments="tabs:FullParametersListTabViewModel"
                       xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -19,7 +19,7 @@
           HorizontalOptions="Fill"
           VerticalOptions="Fill"
           Padding="8,0"
-          BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
+          BackgroundColor="{DynamicResource Surface}"
           >
 
             <HorizontalStackLayout Grid.Row="0" HeightRequest="50" HorizontalOptions="Fill" VerticalOptions="Center" Padding="8,0" Spacing="12" >
@@ -102,7 +102,7 @@
                     LineBreakMode="WordWrap"
                     VerticalOptions="Center" />
 
-                <Label TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}" Text="{Binding ErrorMessage}" LineBreakMode="WordWrap" VerticalOptions="Center" />
+                <Label TextColor="{DynamicResource Warning}" Text="{Binding ErrorMessage}" LineBreakMode="WordWrap" VerticalOptions="Center" />
                 
                 <Label Text="{Binding StatusMessage}" 
                        IsVisible="{Binding IsBackgroundParameterLoadInProgress, Converter={StaticResource InvertedBoolConverter}}"
@@ -110,7 +110,7 @@
 
                 <Label Text="Reboot required after confirmed changes"
                        IsVisible="{Binding RebootRequired}"
-                       TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
+                       TextColor="{DynamicResource Warning}"
                        FontAttributes="Bold"
                        VerticalOptions="Center" />
             </HorizontalStackLayout>
@@ -139,8 +139,7 @@
                                 HorizontalOptions="Center"
                                 VerticalOptions="Center"
                                 Source="{FontImageSource FontFamily=MaterialOutlined, Glyph={x:Static m:MaterialOutlined.Backup_table}, 
-                                    Color={AppThemeBinding Light={StaticResource OnSurface}, 
-                                    Dark={StaticResource OnSurfaceDark}}}"/>
+                                    Color={DynamicResource OnSurface}}"/>
                             <Label
                                 Text="No parameters match the current filter."
                                 FontAttributes="Bold"

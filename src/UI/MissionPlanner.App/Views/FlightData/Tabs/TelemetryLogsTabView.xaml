@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <tabViews:TabViewLifecycleContent x:TypeArguments="tabs:TelemetryLogsTabViewModel" 
                                   xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -12,8 +12,8 @@
                                   x:DataType="tabs:TelemetryLogsTabViewModel">
     <Grid Padding="12" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="10">
         <Border Grid.Row="0" Padding="12" StrokeThickness="2"
-                Stroke="{AppThemeBinding Light=#9A6700, Dark=#F0B429}"
-                BackgroundColor="{AppThemeBinding Light=#FFF8C5, Dark=#3D2E00}">
+                Stroke="{DynamicResource Warning}"
+                BackgroundColor="{DynamicResource WarningContainer}">
             <VerticalStackLayout Spacing="3">
                 <Label Text="{Binding SourceModeLabel}" FontSize="16" FontAttributes="Bold" />
                 <Label Text="Replay uses a separate vehicle-state pipeline. No replay vehicle can receive commands, parameter writes, missions, or file-transfer requests."

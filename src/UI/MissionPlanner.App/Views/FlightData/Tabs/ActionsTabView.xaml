@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <tabViews:TabViewLifecycleContent x:TypeArguments="tabs:ActionsTabViewModel" 
                                   xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -14,7 +14,7 @@
             <Label Text="Vehicle Actions" FontSize="18" FontAttributes="Bold" />
             <Border Padding="8" Stroke="#D97706">
                 <Label Text="{Binding DataSourceMode}" FontAttributes="Bold" 
-                       TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}" />
+                       TextColor="{DynamicResource Warning}" />
             </Border>
             <Label Text="{Binding ObservedState}" FontSize="11" LineBreakMode="WordWrap" />
 
@@ -65,7 +65,7 @@
                 <Switch IsToggled="{Binding IsExpertSectionVisible}" />
             </HorizontalStackLayout>
             <VerticalStackLayout IsVisible="{Binding IsExpertSectionVisible}" Spacing="6">
-                <Label Text="Advanced commands can be hazardous. Verify the command ID and all seven parameters." TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}" />
+                <Label Text="Advanced commands can be hazardous. Verify the command ID and all seven parameters." TextColor="{DynamicResource Warning}" />
                
                 <!--<Entry Placeholder="Command ID" Keyboard="Numeric" Text="{Binding ExpertCommandId}" />
                 <Entry Placeholder="Seven invariant parameters, separated by spaces" Text="{Binding ExpertParameters}" />-->

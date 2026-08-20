@@ -10,7 +10,7 @@
                          xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                          x:Class="MissionPlanner.App.Views.FlightPlanner.FlightPlannerPage"
                          x:DataType="vm:FlightPlannerViewModel"
-                         BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
+                         BackgroundColor="{DynamicResource Surface}"
                          >
 
     <controls:RightDockPanel 
@@ -25,10 +25,10 @@
         AutoSizeToContent="True"
         ShowEdgeToggleWhenExpanded="False"
 
-        DockBackground="{AppThemeBinding Light=White, Dark=#1E1E1E}"
-        HeaderBackground="{AppThemeBinding Light=#F3F3F3, Dark=#2A2A2A}"
-        DockBorderColor="{AppThemeBinding Light=#D0D0D0, Dark=#404040}"
-        SplitterColor="{AppThemeBinding Light=#D8D8D8, Dark=#505050}"
+        DockBackground="{DynamicResource Surface}"
+        HeaderBackground="{DynamicResource SurfaceContainerLow}"
+        DockBorderColor="{DynamicResource Outline}"
+        SplitterColor="{DynamicResource OutlineVariant}"
         >
         <controls:RightDockPanel.MainContent>
             <Grid RowDefinitions="Auto,*" RowSpacing="4" Padding="5"  HorizontalOptions="Fill" VerticalOptions="Fill">

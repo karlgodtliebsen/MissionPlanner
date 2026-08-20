@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <tabViews:ExtendedTabHeaderView
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -11,7 +11,7 @@
     Padding="5"
     >
     <Grid ColumnDefinitions="4,*" Margin="5" >
-        <BoxView BackgroundColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+        <BoxView BackgroundColor="{DynamicResource Primary}"
                          Opacity="0.2"
                          IsVisible="False">
             <BoxView.Triggers>

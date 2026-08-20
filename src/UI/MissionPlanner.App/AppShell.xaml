@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+﻿<?xml version="1.0" encoding="UTF-8" ?>
 <Shell  
 
     x:Class="MissionPlanner.App.AppShell"
@@ -23,7 +23,7 @@
     xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
     Title="MissionPlanner Next Gen"
-    FlyoutBackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
+    FlyoutBackgroundColor="{DynamicResource Surface}"
     FlyoutBehavior="{Binding FlyoutBehavior,Mode=TwoWay}"
     FlyoutIsPresented="{Binding IsFlyoutPresented,Mode=TwoWay}"
     >
@@ -42,7 +42,7 @@
                         <VisualState x:Name="Selected">
                             <VisualState.Setters>
                                 <Setter Property="BackgroundColor"
-                                     Value="{AppThemeBinding Light=#30000000, Dark=#30ffffff}" />
+                                     Value="{DynamicResource PrimaryContainer}" />
                             </VisualState.Setters>
                         </VisualState>
                     </VisualStateGroup>

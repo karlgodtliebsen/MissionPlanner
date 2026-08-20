@@ -8,7 +8,7 @@
              x:DataType="common:TopBarViewModel"
              x:Class="MissionPlanner.App.Views.Common.TopBarView"
              
-             BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
+             BackgroundColor="{DynamicResource Surface}"
              >
     <Border StrokeThickness="1"  VerticalOptions="Fill" Height="50" HorizontalOptions="Fill">
         <Grid ColumnDefinitions="Auto,*,Auto,75,75" 
@@ -16,11 +16,11 @@
           VerticalOptions="Center"
           Padding="2,0,2,0"
           >
-            <!-- Data Source Mode {AppThemeBinding Light=#9A6700, Dark=#F0B429} -->
+            <!-- Data source mode uses the semantic Warning color. -->
             <Label Grid.Column="0"
                Text="{Binding DataSourceMode}"
                FontAttributes="Bold"
-               TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+               TextColor="{DynamicResource Primary}"
                VerticalOptions="Center" />
             <!-- App Title/Logo -->
             <Image Grid.Column="1" 

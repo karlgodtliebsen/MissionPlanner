@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <tabViews:TabViewLifecycleContent
     x:TypeArguments="sections:CompassMotorCalibrationViewModel"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
@@ -12,13 +12,13 @@
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
             <Label Text="Compass / Motor Calibration" FontSize="20" FontAttributes="Bold" />
-            <Label Text="Remove ALL propellers. CompassMot may spin motors." TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}" FontAttributes="Bold" />
+            <Label Text="Remove ALL propellers. CompassMot may spin motors." TextColor="{DynamicResource Warning}" FontAttributes="Bold" />
             <Label Text="{Binding Instruction}" LineBreakMode="WordWrap" />
             <Label Text="{Binding Compensation}" LineBreakMode="WordWrap" />
 
             <HorizontalStackLayout Spacing="8">
                 <Button Text="Start CompassMot" Command="{Binding StartCommand}" />
-                <Button Text="Stop" TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}" Command="{Binding StopCommand}" />
+                <Button Text="Stop" TextColor="{DynamicResource Warning}" Command="{Binding StopCommand}" />
             </HorizontalStackLayout>
 
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Samples}" Spacing="6">
