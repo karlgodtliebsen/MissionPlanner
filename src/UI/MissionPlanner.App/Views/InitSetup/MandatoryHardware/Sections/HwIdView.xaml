@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<tabViews:TabViewLifecycleContent
+    x:TypeArguments="sections:HwIdViewModel"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:hardware="clr-namespace:MissionPlanner.Core.Setup.MandatoryHardware;assembly=MissionPlanner.Core"
+    xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
+    xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+    x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.HwIdView"
+    x:DataType="sections:HwIdViewModel"
+    Margin="100,0,100,0">
+    <ScrollView VerticalScrollBarVisibility="Always">
+        <VerticalStackLayout Spacing="12" Padding="10">
+            <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
+            <Label Text="HW ID" FontSize="18" FontAttributes="Bold" />
+            <Label Text="{Binding Status}" FontAttributes="Italic" />
+            <Label Text="{Binding Error}" TextColor="OrangeRed" />
+            <Border StyleClass="SurfaceContainer,Rounded" Padding="12">
+                <Grid RowDefinitions="Auto,Auto" ColumnDefinitions="140,*" RowSpacing="6">
+                    <Label Text="Autopilot board" FontAttributes="Bold" />
+                    <Label Grid.Column="1" Text="{Binding Board}" />
+                    <Label Grid.Row="1" Text="Firmware" FontAttributes="Bold" />
+                    <Label Grid.Row="1" Grid.Column="1" Text="{Binding Firmware}" />
+                </Grid>
+            </Border>
+            <VerticalStackLayout BindableLayout.ItemsSource="{Binding Items}" Spacing="6">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="hardware:HwIdItem">
+                        <Grid ColumnDefinitions="220,*" ColumnSpacing="10" Padding="8">
+                            <Label Text="{Binding Name}" FontAttributes="Bold" />
+                            <Label Grid.Column="1" Text="{Binding Description}" />
+                        </Grid>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+            <Button Text="Refresh hardware IDs" Command="{Binding RefreshCommand}" HorizontalOptions="Start" />
+        </VerticalStackLayout>
+    </ScrollView>
+</tabViews:TabViewLifecycleContent>

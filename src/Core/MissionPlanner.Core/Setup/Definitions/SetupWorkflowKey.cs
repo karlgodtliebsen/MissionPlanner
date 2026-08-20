@@ -33,7 +33,8 @@ public enum SetupWorkflowKey
     FailSafe,
     /// <summary>Initial vehicle tune recommendations.</summary>
     InitTuneParameters,
-    HWId,
+    /// <summary>Hardware and peripheral identification.</summary>
+    HwId,
 
     ADSB,
 
