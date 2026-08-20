@@ -60,23 +60,20 @@ public sealed class SetupWorkspaceTests
         var result = catalog.Evaluate(Snapshot(State(family)), EmptyParameters(), []);
 
         result.Single(item => item.Descriptor.Key == SetupWorkflowKey.Frame).IsVisible.Should().BeTrue();
-        result.Single(item => item.Descriptor.Key == SetupWorkflowKey.Frame).State.Should().Be(SetupWorkflowState.NotStarted);
+        result.Single(item => item.Descriptor.Key == SetupWorkflowKey.Frame).State.Should().Be(SetupWorkflowState.Available);
     }
 
-    /// <summary>Verifies capability and parameter presence control optional-hardware relevance.</summary>
+    /// <summary>Verifies reported ADS-B parameters control ADS-B relevance.</summary>
     [Fact]
     public void CatalogUsesCapabilitiesAndParameterPresenceForVisibility()
     {
         var catalog = new SetupWorkflowCatalog();
-        var withoutCapability = State(FirmwareFamily.ArduCopter);
-        var withCapability = State(FirmwareFamily.ArduCopter, (ulong)MavProtocolCapability.Ftp);
+        var vehicle = State(FirmwareFamily.ArduCopter);
 
-        catalog.Evaluate(Snapshot(withoutCapability), EmptyParameters(), [])
-            .Single(item => item.Descriptor.Key == SetupWorkflowKey.OptionalHardware).IsVisible.Should().BeFalse();
-        catalog.Evaluate(Snapshot(withCapability), EmptyParameters(), [])
-            .Single(item => item.Descriptor.Key == SetupWorkflowKey.OptionalHardware).IsVisible.Should().BeTrue();
-        catalog.Evaluate(Snapshot(withoutCapability), Parameters(("SERIAL1_PROTOCOL", 2)), [])
-            .Single(item => item.Descriptor.Key == SetupWorkflowKey.OptionalHardware).IsVisible.Should().BeTrue();
+        catalog.Evaluate(Snapshot(vehicle), EmptyParameters(), [])
+            .Single(item => item.Descriptor.Key == SetupWorkflowKey.Adsb).State.Should().Be(SetupWorkflowState.Unsupported);
+        catalog.Evaluate(Snapshot(vehicle), Parameters(("ADSB_TYPE", 1)), [])
+            .Single(item => item.Descriptor.Key == SetupWorkflowKey.Adsb).State.Should().Be(SetupWorkflowState.Available);
     }
 
     /// <summary>Verifies local completion becomes a warning after firmware or parameters change.</summary>
@@ -86,7 +83,7 @@ public sealed class SetupWorkspaceTests
         var catalog = new SetupWorkflowCatalog();
         var original = State(FirmwareFamily.ArduCopter, versionMajor: 4);
         var parameters = Parameters(("FRAME_CLASS", 1));
-        var evidence = catalog.CreateEvidence(SetupWorkflowKey.Firmware, original, parameters, DateTimeOffset.UtcNow);
+        var evidence = catalog.CreateEvidence(SetupWorkflowKey.Frame, original, parameters, DateTimeOffset.UtcNow);
 
         Evaluation(catalog, original, parameters, evidence).State.Should().Be(SetupWorkflowState.Completed);
         Evaluation(catalog, original, Parameters(("FRAME_CLASS", 2)), evidence).State.Should().Be(SetupWorkflowState.Warning);
@@ -131,7 +128,7 @@ public sealed class SetupWorkspaceTests
 
         var heading = viewModel.VehicleHeading;
         context.Set(reconnected with { Connection = reconnected.Connection with { State = VehicleConnectionState.Offline } });
-        viewModel.VehicleHeading.Should().Be(heading);
+        viewModel.VehicleHeading.Should().Contain("disconnected");
     }
 
     /// <summary>Verifies telemetry-only snapshots do not rebuild the Setup workflow collection.</summary>
@@ -189,15 +186,16 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<IBatteryConfigurationService>().Should().NotBeNull();
         provider.GetRequiredService<IActuatorTestService>().Should().NotBeNull();
         provider.GetRequiredService<IServoOutputConfigurationService>().Should().NotBeNull();
+        provider.GetRequiredService<IFailSafeService>().Should().NotBeNull();
+        provider.GetRequiredService<IInitTuneParametersService>().Should().NotBeNull();
+        provider.GetRequiredService<IHwIdService>().Should().NotBeNull();
+        provider.GetRequiredService<IAdsbService>().Should().NotBeNull();
         provider.GetRequiredService<IOptionalHardwareService>().Should().NotBeNull();
         provider.GetRequiredService<IOptionalHardwareCatalog>().Modules.Should().NotBeEmpty();
         provider.GetRequiredService<ISafetyAssessmentService>().Should().NotBeNull();
         provider.GetRequiredService<ISetupSummaryService>().Should().NotBeNull();
         provider.GetRequiredService<INavigationService>().Should().NotBeNull();
         provider.GetRequiredService<MandatoryHardwareViewModel>().Should().NotBeNull();
-        var firmwareViewModel = provider.GetRequiredService<FirmwareSetupViewModel>();
-        firmwareViewModel.Descriptor.Key.Should().Be(SetupWorkflowKey.Firmware);
-        provider.GetRequiredService<FirmwareSetupViewModel>().Should().NotBeSameAs(firmwareViewModel);
         provider.GetRequiredService<FrameSetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Frame);
         provider.GetRequiredService<AccelerometerSetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Accelerometer);
         provider.GetRequiredService<CompassSetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Compass);
@@ -205,8 +203,10 @@ public sealed class SetupWorkspaceTests
         provider.GetRequiredService<FlightModesSetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.FlightModes);
         provider.GetRequiredService<EscMotorSetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Esc);
         provider.GetRequiredService<ServoOutputSetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.ServoOutput);
-        provider.GetRequiredService<SafetySetupViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Safety);
-        provider.GetRequiredService<SetupSummaryViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Summary);
+        provider.GetRequiredService<FailSafeViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.FailSafe);
+        provider.GetRequiredService<InitTuneParametersViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.InitTuneParameters);
+        provider.GetRequiredService<HwIdViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.HwId);
+        provider.GetRequiredService<AdsbViewModel>().Descriptor.Key.Should().Be(SetupWorkflowKey.Adsb);
         provider.GetRequiredService<IParameterEditSessionFactory>().Should().NotBeNull();
         provider.GetRequiredService<IConfigNavigationGuard>().Should().NotBeNull();
         provider.GetRequiredService<IFenceProtocolMapper>().Should().NotBeNull();
@@ -273,7 +273,7 @@ public sealed class SetupWorkspaceTests
         IReadOnlyDictionary<string, VehicleParameter> parameters,
         SetupCompletionEvidence evidence)
     {
-        return catalog.Evaluate(Snapshot(state), parameters, [evidence]).Single(item => item.Descriptor.Key == SetupWorkflowKey.Firmware);
+        return catalog.Evaluate(Snapshot(state), parameters, [evidence]).Single(item => item.Descriptor.Key == SetupWorkflowKey.Frame);
     }
 
     private static ActiveVehicleSnapshot Snapshot(VehicleState state)
