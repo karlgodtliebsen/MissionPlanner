@@ -29,7 +29,8 @@ public enum SetupWorkflowKey
     /// <summary>Electronic speed controller configuration.</summary>
     Esc,
 
-    Failsafe,
+    /// <summary>Vehicle failsafe configuration.</summary>
+    FailSafe,
     InitialTuneParameters,
     HWId,
 

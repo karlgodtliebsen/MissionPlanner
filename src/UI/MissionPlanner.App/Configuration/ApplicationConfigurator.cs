@@ -259,6 +259,7 @@ public static class ApplicationConfigurator
         //services.TryAddTransient<SerialPortsViewModel>();
         services.TryAddTransient<EscMotorSetupViewModel>();
         services.TryAddTransient<FlightModesSetupViewModel>();
+        services.TryAddTransient<FailSafeViewModel>();
         services.TryAddTransient<SafetySetupViewModel>(); //FailSafe
         //services.TryAddTransient<InitialTuneParametersViewModel>();
         //services.TryAddTransient<HwIdViewModel>();
