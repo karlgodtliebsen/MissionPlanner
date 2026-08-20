@@ -7,13 +7,13 @@ namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 /// <summary>Presents one editable peripheral setting with either options or numeric entry.</summary>
 public sealed partial class PeripheralSettingViewModel : ObservableObject
 {
-    private readonly Action<(string, double)> action;
+    private readonly Func<(string, double), Task> action;
     private readonly PeripheralSetting setting;
 
     /// <summary>Initializes a peripheral setting row.</summary>
     /// <param name="setting">The setting projection.</param>
     /// <param name="action">The owning workflow.</param>
-    public PeripheralSettingViewModel(PeripheralSetting setting, Action<(string, double)> action)
+    public PeripheralSettingViewModel(PeripheralSetting setting, Func<(string, double), Task> action)
     {
         this.setting = setting;
         this.action = action;
@@ -54,7 +54,6 @@ public sealed partial class PeripheralSettingViewModel : ObservableObject
     private Task Apply()
     {
         var value = HasOptions ? SelectedOption?.Value ?? setting.CurrentValue : NumericValue;
-        action.Invoke((setting.Name, value));
-        return Task.CompletedTask;
+        return action.Invoke((setting.Name, value));
     }
 }

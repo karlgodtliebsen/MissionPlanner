@@ -111,7 +111,7 @@ public abstract partial class MandatoryParameterViewModel : SetupWorkflowDetailV
         return LoadAsync();
     }
 
-    private async void Apply((string Name, double Value) change)
+    private async Task Apply((string Name, double Value) change)
     {
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
