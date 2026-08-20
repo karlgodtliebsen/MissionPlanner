@@ -1,4 +1,4 @@
-namespace MissionPlanner.App.Views.Common;
+namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 
 /// <summary>Describes how an RC input channel should be presented.</summary>
 public enum RadioChannelPresentationKind

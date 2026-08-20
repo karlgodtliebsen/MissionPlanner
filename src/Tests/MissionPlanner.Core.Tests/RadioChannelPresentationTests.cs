@@ -1,5 +1,5 @@
 ﻿using FluentAssertions;
-using MissionPlanner.App.Views.Common;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 

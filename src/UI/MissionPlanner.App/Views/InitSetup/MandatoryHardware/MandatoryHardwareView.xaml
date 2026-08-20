@@ -8,14 +8,19 @@
                             xmlns:mandatoryHardware="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware"
                             xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                             xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
-                            xmlns:tabsUtils="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.TabsUtils"
+                            xmlns:tabsUtils="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.TabsUtils"
+                            xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
                             x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.MandatoryHardwareView"
                             x:DataType="mandatoryHardware:MandatoryHardwareViewModel"
                             Title="Initial Setup"
                             BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
                             >
 
-    <Grid Padding="20" RowDefinitions="Auto,Auto,*" RowSpacing="14" HorizontalOptions="Center">
+    <Grid Padding="20" RowDefinitions="Auto,Auto,*"
+          RowSpacing="14" 
+          HorizontalOptions="Fill"
+          VerticalOptions="Fill"
+          >
         <VerticalStackLayout Grid.Row="0" Spacing="8">
             <Label Text="Initial Setup" FontSize="26" FontAttributes="Bold" />
             <Label Text="{Binding VehicleHeading}" VerticalOptions="Center" FontSize="16" />
@@ -27,10 +32,10 @@
 
         <VerticalStackLayout Grid.Row="1" Spacing="8">
             <HorizontalStackLayout Spacing="10">
-                <Button Text="Record reviewed"
+                <!--<Button Text="Record reviewed"
                         IsEnabled="{Binding SelectedWorkflow.CanOpen}"
                         IsVisible="{Binding CanRecordSelectedWorkflowManually}"
-                        Command="{Binding MarkCompleteCommand}" />
+                        Command="{Binding MarkCompleteCommand}" />-->
                 <Button Text="Open related Config page"
                         IsVisible="{Binding HasConfigDestination}"
                         Command="{Binding OpenConfigCommand}" />
@@ -38,26 +43,24 @@
             </HorizontalStackLayout>
         </VerticalStackLayout>
 
-        <Border Grid.Row="2"  StyleClass="SurfaceContainer,Rounded,Elevation1" BackgroundColor="Transparent" Padding="10">
+        <Border Grid.Row="2"  StyleClass="SurfaceContainer,Rounded,Elevation1"  >
 
-            <tabViews:ExtendedTabView Grid.Row="2" 
+            <tabViews:ExtendedTabView 
                                   HorizontalOptions="Fill"
-                                  HeaderItemsSource="{Binding Workflows}"
-                                  SelectedHeaderItem="{Binding SelectedWorkflow, Mode=TwoWay}"
+                                  VerticalOptions="Fill"
+                                  HeaderItemsSource="{Binding Tabs}"
+                                  SelectedHeaderItem="{Binding SelectedTab, Mode=TwoWay}"
                                   CachingStrategy="CacheOnLayout"
                                   UseAnimation="False"
                                   TabPlacement="Start"
-                                  Padding="0"
+                                  
                                   >
 
                 <material:TabView.TabHeaderItemTemplate>
                     <DataTemplate>
-                        <tabsUtils:SlimTabHeaderView />
+                        <common:SlimTabHeaderView />
                     </DataTemplate>
                 </material:TabView.TabHeaderItemTemplate>
-                <!--<material:TabItem Title="Firmware" >
-                <sections:FirmwareSetupView />
-            </material:TabItem>-->
                 <material:TabItem Title="Frame">
                     <sections:FrameSetupView />
                 </material:TabItem>
@@ -73,9 +76,6 @@
                 <material:TabItem Title="Servo Output">
                     <sections:ServoOutputSetupView />
                 </material:TabItem>
-                <!--<material:TabItem Title="Serial Ports">
-                <sections:BatterySetupView />
-            </material:TabItem>-->
                 <material:TabItem Title="ESC Calibration">
                     <sections:EscMotorSetupView />
                 </material:TabItem>
@@ -95,22 +95,6 @@
                 <material:TabItem Title="ADSB">
                     <sections:AdsbView />
                 </material:TabItem>
-
-
-                <!--<material:TabItem Title="Battery">
-                <sections:BatterySetupView />
-            </material:TabItem>-->
-
-
-                <!--<material:TabItem Title="Optional Hardware">
-                <sections:OptionalHardwareSetupView />
-            </material:TabItem>
-            <material:TabItem Title="Safety">
-                <sections:SafetySetupView />
-            </material:TabItem>
-            <material:TabItem Title="Summary">
-                <sections:SetupSummaryView />
-            </material:TabItem>-->
             </tabViews:ExtendedTabView>
         </Border>
     </Grid>

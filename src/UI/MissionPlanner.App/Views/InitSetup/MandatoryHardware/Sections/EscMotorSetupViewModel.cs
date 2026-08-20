@@ -3,13 +3,13 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
-using MissionPlanner.Core.Setup;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.OptionalHardware.Motor;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using SetupWorkflowDetailViewModel = MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models.SetupWorkflowDetailViewModel;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -52,48 +52,92 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
     }
 
     /// <summary>Gets the audit log of actuator operations.</summary>
-    public ObservableCollection<string> Log { get; } = [];
+    public ObservableCollection<string> Log
+    {
+        get;
+    } = [];
 
     /// <summary>Gets whether the connected vehicle family supports motor testing.</summary>
     [ObservableProperty]
-    public partial bool SupportsMotorTest { get; private set; }
+    public partial bool SupportsMotorTest
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the ESC calibration explanation.</summary>
     [ObservableProperty]
-    public partial string EscExplanation { get; private set; } = string.Empty;
+    public partial string EscExplanation
+    {
+        get;
+        private set;
+    } = string.Empty;
 
     /// <summary>Gets the ESC calibration steps, when applicable.</summary>
-    public ObservableCollection<string> EscSteps { get; } = [];
+    public ObservableCollection<string> EscSteps
+    {
+        get;
+    } = [];
 
     /// <summary>Gets whether ESC calibration steps apply.</summary>
     [ObservableProperty]
-    public partial bool EscCalibrationApplicable { get; private set; }
+    public partial bool EscCalibrationApplicable
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the current actuator-test state.</summary>
     [ObservableProperty]
-    public partial MotorTestState TestState { get; private set; }
+    public partial MotorTestState TestState
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the current actuator-test instruction.</summary>
     [ObservableProperty]
-    public partial string Instruction { get; private set; } = string.Empty;
+    public partial string Instruction
+    {
+        get;
+        private set;
+    } = string.Empty;
 
     /// <summary>Gets or sets the motor index to test.</summary>
     [ObservableProperty]
-    public partial int MotorIndex { get; set; } = 1;
+    public partial int MotorIndex
+    {
+        get;
+        set;
+    } = 1;
 
     /// <summary>Gets or sets the throttle percentage to apply.</summary>
     [ObservableProperty]
-    public partial double ThrottlePercent { get; set; } = 10;
+    public partial double ThrottlePercent
+    {
+        get;
+        set;
+    } = 10;
 
     /// <summary>Gets or sets the bounded test duration in seconds.</summary>
     [ObservableProperty]
-    public partial double DurationSeconds { get; set; } = 2;
+    public partial double DurationSeconds
+    {
+        get;
+        set;
+    } = 2;
 
     /// <summary>Gets the maximum permitted duration.</summary>
-    public double MaximumDuration { get; }
+    public double MaximumDuration
+    {
+        get;
+    }
 
     /// <summary>Gets the maximum permitted throttle percentage.</summary>
-    public double MaximumThrottle { get; }
+    public double MaximumThrottle
+    {
+        get;
+    }
 
     /// <summary>Gets whether an actuator test is running.</summary>
     public bool IsRunning => TestState == MotorTestState.Running;

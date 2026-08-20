@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
@@ -11,6 +11,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 using UraniumUI.Extensions;
+using SetupWorkflowDetailViewModel = MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models.SetupWorkflowDetailViewModel;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -64,22 +65,40 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
     }
 
     /// <summary>Gets frame parameters supported by both live values and firmware metadata.</summary>
-    public ObservableCollection<FrameParameterSettingViewModel> Settings { get; } = [];
+    public ObservableCollection<FrameParameterSettingViewModel> Settings
+    {
+        get;
+    } = [];
 
     /// <summary>Gets optional initial-setup recommendations that require explicit selection.</summary>
-    public ObservableCollection<FrameRecommendationViewModel> Recommendations { get; } = [];
+    public ObservableCollection<FrameRecommendationViewModel> Recommendations
+    {
+        get;
+    } = [];
 
     /// <summary>Gets the reported firmware family.</summary>
     [ObservableProperty]
-    public partial string FirmwareFamily { get; private set; } = "Unknown";
+    public partial string FirmwareFamily
+    {
+        get;
+        private set;
+    } = "Unknown";
 
     /// <summary>Gets workflow guidance or the latest operation result.</summary>
     [ObservableProperty]
-    public partial string Status { get; private set; } = "Load the connected vehicle's supported frame choices.";
+    public partial string Status
+    {
+        get;
+        private set;
+    } = "Load the connected vehicle's supported frame choices.";
 
     /// <summary>Gets whether a confirmed change requires a vehicle reboot.</summary>
     [ObservableProperty]
-    public partial bool RebootRequired { get; private set; }
+    public partial bool RebootRequired
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether at least one frame setting is supported.</summary>
     public bool HasSettings => Settings.Count > 0;
@@ -282,7 +301,10 @@ public sealed partial class FrameParameterSettingViewModel : ObservableObject
     }
 
     /// <summary>Gets the underlying setting.</summary>
-    public FrameParameterSetting Setting { get; }
+    public FrameParameterSetting Setting
+    {
+        get;
+    }
 
     /// <summary>Gets the parameter name.</summary>
     public string Name => Setting.Name;
@@ -303,7 +325,11 @@ public sealed partial class FrameParameterSettingViewModel : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(PendingDisplay))]
     [NotifyPropertyChangedFor(nameof(HasChange))]
-    public partial FrameParameterOption? SelectedOption { get; set; }
+    public partial FrameParameterOption? SelectedOption
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets a label for the pending value.</summary>
     public string PendingDisplay => SelectedOption is null ? "Select a supported value" : $"{SelectedOption.Label} ({SelectedOption.Value})";
@@ -337,7 +363,10 @@ public sealed partial class FrameRecommendationViewModel : ObservableObject
     }
 
     /// <summary>Gets the underlying recommendation.</summary>
-    public FrameInitialParameterRecommendation Recommendation { get; }
+    public FrameInitialParameterRecommendation Recommendation
+    {
+        get;
+    }
 
     /// <summary>Gets the parameter name.</summary>
     public string Name => Recommendation.Name;
@@ -347,7 +376,11 @@ public sealed partial class FrameRecommendationViewModel : ObservableObject
 
     /// <summary>Gets or sets whether the user explicitly approved this recommendation.</summary>
     [ObservableProperty]
-    public partial bool IsSelected { get; set; }
+    public partial bool IsSelected
+    {
+        get;
+        set;
+    }
 
     /// <summary>Creates the explicitly selected change.</summary>
     /// <returns>The reviewed parameter change.</returns>

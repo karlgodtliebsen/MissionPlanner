@@ -1,6 +1,6 @@
 using MissionPlanner.Core.Vehicles;
 
-namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
+namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 
 internal static class SetupVehicleChange
 {

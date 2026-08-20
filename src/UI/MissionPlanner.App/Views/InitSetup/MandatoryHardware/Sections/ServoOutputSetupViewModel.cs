@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
@@ -15,7 +16,7 @@ using UraniumUI.Extensions;
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Projects servo output functions with live PWM and confirmed function writes into Setup controls.</summary>
-public sealed partial class ServoOutputSetupViewModel : Models.SetupWorkflowDetailViewModel
+public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IServoOutputConfigurationService servoService;
@@ -27,15 +28,26 @@ public sealed partial class ServoOutputSetupViewModel : Models.SetupWorkflowDeta
     private DateTimeOffset? observedServoAt;
 
     /// <summary>Gets the discovered servo outputs.</summary>
-    public ObservableCollection<ServoOutputItemViewModel> Outputs { get; } = [];
+    public ObservableCollection<ServoOutputItemViewModel> Outputs
+    {
+        get;
+    } = [];
 
     /// <summary>Gets the workflow status.</summary>
     [ObservableProperty]
-    public partial string Status { get; private set; } = "Load the connected vehicle's servo output functions.";
+    public partial string Status
+    {
+        get;
+        private set;
+    } = "Load the connected vehicle's servo output functions.";
 
     /// <summary>Gets whether any servo outputs were discovered.</summary>
     [ObservableProperty]
-    public partial bool HasOutputs { get; private set; }
+    public partial bool HasOutputs
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Initializes the servo output Setup workflow.</summary>
     /// <param name="workflowCatalog">The setup workflow catalog.</param>

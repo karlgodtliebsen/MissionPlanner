@@ -2,12 +2,13 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using SetupWorkflowDetailViewModel = MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models.SetupWorkflowDetailViewModel;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -47,14 +48,24 @@ public sealed partial class SafetySetupViewModel : SetupWorkflowDetailViewModel
     }
 
     /// <summary>Gets the assessed safety checks.</summary>
-    public ObservableCollection<SafetyCheckItem> Items { get; } = [];
+    public ObservableCollection<SafetyCheckItem> Items
+    {
+        get;
+    } = [];
 
     /// <summary>Gets the evidence-based warnings.</summary>
-    public ObservableCollection<string> Warnings { get; } = [];
+    public ObservableCollection<string> Warnings
+    {
+        get;
+    } = [];
 
     /// <summary>Gets the workflow status.</summary>
     [ObservableProperty]
-    public partial string Status { get; set; }
+    public partial string Status
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets whether any warnings were raised.</summary>
     public bool HasWarnings => Warnings.Count > 0;

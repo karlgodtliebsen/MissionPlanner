@@ -4,7 +4,8 @@ using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
+using MissionPlanner.App.Views.Common;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
@@ -60,20 +61,46 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
         this.clock = clock;
         this.dispatcher = dispatcher;
         this.logger = logger;
+
+        //Tabs = new ObservableRangeCollection<TabItemViewModel>(
+        //    catalog.Workflows.Select(item => new TabItemViewModel(item)));
+        //Tabs = new ObservableRangeCollection<TabItemViewModel>(
+
+        Tabs = new ObservableRangeCollection<TabItemViewModel>(
+            catalog.Workflows.Select(item =>
+                new TabItemViewModel(new TabDescriptor(item.Key.ToString(), item.Title, item.Description, item.ConfigDestination)))
+        );
+
         activeVehicle.Changed += OnActiveVehicleChanged;
         parameterRegistry.Changed += OnParameterChanged;
         RefreshCore();
     }
 
-    /// <summary>Gets the relevant workflows in dependency order.</summary>
-    public ObservableRangeCollection<SetupWorkflowItemViewModel> Workflows
+    ///// <summary>Gets the relevant workflows in dependency order.</summary>
+    //public ObservableRangeCollection<SetupWorkflowItemViewModel> Workflows
+    //{
+    //    get;
+    //} = [];
+
+    ///// <summary>Gets or sets the selected workflow.</summary>
+    //[ObservableProperty]
+    //public partial SetupWorkflowItemViewModel? SelectedWorkflow
+    //{
+    //    get;
+    //    set;
+    //}
+
+    /// <summary>
+    /// Gets fixed index-aligned headers.
+    /// </summary>
+    public ObservableRangeCollection<TabItemViewModel> Tabs
     {
         get;
-    } = [];
+    }
 
-    /// <summary>Gets or sets the selected workflow.</summary>
+    /// <summary>Gets or sets the selected header.</summary>
     [ObservableProperty]
-    public partial SetupWorkflowItemViewModel? SelectedWorkflow
+    public partial TabItemViewModel? SelectedTab
     {
         get;
         set;
@@ -130,13 +157,13 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
 
     /// <summary>Gets whether Optional Hardware is selected.</summary>
     /// <summary>Gets whether the selected workflow links to a Config page.</summary>
-    public bool HasConfigDestination => SelectedWorkflow?.Descriptor.ConfigDestination is not null;
+    public bool HasConfigDestination => SelectedTab?.Descriptor.ConfigDestination is not null;
 
-    /// <summary>Gets whether the selected workflow may be recorded through generic manual review.</summary>
-    public bool CanRecordSelectedWorkflowManually =>
-        SelectedWorkflow?.Descriptor.Key is { } key &&
-        key is not SetupWorkflowKey.Frame and not SetupWorkflowKey.Accelerometer and
-            not SetupWorkflowKey.Compass and not SetupWorkflowKey.Radio;
+    ///// <summary>Gets whether the selected workflow may be recorded through generic manual review.</summary>
+    //public bool CanRecordSelectedWorkflowManually =>
+    //    SelectedWorkflow?.Descriptor.Key is { } key &&
+    //    key is not SetupWorkflowKey.Frame and not SetupWorkflowKey.Accelerometer and
+    //        not SetupWorkflowKey.Compass and not SetupWorkflowKey.Radio;
 
     /// <summary>Gets the active vehicle heading.</summary>
     [ObservableProperty]
@@ -176,28 +203,28 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
         CancelParameterRefresh();
     }
 
-    partial void OnSelectedWorkflowChanged(SetupWorkflowItemViewModel? value)
-    {
-        //  OnPropertyChanged(nameof(IsFirmwareSelected));
-        //OnPropertyChanged(nameof(IsFlightModesSelected));
-        //OnPropertyChanged(nameof(IsBatterySelected));
-        //OnPropertyChanged(nameof(IsOptionalHardwareSelected));
-        //OnPropertyChanged(nameof(IsSafetySelected));
-        //OnPropertyChanged(nameof(IsSummarySelected));   
+    //partial void OnSelectedWorkflowChanged(SetupWorkflowItemViewModel? value)
+    //{
+    //    //  OnPropertyChanged(nameof(IsFirmwareSelected));
+    //    //OnPropertyChanged(nameof(IsFlightModesSelected));
+    //    //OnPropertyChanged(nameof(IsBatterySelected));
+    //    //OnPropertyChanged(nameof(IsOptionalHardwareSelected));
+    //    //OnPropertyChanged(nameof(IsSafetySelected));
+    //    //OnPropertyChanged(nameof(IsSummarySelected));   
 
-        OnPropertyChanged(nameof(IsFrameSelected));
-        OnPropertyChanged(nameof(IsAccelerometerSelected));
-        OnPropertyChanged(nameof(IsCompassSelected));
-        OnPropertyChanged(nameof(IsRadioSelected));
-        OnPropertyChanged(nameof(IsEscSelected));
-        OnPropertyChanged(nameof(IsServoOutputSelected));
-        OnPropertyChanged(nameof(IsFailSafeSelected));
-        OnPropertyChanged(nameof(IsInitTuneParametersSelected));
-        OnPropertyChanged(nameof(IsHwIdSelected));
-        OnPropertyChanged(nameof(IsAdsbSelected));
-        OnPropertyChanged(nameof(HasConfigDestination));
-        OnPropertyChanged(nameof(CanRecordSelectedWorkflowManually));
-    }
+    //    OnPropertyChanged(nameof(IsFrameSelected));
+    //    OnPropertyChanged(nameof(IsAccelerometerSelected));
+    //    OnPropertyChanged(nameof(IsCompassSelected));
+    //    OnPropertyChanged(nameof(IsRadioSelected));
+    //    OnPropertyChanged(nameof(IsEscSelected));
+    //    OnPropertyChanged(nameof(IsServoOutputSelected));
+    //    OnPropertyChanged(nameof(IsFailSafeSelected));
+    //    OnPropertyChanged(nameof(IsInitTuneParametersSelected));
+    //    OnPropertyChanged(nameof(IsHwIdSelected));
+    //    OnPropertyChanged(nameof(IsAdsbSelected));
+    //    OnPropertyChanged(nameof(HasConfigDestination));
+    //    OnPropertyChanged(nameof(CanRecordSelectedWorkflowManually));
+    //}
 
     [RelayCommand]
     private void Refresh()
@@ -205,42 +232,42 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
         RefreshCore();
     }
 
-    [RelayCommand]
-    private async Task MarkCompleteAsync(CancellationToken cancellationToken)
-    {
-        if (SelectedWorkflow is null || activeVehicle.State is not { } state || !activeVehicle.IsOnline)
-        {
-            Error = "Connect a vehicle and select a workflow first.";
-            return;
-        }
+    //[RelayCommand]
+    //private async Task MarkCompleteAsync(CancellationToken cancellationToken)
+    //{
+    //    if (SelectedWorkflow is null || activeVehicle.State is not { } state || !activeVehicle.IsOnline)
+    //    {
+    //        Error = "Connect a vehicle and select a workflow first.";
+    //        return;
+    //    }
 
-        if (!CanRecordSelectedWorkflowManually)
-        {
-            Error = "This workflow is recorded only after explicit vehicle protocol confirmation.";
-            return;
-        }
+    //    if (!CanRecordSelectedWorkflowManually)
+    //    {
+    //        Error = "This workflow is recorded only after explicit vehicle protocol confirmation.";
+    //        return;
+    //    }
 
-        var accepted = await confirmation.ConfirmAsync(
-            "Record setup completion",
-            $"Record {SelectedWorkflow.Title} as reviewed for {state.DisplayName}? It will be revalidated after firmware or parameter changes.",
-            "Record complete",
-            cancellationToken);
-        if (!accepted)
-        {
-            return;
-        }
+    //    var accepted = await confirmation.ConfirmAsync(
+    //        "Record setup completion",
+    //        $"Record {SelectedWorkflow.Title} as reviewed for {state.DisplayName}? It will be revalidated after firmware or parameter changes.",
+    //        "Record complete",
+    //        cancellationToken);
+    //    if (!accepted)
+    //    {
+    //        return;
+    //    }
 
-        var parameters = parameterRegistry.GetAllParameters(state.VehicleId);
-        completionStore.Save(catalog.CreateEvidence(SelectedWorkflow.Descriptor.Key, state, parameters, clock.UtcNow));
-        logger.LogInformation("Recorded local completion for Setup workflow {Workflow} on {VehicleId}.", SelectedWorkflow.Descriptor.Key, state.VehicleId);
-        Error = null;
-        Refresh();
-    }
+    //    var parameters = parameterRegistry.GetAllParameters(state.VehicleId);
+    //    completionStore.Save(catalog.CreateEvidence(SelectedWorkflow.Descriptor.Key, state, parameters, clock.UtcNow));
+    //    logger.LogInformation("Recorded local completion for Setup workflow {Workflow} on {VehicleId}.", SelectedWorkflow.Descriptor.Key, state.VehicleId);
+    //    Error = null;
+    //    Refresh();
+    //}
 
     [RelayCommand]
     private async Task OpenConfigAsync()
     {
-        if (SelectedWorkflow?.Descriptor.ConfigDestination is not { } destination)
+        if (SelectedTab?.Descriptor.ConfigDestination is not { } destination)
         {
             return;
         }
@@ -262,12 +289,12 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
 
     private bool IsSelected(SetupWorkflowKey key)
     {
-        return SelectedWorkflow?.Descriptor.Key == key;
+        return SelectedTab?.Descriptor.Key == key.ToString();
     }
 
     private void RefreshCore()
     {
-        var selectedKey = SelectedWorkflow?.Descriptor.Key;
+        var selectedKey = SelectedTab?.Descriptor.Key;
         var snapshot = activeVehicle.Current;
         var parameters = snapshot.VehicleId is { } id
             ? parameterRegistry.GetAllParameters(id)
@@ -276,18 +303,27 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
         // Retain unsupported workflows so removing a header cannot shift it onto another tab.
         var evaluations = catalog.Evaluate(snapshot, parameters, completionStore.GetAll()).ToArray();
 
-        Workflows.ReplaceRange(evaluations.Select(x => new SetupWorkflowItemViewModel(x)));
+        var tabs = new ObservableRangeCollection<TabItemViewModel>(
+            catalog.Workflows.Select(item =>
+                new TabItemViewModel(new TabDescriptor(item.Key.ToString(), item.Title, item.Description, item.ConfigDestination)))
+        );
+
+
+        //   var tabs = evaluations.Select(x => new SetupWorkflowItemViewModel(x));
+
+        Tabs.ReplaceRange(tabs);
 
         VehicleHeading = snapshot.IsOnline
             ? $"{snapshot.DisplayName} · {snapshot.State!.Identity.Firmware.Family}"
             : snapshot.VehicleId is null
                 ? "No vehicle connected"
                 : $"{snapshot.DisplayName} · disconnected";
+
         var relevant = evaluations.Where(item => item.State != SetupWorkflowState.Unsupported).ToArray();
         var completed = relevant.Count(item => item.State == SetupWorkflowState.Completed);
         var warnings = relevant.Count(item => item.State is SetupWorkflowState.Warning or SetupWorkflowState.Failed);
         SummaryReport = $"{completed} of {relevant.Length} relevant workflows completed; {warnings} require attention.";
-        SelectedWorkflow = Workflows.FirstOrDefault(item => item.Descriptor.Key == selectedKey) ?? Workflows.FirstOrDefault();
+        SelectedTab = Tabs.FirstOrDefault(item => item.Descriptor.Key == selectedKey) ?? Tabs.FirstOrDefault();
     }
 
     private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)

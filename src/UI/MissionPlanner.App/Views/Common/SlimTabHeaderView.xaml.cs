@@ -1,6 +1,6 @@
 ﻿using UraniumUI.Material.TabViews;
 
-namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.TabsUtils;
+namespace MissionPlanner.App.Views.Common;
 
 /// <summary>
 /// A slim version of the ExtendedTabHeaderView.    

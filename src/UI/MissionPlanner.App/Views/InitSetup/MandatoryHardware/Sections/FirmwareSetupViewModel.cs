@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Setup.Abstractions;
@@ -18,7 +19,7 @@ using MissionPlanner.MavLink.Generated;
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Presents firmware identity and guarded discovery, verification, and flashing actions.</summary>
-public sealed partial class FirmwareSetupViewModel : Models.SetupWorkflowDetailViewModel
+public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IDomainEventHub domainEventHub;
@@ -66,19 +67,33 @@ public sealed partial class FirmwareSetupViewModel : Models.SetupWorkflowDetailV
     }
 
     /// <summary>Gets the available release channels.</summary>
-    public IReadOnlyList<FirmwareReleaseChannel> Channels { get; } = Enum.GetValues<FirmwareReleaseChannel>();
+    public IReadOnlyList<FirmwareReleaseChannel> Channels
+    {
+        get;
+    } = Enum.GetValues<FirmwareReleaseChannel>();
 
     /// <summary>Gets compatible manifest releases.</summary>
-    public ObservableCollection<FirmwareManifestEntryRecord> Releases { get; } = [];
+    public ObservableCollection<FirmwareManifestEntryRecord> Releases
+    {
+        get;
+    } = [];
 
     /// <summary>Gets or sets the selected release channel.</summary>
     [ObservableProperty]
-    public partial FirmwareReleaseChannel SelectedChannel { get; set; } = FirmwareReleaseChannel.Stable;
+    public partial FirmwareReleaseChannel SelectedChannel
+    {
+        get;
+        set;
+    } = FirmwareReleaseChannel.Stable;
 
     /// <summary>Gets or sets the selected compatible release.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(DownloadCommand))]
-    public partial FirmwareManifestEntryRecord? SelectedRelease { get; set; }
+    public partial FirmwareManifestEntryRecord? SelectedRelease
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets the manifest-provided technical board target for the selected release.</summary>
     public string SelectedBoardTarget => SelectedRelease?.BoardTarget ?? "No compatible release selected";
@@ -88,56 +103,108 @@ public sealed partial class FirmwareSetupViewModel : Models.SetupWorkflowDetailV
 
     /// <summary>Gets the derived vehicle label.</summary>
     [ObservableProperty]
-    public partial string VehicleLabel { get; private set; } = "No vehicle";
+    public partial string VehicleLabel
+    {
+        get;
+        private set;
+    } = "No vehicle";
 
     /// <summary>Gets the formatted firmware family and version.</summary>
     [ObservableProperty]
-    public partial string FirmwareVersion { get; private set; } = "Unknown";
+    public partial string FirmwareVersion
+    {
+        get;
+        private set;
+    } = "Unknown";
 
     /// <summary>Gets the firmware release type.</summary>
     [ObservableProperty]
-    public partial string ReleaseType { get; private set; } = "Unknown";
+    public partial string ReleaseType
+    {
+        get;
+        private set;
+    } = "Unknown";
 
     /// <summary>Gets the flight firmware Git hash.</summary>
     [ObservableProperty]
-    public partial string GitHash { get; private set; } = "Not reported";
+    public partial string GitHash
+    {
+        get;
+        private set;
+    } = "Not reported";
 
     /// <summary>Gets the board version.</summary>
     [ObservableProperty]
-    public partial string BoardVersion { get; private set; } = "Not reported";
+    public partial string BoardVersion
+    {
+        get;
+        private set;
+    } = "Not reported";
 
     /// <summary>Gets vendor and product identifiers.</summary>
     [ObservableProperty]
-    public partial string VendorProduct { get; private set; } = "Not reported";
+    public partial string VendorProduct
+    {
+        get;
+        private set;
+    } = "Not reported";
 
     /// <summary>Gets the legacy hardware UID.</summary>
     [ObservableProperty]
-    public partial string HardwareUid { get; private set; } = "Not reported";
+    public partial string HardwareUid
+    {
+        get;
+        private set;
+    } = "Not reported";
 
     /// <summary>Gets the extended hardware UID.</summary>
     [ObservableProperty]
-    public partial string HardwareUid2 { get; private set; } = "Not reported";
+    public partial string HardwareUid2
+    {
+        get;
+        private set;
+    } = "Not reported";
 
     /// <summary>Gets the reported MAVLink version.</summary>
     [ObservableProperty]
-    public partial string MavLinkVersion { get; private set; } = "Unknown";
+    public partial string MavLinkVersion
+    {
+        get;
+        private set;
+    } = "Unknown";
 
     /// <summary>Gets named and raw MAVLink capability flags.</summary>
     [ObservableProperty]
-    public partial string Capabilities { get; private set; } = "None";
+    public partial string Capabilities
+    {
+        get;
+        private set;
+    } = "None";
 
     /// <summary>Gets platform flashing availability.</summary>
     [ObservableProperty]
-    public partial string FlashingAvailability { get; private set; } = "No platform adapter available.";
+    public partial string FlashingAvailability
+    {
+        get;
+        private set;
+    } = "No platform adapter available.";
 
     /// <summary>Gets the firmware workflow status.</summary>
     [ObservableProperty]
-    public partial string Status { get; private set; } = "Identity is read-only until a compatible manifest release is selected.";
+    public partial string Status
+    {
+        get;
+        private set;
+    } = "Identity is read-only until a compatible manifest release is selected.";
 
     /// <summary>Gets the firmware workflow state.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(FlashCommand))]
-    public partial FirmwareUpdateState UpdateState { get; private set; }
+    public partial FirmwareUpdateState UpdateState
+    {
+        get;
+        private set;
+    }
 
     partial void OnSelectedChannelChanged(FirmwareReleaseChannel value)
     {

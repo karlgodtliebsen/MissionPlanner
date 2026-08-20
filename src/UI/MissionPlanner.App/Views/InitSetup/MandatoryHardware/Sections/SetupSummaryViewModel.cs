@@ -2,12 +2,13 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using SetupWorkflowDetailViewModel = MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models.SetupWorkflowDetailViewModel;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -43,19 +44,33 @@ public sealed partial class SetupSummaryViewModel : SetupWorkflowDetailViewModel
     }
 
     /// <summary>Gets the summary sections.</summary>
-    public ObservableCollection<SetupSummarySectionViewModel> Sections { get; } = [];
+    public ObservableCollection<SetupSummarySectionViewModel> Sections
+    {
+        get;
+    } = [];
 
     /// <summary>Gets the aggregated warnings.</summary>
-    public ObservableCollection<string> Warnings { get; } = [];
+    public ObservableCollection<string> Warnings
+    {
+        get;
+    } = [];
 
     /// <summary>Gets the vehicle heading.</summary>
     [ObservableProperty]
-    public partial string Heading { get; private set; } = "Connect a vehicle to build a setup summary.";
+    public partial string Heading
+    {
+        get;
+        private set;
+    } = "Connect a vehicle to build a setup summary.";
 
     /// <summary>Gets the exported report text, when generated.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasExport))]
-    public partial string? ExportedText { get; private set; }
+    public partial string? ExportedText
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether exported report text is available.</summary>
     public bool HasExport => !string.IsNullOrEmpty(ExportedText);

@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.Common;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
@@ -16,7 +17,7 @@ using MissionPlanner.Library.EventHub.Abstractions;
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
 /// <summary>Projects live RC channels and the radio endpoint-calibration state machine into Setup controls.</summary>
-public sealed partial class RadioSetupViewModel : Models.SetupWorkflowDetailViewModel
+public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IRadioCalibrationService radioService;
@@ -75,53 +76,99 @@ public sealed partial class RadioSetupViewModel : Models.SetupWorkflowDetailView
     }
 
     /// <summary>Gets the live RC channels.</summary>
-    public ObservableCollection<RadioChannelDisplayViewModel> Channels { get; } = [];
+    public ObservableCollection<RadioChannelDisplayViewModel> Channels
+    {
+        get;
+    } = [];
 
     /// <summary>Gets the current configuration and validation issues.</summary>
-    public ObservableCollection<string> Issues { get; } = [];
+    public ObservableCollection<string> Issues
+    {
+        get;
+    } = [];
 
     /// <summary>Gets whether the RC telemetry is stale.</summary>
     [ObservableProperty]
-    public partial bool IsStale { get; private set; } = true;
+    public partial bool IsStale
+    {
+        get;
+        private set;
+    } = true;
 
     /// <summary>Gets the receiver signal state.</summary>
     [ObservableProperty]
-    public partial RadioSignalState SignalState { get; private set; } = RadioSignalState.NoSignal;
+    public partial RadioSignalState SignalState
+    {
+        get;
+        private set;
+    } = RadioSignalState.NoSignal;
 
     /// <summary>Gets a concise receiver state label.</summary>
     [ObservableProperty]
-    public partial string SignalStatus { get; private set; } = "No signal";
+    public partial string SignalStatus
+    {
+        get;
+        private set;
+    } = "No signal";
 
     /// <summary>Gets the number of currently observed RC channels.</summary>
     [ObservableProperty]
-    public partial int ChannelCount { get; private set; }
+    public partial int ChannelCount
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets RC input RSSI text, or an explicit unavailable marker.</summary>
     [ObservableProperty]
-    public partial string RssiText { get; private set; } = "RSSI —";
+    public partial string RssiText
+    {
+        get;
+        private set;
+    } = "RSSI —";
 
     /// <summary>Gets the resolved pilot-channel map summary.</summary>
     [ObservableProperty]
-    public partial string ChannelMapSummary { get; private set; } = "Map unavailable";
+    public partial string ChannelMapSummary
+    {
+        get;
+        private set;
+    } = "Map unavailable";
 
     /// <summary>Gets whether the connected vehicle is armed.</summary>
     [ObservableProperty]
-    public partial bool IsArmed { get; private set; }
+    public partial bool IsArmed
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the vehicle safety-state label.</summary>
     public string VehicleSafetyStatus => IsArmed ? "ARMED — writing blocked" : "Disarmed";
 
     /// <summary>Gets the current calibration workflow stage.</summary>
     [ObservableProperty]
-    public partial RadioCalibrationState CalibrationState { get; private set; }
+    public partial RadioCalibrationState CalibrationState
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the primary calibration instruction.</summary>
     [ObservableProperty]
-    public partial string Instruction { get; private set; } = string.Empty;
+    public partial string Instruction
+    {
+        get;
+        private set;
+    } = string.Empty;
 
     /// <summary>Gets a summary of captured endpoints during calibration.</summary>
     [ObservableProperty]
-    public partial string CaptureSummary { get; private set; } = string.Empty;
+    public partial string CaptureSummary
+    {
+        get;
+        private set;
+    } = string.Empty;
 
     /// <summary>Gets whether any live channels are available.</summary>
     public bool HasChannels => Channels.Count > 0;
@@ -452,13 +499,20 @@ public sealed partial class RadioChannelDisplayViewModel : ObservableObject
     }
 
     /// <summary>Gets the one-based channel number.</summary>
-    public int Number { get; }
+    public int Number
+    {
+        get;
+    }
 
     /// <summary>Gets the mapped pilot function, when known.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(Title))]
     [NotifyPropertyChangedFor(nameof(RoleLabel))]
-    public partial string? FunctionName { get; private set; }
+    public partial string? FunctionName
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the channel title.</summary>
     public string Title => FunctionName is null ? $"Channel {Number}" : $"Channel {Number} ({FunctionName})";
@@ -468,71 +522,139 @@ public sealed partial class RadioChannelDisplayViewModel : ObservableObject
 
     /// <summary>Gets the latest PWM value in microseconds.</summary>
     [ObservableProperty]
-    public partial int Pwm { get; private set; }
+    public partial int Pwm
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the normalized stick position from minus one to one.</summary>
     [ObservableProperty]
-    public partial double Normalized { get; private set; }
+    public partial double Normalized
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the configured minimum endpoint.</summary>
     [ObservableProperty]
-    public partial int Minimum { get; private set; }
+    public partial int Minimum
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the configured maximum endpoint.</summary>
     [ObservableProperty]
-    public partial int Maximum { get; private set; }
+    public partial int Maximum
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the configured trim.</summary>
     [ObservableProperty]
-    public partial int Trim { get; private set; }
+    public partial int Trim
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the centered-axis dead zone.</summary>
     [ObservableProperty]
-    public partial int DeadZone { get; private set; }
+    public partial int DeadZone
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether the channel is reversed.</summary>
     [ObservableProperty]
-    public partial bool IsReversed { get; private set; }
+    public partial bool IsReversed
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether a live PWM value is available.</summary>
     [ObservableProperty]
-    public partial bool HasSignal { get; private set; }
+    public partial bool HasSignal
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the meter presentation kind.</summary>
     [ObservableProperty]
-    public partial RadioChannelPresentationKind PresentationKind { get; private set; }
+    public partial RadioChannelPresentationKind PresentationKind
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the captured minimum endpoint.</summary>
     [ObservableProperty]
-    public partial int? CapturedMinimum { get; private set; }
+    public partial int? CapturedMinimum
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the captured maximum endpoint.</summary>
     [ObservableProperty]
-    public partial int? CapturedMaximum { get; private set; }
+    public partial int? CapturedMaximum
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the fresh Review-stage trim candidate.</summary>
     [ObservableProperty]
-    public partial int? CandidateTrim { get; private set; }
+    public partial int? CandidateTrim
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether captured markers should be rendered.</summary>
     [ObservableProperty]
-    public partial bool ShowCapturedRange { get; private set; }
+    public partial bool ShowCapturedRange
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets an optional honest auxiliary-position interpretation.</summary>
     [ObservableProperty]
-    public partial string? AuxiliaryState { get; private set; }
+    public partial string? AuxiliaryState
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the channel-specific validation message.</summary>
     [ObservableProperty]
-    public partial string? CalibrationIssue { get; private set; }
+    public partial string? CalibrationIssue
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the endpoint and reversal summary.</summary>
     [ObservableProperty]
-    public partial string Range { get; private set; } = string.Empty;
+    public partial string Range
+    {
+        get;
+        private set;
+    } = string.Empty;
 
     /// <summary>Gets whether the channel telemetry is stale.</summary>
     [ObservableProperty]
-    public partial bool IsStale { get; private set; }
+    public partial bool IsStale
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Updates the live values from a new projection.</summary>
     /// <param name="info">The channel projection.</param>

@@ -1,5 +1,5 @@
-using FluentAssertions;
-using MissionPlanner.App.Views.Common;
+﻿using FluentAssertions;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 
 namespace MissionPlanner.Core.Tests;
 

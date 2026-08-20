@@ -1,13 +1,13 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using UraniumUI.Extensions;
+using SetupWorkflowDetailViewModel = MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models.SetupWorkflowDetailViewModel;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -31,19 +31,34 @@ public sealed partial class HwIdViewModel : SetupWorkflowDetailViewModel
     }
 
     /// <summary>Gets reported peripheral identifiers.</summary>
-    public ObservableCollection<HwIdItem> Items { get; } = [];
+    public ObservableCollection<HwIdItem> Items
+    {
+        get;
+    } = [];
 
     /// <summary>Gets the board summary.</summary>
     [ObservableProperty]
-    public partial string Board { get; private set; } = "Unavailable";
+    public partial string Board
+    {
+        get;
+        private set;
+    } = "Unavailable";
 
     /// <summary>Gets the firmware summary.</summary>
     [ObservableProperty]
-    public partial string Firmware { get; private set; } = "Unavailable";
+    public partial string Firmware
+    {
+        get;
+        private set;
+    } = "Unavailable";
 
     /// <summary>Gets the current diagnostic status.</summary>
     [ObservableProperty]
-    public partial string Status { get; private set; } = "Connect a vehicle to inspect hardware identifiers.";
+    public partial string Status
+    {
+        get;
+        private set;
+    } = "Connect a vehicle to inspect hardware identifiers.";
 
     /// <inheritdoc />
     public override void Cancel()

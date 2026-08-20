@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using MissionPlanner.Core.Setup;
 
-namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
+namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 
 /// <summary>Provides the common presentation and lifecycle state for one Setup workflow.</summary>
 public partial class SetupWorkflowDetailViewModel : ObservableObject, IDisposable
@@ -14,7 +14,10 @@ public partial class SetupWorkflowDetailViewModel : ObservableObject, IDisposabl
     }
 
     /// <summary>Gets the workflow definition.</summary>
-    public SetupWorkflowDescriptor Descriptor { get; }
+    public SetupWorkflowDescriptor Descriptor
+    {
+        get;
+    }
 
     /// <summary>Gets the workflow title.</summary>
     public string Title => Descriptor.Title;
@@ -27,16 +30,28 @@ public partial class SetupWorkflowDetailViewModel : ObservableObject, IDisposabl
 
     /// <summary>Gets or sets the current operation progress from zero to one.</summary>
     [ObservableProperty]
-    public partial bool IsBusy { get; set; }
+    public partial bool IsBusy
+    {
+        get;
+        set;
+    }
 
 
     /// <summary>Gets or sets the current operation progress from zero to one.</summary>
     [ObservableProperty]
-    public partial double Progress { get; set; }
+    public partial double Progress
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets the latest workflow error.</summary>
     [ObservableProperty]
-    public partial string? Error { get; set; }
+    public partial string? Error
+    {
+        get;
+        set;
+    }
 
 
     /// <summary>Cancels work owned by this workflow ViewModel.</summary>

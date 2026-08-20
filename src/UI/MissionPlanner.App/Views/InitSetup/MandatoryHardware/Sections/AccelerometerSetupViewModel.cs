@@ -2,7 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
@@ -10,6 +10,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Shared.Models.Vehicles.Models;
+using SetupWorkflowDetailViewModel = MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models.SetupWorkflowDetailViewModel;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -65,27 +66,51 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
 
     /// <summary>Gets the current calibration workflow stage.</summary>
     [ObservableProperty]
-    public partial CalibrationWorkflowState CalibrationState { get; private set; }
+    public partial CalibrationWorkflowState CalibrationState
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the primary physical instruction.</summary>
     [ObservableProperty]
-    public partial string Instruction { get; private set; } = string.Empty;
+    public partial string Instruction
+    {
+        get;
+        private set;
+    } = string.Empty;
 
     /// <summary>Gets supplemental ArduPilot status text.</summary>
     [ObservableProperty]
-    public partial string? SupplementalStatus { get; private set; }
+    public partial string? SupplementalStatus
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the current orientation label.</summary>
     [ObservableProperty]
-    public partial string Orientation { get; private set; } = "No orientation requested";
+    public partial string Orientation
+    {
+        get;
+        private set;
+    } = "No orientation requested";
 
     /// <summary>Gets the repository image illustrating the requested orientation.</summary>
     [ObservableProperty]
-    public partial string OrientationImage { get; private set; } = "x_calibration01_x.jpg";
+    public partial string OrientationImage
+    {
+        get;
+        private set;
+    } = "x_calibration01_x.jpg";
 
     /// <summary>Gets a concise completed-orientation summary.</summary>
     [ObservableProperty]
-    public partial string CompletedOrientations { get; private set; } = "0 of 6 positions sampled";
+    public partial string CompletedOrientations
+    {
+        get;
+        private set;
+    } = "0 of 6 positions sampled";
 
     /// <summary>Gets whether the vehicle is waiting for the user to confirm placement.</summary>
     public bool CanConfirmOrientation => CalibrationState == CalibrationWorkflowState.WaitingForOrientation && calibration.Current.RequiredOrientation is not null;

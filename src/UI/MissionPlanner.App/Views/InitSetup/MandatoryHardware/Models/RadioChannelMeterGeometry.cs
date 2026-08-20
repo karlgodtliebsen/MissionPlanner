@@ -1,4 +1,4 @@
-namespace MissionPlanner.App.Views.Common;
+namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 
 /// <summary>Provides allocation-free PWM-to-rail geometry for radio channel meters.</summary>
 public static class RadioChannelMeterGeometry

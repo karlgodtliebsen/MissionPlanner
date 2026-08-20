@@ -2,13 +2,14 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using SetupWorkflowDetailViewModel = MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models.SetupWorkflowDetailViewModel;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -44,19 +45,34 @@ public sealed partial class FlightModesSetupViewModel : SetupWorkflowDetailViewM
     }
 
     /// <summary>Gets the six flight-mode slots.</summary>
-    public ObservableCollection<FlightModeSlotViewModel> Slots { get; } = [];
+    public ObservableCollection<FlightModeSlotViewModel> Slots
+    {
+        get;
+    } = [];
 
     /// <summary>Gets the workflow status.</summary>
     [ObservableProperty]
-    public partial string Status { get; private set; } = "Load the connected vehicle's flight-mode configuration.";
+    public partial string Status
+    {
+        get;
+        private set;
+    } = "Load the connected vehicle's flight-mode configuration.";
 
     /// <summary>Gets the configured mode channel description.</summary>
     [ObservableProperty]
-    public partial string ModeChannelDescription { get; private set; } = string.Empty;
+    public partial string ModeChannelDescription
+    {
+        get;
+        private set;
+    } = string.Empty;
 
     /// <summary>Gets whether the connected firmware supports flight-mode slots.</summary>
     [ObservableProperty]
-    public partial bool IsSupported { get; private set; }
+    public partial bool IsSupported
+    {
+        get;
+        private set;
+    }
 
     /// <inheritdoc />
     public override void Cancel()
@@ -196,22 +212,41 @@ public sealed partial class FlightModeSlotViewModel : ObservableObject
     }
 
     /// <summary>Gets the one-based slot number.</summary>
-    public int Slot { get; }
+    public int Slot
+    {
+        get;
+    }
 
     /// <summary>Gets the available modes.</summary>
-    public IReadOnlyList<VehicleModeOption> Options { get; private set; }
+    public IReadOnlyList<VehicleModeOption> Options
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the PWM band description.</summary>
     [ObservableProperty]
-    public partial string BandDescription { get; private set; } = string.Empty;
+    public partial string BandDescription
+    {
+        get;
+        private set;
+    } = string.Empty;
 
     /// <summary>Gets whether the mode channel currently selects this slot.</summary>
     [ObservableProperty]
-    public partial bool IsActive { get; private set; }
+    public partial bool IsActive
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets or sets the selected mode.</summary>
     [ObservableProperty]
-    public partial VehicleModeOption? SelectedMode { get; set; }
+    public partial VehicleModeOption? SelectedMode
+    {
+        get;
+        set;
+    }
 
     /// <summary>Updates the slot from a new projection.</summary>
     /// <param name="slot">The slot projection.</param>

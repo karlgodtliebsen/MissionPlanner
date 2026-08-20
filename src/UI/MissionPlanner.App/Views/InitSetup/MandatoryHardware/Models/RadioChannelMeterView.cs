@@ -1,6 +1,4 @@
-using Microsoft.Maui.Graphics;
-
-namespace MissionPlanner.App.Views.Common;
+namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 
 /// <summary>Draws one live RC channel with configured and calibration markers.</summary>
 public sealed class RadioChannelMeterView : GraphicsView
@@ -18,87 +16,172 @@ public sealed class RadioChannelMeterView : GraphicsView
     }
 
     /// <summary>Gets or sets the one-based channel number used for accessibility.</summary>
-    public int ChannelNumber { get => (int)GetValue(ChannelNumberProperty); set => SetValue(ChannelNumberProperty, value); }
+    public int ChannelNumber
+    {
+        get => (int)GetValue(ChannelNumberProperty);
+        set => SetValue(ChannelNumberProperty, value);
+    }
+
     /// <summary>Identifies <see cref="ChannelNumber"/>.</summary>
     public static readonly BindableProperty ChannelNumberProperty = MeterProperty(nameof(ChannelNumber), 0);
 
     /// <summary>Gets or sets the resolved channel function used for accessibility.</summary>
-    public string? FunctionName { get => (string?)GetValue(FunctionNameProperty); set => SetValue(FunctionNameProperty, value); }
+    public string? FunctionName
+    {
+        get => (string?)GetValue(FunctionNameProperty);
+        set => SetValue(FunctionNameProperty, value);
+    }
+
     /// <summary>Identifies <see cref="FunctionName"/>.</summary>
     public static readonly BindableProperty FunctionNameProperty = MeterProperty<string?>(nameof(FunctionName), null);
 
     /// <summary>Gets or sets the latest raw PWM value.</summary>
-    public int Pwm { get => (int)GetValue(PwmProperty); set => SetValue(PwmProperty, value); }
+    public int Pwm
+    {
+        get => (int)GetValue(PwmProperty);
+        set => SetValue(PwmProperty, value);
+    }
+
     /// <summary>Identifies <see cref="Pwm"/>.</summary>
     public static readonly BindableProperty PwmProperty = MeterProperty(nameof(Pwm), 1500);
 
     /// <summary>Gets or sets the lower visual-domain PWM value.</summary>
-    public int DisplayMinimum { get => (int)GetValue(DisplayMinimumProperty); set => SetValue(DisplayMinimumProperty, value); }
+    public int DisplayMinimum
+    {
+        get => (int)GetValue(DisplayMinimumProperty);
+        set => SetValue(DisplayMinimumProperty, value);
+    }
+
     /// <summary>Identifies <see cref="DisplayMinimum"/>.</summary>
     public static readonly BindableProperty DisplayMinimumProperty = MeterProperty(nameof(DisplayMinimum), 800);
 
     /// <summary>Gets or sets the upper visual-domain PWM value.</summary>
-    public int DisplayMaximum { get => (int)GetValue(DisplayMaximumProperty); set => SetValue(DisplayMaximumProperty, value); }
+    public int DisplayMaximum
+    {
+        get => (int)GetValue(DisplayMaximumProperty);
+        set => SetValue(DisplayMaximumProperty, value);
+    }
+
     /// <summary>Identifies <see cref="DisplayMaximum"/>.</summary>
     public static readonly BindableProperty DisplayMaximumProperty = MeterProperty(nameof(DisplayMaximum), 2200);
 
     /// <summary>Gets or sets the configured minimum endpoint.</summary>
-    public int ConfiguredMinimum { get => (int)GetValue(ConfiguredMinimumProperty); set => SetValue(ConfiguredMinimumProperty, value); }
+    public int ConfiguredMinimum
+    {
+        get => (int)GetValue(ConfiguredMinimumProperty);
+        set => SetValue(ConfiguredMinimumProperty, value);
+    }
+
     /// <summary>Identifies <see cref="ConfiguredMinimum"/>.</summary>
     public static readonly BindableProperty ConfiguredMinimumProperty = MeterProperty(nameof(ConfiguredMinimum), 1100);
 
     /// <summary>Gets or sets the configured maximum endpoint.</summary>
-    public int ConfiguredMaximum { get => (int)GetValue(ConfiguredMaximumProperty); set => SetValue(ConfiguredMaximumProperty, value); }
+    public int ConfiguredMaximum
+    {
+        get => (int)GetValue(ConfiguredMaximumProperty);
+        set => SetValue(ConfiguredMaximumProperty, value);
+    }
+
     /// <summary>Identifies <see cref="ConfiguredMaximum"/>.</summary>
     public static readonly BindableProperty ConfiguredMaximumProperty = MeterProperty(nameof(ConfiguredMaximum), 1900);
 
     /// <summary>Gets or sets the configured trim value.</summary>
-    public int Trim { get => (int)GetValue(TrimProperty); set => SetValue(TrimProperty, value); }
+    public int Trim
+    {
+        get => (int)GetValue(TrimProperty);
+        set => SetValue(TrimProperty, value);
+    }
+
     /// <summary>Identifies <see cref="Trim"/>.</summary>
     public static readonly BindableProperty TrimProperty = MeterProperty(nameof(Trim), 1500);
 
     /// <summary>Gets or sets the centered-axis dead zone in microseconds.</summary>
-    public int DeadZone { get => (int)GetValue(DeadZoneProperty); set => SetValue(DeadZoneProperty, value); }
+    public int DeadZone
+    {
+        get => (int)GetValue(DeadZoneProperty);
+        set => SetValue(DeadZoneProperty, value);
+    }
+
     /// <summary>Identifies <see cref="DeadZone"/>.</summary>
     public static readonly BindableProperty DeadZoneProperty = MeterProperty(nameof(DeadZone), 0);
 
     /// <summary>Gets or sets the minimum captured during the current calibration.</summary>
-    public int? CapturedMinimum { get => (int?)GetValue(CapturedMinimumProperty); set => SetValue(CapturedMinimumProperty, value); }
+    public int? CapturedMinimum
+    {
+        get => (int?)GetValue(CapturedMinimumProperty);
+        set => SetValue(CapturedMinimumProperty, value);
+    }
+
     /// <summary>Identifies <see cref="CapturedMinimum"/>.</summary>
     public static readonly BindableProperty CapturedMinimumProperty = MeterProperty<int?>(nameof(CapturedMinimum), null);
 
     /// <summary>Gets or sets the maximum captured during the current calibration.</summary>
-    public int? CapturedMaximum { get => (int?)GetValue(CapturedMaximumProperty); set => SetValue(CapturedMaximumProperty, value); }
+    public int? CapturedMaximum
+    {
+        get => (int?)GetValue(CapturedMaximumProperty);
+        set => SetValue(CapturedMaximumProperty, value);
+    }
+
     /// <summary>Identifies <see cref="CapturedMaximum"/>.</summary>
     public static readonly BindableProperty CapturedMaximumProperty = MeterProperty<int?>(nameof(CapturedMaximum), null);
 
     /// <summary>Gets or sets the fresh Review-stage trim candidate.</summary>
-    public int? CandidateTrim { get => (int?)GetValue(CandidateTrimProperty); set => SetValue(CandidateTrimProperty, value); }
+    public int? CandidateTrim
+    {
+        get => (int?)GetValue(CandidateTrimProperty);
+        set => SetValue(CandidateTrimProperty, value);
+    }
+
     /// <summary>Identifies <see cref="CandidateTrim"/>.</summary>
     public static readonly BindableProperty CandidateTrimProperty = MeterProperty<int?>(nameof(CandidateTrim), null);
 
     /// <summary>Gets or sets whether captured endpoint markers are displayed.</summary>
-    public bool IsCapturing { get => (bool)GetValue(IsCapturingProperty); set => SetValue(IsCapturingProperty, value); }
+    public bool IsCapturing
+    {
+        get => (bool)GetValue(IsCapturingProperty);
+        set => SetValue(IsCapturingProperty, value);
+    }
+
     /// <summary>Identifies <see cref="IsCapturing"/>.</summary>
     public static readonly BindableProperty IsCapturingProperty = MeterProperty(nameof(IsCapturing), false);
 
     /// <summary>Gets or sets whether the retained input is stale.</summary>
-    public bool IsStale { get => (bool)GetValue(IsStaleProperty); set => SetValue(IsStaleProperty, value); }
+    public bool IsStale
+    {
+        get => (bool)GetValue(IsStaleProperty);
+        set => SetValue(IsStaleProperty, value);
+    }
+
     /// <summary>Identifies <see cref="IsStale"/>.</summary>
     public static readonly BindableProperty IsStaleProperty = MeterProperty(nameof(IsStale), false);
 
     /// <summary>Gets or sets whether a live channel value is available.</summary>
-    public bool HasSignal { get => (bool)GetValue(HasSignalProperty); set => SetValue(HasSignalProperty, value); }
+    public bool HasSignal
+    {
+        get => (bool)GetValue(HasSignalProperty);
+        set => SetValue(HasSignalProperty, value);
+    }
+
     /// <summary>Identifies <see cref="HasSignal"/>.</summary>
     public static readonly BindableProperty HasSignalProperty = MeterProperty(nameof(HasSignal), true);
 
     /// <summary>Gets or sets the channel presentation semantics.</summary>
-    public RadioChannelPresentationKind PresentationKind { get => (RadioChannelPresentationKind)GetValue(PresentationKindProperty); set => SetValue(PresentationKindProperty, value); }
+    public RadioChannelPresentationKind PresentationKind
+    {
+        get => (RadioChannelPresentationKind)GetValue(PresentationKindProperty);
+        set => SetValue(PresentationKindProperty, value);
+    }
+
     /// <summary>Identifies <see cref="PresentationKind"/>.</summary>
     public static readonly BindableProperty PresentationKindProperty = MeterProperty(nameof(PresentationKind), RadioChannelPresentationKind.Auxiliary);
 
     /// <summary>Gets or sets whether the configured channel direction is reversed.</summary>
-    public bool IsReversed { get => (bool)GetValue(IsReversedProperty); set => SetValue(IsReversedProperty, value); }
+    public bool IsReversed
+    {
+        get => (bool)GetValue(IsReversedProperty);
+        set => SetValue(IsReversedProperty, value);
+    }
+
     /// <summary>Identifies <see cref="IsReversed"/>.</summary>
     public static readonly BindableProperty IsReversedProperty = MeterProperty(nameof(IsReversed), false);
 

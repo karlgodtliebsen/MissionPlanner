@@ -1,9 +1,10 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Mapsui.Utilities;
+using MissionPlanner.App.Views.Common;
 using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.App.Views.InitSetup.OptionalHardware.Models;
+using TabItemViewModel = MissionPlanner.App.Views.Common.TabItemViewModel;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware;
 
@@ -26,9 +27,11 @@ public sealed partial class OptionalHardwareViewModel : ObservableObject, IDispo
         this.parameters = parameters;
         this.dispatcher = dispatcher;
 
-        Tabs = new ObservableCollection<TabItemViewModel>(
-            catalog.Tabs.Select(item => new TabItemViewModel(item)));
+        Tabs = new ObservableRangeCollection<TabItemViewModel>(
+            catalog.Tabs.Select(item =>
+                new TabItemViewModel(new TabDescriptor(item.Key.ToString(), item.Title, item.Description))));
 
+        //, item.Order, item.RequiresVehicle, item.RequiresParameters, item.SupportsOffline, item.ParameterPrefixes, item.FirmwareFamilies))));
 
         activeVehicle.Changed += OnVehicleChanged;
         parameters.Changed += OnParameterChanged;
@@ -38,19 +41,34 @@ public sealed partial class OptionalHardwareViewModel : ObservableObject, IDispo
     /// <summary>
     /// Gets fixed index-aligned headers.
     /// </summary>
-    public ObservableCollection<TabItemViewModel> Tabs { get; }
+    public ObservableRangeCollection<TabItemViewModel> Tabs
+    {
+        get;
+    }
 
     /// <summary>Gets or sets the selected header.</summary>
     [ObservableProperty]
-    public partial TabItemViewModel? SelectedTab { get; set; }
+    public partial TabItemViewModel? SelectedTab
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets the vehicle heading.</summary>
     [ObservableProperty]
-    public partial string VehicleHeading { get; private set; } = "No vehicle connected";
+    public partial string VehicleHeading
+    {
+        get;
+        private set;
+    } = "No vehicle connected";
 
     /// <summary>Gets the availability summary.</summary>
     [ObservableProperty]
-    public partial string AvailabilitySummary { get; private set; } = string.Empty;
+    public partial string AvailabilitySummary
+    {
+        get;
+        private set;
+    } = string.Empty;
 
     private void Refresh()
     {

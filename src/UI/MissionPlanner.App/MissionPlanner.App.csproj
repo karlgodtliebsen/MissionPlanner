@@ -326,16 +326,13 @@
 	  <MauiXaml Update="Views\ConfigTuning\Tabs\ParametersEditorView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Views\InitSetup\MandatoryHardware\Sections\TabsUtils\SlimTabHeaderView.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
 	  <MauiXaml Update="Views\InitSetup\OptionalHardware\Sections\MotorTestView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\InitSetup\OptionalHardware\Sections\RtkGpsInjectView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Views\InitSetup\OptionalHardware\TabsUtils\SlimTabHeaderView.xaml">
+	  <MauiXaml Update="Views\Common\SlimTabHeaderView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\Landing\LandingPage.xaml">
@@ -362,9 +359,6 @@
 	  <MauiXaml Update="Views\InitSetup\InstallFirmware\InstallFirmwareView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Views\InitSetup\MandatoryHardware\Sections\TabsUtils\TabHeaderView.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
 	  <MauiXaml Update="Views\InitSetup\OptionalHardware\OptionalHardwareView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
@@ -383,5 +377,9 @@
 	  <MauiXaml Update="Views\Missions\MissionItemListViewPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Views\InitSetup\OptionalHardware\Models\" />
 	</ItemGroup>
 </Project>

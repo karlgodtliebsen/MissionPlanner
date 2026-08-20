@@ -1,6 +1,6 @@
 ﻿using MissionPlanner.Core.Setup;
 
-namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
+namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 
 /// <summary>Represents one vehicle-evaluated workflow card in the Setup shell.</summary>
 public sealed class SetupWorkflowItemViewModel
@@ -13,7 +13,10 @@ public sealed class SetupWorkflowItemViewModel
     }
 
     /// <summary>Gets the underlying evaluation.</summary>
-    public SetupWorkflowEvaluation Evaluation { get; }
+    public SetupWorkflowEvaluation Evaluation
+    {
+        get;
+    }
 
     /// <summary>Gets the workflow definition.</summary>
     public SetupWorkflowDescriptor Descriptor => Evaluation.Descriptor;

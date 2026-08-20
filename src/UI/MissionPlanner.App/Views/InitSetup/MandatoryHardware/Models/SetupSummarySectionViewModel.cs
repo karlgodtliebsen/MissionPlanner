@@ -1,6 +1,6 @@
 ﻿using MissionPlanner.Core.Setup.MandatoryHardware;
 
-namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
+namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 
 /// <summary>Presents one summary section for display.</summary>
 public sealed class SetupSummarySectionViewModel
@@ -14,8 +14,14 @@ public sealed class SetupSummarySectionViewModel
     }
 
     /// <summary>Gets the section title.</summary>
-    public string Title { get; }
+    public string Title
+    {
+        get;
+    }
 
     /// <summary>Gets the section entries.</summary>
-    public IReadOnlyList<SetupSummaryEntry> Entries { get; }
+    public IReadOnlyList<SetupSummaryEntry> Entries
+    {
+        get;
+    }
 }
