@@ -549,7 +549,12 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
     {
         if (!loading)
         {
-            runtime.PreviewTheme(value);
+            runtime.PreviewTheme(value switch
+            {
+                PlannerTheme.Light => "mission-light",
+                PlannerTheme.Dark => "mission-dark",
+                _ => "system"
+            });
         }
     }
 
@@ -750,7 +755,7 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
             loading = false;
         }
 
-        runtime.PreviewTheme(settings.Appearance.Theme);
+        runtime.PreviewTheme(settings.Appearance.ThemeId);
     }
 
     private PlannerSettings CreateSettings()

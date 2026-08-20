@@ -212,7 +212,12 @@ public partial class AppShellContentViewModel : ObservableObject
 
     partial void OnSelectedThemeChanged(AppTheme value)
     {
-        runtime.PreviewTheme(ToPlannerTheme(value));
+        runtime.PreviewTheme(value switch
+        {
+            AppTheme.Light => "mission-light",
+            AppTheme.Dark => "mission-dark",
+            _ => "system"
+        });
         if (!synchronizing)
         {
             _ = PersistThemeAsync(ToPlannerTheme(value));
