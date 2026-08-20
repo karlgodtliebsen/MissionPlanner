@@ -211,32 +211,25 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
     }
 
     /// <inheritdoc />
-    public ValueTask<PlannerSettingsSaveResult> SaveTheme(PlannerSettings settings, PlannerTheme theme, bool preferDarkTheme, CancellationToken cancellationToken = default)
+    public ValueTask<PlannerSettingsSaveResult> SaveTheme(PlannerSettings settings, string themeId, CancellationToken cancellationToken = default)
     {
-        var appearance = new PlannerAppearanceSettings
+        ArgumentException.ThrowIfNullOrWhiteSpace(themeId);
+        settings.Appearance = settings.Appearance with
         {
-            PreferDarkTheme = preferDarkTheme,
-            IsFlyoutVisibleAtStartup = settings.Appearance.IsFlyoutVisibleAtStartup,
-            IsFlyoutLocked = settings.Appearance.IsFlyoutLocked,
-            IsTutorialVisibleAtStartup = settings.Appearance.IsTutorialVisibleAtStartup,
-            Theme = theme
+            ThemeId = themeId.Trim().ToLowerInvariant()
         };
-        settings.Appearance = appearance;
         return SaveAsync(settings, cancellationToken);
     }
 
     /// <inheritdoc />
     public ValueTask<PlannerSettingsSaveResult> SaveFlyout(PlannerSettings settings, bool isFlyoutVisibleAtStartup, bool isFlyoutLocked, bool isTutorialVisibleAtStartup, CancellationToken cancellationToken = default)
     {
-        var appearance = new PlannerAppearanceSettings
+        settings.Appearance = settings.Appearance with
         {
-            PreferDarkTheme = settings.Appearance.PreferDarkTheme,
             IsFlyoutVisibleAtStartup = isFlyoutVisibleAtStartup,
             IsFlyoutLocked = isFlyoutLocked,
-            IsTutorialVisibleAtStartup = isTutorialVisibleAtStartup,
-            Theme = settings.Appearance.Theme
+            IsTutorialVisibleAtStartup = isTutorialVisibleAtStartup
         };
-        settings.Appearance = appearance;
         return SaveAsync(settings, cancellationToken);
     }
 

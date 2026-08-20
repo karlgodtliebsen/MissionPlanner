@@ -34,11 +34,10 @@ public interface IPlannerSettingsService
     /// This is a convenience method that updates the Theme section and saves the settings.
     /// </summary>
     /// <param name="settings"></param>
-    /// <param name="theme"></param>
-    /// <param name="preferDarkTheme"></param>
+    /// <param name="themeId">The stable theme or selection-policy identifier.</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    ValueTask<PlannerSettingsSaveResult> SaveTheme(PlannerSettings settings, PlannerTheme theme, bool preferDarkTheme, CancellationToken cancellationToken = default);
+    ValueTask<PlannerSettingsSaveResult> SaveTheme(PlannerSettings settings, string themeId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Persists a complete validated settings snapshot with updated Flyout.

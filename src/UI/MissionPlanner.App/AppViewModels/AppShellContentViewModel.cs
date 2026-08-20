@@ -281,7 +281,13 @@ public partial class AppShellContentViewModel : ObservableObject
     {
         try
         {
-            await settingsService.SaveTheme(settingsService.Current, theme, PreferDarkTheme);
+            var themeId = theme switch
+            {
+                PlannerTheme.Light => "mission-light",
+                PlannerTheme.Dark => "mission-dark",
+                _ => "system"
+            };
+            await settingsService.SaveTheme(settingsService.Current, themeId);
         }
         catch (Exception exception)
         {
