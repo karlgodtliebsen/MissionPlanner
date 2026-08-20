@@ -109,6 +109,18 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
     /// <summary>Gets whether Servo Output is selected.</summary>
     public bool IsServoOutputSelected => IsSelected(SetupWorkflowKey.ServoOutput);
 
+    /// <summary>Gets whether Failsafe is selected.</summary>
+    public bool IsFailSafeSelected => IsSelected(SetupWorkflowKey.FailSafe);
+
+    /// <summary>Gets whether Initial Tune Parameters is selected.</summary>
+    public bool IsInitTuneParametersSelected => IsSelected(SetupWorkflowKey.InitTuneParameters);
+
+    /// <summary>Gets whether HW ID is selected.</summary>
+    public bool IsHwIdSelected => IsSelected(SetupWorkflowKey.HwId);
+
+    /// <summary>Gets whether ADSB is selected.</summary>
+    public bool IsAdsbSelected => IsSelected(SetupWorkflowKey.Adsb);
+
     /// <summary>Gets whether Optional Hardware is selected.</summary>
     /// <summary>Gets whether the selected workflow links to a Config page.</summary>
     public bool HasConfigDestination => SelectedWorkflow?.Descriptor.ConfigDestination is not null;
@@ -160,6 +172,10 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
         OnPropertyChanged(nameof(IsRadioSelected));
         OnPropertyChanged(nameof(IsEscSelected));
         OnPropertyChanged(nameof(IsServoOutputSelected));
+        OnPropertyChanged(nameof(IsFailSafeSelected));
+        OnPropertyChanged(nameof(IsInitTuneParametersSelected));
+        OnPropertyChanged(nameof(IsHwIdSelected));
+        OnPropertyChanged(nameof(IsAdsbSelected));
         OnPropertyChanged(nameof(HasConfigDestination));
         OnPropertyChanged(nameof(CanRecordSelectedWorkflowManually));
     }

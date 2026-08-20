@@ -81,18 +81,18 @@
                 <material:TabItem Title="Flight Modes">
                     <sections:FlightModesSetupView />
                 </material:TabItem>
-                <!--<material:TabItem Title="Failsafe">
-                <sections:View />
-            </material:TabItem>-->
-                <!--<material:TabItem Title="Initial Tune Parameters">
-                <sections: ItpSetupView/>
-            </material:TabItem>-->
-                <!--<material:TabItem Title="HW ID">
-                <sections:HwIdSetupView />
-            </material:TabItem>-->
-                <!--<material:TabItem Title="ADSB">
-                <sections:AdsbSetupView />
-            </material:TabItem>-->
+                <material:TabItem Title="Failsafe">
+                    <sections:FailSafeView />
+                </material:TabItem>
+                <material:TabItem Title="Initial Tune Parameters">
+                    <sections:InitTuneParametersView />
+                </material:TabItem>
+                <material:TabItem Title="HW ID">
+                    <sections:HwIdView />
+                </material:TabItem>
+                <material:TabItem Title="ADSB">
+                    <sections:AdsbView />
+                </material:TabItem>
 
 
                 <!--<material:TabItem Title="Battery">
