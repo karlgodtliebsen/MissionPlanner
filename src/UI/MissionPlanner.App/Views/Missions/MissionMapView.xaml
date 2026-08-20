@@ -7,7 +7,7 @@
                 xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                 x:Class="MissionPlanner.App.Views.Missions.MissionMapView"
                 x:DataType="missions:MissionMapViewModel"
-                BackgroundColor="{DynamicResource Surface}"
+                BackgroundColor="{DynamicResource SurfaceContainerHigh}"
                 >
 
     <Grid RowDefinitions="*,Auto">
@@ -126,7 +126,8 @@
         </mapsui:MapView>
 
         <Border Grid.Row="0" IsVisible="{Binding IsElevationProfileVisible}" HeightRequest="190"
-                VerticalOptions="End" Margin="12" Padding="6" BackgroundColor="{DynamicResource SurfaceContainerHigh}">
+                VerticalOptions="End" Margin="12" Padding="6" 
+                BackgroundColor="{DynamicResource SurfaceContainerHigh}">
             <Grid RowDefinitions="Auto,*">
                 <HorizontalStackLayout Spacing="12">
                     <Label Text="Elevation profile — terrain / planned MSL"  />
@@ -148,16 +149,15 @@
             Clicked="OnAttributionClicked"
             SemanticProperties.Hint="Map attribution. Activate to toggle expanded details." />
 
-
             <!-- Application chrome colors come from semantic DynamicResource values. -->
 
 
         <!-- Bottom status bar (mirrors Controls.Status) -->
 
-        <Border Grid.Row="1"  StrokeThickness="1"  VerticalOptions="Fill" Height="50">
+        <Border Grid.Row="1"  StrokeThickness="1"  VerticalOptions="Fill" Height="40" 
+                >
 
-
-            <HorizontalStackLayout Grid.Row="1"  VerticalOptions="Center" HorizontalOptions="Start" Spacing="10"
+            <HorizontalStackLayout VerticalOptions="Center" HorizontalOptions="Start" Spacing="10"
                                 >
 
             <material:SelectField 

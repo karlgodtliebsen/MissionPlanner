@@ -5,11 +5,12 @@
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:virtualizedResources="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Resources;assembly=UraniumUI.Material.VirtualizedDataGrid"
              xmlns:converters="clr-namespace:UraniumUI.Material.Controls.Converters;assembly=UraniumUI.Material.Controls.Extensions"
+             xmlns:styles="clr-namespace:MissionPlanner.App.Resources.Styles"
              x:Class="MissionPlanner.App.App">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary x:Name="AppColors" Source="Resources/Styles/Colors.xaml" />
+                <styles:ActiveThemeResources x:Name="AppColors" />
                 <ResourceDictionary x:Name="AppStyles" Source="Resources/Styles/Styles.xaml" />
                 <material:StyleResource BasedOn="{x:Reference AppStyles}" />
                 <ResourceDictionary x:Name="OverrideStyles" Source="Resources/Styles/Override.xaml" />

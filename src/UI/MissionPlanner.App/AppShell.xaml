@@ -87,7 +87,7 @@
                        HorizontalTextAlignment="Center"
                        Padding="20"
                        Margin="10"
-                       TextColor="{DynamicResource OnSurface}" />
+                       TextColor="{DynamicResource OnSurface}"/>
                 <VerticalStackLayout   Padding="20" >
 
                     <Label Text="App Theme" HorizontalOptions="Center" Margin="10" />

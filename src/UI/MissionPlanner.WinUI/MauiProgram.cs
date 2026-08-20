@@ -1,5 +1,7 @@
 ﻿using MissionPlanner.App;
 using MissionPlanner.App.Configuration;
+using MissionPlanner.App.Services;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace MissionPlanner.WinUI;
 
@@ -18,6 +20,8 @@ public static class MauiProgram
 
         builder
             .UseSharedMauiApp();
+        builder.Services.Replace(
+            ServiceDescriptor.Singleton<IWindowTitleBarThemeService, WinUiWindowTitleBarThemeService>());
         var host = builder.Build();
         host.Services.UseApplication();
         return host;

@@ -100,6 +100,14 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Compile Remove="Views\InitSetup\OptionalHardware\Models\**" />
+      <EmbeddedResource Remove="Views\InitSetup\OptionalHardware\Models\**" />
+      <MauiCss Remove="Views\InitSetup\OptionalHardware\Models\**" />
+      <MauiXaml Remove="Views\InitSetup\OptionalHardware\Models\**" />
+      <None Remove="Views\InitSetup\OptionalHardware\Models\**" />
+    </ItemGroup>
+
+    <ItemGroup>
       <MauiAsset Remove="Introduction\Content\Introduction.json" />
     </ItemGroup>
 
@@ -377,9 +385,5 @@
 	  <MauiXaml Update="Views\Missions\MissionItemListViewPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Views\InitSetup\OptionalHardware\Models\" />
 	</ItemGroup>
 </Project>

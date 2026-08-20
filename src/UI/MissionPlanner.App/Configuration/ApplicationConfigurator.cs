@@ -98,6 +98,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<IThemePaletteLoader, XamlThemePaletteLoader>();
         services.TryAddSingleton<IThemeEnvironment, MauiThemeEnvironment>();
         services.TryAddSingleton<IThemeManager, ThemeManager>();
+        services.TryAddSingleton<IWindowTitleBarThemeService, DefaultWindowTitleBarThemeService>();
         services.TryAddSingleton<IPlannerSettingsStore, PreferencesPlannerSettingsStore>();
         services.TryAddSingleton<IPlannerSecretStore, SecurePlannerSecretStore>();
         services.TryAddTransient<IMapSecretStore, PlannerMapSecretStoreAdapter>();

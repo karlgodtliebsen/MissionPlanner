@@ -2,7 +2,9 @@
 <?xaml-comp compile="true" ?>
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="MissionPlanner.App.Resources.Styles.ActiveThemeResources"
+    x:ClassModifier="internal">
     <!-- Bootstrap active palette. ThemeManager overwrites every semantic key atomically. -->
     <Color x:Key="Primary">#A8EAC0</Color>
     <Color x:Key="OnPrimary">#1C783D</Color>

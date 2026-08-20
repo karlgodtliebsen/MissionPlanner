@@ -3,7 +3,6 @@ using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.App.Services;
 using MissionPlanner.App.Theming;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using ShellItem = Microsoft.Maui.Controls.ShellItem;
@@ -21,46 +20,93 @@ public partial class AppShellContentViewModel : ObservableObject
     private bool synchronizing;
     private bool disposed;
 
-    [ObservableProperty] public partial Shell CurrentShell { get; set; } = null!;
-    [ObservableProperty] public partial ReadOnlyObservableCollection<ShellItem> Items { get; set; } = null!;
-    [ObservableProperty] public partial ShellItem? SelectedItem { get; set; } = null!;
-    [ObservableProperty] public partial FlyoutBehavior FlyoutBehavior { get; set; }
+    [ObservableProperty]
+    public partial Shell CurrentShell
+    {
+        get;
+        set;
+    } = null!;
+
+    [ObservableProperty]
+    public partial ReadOnlyObservableCollection<ShellItem> Items
+    {
+        get;
+        set;
+    } = null!;
+
+    [ObservableProperty]
+    public partial ShellItem? SelectedItem
+    {
+        get;
+        set;
+    } = null!;
+
+    [ObservableProperty]
+    public partial FlyoutBehavior FlyoutBehavior
+    {
+        get;
+        set;
+    }
 
     /// <summary>
     /// Gets or sets a value indicating whether the flyout menu is currently presented in the UI.
     /// </summary>
     [ObservableProperty]
-    public partial bool IsFlyoutPresented { get; set; }
+    public partial bool IsFlyoutPresented
+    {
+        get;
+        set;
+    }
 
     /// <summary>
     /// Gets or sets a value indicating whether the flyout menu is presented at startup in the UI.
     /// </summary>
     [ObservableProperty]
-    public partial bool IsFlyoutVisibleAtStartup { get; set; }
+    public partial bool IsFlyoutVisibleAtStartup
+    {
+        get;
+        set;
+    }
 
     /// <summary>
     /// Gets or sets a value indicating whether the tutorial is currently presented in the UI.
     /// </summary>
     [ObservableProperty]
-    public partial bool IsTutorialVisibleAtStartup { get; set; }
+    public partial bool IsTutorialVisibleAtStartup
+    {
+        get;
+        set;
+    }
 
     /// <summary>
     /// Gets or sets a value indicating whether the flyout menu is locked in the UI.
     /// </summary>
     [ObservableProperty]
-    public partial bool IsFlyoutLocked { get; set; }
+    public partial bool IsFlyoutLocked
+    {
+        get;
+        set;
+    }
 
     /// <summary>
     /// Gets or sets a value indicating whether the flyout menu is locked in the UI.
     /// </summary>
     [ObservableProperty]
-    public partial bool IsFlyoutCollapseButtonVisible { get; set; }
+    public partial bool IsFlyoutCollapseButtonVisible
+    {
+        get;
+        set;
+    }
 
     /// <summary>
     /// Gets or sets a value indicating whether the flyout menu is locked in the UI.
     /// </summary>
     [ObservableProperty]
-    public partial bool IsFlyoutExpandButtonVisible { get; set; }
+    public partial bool IsFlyoutExpandButtonVisible
+    {
+        get;
+        set;
+    }
 
 
     /// <summary>
@@ -72,7 +118,11 @@ public partial class AppShellContentViewModel : ObservableObject
     /// Gets or sets the selected application theme.
     /// </summary>
     [ObservableProperty]
-    public partial ThemeOption? SelectedThemeOption { get; set; }
+    public partial ThemeOption? SelectedThemeOption
+    {
+        get;
+        set;
+    }
 
     private readonly IDispatcher dispatcher = null!;
 
@@ -185,13 +235,16 @@ public partial class AppShellContentViewModel : ObservableObject
 
     partial void OnSelectedThemeOptionChanged(ThemeOption? value)
     {
-        if (value is null || synchronizing)
+        if (value is null)
         {
             return;
         }
 
         _ = themeManager.ApplyAsync(value.Id);
-        _ = PersistThemeAsync(value.Id);
+        if (!synchronizing)
+        {
+            _ = PersistThemeAsync(value.Id);
+        }
     }
 
     private void OnSettingsChanged(object? sender, PlannerSettingsChangedEventArgs e)
@@ -228,11 +281,11 @@ public partial class AppShellContentViewModel : ObservableObject
         disposed = true;
     }
 
-    private async Task PersistThemeAsync(string themeId)
+    private async Task PersistThemeAsync(string newThemeId)
     {
         try
         {
-            await settingsService.SaveTheme(settingsService.Current, themeId);
+            await settingsService.SaveTheme(settingsService.Current, newThemeId);
         }
         catch (Exception exception)
         {

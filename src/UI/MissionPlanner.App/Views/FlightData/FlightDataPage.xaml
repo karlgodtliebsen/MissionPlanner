@@ -11,13 +11,14 @@
                             xmlns:extended="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                             x:Class="MissionPlanner.App.Views.FlightData.FlightDataPage"
                             x:DataType="flightData:FlightDataViewModel"
-                            BackgroundColor="{DynamicResource Surface}"
                     
                         >
 
-    <Grid  ColumnDefinitions="260,5,*" ColumnSpacing="0" 
-           Padding="0,0,0,0" 
-           Margin="0,0,0,0">
+    <!--BackgroundColor="{DynamicResource Surface}"-->
+
+
+
+    <Grid  ColumnDefinitions="260,5,*" ColumnSpacing="0" >
 
         <!-- Left column: HUD + action tabs -->
         <Grid Grid.Column="0" RowDefinitions="*,2*" RowSpacing="4" ColumnDefinitions="*" >
@@ -104,6 +105,6 @@
                            HorizontalOptions="Center"
                            VerticalOptions="Center" />
 
-  </Grid>
+    </Grid>
 
 </navigation:ExtendedContentPage>

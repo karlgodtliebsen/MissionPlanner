@@ -40,6 +40,9 @@ public partial class App : Application
             var domainEventHub = activationState.Context.Services.GetRequiredService<IDomainEventHub>();
             domainEventHub.SubscribeDomainEventAsync<ExitApplicationRequested>(Func);
             window = new Window(new AppShell());
+            serviceProvider
+                .GetRequiredService<IWindowTitleBarThemeService>()
+                .Attach(window, themeManager, AppColors);
             // Handle window destruction to ensure connection cleanup
             window.Destroying += OnWindowDestroying;
             return window;
