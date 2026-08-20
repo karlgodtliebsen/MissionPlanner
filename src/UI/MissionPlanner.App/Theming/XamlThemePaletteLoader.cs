@@ -6,9 +6,12 @@ public sealed class XamlThemePaletteLoader : IThemePaletteLoader
     /// <inheritdoc />
     public ResourceDictionary Load(ThemeDescriptor theme)
     {
-        return new ResourceDictionary
+        return theme.Id switch
         {
-            Source = new Uri(theme.ResourcePath, UriKind.Relative)
+            ThemeIds.MissionLight => new Resources.Themes.MissionLightPalette(),
+            ThemeIds.MissionDark => new Resources.Themes.MissionDarkPalette(),
+            ThemeIds.MissionBlue => new Resources.Themes.MissionBluePalette(),
+            _ => throw new ArgumentException($"Theme '{theme.Id}' has no compiled palette.", nameof(theme))
         };
     }
 }
