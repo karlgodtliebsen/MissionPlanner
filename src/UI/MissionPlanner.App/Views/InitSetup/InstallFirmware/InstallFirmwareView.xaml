@@ -464,7 +464,7 @@
         <HorizontalStackLayout  Grid.Row="1" HorizontalOptions="Fill" VerticalOptions="Fill"
                                 Padding="12,6"
                                 Spacing="10"
-                                BackgroundColor="#2d2d30" >
+                                BackgroundColor="{DynamicResource SurfaceContainer}" >
             <Label 
                    Text="{Binding StatusMessage}"
                    VerticalOptions="Center"

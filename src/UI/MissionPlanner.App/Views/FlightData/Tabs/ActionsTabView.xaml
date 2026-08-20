@@ -12,7 +12,7 @@
     <ScrollView>
         <VerticalStackLayout Padding="12" Spacing="10">
             <Label Text="Vehicle Actions" FontSize="18" FontAttributes="Bold" />
-            <Border Padding="8" Stroke="#D97706">
+            <Border Padding="8" Stroke="{DynamicResource Warning}">
                 <Label Text="{Binding DataSourceMode}" FontAttributes="Bold" 
                        TextColor="{DynamicResource Warning}" />
             </Border>

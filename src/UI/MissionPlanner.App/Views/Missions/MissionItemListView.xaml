@@ -17,7 +17,7 @@
         <Border StyleClass="SurfaceContainer,Rounded,Elevation1" HorizontalOptions="Center"  >
             <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="10"
                   RowSpacing="6" BackgroundColor="Transparent"   HorizontalOptions="Fill"   VerticalOptions="Fill">
-                <!-- Title + mode switch BackgroundColor="#252526" -->
+                <!-- Title and mode switch. -->
                 <Label Grid.Row="1"  Text="Mission" FontAttributes="Bold" FontSize="16" VerticalOptions="Center" />
 
                 <Label Grid.Row="2" Text="{Binding HomePosition, StringFormat='Home: {0}'}" FontSize="12" Opacity="0.8" />

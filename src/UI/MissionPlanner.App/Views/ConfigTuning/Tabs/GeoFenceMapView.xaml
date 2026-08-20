@@ -11,8 +11,9 @@
                 Padding="10,6"
                 HorizontalOptions="Start"
                 VerticalOptions="Start"
-                BackgroundColor="#CC202020">
-            <Label Text="{Binding EditModeText}"  />
+                BackgroundColor="{DynamicResource InverseSurface}">
+            <Label Text="{Binding EditModeText}"
+                   TextColor="{DynamicResource InverseOnSurface}" />
         </Border>
     </Grid>
 </ContentView>

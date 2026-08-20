@@ -126,7 +126,7 @@
         </mapsui:MapView>
 
         <Border Grid.Row="0" IsVisible="{Binding IsElevationProfileVisible}" HeightRequest="190"
-                VerticalOptions="End" Margin="12" Padding="6" BackgroundColor="#E6202024">
+                VerticalOptions="End" Margin="12" Padding="6" BackgroundColor="{DynamicResource SurfaceContainerHigh}">
             <Grid RowDefinitions="Auto,*">
                 <HorizontalStackLayout Spacing="12">
                     <Label Text="Elevation profile — terrain / planned MSL"  />

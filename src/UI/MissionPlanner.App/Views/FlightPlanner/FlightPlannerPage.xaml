@@ -75,7 +75,7 @@
 
                 <vm:FlightPlannerMissionMapView x:Name="MapView" Grid.Row="1"  HorizontalOptions="Fill" VerticalOptions="Fill"/>
                 <ActivityIndicator x:Name="MapLoadingIndicator"
-                                   Color="Black"
+                                   Color="{DynamicResource Primary}"
                                    MinimumWidthRequest="100"
                                    MinimumHeightRequest="100"
                                    Grid.Row="1"
