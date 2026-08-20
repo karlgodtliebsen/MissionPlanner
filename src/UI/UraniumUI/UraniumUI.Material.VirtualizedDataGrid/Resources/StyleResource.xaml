@@ -6,12 +6,7 @@
     xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls">
 
     <ResourceDictionary.MergedDictionaries>
-        <!--
-            Keep styles in a replaceable child dictionary, matching UraniumUI's
-            own StyleResource. When ColorsOverride changes, the code-behind can
-            remove this dictionary and initialize it again without adding a
-            second implicit type-keyed style to the root dictionary.
-        -->
+        <!-- Keep the keyed and implicit styles together in one child dictionary. -->
         <ResourceDictionary>
             <Style
                 x:Key="UraniumUI.Styles.VirtualizedDataGrid"

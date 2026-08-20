@@ -13,7 +13,7 @@
                 <ResourceDictionary x:Name="AppColors" Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary x:Name="AppStyles" Source="Resources/Styles/Styles.xaml" />
                 <material:StyleResource ColorsOverride="{x:Reference AppColors}" />
-                <virtualizedResources:StyleResource ColorsOverride="{x:Reference AppStyles}" />
+                <virtualizedResources:StyleResource />
                 <ResourceDictionary Source="Resources/Styles/Override.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
