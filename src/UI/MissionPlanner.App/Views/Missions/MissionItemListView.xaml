@@ -8,7 +8,7 @@
                     xmlns:extended="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                     x:Class="MissionPlanner.App.Views.Missions.MissionItemListView"
                     x:DataType="missions:MissionMapViewModel"
-                    BackgroundColor="Transparent"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
                     x:Name="Root">
 
     <Grid RowDefinitions="Auto,*" Margin="10"

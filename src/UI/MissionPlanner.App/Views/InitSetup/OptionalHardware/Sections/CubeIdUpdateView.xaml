@@ -4,7 +4,7 @@
                                   x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.CubeIdUpdateView" x:DataType="sections:CubeIdUpdateViewModel">
     
     
-    <VerticalStackLayout Padding="20" Spacing="25" HorizontalOptions="Center">
+    <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
         <Label Text="CubeID Firmware Update" FontSize="24" FontAttributes="Bold"/>
         <Label Text="The target component identity is retained; an autopilot component cannot consume CubeID acknowledgements."/>
         <controls:AlignedEditorField Title="Local firmware .bin path" HorizontalTextAlignment="End" Text="{Binding FirmwarePath}"/>

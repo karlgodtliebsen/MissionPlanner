@@ -1,7 +1,13 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<tabViews:TabViewLifecycleContent x:TypeArguments="sections:ParachuteViewModel" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.ParachuteView" x:DataType="sections:ParachuteViewModel">
+<tabViews:TabViewLifecycleContent x:TypeArguments="sections:ParachuteViewModel" 
+                                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
+                                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+                                  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" 
+                                  xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" 
+                                  x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.ParachuteView" 
+                                  x:DataType="sections:ParachuteViewModel">
     <ScrollView>
-        <VerticalStackLayout Padding="16" Spacing="10">
+        <VerticalStackLayout Padding="16"  Spacing="25" HorizontalOptions="Center">
             <Label Text="Parachute" FontSize="20" FontAttributes="Bold"/>
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
             <Label Text="{Binding Status}"/>

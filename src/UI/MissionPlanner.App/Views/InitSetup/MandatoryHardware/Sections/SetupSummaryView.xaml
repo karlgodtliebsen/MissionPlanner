@@ -9,9 +9,9 @@
                                   xmlns:mandatoryHardware="clr-namespace:MissionPlanner.Core.Setup.MandatoryHardware;assembly=MissionPlanner.Core"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SetupSummaryView"
                                   x:DataType="sections:SetupSummaryViewModel"
-                                  Margin="100,0,100,0">
+                                  >
     <ScrollView VerticalScrollBarVisibility="Always">
-        <VerticalStackLayout Spacing="10">
+        <VerticalStackLayout Padding="16"  Spacing="25" HorizontalOptions="Center">
             <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
             <Label Text="{Binding Error}" TextColor="Red" />
             <Label Text="Setup summary" FontSize="18" FontAttributes="Bold" />

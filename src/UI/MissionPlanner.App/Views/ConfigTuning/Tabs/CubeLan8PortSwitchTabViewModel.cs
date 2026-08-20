@@ -1,7 +1,7 @@
-﻿using System.Collections.ObjectModel;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.ConfigTuning.VendorDevices;
@@ -53,31 +53,54 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ObservableObject, I
     }
 
     /// <summary>Gets the eight port editors after successful discovery.</summary>
-    public ObservableCollection<CubeLanPortViewModel> Ports { get; } = [];
+    public ObservableRangeCollection<CubeLanPortViewModel> Ports
+    {
+        get;
+    } = [];
 
     /// <summary>Gets the current workflow status.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanEdit))]
     [NotifyPropertyChangedFor(nameof(IsUnavailable))]
-    public partial VendorDeviceStatus Status { get; private set; } = VendorDeviceStatus.NotDiscovered;
+    public partial VendorDeviceStatus Status
+    {
+        get;
+        private set;
+    } = VendorDeviceStatus.NotDiscovered;
 
     /// <summary>Gets a user-facing discovery or operation message.</summary>
     [ObservableProperty]
-    public partial string StatusMessage { get; private set; } =
+    public partial string StatusMessage
+    {
+        get;
+        private set;
+    } =
         "Connect a vehicle to discover CubeLAN through the documented MAVLink I²C proxy.";
 
     /// <summary>Gets the active vehicle heading.</summary>
     [ObservableProperty]
-    public partial string VehicleHeading { get; private set; } = "No connected vehicle";
+    public partial string VehicleHeading
+    {
+        get;
+        private set;
+    } = "No connected vehicle";
 
     /// <summary>Gets whether an operation is running.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanEdit))]
-    public partial bool IsBusy { get; private set; }
+    public partial bool IsBusy
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether the local editor differs from the read-before-edit snapshot.</summary>
     [ObservableProperty]
-    public partial bool IsDirty { get; private set; }
+    public partial bool IsDirty
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether verified settings are available for editing.</summary>
     public bool CanEdit => Status == VendorDeviceStatus.Available && !IsBusy;
@@ -311,7 +334,7 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ObservableObject, I
                 }
             }
 
-            Ports.Clear();
+            var ports = new List<CubeLanPortViewModel>();
             foreach (var portConfiguration in configuration.Ports.OrderBy(port => port.PortIndex))
             {
                 var port = new CubeLanPortViewModel(
@@ -323,8 +346,10 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ObservableObject, I
                     membership.PropertyChanged += OnEditorChanged;
                 }
 
-                Ports.Add(port);
+                ports.Add(port);
             }
+
+            Ports.ReplaceRange(ports);
 
             IsDirty = false;
         }

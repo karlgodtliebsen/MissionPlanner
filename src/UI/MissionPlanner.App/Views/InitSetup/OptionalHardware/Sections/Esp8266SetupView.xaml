@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <tabViews:TabViewLifecycleContent 
     x:TypeArguments="sections:Esp8266SetupViewModel" 
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.Esp8266SetupView" x:DataType="sections:Esp8266SetupViewModel">
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+    xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" 
+    xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" 
+    x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.Esp8266SetupView" 
+    x:DataType="sections:Esp8266SetupViewModel">
 
-    <VerticalStackLayout Padding="20" Spacing="25" HorizontalOptions="Center">
+    <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
         <Label Text="ESP8266 MAVLink Bridge" FontSize="24" FontAttributes="Bold"/>
         <Label Text="{Binding Target}"/>
 

@@ -1,7 +1,7 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Maui.Storage;
+﻿using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.Core.DomainEvents;
@@ -44,28 +44,93 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
 
     private const string NoRegisteredConnection = "No Connection registered with the vehicle. Please connect to the vehicle first.";
 
-    [ObservableProperty] public partial string CurrentPath { get; set; } = "/";
-    [ObservableProperty] public partial bool IsBusy { get; set; }
-    [ObservableProperty] public partial double TransferProgress { get; set; }
-    [ObservableProperty] public partial string TransferDetails { get; set; } = string.Empty;
-    [ObservableProperty] public partial string? StatusText { get; set; }
-    [ObservableProperty] public partial string? EmptyText { get; set; }
-    [ObservableProperty] public partial string? ErrorText { get; set; }
-    [ObservableProperty] public partial bool HasEntries { get; set; }
-    [ObservableProperty] public partial bool HasConnection { get; set; }
+    [ObservableProperty]
+    public partial string CurrentPath
+    {
+        get;
+        set;
+    } = "/";
 
-    [ObservableProperty] public partial string Message { get; set; } = string.Empty;
+    [ObservableProperty]
+    public partial bool IsBusy
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial double TransferProgress
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial string TransferDetails
+    {
+        get;
+        set;
+    } = string.Empty;
+
+    [ObservableProperty]
+    public partial string? StatusText
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial string? EmptyText
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial string? ErrorText
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial bool HasEntries
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial bool HasConnection
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial string Message
+    {
+        get;
+        set;
+    } = string.Empty;
 
     /// <summary>
     /// Gets the collection of file system entries.
     /// </summary>
-    public ObservableCollection<VehicleFileSystemEntryViewModel> Entries { get; } = [];
+    public ObservableRangeCollection<VehicleFileSystemEntryViewModel> Entries
+    {
+        get;
+    } = [];
 
 
     /// <summary>
     /// Gets or sets the currently selected file system entry.
     /// </summary>
-    public VehicleFileSystemEntryViewModel? SelectedEntry { get; set; }
+    public VehicleFileSystemEntryViewModel? SelectedEntry
+    {
+        get;
+        set;
+    }
 
     /// <summary>
     /// Gets a value indicating whether the user can navigate up in the file system.
@@ -486,11 +551,14 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
             dispatcher.Dispatch(() =>
             {
                 Message = $"Found {entries.Count} Remote Entries";
-                Entries.Clear();
+                var entris = new List<VehicleFileSystemEntryViewModel>();
                 foreach (var entry in entries.OrderBy(x => x.Type).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase))
                 {
-                    Entries.Add(new VehicleFileSystemEntryViewModel(entry.Name, entry.Type, entry.Size));
+                    entris.Add(new VehicleFileSystemEntryViewModel(entry.Name, entry.Type, entry.Size));
                 }
+
+                Entries.ReplaceRange(entris);
+
 
                 HasEntries = Entries.Any();
                 CurrentPath = RemotePath.Normalize(path);

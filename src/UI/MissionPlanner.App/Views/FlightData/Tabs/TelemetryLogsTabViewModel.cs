@@ -1,6 +1,6 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -33,63 +33,118 @@ public sealed partial class TelemetryLogsTabViewModel : ObservableObject, IDispo
 
 
     /// <summary>Gets replay-only vehicle states; these vehicles never enter the live registry.</summary>
-    public ObservableCollection<VehicleState> ReplayVehicles { get; } = [];
+    public ObservableRangeCollection<VehicleState> ReplayVehicles
+    {
+        get;
+    } = [];
 
     /// <summary>Gets the prominent source and safety label.</summary>
     [ObservableProperty]
-    public partial string SourceModeLabel { get; private set; } = "LIVE / SIMULATION";
+    public partial string SourceModeLabel
+    {
+        get;
+        private set;
+    } = "LIVE / SIMULATION";
 
     /// <summary>Gets the current replay lifecycle label.</summary>
     [ObservableProperty]
-    public partial string ReplayStateLabel { get; private set; } = "Unloaded";
+    public partial string ReplayStateLabel
+    {
+        get;
+        private set;
+    } = "Unloaded";
 
     /// <summary>Gets the loaded telemetry-log display name.</summary>
     [ObservableProperty]
-    public partial string SourceName { get; private set; } = "No telemetry log loaded";
+    public partial string SourceName
+    {
+        get;
+        private set;
+    } = "No telemetry log loaded";
 
     /// <summary>Gets workflow status or failure detail.</summary>
     [ObservableProperty]
-    public partial string StatusMessage { get; private set; } = ReplaySessionSnapshot.Unloaded.Message;
+    public partial string StatusMessage
+    {
+        get;
+        private set;
+    } = ReplaySessionSnapshot.Unloaded.Message;
 
     /// <summary>Gets whether a background file or playback operation is pending.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(LoadCommand), nameof(PlayPauseCommand), nameof(SeekCommand), nameof(CloseReplayCommand), nameof(ApplySpeedCommand))]
-    public partial bool IsBusy { get; private set; }
+    public partial bool IsBusy
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether a replay is loaded and every outbound MAVLink send is prohibited.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanLoad), nameof(CanControlReplay))]
     [NotifyCanExecuteChangedFor(nameof(LoadCommand), nameof(PlayPauseCommand), nameof(SeekCommand), nameof(CloseReplayCommand), nameof(ApplySpeedCommand))]
-    public partial bool IsReplayActive { get; private set; }
+    public partial bool IsReplayActive
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether the replay clock is currently advancing.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(PlayPauseText))]
-    public partial bool IsPlaying { get; private set; }
+    public partial bool IsPlaying
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets playback progress from zero through one.</summary>
     [ObservableProperty]
-    public partial double Progress { get; private set; }
+    public partial double Progress
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets or sets the requested seek position in recorded seconds.</summary>
     [ObservableProperty]
-    public partial double SeekSeconds { get; set; }
+    public partial double SeekSeconds
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets the total recorded duration in seconds.</summary>
     [ObservableProperty]
-    public partial double DurationSeconds { get; private set; }
+    public partial double DurationSeconds
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets or sets the requested playback speed multiplier.</summary>
     [ObservableProperty]
-    public partial double PlaybackSpeed { get; set; } = 1;
+    public partial double PlaybackSpeed
+    {
+        get;
+        set;
+    } = 1;
 
     /// <summary>Gets a readable current recorded timestamp.</summary>
     [ObservableProperty]
-    public partial string ReplayTimeText { get; private set; } = "--";
+    public partial string ReplayTimeText
+    {
+        get;
+        private set;
+    } = "--";
 
     /// <summary>Gets decoded and rejected frame statistics.</summary>
     [ObservableProperty]
-    public partial string FrameStatistics { get; private set; } = "0 decoded · 0 rejected";
+    public partial string FrameStatistics
+    {
+        get;
+        private set;
+    } = "0 decoded · 0 rejected";
 
     /// <summary>Gets the play/pause button label.</summary>
     public string PlayPauseText => IsPlaying ? "Pause" : "Play";
@@ -228,11 +283,7 @@ public sealed partial class TelemetryLogsTabViewModel : ObservableObject, IDispo
             : $"{snapshot.Clock.LogTime:O} · {snapshot.Clock.Elapsed:g} / {snapshot.Clock.Duration:g}";
         FrameStatistics = $"{snapshot.DecodedFrames} decoded · {snapshot.RejectedFrames} rejected";
 
-        ReplayVehicles.Clear();
-        foreach (var vehicle in snapshot.Vehicles)
-        {
-            ReplayVehicles.Add(vehicle);
-        }
+        ReplayVehicles.ReplaceRange(snapshot.Vehicles);
 
         OnPropertyChanged(nameof(CanLoad));
         OnPropertyChanged(nameof(CanControlReplay));

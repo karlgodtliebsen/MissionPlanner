@@ -26,32 +26,104 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
     /// <summary>
     /// Provides the public API for Channels.
     /// </summary>
-    public ObservableRangeCollection<string> Channels { get; set; }
+    public ObservableRangeCollection<string> Channels
+    {
+        get;
+        set;
+    }
 
     /// <summary>
     /// Provides the public API for BaudRates.
     /// </summary>
-    public ObservableRangeCollection<string> BaudRates { get; set; }
+    public ObservableRangeCollection<string> BaudRates
+    {
+        get;
+        set;
+    }
 
-    [ObservableProperty] public partial string? SelectedHost { get; set; }
+    [ObservableProperty]
+    public partial string? SelectedHost
+    {
+        get;
+        set;
+    }
 
-    [ObservableProperty] public partial string? SelectedChannel { get; set; }
+    [ObservableProperty]
+    public partial string? SelectedChannel
+    {
+        get;
+        set;
+    }
 
-    [ObservableProperty] public partial string? SelectedPort { get; set; }
+    [ObservableProperty]
+    public partial string? SelectedPort
+    {
+        get;
+        set;
+    }
 
-    [ObservableProperty] public partial string? VehicleName { get; set; }
-    [ObservableProperty] public partial VehicleId? VehicleId { get; set; }
-    [ObservableProperty] public partial string? SelectedBaudRate { get; set; }
+    [ObservableProperty]
+    public partial string? VehicleName
+    {
+        get;
+        set;
+    }
 
-    [ObservableProperty] public partial bool IsConnected { get; set; }
+    [ObservableProperty]
+    public partial VehicleId? VehicleId
+    {
+        get;
+        set;
+    }
 
-    [ObservableProperty] public partial string? IsConnectedImage { get; set; } = ConnectImage;
+    [ObservableProperty]
+    public partial string? SelectedBaudRate
+    {
+        get;
+        set;
+    }
 
-    [ObservableProperty] public partial bool IsConnecting { get; set; }
+    [ObservableProperty]
+    public partial bool IsConnected
+    {
+        get;
+        set;
+    }
 
-    [ObservableProperty] public partial string? StatusMessage { get; set; }
-    [ObservableProperty] public partial bool ShowSelectedHost { get; set; }
-    [ObservableProperty] public partial bool ShowSelectedCom { get; set; } = true;
+    [ObservableProperty]
+    public partial string? IsConnectedImage
+    {
+        get;
+        set;
+    } = ConnectImage;
+
+    [ObservableProperty]
+    public partial bool IsConnecting
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial string? StatusMessage
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial bool ShowSelectedHost
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial bool ShowSelectedCom
+    {
+        get;
+        set;
+    } = true;
 
     private readonly List<string> configuredChannels;
     private const string? ConnectImage = "Resources/Images/x_light_disconnect_icon_x.png";
@@ -203,8 +275,7 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
             if (availablePorts.Length > 0)
             {
                 var channels = availablePorts.Concat(configuredChannels).Distinct().Order().ToArray();
-                Channels.Clear();
-                Channels.AddRange(channels);
+                Channels.ReplaceRange(channels);
                 SelectedChannel = availablePorts[0];
             }
 

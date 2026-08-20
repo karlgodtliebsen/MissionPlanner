@@ -7,7 +7,7 @@
                                   x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.DroneCanUavCanView" 
                                   x:DataType="sections:DroneCanUavCanViewModel">
 
-    <VerticalStackLayout Padding="20" Spacing="25" HorizontalOptions="Center">
+    <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
         <Label Text="DroneCAN / UAVCAN v0" FontSize="24" FontAttributes="Bold"/>
         <Picker Title="Transport" ItemsSource="{Binding TransportKinds}" SelectedItem="{Binding TransportKind}"/>
 

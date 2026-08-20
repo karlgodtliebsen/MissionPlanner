@@ -4,11 +4,11 @@
                                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                                 xmlns:mapsui="clr-namespace:Mapsui.UI.Maui;assembly=Mapsui.UI.Maui"
                                 xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
-                                xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                                 xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                                 x:Class="MissionPlanner.App.Views.Missions.MissionMapView"
                                 x:DataType="missions:MissionMapViewModel"
-                                BackgroundColor="#1e1e1e">
+                                BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
+                                >
 
     <Grid RowDefinitions="*,Auto">
 

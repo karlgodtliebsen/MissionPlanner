@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.ConfigTuning;
@@ -41,7 +42,10 @@ public sealed partial class OsdItemViewModel : ObservableObject
     }
 
     /// <summary>Gets the discovered item definition.</summary>
-    public OsdItemDefinition Definition { get; }
+    public OsdItemDefinition Definition
+    {
+        get;
+    }
 
     /// <summary>Gets the firmware item key.</summary>
     public string Key => Definition.Key;
@@ -53,24 +57,43 @@ public sealed partial class OsdItemViewModel : ObservableObject
     public string Description => Definition.Description;
 
     /// <summary>Gets discovered item-specific option/unit/warning parameters.</summary>
-    public ObservableCollection<ParameterItemViewModel> AdditionalParameters { get; }
+    public ObservableCollection<ParameterItemViewModel> AdditionalParameters
+    {
+        get;
+    }
 
     /// <summary>Gets or sets whether the item is enabled.</summary>
     [ObservableProperty]
-    public partial bool IsEnabled { get; set; }
+    public partial bool IsEnabled
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets the zero-based character column.</summary>
     [ObservableProperty]
-    public partial int Column { get; set; }
+    public partial int Column
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets the zero-based character row.</summary>
     [ObservableProperty]
-    public partial int Row { get; set; }
+    public partial int Row
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets the latest coordinate or metadata error.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasValidationError))]
-    public partial string? ValidationError { get; private set; }
+    public partial string? ValidationError
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether placement is currently invalid.</summary>
     public bool HasValidationError => !string.IsNullOrWhiteSpace(ValidationError);
@@ -160,7 +183,10 @@ public sealed class OsdScreenViewModel
     }
 
     /// <summary>Gets the screen definition.</summary>
-    public OsdScreenDefinition Definition { get; }
+    public OsdScreenDefinition Definition
+    {
+        get;
+    }
 
     /// <summary>Gets the one-based screen number.</summary>
     public int Number => Definition.Number;
@@ -175,10 +201,16 @@ public sealed class OsdScreenViewModel
     public bool SupportsDynamicOverlaps => Definition.SupportsDynamicOverlaps;
 
     /// <summary>Gets screen enable/options/resolution parameters.</summary>
-    public ObservableCollection<ParameterItemViewModel> Parameters { get; }
+    public ObservableCollection<ParameterItemViewModel> Parameters
+    {
+        get;
+    }
 
     /// <summary>Gets discovered screen items.</summary>
-    public ObservableCollection<OsdItemViewModel> Items { get; }
+    public ObservableCollection<OsdItemViewModel> Items
+    {
+        get;
+    }
 
     /// <inheritdoc />
     public override string ToString()
@@ -226,35 +258,64 @@ public sealed partial class OnboardOsdTabViewModel : ObservableObject, IDisposab
     }
 
     /// <summary>Gets discovered OSD screens.</summary>
-    public ObservableCollection<OsdScreenViewModel> Screens { get; } = [];
+    public ObservableCollection<OsdScreenViewModel> Screens
+    {
+        get;
+    } = [];
 
     /// <summary>Gets firmware-global OSD parameters.</summary>
-    public ObservableCollection<ParameterItemViewModel> GlobalParameters { get; } = [];
+    public ObservableCollection<ParameterItemViewModel> GlobalParameters
+    {
+        get;
+    } = [];
 
     /// <summary>Gets whether firmware-global OSD options were discovered.</summary>
     [ObservableProperty]
-    public partial bool HasGlobalParameters { get; private set; }
+    public partial bool HasGlobalParameters
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets preview items for the selected screen.</summary>
-    public ObservableCollection<OsdPreviewItem> PreviewItems { get; } = [];
+    public ObservableRangeCollection<OsdPreviewItem> PreviewItems
+    {
+        get;
+    } = [];
 
     /// <summary>Gets or sets the selected screen.</summary>
     [ObservableProperty]
-    public partial OsdScreenViewModel? SelectedScreen { get; set; }
+    public partial OsdScreenViewModel? SelectedScreen
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets the selected item.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(MoveLeftCommand), nameof(MoveRightCommand), nameof(MoveUpCommand), nameof(MoveDownCommand))]
-    public partial OsdItemViewModel? SelectedItem { get; set; }
+    public partial OsdItemViewModel? SelectedItem
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets whether a vehicle is connected.</summary>
     [ObservableProperty]
-    public partial bool IsConnected { get; private set; }
+    public partial bool IsConnected
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether OSD parameters were discovered.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsUnsupported))]
-    public partial bool HasOsdConfiguration { get; private set; }
+    public partial bool HasOsdConfiguration
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether no OSD configuration is present on the connected firmware.</summary>
     public bool IsUnsupported => IsConnected && !HasOsdConfiguration;
@@ -262,24 +323,44 @@ public sealed partial class OnboardOsdTabViewModel : ObservableObject, IDisposab
     /// <summary>Gets whether a file or write operation is active.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ApplyScreenCommand), nameof(ResetScreenCommand), nameof(ImportCommand), nameof(ExportCommand))]
-    public partial bool IsBusy { get; private set; }
+    public partial bool IsBusy
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the selected screen's grid width.</summary>
     [ObservableProperty]
-    public partial int PreviewGridWidth { get; private set; } = 30;
+    public partial int PreviewGridWidth
+    {
+        get;
+        private set;
+    } = 30;
 
     /// <summary>Gets the selected screen's grid height.</summary>
     [ObservableProperty]
-    public partial int PreviewGridHeight { get; private set; } = 16;
+    public partial int PreviewGridHeight
+    {
+        get;
+        private set;
+    } = 16;
 
     /// <summary>Gets the latest validation or operation status.</summary>
     [ObservableProperty]
-    public partial string StatusMessage { get; private set; } = "Connect a vehicle to discover onboard OSD parameters.";
+    public partial string StatusMessage
+    {
+        get;
+        private set;
+    } = "Connect a vehicle to discover onboard OSD parameters.";
 
     /// <summary>Gets current validation messages.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasValidationIssues))]
-    public partial string ValidationMessage { get; private set; } = string.Empty;
+    public partial string ValidationMessage
+    {
+        get;
+        private set;
+    } = string.Empty;
 
     /// <summary>Gets whether the selected screen has validation issues.</summary>
     public bool HasValidationIssues => !string.IsNullOrWhiteSpace(ValidationMessage);
@@ -622,18 +703,22 @@ public sealed partial class OnboardOsdTabViewModel : ObservableObject, IDisposab
 
     private void RefreshPreviewAndValidation()
     {
-        PreviewItems.Clear();
         if (workspace is null || SelectedScreen is null)
         {
             ValidationMessage = string.Empty;
             LayoutChanged?.Invoke(this, EventArgs.Empty);
+            PreviewItems.Clear();
             return;
         }
 
+        var previewItems = new List<OsdPreviewItem>();
         foreach (var item in osdService.GetPreviewItems(workspace, SelectedScreen.Number))
         {
-            PreviewItems.Add(item);
+            previewItems.Add(item);
         }
+
+        PreviewItems.ReplaceRange(previewItems);
+
 
         var issues = osdService.ValidateScreen(workspace, SelectedScreen.Number);
         ValidationMessage = string.Join(Environment.NewLine, issues.Select(issue => itemPrefix(issue) + issue.Message));

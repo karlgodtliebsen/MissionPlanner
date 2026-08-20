@@ -9,9 +9,9 @@
                          xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                          xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                          x:Class="MissionPlanner.App.Views.FlightPlanner.FlightPlannerPage"
-                         x:DataType="vm:FlightPlannerViewModel">
-
-
+                         x:DataType="vm:FlightPlannerViewModel"
+                         BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
+                         >
 
     <controls:RightDockPanel 
         HorizontalOptions="Fill" 

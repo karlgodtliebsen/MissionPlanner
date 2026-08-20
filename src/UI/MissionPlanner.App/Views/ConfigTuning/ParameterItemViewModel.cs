@@ -1,9 +1,9 @@
-﻿using System.Collections.ObjectModel;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Library.Math;
 using MissionPlanner.MavLink.Parameters;
@@ -36,16 +36,60 @@ public partial class ParameterItemViewModel : ObservableObject
     /// <summary>
     /// Command that is triggered when the selected values change.
     /// </summary>
-    public ICommand SelectedValuesChanged { get; }
+    public ICommand SelectedValuesChanged
+    {
+        get;
+    }
 
-    [DisplayName("Default")][ObservableProperty] public partial double OriginalValue { get; set; }
+    [DisplayName("Default")]
+    [ObservableProperty]
+    public partial double OriginalValue
+    {
+        get;
+        set;
+    }
 
-    [ObservableProperty] public partial string Name { get; set; } = null!;
-    [ObservableProperty] public partial string? DisplayName { get; set; }
-    [ObservableProperty] public partial double Value { get; set; }
-    [ObservableProperty] public partial double LiveValue { get; set; }
-    [ObservableProperty] public partial double StepSize { get; set; }
-    [ObservableProperty] public partial string? SelectedValue { get; set; }
+    [ObservableProperty]
+    public partial string Name
+    {
+        get;
+        set;
+    } = null!;
+
+    [ObservableProperty]
+    public partial string? DisplayName
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial double Value
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial double LiveValue
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial double StepSize
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial string? SelectedValue
+    {
+        get;
+        set;
+    }
 
     /// <summary>
     /// Gets or sets the culture-aware text displayed by the unrestricted value editor.
@@ -75,35 +119,192 @@ public partial class ParameterItemViewModel : ObservableObject
     [DataGridIgnore]
     public string OriginalValueText => FormatParameterValue(OriginalValue);
 
-    [ObservableProperty] public partial double Max { get; set; }
-    [ObservableProperty] public partial double Min { get; set; }
+    [ObservableProperty]
+    public partial double Max
+    {
+        get;
+        set;
+    }
 
-    [ObservableProperty] public partial string? Units { get; set; }
-    [ObservableProperty] public partial string? UnitText { get; set; }
+    [ObservableProperty]
+    public partial double Min
+    {
+        get;
+        set;
+    }
 
-    [ObservableProperty] public partial string? Values { get; set; }
-    [ObservableProperty] public partial string? Range { get; set; }
-    [ObservableProperty] public partial string? Description { get; set; }
+    [ObservableProperty]
+    public partial string? Units
+    {
+        get;
+        set;
+    }
 
-    [ObservableProperty] public partial string? Options { get; set; }
-    [ObservableProperty] public partial string[]? ValuesData { get; set; }
-    [ObservableProperty] public partial string[]? RangeData { get; set; }
+    [ObservableProperty]
+    public partial string? UnitText
+    {
+        get;
+        set;
+    }
 
-    [ObservableProperty] public partial SelectItem[]? ValuesItems { get; set; }
-    [ObservableProperty] public partial SelectItem[]? BitmaskOptions { get; set; }
-    [ObservableProperty] public partial ObservableCollection<object> SelectedBitmaskItems { get; set; } = [];
-    [DataGridIgnore][ObservableProperty] public partial string? Increment { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial string? UserLevel { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial string? Bitmask { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial bool IsModified { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial bool IsReadOnly { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial bool RebootRequired { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial bool HasValuesData { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial bool HasNumericRangeData { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial bool HasBitmask { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial string? ValidationError { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial ParameterEditWriteStatus WriteStatus { get; set; }
-    [DataGridIgnore][ObservableProperty] public partial string? WriteMessage { get; set; }
+    [ObservableProperty]
+    public partial string? Values
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial string? Range
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial string? Description
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial string? Options
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial string[]? ValuesData
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial string[]? RangeData
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial SelectItem[]? ValuesItems
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial SelectItem[]? BitmaskOptions
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial ObservableRangeCollection<object> SelectedBitmaskItems
+    {
+        get;
+        set;
+    } = new();
+
+    [DataGridIgnore]
+    [ObservableProperty]
+    public partial string? Increment
+    {
+        get;
+        set;
+    }
+
+    [DataGridIgnore]
+    [ObservableProperty]
+    public partial string? UserLevel
+    {
+        get;
+        set;
+    }
+
+    [DataGridIgnore]
+    [ObservableProperty]
+    public partial string? Bitmask
+    {
+        get;
+        set;
+    }
+
+    [DataGridIgnore]
+    [ObservableProperty]
+    public partial bool IsModified
+    {
+        get;
+        set;
+    }
+
+    [DataGridIgnore]
+    [ObservableProperty]
+    public partial bool IsReadOnly
+    {
+        get;
+        set;
+    }
+
+    [DataGridIgnore]
+    [ObservableProperty]
+    public partial bool RebootRequired
+    {
+        get;
+        set;
+    }
+
+    [DataGridIgnore]
+    [ObservableProperty]
+    public partial bool HasValuesData
+    {
+        get;
+        set;
+    }
+
+    [DataGridIgnore]
+    [ObservableProperty]
+    public partial bool HasNumericRangeData
+    {
+        get;
+        set;
+    }
+
+    [DataGridIgnore]
+    [ObservableProperty]
+    public partial bool HasBitmask
+    {
+        get;
+        set;
+    }
+
+    [DataGridIgnore]
+    [ObservableProperty]
+    public partial string? ValidationError
+    {
+        get;
+        set;
+    }
+
+    [DataGridIgnore]
+    [ObservableProperty]
+    public partial ParameterEditWriteStatus WriteStatus
+    {
+        get;
+        set;
+    }
+
+    [DataGridIgnore]
+    [ObservableProperty]
+    public partial string? WriteMessage
+    {
+        get;
+        set;
+    }
 
     /// <summary>Initializes an item backed by the shared parameter editing session.</summary>
     /// <param name="editSession">The shared vehicle parameter editing session.</param>
@@ -234,15 +435,17 @@ public partial class ParameterItemViewModel : ObservableObject
             .FirstOrDefault(option => Math.Abs(option.Value - pendingValue) < 0.0001f)?
             .Name;
 
-        SelectedBitmaskItems.Clear();
+        var selectedBitmaskItems = new List<object>();
         var selectedMask = (ulong)Math.Max(0, Math.Round(pendingValue));
         foreach (var option in BitmaskOptions ?? [])
         {
             if ((selectedMask & (ulong)option.Value) != 0)
             {
-                SelectedBitmaskItems.Add(option);
+                selectedBitmaskItems.Add(option);
             }
         }
+
+        SelectedBitmaskItems.ReplaceRange(selectedBitmaskItems);
     }
 
     private static double ResolveStepSize(EditorMetadataProjection metadata, double? minimum, double? maximum)

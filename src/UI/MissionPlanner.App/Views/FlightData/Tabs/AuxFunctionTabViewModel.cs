@@ -1,6 +1,6 @@
-using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
 using MissionPlanner.Core.FlightData.Auxiliary;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.MavLink.Generated;
@@ -24,25 +24,66 @@ public partial class AuxFunctionTabViewModel : ObservableObject, IDisposable
         activeVehicle.Changed += OnActiveVehicleChanged;
         Refresh();
     }
+
     /// <summary>Gets available reviewed functions.</summary>
-    public ObservableCollection<AuxiliaryFunctionDescriptor> Functions { get; } = [];
+    public ObservableRangeCollection<AuxiliaryFunctionDescriptor> Functions
+    {
+        get;
+    } = [];
+
     /// <summary>Gets or sets the selected function.</summary>
-    [ObservableProperty] public partial AuxiliaryFunctionDescriptor? SelectedFunction { get; set; }
+    [ObservableProperty]
+    public partial AuxiliaryFunctionDescriptor? SelectedFunction
+    {
+        get;
+        set;
+    }
+
     /// <summary>Gets or sets the switch level.</summary>
-    [ObservableProperty] public partial MavCmdDoAuxFunctionSwitchLevel Level { get; set; }
+    [ObservableProperty]
+    public partial MavCmdDoAuxFunctionSwitchLevel Level
+    {
+        get;
+        set;
+    }
+
     /// <summary>Gets available switch levels.</summary>
-    public IReadOnlyList<MavCmdDoAuxFunctionSwitchLevel> Levels { get; } = Enum.GetValues<MavCmdDoAuxFunctionSwitchLevel>();
+    public IReadOnlyList<MavCmdDoAuxFunctionSwitchLevel> Levels
+    {
+        get;
+    } = Enum.GetValues<MavCmdDoAuxFunctionSwitchLevel>();
+
     /// <summary>Gets or sets explicit safety confirmation.</summary>
-    [ObservableProperty] public partial bool IsConfirmed { get; set; }
+    [ObservableProperty]
+    public partial bool IsConfirmed
+    {
+        get;
+        set;
+    }
+
     /// <summary>Gets the latest operation result.</summary>
-    [ObservableProperty] public partial string Result { get; private set; } = "Select an auxiliary function.";
+    [ObservableProperty]
+    public partial string Result
+    {
+        get;
+        private set;
+    } = "Select an auxiliary function.";
 
     /// <summary>Builds the active-vehicle catalog.</summary>
     public void Refresh()
     {
-        if (activeVehicle.State is not { } state) return;
-        Functions.Clear();
-        foreach (var function in catalog.GetFunctions(state)) Functions.Add(function);
+        if (activeVehicle.State is not { } state)
+        {
+            return;
+        }
+
+        var functions = new List<AuxiliaryFunctionDescriptor>();
+        foreach (var function in catalog.GetFunctions(state))
+        {
+            functions.Add(function);
+        }
+
+        Functions.ReplaceRange(functions);
         SelectedFunction ??= Functions.FirstOrDefault();
     }
 
@@ -54,11 +95,18 @@ public partial class AuxFunctionTabViewModel : ObservableObject, IDisposable
             Result = "Select an online vehicle and function.";
             return;
         }
-        Result = (await service.ExecuteAsync(new(state, function, Level, IsConfirmed), cancellationToken)).Summary;
+
+        Result = (await service.ExecuteAsync(new AuxiliaryFunctionRequest(state, function, Level, IsConfirmed), cancellationToken)).Summary;
     }
 
     /// <inheritdoc />
-    public void Dispose() => activeVehicle.Changed -= OnActiveVehicleChanged;
+    public void Dispose()
+    {
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+    }
 
-    private void OnActiveVehicleChanged(object? sender, EventArgs e) => Refresh();
+    private void OnActiveVehicleChanged(object? sender, EventArgs e)
+    {
+        Refresh();
+    }
 }

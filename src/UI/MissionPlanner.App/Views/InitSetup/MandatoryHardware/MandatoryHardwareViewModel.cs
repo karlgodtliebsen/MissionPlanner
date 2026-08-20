@@ -1,6 +1,6 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Presentation;
@@ -66,11 +66,18 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>Gets the relevant workflows in dependency order.</summary>
-    public ObservableCollection<SetupWorkflowItemViewModel> Workflows { get; } = [];
+    public ObservableRangeCollection<SetupWorkflowItemViewModel> Workflows
+    {
+        get;
+    } = [];
 
     /// <summary>Gets or sets the selected workflow.</summary>
     [ObservableProperty]
-    public partial SetupWorkflowItemViewModel? SelectedWorkflow { get; set; }
+    public partial SetupWorkflowItemViewModel? SelectedWorkflow
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets whether Firmware is selected.</summary>
     public bool IsFirmwareSelected => IsSelected(SetupWorkflowKey.Firmware);
@@ -133,15 +140,27 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
 
     /// <summary>Gets the active vehicle heading.</summary>
     [ObservableProperty]
-    public partial string VehicleHeading { get; private set; } = "No vehicle connected";
+    public partial string VehicleHeading
+    {
+        get;
+        private set;
+    } = "No vehicle connected";
 
     /// <summary>Gets the setup summary report.</summary>
     [ObservableProperty]
-    public partial string SummaryReport { get; private set; } = string.Empty;
+    public partial string SummaryReport
+    {
+        get;
+        private set;
+    } = string.Empty;
 
     /// <summary>Gets the latest shell-level error.</summary>
     [ObservableProperty]
-    public partial string? Error { get; private set; }
+    public partial string? Error
+    {
+        get;
+        private set;
+    }
 
     /// <inheritdoc />
     public void Dispose()
@@ -256,11 +275,8 @@ public partial class MandatoryHardwareViewModel : ObservableObject, IDisposable
         // ExtendedTabView uses an index-aligned header collection with fixed tab content.
         // Retain unsupported workflows so removing a header cannot shift it onto another tab.
         var evaluations = catalog.Evaluate(snapshot, parameters, completionStore.GetAll()).ToArray();
-        Workflows.Clear();
-        foreach (var evaluation in evaluations)
-        {
-            Workflows.Add(new SetupWorkflowItemViewModel(evaluation));
-        }
+
+        Workflows.ReplaceRange(evaluations.Select(x => new SetupWorkflowItemViewModel(x)));
 
         VehicleHeading = snapshot.IsOnline
             ? $"{snapshot.DisplayName} · {snapshot.State!.Identity.Firmware.Family}"

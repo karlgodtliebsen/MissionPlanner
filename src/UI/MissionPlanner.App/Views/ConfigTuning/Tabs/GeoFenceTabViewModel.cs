@@ -1,6 +1,6 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.ConfigTuning;
@@ -8,7 +8,6 @@ using MissionPlanner.Core.ConfigTuning.Fences;
 using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
@@ -50,45 +49,79 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>Gets editable fence parameter rows resolved from live metadata.</summary>
-    public ObservableCollection<ParameterItemViewModel> Parameters { get; } = [];
+    public ObservableRangeCollection<ParameterItemViewModel> Parameters
+    {
+        get;
+    } = [];
 
     /// <summary>Gets the local fence areas.</summary>
-    public ObservableCollection<FenceAreaListItem> Areas { get; } = [];
+    public ObservableRangeCollection<FenceAreaListItem> Areas
+    {
+        get;
+    } = [];
 
     /// <summary>Gets the local fence plan rendered by the dedicated map.</summary>
     [ObservableProperty]
-    public partial FencePlan LocalPlan { get; private set; } = FencePlan.Empty;
+    public partial FencePlan LocalPlan
+    {
+        get;
+        private set;
+    } = FencePlan.Empty;
 
     /// <summary>Gets whether the target vehicle is connected.</summary>
     [ObservableProperty]
-    public partial bool IsConnected { get; private set; }
+    public partial bool IsConnected
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether a parameter or transfer operation is running.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(DownloadCommand), nameof(UploadCommand), nameof(ClearVehicleCommand))]
-    public partial bool IsBusy { get; private set; }
+    public partial bool IsBusy
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether the vehicle supports typed fence geometry.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsTypedGeometryUnsupported))]
-    public partial bool SupportsTypedGeometry { get; private set; }
+    public partial bool SupportsTypedGeometry
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether typed fence geometry is unavailable for the connected firmware.</summary>
     public bool IsTypedGeometryUnsupported => !SupportsTypedGeometry;
 
     /// <summary>Gets whether local geometry differs from the last synchronized vehicle revision.</summary>
     [ObservableProperty]
-    public partial bool IsGeometryDirty { get; private set; }
+    public partial bool IsGeometryDirty
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether a recoverable pre-replace or pre-clear backup exists.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RestoreBackupCommand))]
-    public partial bool HasBackup { get; private set; }
+    public partial bool HasBackup
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the current map editing mode.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsFenceEditMode), nameof(EditModeText))]
-    public partial FenceMapEditMode EditMode { get; private set; }
+    public partial FenceMapEditMode EditMode
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether the map is currently accepting fence edits.</summary>
     public bool IsFenceEditMode => EditMode != FenceMapEditMode.None;
@@ -98,31 +131,59 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
 
     /// <summary>Gets or sets the radius used by the next circle map click.</summary>
     [ObservableProperty]
-    public partial double CircleRadiusMeters { get; set; } = 100;
+    public partial double CircleRadiusMeters
+    {
+        get;
+        set;
+    } = 100;
 
     /// <summary>Gets or sets the selected area in the geometry list.</summary>
     [ObservableProperty]
-    public partial FenceAreaListItem? SelectedArea { get; set; }
+    public partial FenceAreaListItem? SelectedArea
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets the local revision label.</summary>
     [ObservableProperty]
-    public partial string LocalRevisionText { get; private set; } = "Local revision 0";
+    public partial string LocalRevisionText
+    {
+        get;
+        private set;
+    } = "Local revision 0";
 
     /// <summary>Gets the last synchronized vehicle revision label.</summary>
     [ObservableProperty]
-    public partial string VehicleRevisionText { get; private set; } = "Vehicle revision not downloaded";
+    public partial string VehicleRevisionText
+    {
+        get;
+        private set;
+    } = "Vehicle revision not downloaded";
 
     /// <summary>Gets the current return-point label.</summary>
     [ObservableProperty]
-    public partial string ReturnPointText { get; private set; } = "Return point not set";
+    public partial string ReturnPointText
+    {
+        get;
+        private set;
+    } = "Return point not set";
 
     /// <summary>Gets the latest validation or transfer status.</summary>
     [ObservableProperty]
-    public partial string StatusMessage { get; private set; } = "Connect a vehicle to configure GeoFence.";
+    public partial string StatusMessage
+    {
+        get;
+        private set;
+    } = "Connect a vehicle to configure GeoFence.";
 
     /// <summary>Gets the current transfer percentage.</summary>
     [ObservableProperty]
-    public partial double TransferPercent { get; private set; }
+    public partial double TransferPercent
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Occurs when map geometry must be redrawn.</summary>
     public event EventHandler? GeometryChanged;
@@ -191,10 +252,16 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
                 }
                 else
                 {
-                    areas[index] = areas[index] with { Vertices = areas[index].Vertices.Append(position).ToArray() };
+                    areas[index] = areas[index] with
+                    {
+                        Vertices = areas[index].Vertices.Append(position).ToArray()
+                    };
                 }
 
-                UpdateLocal(target, plan with { Areas = areas });
+                UpdateLocal(target, plan with
+                {
+                    Areas = areas
+                });
                 StatusMessage = "Vertex added. Add at least three, then finish the polygon.";
                 break;
             case FenceMapEditMode.CircleInclusion:
@@ -202,12 +269,18 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
                 var circleKind = EditMode == FenceMapEditMode.CircleInclusion
                     ? FenceAreaKind.CircleInclusion
                     : FenceAreaKind.CircleExclusion;
-                UpdateLocal(target, plan with { Areas = plan.Areas.Append(FenceArea.Circle(circleKind, position, CircleRadiusMeters)).ToArray() });
+                UpdateLocal(target, plan with
+                {
+                    Areas = plan.Areas.Append(FenceArea.Circle(circleKind, position, CircleRadiusMeters)).ToArray()
+                });
                 EditMode = FenceMapEditMode.None;
                 StatusMessage = "Circle added to the local fence plan.";
                 break;
             case FenceMapEditMode.ReturnPoint:
-                UpdateLocal(target, plan with { ReturnPoint = position });
+                UpdateLocal(target, plan with
+                {
+                    ReturnPoint = position
+                });
                 EditMode = FenceMapEditMode.None;
                 StatusMessage = "Fence return point updated locally.";
                 break;
@@ -269,8 +342,14 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
         var index = areas.FindIndex(area => area.Id == draft);
         if (index >= 0)
         {
-            areas[index] = areas[index] with { IsClosed = true };
-            UpdateLocal(target, LocalPlan with { Areas = areas });
+            areas[index] = areas[index] with
+            {
+                IsClosed = true
+            };
+            UpdateLocal(target, LocalPlan with
+            {
+                Areas = areas
+            });
         }
 
         draftPolygonId = null;
@@ -285,7 +364,10 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
     {
         if (vehicleId is { } target && draftPolygonId is { } draft)
         {
-            UpdateLocal(target, LocalPlan with { Areas = LocalPlan.Areas.Where(area => area.Id != draft).ToArray() });
+            UpdateLocal(target, LocalPlan with
+            {
+                Areas = LocalPlan.Areas.Where(area => area.Id != draft).ToArray()
+            });
         }
 
         draftPolygonId = null;
@@ -301,7 +383,10 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
             return;
         }
 
-        UpdateLocal(target, LocalPlan with { Areas = LocalPlan.Areas.Where(area => area.Id != item.Id).ToArray() });
+        UpdateLocal(target, LocalPlan with
+        {
+            Areas = LocalPlan.Areas.Where(area => area.Id != item.Id).ToArray()
+        });
         SelectedArea = null;
         StatusMessage = "Fence area removed locally.";
     }
@@ -311,7 +396,10 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
     {
         if (vehicleId is { } target)
         {
-            UpdateLocal(target, LocalPlan with { ReturnPoint = null });
+            UpdateLocal(target, LocalPlan with
+            {
+                ReturnPoint = null
+            });
             StatusMessage = "Fence return point removed locally.";
         }
     }
@@ -430,7 +518,10 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
     {
         if (vehicleId is { } target && draftPolygonId is { } draft)
         {
-            UpdateLocal(target, LocalPlan with { Areas = LocalPlan.Areas.Where(area => area.Id != draft).ToArray() });
+            UpdateLocal(target, LocalPlan with
+            {
+                Areas = LocalPlan.Areas.Where(area => area.Id != draft).ToArray()
+            });
         }
 
         draftPolygonId = null;
@@ -523,14 +614,17 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
     private void ApplySnapshot(FenceConfigurationSnapshot snapshot)
     {
         LocalPlan = snapshot.LocalPlan;
-        Areas.Clear();
+        var areas = new List<FenceAreaListItem>();
         foreach (var area in snapshot.LocalPlan.Areas)
         {
             var summary = area.Kind is FenceAreaKind.PolygonInclusion or FenceAreaKind.PolygonExclusion
                 ? $"{area.Vertices.Count} vertices{(area.IsClosed ? string.Empty : " (open)")}"
                 : $"{area.RadiusMeters:0.#} m radius";
-            Areas.Add(new FenceAreaListItem(area.Id, area.Kind, summary, area.IsClosed));
+            areas.Add(new FenceAreaListItem(area.Id, area.Kind, summary, area.IsClosed));
         }
+
+        Areas.ReplaceRange(areas);
+
 
         IsGeometryDirty = snapshot.IsDirty;
         HasBackup = snapshot.BackupPlan is not null;

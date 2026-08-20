@@ -1,10 +1,10 @@
-﻿using System.Collections.ObjectModel;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Notifications;
@@ -52,38 +52,71 @@ public partial class MessagesTabViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>Gets all available exact-severity filters.</summary>
-    public IReadOnlyList<string> SeverityFilters { get; } =
+    public IReadOnlyList<string> SeverityFilters
+    {
+        get;
+    } =
         ["All", "Emergency", "Alert", "Critical", "Error", "Warning", "Notice", "Info", "Debug", "Application"];
 
     /// <summary>Gets the filtered current-vehicle rows in arrival order.</summary>
-    public ObservableCollection<MessageListItem> Items { get; } = [];
+    public ObservableRangeCollection<MessageListItem> Items
+    {
+        get;
+    } = [];
 
     /// <summary>Gets the message rows currently selected in the grid.</summary>
-    public ObservableCollection<MessageListItem> SelectedItems { get; } = [];
+    public ObservableRangeCollection<MessageListItem> SelectedItems
+    {
+        get;
+    } = [];
 
     /// <summary>Gets or sets the selected exact severity or origin filter.</summary>
     [ObservableProperty]
-    public partial string SelectedSeverity { get; set; } = "All";
+    public partial string SelectedSeverity
+    {
+        get;
+        set;
+    } = "All";
 
     /// <summary>Gets or sets case-insensitive text search.</summary>
     [ObservableProperty]
-    public partial string SearchText { get; set; } = string.Empty;
+    public partial string SearchText
+    {
+        get;
+        set;
+    } = string.Empty;
 
     /// <summary>Gets or sets the selected message row.</summary>
     [ObservableProperty]
-    public partial MessageListItem? SelectedMessage { get; set; }
+    public partial MessageListItem? SelectedMessage
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets whether automatic scrolling is paused.</summary>
     [ObservableProperty]
-    public partial bool IsAutoScrollPaused { get; private set; }
+    public partial bool IsAutoScrollPaused
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets a monotonically increasing request used by the view for auto-scroll.</summary>
     [ObservableProperty]
-    public partial int ScrollRequestVersion { get; private set; }
+    public partial int ScrollRequestVersion
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the latest copy/export status.</summary>
     [ObservableProperty]
-    public partial string Status { get; private set; } = "No messages";
+    public partial string Status
+    {
+        get;
+        private set;
+    } = "No messages";
 
     /// <summary>Gets the pause/resume button label.</summary>
     public string PauseButtonText => IsAutoScrollPaused ? "Resume Auto-scroll" : "Pause Auto-scroll";
@@ -254,11 +287,7 @@ public partial class MessagesTabViewModel : ObservableObject, IDisposable
             .OrderBy(row => row.ReceivedAt)
             .ThenBy(row => row.Identity)
             .ToList();
-
-        foreach (var row in rows)
-        {
-            Items.Add(row);
-        }
+        Items.AddRange(rows);
 
         SelectedMessage = Items.FirstOrDefault(item => item.Identity == selectedIdentity);
         Status = $"{Items.Count} visible messages for {activeVehicle.Current.DisplayName}.";

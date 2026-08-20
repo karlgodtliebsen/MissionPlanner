@@ -1,6 +1,6 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
@@ -71,30 +71,56 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
     }
 
     /// <summary>Gets the discovered compass instances.</summary>
-    public ObservableCollection<CompassInstanceViewModel> Compasses { get; } = [];
+    public ObservableRangeCollection<CompassInstanceViewModel> Compasses
+    {
+        get;
+    } = [];
 
     /// <summary>Gets detected duplicate-identity or priority inconsistencies.</summary>
-    public ObservableCollection<string> Issues { get; } = [];
+    public ObservableRangeCollection<string> Issues
+    {
+        get;
+    } = [];
 
     /// <summary>Gets the inventory status or the latest operation result.</summary>
     [ObservableProperty]
-    public partial string Status { get; private set; } = "Load the connected vehicle's compass configuration.";
+    public partial string Status
+    {
+        get;
+        private set;
+    } = "Load the connected vehicle's compass configuration.";
 
     /// <summary>Gets the current calibration workflow stage.</summary>
     [ObservableProperty]
-    public partial CompassCalibrationWorkflowState CalibrationState { get; private set; }
+    public partial CompassCalibrationWorkflowState CalibrationState
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the primary calibration instruction.</summary>
     [ObservableProperty]
-    public partial string Instruction { get; private set; } = string.Empty;
+    public partial string Instruction
+    {
+        get;
+        private set;
+    } = string.Empty;
 
     /// <summary>Gets the per-compass progress summary.</summary>
     [ObservableProperty]
-    public partial string ProgressSummary { get; private set; } = string.Empty;
+    public partial string ProgressSummary
+    {
+        get;
+        private set;
+    } = string.Empty;
 
     /// <summary>Gets the post-calibration quality summary, when available.</summary>
     [ObservableProperty]
-    public partial string? QualitySummary { get; private set; }
+    public partial string? QualitySummary
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether at least one compass was discovered.</summary>
     public bool HasCompasses => Compasses.Count > 0;
@@ -355,17 +381,8 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
     private void ShowInventory(CompassInventory inventory, bool preserveStatus = false)
     {
         orientationOptions = inventory.OrientationOptions;
-        Compasses.Clear();
-        foreach (var compass in inventory.Compasses)
-        {
-            Compasses.Add(new CompassInstanceViewModel(compass, inventory.OrientationOptions, this));
-        }
-
-        Issues.Clear();
-        foreach (var issue in inventory.Issues)
-        {
-            Issues.Add(issue.Message);
-        }
+        Compasses.ReplaceRange(inventory.Compasses.Select(x => new CompassInstanceViewModel(x, inventory.OrientationOptions, this)));
+        Issues.ReplaceRange(inventory.Issues.Select(issue => issue.Message));
 
         if (!preserveStatus)
         {

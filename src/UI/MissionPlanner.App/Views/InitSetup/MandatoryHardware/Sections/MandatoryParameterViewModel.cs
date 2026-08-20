@@ -1,6 +1,6 @@
-using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Setup.MandatoryHardware;
@@ -18,10 +18,7 @@ public abstract partial class MandatoryParameterViewModel : SetupWorkflowDetailV
     private CancellationTokenSource? operationCancellation;
 
     /// <summary>Initializes a metadata-backed mandatory workflow.</summary>
-    protected MandatoryParameterViewModel(
-        SetupWorkflowDescriptor descriptor,
-        IActiveVehicleContext activeVehicle,
-        IDispatcher dispatcher)
+    protected MandatoryParameterViewModel(SetupWorkflowDescriptor descriptor, IActiveVehicleContext activeVehicle, IDispatcher dispatcher)
         : base(descriptor)
     {
         this.activeVehicle = activeVehicle;
@@ -30,14 +27,24 @@ public abstract partial class MandatoryParameterViewModel : SetupWorkflowDetailV
     }
 
     /// <summary>Gets the supported settings.</summary>
-    public ObservableCollection<PeripheralSettingViewModel> Settings { get; } = [];
+    public ObservableRangeCollection<PeripheralSettingViewModel> Settings
+    {
+        get;
+    } = [];
 
     /// <summary>Gets workflow guidance.</summary>
-    public ObservableCollection<string> Guidance { get; } = [];
+    public ObservableRangeCollection<string> Guidance
+    {
+        get;
+    } = [];
 
     /// <summary>Gets the current workflow status.</summary>
     [ObservableProperty]
-    public partial string Status { get; private set; } = "Connect a vehicle to load settings.";
+    public partial string Status
+    {
+        get;
+        private set;
+    } = "Connect a vehicle to load settings.";
 
     /// <summary>Gets whether supported settings were found.</summary>
     public bool HasSettings => Settings.Count > 0;
@@ -94,16 +101,12 @@ public abstract partial class MandatoryParameterViewModel : SetupWorkflowDetailV
     }
 
     /// <summary>Loads configuration for the concrete workflow.</summary>
-    protected abstract Task<MandatoryParameterConfiguration> LoadConfigurationAsync(
-        MissionPlanner.Shared.Models.Vehicles.Models.VehicleId vehicleId,
+    protected abstract Task<MandatoryParameterConfiguration> LoadConfigurationAsync(MissionPlanner.Shared.Models.Vehicles.Models.VehicleId vehicleId,
         CancellationToken cancellationToken);
 
     /// <summary>Applies one setting for the concrete workflow.</summary>
-    protected abstract Task<MandatoryParameterApplyResult> ApplySettingAsync(
-        MissionPlanner.Shared.Models.Vehicles.Models.VehicleId vehicleId,
-        string name,
-        double value,
-        CancellationToken cancellationToken);
+    protected abstract Task<MandatoryParameterApplyResult> ApplySettingAsync(MissionPlanner.Shared.Models.Vehicles.Models.VehicleId vehicleId,
+        string name, double value, CancellationToken cancellationToken);
 
     [RelayCommand]
     private Task RefreshAsync()
@@ -153,17 +156,9 @@ public abstract partial class MandatoryParameterViewModel : SetupWorkflowDetailV
 
     private void Show(MandatoryParameterConfiguration configuration)
     {
-        Settings.Clear();
-        foreach (var setting in configuration.Settings)
-        {
-            Settings.Add(new PeripheralSettingViewModel(setting, Apply));
-        }
-
-        Guidance.Clear();
-        foreach (var guidance in configuration.Guidance)
-        {
-            Guidance.Add(guidance);
-        }
+        var allSettings = configuration.Settings.Select(s => new PeripheralSettingViewModel(s, Apply));
+        Settings.ReplaceRange(allSettings);
+        Guidance.ReplaceRange(configuration.Guidance);
 
         Status = Settings.Count == 0
             ? "This firmware does not report settings for this workflow."

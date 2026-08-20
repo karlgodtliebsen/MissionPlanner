@@ -9,6 +9,7 @@
     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
     x:DataType="local:InstallFirmwareViewModel"
+    BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
     Title="Install Firmware">
 
     <Grid RowDefinitions="*,32">

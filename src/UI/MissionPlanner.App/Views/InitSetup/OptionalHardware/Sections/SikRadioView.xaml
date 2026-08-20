@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<tabViews:TabViewLifecycleContent x:TypeArguments="sections:SikRadioViewModel" xmlns="http://schemas.microsoft.com/dotnet/2021/maui" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+<tabViews:TabViewLifecycleContent x:TypeArguments="sections:SikRadioViewModel" 
+                                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
+                                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+                                  xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" 
+                                  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
-                                  x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.SikRadioView" x:DataType="sections:SikRadioViewModel">
+                                  x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.SikRadioView"
+                                  x:DataType="sections:SikRadioViewModel">
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="25" VerticalOptions="Center" HorizontalOptions="Center">
             <Label Text="SiK / RFD Radio" FontSize="20" FontAttributes="Bold" />

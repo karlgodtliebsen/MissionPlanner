@@ -11,7 +11,9 @@
                             xmlns:tabsUtils="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.TabsUtils"
                             x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.MandatoryHardwareView"
                             x:DataType="mandatoryHardware:MandatoryHardwareViewModel"
-                            Title="Initial Setup">
+                            Title="Initial Setup"
+                            BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
+                            >
 
     <Grid Padding="20" RowDefinitions="Auto,Auto,*" RowSpacing="14" HorizontalOptions="Center">
         <VerticalStackLayout Grid.Row="0" Spacing="8">

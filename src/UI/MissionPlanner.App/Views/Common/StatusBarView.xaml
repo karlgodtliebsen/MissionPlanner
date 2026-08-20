@@ -4,11 +4,12 @@
              xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
              x:Class="MissionPlanner.App.Views.Common.StatusBarView"
              x:DataType="common:StatusBarViewModel"
+             BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
              HeightRequest="32">
 
     <Grid ColumnDefinitions="*,Auto,Auto" 
           Padding="12,6"
-          BackgroundColor="#2d2d30">
+         >
 
         <!-- Status Message (Left) -->
         <Label Grid.Column="0"

@@ -125,88 +125,183 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     /// Gets whether an operation is running.
     /// </summary>
     [ObservableProperty]
-    public partial bool IsBusy { get; private set; }
+    public partial bool IsBusy
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the message displayed by the active firmware progress dialog.</summary>
     [ObservableProperty]
-    public partial string ProgressMessage { get; private set; } = string.Empty;
+    public partial string ProgressMessage
+    {
+        get;
+        private set;
+    } = string.Empty;
 
     ///
     /// <summary>Gets catalogue choices.
     /// </summary>
     [ObservableProperty]
-    public partial ObservableRangeCollection<FirmwareCatalogItemViewModel> FirmwareChoices { get; private set; } = [];
+    public partial ObservableRangeCollection<FirmwareCatalogItemViewModel> FirmwareChoices
+    {
+        get;
+        private set;
+    } = [];
 
     /// <summary>
     /// Gets catalogue choices.
     /// </summary>
     [ObservableProperty]
-    public partial ObservableRangeCollection<FirmwareCatalogItemViewModel> FilteredFirmwareChoices { get; private set; } = [];
+    public partial ObservableRangeCollection<FirmwareCatalogItemViewModel> FilteredFirmwareChoices
+    {
+        get;
+        private set;
+    } = [];
 
     /// <summary>
     /// Gets the distinct firmware versions available in the catalogue.
     /// </summary>
     [ObservableProperty]
-    public partial ObservableRangeCollection<string> Versions { get; private set; } = [];
+    public partial ObservableRangeCollection<string> Versions
+    {
+        get;
+        private set;
+    } = [];
 
     /// <summary>
     /// Gets or sets the selected firmware version for filtering the catalogue.
     /// </summary>
     [ObservableProperty]
-    public partial string? SelectedVersion { get; set; }
+    public partial string? SelectedVersion
+    {
+        get;
+        set;
+    }
 
     /// <summary>
     ///  Gets the distinct FrameTypes available in the catalogue.
     /// </summary>
     [ObservableProperty]
-    public partial ObservableRangeCollection<string> FrameTypes { get; private set; } = [];
+    public partial ObservableRangeCollection<string> FrameTypes
+    {
+        get;
+        private set;
+    } = [];
 
     /// <summary>
     /// Gets or sets the selected FrameType for filtering the catalogue.
     /// </summary>
     [ObservableProperty]
-    public partial string? SelectedFrameType { get; set; }
+    public partial string? SelectedFrameType
+    {
+        get;
+        set;
+    }
 
 
     /// <summary>
     ///  Gets the distinct Manufacturer available in the catalogue.
     /// </summary>
     [ObservableProperty]
-    public partial ObservableRangeCollection<string> Manufacturers { get; private set; } = [];
+    public partial ObservableRangeCollection<string> Manufacturers
+    {
+        get;
+        private set;
+    } = [];
 
     /// <summary>
     ///  Gets or sets the selected Manufacturer for filtering the catalogue.
     /// </summary>
     [ObservableProperty]
-    public partial string? SelectedManufacturer { get; set; }
+    public partial string? SelectedManufacturer
+    {
+        get;
+        set;
+    }
 
 
     /// <summary>Gets discovered serial devices.</summary>
     [ObservableProperty]
-    public partial IReadOnlyList<FirmwareDeviceItemViewModel> DetectedDevices { get; private set; } = [];
+    public partial IReadOnlyList<FirmwareDeviceItemViewModel> DetectedDevices
+    {
+        get;
+        private set;
+    } = [];
 
     /// <summary>Gets release channels.</summary>
-    public IReadOnlyList<FirmwareReleaseChannel> Channels { get; } =
+    public IReadOnlyList<FirmwareReleaseChannel> Channels
+    {
+        get;
+    } =
         [FirmwareReleaseChannel.Stable, FirmwareReleaseChannel.Beta, FirmwareReleaseChannel.Latest];
 
     /// <summary>Gets operation progress.</summary>
-    public FirmwareProgressViewModel OperationProgress { get; } = new();
+    public FirmwareProgressViewModel OperationProgress
+    {
+        get;
+    } = new();
 
     /// <summary>Gets concise help that remains available offline.</summary>
-    public IReadOnlyList<FirmwareSupportSection> SupportSections { get; } = FirmwareSupportContent.Sections;
+    public IReadOnlyList<FirmwareSupportSection> SupportSections
+    {
+        get;
+    } = FirmwareSupportContent.Sections;
 
     /// <summary>Gets curated official and fallback support destinations.</summary>
-    public IReadOnlyList<FirmwareSupportLink> SupportLinks { get; }
+    public IReadOnlyList<FirmwareSupportLink> SupportLinks
+    {
+        get;
+    }
 
-    [ObservableProperty] public partial FirmwareReleaseChannel SelectedChannel { get; set; } = FirmwareReleaseChannel.Stable;
+    [ObservableProperty]
+    public partial FirmwareReleaseChannel SelectedChannel
+    {
+        get;
+        set;
+    } = FirmwareReleaseChannel.Stable;
 
-    [ObservableProperty] public partial FirmwareCatalogItemViewModel? SelectedFirmware { get; set; }
-    [ObservableProperty] public partial FirmwareDeviceItemViewModel? SelectedDevice { get; set; }
-    [ObservableProperty] public partial IReadOnlyList<DfuDeviceItemViewModel> DfuDevices { get; private set; } = [];
-    [ObservableProperty] public partial DfuDeviceItemViewModel? SelectedDfuDevice { get; set; }
-    [ObservableProperty] public partial string DfuStatus { get; private set; } = "Enter STM32 DFU mode, then refresh the catalogue.";
+    [ObservableProperty]
+    public partial FirmwareCatalogItemViewModel? SelectedFirmware
+    {
+        get;
+        set;
+    }
 
-    [ObservableProperty] public partial FirmwarePreparationResult? PreparedFirmware { get; private set; }
+    [ObservableProperty]
+    public partial FirmwareDeviceItemViewModel? SelectedDevice
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial IReadOnlyList<DfuDeviceItemViewModel> DfuDevices
+    {
+        get;
+        private set;
+    } = [];
+
+    [ObservableProperty]
+    public partial DfuDeviceItemViewModel? SelectedDfuDevice
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial string DfuStatus
+    {
+        get;
+        private set;
+    } = "Enter STM32 DFU mode, then refresh the catalogue.";
+
+    [ObservableProperty]
+    public partial FirmwarePreparationResult? PreparedFirmware
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether this host can open Windows Device Manager.</summary>
     public bool CanOpenDeviceManager => deviceManagerLauncher.IsAvailable;
@@ -239,35 +334,175 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     /// <summary>Gets whether a firmware release from the catalogue is selected.</summary>
     public bool HasSelectedFirmware => SelectedFirmware is not null;
 
-    [ObservableProperty] public partial ApjFirmwarePackage? CustomPackage { get; private set; }
-    [ObservableProperty] public partial string? CustomFirmwareName { get; private set; }
-    [ObservableProperty] public partial string? CustomFirmwareDescription { get; private set; }
-    [ObservableProperty] public partial string? CustomFirmwarePlatform { get; private set; }
-    [ObservableProperty] public partial string? CustomFirmwareBuild { get; private set; }
-    [ObservableProperty] public partial int CustomFirmwareBoardId { get; private set; }
-    [ObservableProperty] public partial long CustomFirmwareImageSize { get; private set; }
-    [ObservableProperty] public partial bool RequireExactBoardIdMatch { get; set; } = true;
-    [ObservableProperty] public partial string? LocalDfuFirmwarePath { get; private set; }
-    [ObservableProperty] public partial string? LocalDfuFirmwareName { get; private set; }
-    [ObservableProperty] public partial string? LocalDfuPlatform { get; set; }
-    [ObservableProperty] public partial bool IsConnectedMode { get; private set; }
-    [ObservableProperty] public partial bool IsDisconnectedMode { get; private set; }
-    [ObservableProperty] public partial bool IsUnsupportedMode { get; private set; }
-    [ObservableProperty] public partial bool IsOperationInProgress { get; private set; }
-    [ObservableProperty] public partial bool IsCatalogRefreshRunning { get; private set; }
-    [ObservableProperty] public partial bool IsCancellationDeferred { get; private set; }
-    [ObservableProperty] public partial FirmwareOperationState? CurrentOperationState { get; private set; }
+    [ObservableProperty]
+    public partial ApjFirmwarePackage? CustomPackage
+    {
+        get;
+        private set;
+    }
 
     [ObservableProperty]
-    public partial FirmwareContextHelp ContextHelp { get; private set; } =
+    public partial string? CustomFirmwareName
+    {
+        get;
+        private set;
+    }
+
+    [ObservableProperty]
+    public partial string? CustomFirmwareDescription
+    {
+        get;
+        private set;
+    }
+
+    [ObservableProperty]
+    public partial string? CustomFirmwarePlatform
+    {
+        get;
+        private set;
+    }
+
+    [ObservableProperty]
+    public partial string? CustomFirmwareBuild
+    {
+        get;
+        private set;
+    }
+
+    [ObservableProperty]
+    public partial int CustomFirmwareBoardId
+    {
+        get;
+        private set;
+    }
+
+    [ObservableProperty]
+    public partial long CustomFirmwareImageSize
+    {
+        get;
+        private set;
+    }
+
+    [ObservableProperty]
+    public partial bool RequireExactBoardIdMatch
+    {
+        get;
+        set;
+    } = true;
+
+    [ObservableProperty]
+    public partial string? LocalDfuFirmwarePath
+    {
+        get;
+        private set;
+    }
+
+    [ObservableProperty]
+    public partial string? LocalDfuFirmwareName
+    {
+        get;
+        private set;
+    }
+
+    [ObservableProperty]
+    public partial string? LocalDfuPlatform
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial bool IsConnectedMode
+    {
+        get;
+        private set;
+    }
+
+    [ObservableProperty]
+    public partial bool IsDisconnectedMode
+    {
+        get;
+        private set;
+    }
+
+    [ObservableProperty]
+    public partial bool IsUnsupportedMode
+    {
+        get;
+        private set;
+    }
+
+    [ObservableProperty]
+    public partial bool IsOperationInProgress
+    {
+        get;
+        private set;
+    }
+
+    [ObservableProperty]
+    public partial bool IsCatalogRefreshRunning
+    {
+        get;
+        private set;
+    }
+
+    [ObservableProperty]
+    public partial bool IsCancellationDeferred
+    {
+        get;
+        private set;
+    }
+
+    [ObservableProperty]
+    public partial FirmwareOperationState? CurrentOperationState
+    {
+        get;
+        private set;
+    }
+
+    [ObservableProperty]
+    public partial FirmwareContextHelp ContextHelp
+    {
+        get;
+        private set;
+    } =
         FirmwareContextHelpResolver.Resolve(new FirmwareSupportContext(SerialDevicePresent: false));
 
 
-    [ObservableProperty] public partial bool CanUpdateBootloader { get; private set; }
-    [ObservableProperty] public partial bool CanInstall { get; private set; }
-    [ObservableProperty] public partial string StatusMessage { get; private set; } = "Ready";
-    [ObservableProperty] public partial string DeviceStatus { get; private set; } = "No flight controller detected";
-    [ObservableProperty] public partial string? LastDiagnosticReport { get; private set; }
+    [ObservableProperty]
+    public partial bool CanUpdateBootloader
+    {
+        get;
+        private set;
+    }
+
+    [ObservableProperty]
+    public partial bool CanInstall
+    {
+        get;
+        private set;
+    }
+
+    [ObservableProperty]
+    public partial string StatusMessage
+    {
+        get;
+        private set;
+    } = "Ready";
+
+    [ObservableProperty]
+    public partial string DeviceStatus
+    {
+        get;
+        private set;
+    } = "No flight controller detected";
+
+    [ObservableProperty]
+    public partial string? LastDiagnosticReport
+    {
+        get;
+        private set;
+    }
 
 
     /// <summary>
@@ -820,7 +1055,9 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
                 UpdateContextHelp();
             });
         }
-        catch (OperationCanceledException) when (refreshToken.IsCancellationRequested) { }
+        catch (OperationCanceledException) when (refreshToken.IsCancellationRequested)
+        {
+        }
         catch (Exception exception)
         {
             Debug.Print("Firmware catalogue refresh failed.\n" + exception.Message);
@@ -901,9 +1138,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         var choices = recommendations.Select(recommendation => new FirmwareCatalogItemViewModel(recommendation))
             .ToArray();
 
-        FirmwareChoices.Clear();
-        FirmwareChoices.AddRange(choices);
-
+        FirmwareChoices.ReplaceRange(choices);
 
         var versions = choices
             .Select(x => x.FirmwareVersion)
@@ -913,8 +1148,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             .Select(x => x.ToString())
             .ToList();
 
-        Versions.Clear();
-        Versions.AddRange(versions);
+        Versions.ReplaceRange(versions);
 
         //FirmwareManifestEntry -> FirmwareBoardTarget Target  -> FirmwareVehicleType VehicleType 
         var frameTypes = choices
@@ -923,8 +1157,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             .Order()
             .ToList();
 
-        FrameTypes.Clear();
-        FrameTypes.AddRange(frameTypes);
+        FrameTypes.ReplaceRange(frameTypes);
 
         var manufacturers = choices
             .Select(x => x.Manufacturer)
@@ -935,8 +1168,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         Manufacturers.Clear();
         Manufacturers.AddRange(manufacturers);
 
-        FilteredFirmwareChoices.Clear();
-        FilteredFirmwareChoices.AddRange(choices);
+        FilteredFirmwareChoices.ReplaceRange(choices);
 
         Debug.Print($"ApplyTargetQuery with FirmwareChoices count: {FirmwareChoices.Count}");
 
@@ -1346,11 +1578,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         return normalized.Any(char.IsLetter) ? normalized : null;
     }
 
-    private static string BuildDfuDiagnosticReport(
-        DfuProgrammingResult result,
-        string platform,
-        int? boardId,
-        DfuDeviceDescriptor device)
+    private static string BuildDfuDiagnosticReport(DfuProgrammingResult result, string platform, int? boardId, DfuDeviceDescriptor device)
     {
         var warnings = result.Warnings is { Count: > 0 } ? string.Join(", ", result.Warnings) : "None";
         return $"Operation: {result.OperationId}\n" +

@@ -6,7 +6,8 @@
               x:DataType="common:ErrorViewModel"
               HorizontalOptions="Center"
               VerticalOptions="Center"
-              BackgroundColor="#80000000">
+              BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
+              >
 
 
         <VerticalStackLayout  Margin="25,50,25,50" Padding="50" HorizontalOptions="Center" VerticalOptions="Center">

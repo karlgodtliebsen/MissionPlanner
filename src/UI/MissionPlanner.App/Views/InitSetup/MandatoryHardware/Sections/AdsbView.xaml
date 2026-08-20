@@ -8,11 +8,10 @@
     xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
     x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.AdsbView"
     x:DataType="sections:AdsbViewModel"
-    Margin="20,0"
-    MaximumWidthRequest="1100"
-    HorizontalOptions="Center">
+    >
+
     <ScrollView VerticalScrollBarVisibility="Always">
-        <VerticalStackLayout Spacing="12" Padding="10">
+        <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
             <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
             <Label Text="ADSB" FontSize="18" FontAttributes="Bold" />
             <Label Text="{Binding Status}" FontAttributes="Italic" />

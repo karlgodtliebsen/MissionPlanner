@@ -7,9 +7,9 @@
                                   xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.FrameSetupView"
                                   x:DataType="sections:FrameSetupViewModel" 
-                                  Margin="100,0,100,0">
+                                 >
     <ScrollView VerticalScrollBarVisibility="Always">
-        <VerticalStackLayout Spacing="10">
+        <VerticalStackLayout Padding="16"  Spacing="25" HorizontalOptions="Center">
             <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
             <Label Text="{Binding Error}" TextColor="Red" />
             <Label Text="Supported frame configuration" FontSize="18" FontAttributes="Bold" />

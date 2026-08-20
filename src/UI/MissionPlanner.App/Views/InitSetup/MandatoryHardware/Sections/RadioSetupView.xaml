@@ -7,9 +7,9 @@
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.RadioSetupView"
                                   x:DataType="sections:RadioSetupViewModel"
-                                  Margin="100,0,100,0">
+                                  >
     <ScrollView VerticalScrollBarVisibility="Always">
-        <VerticalStackLayout Padding="16" Spacing="14">
+        <VerticalStackLayout Padding="16"  Spacing="25" HorizontalOptions="Center">
             <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                 <VerticalStackLayout Spacing="2">

@@ -1,6 +1,6 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.ConfigTuning;
@@ -27,13 +27,22 @@ public sealed partial class AdvancedTuningFieldViewModel : ObservableObject
     }
 
     /// <summary>Gets the expanded field definition.</summary>
-    public AdvancedTuningFieldDefinition Definition { get; }
+    public AdvancedTuningFieldDefinition Definition
+    {
+        get;
+    }
 
     /// <summary>Gets the resolved parameter name.</summary>
-    public string ParameterName { get; }
+    public string ParameterName
+    {
+        get;
+    }
 
     /// <summary>Gets the shared-session editor.</summary>
-    public ParameterItemViewModel Editor { get; }
+    public ParameterItemViewModel Editor
+    {
+        get;
+    }
 
     /// <summary>Gets the axis label, when applicable.</summary>
     public string AxisText => string.IsNullOrWhiteSpace(Definition.Axis) ? string.Empty : $"Axis {Definition.Axis}";
@@ -54,7 +63,11 @@ public sealed partial class AdvancedTuningFieldViewModel : ObservableObject
 
     /// <summary>Gets the normalized pending magnitude for axis comparisons.</summary>
     [ObservableProperty]
-    public partial double NormalizedMagnitude { get; set; }
+    public partial double NormalizedMagnitude
+    {
+        get;
+        set;
+    }
 
     /// <summary>Refreshes the editor from shared state.</summary>
     /// <param name="session">The shared parameter session.</param>
@@ -158,61 +171,116 @@ public sealed partial class ExtendedTuningGroupViewModel : ObservableObject
     public bool SupportsAxisCopy => resolved.Descriptor.SupportsAxisCopy && Axes.Count > 1;
 
     /// <summary>Gets the present axes.</summary>
-    public IReadOnlyList<string> Axes { get; }
+    public IReadOnlyList<string> Axes
+    {
+        get;
+    }
 
     /// <summary>Gets or sets the source copy axis.</summary>
     [ObservableProperty]
-    public partial string? SelectedSourceAxis { get; set; }
+    public partial string? SelectedSourceAxis
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets the target copy axis.</summary>
     [ObservableProperty]
-    public partial string? SelectedTargetAxis { get; set; }
+    public partial string? SelectedTargetAxis
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets whether editor rows have been materialized.</summary>
     [ObservableProperty]
-    public partial bool IsExpanded { get; private set; }
+    public partial bool IsExpanded
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether this group contains pending changes.</summary>
     [ObservableProperty]
-    public partial bool IsModified { get; private set; }
+    public partial bool IsModified
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the current coupled validation message.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasValidationError))]
-    public partial string? ValidationMessage { get; set; }
+    public partial string? ValidationMessage
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets whether group validation currently fails.</summary>
     public bool HasValidationError => !string.IsNullOrWhiteSpace(ValidationMessage);
 
     /// <summary>Gets the currently visible, lazily materialized field rows.</summary>
-    public ObservableCollection<AdvancedTuningFieldViewModel> Fields { get; } = [];
+    public ObservableRangeCollection<AdvancedTuningFieldViewModel> Fields
+    {
+        get;
+    } = [];
 
     /// <summary>Gets the current explicit axis-copy preview rows.</summary>
-    public ObservableCollection<AxisCopyChangeViewModel> CopyPreview { get; } = [];
+    public ObservableRangeCollection<AxisCopyChangeViewModel> CopyPreview
+    {
+        get;
+    } = [];
 
     /// <summary>Gets whether an axis-copy preview awaits explicit application.</summary>
     [ObservableProperty]
-    public partial bool HasCopyPreview { get; private set; }
+    public partial bool HasCopyPreview
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the expand/collapse command.</summary>
-    public IRelayCommand ToggleExpandedCommand { get; }
+    public IRelayCommand ToggleExpandedCommand
+    {
+        get;
+    }
 
     /// <summary>Gets the confirmed group apply command.</summary>
-    public IAsyncRelayCommand ApplyCommand { get; }
+    public IAsyncRelayCommand ApplyCommand
+    {
+        get;
+    }
 
     /// <summary>Gets the group revert command.</summary>
-    public IRelayCommand RevertCommand { get; }
+    public IRelayCommand RevertCommand
+    {
+        get;
+    }
 
     /// <summary>Gets the group refresh command.</summary>
-    public IAsyncRelayCommand RefreshCommand { get; }
+    public IAsyncRelayCommand RefreshCommand
+    {
+        get;
+    }
 
     /// <summary>Gets the non-mutating axis-copy preview command.</summary>
-    public IRelayCommand PreviewCopyCommand { get; }
+    public IRelayCommand PreviewCopyCommand
+    {
+        get;
+    }
 
     /// <summary>Gets the command that applies a reviewed preview to pending values.</summary>
-    public IAsyncRelayCommand ApplyCopyCommand { get; }
+    public IAsyncRelayCommand ApplyCopyCommand
+    {
+        get;
+    }
 
-    internal AxisCopyPreview? PendingCopyPreview { get; private set; }
+    internal AxisCopyPreview? PendingCopyPreview
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Determines whether the descriptor or one of its fields matches a search.</summary>
     /// <param name="search">The search text.</param>
@@ -269,16 +337,19 @@ public sealed partial class ExtendedTuningGroupViewModel : ObservableObject
     internal void SetCopyPreview(AxisCopyPreview preview)
     {
         PendingCopyPreview = preview;
-        CopyPreview.Clear();
+        var copyPreview = new List<AxisCopyChangeViewModel>();
+
         foreach (var change in preview.Changes)
         {
-            CopyPreview.Add(new AxisCopyChangeViewModel(
+            copyPreview.Add(new AxisCopyChangeViewModel(
                 change.Component,
                 change.SourceParameter,
                 change.TargetParameter,
                 change.TargetValue,
                 change.SourceValue));
         }
+
+        CopyPreview.ReplaceRange(copyPreview);
 
         HasCopyPreview = CopyPreview.Count > 0;
     }
@@ -329,11 +400,15 @@ public sealed partial class ExtendedTuningGroupViewModel : ObservableObject
                 item.Title.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
                 item.Description.Contains(filter, StringComparison.OrdinalIgnoreCase) ||
                 item.AxisText.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
-        Fields.Clear();
+
+
+        var fields = new List<AdvancedTuningFieldViewModel>();
         foreach (var item in selected)
         {
-            Fields.Add(item);
+            fields.Add(item);
         }
+
+        Fields.ReplaceRange(fields);
     }
 }
 
@@ -376,53 +451,94 @@ public sealed partial class ExtendedTuningTabViewModel : ObservableObject, IDisp
     }
 
     /// <summary>Gets all lazy descriptor groups.</summary>
-    public ObservableCollection<ExtendedTuningGroupViewModel> Groups { get; } = [];
+    public ObservableRangeCollection<ExtendedTuningGroupViewModel> Groups
+    {
+        get;
+    } = [];
 
     /// <summary>Gets descriptor groups matching the current curated-set search.</summary>
-    public ObservableCollection<ExtendedTuningGroupViewModel> VisibleGroups { get; } = [];
+    public ObservableRangeCollection<ExtendedTuningGroupViewModel> VisibleGroups
+    {
+        get;
+    } = [];
 
     /// <summary>Gets read-only response telemetry for the active vehicle.</summary>
-    public ObservableCollection<ControlResponseMetricViewModel> ResponseMetrics { get; } = [];
+    public ObservableRangeCollection<ControlResponseMetricViewModel> ResponseMetrics
+    {
+        get;
+    } = [];
 
     /// <summary>Gets or sets the advanced curated-set search.</summary>
     [ObservableProperty]
-    public partial string SearchText { get; set; } = string.Empty;
+    public partial string SearchText
+    {
+        get;
+        set;
+    } = string.Empty;
 
     /// <summary>Gets whether an operation is running.</summary>
     [ObservableProperty]
-    public partial bool IsBusy { get; private set; }
+    public partial bool IsBusy
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether the vehicle is connected.</summary>
     [ObservableProperty]
-    public partial bool IsConnected { get; private set; }
+    public partial bool IsConnected
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether a supported advanced profile is open.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsUnsupported))]
-    public partial bool HasSupportedProfile { get; private set; }
+    public partial bool HasSupportedProfile
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether the connected firmware has no supported advanced profile.</summary>
     public bool IsUnsupported => IsConnected && !HasSupportedProfile;
 
     /// <summary>Gets the connected firmware family.</summary>
     [ObservableProperty]
-    public partial string FirmwareFamilyText { get; private set; } = "No vehicle connected";
+    public partial string FirmwareFamilyText
+    {
+        get;
+        private set;
+    } = "No vehicle connected";
 
     /// <summary>Gets the latest operation status.</summary>
     [ObservableProperty]
-    public partial string StatusMessage { get; private set; } = "Connect a vehicle to use Extended Tuning.";
+    public partial string StatusMessage
+    {
+        get;
+        private set;
+    } = "Connect a vehicle to use Extended Tuning.";
 
     /// <summary>Gets the number of pending advanced parameter edits.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasPendingChanges))]
-    public partial int ModifiedCount { get; private set; }
+    public partial int ModifiedCount
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether advanced fields contain pending edits.</summary>
     public bool HasPendingChanges => ModifiedCount > 0;
 
     /// <summary>Gets a reviewable summary of pending advanced edits.</summary>
     [ObservableProperty]
-    public partial string ChangeSummary { get; private set; } = "No pending advanced changes.";
+    public partial string ChangeSummary
+    {
+        get;
+        private set;
+    } = "No pending advanced changes.";
 
     /// <summary>Activates lifecycle and metric observation.</summary>
     public void Activate()
@@ -622,9 +738,10 @@ public sealed partial class ExtendedTuningTabViewModel : ObservableObject, IDisp
             }
 
             workspace.Session.Changed += OnSessionChanged;
+            var groups = new List<ExtendedTuningGroupViewModel>();
             foreach (var item in workspace.Groups)
             {
-                Groups.Add(new ExtendedTuningGroupViewModel(
+                groups.Add(new ExtendedTuningGroupViewModel(
                     item,
                     workspace.Session,
                     tuningService,
@@ -634,6 +751,8 @@ public sealed partial class ExtendedTuningTabViewModel : ObservableObject, IDisp
                     PreviewCopy,
                     ApplyCopyAsync));
             }
+
+            Groups.ReplaceRange(groups);
 
             HasSupportedProfile = true;
             FilterGroups();
@@ -675,12 +794,15 @@ public sealed partial class ExtendedTuningTabViewModel : ObservableObject, IDisp
     private void FilterGroups()
     {
         var search = SearchText.Trim();
-        VisibleGroups.Clear();
+        var visibleGroups = new List<ExtendedTuningGroupViewModel>();
+
         foreach (var group in Groups.Where(group => group.Matches(search)))
         {
             group.SetFilter(search, !string.IsNullOrWhiteSpace(search));
-            VisibleGroups.Add(group);
+            visibleGroups.Add(group);
         }
+
+        VisibleGroups.ReplaceRange(visibleGroups);
     }
 
     private void RefreshState()
@@ -714,11 +836,13 @@ public sealed partial class ExtendedTuningTabViewModel : ObservableObject, IDisp
 
     private void RefreshMetrics(VehicleId vehicleId)
     {
-        ResponseMetrics.Clear();
+        var responseMetrics = new List<ControlResponseMetricViewModel>();
         foreach (var metric in metricsService.GetMetrics(vehicleId))
         {
-            ResponseMetrics.Add(ToMetricViewModel(metric));
+            responseMetrics.Add(ToMetricViewModel(metric));
         }
+
+        ResponseMetrics.ReplaceRange(responseMetrics);
     }
 
     private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)

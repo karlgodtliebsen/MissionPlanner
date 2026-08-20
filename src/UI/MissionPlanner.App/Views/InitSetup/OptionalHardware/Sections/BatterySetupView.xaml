@@ -7,9 +7,9 @@
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
                                   x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.BatterySetupView"
                                   x:DataType="sections:BatterySetupViewModel"
-                                  Margin="100,0,100,0">
+                                  >
     <ScrollView VerticalScrollBarVisibility="Always">
-        <VerticalStackLayout Spacing="25" HorizontalOptions="Center"
+        <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center"
                              >
             <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
             <HorizontalStackLayout  Padding="18,4" Spacing="12" Margin="0,10,0,10">

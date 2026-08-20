@@ -6,13 +6,12 @@
     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
     xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
     xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+    xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
     x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.InitTuneParametersView"
     x:DataType="sections:InitTuneParametersViewModel"
-    Margin="20,0"
-    MaximumWidthRequest="1100"
-    HorizontalOptions="Center">
+    >
     <ScrollView VerticalScrollBarVisibility="Always">
-        <VerticalStackLayout Spacing="12" Padding="10">
+        <VerticalStackLayout Padding="16"  Spacing="25" HorizontalOptions="Center">
             <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
             <Label Text="Initial Tune Parameters" FontSize="18" FontAttributes="Bold" />
             <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
@@ -35,7 +34,13 @@
                                 </VerticalStackLayout>
                                 <material:SelectField Grid.Column="1" Title="Value" IsVisible="{Binding HasOptions}"
                                     ItemsSource="{Binding Options}" SelectedItem="{Binding SelectedOption}" ItemDisplayBinding="{Binding Name}" />
-                                <material:TextField Grid.Column="1" Title="Value" IsVisible="{Binding IsNumeric}" Text="{Binding NumericValue}" />
+                              <controls:NumericField
+                                    Grid.Column="1" 
+                                    Title="Value" IsVisible="{Binding IsNumeric}" 
+                                    Value="{Binding NumericValue, Mode=TwoWay}"
+                                    NumberFormat="F1"
+                                    HorizontalOptions="Fill"
+                                    HorizontalTextAlignment="End" />
                                 <Button Grid.Column="2" Text="Apply" Command="{Binding ApplyCommand}" />
                             </Grid>
                         </Border>
