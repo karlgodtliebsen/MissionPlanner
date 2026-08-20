@@ -8,7 +8,9 @@
     xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
     x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.FailSafeView"
     x:DataType="sections:FailSafeViewModel"
-    Margin="100,0,100,0">
+    Margin="20,0"
+    MaximumWidthRequest="1100"
+    HorizontalOptions="Center">
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Spacing="12" Padding="10">
             <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
