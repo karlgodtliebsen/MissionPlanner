@@ -12,15 +12,15 @@
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Padding="16"  Spacing="25" HorizontalOptions="Center">
             <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
-            <Label Text="{Binding Error}" TextColor="Red" />
+            <Label Text="{Binding Error}" TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}" />
             <Label Text="Compass discovery and calibration" FontSize="18" FontAttributes="Bold" />
             <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
             <VerticalStackLayout IsVisible="{Binding HasIssues}" Spacing="4">
-                <Label Text="Configuration warnings" FontAttributes="Bold" TextColor="OrangeRed" />
+                <Label Text="Configuration warnings" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}" />
                 <VerticalStackLayout BindableLayout.ItemsSource="{Binding Issues}">
                     <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="x:String">
-                            <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
+                            <Label Text="{Binding .}" TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}" LineBreakMode="WordWrap" />
                         </DataTemplate>
                     </BindableLayout.ItemTemplate>
                 </VerticalStackLayout>
@@ -59,7 +59,7 @@
 
             <Label Text="Onboard calibration" FontSize="18" FontAttributes="Bold" />
             <Label Text="Move away from metal, vehicles, and magnetic interference before starting calibration."
-               TextColor="OrangeRed"
+               TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
                FontAttributes="Bold"
                LineBreakMode="WordWrap" />
             <Label Text="{Binding CalibrationState, StringFormat='State: {0}'}" FontAttributes="Bold" />

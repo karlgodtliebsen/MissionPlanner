@@ -12,7 +12,7 @@
                 HorizontalOptions="Start"
                 VerticalOptions="Start"
                 BackgroundColor="#CC202020">
-            <Label Text="{Binding EditModeText}" TextColor="White" />
+            <Label Text="{Binding EditModeText}"  />
         </Border>
     </Grid>
 </ContentView>

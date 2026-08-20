@@ -13,7 +13,8 @@
         <VerticalStackLayout Padding="12" Spacing="10">
             <Label Text="Vehicle Actions" FontSize="18" FontAttributes="Bold" />
             <Border Padding="8" Stroke="#D97706">
-                <Label Text="{Binding DataSourceMode}" FontAttributes="Bold" TextColor="#D97706" />
+                <Label Text="{Binding DataSourceMode}" FontAttributes="Bold" 
+                       TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}" />
             </Border>
             <Label Text="{Binding ObservedState}" FontSize="11" LineBreakMode="WordWrap" />
 
@@ -64,7 +65,7 @@
                 <Switch IsToggled="{Binding IsExpertSectionVisible}" />
             </HorizontalStackLayout>
             <VerticalStackLayout IsVisible="{Binding IsExpertSectionVisible}" Spacing="6">
-                <Label Text="Advanced commands can be hazardous. Verify the command ID and all seven parameters." TextColor="OrangeRed" />
+                <Label Text="Advanced commands can be hazardous. Verify the command ID and all seven parameters." TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}" />
                
                 <!--<Entry Placeholder="Command ID" Keyboard="Numeric" Text="{Binding ExpertCommandId}" />
                 <Entry Placeholder="Seven invariant parameters, separated by spaces" Text="{Binding ExpertParameters}" />-->

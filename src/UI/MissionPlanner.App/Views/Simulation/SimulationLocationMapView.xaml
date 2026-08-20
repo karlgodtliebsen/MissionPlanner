@@ -10,7 +10,7 @@
                 HorizontalOptions="Start"
                 VerticalOptions="Start"
                 BackgroundColor="#CC202020">
-            <Label Text="Select SITL start position" TextColor="White" />
+            <Label Text="Select SITL start position"  />
         </Border>
     </Grid>
 </ContentView>

@@ -6,13 +6,15 @@
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
                                   xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                                   x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.AirspeedView" 
-                                  x:DataType="sections:AirspeedViewModel">
+                                  x:DataType="sections:AirspeedViewModel"
+                                  
+                                  >
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
             <Label Text="Airspeed" FontSize="20" FontAttributes="Bold"/>
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
             <Label Text="{Binding Status}"/>
-            <Label Text="Reboot required" TextColor="Orange" IsVisible="{Binding RebootRequired}"/>
+            <Label Text="Reboot required" TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}" IsVisible="{Binding RebootRequired}"/>
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}" Spacing="8">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="sections:ParameterSettingViewModel">

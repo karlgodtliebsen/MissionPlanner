@@ -10,7 +10,8 @@
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="25" VerticalOptions="Center" HorizontalOptions="Center">
             <Label Text="SiK / RFD Radio" FontSize="20" FontAttributes="Bold" />
-            <Label Text="Direct serial configuration. Disconnect any vehicle using the selected port." TextColor="Orange" />
+            <Label Text="Direct serial configuration. Disconnect any vehicle using the selected port." 
+                   TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}" />
             <HorizontalStackLayout Spacing="50"  HorizontalOptions="Fill" HeightRequest="75" VerticalOptions="End">
                 <Picker Title="Serial device" 
                         VerticalOptions="End"

@@ -6,36 +6,41 @@
              x:DataType="common:StatusBarViewModel"
              BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
              HeightRequest="32">
-
-    <Grid ColumnDefinitions="*,Auto,Auto" 
-          Padding="12,6"
+    <Border StrokeThickness="1" Padding="2" VerticalOptions="Fill" Height="50"
+            
+            >
+        <Grid ColumnDefinitions="*,Auto,Auto" 
+          HorizontalOptions="Fill"
+          VerticalOptions="Center"  
          >
 
-        <!-- Status Message (Left) -->
-        <Label Grid.Column="0"
+            <!-- Status Message (Left) -->
+            <Label Grid.Column="0"
                Text="{Binding StatusMessage}"
                VerticalOptions="Center"
                FontSize="12"
                TextColor="LightGray"/>
 
-        <!-- Connection Info (Center-Right) -->
-        <HorizontalStackLayout Grid.Column="1" 
+            <!-- Connection Info (Center-Right) -->
+            <HorizontalStackLayout Grid.Column="1" 
                                Spacing="8"
                                VerticalOptions="Center"
                                Margin="0,0,16,0">
-            <Label Text="●" 
+                <Label Text="●" 
                    TextColor="{Binding ConnectionDotColor}"
                    FontSize="14"/>
-            <Label Text="{Binding ConnectionStatus}"
+                <Label Text="{Binding ConnectionStatus}"
                    FontSize="12"
                    TextColor="LightGray"/>
-        </HorizontalStackLayout>
+            </HorizontalStackLayout>
 
-        <!-- Clock (Right) -->
-        <Label Grid.Column="2"
+            <!-- Clock (Right) -->
+            <Label Grid.Column="2"
                Text="{Binding CurrentTime}"
                VerticalOptions="Center"
                FontSize="12"
                TextColor="LightGray"/>
-    </Grid>
+        </Grid>
+    </Border>
+
 </ContentView>

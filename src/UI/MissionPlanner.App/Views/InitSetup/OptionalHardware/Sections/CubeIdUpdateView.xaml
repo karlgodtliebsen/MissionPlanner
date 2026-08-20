@@ -12,6 +12,7 @@
 
         <Button Text="Inspect firmware" Command="{Binding InspectCommand}" HorizontalOptions="Center"/>
         <Label Text="{Binding FirmwareSummary}"/>
-        <Label Text="{Binding ErrorMessage}" TextColor="Red"/>
+        <Label Text="{Binding ErrorMessage}" 
+               TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}"/>
     </VerticalStackLayout>
 </tabViews:TabViewLifecycleContent>

@@ -1,4 +1,5 @@
 ﻿using System.Windows.Input;
+using UraniumUI.Icons.MaterialSymbols;
 
 namespace UraniumUI.Material.Controls;
 
@@ -49,14 +50,33 @@ public class RightDockPanel : ContentView
         headerToggleButton = new Button { WidthRequest = 32, HeightRequest = 32, Padding = 0 };
         headerToggleButton.Clicked += OnToggleClicked;
 
-        headerHost = new ContentView();
+        edgeToggleButton = new Button
+        {
+            WidthRequest = 32,
+            HeightRequest = 32,
+            Padding = 0,
+            HorizontalOptions = LayoutOptions.End,
+            VerticalOptions = LayoutOptions.Start,
+            Margin = new Thickness(0, 4, 4, 0),
+            ZIndex = 100
+        };
+        edgeToggleButton.Clicked += OnToggleClicked;
+        Grid.SetColumnSpan(edgeToggleButton, 3);
 
+
+        headerHost = new ContentView();
         headerGrid = new Grid { Padding = new Thickness(8, 6), ColumnDefinitions = { new ColumnDefinition { Width = GridLength.Auto }, new ColumnDefinition { Width = GridLength.Star }, new ColumnDefinition { Width = GridLength.Auto } } };
 
         headerGrid.Add(headerToggleButton);
         Grid.SetColumn(headerToggleButton, 0);
 
-        var titleLabel = new Label { VerticalOptions = LayoutOptions.Center, FontAttributes = FontAttributes.Bold, Margin = new Thickness(5, 0, 0, 0) };
+        var titleLabel = new Label
+        {
+            VerticalOptions = LayoutOptions.Center,
+            FontAttributes = FontAttributes.Bold,
+            Margin =
+                new Thickness(5, 0, 0, 0)
+        };
         titleLabel.SetBinding(Label.TextProperty, new Binding(nameof(Title), source: this));
         headerGrid.Add(titleLabel);
         Grid.SetColumn(titleLabel, 1);
@@ -74,17 +94,6 @@ public class RightDockPanel : ContentView
         dockBorder = new Border { Content = dockLayout, StrokeThickness = 1 };
         Grid.SetColumn(dockBorder, 2);
 
-        edgeToggleButton = new Button
-        {
-            WidthRequest = 36,
-            HeightRequest = 36,
-            HorizontalOptions = LayoutOptions.End,
-            VerticalOptions = LayoutOptions.Start,
-            Margin = new Thickness(0, 8, 8, 0),
-            ZIndex = 100
-        };
-        edgeToggleButton.Clicked += OnToggleClicked;
-        Grid.SetColumnSpan(edgeToggleButton, 3);
 
         root.Children.Add(mainHost);
         root.Children.Add(splitterHost);
@@ -469,8 +478,14 @@ public class RightDockPanel : ContentView
         dockBorder.Stroke = DockBorderColor;
         headerGrid.BackgroundColor = HeaderBackground;
 
-        headerToggleButton.Text = CollapseGlyph;
-        edgeToggleButton.Text = ExpandGlyph;
+        //ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Arrow_circle_left}, FontFamily=MaterialSharp}"
+        //ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Arrow_circle_right},
+        //FontFamily=MaterialSharp}"
+        headerToggleButton.ImageSource = new FontImageSource { Glyph = MaterialSharp.Arrow_circle_right, FontFamily = "MaterialSharp" };
+        edgeToggleButton.ImageSource = new FontImageSource { Glyph = MaterialSharp.Arrow_circle_left, FontFamily = "MaterialSharp" };
+
+        //headerToggleButton.Text = CollapseGlyph;
+        //edgeToggleButton.Text = ExpandGlyph;
     }
 
     private void ApplyState()

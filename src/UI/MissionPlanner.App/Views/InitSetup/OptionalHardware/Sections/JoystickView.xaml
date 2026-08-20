@@ -26,6 +26,6 @@
         <Button Text="Disable and release vehicle control" 
                 Command="{Binding DisableCommand}" HorizontalOptions="Start"/>
         <Label Text="{Binding StatusMessage}"/>
-        <Label Text="{Binding ErrorMessage}" TextColor="Red"/>
+        <Label Text="{Binding ErrorMessage}" TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}"/>
     </VerticalStackLayout>
 </tabViews:TabViewLifecycleContent>

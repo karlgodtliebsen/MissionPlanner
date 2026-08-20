@@ -7,11 +7,34 @@ namespace MissionPlanner.App.Views.Missions.DockView;
 public partial class MissionItemListDockViewModel : ObservableObject, IDisposable
 {
     private readonly IDomainEventHub domainEventHub;
-    [ObservableProperty] public partial bool IsExpanded { get; set; }
-    [ObservableProperty] public partial double CalculatedWidth { get; set; }
-    [ObservableProperty] public partial string GuidingText { get; set; } = "<<";
-    [ObservableProperty] public partial double ShrinkWidth { get; set; } = 40;
-    [ObservableProperty] public partial double ExpandWidth { get; set; } = 500;
+
+    [ObservableProperty]
+    public partial bool IsExpanded
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial double CalculatedWidth
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial double ShrinkWidth
+    {
+        get;
+        set;
+    } = 40;
+
+    [ObservableProperty]
+    public partial double ExpandWidth
+    {
+        get;
+        set;
+    } = 500;
 
     /// <inheritdoc />
     public MissionItemListDockViewModel(IDomainEventHub domainEventHub)
@@ -26,7 +49,6 @@ public partial class MissionItemListDockViewModel : ObservableObject, IDisposabl
     {
         IsExpanded = !IsExpanded;
         CalculatedWidth = IsExpanded ? ExpandWidth : ShrinkWidth;
-        GuidingText = IsExpanded ? ">>" : "<<";
     }
 
     [RelayCommand]

@@ -37,10 +37,10 @@
                             <Label Text="{Binding VehicleRevisionText}" />
                             <Label Text="{Binding ReturnPointText}" />
                             <Label Text="Local geometry has unapplied changes"
-                                   TextColor="OrangeRed"
+                                   TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
                                    IsVisible="{Binding IsGeometryDirty}" />
                             <Label Text="Typed geometry is not advertised by this firmware."
-                                   TextColor="OrangeRed"
+                                   TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
                                    IsVisible="{Binding IsTypedGeometryUnsupported}" />
                         </VerticalStackLayout>
                     </Border>
@@ -62,7 +62,7 @@
                                                 HorizontalTextAlignment="End" />
                                                 <Label Grid.Row="1" Grid.ColumnSpan="2"
                                                    Text="{Binding ValidationError}"
-                                                   TextColor="OrangeRed"
+                                                   TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
                                                    FontSize="12" />
                                         </Grid>
                                     </DataTemplate>

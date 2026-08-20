@@ -11,10 +11,10 @@
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Padding="16"  Spacing="25" HorizontalOptions="Center">
             <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
-            <Label Text="{Binding Error}" TextColor="Red" />
+            <Label Text="{Binding Error}" TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}" />
             <Label Text="ESC calibration and motor test" FontSize="18" FontAttributes="Bold" />
             <Label Text="Remove ALL propellers before any actuator test. Motors will spin."
-               TextColor="OrangeRed"
+               TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
                FontAttributes="Bold"
                LineBreakMode="WordWrap" />
             <Label Text="{Binding EscExplanation}" LineBreakMode="WordWrap" />
@@ -60,7 +60,7 @@
                 <HorizontalStackLayout Spacing="10">
                     <Button Text="Test motor" Command="{Binding TestMotorCommand}" />
                     <Button Text="Test sequence" Command="{Binding TestSequenceCommand}" />
-                    <Button TextColor="OrangeRed" FontAttributes="Bold" Text="STOP" Command="{Binding StopCommand}" />
+                    <Button TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}" FontAttributes="Bold" Text="STOP" Command="{Binding StopCommand}" />
                 </HorizontalStackLayout>
                 <Label Text="Operation log" FontAttributes="Bold" />
                 <VerticalStackLayout BindableLayout.ItemsSource="{Binding Log}">

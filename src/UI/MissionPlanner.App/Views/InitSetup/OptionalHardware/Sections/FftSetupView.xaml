@@ -21,7 +21,7 @@
             
             <Button Text="Analyze samples" Command="{Binding AnalyzeCommand}" HorizontalOptions="Start"/>
             <Label Text="{Binding Result}"/>
-            <Label Text="{Binding ErrorMessage}" TextColor="Red"/>
+            <Label Text="{Binding ErrorMessage}" TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}"/>
         </VerticalStackLayout>
     </ScrollView>
 </tabViews:TabViewLifecycleContent>

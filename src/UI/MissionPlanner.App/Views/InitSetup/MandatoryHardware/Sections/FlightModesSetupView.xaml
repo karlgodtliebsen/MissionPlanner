@@ -12,7 +12,7 @@
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
             <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
-            <Label Text="{Binding Error}" TextColor="Red" />
+            <Label Text="{Binding Error}" TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}" />
             <Label Text="Flight-mode assignment" FontSize="18" FontAttributes="Bold" />
             <Label Text="{Binding ModeChannelDescription}" FontAttributes="Bold" />
             <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
@@ -28,7 +28,7 @@
                     <DataTemplate x:DataType="sections:FlightModeSlotViewModel">
                         <Border Padding="10" StyleClass="SurfaceContainer,Rounded,Elevation1" HorizontalOptions="Fill">
                             <Grid ColumnDefinitions="Auto,*,*" ColumnSpacing="8">
-                                <Label Text="●" TextColor="LimeGreen" IsVisible="{Binding IsActive}" VerticalOptions="Center" />
+                                <Label Text="●" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" IsVisible="{Binding IsActive}" VerticalOptions="Center" />
                                 <Label Grid.Column="1" Text="{Binding BandDescription}" VerticalOptions="Center" />
                                 <material:SelectField Grid.Column="2"
                                     Title="Mode"

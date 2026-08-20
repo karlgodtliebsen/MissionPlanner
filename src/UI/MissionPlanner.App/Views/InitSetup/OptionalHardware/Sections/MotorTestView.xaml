@@ -26,7 +26,9 @@
                     LineBreakMode="WordWrap"
                     VerticalOptions="Center" />
 
-                <Label TextColor="OrangeRed" Text="{Binding ErrorMessage}" LineBreakMode="WordWrap" VerticalOptions="Center" />
+                <Label 
+                    TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}" Text="{Binding ErrorMessage}" 
+                    LineBreakMode="WordWrap" VerticalOptions="Center" />
 
                 <Label Text="{Binding StatusMessage}" 
                        IsVisible="{Binding IsBackgroundParameterLoadInProgress, Converter={StaticResource InvertedBoolConverter}}"
@@ -41,7 +43,7 @@
 
                 <Label
                 Text="Remove ALL propellers. Motors will spin."
-                TextColor="OrangeRed"
+                TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
                 FontAttributes="Bold" />
             </VerticalStackLayout>
 
@@ -108,7 +110,7 @@
                     </HorizontalStackLayout>
                     <Button
                         Text="STOP All Motors"
-                        TextColor="OrangeRed"
+                        TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
                         Command="{Binding StopCommand}" />
                 </VerticalStackLayout>
                 <Grid Grid.Column="1" RowDefinitions="Auto,*" 

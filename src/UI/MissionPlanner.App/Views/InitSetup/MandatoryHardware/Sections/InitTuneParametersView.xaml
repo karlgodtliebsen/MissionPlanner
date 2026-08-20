@@ -15,11 +15,11 @@
             <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
             <Label Text="Initial Tune Parameters" FontSize="18" FontAttributes="Bold" />
             <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
-            <Label Text="{Binding Error}" TextColor="OrangeRed" />
+            <Label Text="{Binding Error}" TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}" />
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Guidance}">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="x:String">
-                        <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
+                        <Label Text="{Binding .}" TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}" LineBreakMode="WordWrap" />
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>
             </VerticalStackLayout>

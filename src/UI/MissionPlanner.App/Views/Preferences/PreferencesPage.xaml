@@ -516,7 +516,8 @@
                 </VerticalStackLayout>
             </Border>
 
-            <Label Text="{Binding RestartRequiredMessage}" IsVisible="{Binding RestartRequired}" TextColor="DarkOrange" FontAttributes="Bold" />
+            <Label Text="{Binding RestartRequiredMessage}" IsVisible="{Binding RestartRequired}" 
+                   TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}" FontAttributes="Bold" />
             <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" />
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
 

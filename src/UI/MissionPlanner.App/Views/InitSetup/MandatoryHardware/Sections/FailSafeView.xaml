@@ -17,13 +17,13 @@
             <Label Text="Failsafe" FontSize="18" FontAttributes="Bold" />
             <Label Text="{Binding Description}" LineBreakMode="WordWrap" />
             <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
-            <Label Text="{Binding Error}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
+            <Label Text="{Binding Error}" TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}" LineBreakMode="WordWrap" />
             
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Guidance}" Spacing="4">
                 <BindableLayout.ItemTemplate>
                     <!--x:DataType="x:String"-->
                     <DataTemplate >
-                        <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
+                        <Label Text="{Binding .}" TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}" LineBreakMode="WordWrap" />
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>
             </VerticalStackLayout>

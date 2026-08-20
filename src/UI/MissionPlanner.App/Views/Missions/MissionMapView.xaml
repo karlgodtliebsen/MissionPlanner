@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView 
-                                xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-                                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                                xmlns:mapsui="clr-namespace:Mapsui.UI.Maui;assembly=Mapsui.UI.Maui"
-                                xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
-                                xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
-                                x:Class="MissionPlanner.App.Views.Missions.MissionMapView"
-                                x:DataType="missions:MissionMapViewModel"
-                                BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
-                                >
+                xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                xmlns:mapsui="clr-namespace:Mapsui.UI.Maui;assembly=Mapsui.UI.Maui"
+                xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
+                xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                x:Class="MissionPlanner.App.Views.Missions.MissionMapView"
+                x:DataType="missions:MissionMapViewModel"
+                BackgroundColor="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}"
+                >
 
     <Grid RowDefinitions="*,Auto">
 
@@ -129,7 +129,7 @@
                 VerticalOptions="End" Margin="12" Padding="6" BackgroundColor="#E6202024">
             <Grid RowDefinitions="Auto,*">
                 <HorizontalStackLayout Spacing="12">
-                    <Label Text="Elevation profile — terrain / planned MSL" TextColor="White" />
+                    <Label Text="Elevation profile — terrain / planned MSL"  />
                     <Button Text="Close" Command="{Binding CloseElevationGraphCommand}" Padding="8,2" />
                 </HorizontalStackLayout>
                 <missions:MissionElevationProfileView Grid.Row="1" Profile="{Binding ElevationProfile}" />
@@ -145,18 +145,25 @@
             FontSize="11"
             Text="{Binding AttributionText}"
             IsVisible="{Binding IsAttributionVisible}"
-            BackgroundColor="{AppThemeBinding Light=#DFFFFFFF, Dark=#D9222222}"
-            TextColor="{AppThemeBinding Light=#202020, Dark=#F5F5F5}"
             Clicked="OnAttributionClicked"
             SemanticProperties.Hint="Map attribution. Activate to toggle expanded details." />
 
+
+            <!--BackgroundColor="{AppThemeBinding Light=#DFFFFFFF, Dark=#D9222222}"
+            TextColor="{AppThemeBinding Light=#202020, Dark=#F5F5F5}"-->
+
+
         <!-- Bottom status bar (mirrors Controls.Status) -->
-        <HorizontalStackLayout Grid.Row="1"  VerticalOptions="Center" HorizontalOptions="Start" Spacing="10"
-                                Margin="10,5,0,5" >
+
+        <Border Grid.Row="1"  StrokeThickness="1"  VerticalOptions="Fill" Height="50">
+
+
+            <HorizontalStackLayout Grid.Row="1"  VerticalOptions="Center" HorizontalOptions="Start" Spacing="10"
+                                >
 
             <material:SelectField 
-            ItemsSource="{Binding MapStyles}"
-            SelectedItem="{Binding SelectedMapStyle}" />
+                        ItemsSource="{Binding MapStyles}"
+                        SelectedItem="{Binding SelectedMapStyle}" />
 
             <Label 
                 Text="{Binding VehicleDisplayName}"
@@ -197,6 +204,7 @@
                 Text="{Binding StatusMessage}"
                 VerticalOptions="Center" />
         </HorizontalStackLayout>
+        </Border>
     </Grid>
 
 

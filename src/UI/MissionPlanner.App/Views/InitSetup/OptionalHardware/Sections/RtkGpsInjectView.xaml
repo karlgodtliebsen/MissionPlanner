@@ -35,7 +35,8 @@
                 <Button Text="Connect source" Command="{Binding ConnectCommand}"/>
                 <Button Text="Disconnect" Command="{Binding DisconnectCommand}"/>
             </HorizontalStackLayout>
-            <Label Text="{Binding ErrorMessage}" TextColor="OrangeRed"/>
+            <Label Text="{Binding ErrorMessage}" 
+                   TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"/>
             <Label Text="{Binding SourceStatus}" FontAttributes="Bold"/>
             <Label Text="{Binding TargetStatus}"/>
             <Label Text="{Binding Statistics}"/>

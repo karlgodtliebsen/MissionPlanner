@@ -11,7 +11,7 @@
             <Label Text="Rangefinder" FontSize="20" FontAttributes="Bold"/>
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
             <Label Text="{Binding Status}"/>
-            <Label Text="Reboot required" TextColor="Orange" IsVisible="{Binding RebootRequired}"/>
+            <Label Text="Reboot required" TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}" IsVisible="{Binding RebootRequired}"/>
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}" Spacing="8">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="sections:ParameterSettingViewModel">

@@ -35,8 +35,6 @@
         <Grid Grid.Row="2" ColumnDefinitions="*,Auto,90,Auto" ColumnSpacing="8">
             <Slider Grid.Column="0" Minimum="0" Maximum="{Binding DurationSeconds}" Value="{Binding SeekSeconds}" />
             <Button Grid.Column="1" Text="Seek" Command="{Binding SeekCommand}" />
-            <!--<Entry Grid.Column="2" Text="{Binding PlaybackSpeed}" Keyboard="Numeric" HorizontalTextAlignment="End" />-->
-
             <controls1:NumericField
                 Grid.Column="2"
                 Value="{Binding PlaybackSpeed, Mode=TwoWay}"
@@ -67,7 +65,8 @@
                 VerticalOptions="Fill" 
                 BackgroundColor="Transparent">
                 <controls:VirtualizedDataGrid.EmptyView>
-                    <Label HorizontalOptions="Center" Text="No vehicle heartbeat has been decoded at this replay position." FontSize="12" Opacity="0.6" Margin="0,20" />
+                    <Label HorizontalOptions="Center" Text="No vehicle heartbeat has been decoded at this replay position." 
+                           FontSize="12" Opacity="0.6" Margin="0,20" />
                 </controls:VirtualizedDataGrid.EmptyView>
                 <controls:VirtualizedDataGrid.Columns>
                     <material:DataGridColumn Width="*"  Title="REPLAY" />
@@ -89,24 +88,6 @@
 
                 </controls:VirtualizedDataGrid.Columns>
             </controls:VirtualizedDataGrid>
-
-            <!--
-            <CollectionView 
-            Grid.Row="1" 
-            ItemsSource="{Binding ReplayVehicles}" 
-                            EmptyView="No vehicle heartbeat has been decoded at this replay position.">
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="vehicles:VehicleState">
-                        <Grid Padding="8,5" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
-                            <Label Grid.Column="0" Text="REPLAY" FontAttributes="Bold" TextColor="#D97706" />
-                            <Label Grid.Column="1" Text="{Binding DisplayName}" />
-                            <Label Grid.Column="2" Text="{Binding VehicleId}" />
-                        </Grid>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
-            -->
-
 
         </Grid>
     </Grid>

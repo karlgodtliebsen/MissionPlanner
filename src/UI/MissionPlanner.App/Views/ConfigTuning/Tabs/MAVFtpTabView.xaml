@@ -69,7 +69,7 @@
             </controls:VirtualizedDataGrid>
         </Grid>
         <VerticalStackLayout Grid.Row="2" Spacing="6">
-            <Label Text="{Binding ErrorText}" TextColor="Red" />
+            <Label Text="{Binding ErrorText}" TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}" />
             <ProgressBar Progress="{Binding TransferProgress}" />
             <Label Text="{Binding TransferDetails}" FontSize="12" />
             <Label Text="{Binding StatusText}" />

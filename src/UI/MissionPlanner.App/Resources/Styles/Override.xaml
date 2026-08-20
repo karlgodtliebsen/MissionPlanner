@@ -1,38 +1,59 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <?xaml-comp compile="true" ?>
 <ResourceDictionary 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
     x:ClassModifier="internal">
-    <Style TargetType="Button" BaseResourceKey="UraniumUI.Styles.Button"  CanCascade="True">
 
-        <Setter Property="Shadow" Value="{StaticResource UraniumUI.Styles.Resources.ShadowElevation1}"/>
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource PrimaryDark}}" />
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource SurfaceDark}}" />
+    <!--
+        Application overrides are merged after UraniumUI's Material StyleResource.
+        Keep the override narrow: use the shared semantic palette rather than
+        introducing control-specific hard-coded colors.
+    -->
 
-        <Setter Property="FontFamily" Value="OpenSansRegular"/>
-        <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Padding" Value="14,10"/>
+    <Style TargetType="Button"
+           BaseResourceKey="UraniumUI.Styles.Button"
+           CanCascade="True">
+
+        <Setter Property="Shadow"
+                Value="{StaticResource UraniumUI.Styles.Resources.ShadowElevation1}" />
+        <Setter Property="TextColor"
+                Value="{AppThemeBinding Light={StaticResource OnPrimary}, Dark={StaticResource PrimaryDark}}" />
+        <Setter Property="BackgroundColor"
+                Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource SurfaceDark}}" />
+
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Padding" Value="14,10" />
+
         <Setter Property="VisualStateManager.VisualStateGroups">
             <VisualStateGroupList>
                 <VisualStateGroup x:Name="CommonStates">
-                    <VisualState x:Name="Normal"/>
+                    <VisualState x:Name="Normal" />
+
                     <VisualState x:Name="Disabled">
                         <VisualState.Setters>
-                            <Setter Property="Shadow" Value="{StaticResource UraniumUI.Styles.Resources.ShadowElevation0}" />
-                            <Setter Property="TextColor" Value="{StaticResource DisabledText}"/>
-                            <Setter Property="BackgroundColor" Value="{StaticResource DisabledBackground}" />
+                            <Setter Property="Shadow"
+                                    Value="{StaticResource UraniumUI.Styles.Resources.ShadowElevation0}" />
+                            <Setter Property="TextColor"
+                                    Value="{AppThemeBinding Light={StaticResource DisabledTextLight}, Dark={StaticResource DisabledTextDark}}" />
+                            <Setter Property="BackgroundColor"
+                                    Value="{AppThemeBinding Light={StaticResource DisabledBackgroundLight}, Dark={StaticResource DisabledBackgroundDark}}" />
                         </VisualState.Setters>
                     </VisualState>
+
                     <VisualState x:Name="Hover">
                         <VisualState.Setters>
-                            <Setter Property="Shadow" Value="{StaticResource UraniumUI.Styles.Resources.ShadowElevation2}" />
+                            <Setter Property="Shadow"
+                                    Value="{StaticResource UraniumUI.Styles.Resources.ShadowElevation2}" />
                         </VisualState.Setters>
                     </VisualState>
+
                     <VisualState x:Name="Pressed">
                         <VisualState.Setters>
-                            <Setter Property="Shadow" Value="{StaticResource UraniumUI.Styles.Resources.ShadowElevation0}" />
+                            <Setter Property="Shadow"
+                                    Value="{StaticResource UraniumUI.Styles.Resources.ShadowElevation0}" />
                         </VisualState.Setters>
                     </VisualState>
                 </VisualStateGroup>
@@ -40,19 +61,6 @@
         </Setter>
     </Style>
 
-
-
-    <!--<Border Padding="14" StyleClass="">-->
-    <!--
-    <Style
-        TargetType="Border" BaseResourceKey="U" >
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Primary}}" />
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Transparent}}" />
-        <Setter Property="FontFamily" Value="OpenSansRegular"/>
-        <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Padding" Value="14,10"/>
-    </Style>
-    -->
     <Style x:Key="ColumnHeaderIconStyle" TargetType="Image">
         <Setter Property="WidthRequest" Value="28" />
         <Setter Property="HeightRequest" Value="28" />
@@ -62,11 +70,16 @@
     </Style>
 
     <Style TargetType="uranium:Select">
-        <Setter Property="DropDownBackgroundColor" Value="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}" />
-        <Setter Property="DropDownBorderColor" Value="{AppThemeBinding Light={StaticResource Outline}, Dark={StaticResource OutlineDark}}" />
-        <Setter Property="SelectedItemBackgroundColor" Value="{AppThemeBinding Light={StaticResource PrimaryContainer}, Dark={StaticResource PrimaryContainerDark}}" />
-        <Setter Property="HoveredItemBackgroundColor" Value="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}" />
-        <Setter Property="PressedItemBackgroundColor" Value="{AppThemeBinding Light={StaticResource PrimaryContainer}, Dark={StaticResource PrimaryContainerDark}}" />
+        <Setter Property="DropDownBackgroundColor"
+                Value="{AppThemeBinding Light={StaticResource Surface}, Dark={StaticResource SurfaceDark}}" />
+        <Setter Property="DropDownBorderColor"
+                Value="{AppThemeBinding Light={StaticResource Outline}, Dark={StaticResource OutlineDark}}" />
+        <Setter Property="SelectedItemBackgroundColor"
+                Value="{AppThemeBinding Light={StaticResource PrimaryContainer}, Dark={StaticResource PrimaryContainerDark}}" />
+        <Setter Property="HoveredItemBackgroundColor"
+                Value="{AppThemeBinding Light={StaticResource SurfaceVariant}, Dark={StaticResource SurfaceVariantDark}}" />
+        <Setter Property="PressedItemBackgroundColor"
+                Value="{AppThemeBinding Light={StaticResource PrimaryContainer}, Dark={StaticResource PrimaryContainerDark}}" />
     </Style>
 
 </ResourceDictionary>

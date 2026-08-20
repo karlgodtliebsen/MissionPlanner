@@ -50,15 +50,15 @@
             </Setter>
         </Style>
     </Shell.Resources>
-
     <Shell.FlyoutHeader>
 
+        <Grid ColumnDefinitions="*,1">
 
-        <VerticalStackLayout Grid.Row="1" StyleClass="PrimaryContainer" Padding="0" Spacing="20">
-            <HorizontalStackLayout HorizontalOptions="Start" 
+            <VerticalStackLayout StyleClass="PrimaryContainer" Padding="0" Spacing="20" >
+                <HorizontalStackLayout HorizontalOptions="Start" 
                                    MinimumHeightRequest="50"
                                    IsVisible="{Binding IsFlyoutExpandButtonVisible}">
-                <Button 
+                    <Button 
                         BorderColor="Transparent"
                         BorderWidth="0"
                         BackgroundColor="Transparent"
@@ -67,13 +67,12 @@
                         ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Arrow_circle_right}, FontFamily=MaterialSharp}"
                         Command="{Binding ExpandFlyoutCommand}">
 
-                   
-                </Button>
-            </HorizontalStackLayout>
-            <HorizontalStackLayout HorizontalOptions="End" 
+                    </Button>
+                </HorizontalStackLayout>
+                <HorizontalStackLayout HorizontalOptions="End" 
                                    MinimumHeightRequest="50"
                                    IsVisible="{Binding IsFlyoutCollapseButtonVisible}">
-                <Button
+                    <Button
                         BorderColor="Transparent"
                         BorderWidth="0"
                         BackgroundColor="Transparent"
@@ -81,38 +80,42 @@
                         MinimumHeightRequest="50"
                         ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Arrow_circle_left}, FontFamily=MaterialSharp}"
                         Command="{Binding CloseFlyoutCommand}"></Button>
-            </HorizontalStackLayout>
+                </HorizontalStackLayout>
 
-            <Label Text="MissionPlanner Next Gen" FontSize="Large" HorizontalTextAlignment="Center" Padding="20" Margin="10" />
-            <VerticalStackLayout   Padding="20" >
+                <Label Text="MissionPlanner Next Gen" FontSize="Large" HorizontalTextAlignment="Center" Padding="20" Margin="10" />
+                <VerticalStackLayout   Padding="20" >
 
-                <Label Text="App Theme" HorizontalOptions="Center" Margin="10" />
+                    <Label Text="App Theme" HorizontalOptions="Center" Margin="10" />
 
-                <controls:SelectionView HorizontalOptions="Center"
+                    <controls:SelectionView HorizontalOptions="Center"
                                         ItemsSource="{Binding AppThemeList}" 
                                         SelectedItem="{Binding SelectedTheme,Mode=TwoWay}" 
                                         ColumnNumber="2" ColumnSpacing="-2" Color="{StaticResource Tertiary}" >
-                </controls:SelectionView>
+                    </controls:SelectionView>
 
-                <material:CheckBox Text="Always Use Dark Mode" Type="Regular" 
+                    <material:CheckBox Text="Always Use Dark Mode" Type="Regular" 
                                    IsVisible="{Binding IsFlyoutPresented}"
                                    IsChecked="{Binding PreferDarkTheme,Mode=TwoWay}" />
-                <material:CheckBox Text="Lock Flyout (Requires Restart)" Type="Regular" 
+                    <material:CheckBox Text="Lock Flyout (Requires Restart)" Type="Regular" 
                                    IsVisible="{Binding IsFlyoutPresented}"
                                    IsChecked="{Binding IsFlyoutLocked,Mode=TwoWay}" />
-                <material:CheckBox Text="Show Flyout at Startup" Type="Regular" 
+                    <material:CheckBox Text="Show Flyout at Startup" Type="Regular" 
                                    IsVisible="{Binding IsFlyoutPresented}"
                                    IsChecked="{Binding IsFlyoutVisibleAtStartup,Mode=TwoWay}" />
-                <material:CheckBox Text="Show Tutorial at Startup" Type="Regular" 
+                    <material:CheckBox Text="Show Tutorial at Startup" Type="Regular" 
                                    IsVisible="{Binding IsFlyoutPresented}"
                                    IsChecked="{Binding IsTutorialVisibleAtStartup,Mode=TwoWay}" />
+                </VerticalStackLayout>
             </VerticalStackLayout>
-        </VerticalStackLayout>
+
+            <BoxView Grid.Column="1" Width="1" ></BoxView>
+
+        </Grid>
 
     </Shell.FlyoutHeader>
 
-    <Shell.FlyoutContent>
-        <Grid RowDefinitions="Auto,*">
+    <Shell.FlyoutContent >
+        <Grid RowDefinitions="Auto,*"  ColumnDefinitions="*,1">
             <CollectionView Grid.Row="1" SelectedItem="{Binding SelectedItem}" SelectionMode="Single" 
                             ItemsSource="{Binding Items}">
                 <CollectionView.ItemTemplate>
@@ -124,6 +127,8 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
+            <BoxView Grid.Row="1" Grid.Column="1" Width="1"></BoxView>
+
         </Grid>
     </Shell.FlyoutContent>
 
@@ -199,6 +204,4 @@
             Title=""
             ContentTemplate="{DataTemplate exit:ExitView}" Route="Exit" />
     </FlyoutItem>
-
-
 </Shell>

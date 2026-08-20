@@ -20,7 +20,7 @@
             <Label Text="Initial Setup" FontSize="26" FontAttributes="Bold" />
             <Label Text="{Binding VehicleHeading}" VerticalOptions="Center" FontSize="16" />
             <Label Text="{Binding SummaryReport}" VerticalOptions="Center" Opacity="0.75" />
-            <Label Text="{Binding Error}"  VerticalOptions="Center" TextColor="Orange" />
+            <Label Text="{Binding Error}"  VerticalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}" />
             <Label Text="Completion is stored locally and automatically requires review when firmware or parameters change. Prerequisites are guidance, not a rigid wizard."
                    LineBreakMode="WordWrap" Opacity="0.7" />
         </VerticalStackLayout>

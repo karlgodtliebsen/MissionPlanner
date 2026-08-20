@@ -6,25 +6,41 @@
                                 xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
                                 xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                                 xmlns:dockView="clr-namespace:MissionPlanner.App.Views.Missions.DockView"
+                                xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                                 x:Class="MissionPlanner.App.Views.Missions.DockView.MissionItemListDockView"
                                 x:DataType="dockView:MissionItemListDockViewModel"
                                 WidthRequest="{Binding CalculatedWidth}"
                                 
                                 >
 
-    <Grid RowDefinitions="Auto,*" RowSpacing="6"  BackgroundColor="#252526" HorizontalOptions="Fill"  VerticalOptions="Fill" Margin="2,0,0,0">
+    <Grid RowDefinitions="Auto,*" RowSpacing="6"   HorizontalOptions="Fill"  VerticalOptions="Fill" Margin="2,0,0,0">
         <HorizontalStackLayout HorizontalOptions="End" VerticalOptions="Center">
             <Button Width="25" Height="25"  HorizontalOptions="Center"  VerticalOptions="Center" Margin="0" 
                 x:DataType="dockView:MissionItemListDockViewModel" FontSize="8"
-                Text="Editor"  Command="{Binding EditCommand}"
+                Text="Editor XX"  Command="{Binding EditCommand}"
                 IsVisible="{Binding IsExpanded}"
                 >
             </Button>
-            <Button Width="25" Height="25"  HorizontalOptions="Center" VerticalOptions="Center" Margin="0" 
-                x:DataType="dockView:MissionItemListDockViewModel" FontSize="8"
-                Text="{Binding GuidingText}"  Command="{Binding ExpandCommand}"
-                >
-            </Button>
+            <Button 
+                Width="25" Height="25"  HorizontalOptions="Center" VerticalOptions="Center" Margin="0" 
+                IsVisible="{Binding IsExpanded}"
+                BorderColor="Transparent"
+                BorderWidth="0"
+                BackgroundColor="Transparent"
+                
+                ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Arrow_circle_right}, FontFamily=MaterialSharp}"
+                Command="{Binding ExpandCommand}"/>
+            <Button
+                Width="25" Height="25"  HorizontalOptions="Center" VerticalOptions="Center" Margin="0" 
+                IsVisible="{Binding IsExpanded, Converter={StaticResource InvertedBoolConverter}}"
+                BorderColor="Transparent"
+                BorderWidth="0"
+                BackgroundColor="Transparent"
+                
+                ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Arrow_circle_left}, FontFamily=MaterialSharp}"
+                Command="{Binding ExpandCommand}"/>
+
+
         </HorizontalStackLayout>
         <Grid Grid.Row="1" HorizontalOptions="Fill" VerticalOptions="Fill" IsVisible="{Binding IsExpanded}">
             <missions:MissionItemListView HorizontalOptions="Fill" VerticalOptions="Fill" ShowAllRows="False"></missions:MissionItemListView>
@@ -32,6 +48,5 @@
     </Grid>
 </navigation:ExtendedContentView>
 
-<!--IsVisible="{Binding IsExpanded}"-->
     
     

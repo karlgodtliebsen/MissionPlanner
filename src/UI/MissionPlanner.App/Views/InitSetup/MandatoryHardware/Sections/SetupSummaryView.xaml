@@ -13,7 +13,7 @@
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Padding="16"  Spacing="25" HorizontalOptions="Center">
             <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
-            <Label Text="{Binding Error}" TextColor="Red" />
+            <Label Text="{Binding Error}" TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}" />
             <Label Text="Setup summary" FontSize="18" FontAttributes="Bold" />
             <Label Text="{Binding Heading}" FontAttributes="Bold" LineBreakMode="WordWrap" />
             <Label Text="This report describes configuration evidence only and is not a safe-to-fly certification."
@@ -44,7 +44,7 @@
             <VerticalStackLayout IsVisible="{Binding HasWarnings}" BindableLayout.ItemsSource="{Binding Warnings}">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="x:String">
-                        <Label Text="{Binding .}" TextColor="OrangeRed" LineBreakMode="WordWrap" />
+                        <Label Text="{Binding .}" TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}" LineBreakMode="WordWrap" />
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>
             </VerticalStackLayout>

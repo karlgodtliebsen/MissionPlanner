@@ -27,7 +27,7 @@
             <VerticalStackLayout Spacing="3">
                 <Label Text="{Binding StatusMessage}" LineBreakMode="WordWrap" />
                 <Label Text="{Binding ValidationMessage}"
-                       TextColor="OrangeRed"
+                       TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
                        IsVisible="{Binding HasValidationIssues}"
                        LineBreakMode="WordWrap" />
                 <Label Text="Font upload is not offered because no font-transfer service is registered."
@@ -35,7 +35,7 @@
                        Opacity="0.75"
                        IsVisible="{Binding HasOsdConfiguration}" />
                 <Label Text="The connected firmware exposes no discoverable OSD screens/items."
-                       TextColor="OrangeRed"
+                       TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}"
                        IsVisible="{Binding IsUnsupported}" />
             </VerticalStackLayout>
         </Border>
@@ -165,7 +165,7 @@
                             <Button  Grid.Column="2" Text="↓ Down" Command="{Binding MoveDownCommand}" />
                             <Button  Grid.Column="3" Text="Right →" Command="{Binding MoveRightCommand}" />
                         </Grid>
-                        <Label Text="{Binding SelectedItem.ValidationError}" TextColor="OrangeRed" FontSize="12" />
+                        <Label Text="{Binding SelectedItem.ValidationError}" TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource WarningDark}}" FontSize="12" />
                         <VerticalStackLayout BindableLayout.ItemsSource="{Binding SelectedItem.AdditionalParameters}" Spacing="4">
                             <BindableLayout.ItemTemplate>
                                 <DataTemplate x:DataType="config:ParameterItemViewModel">

@@ -16,7 +16,7 @@
             <Button Text="Refresh nodes" Command="{Binding RefreshCommand}" HorizontalOptions="End"/>
         </HorizontalStackLayout>
         <Label Text="{Binding StatusMessage}"/>
-        <Label Text="{Binding ErrorMessage}" TextColor="Red"/>
+        <Label Text="{Binding ErrorMessage}" TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource ErrorDark}}"/>
         <CollectionView ItemsSource="{Binding Nodes}" SelectionMode="Single" SelectedItem="{Binding SelectedNode}">
             <CollectionView.ItemTemplate>
                 <DataTemplate>
