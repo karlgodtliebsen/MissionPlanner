@@ -8,6 +8,7 @@ using MissionPlanner.App.Maps;
 using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Services;
+using MissionPlanner.App.Theming;
 using MissionPlanner.App.Views.Common;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.ConfigTuning.Tabs;
@@ -93,6 +94,9 @@ public static class ApplicationConfigurator
         services.TryAddTransient<IConfigNavigationGuard, ConfigNavigationGuard>();
 
         services.TryAddSingleton<IPlannerSettingsService, PlannerSettingsService>();
+        services.TryAddSingleton<IThemeCatalog, ThemeCatalog>();
+        services.TryAddSingleton<IThemePaletteLoader, XamlThemePaletteLoader>();
+        services.TryAddSingleton<IThemeManager, ThemeManager>();
         services.TryAddSingleton<IPlannerSettingsStore, PreferencesPlannerSettingsStore>();
         services.TryAddSingleton<IPlannerSecretStore, SecurePlannerSecretStore>();
         services.TryAddTransient<IMapSecretStore, PlannerMapSecretStoreAdapter>();
@@ -117,9 +121,9 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<ISimulatorOwnedProcessRecovery, LocalSimulatorOwnedProcessRecovery>();
         services.TryAddSingleton<ISimulatorRuntime, ArduPilotSitlRuntime>();
 
-        services.TryAddTransient<ApplicationStateService>();
+        services.TryAddSingleton<ApplicationStateService>();
         services.TryAddTransient<ParametersFileHandler>();
-        services.TryAddTransient<PlannerSettingsRuntime>();
+        services.TryAddSingleton<PlannerSettingsRuntime>();
         services.TryAddTransient<MissionItemListViewPage>();
         services.TryAddTransient<MissionItemListDockViewModel>();
         services.TryAddTransient<MissionMapPresenter>();
