@@ -1,4 +1,7 @@
 ﻿using MissionPlanner.App.Views.Exit;
+using MissionPlanner.App.Services;
+using MissionPlanner.App.Theming;
+using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -28,6 +31,11 @@ public partial class App : Application
         {
             // Store connection service reference for cleanup
             serviceProvider = activationState.Context.Services;
+            var themeManager = serviceProvider.GetRequiredService<IThemeManager>();
+            themeManager.Initialize(AppColors);
+            var settingsService = serviceProvider.GetRequiredService<IPlannerSettingsService>();
+            themeManager.ApplyAsync(settingsService.Current.Appearance.ThemeId).GetAwaiter().GetResult();
+            serviceProvider.GetRequiredService<PlannerSettingsRuntime>().ApplyCurrent();
             var domainEventHub = activationState.Context.Services.GetRequiredService<IDomainEventHub>();
             domainEventHub.SubscribeDomainEventAsync<ExitApplicationRequested>(Func);
             window = new Window(new AppShell());

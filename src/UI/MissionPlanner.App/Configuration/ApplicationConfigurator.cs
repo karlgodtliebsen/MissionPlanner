@@ -323,8 +323,7 @@ public static class ApplicationConfigurator
         serviceProvider
             .UseMavLinkServices()
             .UseDomainServices()
-            .UseSimulationServices()
-            .GetRequiredService<PlannerSettingsRuntime>().ApplyCurrent();
+            .UseSimulationServices();
 
         var plannerSettingsService = serviceProvider.GetRequiredService<IPlannerSettingsService>();
         var loadResult = plannerSettingsService.InitializeAsync().AsTask().GetAwaiter().GetResult();
@@ -334,7 +333,6 @@ public static class ApplicationConfigurator
         // Register shared state service as singleton for runtime state management
         var stateService = serviceProvider.GetRequiredService<ApplicationStateService>();
         stateService.Initialize(state);
-        _ = serviceProvider.GetRequiredService<PlannerSettingsRuntime>();
         serviceProvider.UseApplicationServices();
         return serviceProvider;
     }
