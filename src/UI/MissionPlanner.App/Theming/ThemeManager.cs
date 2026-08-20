@@ -11,6 +11,8 @@ public sealed class ThemeManager : IThemeManager
     private readonly ILogger<ThemeManager> logger;
     private readonly SemaphoreSlim applyLock = new(1, 1);
     private ResourceDictionary? activeResources;
+    private Application? application;
+    private bool assigningNativeAppearance;
     private bool disposed;
 
     /// <summary>Initializes the theme manager.</summary>
@@ -44,6 +46,12 @@ public sealed class ThemeManager : IThemeManager
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         this.activeResources = activeResources ?? throw new ArgumentNullException(nameof(activeResources));
+        application = Application.Current;
+        if (application is not null)
+        {
+            application.RequestedThemeChanged -= OnRequestedThemeChanged;
+            application.RequestedThemeChanged += OnRequestedThemeChanged;
+        }
     }
 
     /// <inheritdoc />
@@ -67,6 +75,12 @@ public sealed class ThemeManager : IThemeManager
         }
 
         disposed = true;
+        if (application is not null)
+        {
+            application.RequestedThemeChanged -= OnRequestedThemeChanged;
+            application = null;
+        }
+
         applyLock.Dispose();
     }
 
@@ -78,7 +92,11 @@ public sealed class ThemeManager : IThemeManager
             throw new InvalidOperationException("ThemeManager must be initialized with the active resource dictionary before applying a theme.");
         }
 
-        if (!catalog.TryGetTheme(themeId, out var theme) || theme is null)
+        var usesSystemPolicy = string.Equals(themeId, ThemeIds.System, StringComparison.OrdinalIgnoreCase);
+        var concreteThemeId = usesSystemPolicy
+            ? ResolveSystemThemeId()
+            : themeId;
+        if (!catalog.TryGetTheme(concreteThemeId, out var theme) || theme is null)
         {
             throw new ArgumentException($"Unknown concrete theme '{themeId}'.", nameof(themeId));
         }
@@ -88,7 +106,9 @@ public sealed class ThemeManager : IThemeManager
         {
             var palette = await RunOnDispatcherAsync(() => paletteLoader.Load(theme), cancellationToken).ConfigureAwait(false);
             var values = ValidatePalette(theme, palette);
-            await RunOnDispatcherAsync(() => ApplyValidatedPalette(theme, values, select ? themeId : SelectedThemeId), cancellationToken).ConfigureAwait(false);
+            await RunOnDispatcherAsync(
+                () => ApplyValidatedPalette(theme, values, select ? themeId : SelectedThemeId, usesSystemPolicy),
+                cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -117,24 +137,67 @@ public sealed class ThemeManager : IThemeManager
         return values;
     }
 
-    private void ApplyValidatedPalette(ThemeDescriptor theme, IReadOnlyDictionary<string, Color> values, string selectedThemeId)
+    private void ApplyValidatedPalette(
+        ThemeDescriptor theme,
+        IReadOnlyDictionary<string, Color> values,
+        string selectedThemeId,
+        bool usesSystemPolicy)
     {
         foreach (var value in values)
         {
             activeResources![value.Key] = value.Value;
         }
 
-        if (Application.Current is { } application)
+        SelectedThemeId = selectedThemeId;
+        if (application is not null)
         {
-            application.UserAppTheme = theme.BaseAppearance == ThemeBaseAppearance.Dark
-                ? AppTheme.Dark
-                : AppTheme.Light;
+            assigningNativeAppearance = true;
+            try
+            {
+                application.UserAppTheme = usesSystemPolicy
+                    ? AppTheme.Unspecified
+                    : theme.BaseAppearance == ThemeBaseAppearance.Dark
+                        ? AppTheme.Dark
+                        : AppTheme.Light;
+            }
+            finally
+            {
+                assigningNativeAppearance = false;
+            }
         }
 
-        SelectedThemeId = selectedThemeId;
         ActiveTheme = theme;
         logger.LogInformation("Applied application theme {ThemeId} with {BaseAppearance} native appearance.", theme.Id, theme.BaseAppearance);
         ThemeChanged?.Invoke(this, new ThemeChangedEventArgs(SelectedThemeId, ActiveTheme));
+    }
+
+    private string ResolveSystemThemeId()
+    {
+        return application?.RequestedTheme == AppTheme.Dark
+            ? ThemeIds.MissionDark
+            : ThemeIds.MissionLight;
+    }
+
+    private void OnRequestedThemeChanged(object? sender, AppThemeChangedEventArgs args)
+    {
+        if (assigningNativeAppearance || !string.Equals(SelectedThemeId, ThemeIds.System, StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        _ = ReapplySystemThemeAsync();
+    }
+
+    private async Task ReapplySystemThemeAsync()
+    {
+        try
+        {
+            await ApplyAsync(ThemeIds.System).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception is not ObjectDisposedException)
+        {
+            logger.LogError(exception, "Applying an operating-system theme transition failed.");
+        }
     }
 
     private Task RunOnDispatcherAsync(Action action, CancellationToken cancellationToken)
