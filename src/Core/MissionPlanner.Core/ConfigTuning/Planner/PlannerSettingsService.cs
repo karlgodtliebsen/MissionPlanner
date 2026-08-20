@@ -324,7 +324,63 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
             settings = settings with { Map = settings.Map with { SelectedSourceId = LegacySourceId(settings.Map.Provider, settings.Map.Style) } };
         }
 
+        if (settings.SchemaVersion < 5)
+        {
+            settings = settings with
+            {
+                Appearance = settings.Appearance with
+                {
+                    ThemeId = MigrateLegacyThemeId(document)
+                }
+            };
+        }
+
         return (settings with { SchemaVersion = PlannerSettings.CurrentSchemaVersion }, migrated);
+    }
+
+    private static string MigrateLegacyThemeId(string document)
+    {
+        using var json = JsonDocument.Parse(document);
+        if (!TryGetProperty(json.RootElement, "appearance", out var appearance) || appearance.ValueKind != JsonValueKind.Object)
+        {
+            return PlannerAppearanceSettings.DefaultThemeId;
+        }
+
+        if (TryGetProperty(appearance, "theme", out var theme) && theme.ValueKind == JsonValueKind.String)
+        {
+            return theme.GetString()?.Trim().ToLowerInvariant() switch
+            {
+                "system" => "system",
+                "light" => "mission-light",
+                "dark" => "mission-dark",
+                _ => LegacyThemeFallback(appearance)
+            };
+        }
+
+        return LegacyThemeFallback(appearance);
+    }
+
+    private static string LegacyThemeFallback(JsonElement appearance)
+    {
+        return TryGetProperty(appearance, "preferDarkTheme", out var preferDark) &&
+            preferDark.ValueKind is JsonValueKind.True
+                ? "mission-dark"
+                : PlannerAppearanceSettings.DefaultThemeId;
+    }
+
+    private static bool TryGetProperty(JsonElement element, string name, out JsonElement value)
+    {
+        foreach (var property in element.EnumerateObject())
+        {
+            if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase))
+            {
+                value = property.Value;
+                return true;
+            }
+        }
+
+        value = default;
+        return false;
     }
 
     private static bool HasModernSelectedSourceId(string document)
