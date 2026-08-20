@@ -88,14 +88,10 @@
                     <Label Text="App Theme" HorizontalOptions="Center" Margin="10" />
 
                     <controls:SelectionView HorizontalOptions="Center"
-                                        ItemsSource="{Binding AppThemeList}" 
-                                        SelectedItem="{Binding SelectedTheme,Mode=TwoWay}" 
-                                        ColumnNumber="2" ColumnSpacing="-2" Color="{StaticResource Tertiary}" >
+                                        ItemsSource="{Binding ThemeOptions}"
+                                        SelectedItem="{Binding SelectedThemeOption,Mode=TwoWay}"
+                                        ColumnNumber="2" ColumnSpacing="-2" Color="{DynamicResource Tertiary}" >
                     </controls:SelectionView>
-
-                    <material:CheckBox Text="Always Use Dark Mode" Type="Regular" 
-                                   IsVisible="{Binding IsFlyoutPresented}"
-                                   IsChecked="{Binding PreferDarkTheme,Mode=TwoWay}" />
                     <material:CheckBox Text="Lock Flyout (Requires Restart)" Type="Regular" 
                                    IsVisible="{Binding IsFlyoutPresented}"
                                    IsChecked="{Binding IsFlyoutLocked,Mode=TwoWay}" />

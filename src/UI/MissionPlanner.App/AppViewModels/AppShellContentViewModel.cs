@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Services;
+using MissionPlanner.App.Theming;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using ShellItem = Microsoft.Maui.Controls.ShellItem;
 
@@ -16,7 +17,7 @@ public partial class AppShellContentViewModel : ObservableObject
 {
     private readonly IPlannerSettingsService settingsService = null!;
     private readonly ILogger<AppShellContentViewModel> logger = null!;
-    private readonly PlannerSettingsRuntime runtime = null!;
+    private readonly IThemeManager themeManager = null!;
     private bool synchronizing;
     private bool disposed;
 
@@ -63,30 +64,28 @@ public partial class AppShellContentViewModel : ObservableObject
 
 
     /// <summary>
-    /// Gets the system, light, and dark theme choices.
+    /// Gets the installed application theme choices.
     /// </summary>
-    public AppTheme[] AppThemeList { get; } = [AppTheme.Light, AppTheme.Dark];
+    public IReadOnlyList<ThemeOption> ThemeOptions => themeManager.AvailableThemes;
 
     /// <summary>
-    /// Gets the selected MAUI application theme.
+    /// Gets or sets the selected application theme.
     /// </summary>
     [ObservableProperty]
-    public partial AppTheme SelectedTheme { get; set; }
-
-    /// <summary>
-    /// Application preferences that are not persisted in the settings file, but are used to control the UI and behavior of the application.
-    /// </summary>
-    [ObservableProperty]
-    public partial bool PreferDarkTheme { get; set; }
+    public partial ThemeOption? SelectedThemeOption { get; set; }
 
     private readonly IDispatcher dispatcher = null!;
 
     /// <inheritdoc />
-    public AppShellContentViewModel(IDispatcher dispatcher, IPlannerSettingsService settingsService, PlannerSettingsRuntime runtime, ILogger<AppShellContentViewModel> logger)
+    public AppShellContentViewModel(
+        IDispatcher dispatcher,
+        IPlannerSettingsService settingsService,
+        IThemeManager themeManager,
+        ILogger<AppShellContentViewModel> logger)
     {
         this.dispatcher = dispatcher;
         this.settingsService = settingsService;
-        this.runtime = runtime;
+        this.themeManager = themeManager;
         this.logger = logger;
         SetState(settingsService.Current.Appearance);
         settingsService.SettingsChanged += OnSettingsChanged;
@@ -100,56 +99,30 @@ public partial class AppShellContentViewModel : ObservableObject
         }
 
         synchronizing = true;
-        IsFlyoutLocked = currentAppearance.IsFlyoutLocked;
-        IsFlyoutVisibleAtStartup = currentAppearance.IsFlyoutVisibleAtStartup;
-        if (IsFlyoutVisibleAtStartup)
+        try
         {
-            IsFlyoutPresented = true;
-        }
-
-        IsTutorialVisibleAtStartup = currentAppearance.IsTutorialVisibleAtStartup;
-        FlyoutBehavior = currentAppearance.IsFlyoutLocked ? FlyoutBehavior.Locked : FlyoutBehavior.Flyout;
-        IsFlyoutCollapseButtonVisible = FlyoutBehavior == FlyoutBehavior.Locked && IsFlyoutPresented;
-        IsFlyoutExpandButtonVisible = FlyoutBehavior == FlyoutBehavior.Locked && !IsFlyoutPresented;
-        synchronizing = false;
-        var prefer = currentAppearance.PreferDarkTheme;
-        if (prefer != PreferDarkTheme)
-        {
-            PreferDarkTheme = prefer;
-        }
-
-        var selected = ToAppTheme(currentAppearance.Theme);
-        if (SelectedTheme != selected)
-        {
-            SelectedTheme = selected;
-        }
-    }
-
-    partial void OnPreferDarkThemeChanged(bool value)
-    {
-        if (synchronizing)
-        {
-            return;
-        }
-
-        if (value != settingsService.Current.Appearance.PreferDarkTheme)
-        {
-            AppTheme selected;
-            synchronizing = true;
-            try
+            IsFlyoutLocked = currentAppearance.IsFlyoutLocked;
+            IsFlyoutVisibleAtStartup = currentAppearance.IsFlyoutVisibleAtStartup;
+            if (IsFlyoutVisibleAtStartup)
             {
-                settingsService.Current.Appearance.PreferDarkTheme = value;
-                selected = ToAppTheme(settingsService.Current.Appearance.Theme);
-            }
-            finally
-            {
-                synchronizing = false;
+                IsFlyoutPresented = true;
             }
 
-            if (SelectedTheme != selected)
+            IsTutorialVisibleAtStartup = currentAppearance.IsTutorialVisibleAtStartup;
+            FlyoutBehavior = currentAppearance.IsFlyoutLocked ? FlyoutBehavior.Locked : FlyoutBehavior.Flyout;
+            IsFlyoutCollapseButtonVisible = FlyoutBehavior == FlyoutBehavior.Locked && IsFlyoutPresented;
+            IsFlyoutExpandButtonVisible = FlyoutBehavior == FlyoutBehavior.Locked && !IsFlyoutPresented;
+            var selected = ThemeOptions.FirstOrDefault(option =>
+                string.Equals(option.Id, currentAppearance.ThemeId, StringComparison.Ordinal));
+            selected ??= ThemeOptions.First(option => option.Id == ThemeIds.System);
+            if (SelectedThemeOption != selected)
             {
-                SelectedTheme = selected;
+                SelectedThemeOption = selected;
             }
+        }
+        finally
+        {
+            synchronizing = false;
         }
     }
 
@@ -210,18 +183,15 @@ public partial class AppShellContentViewModel : ObservableObject
         _ = PersistAsync();
     }
 
-    partial void OnSelectedThemeChanged(AppTheme value)
+    partial void OnSelectedThemeOptionChanged(ThemeOption? value)
     {
-        runtime.PreviewTheme(value switch
+        if (value is null || synchronizing)
         {
-            AppTheme.Light => "mission-light",
-            AppTheme.Dark => "mission-dark",
-            _ => "system"
-        });
-        if (!synchronizing)
-        {
-            _ = PersistThemeAsync(ToPlannerTheme(value));
+            return;
         }
+
+        _ = themeManager.ApplyAsync(value.Id);
+        _ = PersistThemeAsync(value.Id);
     }
 
     private void OnSettingsChanged(object? sender, PlannerSettingsChangedEventArgs e)
@@ -246,30 +216,6 @@ public partial class AppShellContentViewModel : ObservableObject
         IsFlyoutPresented = true;
     }
 
-    private AppTheme ToAppTheme(PlannerTheme theme)
-    {
-        return PreferDarkTheme
-            ? AppTheme.Dark
-            : theme switch
-            {
-                PlannerTheme.Light => AppTheme.Light,
-                PlannerTheme.Dark => AppTheme.Dark,
-                var _ => AppTheme.Unspecified
-            };
-    }
-
-    private PlannerTheme ToPlannerTheme(AppTheme theme)
-    {
-        return PreferDarkTheme
-            ? PlannerTheme.Dark
-            : theme switch
-            {
-                AppTheme.Light => PlannerTheme.Light,
-                AppTheme.Dark => PlannerTheme.Dark,
-                var _ => PlannerTheme.System
-            };
-    }
-
     /// <inheritdoc />
     public void Dispose()
     {
@@ -282,16 +228,10 @@ public partial class AppShellContentViewModel : ObservableObject
         disposed = true;
     }
 
-    private async Task PersistThemeAsync(PlannerTheme theme)
+    private async Task PersistThemeAsync(string themeId)
     {
         try
         {
-            var themeId = theme switch
-            {
-                PlannerTheme.Light => "mission-light",
-                PlannerTheme.Dark => "mission-dark",
-                _ => "system"
-            };
             await settingsService.SaveTheme(settingsService.Current, themeId);
         }
         catch (Exception exception)
