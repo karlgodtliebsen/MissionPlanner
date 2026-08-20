@@ -88,13 +88,21 @@ public sealed class ThemeManager : IThemeManager
             throw new InvalidOperationException("ThemeManager must be initialized with the active resource dictionary before applying a theme.");
         }
 
+        var selectedThemeId = themeId;
         var usesSystemPolicy = string.Equals(themeId, ThemeIds.System, StringComparison.OrdinalIgnoreCase);
         var concreteThemeId = usesSystemPolicy
             ? ResolveSystemThemeId()
             : themeId;
         if (!catalog.TryGetTheme(concreteThemeId, out var theme) || theme is null)
         {
-            throw new ArgumentException($"Unknown concrete theme '{themeId}'.", nameof(themeId));
+            logger.LogWarning("Theme {ThemeId} is not installed. Falling back to System.", themeId);
+            selectedThemeId = ThemeIds.System;
+            usesSystemPolicy = true;
+            concreteThemeId = ResolveSystemThemeId();
+            if (!catalog.TryGetTheme(concreteThemeId, out theme) || theme is null)
+            {
+                throw new InvalidOperationException("The theme catalog does not provide the System fallback palette.");
+            }
         }
 
         await applyLock.WaitAsync(cancellationToken).ConfigureAwait(false);
@@ -103,7 +111,7 @@ public sealed class ThemeManager : IThemeManager
             var palette = await RunOnDispatcherAsync(() => paletteLoader.Load(theme), cancellationToken).ConfigureAwait(false);
             var values = ValidatePalette(theme, palette);
             await RunOnDispatcherAsync(
-                () => ApplyValidatedPalette(theme, values, select ? themeId : SelectedThemeId, usesSystemPolicy),
+                () => ApplyValidatedPalette(theme, values, select ? selectedThemeId : SelectedThemeId, usesSystemPolicy),
                 cancellationToken).ConfigureAwait(false);
         }
         finally

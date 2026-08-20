@@ -45,16 +45,19 @@ public sealed class ThemeManagerTests
         Assert.Equal(AppTheme.Dark, fixture.Environment.UserTheme);
     }
 
-    /// <summary>Verifies unknown and malformed themes leave the active palette unchanged.</summary>
+    /// <summary>Verifies unknown themes fall back safely and malformed palettes apply nothing.</summary>
     [Fact]
     public async Task InvalidThemesDoNotPartiallyApply()
     {
         using var fixture = new ThemeManagerFixture();
         fixture.Initialize();
         await fixture.Manager.ApplyAsync(ThemeIds.MissionLight);
-        var original = fixture.ActiveResources[ThemeResourceKeys.Primary];
+        await fixture.Manager.ApplyAsync("not-installed");
+        Assert.Equal(ThemeIds.System, fixture.Manager.SelectedThemeId);
+        Assert.Equal(ThemeIds.MissionLight, fixture.Manager.ActiveTheme.Id);
 
-        await Assert.ThrowsAsync<ArgumentException>(() => fixture.Manager.ApplyAsync("not-installed"));
+        await fixture.Manager.ApplyAsync(ThemeIds.MissionLight);
+        var original = fixture.ActiveResources[ThemeResourceKeys.Primary];
         fixture.Loader.ReturnMalformed = true;
         await Assert.ThrowsAsync<InvalidDataException>(() => fixture.Manager.ApplyAsync(ThemeIds.MissionBlue));
 
@@ -215,12 +218,12 @@ public sealed class ThemeManagerTests
             add
             {
                 requestedThemeChanged += value;
-                SubscriberCount++;
+                SubscriberCount = requestedThemeChanged?.GetInvocationList().Length ?? 0;
             }
             remove
             {
                 requestedThemeChanged -= value;
-                SubscriberCount--;
+                SubscriberCount = requestedThemeChanged?.GetInvocationList().Length ?? 0;
             }
         }
 

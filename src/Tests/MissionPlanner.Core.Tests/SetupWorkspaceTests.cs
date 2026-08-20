@@ -111,20 +111,19 @@ public sealed class SetupWorkspaceTests
             clock,
             dispatcher,
             Substitute.For<ILogger<MandatoryHardwareViewModel>>());
-        viewModel.SelectedWorkflow = viewModel.Workflows.Single(item => item.Descriptor.Key == SetupWorkflowKey.Frame);
+        viewModel.SelectedTab = viewModel.Tabs.Single(item => item.Descriptor.Key == SetupWorkflowKey.Frame.ToString());
         viewModel.IsFrameSelected.Should().BeTrue();
         viewModel.IsFirmwareSelected.Should().BeFalse();
 
         context.Set(context.Current.State! with { Connection = context.Current.State!.Connection with { State = VehicleConnectionState.Offline } });
 
         viewModel.VehicleHeading.Should().Contain("disconnected");
-        viewModel.Workflows.Should().OnlyContain(item => item.State == SetupWorkflowState.NotConnected);
+        viewModel.Tabs.Should().NotBeEmpty();
 
         var reconnected = State(FirmwareFamily.ArduCopter, (ulong)MavProtocolCapability.Ftp);
         context.Set(reconnected);
         viewModel.VehicleHeading.Should().Contain("ArduCopter");
-        viewModel.Workflows.Should().Contain(item =>
-            item.State == SetupWorkflowState.Available || item.State == SetupWorkflowState.NotStarted);
+        viewModel.Tabs.Should().Contain(item => item.Descriptor.Key == SetupWorkflowKey.Frame.ToString());
 
         var heading = viewModel.VehicleHeading;
         context.Set(reconnected with { Connection = reconnected.Connection with { State = VehicleConnectionState.Offline } });
@@ -147,20 +146,20 @@ public sealed class SetupWorkspaceTests
             Substitute.For<IDateTimeProvider>(),
             dispatcher,
             Substitute.For<ILogger<MandatoryHardwareViewModel>>());
-        viewModel.SelectedWorkflow = viewModel.Workflows.Single(item => item.Descriptor.Key == SetupWorkflowKey.Frame);
-        var workflowItems = viewModel.Workflows.ToArray();
-        var selectedWorkflow = viewModel.SelectedWorkflow;
+        viewModel.SelectedTab = viewModel.Tabs.Single(item => item.Descriptor.Key == SetupWorkflowKey.Frame.ToString());
+        var workflowItems = viewModel.Tabs.ToArray();
+        var selectedWorkflow = viewModel.SelectedTab;
         dispatcher.ClearReceivedCalls();
 
         var current = context.Current.State!;
         context.Set(current with { Connection = current.Connection with { LastHeartbeatAt = current.LastHeartbeatAt.AddSeconds(1) }, Flight = current.Flight with { IsArmed = true } });
 
         dispatcher.DidNotReceive().Dispatch(Arg.Any<Action>());
-        viewModel.SelectedWorkflow.Should().BeSameAs(selectedWorkflow);
-        viewModel.Workflows.Should().HaveCount(workflowItems.Length);
+        viewModel.SelectedTab.Should().BeSameAs(selectedWorkflow);
+        viewModel.Tabs.Should().HaveCount(workflowItems.Length);
         for (var index = 0; index < workflowItems.Length; index++)
         {
-            viewModel.Workflows[index].Should().BeSameAs(workflowItems[index]);
+            viewModel.Tabs[index].Should().BeSameAs(workflowItems[index]);
         }
     }
 

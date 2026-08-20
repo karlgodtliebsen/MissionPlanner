@@ -10,13 +10,6 @@ public sealed record PlannerAppearanceSettings
     public string ThemeId { get; init; } = DefaultThemeId;
 
     /// <summary>
-    /// Application preferences that are not persisted in the settings file, but are used to control the UI and behavior of the application.
-    /// </summary>
-    [Obsolete("Use ThemeId. This compatibility property is removed after all UI callers migrate.")]
-    [System.Text.Json.Serialization.JsonIgnore]
-    public bool PreferDarkTheme { get; set; } = true;
-
-    /// <summary>
     /// Gets or sets a value indicating whether the flyout menu is presented at startup in the UI.
     /// </summary>
     public bool IsFlyoutVisibleAtStartup { get; set; }
@@ -30,12 +23,4 @@ public sealed record PlannerAppearanceSettings
     /// Gets or sets a value indicating whether the flyout menu is locked in the UI.
     /// </summary>
     public bool IsFlyoutLocked { get; set; }
-
-
-    /// <summary>
-    /// Gets the application theme.
-    /// </summary>
-    [Obsolete("Use ThemeId. This compatibility property exists only while schema-v4 callers migrate.")]
-    [System.Text.Json.Serialization.JsonIgnore]
-    public PlannerTheme Theme { get; init; } = PlannerTheme.System;
 }
