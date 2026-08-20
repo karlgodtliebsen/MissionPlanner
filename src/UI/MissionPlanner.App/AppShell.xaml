@@ -82,7 +82,12 @@
                         Command="{Binding CloseFlyoutCommand}"></Button>
                 </HorizontalStackLayout>
 
-                <Label Text="MissionPlanner Next Gen" FontSize="Large" HorizontalTextAlignment="Center" Padding="20" Margin="10" />
+                <Label Text="MissionPlanner Next Gen" 
+                       FontSize="Large"
+                       HorizontalTextAlignment="Center"
+                       Padding="20"
+                       Margin="10"
+                       TextColor="{DynamicResource OnSurface}" />
                 <VerticalStackLayout   Padding="20" >
 
                     <Label Text="App Theme" HorizontalOptions="Center" Margin="10" />
