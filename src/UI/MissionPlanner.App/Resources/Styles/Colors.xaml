@@ -65,6 +65,13 @@
     <SolidColorBrush x:Key="PrimaryBrush" Color="{DynamicResource Primary}" />
     <SolidColorBrush x:Key="SecondaryBrush" Color="{DynamicResource Secondary}" />
     <SolidColorBrush x:Key="TertiaryBrush" Color="{DynamicResource Tertiary}" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="{DynamicResource Surface}" />
+    <SolidColorBrush x:Key="OnSurfaceBrush" Color="{DynamicResource OnSurface}" />
+    <SolidColorBrush x:Key="OutlineBrush" Color="{DynamicResource Outline}" />
+    <SolidColorBrush x:Key="SuccessBrush" Color="{DynamicResource Success}" />
+    <SolidColorBrush x:Key="WarningBrush" Color="{DynamicResource Warning}" />
+    <SolidColorBrush x:Key="InfoBrush" Color="{DynamicResource Info}" />
+    <SolidColorBrush x:Key="ErrorBrush" Color="{DynamicResource Error}" />
     <SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource White}" />
     <SolidColorBrush x:Key="BlackBrush" Color="{StaticResource Black}" />
     <SolidColorBrush x:Key="Gray100Brush" Color="{StaticResource Gray100}" />
