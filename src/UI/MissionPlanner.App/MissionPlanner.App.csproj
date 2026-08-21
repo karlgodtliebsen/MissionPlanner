@@ -20,6 +20,9 @@
 		<!-- Resource dictionaries do not require public source-generated backing types. -->
 		<MauiXaml Update="Resources\Styles\Colors.xaml" Inflator="XamlC" />
 		<MauiXaml Update="Resources\Styles\Override.xaml" Inflator="XamlC" />
+		<MauiXaml Update="Resources\Styles\StyleResources.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</MauiXaml>
 		<MauiXaml Update="Resources\Styles\Styles.xaml" Inflator="XamlC" />
 	</ItemGroup>
 
@@ -112,6 +115,9 @@
     </ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="Resources\Styles\StyleResources.xaml.cs">
+	    <DependentUpon>StyleResources.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Views\Common\ErrorView.xaml.cs">
 	    <DependentUpon>ErrorView.xaml</DependentUpon>
 	  </Compile>
@@ -301,6 +307,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="Resources\Themes\MissionBlue.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Resources\Themes\MissionDark.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Resources\Themes\MissionLight.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\Common\ErrorView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

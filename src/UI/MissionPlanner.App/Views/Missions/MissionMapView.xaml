@@ -7,7 +7,6 @@
                 xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                 x:Class="MissionPlanner.App.Views.Missions.MissionMapView"
                 x:DataType="missions:MissionMapViewModel"
-                BackgroundColor="{DynamicResource SurfaceContainerHigh}"
                 >
 
     <Grid RowDefinitions="*,Auto">
@@ -127,7 +126,7 @@
 
         <Border Grid.Row="0" IsVisible="{Binding IsElevationProfileVisible}" HeightRequest="190"
                 VerticalOptions="End" Margin="12" Padding="6" 
-                BackgroundColor="{DynamicResource SurfaceContainerHigh}">
+                >
             <Grid RowDefinitions="Auto,*">
                 <HorizontalStackLayout Spacing="12">
                     <Label Text="Elevation profile — terrain / planned MSL"  />

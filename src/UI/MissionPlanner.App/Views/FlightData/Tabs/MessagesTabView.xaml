@@ -6,7 +6,6 @@
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
                                   xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
-                                  xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                                   x:Class="MissionPlanner.App.Views.FlightData.Tabs.MessagesTabView"
                                   x:DataType="tabs:MessagesTabViewModel"
                                   >

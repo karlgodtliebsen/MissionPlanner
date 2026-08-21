@@ -5,11 +5,11 @@
                       xmlns:tabs="clr-namespace:MissionPlanner.App.Views.ConfigTuning.Tabs"
                       xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                       xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
-                      xmlns:tabs1="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
                       xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                       x:Name="RootPage"
                       x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.MAVFtpTabView"
                       Title="Vehicle Files">
+
     <Grid Padding="16" RowDefinitions="Auto,*,Auto" RowSpacing="12">
         <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
             <Button Text="↑" Command="{Binding NavigateUpCommand}" IsEnabled="{Binding CanNavigateUp}" />
@@ -35,11 +35,6 @@
                     <Label HorizontalOptions="Center" Text="{Binding EmptyText}" FontSize="12" Opacity="0.6" Margin="0,20" />
                 </controls:VirtualizedDataGrid.EmptyView>
                 <controls:VirtualizedDataGrid.Columns>
-                    <!--
-                    <material:DataGridColumn Width="200"  ValueBinding="{Binding Name}" Title="Name" />
-                    <material:DataGridColumn Width="100"  ValueBinding="{Binding TypeText}" Title="Type" />
-                    <material:DataGridColumn Width="10"  ValueBinding="{Binding SizeText}" Title="Size" />
-                    -->
                     <controls:ExtendedSelectableDataGridColumn
                         SelectionMemberPath="IsSelected"
                         SelectionCommandMemberPath="SelectionChangedCommand" />

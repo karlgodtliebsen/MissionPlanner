@@ -7,22 +7,20 @@
               xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
               x:Class="MissionPlanner.App.Views.Connect.ConnectPopupView"
               x:DataType="connect:ConnectPopupViewModel"
-              BackgroundColor="{DynamicResource Surface}">
-
-
-    <Grid>
-
-        <VerticalStackLayout Spacing="12" Margin="25" 
+             >
+   
+        <Grid >
+            <VerticalStackLayout Spacing="12" Margin="25" 
                              IsEnabled="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
                              IsVisible="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}">
-            <material:SelectField
+                <material:SelectField
                 Title="Channel"
                 AllowClear="True"
                 ItemsSource="{Binding Channels}"
                 SelectedItem="{Binding SelectedChannel}"
                 />
-           
-            <material:SelectField
+
+                <material:SelectField
                 Title="Baud rate"
                 AllowClear="True"
                 ItemsSource="{Binding BaudRates}"
@@ -30,19 +28,19 @@
                 />
 
 
-            <controls:AlignedEditorField Title="Host" Text="{Binding SelectedHost}" 
+                <controls:AlignedEditorField Title="Host" Text="{Binding SelectedHost}" 
                                          IsVisible="{Binding ShowSelectedHost}" />
-            <controls:AlignedEditorField Title="Port" Text="{Binding SelectedPort}" 
+                <controls:AlignedEditorField Title="Port" Text="{Binding SelectedPort}" 
                                          IsVisible="{Binding ShowSelectedHost}" />
 
-            <Label Text="{Binding StatusMessage}"
+                <Label Text="{Binding StatusMessage}"
                        FontSize="20"
                        HorizontalOptions="Center"
                        Margin="0,4,0,0" />
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="8" >
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="8" >
 
-                <Button Grid.Column="0"
+                    <Button Grid.Column="0"
                         IsVisible="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
                         ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Find_replace}, FontFamily=MaterialSharp}"
                         FontSize="20"
@@ -51,7 +49,7 @@
                         VerticalOptions="Center"
                         Command="{Binding RefreshCommand}" />
 
-                <Button Grid.Column="1"
+                    <Button Grid.Column="1"
                         IsVisible="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
                         ImageSource="{Binding IsConnectedImage}"
                         FontSize="20"
@@ -60,17 +58,17 @@
                         VerticalOptions="Center"
                         Command="{Binding ConnectCommand}" />
 
-            </Grid>
-        </VerticalStackLayout>
-        <VerticalStackLayout Spacing="12" Margin="25" IsVisible="{Binding IsConnected}">
-            <Label Text="{Binding StatusMessage}"
+                </Grid>
+            </VerticalStackLayout>
+            <VerticalStackLayout Spacing="12" Margin="25" IsVisible="{Binding IsConnected}">
+                <Label Text="{Binding StatusMessage}"
                       FontSize="20"
                        HorizontalOptions="Center"
                        Margin="0,4,0,0" />
 
-            <HorizontalStackLayout HorizontalOptions="Center" >
+                <HorizontalStackLayout HorizontalOptions="Center" >
 
-                <Button 
+                    <Button 
                     ImageSource="{Binding IsConnectedImage}"
                     FontSize="20"
                     Padding="5"
@@ -79,10 +77,9 @@
                     VerticalOptions="Center"
                     Command="{Binding ConnectCommand}" />
 
-            </HorizontalStackLayout>
+                </HorizontalStackLayout>
 
-        </VerticalStackLayout>
-
-    </Grid>
+            </VerticalStackLayout>
+        </Grid>
 
 </ContentView>

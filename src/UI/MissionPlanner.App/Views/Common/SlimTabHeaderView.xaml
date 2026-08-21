@@ -8,6 +8,7 @@
     x:DataType="common:TabItemViewModel"
     Margin="0,0,0,0"
     BorderStyleClass="SurfaceContainer,Rounded,Elevation1"
+    BackgroundColor="Transparent"
     Padding="5"
     >
     <Grid ColumnDefinitions="4,*" Margin="5" >
@@ -15,17 +16,17 @@
                          Opacity="0.2"
                          IsVisible="False">
             <BoxView.Triggers>
-                <DataTrigger TargetType="BoxView"
-                                     Binding="{Binding Source={RelativeSource Self}, 
+                <DataTrigger TargetType="BoxView" 
+                             Binding="{Binding Source={RelativeSource Self},
                     Path=(tabViews:ExtendedTabView.IsHeaderSelected)}"
                                      Value="True">
                     <Setter Property="IsVisible" Value="True" />
                 </DataTrigger>
             </BoxView.Triggers>
         </BoxView>
-        <Grid Grid.Column="1" 
-                      RowDefinitions="Auto,Auto"  RowSpacing="5">
-            <Label Grid.Row="0" Text="{Binding Title}" FontAttributes="Bold" FontSize="16" />
+        <Grid Grid.Column="1" RowDefinitions="Auto,Auto"  RowSpacing="5">
+            <Label Grid.Row="0" Text="{Binding Title}" 
+                   TextColor="{DynamicResource OnPrimary}"  FontSize="18" />
         </Grid>
     </Grid>
 </tabViews:ExtendedTabHeaderView>

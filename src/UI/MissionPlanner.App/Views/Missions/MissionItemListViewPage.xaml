@@ -7,18 +7,18 @@
                     x:Class="MissionPlanner.App.Views.Missions.MissionItemListViewPage"
                     x:DataType="missions:MissionMapViewModel"
                     Padding="25"
-                    BackgroundColor="Transparent"
                   >
 
     <Border StyleClass="SurfaceContainer,Rounded,Elevation1"  HorizontalOptions="Fill"   VerticalOptions="Fill">
         <Grid RowDefinitions="Auto,*" 
-          RowSpacing="6" BackgroundColor="{DynamicResource SurfaceContainer}" HorizontalOptions="Fill"   VerticalOptions="Fill">
+          RowSpacing="6" HorizontalOptions="Fill"   VerticalOptions="Fill">
 
             <Button HorizontalOptions="End" Margin="0,10,10,10"
                 Text="Close" WidthRequest="100" Command="{Binding CloseCommand}">
             </Button>
 
-            <missions:MissionItemListView Grid.Row="1" HorizontalOptions="Fill" VerticalOptions="Fill" Margin="25,10,25,10" ShowAllRows="True"></missions:MissionItemListView>
+            <missions:MissionItemListView Grid.Row="1" HorizontalOptions="Fill" VerticalOptions="Fill" Margin="25,10,25,10" 
+                                          ShowAllRows="True"></missions:MissionItemListView>
 
         </Grid>
     </Border>

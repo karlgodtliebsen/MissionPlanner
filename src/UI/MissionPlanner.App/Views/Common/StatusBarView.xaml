@@ -6,9 +6,9 @@
              x:DataType="common:StatusBarViewModel"
              BackgroundColor="{DynamicResource Surface}"
              HeightRequest="32">
+
     <Border StrokeThickness="1" Padding="2" VerticalOptions="Fill" Height="50"
-            
-            >
+    >
         <Grid ColumnDefinitions="*,Auto,Auto" 
           HorizontalOptions="Fill"
           VerticalOptions="Center"  

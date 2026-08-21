@@ -6,14 +6,9 @@
               x:DataType="common:ErrorViewModel"
               HorizontalOptions="Center"
               VerticalOptions="Center"
-              BackgroundColor="{DynamicResource Surface}"
               >
-
-
         <VerticalStackLayout  Margin="25,50,25,50" Padding="50" HorizontalOptions="Center" VerticalOptions="Center">
-
-            <Label Background="Transparent" HorizontalOptions="Center" VerticalOptions="Center"  FontSize="16" Text="{Binding ErrorMessage}"></Label>
-            
+            <Label Background="Transparent" HorizontalOptions="Center" VerticalOptions="Center"  FontSize="16" 
+                   Text="{Binding ErrorMessage}"></Label>
         </VerticalStackLayout>
-
 </ContentView>

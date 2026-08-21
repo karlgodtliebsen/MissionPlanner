@@ -1,14 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<?xaml-comp compile="true" ?>
 <ResourceDictionary
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="MissionPlanner.App.Resources.Themes.MissionDarkPalette"
     x:ClassModifier="internal">
-    <Color x:Key="Primary">#A8EAC0</Color>
-    <Color x:Key="OnPrimary">#1C783D</Color>
+
+    <!--
+    From UraniumUI.Material.Colors.xaml, but with a different primary color to match the Mission Planner branding.
+    -->
+    <Color x:Key="Primary">#52D681</Color>
+    <Color x:Key="OnPrimary">#FFFFFF</Color>
+    <Color x:Key="PrimaryContainer">#baefcd</Color>
+    <Color x:Key="OnPrimaryContainer">#176031</Color>
+
+
+<!--<Color x:Key="Primary">#2E7D4F</Color>
+    <Color x:Key="OnPrimary">#FFFFFF</Color>
     <Color x:Key="PrimaryContainer">#1A6C37</Color>
-    <Color x:Key="OnPrimaryContainer">#BAEFCD</Color>
+    <Color x:Key="OnPrimaryContainer">#BAEFCD</Color>-->
+
     <Color x:Key="Secondary">#DAFFBE</Color>
     <Color x:Key="OnSecondary">#245900</Color>
     <Color x:Key="SecondaryContainer">#193900</Color>

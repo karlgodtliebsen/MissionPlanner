@@ -8,15 +8,14 @@
                     xmlns:extended="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                     x:Class="MissionPlanner.App.Views.Missions.MissionItemListView"
                     x:DataType="missions:MissionMapViewModel"
-                    BackgroundColor="{DynamicResource Surface}"
                     x:Name="Root">
 
     <Grid RowDefinitions="Auto,*" Margin="10"
-          RowSpacing="6" BackgroundColor="Transparent"  HorizontalOptions="Center"   VerticalOptions="Fill">
+          RowSpacing="6"   HorizontalOptions="Center"   VerticalOptions="Fill">
 
         <Border StyleClass="SurfaceContainer,Rounded,Elevation1" HorizontalOptions="Center"  >
             <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="10"
-                  RowSpacing="6" BackgroundColor="Transparent"   HorizontalOptions="Fill"   VerticalOptions="Fill">
+                  RowSpacing="6"  HorizontalOptions="Fill"   VerticalOptions="Fill">
                 <!-- Title and mode switch. -->
                 <Label Grid.Row="1"  Text="Mission" FontAttributes="Bold" FontSize="16" VerticalOptions="Center" />
 
@@ -72,7 +71,6 @@
                 ShowSearchBar="False"
                 HorizontalOptions="Center" 
                 VerticalOptions="Fill" 
-                BackgroundColor="Transparent"
             >
                 <controls:VirtualizedDataGrid.EmptyView>
                     <Label HorizontalOptions="Center" Text="No mission items. Right-click the map to add waypoints."

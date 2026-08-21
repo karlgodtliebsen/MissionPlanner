@@ -32,7 +32,10 @@
             <Style
                 TargetType="controls:VirtualizedDataGrid"
                 ApplyToDerivedTypes="True"
-                BasedOn="{StaticResource UraniumUI.Styles.VirtualizedDataGrid}" />
+                BasedOn="{StaticResource UraniumUI.Styles.VirtualizedDataGrid}" 
+                >
+            </Style>
+
         </ResourceDictionary>
     </ResourceDictionary.MergedDictionaries>
 

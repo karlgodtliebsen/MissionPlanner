@@ -10,10 +10,9 @@
                                 x:Class="MissionPlanner.App.Views.Missions.DockView.MissionItemListDockView"
                                 x:DataType="dockView:MissionItemListDockViewModel"
                                 WidthRequest="{Binding CalculatedWidth}"
-                                
                                 >
 
-    <Grid RowDefinitions="Auto,*" RowSpacing="6"   HorizontalOptions="Fill"  VerticalOptions="Fill" Margin="2,0,0,0">
+    <Grid RowDefinitions="Auto,*" RowSpacing="6"  HorizontalOptions="Fill"  VerticalOptions="Fill" Margin="2,0,0,0">
         <HorizontalStackLayout HorizontalOptions="End" VerticalOptions="Center">
             <Button Width="25" Height="25"  HorizontalOptions="Center"  VerticalOptions="Center" Margin="0" 
                 x:DataType="dockView:MissionItemListDockViewModel" FontSize="8"
@@ -24,8 +23,8 @@
             <Button 
                 Width="25" Height="25"  HorizontalOptions="Center" VerticalOptions="Center" Margin="0" 
                 IsVisible="{Binding IsExpanded}"
-                BorderColor="Transparent"
                 BorderWidth="0"
+                BorderColor="Transparent"
                 BackgroundColor="Transparent"
                 
                 ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Arrow_circle_right}, FontFamily=MaterialSharp}"
