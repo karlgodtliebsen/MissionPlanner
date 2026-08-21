@@ -69,13 +69,13 @@ internal sealed class WinUiWindowTitleBarThemeService : IWindowTitleBarThemeServ
         titleBar.ForegroundColor = ToWindowsColor(onPrimary);
         titleBar.InactiveBackgroundColor = ToWindowsColor(primary);
         titleBar.InactiveForegroundColor = ToWindowsColor(onPrimary);
-        titleBar.ButtonBackgroundColor = ToWindowsColor(primary);
+        titleBar.ButtonBackgroundColor = WindowsColor.FromArgb(0, 0, 0, 0);
         titleBar.ButtonForegroundColor = ToWindowsColor(onPrimary);
         titleBar.ButtonHoverBackgroundColor = ToWindowsColor(primaryContainer);
         titleBar.ButtonHoverForegroundColor = ToWindowsColor(onPrimaryContainer);
         titleBar.ButtonPressedBackgroundColor = ToWindowsColor(primaryContainer);
         titleBar.ButtonPressedForegroundColor = ToWindowsColor(onPrimaryContainer);
-        titleBar.ButtonInactiveBackgroundColor = ToWindowsColor(primary);
+        titleBar.ButtonInactiveBackgroundColor = WindowsColor.FromArgb(0, 0, 0, 0);
         titleBar.ButtonInactiveForegroundColor = ToWindowsColor(onPrimary);
     }
 

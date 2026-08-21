@@ -42,8 +42,7 @@
 
                     <Button Grid.Column="0"
                         IsVisible="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
-                        ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Find_replace}, FontFamily=MaterialSharp}"
-                        FontSize="20"
+                        ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Sync}, FontFamily=MaterialSharp}"
                         Padding="5"
                         HorizontalOptions="Fill"
                         VerticalOptions="Center"
@@ -52,7 +51,6 @@
                     <Button Grid.Column="1"
                         IsVisible="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
                         ImageSource="{Binding IsConnectedImage}"
-                        FontSize="20"
                         Padding="5"
                         HorizontalOptions="Fill"
                         VerticalOptions="Center"
@@ -69,13 +67,12 @@
                 <HorizontalStackLayout HorizontalOptions="Center" >
 
                     <Button 
-                    ImageSource="{Binding IsConnectedImage}"
-                    FontSize="20"
-                    Padding="5"
-                    MinimumWidthRequest="100"
-                    HorizontalOptions="Fill"
-                    VerticalOptions="Center"
-                    Command="{Binding ConnectCommand}" />
+                        ImageSource="{Binding IsConnectedImage}"
+                        Padding="5"
+                        MinimumWidthRequest="100"
+                        HorizontalOptions="Fill"
+                        VerticalOptions="Center"
+                        Command="{Binding ConnectCommand}" />
 
                 </HorizontalStackLayout>
 

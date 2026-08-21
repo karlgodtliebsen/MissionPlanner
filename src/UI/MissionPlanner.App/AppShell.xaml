@@ -23,7 +23,7 @@
     xmlns:preferences="clr-namespace:MissionPlanner.App.Views.Preferences"
     xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
     Title="MissionPlanner Next Gen"
-    FlyoutBackgroundColor="{DynamicResource Surface}"
+    FlyoutBackgroundColor="{DynamicResource Background}"
     FlyoutBehavior="{Binding FlyoutBehavior,Mode=TwoWay}"
     FlyoutIsPresented="{Binding IsFlyoutPresented,Mode=TwoWay}"
     >
@@ -42,7 +42,7 @@
                         <VisualState x:Name="Selected">
                             <VisualState.Setters>
                                 <Setter Property="BackgroundColor"
-                                     Value="{DynamicResource PrimaryContainer}" />
+                                     Value="{DynamicResource SurfaceContainerHigh}" />
                             </VisualState.Setters>
                         </VisualState>
                     </VisualStateGroup>
@@ -54,7 +54,10 @@
 
         <Grid ColumnDefinitions="*,1">
 
-            <VerticalStackLayout StyleClass="PrimaryContainer" Padding="0" Spacing="20" >
+            <VerticalStackLayout
+                Padding="0"
+                Spacing="20"
+                BackgroundColor="{DynamicResource PrimaryContainer}">
                 <HorizontalStackLayout HorizontalOptions="Start" 
                                    MinimumHeightRequest="50"
                                    IsVisible="{Binding IsFlyoutExpandButtonVisible}">
@@ -87,17 +90,23 @@
                        HorizontalTextAlignment="Center"
                        Padding="20"
                        Margin="10"
-                       TextColor="{DynamicResource OnSurface}"/>
-                <VerticalStackLayout   Padding="20" >
+                       TextColor="{DynamicResource OnPrimaryContainer}"/>
+  
+               <VerticalStackLayout   Padding="20" >
 
-                    <Label Text="App Theme" HorizontalOptions="Center" Margin="10" />
+                    <Label
+                        Margin="10"
+                        HorizontalOptions="Center"
+                        Text="App Theme"
+                        TextColor="{DynamicResource OnPrimaryContainer}" />
 
                     <controls:SelectionView HorizontalOptions="Center"
                                         ItemsSource="{Binding ThemeOptions}"
                                         SelectedItem="{Binding SelectedThemeOption,Mode=TwoWay}"
                                         ColumnNumber="2" ColumnSpacing="-2" Color="{DynamicResource Tertiary}" >
                     </controls:SelectionView>
-                    <material:CheckBox Text="Lock Flyout (Requires Restart)" Type="Regular" 
+              <!--      
+                   <material:CheckBox Text="Lock Flyout (Requires Restart)" Type="Regular" 
                                    IsVisible="{Binding IsFlyoutPresented}"
                                    IsChecked="{Binding IsFlyoutLocked,Mode=TwoWay}" />
                     <material:CheckBox Text="Show Flyout at Startup" Type="Regular" 
@@ -106,6 +115,7 @@
                     <material:CheckBox Text="Show Tutorial at Startup" Type="Regular" 
                                    IsVisible="{Binding IsFlyoutPresented}"
                                    IsChecked="{Binding IsTutorialVisibleAtStartup,Mode=TwoWay}" />
+                   -->
                 </VerticalStackLayout>
             </VerticalStackLayout>
 

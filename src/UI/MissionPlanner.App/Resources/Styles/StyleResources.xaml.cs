@@ -14,6 +14,8 @@ public partial class StyleResources : ResourceDictionary
 
     public StyleResources()
     {
+        // Retain Uranium-only compatibility resources used by controls such as
+        // TabView. MissionPlanner colors are removed in ApplyColorOverride.
         MergedDictionaries.Add(new ColorResource());
 
         InitializeComponent();
@@ -77,18 +79,12 @@ public partial class StyleResources : ResourceDictionary
 
     internal virtual void ApplyColorOverride()
     {
-        var thisColorDict = MergedDictionaries.First();
+        var uraniumColors = MergedDictionaries.First();
 
         foreach (var overrideKey in ColorsOverride.Keys)
         {
-            if (thisColorDict.TryGetValue(overrideKey, out var value) && value is Color thisColor)
-            {
-                thisColorDict[overrideKey] = ColorsOverride[overrideKey];
-            }
+            uraniumColors.Remove(overrideKey);
         }
-
-        MergedDictionaries.Remove(MergedDictionaries.Last());
-        InitializeComponent();
     }
 
     protected virtual void ApplyBasedOn()

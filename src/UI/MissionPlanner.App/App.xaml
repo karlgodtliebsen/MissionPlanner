@@ -12,7 +12,6 @@
             <ResourceDictionary.MergedDictionaries>
                 <styles:ActiveThemeResources x:Name="AppColors" />
                 <ResourceDictionary x:Name="AppStyles" Source="Resources/Styles/Styles.xaml" />
-                <!--<material:StyleResource BasedOn="{x:Reference AppStyles}" ColorsOverride="{x:Reference AppColors}" />-->
                 <styles:StyleResources  BasedOn="{x:Reference AppStyles}" ColorsOverride="{x:Reference AppColors}"></styles:StyleResources>
                 <ResourceDictionary x:Name="OverrideStyles" Source="Resources/Styles/Override.xaml" />
                 <virtualizedResources:StyleResource />
