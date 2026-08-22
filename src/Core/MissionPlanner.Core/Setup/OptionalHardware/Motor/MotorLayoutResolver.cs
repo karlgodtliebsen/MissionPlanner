@@ -2,7 +2,9 @@
 
 namespace MissionPlanner.Core.Setup.OptionalHardware.Motor;
 
-/// <summary>Resolves supported matrix layouts from active frame parameters.</summary>
+/// <summary>
+/// Resolves supported matrix layouts from active frame parameters.
+/// </summary>
 public sealed class MotorLayoutResolver
 {
     /// <summary>Resolves a layout or returns null for missing/custom/unsupported frames.</summary>
@@ -16,7 +18,18 @@ public sealed class MotorLayoutResolver
         }
 
         var value = (int)Math.Round(frameClass.Value);
-        var count = value switch { 1 => 4, 2 => 6, 3 => 8, 4 => 8, 5 => 6, 7 => 3, 12 => 12, 13 => 10, var _ => 0 };
+        var count = value switch
+        {
+            1 => 4,
+            2 => 6,
+            3 => 8,
+            4 => 8,
+            5 => 6,
+            7 => 3,
+            12 => 12,
+            13 => 10,
+            var _ => 0
+        };
         if (count == 0)
         {
             return null;

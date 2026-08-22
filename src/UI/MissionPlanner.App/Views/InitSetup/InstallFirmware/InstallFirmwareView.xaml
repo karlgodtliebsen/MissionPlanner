@@ -471,7 +471,7 @@
                    />
 
             <Label Text="•" FontSize="16" IsVisible="{Binding IsCancellationDeferred}" VerticalOptions="Center"/>
-            <Label Text="Cancellation is deferred until verification and reboot reach a safe boundary. Keep power connected."
+            <Label Text="Cancellation is deferred until verification and vehicle reboot reach a safe boundary. Keep power connected."
                    TextColor="{DynamicResource Warning}" IsVisible="{Binding IsCancellationDeferred}" />
 
             <Label Text="•"  FontSize="16" IsVisible="{Binding OperationProgress.HasStage}" VerticalOptions="Center"/>

@@ -1,6 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.ComponentModel;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.Common;
@@ -84,11 +84,19 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     [NotifyCanExecuteChangedFor(nameof(SaveToJsonFileCommand))]
     //[NotifyCanExecuteChangedFor(nameof(ClearParametersCommand))]
     //[NotifyCanExecuteChangedFor(nameof(RetryFailedCommand))]
-    public partial bool HasRows { get; set; }
+    public partial bool HasRows
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets whether at least one confirmed change requires a vehicle reboot.</summary>
     [ObservableProperty]
-    public partial bool RebootRequired { get; set; }
+    public partial bool RebootRequired
+    {
+        get;
+        set;
+    }
 
 
     [RelayCommand]
@@ -102,17 +110,21 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
 
         try
         {
-            var viewModel = domainFactory.Create<ParametersEditorViewModel>();
-            var pageView = domainFactory.Create<ParametersEditorView, ParametersEditorViewModel>(viewModel);
-            await dialogService.ShowAsync(pageView, true, cancellationToken);
-            var fullList = EditSession.Fields.Select(ToVehicleParameter).ToList();
-            var parameters = viewModel.UpdateParameters(fullList);
-            foreach (var parameter in parameters)
+            var viewModel = domainFactory.Create<ParametersEditorViewModel, Action<ParametersEditorViewModel>>(vm =>
             {
-                EditSession.TrySetPending(parameter.Name, parameter.Value, out var _);
-            }
+                var fullList = EditSession.Fields.Select(ToVehicleParameter).ToList();
+                var parameters = vm.UpdateParameters(fullList);
+                foreach (var parameter in parameters)
+                {
+                    EditSession.TrySetPending(parameter.Name, parameter.Value, out var _);
+                }
 
-            SetMessages($"Imported {parameters.Count} matching values as unapplied edits.");
+                SetMessages($"Imported {parameters.Count} matching values as unapplied edits.");
+                HasRows = Parameters.Count > 0;
+            });
+            var pageView = domainFactory.Create<ParametersEditorView, ParametersEditorViewModel>(viewModel);
+
+            await dialogService.ShowAsync(pageView, true, cancellationToken);
         }
         catch (Exception exception)
         {
@@ -121,6 +133,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
 
         HasRows = Parameters.Count > 0;
     }
+
 
     [RelayCommand]
     private async Task LoadFromFileAsync()

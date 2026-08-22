@@ -67,9 +67,6 @@
             <VerticalStackLayout IsVisible="{Binding IsExpertSectionVisible}" Spacing="6">
                 <Label Text="Advanced commands can be hazardous. Verify the command ID and all seven parameters." TextColor="{DynamicResource Warning}" />
                
-                <!--<Entry Placeholder="Command ID" Keyboard="Numeric" Text="{Binding ExpertCommandId}" />
-                <Entry Placeholder="Seven invariant parameters, separated by spaces" Text="{Binding ExpertParameters}" />-->
-
                 <controls:NumericField
                     Title="Command ID"
                     Value="{Binding TakeoffAltitudeMeters, Mode=TwoWay}"

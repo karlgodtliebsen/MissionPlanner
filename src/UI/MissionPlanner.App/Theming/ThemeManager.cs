@@ -35,10 +35,18 @@ public sealed class ThemeManager : IThemeManager
     public IReadOnlyList<ThemeOption> AvailableThemes => catalog.Options;
 
     /// <inheritdoc />
-    public string SelectedThemeId { get; private set; } = ThemeIds.System;
+    public string SelectedThemeId
+    {
+        get;
+        private set;
+    } = ThemeIds.System;
 
     /// <inheritdoc />
-    public ThemeDescriptor ActiveTheme { get; private set; }
+    public ThemeDescriptor ActiveTheme
+    {
+        get;
+        private set;
+    }
 
     /// <inheritdoc />
     public event EventHandler<ThemeChangedEventArgs>? ThemeChanged;
@@ -168,7 +176,7 @@ public sealed class ThemeManager : IThemeManager
         }
 
         ActiveTheme = theme;
-        logger.LogInformation("Applied application theme {ThemeId} with {BaseAppearance} native appearance.", theme.Id, theme.BaseAppearance);
+        logger.LogInformation("UseParameters application theme {ThemeId} with {BaseAppearance} native appearance.", theme.Id, theme.BaseAppearance);
         ThemeChanged?.Invoke(this, new ThemeChangedEventArgs(SelectedThemeId, ActiveTheme));
     }
 

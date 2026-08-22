@@ -107,7 +107,7 @@
                        IsVisible="{Binding IsBackgroundParameterLoadInProgress, Converter={StaticResource InvertedBoolConverter}}"
                        LineBreakMode="WordWrap" VerticalOptions="Center" />
 
-                <Label Text="Reboot required after confirmed changes"
+                <Label Text="Vehicle Reboot required after confirmed changes"
                        IsVisible="{Binding RebootRequired}"
                        TextColor="{DynamicResource Warning}"
                        FontAttributes="Bold"

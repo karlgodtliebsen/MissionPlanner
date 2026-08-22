@@ -6,33 +6,48 @@
                     MaximumWidthRequest="800"
 >
     <Grid
-        Margin="25"
-       HorizontalOptions="Fill"
-        VerticalOptions="Fill"
-        RowDefinitions="Auto,*"
-        RowSpacing="10"
-        Padding="12">
+                Margin="25"
+                HorizontalOptions="Fill"
+                VerticalOptions="Fill"
+                RowDefinitions="Auto,*"
+                RowSpacing="10"
+                Padding="12">
 
-        <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto" ColumnSpacing="8">
+        <FlexLayout Direction="Row" HorizontalOptions="End">
             <Button HorizontalOptions="End"
-                Grid.Column="5" Text="Close" WidthRequest="100" Command="{Binding CloseCommand}">
+                Text="Use Parameters" WidthRequest="200" Command="{Binding UseCommand}">
             </Button>
-        </Grid>
+            <Button HorizontalOptions="End"
+                     Text="Clear" WidthRequest="150" Command="{Binding ClearCommand}">
+            </Button>
+            <Button HorizontalOptions="End"
+                    Text="Cancel" WidthRequest="100" Command="{Binding CancelCommand}">
+            </Button>
+        </FlexLayout>
 
-        <Border Grid.Row="1" Margin="25" HorizontalOptions="Fill" VerticalOptions="Fill" StyleClass="SurfaceContainer,Rounded,Elevation1">
 
-            <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Spacing="20" Margin="30">
+        <Border Grid.Row="1" Margin="25" HorizontalOptions="Fill" VerticalOptions="Fill" 
+                StyleClass="SurfaceContainer,Rounded,Elevation1">
 
-                <Label FontSize="Medium" Text="Add a List of Parameters and Values"
+            <Grid 
+                RowDefinitions="Auto,Auto,*"
+                HorizontalOptions="Fill" VerticalOptions="Fill" RowSpacing="20" Margin="30">
+
+                <Label Grid.Row="0"
+                        FontSize="Medium" Text="Add a List of Parameters and Values"
                        HorizontalOptions="Center" VerticalOptions="Center"></Label>
-                <Label FontSize="Small" Text="Format: (name=value) or (name=value//comment)"
-                       HorizontalOptions="Center" VerticalOptions="Center"></Label>
+                <Label  Grid.Row="1" FontSize="Small" Text="Format: (name=value) or (name=value//comment)"
+                        HorizontalOptions="Center" VerticalOptions="Center"></Label>
 
-                <Editor 
-                    Text="{Binding Text}" HorizontalOptions="Center" VerticalOptions="Center" AutoSize="TextChanges" 
-                       Margin="10"></Editor>
+                <Editor  Grid.Row="2"
+                    
+                         Text="{Binding Text}" HorizontalOptions="Fill" VerticalOptions="Fill" AutoSize="Disabled" 
+                         Margin="10"></Editor>
 
-            </VerticalStackLayout>
+            </Grid>
+
+
+
         </Border>
     </Grid>
 

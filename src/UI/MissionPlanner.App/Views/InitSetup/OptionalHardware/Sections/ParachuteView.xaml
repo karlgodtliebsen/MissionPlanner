@@ -11,7 +11,7 @@
             <Label Text="Parachute" FontSize="20" FontAttributes="Bold"/>
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
             <Label Text="{Binding Status}"/>
-            <Label Text="Reboot required" 
+            <Label Text="Vehicle Reboot required" 
                    TextColor="{DynamicResource Error}" IsVisible="{Binding RebootRequired}"/>
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}" Spacing="8">
                 <BindableLayout.ItemTemplate>

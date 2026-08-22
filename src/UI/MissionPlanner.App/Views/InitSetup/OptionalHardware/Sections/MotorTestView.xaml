@@ -52,51 +52,83 @@
                 FontAttributes="Bold" />
 
 
-            <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" 
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" 
                   ColumnSpacing="50" 
                   RowSpacing="10">
 
+                <HorizontalStackLayout 
+                    Grid.Row="0"
+                    HorizontalOptions="Fill" VerticalOptions="Fill" Spacing="10" Margin="0,20,0,20">
+                    <controls:NumericUpDownField
+                        Title="Throttle Percent"
+                        Value="{Binding ThrottlePercent, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                        NumberFormat="F0"
+                        StepSize="5"
+                        Min ="5"
+                        Max="25"
+                        VerticalOptions="Center"
+                        MinimumWidthRequest="200"
+                        HorizontalOptions="Fill"
+                        ButtonOrientation="Vertical"
+                        HorizontalTextAlignment="End" />
+                    <controls:NumericUpDownField
+                        Title="Duration (seconds)"
+                        Value="{Binding DurationSeconds, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                        NumberFormat="F0"
+                        StepSize="1"
+                        Min ="1"
+                        Max="10"
+                        VerticalOptions="Center"
+                        MinimumWidthRequest="200"
+                        HorizontalOptions="Fill"
+                        ButtonOrientation="Vertical"
+                        HorizontalTextAlignment="End" />
+                </HorizontalStackLayout>
                 <HorizontalStackLayout 
                     Grid.Row="1"
                     HorizontalOptions="Fill" VerticalOptions="Fill" Spacing="10" Margin="0,20,0,20">
 
                     <controls:NumericField
-                    Title="Throttle Percent"
-                    NumberFormat="F0"
-                    HorizontalOptions="Fill"
-                    HorizontalTextAlignment="End"
-                    Min="5"
-                    Max="25"
-                    Value="{Binding ThrottlePercent, Mode=TwoWay}"
-                    >
-                    </controls:NumericField>
+                              Title="Throttle Percent"
+                              NumberFormat="F0"
+                              HorizontalOptions="Fill"
+                              HorizontalTextAlignment="End"
+                              Min="5"
+                              Max="25"
+                              Value="{Binding ThrottlePercent, Mode=TwoWay}"
+                              >
+                  </controls:NumericField>
+    
 
                     <controls:NumericField
-                    Title="Duration (seconds)"
-                    Value="{Binding DurationSeconds, Mode=TwoWay}"
-                    NumberFormat="F0"
-                    Min="2"
-                    Max="10"
-                    HorizontalOptions="Fill"
-                    HorizontalTextAlignment="End" >
-                    </controls:NumericField>
+                              Title="Duration (seconds)"
+                              Value="{Binding DurationSeconds, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                              NumberFormat="F0"
+                              Min="2"
+                              Max="10"
+                              HorizontalOptions="Fill"
+                              HorizontalTextAlignment="End" >
+                  </controls:NumericField>
 
                 </HorizontalStackLayout>
+
 
                 <VerticalStackLayout
                     Grid.Row="2"
                     BindableLayout.ItemsSource="{Binding Motors}"
                     Spacing="6">
+                   
                     <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="motor:MotorLayoutMotor">
                             <Button
                                 HorizontalOptions="Start"
-                            MaximumWidthRequest="150"
-                            Text="{Binding Label}"
-                            Command="{Binding Source={x:Reference Root}, Path=BindingContext.TestMotorCommand}"
-                            CommandParameter="{Binding .}" />
+                                    MaximumWidthRequest="150"
+                                    Text="{Binding Label}"
+                                    Command="{Binding Source={x:Reference Root}, Path=BindingContext.TestMotorCommand}"
+                                    CommandParameter="{Binding .}" />
                         </DataTemplate>
                     </BindableLayout.ItemTemplate>
+
                 </VerticalStackLayout>
                 <VerticalStackLayout Grid.Row="3" Spacing="25">
                     <HorizontalStackLayout Grid.Row="3" Spacing="8" Margin="0,35,0,0">

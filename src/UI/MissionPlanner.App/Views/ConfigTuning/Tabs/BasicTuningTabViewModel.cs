@@ -27,13 +27,22 @@ public sealed class BasicTuningParameterViewModel
     }
 
     /// <summary>Gets the curated field definition.</summary>
-    public BasicTuningFieldDefinition Definition { get; }
+    public BasicTuningFieldDefinition Definition
+    {
+        get;
+    }
 
     /// <summary>Gets the resolved vehicle parameter name.</summary>
-    public string ParameterName { get; }
+    public string ParameterName
+    {
+        get;
+    }
 
     /// <summary>Gets the shared-session parameter editor.</summary>
-    public ParameterItemViewModel Editor { get; }
+    public ParameterItemViewModel Editor
+    {
+        get;
+    }
 
     /// <summary>Gets the plain-language title.</summary>
     public string Title => Definition.Title;
@@ -98,7 +107,10 @@ public sealed partial class BasicTuningGroupViewModel : ObservableObject
     }
 
     /// <summary>Gets the curated group definition.</summary>
-    public BasicTuningGroupDefinition Definition { get; }
+    public BasicTuningGroupDefinition Definition
+    {
+        get;
+    }
 
     /// <summary>Gets the stable group key.</summary>
     public string Key => Definition.Key;
@@ -116,25 +128,45 @@ public sealed partial class BasicTuningGroupViewModel : ObservableObject
     public bool HasWarning => !string.IsNullOrWhiteSpace(Warning);
 
     /// <summary>Gets the displayed tuning fields.</summary>
-    public ObservableCollection<BasicTuningParameterViewModel> Parameters { get; }
+    public ObservableCollection<BasicTuningParameterViewModel> Parameters
+    {
+        get;
+    }
 
     /// <summary>Gets the command that validates and applies this group.</summary>
-    public IAsyncRelayCommand ApplyCommand { get; }
+    public IAsyncRelayCommand ApplyCommand
+    {
+        get;
+    }
 
     /// <summary>Gets the command that reverts this group.</summary>
-    public IRelayCommand RevertCommand { get; }
+    public IRelayCommand RevertCommand
+    {
+        get;
+    }
 
     /// <summary>Gets the command that refreshes this group.</summary>
-    public IAsyncRelayCommand RefreshCommand { get; }
+    public IAsyncRelayCommand RefreshCommand
+    {
+        get;
+    }
 
     /// <summary>Gets whether this group contains pending changes.</summary>
     [ObservableProperty]
-    public partial bool IsModified { get; private set; }
+    public partial bool IsModified
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the latest group validation message.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasValidationError))]
-    public partial string? ValidationMessage { get; set; }
+    public partial string? ValidationMessage
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets whether coupled group validation currently fails.</summary>
     public bool HasValidationError => !string.IsNullOrWhiteSpace(ValidationMessage);
@@ -190,16 +222,27 @@ public sealed partial class BasicTuningTabViewModel : ObservableObject, IDisposa
     }
 
     /// <summary>Gets the firmware-supported tuning groups.</summary>
-    public ObservableCollection<BasicTuningGroupViewModel> Groups { get; } = [];
+    public ObservableCollection<BasicTuningGroupViewModel> Groups
+    {
+        get;
+    } = [];
 
     /// <summary>Gets whether the target vehicle is connected.</summary>
     [ObservableProperty]
-    public partial bool IsConnected { get; private set; }
+    public partial bool IsConnected
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether the firmware has a Basic Tuning profile with supported fields.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsUnsupported))]
-    public partial bool HasSupportedProfile { get; private set; }
+    public partial bool HasSupportedProfile
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether no Basic Tuning profile is available.</summary>
     public bool IsUnsupported => IsConnected && !HasSupportedProfile;
@@ -207,15 +250,27 @@ public sealed partial class BasicTuningTabViewModel : ObservableObject, IDisposa
     /// <summary>Gets whether an operation is running.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ImportCommand), nameof(ExportCommand))]
-    public partial bool IsBusy { get; private set; }
+    public partial bool IsBusy
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the connected firmware-family label.</summary>
     [ObservableProperty]
-    public partial string FirmwareFamilyText { get; private set; } = "No vehicle connected";
+    public partial string FirmwareFamilyText
+    {
+        get;
+        private set;
+    } = "No vehicle connected";
 
     /// <summary>Gets the latest lifecycle, validation, file, or write status.</summary>
     [ObservableProperty]
-    public partial string StatusMessage { get; private set; } = "Connect a vehicle to use Basic Tuning.";
+    public partial string StatusMessage
+    {
+        get;
+        private set;
+    } = "Connect a vehicle to use Basic Tuning.";
 
     /// <summary>Activates active-vehicle observation and opens the supported profile.</summary>
     public void Activate()
@@ -332,7 +387,7 @@ public sealed partial class BasicTuningTabViewModel : ObservableObject, IDisposa
             RefreshGroups();
             StatusMessage = result.Success
                 ? result.ParameterReport?.RebootRequired == true
-                    ? $"{group.Title} applied and confirmed. Reboot is required for one or more changes."
+                    ? $"{group.Title} applied and confirmed. Vehicle Reboot is required for one or more changes."
                     : $"{group.Title} applied and confirmed."
                 : result.ValidationIssues.Count > 0
                     ? group.ValidationMessage!

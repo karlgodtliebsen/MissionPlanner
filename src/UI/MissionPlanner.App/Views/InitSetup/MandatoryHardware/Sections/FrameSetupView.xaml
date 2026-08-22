@@ -54,7 +54,7 @@
             </HorizontalStackLayout>
             <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
             <Label IsVisible="{Binding RebootRequired}"
-               Text="Reboot required. Reconnect, then use Refresh vehicle values to confirm the persisted configuration."
+               Text="Vehicle Reboot required. Reconnect, then use Refresh vehicle values to confirm the persisted configuration."
                TextColor="{DynamicResource Warning}"
                FontAttributes="Bold"
                LineBreakMode="WordWrap" />

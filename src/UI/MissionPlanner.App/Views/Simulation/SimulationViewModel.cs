@@ -105,31 +105,58 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     }
 
     /// <summary>Gets persisted profiles.</summary>
-    public ObservableCollection<SimulatorProfile> Profiles { get; } = [];
+    public ObservableCollection<SimulatorProfile> Profiles
+    {
+        get;
+    } = [];
 
     /// <summary>Gets discovered external and verified cached SITL installations.</summary>
-    public ObservableCollection<SitlInstallation> Installations { get; } = [];
+    public ObservableCollection<SitlInstallation> Installations
+    {
+        get;
+    } = [];
 
     /// <summary>Gets compatible verified releases from the configured manifest.</summary>
-    public ObservableCollection<SitlManifestEntry> AvailableReleases { get; } = [];
+    public ObservableCollection<SitlManifestEntry> AvailableReleases
+    {
+        get;
+    } = [];
 
     /// <summary>Gets documented runtime control capabilities for the connected simulator.</summary>
-    public ObservableCollection<SimulationControlCapability> ControlCapabilities { get; } = [];
+    public ObservableCollection<SimulationControlCapability> ControlCapabilities
+    {
+        get;
+    } = [];
 
     /// <summary>Gets built-in typed start-location presets.</summary>
-    public ObservableCollection<SimulationLocationPreset> LocationPresets { get; } = [];
+    public ObservableCollection<SimulationLocationPreset> LocationPresets
+    {
+        get;
+    } = [];
 
     /// <summary>Gets persisted scenario presets separate from launch profiles.</summary>
-    public ObservableCollection<SimulationScenarioPreset> ScenarioPresets { get; } = [];
+    public ObservableCollection<SimulationScenarioPreset> ScenarioPresets
+    {
+        get;
+    } = [];
 
     /// <summary>Gets auditable runtime control events.</summary>
-    public ObservableCollection<SimulationScenarioEvent> ScenarioEvents { get; } = [];
+    public ObservableCollection<SimulationScenarioEvent> ScenarioEvents
+    {
+        get;
+    } = [];
 
     /// <summary>Gets available release channels.</summary>
-    public IReadOnlyList<FirmwareReleaseChannel> ReleaseChannels { get; } = Enum.GetValues<FirmwareReleaseChannel>();
+    public IReadOnlyList<FirmwareReleaseChannel> ReleaseChannels
+    {
+        get;
+    } = Enum.GetValues<FirmwareReleaseChannel>();
 
     /// <summary>Gets the firmware families supported by the Simulation workspace.</summary>
-    public IReadOnlyList<FirmwareFamily> FirmwareFamilies { get; } =
+    public IReadOnlyList<FirmwareFamily> FirmwareFamilies
+    {
+        get;
+    } =
     [
         FirmwareFamily.ArduCopter,
         FirmwareFamily.ArduPlane,
@@ -138,222 +165,435 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     ];
 
     /// <summary>Gets supported direct-SITL frames for the selected firmware family.</summary>
-    public ObservableCollection<string> AvailableFrames { get; } = [];
+    public ObservableCollection<string> AvailableFrames
+    {
+        get;
+    } = [];
 
     /// <summary>Gets the bounded recent runtime output.</summary>
-    public ObservableCollection<SimulatorOutputLine> RecentOutput { get; } = [];
+    public ObservableCollection<SimulatorOutputLine> RecentOutput
+    {
+        get;
+    } = [];
 
     /// <summary>Gets every independently owned simulator fleet member.</summary>
-    public ObservableCollection<SimulationFleetSessionSnapshot> FleetSessions { get; } = [];
+    public ObservableCollection<SimulationFleetSessionSnapshot> FleetSessions
+    {
+        get;
+    } = [];
 
     /// <summary>Gets or sets the explicitly selected simulator fleet member.</summary>
     [ObservableProperty]
-    public partial SimulationFleetSessionSnapshot? SelectedFleetSession { get; set; }
+    public partial SimulationFleetSessionSnapshot? SelectedFleetSession
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets the requested fleet size.</summary>
     [ObservableProperty]
-    public partial int FleetCount { get; set; } = 2;
+    public partial int FleetCount
+    {
+        get;
+        set;
+    } = 2;
 
     /// <summary>Gets or sets north/south launch spacing in metres.</summary>
     [ObservableProperty]
-    public partial double FleetSpacingMeters { get; set; } = 10;
+    public partial double FleetSpacingMeters
+    {
+        get;
+        set;
+    } = 10;
 
     /// <summary>Gets or sets the deterministic port increment per fleet member.</summary>
     [ObservableProperty]
-    public partial int FleetPortStride { get; set; } = 10;
+    public partial int FleetPortStride
+    {
+        get;
+        set;
+    } = 10;
 
     /// <summary>Gets or sets the bounded number of concurrent fleet lifecycle operations.</summary>
     [ObservableProperty]
-    public partial int FleetMaximumConcurrency { get; set; } = 3;
+    public partial int FleetMaximumConcurrency
+    {
+        get;
+        set;
+    } = 3;
 
     /// <summary>Gets the latest fleet-level operation summary.</summary>
     [ObservableProperty]
-    public partial string FleetStatus { get; private set; } = "No simulator fleet is allocated.";
+    public partial string FleetStatus
+    {
+        get;
+        private set;
+    } = "No simulator fleet is allocated.";
 
     /// <summary>Gets or sets the selected discovered installation.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanRemoveInstallation))]
-    public partial SitlInstallation? SelectedInstallation { get; set; }
+    public partial SitlInstallation? SelectedInstallation
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets the selected manifest release.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanInstallRelease))]
-    public partial SitlManifestEntry? SelectedRelease { get; set; }
+    public partial SitlManifestEntry? SelectedRelease
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets the requested manifest channel.</summary>
     [ObservableProperty]
-    public partial FirmwareReleaseChannel SelectedReleaseChannel { get; set; } = FirmwareReleaseChannel.Stable;
+    public partial FirmwareReleaseChannel SelectedReleaseChannel
+    {
+        get;
+        set;
+    } = FirmwareReleaseChannel.Stable;
 
     /// <summary>Gets the detected platform capability.</summary>
     [ObservableProperty]
-    public partial string PlatformCapability { get; private set; } = string.Empty;
+    public partial string PlatformCapability
+    {
+        get;
+        private set;
+    } = string.Empty;
 
     /// <summary>Gets install/download progress from zero to one.</summary>
     [ObservableProperty]
-    public partial double InstallProgress { get; private set; }
+    public partial double InstallProgress
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets installation discovery or download status.</summary>
     [ObservableProperty]
-    public partial string InstallationStatus { get; private set; } = "SITL installations have not been scanned.";
+    public partial string InstallationStatus
+    {
+        get;
+        private set;
+    } = "SITL installations have not been scanned.";
 
     /// <summary>Gets or sets the selected runtime control capability.</summary>
     [ObservableProperty]
-    public partial SimulationControlCapability? SelectedControl { get; set; }
+    public partial SimulationControlCapability? SelectedControl
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets the requested value for the selected control.</summary>
     [ObservableProperty]
-    public partial double ControlRequestedValue { get; set; }
+    public partial double ControlRequestedValue
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets the bounded hazardous-control duration in seconds.</summary>
     [ObservableProperty]
-    public partial double FaultDurationSeconds { get; set; } = 10;
+    public partial double FaultDurationSeconds
+    {
+        get;
+        set;
+    } = 10;
 
     /// <summary>Gets or sets explicit hazardous-action confirmation.</summary>
     [ObservableProperty]
-    public partial bool HazardConfirmed { get; set; }
+    public partial bool HazardConfirmed
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets the selected launch-location preset.</summary>
     [ObservableProperty]
-    public partial SimulationLocationPreset? SelectedLocationPreset { get; set; }
+    public partial SimulationLocationPreset? SelectedLocationPreset
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets the selected persisted scenario preset.</summary>
     [ObservableProperty]
-    public partial SimulationScenarioPreset? SelectedScenarioPreset { get; set; }
+    public partial SimulationScenarioPreset? SelectedScenarioPreset
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets the scenario preset editor name.</summary>
     [ObservableProperty]
-    public partial string ScenarioPresetName { get; set; } = "Simulation scenario";
+    public partial string ScenarioPresetName
+    {
+        get;
+        set;
+    } = "Simulation scenario";
 
     /// <summary>Gets or sets the closed-schema scenario JSON editor.</summary>
     [ObservableProperty]
-    public partial string ScenarioDocumentText { get; set; } = ExampleScenarioJson;
+    public partial string ScenarioDocumentText
+    {
+        get;
+        set;
+    } = ExampleScenarioJson;
 
     /// <summary>Gets or sets explicit confirmation for hazardous scenario actions.</summary>
     [ObservableProperty]
-    public partial bool ScenarioHazardsConfirmed { get; set; }
+    public partial bool ScenarioHazardsConfirmed
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets the current scenario runner status.</summary>
     [ObservableProperty]
-    public partial string ScenarioRunnerStatus { get; private set; } = "No scenario is running.";
+    public partial string ScenarioRunnerStatus
+    {
+        get;
+        private set;
+    } = "No scenario is running.";
 
     /// <summary>Gets the last dry-run or execution report.</summary>
     [ObservableProperty]
-    public partial SimulationScenarioRunReport? LastScenarioReport { get; private set; }
+    public partial SimulationScenarioRunReport? LastScenarioReport
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets or sets the selected persisted profile.</summary>
     [ObservableProperty]
-    public partial SimulatorProfile? SelectedProfile { get; set; }
+    public partial SimulatorProfile? SelectedProfile
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets the profile name.</summary>
     [ObservableProperty]
-    public partial string ProfileName { get; set; } = string.Empty;
+    public partial string ProfileName
+    {
+        get;
+        set;
+    } = string.Empty;
 
     /// <summary>Gets or sets the expected firmware family.</summary>
     [ObservableProperty]
-    public partial FirmwareFamily SelectedFirmwareFamily { get; set; } = FirmwareFamily.ArduCopter;
+    public partial FirmwareFamily SelectedFirmwareFamily
+    {
+        get;
+        set;
+    } = FirmwareFamily.ArduCopter;
 
     /// <summary>Gets or sets the frame/model identifier.</summary>
     [ObservableProperty]
-    public partial string FrameModel { get; set; } = string.Empty;
+    public partial string FrameModel
+    {
+        get;
+        set;
+    } = string.Empty;
 
     /// <summary>Gets or sets the selected simulator version label.</summary>
     [ObservableProperty]
-    public partial string BinaryVersion { get; set; } = string.Empty;
+    public partial string BinaryVersion
+    {
+        get;
+        set;
+    } = string.Empty;
 
     /// <summary>Gets or sets the absolute simulator executable path.</summary>
     [ObservableProperty]
-    public partial string BinaryPath { get; set; } = string.Empty;
+    public partial string BinaryPath
+    {
+        get;
+        set;
+    } = string.Empty;
 
     /// <summary>Gets or sets the simulation speed multiplier.</summary>
     [ObservableProperty]
-    public partial double Speedup { get; set; } = 1;
+    public partial double Speedup
+    {
+        get;
+        set;
+    } = 1;
 
     /// <summary>Gets or sets start latitude.</summary>
     [ObservableProperty]
-    public partial double Latitude { get; set; }
+    public partial double Latitude
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets start longitude.</summary>
     [ObservableProperty]
-    public partial double Longitude { get; set; }
+    public partial double Longitude
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets start altitude in meters.</summary>
     [ObservableProperty]
-    public partial double Altitude { get; set; }
+    public partial double Altitude
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets start heading in degrees.</summary>
     [ObservableProperty]
-    public partial double Heading { get; set; }
+    public partial double Heading
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets the local MAVLink UDP port.</summary>
     [ObservableProperty]
-    public partial int MavLinkPort { get; set; } = 14550;
+    public partial int MavLinkPort
+    {
+        get;
+        set;
+    } = 14550;
 
     /// <summary>Gets or sets the simulator console TCP port.</summary>
     [ObservableProperty]
-    public partial int ConsolePort { get; set; } = 5760;
+    public partial int ConsolePort
+    {
+        get;
+        set;
+    } = 5760;
 
     /// <summary>Gets or sets additional argument tokens, one token per line.</summary>
     [ObservableProperty]
-    public partial string AdditionalArgumentsText { get; set; } = string.Empty;
+    public partial string AdditionalArgumentsText
+    {
+        get;
+        set;
+    } = string.Empty;
 
     /// <summary>Gets or sets environment entries as one NAME=VALUE pair per line.</summary>
     [ObservableProperty]
-    public partial string EnvironmentText { get; set; } = string.Empty;
+    public partial string EnvironmentText
+    {
+        get;
+        set;
+    } = string.Empty;
 
     /// <summary>Gets or sets the zero-based SITL instance number.</summary>
     [ObservableProperty]
-    public partial int InstanceNumber { get; set; }
+    public partial int InstanceNumber
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets the expected MAVLink system ID.</summary>
     [ObservableProperty]
-    public partial byte SystemId { get; set; } = 1;
+    public partial byte SystemId
+    {
+        get;
+        set;
+    } = 1;
 
     /// <summary>Gets or sets absolute defaults/parameter file paths, one per line.</summary>
     [ObservableProperty]
-    public partial string DefaultsFilesText { get; set; } = string.Empty;
+    public partial string DefaultsFilesText
+    {
+        get;
+        set;
+    } = string.Empty;
 
     /// <summary>Gets or sets additional typed serial endpoints, one index,transport,host,port entry per line.</summary>
     [ObservableProperty]
-    public partial string SerialEndpointsText { get; set; } = string.Empty;
+    public partial string SerialEndpointsText
+    {
+        get;
+        set;
+    } = string.Empty;
 
     /// <summary>Gets or sets whether SITL persistent state is wiped at launch.</summary>
     [ObservableProperty]
-    public partial bool WipeState { get; set; }
+    public partial bool WipeState
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets whether the local process may display its console window.</summary>
     [ObservableProperty]
-    public partial bool ShowConsoleWindow { get; set; }
+    public partial bool ShowConsoleWindow
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets whether live MissionPlanner map integration is enabled.</summary>
     [ObservableProperty]
-    public partial bool EnableMapIntegration { get; set; } = true;
+    public partial bool EnableMapIntegration
+    {
+        get;
+        set;
+    } = true;
 
     /// <summary>Gets the current session state.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanStart))]
     [NotifyPropertyChangedFor(nameof(CanStop))]
     [NotifyPropertyChangedFor(nameof(CanRestart))]
-    public partial SimulationSessionState SessionState { get; private set; } = SimulationSessionState.Stopped;
+    public partial SimulationSessionState SessionState
+    {
+        get;
+        private set;
+    } = SimulationSessionState.Stopped;
 
     /// <summary>Gets the current status message.</summary>
     [ObservableProperty]
-    public partial string StatusMessage { get; private set; } = "No simulation is running.";
+    public partial string StatusMessage
+    {
+        get;
+        private set;
+    } = "No simulation is running.";
 
     /// <summary>Gets the current failure detail.</summary>
     [ObservableProperty]
-    public partial string? FailureMessage { get; private set; }
+    public partial string? FailureMessage
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets the runtime identity or PID description.</summary>
     [ObservableProperty]
-    public partial string RuntimeIdentity { get; private set; } = "Not started";
+    public partial string RuntimeIdentity
+    {
+        get;
+        private set;
+    } = "Not started";
 
     /// <summary>Gets the runtime-confirmed endpoint display.</summary>
     [ObservableProperty]
-    public partial string ConnectionEndpoints { get; private set; } = "No runtime endpoints";
+    public partial string ConnectionEndpoints
+    {
+        get;
+        private set;
+    } = "No runtime endpoints";
 
     /// <summary>Gets the elapsed runtime text.</summary>
     [ObservableProperty]
-    public partial string Elapsed { get; private set; } = "00:00:00";
+    public partial string Elapsed
+    {
+        get;
+        private set;
+    } = "00:00:00";
 
     /// <summary>Gets whether a UI command is executing.</summary>
     [ObservableProperty]
@@ -363,7 +603,11 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     [NotifyPropertyChangedFor(nameof(CanInstallRelease))]
     [NotifyPropertyChangedFor(nameof(CanRemoveInstallation))]
     [NotifyCanExecuteChangedFor(nameof(CancelOperationCommand))]
-    public partial bool IsBusy { get; private set; }
+    public partial bool IsBusy
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether a new simulation may be started.</summary>
     public bool CanStart => !IsBusy && SessionState is SimulationSessionState.Stopped or
@@ -563,7 +807,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         }
 
         ApplyLocation(SelectedLocationPreset.Location);
-        StatusMessage = $"Applied location preset '{SelectedLocationPreset.Name}' to the profile editor.";
+        StatusMessage = $"UseParameters location preset '{SelectedLocationPreset.Name}' to the profile editor.";
     }
 
     /// <summary>Handles an unavoidable map integration click for launch-location selection.</summary>

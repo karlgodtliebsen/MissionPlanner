@@ -46,7 +46,7 @@
                         <material:DataGridColumn Width="75" x:DataType="sections:ServoOutputItemViewModel" 
                                              ValueBinding="{Binding Header}" Title="" />
 
-                        <material:DataGridColumn Title="Position" Width="160">
+                        <material:DataGridColumn Title="Output PWM" Width="160">
                             <material:DataGridColumn.CellItemTemplate >
                                 <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
                                     <BoxView HeightRequest="35" WidthRequest="50"  HorizontalOptions="Center" VerticalOptions="Center" 
