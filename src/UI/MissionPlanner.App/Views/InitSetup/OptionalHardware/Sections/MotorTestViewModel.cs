@@ -31,11 +31,38 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     private MotorLayout? layout;
 
 
-    public ObservableRangeCollection<MotorLayoutMotor> Motors { get; } = [];
-    [ObservableProperty] public partial string FrameDisplay { get; private set; } = "Frame layout unavailable.";
-    [ObservableProperty] public partial string Status { get; private set; } = "Remove all propellers before testing.";
-    [ObservableProperty] public partial double ThrottlePercent { get; set; } = 10;
-    [ObservableProperty] public partial double DurationSeconds { get; set; } = 2;
+    public ObservableRangeCollection<MotorLayoutMotor> Motors
+    {
+        get;
+    } = [];
+
+    [ObservableProperty]
+    public partial string FrameDisplay
+    {
+        get;
+        private set;
+    } = "Frame layout unavailable.";
+
+    [ObservableProperty]
+    public partial string Status
+    {
+        get;
+        private set;
+    } = "Remove all propellers before testing.";
+
+    [ObservableProperty]
+    public partial double ThrottlePercent
+    {
+        get;
+        set;
+    } = 10;
+
+    [ObservableProperty]
+    public partial double DurationSeconds
+    {
+        get;
+        set;
+    } = 2;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SetMotorSpinMinCommand))]
@@ -44,7 +71,11 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     [NotifyCanExecuteChangedFor(nameof(TestSequenceCommand))]
     [NotifyCanExecuteChangedFor(nameof(TestAllCommand))]
     [NotifyCanExecuteChangedFor(nameof(StopCommand))]
-    public partial bool IsReady { get; set; }
+    public partial bool IsReady
+    {
+        get;
+        set;
+    }
 
 
     /// <summary>
@@ -177,7 +208,6 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         }
 
         canExecute = false;
-        //IsBusy = true;
         layout = activeVehicle.VehicleId is { } id
             ? resolver.Resolve(parameters.GetAllParameters(id))
             : null;
@@ -189,10 +219,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
 
         FrameDisplay = $"Frame: {layout.DisplayName} · {layout.Motors.Count} test positions";
 
-        Motors.ReplaceRange(layout.Motors);
-        //Motors.Clear();
-        //Motors.AddRange(layout.Motors);
-
+        Motors.ReplaceRange(layout.Motors.OrderBy(motor => motor.TestOrder));
         canExecute = true;
         IsReady = true;
     }

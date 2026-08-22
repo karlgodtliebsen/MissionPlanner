@@ -18,4 +18,8 @@
     <ProjectReference Include="..\MissionPlanner.Simulation\MissionPlanner.Simulation.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Setup\OptionalHardware\Motor\APMotorLayout.json" />
+  </ItemGroup>
+
 </Project>

@@ -74,6 +74,24 @@ public sealed class ActuatorSetupTests
         fixture.CommandParameters.Last()[2].Should().Be(0, "the stop command drives zero throttle");
     }
 
+    /// <summary>Verifies motor-test order, rather than logical motor number, is sent in command parameter 1.</summary>
+    [Theory]
+    [InlineData(2)]
+    [InlineData(4)]
+    public async Task IndividualMotorTestSendsTestOrderAsParam1(int testOrder)
+    {
+        using var fixture = CreateFixture();
+        var test = fixture.Service.TestMotorAsync(
+            vehicleId,
+            new MotorTestRequest(testOrder, MotorThrottleType.Percent, 10, 2),
+            TestContext.Current.CancellationToken);
+        await fixture.CommandSent.Task;
+        await fixture.PublishAckAsync(MavResult.Accepted);
+        await test;
+
+        fixture.CommandParameters.Single()[0].Should().Be(testOrder);
+    }
+
     /// <summary>Verifies all motors use independent ACTUATOR_TEST functions with a shared timeout.</summary>
     [Fact]
     public async Task TestAllStartsMotorFunctionsSimultaneouslyAndReleasesThem()

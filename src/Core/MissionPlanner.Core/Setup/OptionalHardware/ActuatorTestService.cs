@@ -113,16 +113,16 @@ public sealed class ActuatorTestService : IActuatorTestService
     /// <inheritdoc />
     public Task<MotorTestResult> TestMotorAsync(VehicleId vehicleId, MotorTestRequest request, CancellationToken cancellationToken = default)
     {
-        return request.MotorIndex < 1
-            ? Task.FromResult(new MotorTestResult(false, "Motor index must be one or greater."))
+        return request.TestOrder < 1
+            ? Task.FromResult(new MotorTestResult(false, "Motor test order must be one or greater."))
             : !TryNormalizeThrottle(request.ThrottleType, request.ThrottleValue, out var throttleType, out var throttleValue, out var throttleError)
                 ? Task.FromResult(new MotorTestResult(false, throttleError))
                 : !TryBoundDuration(request.DurationSeconds, out var duration, out var durationError)
                     ? Task.FromResult(new MotorTestResult(false, durationError))
                     : RunAsync(vehicleId,
-                        [request.MotorIndex, (float)throttleType, throttleValue, (float)duration, 1, (float)MotorTestOrder.Board, 0],
-                        request.MotorIndex, duration,
-                        $"Motor {request.MotorIndex} at {request.ThrottleValue:0.#} {(request.ThrottleType == MotorThrottleType.Percent ? "%" : "us")} for {duration:0.#}s",
+                        [request.TestOrder, (float)throttleType, throttleValue, (float)duration, 1, (float)MotorTestOrder.Board, 0],
+                        request.TestOrder, duration,
+                        $"Motor test {request.TestOrder} at {request.ThrottleValue:0.#} {(request.ThrottleType == MotorThrottleType.Percent ? "%" : "us")} for {duration:0.#}s",
                         cancellationToken);
     }
 

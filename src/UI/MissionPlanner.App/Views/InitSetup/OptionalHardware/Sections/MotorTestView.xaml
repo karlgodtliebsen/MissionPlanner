@@ -122,7 +122,7 @@
                         <DataTemplate x:DataType="motor:MotorLayoutMotor">
                             <Button
                                 HorizontalOptions="Start"
-                                    MaximumWidthRequest="150"
+                                    WidthRequest="250"
                                     Text="{Binding Label}"
                                     Command="{Binding Source={x:Reference Root}, Path=BindingContext.TestMotorCommand}"
                                     CommandParameter="{Binding .}" />
