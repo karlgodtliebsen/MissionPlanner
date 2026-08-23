@@ -4,6 +4,14 @@ namespace UraniumUI.Material.Controls;
 
 public partial class NumericField
 {
+    /// <summary>Gets or sets the textual numeric representation, such as Double, Int16, or UInt8.</summary>
+    public string NumericType { get => (string)GetValue(NumericTypeProperty); set => SetValue(NumericTypeProperty, value); }
+
+    /// <summary>Identifies the <see cref="NumericType"/> bindable property.</summary>
+    public static readonly BindableProperty NumericTypeProperty = BindableProperty.Create(
+        nameof(NumericType), typeof(string), typeof(NumericField), "Double",
+        propertyChanged: static (bindable, _, _) => ((NumericField)bindable).OnNumericTypeChanged());
+
     /// <summary>Gets or sets the numeric value.</summary>
     public double Value { get => (double)GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
 

@@ -6,6 +6,28 @@ namespace UraniumUI.Material.Controls;
 
 public partial class NumericUpDownField
 {
+    /// <summary>Gets or sets the textual numeric representation, such as Double, Int16, or UInt8.</summary>
+    public string NumericType { get => (string)GetValue(NumericTypeProperty); set => SetValue(NumericTypeProperty, value); }
+
+    /// <summary>Identifies the <see cref="NumericType"/> bindable property.</summary>
+    public static readonly BindableProperty NumericTypeProperty = BindableProperty.Create(
+        nameof(NumericType), typeof(string), typeof(NumericUpDownField), "Double",
+        propertyChanged: static (bindable, _, _) => ((NumericUpDownField)bindable).OnNumericTypeChanged());
+
+    /// <summary>Gets or sets whether leading signs are accepted.</summary>
+    public bool AllowSign { get => (bool)GetValue(AllowSignProperty); set => SetValue(AllowSignProperty, value); }
+
+    /// <summary>Identifies the <see cref="AllowSign"/> bindable property.</summary>
+    public static readonly BindableProperty AllowSignProperty = BindableProperty.Create(
+        nameof(AllowSign), typeof(bool), typeof(NumericUpDownField), true);
+
+    /// <summary>Gets or sets whether culture-specific thousands separators are accepted.</summary>
+    public bool AllowThousands { get => (bool)GetValue(AllowThousandsProperty); set => SetValue(AllowThousandsProperty, value); }
+
+    /// <summary>Identifies the <see cref="AllowThousands"/> bindable property.</summary>
+    public static readonly BindableProperty AllowThousandsProperty = BindableProperty.Create(
+        nameof(AllowThousands), typeof(bool), typeof(NumericUpDownField), true);
+
     /// <summary>
     /// Gets or sets the current numeric value.
     /// </summary>

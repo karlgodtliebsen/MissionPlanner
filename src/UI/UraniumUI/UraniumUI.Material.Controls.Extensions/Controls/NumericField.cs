@@ -50,7 +50,7 @@ public partial class NumericField : TextField
             return;
         }
 
-        var inRange = parsed >= Min && parsed <= Max;
+        var inRange = parsed >= EffectiveMin && parsed <= EffectiveMax;
         SetValidity(inRange);
         if (!inRange || Value.Equals(parsed))
         {
@@ -88,9 +88,9 @@ public partial class NumericField : TextField
 
         if (ClampOnCommit)
         {
-            parsed = Math.Clamp(parsed, Min, Max);
+            parsed = Math.Clamp(parsed, EffectiveMin, EffectiveMax);
         }
-        else if (parsed < Min || parsed > Max)
+        else if (parsed < EffectiveMin || parsed > EffectiveMax)
         {
             SetValidity(false);
             return;
@@ -106,13 +106,15 @@ public partial class NumericField : TextField
 
     internal double CoerceValue(double value)
     {
+        var rules = NumericTypeRules.Resolve(NumericType);
+        value = rules.Normalize(value);
         return double.IsNaN(value)
             ? Value
             : double.IsPositiveInfinity(value)
-                ? Max
+                ? EffectiveMax
                 : double.IsNegativeInfinity(value)
-                    ? Min
-                    : Math.Clamp(value, Min, Max);
+                    ? EffectiveMin
+                    : Math.Clamp(value, EffectiveMin, EffectiveMax);
     }
 
     internal void OnValueChanged(double oldValue, double newValue)
@@ -158,6 +160,14 @@ public partial class NumericField : TextField
         {
             correctingRange = false;
         }
+    }
+
+    internal void OnNumericTypeChanged()
+    {
+        var rules = NumericTypeRules.Resolve(NumericType);
+        AllowSign = !rules.IsUnsigned;
+        AllowThousands = !rules.IsInteger;
+        OnRangeChanged();
     }
 
     internal void FormatValueWhenNotEditing()
@@ -213,18 +223,9 @@ public partial class NumericField : TextField
             return false;
         }
 
-        var style = NumberStyles.AllowDecimalPoint;
-        if (AllowSign)
-        {
-            style |= NumberStyles.AllowLeadingSign;
-        }
-
-        if (AllowThousands)
-        {
-            style |= NumberStyles.AllowThousands;
-        }
-
-        return double.TryParse(text, style, ResolveCulture(), out value) && double.IsFinite(value);
+        var rules = NumericTypeRules.Resolve(NumericType);
+        return double.TryParse(text, rules.GetNumberStyles(AllowSign, AllowThousands), ResolveCulture(), out value) &&
+               double.IsFinite(value) && value >= rules.Min && value <= rules.Max;
     }
 
     private bool IsPotentialNumber(string? text)
@@ -251,7 +252,9 @@ public partial class NumericField : TextField
             return false;
         }
 
-        if (Count(remaining, number.NumberDecimalSeparator) > 1)
+        var rules = NumericTypeRules.Resolve(NumericType);
+        if ((rules.IsInteger && remaining.Contains(number.NumberDecimalSeparator, StringComparison.Ordinal)) ||
+            Count(remaining, number.NumberDecimalSeparator) > 1)
         {
             return false;
         }
@@ -263,6 +266,24 @@ public partial class NumericField : TextField
         }
 
         return remaining.All(char.IsDigit);
+    }
+
+    private double EffectiveMin
+    {
+        get
+        {
+            var rules = NumericTypeRules.Resolve(NumericType);
+            return Math.Clamp(Min, rules.Min, rules.Max);
+        }
+    }
+
+    private double EffectiveMax
+    {
+        get
+        {
+            var rules = NumericTypeRules.Resolve(NumericType);
+            return Math.Clamp(Math.Max(Max, EffectiveMin), rules.Min, rules.Max);
+        }
     }
 
     private CultureInfo ResolveCulture()

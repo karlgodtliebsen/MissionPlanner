@@ -86,4 +86,40 @@ public class NumericUpDownField_Test
 
         control.Attachments.Count.ShouldBeGreaterThan(0);
     }
+
+    [Theory]
+    [InlineData("Int8", -128, 127)]
+    [InlineData("Int16", -32768, 32767)]
+    [InlineData("Int32", -2147483648d, 2147483647d)]
+    [InlineData("UInt8", 0, 255)]
+    [InlineData("UInt16", 0, 65535)]
+    [InlineData("UInt32", 0, 4294967295d)]
+    public void IntegerNumericType_ShouldApplyNativeRangeAndStepRules(string numericType, double minimum, double maximum)
+    {
+        var control = AnimationReadyHandler.Prepare(new NumericUpDownField
+        {
+            CultureName = "en-US",
+            NumericType = numericType,
+            Value = maximum
+        });
+
+        control.Value.ShouldBe(maximum);
+        control.IncrementCommand.CanExecute(null).ShouldBeFalse();
+        control.AllowThousands.ShouldBeFalse();
+        control.AllowSign.ShouldBe(!numericType.StartsWith("UInt", StringComparison.Ordinal));
+
+        control.Value = minimum;
+        control.DecrementCommand.CanExecute(null).ShouldBeFalse();
+        control.Text = "1.5";
+        control.IsTextValid.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void IntegerNumericType_ShouldNormalizeExternalFraction()
+    {
+        var control = AnimationReadyHandler.Prepare(new NumericUpDownField { NumericType = "UInt8", Value = 12.6 });
+
+        control.Value.ShouldBe(13);
+        control.Text.ShouldBe("13");
+    }
 }

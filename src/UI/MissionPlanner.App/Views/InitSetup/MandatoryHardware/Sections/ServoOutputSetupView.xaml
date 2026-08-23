@@ -40,7 +40,7 @@
                                 
                             HorizontalOptions="Center"
                             VerticalOptions="Fill" 
-                            BackgroundColor="Transparent">
+                            >
 
                     <controls:VirtualizedDataGrid.Columns>
                         <material:DataGridColumn Width="75" x:DataType="sections:ServoOutputItemViewModel" 
@@ -71,7 +71,6 @@
                                 <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
                                     <material:SelectField VerticalOptions="Center"
                                                           HorizontalOptions="Fill"
-                                                          BorderColor="Aqua"
                                                       Title="Function"
                                                       ItemsSource="{Binding Functions}"
                                                       SelectedItem="{Binding SelectedFunction}"
@@ -87,13 +86,13 @@
                                     <controls1:NumericUpDownField
                                         Value="{Binding MinimumPwm, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
                                         NumberFormat="F0"
-                                        BorderColor="Aqua"
                                         Min ="{Binding AllowedMinimumPwm}"
                                         Max="{Binding AllowedMaximumPwm}"
                                         VerticalOptions="Center"
                                         MinimumWidthRequest="150"
                                         HorizontalOptions="Fill"
                                         ButtonOrientation="Vertical"
+                                        NumericType="UInt32"
                                         HorizontalTextAlignment="End" />
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
@@ -106,13 +105,13 @@
                                     <controls1:NumericUpDownField
                                         Value="{Binding TrimPwm, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
                                         NumberFormat="F0"
-                                        BorderColor="Aqua"
                                         Min ="{Binding AllowedMinimumPwm}"
                                         Max="{Binding AllowedMaximumPwm}"
                                         VerticalOptions="Center"
                                         MinimumWidthRequest="150"
                                         HorizontalOptions="Fill"
                                         ButtonOrientation="Vertical"
+                                        NumericType="UInt32"
                                         HorizontalTextAlignment="End" />
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
@@ -124,13 +123,13 @@
                                     <controls1:NumericUpDownField
                                         Value="{Binding MaximumPwm, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
                                         NumberFormat="F0"
-                                        BorderColor="Aqua"
                                         Min ="{Binding AllowedMinimumPwm}"
                                         Max="{Binding AllowedMaximumPwm}"
                                         VerticalOptions="Center"
                                         MinimumWidthRequest="150"
                                         HorizontalOptions="Fill"
                                         ButtonOrientation="Vertical"
+                                        NumericType="UInt32"
                                         HorizontalTextAlignment="End" />
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>

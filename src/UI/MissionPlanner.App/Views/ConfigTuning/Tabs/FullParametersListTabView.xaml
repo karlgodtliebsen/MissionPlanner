@@ -172,37 +172,27 @@
                                 <DataTemplate  x:DataType="configTuning:ParameterItemViewModel" >
 
                                     <VerticalStackLayout  HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0,5,0">
+
                                         <controls:NumericField
-                                        IsVisible="{Binding IsFloat}"
                                         IsReadOnly="{Binding IsReadOnly}"
                                         Value="{Binding Value, Mode=TwoWay}"
-                                        BorderColor="Aqua"
-                                        NumberFormat="N2"
-                                        Min="{Binding Min}"
-                                        Max="{Binding Max}"
-                                        HorizontalOptions="Fill"
-                                        VerticalOptions="Center"  
-                                        HorizontalTextAlignment="End" 
-                                        AllowClear="True"
-                                        AllowSign="True"
-                                        AllowThousands="True" />
-
-
-                                        <controls:NumericField
-                                        IsVisible="{Binding IsInteger}"
-                                        IsReadOnly="{Binding IsReadOnly}"
-                                        Value="{Binding Value, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
-                                        BorderColor="Aqua"
                                         NumberFormat="F0"
                                         Min="{Binding Min}"
                                         Max="{Binding Max}"
                                         HorizontalOptions="Fill"
                                         VerticalOptions="Center"  
                                         HorizontalTextAlignment="End" 
-                                        AllowClear="True"
+                                        NumericType="{Binding NumericType}"
+                                        />
+
+                                        <!--
+                                        
+                                               Value="{Binding Value, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
+                                 
+                                        
+                                               AllowClear="True"
                                         AllowSign="True"
-                                        AllowThousands="False" />
-                                        <controls:NumericField
+                                        AllowThousands="False"                                  <controls:NumericField
                                         IsVisible="{Binding IsUnsignedInteger}"
                                         IsReadOnly="{Binding IsReadOnly}"
                                         Value="{Binding Value, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
@@ -245,7 +235,7 @@
                                         HorizontalTextAlignment="End" 
                                         AllowClear="True"
                                         AllowSign="False"
-                                        AllowThousands="False" />
+                                        AllowThousands="False" />-->
 
 
 
@@ -260,7 +250,6 @@
                                     <VerticalStackLayout HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0,5,0" >
                                         <material:PickerField IsVisible="{Binding HasValuesData}"
                                               FontSize="12" 
-                                              BorderColor="Aqua"
                                               Title="Pick an option"
                                               TitleFontSize="10"
                                               WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
@@ -270,7 +259,6 @@
 
                                         <controls:ExtendedMultiplePickerField IsVisible="{Binding HasBitmask}"
                                                        Title="Multiple options"
-                                                       BorderColor="Aqua"
                                                        TitleFontSize="10"
                                                        FontSize="14" 
                                                        WidthRequest="200" VerticalOptions="Center" HorizontalOptions="Fill"
@@ -279,18 +267,19 @@
                                                        SelectedItems="{Binding SelectedBitmaskItems}" />
 
 
-                                        <controls:NumericUpDownField IsVisible="{Binding IsFloatRangeData}" 
+                                        <controls:NumericUpDownField IsVisible="{Binding HasNumericRangeData}" 
                                                                        Title="Number" 
-                                                                       BorderColor="Aqua"
                                                                        TitleFontSize="10"
                                                                        FontSize="14" 
                                                                        WidthRequest="200" 
                                                                        ButtonOrientation="Vertical"
+                                                                       NumericType="{Binding NumericType}"
                                                                        Value="{Binding Value, Mode=TwoWay}"
                                                                        Min="{Binding Min}"
                                                                        Max="{Binding Max}"
                                                                        StepSize="{Binding StepSize}"
-                                                                       VerticalOptions="Center" HorizontalOptions="Fill"
+                                                                       VerticalOptions="Center" 
+                                                                       HorizontalOptions="Fill"
                                                                        HorizontalTextAlignment="End"
                                                                        VerticalTextAlignment="Center" />
 

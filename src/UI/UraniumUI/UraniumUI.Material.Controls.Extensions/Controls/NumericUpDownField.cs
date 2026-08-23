@@ -108,7 +108,7 @@ public partial class NumericUpDownField : TextField
             return;
         }
 
-        var isWithinRange = parsed >= Min && parsed <= Max;
+        var isWithinRange = parsed >= EffectiveMin && parsed <= EffectiveMax;
         SetTextValidity(isWithinRange);
 
         if (!isWithinRange)
@@ -163,7 +163,7 @@ public partial class NumericUpDownField : TextField
         {
             candidate = ClampAndNormalize(parsed);
         }
-        else if (parsed >= Min && parsed <= Max)
+        else if (parsed >= EffectiveMin && parsed <= EffectiveMax)
         {
             candidate = Normalize(parsed);
         }
@@ -202,13 +202,13 @@ public partial class NumericUpDownField : TextField
 
         if (IsWrapEnabled)
         {
-            if (candidate > Max && !NumericEquals(candidate, Max))
+            if (candidate > EffectiveMax && !NumericEquals(candidate, EffectiveMax))
             {
-                candidate = Min;
+                candidate = EffectiveMin;
             }
-            else if (candidate < Min && !NumericEquals(candidate, Min))
+            else if (candidate < EffectiveMin && !NumericEquals(candidate, EffectiveMin))
             {
-                candidate = Max;
+                candidate = EffectiveMax;
             }
         }
 
@@ -277,7 +277,7 @@ public partial class NumericUpDownField : TextField
         return IsEnabled &&
                !IsReadOnly &&
                (IsWrapEnabled ||
-                (Value < Max && !NumericEquals(Value, Max)));
+                (Value < EffectiveMax && !NumericEquals(Value, EffectiveMax)));
     }
 
     private bool CanDecrement()
@@ -285,7 +285,7 @@ public partial class NumericUpDownField : TextField
         return IsEnabled &&
                !IsReadOnly &&
                (IsWrapEnabled ||
-                (Value > Min && !NumericEquals(Value, Min)));
+                (Value > EffectiveMin && !NumericEquals(Value, EffectiveMin)));
     }
 
     internal void UpdateCommandStates()
@@ -357,6 +357,15 @@ public partial class NumericUpDownField : TextField
         }
     }
 
+    internal void OnNumericTypeChanged()
+    {
+        var rules = NumericTypeRules.Resolve(NumericType);
+        AllowSign = !rules.IsUnsigned;
+        AllowThousands = !rules.IsInteger;
+        OnRangeChanged();
+        ReformatValue(true);
+    }
+
     internal double ClampAndNormalize(double value)
     {
         if (double.IsNaN(value))
@@ -373,11 +382,12 @@ public partial class NumericUpDownField : TextField
             value = Min;
         }
 
-        return Normalize(Math.Clamp(value, Min, Max));
+        return Normalize(Math.Clamp(value, EffectiveMin, EffectiveMax));
     }
 
     private double Normalize(double value)
     {
+        value = NumericTypeRules.Resolve(NumericType).Normalize(value);
         if (DecimalPlaces >= 0)
         {
             return Math.Round(value, DecimalPlaces, MidpointRounding.AwayFromZero);
@@ -422,6 +432,11 @@ public partial class NumericUpDownField : TextField
 
     private int GetEffectiveDecimalPlaces()
     {
+        if (NumericTypeRules.Resolve(NumericType).IsInteger)
+        {
+            return 0;
+        }
+
         if (DecimalPlaces >= 0)
         {
             return DecimalPlaces;
@@ -565,9 +580,8 @@ public partial class NumericUpDownField : TextField
             return false;
         }
 
-        const NumberStyles styles = NumberStyles.Number | NumberStyles.AllowThousands;
-
         var culture = ResolveCulture();
+        var styles = NumericTypeRules.Resolve(NumericType).GetNumberStyles(AllowSign, AllowThousands);
 
         if (double.TryParse(text, styles, culture, out value))
         {
@@ -577,6 +591,24 @@ public partial class NumericUpDownField : TextField
         // ArduPilot parameter files commonly use invariant decimal points even when
         // the UI culture uses a decimal comma.
         return !Equals(culture, CultureInfo.InvariantCulture) && double.TryParse(text, styles, CultureInfo.InvariantCulture, out value);
+    }
+
+    private double EffectiveMin
+    {
+        get
+        {
+            var rules = NumericTypeRules.Resolve(NumericType);
+            return Math.Clamp(Min, rules.Min, rules.Max);
+        }
+    }
+
+    private double EffectiveMax
+    {
+        get
+        {
+            var rules = NumericTypeRules.Resolve(NumericType);
+            return Math.Clamp(Math.Max(Max, EffectiveMin), rules.Min, rules.Max);
+        }
     }
 
     private CultureInfo ResolveCulture()
