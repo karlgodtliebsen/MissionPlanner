@@ -102,7 +102,7 @@
                     VerticalOptions="Center" />
 
                 <Label TextColor="{DynamicResource Error}" Text="{Binding ErrorMessage}" LineBreakMode="WordWrap" VerticalOptions="Center" />
-                
+
                 <Label Text="{Binding StatusMessage}" 
                        IsVisible="{Binding IsBackgroundParameterLoadInProgress, Converter={StaticResource InvertedBoolConverter}}"
                        LineBreakMode="WordWrap" VerticalOptions="Center" />
@@ -172,7 +172,7 @@
                                 <DataTemplate  x:DataType="configTuning:ParameterItemViewModel" >
 
                                     <VerticalStackLayout  HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0,5,0">
-                                    <controls:NumericField
+                                        <controls:NumericField
                                         IsVisible="{Binding IsFloat}"
                                         IsReadOnly="{Binding IsReadOnly}"
                                         Value="{Binding Value, Mode=TwoWay}"
@@ -188,7 +188,7 @@
                                         AllowThousands="True" />
 
 
-                                    <controls:NumericField
+                                        <controls:NumericField
                                         IsVisible="{Binding IsInteger}"
                                         IsReadOnly="{Binding IsReadOnly}"
                                         Value="{Binding Value, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
@@ -202,7 +202,7 @@
                                         AllowClear="True"
                                         AllowSign="True"
                                         AllowThousands="False" />
-                                    <controls:NumericField
+                                        <controls:NumericField
                                         IsVisible="{Binding IsUnsignedInteger}"
                                         IsReadOnly="{Binding IsReadOnly}"
                                         Value="{Binding Value, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
@@ -231,8 +231,8 @@
                                         AllowClear="True"
                                         AllowSign="True"
                                         AllowThousands="False" />
-                                    
-                                    <controls:NumericField
+
+                                        <controls:NumericField
                                         IsVisible="{Binding IsUnsignedByte}"
                                         IsReadOnly="{Binding IsReadOnly}"
                                         Value="{Binding Value, Mode=TwoWay, Converter={StaticResource ByteDoubleConverter}}"

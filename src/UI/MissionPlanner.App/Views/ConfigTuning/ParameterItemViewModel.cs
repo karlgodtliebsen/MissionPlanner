@@ -369,6 +369,14 @@ public partial class ParameterItemViewModel : ObservableObject
         SetField(field);
     }
 
+    partial void OnSelectedValueChanged(string? value)
+    {
+        if (float.TryParse(value, out var result))
+        {
+            Value = result;
+        }
+    }
+
     private void OnSelectedValuesChanged(object value)
     {
         if (loadingData || value is not IEnumerable<object> items)
