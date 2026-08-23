@@ -156,16 +156,20 @@
                     <Button  VerticalOptions="Center"
                             Text="Set Motor Spin Arm"
                             Command="{Binding SetMotorSpinArmCommand}" />
-                    <Label VerticalOptions="Center" Grid.Column="1" 
-                           Text="Set the Minimum % that will be output when armed, but still on the ground" HorizontalOptions="Fill"></Label>
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
+                        <Label Text="{Binding SpinArmDisplay}" FontAttributes="Bold" />
+                        <Label Text="Set the minimum output at which motors reliably spin while armed." />
+                    </VerticalStackLayout>
 
                     <Button VerticalOptions="Center"
                             Grid.Row="1"
                             Text="Set Motor Spin Min"
                             Command="{Binding SetMotorSpinMinCommand}" />
 
-                    <Label VerticalOptions="Center" Grid.Row="1" Grid.Column="1"  
-                           Text="Set the Minimum % that will be output when flying" HorizontalOptions="Fill"></Label>
+                    <VerticalStackLayout Grid.Row="1" Grid.Column="1" VerticalOptions="Center">
+                        <Label Text="{Binding SpinMinDisplay}" FontAttributes="Bold" />
+                        <Label Text="Set the minimum motor output while flying." />
+                    </VerticalStackLayout>
 
                 </Grid>
             </Grid>

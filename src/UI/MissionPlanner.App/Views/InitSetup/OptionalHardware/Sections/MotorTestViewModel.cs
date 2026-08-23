@@ -23,6 +23,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleParameterRegistry parameters;
     private readonly IActuatorTestService service;
+    private readonly IMotorSpinParameterService spinParameters;
     private readonly MotorLayoutResolver resolver;
     private readonly IUserConfirmationService confirmation;
     private readonly IDispatcher dispatcher;
@@ -64,6 +65,24 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         set;
     } = 2;
 
+    /// <summary>Gets the current MOT_SPIN_ARM value for display.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SetMotorSpinArmCommand))]
+    public partial string SpinArmDisplay { get; private set; } = "MOT_SPIN_ARM: unavailable";
+
+    /// <summary>Gets the current MOT_SPIN_MIN value for display.</summary>
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SetMotorSpinMinCommand))]
+    public partial string SpinMinDisplay { get; private set; } = "MOT_SPIN_MIN: unavailable";
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SetMotorSpinArmCommand))]
+    private partial bool HasSpinArm { get; set; }
+
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(SetMotorSpinMinCommand))]
+    private partial bool HasSpinMin { get; set; }
+
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SetMotorSpinMinCommand))]
     [NotifyCanExecuteChangedFor(nameof(SetMotorSpinArmCommand))]
@@ -89,6 +108,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     /// <param name="parameters"></param>
     /// <param name="service"></param>
     /// <param name="resolver"></param>
+    /// <param name="spinParameters">The normalized motor-spin parameter workflow.</param>
     /// <param name="confirmation"></param>
     /// <param name="editSessionFactory"></param>
     /// <param name="dispatcher"></param>
@@ -106,6 +126,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         ILogger<MotorTestViewModel> logger,
         IVehicleParameterRegistry parameters,
         IActuatorTestService service,
+        IMotorSpinParameterService spinParameters,
         MotorLayoutResolver resolver,
         IUserConfirmationService confirmation)
         : base(
@@ -122,6 +143,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         this.activeVehicle = activeVehicle;
         this.parameters = parameters;
         this.service = service;
+        this.spinParameters = spinParameters;
         this.resolver = resolver;
         this.confirmation = confirmation;
         this.dispatcher = dispatcher;
@@ -139,14 +161,64 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         return canExecute;
     }
 
-    [RelayCommand(CanExecute = nameof(CanExecuteCommand))]
+    private bool CanSetSpinMin() => canExecute && HasSpinMin;
+
+    private bool CanSetSpinArm() => canExecute && HasSpinArm;
+
+    [RelayCommand(CanExecute = nameof(CanSetSpinMin))]
     private async Task SetMotorSpinMin()
     {
+        if (activeVehicle.VehicleId is not { } id)
+        {
+            return;
+        }
+
+        var recommendation = spinParameters.RecommendSpinMin(id);
+        if (!recommendation.Success)
+        {
+            Status = recommendation.Message;
+            return;
+        }
+
+        if (!await confirmation.ConfirmAsync(
+                "Set minimum in-flight motor output",
+                $"Set MOT_SPIN_MIN to {recommendation.Percent:0.#}%? This is MOT_SPIN_ARM plus 3 percentage points.",
+                "Set MOT_SPIN_MIN"))
+        {
+            return;
+        }
+
+        var result = await spinParameters.SetSpinMinAsync(id, activeVehicle.ConnectionCancellationToken);
+        Status = result.Message;
+        RefreshSpinParameters(id);
     }
 
-    [RelayCommand(CanExecute = nameof(CanExecuteCommand))]
+    [RelayCommand(CanExecute = nameof(CanSetSpinArm))]
     private async Task SetMotorSpinArm()
     {
+        if (activeVehicle.VehicleId is not { } id)
+        {
+            return;
+        }
+
+        var recommendation = spinParameters.RecommendSpinArm(id, ThrottlePercent);
+        if (!recommendation.Success)
+        {
+            Status = recommendation.Message;
+            return;
+        }
+
+        if (!await confirmation.ConfirmAsync(
+                "Set armed motor spin output",
+                $"Set MOT_SPIN_ARM to {recommendation.Percent:0.#}%? This is 2 percentage points above the selected motor-test throttle.",
+                "Set MOT_SPIN_ARM"))
+        {
+            return;
+        }
+
+        var result = await spinParameters.SetSpinArmAsync(id, ThrottlePercent, activeVehicle.ConnectionCancellationToken);
+        Status = result.Message;
+        RefreshSpinParameters(id);
     }
 
     [RelayCommand(CanExecute = nameof(CanExecuteCommand))]
@@ -208,6 +280,19 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         }
 
         canExecute = false;
+        IsReady = false;
+        if (activeVehicle.VehicleId is { } spinVehicleId)
+        {
+            RefreshSpinParameters(spinVehicleId);
+        }
+        else
+        {
+            HasSpinArm = false;
+            HasSpinMin = false;
+            SpinArmDisplay = "MOT_SPIN_ARM: unavailable";
+            SpinMinDisplay = "MOT_SPIN_MIN: unavailable";
+        }
+
         layout = activeVehicle.VehicleId is { } id
             ? resolver.Resolve(parameters.GetAllParameters(id))
             : null;
@@ -222,6 +307,17 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         Motors.ReplaceRange(layout.Motors.OrderBy(motor => motor.TestOrder));
         canExecute = true;
         IsReady = true;
+        SetMotorSpinArmCommand.NotifyCanExecuteChanged();
+        SetMotorSpinMinCommand.NotifyCanExecuteChanged();
+    }
+
+    private void RefreshSpinParameters(MissionPlanner.Shared.Models.Vehicles.Models.VehicleId vehicleId)
+    {
+        var state = spinParameters.GetState(vehicleId);
+        HasSpinArm = state.HasSpinArm;
+        HasSpinMin = state.HasSpinMin;
+        SpinArmDisplay = state.SpinArmPercent is { } arm ? $"MOT_SPIN_ARM: {arm:0.#}%" : "MOT_SPIN_ARM: unavailable";
+        SpinMinDisplay = state.SpinMinPercent is { } min ? $"MOT_SPIN_MIN: {min:0.#}%" : "MOT_SPIN_MIN: unavailable";
     }
 
     private void Changed(object? s, ActiveVehicleChangedEventArgs e)

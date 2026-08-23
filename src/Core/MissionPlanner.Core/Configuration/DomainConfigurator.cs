@@ -26,6 +26,7 @@ using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Setup.OptionalHardware;
+using MissionPlanner.Core.Setup.OptionalHardware.Motor;
 using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Simulation.Abstractions;
 using MissionPlanner.Core.Vehicles;
@@ -135,6 +136,7 @@ public static class DomainConfigurator
         services.TryAddTransient<IFlightModeConfigurationService, FlightModeConfigurationService>();
         services.TryAddTransient<IBatteryConfigurationService, BatteryConfigurationService>();
         services.TryAddTransient<IActuatorTestService, ActuatorTestService>();
+        services.TryAddTransient<IMotorSpinParameterService, MotorSpinParameterService>();
         services.TryAddTransient<ICompassMotorCalibrationService, CompassMotorCalibrationService>();
         services.TryAddTransient<IDirectSerialSessionFactory, DirectSerialSessionFactory>();
         services.TryAddTransient<ISikRadioConfigurator, SikRadioConfigurator>();

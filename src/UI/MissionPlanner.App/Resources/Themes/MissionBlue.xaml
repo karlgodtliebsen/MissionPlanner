@@ -51,4 +51,8 @@
     <Color x:Key="InversePrimary">#9BC9EC</Color>
     <Color x:Key="DisabledText">#7A858D</Color>
     <Color x:Key="DisabledBackground">#DCE3E8</Color>
+    <Color x:Key="MainButton">#245B89</Color>
+    <Color x:Key="OnMainButton">#FFFFFF</Color>
+
+
 </ResourceDictionary>

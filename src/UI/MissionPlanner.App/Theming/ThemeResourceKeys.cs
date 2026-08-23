@@ -1,10 +1,13 @@
-namespace MissionPlanner.App.Theming;
+﻿namespace MissionPlanner.App.Theming;
 
 /// <summary>Defines the semantic color resources that every concrete application theme must provide.</summary>
 public static class ThemeResourceKeys
 {
     /// <summary>Gets all required semantic color keys.</summary>
-    public static IReadOnlyList<string> RequiredColorKeys { get; } =
+    public static IReadOnlyList<string> RequiredColorKeys
+    {
+        get;
+    } =
     [
         Primary,
         OnPrimary,
@@ -51,8 +54,20 @@ public static class ThemeResourceKeys
         InverseOnSurface,
         InversePrimary,
         DisabledText,
-        DisabledBackground
+        DisabledBackground,
+        MainButton,
+        OnMainButton
     ];
+
+    /// <summary>
+    /// Main button color for primary actions, such as "Start" or "Submit".
+    /// </summary>
+    public const string MainButton = nameof(MainButton);
+
+    /// <summary>
+    /// Content drawn on the main button.
+    /// </summary>
+    public const string OnMainButton = nameof(OnMainButton);
 
     /// <summary>Primary application and action accent.</summary>
     public const string Primary = nameof(Primary);

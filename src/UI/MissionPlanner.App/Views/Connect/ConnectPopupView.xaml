@@ -43,6 +43,7 @@
                     <Button Grid.Column="0"
                         IsVisible="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
                         ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Sync}, FontFamily=MaterialSharp}"
+                        BackgroundColor="{DynamicResource MainButton}"
                         Padding="5"
                         HorizontalOptions="Fill"
                         VerticalOptions="Center"
@@ -51,6 +52,7 @@
                     <Button Grid.Column="1"
                         IsVisible="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
                         ImageSource="{Binding IsConnectedImage}"
+                        BackgroundColor="{DynamicResource MainButton}"
                         Padding="5"
                         HorizontalOptions="Fill"
                         VerticalOptions="Center"
@@ -68,6 +70,7 @@
 
                     <Button 
                         ImageSource="{Binding IsConnectedImage}"
+                        BackgroundColor="{DynamicResource MainButton}"
                         Padding="5"
                         MinimumWidthRequest="100"
                         HorizontalOptions="Fill"

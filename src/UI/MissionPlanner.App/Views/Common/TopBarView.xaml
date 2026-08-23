@@ -46,7 +46,8 @@
 
             <!-- Connect Button -->
             <Button Grid.Column="3"
-                     ImageSource="{Binding IsConnectedImage}"
+                    BackgroundColor="{DynamicResource MainButton}"
+                    ImageSource="{Binding IsConnectedImage}"
                     Padding="5"
                     HorizontalOptions="Fill"
                     VerticalOptions="Center"
@@ -57,7 +58,8 @@
  Settings/Options  Text="⚙"
             -->
             <Button Grid.Column="4"
-                    ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Build_circle}, FontFamily=MaterialSharp}"
+                BackgroundColor="{DynamicResource MainButton}"
+                ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Build_circle}, FontFamily=MaterialSharp}"
                 Padding="5"
                 HorizontalOptions="Fill"
                 VerticalOptions="Center"
