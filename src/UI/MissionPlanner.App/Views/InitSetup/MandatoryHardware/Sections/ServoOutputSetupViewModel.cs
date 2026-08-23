@@ -122,34 +122,37 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
         base.Dispose();
     }
 
-    /// <summary>Writes the reviewed function for one servo output with readback confirmation.</summary>
+    /// <summary>Writes the modified settings for one servo output with readback confirmation.</summary>
     /// <param name="item">The output row to apply.</param>
     /// <returns>A task that completes after the write is confirmed or reported failed.</returns>
-    internal async Task ApplyAsync(ServoOutputItemViewModel item)
+    internal async Task<bool> ApplyAsync(ServoOutputItemViewModel item)
     {
-        if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline || item.SelectedFunction is not { } function)
+        if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
-            return;
+            return false;
         }
 
         var token = StartOperation();
         try
         {
-            var result = await servoService.SetFunctionAsync(vehicleId, item.Output, function.Value, token);
+            var result = await servoService.SetOutputAsync(vehicleId, item.Settings, token);
             Status = result.Message;
             if (result.Success)
             {
-                var configuration = await servoService.GetConfigurationAsync(vehicleId, token);
-                dispatcher.Dispatch(() => Show(configuration, true));
+                item.AcceptChanges();
             }
+
+            return result.Success;
         }
         catch (OperationCanceledException)
         {
+            return false;
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, "Applying servo output function failed for {VehicleId}.", vehicleId);
+            logger.LogError(exception, "Applying servo output settings failed for {VehicleId}.", vehicleId);
             Error = exception.Message;
+            return false;
         }
     }
 
@@ -157,7 +160,6 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
     private Task RefreshAsync()
     {
         return LoadAsync();
-        WriteCommand.NotifyCanExecuteChanged();
     }
 
     private bool CanWrite()
@@ -168,14 +170,12 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
     [RelayCommand(CanExecute = nameof(CanWrite))]
     private async Task WriteAsync()
     {
-        foreach (var model in Outputs)
+        foreach (var model in Outputs.Where(output => output.IsDirty).ToArray())
         {
-            await ApplyAsync(model);
-        }
-
-        foreach (var model in Outputs)
-        {
-            model.Reset();
+            if (!await ApplyAsync(model))
+            {
+                break;
+            }
         }
 
         WriteCommand.NotifyCanExecuteChanged();
@@ -237,7 +237,7 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
             {
                 foreach (var output in configuration.Outputs)
                 {
-                    Outputs.FirstOrDefault(item => item.Output == output.Output)?.UpdateLive(output);
+                    Outputs.FirstOrDefault(item => item.ChannelNumber == output.ChannelNumber)?.UpdateLive(output);
                 }
 
                 WriteCommand.NotifyCanExecuteChanged();
@@ -252,19 +252,28 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
     private void Show(ServoOutputConfiguration configuration, bool preserveStatus = false)
     {
         if (Outputs.Count == configuration.Outputs.Count &&
-            Outputs.Zip(configuration.Outputs).All(pair => pair.First.Output == pair.Second.Output))
+            Outputs.Zip(configuration.Outputs).All(pair => pair.First.ChannelNumber == pair.Second.ChannelNumber))
         {
             for (var index = 0; index < configuration.Outputs.Count; index++)
             {
-                Outputs[index].UpdateLive(configuration.Outputs[index]);
+                Outputs[index].Refresh(configuration.Outputs[index]);
             }
         }
         else
         {
+            var existing = Outputs.ToDictionary(output => output.ChannelNumber);
             Outputs.Clear();
             foreach (var output in configuration.Outputs)
             {
-                Outputs.Add(new ServoOutputItemViewModel(output, configuration.FunctionOptions, (x) => WriteCommand.NotifyCanExecuteChanged()));
+                if (existing.TryGetValue(output.ChannelNumber, out var item))
+                {
+                    item.Refresh(output);
+                    Outputs.Add(item);
+                }
+                else
+                {
+                    Outputs.Add(new ServoOutputItemViewModel(output, configuration.FunctionOptions, _ => WriteCommand.NotifyCanExecuteChanged()));
+                }
             }
         }
 

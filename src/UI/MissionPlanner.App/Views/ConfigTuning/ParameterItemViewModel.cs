@@ -92,6 +92,58 @@ public partial class ParameterItemViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Gets a value indicating whether the parameter is a signed byte.
+    /// </summary>
+    public bool IsByte => OriginalParameter!.Type == MavParamType.Int8;
+
+    /// <summary>
+    /// Gets a value indicating whether the parameter is an unsigned byte.
+    /// </summary>
+    public bool IsUnsignedByte => OriginalParameter.Type == MavParamType.Uint8;
+
+    /// <summary>
+    /// Gets a value indicating whether the parameter is a signed integer.
+    /// </summary>
+    public bool IsInteger => OriginalParameter!.Type == MavParamType.Int16 || OriginalParameter.Type == MavParamType.Int32;
+
+    /// <summary>
+    /// Gets a value indicating whether the parameter is an unsigned integer.
+    /// </summary>
+    public bool IsUnsignedInteger => OriginalParameter.Type is MavParamType.Uint16 or MavParamType.Uint32;
+
+    /// <summary>
+    /// Gets a value indicating whether the parameter is a floating-point number.
+    /// </summary>
+    public bool IsFloat => OriginalParameter!.Type == MavParamType.Real32;
+
+
+    /// <summary>
+    /// Gets a value indicating whether the parameter is a numeric range data.
+    /// </summary>
+    public bool IsFloatRangeData => IsFloat && HasNumericRangeData;
+
+    /// <summary>
+    /// Gets a value indicating whether the parameter is an unsigned integer range data.
+    /// </summary>
+    public bool IsUnsignedIntegerRangeData => IsUnsignedInteger && HasNumericRangeData;
+
+    /// <summary>
+    /// Gets a value indicating whether the parameter is an integer range data.
+    /// </summary>
+    public bool IsIntegerRangeData => IsInteger && HasNumericRangeData;
+
+    /// <summary>
+    /// Gets a value indicating whether the parameter is an unsigned byte range data.
+    /// </summary>
+    public bool IsUnsignedByteRangeData => IsUnsignedByte && HasNumericRangeData;
+
+    /// <summary>
+    /// Gets a value indicating whether the parameter is a byte range data.
+    /// </summary>
+    public bool IsByteRangeData => IsByte && HasNumericRangeData;
+
+
+    /// <summary>
     /// Gets or sets the culture-aware text displayed by the unrestricted value editor.
     /// </summary>
     /// <remarks>
@@ -273,6 +325,7 @@ public partial class ParameterItemViewModel : ObservableObject
         get;
         set;
     }
+
 
     [DataGridIgnore]
     [ObservableProperty]

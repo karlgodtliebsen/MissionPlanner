@@ -1,153 +1,170 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
-/// <summary>Presents one servo output with a function picker and live PWM.</summary>
+/// <summary>Presents one physical servo output with editable parameters and live PWM.</summary>
 public sealed partial class ServoOutputItemViewModel : ObservableObject
 {
-    private readonly Action<ServoOutputItemViewModel> isDirtyAction;
-    private readonly bool suppressApply = true;
-
-    /// <summary>
-    /// Gets a value indicating whether the servo output has been modified.
-    /// </summary>
-    [ObservableProperty]
-    public partial bool IsDirty { get; private set; }
-
+    private readonly Action<ServoOutputItemViewModel> dirtyChanged;
+    private bool suppressDirtyTracking;
+    private bool originalReversed;
+    private int originalFunction;
+    private int originalMinimum;
+    private int originalTrim;
+    private int originalMaximum;
 
     /// <summary>Initializes a servo output row.</summary>
     /// <param name="info">The output projection.</param>
     /// <param name="options">The available functions.</param>
-    /// <param name="isDirtyAction"></param>
-    public ServoOutputItemViewModel(ServoOutputInfo info, IReadOnlyList<ServoFunctionOption> options, Action<ServoOutputItemViewModel> isDirtyAction)
+    /// <param name="dirtyChanged">Called when the row's dirty state changes.</param>
+    public ServoOutputItemViewModel(
+        ServoOutputInfo info,
+        IReadOnlyList<ServoFunctionOption> options,
+        Action<ServoOutputItemViewModel> dirtyChanged)
     {
-        this.isDirtyAction = isDirtyAction;
-        Output = info.Output;
-        Functions = options;
-        UpdateLive(info);
-        SelectedFunction = options.FirstOrDefault(option => option.Value == info.FunctionValue);
-        suppressApply = false;
-        Reset();
+        this.dirtyChanged = dirtyChanged;
+        ChannelNumber = info.ChannelNumber;
+        Functions = options.Any(option => option.Value == info.FunctionValue)
+            ? options
+            : options.Append(new ServoFunctionOption(info.FunctionValue, info.FunctionName)).ToArray();
+        ApplyConfiguration(info);
     }
 
-    partial void OnMaxChanging(int value)
-    {
-        if (value == Max)
-        {
-            return;
-        }
-
-        IsDirty = true;
-    }
-
-    partial void OnMinChanging(int value)
-    {
-        if (value == Min)
-        {
-            return;
-        }
-
-        IsDirty = true;
-    }
-
-
-    partial void OnTrimChanging(int value)
-    {
-        if (value == Trim)
-        {
-            return;
-        }
-
-        IsDirty = true;
-    }
-
-    partial void OnOutputChanging(int value)
-    {
-        if (value == Output)
-        {
-            return;
-        }
-
-        IsDirty = true;
-    }
-
-
-    partial void OnIsDirtyChanged(bool value)
-    {
-        if (suppressApply)
-        {
-            return;
-        }
-
-        isDirtyAction(this);
-    }
-
-    ///
-    /// <summary>Gets the one-based output number.
-    /// </summary>
+    /// <summary>Gets whether an editable value differs from its last confirmed value.</summary>
     [ObservableProperty]
-    public partial int Output { get; set; }
+    public partial bool IsDirty { get; private set; }
 
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <summary>Gets the one-based physical output channel.</summary>
+    public int ChannelNumber { get; }
+
+    /// <summary>Gets or sets whether the output is reversed.</summary>
     [ObservableProperty]
-    public partial int Min { get; set; }
+    public partial bool Reversed { get; set; }
 
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <summary>Gets or sets the minimum PWM.</summary>
     [ObservableProperty]
-    public partial int Trim { get; set; }
+    public partial int MinimumPwm { get; set; }
 
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <summary>Gets or sets the trim PWM.</summary>
     [ObservableProperty]
-    public partial int Max { get; set; }
+    public partial int TrimPwm { get; set; }
 
+    /// <summary>Gets or sets the maximum PWM.</summary>
+    [ObservableProperty]
+    public partial int MaximumPwm { get; set; }
 
-    /// <summary>
-    /// Gets the available function options.
-    /// </summary>
+    /// <summary>Gets the lowest allowed PWM value.</summary>
+    [ObservableProperty]
+    public partial int AllowedMinimumPwm { get; private set; }
+
+    /// <summary>Gets the highest allowed PWM value.</summary>
+    [ObservableProperty]
+    public partial int AllowedMaximumPwm { get; private set; }
+
+    /// <summary>Gets the available function options.</summary>
     public IReadOnlyList<ServoFunctionOption> Functions { get; }
 
-    /// <summary>
-    /// Gets the live PWM description.
-    /// </summary>
+    /// <summary>Gets the live PWM description.</summary>
     [ObservableProperty]
     public partial string LiveDescription { get; private set; } = string.Empty;
 
-    /// <summary>
-    /// Gets or sets the selected function.
-    /// </summary>
+    /// <summary>Gets or sets the selected function.</summary>
     [ObservableProperty]
     public partial ServoFunctionOption? SelectedFunction { get; set; }
 
     /// <summary>Gets the output header.</summary>
-    public string Header => $"# {Output}";
+    public string Header => $"# {ChannelNumber}";
 
-    /// <summary>Updates the live PWM from a new projection.</summary>
-    /// <param name="info">The output projection.</param>
+    /// <summary>Gets the desired settings represented by the row.</summary>
+    public ServoOutputSettings Settings => new(
+        ChannelNumber,
+        Reversed,
+        SelectedFunction?.Value ?? originalFunction,
+        MinimumPwm,
+        TrimPwm,
+        MaximumPwm);
+
+    /// <summary>Updates live PWM without affecting editable state or dirty tracking.</summary>
+    /// <param name="info">The latest output projection.</param>
     public void UpdateLive(ServoOutputInfo info)
     {
-        LiveDescription = info.LivePwm is { } pwm ? $"{pwm} us{(info.IsStale ? " (stale)" : string.Empty)}" : "—";
+        LiveDescription = info.LivePwm is { } pwm
+            ? $"{pwm} µs{(info.IsStale ? " (stale)" : string.Empty)}"
+            : "—";
     }
 
-    partial void OnSelectedFunctionChanged(ServoFunctionOption? value)
+    /// <summary>Refreshes confirmed configuration when the row has no unsaved edits.</summary>
+    /// <param name="info">The latest output projection.</param>
+    public void Refresh(ServoOutputInfo info)
     {
-        if (!suppressApply && value is not null)
+        UpdateLive(info);
+        if (!IsDirty)
         {
-            IsDirty = true;
+            ApplyConfiguration(info);
         }
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public void Reset()
+    /// <summary>Marks current editable values as successfully confirmed.</summary>
+    public void AcceptChanges()
     {
+        originalReversed = Reversed;
+        originalFunction = SelectedFunction?.Value ?? originalFunction;
+        originalMinimum = MinimumPwm;
+        originalTrim = TrimPwm;
+        originalMaximum = MaximumPwm;
+        UpdateDirtyState();
+    }
+
+    partial void OnReversedChanged(bool value) => UpdateDirtyState();
+
+    partial void OnMinimumPwmChanged(int value) => UpdateDirtyState();
+
+    partial void OnTrimPwmChanged(int value) => UpdateDirtyState();
+
+    partial void OnMaximumPwmChanged(int value) => UpdateDirtyState();
+
+    partial void OnSelectedFunctionChanged(ServoFunctionOption? value) => UpdateDirtyState();
+
+    partial void OnIsDirtyChanged(bool value)
+    {
+        if (!suppressDirtyTracking)
+        {
+            dirtyChanged(this);
+        }
+    }
+
+    private void ApplyConfiguration(ServoOutputInfo info)
+    {
+        suppressDirtyTracking = true;
+        UpdateLive(info);
+        Reversed = info.Reversed;
+        MinimumPwm = info.MinimumPwm;
+        TrimPwm = info.TrimPwm;
+        MaximumPwm = info.MaximumPwm;
+        AllowedMinimumPwm = info.AllowedMinimumPwm;
+        AllowedMaximumPwm = info.AllowedMaximumPwm;
+        SelectedFunction = Functions.First(option => option.Value == info.FunctionValue);
+        originalReversed = Reversed;
+        originalFunction = info.FunctionValue;
+        originalMinimum = MinimumPwm;
+        originalTrim = TrimPwm;
+        originalMaximum = MaximumPwm;
         IsDirty = false;
+        suppressDirtyTracking = false;
+    }
+
+    private void UpdateDirtyState()
+    {
+        if (suppressDirtyTracking)
+        {
+            return;
+        }
+
+        IsDirty = Reversed != originalReversed ||
+            (SelectedFunction?.Value ?? originalFunction) != originalFunction ||
+            MinimumPwm != originalMinimum ||
+            TrimPwm != originalTrim ||
+            MaximumPwm != originalMaximum;
     }
 }

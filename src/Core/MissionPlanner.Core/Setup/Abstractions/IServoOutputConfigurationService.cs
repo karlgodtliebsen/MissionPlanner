@@ -12,9 +12,16 @@ public interface IServoOutputConfigurationService
     /// <returns>The servo output configuration projection.</returns>
     Task<ServoOutputConfiguration> GetConfigurationAsync(VehicleId vehicleId, CancellationToken cancellationToken = default);
 
-    /// <summary>Writes and confirms the function assigned to one servo output.</summary>
+    /// <summary>Writes and confirms modified settings for one physical servo output.</summary>
     /// <param name="vehicleId">The active target vehicle.</param>
-    /// <param name="output">The one-based servo output number.</param>
+    /// <param name="settings">The desired settings for the physical output.</param>
+    /// <param name="cancellationToken">A connection-scoped cancellation token.</param>
+    /// <returns>The confirmed or failed apply result.</returns>
+    Task<ServoOutputApplyResult> SetOutputAsync(VehicleId vehicleId, ServoOutputSettings settings, CancellationToken cancellationToken = default);
+
+    /// <summary>Writes and confirms only the function assigned to one servo output.</summary>
+    /// <param name="vehicleId">The active target vehicle.</param>
+    /// <param name="output">The one-based physical output number.</param>
     /// <param name="functionValue">The function value to assign.</param>
     /// <param name="cancellationToken">A connection-scoped cancellation token.</param>
     /// <returns>The confirmed or failed apply result.</returns>

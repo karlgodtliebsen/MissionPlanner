@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Setup.OptionalHardware;
@@ -145,35 +146,130 @@ public sealed class ActuatorSetupTests
     public async Task ServoOutputsDiscoverSparselyAndWriteFunctions()
     {
         var registry = new VehicleParameterRegistry();
-        Store(registry, "SERVO1_FUNCTION", 33);
-        Store(registry, "SERVO3_FUNCTION", 35); // Sparse: output 2 absent.
+        StoreServo(registry, 1, 33, 1100, 1500, 1900);
+        StoreServo(registry, 3, 35, 1050, 1450, 1950); // Sparse: output 2 absent.
         var now = DateTimeOffset.UtcNow;
         var context = new TestActiveVehicleContext(State(now: now));
         var service = CreateServoService(context, registry, now);
 
         var configuration = await service.GetConfigurationAsync(vehicleId, TestContext.Current.CancellationToken);
-        configuration.Outputs.Select(output => output.Output).Should().Equal(1, 3);
+        configuration.Outputs.Select(output => output.ChannelNumber).Should().Equal(1, 3);
+        configuration.Outputs[0].Should().Match<ServoOutputInfo>(output =>
+            output.FunctionValue == 33 &&
+            output.MinimumPwm == 1100 &&
+            output.TrimPwm == 1500 &&
+            output.MaximumPwm == 1900 &&
+            output.LivePwm == 1500);
 
-        var result = await service.SetFunctionAsync(vehicleId, 1, 36, TestContext.Current.CancellationToken);
+        var result = await service.SetOutputAsync(
+            vehicleId,
+            new ServoOutputSettings(1, false, 36, 1100, 1500, 1900),
+            TestContext.Current.CancellationToken);
         result.Success.Should().BeTrue();
         registry.GetParameter(vehicleId, "SERVO1_FUNCTION")!.Value.Should().Be(36);
     }
 
-    private static ServoOutputConfigurationService CreateServoService(TestActiveVehicleContext context, VehicleParameterRegistry registry, DateTimeOffset now)
+    /// <summary>Verifies physical output ordering retains non-sequential logical motor functions.</summary>
+    [Fact]
+    public async Task ServoOutputsRetainPhysicalChannelFunctionMapping()
+    {
+        var registry = new VehicleParameterRegistry();
+        StoreServo(registry, 1, 34, 1100, 1500, 1900);
+        StoreServo(registry, 2, 35, 1100, 1500, 1900);
+        StoreServo(registry, 3, 36, 1100, 1500, 1900);
+        StoreServo(registry, 4, 33, 1100, 1500, 1900);
+        var now = DateTimeOffset.UtcNow;
+        var service = CreateServoService(new TestActiveVehicleContext(State(now: now)), registry, now);
+
+        var configuration = await service.GetConfigurationAsync(vehicleId, TestContext.Current.CancellationToken);
+
+        configuration.Outputs.Select(output => (output.ChannelNumber, output.FunctionValue))
+            .Should().Equal((1, 34), (2, 35), (3, 36), (4, 33));
+    }
+
+    /// <summary>Verifies only changed SERVOx fields are written and failed writes remain retryable.</summary>
+    [Fact]
+    public async Task ServoOutputWriteUsesExactParameterNamesAndSurfacesFailure()
+    {
+        var registry = new VehicleParameterRegistry();
+        StoreServo(registry, 2, 35, 1100, 1500, 1900);
+        var now = DateTimeOffset.UtcNow;
+        var context = new TestActiveVehicleContext(State(now: now));
+        var parameterService = Substitute.For<IVehicleParameterService>();
+        parameterService.SetParameterAsync(vehicleId, "SERVO2_MIN", 1125, MavParamType.Int16, Arg.Any<CancellationToken>())
+            .Returns(false);
+        var service = CreateServoService(context, registry, now, parameterService);
+
+        var result = await service.SetOutputAsync(
+            vehicleId,
+            new ServoOutputSettings(2, false, 35, 1125, 1500, 1900),
+            TestContext.Current.CancellationToken);
+
+        result.Success.Should().BeFalse();
+        result.Message.Should().Contain("SERVO2_MIN");
+        await parameterService.Received(1).SetParameterAsync(
+            vehicleId,
+            "SERVO2_MIN",
+            1125,
+            MavParamType.Int16,
+            Arg.Any<CancellationToken>());
+        await parameterService.DidNotReceive().SetParameterAsync(
+            vehicleId,
+            Arg.Is<string>(name => name != "SERVO2_MIN"),
+            Arg.Any<float>(),
+            Arg.Any<MavParamType>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    /// <summary>Verifies live PWM changes do not mark editable servo settings dirty.</summary>
+    [Fact]
+    public void ServoOutputRowTracksEditsButNotLivePwm()
+    {
+        var info = new ServoOutputInfo(2, 35, "Motor3", false, 1100, 1500, 1900, 1180, false, 800, 2200);
+        var row = new ServoOutputItemViewModel(info, [new ServoFunctionOption(35, "Motor3")], _ => { });
+
+        row.LiveDescription.Should().Be("1180 µs");
+        row.IsDirty.Should().BeFalse();
+        row.UpdateLive(info with { LivePwm = 1200 });
+        row.IsDirty.Should().BeFalse();
+
+        row.MinimumPwm = 1125;
+        row.IsDirty.Should().BeTrue();
+        row.AcceptChanges();
+        row.IsDirty.Should().BeFalse();
+    }
+
+    private static ServoOutputConfigurationService CreateServoService(
+        TestActiveVehicleContext context,
+        VehicleParameterRegistry registry,
+        DateTimeOffset now,
+        IVehicleParameterService? parameterService = null)
     {
         var clock = Substitute.For<IDateTimeProvider>();
         clock.UtcNow.Returns(now);
         var metadata = Substitute.For<IVehicleParameterMetadataService>();
         metadata.GetAllMetadataAsync(vehicleId, Arg.Any<CancellationToken>()).Returns(new Dictionary<string, ParameterMetadata>());
-        var parameterService = Substitute.For<IVehicleParameterService>();
-        parameterService.SetParameterAsync(vehicleId, Arg.Any<string>(), Arg.Any<float>(), Arg.Any<MavParamType>(), Arg.Any<CancellationToken>())
-            .Returns(call =>
-            {
-                registry.StoreParameter(vehicleId, new VehicleParameter(call.ArgAt<string>(1), call.ArgAt<float>(2), MavParamType.Int16, 0, 1), CancellationToken.None);
-                return Task.FromResult(true);
-            });
+        if (parameterService is null)
+        {
+            parameterService = Substitute.For<IVehicleParameterService>();
+            parameterService.SetParameterAsync(vehicleId, Arg.Any<string>(), Arg.Any<float>(), Arg.Any<MavParamType>(), Arg.Any<CancellationToken>())
+                .Returns(call =>
+                {
+                    registry.StoreParameter(vehicleId, new VehicleParameter(call.ArgAt<string>(1), call.ArgAt<float>(2), MavParamType.Int16, 0, 1), CancellationToken.None);
+                    return Task.FromResult(true);
+                });
+        }
         return new ServoOutputConfigurationService(context, registry, metadata, parameterService, clock,
             Substitute.For<ILogger<ServoOutputConfigurationService>>());
+    }
+
+    private static void StoreServo(VehicleParameterRegistry registry, int channel, int function, int minimum, int trim, int maximum)
+    {
+        Store(registry, $"SERVO{channel}_REVERSED", 0);
+        Store(registry, $"SERVO{channel}_FUNCTION", function);
+        Store(registry, $"SERVO{channel}_MIN", minimum);
+        Store(registry, $"SERVO{channel}_TRIM", trim);
+        Store(registry, $"SERVO{channel}_MAX", maximum);
     }
 
     private static void Store(VehicleParameterRegistry registry, string name, float value)

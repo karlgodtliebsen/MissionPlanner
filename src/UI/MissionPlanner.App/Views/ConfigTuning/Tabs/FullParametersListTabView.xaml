@@ -159,7 +159,7 @@
                             <material:DataGridColumn.CellItemTemplate >
                                 <DataTemplate x:DataType="configTuning:ParameterItemViewModel" >
 
-                                    <Label FontSize="12" VerticalOptions="Center" VerticalTextAlignment="Center" 
+                                    <m:SelectableLabel FontSize="12" VerticalOptions="Center" VerticalTextAlignment="Center" 
                                                HorizontalOptions="Start" HorizontalTextAlignment="Start" 
                                                    Text="{Binding Name}"/>
 
@@ -170,11 +170,14 @@
                         <material:DataGridColumn Title="Value" >
                             <material:DataGridColumn.CellItemTemplate >
                                 <DataTemplate  x:DataType="configTuning:ParameterItemViewModel" >
+
+                                    <VerticalStackLayout  HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0,5,0">
                                     <controls:NumericField
+                                        IsVisible="{Binding IsFloat}"
                                         IsReadOnly="{Binding IsReadOnly}"
                                         Value="{Binding Value, Mode=TwoWay}"
                                         BorderColor="Aqua"
-                                        NumberFormat="N7"
+                                        NumberFormat="N2"
                                         Min="{Binding Min}"
                                         Max="{Binding Max}"
                                         HorizontalOptions="Fill"
@@ -183,6 +186,70 @@
                                         AllowClear="True"
                                         AllowSign="True"
                                         AllowThousands="True" />
+
+
+                                    <controls:NumericField
+                                        IsVisible="{Binding IsInteger}"
+                                        IsReadOnly="{Binding IsReadOnly}"
+                                        Value="{Binding Value, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
+                                        BorderColor="Aqua"
+                                        NumberFormat="F0"
+                                        Min="{Binding Min}"
+                                        Max="{Binding Max}"
+                                        HorizontalOptions="Fill"
+                                        VerticalOptions="Center"  
+                                        HorizontalTextAlignment="End" 
+                                        AllowClear="True"
+                                        AllowSign="True"
+                                        AllowThousands="False" />
+                                    <controls:NumericField
+                                        IsVisible="{Binding IsUnsignedInteger}"
+                                        IsReadOnly="{Binding IsReadOnly}"
+                                        Value="{Binding Value, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
+                                        BorderColor="Aqua"
+                                        NumberFormat="F0"
+                                        Min="{Binding Min}"
+                                        Max="{Binding Max}"
+                                        HorizontalOptions="Fill"
+                                        VerticalOptions="Center"  
+                                        HorizontalTextAlignment="End" 
+                                        AllowClear="True"
+                                        AllowSign="False"
+                                        AllowThousands="False" />
+
+                                        <controls:NumericField
+                                        IsVisible="{Binding IsByte}"
+                                        IsReadOnly="{Binding IsReadOnly}"
+                                        Value="{Binding Value, Mode=TwoWay, Converter={StaticResource ByteDoubleConverter}}"
+                                        BorderColor="Aqua"
+                                        NumberFormat="F0"
+                                        Min="{Binding Min}"
+                                        Max="{Binding Max}"
+                                        HorizontalOptions="Fill"
+                                        VerticalOptions="Center"  
+                                        HorizontalTextAlignment="End" 
+                                        AllowClear="True"
+                                        AllowSign="True"
+                                        AllowThousands="False" />
+                                    
+                                    <controls:NumericField
+                                        IsVisible="{Binding IsUnsignedByte}"
+                                        IsReadOnly="{Binding IsReadOnly}"
+                                        Value="{Binding Value, Mode=TwoWay, Converter={StaticResource ByteDoubleConverter}}"
+                                        BorderColor="Aqua"
+                                        NumberFormat="F0"
+                                        Min="{Binding Min}"
+                                        Max="{Binding Max}"
+                                        HorizontalOptions="Fill"
+                                        VerticalOptions="Center"  
+                                        HorizontalTextAlignment="End" 
+                                        AllowClear="True"
+                                        AllowSign="False"
+                                        AllowThousands="False" />
+
+
+
+                                    </VerticalStackLayout>
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
                         </material:DataGridColumn>
@@ -211,7 +278,8 @@
                                                        SelectedValuesChangedCommand="{Binding SelectedValuesChanged}"
                                                        SelectedItems="{Binding SelectedBitmaskItems}" />
 
-                                        <controls:NumericUpDownField IsVisible="{Binding HasNumericRangeData}" 
+
+                                        <controls:NumericUpDownField IsVisible="{Binding IsFloatRangeData}" 
                                                                        Title="Number" 
                                                                        BorderColor="Aqua"
                                                                        TitleFontSize="10"
@@ -225,6 +293,8 @@
                                                                        VerticalOptions="Center" HorizontalOptions="Fill"
                                                                        HorizontalTextAlignment="End"
                                                                        VerticalTextAlignment="Center" />
+
+
 
 
                                     </VerticalStackLayout>

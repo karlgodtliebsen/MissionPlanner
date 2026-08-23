@@ -49,8 +49,9 @@
                         <material:DataGridColumn Title="Output PWM" Width="160">
                             <material:DataGridColumn.CellItemTemplate >
                                 <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
-                                    <BoxView HeightRequest="35" WidthRequest="50"  HorizontalOptions="Center" VerticalOptions="Center" 
-                                             BackgroundColor="BurlyWood"/>
+                                    <Label Text="{Binding LiveDescription}"
+                                           HorizontalOptions="Center"
+                                           VerticalOptions="Center" />
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
                         </material:DataGridColumn>
@@ -59,7 +60,8 @@
                         <material:DataGridColumn Title="Reverse" Width="120">
                             <material:DataGridColumn.CellItemTemplate >
                                 <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
-                                    <material:CheckBox  HorizontalOptions="Center"></material:CheckBox>
+                                    <material:CheckBox IsChecked="{Binding Reversed, Mode=TwoWay}"
+                                                       HorizontalOptions="Center" />
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
                         </material:DataGridColumn>
@@ -81,12 +83,13 @@
                         <material:DataGridColumn Title="Min" Width="160">
                             <material:DataGridColumn.CellItemTemplate >
                                 <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
+                                   
                                     <controls1:NumericUpDownField
-                                        Value="{Binding Min, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                                        Value="{Binding MinimumPwm, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
                                         NumberFormat="F0"
                                         BorderColor="Aqua"
-                                        Min ="0"
-                                        Max="2200"
+                                        Min ="{Binding AllowedMinimumPwm}"
+                                        Max="{Binding AllowedMaximumPwm}"
                                         VerticalOptions="Center"
                                         MinimumWidthRequest="150"
                                         HorizontalOptions="Fill"
@@ -101,11 +104,11 @@
                             <material:DataGridColumn.CellItemTemplate >
                                 <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
                                     <controls1:NumericUpDownField
-                                        Value="{Binding Trim, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                                        Value="{Binding TrimPwm, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
                                         NumberFormat="F0"
                                         BorderColor="Aqua"
-                                        Min ="0"
-                                        Max="2200"
+                                        Min ="{Binding AllowedMinimumPwm}"
+                                        Max="{Binding AllowedMaximumPwm}"
                                         VerticalOptions="Center"
                                         MinimumWidthRequest="150"
                                         HorizontalOptions="Fill"
@@ -119,11 +122,11 @@
                             <material:DataGridColumn.CellItemTemplate >
                                 <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
                                     <controls1:NumericUpDownField
-                                        Value="{Binding Max, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                                        Value="{Binding MaximumPwm, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
                                         NumberFormat="F0"
                                         BorderColor="Aqua"
-                                        Min ="0"
-                                        Max="2200"
+                                        Min ="{Binding AllowedMinimumPwm}"
+                                        Max="{Binding AllowedMaximumPwm}"
                                         VerticalOptions="Center"
                                         MinimumWidthRequest="150"
                                         HorizontalOptions="Fill"
@@ -133,7 +136,6 @@
                             </material:DataGridColumn.CellItemTemplate>
                         </material:DataGridColumn>
 
-                        <!--<material:DataGridColumn Width="*" x:DataType="sections:ServoOutputItemViewModel"  ValueBinding="{Binding LiveDescription}" Title="Live Description" />-->
                     </controls:VirtualizedDataGrid.Columns>
                 </controls:VirtualizedDataGrid>
 

@@ -59,6 +59,7 @@
                 <HorizontalStackLayout 
                     Grid.Row="0"
                     HorizontalOptions="Fill" VerticalOptions="Fill" Spacing="10" Margin="0,20,0,20">
+                   
                     <controls:NumericUpDownField
                         Title="Throttle Percent"
                         Value="{Binding ThrottlePercent, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
@@ -71,6 +72,7 @@
                         HorizontalOptions="Fill"
                         ButtonOrientation="Vertical"
                         HorizontalTextAlignment="End" />
+
                     <controls:NumericUpDownField
                         Title="Duration (seconds)"
                         Value="{Binding DurationSeconds, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
@@ -83,6 +85,7 @@
                         HorizontalOptions="Fill"
                         ButtonOrientation="Vertical"
                         HorizontalTextAlignment="End" />
+
                 </HorizontalStackLayout>
                 <HorizontalStackLayout 
                     Grid.Row="1"

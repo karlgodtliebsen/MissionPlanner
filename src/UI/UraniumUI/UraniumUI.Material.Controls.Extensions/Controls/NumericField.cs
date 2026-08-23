@@ -22,8 +22,6 @@ public partial class NumericField : TextField
     public NumericField()
     {
         Keyboard = Keyboard.Numeric;
-        //AllowClear = false;
-        //ClearButtonVisibility = ClearButtonVisibility.;
         TextChanged += OnNumericTextChanged;
         Completed += OnCompleted;
         EntryView.Unfocused += OnUnfocused;
@@ -64,7 +62,10 @@ public partial class NumericField : TextField
         {
             Value = parsed;
         }
-        finally { updatingValue = false; }
+        finally
+        {
+            updatingValue = false;
+        }
     }
 
     private void OnCompleted(object? sender, EventArgs args)
@@ -153,7 +154,10 @@ public partial class NumericField : TextField
                 FormatValueWhenNotEditing();
             }
         }
-        finally { correctingRange = false; }
+        finally
+        {
+            correctingRange = false;
+        }
     }
 
     internal void FormatValueWhenNotEditing()
@@ -172,7 +176,10 @@ public partial class NumericField : TextField
         {
             formatted = Value.ToString(format, ResolveCulture());
         }
-        catch (FormatException) { formatted = Value.ToString("G15", ResolveCulture()); }
+        catch (FormatException)
+        {
+            formatted = Value.ToString("G15", ResolveCulture());
+        }
 
         if (string.Equals(Text, formatted, StringComparison.Ordinal))
         {
@@ -192,7 +199,10 @@ public partial class NumericField : TextField
             Text = text ?? string.Empty;
             EntryView.CursorPosition = Text.Length;
         }
-        finally { updatingText = false; }
+        finally
+        {
+            updatingText = false;
+        }
     }
 
     private bool TryParse(string? text, out double value)
@@ -266,7 +276,10 @@ public partial class NumericField : TextField
         {
             return CultureInfo.GetCultureInfo(CultureName);
         }
-        catch (CultureNotFoundException) { return CultureInfo.CurrentCulture; }
+        catch (CultureNotFoundException)
+        {
+            return CultureInfo.CurrentCulture;
+        }
     }
 
     private void SetValidity(bool valid)
