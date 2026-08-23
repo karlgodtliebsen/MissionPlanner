@@ -67,6 +67,7 @@
                         StepSize="5"
                         Min ="5"
                         Max="25"
+                        NumericType="UInt32"
                         VerticalOptions="Center"
                         MinimumWidthRequest="200"
                         HorizontalOptions="Fill"
@@ -78,6 +79,7 @@
                         Value="{Binding DurationSeconds, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
                         NumberFormat="F0"
                         StepSize="1"
+                        NumericType="UInt32"
                         Min ="1"
                         Max="10"
                         VerticalOptions="Center"
@@ -96,6 +98,7 @@
                               NumberFormat="F0"
                               HorizontalOptions="Fill"
                               HorizontalTextAlignment="End"
+                              NumericType="UInt32"
                               Min="5"
                               Max="25"
                               Value="{Binding ThrottlePercent, Mode=TwoWay}"
@@ -109,6 +112,7 @@
                               NumberFormat="F0"
                               Min="2"
                               Max="10"
+                              NumericType="UInt32"
                               HorizontalOptions="Fill"
                               HorizontalTextAlignment="End" >
                   </controls:NumericField>
