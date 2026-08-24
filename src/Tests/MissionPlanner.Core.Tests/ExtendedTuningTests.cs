@@ -227,7 +227,7 @@ public sealed class ExtendedTuningTests
             dispatcher,
             NullLogger<ExtendedTuningTabViewModel>.Instance);
 
-        viewModel.Activate();
+        await viewModel.ActivateAsync();
         await WaitUntilAsync(() => viewModel.Groups.Count > 0);
         var rate = viewModel.Groups.Single(group => group.Key == "rate-pid");
         rate.Fields.Should().BeEmpty();
@@ -317,7 +317,13 @@ public sealed class ExtendedTuningTests
         var firmware = new VehicleFirmwareIdentity(
             family, 2, 3, new FirmwareSemanticVersion(4, 6, 0, FirmwareReleaseType.Official),
             "abcdef01", 0, 1, 2, 3, 4, "extended-tuning-test");
-        return state with { Identity = state.Identity with { Firmware = firmware } };
+        return state with
+        {
+            Identity = state.Identity with
+            {
+                Firmware = firmware
+            }
+        };
     }
 
     private sealed record Fixture(
@@ -377,8 +383,12 @@ public sealed class ExtendedTuningTests
 
         public event EventHandler<ActiveVehicleChangedEventArgs>? Changed
         {
-            add { }
-            remove { }
+            add
+            {
+            }
+            remove
+            {
+            }
         }
     }
 }

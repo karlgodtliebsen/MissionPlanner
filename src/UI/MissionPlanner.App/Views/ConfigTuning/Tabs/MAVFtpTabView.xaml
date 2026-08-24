@@ -64,10 +64,10 @@
             </controls:VirtualizedDataGrid>
         </Grid>
         <VerticalStackLayout Grid.Row="2" Spacing="6">
-            <Label Text="{Binding ErrorText}" TextColor="{DynamicResource Error}" />
+            <Label Text="{Binding ErrorMessage}" TextColor="{DynamicResource Error}" />
             <ProgressBar Progress="{Binding TransferProgress}" />
             <Label Text="{Binding TransferDetails}" FontSize="12" />
-            <Label Text="{Binding StatusText}" />
+            <Label Text="{Binding StatusMessage}" />
             <HorizontalStackLayout Spacing="8">
                 <Button Text="Download selected" Command="{Binding DownloadSelectedCommand}"  IsVisible="{Binding HasEntries}"/>
                 <Button Text="Cancel" Command="{Binding CancelCommand}" IsEnabled="{Binding IsBusy}" />

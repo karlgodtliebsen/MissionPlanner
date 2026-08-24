@@ -1,9 +1,8 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Views.Common;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Setup.Abstractions;
@@ -55,7 +54,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
         IDateTimeProvider clock,
         IDispatcher dispatcher,
         ILogger<RadioSetupViewModel> logger)
-        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Radio))
+        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Radio), logger)
     {
         this.activeVehicle = activeVehicle;
         this.radioService = radioService;
@@ -67,22 +66,16 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
         this.clock = clock;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        radioService.StateChanged += OnCalibrationStateChanged;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        observedRadioAt = activeVehicle.State?.Radio.ObservedAt;
-        vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
-        Show(radioService.Current);
-        RefreshLiveChannels();
     }
 
     /// <summary>Gets the live RC channels.</summary>
-    public ObservableCollection<RadioChannelDisplayViewModel> Channels
+    public ObservableRangeCollection<RadioChannelDisplayViewModel> Channels
     {
         get;
     } = [];
 
     /// <summary>Gets the current configuration and validation issues.</summary>
-    public ObservableCollection<string> Issues
+    public ObservableRangeCollection<string> Issues
     {
         get;
     } = [];
@@ -199,7 +192,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
     {
         if (CanCancelCalibration)
         {
-            _ = radioService.CancelAsync();
+            radioService.CancelAsync().GetAwaiter().GetResult();
         }
 
         operationCancellation?.Cancel();
@@ -208,15 +201,34 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
     }
 
     /// <inheritdoc />
-    public override void Dispose()
+    public override Task ActivateAsync()
+    {
+        radioService.StateChanged += OnCalibrationStateChanged;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        observedRadioAt = activeVehicle.State?.Radio.ObservedAt;
+        vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
+        Show(radioService.Current);
+        RefreshLiveChannels();
+
+        return base.ActivateAsync();
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
     {
         radioService.StateChanged -= OnCalibrationStateChanged;
         activeVehicle.Changed -= OnActiveVehicleChanged;
         vehicleStateSubscription?.Dispose();
         vehicleStateSubscription = null;
         observedRadioAt = null;
-        base.Dispose();
+        return base.DeactivateAsync();
+    }
+
+    /// <inheritdoc />
+    public override void Dispose()
+    {
         radioService.Dispose();
+        base.Dispose();
     }
 
     private bool CanStartCommand()
@@ -229,7 +241,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
     {
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
-            Error = "Connect a vehicle before starting radio calibration.";
+            ErrorMessage = "Connect a vehicle before starting radio calibration.";
             return;
         }
 
@@ -242,7 +254,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
             return;
         }
 
-        Error = null;
+        ErrorMessage = null;
         try
         {
             await radioService.StartAsync(vehicleId, activeVehicle.ConnectionCancellationToken);
@@ -250,7 +262,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogError(exception, "Starting radio calibration failed for {VehicleId}.", vehicleId);
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
         }
     }
 
@@ -269,7 +281,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogError(exception, "Finishing radio endpoint capture failed.");
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
         }
     }
 
@@ -296,13 +308,13 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
             var result = await radioService.CompleteAsync(operationCancellation.Token);
             if (!result.Success)
             {
-                Error = result.Message;
+                ErrorMessage = result.Message;
             }
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogError(exception, "Finishing radio calibration failed.");
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
         }
     }
 
@@ -316,7 +328,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogError(exception, "Cancelling radio calibration failed.");
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
         }
     }
 
@@ -438,7 +450,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
     {
         CalibrationState = snapshot.State;
         Instruction = snapshot.Instruction;
-        Error = snapshot.FailureReason;
+        ErrorMessage = snapshot.FailureReason;
         CaptureSummary = snapshot.Captures.Count == 0
             ? string.Empty
             : string.Join(Environment.NewLine, snapshot.Captures.Select(capture =>

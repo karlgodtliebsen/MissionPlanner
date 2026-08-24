@@ -7,6 +7,9 @@ namespace MissionPlanner.App.Views.Landing;
 /// </summary>
 public partial class LandingPage : ExtendedContentPage<LandingPageViewModel>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="LandingPage"/> class.
+    /// </summary>
     public LandingPage()
     {
         InitializeComponent();

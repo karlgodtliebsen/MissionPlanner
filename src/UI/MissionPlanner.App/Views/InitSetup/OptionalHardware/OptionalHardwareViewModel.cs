@@ -1,15 +1,17 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Mapsui.Utilities;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Views.Common;
 using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using UraniumUI.Material.TabViews;
 using TabItemViewModel = MissionPlanner.App.Views.Common.TabItemViewModel;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware;
 
 /// <summary>Owns Optional Hardware availability and selected-tab state.</summary>
-public sealed partial class OptionalHardwareViewModel : ObservableObject, IDisposable
+public sealed partial class OptionalHardwareViewModel : BaseViewModel
 {
     private readonly OptionalHardwareTabCatalog catalog;
     private readonly IActiveVehicleContext activeVehicle;
@@ -20,66 +22,42 @@ public sealed partial class OptionalHardwareViewModel : ObservableObject, IDispo
     /// <summary>Initializes the workspace.</summary>
     public OptionalHardwareViewModel(OptionalHardwareTabCatalog catalog,
         IActiveVehicleContext activeVehicle,
-        IVehicleParameterRegistry parameters, IDispatcher dispatcher)
+        IVehicleParameterRegistry parameters,
+        IDispatcher dispatcher,
+        ILogger<OptionalHardwareViewModel> logger
+        ) : base(logger)
     {
         this.catalog = catalog;
         this.activeVehicle = activeVehicle;
         this.parameters = parameters;
         this.dispatcher = dispatcher;
-
-        Tabs = new ObservableRangeCollection<TabItemViewModel>(
-            catalog.Tabs.Select(item =>
-                new TabItemViewModel(new TabDescriptor(item.Key.ToString(), item.Title, item.Description))));
-
-        //, item.Order, item.RequiresVehicle, item.RequiresParameters, item.SupportsOffline, item.ParameterPrefixes, item.FirmwareFamilies))));
-
-        activeVehicle.Changed += OnVehicleChanged;
-        parameters.Changed += OnParameterChanged;
-        Refresh();
     }
 
     /// <summary>
     /// Gets fixed index-aligned headers.
     /// </summary>
-    public ObservableRangeCollection<TabItemViewModel> Tabs
-    {
-        get;
-    }
+    public ObservableRangeCollection<TabItemViewModel> Tabs { get; } = [];
 
     /// <summary>Gets or sets the selected header.</summary>
     [ObservableProperty]
     public partial TabItemViewModel? SelectedTab
     {
-        get;
-        set;
+        get; set;
     }
 
     /// <summary>Gets the vehicle heading.</summary>
     [ObservableProperty]
-    public partial string VehicleHeading
-    {
-        get;
-        private set;
-    } = "No vehicle connected";
+    public partial string VehicleHeading { get; private set; } = "No vehicle connected";
 
     /// <summary>Gets the availability summary.</summary>
     [ObservableProperty]
-    public partial string AvailabilitySummary
-    {
-        get;
-        private set;
-    } = string.Empty;
+    public partial string AvailabilitySummary { get; private set; } = string.Empty;
 
     private void Refresh()
     {
         var snapshot = activeVehicle.Current;
         var values =
-            snapshot.VehicleId is
-            {
-            }
-                id
-                ? parameters.GetAllParameters(id)
-                : new Dictionary<string, MavLink.Parameters.VehicleParameter>();
+            snapshot.VehicleId is { } id ? parameters.GetAllParameters(id) : new Dictionary<string, MavLink.Parameters.VehicleParameter>();
 
         var states = catalog.Evaluate(snapshot.IsOnline, snapshot.State?.Identity.Firmware.Family, values);
         for (var index = 0; index < Tabs.Count; index++)
@@ -95,7 +73,7 @@ public sealed partial class OptionalHardwareViewModel : ObservableObject, IDispo
 
     private void OnVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
     {
-        dispatcher.Dispatch(Refresh);
+        dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(1), Refresh);
     }
 
     private void OnParameterChanged(object? sender, VehicleParameterChangedEventArgs args)
@@ -108,27 +86,34 @@ public sealed partial class OptionalHardwareViewModel : ObservableObject, IDispo
         refreshCancellation?.Cancel();
         refreshCancellation?.Dispose();
         refreshCancellation = new CancellationTokenSource();
-        _ = RefreshLaterAsync(refreshCancellation.Token);
-    }
-
-    private async Task RefreshLaterAsync(CancellationToken token)
-    {
-        try
-        {
-            await Task.Delay(150, token);
-            dispatcher.Dispatch(Refresh);
-        }
-        catch (OperationCanceledException)
-        {
-        }
+        dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(1), Refresh);
     }
 
     /// <inheritdoc />
-    public void Dispose()
+    public override void Dispose()
+    {
+        DeactivateAsync().GetAwaiter().GetResult();
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        Tabs.ReplaceRange(
+            catalog.Tabs.Select(item =>
+                new TabItemViewModel(new TabDescriptor(item.Key.ToString(), item.Title, item.Description))));
+        activeVehicle.Changed += OnVehicleChanged;
+        parameters.Changed += OnParameterChanged;
+        Refresh();
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
     {
         activeVehicle.Changed -= OnVehicleChanged;
         parameters.Changed -= OnParameterChanged;
         refreshCancellation?.Cancel();
         refreshCancellation?.Dispose();
+        return Task.CompletedTask;
     }
 }

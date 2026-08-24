@@ -32,10 +32,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     private MotorLayout? layout;
 
 
-    public ObservableRangeCollection<MotorLayoutMotor> Motors
-    {
-        get;
-    } = [];
+    public ObservableRangeCollection<MotorLayoutMotor> Motors { get; } = [];
 
     [ObservableProperty]
     public partial string FrameDisplay
@@ -44,12 +41,6 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         private set;
     } = "Frame layout unavailable.";
 
-    [ObservableProperty]
-    public partial string Status
-    {
-        get;
-        private set;
-    } = "Remove all propellers before testing.";
 
     [ObservableProperty]
     public partial double ThrottlePercent
@@ -77,11 +68,17 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SetMotorSpinArmCommand))]
-    private partial bool HasSpinArm { get; set; }
+    private partial bool HasSpinArm
+    {
+        get; set;
+    }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SetMotorSpinMinCommand))]
-    private partial bool HasSpinMin { get; set; }
+    private partial bool HasSpinMin
+    {
+        get; set;
+    }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SetMotorSpinMinCommand))]
@@ -147,11 +144,6 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         this.resolver = resolver;
         this.confirmation = confirmation;
         this.dispatcher = dispatcher;
-        activeVehicle.Changed += Changed;
-        service.StateChanged += StateChanged;
-
-        InitializeParameters();
-        QueueRefresh();
     }
 
     private bool canExecute = false;
@@ -161,9 +153,15 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         return canExecute;
     }
 
-    private bool CanSetSpinMin() => canExecute && HasSpinMin;
+    private bool CanSetSpinMin()
+    {
+        return canExecute && HasSpinMin;
+    }
 
-    private bool CanSetSpinArm() => canExecute && HasSpinArm;
+    private bool CanSetSpinArm()
+    {
+        return canExecute && HasSpinArm;
+    }
 
     [RelayCommand(CanExecute = nameof(CanSetSpinMin))]
     private async Task SetMotorSpinMin()
@@ -176,7 +174,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         var recommendation = spinParameters.RecommendSpinMin(id);
         if (!recommendation.Success)
         {
-            Status = recommendation.Message;
+            StatusMessage = recommendation.Message;
             return;
         }
 
@@ -189,7 +187,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         }
 
         var result = await spinParameters.SetSpinMinAsync(id, activeVehicle.ConnectionCancellationToken);
-        Status = result.Message;
+        StatusMessage = result.Message;
         RefreshSpinParameters(id);
     }
 
@@ -204,7 +202,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         var recommendation = spinParameters.RecommendSpinArm(id, ThrottlePercent);
         if (!recommendation.Success)
         {
-            Status = recommendation.Message;
+            StatusMessage = recommendation.Message;
             return;
         }
 
@@ -217,7 +215,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         }
 
         var result = await spinParameters.SetSpinArmAsync(id, ThrottlePercent, activeVehicle.ConnectionCancellationToken);
-        Status = result.Message;
+        StatusMessage = result.Message;
         RefreshSpinParameters(id);
     }
 
@@ -232,7 +230,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         var result = await service.TestMotorAsync(id,
             new MotorTestRequest(motor.TestOrder, MotorThrottleType.Percent, ThrottlePercent, DurationSeconds),
             activeVehicle.ConnectionCancellationToken);
-        Status = result.Message;
+        StatusMessage = result.Message;
     }
 
     [RelayCommand(CanExecute = nameof(CanExecuteCommand))]
@@ -244,7 +242,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         }
 
         var result = await service.TestSequenceAsync(id, ThrottlePercent, DurationSeconds, layout.Motors.Count, activeVehicle.ConnectionCancellationToken);
-        Status = result.Message;
+        StatusMessage = result.Message;
     }
 
 
@@ -257,7 +255,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         }
 
         var result = await service.TestAllAsync(id, ThrottlePercent, DurationSeconds, layout.Motors.Count, activeVehicle.ConnectionCancellationToken);
-        Status = result.Message;
+        StatusMessage = result.Message;
     }
 
 
@@ -322,23 +320,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
 
     private void Changed(object? s, ActiveVehicleChangedEventArgs e)
     {
-        QueueRefresh();
-    }
-
-    private void QueueRefresh()
-    {
-        if (disposed)
-        {
-            return;
-        }
-
-        dispatcher.Dispatch(() =>
-        {
-            if (!disposed)
-            {
-                Refresh();
-            }
-        });
+        dispatcher.Dispatch(Refresh);
     }
 
     private void StateChanged(object? s, MotorTestStateChangedEventArgs e)
@@ -352,7 +334,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         {
             if (!disposed)
             {
-                Status = e.Snapshot.Instruction;
+                StatusMessage = e.Snapshot.Instruction;
             }
         });
     }
@@ -360,8 +342,32 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     /// <inheritdoc />
     protected override void OnEditSessionChanged(object? sender, EventArgs e)
     {
-        QueueRefresh();
+        dispatcher.Dispatch(Refresh);
     }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        if (disposed)
+        {
+            return Task.CompletedTask;
+        }
+        StatusMessage = "Remove all propellers before testing.";
+        activeVehicle.Changed += Changed;
+        service.StateChanged += StateChanged;
+        base.ActivateAsync();
+        dispatcher.Dispatch(Refresh);
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
+        activeVehicle.Changed -= Changed;
+        service.StateChanged -= StateChanged;
+        return base.DeactivateAsync();
+    }
+
 
     /// <inheritdoc />
     public override void Dispose()

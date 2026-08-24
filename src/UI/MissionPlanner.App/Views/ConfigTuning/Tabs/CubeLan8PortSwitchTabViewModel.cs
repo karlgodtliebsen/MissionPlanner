@@ -9,11 +9,12 @@ using MissionPlanner.Core.ConfigTuning.VendorDevices.CubeLan;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
+using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
 /// <summary>Coordinates CubeLAN discovery, read-before-edit, confirmed apply, rollback, and export.</summary>
-public sealed partial class CubeLan8PortSwitchTabViewModel : ObservableObject, IDisposable
+public sealed partial class CubeLan8PortSwitchTabViewModel : BaseViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVendorDeviceAdapter<CubeLanConfiguration> adapter;
@@ -42,7 +43,7 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ObservableObject, I
         ParametersFileHandler fileHandler,
         IUserConfirmationService confirmation,
         IDispatcher dispatcher,
-        ILogger<CubeLan8PortSwitchTabViewModel> logger)
+        ILogger<CubeLan8PortSwitchTabViewModel> logger) : base(logger)
     {
         this.activeVehicle = activeVehicle;
         this.adapter = adapter;
@@ -50,32 +51,19 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ObservableObject, I
         this.confirmation = confirmation;
         this.dispatcher = dispatcher;
         this.logger = logger;
+        StatusMessage = "Connect a vehicle to discover CubeLAN through the documented MAVLink I²C proxy.";
     }
 
     /// <summary>Gets the eight port editors after successful discovery.</summary>
-    public ObservableRangeCollection<CubeLanPortViewModel> Ports
-    {
-        get;
-    } = [];
+    public ObservableRangeCollection<CubeLanPortViewModel> Ports { get; } = [];
 
     /// <summary>Gets the current workflow status.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanEdit))]
     [NotifyPropertyChangedFor(nameof(IsUnavailable))]
-    public partial VendorDeviceStatus Status
-    {
-        get;
-        private set;
-    } = VendorDeviceStatus.NotDiscovered;
+    public partial VendorDeviceStatus Status { get; private set; } = VendorDeviceStatus.NotDiscovered;
 
-    /// <summary>Gets a user-facing discovery or operation message.</summary>
-    [ObservableProperty]
-    public partial string StatusMessage
-    {
-        get;
-        private set;
-    } =
-        "Connect a vehicle to discover CubeLAN through the documented MAVLink I²C proxy.";
+
 
     /// <summary>Gets the active vehicle heading.</summary>
     [ObservableProperty]
@@ -84,15 +72,6 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ObservableObject, I
         get;
         private set;
     } = "No connected vehicle";
-
-    /// <summary>Gets whether an operation is running.</summary>
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CanEdit))]
-    public partial bool IsBusy
-    {
-        get;
-        private set;
-    }
 
     /// <summary>Gets whether the local editor differs from the read-before-edit snapshot.</summary>
     [ObservableProperty]
@@ -107,33 +86,6 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ObservableObject, I
 
     /// <summary>Gets whether no editable device is currently available.</summary>
     public bool IsUnavailable => Status is not VendorDeviceStatus.Available and not VendorDeviceStatus.Busy;
-
-    /// <summary>Begins connection-aware discovery while the page is visible.</summary>
-    public void Activate()
-    {
-        ObjectDisposedException.ThrowIf(disposed, this);
-        if (active)
-        {
-            return;
-        }
-
-        active = true;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        RefreshForActiveVehicle(true);
-    }
-
-    /// <summary>Stops page observation and cancels its current operation.</summary>
-    public void Deactivate()
-    {
-        if (!active)
-        {
-            return;
-        }
-
-        active = false;
-        activeVehicle.Changed -= OnActiveVehicleChanged;
-        CancelOperation();
-    }
 
     /// <summary>Discovers and reads CubeLAN for the current active vehicle.</summary>
     /// <returns>A task representing discovery.</returns>
@@ -249,9 +201,8 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ObservableObject, I
                 : $"CubeLAN configuration exported to {path}. Authentication secrets and raw registers are excluded.";
         });
     }
-
     /// <inheritdoc />
-    public void Dispose()
+    public override void Dispose()
     {
         if (disposed)
         {
@@ -259,8 +210,37 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ObservableObject, I
         }
 
         disposed = true;
-        Deactivate();
+        DeactivateAsync().GetAwaiter().GetResult();
         operationGate.Dispose();
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        if (active)
+        {
+            return Task.CompletedTask;
+        }
+
+        active = true;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        RefreshForActiveVehicle(true);
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
+        if (!active)
+        {
+            return Task.CompletedTask;
+        }
+
+        active = false;
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        CancelOperation();
+        return Task.CompletedTask;
     }
 
     private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs e)
@@ -290,7 +270,7 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : ObservableObject, I
         _ = RefreshAsync();
     }
 
-    private async Task RunAsync(Func<CancellationToken, Task> operation)
+    private new async Task RunAsync(Func<CancellationToken, Task> operation)
     {
         await operationGate.WaitAsync();
 

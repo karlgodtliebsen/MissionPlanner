@@ -8,12 +8,14 @@ using MissionPlanner.Core.ConfigTuning.Fences;
 using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.Library;
 using MissionPlanner.Shared.Models.Vehicles.Models;
+using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
 /// <summary>Coordinates the shared fence parameter session, local geometry editor, and confirmed transfers.</summary>
-public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
+public sealed partial class GeoFenceTabViewModel : BaseViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IFenceConfigurationService fenceService;
@@ -35,54 +37,36 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
         IActiveVehicleContext activeVehicle,
         IFenceConfigurationService fenceService,
         IUserConfirmationService confirmation,
-        ILogger<GeoFenceTabViewModel> logger)
+        ILogger<GeoFenceTabViewModel> logger) : base(logger)
     {
         this.activeVehicle = activeVehicle;
         this.fenceService = fenceService;
         this.confirmation = confirmation;
         this.logger = logger;
-        if (activeVehicle.VehicleId is { } currentVehicle)
-        {
-            vehicleId = currentVehicle;
-            ApplySnapshot(fenceService.GetSnapshot(currentVehicle));
-        }
     }
 
     /// <summary>Gets editable fence parameter rows resolved from live metadata.</summary>
-    public ObservableRangeCollection<ParameterItemViewModel> Parameters
-    {
-        get;
-    } = [];
-
+    public ObservableRangeCollection<ParameterItemViewModel> Parameters { get; } = [];
     /// <summary>Gets the local fence areas.</summary>
-    public ObservableRangeCollection<FenceAreaListItem> Areas
-    {
-        get;
-    } = [];
+    public ObservableRangeCollection<FenceAreaListItem> Areas { get; } = [];
 
     /// <summary>Gets the local fence plan rendered by the dedicated map.</summary>
     [ObservableProperty]
-    public partial FencePlan LocalPlan
-    {
-        get;
-        private set;
-    } = FencePlan.Empty;
+    public partial FencePlan LocalPlan { get; private set; } = FencePlan.Empty;
 
     /// <summary>Gets whether the target vehicle is connected.</summary>
     [ObservableProperty]
     public partial bool IsConnected
     {
-        get;
-        private set;
+        get; private set;
     }
 
     /// <summary>Gets whether a parameter or transfer operation is running.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(DownloadCommand), nameof(UploadCommand), nameof(ClearVehicleCommand))]
-    public partial bool IsBusy
+    public override partial bool IsBusy
     {
-        get;
-        private set;
+        get; set;
     }
 
     /// <summary>Gets whether the vehicle supports typed fence geometry.</summary>
@@ -131,18 +115,13 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
 
     /// <summary>Gets or sets the radius used by the next circle map click.</summary>
     [ObservableProperty]
-    public partial double CircleRadiusMeters
-    {
-        get;
-        set;
-    } = 100;
+    public partial double CircleRadiusMeters { get; set; } = 100;
 
     /// <summary>Gets or sets the selected area in the geometry list.</summary>
     [ObservableProperty]
     public partial FenceAreaListItem? SelectedArea
     {
-        get;
-        set;
+        get; set;
     }
 
     /// <summary>Gets the local revision label.</summary>
@@ -169,14 +148,6 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
         private set;
     } = "Return point not set";
 
-    /// <summary>Gets the latest validation or transfer status.</summary>
-    [ObservableProperty]
-    public partial string StatusMessage
-    {
-        get;
-        private set;
-    } = "Connect a vehicle to configure GeoFence.";
-
     /// <summary>Gets the current transfer percentage.</summary>
     [ObservableProperty]
     public partial double TransferPercent
@@ -188,31 +159,59 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
     /// <summary>Occurs when map geometry must be redrawn.</summary>
     public event EventHandler? GeometryChanged;
 
-    /// <summary>Activates connection lifecycle and loads supported fence parameters.</summary>
-    public void Activate()
+
+
+
+
+    /// <inheritdoc />
+    public override void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
+        DeactivateAsync().GetAwaiter().GetResult();
+        DetachParameterSession();
+    }
+
+    /// <inheritdoc />
+    public override async Task ActivateAsync()
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         if (active)
         {
             return;
         }
-
+        operationCancellation = new();
+        StatusMessage = "Connect a vehicle to configure GeoFence.";
         active = true;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        _ = InitializeForActiveVehicleAsync();
+        activeVehicle.Changed += ActiveVehicle_Changed;
+        if (activeVehicle.VehicleId is { } currentVehicle)
+        {
+            vehicleId = currentVehicle;
+        }
+        await InitializeForActiveVehicleAsync();
     }
 
-    /// <summary>Stops connection observation and cancels active work.</summary>
-    public void Deactivate()
+    private void ActiveVehicle_Changed(object? sender, ActiveVehicleChangedEventArgs e)
+    {
+        OnActiveVehicleChangedAsync(sender, e).GetAwaiter().GetResult();
+    }
+
+    /// <inheritdoc />
+    public override async Task DeactivateAsync()
     {
         if (!active)
         {
             return;
         }
 
+        await CancelOperationAsync();
         active = false;
-        activeVehicle.Changed -= OnActiveVehicleChanged;
-        CancelOperation();
+        activeVehicle.Changed -= ActiveVehicle_Changed;
+        return;
     }
 
     /// <summary>Applies one map click according to the explicit fence edit mode.</summary>
@@ -285,19 +284,6 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
                 StatusMessage = "Fence return point updated locally.";
                 break;
         }
-    }
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        if (disposed)
-        {
-            return;
-        }
-
-        disposed = true;
-        Deactivate();
-        DetachParameterSession();
     }
 
     [RelayCommand]
@@ -530,6 +516,7 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
     private async Task InitializeForActiveVehicleAsync()
     {
         SupersedeOperation();
+        DomainException.ThrowIfNull(operationCancellation);
         var snapshot = activeVehicle.Current;
         IsConnected = snapshot.IsOnline;
         if (!snapshot.IsOnline || snapshot.VehicleId is not { } target)
@@ -547,21 +534,19 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
         ApplySnapshot(fenceService.GetSnapshot(target));
         SupportsTypedGeometry = fenceService.SupportsTypedGeometry(target);
         NotifyTransferCommands();
-        await RunAsync(async token =>
-        {
-            DetachParameterSession();
-            parameterSession = await fenceService.OpenParameterSessionAsync(target, token);
-            parameterSession.Changed += OnParameterSessionChanged;
-            SyncParameterRows();
-            StatusMessage = SupportsTypedGeometry
-                ? "Fence parameters loaded. Download geometry or begin local fence editing."
-                : "Fence parameters loaded, but this firmware does not advertise typed fence geometry.";
-        }, true);
+
+        DetachParameterSession();
+        parameterSession = await fenceService.OpenParameterSessionAsync(target, operationCancellation.Token);
+        parameterSession.Changed += OnParameterSessionChanged;
+        SyncParameterRows();
+        StatusMessage = SupportsTypedGeometry
+            ? "Fence parameters loaded. Download geometry or begin local fence editing."
+            : "Fence parameters loaded, but this firmware does not advertise typed fence geometry.";
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private async Task OnActiveVehicleChangedAsync(object? sender, ActiveVehicleChangedEventArgs args)
     {
-        _ = InitializeForActiveVehicleAsync();
+        await InitializeForActiveVehicleAsync();
     }
 
     private void OnParameterSessionChanged(object? sender, EventArgs args)
@@ -658,52 +643,41 @@ public sealed partial class GeoFenceTabViewModel : ObservableObject, IDisposable
         {
             SupersedeOperation();
         }
-
-        var cancellation = new CancellationTokenSource();
-        operationCancellation = cancellation;
+        DomainException.ThrowIfNull(operationCancellation);
         IsBusy = true;
         NotifyTransferCommands();
         try
         {
-            await operation(cancellation.Token);
+            await operation(operationCancellation.Token);
         }
         catch (OperationCanceledException)
         {
-            if (ReferenceEquals(operationCancellation, cancellation))
-            {
-                StatusMessage = "Fence operation cancelled.";
-            }
+            StatusMessage = "Fence operation cancelled.";
         }
         catch (Exception exception)
         {
             logger.LogError(exception, "GeoFence operation failed for {VehicleId}.", vehicleId);
-            if (ReferenceEquals(operationCancellation, cancellation))
-            {
-                StatusMessage = $"Fence operation failed: {exception.Message}";
-            }
+            StatusMessage = $"Fence operation failed: {exception.Message}";
         }
         finally
         {
-            if (ReferenceEquals(operationCancellation, cancellation))
-            {
-                operationCancellation = null;
-                IsBusy = false;
-                NotifyTransferCommands();
-            }
-
-            cancellation.Dispose();
+            IsBusy = false;
+            NotifyTransferCommands();
+            operationCancellation.Dispose();
+            operationCancellation = new();
         }
     }
 
-    private void CancelOperation()
+    private async Task CancelOperationAsync()
     {
-        operationCancellation?.Cancel();
+        DomainException.ThrowIfNull(operationCancellation);
+        await operationCancellation.CancelAsync();
     }
 
     private void SupersedeOperation()
     {
         var previous = operationCancellation;
-        operationCancellation = null;
+        operationCancellation = new();
         previous?.Cancel();
         IsBusy = false;
         NotifyTransferCommands();

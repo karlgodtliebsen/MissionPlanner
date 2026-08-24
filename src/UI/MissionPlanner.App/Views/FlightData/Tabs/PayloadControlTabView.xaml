@@ -47,7 +47,7 @@
         <Button  Grid.Row="5" Text="Move gimbal" Command="{Binding MoveGimbalCommand}" />
 
 
-        <Label Grid.Row="6" Text="{Binding Status}" />
+        <Label Grid.Row="6" Text="{Binding StatusMessage}" />
         <Label Grid.Row="7" Text="Commands target the selected component. ACK does not imply observed state." />
     </Grid>
 

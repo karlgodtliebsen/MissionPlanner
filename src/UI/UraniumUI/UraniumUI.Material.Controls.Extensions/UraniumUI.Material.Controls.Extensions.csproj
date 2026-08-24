@@ -15,6 +15,7 @@
         <MauiXamlInflator>SourceGen</MauiXamlInflator>
     </PropertyGroup>
     <ItemGroup>
+        <PackageReference Include="CommunityToolkit.Mvvm" />
         <PackageReference Include="Microsoft.Maui.Controls" />
         <PackageReference Include="Plainer.Maui" />
         <PackageReference Include="UraniumUI.Dialogs.CommunityToolkit" />

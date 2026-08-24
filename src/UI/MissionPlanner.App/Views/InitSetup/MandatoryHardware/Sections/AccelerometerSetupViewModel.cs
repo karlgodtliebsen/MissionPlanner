@@ -10,7 +10,6 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Shared.Models.Vehicles.Models;
-using SetupWorkflowDetailViewModel = MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models.SetupWorkflowDetailViewModel;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -48,7 +47,7 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
         IDateTimeProvider clock,
         IDispatcher dispatcher,
         ILogger<AccelerometerSetupViewModel> logger)
-        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Accelerometer))
+        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Accelerometer), logger)
     {
         this.activeVehicle = activeVehicle;
         this.calibration = calibration;
@@ -59,9 +58,6 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
         this.clock = clock;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        calibration.StateChanged += OnCalibrationStateChanged;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        Show(calibration.Current);
     }
 
     /// <summary>Gets the current calibration workflow stage.</summary>
@@ -137,12 +133,27 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
     }
 
     /// <inheritdoc />
-    public override void Dispose()
+    public override Task ActivateAsync()
+    {
+        calibration.StateChanged += OnCalibrationStateChanged;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        Show(calibration.Current);
+        return base.ActivateAsync();
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
     {
         calibration.StateChanged -= OnCalibrationStateChanged;
         activeVehicle.Changed -= OnActiveVehicleChanged;
-        base.Dispose();
+        return base.DeactivateAsync();
+    }
+
+    /// <inheritdoc />
+    public override void Dispose()
+    {
         calibration.Dispose();
+        base.Dispose();
     }
 
     private bool CanStartCommand()
@@ -187,7 +198,7 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogError(exception, "Confirming calibration orientation failed.");
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
         }
     }
 
@@ -206,7 +217,7 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogError(exception, "Cancelling accelerometer calibration failed.");
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
         }
     }
 
@@ -228,13 +239,13 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
     {
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
-            Error = "Connect a vehicle before starting calibration.";
+            ErrorMessage = "Connect a vehicle before starting calibration.";
             return;
         }
 
         Cancel();
         operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
-        Error = null;
+        ErrorMessage = null;
         try
         {
             await operation(vehicleId, operationCancellation.Token);
@@ -245,7 +256,7 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
         catch (Exception exception)
         {
             logger.LogError(exception, "Accelerometer Setup operation failed for {VehicleId}.", vehicleId);
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
         }
     }
 
@@ -273,7 +284,7 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
         Orientation = snapshot.RequiredOrientation?.ToString() ?? "No orientation requested";
         OrientationImage = ImageFor(snapshot.RequiredOrientation);
         CompletedOrientations = $"{snapshot.CompletedOrientations.Count} of 6 positions sampled";
-        Error = snapshot.FailureReason;
+        ErrorMessage = snapshot.FailureReason;
         OnPropertyChanged(nameof(CanConfirmOrientation));
         OnPropertyChanged(nameof(CanStart));
         OnPropertyChanged(nameof(CanCancel));

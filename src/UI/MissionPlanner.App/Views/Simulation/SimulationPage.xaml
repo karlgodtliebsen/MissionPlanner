@@ -331,7 +331,7 @@
                         <VerticalStackLayout Spacing="4">
                             <Label Text="{Binding SessionState}" FontSize="20" FontAttributes="Bold" />
                             <Label Text="{Binding StatusMessage}" />
-                            <Label Text="{Binding FailureMessage}" 
+                            <Label Text="{Binding ErrorMessage}" 
                                    TextColor="{DynamicResource Error}" />
                         </VerticalStackLayout>
                         <ActivityIndicator Grid.Column="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />

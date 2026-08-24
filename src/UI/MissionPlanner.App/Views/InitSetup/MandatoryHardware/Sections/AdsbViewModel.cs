@@ -1,3 +1,4 @@
+﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
@@ -12,11 +13,10 @@ public sealed class AdsbViewModel : MandatoryParameterViewModel
     private readonly IAdsbService service;
 
     /// <summary>Initializes the ADS-B workflow ViewModel.</summary>
-    public AdsbViewModel(ISetupWorkflowCatalog catalog, IActiveVehicleContext activeVehicle, IAdsbService service, IDispatcher dispatcher)
-        : base(catalog.Workflows.First(workflow => workflow.Key == SetupWorkflowKey.Adsb), activeVehicle, dispatcher)
+    public AdsbViewModel(ISetupWorkflowCatalog catalog, IActiveVehicleContext activeVehicle, IAdsbService service, IDispatcher dispatcher, ILogger<AdsbViewModel> logger)
+        : base(catalog.Workflows.First(workflow => workflow.Key == SetupWorkflowKey.Adsb), activeVehicle, dispatcher, logger)
     {
         this.service = service;
-        Initialize();
     }
 
     /// <inheritdoc />

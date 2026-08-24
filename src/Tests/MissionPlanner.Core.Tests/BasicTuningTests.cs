@@ -253,16 +253,28 @@ public sealed class BasicTuningTests
             dispatcher,
             NullLogger<BasicTuningTabViewModel>.Instance);
 
-        viewModel.Activate();
+        await viewModel.ActivateAsync();
         await WaitUntilAsync(() => viewModel.Groups.Count > 0);
         var firstGroup = viewModel.Groups[0];
         var online = fixture.ActiveVehicle.State!;
 
-        fixture.ActiveVehicle.Set(online with { Flight = online.Flight with { IsArmed = true } });
+        fixture.ActiveVehicle.Set(online with
+        {
+            Flight = online.Flight with
+            {
+                IsArmed = true
+            }
+        });
 
         viewModel.Groups[0].Should().BeSameAs(firstGroup);
 
-        fixture.ActiveVehicle.Set(online with { Connection = online.Connection with { State = VehicleConnectionState.Offline } });
+        fixture.ActiveVehicle.Set(online with
+        {
+            Connection = online.Connection with
+            {
+                State = VehicleConnectionState.Offline
+            }
+        });
         await WaitUntilAsync(() => viewModel.Groups.Count == 0);
 
         viewModel.IsConnected.Should().BeFalse();
@@ -313,7 +325,13 @@ public sealed class BasicTuningTests
             3,
             4,
             "basic-tuning-test");
-        return state with { Identity = state.Identity with { Firmware = firmware } };
+        return state with
+        {
+            Identity = state.Identity with
+            {
+                Firmware = firmware
+            }
+        };
     }
 
     private sealed record Fixture(

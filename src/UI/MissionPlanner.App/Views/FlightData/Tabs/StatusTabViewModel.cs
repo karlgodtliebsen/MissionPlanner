@@ -1,48 +1,48 @@
-﻿using System.Collections.ObjectModel;
-using System.Text.Json;
+﻿using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
+using Mapsui.Utilities;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.FlightData.Telemetry;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
+using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
 /// <summary>Presents searchable promoted telemetry using the shared descriptor catalog.</summary>
-public partial class StatusTabViewModel : ObservableObject, IDisposable
+public partial class StatusTabViewModel : BaseViewModel
 {
     private readonly IActiveVehicleContext active;
+    private readonly ITelemetryFieldCatalog catalog;
     private readonly ITelemetrySnapshotProjector projector;
     private readonly IPlannerSettingsService settings;
+    private readonly IDomainEventHub events;
     private readonly IDateTimeProvider dateTimeProvider;
     private readonly IDispatcher dispatcher;
-    private readonly IDisposable subscription;
+    private IDisposable subscription;
     private readonly CancellationTokenSource lifetime = new();
     private int pending;
 
     /// <summary>Initializes a transient Status tab.</summary>
     public StatusTabViewModel(IActiveVehicleContext active, ITelemetryFieldCatalog catalog, ITelemetrySnapshotProjector projector,
-        IPlannerSettingsService settings, IDomainEventHub events, IDateTimeProvider dateTimeProvider, IDispatcher dispatcher)
+        IPlannerSettingsService settings, IDomainEventHub events, IDateTimeProvider dateTimeProvider, IDispatcher dispatcher,
+        ILogger<StatusTabViewModel> logger)
+        : base(logger)
     {
         this.active = active;
+        this.catalog = catalog;
         this.projector = projector;
         this.settings = settings;
+        this.events = events;
         this.dateTimeProvider = dateTimeProvider;
         this.dispatcher = dispatcher;
-        foreach (var descriptor in catalog.Fields.OrderBy(x => x.Category).ThenBy(x => x.Label))
-        {
-            Items.Add(new StatusTelemetryItemViewModel(descriptor));
-        }
-
-        active.Changed += OnChanged;
-        subscription = events.SubscribeDomainEventAsync<VehicleStateUpdated>(OnUpdated);
-        Update();
     }
 
     /// <summary>Gets stable telemetry rows.</summary>
-    public ObservableCollection<StatusTelemetryItemViewModel> Items { get; } = [];
+    public ObservableRangeCollection<StatusTelemetryItemViewModel> Items { get; } = [];
 
     /// <summary>Gets or sets search text.</summary>
     [ObservableProperty]
@@ -63,12 +63,35 @@ public partial class StatusTabViewModel : ObservableObject, IDisposable
     }
 
     /// <inheritdoc />
-    public void Dispose()
+    public override void Dispose()
+    {
+        DeactivateAsync().GetAwaiter().GetResult();
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        var items = new List<StatusTelemetryItemViewModel>();
+        foreach (var descriptor in catalog.Fields.OrderBy(x => x.Category).ThenBy(x => x.Label))
+        {
+            items.Add(new StatusTelemetryItemViewModel(descriptor));
+        }
+        Items.ReplaceRange(items);
+        active.Changed += OnChanged;
+        subscription = events.SubscribeDomainEventAsync<VehicleStateUpdated>(OnUpdated);
+        Update();
+        return Task.CompletedTask;
+
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
     {
         active.Changed -= OnChanged;
         subscription.Dispose();
         lifetime.Cancel();
         lifetime.Dispose();
+        return Task.CompletedTask;
     }
 
     private void OnChanged(object? s, EventArgs e)
@@ -76,22 +99,20 @@ public partial class StatusTabViewModel : ObservableObject, IDisposable
         dispatcher.Dispatch(Update);
     }
 
-    private Task OnUpdated(VehicleStateUpdated e, CancellationToken token)
+    private async Task OnUpdated(VehicleStateUpdated e, CancellationToken token)
     {
         if (e.VehicleId == active.VehicleId && Interlocked.Exchange(ref pending, 1) == 0)
         {
-            _ = Later(lifetime.Token);
+            await Later(lifetime.Token);
         }
-
-        return Task.CompletedTask;
     }
 
-    private async Task Later(CancellationToken token)
+    private Task Later(CancellationToken token)
     {
         try
         {
-            await Task.Delay(TimeSpan.FromSeconds(1d / Math.Clamp(settings.Current.Telemetry.DisplayRateHz, 1, 30)), token);
-            dispatcher.Dispatch(Update);
+            token.ThrowIfCancellationRequested();
+            dispatcher.DispatchDelayed(TimeSpan.FromSeconds(1d / Math.Clamp(settings.Current.Telemetry.DisplayRateHz, 1, 30)), Update);
         }
         catch (OperationCanceledException)
         {
@@ -100,6 +121,7 @@ public partial class StatusTabViewModel : ObservableObject, IDisposable
         {
             Interlocked.Exchange(ref pending, 0);
         }
+        return Task.CompletedTask;
     }
 
     private void Update()

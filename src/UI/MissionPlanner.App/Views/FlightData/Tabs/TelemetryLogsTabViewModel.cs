@@ -5,11 +5,12 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
 /// <summary>Projects isolated, read-only telemetry-log playback into the Flight Data workspace.</summary>
-public sealed partial class TelemetryLogsTabViewModel : ObservableObject, IDisposable
+public sealed partial class TelemetryLogsTabViewModel : BaseViewModel
 {
     private readonly IReplaySessionManager replaySessionManager;
     private readonly IActiveVehicleContext activeVehicle;
@@ -22,13 +23,33 @@ public sealed partial class TelemetryLogsTabViewModel : ObservableObject, IDispo
     /// <param name="dispatcher">UI Dispatcher.</param>
     /// <param name="logger">Structured workflow logger.</param>
     public TelemetryLogsTabViewModel(IReplaySessionManager replaySessionManager, IActiveVehicleContext activeVehicle, IDispatcher dispatcher, ILogger<TelemetryLogsTabViewModel> logger)
+        : base(logger)
     {
         this.replaySessionManager = replaySessionManager;
         this.activeVehicle = activeVehicle;
         this.dispatcher = dispatcher;
         this.logger = logger;
+        StatusMessage = ReplaySessionSnapshot.Unloaded.Message;
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
         replaySessionManager.Changed += OnReplayChanged;
         ApplySnapshot(replaySessionManager.Snapshot);
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
+        replaySessionManager.Changed -= OnReplayChanged;
+        return Task.CompletedTask;
+    }
+    /// <inheritdoc />
+    public override void Dispose()
+    {
+        DeactivateAsync().GetAwaiter().GetResult();
     }
 
 
@@ -62,21 +83,13 @@ public sealed partial class TelemetryLogsTabViewModel : ObservableObject, IDispo
         private set;
     } = "No telemetry log loaded";
 
-    /// <summary>Gets workflow status or failure detail.</summary>
-    [ObservableProperty]
-    public partial string StatusMessage
-    {
-        get;
-        private set;
-    } = ReplaySessionSnapshot.Unloaded.Message;
-
     /// <summary>Gets whether a background file or playback operation is pending.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(LoadCommand), nameof(PlayPauseCommand), nameof(SeekCommand), nameof(CloseReplayCommand), nameof(ApplySpeedCommand))]
-    public partial bool IsBusy
+    public override partial bool IsBusy
     {
         get;
-        private set;
+        set;
     }
 
     /// <summary>Gets whether a replay is loaded and every outbound MAVLink send is prohibited.</summary>
@@ -85,8 +98,7 @@ public sealed partial class TelemetryLogsTabViewModel : ObservableObject, IDispo
     [NotifyCanExecuteChangedFor(nameof(LoadCommand), nameof(PlayPauseCommand), nameof(SeekCommand), nameof(CloseReplayCommand), nameof(ApplySpeedCommand))]
     public partial bool IsReplayActive
     {
-        get;
-        private set;
+        get; private set;
     }
 
     /// <summary>Gets whether the replay clock is currently advancing.</summary>
@@ -94,16 +106,14 @@ public sealed partial class TelemetryLogsTabViewModel : ObservableObject, IDispo
     [NotifyPropertyChangedFor(nameof(PlayPauseText))]
     public partial bool IsPlaying
     {
-        get;
-        private set;
+        get; private set;
     }
 
     /// <summary>Gets playback progress from zero through one.</summary>
     [ObservableProperty]
     public partial double Progress
     {
-        get;
-        private set;
+        get; private set;
     }
 
     /// <summary>Gets or sets the requested seek position in recorded seconds.</summary>
@@ -124,11 +134,7 @@ public sealed partial class TelemetryLogsTabViewModel : ObservableObject, IDispo
 
     /// <summary>Gets or sets the requested playback speed multiplier.</summary>
     [ObservableProperty]
-    public partial double PlaybackSpeed
-    {
-        get;
-        set;
-    } = 1;
+    public partial double PlaybackSpeed { get; set; } = 1;
 
     /// <summary>Gets a readable current recorded timestamp.</summary>
     [ObservableProperty]
@@ -140,11 +146,7 @@ public sealed partial class TelemetryLogsTabViewModel : ObservableObject, IDispo
 
     /// <summary>Gets decoded and rejected frame statistics.</summary>
     [ObservableProperty]
-    public partial string FrameStatistics
-    {
-        get;
-        private set;
-    } = "0 decoded · 0 rejected";
+    public partial string FrameStatistics { get; private set; } = "0 decoded · 0 rejected";
 
     /// <summary>Gets the play/pause button label.</summary>
     public string PlayPauseText => IsPlaying ? "Pause" : "Play";
@@ -226,39 +228,6 @@ public sealed partial class TelemetryLogsTabViewModel : ObservableObject, IDispo
     private Task CloseReplayAsync()
     {
         return RunAsync(replaySessionManager.CloseAsync);
-    }
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        replaySessionManager.Changed -= OnReplayChanged;
-    }
-
-    private async Task RunAsync(Func<CancellationToken, Task> operation)
-    {
-        if (IsBusy)
-        {
-            return;
-        }
-
-        IsBusy = true;
-        try
-        {
-            await operation(CancellationToken.None);
-        }
-        catch (OperationCanceledException)
-        {
-            StatusMessage = "Replay operation cancelled.";
-        }
-        catch (Exception exception)
-        {
-            logger.LogError(exception, "Telemetry-log replay operation failed.");
-            StatusMessage = exception.Message;
-        }
-        finally
-        {
-            IsBusy = false;
-        }
     }
 
     private void OnReplayChanged(object? sender, ReplaySessionChangedEventArgs args)

@@ -2,10 +2,8 @@
 <tabViews:TabViewLifecycleContent x:TypeArguments="sections:SetupSummaryViewModel" 
                                   xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                                  xmlns:setup="clr-namespace:MissionPlanner.Core.Setup;assembly=MissionPlanner.Core"
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
-                                  xmlns:models="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.Models"
                                   xmlns:mandatoryHardware="clr-namespace:MissionPlanner.Core.Setup.MandatoryHardware;assembly=MissionPlanner.Core"
                                   xmlns:models1="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SetupSummaryView"
@@ -14,7 +12,7 @@
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Padding="16"  Spacing="25" HorizontalOptions="Center">
             <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
-            <Label Text="{Binding Error}" TextColor="{DynamicResource Error}" />
+            <Label Text="{Binding ErrorMessage}" TextColor="{DynamicResource Error}" />
             <Label Text="Setup summary" FontSize="18" FontAttributes="Bold" />
             <Label Text="{Binding Heading}" FontAttributes="Bold" LineBreakMode="WordWrap" />
             <Label Text="This report describes configuration evidence only and is not a safe-to-fly certification."

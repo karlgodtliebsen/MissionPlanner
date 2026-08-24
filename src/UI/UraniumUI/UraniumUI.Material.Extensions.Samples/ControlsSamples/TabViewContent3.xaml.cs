@@ -11,7 +11,7 @@ public partial class TabViewContent3 : TabViewLifecycleContent<TabViewModel3>
     }
 }
 
-public partial class TabViewModel3 : ObservableObject, IDisposable
+public partial class TabViewModel3 : ObservableObject, IDisposable, IActivationLifeCycle
 {
     [ObservableProperty] public partial string Name { get; set; } = "View 3";
 
@@ -19,5 +19,17 @@ public partial class TabViewModel3 : ObservableObject, IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
+    }
+
+    /// <inheritdoc />
+    public Task ActivateAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public Task DeactivateAsync()
+    {
+        return Task.CompletedTask;
     }
 }

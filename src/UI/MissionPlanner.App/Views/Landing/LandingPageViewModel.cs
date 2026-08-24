@@ -1,13 +1,14 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Navigation;
+using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.Landing;
 
 /// <summary>
 /// ViewModel for the LandingPage.
 /// </summary>
-public partial class LandingPageViewModel(INavigationService navigation) : ObservableObject, IDisposable
+public partial class LandingPageViewModel(INavigationService navigation, ILogger<LandingPageViewModel> logger) : BaseViewModel(logger)
 {
     [RelayCommand]
     private async Task OpenFlightDataAsync()
@@ -23,7 +24,19 @@ public partial class LandingPageViewModel(INavigationService navigation) : Obser
 
 
     /// <inheritdoc />
-    public void Dispose()
+    public override void Dispose()
     {
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
+        return Task.CompletedTask;
     }
 }

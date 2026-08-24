@@ -1,14 +1,16 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.FlightData.Auxiliary;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.MavLink.Generated;
+using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
 /// <inheritdoc />
-public partial class AuxFunctionTabViewModel : ObservableObject, IDisposable
+public partial class AuxFunctionTabViewModel : BaseViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IAuxiliaryFunctionCatalog catalog;
@@ -16,13 +18,11 @@ public partial class AuxFunctionTabViewModel : ObservableObject, IDisposable
 
     /// <summary>Initializes the auxiliary-function tab for the active vehicle lifetime.</summary>
     public AuxFunctionTabViewModel(IActiveVehicleContext activeVehicle, IAuxiliaryFunctionCatalog catalog,
-        IAuxiliaryFunctionService service)
+        IAuxiliaryFunctionService service, ILogger<AuxFunctionTabViewModel> logger) : base(logger)
     {
         this.activeVehicle = activeVehicle;
         this.catalog = catalog;
         this.service = service;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        Refresh();
     }
 
     /// <summary>Gets available reviewed functions.</summary>
@@ -100,9 +100,24 @@ public partial class AuxFunctionTabViewModel : ObservableObject, IDisposable
     }
 
     /// <inheritdoc />
-    public void Dispose()
+    public override void Dispose()
+    {
+        DeactivateAsync().GetAwaiter().GetResult();
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        Refresh();
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
     {
         activeVehicle.Changed -= OnActiveVehicleChanged;
+        return Task.CompletedTask;
     }
 
     private void OnActiveVehicleChanged(object? sender, EventArgs e)

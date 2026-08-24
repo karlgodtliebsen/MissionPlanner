@@ -12,10 +12,10 @@
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
             <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
-            <Label Text="{Binding Error}" TextColor="{DynamicResource Error}" />
+            <Label Text="{Binding ErrorMessage}" TextColor="{DynamicResource Error}" />
             <Label Text="Flight-mode assignment" FontSize="18" FontAttributes="Bold" />
             <Label Text="{Binding ModeChannelDescription}" FontAttributes="Bold" />
-            <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
+            <Label Text="{Binding StatusMessage}" FontAttributes="Italic" LineBreakMode="WordWrap" />
             <Button Text="Refresh flight modes"
                 Command="{Binding RefreshCommand}"
                 HorizontalOptions="Start" />

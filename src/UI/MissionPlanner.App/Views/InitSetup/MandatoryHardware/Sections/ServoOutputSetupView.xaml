@@ -17,9 +17,9 @@
             <Grid RowDefinitions="Auto,*" HorizontalOptions="Center"  Padding="10">
                 <VerticalStackLayout  Spacing="25">
                     <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
-                    <Label Text="{Binding Error}" TextColor="{DynamicResource Error}" />
+                    <Label Text="{Binding ErrorMessage}" TextColor="{DynamicResource Error}" />
                     <Label Text="Servo output functions" FontSize="18" FontAttributes="Bold" />
-                    <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
+                    <Label Text="{Binding StatusMessage}" FontAttributes="Italic" LineBreakMode="WordWrap" />
 
                     <HorizontalStackLayout Spacing="10" HorizontalOptions="Fill" Margin="0,10,0,10">
                         <Button Text="Refresh servo outputs"

@@ -10,6 +10,7 @@ using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using UraniumUI.Material.Dialogs;
+using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.FlightPlanner;
 
@@ -17,11 +18,12 @@ namespace MissionPlanner.App.Views.FlightPlanner;
 /// View model for the Plan screen. Composes the shared <see cref="MissionMapViewModel"/> (map,
 /// mission editing, file load/save) and adds vehicle transfer: Read, Write and Write Fast.
 /// </summary>
-public partial class FlightPlannerViewModel : ObservableObject, IDisposable
+public partial class FlightPlannerViewModel : BaseViewModel
 {
     private readonly IExtendedDialogService dialogService;
 
     private readonly IDomainFactory domainFactory;
+    private readonly IDomainEventHub domainEventHub;
     private readonly IMissionTransferService transferService;
     private readonly IMissionProtocolMapper protocolMapper;
     private readonly IMissionValidator validator;
@@ -42,29 +44,31 @@ public partial class FlightPlannerViewModel : ObservableObject, IDisposable
         IMissionProtocolMapper protocolMapper,
         IMissionValidator validator,
         IVehicleRegistry vehicleRegistry,
-        ILogger<FlightPlannerViewModel> logger)
+        ILogger<FlightPlannerViewModel> logger) : base(logger)
     {
         Map = map;
         this.dialogService = dialogService;
         this.domainFactory = domainFactory;
+        this.domainEventHub = domainEventHub;
         this.transferService = transferService;
         this.protocolMapper = protocolMapper;
         this.validator = validator;
         this.vehicleRegistry = vehicleRegistry;
         this.logger = logger;
-        disposables.Add(domainEventHub.SubscribeDomainEventAsync<EditorDisplayEvent>(ShowHideEditAsync));
     }
 
     /// <summary>The shared mission map editor (same instance as the FlightData map).</summary>
-    public MissionMapViewModel? Map { get; private set; }
-
-    /// <summary>True while a vehicle transfer is running; disables the transfer buttons.</summary>
-    [ObservableProperty]
-    public partial bool IsBusy { get; set; }
+    public MissionMapViewModel? Map
+    {
+        get; private set;
+    }
 
     /// <summary>Progress/result text for the last vehicle transfer.</summary>
     [ObservableProperty]
-    public partial string? TransferStatus { get; set; }
+    public partial string? TransferStatus
+    {
+        get; set;
+    }
 
     [RelayCommand]
     private async Task ReadFromVehicleAsync()
@@ -228,12 +232,26 @@ public partial class FlightPlannerViewModel : ObservableObject, IDisposable
     }
 
     /// <inheritdoc />
-    public void Dispose()
+    public override void Dispose()
     {
+        DeactivateAsync().GetAwaiter().GetResult();
         Map = null;
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        disposables.Add(domainEventHub.SubscribeDomainEventAsync<EditorDisplayEvent>(ShowHideEditAsync));
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
         foreach (var disposable in disposables)
         {
             disposable.Dispose();
         }
+        return Task.CompletedTask;
     }
 }

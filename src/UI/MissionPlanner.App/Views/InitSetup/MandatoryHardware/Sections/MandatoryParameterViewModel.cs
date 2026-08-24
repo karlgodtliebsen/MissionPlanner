@@ -1,6 +1,6 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
+﻿using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
@@ -16,14 +16,15 @@ public abstract partial class MandatoryParameterViewModel : SetupWorkflowDetailV
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IDispatcher dispatcher;
     private CancellationTokenSource? operationCancellation;
+    private readonly ILogger<MandatoryParameterViewModel> logger;
 
     /// <summary>Initializes a metadata-backed mandatory workflow.</summary>
-    protected MandatoryParameterViewModel(SetupWorkflowDescriptor descriptor, IActiveVehicleContext activeVehicle, IDispatcher dispatcher)
-        : base(descriptor)
+    protected MandatoryParameterViewModel(SetupWorkflowDescriptor descriptor, IActiveVehicleContext activeVehicle, IDispatcher dispatcher, ILogger<MandatoryParameterViewModel> logger)
+        : base(descriptor, logger)
     {
         this.activeVehicle = activeVehicle;
         this.dispatcher = dispatcher;
-        activeVehicle.Changed += OnActiveVehicleChanged;
+        this.logger = logger;
     }
 
     /// <summary>Gets the supported settings.</summary>
@@ -38,22 +39,10 @@ public abstract partial class MandatoryParameterViewModel : SetupWorkflowDetailV
         get;
     } = [];
 
-    /// <summary>Gets the current workflow status.</summary>
-    [ObservableProperty]
-    public partial string Status
-    {
-        get;
-        private set;
-    } = "Connect a vehicle to load settings.";
 
     /// <summary>Gets whether supported settings were found.</summary>
     public bool HasSettings => Settings.Count > 0;
 
-    /// <summary>Starts the initial load after the concrete ViewModel has initialized its dependencies.</summary>
-    protected void Initialize()
-    {
-        LoadAsync().FireAndForget();
-    }
 
     /// <summary>Loads the parameter configuration from the workflow service.</summary>
     public async Task LoadAsync()
@@ -76,7 +65,8 @@ public abstract partial class MandatoryParameterViewModel : SetupWorkflowDetailV
         }
         catch (Exception exception)
         {
-            Error = exception.Message;
+            logger.LogError(exception, "Loading mandatory parameter configuration failed for {VehicleId}.", vehicleId);
+            ErrorMessage = exception.Message;
         }
         finally
         {
@@ -93,12 +83,23 @@ public abstract partial class MandatoryParameterViewModel : SetupWorkflowDetailV
     }
 
     /// <inheritdoc />
-    public override void Dispose()
+    public override Task ActivateAsync()
+    {
+        StatusMessage = "Connect a vehicle to load settings.";
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        base.ActivateAsync();
+        LoadAsync().GetAwaiter().GetResult();
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
     {
         activeVehicle.Changed -= OnActiveVehicleChanged;
         Cancel();
-        base.Dispose();
+        return base.DeactivateAsync();
     }
+
 
     /// <summary>Loads configuration for the concrete workflow.</summary>
     protected abstract Task<MandatoryParameterConfiguration> LoadConfigurationAsync(MissionPlanner.Shared.Models.Vehicles.Models.VehicleId vehicleId,
@@ -127,7 +128,7 @@ public abstract partial class MandatoryParameterViewModel : SetupWorkflowDetailV
         try
         {
             var result = await ApplySettingAsync(vehicleId, change.Name, change.Value, token);
-            Status = result.Message;
+            StatusMessage = result.Message;
             if (result.Success)
             {
                 await LoadAsync();
@@ -138,7 +139,7 @@ public abstract partial class MandatoryParameterViewModel : SetupWorkflowDetailV
         }
         catch (Exception exception)
         {
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
         }
         finally
         {
@@ -150,7 +151,8 @@ public abstract partial class MandatoryParameterViewModel : SetupWorkflowDetailV
     {
         Cancel();
         operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
-        Error = null;
+        ErrorMessage = null;
+        StatusMessage = null;
         return operationCancellation.Token;
     }
 
@@ -160,7 +162,7 @@ public abstract partial class MandatoryParameterViewModel : SetupWorkflowDetailV
         Settings.ReplaceRange(allSettings);
         Guidance.ReplaceRange(configuration.Guidance);
 
-        Status = Settings.Count == 0
+        StatusMessage = Settings.Count == 0
             ? "This firmware does not report settings for this workflow."
             : $"{Settings.Count} supported setting(s) loaded. Review changes before applying.";
         OnPropertyChanged(nameof(HasSettings));
@@ -172,7 +174,7 @@ public abstract partial class MandatoryParameterViewModel : SetupWorkflowDetailV
         {
             Settings.Clear();
             Guidance.Clear();
-            Status = "Connect a vehicle to load settings.";
+            StatusMessage = "Connect a vehicle to load settings.";
             OnPropertyChanged(nameof(HasSettings));
         });
     }

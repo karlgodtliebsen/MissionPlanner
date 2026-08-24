@@ -32,11 +32,7 @@
 
         <VerticalStackLayout Grid.Row="1" Spacing="8">
             <HorizontalStackLayout Spacing="10">
-                <!--<Button Text="Record reviewed"
-                        IsEnabled="{Binding SelectedWorkflow.CanOpen}"
-                        IsVisible="{Binding CanRecordSelectedWorkflowManually}"
-                        Command="{Binding MarkCompleteCommand}" />-->
-                <Button Text="Open related Config page"
+               <Button Text="Open related Config page"
                         IsVisible="{Binding HasConfigDestination}"
                         Command="{Binding OpenConfigCommand}" />
                 <Button Grid.Row="2" Text="Re-evaluate vehicle" Command="{Binding RefreshCommand}" HorizontalOptions="Start" />

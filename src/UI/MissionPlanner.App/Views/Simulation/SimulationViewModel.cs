@@ -1,20 +1,20 @@
-﻿using System.Collections.ObjectModel;
-using System.Globalization;
+﻿using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Views.ConfigTuning;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Simulation;
 using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Simulation.ArduPilot;
+using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.Simulation;
 
 /// <summary>Coordinates persisted simulator profiles and the observable simulation session.</summary>
-public sealed partial class SimulationViewModel : ObservableObject, IDisposable
+public sealed partial class SimulationViewModel : BaseViewModel
 {
     private readonly ISimulatorProfileService profileService;
     private readonly ISimulationSessionManager sessionManager;
@@ -74,7 +74,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         ParametersFileHandler fileHandler,
         IDispatcher dispatcher,
         ILogger<SimulationViewModel> logger,
-        ISimulationFleetManager? fleetManager = null)
+        ISimulationFleetManager? fleetManager = null) : base(logger)
     {
         this.profileService = profileService;
         this.sessionManager = sessionManager;
@@ -92,56 +92,39 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         this.dispatcher = dispatcher;
         this.logger = logger;
         this.fleetManager = fleetManager;
-        ApplySnapshot(sessionManager.Current);
-        PlatformCapability = platformService.Current.Message;
-        ScenarioRunnerStatus = scenarioRunner.Current?.Message ?? "No scenario is running.";
-        scenarioRunner.Changed += OnScenarioRunnerChanged;
-        foreach (var location in controlCatalog.Locations)
-        {
-            LocationPresets.Add(location);
-        }
-
-        RefreshFrames();
+        StatusMessage = "No simulation is running.";
     }
 
+
     /// <summary>Gets persisted profiles.</summary>
-    public ObservableCollection<SimulatorProfile> Profiles
-    {
-        get;
-    } = [];
+    public ObservableRangeCollection<SimulatorProfile> Profiles { get; } = [];
 
     /// <summary>Gets discovered external and verified cached SITL installations.</summary>
-    public ObservableCollection<SitlInstallation> Installations
-    {
-        get;
-    } = [];
+    public ObservableRangeCollection<SitlInstallation> Installations { get; } = [];
 
     /// <summary>Gets compatible verified releases from the configured manifest.</summary>
-    public ObservableCollection<SitlManifestEntry> AvailableReleases
-    {
-        get;
-    } = [];
+    public ObservableRangeCollection<SitlManifestEntry> AvailableReleases { get; } = [];
 
     /// <summary>Gets documented runtime control capabilities for the connected simulator.</summary>
-    public ObservableCollection<SimulationControlCapability> ControlCapabilities
+    public ObservableRangeCollection<SimulationControlCapability> ControlCapabilities
     {
         get;
     } = [];
 
     /// <summary>Gets built-in typed start-location presets.</summary>
-    public ObservableCollection<SimulationLocationPreset> LocationPresets
+    public ObservableRangeCollection<SimulationLocationPreset> LocationPresets
     {
         get;
     } = [];
 
     /// <summary>Gets persisted scenario presets separate from launch profiles.</summary>
-    public ObservableCollection<SimulationScenarioPreset> ScenarioPresets
+    public ObservableRangeCollection<SimulationScenarioPreset> ScenarioPresets
     {
         get;
     } = [];
 
     /// <summary>Gets auditable runtime control events.</summary>
-    public ObservableCollection<SimulationScenarioEvent> ScenarioEvents
+    public ObservableRangeCollection<SimulationScenarioEvent> ScenarioEvents
     {
         get;
     } = [];
@@ -165,19 +148,19 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     ];
 
     /// <summary>Gets supported direct-SITL frames for the selected firmware family.</summary>
-    public ObservableCollection<string> AvailableFrames
+    public ObservableRangeCollection<string> AvailableFrames
     {
         get;
     } = [];
 
     /// <summary>Gets the bounded recent runtime output.</summary>
-    public ObservableCollection<SimulatorOutputLine> RecentOutput
+    public ObservableRangeCollection<SimulatorOutputLine> RecentOutput
     {
         get;
     } = [];
 
     /// <summary>Gets every independently owned simulator fleet member.</summary>
-    public ObservableCollection<SimulationFleetSessionSnapshot> FleetSessions
+    public ObservableRangeCollection<SimulationFleetSessionSnapshot> FleetSessions
     {
         get;
     } = [];
@@ -555,21 +538,6 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         private set;
     } = SimulationSessionState.Stopped;
 
-    /// <summary>Gets the current status message.</summary>
-    [ObservableProperty]
-    public partial string StatusMessage
-    {
-        get;
-        private set;
-    } = "No simulation is running.";
-
-    /// <summary>Gets the current failure detail.</summary>
-    [ObservableProperty]
-    public partial string? FailureMessage
-    {
-        get;
-        private set;
-    }
 
     /// <summary>Gets the runtime identity or PID description.</summary>
     [ObservableProperty]
@@ -603,10 +571,9 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     [NotifyPropertyChangedFor(nameof(CanInstallRelease))]
     [NotifyPropertyChangedFor(nameof(CanRemoveInstallation))]
     [NotifyCanExecuteChangedFor(nameof(CancelOperationCommand))]
-    public partial bool IsBusy
+    public override partial bool IsBusy
     {
-        get;
-        private set;
+        get; set;
     }
 
     /// <summary>Gets whether a new simulation may be started.</summary>
@@ -637,16 +604,27 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         operationCancellation?.Cancel();
     }
 
-    /// <summary>Activates workspace observation without changing simulator ownership.</summary>
-    public void Activate()
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
+    public override Task ActivateAsync()
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         if (active)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         active = true;
+
+        ApplySnapshot(sessionManager.Current);
+        PlatformCapability = platformService.Current.Message;
+        ScenarioRunnerStatus = scenarioRunner.Current?.Message ?? "No scenario is running.";
+        scenarioRunner.Changed += OnScenarioRunnerChanged;
+        LocationPresets.ReplaceRange(controlCatalog.Locations);
+        RefreshFrames();
+
         sessionManager.Changed += OnSessionChanged;
         if (fleetManager is not null)
         {
@@ -658,20 +636,22 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         _ = UpdateElapsedAsync(timerCancellation.Token);
         if (!initialized)
         {
-            _ = InitializeAsync();
+            InitializeAsync().GetAwaiter().GetResult();
         }
         else
         {
             ApplySnapshot(sessionManager.Current);
         }
+        return Task.CompletedTask;
     }
 
-    /// <summary>Detaches navigation-scoped observation while leaving owned sessions running.</summary>
-    public void Deactivate()
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
     {
+
         if (!active)
         {
-            return;
+            return Task.CompletedTask;
         }
 
         active = false;
@@ -681,6 +661,26 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         timerCancellation?.Cancel();
         timerCancellation?.Dispose();
         timerCancellation = null;
+
+        scenarioRunner.Changed -= OnScenarioRunnerChanged;
+        fleetManager?.Changed -= OnFleetChanged;
+
+        operationCancellation?.Cancel();
+        return Task.CompletedTask;
+    }
+
+
+
+    /// <inheritdoc />
+    public override void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
+        DeactivateAsync().GetAwaiter().GetResult();
     }
 
     /// <summary>Loads persisted profiles.</summary>
@@ -691,11 +691,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         return RunAsync(async cancellationToken =>
         {
             var profiles = await profileService.InitializeAsync(cancellationToken);
-            Profiles.Clear();
-            foreach (var profile in profiles)
-            {
-                Profiles.Add(profile);
-            }
+            Profiles.ReplaceRange(profiles);
 
             SelectedProfile = Profiles.FirstOrDefault();
             await scenarioPresetService.InitializeAsync(cancellationToken);
@@ -710,11 +706,15 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         });
     }
 
+
     /// <summary>Creates a new editable profile from safe defaults.</summary>
     [RelayCommand]
     public void NewProfile()
     {
-        SelectedProfile = SimulatorProfile.CreateDefault() with { Name = "New simulation profile" };
+        SelectedProfile = SimulatorProfile.CreateDefault() with
+        {
+            Name = "New simulation profile"
+        };
     }
 
     /// <summary>Saves the current profile editor.</summary>
@@ -1105,7 +1105,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         {
             logger.LogError(exception, "Simulation stop failed.");
             StatusMessage = "Simulation stop failed.";
-            FailureMessage = exception.Message;
+            ErrorMessage = exception.Message;
         }
     }
 
@@ -1130,22 +1130,6 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
                 cancellationToken);
             StatusMessage = path is null ? "Diagnostic export cancelled." : $"Diagnostics exported to {path}.";
         });
-    }
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        if (disposed)
-        {
-            return;
-        }
-
-        disposed = true;
-        Deactivate();
-        scenarioRunner.Changed -= OnScenarioRunnerChanged;
-        fleetManager?.Changed -= OnFleetChanged;
-
-        operationCancellation?.Cancel();
     }
 
     partial void OnSelectedProfileChanged(SimulatorProfile? value)
@@ -1220,7 +1204,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         }
     }
 
-    private async Task RunAsync(Func<CancellationToken, Task> operation)
+    private new async Task RunAsync(Func<CancellationToken, Task> operation)
     {
         if (!await operationGate.WaitAsync(0))
         {
@@ -1242,7 +1226,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
         {
             logger.LogError(exception, "Simulation workspace operation failed.");
             StatusMessage = "Simulation operation failed.";
-            FailureMessage = exception.Message;
+            ErrorMessage = exception.Message;
         }
         finally
         {
@@ -1301,7 +1285,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     {
         SessionState = snapshot.State;
         StatusMessage = snapshot.Message;
-        FailureMessage = snapshot.Failure;
+        ErrorMessage = snapshot.Failure;
         RuntimeIdentity = snapshot.RuntimeIdentity is null
             ? "Not started"
             : snapshot.RuntimeIdentity.ProcessId is { } processId
@@ -1419,23 +1403,14 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
 
     private void ReplaceProfiles(IReadOnlyList<SimulatorProfile> profiles, Guid selectedId)
     {
-        Profiles.Clear();
-        foreach (var profile in profiles)
-        {
-            Profiles.Add(profile);
-        }
-
+        Profiles.ReplaceRange(profiles);
         SelectedProfile = Profiles.FirstOrDefault(item => item.Id == selectedId) ?? Profiles.FirstOrDefault();
     }
 
     private async Task RefreshInstallationsCoreAsync(CancellationToken cancellationToken)
     {
         var installations = await installationService.DiscoverAsync(cancellationToken);
-        Installations.Clear();
-        foreach (var installation in installations)
-        {
-            Installations.Add(installation);
-        }
+        Installations.ReplaceRange(installations);
 
         SelectedInstallation = SelectedProfile?.Binary.InstallationId is { } id
             ? Installations.FirstOrDefault(item => item.InstallationId == id)
@@ -1478,20 +1453,12 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     {
         var selectedKey = SelectedControl?.Descriptor.Key;
         var capabilities = await controlService.DiscoverAsync(cancellationToken);
-        ControlCapabilities.Clear();
-        foreach (var capability in capabilities)
-        {
-            ControlCapabilities.Add(capability);
-        }
+        ControlCapabilities.ReplaceRange(capabilities);
 
         SelectedControl = ControlCapabilities.FirstOrDefault(item => item.Descriptor.Key == selectedKey) ??
                           ControlCapabilities.FirstOrDefault(item => item.IsAvailable) ??
                           ControlCapabilities.FirstOrDefault();
-        ScenarioEvents.Clear();
-        foreach (var item in controlService.Events)
-        {
-            ScenarioEvents.Add(item);
-        }
+        ScenarioEvents.ReplaceRange(controlService.Events);
     }
 
     private Task ExecuteScenarioAsync(bool dryRun)
@@ -1550,11 +1517,9 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
     private void RefreshFrames()
     {
         var current = FrameModel;
-        AvailableFrames.Clear();
-        foreach (var frame in frameCatalog.GetFrames(SelectedFirmwareFamily))
-        {
-            AvailableFrames.Add(frame);
-        }
+
+        var availableFrames = frameCatalog.GetFrames(SelectedFirmwareFamily);
+        AvailableFrames.ReplaceRange(availableFrames);
 
         if (!AvailableFrames.Contains(current, StringComparer.OrdinalIgnoreCase))
         {
@@ -1628,12 +1593,7 @@ public sealed partial class SimulationViewModel : ObservableObject, IDisposable
 
     private void ReplaceScenarioPresets(Guid? selectedId = null)
     {
-        ScenarioPresets.Clear();
-        foreach (var preset in scenarioPresetService.Presets)
-        {
-            ScenarioPresets.Add(preset);
-        }
-
+        ScenarioPresets.ReplaceRange(scenarioPresetService.Presets);
         SelectedScenarioPreset = selectedId is null
             ? ScenarioPresets.FirstOrDefault()
             : ScenarioPresets.FirstOrDefault(item => item.Id == selectedId) ?? ScenarioPresets.FirstOrDefault();

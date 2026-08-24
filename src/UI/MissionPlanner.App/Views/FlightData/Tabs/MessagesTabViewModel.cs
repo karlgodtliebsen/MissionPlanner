@@ -11,13 +11,14 @@ using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.MavLink;
+using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
 /// <summary>
 /// Presents a bounded, filterable active-vehicle message history with separate MAVLink and application origins.
 /// </summary>
-public partial class MessagesTabViewModel : ObservableObject, IDisposable
+public partial class MessagesTabViewModel : BaseViewModel
 {
     private static readonly JsonSerializerOptions jsonOptions = new() { WriteIndented = true };
     private readonly IActiveVehicleContext activeVehicle;
@@ -37,7 +38,7 @@ public partial class MessagesTabViewModel : ObservableObject, IDisposable
     /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public MessagesTabViewModel(IActiveVehicleContext activeVehicle, IVehicleMessageStore vehicleMessages, IApplicationNotificationStore applicationMessages,
-        ITextClipboardService clipboard, IFileSaver fileSaver, IDispatcher dispatcher, ILogger<MessagesTabViewModel> logger)
+        ITextClipboardService clipboard, IFileSaver fileSaver, IDispatcher dispatcher, ILogger<MessagesTabViewModel> logger) : base(logger)
     {
         this.activeVehicle = activeVehicle;
         this.vehicleMessages = vehicleMessages;
@@ -46,9 +47,6 @@ public partial class MessagesTabViewModel : ObservableObject, IDisposable
         this.fileSaver = fileSaver;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        vehicleMessages.MessageAdded += OnVehicleMessageAdded;
-        applicationMessages.NotificationAdded += OnApplicationMessageAdded;
-        Refresh();
     }
 
     /// <summary>Gets all available exact-severity filters.</summary>
@@ -110,14 +108,6 @@ public partial class MessagesTabViewModel : ObservableObject, IDisposable
         private set;
     }
 
-    /// <summary>Gets the latest copy/export status.</summary>
-    [ObservableProperty]
-    public partial string Status
-    {
-        get;
-        private set;
-    } = "No messages";
-
     /// <summary>Gets the pause/resume button label.</summary>
     public string PauseButtonText => IsAutoScrollPaused ? "Resume Auto-scroll" : "Pause Auto-scroll";
 
@@ -140,10 +130,26 @@ public partial class MessagesTabViewModel : ObservableObject, IDisposable
     }
 
     /// <inheritdoc />
-    public void Dispose()
+    public override void Dispose()
+    {
+        DeactivateAsync().GetAwaiter().GetResult();
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        vehicleMessages.MessageAdded += OnVehicleMessageAdded;
+        applicationMessages.NotificationAdded += OnApplicationMessageAdded;
+        Refresh();
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
     {
         vehicleMessages.MessageAdded -= OnVehicleMessageAdded;
         applicationMessages.NotificationAdded -= OnApplicationMessageAdded;
+        return Task.CompletedTask;
     }
 
     partial void OnSelectedSeverityChanged(string value)
@@ -190,7 +196,7 @@ public partial class MessagesTabViewModel : ObservableObject, IDisposable
         vehicleMessages.Clear(vehicleId, message => vehicleIdentities.Contains(message.Identity));
         applicationMessages.Clear(vehicleId, message => applicationIdentities.Contains(message.Identity));
         Refresh();
-        Status = "Cleared the current filtered view.";
+        StatusMessage = "Cleared the current filtered view.";
     }
 
     [RelayCommand]
@@ -198,19 +204,19 @@ public partial class MessagesTabViewModel : ObservableObject, IDisposable
     {
         if (SelectedMessage is null)
         {
-            Status = "Select a message to copy.";
+            StatusMessage = "Select a message to copy.";
             return;
         }
 
         await clipboard.SetTextAsync(FormatRow(SelectedMessage));
-        Status = "Selected message copied.";
+        StatusMessage = "Selected message copied.";
     }
 
     [RelayCommand]
     private async Task CopyAllAsync()
     {
         await clipboard.SetTextAsync(CreateTextExport());
-        Status = $"Copied {Items.Count} visible messages.";
+        StatusMessage = $"Copied {Items.Count} visible messages.";
     }
 
     [RelayCommand]
@@ -232,16 +238,16 @@ public partial class MessagesTabViewModel : ObservableObject, IDisposable
         {
             await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
             var result = await fileSaver.SaveAsync(fileName, stream, cancellationToken);
-            Status = result.IsSuccessful ? $"Exported to {result.FilePath}." : "Export cancelled.";
+            StatusMessage = result.IsSuccessful ? $"Exported to {result.FilePath}." : "Export cancelled.";
         }
         catch (OperationCanceledException)
         {
-            Status = "Export cancelled.";
+            StatusMessage = "Export cancelled.";
         }
         catch (Exception exception)
         {
             logger.LogError(exception, "Message export failed.");
-            Status = $"Export failed: {exception.Message}";
+            StatusMessage = $"Export failed: {exception.Message}";
         }
     }
 
@@ -277,7 +283,7 @@ public partial class MessagesTabViewModel : ObservableObject, IDisposable
         Items.Clear();
         if (activeVehicle.VehicleId is not { } vehicleId)
         {
-            Status = "No active vehicle";
+            StatusMessage = "No active vehicle";
             return;
         }
 
@@ -290,7 +296,7 @@ public partial class MessagesTabViewModel : ObservableObject, IDisposable
         Items.AddRange(rows);
 
         SelectedMessage = Items.FirstOrDefault(item => item.Identity == selectedIdentity);
-        Status = $"{Items.Count} visible messages for {activeVehicle.Current.DisplayName}.";
+        StatusMessage = $"{Items.Count} visible messages for {activeVehicle.Current.DisplayName}.";
     }
 
     private bool MatchesFilter(MessageListItem item)

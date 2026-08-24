@@ -1,14 +1,16 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.FlightData.Scripting;
+using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
 /// <summary>Presents constrained declarative vehicle scripts.</summary>
 public partial class ScriptsTabViewModel(IVehicleScriptParser parser, IVehicleScriptValidator validator,
-    IVehicleScriptExecutor executor) : ObservableObject, IDisposable
+    IVehicleScriptExecutor executor, ILogger<ScriptsTabViewModel> logger) : BaseViewModel(logger)
 {
     private CancellationTokenSource? execution;
     /// <summary>Gets or sets the versioned JSON source.</summary>
@@ -20,10 +22,29 @@ public partial class ScriptsTabViewModel(IVehicleScriptParser parser, IVehicleSc
     /// <summary>Gets the bounded ordered execution log.</summary>
     public ObservableCollection<string> Output { get; } = [];
 
-    [RelayCommand] private void Validate() => ValidateCore();
-    [RelayCommand] private Task DryRunAsync() => RunCoreAsync(true);
-    [RelayCommand] private Task RunAsync() => RunCoreAsync(false);
-    [RelayCommand] private void Cancel() => execution?.Cancel();
+    [RelayCommand]
+    private void Validate()
+    {
+        ValidateCore();
+    }
+
+    [RelayCommand]
+    private Task DryRunAsync()
+    {
+        return RunCoreAsync(true);
+    }
+
+    [RelayCommand]
+    private Task RunAsync()
+    {
+        return RunCoreAsync(false);
+    }
+
+    [RelayCommand]
+    private void Cancel()
+    {
+        execution?.Cancel();
+    }
 
     private VehicleScriptDocument? ValidateCore()
     {
@@ -40,17 +61,47 @@ public partial class ScriptsTabViewModel(IVehicleScriptParser parser, IVehicleSc
     private async Task RunCoreAsync(bool dryRun)
     {
         var document = ValidateCore();
-        if (document is null) return;
-        execution?.Dispose(); execution = new();
+        if (document is null)
+        {
+            return;
+        }
+
+        execution?.Dispose();
+        execution = new();
         try
         {
             var results = await executor.ExecuteAsync(document, dryRun, execution.Token);
-            foreach (var result in results) { Output.Add($"{result.CompletedAt:HH:mm:ss} [{result.Index + 1}] {result.Action}: {result.Message}"); while (Output.Count > 200) Output.RemoveAt(0); }
+            foreach (var result in results)
+            {
+                Output.Add($"{result.CompletedAt:HH:mm:ss} [{result.Index + 1}] {result.Action}: {result.Message}");
+                while (Output.Count > 200)
+                {
+                    Output.RemoveAt(0);
+                }
+            }
             Status = results.All(item => item.Succeeded) ? (dryRun ? "Dry run succeeded." : "Script succeeded.") : "Script stopped on failure.";
         }
         catch (OperationCanceledException) { Status = "Script cancelled."; }
     }
 
     /// <inheritdoc />
-    public void Dispose() { execution?.Cancel(); execution?.Dispose(); }
+    public override void Dispose()
+    {
+        DeactivateAsync().GetAwaiter().GetResult();
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        execution = new();
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
+        execution?.Cancel();
+        execution?.Dispose();
+        return Task.CompletedTask;
+    }
 }

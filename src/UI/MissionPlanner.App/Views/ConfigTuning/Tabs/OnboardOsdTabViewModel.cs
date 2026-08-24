@@ -4,223 +4,18 @@ using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Osd;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Shared.Models.Vehicles.Models;
+using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
-/// <summary>Projects one discovered OSD item and its placement controls.</summary>
-public sealed partial class OsdItemViewModel : ObservableObject
-{
-    private readonly IParameterEditSession session;
-    private readonly Func<OsdItemViewModel, int, int, string?> move;
-    private bool loading;
-
-    /// <summary>Initializes an OSD item projection.</summary>
-    /// <param name="definition">The discovered item definition.</param>
-    /// <param name="session">The shared editing session.</param>
-    /// <param name="move">The validated position callback.</param>
-    public OsdItemViewModel(
-        OsdItemDefinition definition,
-        IParameterEditSession session,
-        Func<OsdItemViewModel, int, int, string?> move)
-    {
-        Definition = definition;
-        this.session = session;
-        this.move = move;
-        AdditionalParameters = new ObservableCollection<ParameterItemViewModel>(
-            definition.AdditionalParameterNames
-                .Select(session.GetField)
-                .Where(state => state is not null)
-                .Select(state => new ParameterItemViewModel(session, state!)));
-        Refresh();
-    }
-
-    /// <summary>Gets the discovered item definition.</summary>
-    public OsdItemDefinition Definition
-    {
-        get;
-    }
-
-    /// <summary>Gets the firmware item key.</summary>
-    public string Key => Definition.Key;
-
-    /// <summary>Gets the metadata-derived item title.</summary>
-    public string Title => Definition.Title;
-
-    /// <summary>Gets the metadata-derived item description.</summary>
-    public string Description => Definition.Description;
-
-    /// <summary>Gets discovered item-specific option/unit/warning parameters.</summary>
-    public ObservableCollection<ParameterItemViewModel> AdditionalParameters
-    {
-        get;
-    }
-
-    /// <summary>Gets or sets whether the item is enabled.</summary>
-    [ObservableProperty]
-    public partial bool IsEnabled
-    {
-        get;
-        set;
-    }
-
-    /// <summary>Gets or sets the zero-based character column.</summary>
-    [ObservableProperty]
-    public partial int Column
-    {
-        get;
-        set;
-    }
-
-    /// <summary>Gets or sets the zero-based character row.</summary>
-    [ObservableProperty]
-    public partial int Row
-    {
-        get;
-        set;
-    }
-
-    /// <summary>Gets the latest coordinate or metadata error.</summary>
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasValidationError))]
-    public partial string? ValidationError
-    {
-        get;
-        private set;
-    }
-
-    /// <summary>Gets whether placement is currently invalid.</summary>
-    public bool HasValidationError => !string.IsNullOrWhiteSpace(ValidationError);
-
-    /// <summary>Refreshes values from the shared session.</summary>
-    public void Refresh()
-    {
-        loading = true;
-        IsEnabled = Definition.EnableParameterName is null ||
-                    session.GetField(Definition.EnableParameterName)?.PendingValue > 0.5;
-        Column = (int)Math.Round(session.GetField(Definition.ColumnParameterName)?.PendingValue ?? 0);
-        Row = (int)Math.Round(session.GetField(Definition.RowParameterName)?.PendingValue ?? 0);
-        foreach (var parameter in AdditionalParameters)
-        {
-            if (session.GetField(parameter.Name) is { } state)
-            {
-                parameter.SetField(state);
-            }
-        }
-
-        loading = false;
-    }
-
-    internal void SetValidationError(string? error)
-    {
-        ValidationError = error;
-    }
-
-    partial void OnIsEnabledChanged(bool value)
-    {
-        if (!loading && Definition.EnableParameterName is not null)
-        {
-            session.TrySetPending(Definition.EnableParameterName, value ? 1 : 0, out var error);
-            ValidationError = error;
-        }
-    }
-
-    partial void OnColumnChanged(int oldValue, int newValue)
-    {
-        if (!loading)
-        {
-            ValidationError = move(this, newValue, Row);
-            if (ValidationError is not null)
-            {
-                loading = true;
-                Column = oldValue;
-                loading = false;
-            }
-        }
-    }
-
-    partial void OnRowChanged(int oldValue, int newValue)
-    {
-        if (!loading)
-        {
-            ValidationError = move(this, Column, newValue);
-            if (ValidationError is not null)
-            {
-                loading = true;
-                Row = oldValue;
-                loading = false;
-            }
-        }
-    }
-}
-
-/// <summary>Projects one discovered OSD screen.</summary>
-public sealed class OsdScreenViewModel
-{
-    /// <summary>Initializes a screen projection.</summary>
-    /// <param name="definition">The discovered screen.</param>
-    /// <param name="session">The shared editing session.</param>
-    /// <param name="move">The validated item-position callback.</param>
-    public OsdScreenViewModel(
-        OsdScreenDefinition definition,
-        IParameterEditSession session,
-        Func<OsdItemViewModel, int, int, string?> move)
-    {
-        Definition = definition;
-        Parameters = new ObservableCollection<ParameterItemViewModel>(
-            definition.ScreenParameterNames
-                .Select(session.GetField)
-                .Where(state => state is not null)
-                .Select(state => new ParameterItemViewModel(session, state!)));
-        Items = new ObservableCollection<OsdItemViewModel>(
-            definition.Items.Select(item => new OsdItemViewModel(item, session, move)));
-    }
-
-    /// <summary>Gets the screen definition.</summary>
-    public OsdScreenDefinition Definition
-    {
-        get;
-    }
-
-    /// <summary>Gets the one-based screen number.</summary>
-    public int Number => Definition.Number;
-
-    /// <summary>Gets the screen title.</summary>
-    public string Title => Definition.Title;
-
-    /// <summary>Gets a grid dimension label.</summary>
-    public string GridSizeText => $"{Definition.GridWidth}×{Definition.GridHeight} characters";
-
-    /// <summary>Gets whether metadata advertises dynamic overlapping items.</summary>
-    public bool SupportsDynamicOverlaps => Definition.SupportsDynamicOverlaps;
-
-    /// <summary>Gets screen enable/options/resolution parameters.</summary>
-    public ObservableCollection<ParameterItemViewModel> Parameters
-    {
-        get;
-    }
-
-    /// <summary>Gets discovered screen items.</summary>
-    public ObservableCollection<OsdItemViewModel> Items
-    {
-        get;
-    }
-
-    /// <inheritdoc />
-    public override string ToString()
-    {
-        return Title;
-    }
-}
-
 /// <summary>Coordinates onboard OSD discovery, placement preview, files, and confirmed writes.</summary>
-public sealed partial class OnboardOsdTabViewModel : ObservableObject, IDisposable
+public sealed partial class OnboardOsdTabViewModel : BaseViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IOsdConfigurationService osdService;
@@ -247,7 +42,7 @@ public sealed partial class OnboardOsdTabViewModel : ObservableObject, IDisposab
         ParametersFileHandler fileHandler,
         IUserConfirmationService confirmation,
         IDispatcher dispatcher,
-        ILogger<OnboardOsdTabViewModel> logger)
+        ILogger<OnboardOsdTabViewModel> logger) : base(logger)
     {
         this.activeVehicle = activeVehicle;
         this.osdService = osdService;
@@ -255,6 +50,7 @@ public sealed partial class OnboardOsdTabViewModel : ObservableObject, IDisposab
         this.confirmation = confirmation;
         this.dispatcher = dispatcher;
         this.logger = logger;
+        StatusMessage = "Connect a vehicle to discover onboard OSD parameters.";
     }
 
     /// <summary>Gets discovered OSD screens.</summary>
@@ -323,10 +119,10 @@ public sealed partial class OnboardOsdTabViewModel : ObservableObject, IDisposab
     /// <summary>Gets whether a file or write operation is active.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(ApplyScreenCommand), nameof(ResetScreenCommand), nameof(ImportCommand), nameof(ExportCommand))]
-    public partial bool IsBusy
+    public override partial bool IsBusy
     {
         get;
-        private set;
+        set;
     }
 
     /// <summary>Gets the selected screen's grid width.</summary>
@@ -345,13 +141,6 @@ public sealed partial class OnboardOsdTabViewModel : ObservableObject, IDisposab
         private set;
     } = 16;
 
-    /// <summary>Gets the latest validation or operation status.</summary>
-    [ObservableProperty]
-    public partial string StatusMessage
-    {
-        get;
-        private set;
-    } = "Connect a vehicle to discover onboard OSD parameters.";
 
     /// <summary>Gets current validation messages.</summary>
     [ObservableProperty]
@@ -368,35 +157,8 @@ public sealed partial class OnboardOsdTabViewModel : ObservableObject, IDisposab
     /// <summary>Occurs when the graphics preview should redraw.</summary>
     public event EventHandler? LayoutChanged;
 
-    /// <summary>Activates vehicle lifecycle observation and OSD discovery.</summary>
-    public void Activate()
-    {
-        ObjectDisposedException.ThrowIf(disposed, this);
-        if (active)
-        {
-            return;
-        }
-
-        active = true;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        dispatcher.Dispatch(() => _ = InitializeAsync());
-    }
-
-    /// <summary>Stops lifecycle observation and cancels current work.</summary>
-    public void Deactivate()
-    {
-        if (!active)
-        {
-            return;
-        }
-
-        active = false;
-        activeVehicle.Changed -= OnActiveVehicleChanged;
-        CancelOperation();
-    }
-
     /// <inheritdoc />
-    public void Dispose()
+    public override void Dispose()
     {
         if (disposed)
         {
@@ -404,8 +166,37 @@ public sealed partial class OnboardOsdTabViewModel : ObservableObject, IDisposab
         }
 
         disposed = true;
-        Deactivate();
+        DeactivateAsync().GetAwaiter().GetResult();
         DetachWorkspace();
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        if (active)
+        {
+            return Task.CompletedTask;
+        }
+
+        active = true;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        InitializeAsync().GetAwaiter().GetResult();
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
+        if (!active)
+        {
+            return Task.CompletedTask;
+        }
+
+        active = false;
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        CancelOperation();
+        return Task.CompletedTask;
     }
 
     partial void OnSelectedScreenChanged(OsdScreenViewModel? value)

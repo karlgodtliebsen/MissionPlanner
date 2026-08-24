@@ -130,6 +130,7 @@ public class ExtendedTabView : LifecycleTabView
         {
             header.IsHeaderSelected = isSelected;
         }
+
         switch (view)
         {
             case ContentView contentView when contentView.Content is View content:

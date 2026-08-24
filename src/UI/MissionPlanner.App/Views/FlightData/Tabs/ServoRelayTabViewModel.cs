@@ -1,16 +1,19 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.FlightData.Actuators;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
 /// <summary>Presents observed servo outputs and explicit actuator tests.</summary>
-public partial class ServoRelayTabViewModel(IActiveVehicleContext active, IVehicleActuatorService service) : ObservableObject, IDisposable
+public partial class ServoRelayTabViewModel(IActiveVehicleContext active, IVehicleActuatorService service, ILogger<ServoRelayTabViewModel> logger)
+    : BaseViewModel(logger)
 {
     /// <summary>Gets observed servo PWM values.</summary>
-    public ObservableCollection<string> ServoOutputs { get; } = [];
+    public ObservableRangeCollection<string> ServoOutputs { get; } = [];
 
     /// <summary>Gets or sets target channel.</summary>
     [ObservableProperty]
@@ -22,21 +25,29 @@ public partial class ServoRelayTabViewModel(IActiveVehicleContext active, IVehic
 
     /// <summary>Gets explicit confirmation.</summary>
     [ObservableProperty]
-    public partial bool IsConfirmed { get; set; }
+    public partial bool IsConfirmed
+    {
+        get; set;
+    }
 
     /// <summary>Gets latest result.</summary>
     [ObservableProperty]
     public partial string Result { get; private set; } = "No command requested";
 
-    /// <summary>Initializes observed outputs.</summary>
-    public void Refresh()
+    /// <summary>
+    /// Initializes observed outputs.
+    /// </summary>
+    private void Refresh()
     {
-        ServoOutputs.Clear();
         var values = active.State?.Radio.ServoOutputsRaw ?? [];
+
+        var servos = new List<string>();
         for (var i = 0; i < values.Count; i++)
         {
-            ServoOutputs.Add($"Servo {i + 1}: {values[i]} µs");
+            servos.Add($"Servo {i + 1}: {values[i]} µs");
         }
+
+        ServoOutputs.ReplaceRange(servos);
     }
 
     [RelayCommand]
@@ -51,5 +62,20 @@ public partial class ServoRelayTabViewModel(IActiveVehicleContext active, IVehic
     }
 
     /// <inheritdoc />
-    public void Dispose() { }
+    public override void Dispose()
+    {
+
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
+        return Task.CompletedTask;
+    }
 }

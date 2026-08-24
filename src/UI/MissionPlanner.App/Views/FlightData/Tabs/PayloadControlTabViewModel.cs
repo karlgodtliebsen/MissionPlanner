@@ -1,31 +1,34 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.FlightData.Components;
 using MissionPlanner.Core.FlightData.Payload;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
 /// <summary>Presents discovered, component-targeted camera and gimbal controls.</summary>
-public partial class PayloadControlTabViewModel : ObservableObject, IDisposable
+public partial class PayloadControlTabViewModel : BaseViewModel
 {
     private readonly IActiveVehicleContext active;
     private readonly IVehicleComponentRegistry components;
     private readonly ICameraProtocolService cameras;
     private readonly IGimbalProtocolService gimbals;
+    private readonly IDispatcher dispatcher;
 
     /// <summary>Initializes payload controls for the transient tab lifetime.</summary>
     public PayloadControlTabViewModel(IActiveVehicleContext active, IVehicleComponentRegistry components,
-        ICameraProtocolService cameras, IGimbalProtocolService gimbals)
+        ICameraProtocolService cameras, IGimbalProtocolService gimbals, IDispatcher dispatcher, ILogger<PayloadControlTabViewModel> logger)
+        : base(logger)
     {
         this.active = active;
         this.components = components;
         this.cameras = cameras;
         this.gimbals = gimbals;
-        active.Changed += OnChanged;
-        components.Changed += OnChanged;
-        Refresh();
+        this.dispatcher = dispatcher;
+        StatusMessage = "No payload discovered.";
     }
 
     /// <summary>Gets discovered payload components.</summary>
@@ -66,14 +69,6 @@ public partial class PayloadControlTabViewModel : ObservableObject, IDisposable
         set;
     }
 
-    /// <summary>Gets current operation state.</summary>
-    [ObservableProperty]
-    public partial string Status
-    {
-        get;
-        private set;
-    } = "No payload discovered.";
-
     /// <summary>Refreshes component discovery without assuming fixed IDs.</summary>
     public void Refresh()
     {
@@ -96,13 +91,13 @@ public partial class PayloadControlTabViewModel : ObservableObject, IDisposable
         }
 
         SelectedPayload = Payloads.FirstOrDefault(item => item.Key == selected) ?? Payloads.FirstOrDefault();
-        Status = Payloads.Count == 0 ? "No supported camera or gimbal heartbeat has been discovered." : $"{Payloads.Count} payload component(s) discovered.";
+        StatusMessage = Payloads.Count == 0 ? "No supported camera or gimbal heartbeat has been discovered." : $"{Payloads.Count} payload component(s) discovered.";
     }
 
     [RelayCommand]
     private async Task CaptureAsync(CancellationToken token)
     {
-        Status = active.VehicleId is { } vehicle && SelectedPayload is { Kind: "Camera" } payload
+        StatusMessage = active.VehicleId is { } vehicle && SelectedPayload is { Kind: "Camera" } payload
             ? (await cameras.CaptureImageAsync(vehicle, payload.Key.ComponentId, token)).Summary
             : "Select a camera component.";
     }
@@ -122,23 +117,39 @@ public partial class PayloadControlTabViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task MoveGimbalAsync(CancellationToken token)
     {
-        Status = active.VehicleId is { } vehicle && SelectedPayload is { Kind: "Gimbal" } payload
+        StatusMessage = active.VehicleId is { } vehicle && SelectedPayload is { Kind: "Gimbal" } payload
             ? (await gimbals.SetPitchYawAsync(vehicle, payload.Key.ComponentId, (float)Pitch, (float)Yaw, YawLock, token)).Summary
             : "Select a gimbal component.";
     }
 
     private async Task SetVideoAsync(bool start, CancellationToken token)
     {
-        Status = active.VehicleId is { } vehicle && SelectedPayload is { Kind: "Camera" } payload
+        StatusMessage = active.VehicleId is { } vehicle && SelectedPayload is { Kind: "Camera" } payload
             ? (await cameras.SetVideoAsync(vehicle, payload.Key.ComponentId, start, token)).Summary
             : "Select a camera component.";
     }
 
     /// <inheritdoc />
-    public void Dispose()
+    public override void Dispose()
+    {
+        DeactivateAsync().GetAwaiter().GetResult();
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        active.Changed += OnChanged;
+        components.Changed += OnChanged;
+        Refresh();
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
     {
         active.Changed -= OnChanged;
         components.Changed -= OnChanged;
+        return Task.CompletedTask;
     }
 
     private void OnChanged(object? sender, EventArgs e)

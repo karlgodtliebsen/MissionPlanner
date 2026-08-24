@@ -1,6 +1,6 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.DomainEvents;
@@ -11,7 +11,6 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
-using UraniumUI.Extensions;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -28,18 +27,8 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
     private DateTimeOffset? observedServoAt;
 
     /// <summary>Gets the discovered servo outputs.</summary>
-    public ObservableCollection<ServoOutputItemViewModel> Outputs
-    {
-        get;
-    } = [];
+    public ObservableRangeCollection<ServoOutputItemViewModel> Outputs { get; } = [];
 
-    /// <summary>Gets the workflow status.</summary>
-    [ObservableProperty]
-    public partial string Status
-    {
-        get;
-        private set;
-    } = "Load the connected vehicle's servo output functions.";
 
     /// <summary>Gets whether any servo outputs were discovered.</summary>
     [ObservableProperty]
@@ -63,17 +52,13 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
         IDomainEventHub domainEventHub,
         IDispatcher dispatcher,
         ILogger<ServoOutputSetupViewModel> logger)
-        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.ServoOutput))
+        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.ServoOutput), logger)
     {
         this.activeVehicle = activeVehicle;
         this.servoService = servoService;
         this.domainEventHub = domainEventHub;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        observedServoAt = activeVehicle.State?.Radio.ServoObservedAt;
-        vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
-        LoadAsync().FireAndForget();
     }
 
 
@@ -83,7 +68,7 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
     {
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
-            Status = "Connect a vehicle before loading servo outputs.";
+            StatusMessage = "Connect a vehicle before loading servo outputs.";
             return;
         }
 
@@ -99,7 +84,7 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
         catch (Exception exception)
         {
             logger.LogError(exception, "Loading servo outputs failed for {VehicleId}.", vehicleId);
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
         }
     }
 
@@ -113,14 +98,26 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
     }
 
     /// <inheritdoc />
-    public override void Dispose()
+    public override Task ActivateAsync()
+    {
+        StatusMessage = "Load the connected vehicle's servo output functions.";
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        observedServoAt = activeVehicle.State?.Radio.ServoObservedAt;
+        vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
+        LoadAsync().GetAwaiter().GetResult();
+        return base.ActivateAsync();
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
     {
         activeVehicle.Changed -= OnActiveVehicleChanged;
         vehicleStateSubscription?.Dispose();
         vehicleStateSubscription = null;
         observedServoAt = null;
-        base.Dispose();
+        return base.DeactivateAsync();
     }
+
 
     /// <summary>Writes the modified settings for one servo output with readback confirmation.</summary>
     /// <param name="item">The output row to apply.</param>
@@ -136,7 +133,7 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
         try
         {
             var result = await servoService.SetOutputAsync(vehicleId, item.Settings, token);
-            Status = result.Message;
+            StatusMessage = result.Message;
             if (result.Success)
             {
                 item.AcceptChanges();
@@ -151,7 +148,7 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
         catch (Exception exception)
         {
             logger.LogError(exception, "Applying servo output settings failed for {VehicleId}.", vehicleId);
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
             return false;
         }
     }
@@ -186,7 +183,7 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
         operationCancellation?.Cancel();
         operationCancellation?.Dispose();
         operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
-        Error = null;
+        ErrorMessage = null;
         return operationCancellation.Token;
     }
 
@@ -279,7 +276,7 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
 
         if (!preserveStatus)
         {
-            Status = Outputs.Count == 0
+            StatusMessage = Outputs.Count == 0
                 ? "No servo output functions were detected. Refresh after parameters load."
                 : "Review or reassign servo output functions. Live PWM updates from telemetry.";
         }

@@ -1,4 +1,6 @@
-﻿using MissionPlanner.App.Helpers;
+﻿using System.Diagnostics;
+using MissionPlanner.App.Helpers;
+using UraniumUI.Material.TabViews;
 using UraniumUI.Pages;
 
 namespace MissionPlanner.App.Navigation;
@@ -8,11 +10,11 @@ namespace MissionPlanner.App.Navigation;
 /// Handles viewmodel allocation and cleanup for navigation events.
 /// Used to Enforce Cleanup when Navigating away from a view. The view model is automatically disposed when the view is disposed.
 /// </summary>
-public class ExtendedContentPage<TViewModel> : UraniumContentPage
-    where TViewModel : class, IDisposable
+public class ExtendedContentPage<TViewModel> : UraniumContentPage, IDisposable
+    where TViewModel : class, IDisposable, IActivationLifeCycle
 
 {
-    private readonly string? key;
+    private bool isActive;
 
     /// <summary>
     ///  
@@ -22,10 +24,35 @@ public class ExtendedContentPage<TViewModel> : UraniumContentPage
     /// <summary>
     /// Initializes a new instance of the <see cref="ExtendedContentPage{TViewModel}"/> class.
     /// </summary>
-    protected ExtendedContentPage(string? k = null)
+    protected ExtendedContentPage(string? key = null)
     {
-        key = k;
+        ViewModel = key is not null
+            ? ServiceHelper.GetRequiredKeyedService<TViewModel>(key)
+            : ServiceHelper.GetRequiredService<TViewModel>();
+        BindingContext = ViewModel;
     }
+
+    /// <inheritdoc />
+    protected ExtendedContentPage()
+    {
+        ViewModel = ServiceHelper.GetRequiredService<TViewModel>();
+        BindingContext = ViewModel;
+    }
+
+    //private void SetBindingContext()
+    //{
+    //    Dispatcher.Dispatch(() =>
+    //    {
+    //        if (ViewModel is null)
+    //        {
+    //            Debug.Print("ViewModel is null");
+    //            return;
+    //        }
+
+    //        var t1 = Task.Yield().GetAwaiter();
+    //        t1.OnCompleted(() => BindingContext = ViewModel);
+    //    });
+    //}
 
     /// <inheritdoc />
     protected override void OnNavigatingFrom(NavigatingFromEventArgs args)
@@ -33,7 +60,17 @@ public class ExtendedContentPage<TViewModel> : UraniumContentPage
         base.OnNavigatingFrom(args);
         if (args.NavigationType is NavigationType.Replace or NavigationType.Remove)
         {
-            DeactivateViewModel();
+            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(1), () =>
+            {
+                if (ViewModel is null)
+                {
+                    Debug.Print("ViewModel is null");
+                    return;
+                }
+
+                var t1 = Task.Yield().GetAwaiter();
+                t1.OnCompleted(async () => await DeactivateAsync());
+            });
         }
     }
 
@@ -43,7 +80,17 @@ public class ExtendedContentPage<TViewModel> : UraniumContentPage
         base.OnNavigatedFrom(args);
         if (args.NavigationType is NavigationType.Replace or NavigationType.Remove)
         {
-            DeactivateViewModel();
+            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(1), () =>
+            {
+                if (ViewModel is null)
+                {
+                    Debug.Print("ViewModel is null");
+                    return;
+                }
+
+                var t1 = Task.Yield().GetAwaiter();
+                t1.OnCompleted(async () => await DeactivateAsync());
+            });
         }
     }
 
@@ -51,65 +98,89 @@ public class ExtendedContentPage<TViewModel> : UraniumContentPage
     protected override async void OnNavigatedTo(NavigatedToEventArgs args)
     {
         base.OnNavigatedTo(args);
-
         if (args.NavigationType is not (NavigationType.Replace or NavigationType.Remove))
         {
             return;
         }
 
-        ViewModel = key is not null
-            ? ServiceHelper.GetRequiredKeyedService<TViewModel>(key)
-            : ServiceHelper.GetRequiredService<TViewModel>();
+        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(1), () =>
+        {
+            if (ViewModel is null)
+            {
+                Debug.Print("ViewModel is null");
+                return;
+            }
+            var t1 = Task.Yield().GetAwaiter();
+            t1.OnCompleted(async () => await ActivateAsync());
+        });
+    }
 
-        BindingContext = ViewModel;
-        try
-        {
-            await OnModelCreatedAsync(ViewModel);
-        }
-        catch (OperationCanceledException)
-        {
-            // Expected if navigation deactivates the model during activation.
-        }
+    /// <inheritdoc/>
+    public virtual void Dispose()
+    {
+        ViewModel?.Dispose();
+        ViewModel = null;
     }
 
     /// <summary>
-    /// Called when the view model is created.
+    /// Called when the view model needs activating.
     /// </summary>
-    /// <param name="viewModel">The created view model.</param>
-    protected virtual Task OnModelCreatedAsync(TViewModel viewModel)
+    protected virtual async Task ActivateAsync()
     {
-        return Task.CompletedTask;
-    }
-
-    /// <summary>
-    /// Called when the view model is being destroyed.
-    /// </summary>
-    /// <param name="viewModel">The view model being destroyed.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    protected virtual void OnDestroyingModel(TViewModel viewModel)
-    {
-    }
-
-    private void DeactivateViewModel()
-    {
-        var viewModel = ViewModel;
-        if (viewModel is null)
+        if (isActive)
         {
             return;
         }
 
-        // Claim the model immediately. OnNavigatedFrom will then be a no-op
-        // if OnNavigatingFrom already performed cleanup.
-        ViewModel = null;
-        BindingContext = null;
+        if (ViewModel is null)
+        {
+            return;
+        }
 
         try
         {
-            OnDestroyingModel(viewModel);
+            await ViewModel.ActivateAsync();
         }
-        finally
+        catch (OperationCanceledException ex)
         {
-            viewModel.Dispose();
+            Debug.Print(ex.Message);
         }
+        catch (Exception ex)
+        {
+            Debug.Print(ex.Message);
+        }
+
+        isActive = true;
+    }
+
+    /// <summary>
+    /// Called when the view model needs deactivating.
+    /// </summary>
+    protected virtual async Task DeactivateAsync()
+    {
+        if (!isActive)
+        {
+            return;
+        }
+
+        if (ViewModel is null)
+        {
+            return;
+        }
+
+        try
+        {
+            await ViewModel.DeactivateAsync();
+        }
+        catch (OperationCanceledException ex)
+        {
+            Debug.Print(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            Debug.Print(ex.Message);
+        }
+
+        isActive = false;
     }
 }

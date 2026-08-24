@@ -2,12 +2,10 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using MissionPlanner.App.Configuration;
-using MissionPlanner.App.Helpers;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Services;
 using MissionPlanner.App.Theming;
 using MissionPlanner.App.Views.ConfigTuning;
-using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.App.Views.Preferences;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -133,7 +131,18 @@ public sealed class PlannerSettingsTests
         var service = CreateService(store);
         var cancellationToken = TestContext.Current.CancellationToken;
         await service.InitializeAsync(cancellationToken);
-        var invalid = service.Current with { Map = service.Current.Map with { DefaultZoom = 40, Style = PlannerMapStyle.Physical }, Connection = service.Current.Connection with { Port = 0 } };
+        var invalid = service.Current with
+        {
+            Map = service.Current.Map with
+            {
+                DefaultZoom = 40,
+                Style = PlannerMapStyle.Physical
+            },
+            Connection = service.Current.Connection with
+            {
+                Port = 0
+            }
+        };
 
         var result = await service.SaveAsync(invalid, cancellationToken);
 
@@ -174,7 +183,11 @@ public sealed class PlannerSettingsTests
         await service.InitializeAsync(cancellationToken);
         PlannerSettingsChangedEventArgs? changed = null;
         service.SettingsChanged += (_, args) => changed = args;
-        var updated = service.Current with { Appearance = new PlannerAppearanceSettings { ThemeId = ThemeIds.MissionDark }, Logging = new PlannerLoggingSettings { Level = PlannerLogLevel.Warning, RetentionDays = 14 } };
+        var updated = service.Current with
+        {
+            Appearance = new PlannerAppearanceSettings { ThemeId = ThemeIds.MissionDark },
+            Logging = new PlannerLoggingSettings { Level = PlannerLogLevel.Warning, RetentionDays = 14 }
+        };
 
         var result = await service.SaveAsync(updated, cancellationToken);
 
@@ -207,7 +220,14 @@ public sealed class PlannerSettingsTests
         var service = CreateService(new MemoryStore());
         var cancellationToken = TestContext.Current.CancellationToken;
         await service.InitializeAsync(cancellationToken);
-        await service.SaveAsync(service.Current with { Units = new PlannerUnitSettings { System = UnitSystem.Aviation }, Map = service.Current.Map with { DefaultZoom = 8 } }, cancellationToken);
+        await service.SaveAsync(service.Current with
+        {
+            Units = new PlannerUnitSettings { System = UnitSystem.Aviation },
+            Map = service.Current.Map with
+            {
+                DefaultZoom = 8
+            }
+        }, cancellationToken);
 
         await service.ResetSectionAsync(PlannerSettingsSection.Units, cancellationToken);
         service.Current.Units.Should().Be(new PlannerUnitSettings());
@@ -246,12 +266,16 @@ public sealed class PlannerSettingsTests
             themeManager,
             new ParametersFileHandler(fileSaver),
             Substitute.For<IUserConfirmationService>(),
-            NullLogger<PreferencesViewModel>.Instance,
             Substitute.For<MissionPlanner.Maps.Credentials.IMapSecretStore>(),
             offlinePacks,
             Substitute.For<MissionPlanner.Maps.Offline.IOfflineMapPackManager>(),
             Substitute.For<MissionPlanner.Maps.Offline.IOfflineMapPackValidator>(),
-            new MissionPlanner.Maps.Http.MapHttpDiskCache(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")), 1_048_576));
+            new MissionPlanner.Maps.Http.MapHttpDiskCache(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")), 1_048_576),
+            NullLogger<PreferencesViewModel>.Instance
+
+
+            );
+
         await viewModel.ActivateAsync();
         viewModel.ConnectionChannel = "UDP";
         viewModel.ConnectionHost = "192.168.1.20";
@@ -289,7 +313,10 @@ public sealed class PlannerSettingsTests
     {
         public string? Document { get; private set; } = document;
 
-        public int WriteCount { get; private set; }
+        public int WriteCount
+        {
+            get; private set;
+        }
 
         public ValueTask<string?> ReadAsync(CancellationToken cancellationToken = default)
         {

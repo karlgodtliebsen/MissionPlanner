@@ -1,6 +1,8 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
@@ -14,6 +16,7 @@ public abstract partial class ParameterHardwareViewModel : OptionalHardwareBaseV
     private readonly string moduleKey;
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IOptionalHardwareService service;
+    private readonly ILogger<ParameterHardwareViewModel> logger;
     private CancellationTokenSource? cancellation = null;
 
     /// <summary>
@@ -22,25 +25,26 @@ public abstract partial class ParameterHardwareViewModel : OptionalHardwareBaseV
     /// <param name="moduleKey">The key of the module.</param>
     /// <param name="activeVehicle">The active vehicle context.</param>
     /// <param name="service">The optional hardware service.</param>
-    protected ParameterHardwareViewModel(string moduleKey, IActiveVehicleContext activeVehicle, IOptionalHardwareService service)
+    /// <param name="logger"></param>
+    protected ParameterHardwareViewModel(string moduleKey, IActiveVehicleContext activeVehicle,
+        IOptionalHardwareService service, ILogger<ParameterHardwareViewModel> logger) : base(logger)
     {
         this.moduleKey = moduleKey;
         this.activeVehicle = activeVehicle;
         this.service = service;
-        activeVehicle.Changed += Changed;
-        _ = Load();
+        this.logger = logger;
     }
 
     /// <summary>Gets editable settings.</summary>
-    public ObservableCollection<ParameterSettingViewModel> Settings { get; } = [];
+    public ObservableRangeCollection<ParameterSettingViewModel> Settings { get; } = [];
 
-    /// <summary>Gets status.</summary>
-    [ObservableProperty]
-    public partial string Status { get; private set; } = "Loading supported settings…";
 
     /// <summary>Gets reboot state.</summary>
     [ObservableProperty]
-    public partial bool RebootRequired { get; private set; }
+    public partial bool RebootRequired
+    {
+        get; private set;
+    }
 
 
     [RelayCommand]
@@ -51,6 +55,8 @@ public abstract partial class ParameterHardwareViewModel : OptionalHardwareBaseV
 
     private async Task Load()
     {
+        StatusMessage = "Loading supported settings…";
+
         if (cancellation != null)
         {
             await cancellation.CancelAsync();
@@ -60,7 +66,7 @@ public abstract partial class ParameterHardwareViewModel : OptionalHardwareBaseV
         cancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
         if (activeVehicle.VehicleId is not { } id || !activeVehicle.IsOnline)
         {
-            Status = "Connect a vehicle to load this hardware.";
+            StatusMessage = "Connect a vehicle to load this hardware.";
             Settings.Clear();
             return;
         }
@@ -72,19 +78,20 @@ public abstract partial class ParameterHardwareViewModel : OptionalHardwareBaseV
             Settings.Clear();
             if (module is null)
             {
-                Status = "This hardware is not reported by the active vehicle.";
+                StatusMessage = "This hardware is not reported by the active vehicle.";
                 return;
             }
 
-            foreach (var setting in module.Settings)
-            {
-                Settings.Add(new ParameterSettingViewModel(setting, ApplyAsync));
-            }
-
-            Status = module.Description;
+            Settings.ReplaceRange(module.Settings.Select(setting => new ParameterSettingViewModel(setting, ApplyAsync)));
+            StatusMessage = module.Description;
         }
         catch (OperationCanceledException)
         {
+        }
+        catch (Exception ex)
+        {
+            Debug.Print("Error Loading ");
+            logger.LogError(ex, ex.Message);
         }
         finally
         {
@@ -107,24 +114,34 @@ public abstract partial class ParameterHardwareViewModel : OptionalHardwareBaseV
         }
 
         var result = await service.SetValueAsync(id, setting.Name, value, cancellation?.Token ?? default);
-        Status = result.Message;
+        StatusMessage = result.Message;
         RebootRequired |= result.RequiresReboot;
         if (result.Success)
         {
-            await Load();
+            await Dispatcher.DispatchAsync(Load);
         }
     }
 
-    private void Changed(object? s, ActiveVehicleChangedEventArgs e)
+    private async void Changed(object? s, ActiveVehicleChangedEventArgs e)
     {
-        _ = Load();
+        await Dispatcher.DispatchAsync(Load);
     }
 
     /// <inheritdoc />
-    public override void Dispose()
+    public override async Task ActivateAsync()
+    {
+        cancellation = new CancellationTokenSource();
+        activeVehicle.Changed += Changed;
+        await Dispatcher.DispatchAsync(Load);
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
     {
         activeVehicle.Changed -= Changed;
         cancellation?.Cancel();
         cancellation?.Dispose();
+        return Task.CompletedTask;
     }
+
 }

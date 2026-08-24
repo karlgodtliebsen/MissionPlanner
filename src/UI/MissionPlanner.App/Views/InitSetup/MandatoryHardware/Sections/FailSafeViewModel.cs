@@ -1,7 +1,7 @@
+﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
-using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
@@ -17,11 +17,11 @@ public sealed class FailSafeViewModel : MandatoryParameterViewModel
         ISetupWorkflowCatalog workflowCatalog,
         IActiveVehicleContext activeVehicle,
         IFailSafeService service,
-        IDispatcher dispatcher)
-        : base(workflowCatalog.Workflows.First(workflow => workflow.Key == SetupWorkflowKey.FailSafe), activeVehicle, dispatcher)
+        IDispatcher dispatcher,
+        ILogger<FailSafeViewModel> logger)
+        : base(workflowCatalog.Workflows.First(workflow => workflow.Key == SetupWorkflowKey.FailSafe), activeVehicle, dispatcher, logger)
     {
         this.service = service;
-        Initialize();
     }
 
     /// <inheritdoc />
@@ -34,5 +34,17 @@ public sealed class FailSafeViewModel : MandatoryParameterViewModel
     protected override Task<MandatoryParameterApplyResult> ApplySettingAsync(VehicleId vehicleId, string name, double value, CancellationToken cancellationToken)
     {
         return service.ApplyAsync(vehicleId, name, value, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        return base.ActivateAsync();
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
+        return base.DeactivateAsync();
     }
 }

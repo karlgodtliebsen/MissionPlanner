@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
-using MissionPlanner.App.Services;
 using MissionPlanner.App.Theming;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Planner;
@@ -11,13 +10,14 @@ using MissionPlanner.Maps.Credentials;
 using MissionPlanner.Maps.Http;
 using MissionPlanner.Maps.Offline;
 using MissionPlanner.Maps.Settings;
+using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.Preferences;
 
 /// <summary>
 /// Edits versioned local MissionPlanner preferences without changing vehicle parameters.
 /// </summary>
-public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
+public sealed partial class PreferencesViewModel : BaseViewModel
 {
     private readonly IPlannerSettingsService settingsService;
     private readonly IThemeManager themeManager;
@@ -51,12 +51,13 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
         IThemeManager themeManager,
         ParametersFileHandler fileHandler,
         IUserConfirmationService confirmation,
-        ILogger<PreferencesViewModel> logger,
         IMapSecretStore mapSecretStore,
         IOfflineMapPackRepository offlinePacks,
         IOfflineMapPackManager offlinePackManager,
         IOfflineMapPackValidator offlinePackValidator,
-        MapHttpDiskCache mapCache)
+        MapHttpDiskCache mapCache,
+        ILogger<PreferencesViewModel> logger
+    ) : base(logger)
     {
         this.settingsService = settingsService;
         this.themeManager = themeManager;
@@ -73,10 +74,17 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
     /// <summary>
     /// Gets available unit systems.
     /// </summary>
-    public IReadOnlyList<UnitSystem> UnitSystems { get; } = Enum.GetValues<UnitSystem>();
+    public IReadOnlyList<UnitSystem> UnitSystems
+    {
+        get;
+    } = Enum.GetValues<UnitSystem>();
 
     /// <summary>Gets selectable built-in sources grouped for the settings UI.</summary>
-    public IReadOnlyList<MapSettingsSourceItem> MapSources { get; private set; } = [];
+    public IReadOnlyList<MapSettingsSourceItem> MapSources
+    {
+        get;
+        private set;
+    } = [];
 
     /// <summary>Gets selectable offline pack sources.</summary>
     public IEnumerable<MapSettingsSourceItem> OfflineMapSources => MapSources.Where(value => value.Group == MapSettingsSourceGroup.OfflinePacks);
@@ -92,257 +100,626 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
 
     /// <summary>Gets installed offline packs shown by the pack manager.</summary>
     [ObservableProperty]
-    public partial IReadOnlyList<InstalledOfflineMapPack> InstalledMapPacks { get; private set; } = [];
+    public partial IReadOnlyList<InstalledOfflineMapPack> InstalledMapPacks
+    {
+        get;
+        private set;
+    } = [];
 
     /// <summary>Gets or sets the pack selected in the pack manager.</summary>
     [ObservableProperty]
-    public partial InstalledOfflineMapPack? SelectedMapPack { get; set; }
+    public partial InstalledOfflineMapPack? SelectedMapPack
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets the current HTTP-cache size in megabytes.</summary>
     [ObservableProperty]
-    public partial double MapHttpCacheSizeMiB { get; private set; }
+    public partial double MapHttpCacheSizeMiB
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets available application themes.</summary>
     public IReadOnlyList<ThemeOption> Themes => themeManager.AvailableThemes;
 
     /// <summary>Gets available logging levels.</summary>
-    public IReadOnlyList<PlannerLogLevel> LoggingLevels { get; } = Enum.GetValues<PlannerLogLevel>();
+    public IReadOnlyList<PlannerLogLevel> LoggingLevels
+    {
+        get;
+    } = Enum.GetValues<PlannerLogLevel>();
 
     /// <summary>Gets available connection channels.</summary>
-    public IReadOnlyList<string> ConnectionChannels { get; } = ["AUTO", "TCP", "UDP", "UDPCI", "WS"];
+    public IReadOnlyList<string> ConnectionChannels
+    {
+        get;
+    } = ["AUTO", "TCP", "UDP", "UDPCI", "WS"];
 
     /// <summary>Gets available parameter-cache policies.</summary>
-    public IReadOnlyList<ParameterCachePolicy> ParameterCachePolicies { get; } = Enum.GetValues<ParameterCachePolicy>();
+    public IReadOnlyList<ParameterCachePolicy> ParameterCachePolicies
+    {
+        get;
+    } = Enum.GetValues<ParameterCachePolicy>();
 
     /// <summary>Gets available update channels.</summary>
-    public IReadOnlyList<string> UpdateChannels { get; } = ["Stable", "Beta", "Development"];
+    public IReadOnlyList<string> UpdateChannels
+    {
+        get;
+    } = ["Stable", "Beta", "Development"];
 
     /// <summary>
     /// 
     /// </summary>
-    public IReadOnlyList<string> DistanceUnits { get; } = ["Meters", "Feet"];
+    public IReadOnlyList<string> DistanceUnits
+    {
+        get;
+    } = ["Meters", "Feet"];
 
     /// <summary>
     /// 
     /// </summary>
-    public IReadOnlyList<string> AltitudeUnits { get; } = ["Meters", "Feet"];
+    public IReadOnlyList<string> AltitudeUnits
+    {
+        get;
+    } = ["Meters", "Feet"];
 
     /// <summary>
     /// 
     /// </summary>
-    public IReadOnlyList<string> SpeedUnits { get; } = ["MetersPerSecond", "KilometersPerHour", "MilesPerHour", "Knots"];
+    public IReadOnlyList<string> SpeedUnits
+    {
+        get;
+    } = ["MetersPerSecond", "KilometersPerHour", "MilesPerHour", "Knots"];
 
     /// <summary>
     /// 
     /// </summary>
-    public IReadOnlyList<string> SpeechSeverities { get; } = ["Emergency", "Alert", "Critical", "Error", "Warning", "Notice", "Info", "Debug"];
+    public IReadOnlyList<string> SpeechSeverities
+    {
+        get;
+    } = ["Emergency", "Alert", "Critical", "Error", "Warning", "Notice", "Info", "Debug"];
 
     /// <summary>
     /// 
     /// </summary>
-    public IReadOnlyList<string> MapAccessModes { get; } = ["ServerOnly", "ServerAndCache", "CacheOnly"];
+    public IReadOnlyList<string> MapAccessModes
+    {
+        get;
+    } = ["ServerOnly", "ServerAndCache", "CacheOnly"];
 
     /// <summary>
     /// 
     /// </summary>
-    public IReadOnlyList<string> LayoutModes { get; } = ["Basic", "Advanced", "Custom"];
+    public IReadOnlyList<string> LayoutModes
+    {
+        get;
+    } = ["Basic", "Advanced", "Custom"];
 
     /// <summary>
     /// Gets or sets a value indicating whether the flyout menu is visible at startup.
     /// </summary>
     [ObservableProperty]
-    public partial bool IsFlyoutVisibleAtStartup { get; set; }
+    public partial bool IsFlyoutVisibleAtStartup
+    {
+        get;
+        set;
+    }
 
     /// <summary>
     /// Gets or sets a value indicating whether the flyout menu is visible at startup.
     /// </summary>
     [ObservableProperty]
-    public partial bool IsTutorialVisibleAtStartup { get; set; }
+    public partial bool IsTutorialVisibleAtStartup
+    {
+        get;
+        set;
+    }
 
     /// <summary>
     /// Gets or sets a value indicating whether the flyout menu is locked in the UI.
     /// </summary>
     [ObservableProperty]
-    public partial bool IsFlyoutLocked { get; set; }
+    public partial bool IsFlyoutLocked
+    {
+        get;
+        set;
+    }
 
 
     /// <summary>Gets the selected unit system.</summary>
     [ObservableProperty]
-    public partial UnitSystem SelectedUnitSystem { get; set; }
+    public partial UnitSystem SelectedUnitSystem
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets the default map zoom level.</summary>
     [ObservableProperty]
-    public partial double DefaultMapZoom { get; set; }
+    public partial double DefaultMapZoom
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets the selected stable map source.</summary>
     [ObservableProperty]
-    public partial MapSettingsSourceItem? SelectedMapSource { get; set; }
+    public partial MapSettingsSourceItem? SelectedMapSource
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets whether the bounded HTTP cache is enabled.</summary>
     [ObservableProperty]
-    public partial bool MapHttpCacheEnabled { get; set; }
+    public partial bool MapHttpCacheEnabled
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets the HTTP cache disk limit in mebibytes.</summary>
     [ObservableProperty]
-    public partial int MapHttpCacheLimitMiB { get; set; }
+    public partial int MapHttpCacheLimitMiB
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or sets a transient credential entry; it is cleared immediately after use.</summary>
     [ObservableProperty]
-    public partial string MapCredentialInput { get; set; } = string.Empty;
+    public partial string MapCredentialInput
+    {
+        get;
+        set;
+    } = string.Empty;
 
     /// <summary>Gets the telemetry display rate in hertz.</summary>
     [ObservableProperty]
-    public partial int TelemetryDisplayRateHz { get; set; }
+    public partial int TelemetryDisplayRateHz
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets the telemetry chart history in seconds.</summary>
     [ObservableProperty]
-    public partial int ChartHistorySeconds { get; set; }
+    public partial int ChartHistorySeconds
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets the selected application theme.</summary>
     [ObservableProperty]
-    public partial ThemeOption? SelectedTheme { get; set; }
+    public partial ThemeOption? SelectedTheme
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets the selected logging level.</summary>
     [ObservableProperty]
-    public partial PlannerLogLevel SelectedLoggingLevel { get; set; }
+    public partial PlannerLogLevel SelectedLoggingLevel
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets the log retention period in days.</summary>
     [ObservableProperty]
-    public partial int LogRetentionDays { get; set; }
+    public partial int LogRetentionDays
+    {
+        get;
+        set;
+    }
 
-    [ObservableProperty] public partial string LogDirectory { get; set; } = string.Empty;
+    [ObservableProperty]
+    public partial string LogDirectory
+    {
+        get;
+        set;
+    } = string.Empty;
 
     /// <summary>Gets the default connection channel.</summary>
     [ObservableProperty]
-    public partial string ConnectionChannel { get; set; } = "AUTO";
+    public partial string ConnectionChannel
+    {
+        get;
+        set;
+    } = "AUTO";
 
     /// <summary>Gets the default connection host.</summary>
     [ObservableProperty]
-    public partial string ConnectionHost { get; set; } = string.Empty;
+    public partial string ConnectionHost
+    {
+        get;
+        set;
+    } = string.Empty;
 
     /// <summary>Gets the default connection port.</summary>
     [ObservableProperty]
-    public partial int ConnectionPort { get; set; }
+    public partial int ConnectionPort
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets the default serial baud rate.</summary>
     [ObservableProperty]
-    public partial int ConnectionBaudRate { get; set; }
+    public partial int ConnectionBaudRate
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets the selected parameter-cache policy.</summary>
     [ObservableProperty]
-    public partial ParameterCachePolicy SelectedParameterCachePolicy { get; set; }
+    public partial ParameterCachePolicy SelectedParameterCachePolicy
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets the maximum accepted parameter-cache age in minutes.</summary>
     [ObservableProperty]
-    public partial int ParameterCacheMaximumAgeMinutes { get; set; }
+    public partial int ParameterCacheMaximumAgeMinutes
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets whether vehicle parameter writes require confirmation.</summary>
     [ObservableProperty]
-    public partial bool ConfirmParameterWrites { get; set; }
+    public partial bool ConfirmParameterWrites
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets whether arm and disarm operations require confirmation.</summary>
     [ObservableProperty]
-    public partial bool ConfirmArmDisarm { get; set; }
+    public partial bool ConfirmArmDisarm
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets whether firmware changes require confirmation.</summary>
     [ObservableProperty]
-    public partial bool ConfirmFirmwareChanges { get; set; }
+    public partial bool ConfirmFirmwareChanges
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets whether update checks run automatically.</summary>
     [ObservableProperty]
-    public partial bool CheckUpdatesAutomatically { get; set; }
+    public partial bool CheckUpdatesAutomatically
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets the update-check interval in days.</summary>
     [ObservableProperty]
-    public partial int UpdateCheckIntervalDays { get; set; }
+    public partial int UpdateCheckIntervalDays
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets the selected update channel.</summary>
     [ObservableProperty]
-    public partial string UpdateChannel { get; set; } = "Stable";
+    public partial string UpdateChannel
+    {
+        get;
+        set;
+    } = "Stable";
 
     /// <summary>Gets whether high-contrast telemetry presentation is requested.</summary>
     [ObservableProperty]
-    public partial bool HighContrastTelemetry { get; set; }
+    public partial bool HighContrastTelemetry
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets whether nonessential telemetry animation is reduced.</summary>
     [ObservableProperty]
-    public partial bool ReduceMotion { get; set; }
+    public partial bool ReduceMotion
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets the UI text scale multiplier.</summary>
     [ObservableProperty]
-    public partial double TextScale { get; set; }
+    public partial double TextScale
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets whether important telemetry warnings should be announced.</summary>
     [ObservableProperty]
-    public partial bool AnnounceTelemetryWarnings { get; set; }
+    public partial bool AnnounceTelemetryWarnings
+    {
+        get;
+        set;
+    }
 
-    [ObservableProperty] public partial string DistanceUnit { get; set; } = "Meters";
-    [ObservableProperty] public partial string LayoutMode { get; set; } = "Advanced";
-    [ObservableProperty] public partial string AltitudeUnit { get; set; } = "Meters";
-    [ObservableProperty] public partial string SpeedUnit { get; set; } = "MetersPerSecond";
-    [ObservableProperty] public partial bool SpeechEnabled { get; set; }
-    [ObservableProperty] public partial string SpeechSeverity { get; set; } = "Warning";
-    [ObservableProperty] public partial int AttitudeRateHz { get; set; }
-    [ObservableProperty] public partial int PositionRateHz { get; set; }
-    [ObservableProperty] public partial int StatusRateHz { get; set; }
-    [ObservableProperty] public partial int RcRateHz { get; set; }
-    [ObservableProperty] public partial int SensorRateHz { get; set; }
-    [ObservableProperty] public partial bool ResetOnUsbConnect { get; set; }
-    [ObservableProperty] public partial bool DisableEsp32RtsReset { get; set; }
-    [ObservableProperty] public partial int TrackLength { get; set; }
-    [ObservableProperty] public partial bool ShowDistanceToHome { get; set; }
-    [ObservableProperty] public partial bool LoadWaypointsOnConnect { get; set; }
-    [ObservableProperty] public partial bool RotateMapToHeading { get; set; }
-    [ObservableProperty] public partial int GcsSystemId { get; set; }
-    [ObservableProperty] public partial bool DisplayCourseOverGround { get; set; }
-    [ObservableProperty] public partial bool DisplayHeading { get; set; }
-    [ObservableProperty] public partial bool DisplayNavigationBearing { get; set; }
-    [ObservableProperty] public partial bool DisplayTurnRadius { get; set; }
-    [ObservableProperty] public partial bool DisplayTarget { get; set; }
-    [ObservableProperty] public partial bool DisplayAircraftToolTip { get; set; }
-    [ObservableProperty] public partial int AircraftLineLength { get; set; }
-    [ObservableProperty] public partial bool ShowAirports { get; set; }
-    [ObservableProperty] public partial bool ShowAdsb { get; set; }
-    [ObservableProperty] public partial bool ShowNoFlyZones { get; set; }
-    [ObservableProperty] public partial bool ShowTemporaryFlightRestrictions { get; set; }
-    [ObservableProperty] public partial bool DownloadParametersInBackground { get; set; }
-    [ObservableProperty] public partial bool NoRcReceiver { get; set; }
-    [ObservableProperty] public partial bool SlowComputerMode { get; set; }
-    [ObservableProperty] public partial string MapAccessMode { get; set; } = "ServerAndCache";
-
-    /// <summary>Gets whether an operation is running.</summary>
     [ObservableProperty]
-    public partial bool IsBusy { get; private set; }
+    public partial string DistanceUnit
+    {
+        get;
+        set;
+    } = "Meters";
 
-    /// <summary>Gets the latest operation or validation status.</summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasStatusMessage))]
-    public partial string? StatusMessage { get; private set; }
+    public partial string LayoutMode
+    {
+        get;
+        set;
+    } = "Advanced";
 
-    /// <summary>Gets whether a status message is available.</summary>
-    public bool HasStatusMessage => !string.IsNullOrWhiteSpace(StatusMessage);
+    [ObservableProperty]
+    public partial string AltitudeUnit
+    {
+        get;
+        set;
+    } = "Meters";
+
+    [ObservableProperty]
+    public partial string SpeedUnit
+    {
+        get;
+        set;
+    } = "MetersPerSecond";
+
+    [ObservableProperty]
+    public partial bool SpeechEnabled
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial string SpeechSeverity
+    {
+        get;
+        set;
+    } = "Warning";
+
+    [ObservableProperty]
+    public partial int AttitudeRateHz
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial int PositionRateHz
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial int StatusRateHz
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial int RcRateHz
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial int SensorRateHz
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial bool ResetOnUsbConnect
+    {
+        get; set;
+    }
+
+    [ObservableProperty]
+    public partial bool DisableEsp32RtsReset
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial int TrackLength
+    {
+        get; set;
+    }
+
+    [ObservableProperty]
+    public partial bool ShowDistanceToHome
+    {
+        get; set;
+    }
+
+    [ObservableProperty]
+    public partial bool LoadWaypointsOnConnect
+    {
+        get; set;
+    }
+
+    [ObservableProperty]
+    public partial bool RotateMapToHeading
+    {
+        get; set;
+    }
+
+    [ObservableProperty]
+    public partial int GcsSystemId
+    {
+        get; set;
+    }
+
+    [ObservableProperty]
+    public partial bool DisplayCourseOverGround
+    {
+        get; set;
+    }
+
+    [ObservableProperty]
+    public partial bool DisplayHeading
+    {
+        get; set;
+    }
+
+    [ObservableProperty]
+    public partial bool DisplayNavigationBearing
+    {
+        get; set;
+    }
+
+
+    [ObservableProperty]
+    public partial bool DisplayTurnRadius
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial bool DisplayTarget
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial bool DisplayAircraftToolTip
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial int AircraftLineLength
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial bool ShowAirports
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial bool ShowAdsb
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial bool ShowNoFlyZones
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial bool ShowTemporaryFlightRestrictions
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial bool DownloadParametersInBackground
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial bool NoRcReceiver
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial bool SlowComputerMode
+    {
+        get;
+        set;
+    }
+
+    [ObservableProperty]
+    public partial string MapAccessMode
+    {
+        get;
+        set;
+    } = "ServerAndCache";
 
     /// <summary>Gets settings that require an application restart.</summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(RestartRequired))]
-    public partial string? RestartRequiredMessage { get; private set; }
+    public partial string? RestartRequiredMessage
+    {
+        get;
+        private set;
+    }
 
     /// <summary>Gets whether a restart is required for one or more saved settings.</summary>
     public bool RestartRequired => !string.IsNullOrWhiteSpace(RestartRequiredMessage);
 
     /// <summary>Loads persisted settings and performs safe recovery when necessary.</summary>
-    public Task ActivateAsync()
+    public override async Task ActivateAsync()
     {
-        return RunAsync(async cancellationToken =>
-        {
-            var result = await settingsService.InitializeAsync(cancellationToken);
-            await LoadMapSourcesAsync(result.Settings.Map.SelectedSourceId, cancellationToken);
-            await RefreshMapPacksAsync(cancellationToken);
-            RestoreOfflinePackSelection(result.Settings.Map.SelectedSourceId);
-            RefreshMapCacheSize();
-            Load(result.Settings);
-            StatusMessage = result.Message ?? "Planner preferences loaded. These settings are local and do not change the flight controller.";
-        });
+        var result = await settingsService.InitializeAsync(CancellationToken.None);
+        await LoadMapSourcesAsync(result.Settings.Map.SelectedSourceId, CancellationToken.None);
+        await RefreshMapPacksAsync(CancellationToken.None);
+        RestoreOfflinePackSelection(result.Settings.Map.SelectedSourceId);
+        RefreshMapCacheSize();
+        Load(result.Settings);
+        StatusMessage = result.Message ?? "Planner preferences loaded. These settings are local and do not change the flight controller.";
+
+
+        //return RunAsync(async cancellationToken =>
+        //{
+        //    var result = await settingsService.InitializeAsync(cancellationToken);
+        //    await LoadMapSourcesAsync(result.Settings.Map.SelectedSourceId, cancellationToken);
+        //    await RefreshMapPacksAsync(cancellationToken);
+        //    RestoreOfflinePackSelection(result.Settings.Map.SelectedSourceId);
+        //    RefreshMapCacheSize();
+        //    Load(result.Settings);
+        //    StatusMessage = result.Message ?? "Planner preferences loaded. These settings are local and do not change the flight controller.";
+        //});
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override void Dispose()
+    {
+        //settingsService.Dispose()
     }
 
     [RelayCommand]
@@ -641,34 +1018,6 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
         });
     }
 
-    private async Task RunAsync(Func<CancellationToken, Task> operation)
-    {
-        if (!await operationGate.WaitAsync(0))
-        {
-            return;
-        }
-
-        IsBusy = true;
-        try
-        {
-            await operation(CancellationToken.None);
-        }
-        catch (OperationCanceledException)
-        {
-            StatusMessage = "Planner settings operation cancelled.";
-        }
-        catch (Exception exception)
-        {
-            logger.LogError(exception, "Planner settings operation failed.");
-            StatusMessage = $"Planner settings operation failed: {exception.Message}";
-        }
-        finally
-        {
-            IsBusy = false;
-            operationGate.Release();
-        }
-    }
-
     private void Load(PlannerSettings settings)
     {
         loading = true;
@@ -686,8 +1035,8 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
             TelemetryDisplayRateHz = settings.Telemetry.DisplayRateHz;
             ChartHistorySeconds = settings.Telemetry.ChartHistorySeconds;
             SelectedTheme = Themes.FirstOrDefault(theme =>
-                string.Equals(theme.Id, settings.Appearance.ThemeId, StringComparison.Ordinal))
-                ?? Themes.First(theme => theme.Id == ThemeIds.System);
+                                string.Equals(theme.Id, settings.Appearance.ThemeId, StringComparison.Ordinal))
+                            ?? Themes.First(theme => theme.Id == ThemeIds.System);
             SelectedLoggingLevel = settings.Logging.Level;
             LogRetentionDays = settings.Logging.RetentionDays;
             LogDirectory = settings.Logging.LogDirectory;
@@ -756,13 +1105,7 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
             Units = new PlannerUnitSettings { System = SelectedUnitSystem },
             Map = new PlannerMapSettings { DefaultZoom = DefaultMapZoom, SelectedSourceId = selectedOfflineSourceId ?? SelectedMapSource?.Id ?? "osm-standard", HttpCacheEnabled = MapHttpCacheEnabled, HttpCacheLimitBytes = Math.Max(16, MapHttpCacheLimitMiB) * 1_048_576L },
             Telemetry = new PlannerTelemetrySettings { DisplayRateHz = TelemetryDisplayRateHz, ChartHistorySeconds = ChartHistorySeconds },
-            Appearance = new PlannerAppearanceSettings
-            {
-                ThemeId = SelectedTheme?.Id ?? ThemeIds.System,
-                IsFlyoutVisibleAtStartup = IsFlyoutVisibleAtStartup,
-                IsTutorialVisibleAtStartup = IsTutorialVisibleAtStartup,
-                IsFlyoutLocked = IsFlyoutLocked
-            },
+            Appearance = new PlannerAppearanceSettings { ThemeId = SelectedTheme?.Id ?? ThemeIds.System, IsFlyoutVisibleAtStartup = IsFlyoutVisibleAtStartup, IsTutorialVisibleAtStartup = IsTutorialVisibleAtStartup, IsFlyoutLocked = IsFlyoutLocked },
             Logging = new PlannerLoggingSettings { Level = SelectedLoggingLevel, RetentionDays = LogRetentionDays, LogDirectory = LogDirectory },
             Connection = new PlannerConnectionSettings { Channel = ConnectionChannel, Host = ConnectionHost, Port = ConnectionPort, BaudRate = ConnectionBaudRate },
             ParameterCache = new PlannerParameterCacheSettings { Policy = SelectedParameterCachePolicy, MaximumAgeMinutes = ParameterCacheMaximumAgeMinutes },
@@ -817,11 +1160,5 @@ public sealed partial class PreferencesViewModel : ObservableObject, IDisposable
     private static string? FormatRestart(IReadOnlyList<PlannerSettingsSection> sections)
     {
         return sections.Count == 0 ? null : $"Restart required for: {string.Join(", ", sections)}.";
-    }
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        //settingsService.Dispose()
     }
 }

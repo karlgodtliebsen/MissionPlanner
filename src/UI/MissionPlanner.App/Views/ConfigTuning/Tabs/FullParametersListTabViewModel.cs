@@ -59,7 +59,8 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         IParameterProfileService profileWorkflow,
         IVehicleParameterLoadStatusContext parameterLoadStatus,
         IDomainEventHub domainEventHub,
-        ILogger<FullParametersListTabViewModel> logger) : base(connectionSession, activeVehicle, editSessionFactory, dispatcher, dialogService, domainFactory, parameterLoadStatus, domainEventHub, logger)
+        ILogger<FullParametersListTabViewModel> logger)
+        : base(connectionSession, activeVehicle, editSessionFactory, dispatcher, dialogService, domainFactory, parameterLoadStatus, domainEventHub, logger)
     {
         this.activeVehicle = activeVehicle;
         this.dispatcher = dispatcher;
@@ -70,8 +71,46 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         this.profiles = profiles;
         this.profileWorkflow = profileWorkflow;
         this.logger = logger;
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        if (disposed)
+        {
+            return Task.CompletedTask;
+        }
         PropertyChanged += OnViewModelPropertyChanged;
-        InitializeParameters();
+        base.ActivateAsync();
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
+        if (disposed)
+        {
+            return Task.CompletedTask;
+        }
+        PropertyChanged -= OnViewModelPropertyChanged;
+        base.DeactivateAsync();
+        Interlocked.Exchange(ref sessionRefreshScheduled, 0);
+        CancelLoadOperation();
+        lastApplyReport = null;
+        HasRows = false;
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+        DeactivateAsync().GetAwaiter().GetResult();
+        disposed = true;
+        base.Dispose();
     }
 
     [ObservableProperty]
@@ -86,16 +125,14 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     //[NotifyCanExecuteChangedFor(nameof(RetryFailedCommand))]
     public partial bool HasRows
     {
-        get;
-        set;
+        get; set;
     }
 
     /// <summary>Gets whether at least one confirmed change requires a vehicle reboot.</summary>
     [ObservableProperty]
     public partial bool RebootRequired
     {
-        get;
-        set;
+        get; set;
     }
 
 
@@ -380,7 +417,6 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         {
             return;
         }
-
         WriteParametersCommand.NotifyCanExecuteChanged();
         CompareParametersCommand.NotifyCanExecuteChanged();
         RevertChangesCommand.NotifyCanExecuteChanged();
@@ -474,24 +510,6 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         WriteParametersCommand.NotifyCanExecuteChanged();
         // RetryFailedCommand.NotifyCanExecuteChanged();
         HasRows = Parameters.Count > 0;
-    }
-
-    /// <inheritdoc />
-    public override void Dispose()
-    {
-        if (disposed)
-        {
-            return;
-        }
-
-        PropertyChanged -= OnViewModelPropertyChanged;
-        base.Dispose();
-        disposed = true;
-
-        Interlocked.Exchange(ref sessionRefreshScheduled, 0);
-        CancelLoadOperation();
-        lastApplyReport = null;
-        HasRows = false;
     }
 
     private static VehicleParameter ToVehicleParameter(ParameterEditField field)

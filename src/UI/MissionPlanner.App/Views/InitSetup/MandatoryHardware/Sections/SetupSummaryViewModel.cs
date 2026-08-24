@@ -1,6 +1,6 @@
-﻿using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.Setup.Abstractions;
@@ -33,24 +33,22 @@ public sealed partial class SetupSummaryViewModel : SetupWorkflowDetailViewModel
         ISetupSummaryService summaryService,
         IDispatcher dispatcher,
         ILogger<SetupSummaryViewModel> logger)
-        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Summary))
+        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Summary), logger)
     {
         this.activeVehicle = activeVehicle;
         this.summaryService = summaryService;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        Refresh();
     }
 
     /// <summary>Gets the summary sections.</summary>
-    public ObservableCollection<SetupSummarySectionViewModel> Sections
+    public ObservableRangeCollection<SetupSummarySectionViewModel> Sections
     {
         get;
     } = [];
 
     /// <summary>Gets the aggregated warnings.</summary>
-    public ObservableCollection<string> Warnings
+    public ObservableRangeCollection<string> Warnings
     {
         get;
     } = [];
@@ -78,11 +76,20 @@ public sealed partial class SetupSummaryViewModel : SetupWorkflowDetailViewModel
     /// <summary>Gets whether any warnings were raised.</summary>
     public bool HasWarnings => Warnings.Count > 0;
 
+
     /// <inheritdoc />
-    public override void Dispose()
+    public override Task ActivateAsync()
+    {
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        Refresh();
+        return base.ActivateAsync();
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
     {
         activeVehicle.Changed -= OnActiveVehicleChanged;
-        base.Dispose();
+        return base.DeactivateAsync();
     }
 
     [RelayCommand]
@@ -121,7 +128,7 @@ public sealed partial class SetupSummaryViewModel : SetupWorkflowDetailViewModel
         catch (Exception exception)
         {
             logger.LogError(exception, "Building setup summary failed.");
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
         }
     }
 

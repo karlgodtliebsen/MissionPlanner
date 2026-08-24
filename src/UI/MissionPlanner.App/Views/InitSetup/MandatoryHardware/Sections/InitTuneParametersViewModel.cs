@@ -1,3 +1,4 @@
+﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
@@ -12,11 +13,11 @@ public sealed class InitTuneParametersViewModel : MandatoryParameterViewModel
     private readonly IInitTuneParametersService service;
 
     /// <summary>Initializes the Initial Tune Parameters workflow ViewModel.</summary>
-    public InitTuneParametersViewModel(ISetupWorkflowCatalog catalog, IActiveVehicleContext activeVehicle, IInitTuneParametersService service, IDispatcher dispatcher)
-        : base(catalog.Workflows.First(workflow => workflow.Key == SetupWorkflowKey.InitTuneParameters), activeVehicle, dispatcher)
+    public InitTuneParametersViewModel(ISetupWorkflowCatalog catalog, IActiveVehicleContext activeVehicle, IInitTuneParametersService service,
+        IDispatcher dispatcher, ILogger<InitTuneParametersViewModel> logger)
+        : base(catalog.Workflows.First(workflow => workflow.Key == SetupWorkflowKey.InitTuneParameters), activeVehicle, dispatcher, logger)
     {
         this.service = service;
-        Initialize();
     }
 
     /// <inheritdoc />

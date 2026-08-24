@@ -1,12 +1,13 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Firmware.Devices;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
-public sealed partial class BluetoothSetupViewModel(IFirmwareSerialDeviceCatalog devices, IBluetoothSerialConfigurator configurator)
-    : ExternalSerialToolViewModel(devices)
+public sealed partial class BluetoothSetupViewModel(IFirmwareSerialDeviceCatalog devices, IBluetoothSerialConfigurator configurator, ILogger<BluetoothSetupViewModel> logger)
+    : ExternalSerialToolViewModel(devices, logger)
 {
     private BluetoothModuleSnapshot? module;
     [ObservableProperty] public partial string ModuleIdentity { get; private set; } = string.Empty;

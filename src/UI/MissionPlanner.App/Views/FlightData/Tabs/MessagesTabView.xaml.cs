@@ -2,8 +2,10 @@
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
-/// <inheritdoc />
-public partial class MessagesTabView : TabViewLifecycleContent<MessagesTabViewModel>
+/// <summary>
+/// 
+/// </summary>
+public partial class MessagesTabView : TabViewLifecycleContent<MessagesTabViewModel>, IDisposable
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MessagesTabView"/> class.
@@ -11,20 +13,27 @@ public partial class MessagesTabView : TabViewLifecycleContent<MessagesTabViewMo
     public MessagesTabView()
     {
         InitializeComponent();
-    }
-
-    /// <inheritdoc />
-    public override void Activate()
-    {
-        base.Activate();
         ViewModel?.PropertyChanged += OnViewModelPropertyChanged;
     }
 
     /// <inheritdoc />
-    public override void Deactivate()
+    public override async Task ActivateAsync()
+    {
+        await base.ActivateAsync();
+        ViewModel?.PropertyChanged += OnViewModelPropertyChanged;
+    }
+
+    /// <inheritdoc />
+    public override async Task DeactivateAsync()
     {
         ViewModel?.PropertyChanged -= OnViewModelPropertyChanged;
-        base.Deactivate();
+        await base.DeactivateAsync();
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        DeactivateAsync().GetAwaiter().GetResult();
     }
 
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
@@ -36,4 +45,6 @@ public partial class MessagesTabView : TabViewLifecycleContent<MessagesTabViewMo
             //MessageCollection.ScrollTo(last, position: ScrollToPosition.End, animate: true);
         }
     }
+
+
 }

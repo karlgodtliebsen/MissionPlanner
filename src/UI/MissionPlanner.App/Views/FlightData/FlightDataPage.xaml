@@ -11,12 +11,7 @@
                             xmlns:extended="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                             x:Class="MissionPlanner.App.Views.FlightData.FlightDataPage"
                             x:DataType="flightData:FlightDataViewModel"
-                    
                         >
-
-    <!--BackgroundColor="{DynamicResource Surface}"-->
-
-
 
     <Grid  ColumnDefinitions="260,5,*" ColumnSpacing="0" >
 

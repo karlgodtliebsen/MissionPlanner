@@ -11,7 +11,7 @@
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Padding="16"  Spacing="25" HorizontalOptions="Center">
             <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
-            <Label Text="{Binding Error}" TextColor="{DynamicResource Error}" />
+            <Label Text="{Binding ErrorMessage}" TextColor="{DynamicResource Error}" />
             <Label Text="Supported frame configuration" FontSize="18" FontAttributes="Bold" />
             <Label Text="{Binding FirmwareFamily, StringFormat='Firmware family: {0}'}" />
             <Label Text="Only values advertised by the connected firmware metadata are shown. Current values remain unchanged until Write and verify is confirmed."
@@ -52,7 +52,7 @@
                 <Button Text="Refresh vehicle values" Command="{Binding RefreshCommand}" />
                 <Button Text="Write and verify" Command="{Binding ApplyCommand}" />
             </HorizontalStackLayout>
-            <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
+            <Label Text="{Binding StatusMessage}" FontAttributes="Italic" LineBreakMode="WordWrap" />
             <Label IsVisible="{Binding RebootRequired}"
                Text="Vehicle Reboot required. Reconnect, then use Refresh vehicle values to confirm the persisted configuration."
                TextColor="{DynamicResource Warning}"

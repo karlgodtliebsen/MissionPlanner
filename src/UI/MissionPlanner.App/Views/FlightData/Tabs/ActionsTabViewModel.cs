@@ -12,13 +12,14 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
+using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
 /// <summary>
 /// Presents safety-aware, acknowledged actions for the active ArduPilot vehicle.
 /// </summary>
-public partial class ActionsTabViewModel : ObservableObject, IDisposable
+public partial class ActionsTabViewModel : BaseViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleCommandService commandService;
@@ -56,7 +57,7 @@ public partial class ActionsTabViewModel : ObservableObject, IDisposable
         IDispatcher dispatcher,
         IDomainEventHub domainEventHub,
         ILogger<ActionsTabViewModel> logger,
-        IReplaySessionManager? replaySessionManager = null)
+        IReplaySessionManager? replaySessionManager = null) : base(logger)
     {
         this.activeVehicle = activeVehicle;
         this.commandService = commandService;
@@ -69,15 +70,6 @@ public partial class ActionsTabViewModel : ObservableObject, IDisposable
         this.logger = logger;
         this.replaySessionManager = replaySessionManager;
         operationRunner = new AsyncOperationRunner(activeVehicle);
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        stateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
-
-        ApplySnapshot(activeVehicle.Current);
-        if (replaySessionManager is not null)
-        {
-            replaySessionManager.Changed += OnReplayChanged;
-            ApplyReplayState(replaySessionManager.Snapshot);
-        }
     }
 
     /// <summary>Gets the modes appropriate to the connected firmware family.</summary>
@@ -86,7 +78,10 @@ public partial class ActionsTabViewModel : ObservableObject, IDisposable
 
     /// <summary>Gets or sets the selected family-specific flight mode.</summary>
     [ObservableProperty]
-    public partial VehicleModeOption? SelectedMode { get; set; }
+    public partial VehicleModeOption? SelectedMode
+    {
+        get; set;
+    }
 
     /// <summary>Gets or sets the requested takeoff altitude in metres.</summary>
     [ObservableProperty]
@@ -102,11 +97,17 @@ public partial class ActionsTabViewModel : ObservableObject, IDisposable
 
     /// <summary>Gets or sets whether the advanced expert command section is expanded.</summary>
     [ObservableProperty]
-    public partial bool IsExpertSectionVisible { get; set; }
+    public partial bool IsExpertSectionVisible
+    {
+        get; set;
+    }
 
     /// <summary>Gets the command currently awaiting acknowledgement or telemetry confirmation.</summary>
     [ObservableProperty]
-    public partial string? PendingCommand { get; private set; }
+    public partial string? PendingCommand
+    {
+        get; private set;
+    }
 
     /// <summary>Gets the latest acknowledgement description.</summary>
     [ObservableProperty]
@@ -122,27 +123,45 @@ public partial class ActionsTabViewModel : ObservableObject, IDisposable
 
     /// <summary>Gets whether arm is currently permitted by policy.</summary>
     [ObservableProperty]
-    public partial bool CanArm { get; private set; }
+    public partial bool CanArm
+    {
+        get; private set;
+    }
 
     /// <summary>Gets whether disarm is currently permitted by policy.</summary>
     [ObservableProperty]
-    public partial bool CanDisarm { get; private set; }
+    public partial bool CanDisarm
+    {
+        get; private set;
+    }
 
     /// <summary>Gets whether takeoff is currently permitted by policy.</summary>
     [ObservableProperty]
-    public partial bool CanTakeoff { get; private set; }
+    public partial bool CanTakeoff
+    {
+        get; private set;
+    }
 
     /// <summary>Gets whether in-flight recovery actions are currently permitted by policy.</summary>
     [ObservableProperty]
-    public partial bool CanInFlightAction { get; private set; }
+    public partial bool CanInFlightAction
+    {
+        get; private set;
+    }
 
     /// <summary>Gets whether reboot is currently permitted by policy.</summary>
     [ObservableProperty]
-    public partial bool CanReboot { get; private set; }
+    public partial bool CanReboot
+    {
+        get; private set;
+    }
 
     /// <summary>Gets whether setting home is currently permitted by policy.</summary>
     [ObservableProperty]
-    public partial bool CanSetHome { get; private set; }
+    public partial bool CanSetHome
+    {
+        get; private set;
+    }
 
     /// <summary>Gets whether vehicle-changing controls may transmit in the current data-source mode.</summary>
     [ObservableProperty]
@@ -153,12 +172,34 @@ public partial class ActionsTabViewModel : ObservableObject, IDisposable
     public partial string DataSourceMode { get; private set; } = "LIVE / SIMULATION";
 
     /// <inheritdoc />
-    public void Dispose()
+    public override void Dispose()
+    {
+        DeactivateAsync().GetAwaiter().GetResult();
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        stateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
+        ApplySnapshot(activeVehicle.Current);
+        if (replaySessionManager is not null)
+        {
+            replaySessionManager.Changed += OnReplayChanged;
+            ApplyReplayState(replaySessionManager.Snapshot);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
     {
         replaySessionManager?.Changed -= OnReplayChanged;
         activeVehicle.Changed -= OnActiveVehicleChanged;
         stateSubscription?.Dispose();
         stateSubscription = null;
+        return Task.CompletedTask;
     }
 
     [RelayCommand]

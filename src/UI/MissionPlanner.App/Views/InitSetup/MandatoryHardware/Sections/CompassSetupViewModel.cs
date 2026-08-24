@@ -10,7 +10,6 @@ using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
-using UraniumUI.Extensions;
 using SetupWorkflowDetailViewModel = MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models.SetupWorkflowDetailViewModel;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
@@ -53,7 +52,7 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
         IDateTimeProvider clock,
         IDispatcher dispatcher,
         ILogger<CompassSetupViewModel> logger)
-        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Compass))
+        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Compass), logger)
     {
         this.activeVehicle = activeVehicle;
         this.compassService = compassService;
@@ -65,10 +64,7 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
         this.clock = clock;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        calibration.StateChanged += OnCalibrationStateChanged;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        Show(calibration.Current);
-        LoadAsync().FireAndForget();
+        StatusMessage = "Load the connected vehicle's compass configuration.";
     }
 
     /// <summary>Gets the discovered compass instances.</summary>
@@ -82,14 +78,6 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
     {
         get;
     } = [];
-
-    /// <summary>Gets the inventory status or the latest operation result.</summary>
-    [ObservableProperty]
-    public partial string Status
-    {
-        get;
-        private set;
-    } = "Load the connected vehicle's compass configuration.";
 
     /// <summary>Gets the current calibration workflow stage.</summary>
     [ObservableProperty]
@@ -146,7 +134,7 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
     {
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
-            Status = "Connect a vehicle before loading compass configuration.";
+            StatusMessage = "Connect a vehicle before loading compass configuration.";
             return;
         }
 
@@ -162,31 +150,11 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
         catch (Exception exception)
         {
             logger.LogError(exception, "Loading compass configuration failed for {VehicleId}.", vehicleId);
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
         }
     }
 
-    /// <inheritdoc />
-    public override void Cancel()
-    {
-        if (CanCancel)
-        {
-            _ = calibration.CancelAsync();
-        }
 
-        operationCancellation?.Cancel();
-        operationCancellation?.Dispose();
-        operationCancellation = null;
-    }
-
-    /// <inheritdoc />
-    public override void Dispose()
-    {
-        calibration.StateChanged -= OnCalibrationStateChanged;
-        activeVehicle.Changed -= OnActiveVehicleChanged;
-        base.Dispose();
-        calibration.Dispose();
-    }
 
     /// <summary>Applies the reviewed edits for one compass with readback confirmation.</summary>
     /// <param name="item">The compass row to apply.</param>
@@ -195,7 +163,7 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
     {
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
-            Status = "Connect a vehicle before editing compass parameters.";
+            StatusMessage = "Connect a vehicle before editing compass parameters.";
             return;
         }
 
@@ -231,18 +199,18 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
                 messages.Add((await compassService.SetExternalAsync(vehicleId, item.Index, item.IsExternal, token)).Message);
             }
 
-            Status = messages.Count == 0 ? "No compass changes were pending." : string.Join(Environment.NewLine, messages);
+            StatusMessage = messages.Count == 0 ? "No compass changes were pending." : string.Join(Environment.NewLine, messages);
             var inventory = await compassService.GetInventoryAsync(vehicleId, token);
             dispatcher.Dispatch(() => ShowInventory(inventory, true));
         }
         catch (OperationCanceledException)
         {
-            Status = "Compass edit was cancelled. Refresh values before continuing.";
+            StatusMessage = "Compass edit was cancelled. Refresh values before continuing.";
         }
         catch (Exception exception)
         {
             logger.LogError(exception, "Applying compass edits failed for {VehicleId}.", vehicleId);
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
         }
     }
 
@@ -257,7 +225,7 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
     {
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
-            Status = "Reconnect the vehicle before refreshing compass values.";
+            StatusMessage = "Reconnect the vehicle before refreshing compass values.";
             return;
         }
 
@@ -274,7 +242,7 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
         catch (Exception exception)
         {
             logger.LogError(exception, "Refreshing compass configuration failed for {VehicleId}.", vehicleId);
-            Error = exception.Message;
+            StatusMessage = exception.Message;
         }
     }
 
@@ -288,7 +256,7 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
     {
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
-            Error = "Connect a vehicle before starting compass calibration.";
+            StatusMessage = "Connect a vehicle before starting compass calibration.";
             return;
         }
 
@@ -312,7 +280,7 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
         catch (Exception exception)
         {
             logger.LogError(exception, "Starting compass calibration failed for {VehicleId}.", vehicleId);
-            Error = exception.Message;
+            StatusMessage = exception.Message;
         }
     }
 
@@ -331,7 +299,7 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogError(exception, "Accepting compass calibration failed.");
-            Error = exception.Message;
+            StatusMessage = exception.Message;
         }
     }
 
@@ -350,7 +318,7 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogError(exception, "Cancelling compass calibration failed.");
-            Error = exception.Message;
+            StatusMessage = exception.Message;
         }
     }
 
@@ -359,6 +327,48 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
     {
         calibration.Reset();
     }
+
+    /// <inheritdoc />
+    public override void Cancel()
+    {
+        if (CanCancel)
+        {
+            calibration.CancelAsync().GetAwaiter().GetResult();
+        }
+
+        operationCancellation?.Cancel();
+        operationCancellation?.Dispose();
+        operationCancellation = null;
+    }
+
+    /// <inheritdoc />
+    public override void Dispose()
+    {
+        calibration.Dispose();
+        base.Dispose();
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        calibration.StateChanged += OnCalibrationStateChanged;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        Show(calibration.Current);
+
+        base.ActivateAsync();
+        LoadAsync().GetAwaiter().GetResult();
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
+        Cancel();
+        calibration.StateChanged -= OnCalibrationStateChanged;
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        return Task.CompletedTask;
+    }
+
 
     private bool WouldDisableLastEnabledCompass(CompassInstanceViewModel item)
     {
@@ -375,7 +385,7 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
         operationCancellation?.Cancel();
         operationCancellation?.Dispose();
         operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
-        Error = null;
+        StatusMessage = null;
         return operationCancellation.Token;
     }
 
@@ -387,7 +397,7 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
 
         if (!preserveStatus)
         {
-            Status = Compasses.Count == 0
+            StatusMessage = Compasses.Count == 0
                 ? "No compass devices were detected. Connect or re-detect compasses, then refresh."
                 : "Review compass identity and orientation, or start guided calibration.";
         }
@@ -419,7 +429,7 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
             ? string.Empty
             : string.Join(Environment.NewLine, snapshot.Progress.Select(item =>
                 $"Compass {item.CompassId + 1}: {item.Status} ({item.CompletionPercent}%)"));
-        Error = snapshot.FailureReason;
+        StatusMessage = snapshot.FailureReason;
         OnPropertyChanged(nameof(CanAccept));
         OnPropertyChanged(nameof(CanStart));
         OnPropertyChanged(nameof(CanCancel));

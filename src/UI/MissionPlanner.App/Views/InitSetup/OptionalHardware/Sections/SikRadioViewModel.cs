@@ -1,12 +1,13 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Firmware.Devices;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
-public sealed partial class SikRadioViewModel(IFirmwareSerialDeviceCatalog devices, ISikRadioConfigurator configurator)
-    : ExternalSerialToolViewModel(devices)
+public sealed partial class SikRadioViewModel(IFirmwareSerialDeviceCatalog devices, ISikRadioConfigurator configurator, ILogger<SikRadioViewModel> logger)
+    : ExternalSerialToolViewModel(devices, logger)
 {
     [ObservableProperty] public partial string Identity { get; private set; } = string.Empty;
     [ObservableProperty] public partial string SettingsText { get; set; } = string.Empty;

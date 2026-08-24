@@ -1,5 +1,5 @@
-﻿using MissionPlanner.App.Navigation;
-using System.ComponentModel;
+﻿using System.ComponentModel;
+using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Views.Introduction.Models;
 using MissionPlanner.Library;
 
@@ -10,6 +10,10 @@ namespace MissionPlanner.App.Views.Introduction;
 /// </summary>
 public partial class IntroductionPage : ExtendedContentPage<IntroductionViewModel>
 {
+    private const double CompactWidth = 820;
+    private int topicTransitionVersion;
+
+
     /// <summary>
     /// Initializes a new instance of the <see cref="IntroductionPage"/> class.
     /// </summary>
@@ -18,31 +22,25 @@ public partial class IntroductionPage : ExtendedContentPage<IntroductionViewMode
         InitializeComponent();
     }
 
-    private const double CompactWidth = 820;
-    private int topicTransitionVersion;
-
-
     /// <inheritdoc />
-    protected override async Task OnModelCreatedAsync(IntroductionViewModel viewModel)
+    protected override async Task ActivateAsync()
     {
-        DomainException.ThrowIfNull(viewModel);
+        DomainException.ThrowIfNull(ViewModel);
+        ViewModel.PropertyChanged += OnViewModelPropertyChanged;
         SizeChanged += OnPageSizeChanged;
-        viewModel.PropertyChanged += OnViewModelPropertyChanged;
-        await base.OnModelCreatedAsync(viewModel);
-        await viewModel.InitializeAsync();
-        QueueTopicPresentation(viewModel.SelectedTopic);
+        await base.ActivateAsync();
+        QueueTopicPresentation(ViewModel.SelectedTopic);
     }
 
     /// <inheritdoc />
-    protected override void OnDestroyingModel(IntroductionViewModel viewModel)
+    protected override Task DeactivateAsync()
     {
-        topicTransitionVersion++;
-        TopicView.BindingContext = null;
-        TopicView.IsVisible = false;
-        viewModel.PropertyChanged -= OnViewModelPropertyChanged;
-        base.OnDestroyingModel(viewModel);
+        DomainException.ThrowIfNull(ViewModel);
+        ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
         SizeChanged -= OnPageSizeChanged;
+        return base.DeactivateAsync();
     }
+
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
@@ -55,20 +53,14 @@ public partial class IntroductionPage : ExtendedContentPage<IntroductionViewMode
     private void QueueTopicPresentation(IntroductionTopic? topic)
     {
         var version = ++topicTransitionVersion;
-
-        // Detach the old BindableLayout/image tree before creating the next one. WinUI can
-        // otherwise overlap disposal and decoding of two large screenshots inside the same
-        // CollectionView SelectedItem notification, which surfaces as ExecutionEngineException.
-        TopicView.IsVisible = false;
-        TopicView.BindingContext = null;
-
-        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(50), () =>
+        Dispatcher.Dispatch(() =>
         {
+            TopicView.IsVisible = false;
+            TopicView.BindingContext = null;
             if (version != topicTransitionVersion || ViewModel?.SelectedTopic != topic)
             {
                 return;
             }
-
             TopicView.BindingContext = topic;
             TopicView.IsVisible = topic is not null;
         });
@@ -102,10 +94,7 @@ public partial class IntroductionPage : ExtendedContentPage<IntroductionViewMode
                     var target = action.Target;
                     // The action button belongs to the topic tree that SelectTopic replaces.
                     // Let its native Clicked callback return before detaching that tree.
-                    Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(1), () =>
-                    {
-                        ViewModel?.SelectTopic(target);
-                    });
+                    Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(1), () => ViewModel?.SelectTopic(target));
                     break;
 
                 case IntroductionActionKind.Route:

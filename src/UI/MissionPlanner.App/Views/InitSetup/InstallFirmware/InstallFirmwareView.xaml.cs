@@ -14,10 +14,4 @@ public partial class InstallFirmwareView : ExtendedContentPage<InstallFirmwareVi
     {
         InitializeComponent();
     }
-
-    /// <inheritdoc />
-    protected override async Task OnModelCreatedAsync(InstallFirmwareViewModel viewModel)
-    {
-        await viewModel.ActivateAsync();
-    }
 }

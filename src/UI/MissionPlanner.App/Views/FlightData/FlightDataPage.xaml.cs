@@ -14,34 +14,20 @@ public partial class FlightDataPage : ExtendedContentPage<FlightDataViewModel>
     public FlightDataPage()
     {
         InitializeComponent();
-    }
-
-    /// <inheritdoc />
-    protected override async Task OnModelCreatedAsync(FlightDataViewModel viewModel)
-    {
-        DomainException.ThrowIfNull(viewModel);
-        var map = viewModel.Map as FlightDataMissionMapViewModel; //To share the Map it is brought over
-        DomainException.ThrowIfNull(map);
-        MapLoadingIndicator.IsVisible = true;
         MapLoadingIndicator.IsRunning = true;
-        try
-        {
-            // Allow the indicator to render before map initialization starts.
-            await Task.Yield();
-            await MapView.Activate(map);
-        }
-        finally
-        {
-            MapLoadingIndicator.IsRunning = false;
-            MapLoadingIndicator.IsVisible = false;
-        }
+        MapLoadingIndicator.IsVisible = true;
     }
 
     /// <inheritdoc />
-    protected override void OnDestroyingModel(FlightDataViewModel viewModel)
+    protected override async Task ActivateAsync()
     {
+        DomainException.ThrowIfNull(ViewModel);
+        var map = ViewModel.Map as FlightDataMissionMapViewModel; //To share the Map it is brought along by this code
+        DomainException.ThrowIfNull(map);
+        await MapView.Activate(map);
+        await base.ActivateAsync();
         MapLoadingIndicator.IsRunning = false;
         MapLoadingIndicator.IsVisible = false;
-        MapView.Deactivate();
     }
+
 }

@@ -37,7 +37,7 @@ public sealed partial class BatterySetupViewModel : OptionalHardwareBaseViewMode
         IBatteryConfigurationService batteryService,
         IDomainEventHub domainEventHub,
         IDispatcher dispatcher,
-        ILogger<BatterySetupViewModel> logger)
+        ILogger<BatterySetupViewModel> logger) : base(logger)
 
     {
         this.activeVehicle = activeVehicle;
@@ -342,65 +342,116 @@ public sealed partial class BatteryInstanceViewModel : ObservableObject
     }
 
     /// <summary>Gets the one-based instance index.</summary>
-    public int Index { get; }
+    public int Index
+    {
+        get;
+    }
 
     /// <summary>Gets the monitor backend name.</summary>
-    public string MonitorName { get; }
+    public string MonitorName
+    {
+        get;
+    }
 
     /// <summary>Gets the monitor backend options.</summary>
-    public IReadOnlyList<BatterySettingOption> MonitorOptions { get; }
+    public IReadOnlyList<BatterySettingOption> MonitorOptions
+    {
+        get;
+    }
 
     /// <summary>Gets the low-failsafe action options.</summary>
-    public IReadOnlyList<BatterySettingOption> LowActionOptions { get; }
+    public IReadOnlyList<BatterySettingOption> LowActionOptions
+    {
+        get;
+    }
 
     /// <summary>Gets the critical-failsafe action options.</summary>
-    public IReadOnlyList<BatterySettingOption> CriticalActionOptions { get; }
+    public IReadOnlyList<BatterySettingOption> CriticalActionOptions
+    {
+        get;
+    }
 
     /// <summary>Gets the instance header.</summary>
     public string Header => $"Battery {Index} · {MonitorName}";
 
     /// <summary>Gets whether capacity is configurable.</summary>
-    public bool SupportsCapacity { get; }
+    public bool SupportsCapacity
+    {
+        get;
+    }
 
     /// <summary>Gets whether voltage failsafe thresholds are configurable.</summary>
-    public bool SupportsVoltageFailsafe { get; }
+    public bool SupportsVoltageFailsafe
+    {
+        get;
+    }
 
     /// <summary>Gets whether capacity failsafe thresholds are configurable.</summary>
-    public bool SupportsCapacityFailsafe { get; }
+    public bool SupportsCapacityFailsafe
+    {
+        get;
+    }
 
     /// <summary>Gets whether voltage calibration is supported.</summary>
-    public bool SupportsVoltageCalibration { get; }
+    public bool SupportsVoltageCalibration
+    {
+        get;
+    }
 
     /// <summary>Gets whether current calibration is supported.</summary>
-    public bool SupportsCurrentCalibration { get; }
+    public bool SupportsCurrentCalibration
+    {
+        get;
+    }
 
     /// <summary>Gets or sets the pack capacity in milliampere-hours.</summary>
     [ObservableProperty]
-    public partial double Capacity { get; set; }
+    public partial double Capacity
+    {
+        get; set;
+    }
 
     /// <summary>Gets or sets the low-voltage failsafe threshold.</summary>
     [ObservableProperty]
-    public partial double LowVoltage { get; set; }
+    public partial double LowVoltage
+    {
+        get; set;
+    }
 
     /// <summary>Gets or sets the critical-voltage failsafe threshold.</summary>
     [ObservableProperty]
-    public partial double CriticalVoltage { get; set; }
+    public partial double CriticalVoltage
+    {
+        get; set;
+    }
 
     /// <summary>Gets or sets the low-capacity failsafe threshold.</summary>
     [ObservableProperty]
-    public partial double LowCapacity { get; set; }
+    public partial double LowCapacity
+    {
+        get; set;
+    }
 
     /// <summary>Gets or sets the critical-capacity failsafe threshold.</summary>
     [ObservableProperty]
-    public partial double CriticalCapacity { get; set; }
+    public partial double CriticalCapacity
+    {
+        get; set;
+    }
 
     /// <summary>Gets or sets the external reference voltage for calibration.</summary>
     [ObservableProperty]
-    public partial double ReferenceVoltage { get; set; }
+    public partial double ReferenceVoltage
+    {
+        get; set;
+    }
 
     /// <summary>Gets or sets the external reference current for calibration.</summary>
     [ObservableProperty]
-    public partial double ReferenceCurrent { get; set; }
+    public partial double ReferenceCurrent
+    {
+        get; set;
+    }
 
     /// <summary>Gets the live readings summary.</summary>
     [ObservableProperty]
@@ -408,7 +459,10 @@ public sealed partial class BatteryInstanceViewModel : ObservableObject
 
     /// <summary>Gets whether the live telemetry is stale.</summary>
     [ObservableProperty]
-    public partial bool IsStale { get; private set; }
+    public partial bool IsStale
+    {
+        get; private set;
+    }
 
     /// <summary>Updates the live readings from a new projection.</summary>
     /// <param name="live">The live reading projection.</param>

@@ -1,5 +1,4 @@
-﻿using Mapsui.UI.Maui;
-using MissionPlanner.App.Navigation;
+﻿using MissionPlanner.App.Navigation;
 using MissionPlanner.Library;
 
 namespace MissionPlanner.App.Views.FlightPlanner;
@@ -15,37 +14,20 @@ public partial class FlightPlannerPage : ExtendedContentPage<FlightPlannerViewMo
     public FlightPlannerPage()
     {
         InitializeComponent();
-    }
-
-    /// <inheritdoc/>
-    protected override async Task OnModelCreatedAsync(FlightPlannerViewModel viewModel)
-    {
-        DomainException.ThrowIfNull(viewModel);
-        var map = viewModel.Map as FlightPlannerMissionMapViewModel; //To share the Map it is brought over
-        DomainException.ThrowIfNull(map);
         MapLoadingIndicator.IsVisible = true;
         MapLoadingIndicator.IsRunning = true;
-        try
-        {
-            // Allow the indicator to render before map initialization starts.
-            await Task.Yield();
-            await MapView.Activate(map);
-            ItemListView.BindingContext = map;
-        }
-        finally
-        {
-            MapLoadingIndicator.IsRunning = false;
-            MapLoadingIndicator.IsVisible = false;
-        }
     }
 
 
     /// <inheritdoc />
-    protected override void OnDestroyingModel(FlightPlannerViewModel viewModel)
+    protected override async Task ActivateAsync()
     {
+        DomainException.ThrowIfNull(ViewModel);
+        var map = ViewModel.Map as FlightPlannerMissionMapViewModel; //To share the Map it is brought along by this code
+        DomainException.ThrowIfNull(map);
+        await MapView.Activate(map);
+        await base.ActivateAsync();
         MapLoadingIndicator.IsRunning = false;
         MapLoadingIndicator.IsVisible = false;
-        MapView.Deactivate();
-        ItemListView.BindingContext = null;
     }
 }

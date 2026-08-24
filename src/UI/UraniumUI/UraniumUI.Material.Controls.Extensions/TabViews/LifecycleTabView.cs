@@ -20,19 +20,17 @@ public class LifecycleTabView : TabView
     /// <inheritdoc />
     protected override async Task OnSelectedTabChanged(TabItem oldValue, TabItem newValue)
     {
-        if (Dispatcher.IsDispatchRequired)
-        {
-            await Dispatcher.DispatchAsync(async () => await OnSelectedTabChanged(oldValue, newValue));
-            return;
-        }
-
-        // RecreateAlways clears oldValue.Content inside the base implementation.
-        // Capture
-        // and deactivate it before that happens rather than using SelectedTabChanged.
         var oldContent = oldValue?.Content ?? currentContent;
+
+
         if (oldContent is not null && oldValue != newValue)
         {
-            (oldContent as ITabViewLifecycleContent)?.Deactivate();
+            if (oldContent is not IActivationLifeCycle content)
+            {
+                return;
+            }
+
+            await content.DeactivateAsync();
         }
 
         await base.OnSelectedTabChanged(oldValue, newValue).ConfigureAwait(true);
@@ -43,10 +41,14 @@ public class LifecycleTabView : TabView
             return;
         }
 
-        currentContent.IsEnabled = true;
         if (isLoaded)
         {
-            (currentContent as ITabViewLifecycleContent)?.Activate();
+            if (currentContent is not IActivationLifeCycle content)
+            {
+                return;
+            }
+
+            await content.ActivateAsync();
         }
     }
 
@@ -57,18 +59,15 @@ public class LifecycleTabView : TabView
             return;
         }
 
-        if (Dispatcher.IsDispatchRequired)
-        {
-            OnLoaded(sender, e);
-            return;
-        }
-
         isLoaded = true;
         currentContent ??= SelectedTab?.Content;
         if (currentContent is not null)
         {
-            currentContent.IsEnabled = true;
-            (currentContent as ITabViewLifecycleContent)?.Activate();
+            if (currentContent is not IActivationLifeCycle content)
+            {
+                return;
+            }
+            content.ActivateAsync().GetAwaiter().GetResult();
         }
     }
 
@@ -78,18 +77,14 @@ public class LifecycleTabView : TabView
         {
             return;
         }
-
-        if (Dispatcher.IsDispatchRequired)
-        {
-            OnUnloaded(sender, e);
-            return;
-        }
-
         isLoaded = false;
         if (currentContent is not null)
         {
-            currentContent.IsEnabled = false;
-            (currentContent as ITabViewLifecycleContent)?.Deactivate();
+            if (currentContent is not IActivationLifeCycle content)
+            {
+                return;
+            }
+            content.DeactivateAsync().GetAwaiter().GetResult();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using MissionPlanner.Core.Setup.Abstractions;
+﻿using Microsoft.Extensions.Logging;
+using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Vehicles.Abstractions;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
@@ -8,4 +9,6 @@ namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 /// </summary>
 /// <param name="v"></param>
 /// <param name="s"></param>
-public sealed class AirspeedViewModel(IActiveVehicleContext v, IOptionalHardwareService s) : ParameterHardwareViewModel("airspeed", v, s);
+/// <param name="logger"></param>
+public sealed class AirspeedViewModel(IActiveVehicleContext v, IOptionalHardwareService s, ILogger<AirspeedViewModel> logger)
+    : ParameterHardwareViewModel("airspeed", v, s, logger);

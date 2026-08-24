@@ -13,17 +13,19 @@ using MissionPlanner.MavLink.MavFtp;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using UraniumUI.Extensions;
 using UraniumUI.Material.Dialogs;
+using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
 /// <summary>
 /// ViewModel for the MAVFTP tab in the configuration tuning section of the application.
 /// </summary>
-public partial class MavFtpTabViewModel : ObservableObject, IDisposable
+public partial class MavFtpTabViewModel : BaseViewModel
 {
     private readonly IVehicleRegistry vehicleRegistry;
     private readonly IVehicleConnectionSession connectionSession;
     private readonly ApplicationStateService stateService;
+    private readonly IDomainEventHub domainEventHub;
     private readonly IExtendedDialogService dialogService;
     private readonly IFileSaver fileSaver;
     private readonly IDispatcher dispatcher;
@@ -51,12 +53,6 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
         set;
     } = "/";
 
-    [ObservableProperty]
-    public partial bool IsBusy
-    {
-        get;
-        set;
-    }
 
     [ObservableProperty]
     public partial double TransferProgress
@@ -72,22 +68,9 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
         set;
     } = string.Empty;
 
-    [ObservableProperty]
-    public partial string? StatusText
-    {
-        get;
-        set;
-    }
 
     [ObservableProperty]
     public partial string? EmptyText
-    {
-        get;
-        set;
-    }
-
-    [ObservableProperty]
-    public partial string? ErrorText
     {
         get;
         set;
@@ -117,10 +100,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
     /// <summary>
     /// Gets the collection of file system entries.
     /// </summary>
-    public ObservableRangeCollection<VehicleFileSystemEntryViewModel> Entries
-    {
-        get;
-    } = [];
+    public ObservableRangeCollection<VehicleFileSystemEntryViewModel> Entries { get; } = [];
 
 
     /// <summary>
@@ -128,8 +108,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
     /// </summary>
     public VehicleFileSystemEntryViewModel? SelectedEntry
     {
-        get;
-        set;
+        get; set;
     }
 
     /// <summary>
@@ -152,22 +131,16 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
         IDomainEventHub domainEventHub,
         IExtendedDialogService dialogService,
         IFileSaver fileSaver,
-        IDispatcher dispatcher, ILogger<MavFtpTabViewModel> logger)
+        IDispatcher dispatcher, ILogger<MavFtpTabViewModel> logger) : base(logger)
     {
         this.vehicleRegistry = vehicleRegistry;
         this.connectionSession = connectionSession;
         this.stateService = stateService;
+        this.domainEventHub = domainEventHub;
         this.dialogService = dialogService;
         this.fileSaver = fileSaver;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected));
-        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
-        fileSystem = connectionSession.CreateMavFtpConnection();
-
-
-        SetConnectionStatus();
-        StartDelayedRefresh(TimeSpan.FromMilliseconds(100));
     }
 
     private async Task ResetFilesystemService(VehicleId vehicleId, CancellationToken ct)
@@ -270,53 +243,6 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
         }
     }
 
-    private void StartDelayedRefresh(TimeSpan milliseconds)
-    {
-        if (disposed)
-        {
-            return;
-        }
-
-        StopDelayedRefresh();
-        var newTimer = dispatcher.CreateTimer();
-        newTimer.Interval = milliseconds;
-        newTimer.Tick += OnRefreshTimerTick;
-        var shouldStart = false;
-        lock (lifecycleSync)
-        {
-            if (!disposed)
-            {
-                timer = newTimer;
-                shouldStart = true;
-            }
-        }
-
-        if (shouldStart)
-        {
-            newTimer.Start();
-            if (!disposed)
-            {
-                return;
-            }
-        }
-
-        newTimer.Tick -= OnRefreshTimerTick;
-        newTimer.Stop();
-    }
-
-    private void OnRefreshTimerTick(object? sender, EventArgs e)
-    {
-        StopDelayedRefresh();
-        if (disposed || !stateService.IsConnected)
-        {
-            return;
-        }
-
-        RefreshAsync().FireAndForget();
-        SetConnectionStatus();
-        SelectionChanged();
-    }
-
     private void StopDelayedRefresh()
     {
         IDispatcherTimer? activeTimer;
@@ -344,21 +270,21 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
 
         dispatcher.Dispatch(() =>
         {
-            ErrorText = null;
-            StatusText = null;
+            ErrorMessage = null;
+            StatusMessage = null;
             EmptyText = NoFiles;
             HasConnection = false;
             if (!stateService.IsConnected)
             {
-                ErrorText = NoRegisteredConnection;
+                ErrorMessage = NoRegisteredConnection;
                 return;
             }
 
             var vehicle = ResolveActiveVehicle();
             if (vehicle is null)
             {
-                StatusText = NoConnection;
-                ErrorText = StatusText;
+                StatusMessage = NoConnection;
+                ErrorMessage = StatusMessage;
                 EmptyText = NoConnection;
                 HasConnection = false;
                 return;
@@ -426,7 +352,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
     [RelayCommand]
     private async Task ResetSessionsAsync()
     {
-        dispatcher.Dispatch(() => ErrorText = null);
+        dispatcher.Dispatch(() => ErrorMessage = null);
         var vehicle = ResolveActiveVehicle();
         if (vehicle is null)
         {
@@ -441,7 +367,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
                 var activeFileSystem = fileSystem;
                 if (activeFileSystem is null)
                 {
-                    dispatcher.Dispatch(() => StatusText = "MAVFTP sessions not initialized.");
+                    dispatcher.Dispatch(() => StatusMessage = "MAVFTP sessions not initialized.");
                     return;
                 }
 
@@ -454,7 +380,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
 
             dispatcher.Dispatch(() =>
             {
-                StatusText = "MAVFTP sessions reset.";
+                StatusMessage = "MAVFTP sessions reset.";
                 SelectedEntry = null;
                 Entries.Clear();
                 HasEntries = false;
@@ -493,14 +419,14 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
                 var activeFileSystem = fileSystem;
                 if (activeFileSystem is null)
                 {
-                    dispatcher.Dispatch(() => StatusText = "MAVFTP sessions not initialized.");
+                    dispatcher.Dispatch(() => StatusMessage = "MAVFTP sessions not initialized.");
                     return;
                 }
 
                 await activeFileSystem.DownloadFileAsync(vehicle.Id, remotePath, destination, progress, ct);
                 destination.Position = 0;
                 var saved = await fileSaver.SaveAsync(SelectedEntry.Name, destination, ct);
-                dispatcher.Dispatch(() => StatusText = saved.IsSuccessful ? $"Downloaded to {saved.FilePath}." : "Download destination selection cancelled.");
+                dispatcher.Dispatch(() => StatusMessage = saved.IsSuccessful ? $"Downloaded to {saved.FilePath}." : "Download destination selection cancelled.");
             }
             finally
             {
@@ -541,7 +467,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
             var activeFileSystem = fileSystem;
             if (activeFileSystem is null)
             {
-                dispatcher.Dispatch(() => StatusText = "MAVFTP sessions not initialized.");
+                dispatcher.Dispatch(() => StatusMessage = "MAVFTP sessions not initialized.");
                 return;
             }
 
@@ -551,18 +477,18 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
             dispatcher.Dispatch(() =>
             {
                 Message = $"Found {entries.Count} Remote Entries";
-                var entris = new List<VehicleFileSystemEntryViewModel>();
+                var entryViewModels = new List<VehicleFileSystemEntryViewModel>();
                 foreach (var entry in entries.OrderBy(x => x.Type).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase))
                 {
-                    entris.Add(new VehicleFileSystemEntryViewModel(entry.Name, entry.Type, entry.Size));
+                    entryViewModels.Add(new VehicleFileSystemEntryViewModel(entry.Name, entry.Type, entry.Size));
                 }
 
-                Entries.ReplaceRange(entris);
+                Entries.ReplaceRange(entryViewModels);
 
 
                 HasEntries = Entries.Any();
                 CurrentPath = RemotePath.Normalize(path);
-                StatusText = Entries.Count == 0 ? "Directory is empty." : $"{Entries.Count} entries.";
+                StatusMessage = Entries.Count == 0 ? "Directory is empty." : $"{Entries.Count} entries.";
                 SelectedEntry = null;
                 SelectionChanged();
             });
@@ -585,7 +511,8 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
         return fallback;
     }
 
-    private async Task RunAsync(Func<CancellationToken, Task> operation)
+    /// <inheritdoc />
+    protected override async Task RunAsync(Func<CancellationToken, Task> operation)
     {
         var enteredGate = false;
         CancellationTokenSource? operationSource = null;
@@ -607,7 +534,7 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
             dispatcher.Dispatch(() =>
             {
                 IsBusy = true;
-                ErrorText = null;
+                ErrorMessage = null;
                 OnPropertyChanged(nameof(CanNavigateUp));
             });
 
@@ -619,36 +546,36 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
         }
         catch (OperationCanceledException)
         {
-            dispatcher.Dispatch(() => StatusText = "Operation cancelled.");
+            dispatcher.Dispatch(() => StatusMessage = "Operation cancelled.");
         }
         catch (TimeoutException ex)
         {
-            dispatcher.Dispatch(() => ErrorText = "MAVFTP transfer timed out. Retrying Connection.");
+            dispatcher.Dispatch(() => ErrorMessage = "MAVFTP transfer timed out. Retrying Connection.");
             logger.LogWarning(ex, "MAVFTP transfer timed out. Retrying Connection.");
         }
         catch (MavFtpRemoteException ex) when (
             ex.Error == MavFtpNakError.UnknownCommand)
         {
-            dispatcher.Dispatch(() => ErrorText = "The connected vehicle does not support this MAVFTP operation.");
+            dispatcher.Dispatch(() => ErrorMessage = "The connected vehicle does not support this MAVFTP operation.");
         }
         catch (MavFtpRemoteException ex) when (
             ex.Error == MavFtpNakError.FileNotFound)
         {
-            dispatcher.Dispatch(() => ErrorText = "The remote file or directory was not found.");
+            dispatcher.Dispatch(() => ErrorMessage = "The remote file or directory was not found.");
         }
         catch (MavFtpProtocolException ex)
         {
-            dispatcher.Dispatch(() => ErrorText = "The vehicle returned an invalid MAVFTP response: " + ex.Message);
+            dispatcher.Dispatch(() => ErrorMessage = "The vehicle returned an invalid MAVFTP response: " + ex.Message);
             logger.LogError(ex, "Invalid MAVFTP protocol response.");
         }
         catch (InvalidOperationException ex)
         {
-            dispatcher.Dispatch(() => ErrorText = "Vehicle is not connected.");
+            dispatcher.Dispatch(() => ErrorMessage = "Vehicle is not connected.");
             logger.LogWarning(ex, "MAVFTP operation has no vehicle.");
         }
         catch (Exception ex)
         {
-            dispatcher.Dispatch(() => ErrorText = "MAVFTP operation failed. The vehicle may not support MAVFTP.");
+            dispatcher.Dispatch(() => ErrorMessage = "MAVFTP operation failed. The vehicle may not support MAVFTP.");
             logger.LogError(ex, "MAVFTP UI operation failed.");
         }
         finally
@@ -703,36 +630,102 @@ public partial class MavFtpTabViewModel : ObservableObject, IDisposable
         }
     }
 
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        IVehicleFileSystemService? ownedFileSystem;
-        lock (lifecycleSync)
-        {
-            if (disposed)
-            {
-                return;
-            }
 
-            disposed = true;
-            ownedFileSystem = fileSystem;
-            fileSystem = null;
+    private void StartDelayedRefresh(TimeSpan milliseconds)
+    {
+        if (disposed)
+        {
+            return;
         }
 
         StopDelayedRefresh();
-        lifetimeCancellation.Cancel();
-        CancelActiveOperation();
+        var newTimer = dispatcher.CreateTimer();
+        newTimer.Interval = milliseconds;
+        newTimer.Tick += OnRefreshTimerTick;
+        var shouldStart = false;
+        lock (lifecycleSync)
+        {
+            if (!disposed)
+            {
+                timer = newTimer;
+                shouldStart = true;
+            }
+        }
 
+        if (shouldStart)
+        {
+            newTimer.Start();
+            if (!disposed)
+            {
+                return;
+            }
+        }
+
+        newTimer.Tick -= OnRefreshTimerTick;
+        newTimer.Stop();
+    }
+
+    private void OnRefreshTimerTick(object? sender, EventArgs e)
+    {
+        StopDelayedRefresh();
+        if (disposed || !stateService.IsConnected)
+        {
+            return;
+        }
+
+        RefreshAsync().FireAndForget();
+        SetConnectionStatus();
+        SelectionChanged();
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected));
+        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
+        fileSystem = connectionSession.CreateMavFtpConnection();
+        SetConnectionStatus();
+        StartDelayedRefresh(TimeSpan.FromMilliseconds(100));
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
+        StopDelayedRefresh();
         foreach (var disposable in disposables)
         {
             disposable.Dispose();
         }
 
         disposables.Clear();
-
+        IVehicleFileSystemService? ownedFileSystem;
+        lock (lifecycleSync)
+        {
+            ownedFileSystem = fileSystem;
+            fileSystem = null;
+        }
         if (ownedFileSystem is not null)
         {
-            _ = DisposeFileSystemAfterOperationsAsync(ownedFileSystem);
+            DisposeFileSystemAfterOperationsAsync(ownedFileSystem).GetAwaiter().GetResult();
         }
+        return Task.CompletedTask;
     }
+
+    /// <inheritdoc />
+    public override void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+        disposed = true;
+
+        DeactivateAsync().GetAwaiter().GetResult();
+        lifetimeCancellation.Cancel();
+        CancelActiveOperation();
+
+
+    }
+
 }

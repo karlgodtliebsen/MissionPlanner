@@ -50,7 +50,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         IUserConfirmationService confirmation,
         IDispatcher dispatcher,
         ILogger<FirmwareSetupViewModel> logger)
-        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Firmware))
+        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Firmware), logger)
     {
         this.activeVehicle = activeVehicle;
         this.domainEventHub = domainEventHub;
@@ -60,10 +60,6 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         this.dispatcher = dispatcher;
         this.logger = logger;
 
-        coordinator.StateChanged += OnStateChanged;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
-        UpdateVehicle(activeVehicle.State);
     }
 
     /// <summary>Gets the available release channels.</summary>
@@ -189,13 +185,6 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         private set;
     } = "No platform adapter available.";
 
-    /// <summary>Gets the firmware workflow status.</summary>
-    [ObservableProperty]
-    public partial string Status
-    {
-        get;
-        private set;
-    } = "Identity is read-only until a compatible manifest release is selected.";
 
     /// <summary>Gets the firmware workflow state.</summary>
     [ObservableProperty]
@@ -212,7 +201,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         coordinator.Reset();
         Releases.Clear();
         SelectedRelease = null;
-        Status = "Discover releases for the selected channel.";
+        StatusMessage = "Discover releases for the selected channel.";
     }
 
     partial void OnSelectedReleaseChanged(FirmwareManifestEntryRecord? value)
@@ -271,13 +260,31 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
     /// <inheritdoc />
     public override void Dispose()
     {
+        coordinator.Dispose();
+        base.Dispose();
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        StatusMessage = "Identity is read-only until a compatible manifest release is selected.";
+        coordinator.StateChanged += OnStateChanged;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
+        UpdateVehicle(activeVehicle.State);
+        return base.ActivateAsync();
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
         coordinator.StateChanged -= OnStateChanged;
         activeVehicle.Changed -= OnActiveVehicleChanged;
         vehicleStateSubscription?.Dispose();
         vehicleStateSubscription = null;
-        base.Dispose();
-        coordinator.Dispose();
+        return base.DeactivateAsync();
     }
+
 
     private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
     {
@@ -305,7 +312,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
     {
         if (activeVehicle.State is not { } state || !activeVehicle.IsOnline)
         {
-            Status = "Connect a vehicle before discovering firmware.";
+            StatusMessage = "Connect a vehicle before discovering firmware.";
             return;
         }
 
@@ -327,7 +334,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         catch (Exception exception)
         {
             logger.LogError(exception, "Firmware discovery failed.");
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
         }
     }
 
@@ -355,7 +362,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         catch (Exception exception)
         {
             logger.LogError(exception, "Firmware package preparation failed.");
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
         }
     }
 
@@ -394,7 +401,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         var result = await coordinator.FlashAsync(state.VehicleId, state.Identity.Firmware, true, operationToken);
         if (!result.Succeeded)
         {
-            Error = result.Message;
+            ErrorMessage = result.Message;
         }
     }
 
@@ -404,7 +411,8 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         operationCancellation = linkToConnection
             ? CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken)
             : new CancellationTokenSource();
-        Error = null;
+        ErrorMessage = null;
+        StatusMessage = null;
         return operationCancellation.Token;
     }
 
@@ -413,7 +421,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         dispatcher.Dispatch(() =>
         {
             UpdateState = args.State;
-            Status = args.Status;
+            StatusMessage = args.Status;
             Progress = args.Progress;
         });
     }

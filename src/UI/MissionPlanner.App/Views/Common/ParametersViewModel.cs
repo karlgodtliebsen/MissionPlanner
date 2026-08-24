@@ -13,23 +13,25 @@ using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using UraniumUI.Material.Dialogs;
+using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.Common;
 
 /// <summary>Provides the searchable full parameter list through the shared safe editing session.</summary>
-public partial class ParametersViewModel : ObservableObject, IDisposable
+public partial class ParametersViewModel : BaseViewModel
 {
     private const string DefaultStatusMessage = "Connect a vehicle, then refresh parameters.";
     private readonly IVehicleConnectionSession connectionSession;
     private readonly IVehicleParameterRegistry parameterRegistry;
     private readonly IVehicleParameterLoadStatusContext parameterLoadStatus;
+    private readonly IDomainEventHub domainEventHub;
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IParameterEditSessionFactory editSessionFactory;
     private readonly IDispatcher dispatcher;
     private readonly IExtendedDialogService dialogService;
     private readonly IDomainFactory domainFactory;
     private readonly ILogger logger;
-    private readonly IDisposable parameterLoadStatusSubscription;
+    private readonly IDisposable parameterLoadStatusSubscription = null!;
     private CancellationTokenSource? loadCancellation;
     private CancellationTokenSource? cachedLoadCancellation;
 
@@ -45,7 +47,10 @@ public partial class ParametersViewModel : ObservableObject, IDisposable
     private int cachedLoadScheduled;
 
     /// <summary>Gets whether the page is temporarily covered by its owned progress dialog.</summary>
-    public bool IsShowingProgressDialog { get; private set; }
+    public bool IsShowingProgressDialog
+    {
+        get; private set;
+    }
 
     /// <summary>Initializes the Full Parameters List tab.</summary>
     /// <param name="connectionSession">The current connection-scoped services.</param>
@@ -66,7 +71,7 @@ public partial class ParametersViewModel : ObservableObject, IDisposable
         IDomainFactory domainFactory,
         IVehicleParameterLoadStatusContext parameterLoadStatus,
         IDomainEventHub domainEventHub,
-        ILogger logger)
+        ILogger logger) : base(logger)
     {
         this.connectionSession = connectionSession;
         parameterRegistry = connectionSession.ParameterRegistry;
@@ -76,6 +81,7 @@ public partial class ParametersViewModel : ObservableObject, IDisposable
         this.dialogService = dialogService;
         this.domainFactory = domainFactory;
         this.parameterLoadStatus = parameterLoadStatus;
+        this.domainEventHub = domainEventHub;
         this.logger = logger;
         parameterLoadStatusSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleParameterLoadStatusChanged>(OnParameterLoadStatusChanged);
     }
@@ -89,33 +95,51 @@ public partial class ParametersViewModel : ObservableObject, IDisposable
 
     /// <summary>Gets whether parameter loading is in progress.</summary>
     [ObservableProperty]
-    public partial bool ShowLoadingProgress { get; set; }
+    public partial bool ShowLoadingProgress
+    {
+        get; set;
+    }
 
     /// <summary>Gets whether the most recent load failed.</summary>
     [ObservableProperty]
-    public partial bool ShowLoadingCompletedWithError { get; set; }
+    public partial bool ShowLoadingCompletedWithError
+    {
+        get; set;
+    }
 
     /// <summary>Gets whether the most recent load was cancelled.</summary>
     [ObservableProperty]
-    public partial bool ShowLoadingCancelled { get; set; }
+    public partial bool ShowLoadingCancelled
+    {
+        get; set;
+    }
 
     /// <summary>
     /// Gets whether the active vehicle is disconnected.
     /// </summary>
     [ObservableProperty]
-    public partial bool ShowVehicleDisconnected { get; set; }
+    public partial bool ShowVehicleDisconnected
+    {
+        get; set;
+    }
 
     /// <summary>
     /// Gets the number of unapplied parameter values.
     /// </summary>
     [ObservableProperty]
-    public partial int ModifiedParameterCount { get; set; }
+    public partial int ModifiedParameterCount
+    {
+        get; set;
+    }
 
     /// <summary>
     /// Gets the total number of loaded parameter fields.
     /// </summary>
     [ObservableProperty]
-    public partial int TotalParameterCount { get; set; }
+    public partial int TotalParameterCount
+    {
+        get; set;
+    }
 
     /// <summary>
     /// Gets whether a load or apply operation is active.
@@ -123,7 +147,10 @@ public partial class ParametersViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
     [NotifyCanExecuteChangedFor(nameof(CancelLoadCommand))]
-    public partial bool IsBusy { get; set; }
+    public new partial bool IsBusy
+    {
+        get; set;
+    }
 
     /// <summary>
     /// Gets whether the connection-owned background parameter download is active.
@@ -131,53 +158,33 @@ public partial class ParametersViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
     [NotifyCanExecuteChangedFor(nameof(CancelLoadCommand))]
-    public partial bool IsBackgroundParameterLoadInProgress { get; set; }
+    public partial bool IsBackgroundParameterLoadInProgress
+    {
+        get; set;
+    }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
     [NotifyCanExecuteChangedFor(nameof(CancelLoadCommand))]
-    public partial bool HasParameters { get; set; }
+    public partial bool HasParameters
+    {
+        get; set;
+    }
 
     /// <summary>Gets whether an active vehicle connection is available.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
     [NotifyCanExecuteChangedFor(nameof(CancelLoadCommand))]
-    public partial bool HasConnection { get; set; }
-
-    /// <summary>Gets the latest editing or apply status.</summary>
-    [ObservableProperty]
-    public partial string? StatusMessage { get; set; }
-
-    /// <summary>Gets the latest error message.</summary>
-    [ObservableProperty]
-    public partial string? ErrorMessage { get; set; }
+    public partial bool HasConnection
+    {
+        get; set;
+    }
 
     /// <summary>Gets or sets the current operation progress from zero to one.</summary>
     [ObservableProperty]
-    public partial double Progress { get; set; }
-
-    /// <summary>Activates vehicle lifecycle tracking while the tab is visible.</summary>
-    protected void InitializeParameters()
+    public partial double Progress
     {
-        if (disposed)
-        {
-            return;
-        }
-
-        ErrorMessage = null;
-        IsBusy = false;
-        HasParameters = Parameters.Count > 0;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        parameterRegistry.Changed += OnParameterRegistryChanged;
-        HasConnection = activeVehicle.IsOnline;
-        ShowVehicleDisconnected = !HasConnection;
-        StatusMessage = HasConnection ? null : DefaultStatusMessage;
-
-        if (activeVehicle.VehicleId is { } vehicleId && HasConnection)
-        {
-            ApplyParameterLoadStatus(parameterLoadStatus.Get(vehicleId));
-            ScheduleCachedParameterLoad(vehicleId);
-        }
+        get; set;
     }
 
     /// <summary>
@@ -668,7 +675,7 @@ public partial class ParametersViewModel : ObservableObject, IDisposable
     }
 
     /// <inheritdoc />
-    public virtual void Dispose()
+    public override void Dispose()
     {
         if (disposed)
         {
@@ -676,25 +683,59 @@ public partial class ParametersViewModel : ObservableObject, IDisposable
         }
 
         disposed = true;
-        Interlocked.Exchange(ref sessionRefreshScheduled, 0);
-        activeVehicle.Changed -= OnActiveVehicleChanged;
-        parameterRegistry.Changed -= OnParameterRegistryChanged;
         parameterLoadStatusSubscription.Dispose();
+        Interlocked.Exchange(ref sessionRefreshScheduled, 0);
+
+        DeactivateAsync().GetAwaiter().GetResult();
+
         CancelCachedParameterLoad();
         CancelLoadOperation();
-        CloseProgressDialog();
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        if (disposed)
+        {
+            return Task.CompletedTask;
+        }
+
+        ErrorMessage = null;
+        IsBusy = false;
+        HasParameters = Parameters.Count > 0;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        parameterRegistry.Changed += OnParameterRegistryChanged;
+        HasConnection = activeVehicle.IsOnline;
+        ShowVehicleDisconnected = !HasConnection;
+        StatusMessage = HasConnection ? null : DefaultStatusMessage;
+
+        if (activeVehicle.VehicleId is { } vehicleId && HasConnection)
+        {
+            ApplyParameterLoadStatus(parameterLoadStatus.Get(vehicleId));
+            ScheduleCachedParameterLoad(vehicleId);
+        }
+
+        return Task.CompletedTask;
+    }
+
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        parameterRegistry.Changed -= OnParameterRegistryChanged;
         EditSession?.Changed -= OnEditSessionChanged;
         EditSession = null;
 
-        // The page is retained by Shell even though this view model is transient.
-        // Release the large row graph immediately so recycled editor controls and
-        // parameter metadata do not remain rooted while another page is active.
+        CloseProgressDialog();
         Parameters.Clear();
         lastApplyReport = null;
         HasParameters = false;
         TotalParameterCount = 0;
         ModifiedParameterCount = 0;
+        return Task.CompletedTask;
     }
+
 
     /// <summary>
     /// Closes the progress dialog if it is currently shown.

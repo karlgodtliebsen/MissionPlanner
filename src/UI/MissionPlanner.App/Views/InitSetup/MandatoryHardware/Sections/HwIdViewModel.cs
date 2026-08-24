@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
@@ -20,14 +21,12 @@ public sealed partial class HwIdViewModel : SetupWorkflowDetailViewModel
     private CancellationTokenSource? cancellation;
 
     /// <summary>Initializes the HW ID ViewModel.</summary>
-    public HwIdViewModel(ISetupWorkflowCatalog catalog, IActiveVehicleContext activeVehicle, IHwIdService service, IDispatcher dispatcher)
-        : base(catalog.Workflows.First(workflow => workflow.Key == SetupWorkflowKey.HwId))
+    public HwIdViewModel(ISetupWorkflowCatalog catalog, IActiveVehicleContext activeVehicle, IHwIdService service, IDispatcher dispatcher, ILogger<HwIdViewModel> logger)
+        : base(catalog.Workflows.First(workflow => workflow.Key == SetupWorkflowKey.HwId), logger)
     {
         this.activeVehicle = activeVehicle;
         this.service = service;
         this.dispatcher = dispatcher;
-        activeVehicle.Changed += OnVehicleChanged;
-        RefreshAsync().FireAndForget();
     }
 
     /// <summary>Gets reported peripheral identifiers.</summary>
@@ -52,13 +51,24 @@ public sealed partial class HwIdViewModel : SetupWorkflowDetailViewModel
         private set;
     } = "Unavailable";
 
-    /// <summary>Gets the current diagnostic status.</summary>
-    [ObservableProperty]
-    public partial string Status
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
     {
-        get;
-        private set;
-    } = "Connect a vehicle to inspect hardware identifiers.";
+        StatusMessage = "Connect a vehicle to inspect hardware identifiers.";
+        activeVehicle.Changed += OnVehicleChanged;
+        RefreshAsync().FireAndForget();
+
+        return base.ActivateAsync();
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
+        activeVehicle.Changed -= OnVehicleChanged;
+        Cancel();
+        return base.DeactivateAsync();
+    }
 
     /// <inheritdoc />
     public override void Cancel()
@@ -68,13 +78,6 @@ public sealed partial class HwIdViewModel : SetupWorkflowDetailViewModel
         cancellation = null;
     }
 
-    /// <inheritdoc />
-    public override void Dispose()
-    {
-        activeVehicle.Changed -= OnVehicleChanged;
-        Cancel();
-        base.Dispose();
-    }
 
     [RelayCommand]
     private async Task RefreshAsync()
@@ -84,7 +87,7 @@ public sealed partial class HwIdViewModel : SetupWorkflowDetailViewModel
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
             Board = Firmware = "Unavailable";
-            Status = "Connect a vehicle to inspect hardware identifiers.";
+            StatusMessage = "Connect a vehicle to inspect hardware identifiers.";
             return;
         }
 
@@ -100,7 +103,7 @@ public sealed partial class HwIdViewModel : SetupWorkflowDetailViewModel
         }
         catch (Exception exception)
         {
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
         }
         finally
         {
@@ -118,11 +121,11 @@ public sealed partial class HwIdViewModel : SetupWorkflowDetailViewModel
             Items.Add(item);
         }
 
-        Status = Items.Count == 0 ? "No peripheral hardware identifiers were reported." : $"{Items.Count} hardware identifier(s) reported.";
+        StatusMessage = Items.Count == 0 ? "No peripheral hardware identifiers were reported." : $"{Items.Count} hardware identifier(s) reported.";
     }
 
     private void OnVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
     {
-        dispatcher.Dispatch(() => RefreshAsync().FireAndForget());
+        dispatcher.Dispatch(() => RefreshAsync().GetAwaiter().GetResult());
     }
 }

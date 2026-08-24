@@ -14,10 +14,4 @@ public partial class PreferencesPage : ExtendedContentPage<PreferencesViewModel>
     {
         InitializeComponent();
     }
-
-    /// <inheritdoc/>
-    protected override async Task OnModelCreatedAsync(PreferencesViewModel viewModel)
-    {
-        await viewModel.ActivateAsync();
-    }
 }

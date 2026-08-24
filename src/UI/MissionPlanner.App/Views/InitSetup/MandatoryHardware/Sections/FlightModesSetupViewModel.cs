@@ -34,14 +34,12 @@ public sealed partial class FlightModesSetupViewModel : SetupWorkflowDetailViewM
         IFlightModeConfigurationService modeService,
         IDispatcher dispatcher,
         ILogger<FlightModesSetupViewModel> logger)
-        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.FlightModes))
+        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.FlightModes), logger)
     {
         this.activeVehicle = activeVehicle;
         this.modeService = modeService;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        Load();
     }
 
     /// <summary>Gets the six flight-mode slots.</summary>
@@ -50,13 +48,6 @@ public sealed partial class FlightModesSetupViewModel : SetupWorkflowDetailViewM
         get;
     } = [];
 
-    /// <summary>Gets the workflow status.</summary>
-    [ObservableProperty]
-    public partial string Status
-    {
-        get;
-        private set;
-    } = "Load the connected vehicle's flight-mode configuration.";
 
     /// <summary>Gets the configured mode channel description.</summary>
     [ObservableProperty]
@@ -75,6 +66,23 @@ public sealed partial class FlightModesSetupViewModel : SetupWorkflowDetailViewM
     }
 
     /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        StatusMessage = "Load the connected vehicle's flight-mode configuration.";
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        Load();
+        return base.ActivateAsync();
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
+        Cancel();
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        return base.DeactivateAsync();
+    }
+
+    /// <inheritdoc />
     public override void Cancel()
     {
         operationCancellation?.Cancel();
@@ -82,12 +90,6 @@ public sealed partial class FlightModesSetupViewModel : SetupWorkflowDetailViewM
         operationCancellation = null;
     }
 
-    /// <inheritdoc />
-    public override void Dispose()
-    {
-        activeVehicle.Changed -= OnActiveVehicleChanged;
-        base.Dispose();
-    }
 
     /// <summary>Applies the reviewed mode assignment for one slot with readback confirmation.</summary>
     /// <param name="slot">The slot to apply.</param>
@@ -96,7 +98,7 @@ public sealed partial class FlightModesSetupViewModel : SetupWorkflowDetailViewM
     {
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
-            Status = "Connect a vehicle before editing flight modes.";
+            StatusMessage = "Connect a vehicle before editing flight modes.";
             return;
         }
 
@@ -107,11 +109,11 @@ public sealed partial class FlightModesSetupViewModel : SetupWorkflowDetailViewM
 
         Cancel();
         operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
-        Error = null;
+        ErrorMessage = null;
         try
         {
             var result = await modeService.SetSlotAsync(vehicleId, slot.Slot, (int)mode.CustomMode, operationCancellation.Token);
-            Status = result.Message;
+            StatusMessage = result.Message;
             dispatcher.Dispatch(Load);
         }
         catch (OperationCanceledException)
@@ -120,7 +122,7 @@ public sealed partial class FlightModesSetupViewModel : SetupWorkflowDetailViewM
         catch (Exception exception)
         {
             logger.LogError(exception, "Applying flight-mode slot failed for {VehicleId}.", vehicleId);
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
         }
     }
 
@@ -144,7 +146,7 @@ public sealed partial class FlightModesSetupViewModel : SetupWorkflowDetailViewM
         {
             Slots.Clear();
             IsSupported = false;
-            Status = "Connect a vehicle to configure flight modes.";
+            StatusMessage = "Connect a vehicle to configure flight modes.";
             return;
         }
 
@@ -156,7 +158,7 @@ public sealed partial class FlightModesSetupViewModel : SetupWorkflowDetailViewM
         catch (Exception exception)
         {
             logger.LogError(exception, "Loading flight-mode configuration failed for {VehicleId}.", vehicleId);
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
             return;
         }
 
@@ -165,7 +167,7 @@ public sealed partial class FlightModesSetupViewModel : SetupWorkflowDetailViewM
         {
             Slots.Clear();
             ModeChannelDescription = string.Empty;
-            Status = $"{configuration.Family} does not expose a switch-based flight-mode channel.";
+            StatusMessage = $"{configuration.Family} does not expose a switch-based flight-mode channel.";
             return;
         }
 
@@ -189,7 +191,7 @@ public sealed partial class FlightModesSetupViewModel : SetupWorkflowDetailViewM
             }
         }
 
-        Status = "Assign a mode to each switch position. The active slot updates live from the transmitter.";
+        StatusMessage = "Assign a mode to each switch position. The active slot updates live from the transmitter.";
     }
 }
 

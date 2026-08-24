@@ -1,10 +1,12 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.OptionalHardware;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
-public sealed partial class FftSetupViewModel(IFftAnalysisService analysis) : OptionalHardwareBaseViewModel
+public sealed partial class FftSetupViewModel(IFftAnalysisService analysis, ILogger<FftSetupViewModel> logger)
+    : OptionalHardwareBaseViewModel(logger)
 {
     [ObservableProperty] public partial string SamplesText { get; set; } = string.Empty;
     [ObservableProperty] public partial double SampleRateHz { get; set; } = 1000;
@@ -20,6 +22,9 @@ public sealed partial class FftSetupViewModel(IFftAnalysisService analysis) : Op
             Result = $"Peak: {spectrum.Peak.FrequencyHz:F2} Hz (magnitude {spectrum.Peak.Magnitude:F3})";
             ErrorMessage = string.Empty;
         }
-        catch (Exception ex) { ErrorMessage = ex.Message; }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
     }
 }

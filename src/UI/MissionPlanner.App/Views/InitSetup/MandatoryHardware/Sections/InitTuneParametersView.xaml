@@ -14,8 +14,8 @@
         <VerticalStackLayout Padding="16"  Spacing="25" HorizontalOptions="Center">
             <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
             <Label Text="Initial Tune Parameters" FontSize="18" FontAttributes="Bold" />
-            <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
-            <Label Text="{Binding Error}" TextColor="{DynamicResource Warning}" />
+            <Label Text="{Binding StatusMessage}" FontAttributes="Italic" LineBreakMode="WordWrap" />
+            <Label Text="{Binding ErrorMessage}" TextColor="{DynamicResource Warning}" />
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Guidance}">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="x:String">

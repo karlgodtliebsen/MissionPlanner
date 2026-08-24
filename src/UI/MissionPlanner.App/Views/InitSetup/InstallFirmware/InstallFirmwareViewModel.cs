@@ -19,11 +19,12 @@ using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Preparation;
 using MissionPlanner.Firmware.Presentation;
 using UraniumUI.Material.Dialogs;
+using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 
 /// <summary>Drives connected and disconnected firmware installation experiences.</summary>
-public sealed partial class InstallFirmwareViewModel : ObservableObject, IDisposable
+public sealed partial class InstallFirmwareViewModel : BaseViewModel
 {
     private readonly IFirmwareCatalogService catalogService;
     private readonly IFirmwareInstallationService installationService;
@@ -98,7 +99,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         IDeviceManagerLauncher deviceManagerLauncher,
         IDispatcher dispatcher,
         IExtendedDialogService dialogService,
-        ILogger<InstallFirmwareViewModel> logger)
+        ILogger<InstallFirmwareViewModel> logger) : base(logger)
     {
         this.catalogService = catalogService;
         this.installationService = installationService;
@@ -121,53 +122,27 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         this.logger = logger;
     }
 
-    /// <summary>
-    /// Gets whether an operation is running.
-    /// </summary>
-    [ObservableProperty]
-    public partial bool IsBusy
-    {
-        get;
-        private set;
-    }
-
     /// <summary>Gets the message displayed by the active firmware progress dialog.</summary>
     [ObservableProperty]
-    public partial string ProgressMessage
-    {
-        get;
-        private set;
-    } = string.Empty;
+    public partial string ProgressMessage { get; private set; } = string.Empty;
 
     ///
     /// <summary>Gets catalogue choices.
     /// </summary>
     [ObservableProperty]
-    public partial ObservableRangeCollection<FirmwareCatalogItemViewModel> FirmwareChoices
-    {
-        get;
-        private set;
-    } = [];
+    public partial ObservableRangeCollection<FirmwareCatalogItemViewModel> FirmwareChoices { get; private set; } = [];
 
     /// <summary>
     /// Gets catalogue choices.
     /// </summary>
     [ObservableProperty]
-    public partial ObservableRangeCollection<FirmwareCatalogItemViewModel> FilteredFirmwareChoices
-    {
-        get;
-        private set;
-    } = [];
+    public partial ObservableRangeCollection<FirmwareCatalogItemViewModel> FilteredFirmwareChoices { get; private set; } = [];
 
     /// <summary>
     /// Gets the distinct firmware versions available in the catalogue.
     /// </summary>
     [ObservableProperty]
-    public partial ObservableRangeCollection<string> Versions
-    {
-        get;
-        private set;
-    } = [];
+    public partial ObservableRangeCollection<string> Versions { get; private set; } = [];
 
     /// <summary>
     /// Gets or sets the selected firmware version for filtering the catalogue.
@@ -230,23 +205,13 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     } = [];
 
     /// <summary>Gets release channels.</summary>
-    public IReadOnlyList<FirmwareReleaseChannel> Channels
-    {
-        get;
-    } =
-        [FirmwareReleaseChannel.Stable, FirmwareReleaseChannel.Beta, FirmwareReleaseChannel.Latest];
+    public IReadOnlyList<FirmwareReleaseChannel> Channels { get; } = [FirmwareReleaseChannel.Stable, FirmwareReleaseChannel.Beta, FirmwareReleaseChannel.Latest];
 
     /// <summary>Gets operation progress.</summary>
-    public FirmwareProgressViewModel OperationProgress
-    {
-        get;
-    } = new();
+    public FirmwareProgressViewModel OperationProgress { get; } = new();
 
     /// <summary>Gets concise help that remains available offline.</summary>
-    public IReadOnlyList<FirmwareSupportSection> SupportSections
-    {
-        get;
-    } = FirmwareSupportContent.Sections;
+    public IReadOnlyList<FirmwareSupportSection> SupportSections { get; } = FirmwareSupportContent.Sections;
 
     /// <summary>Gets curated official and fallback support destinations.</summary>
     public IReadOnlyList<FirmwareSupportLink> SupportLinks
@@ -255,11 +220,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     }
 
     [ObservableProperty]
-    public partial FirmwareReleaseChannel SelectedChannel
-    {
-        get;
-        set;
-    } = FirmwareReleaseChannel.Stable;
+    public partial FirmwareReleaseChannel SelectedChannel { get; set; } = FirmwareReleaseChannel.Stable;
 
     [ObservableProperty]
     public partial FirmwareCatalogItemViewModel? SelectedFirmware
@@ -290,17 +251,12 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     }
 
     [ObservableProperty]
-    public partial string DfuStatus
-    {
-        get;
-        private set;
-    } = "Enter STM32 DFU mode, then refresh the catalogue.";
+    public partial string DfuStatus { get; private set; } = "Enter STM32 DFU mode, then refresh the catalogue.";
 
     [ObservableProperty]
     public partial FirmwarePreparationResult? PreparedFirmware
     {
-        get;
-        private set;
+        get; private set;
     }
 
     /// <summary>Gets whether this host can open Windows Device Manager.</summary>
@@ -484,7 +440,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     }
 
     [ObservableProperty]
-    public partial string StatusMessage
+    public new partial string StatusMessage
     {
         get;
         private set;
@@ -508,7 +464,7 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
     /// <summary>
     /// Starts observing connection state and refreshes disconnected data.
     /// </summary>
-    public Task ActivateAsync()
+    public override Task ActivateAsync()
     {
         if (active)
         {
@@ -537,6 +493,34 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
             : Task.CompletedTask;
     }
 
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
+        if (!active)
+        {
+            return Task.CompletedTask;
+        }
+
+        active = false;
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        CancelRefresh();
+
+        var current = lifetime;
+        lifetime = null;
+
+        current?.Cancel();
+        current?.Dispose();
+        return Task.CompletedTask;
+    }
+
+
+    /// <inheritdoc />
+    public override void Dispose()
+    {
+        DeactivateAsync().GetAwaiter().GetResult();
+    }
+
+
     private async Task RefreshSafelyAsync(bool forceRefresh, CancellationToken cancellationToken, bool allOptions = false)
     {
         IsBusy = true;
@@ -555,24 +539,6 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
         IsBusy = false;
     }
 
-    /// <summary>Stops page-owned observation without cancelling an unsafe firmware operation.</summary>
-    private void Deactivate()
-    {
-        if (!active && lifetime is null)
-        {
-            return;
-        }
-
-        active = false;
-        activeVehicle.Changed -= OnActiveVehicleChanged;
-        CancelRefresh();
-
-        var current = lifetime;
-        lifetime = null;
-
-        current?.Cancel();
-        current?.Dispose();
-    }
 
     partial void OnSelectedChannelChanged(FirmwareReleaseChannel value)
     {
@@ -1594,11 +1560,5 @@ public sealed partial class InstallFirmwareViewModel : ObservableObject, IDispos
                $"Failure detail: {result.Failure?.Message ?? "None"}\n" +
                $"Provider exit code: {result.ExitCode?.ToString() ?? "None"}\n" +
                $"Warnings: {warnings}";
-    }
-
-    /// <inheritdoc />
-    public void Dispose()
-    {
-        Deactivate();
     }
 }

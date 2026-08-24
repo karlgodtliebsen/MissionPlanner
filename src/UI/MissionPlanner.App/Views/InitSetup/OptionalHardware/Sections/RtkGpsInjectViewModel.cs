@@ -1,6 +1,7 @@
-using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Firmware.Devices;
 
@@ -12,26 +13,39 @@ public sealed partial class RtkGpsInjectViewModel : OptionalHardwareBaseViewMode
     private readonly IRtkInjectionService injection;
     private readonly IFirmwareSerialDeviceCatalog devices;
     private readonly IDispatcher dispatcher;
-    private readonly CancellationTokenSource lifetime = new();
+    private CancellationTokenSource lifetime = new();
 
-    public RtkGpsInjectViewModel(IRtkInjectionService injection, IFirmwareSerialDeviceCatalog devices, IDispatcher dispatcher)
+    public RtkGpsInjectViewModel(IRtkInjectionService injection, IFirmwareSerialDeviceCatalog devices, IDispatcher dispatcher, ILogger<RtkGpsInjectViewModel> logger)
+        : base(logger)
     {
         this.injection = injection;
         this.devices = devices;
         this.dispatcher = dispatcher;
-        injection.Changed += OnChanged;
-        Show(injection.Current);
     }
 
-    public ObservableCollection<string> Ports { get; } = [];
+    public ObservableRangeCollection<string> Ports { get; } = [];
+    /// <summary>
+    /// 
+    /// </summary>
     public IReadOnlyList<RtkSourceKind> SourceKinds { get; } = Enum.GetValues<RtkSourceKind>();
-    [ObservableProperty] public partial RtkSourceKind SourceKind { get; set; }
+
+    [ObservableProperty]
+    public partial RtkSourceKind SourceKind
+    {
+        get; set;
+    }
     [ObservableProperty] public partial string Endpoint { get; set; } = string.Empty;
     [ObservableProperty] public partial int PortOrBaud { get; set; } = 2101;
     [ObservableProperty] public partial string MountPoint { get; set; } = string.Empty;
     [ObservableProperty] public partial string Username { get; set; } = string.Empty;
     [ObservableProperty] public partial string Password { get; set; } = string.Empty;
-    [ObservableProperty] public partial bool UseTls { get; set; }
+
+    [ObservableProperty]
+    public partial bool UseTls
+    {
+        get; set;
+    }
+
     [ObservableProperty] public partial string SourceStatus { get; private set; } = string.Empty;
     [ObservableProperty] public partial string TargetStatus { get; private set; } = string.Empty;
     [ObservableProperty] public partial string Statistics { get; private set; } = string.Empty;
@@ -40,9 +54,11 @@ public sealed partial class RtkGpsInjectViewModel : OptionalHardwareBaseViewMode
     private async Task RefreshPortsAsync()
     {
         var snapshot = await devices.GetDevicesAsync(lifetime.Token);
-        Ports.Clear();
-        foreach (var item in snapshot) Ports.Add(item.PortName);
-        if (SourceKind == RtkSourceKind.Serial && string.IsNullOrEmpty(Endpoint)) Endpoint = Ports.FirstOrDefault() ?? string.Empty;
+        Ports.ReplaceRange(snapshot.Select(s => s.PortName));
+        if (SourceKind == RtkSourceKind.Serial && string.IsNullOrEmpty(Endpoint))
+        {
+            Endpoint = Ports.FirstOrDefault() ?? string.Empty;
+        }
     }
 
     [RelayCommand]
@@ -59,9 +75,16 @@ public sealed partial class RtkGpsInjectViewModel : OptionalHardwareBaseViewMode
     }
 
     [RelayCommand]
-    private Task DisconnectAsync() => injection.StopAsync();
+    private Task DisconnectAsync()
+    {
+        return injection.StopAsync();
+    }
 
-    private void OnChanged(object? sender, RtkInjectionSnapshot snapshot) => dispatcher.Dispatch(() => Show(snapshot));
+    private void OnChanged(object? sender, RtkInjectionSnapshot snapshot)
+    {
+        dispatcher.Dispatch(() => Show(snapshot));
+    }
+
     private void Show(RtkInjectionSnapshot snapshot)
     {
         SourceStatus = snapshot.SourceStatus;
@@ -69,12 +92,29 @@ public sealed partial class RtkGpsInjectViewModel : OptionalHardwareBaseViewMode
         Statistics = $"RTCM frames: {snapshot.FramesSeen} · MAVLink packets: {snapshot.PacketsSent} · Last correction: {snapshot.LastCorrection?.ToLocalTime():T}";
     }
 
-    public override void Dispose()
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        lifetime = new();
+        injection.Changed += OnChanged;
+        Show(injection.Current);
+        return base.ActivateAsync();
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
     {
         injection.Changed -= OnChanged;
         lifetime.Cancel();
-        _ = injection.StopAsync();
         lifetime.Dispose();
+        return base.DeactivateAsync();
+    }
+
+    /// <inheritdoc />
+    public override void Dispose()
+    {
+        injection.StopAsync().GetAwaiter().GetResult();
         injection.Dispose();
+        base.Dispose();
     }
 }

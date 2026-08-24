@@ -120,7 +120,7 @@
                     <Label Text="Next step" FontAttributes="Bold" />
                     <Label Text="{Binding Instruction}" FontSize="16" LineBreakMode="WordWrap" />
                     <Label Text="{Binding CaptureSummary}" FontSize="12" Opacity="0.75" LineBreakMode="WordWrap" />
-                    <Label Text="{Binding Error}" FontAttributes="Bold" LineBreakMode="WordWrap" />
+                    <Label Text="{Binding ErrorMessage}" FontAttributes="Bold" LineBreakMode="WordWrap" />
                     <ActivityIndicator IsVisible="{Binding IsWriting}" IsRunning="{Binding IsWriting}" />
                 </VerticalStackLayout>
             </Border>

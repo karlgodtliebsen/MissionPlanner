@@ -189,7 +189,7 @@ public sealed class OsdConfigurationTests
             dispatcher,
             NullLogger<OnboardOsdTabViewModel>.Instance);
 
-        viewModel.Activate();
+        await viewModel.ActivateAsync();
         await WaitUntilAsync(() => viewModel.SelectedItem is not null);
         viewModel.MoveRightCommand.Execute(null);
         viewModel.MoveUpCommand.Execute(null);
@@ -296,7 +296,13 @@ public sealed class OsdConfigurationTests
             FirmwareFamily.ArduCopter, 2, 3,
             new FirmwareSemanticVersion(4, 6, 0, FirmwareReleaseType.Official),
             "abcdef01", 0, 1, 2, 3, 4, "osd-test");
-        return state with { Identity = state.Identity with { Firmware = firmware } };
+        return state with
+        {
+            Identity = state.Identity with
+            {
+                Firmware = firmware
+            }
+        };
     }
 
     private sealed record TestParameter(
@@ -367,8 +373,12 @@ public sealed class OsdConfigurationTests
 
         public event EventHandler<ActiveVehicleChangedEventArgs>? Changed
         {
-            add { }
-            remove { }
+            add
+            {
+            }
+            remove
+            {
+            }
         }
     }
 }

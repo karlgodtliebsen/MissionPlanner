@@ -65,8 +65,6 @@
                                                 <Label Text="{Binding Name}" FontSize="11" />
                                             </VerticalStackLayout>
                                             <Label Grid.Column="1" Text="{Binding LiveValue, StringFormat='Live {0:G}'}" VerticalOptions="Center" />
-                                            <!--<Entry Grid.Column="2" Text="{Binding Value, Mode=TwoWay}" Keyboard="Numeric" 
-                                                   IsReadOnly="{Binding IsReadOnly}" />-->
                                             <controls:NumericField
                                                 IsReadOnly="{Binding IsReadOnly}" 
                                                 Grid.Column="2" 
@@ -90,9 +88,6 @@
                                     <DataTemplate x:DataType="config:ParameterItemViewModel">
                                         <Grid ColumnDefinitions="*,130" ColumnSpacing="8">
                                             <Label Text="{Binding DisplayName}" />
-                                            <!--<Entry Grid.Column="1" Text="{Binding Value, Mode=TwoWay}" 
-                                                   Keyboard="Numeric" IsReadOnly="{Binding IsReadOnly}" />-->
-
                                             <controls:NumericField
                                                 IsReadOnly="{Binding IsReadOnly}" 
                                                 Grid.Column="1" 
@@ -139,7 +134,6 @@
                         <Label Text="{Binding SelectedItem.Description}" FontSize="12" LineBreakMode="WordWrap" />
                         <Grid ColumnDefinitions="Auto,90,Auto,90" ColumnSpacing="6">
                             <Label Text="Column" VerticalOptions="Center" />
-                            <!--<Entry Grid.Column="1" Text="{Binding SelectedItem.Column, Mode=TwoWay}" Keyboard="Numeric" />-->
                             <controls:NumericField
                                 Grid.Column="1" 
                                 Value="{Binding SelectedItem.Column, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
@@ -148,8 +142,6 @@
                                 HorizontalTextAlignment="End" />
 
                             <Label Grid.Column="2" Text="Row" VerticalOptions="Center" />
-                            <!--<Entry Grid.Column="3" Text="{Binding SelectedItem.Row, Mode=TwoWay}" Keyboard="Numeric" />-->
-
                             <controls:NumericField
                                 Grid.Column="3" 
                                 Value="{Binding SelectedItem.Row, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
@@ -171,10 +163,7 @@
                                 <DataTemplate x:DataType="config:ParameterItemViewModel">
                                     <Grid ColumnDefinitions="*,110" ColumnSpacing="6">
                                         <Label Text="{Binding DisplayName}" />
-                                        <!--<Entry Grid.Column="1" Text="{Binding Value, Mode=TwoWay}" Keyboard="Numeric" 
-                                               IsReadOnly="{Binding IsReadOnly}" />-->
-
-                                        <controls:NumericField
+                                      <controls:NumericField
                                             IsReadOnly="{Binding IsReadOnly}" 
                                             Grid.Column="1" 
                                             Value="{Binding Value, Mode=TwoWay}"

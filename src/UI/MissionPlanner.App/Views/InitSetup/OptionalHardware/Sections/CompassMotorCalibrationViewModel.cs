@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -24,8 +25,9 @@ public sealed partial class CompassMotorCalibrationViewModel : OptionalHardwareB
     /// <param name="service"></param>
     /// <param name="confirmation"></param>
     /// <param name="dispatcher"></param>
+    /// <param name="logger"></param>
     public CompassMotorCalibrationViewModel(IActiveVehicleContext active, ICompassMotorCalibrationService service,
-        IUserConfirmationService confirmation, IDispatcher dispatcher)
+        IUserConfirmationService confirmation, IDispatcher dispatcher, ILogger<CompassMotorCalibrationViewModel> logger) : base(logger)
     {
         this.active = active;
         this.service = service;

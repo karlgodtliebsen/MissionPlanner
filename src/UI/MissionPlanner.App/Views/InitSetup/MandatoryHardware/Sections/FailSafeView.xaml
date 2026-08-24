@@ -16,8 +16,8 @@
             <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
             <Label Text="Failsafe" FontSize="18" FontAttributes="Bold" />
             <Label Text="{Binding Description}" LineBreakMode="WordWrap" />
-            <Label Text="{Binding Status}" FontAttributes="Italic" LineBreakMode="WordWrap" />
-            <Label Text="{Binding Error}" TextColor="{DynamicResource Warning}" LineBreakMode="WordWrap" />
+            <Label Text="{Binding StatusMessage}" FontAttributes="Italic" LineBreakMode="WordWrap" />
+            <Label Text="{Binding ErrorMessage}" TextColor="{DynamicResource Warning}" LineBreakMode="WordWrap" />
             
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Guidance}" Spacing="4">
                 <BindableLayout.ItemTemplate>

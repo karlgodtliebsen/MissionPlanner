@@ -1,14 +1,17 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup;
+using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 
 /// <summary>Provides the common presentation and lifecycle state for one Setup workflow.</summary>
-public partial class SetupWorkflowDetailViewModel : ObservableObject, IDisposable
+public partial class SetupWorkflowDetailViewModel : BaseViewModel
 {
     /// <summary>Initializes a workflow ViewModel.</summary>
     /// <param name="descriptor">The workflow definition.</param>
-    public SetupWorkflowDetailViewModel(SetupWorkflowDescriptor descriptor)
+    /// <param name="logger"></param>
+    public SetupWorkflowDetailViewModel(SetupWorkflowDescriptor descriptor, ILogger logger) : base(logger)
     {
         Descriptor = descriptor;
     }
@@ -30,24 +33,7 @@ public partial class SetupWorkflowDetailViewModel : ObservableObject, IDisposabl
 
     /// <summary>Gets or sets the current operation progress from zero to one.</summary>
     [ObservableProperty]
-    public partial bool IsBusy
-    {
-        get;
-        set;
-    }
-
-
-    /// <summary>Gets or sets the current operation progress from zero to one.</summary>
-    [ObservableProperty]
     public partial double Progress
-    {
-        get;
-        set;
-    }
-
-    /// <summary>Gets or sets the latest workflow error.</summary>
-    [ObservableProperty]
-    public partial string? Error
     {
         get;
         set;
@@ -60,7 +46,20 @@ public partial class SetupWorkflowDetailViewModel : ObservableObject, IDisposabl
     }
 
     /// <inheritdoc />
-    public virtual void Dispose()
+    public override void Dispose()
     {
+        DeactivateAsync().GetAwaiter().GetResult();
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
+        return Task.CompletedTask;
     }
 }

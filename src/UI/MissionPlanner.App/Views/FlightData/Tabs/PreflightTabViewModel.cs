@@ -1,39 +1,42 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.FlightData.Preflight;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
+using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
 /// <summary>Presents a conservative, explainable preflight readiness assessment.</summary>
-public partial class PreflightTabViewModel : ObservableObject, IDisposable
+public partial class PreflightTabViewModel : BaseViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IPreflightAssessmentService assessmentService;
     private readonly IDateTimeProvider dateTimeProvider;
     private readonly IPreflightCommandService commandService;
+    private readonly IDomainEventHub eventHub;
     private readonly IDispatcher dispatcher;
-    private readonly IDisposable stateSubscription;
-    private readonly CancellationTokenSource lifetime = new();
+    private IDisposable stateSubscription;
+    private CancellationTokenSource lifetime = new();
     private int refreshPending;
 
     /// <summary>Initializes a transient Preflight tab view model.</summary>
     public PreflightTabViewModel(IActiveVehicleContext activeVehicle, IPreflightAssessmentService assessmentService, IDateTimeProvider dateTimeProvider,
-        IPreflightCommandService commandService, IDomainEventHub eventHub, IDispatcher dispatcher)
+        IPreflightCommandService commandService, IDomainEventHub eventHub, IDispatcher dispatcher, ILogger<PreflightTabViewModel> logger)
+        : base(logger)
     {
         this.activeVehicle = activeVehicle;
         this.assessmentService = assessmentService;
         this.dateTimeProvider = dateTimeProvider;
         this.commandService = commandService;
+        this.eventHub = eventHub;
         this.dispatcher = dispatcher;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        stateSubscription = eventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
-        //  Refresh();
     }
 
     /// <summary>Gets the current readiness checks.</summary>
@@ -60,7 +63,10 @@ public partial class PreflightTabViewModel : ObservableObject, IDisposable
 
     /// <summary>Gets whether the active vehicle permits a pre-arm request.</summary>
     [ObservableProperty]
-    public partial bool CanRunPrearm { get; private set; }
+    public partial bool CanRunPrearm
+    {
+        get; private set;
+    }
 
     [RelayCommand]
     private void Refresh()
@@ -91,38 +97,58 @@ public partial class PreflightTabViewModel : ObservableObject, IDisposable
     }
 
     /// <inheritdoc />
-    public void Dispose()
+    public override void Dispose()
+    {
+        DeactivateAsync().GetAwaiter().GetResult();
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        lifetime = new();
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        stateSubscription = eventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
+        //  Refresh();
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
     {
         activeVehicle.Changed -= OnActiveVehicleChanged;
         stateSubscription.Dispose();
         lifetime.Cancel();
         lifetime.Dispose();
+        return Task.CompletedTask;
     }
 
     private void OnActiveVehicleChanged(object? sender, EventArgs args)
     {
-        dispatcher.Dispatch(ApplyAssessment);
+        dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(20), ApplyAssessment);
     }
 
-    private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
+    private async Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
     {
         if (evt.VehicleId == activeVehicle.VehicleId && Interlocked.Exchange(ref refreshPending, 1) == 0)
         {
-            _ = PublishLaterAsync(lifetime.Token);
+            await PublishLaterAsync(lifetime.Token);
         }
-
-        return Task.CompletedTask;
     }
 
     private async Task PublishLaterAsync(CancellationToken cancellationToken)
     {
         try
         {
-            await Task.Delay(200, cancellationToken);
-            dispatcher.Dispatch(ApplyAssessment);
+            dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(20), ApplyAssessment);
         }
-        catch (OperationCanceledException) { }
-        finally { Interlocked.Exchange(ref refreshPending, 0); }
+        catch (OperationCanceledException)
+        {
+            Debug.Print("PublishLaterAsync was canceled.");
+        }
+        finally
+        {
+            Interlocked.Exchange(ref refreshPending, 0);
+        }
     }
 
     private void ApplyAssessment()

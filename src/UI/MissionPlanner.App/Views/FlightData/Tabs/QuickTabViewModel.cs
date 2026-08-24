@@ -2,12 +2,15 @@
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
 /// <inheritdoc />
-public partial class QuickTabViewModel : ObservableObject, IDisposable
+public partial class QuickTabViewModel : BaseViewModel
 {
+    private readonly IVehicleHudDataService hudDataService;
+    private readonly IActiveVehicleContext activeVehicle;
     private readonly IDispatcher dispatcher;
     private readonly ILogger<QuickTabViewModel> logger;
 
@@ -15,53 +18,86 @@ public partial class QuickTabViewModel : ObservableObject, IDisposable
     /// Yaw angle in degrees. Positive = nose right.
     /// </summary>
     [ObservableProperty]
-    public partial double Yaw { get; set; }
+    public partial double Yaw
+    {
+        get; set;
+    }
 
     /// <summary>Pitch angle in degrees. Positive = nose up.</summary>
     [ObservableProperty]
-    public partial double Pitch { get; set; }
+    public partial double Pitch
+    {
+        get; set;
+    }
 
     /// <summary>Roll angle in degrees. Positive = right wing down.</summary>
     [ObservableProperty]
-    public partial double Roll { get; set; }
+    public partial double Roll
+    {
+        get; set;
+    }
 
     /// <summary>
     /// Distance to the MAV (Micro Air Vehicle) in meters.  
     /// </summary>
     [ObservableProperty]
-    public partial double DistanceToMav { get; set; }
+    public partial double DistanceToMav
+    {
+        get; set;
+    }
 
     /// <summary>
     /// Distance to the next waypoint in meters.
     /// </summary>
     [ObservableProperty]
-    public partial double DistanceToWp { get; set; }
+    public partial double DistanceToWp
+    {
+        get; set;
+    }
 
     /// <summary>
     /// Heading in degrees, 0-360.
     /// </summary>
     [ObservableProperty]
-    public partial double Heading { get; set; }
+    public partial double Heading
+    {
+        get; set;
+    }
 
     /// <summary>Indicated airspeed in m/s.</summary>
     [ObservableProperty]
-    public partial double AirSpeed { get; set; }
+    public partial double AirSpeed
+    {
+        get; set;
+    }
 
     /// <summary>Ground speed in m/s.</summary>
     [ObservableProperty]
-    public partial double GroundSpeed { get; set; }
+    public partial double GroundSpeed
+    {
+        get; set;
+    }
 
     /// <summary>Altitude above home/sea level in meters.</summary>
     [ObservableProperty]
-    public partial double Altitude { get; set; }
+    public partial double Altitude
+    {
+        get; set;
+    }
 
     /// <summary>Vertical climb/descent rate in m/s.</summary>
     [ObservableProperty]
-    public partial double VerticalSpeed { get; set; }
+    public partial double VerticalSpeed
+    {
+        get; set;
+    }
 
     /// <summary>Battery voltage in volts.</summary>
     [ObservableProperty]
-    public partial double BatteryVoltage { get; set; }
+    public partial double BatteryVoltage
+    {
+        get; set;
+    }
 
     /// <summary>Battery remaining percentage, 0-100.</summary>
     [ObservableProperty]
@@ -69,29 +105,44 @@ public partial class QuickTabViewModel : ObservableObject, IDisposable
 
     /// <summary>Number of GPS satellites in view.</summary>
     [ObservableProperty]
-    public partial int GpsSatellites { get; set; }
+    public partial int GpsSatellites
+    {
+        get; set;
+    }
 
     /// <summary>Whether the vehicle is armed.</summary>
     [ObservableProperty]
-    public partial bool IsArmed { get; set; }
+    public partial bool IsArmed
+    {
+        get; set;
+    }
 
     /// <summary>Current flight mode.</summary>
     [ObservableProperty]
-    public partial string FlightMode { get; set; }
+    public partial string FlightMode
+    {
+        get; set;
+    }
 
     private IDisposable? disposable;
 
-    /// <inheritdoc />
-    public QuickTabViewModel(IVehicleHudDataService hudDataService, IActiveVehicleContext activeVehicle, IDispatcher dispatcher, ILogger<QuickTabViewModel> logger)
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="hudDataService"></param>
+    /// <param name="activeVehicle"></param>
+    /// <param name="dispatcher"></param>
+    /// <param name="logger"></param>
+    public QuickTabViewModel(IVehicleHudDataService hudDataService, IActiveVehicleContext activeVehicle, IDispatcher dispatcher,
+        ILogger<QuickTabViewModel> logger) : base(logger)
     {
+        this.hudDataService = hudDataService;
+        this.activeVehicle = activeVehicle;
         this.dispatcher = dispatcher;
         this.logger = logger;
         FlightMode = "Unknown";
-        logger.LogDebug("Starting Quick tab telemetry subscription for {VehicleId}.", activeVehicle.VehicleId);
-        var observable = hudDataService.ObservePrimaryVehicleHudData();
-        disposable = SubscribeToVehicleData(observable);
     }
-
 
     private IDisposable SubscribeToVehicleData(IObservable<VehicleHudData> observable)
     {
@@ -119,10 +170,27 @@ public partial class QuickTabViewModel : ObservableObject, IDisposable
     }
 
     /// <inheritdoc/>
-    public void Dispose()
+    public override void Dispose()
     {
         logger.LogDebug("Disposing Quick tab telemetry lifecycle.");
+        DeactivateAsync().GetAwaiter().GetResult();
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        logger.LogDebug("Starting Quick tab telemetry subscription for {VehicleId}.", activeVehicle.VehicleId);
+
+        var observable = hudDataService.ObservePrimaryVehicleHudData();
+        disposable = SubscribeToVehicleData(observable);
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
         disposable?.Dispose();
         disposable = null;
+        return Task.CompletedTask;
     }
 }

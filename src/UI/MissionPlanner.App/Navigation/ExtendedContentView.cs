@@ -47,7 +47,6 @@ public class ExtendedContentView<TViewModel> : ContentView where TViewModel : cl
     /// </summary>
     public virtual void Dispose()
     {
-        BindingContext = null;
         ViewModel?.Dispose();
         ViewModel = null;
     }

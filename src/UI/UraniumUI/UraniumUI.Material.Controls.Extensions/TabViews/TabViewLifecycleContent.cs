@@ -3,23 +3,17 @@
 /// <summary>
 /// A ContentView that participates in the lifecycle of a TabView.
 /// </summary>
-public class TabViewLifecycleContent<TViewModel> : ContentView, ITabViewLifecycleContent where TViewModel : class, IDisposable
+public class TabViewLifecycleContent<TViewModel> : ContentView, IActivationLifeCycle
+    where TViewModel : class, IDisposable, IActivationLifeCycle
 {
     /// <summary>
     /// The view model associated with this ContentView.
     /// </summary>
     protected TViewModel? ViewModel;
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public virtual void Activate()
+    /// <inheritdoc />
+    public TabViewLifecycleContent()
     {
-        if (ViewModel is not null)
-        {
-            return;
-        }
-
         ViewModel = ServiceHelper.GetRequiredService<TViewModel>();
         BindingContext = ViewModel;
     }
@@ -27,26 +21,26 @@ public class TabViewLifecycleContent<TViewModel> : ContentView, ITabViewLifecycl
     /// <summary>
     /// 
     /// </summary>
-    public virtual void Deactivate()
+    public virtual async Task ActivateAsync()
     {
-        if (Dispatcher.IsDispatchRequired)
-        {
-            Dispatcher.Dispatch(Deactivate);
-            return;
-        }
-
-        var viewModel = ViewModel;
-        if (viewModel is null)
+        if (ViewModel is null)
         {
             return;
         }
 
-        ViewModel = null; // Claim it before invoking binding/disposal code.
-        if (BindingContext is not null)
+        await ViewModel.ActivateAsync();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public virtual async Task DeactivateAsync()
+    {
+        if (ViewModel is null)
         {
-            BindingContext = null;
+            return;
         }
 
-        viewModel.Dispose();
+        await ViewModel.DeactivateAsync();
     }
 }

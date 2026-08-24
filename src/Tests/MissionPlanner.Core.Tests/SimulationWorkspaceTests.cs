@@ -5,7 +5,6 @@ using Microsoft.Extensions.Options;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.App.Views.Simulation;
 using MissionPlanner.Core.Simulation;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Shared.Models.Vehicles.Models;
@@ -127,7 +126,11 @@ public sealed class SimulationWorkspaceTests
         var store = new MemoryProfileStore();
         var service = new SimulatorProfileService(store, Substitute.For<ILogger<SimulatorProfileService>>());
         var initialized = await service.InitializeAsync(cancellationToken);
-        var saved = initialized[0] with { Name = "Persisted profile", Speedup = 4 };
+        var saved = initialized[0] with
+        {
+            Name = "Persisted profile",
+            Speedup = 4
+        };
         await service.SaveAsync(saved, cancellationToken);
         var reloaded = new SimulatorProfileService(store, Substitute.For<ILogger<SimulatorProfileService>>());
 
@@ -145,7 +148,11 @@ public sealed class SimulationWorkspaceTests
     [Fact]
     public void DiagnosticsRedactSecrets()
     {
-        var profile = Profile() with { AdditionalArguments = ["--model", "quad", "--api-key=sensitive-key", "--token", "split-secret"], Environment = new Dictionary<string, string> { ["NORMAL_VALUE"] = "visible", ["AUTH_TOKEN"] = "sensitive-token" } };
+        var profile = Profile() with
+        {
+            AdditionalArguments = ["--model", "quad", "--api-key=sensitive-key", "--token", "split-secret"],
+            Environment = new Dictionary<string, string> { ["NORMAL_VALUE"] = "visible", ["AUTH_TOKEN"] = "sensitive-token" }
+        };
         var snapshot = SimulationSessionSnapshot.Stopped with
         {
             Profile = profile,
@@ -217,9 +224,9 @@ public sealed class SimulationWorkspaceTests
             dispatcher,
             Substitute.For<ILogger<SimulationViewModel>>());
 
-        viewModel.Activate();
+        await viewModel.ActivateAsync();
         await viewModel.InitializeAsync().WaitAsync(cancellationToken);
-        viewModel.Deactivate();
+        await viewModel.DeactivateAsync();
 
         await manager.DidNotReceive().StopAsync(Arg.Any<CancellationToken>());
         viewModel.Profiles.Should().ContainSingle();
@@ -232,7 +239,13 @@ public sealed class SimulationWorkspaceTests
     {
         var vehicleId = new VehicleId(9, 1);
         var sessionId = Guid.NewGuid();
-        var profile = Profile() with { LaunchSettings = ArduPilotLaunchSettings.Default with { SystemId = 9 } };
+        var profile = Profile() with
+        {
+            LaunchSettings = ArduPilotLaunchSettings.Default with
+            {
+                SystemId = 9
+            }
+        };
         var snapshot = new SimulationSessionSnapshot(
             sessionId,
             profile,
@@ -294,7 +307,10 @@ public sealed class SimulationWorkspaceTests
             new SimulationScenarioReportExporter(),
             new ParametersFileHandler(Substitute.For<IFileSaver>()),
             dispatcher,
-            Substitute.For<ILogger<SimulationViewModel>>()) { ScenarioDocumentText = parser.Serialize(parsed) };
+            Substitute.For<ILogger<SimulationViewModel>>())
+        {
+            ScenarioDocumentText = parser.Serialize(parsed)
+        };
 
         await viewModel.DryRunScenarioAsync();
 
@@ -318,7 +334,10 @@ public sealed class SimulationWorkspaceTests
 
     private static SimulatorProfile Profile()
     {
-        return SimulatorProfile.CreateDefault() with { Binary = new SimulatorBinaryReference("4.6.0", Path.GetFullPath("arducopter-test"), "test") };
+        return SimulatorProfile.CreateDefault() with
+        {
+            Binary = new SimulatorBinaryReference("4.6.0", Path.GetFullPath("arducopter-test"), "test")
+        };
     }
 
     private static async Task WaitUntilAsync(Func<bool> condition, CancellationToken cancellationToken)
@@ -333,7 +352,11 @@ public sealed class SimulationWorkspaceTests
 
     private sealed class MemoryProfileStore : ISimulatorProfileStore
     {
-        public string? Document { get; set; }
+        public string? Document
+        {
+            get;
+            set;
+        }
 
         public ValueTask<string?> ReadAsync(CancellationToken cancellationToken = default)
         {
@@ -351,9 +374,17 @@ public sealed class SimulationWorkspaceTests
 
     private sealed class FakeHostEnvironment : ISimulatorHostEnvironment
     {
-        public int? OccupiedPort { get; init; }
+        public int? OccupiedPort
+        {
+            get;
+            init;
+        }
 
-        public SimulationValidationIssue? ExecutableIssue { get; init; }
+        public SimulationValidationIssue? ExecutableIssue
+        {
+            get;
+            init;
+        }
 
         public ValueTask<SimulationValidationIssue?> ValidateExecutableAsync(
             string executablePath,
@@ -376,7 +407,10 @@ public sealed class SimulationWorkspaceTests
     {
         public string Name => "Fake";
 
-        public FakeRuntimeSession Session { get; } = new();
+        public FakeRuntimeSession Session
+        {
+            get;
+        } = new();
 
         public Exception? HeartbeatFailure
         {
@@ -406,20 +440,38 @@ public sealed class SimulationWorkspaceTests
         private readonly TaskCompletionSource<SimulatorRuntimeExit> completion =
             new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public SimulatorRuntimeIdentity Identity { get; } = new("owned-runtime-1", "Fake", 1234);
+        public SimulatorRuntimeIdentity Identity
+        {
+            get;
+        } = new("owned-runtime-1", "Fake", 1234);
 
         public VehicleId? ConnectedVehicleId => new(1, 1);
 
-        public IReadOnlyList<SimulationEndpoint> ConnectionEndpoints { get; } =
+        public IReadOnlyList<SimulationEndpoint> ConnectionEndpoints
+        {
+            get;
+        } =
             [new("MAVLink", SimulationEndpointTransport.Udp, "127.0.0.1", 14550)];
 
         public Task<SimulatorRuntimeExit> Completion => completion.Task;
 
-        public int StopCount { get; private set; }
+        public int StopCount
+        {
+            get;
+            private set;
+        }
 
-        public int DisposeCount { get; private set; }
+        public int DisposeCount
+        {
+            get;
+            private set;
+        }
 
-        public Exception? HeartbeatFailure { get; set; }
+        public Exception? HeartbeatFailure
+        {
+            get;
+            set;
+        }
 
         public event EventHandler<SimulatorOutputLine>? OutputReceived;
 

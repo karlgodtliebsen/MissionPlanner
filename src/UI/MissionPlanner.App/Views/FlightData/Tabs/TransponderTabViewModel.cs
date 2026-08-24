@@ -1,53 +1,58 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Mapsui.Utilities;
+﻿using Mapsui.Utilities;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.FlightData.Components;
 using MissionPlanner.Core.Vehicles.Abstractions;
+using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
 /// <summary>Presents discovered component-scoped transponder and nearby traffic state.</summary>
-public partial class TransponderTabViewModel : ObservableObject, IDisposable
+public partial class TransponderTabViewModel : BaseViewModel
 {
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleComponentRegistry registry;
     private readonly IDispatcher dispatcher;
+    private readonly ILogger<TransponderTabViewModel> logger;
 
     /// <summary>Initializes a transient transponder view model.</summary>
-    public TransponderTabViewModel(IActiveVehicleContext activeVehicle, IVehicleComponentRegistry registry, IDispatcher dispatcher)
+    public TransponderTabViewModel(IActiveVehicleContext activeVehicle, IVehicleComponentRegistry registry, IDispatcher dispatcher,
+        ILogger<TransponderTabViewModel> logger) : base(logger)
     {
         this.activeVehicle = activeVehicle;
         this.registry = registry;
         this.dispatcher = dispatcher;
-        registry.Changed += OnChanged;
-        activeVehicle.Changed += OnChanged;
-        Refresh();
+        this.logger = logger;
     }
 
     /// <summary>Gets discovered transponders.</summary>
-    public ObservableRangeCollection<TransponderComponentState> Components
-    {
-        get;
-    } = [];
+    public ObservableRangeCollection<TransponderComponentState> Components { get; } = [];
 
     /// <summary>Gets bounded nearby traffic.</summary>
-    public ObservableRangeCollection<AdsbTrafficTrack> Traffic
-    {
-        get;
-    } = [];
+    public ObservableRangeCollection<AdsbTrafficTrack> Traffic { get; } = [];
 
-    /// <summary>Gets the explicit support/discovery state.</summary>
-    [ObservableProperty]
-    public partial string Status
-    {
-        get;
-        private set;
-    } = "No transponder discovered";
 
     /// <inheritdoc />
-    public void Dispose()
+    public override void Dispose()
+    {
+        DeactivateAsync().GetAwaiter().GetResult();
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        StatusMessage = "No transponder discovered";
+        registry.Changed += OnChanged;
+        activeVehicle.Changed += OnChanged;
+        Refresh();
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
     {
         registry.Changed -= OnChanged;
         activeVehicle.Changed -= OnChanged;
+        return Task.CompletedTask;
     }
 
     private void OnChanged(object? sender, EventArgs args)
@@ -60,13 +65,13 @@ public partial class TransponderTabViewModel : ObservableObject, IDisposable
         var systemId = activeVehicle.VehicleId?.SystemId;
         if (systemId is null)
         {
-            Status = "No active vehicle";
+            StatusMessage = "No active vehicle";
             return;
         }
 
         Replace(Components, registry.GetTransponders(systemId.Value));
         Replace(Traffic, registry.GetTraffic(systemId.Value, DateTimeOffset.UtcNow));
-        Status = Components.Count == 0 ? "No supported uAvionix transponder discovered" : $"{Components.Count} transponder component(s)";
+        StatusMessage = Components.Count == 0 ? "No supported uAvionix transponder discovered" : $"{Components.Count} transponder component(s)";
     }
 
     private static void Replace<T>(ObservableRangeCollection<T> target, IEnumerable<T> values)

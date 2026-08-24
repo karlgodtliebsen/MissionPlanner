@@ -36,7 +36,7 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
         IUserConfirmationService confirmation,
         IDispatcher dispatcher,
         ILogger<EscMotorSetupViewModel> logger)
-        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Esc))
+        : base(workflowCatalog.Workflows.First(w => w.Key == SetupWorkflowKey.Esc), logger)
     {
         this.activeVehicle = activeVehicle;
         this.actuatorService = actuatorService;
@@ -45,10 +45,6 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
         this.logger = logger;
         MaximumDuration = actuatorService.MaximumDurationSeconds;
         MaximumThrottle = actuatorService.MaximumThrottlePercent;
-        actuatorService.StateChanged += OnStateChanged;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        Load();
-        Show(actuatorService.Current);
     }
 
     /// <summary>Gets the audit log of actuator operations.</summary>
@@ -145,16 +141,34 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
     /// <inheritdoc />
     public override void Cancel()
     {
-        _ = actuatorService.EmergencyStopAsync();
+        actuatorService.EmergencyStopAsync().GetAwaiter().GetResult();
+    }
+
+
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        actuatorService.StateChanged += OnStateChanged;
+        activeVehicle.Changed += OnActiveVehicleChanged;
+        Load();
+        Show(actuatorService.Current);
+        return base.ActivateAsync();
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
+        actuatorService.StateChanged -= OnStateChanged;
+        activeVehicle.Changed -= OnActiveVehicleChanged;
+        return base.DeactivateAsync();
     }
 
     /// <inheritdoc />
     public override void Dispose()
     {
-        actuatorService.StateChanged -= OnStateChanged;
-        activeVehicle.Changed -= OnActiveVehicleChanged;
-        base.Dispose();
         actuatorService.Dispose();
+        base.Dispose();
     }
 
     private bool CanTest()
@@ -182,13 +196,13 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
                 activeVehicle.ConnectionCancellationToken);
             if (!result.Success)
             {
-                Error = result.Message;
+                ErrorMessage = result.Message;
             }
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogError(exception, "Motor test failed for {VehicleId}.", vehicleId);
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
         }
     }
 
@@ -210,13 +224,13 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
             var result = await actuatorService.TestSequenceAsync(vehicleId, ThrottlePercent, DurationSeconds, MotorIndex, activeVehicle.ConnectionCancellationToken);
             if (!result.Success)
             {
-                Error = result.Message;
+                ErrorMessage = result.Message;
             }
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogError(exception, "Sequence test failed for {VehicleId}.", vehicleId);
-            Error = exception.Message;
+            ErrorMessage = exception.Message;
         }
     }
 
@@ -281,7 +295,7 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
     {
         TestState = snapshot.State;
         Instruction = snapshot.Instruction;
-        Error = snapshot.FailureReason;
+        ErrorMessage = snapshot.FailureReason;
         Log.Clear();
         foreach (var entry in snapshot.Log.AsEnumerable().Reverse())
         {
