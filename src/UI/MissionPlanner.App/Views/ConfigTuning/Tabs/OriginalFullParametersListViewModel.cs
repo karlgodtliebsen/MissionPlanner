@@ -47,7 +47,10 @@ public partial class OriginalFullParametersListViewModel : ObservableObject, IDi
     private int cachedLoadScheduled;
 
     /// <summary>Gets whether the page is temporarily covered by its owned progress dialog.</summary>
-    public bool IsShowingProgressDialog { get; private set; }
+    public bool IsShowingProgressDialog
+    {
+        get; private set;
+    }
 
     /// <summary>Initializes the Full Parameters List tab.</summary>
     /// <param name="connectionSession">The current connection-scoped services.</param>
@@ -104,27 +107,45 @@ public partial class OriginalFullParametersListViewModel : ObservableObject, IDi
 
     /// <summary>Gets whether parameter loading is in progress.</summary>
     [ObservableProperty]
-    public partial bool ShowLoadingProgress { get; set; }
+    public partial bool ShowLoadingProgress
+    {
+        get; set;
+    }
 
     /// <summary>Gets whether the most recent load failed.</summary>
     [ObservableProperty]
-    public partial bool ShowLoadingCompletedWithError { get; set; }
+    public partial bool ShowLoadingCompletedWithError
+    {
+        get; set;
+    }
 
     /// <summary>Gets whether the most recent load was cancelled.</summary>
     [ObservableProperty]
-    public partial bool ShowLoadingCancelled { get; set; }
+    public partial bool ShowLoadingCancelled
+    {
+        get; set;
+    }
 
     /// <summary>Gets whether the active vehicle is disconnected.</summary>
     [ObservableProperty]
-    public partial bool ShowVehicleDisconnected { get; set; }
+    public partial bool ShowVehicleDisconnected
+    {
+        get; set;
+    }
 
     /// <summary>Gets the number of unapplied parameter values.</summary>
     [ObservableProperty]
-    public partial int ModifiedParameterCount { get; set; }
+    public partial int ModifiedParameterCount
+    {
+        get; set;
+    }
 
     /// <summary>Gets the total number of loaded parameter fields.</summary>
     [ObservableProperty]
-    public partial int TotalParameterCount { get; set; }
+    public partial int TotalParameterCount
+    {
+        get; set;
+    }
 
     /// <summary>Gets whether a load or apply operation is active.</summary>
     [ObservableProperty]
@@ -137,12 +158,18 @@ public partial class OriginalFullParametersListViewModel : ObservableObject, IDi
     [NotifyCanExecuteChangedFor(nameof(SaveToFileCommand))]
     [NotifyCanExecuteChangedFor(nameof(SaveToJsonFileCommand))]
     [NotifyCanExecuteChangedFor(nameof(RetryFailedCommand))]
-    public partial bool IsBusy { get; set; }
+    public partial bool IsBusy
+    {
+        get; set;
+    }
 
     /// <summary>Gets whether the connection-owned background parameter download is active.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
-    public partial bool IsBackgroundParameterLoadInProgress { get; set; }
+    public partial bool IsBackgroundParameterLoadInProgress
+    {
+        get; set;
+    }
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
@@ -154,7 +181,10 @@ public partial class OriginalFullParametersListViewModel : ObservableObject, IDi
     [NotifyCanExecuteChangedFor(nameof(SaveToFileCommand))]
     [NotifyCanExecuteChangedFor(nameof(SaveToJsonFileCommand))]
     [NotifyCanExecuteChangedFor(nameof(RetryFailedCommand))]
-    public partial bool HasRows { get; set; }
+    public partial bool HasRows
+    {
+        get; set;
+    }
 
     /// <summary>Gets whether an active vehicle connection is available.</summary>
     [ObservableProperty]
@@ -167,19 +197,31 @@ public partial class OriginalFullParametersListViewModel : ObservableObject, IDi
     [NotifyCanExecuteChangedFor(nameof(SaveToFileCommand))]
     [NotifyCanExecuteChangedFor(nameof(SaveToJsonFileCommand))]
     [NotifyCanExecuteChangedFor(nameof(RetryFailedCommand))]
-    public partial bool HasConnection { get; set; }
+    public partial bool HasConnection
+    {
+        get; set;
+    }
 
     /// <summary>Gets the latest editing or apply status.</summary>
     [ObservableProperty]
-    public partial string? StatusMessage { get; set; }
+    public partial string? StatusMessage
+    {
+        get; set;
+    }
 
     /// <summary>Gets the latest error message.</summary>
     [ObservableProperty]
-    public partial string? ErrorMessage { get; set; }
+    public partial string? ErrorMessage
+    {
+        get; set;
+    }
 
     /// <summary>Gets whether at least one confirmed change requires a vehicle reboot.</summary>
     [ObservableProperty]
-    public partial bool RebootRequired { get; set; }
+    public partial bool RebootRequired
+    {
+        get; set;
+    }
 
     /// <summary>Activates vehicle lifecycle tracking while the tab is visible.</summary>
     private void InitializeView()
@@ -863,7 +905,7 @@ public partial class OriginalFullParametersListViewModel : ObservableObject, IDi
         editSession.Changed += OnEditSessionChanged;
     }
 
-    private void OnEditSessionChanged(object? sender, EventArgs args)
+    private void OnEditSessionChanged()
     {
         if (disposed ||
             Interlocked.Exchange(ref sessionRefreshScheduled, 1) != 0)

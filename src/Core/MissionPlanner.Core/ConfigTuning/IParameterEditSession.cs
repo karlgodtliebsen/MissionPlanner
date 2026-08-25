@@ -9,16 +9,28 @@ namespace MissionPlanner.Core.ConfigTuning;
 public interface IParameterEditSession : IDisposable
 {
     /// <summary>Gets the vehicle and firmware identity captured by this session.</summary>
-    ParameterEditScope Scope { get; }
+    ParameterEditScope Scope
+    {
+        get;
+    }
 
     /// <summary>Gets the vehicle this session edits.</summary>
-    VehicleId VehicleId { get; }
+    VehicleId VehicleId
+    {
+        get;
+    }
 
     /// <summary>Gets the editable fields in load order.</summary>
-    IReadOnlyList<ParameterEditField> Fields { get; }
+    IReadOnlyList<ParameterEditField> Fields
+    {
+        get;
+    }
 
     /// <summary>Gets whether any field has an unwritten modification.</summary>
-    bool IsDirty { get; }
+    bool IsDirty
+    {
+        get;
+    }
 
     /// <summary>
     /// Invalidates the session, preventing further edits and marking it as no longer valid.
@@ -27,13 +39,23 @@ public interface IParameterEditSession : IDisposable
     void Invalidate(string reason);
 
     /// <summary>Gets whether the session still targets the active online vehicle and captured firmware.</summary>
-    bool IsValid { get; }
+    bool IsValid
+    {
+        get;
+    }
 
     /// <summary>Gets the reason the session can no longer be used, when invalid.</summary>
-    string? InvalidReason { get; }
+    string? InvalidReason
+    {
+        get;
+    }
 
     /// <summary>Occurs when the field set, values, or dirty state change.</summary>
-    event EventHandler? Changed;
+    Action? Changed
+    {
+        get;
+        set;
+    }
 
     /// <summary>Loads editable fields for the given parameter names, or all known parameters.</summary>
     /// <param name="names">The parameter names to load, or null for all known parameters.</param>

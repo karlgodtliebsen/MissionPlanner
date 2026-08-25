@@ -92,7 +92,6 @@ public sealed partial class SimulationViewModel : BaseViewModel
         this.dispatcher = dispatcher;
         this.logger = logger;
         this.fleetManager = fleetManager;
-        StatusMessage = "No simulation is running.";
     }
 
 
@@ -608,19 +607,19 @@ public sealed partial class SimulationViewModel : BaseViewModel
     /// 
     /// </summary>
     /// <returns></returns>
-    public override Task ActivateAsync()
+    public override async Task ActivateAsync()
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         if (active)
         {
-            return Task.CompletedTask;
+            return;
         }
-
+        StatusMessage = "No simulation is running.";
         active = true;
 
         ApplySnapshot(sessionManager.Current);
         PlatformCapability = platformService.Current.Message;
-        ScenarioRunnerStatus = scenarioRunner.Current?.Message ?? "No scenario is running.";
+        ScenarioRunnerStatus = scenarioRunner.Current?.Message ?? "No simulation is running.";
         scenarioRunner.Changed += OnScenarioRunnerChanged;
         LocationPresets.ReplaceRange(controlCatalog.Locations);
         RefreshFrames();
@@ -633,16 +632,15 @@ public sealed partial class SimulationViewModel : BaseViewModel
         }
 
         timerCancellation = new CancellationTokenSource();
-        _ = UpdateElapsedAsync(timerCancellation.Token);
+        await UpdateElapsedAsync(timerCancellation.Token);
         if (!initialized)
         {
-            InitializeAsync().GetAwaiter().GetResult();
+            await InitializeAsync();
         }
         else
         {
             ApplySnapshot(sessionManager.Current);
         }
-        return Task.CompletedTask;
     }
 
     /// <inheritdoc />

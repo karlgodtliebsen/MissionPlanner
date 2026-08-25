@@ -331,7 +331,7 @@ public sealed partial class BasicTuningTabViewModel : BaseViewModel
         dispatcher.Dispatch(() => _ = InitializeAsync());
     }
 
-    private void OnSessionChanged(object? sender, EventArgs args)
+    private void OnSessionChanged()
     {
         dispatcher.Dispatch(() =>
         {

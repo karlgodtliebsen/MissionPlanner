@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.Math;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.Shared.Models.Vehicles.Models;
@@ -57,7 +56,10 @@ public sealed class ParameterEditSession : IParameterEditSession
     }
 
     /// <inheritdoc />
-    public ParameterEditScope Scope { get; }
+    public ParameterEditScope Scope
+    {
+        get;
+    }
 
     /// <inheritdoc />
     public VehicleId VehicleId => Scope.VehicleId;
@@ -111,7 +113,10 @@ public sealed class ParameterEditSession : IParameterEditSession
     }
 
     /// <inheritdoc />
-    public event EventHandler? Changed;
+    public Action? Changed
+    {
+        get; set;
+    }
 
     /// <inheritdoc />
     public async Task LoadAsync(IReadOnlyList<string>? names = null, CancellationToken cancellationToken = default)
@@ -161,11 +166,17 @@ public sealed class ParameterEditSession : IParameterEditSession
             }
 
             error = Validate(field, value);
-            updated = field with { PendingValue = value, ValidationError = error, WriteStatus = Equivalent(value, field.LiveValue, field.Metadata) ? ParameterEditWriteStatus.Unchanged : ParameterEditWriteStatus.Pending, WriteMessage = null };
+            updated = field with
+            {
+                PendingValue = value,
+                ValidationError = error,
+                WriteStatus = Equivalent(value, field.LiveValue, field.Metadata) ? ParameterEditWriteStatus.Unchanged : ParameterEditWriteStatus.Pending,
+                WriteMessage = null
+            };
             fields[name] = updated;
         }
 
-        Changed?.Invoke(this, EventArgs.Empty);
+        Changed?.Invoke();
         return error is null;
     }
 
@@ -226,14 +237,20 @@ public sealed class ParameterEditSession : IParameterEditSession
         {
             if (fields.TryGetValue(name, out var field))
             {
-                fields[name] = field with { PendingValue = field.LiveValue, ValidationError = null, WriteStatus = ParameterEditWriteStatus.Unchanged, WriteMessage = null };
+                fields[name] = field with
+                {
+                    PendingValue = field.LiveValue,
+                    ValidationError = null,
+                    WriteStatus = ParameterEditWriteStatus.Unchanged,
+                    WriteMessage = null
+                };
                 changed = true;
             }
         }
 
         if (changed)
         {
-            Changed?.Invoke(this, EventArgs.Empty);
+            Changed?.Invoke();
         }
     }
 
@@ -245,11 +262,17 @@ public sealed class ParameterEditSession : IParameterEditSession
             foreach (var name in fieldOrder)
             {
                 var field = fields[name];
-                fields[name] = field with { PendingValue = field.LiveValue, ValidationError = null, WriteStatus = ParameterEditWriteStatus.Unchanged, WriteMessage = null };
+                fields[name] = field with
+                {
+                    PendingValue = field.LiveValue,
+                    ValidationError = null,
+                    WriteStatus = ParameterEditWriteStatus.Unchanged,
+                    WriteMessage = null
+                };
             }
         }
 
-        Changed?.Invoke(this, EventArgs.Empty);
+        Changed?.Invoke();
     }
 
     /// <inheritdoc />
@@ -280,7 +303,10 @@ public sealed class ParameterEditSession : IParameterEditSession
         }
 
         var retry = await ApplyCoreAsync(retryable, progress, cancellationToken).ConfigureAwait(false);
-        return retry with { RebootRequired = previousReport.RebootRequired || retry.RebootRequired };
+        return retry with
+        {
+            RebootRequired = previousReport.RebootRequired || retry.RebootRequired
+        };
     }
 
     private async Task<ParameterApplyReport> ApplyCoreAsync(IReadOnlyList<string>? names, IProgress<ParameterApplyProgress>? progress, CancellationToken cancellationToken)
@@ -497,11 +523,15 @@ public sealed class ParameterEditSession : IParameterEditSession
             invalidReason = reason;
             foreach (var name in fieldOrder.Where(name => fields[name].IsModified))
             {
-                fields[name] = fields[name] with { WriteStatus = ParameterEditWriteStatus.Failed, WriteMessage = reason };
+                fields[name] = fields[name] with
+                {
+                    WriteStatus = ParameterEditWriteStatus.Failed,
+                    WriteMessage = reason
+                };
             }
         }
 
-        Changed?.Invoke(this, EventArgs.Empty);
+        Changed?.Invoke();
     }
 
     /// <inheritdoc/>
@@ -551,7 +581,11 @@ public sealed class ParameterEditSession : IParameterEditSession
                 if (fields.TryGetValue(name, out var existing))
                 {
                     var pending = existing.IsModified ? existing.PendingValue : parameter.Value;
-                    var validation = Validate(existing with { Metadata = projectedMetadata, Type = parameter.Type }, pending);
+                    var validation = Validate(existing with
+                    {
+                        Metadata = projectedMetadata,
+                        Type = parameter.Type
+                    }, pending);
                     fields[name] = existing with
                     {
                         Type = parameter.Type,
@@ -582,7 +616,7 @@ public sealed class ParameterEditSession : IParameterEditSession
             }
         }
 
-        Changed?.Invoke(this, EventArgs.Empty);
+        Changed?.Invoke();
     }
 
     private IReadOnlyList<string> GetApplyTargets(IReadOnlyList<string>? names)
@@ -658,7 +692,7 @@ public sealed class ParameterEditSession : IParameterEditSession
             };
         }
 
-        Changed?.Invoke(this, EventArgs.Empty);
+        Changed?.Invoke();
     }
 
     private void SetWriteState(string name, ParameterEditWriteStatus status, string message, string? validationError)
@@ -670,10 +704,15 @@ public sealed class ParameterEditSession : IParameterEditSession
                 return;
             }
 
-            fields[name] = field with { WriteStatus = status, WriteMessage = message, ValidationError = validationError };
+            fields[name] = field with
+            {
+                WriteStatus = status,
+                WriteMessage = message,
+                ValidationError = validationError
+            };
         }
 
-        Changed?.Invoke(this, EventArgs.Empty);
+        Changed?.Invoke();
     }
 
     private void OnParameterChanged(object? sender, VehicleParameterChangedEventArgs args)
@@ -699,7 +738,11 @@ public sealed class ParameterEditSession : IParameterEditSession
                 Type = parameter.Type,
                 LiveValue = parameter.Value,
                 PendingValue = pending,
-                ValidationError = Validate(field with { Type = parameter.Type, LiveValue = parameter.Value }, pending),
+                ValidationError = Validate(field with
+                {
+                    Type = parameter.Type,
+                    LiveValue = parameter.Value
+                }, pending),
                 WriteStatus = remainsModified
                     ? field.WriteStatus == ParameterEditWriteStatus.Applying ? ParameterEditWriteStatus.Applying : ParameterEditWriteStatus.Pending
                     : field.WriteStatus == ParameterEditWriteStatus.Applying
@@ -712,7 +755,7 @@ public sealed class ParameterEditSession : IParameterEditSession
 
         if (changed)
         {
-            Changed?.Invoke(this, EventArgs.Empty);
+            Changed?.Invoke();
         }
     }
 

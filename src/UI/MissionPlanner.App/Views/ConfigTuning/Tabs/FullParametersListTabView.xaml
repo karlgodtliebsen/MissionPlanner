@@ -23,7 +23,7 @@
 
             <HorizontalStackLayout Grid.Row="0" HeightRequest="50" HorizontalOptions="Fill" VerticalOptions="Center" Padding="8,0" Spacing="12" >
                 <Button 
-                Text="Load from editor"
+                Text="Use editor"
                     VerticalOptions="Center"
                     Command="{Binding LoadFromEditorCommand}" />
 
@@ -184,65 +184,19 @@
                                         HorizontalTextAlignment="End" 
                                         NumericType="{Binding NumericType}"
                                         />
-
-                                        <!--
-                                        
-                                               Value="{Binding Value, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
-                                 
-                                        
-                                               AllowClear="True"
-                                        AllowSign="True"
-                                        AllowThousands="False"                                  <controls:NumericField
-                                        IsVisible="{Binding IsUnsignedInteger}"
-                                        IsReadOnly="{Binding IsReadOnly}"
-                                        Value="{Binding Value, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
-                                        BorderColor="Aqua"
-                                        NumberFormat="F0"
-                                        Min="{Binding Min}"
-                                        Max="{Binding Max}"
-                                        HorizontalOptions="Fill"
-                                        VerticalOptions="Center"  
-                                        HorizontalTextAlignment="End" 
-                                        AllowClear="True"
-                                        AllowSign="False"
-                                        AllowThousands="False" />
-
-                                        <controls:NumericField
-                                        IsVisible="{Binding IsByte}"
-                                        IsReadOnly="{Binding IsReadOnly}"
-                                        Value="{Binding Value, Mode=TwoWay, Converter={StaticResource ByteDoubleConverter}}"
-                                        BorderColor="Aqua"
-                                        NumberFormat="F0"
-                                        Min="{Binding Min}"
-                                        Max="{Binding Max}"
-                                        HorizontalOptions="Fill"
-                                        VerticalOptions="Center"  
-                                        HorizontalTextAlignment="End" 
-                                        AllowClear="True"
-                                        AllowSign="True"
-                                        AllowThousands="False" />
-
-                                        <controls:NumericField
-                                        IsVisible="{Binding IsUnsignedByte}"
-                                        IsReadOnly="{Binding IsReadOnly}"
-                                        Value="{Binding Value, Mode=TwoWay, Converter={StaticResource ByteDoubleConverter}}"
-                                        BorderColor="Aqua"
-                                        NumberFormat="F0"
-                                        Min="{Binding Min}"
-                                        Max="{Binding Max}"
-                                        HorizontalOptions="Fill"
-                                        VerticalOptions="Center"  
-                                        HorizontalTextAlignment="End" 
-                                        AllowClear="True"
-                                        AllowSign="False"
-                                        AllowThousands="False" />-->
-
-
-
                                     </VerticalStackLayout>
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
                         </material:DataGridColumn>
+
+                        <!--<material:DataGridColumn Title="Value"  Width="50" >
+                            <material:DataGridColumn.CellItemTemplate >
+                                <DataTemplate  x:DataType="configTuning:ParameterItemViewModel" >
+                                    <Label Text="{Binding Value}" VerticalOptions="Center" HorizontalOptions="Center" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>-->
+
 
                         <material:DataGridColumn  Width="200"  Title="Selections">
                             <material:DataGridColumn.CellItemTemplate>
@@ -298,6 +252,21 @@
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
                         </material:DataGridColumn>
+                        <material:DataGridColumn Width="100" Title="StepSize">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="configTuning:ParameterItemViewModel">
+                                    <Label Text="{Binding StepSize}" VerticalOptions="Center" HorizontalOptions="Center" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+                        <material:DataGridColumn Width="100" Title="Type">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="configTuning:ParameterItemViewModel">
+                                    <Label Text="{Binding NumericType}" VerticalOptions="Center" HorizontalOptions="Center" />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
                         <material:DataGridColumn Width="100" Title="Default">
                             <material:DataGridColumn.CellItemTemplate>
                                 <DataTemplate x:DataType="configTuning:ParameterItemViewModel">

@@ -451,7 +451,7 @@ public sealed partial class ExtendedTuningTabViewModel : BaseViewModel
         }
     }
 
-    private void OnSessionChanged(object? sender, EventArgs args)
+    private void OnSessionChanged()
     {
         dispatcher.Dispatch(RefreshState);
     }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Views.Introduction.Models;
 using MissionPlanner.Library;
@@ -122,8 +123,9 @@ public partial class IntroductionPage : ExtendedContentPage<IntroductionViewMode
                     break;
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            Debug.Print("Exception in OnActionRequested\n" + ex.Message);
             // Introduction navigation should never make the page unusable.
             // Application-level navigation logging can be added here if desired.
         }

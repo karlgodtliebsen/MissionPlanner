@@ -32,29 +32,23 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     private MotorLayout? layout;
 
 
+    /// <summary>
+    /// The collection of motors in the current layout.
+    /// </summary>
     public ObservableRangeCollection<MotorLayoutMotor> Motors { get; } = [];
 
     [ObservableProperty]
-    public partial string FrameDisplay
-    {
-        get;
-        private set;
-    } = "Frame layout unavailable.";
+    public partial string FrameDisplay { get; private set; } = "Frame layout unavailable.";
 
 
     [ObservableProperty]
-    public partial double ThrottlePercent
-    {
-        get;
-        set;
-    } = 10;
+    public partial int ThrottlePercent { get; set; } = 10;
 
     [ObservableProperty]
-    public partial double DurationSeconds
-    {
-        get;
-        set;
-    } = 2;
+    public partial int DurationSeconds { get; set; } = 2;
+
+
+
 
     /// <summary>Gets the current MOT_SPIN_ARM value for display.</summary>
     [ObservableProperty]
@@ -89,36 +83,35 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     [NotifyCanExecuteChangedFor(nameof(StopCommand))]
     public partial bool IsReady
     {
-        get;
-        set;
+        get; set;
     }
 
 
     /// <summary>
-    /// 
+    /// Initializes a new instance of the <see cref="MotorTestViewModel"/> class.    
     /// </summary>
-    /// <param name="connectionSession"></param>
-    /// <param name="activeVehicle"></param>
-    /// <param name="parameterLoadStatus"></param>
-    /// <param name="domainEventHub"></param>
-    /// <param name="logger"></param>
-    /// <param name="parameters"></param>
-    /// <param name="service"></param>
-    /// <param name="resolver"></param>
+    /// <param name="connectionSession">The current vehicle connection session.</param>
+    /// <param name="activeVehicle">The application active-vehicle context.</param>
+    /// <param name="parameterLoadStatus">The vehicle parameter load status context.</param>
+    /// <param name="dialogService">The extended dialog service.</param>
+    /// <param name="domainFactory">The domain view factory.</param>
+    /// <param name="domainEventHub">The domain event hub.</param>
+    /// <param name="logger">The logger.</param>
+    /// <param name="parameters">The vehicle parameter registry.</param>
+    /// <param name="service">The actuator test service.</param>
+    /// <param name="resolver">The motor layout resolver.</param>
     /// <param name="spinParameters">The normalized motor-spin parameter workflow.</param>
-    /// <param name="confirmation"></param>
-    /// <param name="editSessionFactory"></param>
-    /// <param name="dispatcher"></param>
-    /// <param name="dialogService"></param>
-    /// <param name="domainFactory"></param>
+    /// <param name="confirmation">The user confirmation service.</param>
+    /// <param name="editSessionFactory">The shared parameter editing-session factory.</param>
+    /// <param name="dispatcher">The UI Dispatcher.</param>
     public MotorTestViewModel(
         IVehicleConnectionSession connectionSession,
         IActiveVehicleContext activeVehicle,
         IParameterEditSessionFactory editSessionFactory,
         IDispatcher dispatcher,
+        IVehicleParameterLoadStatusContext parameterLoadStatus,
         IExtendedDialogService dialogService,
         IDomainFactory domainFactory,
-        IVehicleParameterLoadStatusContext parameterLoadStatus,
         IDomainEventHub domainEventHub,
         ILogger<MotorTestViewModel> logger,
         IVehicleParameterRegistry parameters,
@@ -126,16 +119,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         IMotorSpinParameterService spinParameters,
         MotorLayoutResolver resolver,
         IUserConfirmationService confirmation)
-        : base(
-            connectionSession,
-            activeVehicle,
-            editSessionFactory,
-            dispatcher,
-            dialogService,
-            domainFactory,
-            parameterLoadStatus,
-            domainEventHub,
-            logger)
+        : base(connectionSession, activeVehicle, editSessionFactory, dispatcher, dialogService, domainFactory, parameterLoadStatus, domainEventHub, logger)
     {
         this.activeVehicle = activeVehicle;
         this.parameters = parameters;
@@ -340,32 +324,32 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     }
 
     /// <inheritdoc />
-    protected override void OnEditSessionChanged(object? sender, EventArgs e)
+    protected override void OnEditSessionChanged()
     {
+        base.OnEditSessionChanged();
         dispatcher.Dispatch(Refresh);
     }
 
     /// <inheritdoc />
-    public override Task ActivateAsync()
+    public override async Task ActivateAsync()
     {
         if (disposed)
         {
-            return Task.CompletedTask;
+            return;
         }
         StatusMessage = "Remove all propellers before testing.";
         activeVehicle.Changed += Changed;
         service.StateChanged += StateChanged;
-        base.ActivateAsync();
+        await base.ActivateAsync();
         dispatcher.Dispatch(Refresh);
-        return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    public override Task DeactivateAsync()
+    public override async Task DeactivateAsync()
     {
         activeVehicle.Changed -= Changed;
         service.StateChanged -= StateChanged;
-        return base.DeactivateAsync();
+        await base.DeactivateAsync();
     }
 
 

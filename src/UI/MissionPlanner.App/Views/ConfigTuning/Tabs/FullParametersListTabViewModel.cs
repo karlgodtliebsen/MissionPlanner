@@ -7,7 +7,6 @@ using MissionPlanner.App.Views.Common;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Profiles;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Parameters;
@@ -74,31 +73,29 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     }
 
     /// <inheritdoc />
-    public override Task ActivateAsync()
+    public override async Task ActivateAsync()
     {
         if (disposed)
         {
-            return Task.CompletedTask;
+            return;
         }
         PropertyChanged += OnViewModelPropertyChanged;
-        base.ActivateAsync();
-        return Task.CompletedTask;
+        await base.ActivateAsync();
     }
 
     /// <inheritdoc />
-    public override Task DeactivateAsync()
+    public override async Task DeactivateAsync()
     {
         if (disposed)
         {
-            return Task.CompletedTask;
+            return;
         }
         PropertyChanged -= OnViewModelPropertyChanged;
-        base.DeactivateAsync();
+        await base.DeactivateAsync();
         Interlocked.Exchange(ref sessionRefreshScheduled, 0);
         CancelLoadOperation();
         lastApplyReport = null;
         HasRows = false;
-        return Task.CompletedTask;
     }
 
     /// <inheritdoc />
@@ -108,9 +105,8 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         {
             return;
         }
-        DeactivateAsync().GetAwaiter().GetResult();
-        disposed = true;
         base.Dispose();
+        disposed = true;
     }
 
     [ObservableProperty]
@@ -413,7 +409,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is not (nameof(IsBusy) or nameof(HasConnection) or nameof(HasParameters)))
+        if (e.PropertyName is not (nameof(IsBusy) or nameof(HasConnection) or nameof(HasParameters) or nameof(HasRows)))
         {
             return;
         }
@@ -424,6 +420,15 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         SaveToJsonFileCommand.NotifyCanExecuteChanged();
     }
 
+    /// <inheritdoc />
+    protected override void OnEditSessionChanged()
+    {
+        base.OnEditSessionChanged();
+        WriteParametersCommand.NotifyCanExecuteChanged();
+        // RetryFailedCommand.NotifyCanExecuteChanged();
+        HasRows = Parameters.Count > 0;
+    }
+
     private static string BuildResultSummary(ParameterApplyReport report)
     {
         return string.Join(
@@ -432,84 +437,6 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
                 .GroupBy(result => result.Outcome)
                 .OrderBy(group => group.Key)
                 .Select(group => $"{group.Key}: {group.Count()}"));
-    }
-
-    /// <inheritdoc />
-    protected override void OnEditSessionChanged(object? sender, EventArgs args)
-    {
-        if (disposed ||
-            Interlocked.Exchange(ref sessionRefreshScheduled, 1) != 0)
-        {
-            return;
-        }
-
-        if (!dispatcher.Dispatch(() =>
-            {
-                Interlocked.Exchange(ref sessionRefreshScheduled, 0);
-
-                if (disposed || EditSession is null)
-                {
-                    return;
-                }
-
-                SynchronizeParameterItems();
-                if (!EditSession.IsValid)
-                {
-                    var m = EditSession.InvalidReason ?? "This parameter session is stale.";
-                    SetMessages(m);
-                }
-            }))
-        {
-            Interlocked.Exchange(ref sessionRefreshScheduled, 0);
-        }
-    }
-
-    private void SynchronizeParameterItems(IProgress<ParameterStreamProgress>? progress = null)
-    {
-        if (EditSession is null)
-        {
-            return;
-        }
-
-        var fields = EditSession.Fields;
-        progress?.Report(new ParameterStreamProgress(Message: $"Creating data grid for {fields.Count} parameters"));
-
-        var itemsByName = Parameters.ToDictionary(item => item.Name, StringComparer.Ordinal);
-        var fieldNames = new HashSet<string>(StringComparer.Ordinal);
-        var structureChanged = false;
-        var nextItems = new List<ParameterItemViewModel>(fields.Count);
-        foreach (var field in fields)
-        {
-            fieldNames.Add(field.Name);
-            if (itemsByName.TryGetValue(field.Name, out var item))
-            {
-                item.SetField(field);
-                nextItems.Add(item);
-            }
-            else
-            {
-                nextItems.Add(new ParameterItemViewModel(EditSession, field));
-                structureChanged = true;
-            }
-        }
-
-        if (Parameters.Any(item => !fieldNames.Contains(item.Name)))
-        {
-            structureChanged = true;
-        }
-
-        if (structureChanged)
-        {
-            nextItems.Sort((left, right) => StringComparer.Ordinal.Compare(left.Name, right.Name));
-            Parameters.ReplaceRange(nextItems);
-        }
-
-        TotalParameterCount = Parameters.Count;
-        ModifiedParameterCount = fields.Count(field => field.IsModified);
-
-        WriteParametersCommand.NotifyCanExecuteChanged();
-        // RetryFailedCommand.NotifyCanExecuteChanged();
-        HasRows = Parameters.Count > 0;
     }
 
     private static VehicleParameter ToVehicleParameter(ParameterEditField field)

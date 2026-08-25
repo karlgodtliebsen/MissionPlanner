@@ -24,7 +24,6 @@ public partial class BaseViewModel(ILogger logger) : ObservableObject, IDisposab
     public virtual partial string? StatusMessage { get; set; } = null;
 
 
-
     /// <summary>
     /// Gets whether a status message is available.
     /// </summary>
@@ -41,6 +40,16 @@ public partial class BaseViewModel(ILogger logger) : ObservableObject, IDisposab
     /// Gets whether an error message is available.
     /// </summary>
     public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="statusMessage"></param>
+    /// <param name="errorMessage"></param>
+    protected virtual void SetMessages(string? statusMessage = null, string? errorMessage = null)
+    {
+        StatusMessage = statusMessage;
+        ErrorMessage = errorMessage;
+    }
 
 
     /// <summary>

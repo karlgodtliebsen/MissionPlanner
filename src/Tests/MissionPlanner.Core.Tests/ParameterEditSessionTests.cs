@@ -182,7 +182,13 @@ public sealed class ParameterEditSessionTests
         await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
         session.TrySetPending("GAIN", 2, out var _).Should().BeTrue();
 
-        fixture.ActiveVehicle.Set(fixture.ActiveVehicle.State! with { Connection = fixture.ActiveVehicle.State!.Connection with { State = VehicleConnectionState.Offline } });
+        fixture.ActiveVehicle.Set(fixture.ActiveVehicle.State! with
+        {
+            Connection = fixture.ActiveVehicle.State!.Connection with
+            {
+                State = VehicleConnectionState.Offline
+            }
+        });
         var report = await session.ApplyAsync(cancellationToken: TestContext.Current.CancellationToken);
 
         session.IsValid.Should().BeFalse();
@@ -201,7 +207,10 @@ public sealed class ParameterEditSessionTests
         await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
         session.TrySetPending("GAIN", 2, out var _).Should().BeTrue();
 
-        fixture.ActiveVehicle.Set(fixture.ActiveVehicle.State! with { VehicleId = new VehicleId(2, 1) });
+        fixture.ActiveVehicle.Set(fixture.ActiveVehicle.State! with
+        {
+            VehicleId = new VehicleId(2, 1)
+        });
         var report = await session.ApplyAsync(cancellationToken: TestContext.Current.CancellationToken);
 
         session.IsValid.Should().BeFalse();
@@ -322,7 +331,7 @@ public sealed class ParameterEditSessionTests
         item.Value.Should().Be(1);
         session.GetField("GAIN")!.PendingValue.Should().Be(1);
 
-        void SynchronizeItem(object? sender, EventArgs args)
+        void SynchronizeItem()
         {
             item.SetField(session.GetField("GAIN")!);
         }
@@ -365,7 +374,7 @@ public sealed class ParameterEditSessionTests
         item.Value.Should().Be(0.7);
         Convert.ToDecimal(item.Value).Should().Be(0.7m);
 
-        void SynchronizeItem(object? sender, EventArgs args)
+        void SynchronizeItem()
         {
             item.SetField(session.GetField("GAIN")!);
         }
@@ -473,7 +482,7 @@ public sealed class ParameterEditSessionTests
         flags.UserLevel.Should().Be("Advanced");
         flags.IsReadOnly.Should().BeTrue();
 
-        void SynchronizeItems(object? sender, EventArgs args)
+        void SynchronizeItems()
         {
             mode.SetField(session.GetField("MODE")!);
             flags.SetField(session.GetField("FLAGS")!);
@@ -577,7 +586,13 @@ public sealed class ParameterEditSessionTests
             3,
             4,
             "vehicle-1");
-        return state with { Identity = state.Identity with { Firmware = firmware } };
+        return state with
+        {
+            Identity = state.Identity with
+            {
+                Firmware = firmware
+            }
+        };
     }
 
     private sealed record Fixture(

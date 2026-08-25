@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -13,12 +12,13 @@ using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using UraniumUI.Material.Dialogs;
-using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.Common;
 
-/// <summary>Provides the searchable full parameter list through the shared safe editing session.</summary>
-public partial class ParametersViewModel : BaseViewModel
+/// <summary>
+/// Provides the searchable full parameter list through the shared safe editing session.
+/// </summary>
+public partial class ParametersViewModel : VehicleConnectionViewModel
 {
     private const string DefaultStatusMessage = "Connect a vehicle, then refresh parameters.";
     private readonly IVehicleConnectionSession connectionSession;
@@ -31,7 +31,10 @@ public partial class ParametersViewModel : BaseViewModel
     private readonly IExtendedDialogService dialogService;
     private readonly IDomainFactory domainFactory;
     private readonly ILogger logger;
-    private readonly IDisposable parameterLoadStatusSubscription = null!;
+
+    private bool disposed;
+    private bool activated;
+    private IDisposable parameterLoadStatusSubscription = null!;
     private CancellationTokenSource? loadCancellation;
     private CancellationTokenSource? cachedLoadCancellation;
 
@@ -42,7 +45,7 @@ public partial class ParametersViewModel : BaseViewModel
 
     private ParameterApplyReport? lastApplyReport;
     private IDisposable? progressDialog;
-    private bool disposed;
+
     private int sessionRefreshScheduled;
     private int cachedLoadScheduled;
 
@@ -58,9 +61,9 @@ public partial class ParametersViewModel : BaseViewModel
     /// <param name="editSessionFactory">The shared parameter editing-session factory.</param>
     /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="dialogService">The extended dialog service.</param>
-    /// <param name="domainFactory">The domain view factory.</param>
-    /// <param name="parameterLoadStatus"></param>
-    /// <param name="domainEventHub"></param>
+    /// <param name="domainFactory">The domain factory.</param>
+    /// <param name="parameterLoadStatus">The vehicle parameter load status context.</param>
+    /// <param name="domainEventHub">The domain event hub.</param>
     /// <param name="logger">The logger.</param>
     protected ParametersViewModel(
         IVehicleConnectionSession connectionSession,
@@ -71,10 +74,10 @@ public partial class ParametersViewModel : BaseViewModel
         IDomainFactory domainFactory,
         IVehicleParameterLoadStatusContext parameterLoadStatus,
         IDomainEventHub domainEventHub,
-        ILogger logger) : base(logger)
+        ILogger logger) : base(connectionSession, activeVehicle, dispatcher, logger)
     {
         this.connectionSession = connectionSession;
-        parameterRegistry = connectionSession.ParameterRegistry;
+        this.parameterRegistry = connectionSession.ParameterRegistry;
         this.activeVehicle = activeVehicle;
         this.editSessionFactory = editSessionFactory;
         this.dispatcher = dispatcher;
@@ -83,17 +86,22 @@ public partial class ParametersViewModel : BaseViewModel
         this.parameterLoadStatus = parameterLoadStatus;
         this.domainEventHub = domainEventHub;
         this.logger = logger;
-        parameterLoadStatusSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleParameterLoadStatusChanged>(OnParameterLoadStatusChanged);
     }
 
-    /// <summary>Gets the currently visible parameter rows.</summary>
+    /// <summary>
+    /// Gets the currently visible parameter rows.
+    /// </summary>
     public ObservableRangeCollection<ParameterItemViewModel> Parameters { get; } = [];
 
-    /// <summary>Gets the current loading-progress message.</summary>
+    /// <summary>
+    /// Gets the current loading-progress message.
+    /// </summary>
     [ObservableProperty]
     public partial string? ProgressMessage { get; set; } = null;
 
-    /// <summary>Gets whether parameter loading is in progress.</summary>
+    /// <summary>
+    /// Gets whether parameter loading is in progress.
+    /// </summary>
     [ObservableProperty]
     public partial bool ShowLoadingProgress
     {
@@ -114,14 +122,6 @@ public partial class ParametersViewModel : BaseViewModel
         get; set;
     }
 
-    /// <summary>
-    /// Gets whether the active vehicle is disconnected.
-    /// </summary>
-    [ObservableProperty]
-    public partial bool ShowVehicleDisconnected
-    {
-        get; set;
-    }
 
     /// <summary>
     /// Gets the number of unapplied parameter values.
@@ -141,13 +141,14 @@ public partial class ParametersViewModel : BaseViewModel
         get; set;
     }
 
+
     /// <summary>
     /// Gets whether a load or apply operation is active.
     /// </summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
     [NotifyCanExecuteChangedFor(nameof(CancelLoadCommand))]
-    public new partial bool IsBusy
+    public override partial bool IsBusy
     {
         get; set;
     }
@@ -163,6 +164,7 @@ public partial class ParametersViewModel : BaseViewModel
         get; set;
     }
 
+
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
     [NotifyCanExecuteChangedFor(nameof(CancelLoadCommand))]
@@ -175,14 +177,7 @@ public partial class ParametersViewModel : BaseViewModel
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
     [NotifyCanExecuteChangedFor(nameof(CancelLoadCommand))]
-    public partial bool HasConnection
-    {
-        get; set;
-    }
-
-    /// <summary>Gets or sets the current operation progress from zero to one.</summary>
-    [ObservableProperty]
-    public partial double Progress
+    public override partial bool HasConnection
     {
         get; set;
     }
@@ -190,45 +185,32 @@ public partial class ParametersViewModel : BaseViewModel
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="sender"></param>
     /// <param name="vehicleChangedEventArgs"></param>
-    protected virtual void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs vehicleChangedEventArgs)
+    protected override async Task OnActiveVehicleChanged(ActiveVehicleChangedEventArgs vehicleChangedEventArgs)
     {
-        var scopeChanged =
-            vehicleChangedEventArgs.Previous.VehicleId != vehicleChangedEventArgs.Current.VehicleId ||
-            vehicleChangedEventArgs.Previous.IsOnline != vehicleChangedEventArgs.Current.IsOnline ||
-            vehicleChangedEventArgs.Previous.State?.Identity.Firmware != vehicleChangedEventArgs.Current.State?.Identity.Firmware;
-        if (!scopeChanged)
-        {
-            return;
-        }
+        await base.OnActiveVehicleChanged(vehicleChangedEventArgs);
+
 
         var changed = vehicleChangedEventArgs.Current.IsOnline;
 
-        dispatcher.Dispatch(() =>
+        await dispatcher.DispatchAsync(async () =>
         {
+            StatusMessage = "Vehicle changed. Refresh parameters.";
+            ErrorMessage = "The vehicle is disconnected.";
             editSessionFactory?.DiscardPendingChanges();
             CancelCachedParameterLoad();
-            EditSession?.Changed -= OnEditSessionChanged;
+            EditSession?.Changed += OnEditSessionChanged;
             EditSession = null;
             Parameters.Clear();
             HasParameters = false;
             TotalParameterCount = 0;
-            HasConnection = changed;
-            ShowVehicleDisconnected = !changed;
             CancelLoadOperation();
             CloseProgressDialog();
             CompleteBusyState();
-
-            var statusMessage = changed ? "Vehicle changed. Refresh parameters." : null;
-            var errorMessage = changed ? null : "The vehicle is disconnected.";
-            Debug.Assert(statusMessage is null || errorMessage is null);
-            SetMessages(statusMessage, errorMessage);
-
             if (changed && vehicleChangedEventArgs.Current.VehicleId is { } vehicleId)
             {
-                ApplyParameterLoadStatus(parameterLoadStatus.Get(vehicleId));
-                ScheduleCachedParameterLoad(vehicleId);
+                await ApplyParameterLoadStatusAsync(parameterLoadStatus.Get(vehicleId));
+                await ScheduleCachedParameterLoadAsync(vehicleId);
             }
         });
     }
@@ -236,10 +218,75 @@ public partial class ParametersViewModel : BaseViewModel
     /// <summary>
     ///  
     /// </summary>
-    /// <param name="sender"></param>
-    /// <param name="e"></param>
-    protected virtual void OnEditSessionChanged(object? sender, EventArgs e)
+    protected virtual void OnEditSessionChanged()
     {
+        if (disposed || Interlocked.Exchange(ref sessionRefreshScheduled, 1) != 0)
+        {
+            return;
+        }
+        Interlocked.Exchange(ref sessionRefreshScheduled, 1);
+
+        if (disposed || EditSession is null)
+        {
+            return;
+        }
+
+        var progress = CreateProgress();
+        SynchronizeParameterItems(progress);
+        if (!EditSession.IsValid)
+        {
+            var m = EditSession.InvalidReason ?? "This parameter session is stale.";
+            dispatcher.Dispatch(() => SetMessages(m));
+        }
+
+        Interlocked.Exchange(ref sessionRefreshScheduled, 0);
+    }
+
+    private void SynchronizeParameterItems(IProgress<ParameterStreamProgress>? progress = null)
+    {
+        if (EditSession is null)
+        {
+            return;
+        }
+
+        var fields = EditSession.Fields;
+        progress?.Report(new ParameterStreamProgress(Message: $"Creating data grid for {fields.Count} parameters"));
+
+        var itemsByName = Parameters.ToDictionary(item => item.Name, StringComparer.Ordinal);
+        var fieldNames = new HashSet<string>(StringComparer.Ordinal);
+        var structureChanged = false;
+        var nextItems = new List<ParameterItemViewModel>(fields.Count);
+        foreach (var field in fields)
+        {
+            fieldNames.Add(field.Name);
+            if (itemsByName.TryGetValue(field.Name, out var item))
+            {
+                item.SetField(field);
+                nextItems.Add(item);
+            }
+            else
+            {
+                nextItems.Add(new ParameterItemViewModel(EditSession, field));
+                structureChanged = true;
+            }
+        }
+
+        if (Parameters.Any(item => !fieldNames.Contains(item.Name)))
+        {
+            structureChanged = true;
+        }
+
+        dispatcher.Dispatch(() =>
+        {
+            if (structureChanged)
+            {
+                nextItems.Sort((left, right) => StringComparer.Ordinal.Compare(left.Name, right.Name));
+                Parameters.ReplaceRange(nextItems);
+            }
+            TotalParameterCount = Parameters.Count;
+            ModifiedParameterCount = fields.Count(field => field.IsModified);
+        });
+        progress?.Report(new ParameterStreamProgress(Message: $"Completed data grid for {fields.Count} parameters"));
     }
 
     /// <summary>
@@ -248,15 +295,15 @@ public partial class ParametersViewModel : BaseViewModel
     /// <param name="evt"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    protected virtual Task OnParameterLoadStatusChanged(VehicleParameterLoadStatusChanged evt, CancellationToken cancellationToken)
+    protected virtual async Task OnParameterLoadStatusChanged(VehicleParameterLoadStatusChanged evt, CancellationToken cancellationToken)
     {
         var status = evt.Status;
         if (disposed || activeVehicle.VehicleId != status.VehicleId)
         {
-            return Task.CompletedTask;
+            return;
         }
 
-        dispatcher.Dispatch(() =>
+        await dispatcher.DispatchAsync(async () =>
         {
             var latest = parameterLoadStatus.Get(status.VehicleId);
             if (latest != status)
@@ -264,16 +311,15 @@ public partial class ParametersViewModel : BaseViewModel
                 return;
             }
 
-            ApplyParameterLoadStatus(latest);
+            await ApplyParameterLoadStatusAsync(latest);
         });
-        return Task.CompletedTask;
     }
 
     /// <summary>
     /// 
     /// </summary>
     /// <param name="status"></param>
-    protected virtual void ApplyParameterLoadStatus(ParameterLoadStatus? status)
+    protected virtual async Task ApplyParameterLoadStatusAsync(ParameterLoadStatus? status)
     {
         if (status is null || activeVehicle.VehicleId != status.VehicleId)
         {
@@ -296,7 +342,7 @@ public partial class ParametersViewModel : BaseViewModel
                 ShowLoadingCompletedWithError = false;
                 ShowLoadingCancelled = false;
                 SetMessages(status.Message);
-                ScheduleCachedParameterLoad(status.VehicleId);
+                await ScheduleCachedParameterLoadAsync(status.VehicleId);
                 break;
             case ParameterLoadState.Failed:
                 ShowLoadingCompletedWithError = true;
@@ -312,9 +358,8 @@ public partial class ParametersViewModel : BaseViewModel
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="sender"></param>
     /// <param name="args"></param>
-    protected virtual void OnParameterRegistryChanged(object? sender, VehicleParameterChangedEventArgs args)
+    protected virtual async Task OnParameterRegistryChangedAsync(VehicleParameterChangedEventArgs args)
     {
         if (disposed ||
             !activeVehicle.IsOnline ||
@@ -324,25 +369,23 @@ public partial class ParametersViewModel : BaseViewModel
             return;
         }
 
-        ScheduleCachedParameterLoad(args.VehicleId);
+        await ScheduleCachedParameterLoadAsync(args.VehicleId);
     }
 
     /// <summary>
     /// 
     /// </summary>
     /// <param name="vehicleId"></param>
-    protected virtual void ScheduleCachedParameterLoad(VehicleId vehicleId)
+    protected virtual async Task ScheduleCachedParameterLoadAsync(VehicleId vehicleId)
     {
-        if (disposed || IsBusy || !HasCompleteCachedParameterSet(vehicleId) ||
-            Interlocked.CompareExchange(ref cachedLoadScheduled, 1, 0) != 0)
+        if (disposed || IsBusy || !HasCompleteCachedParameterSet(vehicleId) || Interlocked.CompareExchange(ref cachedLoadScheduled, 1, 0) != 0)
         {
             return;
         }
 
-        var cancellation = CancellationTokenSource.CreateLinkedTokenSource(
-            activeVehicle.ConnectionCancellationToken);
+        var cancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
         cachedLoadCancellation = cancellation;
-        _ = LoadCachedParametersAsync(vehicleId, cancellation);
+        await LoadCachedParametersAsync(vehicleId, cancellation);
     }
 
     /// <summary>
@@ -353,8 +396,7 @@ public partial class ParametersViewModel : BaseViewModel
     protected virtual bool HasCompleteCachedParameterSet(VehicleId vehicleId)
     {
         var expectedCount = parameterRegistry.GetParameterCount(vehicleId);
-        return expectedCount is > 0 &&
-               parameterRegistry.GetAllParameters(vehicleId).Count >= expectedCount.Value;
+        return expectedCount is > 0 && parameterRegistry.GetAllParameters(vehicleId).Count >= expectedCount.Value;
     }
 
     /// <summary>
@@ -367,14 +409,12 @@ public partial class ParametersViewModel : BaseViewModel
         try
         {
             var session = editSessionFactory.Create(vehicleId);
-            await session.LoadAsync(cancellationToken: cancellation.Token).ConfigureAwait(false);
+            await session.LoadAsync(cancellationToken: cancellation.Token);
             cancellation.Token.ThrowIfCancellationRequested();
 
             await dispatcher.DispatchAsync(() =>
             {
-                if (disposed ||
-                    !activeVehicle.IsOnline ||
-                    activeVehicle.VehicleId != vehicleId)
+                if (disposed || !activeVehicle.IsOnline || activeVehicle.VehicleId != vehicleId)
                 {
                     return;
                 }
@@ -390,10 +430,7 @@ public partial class ParametersViewModel : BaseViewModel
         }
         catch (Exception exception)
         {
-            logger.LogWarning(
-                exception,
-                "Could not project cached parameters for {VehicleId}.",
-                vehicleId);
+            logger.LogWarning(exception, "Could not project cached parameters for {VehicleId}.", vehicleId);
         }
         finally
         {
@@ -413,7 +450,6 @@ public partial class ParametersViewModel : BaseViewModel
         {
             return;
         }
-
         try
         {
             cancellation.Cancel();
@@ -422,17 +458,6 @@ public partial class ParametersViewModel : BaseViewModel
         {
             // Completion won the race with cancellation.
         }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="statusMessage"></param>
-    /// <param name="errorMessage"></param>
-    protected virtual void SetMessages(string? statusMessage = null, string? errorMessage = null)
-    {
-        StatusMessage = statusMessage;
-        ErrorMessage = errorMessage;
     }
 
     /// <summary>
@@ -622,7 +647,7 @@ public partial class ParametersViewModel : BaseViewModel
 
         // Loading a session does not raise Changed. Notify the derived view model
         // explicitly so it can create its initial UI projection.
-        OnEditSessionChanged(EditSession, EventArgs.Empty);
+        OnEditSessionChanged();
     }
 
     /// <summary>
@@ -644,7 +669,7 @@ public partial class ParametersViewModel : BaseViewModel
     /// <summary>
     /// Completes the busy state, resetting all related flags and messages.
     /// </summary>
-    protected virtual void CompleteBusyState()
+    protected void CompleteBusyState()
     {
         ProgressMessage = string.Empty;
         IsBusy = false;
@@ -683,6 +708,7 @@ public partial class ParametersViewModel : BaseViewModel
         }
 
         disposed = true;
+        base.Dispose();
         parameterLoadStatusSubscription.Dispose();
         Interlocked.Exchange(ref sessionRefreshScheduled, 0);
 
@@ -693,47 +719,66 @@ public partial class ParametersViewModel : BaseViewModel
     }
 
     /// <inheritdoc />
-    public override Task ActivateAsync()
+    public override async Task ActivateAsync()
     {
         if (disposed)
         {
-            return Task.CompletedTask;
+            return;
         }
+        if (activated)
+        {
+            return;
+        }
+
+        activated = true;
+        await base.ActivateAsync();
 
         ErrorMessage = null;
         IsBusy = false;
         HasParameters = Parameters.Count > 0;
-        activeVehicle.Changed += OnActiveVehicleChanged;
-        parameterRegistry.Changed += OnParameterRegistryChanged;
-        HasConnection = activeVehicle.IsOnline;
-        ShowVehicleDisconnected = !HasConnection;
+        activeVehicle.Changed += ActiveVehicleChanged;
+        parameterRegistry.Changed += ParameterRegistryChangedAsync;
+        parameterLoadStatusSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleParameterLoadStatusChanged>(OnParameterLoadStatusChanged);
         StatusMessage = HasConnection ? null : DefaultStatusMessage;
 
         if (activeVehicle.VehicleId is { } vehicleId && HasConnection)
         {
-            ApplyParameterLoadStatus(parameterLoadStatus.Get(vehicleId));
-            ScheduleCachedParameterLoad(vehicleId);
+            await ApplyParameterLoadStatusAsync(parameterLoadStatus.Get(vehicleId));
+            await ScheduleCachedParameterLoadAsync(vehicleId);
         }
 
-        return Task.CompletedTask;
     }
 
+    private void ActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs e)
+    {
+        OnActiveVehicleChanged(e).GetAwaiter().GetResult();
+    }
+
+    private void ParameterRegistryChangedAsync(object? sender, VehicleParameterChangedEventArgs args)
+    {
+        OnParameterRegistryChangedAsync(args).GetAwaiter().GetResult();
+    }
 
     /// <inheritdoc />
-    public override Task DeactivateAsync()
+    public override async Task DeactivateAsync()
     {
-        activeVehicle.Changed -= OnActiveVehicleChanged;
-        parameterRegistry.Changed -= OnParameterRegistryChanged;
+        await base.DeactivateAsync();
+        if (!activated)
+        {
+            return;
+        }
+        activated = false;
+        parameterRegistry.Changed -= ParameterRegistryChangedAsync;
         EditSession?.Changed -= OnEditSessionChanged;
         EditSession = null;
-
+        parameterLoadStatusSubscription.Dispose();
+        parameterLoadStatusSubscription = null!;
         CloseProgressDialog();
         Parameters.Clear();
         lastApplyReport = null;
         HasParameters = false;
         TotalParameterCount = 0;
         ModifiedParameterCount = 0;
-        return Task.CompletedTask;
     }
 
 

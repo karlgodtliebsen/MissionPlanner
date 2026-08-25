@@ -1,5 +1,4 @@
-﻿using MissionPlanner.Core.Vehicles.Models;
-using MissionPlanner.Shared.Models.Vehicles.Models;
+﻿using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.ConfigTuning;
 
@@ -7,10 +6,17 @@ namespace MissionPlanner.Core.ConfigTuning;
 public interface IParameterEditSessionFactory
 {
     /// <summary>Gets whether the shared session has unapplied edits.</summary>
-    bool HasUnappliedChanges { get; }
+    bool HasUnappliedChanges
+    {
+        get;
+    }
 
     /// <summary>Occurs when the shared session or its dirty state changes.</summary>
-    event EventHandler? Changed;
+    Action? Changed
+    {
+        get;
+        set;
+    }
 
     /// <summary>Gets or creates the shared session for the given active vehicle and firmware identity.</summary>
     /// <param name="vehicleId">The target vehicle.</param>

@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
@@ -43,7 +42,11 @@ public sealed class ParameterEditSessionFactory : IParameterEditSessionFactory, 
     }
 
     /// <inheritdoc />
-    public event EventHandler? Changed;
+    public Action? Changed
+    {
+        get;
+        set;
+    }
 
     /// <inheritdoc />
     public IParameterEditSession Create(VehicleId vehicleId)
@@ -79,7 +82,7 @@ public sealed class ParameterEditSessionFactory : IParameterEditSessionFactory, 
         }
 
         replaced?.Dispose();
-        Changed?.Invoke(this, EventArgs.Empty);
+        Changed?.Invoke();
         return result;
     }
 
@@ -136,8 +139,8 @@ public sealed class ParameterEditSessionFactory : IParameterEditSessionFactory, 
         session.Invalidate("The active vehicle connection or firmware identity changed. Revert these stale edits and reload before writing.");
     }
 
-    private void OnSessionChanged(object? sender, EventArgs args)
+    private void OnSessionChanged()
     {
-        Changed?.Invoke(this, EventArgs.Empty);
+        Changed?.Invoke();
     }
 }

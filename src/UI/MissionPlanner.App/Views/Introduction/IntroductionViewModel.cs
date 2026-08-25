@@ -43,6 +43,11 @@ public partial class IntroductionViewModel(IIntroductionContentLoader contentLoa
     } = "Quick guide to MissionPlanner NextGeneration";
 
 
+    /// <summary>
+    /// Selects a topic by its ID.
+    /// </summary>
+    /// <param name="id">The ID of the topic to select.</param>
+    /// <returns>True if the topic was found and selected; otherwise, false.</returns>
     public bool SelectTopic(string? id)
     {
         if (string.IsNullOrWhiteSpace(id))
@@ -85,11 +90,12 @@ public partial class IntroductionViewModel(IIntroductionContentLoader contentLoa
         }
         catch (OperationCanceledException) when (cancellationTokenSource.Token.IsCancellationRequested)
         {
+            Debug.Print("OperationCanceledException");
             throw;
         }
         catch (Exception ex)
         {
-            Debug.Print(ex.ToString());
+            Debug.Print("Exception in ActivateAsync:\n" + ex.ToString());
             logger.LogError(ex, "Could not initialize the MissionPlanner Introduction page.");
             ErrorMessage =
                 "MissionPlanner could not load the Introduction content. " +

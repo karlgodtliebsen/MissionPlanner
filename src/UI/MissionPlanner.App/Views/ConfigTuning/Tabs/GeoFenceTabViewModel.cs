@@ -549,7 +549,7 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
         await InitializeForActiveVehicleAsync();
     }
 
-    private void OnParameterSessionChanged(object? sender, EventArgs args)
+    private void OnParameterSessionChanged()
     {
         SyncParameterRows();
     }

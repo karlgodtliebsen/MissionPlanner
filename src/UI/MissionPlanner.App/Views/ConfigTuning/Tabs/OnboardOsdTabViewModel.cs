@@ -534,7 +534,7 @@ public sealed partial class OnboardOsdTabViewModel : BaseViewModel
         }
     }
 
-    private void OnSessionChanged(object? sender, EventArgs args)
+    private void OnSessionChanged()
     {
         dispatcher.Dispatch(RefreshAll);
     }
