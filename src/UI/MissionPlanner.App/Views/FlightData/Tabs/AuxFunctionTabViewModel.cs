@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.FlightData.Auxiliary;
+using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.MavLink.Generated;
 using UraniumUI.Material.TabViews;
@@ -120,7 +121,7 @@ public partial class AuxFunctionTabViewModel : BaseViewModel
         return Task.CompletedTask;
     }
 
-    private void OnActiveVehicleChanged(object? sender, EventArgs e)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs e)
     {
         Refresh();
     }

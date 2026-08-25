@@ -64,12 +64,9 @@ public sealed class OptionalHardwareService : IOptionalHardwareService
 
         // Never log the value of a secret setting.
         logger.LogInformation("Applying optional-hardware parameter {Parameter} on {VehicleId}.", parameterName, vehicleId);
-        if (await WriteAndConfirmAsync(vehicleId, setting, value, cancellationToken).ConfigureAwait(false))
-        {
-            return new OptionalHardwareApplyResult(true, $"Confirmed {parameterName} by vehicle readback.", setting.RebootRequired);
-        }
-
-        return new OptionalHardwareApplyResult(false, $"Readback did not confirm {parameterName}. Reconnect, refresh, and verify before flying.");
+        return await WriteAndConfirmAsync(vehicleId, setting, value, cancellationToken).ConfigureAwait(false)
+            ? new OptionalHardwareApplyResult(true, $"Confirmed {parameterName} by vehicle readback.", setting.RebootRequired)
+            : new OptionalHardwareApplyResult(false, $"Readback did not confirm {parameterName}. Reconnect, refresh, and verify before flying.");
     }
 
     /// <inheritdoc />
@@ -87,19 +84,16 @@ public sealed class OptionalHardwareService : IOptionalHardwareService
 
     private VehicleState RequireActiveVehicle(VehicleId vehicleId)
     {
-        if (!activeVehicle.IsOnline || activeVehicle.VehicleId != vehicleId || activeVehicle.State is not { } state)
-        {
-            throw new InvalidOperationException("The target vehicle is no longer the active online vehicle.");
-        }
-
-        return state;
+        return !activeVehicle.IsOnline || activeVehicle.VehicleId != vehicleId || activeVehicle.State is not { } state
+            ? throw new InvalidOperationException("The target vehicle is no longer the active online vehicle.")
+            : state;
     }
 
     private async Task<bool> WriteAndConfirmAsync(VehicleId vehicleId, PeripheralSetting setting, double value, CancellationToken cancellationToken)
     {
         var readback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        void OnChanged(object? sender, VehicleParameterChangedEventArgs args)
+        void OnChanged(VehicleParameterChangedEventArgs args)
         {
             if (args.VehicleId == vehicleId && args.Parameter is { } parameter && parameter.Name == setting.Name && NearlyEqual(parameter.Value, value))
             {

@@ -82,7 +82,7 @@ public sealed class ActuatorTestService : IActuatorTestService
     public double MaximumThrottlePercent => 100;
 
     /// <inheritdoc />
-    public event EventHandler<MotorTestStateChangedEventArgs>? StateChanged;
+    public event Action<MotorTestStateChangedEventArgs>? StateChanged;
 
     /// <inheritdoc />
     public bool SupportsMotorTest(FirmwareFamily family)
@@ -392,7 +392,7 @@ public sealed class ActuatorTestService : IActuatorTestService
         return new MotorTestResult(false, reason);
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         if (Current.State == MotorTestState.Running && (!args.Current.IsOnline || args.Current.VehicleId != Current.VehicleId))
         {
@@ -429,7 +429,7 @@ public sealed class ActuatorTestService : IActuatorTestService
                 state is MotorTestState.Failed or MotorTestState.Disconnected ? instruction : null);
         }
 
-        StateChanged?.Invoke(this, new MotorTestStateChangedEventArgs(Current));
+        StateChanged?.Invoke(new MotorTestStateChangedEventArgs(Current));
     }
 
     private void CancelAutoStop()

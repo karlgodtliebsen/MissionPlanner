@@ -55,11 +55,14 @@ public partial class TransponderTabViewModel : BaseViewModel
         return Task.CompletedTask;
     }
 
-    private void OnChanged(object? sender, EventArgs args)
+    private void OnChanged(EventArgs args)
     {
         dispatcher.Dispatch(Refresh);
     }
-
+    private void OnChanged()
+    {
+        dispatcher.Dispatch(Refresh);
+    }
     private void Refresh()
     {
         var systemId = activeVehicle.VehicleId?.SystemId;

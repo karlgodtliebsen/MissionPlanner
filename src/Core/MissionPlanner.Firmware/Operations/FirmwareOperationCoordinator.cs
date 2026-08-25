@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Firmware.Exceptions;
 using MissionPlanner.Firmware.Model;
 
@@ -29,22 +29,22 @@ public sealed class FirmwareOperationCoordinator(ILogger<FirmwareOperationCoordi
     {
         lock (sync)
         {
-            if (ReferenceEquals(active, session)) active = null;
+            if (ReferenceEquals(active, session))
+            {
+                active = null;
+            }
         }
     }
 
     private sealed class FirmwareOperationSession : IFirmwareOperationSession
     {
-        private static readonly IReadOnlyDictionary<FirmwareOperationState, HashSet<FirmwareOperationState>> Transitions =
-            CreateTransitions();
+        private static readonly IReadOnlyDictionary<FirmwareOperationState, HashSet<FirmwareOperationState>>
+            Transitions = CreateTransitions();
         private readonly ILogger logger;
         private readonly Action<FirmwareOperationSession> release;
         private bool disposed;
 
-        public FirmwareOperationSession(
-            FirmwareOperationKind kind,
-            ILogger logger,
-            Action<FirmwareOperationSession> release)
+        public FirmwareOperationSession(FirmwareOperationKind kind, ILogger logger, Action<FirmwareOperationSession> release)
         {
             Kind = kind;
             this.logger = logger;
@@ -54,10 +54,22 @@ public sealed class FirmwareOperationCoordinator(ILogger<FirmwareOperationCoordi
             logger.LogInformation("Firmware operation {OperationId} started for {Kind}.", OperationId, Kind);
         }
 
-        public Guid OperationId { get; }
-        public FirmwareOperationKind Kind { get; }
-        public FirmwareOperationState State { get; private set; }
-        public bool CancellationRequested { get; private set; }
+        public Guid OperationId
+        {
+            get;
+        }
+        public FirmwareOperationKind Kind
+        {
+            get;
+        }
+        public FirmwareOperationState State
+        {
+            get; private set;
+        }
+        public bool CancellationRequested
+        {
+            get; private set;
+        }
         public event EventHandler<FirmwareProgress>? ProgressChanged;
 
         public void Transition(FirmwareProgress progress)
@@ -84,7 +96,10 @@ public sealed class FirmwareOperationCoordinator(ILogger<FirmwareOperationCoordi
         public bool RequestCancellation(string messageCode = "operation.cancelled")
         {
             ObjectDisposedException.ThrowIf(disposed, this);
-            if (IsTerminal(State)) return State == FirmwareOperationState.Cancelled;
+            if (IsTerminal(State))
+            {
+                return State == FirmwareOperationState.Cancelled;
+            }
 
             CancellationRequested = true;
             if (State is FirmwareOperationState.Erasing or FirmwareOperationState.Programming or
@@ -103,7 +118,11 @@ public sealed class FirmwareOperationCoordinator(ILogger<FirmwareOperationCoordi
 
         public void Dispose()
         {
-            if (disposed) return;
+            if (disposed)
+            {
+                return;
+            }
+
             if (!IsTerminal(State))
             {
                 throw new FirmwareStateTransitionException(
@@ -114,8 +133,10 @@ public sealed class FirmwareOperationCoordinator(ILogger<FirmwareOperationCoordi
             release(this);
         }
 
-        private static bool IsTerminal(FirmwareOperationState state) =>
-            state is FirmwareOperationState.Completed or FirmwareOperationState.Cancelled or FirmwareOperationState.Failed;
+        private static bool IsTerminal(FirmwareOperationState state)
+        {
+            return state is FirmwareOperationState.Completed or FirmwareOperationState.Cancelled or FirmwareOperationState.Failed;
+        }
 
         private static IReadOnlyDictionary<FirmwareOperationState, HashSet<FirmwareOperationState>> CreateTransitions()
         {
@@ -156,6 +177,9 @@ public sealed class FirmwareOperationCoordinator(ILogger<FirmwareOperationCoordi
         private static void Add(
             IDictionary<FirmwareOperationState, HashSet<FirmwareOperationState>> map,
             FirmwareOperationState state,
-            params FirmwareOperationState[] allowed) => map[state] = [.. allowed];
+            params FirmwareOperationState[] allowed)
+        {
+            map[state] = [.. allowed];
+        }
     }
 }

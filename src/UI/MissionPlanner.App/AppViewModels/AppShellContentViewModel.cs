@@ -247,7 +247,7 @@ public partial class AppShellContentViewModel : ObservableObject
         }
     }
 
-    private void OnSettingsChanged(object? sender, PlannerSettingsChangedEventArgs e)
+    private void OnSettingsChanged(PlannerSettingsChangedEventArgs e)
     {
         if (synchronizing)
         {

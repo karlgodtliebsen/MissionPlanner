@@ -1,6 +1,5 @@
 ﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -166,6 +165,6 @@ public sealed class BatterySetupTests
 
         public CancellationToken ConnectionCancellationToken => lifetime.Token;
 
-        public event EventHandler<ActiveVehicleChangedEventArgs>? Changed;
+        public event Action<ActiveVehicleChangedEventArgs>? Changed;
     }
 }

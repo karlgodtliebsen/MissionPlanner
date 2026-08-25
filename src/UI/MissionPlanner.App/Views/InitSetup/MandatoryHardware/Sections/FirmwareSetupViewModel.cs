@@ -286,7 +286,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
     }
 
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         dispatcher.Dispatch(() => UpdateVehicle(args.Current.State));
     }

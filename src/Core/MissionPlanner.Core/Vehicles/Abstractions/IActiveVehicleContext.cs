@@ -52,6 +52,6 @@ public interface IActiveVehicleContext
     /// Occurs when the selected vehicle changes or crosses its online connection boundary.
     /// Telemetry-only state updates refresh <see cref="Current"/> without raising this event.
     /// </summary>
-    event EventHandler<ActiveVehicleChangedEventArgs>? Changed;
+    event Action<ActiveVehicleChangedEventArgs>? Changed;
 
 }

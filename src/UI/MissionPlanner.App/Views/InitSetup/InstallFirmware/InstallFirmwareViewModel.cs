@@ -1302,7 +1302,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
         return deviceManagerLauncher.OpenAsync(cancellationToken);
     }
 
-    private void OnActiveVehicleChanged(object? sender, Core.Vehicles.ActiveVehicleChangedEventArgs e)
+    private void OnActiveVehicleChanged(Core.Vehicles.ActiveVehicleChangedEventArgs e)
     {
         if (e.Current.IsOnline)
         {

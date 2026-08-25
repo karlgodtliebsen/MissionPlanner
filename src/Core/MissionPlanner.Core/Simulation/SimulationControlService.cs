@@ -398,18 +398,12 @@ public sealed class SimulationControlService : ISimulationControlService
         active.Cancellation.Dispose();
     }
 
-    private async Task SetConfirmedAsync(
-        SimulationTarget target,
-        string controlKey,
-        string parameterName,
-        MavParamType parameterType,
-        double value,
-        CancellationToken cancellationToken)
+    private async Task SetConfirmedAsync(SimulationTarget target, string controlKey, string parameterName, MavParamType parameterType, double value, CancellationToken cancellationToken)
     {
         EnsureSameTarget(target);
         var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        void OnChanged(object? sender, VehicleParameterChangedEventArgs args)
+        void OnChanged(VehicleParameterChangedEventArgs args)
         {
             if (args.VehicleId == target.VehicleId &&
                 args.Parameter?.Name.Equals(parameterName, StringComparison.OrdinalIgnoreCase) == true &&

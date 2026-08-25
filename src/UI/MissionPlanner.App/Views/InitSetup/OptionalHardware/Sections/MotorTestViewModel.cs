@@ -302,12 +302,12 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         SpinMinDisplay = state.SpinMinPercent is { } min ? $"MOT_SPIN_MIN: {min:0.#}%" : "MOT_SPIN_MIN: unavailable";
     }
 
-    private void Changed(object? s, ActiveVehicleChangedEventArgs e)
+    private void Changed(ActiveVehicleChangedEventArgs e)
     {
         dispatcher.Dispatch(Refresh);
     }
 
-    private void StateChanged(object? s, MotorTestStateChangedEventArgs e)
+    private void StateChanged(MotorTestStateChangedEventArgs e)
     {
         if (disposed)
         {

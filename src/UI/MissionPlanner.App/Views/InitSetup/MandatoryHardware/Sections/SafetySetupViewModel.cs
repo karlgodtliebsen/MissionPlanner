@@ -100,7 +100,7 @@ public sealed partial class SafetySetupViewModel : SetupWorkflowDetailViewModel
         }
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
         {
@@ -114,7 +114,7 @@ public sealed partial class SafetySetupViewModel : SetupWorkflowDetailViewModel
         }
     }
 
-    private void OnParameterChanged(object? sender, VehicleParameterChangedEventArgs args)
+    private void OnParameterChanged(VehicleParameterChangedEventArgs args)
     {
         if (args.VehicleId == activeVehicle.VehicleId)
         {

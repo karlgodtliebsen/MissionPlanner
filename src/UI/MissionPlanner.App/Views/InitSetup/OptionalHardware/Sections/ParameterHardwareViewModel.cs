@@ -122,7 +122,7 @@ public abstract partial class ParameterHardwareViewModel : OptionalHardwareBaseV
         }
     }
 
-    private async void Changed(object? s, ActiveVehicleChangedEventArgs e)
+    private async void Changed(ActiveVehicleChangedEventArgs e)
     {
         await Dispatcher.DispatchAsync(Load);
     }

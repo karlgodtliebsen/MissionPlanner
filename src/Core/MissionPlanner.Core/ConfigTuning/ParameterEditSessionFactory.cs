@@ -119,7 +119,7 @@ public sealed class ParameterEditSessionFactory : IParameterEditSessionFactory, 
         session?.Dispose();
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         IParameterEditSession? session;
         lock (sync)

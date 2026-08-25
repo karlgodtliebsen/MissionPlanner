@@ -1,5 +1,4 @@
-using MissionPlanner.Core.Vehicles.Models;
-using MissionPlanner.Shared.Models.Vehicles.Models;
+﻿using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Vehicles.Abstractions;
 
@@ -9,7 +8,7 @@ namespace MissionPlanner.Core.Vehicles.Abstractions;
 public interface IVehicleMessageStore
 {
     /// <summary>Occurs when a message is appended.</summary>
-    event EventHandler<VehicleStatusTextAddedEventArgs>? MessageAdded;
+    event Action<VehicleStatusTextAddedEventArgs>? MessageAdded;
 
     /// <summary>Gets an immutable snapshot of a vehicle's history.</summary>
     /// <param name="vehicleId">The vehicle whose history is requested.</param>

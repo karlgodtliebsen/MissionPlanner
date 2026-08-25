@@ -381,7 +381,7 @@ public sealed class ExtendedTuningTests
 
         public CancellationToken ConnectionCancellationToken => CancellationToken.None;
 
-        public event EventHandler<ActiveVehicleChangedEventArgs>? Changed
+        public event Action<ActiveVehicleChangedEventArgs>? Changed
         {
             add
             {

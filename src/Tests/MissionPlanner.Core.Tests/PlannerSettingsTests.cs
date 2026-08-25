@@ -182,7 +182,7 @@ public sealed class PlannerSettingsTests
         var cancellationToken = TestContext.Current.CancellationToken;
         await service.InitializeAsync(cancellationToken);
         PlannerSettingsChangedEventArgs? changed = null;
-        service.SettingsChanged += (_, args) => changed = args;
+        service.SettingsChanged += (args) => changed = args;
         var updated = service.Current with
         {
             Appearance = new PlannerAppearanceSettings { ThemeId = ThemeIds.MissionDark },

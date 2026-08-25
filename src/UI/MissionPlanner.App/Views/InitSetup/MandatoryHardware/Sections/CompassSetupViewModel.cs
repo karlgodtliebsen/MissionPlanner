@@ -406,12 +406,12 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
         OnPropertyChanged(nameof(HasIssues));
     }
 
-    private void OnCalibrationStateChanged(object? sender, CompassCalibrationStateChangedEventArgs args)
+    private void OnCalibrationStateChanged(CompassCalibrationStateChangedEventArgs args)
     {
         dispatcher.Dispatch(() => Show(args.Snapshot));
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
         {

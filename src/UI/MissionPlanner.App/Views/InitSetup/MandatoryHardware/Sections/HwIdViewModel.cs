@@ -124,7 +124,7 @@ public sealed partial class HwIdViewModel : SetupWorkflowDetailViewModel
         StatusMessage = Items.Count == 0 ? "No peripheral hardware identifiers were reported." : $"{Items.Count} hardware identifier(s) reported.";
     }
 
-    private void OnVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         dispatcher.Dispatch(() => RefreshAsync().GetAwaiter().GetResult());
     }

@@ -33,19 +33,34 @@ public sealed partial class MissionItemRow : ObservableObject, IDisposable
     private Action<MissionItemRow>? valueChanged;
 
     /// <summary>The identifier of the underlying mission item.</summary>
-    public required MissionItemId Id { get; init; }
+    public required MissionItemId Id
+    {
+        get; init;
+    }
 
     /// <summary>The 1-based display number (sequence + 1).</summary>
-    public required int Number { get; init; }
+    public required int Number
+    {
+        get; init;
+    }
 
     /// <summary>The MAVLink command id (MAV_CMD) the row was built from (fallback when the selection is unknown).</summary>
-    public required ushort CommandId { get; init; }
+    public required ushort CommandId
+    {
+        get; init;
+    }
 
     /// <summary>The MAVLink frame byte the row was built from (fallback when the selection is unknown).</summary>
-    public required byte Frame { get; init; }
+    public required byte Frame
+    {
+        get; init;
+    }
 
     /// <summary>Whether the item auto-continues to the next one.</summary>
-    public required bool AutoContinue { get; init; }
+    public required bool AutoContinue
+    {
+        get; init;
+    }
 
     /// <summary>The selected command name (v1.38 mavcmd naming, e.g. WAYPOINT, LOITER_TIME).</summary>
     [ObservableProperty]
@@ -73,24 +88,42 @@ public sealed partial class MissionItemRow : ObservableObject, IDisposable
 
     /// <summary>The latitude in degrees (editable), or empty when the item has no position.</summary>
     [ObservableProperty]
-    public partial double? Latitude { get; set; }
+    public partial double? Latitude
+    {
+        get; set;
+    }
 
     /// <summary>The longitude in degrees (editable), or empty when the item has no position.</summary>
     [ObservableProperty]
-    public partial double? Longitude { get; set; }
+    public partial double? Longitude
+    {
+        get; set;
+    }
 
     /// <summary>The altitude in meters (editable), or empty when the item has no altitude.</summary>
     [ObservableProperty]
-    public partial double? Altitude { get; set; }
+    public partial double? Altitude
+    {
+        get; set;
+    }
 
     /// <summary>Ground distance in meters from the previous positioned item (or home), display only.</summary>
-    public double? Distance { get; init; }
+    public double? Distance
+    {
+        get; init;
+    }
 
     /// <summary>Bearing in degrees from the previous positioned item (or home), display only.</summary>
-    public double? Azimuth { get; init; }
+    public double? Azimuth
+    {
+        get; init;
+    }
 
     /// <summary>Climb gradient in percent over the leg, display only.</summary>
-    public double? Gradient { get; init; }
+    public double? Gradient
+    {
+        get; init;
+    }
 
     /// <inheritdoc />
     protected override void OnPropertyChanged(PropertyChangedEventArgs e)

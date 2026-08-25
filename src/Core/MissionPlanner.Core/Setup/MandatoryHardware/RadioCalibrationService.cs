@@ -75,7 +75,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
     public RadioCalibrationSnapshot Current { get; private set; } = RadioCalibrationSnapshot.Initial;
 
     /// <inheritdoc />
-    public event EventHandler<RadioCalibrationStateChangedEventArgs>? StateChanged;
+    public event Action<RadioCalibrationStateChangedEventArgs>? StateChanged;
 
     /// <inheritdoc />
     public RadioChannelsView GetLiveChannels(VehicleId vehicleId)
@@ -191,7 +191,13 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
             var issues = ValidateCaptures(snapshot, ResolveFunctions(parameters));
             snapshot = AttachIssues(snapshot, issues);
             next = issues.Any(issue => issue.Severity == RadioIssueSeverity.Hazard)
-                ? Current with { Captures = snapshot, Instruction = "Endpoint capture is incomplete. Move every listed control through its full travel, then try again.", Issues = issues, FailureReason = "One or more channels failed endpoint validation." }
+                ? Current with
+                {
+                    Captures = snapshot,
+                    Instruction = "Endpoint capture is incomplete. Move every listed control through its full travel, then try again.",
+                    Issues = issues,
+                    FailureReason = "One or more channels failed endpoint validation."
+                }
                 : new RadioCalibrationSnapshot(
                     target,
                     RadioCalibrationState.Review,
@@ -339,7 +345,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
         ReleaseLease();
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         if (!workflowActive || Current.VehicleId is not { } vehicleId)
         {
@@ -385,7 +391,10 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
                 return Task.CompletedTask;
             }
 
-            next = Current with { Captures = SnapshotCaptures() };
+            next = Current with
+            {
+                Captures = SnapshotCaptures()
+            };
         }
 
         Transition(next);
@@ -435,7 +444,12 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
 
             var number = index + 1;
             captures[number] = captures.TryGetValue(number, out var existing)
-                ? existing with { Minimum = Math.Min(existing.Minimum, pwm), Maximum = Math.Max(existing.Maximum, pwm), Current = pwm }
+                ? existing with
+                {
+                    Minimum = Math.Min(existing.Minimum, pwm),
+                    Maximum = Math.Max(existing.Maximum, pwm),
+                    Current = pwm
+                }
                 : new RadioChannelCapture(number, pwm, pwm, pwm);
         }
     }
@@ -448,7 +462,11 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
             if (number <= raw.Count && raw[number - 1] != 0)
             {
                 var pwm = raw[number - 1];
-                captures[number] = captures[number] with { Current = pwm, CandidateTrim = pwm };
+                captures[number] = captures[number] with
+                {
+                    Current = pwm,
+                    CandidateTrim = pwm
+                };
             }
         }
     }
@@ -473,7 +491,13 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
                 "Throttle" => RadioTrimPolicy.Low,
                 var _ => RadioTrimPolicy.Current
             };
-            captures[number] = captures[number] with { FunctionName = function, TrimPolicy = policy, CandidateTrim = null, Issues = [] };
+            captures[number] = captures[number] with
+            {
+                FunctionName = function,
+                TrimPolicy = policy,
+                CandidateTrim = null,
+                Issues = []
+            };
         }
     }
 
@@ -675,7 +699,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
         var type = parameterRegistry.GetParameter(vehicleId, name)?.Type ?? MavParamType.Int16;
         var readback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        void OnChanged(object? sender, VehicleParameterChangedEventArgs args)
+        void OnChanged(VehicleParameterChangedEventArgs args)
         {
             if (args.VehicleId == vehicleId && args.Parameter is { } parameter && parameter.Name == name &&
                 Math.Abs(parameter.Value - value) <= 0.5f)
@@ -720,7 +744,7 @@ public sealed class RadioCalibrationService : IRadioCalibrationService
     private void Transition(RadioCalibrationSnapshot snapshot)
     {
         Current = snapshot;
-        StateChanged?.Invoke(this, new RadioCalibrationStateChangedEventArgs(snapshot));
+        StateChanged?.Invoke(new RadioCalibrationStateChangedEventArgs(snapshot));
     }
 
     private void ThrowIfDisposed()

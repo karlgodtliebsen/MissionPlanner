@@ -217,18 +217,24 @@ public sealed class AccelerometerCalibrationTests
             CalibrationWorkflowState.WaitingForOrientation, CalibrationOrientation.NoseUp,
             new HashSet<CalibrationOrientation>(), 0.5, "Nose up");
 
-        calibration.StateChanged += Raise.Event<EventHandler<CalibrationStateChangedEventArgs>>(
-            calibration, new CalibrationStateChangedEventArgs(waiting));
+        calibration.StateChanged += Raise.Event<Action<CalibrationStateChangedEventArgs>>(
+            new CalibrationStateChangedEventArgs(waiting));
         viewModel.OrientationImage.Should().Be("x_calibration07_x.jpg");
         store.GetAll().Should().BeEmpty();
 
-        calibration.StateChanged += Raise.Event<EventHandler<CalibrationStateChangedEventArgs>>(
-            calibration, new CalibrationStateChangedEventArgs(waiting with { State = CalibrationWorkflowState.Success, RequiredOrientation = null, Progress = 1 }));
+        calibration.StateChanged += Raise.Event<Action<CalibrationStateChangedEventArgs>>(new CalibrationStateChangedEventArgs(waiting with
+        {
+            State = CalibrationWorkflowState.Success,
+            RequiredOrientation = null,
+            Progress = 1
+        }));
         store.GetAll().Should().ContainSingle(item => item.Workflow == SetupWorkflowKey.Accelerometer);
 
         var inactiveImage = viewModel.OrientationImage;
-        calibration.StateChanged += Raise.Event<EventHandler<CalibrationStateChangedEventArgs>>(
-            calibration, new CalibrationStateChangedEventArgs(waiting with { RequiredOrientation = CalibrationOrientation.NoseDown }));
+        calibration.StateChanged += Raise.Event<Action<CalibrationStateChangedEventArgs>>(new CalibrationStateChangedEventArgs(waiting with
+        {
+            RequiredOrientation = CalibrationOrientation.NoseDown
+        }));
         viewModel.OrientationImage.Should().Be(inactiveImage);
     }
 
@@ -278,10 +284,10 @@ public sealed class AccelerometerCalibrationTests
         var now = DateTimeOffset.UtcNow;
         return new VehicleState(vehicleId, 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online, now,
                 VehicleMode.Stabilize, false, null, null, null, null, null, null, null, null) with
-            {
-                Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
+        {
+            Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
                     LandedState: VehicleLandedState.OnGround, ObservedAt: now)
-            };
+        };
     }
 
     private static IDispatcher ImmediateDispatcher()
@@ -347,19 +353,25 @@ public sealed class AccelerometerCalibrationTests
 
         public CancellationToken ConnectionCancellationToken => lifetime.Token;
 
-        public event EventHandler<ActiveVehicleChangedEventArgs>? Changed;
+        public event Action<ActiveVehicleChangedEventArgs>? Changed;
 
         public void SetOnline(bool online)
         {
             var previous = Current;
-            var nextState = Current.State! with { Connection = Current.State!.Connection with { State = online ? VehicleConnectionState.Online : VehicleConnectionState.Offline } };
+            var nextState = Current.State! with
+            {
+                Connection = Current.State!.Connection with
+                {
+                    State = online ? VehicleConnectionState.Online : VehicleConnectionState.Offline
+                }
+            };
             Current = new ActiveVehicleSnapshot(nextState.VehicleId, nextState);
             if (!online)
             {
                 lifetime.Cancel();
             }
 
-            Changed?.Invoke(this, new ActiveVehicleChangedEventArgs(previous, Current));
+            Changed?.Invoke(new ActiveVehicleChangedEventArgs(previous, Current));
         }
     }
 

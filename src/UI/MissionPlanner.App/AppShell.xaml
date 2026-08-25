@@ -91,8 +91,8 @@
                        Padding="20"
                        Margin="10"
                        TextColor="{DynamicResource OnPrimaryContainer}"/>
-  
-               <VerticalStackLayout   Padding="20" >
+
+                <VerticalStackLayout   Padding="20" >
 
                     <Label
                         Margin="10"
@@ -105,7 +105,7 @@
                                         SelectedItem="{Binding SelectedThemeOption,Mode=TwoWay}"
                                         ColumnNumber="2" ColumnSpacing="-2" Color="{DynamicResource Tertiary}" >
                     </controls:SelectionView>
-              <!--      
+                    <!--      
                    <material:CheckBox Text="Lock Flyout (Requires Restart)" Type="Regular" 
                                    IsVisible="{Binding IsFlyoutPresented}"
                                    IsChecked="{Binding IsFlyoutLocked,Mode=TwoWay}" />
@@ -162,6 +162,8 @@
             Title=""
             ContentTemplate="{DataTemplate flightPlanner:FlightPlannerPage}" Route="FlightPlanner" />
     </FlyoutItem>
+
+
     <FlyoutItem Title="Setup" Icon="Resources/Images/x_light_initialsetup_icon_x.png">
         <ShellContent
             Title="Install Firmware"
@@ -210,6 +212,7 @@
             Title=""
             ContentTemplate="{DataTemplate help:HelpPage}" Route="Help" />
     </FlyoutItem>
+
     <FlyoutItem Title="Exit" >
         <ShellContent
             Title=""

@@ -67,7 +67,7 @@ public sealed class ActiveVehicleContext : IActiveVehicleContext, IDisposable
     }
 
     /// <inheritdoc />
-    public event EventHandler<ActiveVehicleChangedEventArgs>? Changed;
+    public event Action<ActiveVehicleChangedEventArgs>? Changed;
 
     /// <inheritdoc />
     public void Dispose()
@@ -114,7 +114,13 @@ public sealed class ActiveVehicleContext : IActiveVehicleContext, IDisposable
 
             var offlineState = snapshot.State is null
                 ? null
-                : snapshot.State with { Connection = snapshot.State.Connection with { State = VehicleConnectionState.Offline } };
+                : snapshot.State with
+                {
+                    Connection = snapshot.State.Connection with
+                    {
+                        State = VehicleConnectionState.Offline
+                    }
+                };
             SetCurrent(new ActiveVehicleSnapshot(evt.VehicleId, offlineState));
             return Task.CompletedTask;
         }
@@ -150,7 +156,13 @@ public sealed class ActiveVehicleContext : IActiveVehicleContext, IDisposable
 
         var offlineState = snapshot.State is null
             ? null
-            : snapshot.State with { Connection = snapshot.State.Connection with { State = VehicleConnectionState.Offline } };
+            : snapshot.State with
+            {
+                Connection = snapshot.State.Connection with
+                {
+                    State = VehicleConnectionState.Offline
+                }
+            };
         SetCurrent(new ActiveVehicleSnapshot(snapshot.VehicleId, offlineState));
         return Task.CompletedTask;
     }
@@ -190,7 +202,7 @@ public sealed class ActiveVehicleContext : IActiveVehicleContext, IDisposable
         lifetimeToCancel?.Dispose();
         if (connectionBoundaryChanged)
         {
-            Changed?.Invoke(this, new ActiveVehicleChangedEventArgs(previous, next));
+            Changed?.Invoke(new ActiveVehicleChangedEventArgs(previous, next));
         }
     }
 }

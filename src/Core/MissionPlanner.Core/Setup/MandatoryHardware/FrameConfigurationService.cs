@@ -126,12 +126,9 @@ public sealed class FrameConfigurationService : IFrameConfigurationService
         }
         catch (OperationCanceledException)
         {
-            if (confirmed.Count == 0)
-            {
-                return new FrameConfigurationApplyResult(FrameConfigurationApplyStatus.Cancelled, "Frame configuration was cancelled before any value was confirmed.", [], [], false);
-            }
-
-            return new FrameConfigurationApplyResult(
+            return confirmed.Count == 0
+                ? new FrameConfigurationApplyResult(FrameConfigurationApplyStatus.Cancelled, "Frame configuration was cancelled before any value was confirmed.", [], [], false)
+                : new FrameConfigurationApplyResult(
                 FrameConfigurationApplyStatus.PartialFailure,
                 "The operation was cancelled after one or more writes. Reconnect and verify the listed parameters before flying.",
                 confirmed.Select(item => item.Name).ToArray(), [], RequiresReboot(confirmed, configuration));
@@ -160,12 +157,9 @@ public sealed class FrameConfigurationService : IFrameConfigurationService
 
     private VehicleState RequireActiveVehicle(VehicleId vehicleId)
     {
-        if (!activeVehicle.IsOnline || activeVehicle.VehicleId != vehicleId || activeVehicle.State is not { } state)
-        {
-            throw new InvalidOperationException("The target vehicle is no longer the active online vehicle.");
-        }
-
-        return state;
+        return !activeVehicle.IsOnline || activeVehicle.VehicleId != vehicleId || activeVehicle.State is not { } state
+            ? throw new InvalidOperationException("The target vehicle is no longer the active online vehicle.")
+            : state;
     }
 
     private static IReadOnlyList<FrameInitialParameterRecommendation> CreateRecommendations(
@@ -173,16 +167,12 @@ public sealed class FrameConfigurationService : IFrameConfigurationService
         IReadOnlyDictionary<string, ParameterMetadata> metadata)
     {
         const string name = "ARMING_CHECK";
-        if (!values.TryGetValue(name, out var parameter) || parameter.Value == 1 ||
+        return !values.TryGetValue(name, out var parameter) || parameter.Value == 1 ||
             !metadata.TryGetValue(name, out var definition) || definition.ReadOnly ||
             (definition.MinValue is { } minimum && 1 < minimum) ||
-            (definition.MaxValue is { } maximum && 1 > maximum))
-        {
-            return [];
-        }
-
-        return
-        [
+            (definition.MaxValue is { } maximum && 1 > maximum)
+            ? []
+            : [
             new FrameInitialParameterRecommendation(
                 name,
                 definition.DisplayName ?? name,
@@ -199,14 +189,11 @@ public sealed class FrameConfigurationService : IFrameConfigurationService
         IReadOnlyDictionary<string, FrameParameterSetting> settings,
         IReadOnlyDictionary<string, FrameInitialParameterRecommendation> recommendations)
     {
-        if (settings.TryGetValue(change.Name, out var setting))
-        {
-            return setting.ParameterType == change.ParameterType &&
+        return settings.TryGetValue(change.Name, out var setting)
+            ? setting.ParameterType == change.ParameterType &&
                    NearlyEqual(setting.CurrentValue, change.OriginalValue) &&
-                   setting.Options.Any(option => NearlyEqual(option.Value, change.PendingValue));
-        }
-
-        return recommendations.TryGetValue(change.Name, out var recommendation) &&
+                   setting.Options.Any(option => NearlyEqual(option.Value, change.PendingValue))
+            : recommendations.TryGetValue(change.Name, out var recommendation) &&
                recommendation.ParameterType == change.ParameterType &&
                NearlyEqual(recommendation.CurrentValue, change.OriginalValue) &&
                NearlyEqual(recommendation.RecommendedValue, change.PendingValue);
@@ -253,7 +240,7 @@ public sealed class FrameConfigurationService : IFrameConfigurationService
     {
         var readback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        void OnChanged(object? sender, VehicleParameterChangedEventArgs args)
+        void OnChanged(VehicleParameterChangedEventArgs args)
         {
             if (args.VehicleId == vehicleId && args.Parameter is { } parameter &&
                 parameter.Name == name && NearlyEqual(parameter.Value, value))

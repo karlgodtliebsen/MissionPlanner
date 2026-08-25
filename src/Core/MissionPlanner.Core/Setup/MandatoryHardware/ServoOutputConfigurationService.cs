@@ -138,12 +138,9 @@ public sealed class ServoOutputConfigurationService : IServoOutputConfigurationS
     {
         _ = RequireActiveVehicle(vehicleId);
         var name = $"SERVO{output}_FUNCTION";
-        if (parameterRegistry.GetParameter(vehicleId, name) is not { } parameter)
-        {
-            return new ServoOutputApplyResult(false, $"{name} is not available on the connected vehicle.");
-        }
-
-        return await WriteAndConfirmAsync(vehicleId, name, functionValue, parameter.Type, cancellationToken).ConfigureAwait(false)
+        return parameterRegistry.GetParameter(vehicleId, name) is not { } parameter
+            ? new ServoOutputApplyResult(false, $"{name} is not available on the connected vehicle.")
+            : await WriteAndConfirmAsync(vehicleId, name, functionValue, parameter.Type, cancellationToken).ConfigureAwait(false)
             ? new ServoOutputApplyResult(true, $"Confirmed output {output} function by vehicle readback.")
             : new ServoOutputApplyResult(false, $"Readback did not confirm {name}. Correct the value and retry.");
     }
@@ -177,19 +174,16 @@ public sealed class ServoOutputConfigurationService : IServoOutputConfigurationS
 
     private VehicleState RequireActiveVehicle(VehicleId vehicleId)
     {
-        if (!activeVehicle.IsOnline || activeVehicle.VehicleId != vehicleId || activeVehicle.State is not { } state)
-        {
-            throw new InvalidOperationException("The target vehicle is no longer the active online vehicle.");
-        }
-
-        return state;
+        return !activeVehicle.IsOnline || activeVehicle.VehicleId != vehicleId || activeVehicle.State is not { } state
+            ? throw new InvalidOperationException("The target vehicle is no longer the active online vehicle.")
+            : state;
     }
 
     private async Task<bool> WriteAndConfirmAsync(VehicleId vehicleId, string name, int value, MavParamType type, CancellationToken cancellationToken)
     {
         var readback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        void OnChanged(object? sender, VehicleParameterChangedEventArgs args)
+        void OnChanged(VehicleParameterChangedEventArgs args)
         {
             if (args.VehicleId == vehicleId && args.Parameter is { } parameter && parameter.Name == name && Math.Abs(parameter.Value - value) <= 0.5f)
             {

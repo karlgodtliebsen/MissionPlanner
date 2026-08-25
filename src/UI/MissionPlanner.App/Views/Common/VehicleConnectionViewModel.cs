@@ -120,7 +120,7 @@ public partial class VehicleConnectionViewModel : BaseViewModel
         return Task.CompletedTask;
     }
 
-    private void VehicleChanged(object? sender, ActiveVehicleChangedEventArgs e)
+    private void VehicleChanged(ActiveVehicleChangedEventArgs e)
     {
         OnActiveVehicleChanged(e).GetAwaiter().GetResult();
     }

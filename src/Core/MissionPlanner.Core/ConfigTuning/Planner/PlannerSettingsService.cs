@@ -39,7 +39,7 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
     public PlannerSettings Current { get; private set; } = new();
 
     /// <inheritdoc />
-    public event EventHandler<PlannerSettingsChangedEventArgs>? SettingsChanged;
+    public event Action<PlannerSettingsChangedEventArgs>? SettingsChanged;
 
     /// <inheritdoc />
     public async ValueTask<PlannerSettingsLoadResult> InitializeAsync(CancellationToken cancellationToken = default)
@@ -192,8 +192,15 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
                     ? "osm-standard"
                     : settings.Map.SelectedSourceId.Trim()
             },
-            Connection = settings.Connection with { Channel = settings.Connection.Channel.Trim().ToUpperInvariant(), Host = settings.Connection.Host.Trim() },
-            Updates = settings.Updates with { Channel = NormalizeUpdateChannel(settings.Updates.Channel) }
+            Connection = settings.Connection with
+            {
+                Channel = settings.Connection.Channel.Trim().ToUpperInvariant(),
+                Host = settings.Connection.Host.Trim()
+            },
+            Updates = settings.Updates with
+            {
+                Channel = NormalizeUpdateChannel(settings.Updates.Channel)
+            }
         };
         var errors = Validate(normalized);
         if (errors.Count != 0)
@@ -205,7 +212,7 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
         var previous = Current;
         await PersistAsync(normalized, cancellationToken).ConfigureAwait(false);
         Current = normalized;
-        SettingsChanged?.Invoke(this, new PlannerSettingsChangedEventArgs(previous, Current, restartSections));
+        SettingsChanged?.Invoke(new PlannerSettingsChangedEventArgs(previous, Current, restartSections));
         logger.LogInformation("Saved Planner application preferences.");
         return new PlannerSettingsSaveResult(true, [], restartSections);
     }
@@ -314,7 +321,13 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
         var migrated = settings.SchemaVersion < PlannerSettings.CurrentSchemaVersion;
         if (settings.SchemaVersion < 4 && !HasModernSelectedSourceId(document))
         {
-            settings = settings with { Map = settings.Map with { SelectedSourceId = LegacySourceId(settings.Map.Provider, settings.Map.Style) } };
+            settings = settings with
+            {
+                Map = settings.Map with
+                {
+                    SelectedSourceId = LegacySourceId(settings.Map.Provider, settings.Map.Style)
+                }
+            };
         }
 
         if (settings.SchemaVersion < 5)
@@ -328,29 +341,26 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
             };
         }
 
-        return (settings with { SchemaVersion = PlannerSettings.CurrentSchemaVersion }, migrated);
+        return (settings with
+        {
+            SchemaVersion = PlannerSettings.CurrentSchemaVersion
+        }, migrated);
     }
 
     private static string MigrateLegacyThemeId(string document)
     {
         using var json = JsonDocument.Parse(document);
-        if (!TryGetProperty(json.RootElement, "appearance", out var appearance) || appearance.ValueKind != JsonValueKind.Object)
-        {
-            return PlannerAppearanceSettings.DefaultThemeId;
-        }
-
-        if (TryGetProperty(appearance, "theme", out var theme) && theme.ValueKind == JsonValueKind.String)
-        {
-            return theme.GetString()?.Trim().ToLowerInvariant() switch
+        return !TryGetProperty(json.RootElement, "appearance", out var appearance) || appearance.ValueKind != JsonValueKind.Object
+            ? PlannerAppearanceSettings.DefaultThemeId
+            : TryGetProperty(appearance, "theme", out var theme) && theme.ValueKind == JsonValueKind.String
+            ? theme.GetString()?.Trim().ToLowerInvariant() switch
             {
                 "system" => "system",
                 "light" => "mission-light",
                 "dark" => "mission-dark",
                 _ => LegacyThemeFallback(appearance)
-            };
-        }
-
-        return LegacyThemeFallback(appearance);
+            }
+            : LegacyThemeFallback(appearance);
     }
 
     private static string LegacyThemeFallback(JsonElement appearance)

@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 using MissionPlanner.Core.Commands;
-using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.MandatoryHardware;
@@ -203,13 +202,17 @@ public sealed class CompassSetupTests
 
         var running = new CompassCalibrationSnapshot(vehicleId, CompassCalibrationWorkflowState.Running,
             [new CompassCalibrationProgress(0, CompassCalibrationStatus.Running, 50, 1)], [], 0.5, "Rotating", false);
-        calibration.StateChanged += Raise.Event<EventHandler<CompassCalibrationStateChangedEventArgs>>(
-            calibration, new CompassCalibrationStateChangedEventArgs(running));
+        calibration.StateChanged += Raise.Event<Action<CompassCalibrationStateChangedEventArgs>>(
+            new CompassCalibrationStateChangedEventArgs(running));
         viewModel.ProgressSummary.Should().Contain("Compass 1");
         store.GetAll().Should().BeEmpty();
 
-        calibration.StateChanged += Raise.Event<EventHandler<CompassCalibrationStateChangedEventArgs>>(
-            calibration, new CompassCalibrationStateChangedEventArgs(running with { State = CompassCalibrationWorkflowState.Success, OverallProgress = 1 }));
+        calibration.StateChanged += Raise.Event<Action<CompassCalibrationStateChangedEventArgs>>(
+            calibration, new CompassCalibrationStateChangedEventArgs(running with
+            {
+                State = CompassCalibrationWorkflowState.Success,
+                OverallProgress = 1
+            }));
         store.GetAll().Should().ContainSingle(item => item.Workflow == SetupWorkflowKey.Compass);
     }
 
@@ -270,13 +273,20 @@ public sealed class CompassSetupTests
         var now = DateTimeOffset.UtcNow;
         var state = new VehicleState(vehicleId, 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online, now,
                 VehicleMode.Stabilize, false, null, null, null, null, null, null, null, null) with
-            {
-                Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
+        {
+            Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
                     LandedState: VehicleLandedState.OnGround, ObservedAt: now)
-            };
+        };
         if (magnetometerHealthy is { } healthy)
         {
-            state = state with { Health = VehicleHealthState.Empty with { SensorsPresent = 0x04, SensorsHealthy = healthy ? 0x04u : 0u } };
+            state = state with
+            {
+                Health = VehicleHealthState.Empty with
+                {
+                    SensorsPresent = 0x04,
+                    SensorsHealthy = healthy ? 0x04u : 0u
+                }
+            };
         }
 
         return state;
@@ -345,19 +355,25 @@ public sealed class CompassSetupTests
 
         public CancellationToken ConnectionCancellationToken => lifetime.Token;
 
-        public event EventHandler<ActiveVehicleChangedEventArgs>? Changed;
+        public event Action<ActiveVehicleChangedEventArgs>? Changed;
 
         public void SetOnline(bool online)
         {
             var previous = Current;
-            var nextState = Current.State! with { Connection = Current.State!.Connection with { State = online ? VehicleConnectionState.Online : VehicleConnectionState.Offline } };
+            var nextState = Current.State! with
+            {
+                Connection = Current.State!.Connection with
+                {
+                    State = online ? VehicleConnectionState.Online : VehicleConnectionState.Offline
+                }
+            };
             Current = new ActiveVehicleSnapshot(nextState.VehicleId, nextState);
             if (!online)
             {
                 lifetime.Cancel();
             }
 
-            Changed?.Invoke(this, new ActiveVehicleChangedEventArgs(previous, Current));
+            Changed?.Invoke(new ActiveVehicleChangedEventArgs(previous, Current));
         }
     }
 

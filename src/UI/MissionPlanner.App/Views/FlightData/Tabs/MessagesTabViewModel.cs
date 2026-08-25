@@ -251,7 +251,7 @@ public partial class MessagesTabViewModel : BaseViewModel
         }
     }
 
-    private void OnVehicleMessageAdded(object? sender, VehicleStatusTextAddedEventArgs args)
+    private void OnVehicleMessageAdded(VehicleStatusTextAddedEventArgs args)
     {
         if (args.Message.VehicleId == activeVehicle.VehicleId)
         {
@@ -259,7 +259,7 @@ public partial class MessagesTabViewModel : BaseViewModel
         }
     }
 
-    private void OnApplicationMessageAdded(object? sender, ApplicationNotificationAddedEventArgs args)
+    private void OnApplicationMessageAdded(ApplicationNotificationAddedEventArgs args)
     {
         if (activeVehicle.VehicleId is { } vehicleId &&
             (args.Notification.VehicleId is null || args.Notification.VehicleId == vehicleId))

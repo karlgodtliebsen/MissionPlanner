@@ -103,12 +103,12 @@ public sealed class GaugesTabViewModel : BaseViewModel
         return Task.CompletedTask;
     }
 
-    private void OnChanged(object? sender, EventArgs args)
+    private void OnChanged(EventArgs args)
     {
         dispatcher.Dispatch(Update);
     }
 
-    private void OnSettingsChanged(object? sender, EventArgs args)
+    private void OnSettingsChanged(EventArgs args)
     {
         dispatcher.Dispatch(Update);
     }

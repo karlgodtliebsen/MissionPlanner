@@ -122,7 +122,7 @@ public partial class PreflightTabViewModel : BaseViewModel
         return Task.CompletedTask;
     }
 
-    private void OnActiveVehicleChanged(object? sender, EventArgs args)
+    private void OnActiveVehicleChanged(EventArgs args)
     {
         dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(20), ApplyAssessment);
     }

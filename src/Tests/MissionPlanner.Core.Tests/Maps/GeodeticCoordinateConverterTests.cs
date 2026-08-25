@@ -1,9 +1,9 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Missions.Planning;
 using MissionPlanner.Maps.Coordinates;
 
-namespace MissionPlanner.Core.Tests;
+namespace MissionPlanner.Core.Tests.Maps;
 
 public sealed class GeodeticCoordinateConverterTests
 {
@@ -31,8 +31,11 @@ public sealed class GeodeticCoordinateConverterTests
     [Fact]
     public void TrackerHome_IsLocalStateOnlyAndRaisesChange()
     {
-        var service = new TrackerHomeService(); var changed = 0; service.Changed += (_, _) => changed++;
-        service.Set(new GeoPosition(56,10), 20, DateTimeOffset.UnixEpoch, "test");
-        service.Snapshot!.Position.Should().Be(new GeoPosition(56,10)); changed.Should().Be(1);
+        var service = new TrackerHomeService();
+        var changed = 0;
+        service.Changed += () => changed++;
+        service.Set(new GeoPosition(56, 10), 20, DateTimeOffset.UnixEpoch, "test");
+        service.Snapshot!.Position.Should().Be(new GeoPosition(56, 10));
+        changed.Should().Be(1);
     }
 }

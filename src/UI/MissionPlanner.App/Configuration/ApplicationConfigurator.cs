@@ -109,9 +109,8 @@ public static class ApplicationConfigurator
         services.TryAddTransient<IMapsuiBasemapFactory, CompositeMapsuiBasemapFactory>();
 
         services.TryAddTransient<IMapHttpRuntimeSettings, PlannerMapHttpRuntimeSettings>();
-        services.TryAddSingleton(_ => new MapHttpOptions(
-            $"MissionPlanner/{typeof(App).Assembly.GetName().Version?.ToString(3) ?? "unknown"} (+https://ardupilot.org/planner/)",
-            TimeSpan.FromSeconds(20)));
+        services.TryAddSingleton<MapHttpOptionsProvider>();
+        services.TryAddSingleton(sp => sp.GetRequiredService<MapHttpOptionsProvider>().GetOptions());
 
         services.TryAddTransient<ISimulatorProfileStore, PreferencesSimulatorProfileStore>();
         services.TryAddTransient<ISimulatorProfileService, SimulatorProfileService>();
@@ -135,7 +134,8 @@ public static class ApplicationConfigurator
         services.TryAddTransient<IUserConfirmationService, UserConfirmationService>();
         services.TryAddTransient<IMissionMapInteractionService, MissionMapInteractionService>();
 
-        services.TryAddSingleton<IPoiRepository>(_ => new JsonPoiRepository(Path.Combine(FileSystem.AppDataDirectory, "Planning", "points-of-interest.json")));
+        services.TryAddSingleton<IJsonPoiFilePathProvider, JsonPoiFilePathProvider>();
+        services.TryAddSingleton<IPoiRepository, JsonPoiRepository>();
         services.TryAddSingleton<IPoiService, PoiService>();
 
         services.TryAddTransient<IUserPromptService, MauiMissionPlanningDialogService>();
@@ -330,7 +330,13 @@ public static class ApplicationConfigurator
         var plannerSettingsService = serviceProvider.GetRequiredService<IPlannerSettingsService>();
         var loadResult = plannerSettingsService.InitializeAsync().AsTask().GetAwaiter().GetResult();
         var connection = loadResult.Settings.Connection;
-        ApplicationState state = new() { SelectedChannel = connection.Channel, SelectedHost = connection.Host, SelectedPort = connection.Port.ToString(System.Globalization.CultureInfo.InvariantCulture), SelectedBaudRate = connection.BaudRate.ToString(System.Globalization.CultureInfo.InvariantCulture) };
+        ApplicationState state = new()
+        {
+            SelectedChannel = connection.Channel,
+            SelectedHost = connection.Host,
+            SelectedPort = connection.Port.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            SelectedBaudRate = connection.BaudRate.ToString(System.Globalization.CultureInfo.InvariantCulture)
+        };
 
         // Register shared state service as singleton for runtime state management
         var stateService = serviceProvider.GetRequiredService<ApplicationStateService>();

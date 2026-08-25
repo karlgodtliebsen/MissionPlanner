@@ -28,22 +28,62 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
     private readonly IReplaySessionManager replaySessionManager;
     private readonly INavigationService navigationService;
 
-    [ObservableProperty] public partial bool IsConnected { get; set; }
-    [ObservableProperty] public partial string? Host { get; set; }
-    [ObservableProperty] public partial string? Port { get; set; }
-    [ObservableProperty] public partial string? BaudRate { get; set; }
-    [ObservableProperty] public partial string? VehicleName { get; set; }
-    [ObservableProperty] public partial string? VehicleId { get; set; }
-    [ObservableProperty] public partial string? FirmwareIdentity { get; set; }
-    [ObservableProperty] public partial string? Channel { get; set; }
+    [ObservableProperty]
+    public partial bool IsConnected
+    {
+        get; set;
+    }
+    [ObservableProperty]
+    public partial string? Host
+    {
+        get; set;
+    }
+    [ObservableProperty]
+    public partial string? Port
+    {
+        get; set;
+    }
+    [ObservableProperty]
+    public partial string? BaudRate
+    {
+        get; set;
+    }
+    [ObservableProperty]
+    public partial string? VehicleName
+    {
+        get; set;
+    }
+    [ObservableProperty]
+    public partial string? VehicleId
+    {
+        get; set;
+    }
+    [ObservableProperty]
+    public partial string? FirmwareIdentity
+    {
+        get; set;
+    }
+    [ObservableProperty]
+    public partial string? Channel
+    {
+        get; set;
+    }
     [ObservableProperty] public partial string ConnectionStatus { get; set; } = "Disconnected";
     [ObservableProperty] public partial string? IsConnectedImage { get; set; } = ConnectImage;
     [ObservableProperty] public partial string CurrentTime { get; set; } = DateTime.Now.ToString("HH:mm:ss");
-    [ObservableProperty] public partial bool ShowHost { get; set; }
+    [ObservableProperty]
+    public partial bool ShowHost
+    {
+        get; set;
+    }
     [ObservableProperty] public partial bool ShowCom { get; set; } = true;
     [ObservableProperty] public partial bool ShowVehicleName { get; set; } = true;
     [ObservableProperty] public partial string DataSourceMode { get; private set; } = "LIVE / SIMULATION";
-    [ObservableProperty] public partial bool IsReplayReadOnly { get; private set; }
+    [ObservableProperty]
+    public partial bool IsReplayReadOnly
+    {
+        get; private set;
+    }
 
     /// <summary>Gets whether the connection dialog may be opened in the current data-source mode.</summary>
     public bool CanOpenConnection => !IsReplayReadOnly;
@@ -182,7 +222,7 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
         }
     }
 
-    private void OnReplayChanged(object? sender, ReplaySessionChangedEventArgs args)
+    private void OnReplayChanged(ReplaySessionChangedEventArgs args)
     {
         dispatcher.Dispatch(() => ApplyReplayState(args.Snapshot));
     }

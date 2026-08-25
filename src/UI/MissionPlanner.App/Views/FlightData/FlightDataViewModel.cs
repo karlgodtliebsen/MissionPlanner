@@ -26,6 +26,7 @@ public partial class FlightDataViewModel : BaseViewModel
     {
         Map = map;
         this.logger = logger;
+        logger.LogTrace("FlightDataViewModel initialized.");
     }
 
 }

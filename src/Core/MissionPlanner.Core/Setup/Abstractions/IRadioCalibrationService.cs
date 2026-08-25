@@ -7,10 +7,13 @@ namespace MissionPlanner.Core.Setup.Abstractions;
 public interface IRadioCalibrationService : IDisposable
 {
     /// <summary>Gets the current immutable calibration state.</summary>
-    RadioCalibrationSnapshot Current { get; }
+    RadioCalibrationSnapshot Current
+    {
+        get;
+    }
 
     /// <summary>Occurs when calibration capture advances or terminates.</summary>
-    event EventHandler<RadioCalibrationStateChangedEventArgs>? StateChanged;
+    event Action<RadioCalibrationStateChangedEventArgs>? StateChanged;
 
     /// <summary>Projects the live RC channels and static configuration issues for the active vehicle.</summary>
     /// <param name="vehicleId">The active target vehicle.</param>

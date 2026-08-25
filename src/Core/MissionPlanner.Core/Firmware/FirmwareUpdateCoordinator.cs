@@ -47,10 +47,16 @@ public sealed class FirmwareUpdateCoordinator : IFirmwareUpdateCoordinator
     }
 
     /// <inheritdoc />
-    public FirmwareUpdateState State { get; private set; }
+    public FirmwareUpdateState State
+    {
+        get; private set;
+    }
 
     /// <inheritdoc />
-    public FirmwarePackage? Package { get; private set; }
+    public FirmwarePackage? Package
+    {
+        get; private set;
+    }
 
     /// <inheritdoc />
     public event EventHandler<FirmwareUpdateStateChangedEventArgs>? StateChanged;
@@ -204,7 +210,7 @@ public sealed class FirmwareUpdateCoordinator : IFirmwareUpdateCoordinator
         activeVehicle.Changed -= OnActiveVehicleChanged;
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         if (State == FirmwareUpdateState.WaitingForReconnect &&
             args.Current.IsOnline &&

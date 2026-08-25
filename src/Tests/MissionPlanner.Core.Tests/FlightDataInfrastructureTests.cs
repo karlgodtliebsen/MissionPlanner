@@ -33,7 +33,7 @@ public sealed class FlightDataInfrastructureTests
         var fixture = CreateContextFixture();
         using var context = fixture.Context;
         var changes = new List<ActiveVehicleSnapshot>();
-        context.Changed += (_, args) => changes.Add(args.Current);
+        context.Changed += (args) => changes.Add(args.Current);
 
         await fixture.Connected!(new VehicleConnected(fixture.Session.Id, "UDP", "14550", DateTimeOffset.UtcNow), TestContext.Current.CancellationToken);
         await fixture.Updated!(new VehicleStateUpdated(fixture.Session.State), TestContext.Current.CancellationToken);
@@ -52,12 +52,18 @@ public sealed class FlightDataInfrastructureTests
         var fixture = CreateContextFixture();
         using var context = fixture.Context;
         var changes = new List<ActiveVehicleChangedEventArgs>();
-        context.Changed += (_, args) => changes.Add(args);
+        context.Changed += (args) => changes.Add(args);
         await fixture.Connected!(
             new VehicleConnected(fixture.Session.Id, "UDP", "14550", DateTimeOffset.UtcNow),
             TestContext.Current.CancellationToken);
         var connectionToken = context.ConnectionCancellationToken;
-        var heartbeatState = fixture.Session.State with { Connection = fixture.Session.State.Connection with { LastHeartbeatAt = fixture.Session.State.LastHeartbeatAt + TimeSpan.FromSeconds(1) } };
+        var heartbeatState = fixture.Session.State with
+        {
+            Connection = fixture.Session.State.Connection with
+            {
+                LastHeartbeatAt = fixture.Session.State.LastHeartbeatAt + TimeSpan.FromSeconds(1)
+            }
+        };
 
         await fixture.Updated!(
             new VehicleStateUpdated(heartbeatState),
@@ -84,8 +90,14 @@ public sealed class FlightDataInfrastructureTests
             TestContext.Current.CancellationToken);
         var onlineToken = context.ConnectionCancellationToken;
         var changes = new List<ActiveVehicleChangedEventArgs>();
-        context.Changed += (_, args) => changes.Add(args);
-        var offlineState = fixture.Session.State with { Connection = fixture.Session.State.Connection with { State = VehicleConnectionState.Offline } };
+        context.Changed += (args) => changes.Add(args);
+        var offlineState = fixture.Session.State with
+        {
+            Connection = fixture.Session.State.Connection with
+            {
+                State = VehicleConnectionState.Offline
+            }
+        };
 
         await fixture.Updated!(
             new VehicleStateUpdated(offlineState),

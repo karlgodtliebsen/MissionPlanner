@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
 
 namespace MissionPlanner.Firmware.Dfu;
@@ -19,7 +19,11 @@ public sealed class SystemDfuChildProcessFactory : IDfuChildProcessFactory
             StandardOutputEncoding = outputEncoding,
             StandardErrorEncoding = outputEncoding
         };
-        foreach (var argument in arguments) startInfo.ArgumentList.Add(argument);
+        foreach (var argument in arguments)
+        {
+            startInfo.ArgumentList.Add(argument);
+        }
+
         return new SystemDfuChildProcess(new Process { StartInfo = startInfo, EnableRaisingEvents = true });
     }
 
@@ -36,10 +40,29 @@ public sealed class SystemDfuChildProcessFactory : IDfuChildProcessFactory
         public event Action<string?>? ErrorReceived;
         public bool HasExited => process.HasExited;
         public int ExitCode => process.ExitCode;
-        public bool Start() => process.Start();
-        public void BeginOutputRead() { process.BeginOutputReadLine(); process.BeginErrorReadLine(); }
-        public Task WaitForExitAsync(CancellationToken cancellationToken = default) => process.WaitForExitAsync(cancellationToken);
-        public void Kill(bool entireProcessTree) => process.Kill(entireProcessTree);
-        public void Dispose() => process.Dispose();
+        public bool Start()
+        {
+            return process.Start();
+        }
+
+        public void BeginOutputRead()
+        {
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+        }
+        public Task WaitForExitAsync(CancellationToken cancellationToken = default)
+        {
+            return process.WaitForExitAsync(cancellationToken);
+        }
+
+        public void Kill(bool entireProcessTree)
+        {
+            process.Kill(entireProcessTree);
+        }
+
+        public void Dispose()
+        {
+            process.Dispose();
+        }
     }
 }

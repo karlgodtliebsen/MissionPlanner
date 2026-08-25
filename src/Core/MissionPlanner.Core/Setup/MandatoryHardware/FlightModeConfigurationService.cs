@@ -5,7 +5,6 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware;
 using MissionPlanner.Library.DateTime.Domain;
-using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using MavParamType = MissionPlanner.MavLink.Parameters.MavParamType;
 
@@ -107,12 +106,9 @@ public sealed class FlightModeConfigurationService : IFlightModeConfigurationSer
 
         var name = $"{slotPrefix}{slot}";
         logger.LogInformation("Assigning flight-mode slot {Slot} to mode {Mode} on {VehicleId}.", slot, modeNumber, vehicleId);
-        if (await WriteAndConfirmAsync(vehicleId, name, modeNumber, cancellationToken).ConfigureAwait(false))
-        {
-            return new FlightModeApplyResult(true, $"Confirmed slot {slot} assignment by vehicle readback.");
-        }
-
-        return new FlightModeApplyResult(false, $"Readback did not confirm slot {slot}. Reconnect, refresh, and verify before flying.");
+        return await WriteAndConfirmAsync(vehicleId, name, modeNumber, cancellationToken).ConfigureAwait(false)
+            ? new FlightModeApplyResult(true, $"Confirmed slot {slot} assignment by vehicle readback.")
+            : new FlightModeApplyResult(false, $"Readback did not confirm slot {slot}. Reconnect, refresh, and verify before flying.");
     }
 
     /// <inheritdoc />
@@ -165,12 +161,9 @@ public sealed class FlightModeConfigurationService : IFlightModeConfigurationSer
 
     private VehicleState RequireActiveVehicle(VehicleId vehicleId)
     {
-        if (!activeVehicle.IsOnline || activeVehicle.VehicleId != vehicleId || activeVehicle.State is not { } state)
-        {
-            throw new InvalidOperationException("The target vehicle is no longer the active online vehicle.");
-        }
-
-        return state;
+        return !activeVehicle.IsOnline || activeVehicle.VehicleId != vehicleId || activeVehicle.State is not { } state
+            ? throw new InvalidOperationException("The target vehicle is no longer the active online vehicle.")
+            : state;
     }
 
     private static bool TryResolveNames(FirmwareFamily family, out string channelName, out string slotPrefix)
@@ -199,7 +192,7 @@ public sealed class FlightModeConfigurationService : IFlightModeConfigurationSer
         var type = parameterRegistry.GetParameter(vehicleId, name)?.Type ?? MavParamType.Int8;
         var readback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        void OnChanged(object? sender, VehicleParameterChangedEventArgs args)
+        void OnChanged(VehicleParameterChangedEventArgs args)
         {
             if (args.VehicleId == vehicleId && args.Parameter is { } parameter && parameter.Name == name &&
                 Math.Abs(parameter.Value - value) <= 0.5f)

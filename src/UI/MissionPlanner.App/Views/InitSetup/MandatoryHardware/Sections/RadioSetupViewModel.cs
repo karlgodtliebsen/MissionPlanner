@@ -343,7 +343,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
         radioService.Reset();
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         observedRadioAt = args.Current.State?.Radio.ObservedAt;
         dispatcher.Dispatch(RefreshLiveChannels);
@@ -367,7 +367,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
         return Task.CompletedTask;
     }
 
-    private void OnCalibrationStateChanged(object? sender, RadioCalibrationStateChangedEventArgs args)
+    private void OnCalibrationStateChanged(RadioCalibrationStateChangedEventArgs args)
     {
         dispatcher.Dispatch(() => Show(args.Snapshot));
     }

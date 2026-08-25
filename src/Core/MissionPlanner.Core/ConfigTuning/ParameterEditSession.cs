@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Diagnostics;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -278,7 +279,7 @@ public sealed class ParameterEditSession : IParameterEditSession
     /// <inheritdoc />
     public async Task<ParameterApplyReport> ApplyAsync(IReadOnlyList<string>? names = null, CancellationToken cancellationToken = default)
     {
-        return await ApplyCoreAsync(names, null, cancellationToken).ConfigureAwait(false);
+        return await ApplyCoreAsync(names ?? Array.Empty<string>(), null, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -287,7 +288,7 @@ public sealed class ParameterEditSession : IParameterEditSession
         ArgumentNullException.ThrowIfNull(plan);
         EnsurePlanCurrent(plan);
         logger.LogInformation("Confirmed parameter write plan with {Count} entries for {VehicleId}.", plan.Entries.Count, VehicleId);
-        return await ApplyCoreAsync(plan.Names, progress, cancellationToken).ConfigureAwait(false);
+        return await ApplyCoreAsync(plan.Names ?? Array.Empty<string>(), progress, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
@@ -309,8 +310,9 @@ public sealed class ParameterEditSession : IParameterEditSession
         };
     }
 
-    private async Task<ParameterApplyReport> ApplyCoreAsync(IReadOnlyList<string>? names, IProgress<ParameterApplyProgress>? progress, CancellationToken cancellationToken)
+    private async Task<ParameterApplyReport> ApplyCoreAsync(IReadOnlyList<string> names, IProgress<ParameterApplyProgress>? progress, CancellationToken cancellationToken)
     {
+        Debug.Print("ApplyCoreAsync-Applying parameter edits to {0} for {1}.", names.Count, VehicleId);
         var targets = GetApplyTargets(names);
         if (cancellationToken.IsCancellationRequested)
         {
@@ -474,12 +476,8 @@ public sealed class ParameterEditSession : IParameterEditSession
     }
 
     private static void ReportProgress(
-        IProgress<ParameterApplyProgress>? progress,
-        int zeroBasedIndex,
-        int total,
-        string name,
-        ParameterApplyPhase phase,
-        string message)
+        IProgress<ParameterApplyProgress>? progress, int zeroBasedIndex,
+        int total, string name, ParameterApplyPhase phase, string message)
     {
         progress?.Report(new ParameterApplyProgress(zeroBasedIndex + 1, total, name, phase, message));
     }
@@ -492,9 +490,8 @@ public sealed class ParameterEditSession : IParameterEditSession
             ? Fields.Select(field => field.Name).ToArray()
             : names.Distinct(StringComparer.Ordinal).ToArray();
         logger.LogInformation("Refreshing {Count} edited parameters for {VehicleId}.", targets.Length, VehicleId);
-        using var connectionCancellation = CancellationTokenSource.CreateLinkedTokenSource(
-            cancellationToken,
-            activeVehicle.ConnectionCancellationToken);
+
+        using var connectionCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, activeVehicle.ConnectionCancellationToken);
         foreach (var name in targets)
         {
             connectionCancellation.Token.ThrowIfCancellationRequested();
@@ -554,7 +551,8 @@ public sealed class ParameterEditSession : IParameterEditSession
 
     private async Task LoadCoreAsync(IReadOnlyDictionary<string, VehicleParameter> parameters, IReadOnlyList<string> names, bool replace, CancellationToken cancellationToken)
     {
-        var metadata = await metadataService.GetAllMetadataAsync(VehicleId, cancellationToken).ConfigureAwait(false);
+        Debug.Print("LoadCoreAsync");
+        var metadata = await metadataService.GetAllMetadataAsync(VehicleId, cancellationToken);
         lock (sync)
         {
             EnsureValidUnderLock();
@@ -615,6 +613,7 @@ public sealed class ParameterEditSession : IParameterEditSession
                 }
             }
         }
+        Debug.Print("exit LoadCoreAsync");
 
         Changed?.Invoke();
     }
@@ -634,7 +633,7 @@ public sealed class ParameterEditSession : IParameterEditSession
         var expected = (float)field.PendingValue;
         var readback = new TaskCompletionSource<VehicleParameter>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        void OnChanged(object? sender, VehicleParameterChangedEventArgs args)
+        void OnChanged(VehicleParameterChangedEventArgs args)
         {
             if (args.VehicleId == VehicleId && args.Parameter is { } parameter &&
                 parameter.Name == field.Name && Equivalent(parameter.Value, expected, field.Metadata))
@@ -715,7 +714,7 @@ public sealed class ParameterEditSession : IParameterEditSession
         Changed?.Invoke();
     }
 
-    private void OnParameterChanged(object? sender, VehicleParameterChangedEventArgs args)
+    private void OnParameterChanged(VehicleParameterChangedEventArgs args)
     {
         if (args.VehicleId != VehicleId || args.Parameter is not { } parameter)
         {

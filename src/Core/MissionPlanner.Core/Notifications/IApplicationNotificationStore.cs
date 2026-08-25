@@ -1,5 +1,4 @@
-using MissionPlanner.Core.Vehicles.Models;
-using MissionPlanner.Shared.Models.Vehicles.Models;
+﻿using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Notifications;
 
@@ -9,7 +8,7 @@ namespace MissionPlanner.Core.Notifications;
 public interface IApplicationNotificationStore
 {
     /// <summary>Occurs after a local notification is stored.</summary>
-    event EventHandler<ApplicationNotificationAddedEventArgs>? NotificationAdded;
+    event Action<ApplicationNotificationAddedEventArgs>? NotificationAdded;
 
     /// <summary>Adds a timestamped notification.</summary>
     /// <param name="notification">The notification.</param>

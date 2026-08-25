@@ -61,14 +61,29 @@ public sealed class FirmwareManagementTests
         var identity = State().Identity.Firmware;
         var selector = new FirmwareManifestSelector();
         var matching = Release(FirmwareReleaseChannel.Stable);
-        var wrongProduct = matching with { ProductId = 1, BoardTarget = "Marketing Name Match" };
-        var wrongFamily = matching with { Family = FirmwareFamily.ArduPlane };
-        var beta = matching with { Channel = FirmwareReleaseChannel.Beta, Version = "beta" };
+        var wrongProduct = matching with
+        {
+            ProductId = 1,
+            BoardTarget = "Marketing Name Match"
+        };
+        var wrongFamily = matching with
+        {
+            Family = FirmwareFamily.ArduPlane
+        };
+        var beta = matching with
+        {
+            Channel = FirmwareReleaseChannel.Beta,
+            Version = "beta"
+        };
 
         var result = selector.Select([wrongProduct, wrongFamily, beta, matching], identity, FirmwareReleaseChannel.Stable);
 
         result.Should().ContainSingle().Which.Should().Be(matching);
-        selector.Select([matching], identity with { VendorId = 0, ProductId = 0 }, FirmwareReleaseChannel.Stable).Should().BeEmpty();
+        selector.Select([matching], identity with
+        {
+            VendorId = 0,
+            ProductId = 0
+        }, FirmwareReleaseChannel.Stable).Should().BeEmpty();
     }
 
     /// <summary>Verifies remote JSON manifests accept documented string enum values.</summary>
@@ -109,7 +124,10 @@ public sealed class FirmwareManagementTests
     public async Task PackageManagerVerifiesChecksumBeforeCaching()
     {
         var content = "verified firmware"u8.ToArray();
-        var release = Release(FirmwareReleaseChannel.Stable) with { Sha256 = Hash(content) };
+        var release = Release(FirmwareReleaseChannel.Stable) with
+        {
+            Sha256 = Hash(content)
+        };
         var cache = new MemoryPackageCache();
         var manager = CreatePackageManager(content, cache);
 
@@ -153,7 +171,13 @@ public sealed class FirmwareManagementTests
         var connection = Substitute.For<IVehicleConnectionService>();
         connection.DisconnectAsync(Arg.Any<CancellationToken>()).Returns(_ =>
         {
-            active.Set(state with { Connection = state.Connection with { State = VehicleConnectionState.Offline } });
+            active.Set(state with
+            {
+                Connection = state.Connection with
+                {
+                    State = VehicleConnectionState.Offline
+                }
+            });
             return Task.CompletedTask;
         });
         using var coordinator = new FirmwareUpdateCoordinator(
@@ -288,7 +312,13 @@ public sealed class FirmwareManagementTests
             0x5740,
             0x1234,
             "00112233445566778899aabbccddeeff");
-        return state with { Identity = state.Identity with { Firmware = firmware } };
+        return state with
+        {
+            Identity = state.Identity with
+            {
+                Firmware = firmware
+            }
+        };
     }
 
     private static IDispatcher ImmediateDispatcher()
@@ -314,7 +344,10 @@ public sealed class FirmwareManagementTests
     {
         private byte[]? value;
 
-        public bool Saved { get; private set; }
+        public bool Saved
+        {
+            get; private set;
+        }
 
         public string GetPath(string cacheKey)
         {
@@ -355,7 +388,7 @@ public sealed class FirmwareManagementTests
 
         public CancellationToken ConnectionCancellationToken => lifetime.Token;
 
-        public event EventHandler<ActiveVehicleChangedEventArgs>? Changed;
+        public event Action<ActiveVehicleChangedEventArgs>? Changed;
 
         public void Set(VehicleState next)
         {
@@ -372,7 +405,7 @@ public sealed class FirmwareManagementTests
             }
 
             Current = new ActiveVehicleSnapshot(next.VehicleId, next);
-            Changed?.Invoke(this, new ActiveVehicleChangedEventArgs(previous, Current));
+            Changed?.Invoke(new ActiveVehicleChangedEventArgs(previous, Current));
         }
     }
 }

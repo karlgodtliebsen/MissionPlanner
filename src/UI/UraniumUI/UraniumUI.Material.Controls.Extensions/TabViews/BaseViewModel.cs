@@ -3,9 +3,25 @@ using Microsoft.Extensions.Logging;
 
 namespace UraniumUI.Material.TabViews;
 
-public partial class BaseViewModel(ILogger logger) : ObservableObject, IDisposable, IActivationLifeCycle
+/// <summary>
+/// Represents the base view model with common functionality for handling busy state, status messages, and error messages.
+/// </summary>
+public partial class BaseViewModel : ObservableObject, IDisposable, IActivationLifeCycle
 {
     private readonly SemaphoreSlim operationGate = new(1, 1);
+    private readonly ILogger logger;
+    private readonly IDispatcher dispatcher;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="logger"></param>
+    protected BaseViewModel(ILogger logger)
+    {
+        dispatcher = ServiceHelper.GetRequiredService<IDispatcher>();
+        this.logger = logger;
+    }
+
 
     /// <summary>
     /// Gets whether an operation is running.
@@ -47,6 +63,11 @@ public partial class BaseViewModel(ILogger logger) : ObservableObject, IDisposab
     /// <param name="errorMessage"></param>
     protected virtual void SetMessages(string? statusMessage = null, string? errorMessage = null)
     {
+        if (dispatcher.IsDispatchRequired)
+        {
+            dispatcher.Dispatch(() => SetMessages(statusMessage, errorMessage));
+            return;
+        }
         StatusMessage = statusMessage;
         ErrorMessage = errorMessage;
     }
@@ -62,24 +83,28 @@ public partial class BaseViewModel(ILogger logger) : ObservableObject, IDisposab
         {
             return;
         }
-
-        IsBusy = true;
+        dispatcher.Dispatch(() => IsBusy = true);
         try
         {
             await operation(CancellationToken.None);
         }
         catch (OperationCanceledException)
         {
-            StatusMessage = "Operation cancelled.";
+            dispatcher.Dispatch(() => StatusMessage = "Operation cancelled.");
         }
         catch (Exception exception)
         {
             logger.LogError(exception, "Operation failed.");
-            StatusMessage = $"Operation failed: {exception.Message}";
+            dispatcher.Dispatch(() =>
+            {
+
+                StatusMessage = $"Operation failed: {exception.Message}";
+                ErrorMessage = exception.Message;
+            });
         }
         finally
         {
-            IsBusy = false;
+            dispatcher.Dispatch(() => IsBusy = false);
             operationGate.Release();
         }
     }

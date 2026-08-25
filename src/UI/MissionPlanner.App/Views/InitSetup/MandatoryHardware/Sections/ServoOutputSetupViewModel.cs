@@ -187,7 +187,7 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
         return operationCancellation.Token;
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         dispatcher.Dispatch(() =>
         {

@@ -442,7 +442,7 @@ public sealed partial class ExtendedTuningTabViewModel : BaseViewModel
         ResponseMetrics.ReplaceRange(responseMetrics);
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         var next = ActiveProfileKey.From(args.Current);
         if (next != activeKey)

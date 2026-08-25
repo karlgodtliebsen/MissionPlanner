@@ -119,15 +119,27 @@ public sealed class FlightModeSetupTests
         var now = DateTimeOffset.UtcNow;
         var state = new VehicleState(vehicleId, 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online, now,
                 VehicleMode.Stabilize, false, null, null, null, null, null, null, null, null) with
-            {
-                Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
+        {
+            Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
                     LandedState: VehicleLandedState.OnGround, ObservedAt: now)
-            };
+        };
         var firmware = new VehicleFirmwareIdentity(
             family, state.VehicleType, state.Autopilot,
             new FirmwareSemanticVersion(4, 5, 0, FirmwareReleaseType.Official),
             "abcdef01", 0, 1, 2, 3, 42, "vehicle-1");
-        return state with { Identity = state.Identity with { Firmware = firmware }, Radio = VehicleRadioState.Empty with { ChannelCount = channels.Length, ChannelsRaw = channels, ObservedAt = observedAt } };
+        return state with
+        {
+            Identity = state.Identity with
+            {
+                Firmware = firmware
+            },
+            Radio = VehicleRadioState.Empty with
+            {
+                ChannelCount = channels.Length,
+                ChannelsRaw = channels,
+                ObservedAt = observedAt
+            }
+        };
     }
 
     private sealed class TestActiveVehicleContext(VehicleState state) : IActiveVehicleContext
@@ -144,6 +156,6 @@ public sealed class FlightModeSetupTests
 
         public CancellationToken ConnectionCancellationToken => lifetime.Token;
 
-        public event EventHandler<ActiveVehicleChangedEventArgs>? Changed;
+        public event Action<ActiveVehicleChangedEventArgs>? Changed;
     }
 }

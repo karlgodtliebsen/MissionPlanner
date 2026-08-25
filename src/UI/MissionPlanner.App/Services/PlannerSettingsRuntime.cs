@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.App.Theming;
 using MissionPlanner.Core.ConfigTuning.Planner;
@@ -54,7 +54,7 @@ public sealed class PlannerSettingsRuntime : IDisposable
         settingsService.SettingsChanged -= OnSettingsChanged;
     }
 
-    private void OnSettingsChanged(object? sender, PlannerSettingsChangedEventArgs e)
+    private void OnSettingsChanged(PlannerSettingsChangedEventArgs e)
     {
         _ = ApplySafelyAsync(e.Current);
     }

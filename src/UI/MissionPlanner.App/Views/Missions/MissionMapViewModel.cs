@@ -75,6 +75,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     private IReadOnlyList<ImportedPlanningOverlay> importedOverlays = [];
     private IDisposable? stateSubscription;
     private bool disposed;
+    private bool isActive;
     private readonly IPlannerSettingsService settingsService;
 
     /// <summary>
@@ -114,14 +115,21 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         trackerHomeService = factory.Create<ITrackerHomeService>();
         geodeticConverter = factory.Create<IGeodeticCoordinateConverter>();
         replaySession = factory.Create<IReplaySessionManager>();
-        Activate();
     }
 
     /// <summary>
     /// Activates the Flight Data page and its selected tab.
     /// </summary>
-    private void Activate()
+    public async Task ActivateAsync()
     {
+        if (disposed)
+        {
+            return;
+        }
+        if (isActive)
+        {
+            return;
+        }
         SelectedSourceId = settingsService.Current.Map.SelectedSourceId;
         pendingRallyAltitude = DefaultAltitude();
         polygonService.Changed += OnPolygonChanged;
@@ -132,26 +140,31 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         trackerHomeService.Changed += OnTrackerHomeChanged;
         replaySession.Changed += OnReplaySessionChanged;
 
-        _ = poiService.InitializeAsync();
+        await poiService.ActivateAsync();
         MapSnapshot = MissionMapProjection.Create(Mission, HomePosition);
         SelectedMapStyle = "GEO";
 
         activeVehicle.Changed += OnActiveVehicleChanged;
         stateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
         UpdateVehicleStatus(activeVehicle.Current);
+        isActive = true;
     }
 
 
     /// <summary>
     /// Deactivates the Flight Data page
     /// </summary>
-    private void Deactivate()
+    public void Deactivate()
     {
         if (disposed)
         {
             return;
         }
-
+        if (!isActive)
+        {
+            return;
+        }
+        isActive = false;
         activeVehicle.Changed -= OnActiveVehicleChanged;
         interactionService.Changed -= OnInteractionChanged;
         polygonService.Changed -= OnPolygonChanged;
@@ -167,14 +180,18 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
+        if (disposed)
+        {
+            return;
+        }
         Deactivate();
+        disposed = true;
         interactionService.Cancel();
         foreach (var row in MissionItems)
         {
             row.Dispose();
         }
 
-        disposed = true;
     }
 
     /// <summary>
@@ -186,7 +203,10 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     /// Gets or sets the selected coordinate display style.
     /// </summary>
     [ObservableProperty]
-    public partial string SelectedMapStyle { get; set; }
+    public partial string SelectedMapStyle
+    {
+        get; set;
+    }
 
     /// <summary>Gets the pointer coordinate formatted in the selected coordinate style.</summary>
     [ObservableProperty]
@@ -216,22 +236,39 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     public partial string MapFreshness { get; private set; } = "Map: no position";
 
-    [ObservableProperty] public partial double VehicleLatitude { get; set; }
+    [ObservableProperty]
+    public partial double VehicleLatitude
+    {
+        get; set;
+    }
 
-    [ObservableProperty] public partial double VehicleLongitude { get; set; }
+    [ObservableProperty]
+    public partial double VehicleLongitude
+    {
+        get; set;
+    }
 
     /// <summary>Gets the latitude currently under the map pointer.</summary>
     [ObservableProperty]
-    public partial double? PointerLatitude { get; private set; }
+    public partial double? PointerLatitude
+    {
+        get; private set;
+    }
 
     /// <summary>Gets the longitude currently under the map pointer.</summary>
     [ObservableProperty]
-    public partial double? PointerLongitude { get; private set; }
+    public partial double? PointerLongitude
+    {
+        get; private set;
+    }
 
 
     /// <summary>Gets the altitude currently under the map pointer.</summary>
     [ObservableProperty]
-    public partial double? PointerAltitude { get; private set; }
+    public partial double? PointerAltitude
+    {
+        get; private set;
+    }
 
     /// <summary>Gets the typed state of the current pointer terrain lookup.</summary>
     [ObservableProperty]
@@ -243,7 +280,10 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
 
     /// <summary>Gets whether pointer terrain status should be displayed.</summary>
     [ObservableProperty]
-    public partial bool HasPointerAltitudeStatus { get; private set; }
+    public partial bool HasPointerAltitudeStatus
+    {
+        get; private set;
+    }
 
     /// <summary>Gets the compact or expanded attribution displayed over the map.</summary>
     [ObservableProperty]
@@ -251,7 +291,10 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
 
     /// <summary>Gets whether the map attribution overlay has content.</summary>
     [ObservableProperty]
-    public partial bool IsAttributionVisible { get; private set; }
+    public partial bool IsAttributionVisible
+    {
+        get; private set;
+    }
 
     /// <summary>Updates the shared attribution overlay presentation.</summary>
     public void SetAttribution(string text)
@@ -260,7 +303,11 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         IsAttributionVisible = !string.IsNullOrWhiteSpace(text);
     }
 
-    [ObservableProperty] public partial double VehicleHeading { get; set; }
+    [ObservableProperty]
+    public partial double VehicleHeading
+    {
+        get; set;
+    }
 
     /// <summary>When true the map keeps centering on the vehicle as telemetry arrives.</summary>
     [ObservableProperty]
@@ -272,19 +319,31 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
 
     /// <summary>Planned home/launch position, set via "Set Home Here".</summary>
     [ObservableProperty]
-    public partial GeoPosition? HomePosition { get; set; }
+    public partial GeoPosition? HomePosition
+    {
+        get; set;
+    }
 
     /// <summary>Short feedback message for the last menu action.</summary>
     [ObservableProperty]
-    public partial string? StatusMessage { get; set; }
+    public partial string? StatusMessage
+    {
+        get; set;
+    }
 
     /// <summary>Short feedback message for the last menu action.</summary>
     [ObservableProperty]
-    public partial bool HasStatusMessage { get; set; }
+    public partial bool HasStatusMessage
+    {
+        get; set;
+    }
 
     /// <summary>Short feedback message for the last menu action.</summary>
     [ObservableProperty]
-    public partial bool HasAltitudeMessage { get; set; }
+    public partial bool HasAltitudeMessage
+    {
+        get; set;
+    }
 
     /// <summary>The stable catalog, pack, or custom source identifier rendered by map views.</summary>
     [ObservableProperty]
@@ -292,7 +351,10 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
 
     /// <summary>When true, a primary map click appends a waypoint at the clicked position.</summary>
     [ObservableProperty]
-    public partial bool AddWaypointOnMapClick { get; set; }
+    public partial bool AddWaypointOnMapClick
+    {
+        get; set;
+    }
 
     /// <summary>Waypoint acceptance radius in meters (editor setting, v1.38 "WP Radius").</summary>
     [ObservableProperty]
@@ -304,14 +366,20 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
 
     /// <summary>Altitude warning threshold in meters (editor setting, v1.38 "Alt Warn").</summary>
     [ObservableProperty]
-    public partial double AltWarnMeters { get; set; }
+    public partial double AltWarnMeters
+    {
+        get; set;
+    }
 
     /// <summary>Summary line for the mission (item count, total distance).</summary>
     [ObservableProperty]
     public partial string MissionSummary { get; set; } = "0 items";
 
     /// <summary>Gets the stable built-in source identifiers offered by the compact map selector.</summary>
-    public IReadOnlyList<string> AvailableSourceIds { get; } =
+    public IReadOnlyList<string> AvailableSourceIds
+    {
+        get;
+    } =
         ["osm-standard", "esri-world-topo", "esri-world-physical", "esri-world-shaded-relief", "esri-world-dark-gray", "no-map"];
 
     partial void OnStatusMessageChanged(string? value)
@@ -398,11 +466,17 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     /// Gets the explicit context snapshot used by location-sensitive commands. Pointer hover does
     /// not replace this value; mouse context clicks and ordinary touch taps do.
     /// </summary>
-    public MissionMapContext? MapContext { get; private set; }
+    public MissionMapContext? MapContext
+    {
+        get; private set;
+    }
 
     /// <summary>Gets the UI-neutral presentation state consumed by mission map views.</summary>
     [ObservableProperty]
-    public partial MissionMapSnapshot MapSnapshot { get; private set; }
+    public partial MissionMapSnapshot MapSnapshot
+    {
+        get; private set;
+    }
 
     /// <summary>Gets the renderer-independent planning overlay state.</summary>
     [ObservableProperty]
@@ -410,11 +484,17 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
 
     /// <summary>Gets the current generated elevation profile.</summary>
     [ObservableProperty]
-    public partial MissionElevationProfile? ElevationProfile { get; private set; }
+    public partial MissionElevationProfile? ElevationProfile
+    {
+        get; private set;
+    }
 
     /// <summary>Gets whether the elevation graph overlay is visible.</summary>
     [ObservableProperty]
-    public partial bool IsElevationProfileVisible { get; private set; }
+    public partial bool IsElevationProfileVisible
+    {
+        get; private set;
+    }
 
     /// <summary>Gets the current planning interaction instruction.</summary>
     [ObservableProperty]
@@ -506,7 +586,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
             : "Map: no position";
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs e)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs e)
     {
         dispatcher.Dispatch(() =>
         {
@@ -515,7 +595,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         });
     }
 
-    private void OnReplaySessionChanged(object? sender, ReplaySessionChangedEventArgs args)
+    private void OnReplaySessionChanged(ReplaySessionChangedEventArgs args)
     {
         dispatcher.Dispatch(() => OnPropertyChanged(nameof(CanUseVehicleCommands)));
     }
@@ -558,7 +638,10 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
             if (interactionMode == MissionMapInteractionMode.SetFenceReturnLocation && activeVehicle.VehicleId is { } vehicleId)
             {
                 var snapshot = fenceService.GetSnapshot(vehicleId);
-                fenceService.SetLocalPlan(vehicleId, snapshot.LocalPlan with { ReturnPoint = position });
+                fenceService.SetLocalPlan(vehicleId, snapshot.LocalPlan with
+                {
+                    ReturnPoint = position
+                });
                 interactionService.Complete();
                 ShowStatus("Fence return location updated locally; upload to apply it.");
             }
@@ -626,22 +709,22 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         });
     }
 
-    private void OnFenceChanged(object? sender, EventArgs args)
+    private void OnFenceChanged()
     {
         dispatcher.Dispatch(UpdatePlanningOverlay);
     }
 
-    private void OnRallyChanged(object? sender, EventArgs args)
+    private void OnRallyChanged()
     {
         dispatcher.Dispatch(UpdatePlanningOverlay);
     }
 
-    private void OnPoiChanged(object? sender, EventArgs args)
+    private void OnPoiChanged()
     {
         dispatcher.Dispatch(UpdatePlanningOverlay);
     }
 
-    private void OnTrackerHomeChanged(object? sender, EventArgs args)
+    private void OnTrackerHomeChanged()
     {
         dispatcher.Dispatch(UpdatePlanningOverlay);
     }
@@ -1225,7 +1308,12 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
             return;
         }
 
-        pendingRallyAltitude = new MissionAltitude(altitude, reference switch { "Mean sea level" => MissionAltitudeReference.MeanSeaLevel, "Terrain" => MissionAltitudeReference.Terrain, var _ => MissionAltitudeReference.Home });
+        pendingRallyAltitude = new MissionAltitude(altitude, reference switch
+        {
+            "Mean sea level" => MissionAltitudeReference.MeanSeaLevel,
+            "Terrain" => MissionAltitudeReference.Terrain,
+            var _ => MissionAltitudeReference.Home
+        });
         BeginInteraction(MissionMapInteractionMode.SetRallyPoint, "Click the map to add the local rally point.");
     }
 
@@ -1627,7 +1715,11 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         }
 
         var description = await dialogService.DisplayPromptAsync("Edit nearest POI", "Description", item.Description ?? string.Empty);
-        await poiService.UpdateAsync(item with { Name = name, Description = description }, cancellationToken);
+        await poiService.UpdateAsync(item with
+        {
+            Name = name,
+            Description = description
+        }, cancellationToken);
         ShowStatus($"Local POI '{name}' updated.");
     }
 

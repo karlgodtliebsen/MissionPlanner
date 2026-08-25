@@ -226,7 +226,7 @@ public sealed partial class BatterySetupViewModel : OptionalHardwareBaseViewMode
         return operationCancellation.Token;
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         dispatcher.Dispatch(() =>
         {

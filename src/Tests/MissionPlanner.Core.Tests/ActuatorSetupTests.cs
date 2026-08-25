@@ -230,7 +230,10 @@ public sealed class ActuatorSetupTests
 
         row.LiveDescription.Should().Be("1180 µs");
         row.IsDirty.Should().BeFalse();
-        row.UpdateLive(info with { LivePwm = 1200 });
+        row.UpdateLive(info with
+        {
+            LivePwm = 1200
+        });
         row.IsDirty.Should().BeFalse();
 
         row.MinimumPwm = 1125;
@@ -316,7 +319,14 @@ public sealed class ActuatorSetupTests
             Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, armed,
                     LandedState: VehicleLandedState.OnGround, ObservedAt: timestamp)
         };
-        return state with { Radio = VehicleRadioState.Empty with { ServoOutputsRaw = [1500, 1500, 1500], ServoObservedAt = timestamp } };
+        return state with
+        {
+            Radio = VehicleRadioState.Empty with
+            {
+                ServoOutputsRaw = [1500, 1500, 1500],
+                ServoObservedAt = timestamp
+            }
+        };
     }
 
     private sealed record ActuatorFixture(
@@ -353,6 +363,6 @@ public sealed class ActuatorSetupTests
 
         public CancellationToken ConnectionCancellationToken => lifetime.Token;
 
-        public event EventHandler<ActiveVehicleChangedEventArgs>? Changed;
+        public event Action<ActiveVehicleChangedEventArgs>? Changed;
     }
 }

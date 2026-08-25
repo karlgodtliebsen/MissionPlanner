@@ -1,6 +1,5 @@
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Vehicles;
@@ -24,7 +23,7 @@ public sealed class VehicleMessageStore : IVehicleMessageStore
     }
 
     /// <inheritdoc />
-    public event EventHandler<VehicleStatusTextAddedEventArgs>? MessageAdded;
+    public event Action<VehicleStatusTextAddedEventArgs>? MessageAdded;
 
     /// <inheritdoc />
     public IReadOnlyList<VehicleStatusText> GetMessages(VehicleId vehicleId)
@@ -39,7 +38,10 @@ public sealed class VehicleMessageStore : IVehicleMessageStore
     public VehicleStatusText Add(VehicleStatusText message)
     {
         ArgumentNullException.ThrowIfNull(message);
-        var stored = message with { Identity = Interlocked.Increment(ref nextIdentity) };
+        var stored = message with
+        {
+            Identity = Interlocked.Increment(ref nextIdentity)
+        };
         lock (sync)
         {
             if (!messages.TryGetValue(stored.VehicleId, out var history))
@@ -55,7 +57,7 @@ public sealed class VehicleMessageStore : IVehicleMessageStore
             }
         }
 
-        MessageAdded?.Invoke(this, new VehicleStatusTextAddedEventArgs(stored));
+        MessageAdded?.Invoke(new VehicleStatusTextAddedEventArgs(stored));
         return stored;
     }
 

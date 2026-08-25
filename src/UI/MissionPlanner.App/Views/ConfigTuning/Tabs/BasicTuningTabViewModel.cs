@@ -320,7 +320,7 @@ public sealed partial class BasicTuningTabViewModel : BaseViewModel
         }
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         var next = ActiveProfileKey.From(args.Current);
         if (next == activeKey)

@@ -151,9 +151,12 @@ public partial class PayloadControlTabViewModel : BaseViewModel
         components.Changed -= OnChanged;
         return Task.CompletedTask;
     }
-
-    private void OnChanged(object? sender, EventArgs e)
+    private void OnChanged(EventArgs e)
     {
-        Refresh();
+        dispatcher.Dispatch(Refresh);
+    }
+    private void OnChanged()
+    {
+        dispatcher.Dispatch(Refresh);
     }
 }

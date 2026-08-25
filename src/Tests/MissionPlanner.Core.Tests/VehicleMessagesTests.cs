@@ -249,7 +249,10 @@ public sealed class VehicleMessagesTests
             Current = new ActiveVehicleSnapshot(state.VehicleId, state);
         }
 
-        public ActiveVehicleSnapshot Current { get; private set; }
+        public ActiveVehicleSnapshot Current
+        {
+            get; private set;
+        }
 
         public VehicleId? VehicleId => Current.VehicleId;
 
@@ -259,7 +262,7 @@ public sealed class VehicleMessagesTests
 
         public CancellationToken ConnectionCancellationToken => connection.Token;
 
-        public event EventHandler<ActiveVehicleChangedEventArgs>? Changed;
+        public event Action<ActiveVehicleChangedEventArgs>? Changed;
 
         public void SetState(VehicleState state)
         {
@@ -268,7 +271,7 @@ public sealed class VehicleMessagesTests
             connection.Dispose();
             connection = new CancellationTokenSource();
             Current = new ActiveVehicleSnapshot(state.VehicleId, state);
-            Changed?.Invoke(this, new ActiveVehicleChangedEventArgs(previous, Current));
+            Changed?.Invoke(new ActiveVehicleChangedEventArgs(previous, Current));
         }
     }
 }

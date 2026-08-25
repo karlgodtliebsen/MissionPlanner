@@ -1,4 +1,4 @@
-using MissionPlanner.MavLink.Messages;
+﻿using MissionPlanner.MavLink.Messages;
 
 namespace MissionPlanner.Core.FlightData.Components;
 
@@ -12,7 +12,7 @@ public sealed class VehicleComponentRegistry : IVehicleComponentRegistry
     private readonly Dictionary<(byte SystemId, uint Icao), AdsbTrafficTrack> traffic = [];
 
     /// <inheritdoc /> public event EventHandler? Changed;
-    public event EventHandler? Changed;
+    public event Action? Changed;
 
     /// <summary>Records component heartbeat discovery.</summary>
     public void Observe(HeartbeatMessage message)
@@ -21,11 +21,17 @@ public sealed class VehicleComponentRegistry : IVehicleComponentRegistry
         {
             var key = new VehicleComponentKey(message.SystemId, message.ComponentId);
             components[key] = components.TryGetValue(key, out var current)
-                ? current with { MavType = message.VehicleType, Autopilot = message.Autopilot, LastSeen = message.ReceivedAt, IsOnline = true }
+                ? current with
+                {
+                    MavType = message.VehicleType,
+                    Autopilot = message.Autopilot,
+                    LastSeen = message.ReceivedAt,
+                    IsOnline = true
+                }
                 : new VehicleComponentState(key, message.VehicleType, message.Autopilot, message.ReceivedAt, message.ReceivedAt, true);
         }
 
-        Changed?.Invoke(this, EventArgs.Empty);
+        Changed?.Invoke();
     }
 
     /// <summary>Records uAvionix status for its exact source component.</summary>
@@ -37,7 +43,7 @@ public sealed class VehicleComponentRegistry : IVehicleComponentRegistry
                 message.Squawk, message.FlightId.Trim(), message.State, message.Fault, message.Boardtemp, message.ReceivedAt);
         }
 
-        Changed?.Invoke(this, EventArgs.Empty);
+        Changed?.Invoke();
     }
 
     /// <summary>Records and deduplicates one traffic observation.</summary>
@@ -56,7 +62,7 @@ public sealed class VehicleComponentRegistry : IVehicleComponentRegistry
             }
         }
 
-        Changed?.Invoke(this, EventArgs.Empty);
+        Changed?.Invoke();
     }
 
     /// <inheritdoc />

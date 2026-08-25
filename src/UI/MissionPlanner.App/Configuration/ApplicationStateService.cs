@@ -24,7 +24,7 @@ public partial class ApplicationStateService : ObservableObject, IDisposable
         ApplyActiveVehicle(activeVehicle.Current);
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs e)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs e)
     {
         ApplyActiveVehicle(e.Current);
     }
@@ -42,13 +42,25 @@ public partial class ApplicationStateService : ObservableObject, IDisposable
         activeVehicle.Changed -= OnActiveVehicleChanged;
     }
 
-    [ObservableProperty] public partial bool IsConnected { get; set; }
+    [ObservableProperty]
+    public partial bool IsConnected
+    {
+        get; set;
+    }
     [ObservableProperty] public partial string SelectedChannel { get; set; } = "AUTO";
     [ObservableProperty] public partial string SelectedBaudRate { get; set; } = "115200";
     [ObservableProperty] public partial string SelectedPort { get; set; } = "14550";
     [ObservableProperty] public partial string SelectedHost { get; set; } = "127.0.0.1";
-    [ObservableProperty] public partial string? VehicleName { get; set; }
-    [ObservableProperty] public partial VehicleId? VehicleId { get; set; }
+    [ObservableProperty]
+    public partial string? VehicleName
+    {
+        get; set;
+    }
+    [ObservableProperty]
+    public partial VehicleId? VehicleId
+    {
+        get; set;
+    }
 
     /// <summary>
     /// Initializes the service with values from ApplicationState.

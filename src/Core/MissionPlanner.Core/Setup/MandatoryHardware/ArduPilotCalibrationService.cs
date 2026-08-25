@@ -94,7 +94,7 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
     public CalibrationSnapshot Current { get; private set; } = CalibrationSnapshot.Initial;
 
     /// <inheritdoc />
-    public event EventHandler<CalibrationStateChangedEventArgs>? StateChanged;
+    public event Action<CalibrationStateChangedEventArgs>? StateChanged;
 
     /// <inheritdoc />
     public Task StartSixPositionAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
@@ -127,7 +127,12 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
         }
 
         await SendCommandAsync(vehicleId, AccelerometerPositionCommand, [(float)orientation], cancellationToken).ConfigureAwait(false);
-        Transition(Current with { State = CalibrationWorkflowState.Sampling, Progress = Math.Max(Current.Progress, Math.Min(0.99, (completedOrientations.Count + 0.5) / 6d)), Instruction = $"Keep the vehicle {OrientationText(orientation)} and motionless while it samples." });
+        Transition(Current with
+        {
+            State = CalibrationWorkflowState.Sampling,
+            Progress = Math.Max(Current.Progress, Math.Min(0.99, (completedOrientations.Count + 0.5) / 6d)),
+            Instruction = $"Keep the vehicle {OrientationText(orientation)} and motionless while it samples."
+        });
     }
 
     /// <inheritdoc />
@@ -309,7 +314,10 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
     {
         if (acknowledgement.Progress <= 100 && acknowledgement.Progress / 100d > Current.Progress)
         {
-            Transition(Current with { Progress = acknowledgement.Progress / 100d });
+            Transition(Current with
+            {
+                Progress = acknowledgement.Progress / 100d
+            });
         }
 
         var result = (MavResult)acknowledgement.Result;
@@ -318,11 +326,18 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
             startSignal?.TrySetResult();
             if (Current.Kind == AccelerometerCalibrationKind.Level)
             {
-                Transition(Current with { State = CalibrationWorkflowState.Completing, Instruction = "Keep the vehicle level and motionless until completion is acknowledged." });
+                Transition(Current with
+                {
+                    State = CalibrationWorkflowState.Completing,
+                    Instruction = "Keep the vehicle level and motionless until completion is acknowledged."
+                });
             }
             else if (Current.State == CalibrationWorkflowState.Preparing)
             {
-                Transition(Current with { Instruction = "Calibration accepted. Waiting for the first orientation request." });
+                Transition(Current with
+                {
+                    Instruction = "Calibration accepted. Waiting for the first orientation request."
+                });
             }
 
             return;
@@ -337,7 +352,11 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
             }
             else if (Current.State == CalibrationWorkflowState.Preparing)
             {
-                Transition(Current with { State = CalibrationWorkflowState.WaitingForOrientation, Instruction = "Calibration accepted. Waiting for the vehicle to request an orientation." });
+                Transition(Current with
+                {
+                    State = CalibrationWorkflowState.WaitingForOrientation,
+                    Instruction = "Calibration accepted. Waiting for the vehicle to request an orientation."
+                });
             }
 
             return;
@@ -407,7 +426,7 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
         });
     }
 
-    private void OnStatusTextAdded(object? sender, VehicleStatusTextAddedEventArgs args)
+    private void OnStatusTextAdded(VehicleStatusTextAddedEventArgs args)
     {
         if (args.Message.VehicleId != Current.VehicleId ||
             (!args.Message.Text.Contains("calib", StringComparison.OrdinalIgnoreCase) &&
@@ -416,10 +435,13 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
             return;
         }
 
-        Transition(Current with { SupplementalStatus = args.Message.Text });
+        Transition(Current with
+        {
+            SupplementalStatus = args.Message.Text
+        });
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         if (IsActive(Current.State) &&
             (!args.Current.IsOnline || args.Current.VehicleId != Current.VehicleId))
@@ -483,7 +505,7 @@ public sealed class ArduPilotCalibrationService : IArduPilotCalibrationService
     private void Transition(CalibrationSnapshot snapshot)
     {
         Current = snapshot;
-        StateChanged?.Invoke(this, new CalibrationStateChangedEventArgs(snapshot));
+        StateChanged?.Invoke(new CalibrationStateChangedEventArgs(snapshot));
     }
 
     private void EndRun()

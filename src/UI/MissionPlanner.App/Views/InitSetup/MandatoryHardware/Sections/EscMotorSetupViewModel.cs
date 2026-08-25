@@ -278,12 +278,12 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
         TestSequenceCommand.NotifyCanExecuteChanged();
     }
 
-    private void OnStateChanged(object? sender, MotorTestStateChangedEventArgs args)
+    private void OnStateChanged(MotorTestStateChangedEventArgs args)
     {
         dispatcher.Dispatch(() => Show(args.Snapshot));
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
         {

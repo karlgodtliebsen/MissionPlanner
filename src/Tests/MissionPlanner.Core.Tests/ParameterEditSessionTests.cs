@@ -670,7 +670,7 @@ public sealed class ParameterEditSessionTests
 
         public CancellationToken ConnectionCancellationToken => lifetime.Token;
 
-        public event EventHandler<ActiveVehicleChangedEventArgs>? Changed;
+        public event Action<ActiveVehicleChangedEventArgs>? Changed;
 
         public void Set(VehicleState next)
         {
@@ -687,7 +687,7 @@ public sealed class ParameterEditSessionTests
                 }
             }
 
-            Changed?.Invoke(this, new ActiveVehicleChangedEventArgs(previous, Current));
+            Changed?.Invoke(new ActiveVehicleChangedEventArgs(previous, Current));
         }
     }
 

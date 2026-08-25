@@ -9,43 +9,53 @@ namespace MissionPlanner.App.Views.Missions;
 /// Shared mission-map editor control. Native map events remain at the view boundary while
 /// <see cref="MissionMapPresenter"/> owns Mapsui rendering and navigation.
 /// </summary>
-public partial class MissionMapView : ContentView, IDisposable //ExtendedContentView<MissionMapViewModel>
+public partial class MissionMapView : ContentView, IDisposable
 {
-    private MissionMapViewModel? ViewModel;
+    private MissionMapViewModel? viewModel;
     private readonly IDomainFactory domainFactory;
     private MissionMapPresenter? presenter;
     private bool disposed;
+    private bool isActive;
+    private bool usingCustomPosition;
 
     /// <summary>Initializes a new instance of the <see cref="MissionMapView"/> class.</summary>
     public MissionMapView(IDomainFactory domainFactory)
     {
-        this.domainFactory = domainFactory;
         InitializeComponent();
+        this.domainFactory = domainFactory;
     }
 
-    public async Task Activate(MissionMapViewModel viewModel)
+    /// <summary>
+    /// Activates the view with the specified view model.
+    /// </summary>
+    /// <param name="vModel">The view model to associate with the view.</param>
+    public async Task ActivateAsync(MissionMapViewModel vModel)
     {
         ObjectDisposedException.ThrowIf(disposed, this);
-        Deactivate();
-
-        ViewModel = viewModel;
-        presenter = domainFactory.Create<MissionMapPresenter, MapView, MissionMapViewModel>(MissionMap, viewModel);
-        MissionMap.MapClicked += OnMapClicked;
-        MissionMap.MapPointerMoved += OnMapPointerMoved;
-        viewModel.MapRotationRequested += OnMapRotationRequested;
-        viewModel.MapCenterRequested += OnMapCenterRequested;
-        //Loaded += OnLoaded;
-        BindingContext = viewModel;
-        // resolutions from the layers and can otherwise replace an earlier navigation.
-        await presenter.ActivateAsync();
-        if (ViewModel is not { VehicleLatitude: 0, VehicleLongitude: 0 })
+        if (isActive)
         {
             return;
         }
-
+        isActive = true;
+        this.viewModel = vModel;
+        this.MissionMap.MapClicked += OnMapClicked;
+        this.MissionMap.MapPointerMoved += OnMapPointerMoved;
+        this.viewModel.MapRotationRequested += OnMapRotationRequested;
+        this.viewModel.MapCenterRequested += OnMapCenterRequested;
+        this.BindingContext = this.viewModel;
+        presenter ??= domainFactory.Create<MissionMapPresenter, MapView, MissionMapViewModel>(MissionMap, this.viewModel);
+        await presenter.ActivateAsync();
+        if (this.viewModel is not { VehicleLatitude: 0, VehicleLongitude: 0 })
+        {
+            return;
+        }
         await CenterOnMyLocationAsync();
+        usingCustomPosition = true;
     }
 
+    /// <summary>
+    /// Deactivates the view and releases resources.
+    /// </summary>
     public void Deactivate()
     {
         if (disposed)
@@ -53,14 +63,17 @@ public partial class MissionMapView : ContentView, IDisposable //ExtendedContent
             return;
         }
 
+        if (!isActive)
+        {
+            return;
+        }
+
+        isActive = false;
         MissionMap.MapClicked -= OnMapClicked;
         MissionMap.MapPointerMoved -= OnMapPointerMoved;
-        ViewModel?.MapRotationRequested -= OnMapRotationRequested;
-        ViewModel?.MapCenterRequested -= OnMapCenterRequested;
-        presenter?.Dispose();
-        presenter = null;
-        ViewModel = null;
-        BindingContext = null;
+        viewModel?.MapRotationRequested -= OnMapRotationRequested;
+        viewModel?.MapCenterRequested -= OnMapCenterRequested;
+        presenter?.Deactivate();
     }
 
     /// <inheritdoc />
@@ -70,9 +83,12 @@ public partial class MissionMapView : ContentView, IDisposable //ExtendedContent
         {
             return;
         }
-
         Deactivate();
         disposed = true;
+        presenter?.Dispose();
+        presenter = null;
+        viewModel = null;
+        BindingContext = null;
     }
 
     private void OnMapClicked(object? sender, MapClickedEventArgs args)
@@ -97,6 +113,11 @@ public partial class MissionMapView : ContentView, IDisposable //ExtendedContent
 
     private async Task CenterOnMyLocationAsync()
     {
+        if (usingCustomPosition)
+        {
+            return;
+        }
+
         try
         {
             var location = await Geolocation.Default.GetLastKnownLocationAsync()

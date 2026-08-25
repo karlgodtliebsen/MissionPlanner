@@ -1,6 +1,5 @@
 ﻿using System.Collections.Concurrent;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
@@ -14,14 +13,14 @@ public sealed class VehicleParameterRegistry : IVehicleParameterRegistry
     private readonly ConcurrentDictionary<VehicleId, VehicleParameterCollection> parametersByVehicle = new();
 
     /// <inheritdoc />
-    public event EventHandler<VehicleParameterChangedEventArgs>? Changed;
+    public event Action<VehicleParameterChangedEventArgs>? Changed;
 
     /// <inheritdoc/>
     public void StoreParameter(VehicleId vehicleId, VehicleParameter parameter, CancellationToken cancellationToken)
     {
         var collection = parametersByVehicle.GetOrAdd(vehicleId, _ => new VehicleParameterCollection());
         collection.AddOrUpdate(parameter);
-        Changed?.Invoke(this, new VehicleParameterChangedEventArgs(vehicleId, parameter));
+        Changed?.Invoke(new VehicleParameterChangedEventArgs(vehicleId, parameter));
     }
 
     /// <inheritdoc/>
@@ -48,7 +47,7 @@ public sealed class VehicleParameterRegistry : IVehicleParameterRegistry
     public void ClearParameters(VehicleId vehicleId)
     {
         parametersByVehicle.TryRemove(vehicleId, out var _);
-        Changed?.Invoke(this, new VehicleParameterChangedEventArgs(vehicleId, null));
+        Changed?.Invoke(new VehicleParameterChangedEventArgs(vehicleId, null));
     }
 
     private sealed class VehicleParameterCollection

@@ -700,7 +700,7 @@ public sealed partial class PreferencesViewModel : BaseViewModel
 
         //return RunAsync(async cancellationToken =>
         //{
-        //    var result = await settingsService.InitializeAsync(cancellationToken);
+        //    var result = await settingsService.ActivateAsync(cancellationToken);
         //    await LoadMapSourcesAsync(result.Settings.Map.SelectedSourceId, cancellationToken);
         //    await RefreshMapPacksAsync(cancellationToken);
         //    RestoreOfflinePackSelection(result.Settings.Map.SelectedSourceId);

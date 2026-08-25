@@ -18,16 +18,39 @@ public partial class FlightPlannerPage : ExtendedContentPage<FlightPlannerViewMo
         MapLoadingIndicator.IsRunning = true;
     }
 
-
     /// <inheritdoc />
     protected override async Task ActivateAsync()
     {
         DomainException.ThrowIfNull(ViewModel);
         var map = ViewModel.Map as FlightPlannerMissionMapViewModel; //To share the Map it is brought along by this code
         DomainException.ThrowIfNull(map);
-        await MapView.Activate(map);
+        await map.ActivateAsync();
+
+        await MapView.ActivateAsync(map);
         await base.ActivateAsync();
         MapLoadingIndicator.IsRunning = false;
         MapLoadingIndicator.IsVisible = false;
+    }
+
+    /// <inheritdoc />
+    protected override Task DeactivateAsync()
+    {
+        DomainException.ThrowIfNull(ViewModel);
+        var map = ViewModel.Map as FlightPlannerMissionMapViewModel;
+        DomainException.ThrowIfNull(map);
+        map.Deactivate();
+        MapView.Deactivate();
+        return base.DeactivateAsync();
+    }
+
+    /// <inheritdoc />
+    public override void Dispose()
+    {
+        DomainException.ThrowIfNull(ViewModel);
+        var map = ViewModel.Map as FlightPlannerMissionMapViewModel;
+        DomainException.ThrowIfNull(map);
+        map.Dispose();
+        MapView.Dispose();
+        base.Dispose();
     }
 }

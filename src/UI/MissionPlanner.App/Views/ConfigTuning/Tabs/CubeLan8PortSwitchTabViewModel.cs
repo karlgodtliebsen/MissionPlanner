@@ -243,7 +243,7 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : BaseViewModel
         return Task.CompletedTask;
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs e)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs e)
     {
         dispatcher.Dispatch(() => RefreshForActiveVehicle(false));
     }

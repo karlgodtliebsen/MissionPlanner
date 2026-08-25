@@ -94,7 +94,7 @@ public partial class StatusTabViewModel : BaseViewModel
         return Task.CompletedTask;
     }
 
-    private void OnChanged(object? s, EventArgs e)
+    private void OnChanged(EventArgs e)
     {
         dispatcher.Dispatch(Update);
     }

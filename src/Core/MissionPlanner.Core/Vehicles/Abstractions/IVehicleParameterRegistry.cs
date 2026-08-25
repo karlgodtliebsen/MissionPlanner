@@ -1,5 +1,4 @@
-﻿using MissionPlanner.Core.Vehicles.Models;
-using MissionPlanner.MavLink.Parameters;
+﻿using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Vehicles.Abstractions;
@@ -9,8 +8,11 @@ namespace MissionPlanner.Core.Vehicles.Abstractions;
 /// </summary>
 public interface IVehicleParameterRegistry
 {
-    /// <summary>Occurs after a parameter is stored or a vehicle's parameter set is cleared.</summary>
-    event EventHandler<VehicleParameterChangedEventArgs>? Changed;
+    /// <summary>
+    /// Occurs after a parameter is stored or a vehicle's parameter set is cleared.
+    /// </summary>
+    event Action<VehicleParameterChangedEventArgs>? Changed;
+
 
     /// <summary>
     /// Stores or updates a parameter for a vehicle.

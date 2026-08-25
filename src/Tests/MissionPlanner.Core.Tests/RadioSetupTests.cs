@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.DomainEvents;
@@ -240,7 +240,13 @@ public sealed class RadioSetupTests
         var written = new List<string>();
         var service = CreateService(context, new VehicleParameterRegistry(), now, written);
         await CaptureValidEndpointsAsync(service, context, now);
-        context.SetState(StateWithChannels([1500, 1500, 1000, 1500], now) with { Flight = context.State!.Flight with { IsArmed = true } });
+        context.SetState(StateWithChannels([1500, 1500, 1000, 1500], now) with
+        {
+            Flight = context.State!.Flight with
+            {
+                IsArmed = true
+            }
+        });
 
         var result = await service.CompleteAsync(TestContext.Current.CancellationToken);
 
@@ -325,12 +331,33 @@ public sealed class RadioSetupTests
         Store(registry, "THR_MIN", -100);
         var now = DateTimeOffset.UtcNow;
         var rover = StateWithChannels([1500, 1500, 1500, 1500], now);
-        rover = rover with { Identity = rover.Identity with { Firmware = rover.Identity.Firmware with { Family = MissionPlanner.Firmware.FirmwareFamily.Rover } } };
+        rover = rover with
+        {
+            Identity = rover.Identity with
+            {
+                Firmware = rover.Identity.Firmware with
+                {
+                    Family = MissionPlanner.Firmware.FirmwareFamily.Rover
+                }
+            }
+        };
         var context = new TestActiveVehicleContext(rover);
         var service = CreateService(context, registry, now);
         await service.StartAsync(vehicleId, TestContext.Current.CancellationToken);
-        context.SetState(rover with { Radio = rover.Radio with { ChannelsRaw = [1000, 1000, 1000, 1000] } });
-        context.SetState(rover with { Radio = rover.Radio with { ChannelsRaw = [2000, 2000, 2000, 2000] } });
+        context.SetState(rover with
+        {
+            Radio = rover.Radio with
+            {
+                ChannelsRaw = [1000, 1000, 1000, 1000]
+            }
+        });
+        context.SetState(rover with
+        {
+            Radio = rover.Radio with
+            {
+                ChannelsRaw = [2000, 2000, 2000, 2000]
+            }
+        });
 
         var review = await service.FinishCaptureAsync(TestContext.Current.CancellationToken);
 
@@ -404,9 +431,11 @@ public sealed class RadioSetupTests
                 return Task.FromResult(true);
             });
         var eventHub = Substitute.For<IDomainEventHub>();
+
         eventHub.SubscribeDomainEventAsync(
                 Arg.Do<Func<VehicleStateUpdated, CancellationToken, Task>>(handler =>
-                    context.StateUpdated = state => handler(new VehicleStateUpdated(state), CancellationToken.None).GetAwaiter().GetResult()))
+                    context.StateUpdated += state => handler(new VehicleStateUpdated(state), CancellationToken.None).GetAwaiter().GetResult()))
+
             .Returns(Substitute.For<IDisposable>());
         return new RadioCalibrationService(context, registry, parameterService, new VehicleOperationGate(), eventHub, clock,
             Substitute.For<ILogger<RadioCalibrationService>>());
@@ -430,11 +459,19 @@ public sealed class RadioSetupTests
         var now = DateTimeOffset.UtcNow;
         var state = new VehicleState(vehicleId, 0, 2, 3, 0, 4, 3, VehicleConnectionState.Online, now,
                 VehicleMode.Stabilize, false, null, null, null, null, null, null, null, null) with
-            {
-                Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
+        {
+            Flight = new VehicleFlightState(0, 0, 4, VehicleMode.Stabilize, false,
                     LandedState: VehicleLandedState.OnGround, ObservedAt: now)
-            };
-        return state with { Radio = VehicleRadioState.Empty with { ChannelCount = channels.Length, ChannelsRaw = channels, ObservedAt = observedAt } };
+        };
+        return state with
+        {
+            Radio = VehicleRadioState.Empty with
+            {
+                ChannelCount = channels.Length,
+                ChannelsRaw = channels,
+                ObservedAt = observedAt
+            }
+        };
     }
 
     private sealed class TestActiveVehicleContext(VehicleState state) : IActiveVehicleContext
@@ -451,9 +488,9 @@ public sealed class RadioSetupTests
 
         public CancellationToken ConnectionCancellationToken => lifetime.Token;
 
-        public event EventHandler<ActiveVehicleChangedEventArgs>? Changed;
+        public event Action<ActiveVehicleChangedEventArgs>? Changed;
 
-        public Action<VehicleState>? StateUpdated { get; set; }
+        public event Action<VehicleState>? StateUpdated;
 
         public void SetState(VehicleState next)
         {
@@ -464,14 +501,20 @@ public sealed class RadioSetupTests
         public void SetOnline(bool online)
         {
             var previous = Current;
-            var nextState = Current.State! with { Connection = Current.State!.Connection with { State = online ? VehicleConnectionState.Online : VehicleConnectionState.Offline } };
+            var nextState = Current.State! with
+            {
+                Connection = Current.State!.Connection with
+                {
+                    State = online ? VehicleConnectionState.Online : VehicleConnectionState.Offline
+                }
+            };
             Current = new ActiveVehicleSnapshot(nextState.VehicleId, nextState);
             if (!online)
             {
                 lifetime.Cancel();
             }
 
-            Changed?.Invoke(this, new ActiveVehicleChangedEventArgs(previous, Current));
+            Changed?.Invoke(new ActiveVehicleChangedEventArgs(previous, Current));
         }
     }
 }

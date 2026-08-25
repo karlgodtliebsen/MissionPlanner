@@ -247,7 +247,7 @@ public partial class OriginalFullParametersListViewModel : ObservableObject, IDi
         }
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs vehicleChangedEventArgs)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs vehicleChangedEventArgs)
     {
         var scopeChanged =
             vehicleChangedEventArgs.Previous.VehicleId != vehicleChangedEventArgs.Current.VehicleId ||
@@ -345,12 +345,9 @@ public partial class OriginalFullParametersListViewModel : ObservableObject, IDi
         }
     }
 
-    private void OnParameterRegistryChanged(object? sender, VehicleParameterChangedEventArgs args)
+    private void OnParameterRegistryChanged(VehicleParameterChangedEventArgs args)
     {
-        if (disposed ||
-            !activeVehicle.IsOnline ||
-            activeVehicle.VehicleId != args.VehicleId ||
-            args.Parameter is null)
+        if (disposed || !activeVehicle.IsOnline || activeVehicle.VehicleId != args.VehicleId || args.Parameter is null)
         {
             return;
         }
@@ -360,16 +357,14 @@ public partial class OriginalFullParametersListViewModel : ObservableObject, IDi
 
     private void ScheduleCachedParameterLoad(VehicleId vehicleId)
     {
-        if (disposed || IsBusy || !HasCompleteCachedParameterSet(vehicleId) ||
-            Interlocked.CompareExchange(ref cachedLoadScheduled, 1, 0) != 0)
+        if (disposed || IsBusy || !HasCompleteCachedParameterSet(vehicleId) || Interlocked.CompareExchange(ref cachedLoadScheduled, 1, 0) != 0)
         {
             return;
         }
 
-        var cancellation = CancellationTokenSource.CreateLinkedTokenSource(
-            activeVehicle.ConnectionCancellationToken);
+        var cancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
         cachedLoadCancellation = cancellation;
-        _ = LoadCachedParametersAsync(vehicleId, cancellation);
+        LoadCachedParametersAsync(vehicleId, cancellation).GetAwaiter().GetResult();
     }
 
     private bool HasCompleteCachedParameterSet(VehicleId vehicleId)
@@ -389,9 +384,7 @@ public partial class OriginalFullParametersListViewModel : ObservableObject, IDi
 
             await dispatcher.DispatchAsync(() =>
             {
-                if (disposed ||
-                    !activeVehicle.IsOnline ||
-                    activeVehicle.VehicleId != vehicleId)
+                if (disposed || !activeVehicle.IsOnline || activeVehicle.VehicleId != vehicleId)
                 {
                     return;
                 }
@@ -408,10 +401,7 @@ public partial class OriginalFullParametersListViewModel : ObservableObject, IDi
         }
         catch (Exception exception)
         {
-            logger.LogWarning(
-                exception,
-                "Could not project cached parameters for {VehicleId}.",
-                vehicleId);
+            logger.LogWarning(exception, "Could not project cached parameters for {VehicleId}.", vehicleId);
         }
         finally
         {

@@ -33,7 +33,7 @@ public sealed partial class SimulationViewModel : BaseViewModel
     private readonly IDispatcher dispatcher;
     private readonly ILogger<SimulationViewModel> logger;
     private readonly SemaphoreSlim operationGate = new(1, 1);
-    private CancellationTokenSource? operationCancellation;
+    private readonly CancellationTokenSource? operationCancellation;
     private CancellationTokenSource? timerCancellation;
     private bool initialized;
     private bool active;
@@ -646,7 +646,6 @@ public sealed partial class SimulationViewModel : BaseViewModel
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
-
         if (!active)
         {
             return Task.CompletedTask;
@@ -1202,41 +1201,6 @@ public sealed partial class SimulationViewModel : BaseViewModel
         }
     }
 
-    private new async Task RunAsync(Func<CancellationToken, Task> operation)
-    {
-        if (!await operationGate.WaitAsync(0))
-        {
-            return;
-        }
-
-        IsBusy = true;
-        using var cancellation = new CancellationTokenSource();
-        operationCancellation = cancellation;
-        try
-        {
-            await operation(cancellation.Token);
-        }
-        catch (OperationCanceledException)
-        {
-            StatusMessage = "Simulation operation cancelled.";
-        }
-        catch (Exception exception)
-        {
-            logger.LogError(exception, "Simulation workspace operation failed.");
-            StatusMessage = "Simulation operation failed.";
-            ErrorMessage = exception.Message;
-        }
-        finally
-        {
-            if (ReferenceEquals(operationCancellation, cancellation))
-            {
-                operationCancellation = null;
-            }
-
-            IsBusy = false;
-            operationGate.Release();
-        }
-    }
 
     private void OnSessionChanged(object? sender, SimulationSessionChangedEventArgs e)
     {

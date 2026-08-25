@@ -6,10 +6,13 @@
 public interface IPlannerSettingsService
 {
     /// <summary>Gets the current in-memory settings.</summary>
-    PlannerSettings Current { get; }
+    PlannerSettings Current
+    {
+        get;
+    }
 
     /// <summary>Occurs after current settings change.</summary>
-    event EventHandler<PlannerSettingsChangedEventArgs>? SettingsChanged;
+    event Action<PlannerSettingsChangedEventArgs>? SettingsChanged;
 
     /// <summary>Loads persisted settings and recovers invalid data.</summary>
     /// <param name="cancellationToken">The cancellation token.</param>

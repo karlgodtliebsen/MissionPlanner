@@ -7,10 +7,13 @@ namespace MissionPlanner.Core.Setup.Abstractions;
 public interface IArduPilotCalibrationService : IDisposable
 {
     /// <summary>Gets the current immutable calibration state.</summary>
-    CalibrationSnapshot Current { get; }
+    CalibrationSnapshot Current
+    {
+        get;
+    }
 
     /// <summary>Occurs when protocol evidence advances or terminates calibration.</summary>
-    event EventHandler<CalibrationStateChangedEventArgs>? StateChanged;
+    event Action<CalibrationStateChangedEventArgs>? StateChanged;
 
     /// <summary>Starts the six-position accelerometer workflow.</summary>
     /// <param name="vehicleId">The active target vehicle.</param>

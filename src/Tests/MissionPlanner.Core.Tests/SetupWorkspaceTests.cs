@@ -115,7 +115,13 @@ public sealed class SetupWorkspaceTests
         viewModel.IsFrameSelected.Should().BeTrue();
         viewModel.IsFirmwareSelected.Should().BeFalse();
 
-        context.Set(context.Current.State! with { Connection = context.Current.State!.Connection with { State = VehicleConnectionState.Offline } });
+        context.Set(context.Current.State! with
+        {
+            Connection = context.Current.State!.Connection with
+            {
+                State = VehicleConnectionState.Offline
+            }
+        });
 
         viewModel.VehicleHeading.Should().Contain("disconnected");
         viewModel.Tabs.Should().NotBeEmpty();
@@ -126,7 +132,13 @@ public sealed class SetupWorkspaceTests
         viewModel.Tabs.Should().Contain(item => item.Descriptor.Key == SetupWorkflowKey.Frame.ToString());
 
         var heading = viewModel.VehicleHeading;
-        context.Set(reconnected with { Connection = reconnected.Connection with { State = VehicleConnectionState.Offline } });
+        context.Set(reconnected with
+        {
+            Connection = reconnected.Connection with
+            {
+                State = VehicleConnectionState.Offline
+            }
+        });
         viewModel.VehicleHeading.Should().Contain("disconnected");
     }
 
@@ -152,7 +164,17 @@ public sealed class SetupWorkspaceTests
         dispatcher.ClearReceivedCalls();
 
         var current = context.Current.State!;
-        context.Set(current with { Connection = current.Connection with { LastHeartbeatAt = current.LastHeartbeatAt.AddSeconds(1) }, Flight = current.Flight with { IsArmed = true } });
+        context.Set(current with
+        {
+            Connection = current.Connection with
+            {
+                LastHeartbeatAt = current.LastHeartbeatAt.AddSeconds(1)
+            },
+            Flight = current.Flight with
+            {
+                IsArmed = true
+            }
+        });
 
         dispatcher.DidNotReceive().Dispatch(Arg.Any<Action>());
         viewModel.SelectedTab.Should().BeSameAs(selectedWorkflow);
@@ -297,7 +319,13 @@ public sealed class SetupWorkspaceTests
             3,
             42,
             "vehicle-1");
-        return state with { Identity = state.Identity with { Firmware = firmware } };
+        return state with
+        {
+            Identity = state.Identity with
+            {
+                Firmware = firmware
+            }
+        };
     }
 
     private static IReadOnlyDictionary<string, VehicleParameter> EmptyParameters()
@@ -359,7 +387,7 @@ public sealed class SetupWorkspaceTests
 
         public CancellationToken ConnectionCancellationToken => lifetime.Token;
 
-        public event EventHandler<ActiveVehicleChangedEventArgs>? Changed;
+        public event Action<ActiveVehicleChangedEventArgs>? Changed;
 
         public void Set(VehicleState next)
         {
@@ -376,7 +404,7 @@ public sealed class SetupWorkspaceTests
             }
 
             Current = new ActiveVehicleSnapshot(next.VehicleId, next);
-            Changed?.Invoke(this, new ActiveVehicleChangedEventArgs(previous, Current));
+            Changed?.Invoke(new ActiveVehicleChangedEventArgs(previous, Current));
         }
     }
 }

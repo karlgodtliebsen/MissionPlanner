@@ -43,7 +43,7 @@ public sealed class FenceConfigurationService(
     public IReadOnlyList<ParameterFieldDefinition> ParameterDefinitions => definitions;
 
     /// <inheritdoc />
-    public event EventHandler? Changed;
+    public event Action? Changed;
 
     /// <inheritdoc />
     public FenceConfigurationSnapshot GetSnapshot(VehicleId vehicleId)
@@ -96,7 +96,7 @@ public sealed class FenceConfigurationService(
             snapshot = workspace.Snapshot(vehicleId);
         }
 
-        Changed?.Invoke(this, EventArgs.Empty);
+        Changed?.Invoke();
         return snapshot;
     }
 
@@ -117,7 +117,7 @@ public sealed class FenceConfigurationService(
             snapshot = workspace.Snapshot(vehicleId);
         }
 
-        Changed?.Invoke(this, EventArgs.Empty);
+        Changed?.Invoke();
         return snapshot;
     }
 
@@ -188,7 +188,7 @@ public sealed class FenceConfigurationService(
             snapshot = workspace.Snapshot(vehicleId);
         }
 
-        Changed?.Invoke(this, EventArgs.Empty);
+        Changed?.Invoke();
         logger.LogInformation("Fence download for {VehicleId} completed with {AreaCount} areas.", vehicleId, parsed.Plan.Areas.Count);
         return new FenceOperationReport(true, $"Downloaded {parsed.Plan.Areas.Count} fence areas.", snapshot, FenceValidationResult.Valid);
     }
@@ -264,7 +264,7 @@ public sealed class FenceConfigurationService(
             workspace.BackupPlan = Freeze(workspace.VehiclePlan ?? workspace.LocalPlan);
         }
 
-        Changed?.Invoke(this, EventArgs.Empty);
+        Changed?.Invoke();
         var adapter = new InlineProgress<MissionUploadProgress>(value =>
             progress?.Report(new FenceTransferProgress("Uploading", value.SentItems, value.TotalItems)));
         MissionUploadResult transfer;
@@ -296,7 +296,7 @@ public sealed class FenceConfigurationService(
             snapshot = workspace.Snapshot(vehicleId);
         }
 
-        Changed?.Invoke(this, EventArgs.Empty);
+        Changed?.Invoke();
         logger.LogInformation("Fence upload for {VehicleId} completed and was acknowledged.", vehicleId);
         return new FenceOperationReport(true, "Fence parameters and geometry were confirmed by the vehicle.", snapshot, validation, parameterReport);
     }
@@ -329,7 +329,7 @@ public sealed class FenceConfigurationService(
                 : workspace.VehiclePlan ?? FencePlan.Empty);
         }
 
-        Changed?.Invoke(this, EventArgs.Empty);
+        Changed?.Invoke();
         logger.LogInformation("Clearing fence geometry for {VehicleId}.", vehicleId);
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, activeVehicle.ConnectionCancellationToken);
         MissionUploadResult result;
@@ -359,7 +359,7 @@ public sealed class FenceConfigurationService(
             snapshot = workspace.Snapshot(vehicleId);
         }
 
-        Changed?.Invoke(this, EventArgs.Empty);
+        Changed?.Invoke();
         return new FenceOperationReport(true, "Vehicle fence geometry was cleared and acknowledged; a local backup is available.", snapshot, FenceValidationResult.Valid);
     }
 
@@ -410,15 +410,30 @@ public sealed class FenceConfigurationService(
     {
         public FencePlan LocalPlan { get; set; } = FencePlan.Empty;
 
-        public FencePlan? VehiclePlan { get; set; }
+        public FencePlan? VehiclePlan
+        {
+            get; set;
+        }
 
-        public FencePlan? BackupPlan { get; set; }
+        public FencePlan? BackupPlan
+        {
+            get; set;
+        }
 
-        public long LocalRevision { get; set; }
+        public long LocalRevision
+        {
+            get; set;
+        }
 
-        public long? VehicleRevision { get; set; }
+        public long? VehicleRevision
+        {
+            get; set;
+        }
 
-        public bool IsDirty { get; set; }
+        public bool IsDirty
+        {
+            get; set;
+        }
 
         public FenceConfigurationSnapshot Snapshot(VehicleId vehicleId)
         {

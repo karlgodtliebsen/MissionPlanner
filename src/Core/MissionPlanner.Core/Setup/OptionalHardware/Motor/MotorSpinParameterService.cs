@@ -1,7 +1,6 @@
-using MissionPlanner.Core.Setup.Abstractions;
+﻿using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
@@ -50,12 +49,9 @@ public sealed class MotorSpinParameterService(
         }
 
         var normalized = MotorSpinPercentage.ToNormalized(percent);
-        if (state.SpinMinNormalized is { } spinMin && normalized >= spinMin - ComparisonTolerance)
-        {
-            return Failure(SpinArmName, "MOT_SPIN_ARM must remain below the current MOT_SPIN_MIN value.");
-        }
-
-        return Success(SpinArmName, percent);
+        return state.SpinMinNormalized is { } spinMin && normalized >= spinMin - ComparisonTolerance
+            ? Failure(SpinArmName, "MOT_SPIN_ARM must remain below the current MOT_SPIN_MIN value.")
+            : Success(SpinArmName, percent);
     }
 
     /// <inheritdoc />
@@ -73,12 +69,9 @@ public sealed class MotorSpinParameterService(
         }
 
         var percent = MotorSpinPercentage.ToPercent(spinArm) + SpinMinMarginPercent;
-        if (percent >= MaximumSetupPercent)
-        {
-            return Failure(SpinMinName, "The recommended MOT_SPIN_MIN would be 20% or higher and is refused by this setup workflow.");
-        }
-
-        return Success(SpinMinName, percent);
+        return percent >= MaximumSetupPercent
+            ? Failure(SpinMinName, "The recommended MOT_SPIN_MIN would be 20% or higher and is refused by this setup workflow.")
+            : Success(SpinMinName, percent);
     }
 
     /// <inheritdoc />
@@ -113,18 +106,15 @@ public sealed class MotorSpinParameterService(
         }
 
         var metadata = await metadataService.GetMetadataAsync(vehicleId, recommendation.ParameterName, cancellationToken).ConfigureAwait(false);
-        if (metadata?.ReadOnly == true || metadata?.MinValue is { } minimum && value < minimum - ComparisonTolerance ||
-            metadata?.MaxValue is { } maximum && value > maximum + ComparisonTolerance)
+        if (metadata?.ReadOnly == true || (metadata?.MinValue is { } minimum && value < minimum - ComparisonTolerance) ||
+            (metadata?.MaxValue is { } maximum && value > maximum + ComparisonTolerance))
         {
             return new MotorSpinWriteResult(false, $"The recommended {recommendation.ParameterName} value is outside its firmware metadata limits.");
         }
 
-        if (!await WriteAndConfirmAsync(vehicleId, parameter, value, cancellationToken).ConfigureAwait(false))
-        {
-            return new MotorSpinWriteResult(false, $"The vehicle did not confirm {recommendation.ParameterName}; the previous value remains active and the operation can be retried.");
-        }
-
-        return new MotorSpinWriteResult(true, $"Confirmed {recommendation.ParameterName}: {recommendation.Percent:0.#}% ({value:0.###}).");
+        return !await WriteAndConfirmAsync(vehicleId, parameter, value, cancellationToken).ConfigureAwait(false)
+            ? new MotorSpinWriteResult(false, $"The vehicle did not confirm {recommendation.ParameterName}; the previous value remains active and the operation can be retried.")
+            : new MotorSpinWriteResult(true, $"Confirmed {recommendation.ParameterName}: {recommendation.Percent:0.#}% ({value:0.###}).");
     }
 
     private async Task<bool> WriteAndConfirmAsync(
@@ -135,7 +125,7 @@ public sealed class MotorSpinParameterService(
     {
         var readback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        void OnChanged(object? sender, VehicleParameterChangedEventArgs args)
+        void OnChanged(VehicleParameterChangedEventArgs args)
         {
             if (args.VehicleId == vehicleId && args.Parameter is { } changed &&
                 changed.Name == parameter.Name && Math.Abs(changed.Value - value) <= ComparisonTolerance)

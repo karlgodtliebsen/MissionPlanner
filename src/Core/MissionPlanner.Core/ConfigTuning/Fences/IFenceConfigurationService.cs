@@ -1,6 +1,4 @@
-﻿using MissionPlanner.Core.ConfigTuning;
-using MissionPlanner.Core.Vehicles.Models;
-using MissionPlanner.Shared.Models.Vehicles.Models;
+﻿using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.ConfigTuning.Fences;
 
@@ -8,10 +6,13 @@ namespace MissionPlanner.Core.ConfigTuning.Fences;
 public interface IFenceConfigurationService
 {
     /// <summary>Gets the explicitly supported fence parameter fields.</summary>
-    IReadOnlyList<ParameterFieldDefinition> ParameterDefinitions { get; }
+    IReadOnlyList<ParameterFieldDefinition> ParameterDefinitions
+    {
+        get;
+    }
 
     /// <summary>Occurs when a local, synchronized, or backup revision changes.</summary>
-    event EventHandler? Changed;
+    event Action? Changed;
 
     /// <summary>Gets the retained workspace snapshot for a vehicle.</summary>
     /// <param name="vehicleId">The vehicle.</param>

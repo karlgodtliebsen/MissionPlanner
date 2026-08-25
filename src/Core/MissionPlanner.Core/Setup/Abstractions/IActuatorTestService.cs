@@ -9,16 +9,25 @@ namespace MissionPlanner.Core.Setup.Abstractions;
 public interface IActuatorTestService : IDisposable
 {
     /// <summary>Gets the current immutable actuator-test state.</summary>
-    MotorTestSnapshot Current { get; }
+    MotorTestSnapshot Current
+    {
+        get;
+    }
 
     /// <summary>Gets the maximum permitted test duration in seconds.</summary>
-    double MaximumDurationSeconds { get; }
+    double MaximumDurationSeconds
+    {
+        get;
+    }
 
     /// <summary>Gets the maximum permitted throttle percentage.</summary>
-    double MaximumThrottlePercent { get; }
+    double MaximumThrottlePercent
+    {
+        get;
+    }
 
     /// <summary>Occurs when the actuator-test state changes.</summary>
-    event EventHandler<MotorTestStateChangedEventArgs>? StateChanged;
+    event Action<MotorTestStateChangedEventArgs>? StateChanged;
 
     /// <summary>Determines whether the vehicle family exposes motor testing.</summary>
     /// <param name="family">The firmware family.</param>

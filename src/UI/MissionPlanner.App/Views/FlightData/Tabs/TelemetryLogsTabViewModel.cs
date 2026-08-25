@@ -230,7 +230,7 @@ public sealed partial class TelemetryLogsTabViewModel : BaseViewModel
         return RunAsync(replaySessionManager.CloseAsync);
     }
 
-    private void OnReplayChanged(object? sender, ReplaySessionChangedEventArgs args)
+    private void OnReplayChanged(ReplaySessionChangedEventArgs args)
     {
         dispatcher.Dispatch(() => ApplySnapshot(args.Snapshot));
     }

@@ -260,12 +260,12 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
         }
     }
 
-    private void OnCalibrationStateChanged(object? sender, CalibrationStateChangedEventArgs args)
+    private void OnCalibrationStateChanged(CalibrationStateChangedEventArgs args)
     {
         dispatcher.Dispatch(() => Show(args.Snapshot));
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         if (!SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
         {

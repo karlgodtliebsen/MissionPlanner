@@ -17,12 +17,8 @@ public sealed partial class BasicTuningGroupViewModel : ObservableObject
     /// <param name="apply">The group apply callback.</param>
     /// <param name="revert">The group revert callback.</param>
     /// <param name="refresh">The group refresh callback.</param>
-    public BasicTuningGroupViewModel(
-        ResolvedBasicTuningGroup group,
-        IParameterEditSession session,
-        Func<BasicTuningGroupViewModel, Task> apply,
-        Action<BasicTuningGroupViewModel> revert,
-        Func<BasicTuningGroupViewModel, Task> refresh
+    public BasicTuningGroupViewModel(ResolvedBasicTuningGroup group, IParameterEditSession session,
+        Func<BasicTuningGroupViewModel, Task> apply, Action<BasicTuningGroupViewModel> revert, Func<BasicTuningGroupViewModel, Task> refresh
     )
     {
         Definition = group.Definition;

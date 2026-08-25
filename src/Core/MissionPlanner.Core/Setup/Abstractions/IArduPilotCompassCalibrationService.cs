@@ -7,10 +7,13 @@ namespace MissionPlanner.Core.Setup.Abstractions;
 public interface IArduPilotCompassCalibrationService : IDisposable
 {
     /// <summary>Gets the current immutable calibration state.</summary>
-    CompassCalibrationSnapshot Current { get; }
+    CompassCalibrationSnapshot Current
+    {
+        get;
+    }
 
     /// <summary>Occurs when protocol evidence advances or terminates calibration.</summary>
-    event EventHandler<CompassCalibrationStateChangedEventArgs>? StateChanged;
+    event Action<CompassCalibrationStateChangedEventArgs>? StateChanged;
 
     /// <summary>Starts onboard calibration for all enabled compasses.</summary>
     /// <param name="vehicleId">The active target vehicle.</param>

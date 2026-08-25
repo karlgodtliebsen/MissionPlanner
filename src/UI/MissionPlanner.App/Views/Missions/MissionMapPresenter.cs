@@ -20,7 +20,7 @@ namespace MissionPlanner.App.Views.Missions;
 internal sealed class MissionMapPresenter : IDisposable
 {
     private const double WebMercatorInitialResolution = 156543.03392804097;
-    private static readonly long PointerUpdateInterval = Stopwatch.Frequency / 30;
+    private static readonly long pointerUpdateInterval = Stopwatch.Frequency / 30;
     private readonly MapView mapView;
     private readonly MissionMapViewModel viewModel;
     private readonly IPlannerSettingsService plannerSettings;
@@ -38,10 +38,12 @@ internal sealed class MissionMapPresenter : IDisposable
     private CancellationTokenSource? lifecycleCancellation;
     private Action? pendingNavigation;
     private bool basemapRefreshPending;
-    private bool active;
+    private bool isActive;
     private bool disposed;
 
-    /// <summary>Initializes a presenter for a map view and shared mission editor.</summary>
+    /// <summary>
+    /// Initializes a presenter for a map view and shared mission editor.
+    /// </summary>
     public MissionMapPresenter(MapView mapView, MissionMapViewModel viewModel, IPlannerSettingsService plannerSettings, IMapSourceResolver sourceResolver,
         IMapsuiBasemapFactory basemapFactory, IMapAttributionCoordinator attributionCoordinator, ITerrainElevationService terrainElevationService)
     {
@@ -50,13 +52,8 @@ internal sealed class MissionMapPresenter : IDisposable
         this.plannerSettings = plannerSettings;
         this.attributionCoordinator = attributionCoordinator;
         this.terrainElevationService = terrainElevationService;
-        basemapController = new MapBasemapController(map, sourceResolver, basemapFactory, new MauiMapUiDispatcher(mapView.Dispatcher));
-
-        attributionCoordinator.Changed += OnAttributionChanged;
-
         mapView.Map = map;
-        mapView.SizeChanged += OnMapViewSizeChanged;
-
+        basemapController = new MapBasemapController(map, sourceResolver, basemapFactory, new MauiMapUiDispatcher(mapView.Dispatcher));
         vehiclePin = new Pin(mapView) { Label = "Vehicle", Type = PinType.Pin, Position = new Position(viewModel.VehicleLatitude, viewModel.VehicleLongitude) };
         mapView.Pins.Add(vehiclePin);
         routeLine = new Polyline { StrokeColor = Colors.OrangeRed, StrokeWidth = 3 };
@@ -66,36 +63,52 @@ internal sealed class MissionMapPresenter : IDisposable
         {
             mapView.Drawables.Add(layer);
         }
-
-        viewModel.PropertyChanged += OnViewModelPropertyChanged;
-        viewModel.FitToMissionRequested += OnFitToMissionRequested;
-        Render(viewModel.MapSnapshot);
-        RenderPlanningOverlays(viewModel.PlanningOverlaySnapshot);
     }
 
-    /// <summary>Starts asynchronous map-source work while the view is visible.</summary>
+    /// <summary>
+    /// Starts asynchronous map-source work while the view is visible.
+    /// </summary>
     public async Task ActivateAsync()
     {
-        if (disposed || active)
+        if (disposed || isActive)
         {
             return;
         }
 
-        active = true;
+        isActive = true;
         lifecycleCancellation = new CancellationTokenSource();
+        pointerElevationCancellation = new CancellationTokenSource();
+
+        attributionCoordinator.Changed += OnAttributionChanged;
+        mapView.SizeChanged += OnMapViewSizeChanged;
+        viewModel.PropertyChanged += OnViewModelPropertyChanged;
+        viewModel.FitToMissionRequested += OnFitToMissionRequested;
+        Render(viewModel.MapSnapshot);
+        RenderPlanningOverlays(viewModel.PlanningOverlaySnapshot);
+
         await SwitchSourceAsync(viewModel.SelectedSourceId, lifecycleCancellation.Token);
     }
 
-    /// <summary>Cancels map-source work when the view leaves the visual tree.</summary>
+    /// <summary>
+    /// Cancels map-source work when the view leaves the visual tree.
+    /// </summary>
     public void Deactivate()
     {
-        active = false;
+        if (disposed || !isActive)
+        {
+            return;
+        }
+        isActive = false;
         lifecycleCancellation?.Cancel();
         lifecycleCancellation?.Dispose();
         lifecycleCancellation = null;
         var elevationCancellation = pointerElevationCancellation;
         pointerElevationCancellation = null;
         elevationCancellation?.Cancel();
+        attributionCoordinator.Changed -= OnAttributionChanged;
+        mapView.SizeChanged -= OnMapViewSizeChanged;
+        viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        viewModel.FitToMissionRequested -= OnFitToMissionRequested;
     }
 
     /// <inheritdoc />
@@ -108,16 +121,11 @@ internal sealed class MissionMapPresenter : IDisposable
 
         Deactivate();
         disposed = true;
-        viewModel.PropertyChanged -= OnViewModelPropertyChanged;
-        viewModel.FitToMissionRequested -= OnFitToMissionRequested;
-        attributionCoordinator.Changed -= OnAttributionChanged;
-        mapView.SizeChanged -= OnMapViewSizeChanged;
         pendingNavigation = null;
         foreach (var pin in missionPins)
         {
             mapView.Pins.Remove(pin);
         }
-
         missionPins.Clear();
         mapView.Pins.Remove(vehiclePin);
         mapView.Drawables.Remove(routeLine);
@@ -140,7 +148,7 @@ internal sealed class MissionMapPresenter : IDisposable
     public void UpdatePointerPosition(double x, double y)
     {
         var now = Stopwatch.GetTimestamp();
-        if (now - lastPointerUpdate < PointerUpdateInterval)
+        if (now - lastPointerUpdate < pointerUpdateInterval)
         {
             return;
         }
@@ -466,7 +474,7 @@ internal sealed class MissionMapPresenter : IDisposable
 
     private void RefreshBasemapForCurrentViewport()
     {
-        if (!basemapRefreshPending || disposed || !active)
+        if (!basemapRefreshPending || disposed || !isActive)
         {
             return;
         }
@@ -483,7 +491,7 @@ internal sealed class MissionMapPresenter : IDisposable
 
     private async Task SwitchSourceAsync(string sourceId, CancellationToken cancellationToken)
     {
-        if (!active || disposed)
+        if (!isActive || disposed)
         {
             return;
         }
@@ -491,7 +499,7 @@ internal sealed class MissionMapPresenter : IDisposable
         try
         {
             var result = await basemapController.SwitchAsync(sourceId, cancellationToken);
-            if (result.IsSuccess && active && !disposed)
+            if (result.IsSuccess && isActive && !disposed)
             {
                 basemapRefreshPending = true;
                 await new MauiMapUiDispatcher(mapView.Dispatcher).InvokeAsync(

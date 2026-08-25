@@ -406,7 +406,7 @@ public sealed class TestActiveVehicleContext(VehicleState state) : IActiveVehicl
     public CancellationToken ConnectionCancellationToken => lifetime.Token;
 
     /// <inheritdoc />
-    public event EventHandler<ActiveVehicleChangedEventArgs>? Changed;
+    public event Action<ActiveVehicleChangedEventArgs>? Changed;
 
     /// <summary>Replaces the active state and publishes the corresponding context change.</summary>
     /// <param name="next">The replacement vehicle state.</param>
@@ -425,7 +425,7 @@ public sealed class TestActiveVehicleContext(VehicleState state) : IActiveVehicl
             }
         }
 
-        Changed?.Invoke(this, new ActiveVehicleChangedEventArgs(previous, Current));
+        Changed?.Invoke(new ActiveVehicleChangedEventArgs(previous, Current));
     }
 }
 

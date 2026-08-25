@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -28,8 +28,7 @@ public sealed class ApplicationVehicleNameTests
 
         var connected = new ActiveVehicleSnapshot(session.Id, session.State);
         activeVehicle.Current.Returns(connected);
-        activeVehicle.Changed += Raise.Event<EventHandler<ActiveVehicleChangedEventArgs>>(
-            activeVehicle,
+        activeVehicle.Changed += Raise.Event<Action<ActiveVehicleChangedEventArgs>>(
             new ActiveVehicleChangedEventArgs(ActiveVehicleSnapshot.Empty, connected));
         state.VehicleId.Should().Be(session.Id);
         state.VehicleName.Should().Be("SysID 1:Quadrotor");
@@ -37,16 +36,20 @@ public sealed class ApplicationVehicleNameTests
         session.ApplyHeartbeat(0, 1, 3, 0, 4, 3, DateTimeOffset.UtcNow);
         var updated = new ActiveVehicleSnapshot(session.Id, session.State);
         activeVehicle.Current.Returns(updated);
-        activeVehicle.Changed += Raise.Event<EventHandler<ActiveVehicleChangedEventArgs>>(
-            activeVehicle,
+        activeVehicle.Changed += Raise.Event<Action<ActiveVehicleChangedEventArgs>>(
             new ActiveVehicleChangedEventArgs(connected, updated));
         state.VehicleName.Should().Be("SysID 1:Fixed Wing");
 
-        var disconnectedState = session.State with { Connection = session.State.Connection with { State = VehicleConnectionState.Offline } };
+        var disconnectedState = session.State with
+        {
+            Connection = session.State.Connection with
+            {
+                State = VehicleConnectionState.Offline
+            }
+        };
         var disconnected = new ActiveVehicleSnapshot(session.Id, disconnectedState);
         activeVehicle.Current.Returns(disconnected);
-        activeVehicle.Changed += Raise.Event<EventHandler<ActiveVehicleChangedEventArgs>>(
-            activeVehicle,
+        activeVehicle.Changed += Raise.Event<Action<ActiveVehicleChangedEventArgs>>(
             new ActiveVehicleChangedEventArgs(updated, disconnected));
         state.IsConnected.Should().BeFalse();
         state.VehicleName.Should().Be("SysID 1:Fixed Wing");

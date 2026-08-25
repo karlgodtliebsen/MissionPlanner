@@ -74,7 +74,7 @@ public sealed class ArduPilotCompassCalibrationService : IArduPilotCompassCalibr
     public CompassCalibrationSnapshot Current { get; private set; } = CompassCalibrationSnapshot.Initial;
 
     /// <inheritdoc />
-    public event EventHandler<CompassCalibrationStateChangedEventArgs>? StateChanged;
+    public event Action<CompassCalibrationStateChangedEventArgs>? StateChanged;
 
     /// <inheritdoc />
     public async Task StartAsync(VehicleId vehicleId, bool autoSave, CancellationToken cancellationToken = default)
@@ -276,7 +276,11 @@ public sealed class ArduPilotCompassCalibrationService : IArduPilotCompassCalibr
             {
                 if (Current.State == CompassCalibrationWorkflowState.Preparing)
                 {
-                    Transition(Current with { State = CompassCalibrationWorkflowState.Running, Instruction = "Rotate the vehicle so that each side points down toward the earth in turn until each compass completes." });
+                    Transition(Current with
+                    {
+                        State = CompassCalibrationWorkflowState.Running,
+                        Instruction = "Rotate the vehicle so that each side points down toward the earth in turn until each compass completes."
+                    });
                 }
             }
 
@@ -306,7 +310,13 @@ public sealed class ArduPilotCompassCalibrationService : IArduPilotCompassCalibr
                 Math.Clamp((int)message.CompletionPct, 0, 100),
                 message.Attempt);
 
-            Transition(Current with { State = CompassCalibrationWorkflowState.Running, Progress = progress.Values.ToArray(), OverallProgress = CalculateOverallProgress(), Instruction = "Keep rotating the vehicle through all orientations until every compass reaches one hundred percent." });
+            Transition(Current with
+            {
+                State = CompassCalibrationWorkflowState.Running,
+                Progress = progress.Values.ToArray(),
+                OverallProgress = CalculateOverallProgress(),
+                Instruction = "Keep rotating the vehicle through all orientations until every compass reaches one hundred percent."
+            });
         }
     }
 
@@ -339,7 +349,12 @@ public sealed class ArduPilotCompassCalibrationService : IArduPilotCompassCalibr
                 100,
                 progress.TryGetValue(message.CompassId, out var existing) ? existing.Attempt : 0);
 
-            Transition(Current with { Progress = progress.Values.ToArray(), Reports = reports.Values.ToArray(), OverallProgress = CalculateOverallProgress() });
+            Transition(Current with
+            {
+                Progress = progress.Values.ToArray(),
+                Reports = reports.Values.ToArray(),
+                OverallProgress = CalculateOverallProgress()
+            });
 
             TryFinalize();
         }
@@ -405,7 +420,7 @@ public sealed class ArduPilotCompassCalibrationService : IArduPilotCompassCalibr
         return Math.Clamp(total / (expectedCompasses.Count * 100d), 0, 1);
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         if (IsActive(Current.State) &&
             (!args.Current.IsOnline || args.Current.VehicleId != Current.VehicleId))
@@ -453,7 +468,7 @@ public sealed class ArduPilotCompassCalibrationService : IArduPilotCompassCalibr
     private void Transition(CompassCalibrationSnapshot snapshot)
     {
         Current = snapshot;
-        StateChanged?.Invoke(this, new CompassCalibrationStateChangedEventArgs(snapshot));
+        StateChanged?.Invoke(new CompassCalibrationStateChangedEventArgs(snapshot));
     }
 
     private void EndRun()

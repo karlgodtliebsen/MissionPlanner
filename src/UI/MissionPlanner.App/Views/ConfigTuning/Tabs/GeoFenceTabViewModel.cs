@@ -195,9 +195,9 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
         await InitializeForActiveVehicleAsync();
     }
 
-    private void ActiveVehicle_Changed(object? sender, ActiveVehicleChangedEventArgs e)
+    private void ActiveVehicle_Changed(ActiveVehicleChangedEventArgs e)
     {
-        OnActiveVehicleChangedAsync(sender, e).GetAwaiter().GetResult();
+        OnActiveVehicleChangedAsync(e).GetAwaiter().GetResult();
     }
 
     /// <inheritdoc />
@@ -544,7 +544,7 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
             : "Fence parameters loaded, but this firmware does not advertise typed fence geometry.";
     }
 
-    private async Task OnActiveVehicleChangedAsync(object? sender, ActiveVehicleChangedEventArgs args)
+    private async Task OnActiveVehicleChangedAsync(ActiveVehicleChangedEventArgs args)
     {
         await InitializeForActiveVehicleAsync();
     }

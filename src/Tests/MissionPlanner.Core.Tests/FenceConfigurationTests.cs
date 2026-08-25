@@ -165,7 +165,13 @@ public sealed class FenceConfigurationTests
             fixture.VehicleId,
             true,
             cancellationToken: TestContext.Current.CancellationToken);
-        fixture.ActiveVehicle.Set(fixture.ActiveVehicle.State! with { Connection = fixture.ActiveVehicle.State!.Connection with { State = VehicleConnectionState.Offline } });
+        fixture.ActiveVehicle.Set(fixture.ActiveVehicle.State! with
+        {
+            Connection = fixture.ActiveVehicle.State!.Connection with
+            {
+                State = VehicleConnectionState.Offline
+            }
+        });
         var apply = await fixture.Service.ApplyAsync(
             fixture.VehicleId,
             Session(fixture.VehicleId, true),
@@ -200,7 +206,12 @@ public sealed class FenceConfigurationTests
         service.GetSnapshot(vehicleId).Returns(_ => current);
         service.SetLocalPlan(vehicleId, Arg.Any<FencePlan>()).Returns(call =>
         {
-            current = current with { LocalPlan = call.ArgAt<FencePlan>(1), LocalRevision = current.LocalRevision + 1, IsDirty = true };
+            current = current with
+            {
+                LocalPlan = call.ArgAt<FencePlan>(1),
+                LocalRevision = current.LocalRevision + 1,
+                IsDirty = true
+            };
             return current;
         });
         var viewModel = new GeoFenceTabViewModel(
@@ -386,7 +397,17 @@ public sealed class FenceConfigurationTests
             new VehicleId(1, 1), 0, 2, 3, 0, 4, 3,
             VehicleConnectionState.Online, DateTimeOffset.UtcNow, VehicleMode.Stabilize, false,
             null, null, null, null, null, null, null, null);
-        return state with { Identity = state.Identity with { Firmware = state.Identity.Firmware with { Family = FirmwareFamily.ArduCopter, Capabilities = (ulong)MavProtocolCapabilityMap.MissionFence } } };
+        return state with
+        {
+            Identity = state.Identity with
+            {
+                Firmware = state.Identity.Firmware with
+                {
+                    Family = FirmwareFamily.ArduCopter,
+                    Capabilities = (ulong)MavProtocolCapabilityMap.MissionFence
+                }
+            }
+        };
     }
 
     private sealed record Fixture(
@@ -468,7 +489,7 @@ public sealed class FenceConfigurationTests
 
         public CancellationToken ConnectionCancellationToken => lifetime.Token;
 
-        public event EventHandler<ActiveVehicleChangedEventArgs>? Changed;
+        public event Action<ActiveVehicleChangedEventArgs>? Changed;
 
         public void Set(VehicleState next)
         {
@@ -482,7 +503,7 @@ public sealed class FenceConfigurationTests
                 lifetime.Cancel();
             }
 
-            Changed?.Invoke(this, new ActiveVehicleChangedEventArgs(previous, Current));
+            Changed?.Invoke(new ActiveVehicleChangedEventArgs(previous, Current));
         }
     }
 }

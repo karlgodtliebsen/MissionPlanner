@@ -63,7 +63,7 @@ public sealed partial class CompassMotorCalibrationViewModel : OptionalHardwareB
         return service.StopAsync();
     }
 
-    private void Changed(object? s, CompassMotorCalibrationSnapshot snapshot)
+    private void Changed(CompassMotorCalibrationSnapshot snapshot)
     {
         dispatcher.Dispatch(() => Show(snapshot));
     }

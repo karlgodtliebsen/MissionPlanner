@@ -66,7 +66,11 @@ public sealed class CubeLanConfigurationTests
         var memberships = original.Configuration.VlanMembership
             .Select(item => item.SourcePort == 3 && item.DestinationPort == 7 ? item with { IsMember = false } : item)
             .ToArray();
-        var desired = original.Configuration with { Ports = ports, VlanMembership = memberships };
+        var desired = original.Configuration with
+        {
+            Ports = ports,
+            VlanMembership = memberships
+        };
 
         var applied = await adapter.ApplyAsync(vehicleId, original, desired, null, cancellationToken);
 
@@ -104,7 +108,10 @@ public sealed class CubeLanConfigurationTests
         var device = new MemoryDeviceOperationClient(DefaultDocument(codec));
         var adapter = Adapter(device, codec);
         var original = await adapter.ReadAsync(new VehicleId(1, 1), null, cancellationToken);
-        var invalid = original.Configuration with { Ports = original.Configuration.Ports.Take(7).ToArray() };
+        var invalid = original.Configuration with
+        {
+            Ports = original.Configuration.Ports.Take(7).ToArray()
+        };
 
         var result = await adapter.ApplyAsync(original.VehicleId, original, invalid, null, cancellationToken);
 
@@ -128,7 +135,11 @@ public sealed class CubeLanConfigurationTests
         {
             Ports = original.Configuration.Ports
                 .Select(port => port.PortIndex == 0
-                    ? port with { ClassOfServiceEnabled = true, EnergyEfficientEthernetEnabled = false }
+                    ? port with
+                    {
+                        ClassOfServiceEnabled = true,
+                        EnergyEfficientEthernetEnabled = false
+                    }
                     : port)
                 .ToArray()
         };
@@ -250,9 +261,15 @@ public sealed class CubeLanConfigurationTests
     {
         public byte[] Memory { get; } = CreateMemory(initial);
 
-        public int WriteCount { get; private set; }
+        public int WriteCount
+        {
+            get; private set;
+        }
 
-        public int? FailWriteAtOffset { get; set; }
+        public int? FailWriteAtOffset
+        {
+            get; set;
+        }
 
         public Task<DeviceOperationResult> ReadAsync(
             VehicleId vehicleId,
@@ -307,10 +324,14 @@ public sealed class CubeLanConfigurationTests
 
         public CancellationToken ConnectionCancellationToken => CancellationToken.None;
 
-        public event EventHandler<ActiveVehicleChangedEventArgs>? Changed
+        public event Action<ActiveVehicleChangedEventArgs>? Changed
         {
-            add { }
-            remove { }
+            add
+            {
+            }
+            remove
+            {
+            }
         }
     }
 }

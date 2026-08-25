@@ -1,10 +1,10 @@
-namespace MissionPlanner.Core.FlightData.Components;
+﻿namespace MissionPlanner.Core.FlightData.Components;
 
 /// <summary>Stores discovered peripheral components and component-scoped workflow state.</summary>
 public interface IVehicleComponentRegistry
 {
     /// <summary>Occurs when component or traffic state changes.</summary>
-    event EventHandler? Changed;
+    event Action? Changed;
 
     /// <summary>Returns discovered components for a system.</summary>
     IReadOnlyList<VehicleComponentState> GetComponents(byte systemId);

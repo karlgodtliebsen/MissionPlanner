@@ -21,8 +21,6 @@ public class LifecycleTabView : TabView
     protected override async Task OnSelectedTabChanged(TabItem oldValue, TabItem newValue)
     {
         var oldContent = oldValue?.Content ?? currentContent;
-
-
         if (oldContent is not null && oldValue != newValue)
         {
             if (oldContent is not IActivationLifeCycle content)

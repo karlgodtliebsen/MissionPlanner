@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Diagnostics;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -231,6 +232,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
             return;
         }
 
+        Debug.Print("OnEditSessionChanged-Edit session changed for {0}.", EditSession?.VehicleId);
         var progress = CreateProgress();
         SynchronizeParameterItems(progress);
         if (!EditSession.IsValid)
@@ -244,6 +246,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
 
     private void SynchronizeParameterItems(IProgress<ParameterStreamProgress>? progress = null)
     {
+        Debug.Print("SynchronizeParameterItems-Synchronizing parameter items for {0}.", EditSession?.VehicleId);
         if (EditSession is null)
         {
             return;
@@ -258,6 +261,8 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
         var nextItems = new List<ParameterItemViewModel>(fields.Count);
         foreach (var field in fields)
         {
+            Debug.Print("SynchronizeParameterItems-Field {0}.", field.Name);
+
             fieldNames.Add(field.Name);
             if (itemsByName.TryGetValue(field.Name, out var item))
             {
@@ -281,6 +286,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
             if (structureChanged)
             {
                 nextItems.Sort((left, right) => StringComparer.Ordinal.Compare(left.Name, right.Name));
+                Debug.Print("SynchronizeParameterItems-Parameters.ReplaceRange {0}.", nextItems.Count);
                 Parameters.ReplaceRange(nextItems);
             }
             TotalParameterCount = Parameters.Count;
@@ -325,7 +331,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
         {
             return;
         }
-
+        Debug.Print("ApplyParameterLoadStatusAsync-Applying parameter load status {0} for {1}.", status.State, status.VehicleId);
         IsBackgroundParameterLoadInProgress = status.IsInProgress;
         ShowLoadingProgress = status.IsInProgress;
         ProgressMessage = status.Message;
@@ -361,14 +367,12 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
     /// <param name="args"></param>
     protected virtual async Task OnParameterRegistryChangedAsync(VehicleParameterChangedEventArgs args)
     {
-        if (disposed ||
-            !activeVehicle.IsOnline ||
-            activeVehicle.VehicleId != args.VehicleId ||
-            args.Parameter is null)
+        if (disposed || !activeVehicle.IsOnline || activeVehicle.VehicleId != args.VehicleId || args.Parameter is null)
         {
             return;
         }
 
+        Debug.Print("OnParameterRegistryChangedAsync-Parameter registry changed for {0}.", args.VehicleId);
         await ScheduleCachedParameterLoadAsync(args.VehicleId);
     }
 
@@ -378,6 +382,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
     /// <param name="vehicleId"></param>
     protected virtual async Task ScheduleCachedParameterLoadAsync(VehicleId vehicleId)
     {
+        Debug.Print("ScheduleCachedParameterLoadAsync-Scheduling cached parameter load for {0}.", vehicleId);
         if (disposed || IsBusy || !HasCompleteCachedParameterSet(vehicleId) || Interlocked.CompareExchange(ref cachedLoadScheduled, 1, 0) != 0)
         {
             return;
@@ -396,7 +401,9 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
     protected virtual bool HasCompleteCachedParameterSet(VehicleId vehicleId)
     {
         var expectedCount = parameterRegistry.GetParameterCount(vehicleId);
-        return expectedCount is > 0 && parameterRegistry.GetAllParameters(vehicleId).Count >= expectedCount.Value;
+        var hasCompleteSet = expectedCount is > 0 && parameterRegistry.GetAllParameters(vehicleId).Count >= expectedCount.Value;
+        Debug.Print("HasCompleteCachedParameterSet-Has complete cached parameter set for {0}: {1}.", vehicleId, hasCompleteSet);
+        return hasCompleteSet;
     }
 
     /// <summary>
@@ -408,6 +415,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
     {
         try
         {
+            Debug.Print("LoadCachedParametersAsync-Loading cached parameters for {0}.", vehicleId);
             var session = editSessionFactory.Create(vehicleId);
             await session.LoadAsync(cancellationToken: cancellation.Token);
             cancellation.Token.ThrowIfCancellationRequested();
@@ -749,12 +757,12 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
 
     }
 
-    private void ActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs e)
+    private void ActiveVehicleChanged(ActiveVehicleChangedEventArgs e)
     {
         OnActiveVehicleChanged(e).GetAwaiter().GetResult();
     }
 
-    private void ParameterRegistryChangedAsync(object? sender, VehicleParameterChangedEventArgs args)
+    private void ParameterRegistryChangedAsync(VehicleParameterChangedEventArgs args)
     {
         OnParameterRegistryChangedAsync(args).GetAwaiter().GetResult();
     }

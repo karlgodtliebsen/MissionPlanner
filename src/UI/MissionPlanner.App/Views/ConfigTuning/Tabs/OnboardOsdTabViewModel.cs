@@ -526,7 +526,7 @@ public sealed partial class OnboardOsdTabViewModel : BaseViewModel
         }
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         if (ActiveProfileKey.From(args.Current) != activeKey)
         {

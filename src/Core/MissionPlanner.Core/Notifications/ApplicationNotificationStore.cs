@@ -1,6 +1,5 @@
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Vehicles;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.Core.Notifications;
@@ -24,7 +23,7 @@ public sealed class ApplicationNotificationStore : IApplicationNotificationStore
     }
 
     /// <inheritdoc />
-    public event EventHandler<ApplicationNotificationAddedEventArgs>? NotificationAdded;
+    public event Action<ApplicationNotificationAddedEventArgs>? NotificationAdded;
 
     /// <inheritdoc />
     public void Add(UserNotification notification, DateTimeOffset receivedAt)
@@ -46,7 +45,7 @@ public sealed class ApplicationNotificationStore : IApplicationNotificationStore
             }
         }
 
-        NotificationAdded?.Invoke(this, new ApplicationNotificationAddedEventArgs(entry));
+        NotificationAdded?.Invoke(new ApplicationNotificationAddedEventArgs(entry));
     }
 
     /// <inheritdoc />

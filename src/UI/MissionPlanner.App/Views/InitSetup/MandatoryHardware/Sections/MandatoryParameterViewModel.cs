@@ -179,7 +179,7 @@ public abstract partial class MandatoryParameterViewModel : SetupWorkflowDetailV
         });
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         dispatcher.Dispatch(() => LoadAsync().FireAndForget());
     }

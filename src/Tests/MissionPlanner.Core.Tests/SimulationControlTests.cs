@@ -225,7 +225,13 @@ public sealed class SimulationControlTests
     {
         return new SimulationSessionSnapshot(
             Guid.NewGuid(),
-            SimulatorProfile.CreateDefault() with { LaunchSettings = ArduPilotLaunchSettings.Default with { SystemId = vehicleId.SystemId } },
+            SimulatorProfile.CreateDefault() with
+            {
+                LaunchSettings = ArduPilotLaunchSettings.Default with
+                {
+                    SystemId = vehicleId.SystemId
+                }
+            },
             SimulationSessionState.Running,
             new SimulatorRuntimeIdentity($"sitl-{vehicleId.SystemId}", "test", null),
             [],
@@ -260,7 +266,17 @@ public sealed class SimulationControlTests
             null,
             null,
             null);
-        state = state with { Identity = state.Identity with { Firmware = state.Identity.Firmware with { Family = FirmwareFamily.ArduCopter, FlightVersion = new FirmwareSemanticVersion(4, 6, 0, FirmwareReleaseType.Official) } } };
+        state = state with
+        {
+            Identity = state.Identity with
+            {
+                Firmware = state.Identity.Firmware with
+                {
+                    Family = FirmwareFamily.ArduCopter,
+                    FlightVersion = new FirmwareSemanticVersion(4, 6, 0, FirmwareReleaseType.Official)
+                }
+            }
+        };
         var clock = Substitute.For<IDateTimeProvider>();
         clock.UtcNow.Returns(now);
         return new VehicleSession(state, new TransportEndPoint("simulation-test"), clock);
@@ -277,11 +293,7 @@ public sealed class SimulationControlTests
 
     private sealed record ParameterWrite(VehicleId VehicleId, string Name, float Value);
 
-    private sealed record ControlFixture(
-        SimulationControlCatalog Catalog,
-        SimulationControlService Service,
-        List<ParameterWrite> Writes,
-        Action<VehicleId> SelectVehicle) : IAsyncDisposable
+    private sealed record ControlFixture(SimulationControlCatalog Catalog, SimulationControlService Service, List<ParameterWrite> Writes, Action<VehicleId> SelectVehicle) : IAsyncDisposable
     {
         public ValueTask DisposeAsync()
         {

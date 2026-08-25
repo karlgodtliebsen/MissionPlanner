@@ -281,7 +281,7 @@ public sealed class BatteryConfigurationService : IBatteryConfigurationService
     {
         var readback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        void OnChanged(object? sender, VehicleParameterChangedEventArgs args)
+        void OnChanged(VehicleParameterChangedEventArgs args)
         {
             if (args.VehicleId == vehicleId && args.Parameter is { } parameter && parameter.Name == name && NearlyEqual(parameter.Value, value))
             {

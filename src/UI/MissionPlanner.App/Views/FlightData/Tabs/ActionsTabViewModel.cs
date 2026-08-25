@@ -479,7 +479,7 @@ public partial class ActionsTabViewModel : BaseViewModel
         };
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         dispatcher.Dispatch(() => ApplySnapshot(args.Current));
     }
@@ -516,7 +516,7 @@ public partial class ActionsTabViewModel : BaseViewModel
         CanSetHome = CanTransmit && IsAllowed(state, VehicleAction.SetHomeHere);
     }
 
-    private void OnReplayChanged(object? sender, ReplaySessionChangedEventArgs args)
+    private void OnReplayChanged(ReplaySessionChangedEventArgs args)
     {
         dispatcher.Dispatch(() => ApplyReplayState(args.Snapshot));
     }

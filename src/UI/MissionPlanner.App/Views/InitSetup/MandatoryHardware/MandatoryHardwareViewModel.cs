@@ -254,7 +254,7 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
         SelectedTab = Tabs.FirstOrDefault(item => item.Descriptor.Key == selectedKey) ?? Tabs.FirstOrDefault();
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         if (!SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
         {
@@ -268,7 +268,7 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
         });
     }
 
-    private void OnParameterChanged(object? sender, VehicleParameterChangedEventArgs args)
+    private void OnParameterChanged(VehicleParameterChangedEventArgs args)
     {
         if (args.VehicleId != activeVehicle.VehicleId)
         {

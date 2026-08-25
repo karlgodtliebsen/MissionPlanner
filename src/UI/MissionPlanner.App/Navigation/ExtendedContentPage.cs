@@ -39,21 +39,6 @@ public class ExtendedContentPage<TViewModel> : UraniumContentPage, IDisposable
         BindingContext = ViewModel;
     }
 
-    //private void SetBindingContext()
-    //{
-    //    Dispatcher.Dispatch(() =>
-    //    {
-    //        if (ViewModel is null)
-    //        {
-    //            Debug.Print("ViewModel is null");
-    //            return;
-    //        }
-
-    //        var t1 = Task.Yield().GetAwaiter();
-    //        t1.OnCompleted(() => BindingContext = ViewModel);
-    //    });
-    //}
-
     /// <inheritdoc />
     protected override void OnNavigatingFrom(NavigatingFromEventArgs args)
     {

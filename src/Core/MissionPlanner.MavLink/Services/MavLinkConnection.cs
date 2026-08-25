@@ -162,11 +162,11 @@ public sealed class MavLinkConnection : IMavLinkConnection
     {
         try
         {
-            await foreach (var decoded in decodedMessages!.Reader.ReadAllAsync(cancellationToken).ConfigureAwait(false))
+            await foreach (var decoded in decodedMessages!.Reader.ReadAllAsync(cancellationToken))
             {
                 if (decoded.Message is MavLinkMessage message)
                 {
-                    await eventHub.PublishAsync<MavLinkMessage>(MavLinkEventTopics.ReceivedMessage, message, cancellationToken).ConfigureAwait(false);
+                    await eventHub.PublishAsync<MavLinkMessage>(MavLinkEventTopics.ReceivedMessage, message, cancellationToken);
                 }
             }
         }
@@ -186,7 +186,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
     /// </summary>
     public async Task StopAsync()
     {
-        await lifecycleLock.WaitAsync().ConfigureAwait(false);
+        await lifecycleLock.WaitAsync();
         try
         {
             if (cancellationTokenSource is null)
@@ -194,14 +194,14 @@ public sealed class MavLinkConnection : IMavLinkConnection
                 return;
             }
 
-            await cancellationTokenSource.CancelAsync().ConfigureAwait(false);
-            await client.StopAsync().ConfigureAwait(false);
+            await cancellationTokenSource.CancelAsync();
+            await client.StopAsync();
 
             if (parseTask is not null)
             {
                 try
                 {
-                    await parseTask.ConfigureAwait(false);
+                    await parseTask;
                 }
                 catch (OperationCanceledException)
                 {
@@ -213,7 +213,7 @@ public sealed class MavLinkConnection : IMavLinkConnection
             {
                 try
                 {
-                    await publishTask.ConfigureAwait(false);
+                    await publishTask;
                 }
                 catch (OperationCanceledException)
                 {

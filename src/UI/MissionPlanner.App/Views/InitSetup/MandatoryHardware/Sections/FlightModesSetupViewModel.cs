@@ -132,7 +132,7 @@ public sealed partial class FlightModesSetupViewModel : SetupWorkflowDetailViewM
         Load();
     }
 
-    private void OnActiveVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         if (SetupVehicleChange.IsConnectionOrIdentityBoundary(args))
         {

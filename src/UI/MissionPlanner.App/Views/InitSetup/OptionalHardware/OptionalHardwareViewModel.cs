@@ -71,12 +71,12 @@ public sealed partial class OptionalHardwareViewModel : BaseViewModel
         AvailabilitySummary = snapshot.IsOnline ? $"{count} optional hardware tools available." : $"{count} standalone tools available; connect a vehicle to show vehicle-specific hardware.";
     }
 
-    private void OnVehicleChanged(object? sender, ActiveVehicleChangedEventArgs args)
+    private void OnVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
         dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(1), Refresh);
     }
 
-    private void OnParameterChanged(object? sender, VehicleParameterChangedEventArgs args)
+    private void OnParameterChanged(VehicleParameterChangedEventArgs args)
     {
         if (args.VehicleId != activeVehicle.VehicleId)
         {
