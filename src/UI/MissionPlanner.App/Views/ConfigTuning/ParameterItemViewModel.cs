@@ -107,7 +107,20 @@ public partial class ParameterItemViewModel : ObservableObject
         var _ => "Unknown"
     };
 
-
+    /// <summary>
+    /// Gets the numeric type of the parameter as a string.
+    /// </summary>
+    public string MavNumericType => editType switch
+    {
+        MavParamType.Int8 => "Int8",
+        MavParamType.Uint8 => "Uint8",
+        MavParamType.Int16 => "Int16",
+        MavParamType.Uint16 => "Uint16",
+        MavParamType.Int32 => "Int32",
+        MavParamType.Uint32 => "Uint32",
+        MavParamType.Real32 => "Real32",
+        var _ => "Unknown"
+    };
     /// <summary>
     /// Gets or sets the culture-aware text displayed by the unrestricted value editor.
     /// </summary>
@@ -439,6 +452,10 @@ public partial class ParameterItemViewModel : ObservableObject
 
         // Bitmask values are edited through the multi-option control, not by entering a raw mask.
         IsReadOnly = metadata.ReadOnly || HasBitmask;
+        if (Range is not null && Range.Contains("."))
+        {
+            Range = Range.Replace(".", CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator);
+        }
     }
 
     private void PreserveCurrentValueInEditorBounds(double value)

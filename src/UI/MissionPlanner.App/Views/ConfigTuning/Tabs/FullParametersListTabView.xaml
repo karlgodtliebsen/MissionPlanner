@@ -167,22 +167,22 @@
                             </material:DataGridColumn.CellItemTemplate>
                         </material:DataGridColumn>
 
-                        <material:DataGridColumn Title="Value" >
+                        <material:DataGridColumn Title="Value"  Width="100">
                             <material:DataGridColumn.CellItemTemplate >
                                 <DataTemplate  x:DataType="configTuning:ParameterItemViewModel" >
 
-                                    <VerticalStackLayout  HorizontalOptions="Fill" VerticalOptions="Center" Margin="5,0,5,0">
+                                    <VerticalStackLayout  HorizontalOptions="Center" VerticalOptions="Center" Margin="5,0,5,0">
 
-                                        <controls:NumericField
-                                        IsReadOnly="{Binding IsReadOnly}"
+                                        <controls:NumericLabel
                                         Value="{Binding Value, Mode=TwoWay}"
-                                        NumberFormat="F0"
+                                       
                                         Min="{Binding Min}"
                                         Max="{Binding Max}"
                                         HorizontalOptions="Fill"
                                         VerticalOptions="Center"  
                                         HorizontalTextAlignment="End" 
                                         NumericType="{Binding NumericType}"
+                                        NumberFormat="G7"
                                         />
                                     </VerticalStackLayout>
                                 </DataTemplate>
@@ -262,7 +262,7 @@
                         <material:DataGridColumn Width="100" Title="Type">
                             <material:DataGridColumn.CellItemTemplate>
                                 <DataTemplate x:DataType="configTuning:ParameterItemViewModel">
-                                    <Label Text="{Binding NumericType}" VerticalOptions="Center" HorizontalOptions="Center" />
+                                    <Label Text="{Binding MavNumericType}" VerticalOptions="Center" HorizontalOptions="Center" />
                                 </DataTemplate>
                             </material:DataGridColumn.CellItemTemplate>
                         </material:DataGridColumn>
