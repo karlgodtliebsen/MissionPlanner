@@ -10,6 +10,7 @@ using MissionPlanner.Core.Setup.OptionalHardware.Motor;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using SetupWorkflowDetailViewModel = MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models.SetupWorkflowDetailViewModel;
+using UraniumUI.Extensions;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -141,7 +142,7 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
     /// <inheritdoc />
     public override void Cancel()
     {
-        actuatorService.EmergencyStopAsync().GetAwaiter().GetResult();
+        actuatorService.EmergencyStopAsync().FireAndForget();
     }
 
 
@@ -157,11 +158,12 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
     }
 
     /// <inheritdoc />
-    public override Task DeactivateAsync()
+    public override async Task DeactivateAsync()
     {
         actuatorService.StateChanged -= OnStateChanged;
         activeVehicle.Changed -= OnActiveVehicleChanged;
-        return base.DeactivateAsync();
+        await actuatorService.EmergencyStopAsync();
+        await base.DeactivateAsync();
     }
 
     /// <inheritdoc />

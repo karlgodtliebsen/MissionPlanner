@@ -57,10 +57,11 @@ public sealed partial class JoystickViewModel(IJoystickProvider provider, IJoyst
     }
 
     /// <inheritdoc />
-    public override Task DeactivateAsync()
+    public override async Task DeactivateAsync()
     {
         VehicleOutputEnabled = false;
-        return base.DeactivateAsync();
+        await output.ReleaseAsync(CancellationToken.None);
+        await base.DeactivateAsync();
     }
 
     /// <summary>
@@ -68,7 +69,7 @@ public sealed partial class JoystickViewModel(IJoystickProvider provider, IJoyst
     /// </summary>
     public override void Dispose()
     {
-        output.ReleaseAsync(CancellationToken.None).GetAwaiter().GetResult();
+        VehicleOutputEnabled = false;
         base.Dispose();
     }
 }

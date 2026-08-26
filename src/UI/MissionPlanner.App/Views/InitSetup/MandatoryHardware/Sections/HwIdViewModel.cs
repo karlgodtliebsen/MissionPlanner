@@ -126,6 +126,6 @@ public sealed partial class HwIdViewModel : SetupWorkflowDetailViewModel
 
     private void OnVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
-        dispatcher.Dispatch(() => RefreshAsync().GetAwaiter().GetResult());
+        dispatcher.Dispatch(() => RefreshAsync().FireAndForget());
     }
 }

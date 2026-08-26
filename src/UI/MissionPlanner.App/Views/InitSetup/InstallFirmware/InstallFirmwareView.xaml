@@ -324,8 +324,6 @@
                                         <Button Text="Load Local / Custom Firmware" Command="{Binding LoadCustomFirmwareCommand}" />
                                         <Button Text="Clear" Command="{Binding ClearCustomFirmwareCommand}" />
                                         <Button Text="Install Validated Firmware" Command="{Binding InstallCommand}" />
-                                        <!--<Button Text="Install Custom Firmware" Command="{Binding InstallCommand}" 
-                                                IsEnabled="{Binding CanInstall}" />-->
                                     </VerticalStackLayout>
                                 </Grid>
                             </Border>
@@ -373,20 +371,12 @@
                                     <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="6">
                                         <Button Text="Refresh devices" Command="{Binding RefreshCatalogCommand}" />
                                         <Button Text="Download &amp; Validate" Command="{Binding DownloadAndValidateCommand}" />
-                                        <!--<Button Text="Install Validated Firmware" Command="{Binding InstallCommand}" IsEnabled="{Binding CanInstall}" />-->
                                         <Button Text="Copy Download URL" Command="{Binding CopyDownloadUrlCommand}" />
-
-                                        <!--<Button Text="Load Local file *_with_bl.hex" Command="{Binding LoadCustomBootloaderAndFirmwareCommand}" />-->
                                         <Button Text="Load Local / Custom Firmware" Command="{Binding LoadCustomBlWithFirmwareCommand}" />
-
-                                        <!--<Button Text="Install Custom Firmware"
-                                                Command="{Binding InstallCommand}"
-                                                IsEnabled="{Binding CanInstall}" />-->
                                         <Button HorizontalOptions="Start"  Text="Install ArduPilot + Bootloader through STM32 DFU" 
                                                 Command="{Binding InstallDfuFirmwareCommand}" 
                                                 />
                                         <Button Text="Clear" Command="{Binding ClearCustomFirmwareCommand}" />
-
 
                                     </VerticalStackLayout>
                                 </Grid>
@@ -444,8 +434,8 @@
                                                 <Label Text="{Binding Title}" FontAttributes="Bold" />
                                                 <Label Grid.Row="1" Text="{Binding Description}" />
                                                 <Button Grid.Column="1" Grid.RowSpan="2" Text="Open"
-                                          Command="{Binding Source={RelativeSource AncestorType={x:Type local:InstallFirmwareViewModel}}, Path=OpenSupportLinkCommand}"
-                                          CommandParameter="{Binding .}" />
+                                                      Command="{Binding Source={RelativeSource AncestorType={x:Type local:InstallFirmwareViewModel}}, Path=OpenSupportLinkCommand}"
+                                                      CommandParameter="{Binding .}" />
                                             </Grid>
                                         </DataTemplate>
                                     </BindableLayout.ItemTemplate>
@@ -484,7 +474,6 @@
             <Label Text="Do not disconnect power while flash memory is being changed." 
                    TextColor="{DynamicResource Warning}" 
                    IsVisible="{Binding OperationProgress.IsPowerCritical}" />
-
 
         </HorizontalStackLayout>
 

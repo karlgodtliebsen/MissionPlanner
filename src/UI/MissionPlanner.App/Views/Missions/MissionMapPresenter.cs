@@ -226,16 +226,17 @@ internal sealed class MissionMapPresenter : IDisposable
         CancellationTokenSource? lookupCancellation = null;
         try
         {
+            pointerElevationCancellation?.Cancel();
+            lookupCancellation = new CancellationTokenSource();
+
             // Generation-based debounce avoids a first-chance TaskCanceledException for every pointer event.
-            await Task.Delay(250);
+            await Task.Delay(250, lookupCancellation.Token);
             if (generation != pointerGeneration || disposed)
             {
                 Debug.WriteLine($"[Terrain] generation={generation} status=SupersededBeforeLookup");
                 return;
             }
 
-            pointerElevationCancellation?.Cancel();
-            lookupCancellation = new CancellationTokenSource();
             pointerElevationCancellation = lookupCancellation;
             var result = await terrainElevationService.GetElevationAsync(latitude, longitude, lookupCancellation.Token);
             if (generation != pointerGeneration || disposed)

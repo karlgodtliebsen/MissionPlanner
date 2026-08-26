@@ -12,6 +12,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
+using UraniumUI.Extensions;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -192,7 +193,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
     {
         if (CanCancelCalibration)
         {
-            radioService.CancelAsync().GetAwaiter().GetResult();
+            radioService.CancelAsync().FireAndForget();
         }
 
         operationCancellation?.Cancel();
@@ -214,14 +215,23 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
     }
 
     /// <inheritdoc />
-    public override Task DeactivateAsync()
+    public override async Task DeactivateAsync()
     {
+        CancelLocalOperation();
+        await radioService.CancelAsync();
         radioService.StateChanged -= OnCalibrationStateChanged;
         activeVehicle.Changed -= OnActiveVehicleChanged;
         vehicleStateSubscription?.Dispose();
         vehicleStateSubscription = null;
         observedRadioAt = null;
-        return base.DeactivateAsync();
+        await base.DeactivateAsync();
+    }
+
+    private void CancelLocalOperation()
+    {
+        operationCancellation?.Cancel();
+        operationCancellation?.Dispose();
+        operationCancellation = null;
     }
 
     /// <inheritdoc />

@@ -132,12 +132,12 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
     }
 
     /// <inheritdoc />
-    public override Task ActivateAsync()
+    public override async Task ActivateAsync()
     {
         StatusMessage = "Load the connected vehicle's supported frame choices.";
         activeVehicle.Changed += OnActiveVehicleChanged;
-        LoadAsync().GetAwaiter().GetResult();
-        return base.ActivateAsync();
+        await LoadAsync();
+        await base.ActivateAsync();
     }
 
     /// <inheritdoc />

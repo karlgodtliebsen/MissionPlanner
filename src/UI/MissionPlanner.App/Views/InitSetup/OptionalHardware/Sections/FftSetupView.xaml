@@ -10,6 +10,9 @@
         <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
             <Label Text="FFT Setup and Analysis" FontSize="24" FontAttributes="Bold"/>
             <Label Text="FFT/log settings are available only when INS_LOG_BAT or FFT parameters are reported. Log acquisition remains owned by DataFlash Logs."/>
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
+            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
 
             <controls:NumericField Title="Sample rate Hz" Text="{Binding SampleRateHz}" 
                                    Min="0"     
@@ -20,8 +23,6 @@
             <Editor Placeholder="Paste comma/newline-separated samples from an existing log artifact" Text="{Binding SamplesText}" HeightRequest="180"/>
             
             <Button Text="Analyze samples" Command="{Binding AnalyzeCommand}" HorizontalOptions="Start"/>
-            <Label Text="{Binding Result}"/>
-            <Label Text="{Binding ErrorMessage}" TextColor="{DynamicResource Error}"/>
         </VerticalStackLayout>
     </ScrollView>
 </tabViews:TabViewLifecycleContent>

@@ -12,7 +12,10 @@
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
             <Label Text="Compass / Motor Calibration" FontSize="20" FontAttributes="Bold" />
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
             <Label Text="Remove ALL propellers. CompassMot may spin motors." TextColor="{DynamicResource Warning}" FontAttributes="Bold" />
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
+            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
             <Label Text="{Binding Instruction}" LineBreakMode="WordWrap" />
             <Label Text="{Binding Compensation}" LineBreakMode="WordWrap" />
 

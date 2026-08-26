@@ -46,13 +46,19 @@ public sealed partial class TelemetryLogsTabViewModel : BaseViewModel
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
-        replaySessionManager.Changed -= OnReplayChanged;
+        Deactivate();
         return Task.CompletedTask;
+    }
+
+    private void Deactivate()
+    {
+        replaySessionManager.Changed -= OnReplayChanged;
     }
     /// <inheritdoc />
     public override void Dispose()
     {
-        DeactivateAsync().GetAwaiter().GetResult();
+        Deactivate();
+        base.Dispose();
     }
 
 

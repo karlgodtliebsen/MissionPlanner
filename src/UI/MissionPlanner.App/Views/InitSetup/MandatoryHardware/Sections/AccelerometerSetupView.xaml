@@ -9,13 +9,13 @@
                                  >
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
-            <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
-            <Label Text="{Binding ErrorMessage}" TextColor="{DynamicResource Error}" />
             <Label Text="Accelerometer and level calibration" FontSize="18" FontAttributes="Bold" />
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
+            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
             <Label Text="Remove propellers. Keep the vehicle disarmed and clear of people before calibration."
-               TextColor="{DynamicResource Warning}"
-               FontAttributes="Bold"
-               LineBreakMode="WordWrap" />
+                   TextColor="{DynamicResource Warning}" FontAttributes="Bold" LineBreakMode="WordWrap" />
+
             <HorizontalStackLayout Spacing="10">
                 <Button
                     Text="Start six-position calibration"

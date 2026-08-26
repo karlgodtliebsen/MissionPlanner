@@ -174,7 +174,8 @@ public partial class ActionsTabViewModel : BaseViewModel
     /// <inheritdoc />
     public override void Dispose()
     {
-        DeactivateAsync().GetAwaiter().GetResult();
+        Deactivate();
+        base.Dispose();
     }
 
     /// <inheritdoc />
@@ -195,11 +196,16 @@ public partial class ActionsTabViewModel : BaseViewModel
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
+        Deactivate();
+        return Task.CompletedTask;
+    }
+
+    private void Deactivate()
+    {
         replaySessionManager?.Changed -= OnReplayChanged;
         activeVehicle.Changed -= OnActiveVehicleChanged;
         stateSubscription?.Dispose();
         stateSubscription = null;
-        return Task.CompletedTask;
     }
 
     [RelayCommand]

@@ -10,11 +10,10 @@
         <VerticalStackLayout Padding="16"  Spacing="25" HorizontalOptions="Center">
             <Label Text="Optical Flow" FontSize="20" FontAttributes="Bold"/>
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
-            <Label Text="{Binding Status}"/>
-            <Label Text="{Binding FocusCapabilityStatus}" 
-                   TextColor="{DynamicResource Error}"/>
-            <Label Text="Vehicle Reboot required" 
-                   TextColor="{DynamicResource Error}" IsVisible="{Binding RebootRequired}"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
+            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+            <Label Text="{Binding FocusCapabilityStatus}" TextColor="{DynamicResource Warning}"/>
+            <Label Text="Vehicle Reboot required" TextColor="{DynamicResource Warning}" IsVisible="{Binding RebootRequired}"/>
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}" Spacing="8">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="sections:ParameterSettingViewModel">

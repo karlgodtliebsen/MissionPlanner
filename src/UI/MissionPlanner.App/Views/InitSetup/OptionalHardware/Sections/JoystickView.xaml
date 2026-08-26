@@ -10,22 +10,23 @@
 
     <VerticalStackLayout Padding="20" Spacing="25" HorizontalOptions="Center">
         <Label Text="Joystick Setup" FontSize="24" FontAttributes="Bold"/>
+        <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+        <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
+        <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
         <Label Text="{Binding PlatformStatus}"/>
-        
-        <HorizontalStackLayout VerticalOptions="Center" Spacing="25">
-            <Picker Title="Local device" ItemsSource="{Binding Devices}" VerticalOptions="Center"
+
+        <Grid ColumnDefinitions="Auto,Auto" VerticalOptions="Fill" ColumnSpacing="25" HorizontalOptions="Fill">
+            <Picker Title="Local device" ItemsSource="{Binding Devices}" VerticalOptions="End"
                     ItemDisplayBinding="{Binding Name}" 
                     SelectedItem="{Binding SelectedDevice}" WidthRequest="300"/>
-            <Button Text="Refresh" Command="{Binding RefreshCommand}" VerticalOptions="Center"/>
-        </HorizontalStackLayout>
-    
+            <Button Grid.Column="1" Text="Refresh" Command="{Binding RefreshCommand}" VerticalOptions="End"/>
+        </Grid>
+
         <Label Text="Local calibration is separate from vehicle RC calibration."/>
         <HorizontalStackLayout>
             <material:CheckBox  IsChecked="{Binding VehicleOutputEnabled}" IsEnabled="False" Text="Vehicle MANUAL_CONTROL output (disabled by default)"/>
         </HorizontalStackLayout>
         <Button Text="Disable and release vehicle control" 
-                Command="{Binding DisableCommand}" HorizontalOptions="Start"/>
-        <Label Text="{Binding StatusMessage}"/>
-        <Label Text="{Binding ErrorMessage}" TextColor="{DynamicResource Error}"/>
+                Command="{Binding DisableCommand}" HorizontalOptions="Fill"/>
     </VerticalStackLayout>
 </tabViews:TabViewLifecycleContent>

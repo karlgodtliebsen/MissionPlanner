@@ -5,7 +5,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 
 /// <summary>
-/// 
+/// ViewModel for configuring the airspeed optional hardware. 
 /// </summary>
 /// <param name="v"></param>
 /// <param name="s"></param>

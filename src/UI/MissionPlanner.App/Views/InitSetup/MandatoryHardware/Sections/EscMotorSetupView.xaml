@@ -10,13 +10,14 @@
                                   >
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Padding="16"  Spacing="25" HorizontalOptions="Center">
-            <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
-            <Label Text="{Binding ErrorMessage}" TextColor="{DynamicResource Error}" />
             <Label Text="ESC calibration and motor test" FontSize="18" FontAttributes="Bold" />
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
+            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
             <Label Text="Remove ALL propellers before any actuator test. Motors will spin."
-               TextColor="{DynamicResource Warning}"
-               FontAttributes="Bold"
-               LineBreakMode="WordWrap" />
+                   TextColor="{DynamicResource Warning}"
+                   FontAttributes="Bold"
+                   LineBreakMode="WordWrap" />
             <Label Text="{Binding EscExplanation}" LineBreakMode="WordWrap" />
             <VerticalStackLayout IsVisible="{Binding EscCalibrationApplicable}"
                              BindableLayout.ItemsSource="{Binding EscSteps}">

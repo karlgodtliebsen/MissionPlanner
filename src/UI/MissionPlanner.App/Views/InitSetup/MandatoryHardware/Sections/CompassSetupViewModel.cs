@@ -11,6 +11,7 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 using SetupWorkflowDetailViewModel = MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models.SetupWorkflowDetailViewModel;
+using UraniumUI.Extensions;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -333,7 +334,7 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
     {
         if (CanCancel)
         {
-            calibration.CancelAsync().GetAwaiter().GetResult();
+            calibration.CancelAsync().FireAndForget();
         }
 
         operationCancellation?.Cancel();
@@ -349,24 +350,31 @@ public sealed partial class CompassSetupViewModel : SetupWorkflowDetailViewModel
     }
 
     /// <inheritdoc />
-    public override Task ActivateAsync()
+    public override async Task ActivateAsync()
     {
         calibration.StateChanged += OnCalibrationStateChanged;
         activeVehicle.Changed += OnActiveVehicleChanged;
         Show(calibration.Current);
 
-        base.ActivateAsync();
-        LoadAsync().GetAwaiter().GetResult();
-        return Task.CompletedTask;
+        await base.ActivateAsync();
+        await LoadAsync();
     }
 
     /// <inheritdoc />
-    public override Task DeactivateAsync()
+    public override async Task DeactivateAsync()
     {
-        Cancel();
+        CancelLocalOperation();
+        await calibration.CancelAsync();
         calibration.StateChanged -= OnCalibrationStateChanged;
         activeVehicle.Changed -= OnActiveVehicleChanged;
-        return Task.CompletedTask;
+        await base.DeactivateAsync();
+    }
+
+    private void CancelLocalOperation()
+    {
+        operationCancellation?.Cancel();
+        operationCancellation?.Dispose();
+        operationCancellation = null;
     }
 
 

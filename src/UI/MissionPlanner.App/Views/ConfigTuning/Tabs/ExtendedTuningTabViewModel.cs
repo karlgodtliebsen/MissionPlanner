@@ -143,9 +143,10 @@ public sealed partial class ExtendedTuningTabViewModel : BaseViewModel
             return;
         }
 
+        Deactivate();
         disposed = true;
-        DeactivateAsync();
         DetachWorkspace();
+        base.Dispose();
     }
 
     /// <inheritdoc />
@@ -167,16 +168,21 @@ public sealed partial class ExtendedTuningTabViewModel : BaseViewModel
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
+        Deactivate();
+        return Task.CompletedTask;
+    }
+
+    private void Deactivate()
+    {
         if (!active)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         active = false;
         activeVehicle.Changed -= OnActiveVehicleChanged;
         metricsService.Changed -= OnMetricChanged;
         CancelOperation();
-        return Task.CompletedTask;
     }
 
     partial void OnSearchTextChanged(string value)

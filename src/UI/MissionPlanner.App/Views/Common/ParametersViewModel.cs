@@ -13,6 +13,7 @@ using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using UraniumUI.Material.Dialogs;
+using UraniumUI.Extensions;
 
 namespace MissionPlanner.App.Views.Common;
 
@@ -715,15 +716,12 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
             return;
         }
 
+        DeactivateCore();
         disposed = true;
-        base.Dispose();
-        parameterLoadStatusSubscription.Dispose();
         Interlocked.Exchange(ref sessionRefreshScheduled, 0);
-
-        DeactivateAsync().GetAwaiter().GetResult();
-
         CancelCachedParameterLoad();
         CancelLoadOperation();
+        base.Dispose();
     }
 
     /// <inheritdoc />
@@ -759,18 +757,25 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
 
     private void ActiveVehicleChanged(ActiveVehicleChangedEventArgs e)
     {
-        OnActiveVehicleChanged(e).GetAwaiter().GetResult();
+        OnActiveVehicleChanged(e).FireAndForget();
     }
 
     private void ParameterRegistryChangedAsync(VehicleParameterChangedEventArgs args)
     {
-        OnParameterRegistryChangedAsync(args).GetAwaiter().GetResult();
+        OnParameterRegistryChangedAsync(args).FireAndForget();
     }
 
     /// <inheritdoc />
-    public override async Task DeactivateAsync()
+    public override Task DeactivateAsync()
     {
-        await base.DeactivateAsync();
+        DeactivateCore();
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    protected override void DeactivateCore()
+    {
+        base.DeactivateCore();
         if (!activated)
         {
             return;

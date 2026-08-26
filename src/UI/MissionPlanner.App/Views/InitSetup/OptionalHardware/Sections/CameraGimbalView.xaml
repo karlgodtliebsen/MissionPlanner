@@ -12,7 +12,9 @@
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
             <Label Text="Camera / Gimbal Configuration" FontSize="20" FontAttributes="Bold" />
-            <Label Text="{Binding Status}" LineBreakMode="WordWrap" />
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
+            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
             <Label Text="Changes are explicit and confirmed by parameter readback. Live movement and capture commands remain in Payload Control." Opacity="0.75" LineBreakMode="WordWrap" />
             <Button Text="Open Payload Control" Command="{Binding OpenPayloadControlCommand}" HorizontalOptions="Start" />
             <Label Text="Vehicle Reboot required after confirmed changes." IsVisible="{Binding RebootRequired}" TextColor="{DynamicResource Warning}" FontAttributes="Bold" />

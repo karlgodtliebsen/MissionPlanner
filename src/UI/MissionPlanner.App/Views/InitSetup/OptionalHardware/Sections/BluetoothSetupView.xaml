@@ -9,31 +9,30 @@
                                   x:DataType="sections:BluetoothSetupViewModel">
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
-            
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
             <Label Text="Classic Serial Bluetooth Setup" FontSize="20" FontAttributes="Bold"/>
             <Label Text="For HC-05/HC-06 style AT modules; this is not Bluetooth LE configuration." Opacity="0.75"/>
+
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
+            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+
             <HorizontalStackLayout Spacing="25" VerticalOptions="Center">
                 <Picker Title="Serial device" ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}" WidthRequest="180"/>
                 <Button Text="Refresh ports" Command="{Binding RefreshPortsCommand}"/>
                 <Button Text="Probe module" Command="{Binding ProbeCommand}"/>
             </HorizontalStackLayout>
             <Label Text="{Binding ModuleIdentity}" FontAttributes="Bold"/>
-            <Label Text="{Binding Status}"/>
 
             <controls:AlignedEditorField Title="Module name" Text="{Binding Name}"/>
-            <!--<controls:AlignedEditorField Title="PIN" Text="{Binding Pin}" />-->
             <Entry Placeholder="PIN" Text="{Binding Pin}" IsPassword="True" HorizontalTextAlignment="End"/>
-            <!--IsPassword="True"-->
-
             <controls:NumericField Title="Baud" Text="{Binding BaudRate}" 
                                    Min="0"     
                                    NumberFormat="F0"
                                    HorizontalTextAlignment="End"
-                                   Keyboard="Numeric"/>
+                                   NumericType="Int32"
+                                   />
 
             <Button Text="Apply supported settings" Command="{Binding ApplyCommand}" HorizontalOptions="Start"/>
-
-
 
         </VerticalStackLayout>
     </ScrollView>

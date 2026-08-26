@@ -209,9 +209,10 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : BaseViewModel
             return;
         }
 
+        Deactivate();
         disposed = true;
-        DeactivateAsync().GetAwaiter().GetResult();
         operationGate.Dispose();
+        base.Dispose();
     }
 
     /// <inheritdoc />
@@ -232,15 +233,20 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : BaseViewModel
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
+        Deactivate();
+        return Task.CompletedTask;
+    }
+
+    private void Deactivate()
+    {
         if (!active)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         active = false;
         activeVehicle.Changed -= OnActiveVehicleChanged;
         CancelOperation();
-        return Task.CompletedTask;
     }
 
     private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs e)

@@ -14,6 +14,7 @@ public sealed partial class RtkGpsInjectViewModel : OptionalHardwareBaseViewMode
     private readonly IFirmwareSerialDeviceCatalog devices;
     private readonly IDispatcher dispatcher;
     private CancellationTokenSource lifetime = new();
+    private bool active;
 
     public RtkGpsInjectViewModel(IRtkInjectionService injection, IFirmwareSerialDeviceCatalog devices, IDispatcher dispatcher, ILogger<RtkGpsInjectViewModel> logger)
         : base(logger)
@@ -96,25 +97,38 @@ public sealed partial class RtkGpsInjectViewModel : OptionalHardwareBaseViewMode
     public override Task ActivateAsync()
     {
         lifetime = new();
+        active = true;
         injection.Changed += OnChanged;
         Show(injection.Current);
         return base.ActivateAsync();
     }
 
     /// <inheritdoc />
-    public override Task DeactivateAsync()
+    public override async Task DeactivateAsync()
     {
-        injection.Changed -= OnChanged;
-        lifetime.Cancel();
-        lifetime.Dispose();
-        return base.DeactivateAsync();
+        Deactivate();
+        await injection.StopAsync();
+        await base.DeactivateAsync();
     }
 
     /// <inheritdoc />
     public override void Dispose()
     {
-        injection.StopAsync().GetAwaiter().GetResult();
+        Deactivate();
         injection.Dispose();
         base.Dispose();
+    }
+
+    private void Deactivate()
+    {
+        if (!active)
+        {
+            return;
+        }
+
+        active = false;
+        injection.Changed -= OnChanged;
+        lifetime.Cancel();
+        lifetime.Dispose();
     }
 }

@@ -104,9 +104,10 @@ public sealed partial class BasicTuningTabViewModel : BaseViewModel
             return;
         }
 
+        Deactivate();
         disposed = true;
-        DeactivateAsync().GetAwaiter().GetResult();
         DetachWorkspace();
+        base.Dispose();
     }
 
     /// <inheritdoc />
@@ -127,16 +128,21 @@ public sealed partial class BasicTuningTabViewModel : BaseViewModel
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
+        Deactivate();
+        return Task.CompletedTask;
+    }
+
+    private void Deactivate()
+    {
 
         if (!active)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         active = false;
         activeVehicle.Changed -= OnActiveVehicleChanged;
         CancelOperation();
-        return Task.CompletedTask;
     }
 
     [RelayCommand(CanExecute = nameof(CanOperate))]

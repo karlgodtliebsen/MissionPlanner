@@ -7,7 +7,10 @@
                                   x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.AntennaTrackerView" 
                                   x:DataType="sections:AntennaTrackerViewModel">
     <VerticalStackLayout Padding="16"   Spacing="25" HorizontalOptions="Center">
+        <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
         <Label Text="Antenna Tracker Configuration" FontSize="24" FontAttributes="Bold"/>
+        <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
+        <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
         <Label Text="{Binding TargetStatus}"/>
         <Label Text="Configuration and live tracker operation are deliberately separate."/>
         <Label Text="{Binding SafetyStatus}" Opacity="0.75"/>

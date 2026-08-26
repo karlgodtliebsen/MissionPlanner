@@ -23,7 +23,6 @@
             <Label Text="{Binding AvailabilitySummary}" Opacity="0.75"/>
         </VerticalStackLayout>
 
-
         <Border Grid.Row="1"  StyleClass="SurfaceContainer,Rounded,Elevation1" >
             <tabs:ExtendedTabView  
                               HorizontalOptions="Fill"

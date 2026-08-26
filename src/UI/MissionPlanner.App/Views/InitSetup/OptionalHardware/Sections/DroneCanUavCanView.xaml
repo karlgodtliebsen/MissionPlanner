@@ -9,14 +9,15 @@
 
     <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
         <Label Text="DroneCAN / UAVCAN v0" FontSize="24" FontAttributes="Bold"/>
-        <Picker Title="Transport" ItemsSource="{Binding TransportKinds}" SelectedItem="{Binding TransportKind}"/>
+        <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+        <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
+        <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
 
-        <HorizontalStackLayout HorizontalOptions="Fill">
+        <Picker Title="Transport" ItemsSource="{Binding TransportKinds}" SelectedItem="{Binding TransportKind}"/>
+        <HorizontalStackLayout HorizontalOptions="Fill" Spacing="50">
             <Button Text="Connect" Command="{Binding ConnectCommand}" HorizontalOptions="Start"/>
             <Button Text="Refresh nodes" Command="{Binding RefreshCommand}" HorizontalOptions="End"/>
         </HorizontalStackLayout>
-        <Label Text="{Binding StatusMessage}"/>
-        <Label Text="{Binding ErrorMessage}" TextColor="{DynamicResource Error}"/>
         <CollectionView ItemsSource="{Binding Nodes}" SelectionMode="Single" SelectedItem="{Binding SelectedNode}">
             <CollectionView.ItemTemplate>
                 <DataTemplate>

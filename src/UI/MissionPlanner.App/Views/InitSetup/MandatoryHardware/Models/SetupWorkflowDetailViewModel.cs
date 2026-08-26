@@ -48,7 +48,7 @@ public partial class SetupWorkflowDetailViewModel : BaseViewModel
     /// <inheritdoc />
     public override void Dispose()
     {
-        DeactivateAsync().GetAwaiter().GetResult();
+        base.Dispose();
     }
 
     /// <inheritdoc />

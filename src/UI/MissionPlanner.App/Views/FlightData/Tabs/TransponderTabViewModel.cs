@@ -34,7 +34,8 @@ public partial class TransponderTabViewModel : BaseViewModel
     /// <inheritdoc />
     public override void Dispose()
     {
-        DeactivateAsync().GetAwaiter().GetResult();
+        Deactivate();
+        base.Dispose();
     }
 
     /// <inheritdoc />
@@ -50,9 +51,14 @@ public partial class TransponderTabViewModel : BaseViewModel
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
+        Deactivate();
+        return Task.CompletedTask;
+    }
+
+    private void Deactivate()
+    {
         registry.Changed -= OnChanged;
         activeVehicle.Changed -= OnChanged;
-        return Task.CompletedTask;
     }
 
     private void OnChanged(EventArgs args)

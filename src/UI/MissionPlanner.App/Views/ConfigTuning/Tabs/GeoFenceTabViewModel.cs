@@ -11,6 +11,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using UraniumUI.Material.TabViews;
+using UraniumUI.Extensions;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
@@ -171,9 +172,10 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
             return;
         }
 
+        Deactivate();
         disposed = true;
-        DeactivateAsync().GetAwaiter().GetResult();
         DetachParameterSession();
+        base.Dispose();
     }
 
     /// <inheritdoc />
@@ -197,21 +199,26 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
 
     private void ActiveVehicle_Changed(ActiveVehicleChangedEventArgs e)
     {
-        OnActiveVehicleChangedAsync(e).GetAwaiter().GetResult();
+        OnActiveVehicleChangedAsync(e).FireAndForget();
     }
 
     /// <inheritdoc />
-    public override async Task DeactivateAsync()
+    public override Task DeactivateAsync()
+    {
+        Deactivate();
+        return Task.CompletedTask;
+    }
+
+    private void Deactivate()
     {
         if (!active)
         {
             return;
         }
 
-        await CancelOperationAsync();
         active = false;
         activeVehicle.Changed -= ActiveVehicle_Changed;
-        return;
+        operationCancellation.Cancel();
     }
 
     /// <summary>Applies one map click according to the explicit fence edit mode.</summary>

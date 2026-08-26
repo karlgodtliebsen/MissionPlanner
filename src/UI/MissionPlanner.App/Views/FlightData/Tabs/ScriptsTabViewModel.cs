@@ -87,7 +87,8 @@ public partial class ScriptsTabViewModel(IVehicleScriptParser parser, IVehicleSc
     /// <inheritdoc />
     public override void Dispose()
     {
-        DeactivateAsync().GetAwaiter().GetResult();
+        Deactivate();
+        base.Dispose();
     }
 
     /// <inheritdoc />
@@ -100,8 +101,14 @@ public partial class ScriptsTabViewModel(IVehicleScriptParser parser, IVehicleSc
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
+        Deactivate();
+        return Task.CompletedTask;
+    }
+
+    private void Deactivate()
+    {
         execution?.Cancel();
         execution?.Dispose();
-        return Task.CompletedTask;
+        execution = null;
     }
 }

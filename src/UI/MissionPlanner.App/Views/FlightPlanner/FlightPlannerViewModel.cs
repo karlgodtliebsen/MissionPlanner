@@ -234,8 +234,9 @@ public partial class FlightPlannerViewModel : BaseViewModel
     /// <inheritdoc />
     public override void Dispose()
     {
-        DeactivateAsync().GetAwaiter().GetResult();
+        Deactivate();
         Map = null;
+        base.Dispose();
     }
 
     /// <inheritdoc />
@@ -248,10 +249,16 @@ public partial class FlightPlannerViewModel : BaseViewModel
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
+        Deactivate();
+        return Task.CompletedTask;
+    }
+
+    private void Deactivate()
+    {
         foreach (var disposable in disposables)
         {
             disposable.Dispose();
         }
-        return Task.CompletedTask;
+        disposables.Clear();
     }
 }

@@ -13,13 +13,19 @@
         <VerticalStackLayout Padding="16" Spacing="25"  HorizontalOptions="Center">
             <Label Text="RTK / GPS Correction Injection" FontSize="20" FontAttributes="Bold"/>
             <Label Text="RTCM3 source → active vehicle via MAVLink GPS_RTCM_DATA" Opacity="0.75"/>
-            <Picker Title="Source" ItemsSource="{Binding SourceKinds}" SelectedItem="{Binding SourceKind}"/>
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
+            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+            <Picker Title="Source" 
+                    ItemsSource="{Binding SourceKinds}" 
+                    SelectedItem="{Binding SourceKind}"/>
 
             <Entry Placeholder="Serial port or caster host" Text="{Binding Endpoint}" HorizontalTextAlignment="End"/>
    
             <controls:NumericField Title="Baud or caster port" Text="{Binding PortOrBaud}" 
                                    Min="0"     
                                    NumberFormat="F0"
+                                   NumericType="Int32"
                                    HorizontalTextAlignment="End"
                                    Keyboard="Numeric"/>
 
@@ -35,8 +41,6 @@
                 <Button Text="Connect source" Command="{Binding ConnectCommand}"/>
                 <Button Text="Disconnect" Command="{Binding DisconnectCommand}"/>
             </HorizontalStackLayout>
-            <Label Text="{Binding ErrorMessage}" 
-                   TextColor="{DynamicResource Error}"/>
             <Label Text="{Binding SourceStatus}" FontAttributes="Bold"/>
             <Label Text="{Binding TargetStatus}"/>
             <Label Text="{Binding Statistics}"/>

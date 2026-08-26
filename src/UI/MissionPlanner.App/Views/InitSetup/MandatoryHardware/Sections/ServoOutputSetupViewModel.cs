@@ -68,10 +68,10 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
     {
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
-            StatusMessage = "Connect a vehicle before loading servo outputs.";
+            SetMessages("Connect a vehicle before loading servo outputs.");
             return;
         }
-
+        SetBusy();
         var token = StartOperation();
         try
         {
@@ -84,8 +84,9 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
         catch (Exception exception)
         {
             logger.LogError(exception, "Loading servo outputs failed for {VehicleId}.", vehicleId);
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
         }
+        ResetBusy();
     }
 
     /// <inheritdoc />
@@ -98,14 +99,14 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
     }
 
     /// <inheritdoc />
-    public override Task ActivateAsync()
+    public override async Task ActivateAsync()
     {
-        StatusMessage = "Load the connected vehicle's servo output functions.";
+        SetMessages("Load the connected vehicle's servo output functions.");
         activeVehicle.Changed += OnActiveVehicleChanged;
         observedServoAt = activeVehicle.State?.Radio.ServoObservedAt;
         vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
-        LoadAsync().GetAwaiter().GetResult();
-        return base.ActivateAsync();
+        await LoadAsync();
+        await base.ActivateAsync();
     }
 
     /// <inheritdoc />
@@ -133,7 +134,7 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
         try
         {
             var result = await servoService.SetOutputAsync(vehicleId, item.Settings, token);
-            StatusMessage = result.Message;
+            SetMessages(result.Message);
             if (result.Success)
             {
                 item.AcceptChanges();
@@ -148,7 +149,7 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
         catch (Exception exception)
         {
             logger.LogError(exception, "Applying servo output settings failed for {VehicleId}.", vehicleId);
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
             return false;
         }
     }
@@ -276,9 +277,10 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
 
         if (!preserveStatus)
         {
-            StatusMessage = Outputs.Count == 0
+            var msg = Outputs.Count == 0
                 ? "No servo output functions were detected. Refresh after parameters load."
                 : "Review or reassign servo output functions. Live PWM updates from telemetry.";
+            SetMessages(msg);
         }
 
         HasOutputs = Outputs.Any();

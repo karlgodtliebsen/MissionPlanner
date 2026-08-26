@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using UraniumUI.Material.TabViews;
+using UraniumUI.Extensions;
 
 namespace MissionPlanner.App.Views.Common;
 
@@ -95,8 +96,9 @@ public partial class VehicleConnectionViewModel : BaseViewModel
             return;
         }
 
+        DeactivateCore();
         disposed = true;
-        DeactivateAsync().GetAwaiter().GetResult();
+        base.Dispose();
     }
 
     /// <inheritdoc />
@@ -122,20 +124,26 @@ public partial class VehicleConnectionViewModel : BaseViewModel
 
     private void VehicleChanged(ActiveVehicleChangedEventArgs e)
     {
-        OnActiveVehicleChanged(e).GetAwaiter().GetResult();
+        OnActiveVehicleChanged(e).FireAndForget();
     }
 
 
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
+        DeactivateCore();
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Performs the synchronous portion of lifecycle deactivation.</summary>
+    protected virtual void DeactivateCore()
+    {
         if (!activated)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         activated = false;
         activeVehicle.Changed -= VehicleChanged;
-        return Task.CompletedTask;
     }
 }

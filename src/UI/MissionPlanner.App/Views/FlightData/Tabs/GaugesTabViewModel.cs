@@ -78,7 +78,7 @@ public sealed class GaugesTabViewModel : BaseViewModel
     /// <inheritdoc />
     public override void Dispose()
     {
-        DeactivateAsync().GetAwaiter().GetResult();
+        Deactivate();
     }
 
     /// <inheritdoc />
@@ -92,14 +92,19 @@ public sealed class GaugesTabViewModel : BaseViewModel
         return Task.CompletedTask;
     }
 
-    /// <inheritdoc />
-    public override Task DeactivateAsync()
+    private void Deactivate()
     {
         activeVehicle.Changed -= OnChanged;
         settings.SettingsChanged -= OnSettingsChanged;
         subscription.Dispose();
         lifetime.Cancel();
         lifetime.Dispose();
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
+        Deactivate();
         return Task.CompletedTask;
     }
 
@@ -130,7 +135,7 @@ public sealed class GaugesTabViewModel : BaseViewModel
         }
         catch (OperationCanceledException)
         {
-            Debug.Print("Operation canceled.");
+            Debug.Print("GaugesTabViewModel-PublishAsync-Operation canceled.");
         }
         finally
         {

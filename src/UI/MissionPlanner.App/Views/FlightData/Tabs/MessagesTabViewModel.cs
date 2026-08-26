@@ -132,7 +132,8 @@ public partial class MessagesTabViewModel : BaseViewModel
     /// <inheritdoc />
     public override void Dispose()
     {
-        DeactivateAsync().GetAwaiter().GetResult();
+        Deactivate();
+        base.Dispose();
     }
 
     /// <inheritdoc />
@@ -147,9 +148,14 @@ public partial class MessagesTabViewModel : BaseViewModel
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
+        Deactivate();
+        return Task.CompletedTask;
+    }
+
+    private void Deactivate()
+    {
         vehicleMessages.MessageAdded -= OnVehicleMessageAdded;
         applicationMessages.NotificationAdded -= OnApplicationMessageAdded;
-        return Task.CompletedTask;
     }
 
     partial void OnSelectedSeverityChanged(string value)

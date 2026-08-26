@@ -10,6 +10,9 @@
 
     <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
         <Label Text="ESP8266 MAVLink Bridge" FontSize="24" FontAttributes="Bold"/>
+        <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+        <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
+        <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
         <Label Text="{Binding Target}"/>
 
         <Entry Placeholder="Access-point SSID" Text="{Binding Ssid}" HorizontalTextAlignment="End"/>
@@ -18,7 +21,5 @@
         <Entry Placeholder="Station password" Text="{Binding StationPassword}" IsPassword="True" HorizontalTextAlignment="End"/>
         
         <Button Text="Validate settings"  Command="{Binding ValidateCommand}" HorizontalOptions="Center"/>
-        <Label Text="{Binding StatusMessage}"/>
-        <Label Text="{Binding ErrorMessage}" TextColor="{DynamicResource Error}"/>
     </VerticalStackLayout>
 </tabViews:TabViewLifecycleContent>

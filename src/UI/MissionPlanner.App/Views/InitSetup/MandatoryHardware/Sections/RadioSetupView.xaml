@@ -11,12 +11,11 @@
                                   >
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Padding="16"  Spacing="25" HorizontalOptions="Center">
-            <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
+
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                 <VerticalStackLayout Spacing="2">
                     <Label Text="Radio calibration" FontSize="24" FontAttributes="Bold" />
-                    <Label Text="Live receiver input and verified ArduPilot endpoint calibration"
-                           Opacity="0.7" />
+                    <Label Text="Live receiver input and verified ArduPilot endpoint calibration" Opacity="0.7" />
                 </VerticalStackLayout>
                 <Label Grid.Column="1"
                        Text="{Binding CalibrationState}"
@@ -25,6 +24,10 @@
                        FontAttributes="Bold"
                        BackgroundColor="{DynamicResource PrimaryContainer}" />
             </Grid>
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
+            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
 
             <Border Padding="14"
                     StyleClass="SurfaceContainer,Rounded,Elevation1">

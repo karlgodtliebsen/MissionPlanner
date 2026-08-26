@@ -103,7 +103,8 @@ public partial class AuxFunctionTabViewModel : BaseViewModel
     /// <inheritdoc />
     public override void Dispose()
     {
-        DeactivateAsync().GetAwaiter().GetResult();
+        Deactivate();
+        base.Dispose();
     }
 
     /// <inheritdoc />
@@ -117,8 +118,13 @@ public partial class AuxFunctionTabViewModel : BaseViewModel
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
-        activeVehicle.Changed -= OnActiveVehicleChanged;
+        Deactivate();
         return Task.CompletedTask;
+    }
+
+    private void Deactivate()
+    {
+        activeVehicle.Changed -= OnActiveVehicleChanged;
     }
 
     private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs e)

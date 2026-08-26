@@ -16,6 +16,7 @@ using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using UraniumUI.Material.Dialogs;
+using UraniumUI.Extensions;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
@@ -364,7 +365,7 @@ public partial class OriginalFullParametersListViewModel : ObservableObject, IDi
 
         var cancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
         cachedLoadCancellation = cancellation;
-        LoadCachedParametersAsync(vehicleId, cancellation).GetAwaiter().GetResult();
+        LoadCachedParametersAsync(vehicleId, cancellation).FireAndForget();
     }
 
     private bool HasCompleteCachedParameterSet(VehicleId vehicleId)

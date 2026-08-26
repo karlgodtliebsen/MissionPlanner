@@ -99,7 +99,8 @@ public partial class PreflightTabViewModel : BaseViewModel
     /// <inheritdoc />
     public override void Dispose()
     {
-        DeactivateAsync().GetAwaiter().GetResult();
+        Deactivate();
+        base.Dispose();
     }
 
     /// <inheritdoc />
@@ -115,11 +116,17 @@ public partial class PreflightTabViewModel : BaseViewModel
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
+        Deactivate();
+        return Task.CompletedTask;
+    }
+
+    private void Deactivate()
+    {
         activeVehicle.Changed -= OnActiveVehicleChanged;
-        stateSubscription.Dispose();
+        stateSubscription?.Dispose();
+        stateSubscription = null!;
         lifetime.Cancel();
         lifetime.Dispose();
-        return Task.CompletedTask;
     }
 
     private void OnActiveVehicleChanged(EventArgs args)

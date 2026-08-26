@@ -173,7 +173,8 @@ public partial class QuickTabViewModel : BaseViewModel
     public override void Dispose()
     {
         logger.LogDebug("Disposing Quick tab telemetry lifecycle.");
-        DeactivateAsync().GetAwaiter().GetResult();
+        Deactivate();
+        base.Dispose();
     }
 
     /// <inheritdoc />
@@ -189,8 +190,13 @@ public partial class QuickTabViewModel : BaseViewModel
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
+        Deactivate();
+        return Task.CompletedTask;
+    }
+
+    private void Deactivate()
+    {
         disposable?.Dispose();
         disposable = null;
-        return Task.CompletedTask;
     }
 }

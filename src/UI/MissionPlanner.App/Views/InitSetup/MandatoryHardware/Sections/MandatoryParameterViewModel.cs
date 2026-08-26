@@ -83,13 +83,12 @@ public abstract partial class MandatoryParameterViewModel : SetupWorkflowDetailV
     }
 
     /// <inheritdoc />
-    public override Task ActivateAsync()
+    public override async Task ActivateAsync()
     {
         StatusMessage = "Connect a vehicle to load settings.";
         activeVehicle.Changed += OnActiveVehicleChanged;
-        base.ActivateAsync();
-        LoadAsync().GetAwaiter().GetResult();
-        return Task.CompletedTask;
+        await base.ActivateAsync();
+        await LoadAsync();
     }
 
     /// <inheritdoc />

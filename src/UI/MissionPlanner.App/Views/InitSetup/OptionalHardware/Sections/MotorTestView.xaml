@@ -25,14 +25,11 @@
                     IsVisible="{Binding IsBackgroundParameterLoadInProgress}"
                     LineBreakMode="WordWrap"
                     VerticalOptions="Center" />
-
-                <Label 
-                    TextColor="{DynamicResource Warning}" Text="{Binding ErrorMessage}" 
-                    LineBreakMode="WordWrap" VerticalOptions="Center" />
-
+                <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
                 <Label Text="{Binding StatusMessage}" 
                        IsVisible="{Binding IsBackgroundParameterLoadInProgress, Converter={StaticResource InvertedBoolConverter}}"
                        LineBreakMode="WordWrap" VerticalOptions="Center" />
+
             </HorizontalStackLayout>
 
             <VerticalStackLayout Spacing="10">

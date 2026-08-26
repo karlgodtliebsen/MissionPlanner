@@ -165,38 +165,43 @@ public sealed partial class OnboardOsdTabViewModel : BaseViewModel
             return;
         }
 
+        Deactivate();
         disposed = true;
-        DeactivateAsync().GetAwaiter().GetResult();
         DetachWorkspace();
+        base.Dispose();
     }
 
     /// <inheritdoc />
-    public override Task ActivateAsync()
+    public override async Task ActivateAsync()
     {
         ObjectDisposedException.ThrowIf(disposed, this);
         if (active)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         active = true;
         activeVehicle.Changed += OnActiveVehicleChanged;
-        InitializeAsync().GetAwaiter().GetResult();
-        return Task.CompletedTask;
+        await InitializeAsync();
     }
 
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
+        Deactivate();
+        return Task.CompletedTask;
+    }
+
+    private void Deactivate()
+    {
         if (!active)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         active = false;
         activeVehicle.Changed -= OnActiveVehicleChanged;
         CancelOperation();
-        return Task.CompletedTask;
     }
 
     partial void OnSelectedScreenChanged(OsdScreenViewModel? value)

@@ -11,6 +11,9 @@
         <Label Text="Onboard OSD" FontSize="20" FontAttributes="Bold" />
         <Label Text="Configure screens, elements, positions, units and supported options in the existing Onboard OSD workspace." LineBreakMode="WordWrap" />
         <Label Text="This entry uses the same OSD configuration service and editing session as Config; it does not create a second configuration engine." Opacity="0.75" LineBreakMode="WordWrap" />
+        <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+        <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
+        <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
         <Button Text="Open Onboard OSD configuration" Command="{Binding OpenOnboardOsdCommand}" HorizontalOptions="Start" />
     </VerticalStackLayout>
 </tabViews:TabViewLifecycleContent>

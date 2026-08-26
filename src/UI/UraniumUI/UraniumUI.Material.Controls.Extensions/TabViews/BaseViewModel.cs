@@ -35,8 +35,23 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
     }
 
     /// <summary>
-    /// Gets the latest operation or validation status.</summary>
     /// 
+    /// </summary>
+    protected void SetBusy()
+    {
+        dispatcher.Dispatch(() => IsBusy = true);
+    }
+    /// <summary>
+    /// 
+    /// </summary>
+    protected void ResetBusy()
+    {
+        dispatcher.Dispatch(() => IsBusy = false);
+    }
+
+    /// <summary>
+    /// Gets the latest operation or validation status.
+    /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasStatusMessage))]
     public virtual partial string? StatusMessage { get; set; } = null;
@@ -72,6 +87,21 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
         }
         StatusMessage = statusMessage;
         ErrorMessage = errorMessage;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="ex"></param>
+    protected virtual void SetMessages(Exception ex)
+    {
+        if (dispatcher.IsDispatchRequired)
+        {
+            dispatcher.Dispatch(() => SetMessages(null, ex.Message));
+            return;
+        }
+        StatusMessage = null;
+        ErrorMessage = ex.Message;
     }
 
 

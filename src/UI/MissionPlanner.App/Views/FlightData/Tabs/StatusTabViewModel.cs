@@ -65,7 +65,8 @@ public partial class StatusTabViewModel : BaseViewModel
     /// <inheritdoc />
     public override void Dispose()
     {
-        DeactivateAsync().GetAwaiter().GetResult();
+        Deactivate();
+        base.Dispose();
     }
 
     /// <inheritdoc />
@@ -87,11 +88,17 @@ public partial class StatusTabViewModel : BaseViewModel
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
+        Deactivate();
+        return Task.CompletedTask;
+    }
+
+    private void Deactivate()
+    {
         active.Changed -= OnChanged;
-        subscription.Dispose();
+        subscription?.Dispose();
+        subscription = null!;
         lifetime.Cancel();
         lifetime.Dispose();
-        return Task.CompletedTask;
     }
 
     private void OnChanged(EventArgs e)

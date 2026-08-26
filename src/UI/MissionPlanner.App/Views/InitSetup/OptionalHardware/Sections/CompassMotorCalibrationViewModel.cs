@@ -17,6 +17,7 @@ public sealed partial class CompassMotorCalibrationViewModel : OptionalHardwareB
     private readonly ICompassMotorCalibrationService service;
     private readonly IUserConfirmationService confirmation;
     private readonly IDispatcher dispatcher;
+    private bool activated;
 
     /// <summary>
     ///  
@@ -33,7 +34,6 @@ public sealed partial class CompassMotorCalibrationViewModel : OptionalHardwareB
         this.service = service;
         this.confirmation = confirmation;
         this.dispatcher = dispatcher;
-        service.Changed += Changed;
         Show(service.Current);
     }
 
@@ -84,10 +84,42 @@ public sealed partial class CompassMotorCalibrationViewModel : OptionalHardwareB
     }
 
     /// <inheritdoc />
+    public override async Task ActivateAsync()
+    {
+        if (!activated)
+        {
+            activated = true;
+            service.Changed += Changed;
+            Show(service.Current);
+        }
+
+        await base.ActivateAsync();
+    }
+
+    /// <inheritdoc />
+    public override async Task DeactivateAsync()
+    {
+        Deactivate();
+        await service.StopAsync();
+        await base.DeactivateAsync();
+    }
+
+    /// <inheritdoc />
     public override void Dispose()
     {
-        service.Changed -= Changed;
-        _ = service.StopAsync();
+        Deactivate();
         service.Dispose();
+        base.Dispose();
+    }
+
+    private void Deactivate()
+    {
+        if (!activated)
+        {
+            return;
+        }
+
+        activated = false;
+        service.Changed -= Changed;
     }
 }

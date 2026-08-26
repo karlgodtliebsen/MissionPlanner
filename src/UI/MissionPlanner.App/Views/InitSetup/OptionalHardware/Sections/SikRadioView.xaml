@@ -11,8 +11,11 @@
         <VerticalStackLayout Padding="16" Spacing="25" VerticalOptions="Center" HorizontalOptions="Center">
             <Label Text="SiK / RFD Radio" FontSize="20" FontAttributes="Bold" />
             <Label Text="Direct serial configuration. Disconnect any vehicle using the selected port." 
-                   TextColor="{DynamicResource Error}" />
-            <HorizontalStackLayout Spacing="50"  HorizontalOptions="Fill" HeightRequest="75" VerticalOptions="End">
+                   TextColor="{DynamicResource Warning}" />
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
+            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+            <HorizontalStackLayout Spacing="50"  HorizontalOptions="Fill" HeightRequest="75" VerticalOptions="Fill">
                 <Picker Title="Serial device" 
                         VerticalOptions="End"
                         ItemsSource="{Binding Ports}" 
@@ -22,6 +25,7 @@
                 <controls:NumericField
                     Title="BaudRate"
                     NumberFormat="F0"
+                    NumericType="Int32"
                     VerticalOptions="End"
                     HorizontalOptions="End"
                     HorizontalTextAlignment="End"
@@ -37,7 +41,6 @@
 
 
             <Label Text="{Binding Identity}" FontAttributes="Bold"/>
-            <Label Text="{Binding Status}"/>
 
             <Editor Text="{Binding SettingsText}" HeightRequest="260" Placeholder="S0=value, one setting per line"/>
 

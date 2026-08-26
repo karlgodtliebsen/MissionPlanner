@@ -12,10 +12,10 @@
 
     <ScrollView VerticalScrollBarVisibility="Always">
         <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
-            <ProgressBar IsVisible="{Binding IsBusy}" Progress="{Binding Progress}" />
             <Label Text="ADSB" FontSize="18" FontAttributes="Bold" />
-            <Label Text="{Binding Status}" FontAttributes="Italic" />
-            <Label Text="{Binding Error}" TextColor="{DynamicResource Error}" />
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
+            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Guidance}">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="x:String">

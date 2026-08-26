@@ -5,14 +5,14 @@
     
     
     <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
+        <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
         <Label Text="CubeID Firmware Update" FontSize="24" FontAttributes="Bold"/>
         <Label Text="The target component identity is retained; an autopilot component cannot consume CubeID acknowledgements."/>
+        <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
+        <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
         <controls:AlignedEditorField Title="Local firmware .bin path" HorizontalTextAlignment="End" Text="{Binding FirmwarePath}"/>
-
 
         <Button Text="Inspect firmware" Command="{Binding InspectCommand}" HorizontalOptions="Center"/>
         <Label Text="{Binding FirmwareSummary}"/>
-        <Label Text="{Binding ErrorMessage}" 
-               TextColor="{DynamicResource Error}"/>
     </VerticalStackLayout>
 </tabViews:TabViewLifecycleContent>

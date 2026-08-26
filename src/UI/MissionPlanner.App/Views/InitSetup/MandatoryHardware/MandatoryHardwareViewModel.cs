@@ -30,7 +30,8 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
     private readonly IDispatcher dispatcher;
     private readonly ILogger<MandatoryHardwareViewModel> logger;
     private readonly Lock parameterRefreshSync = new();
-    private CancellationTokenSource? parameterRefreshCancellation;
+    private System.Threading.Timer? parameterRefreshTimer;
+    private bool active;
     private bool disposed;
 
     /// <summary>Initializes the Setup workspace shell.</summary>
@@ -98,13 +99,14 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
     public override Task ActivateAsync()
     {
         Debug.Print("MandatoryHardwareViewModel ActivateAsync Enter");
-        Tabs.ReplaceRange(
-            catalog.Workflows.Select(item =>
-                new TabItemViewModel(new TabDescriptor(item.Key.ToString(), item.Title, item.Description, item.ConfigDestination)))
-        );
-
+        active = true;
         activeVehicle.Changed += OnActiveVehicleChanged;
         parameterRegistry.Changed += OnParameterChanged;
+
+        //Tabs.ReplaceRange(
+        //    catalog.Workflows.Select(item =>
+        //        new TabItemViewModel(new TabDescriptor(item.Key.ToString(), item.Title, item.Description, item.ConfigDestination)))
+        //);
         RefreshCore();
         Debug.Print("MandatoryHardwareViewModel ActivateAsync Exit");
         return Task.CompletedTask;
@@ -121,6 +123,7 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
 
     private void Deactivate()
     {
+        active = false;
         activeVehicle.Changed -= OnActiveVehicleChanged;
         parameterRegistry.Changed -= OnParameterChanged;
         CancelParameterRefresh();
@@ -229,32 +232,39 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
             return;
         }
 
-        CancellationToken token;
         lock (parameterRefreshSync)
         {
-            parameterRefreshCancellation?.Cancel();
-            parameterRefreshCancellation?.Dispose();
-            parameterRefreshCancellation = new CancellationTokenSource();
-            token = parameterRefreshCancellation.Token;
-        }
+            if (!active || disposed)
+            {
+                return;
+            }
 
-        _ = RefreshAfterParameterChangesAsync(token);
+            parameterRefreshTimer ??= new System.Threading.Timer(
+                static state => ((MandatoryHardwareViewModel)state!).DispatchParameterRefresh(),
+                this,
+                Timeout.InfiniteTimeSpan,
+                Timeout.InfiniteTimeSpan);
+            parameterRefreshTimer.Change(TimeSpan.FromMilliseconds(150), Timeout.InfiniteTimeSpan);
+        }
     }
 
-    private async Task RefreshAfterParameterChangesAsync(CancellationToken cancellationToken)
+    private void DispatchParameterRefresh()
     {
-        try
+        lock (parameterRefreshSync)
         {
-            await Task.Delay(TimeSpan.FromMilliseconds(150), cancellationToken);
-            if (!cancellationToken.IsCancellationRequested)
+            if (!active || disposed)
             {
-                dispatcher.Dispatch(Refresh);
+                return;
             }
         }
-        catch (OperationCanceledException)
+
+        dispatcher.Dispatch(() =>
         {
-            // A newer parameter update or page deactivation replaced this refresh.
-        }
+            if (active && !disposed)
+            {
+                Refresh();
+            }
+        });
     }
 
     private void CancelParameterRefresh()
@@ -262,9 +272,8 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
         Debug.Print("MandatoryHardwareViewModel CancelParameterRefresh Enter");
         lock (parameterRefreshSync)
         {
-            parameterRefreshCancellation?.Cancel();
-            parameterRefreshCancellation?.Dispose();
-            parameterRefreshCancellation = null;
+            parameterRefreshTimer?.Dispose();
+            parameterRefreshTimer = null;
         }
         Debug.Print("MandatoryHardwareViewModel CancelParameterRefresh Exit");
     }
