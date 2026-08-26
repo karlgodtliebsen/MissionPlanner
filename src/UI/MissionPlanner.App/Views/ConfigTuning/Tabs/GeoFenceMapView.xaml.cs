@@ -15,6 +15,7 @@ public partial class GeoFenceMapView : ContentView, IDisposable
     private readonly List<Pin> pins = [];
     private readonly List<Polyline> lines = [];
     private GeoFenceTabViewModel? viewModel;
+    private bool disposed;
 
     /// <summary>Initializes the dedicated fence map and its graphics layer.</summary>
     public GeoFenceMapView()
@@ -30,11 +31,45 @@ public partial class GeoFenceMapView : ContentView, IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
         FenceMap.MapClicked -= OnMapClicked;
         BindingContextChanged -= OnBindingContextChanged;
         if (viewModel is not null)
         {
             viewModel.GeometryChanged -= OnGeometryChanged;
+        }
+    }
+
+    /// <summary>Centers the map on the device's current location without changing fence geometry.</summary>
+    public async Task CenterOnMyLocationAsync(CancellationToken cancellationToken = default)
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        try
+        {
+            var location = await Geolocation.Default.GetLastKnownLocationAsync()
+                           ?? await Geolocation.Default.GetLocationAsync(
+                               new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10)),
+                               cancellationToken);
+            if (location is null || disposed)
+            {
+                return;
+            }
+
+            var (x, y) = SphericalMercator.FromLonLat(location.Longitude, location.Latitude);
+            map.Navigator.CenterOnAndZoomTo(new MPoint(x, y), 4.78);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            System.Diagnostics.Debug.WriteLine($"Unable to center the GeoFence map on the current location: {exception}");
         }
     }
 

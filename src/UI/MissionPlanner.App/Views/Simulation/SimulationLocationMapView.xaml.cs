@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using BruTile.Predefined;
 using Mapsui;
 using Mapsui.Projections;
@@ -13,6 +14,7 @@ public partial class SimulationLocationMapView : ContentView, IDisposable
     private readonly Mapsui.Map map;
     private readonly List<Pin> pins = [];
     private SimulationViewModel? viewModel;
+    private bool disposed;
 
     /// <summary>Initializes the location-selection map.</summary>
     public SimulationLocationMapView()
@@ -28,11 +30,45 @@ public partial class SimulationLocationMapView : ContentView, IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
         LocationMap.MapClicked -= OnMapClicked;
         BindingContextChanged -= OnBindingContextChanged;
         if (viewModel is not null)
         {
             viewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        }
+    }
+
+    /// <summary>Centers the map on the device's current location without changing the SITL start position.</summary>
+    public async Task CenterOnMyLocationAsync(CancellationToken cancellationToken = default)
+    {
+        ObjectDisposedException.ThrowIf(disposed, this);
+        try
+        {
+            var location = await Geolocation.Default.GetLastKnownLocationAsync()
+                           ?? await Geolocation.Default.GetLocationAsync(
+                               new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10)),
+                               cancellationToken);
+            if (location is null || disposed)
+            {
+                return;
+            }
+
+            var (x, y) = SphericalMercator.FromLonLat(location.Longitude, location.Latitude);
+            map.Navigator.CenterOnAndZoomTo(new MPoint(x, y), 4.78);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            Debug.WriteLine($"Unable to center the simulation map on the current location: {exception}");
         }
     }
 

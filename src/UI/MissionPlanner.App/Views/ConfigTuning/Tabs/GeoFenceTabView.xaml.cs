@@ -14,4 +14,18 @@ public partial class GeoFenceTabView : ExtendedContentPage<GeoFenceTabViewModel>
     {
         InitializeComponent();
     }
+
+    /// <inheritdoc />
+    protected override async Task OnActivateAsync()
+    {
+        await base.OnActivateAsync();
+        await FenceMapView.CenterOnMyLocationAsync();
+    }
+
+    /// <inheritdoc />
+    public override void Dispose()
+    {
+        FenceMapView.Dispose();
+        base.Dispose();
+    }
 }

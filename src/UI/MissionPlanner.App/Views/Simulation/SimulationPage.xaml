@@ -246,7 +246,7 @@
                             </Grid>
                             <Label Text="Click the map to select latitude/longitude" />
                            
-                            <vm:SimulationLocationMapView HeightRequest="220" />
+                            <vm:SimulationLocationMapView x:Name="LocationMapView" HeightRequest="220" />
         
                             <Label Text="Ports" />
 

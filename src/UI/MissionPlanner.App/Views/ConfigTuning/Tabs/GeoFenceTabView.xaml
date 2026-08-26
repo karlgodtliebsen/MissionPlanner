@@ -129,7 +129,7 @@
                 </VerticalStackLayout>
             </ScrollView>
 
-            <tabs:GeoFenceMapView Grid.Column="1" />
+            <tabs:GeoFenceMapView x:Name="FenceMapView" Grid.Column="1" />
         </Grid>
     </Grid>
 </navigation:ExtendedContentPage>

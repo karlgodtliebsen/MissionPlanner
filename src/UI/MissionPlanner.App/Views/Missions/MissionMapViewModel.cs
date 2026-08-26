@@ -504,7 +504,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     public Mission Mission { get; private set; } = new(MissionId.New(), "New Mission");
 
     /// <summary>Raised whenever the mission items change so the views can redraw pins and the route.</summary>
-    public event EventHandler? MissionChanged;
+    public event Action<MissionEventArgs>? MissionChanged;
 
     /// <summary>Raised when the map should pan/zoom to show the whole mission (after load or vehicle read).</summary>
     public event EventHandler? FitToMissionRequested;
@@ -2213,7 +2213,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     {
         RebuildRows();
         UpdateMapSnapshot();
-        MissionChanged?.Invoke(this, new MissionEventArgs(message));
+        MissionChanged?.Invoke(new MissionEventArgs(message));
         ShowStatus(message);
         OnPropertyChanged(nameof(HasMissionItems));
         OnPropertyChanged(nameof(HasMissionRoute));

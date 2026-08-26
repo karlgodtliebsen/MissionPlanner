@@ -14,4 +14,18 @@ public partial class SimulationPage : ExtendedContentPage<SimulationViewModel>
     {
         InitializeComponent();
     }
+
+    /// <inheritdoc />
+    protected override async Task OnActivateAsync()
+    {
+        await base.OnActivateAsync();
+        await LocationMapView.CenterOnMyLocationAsync();
+    }
+
+    /// <inheritdoc />
+    public override void Dispose()
+    {
+        LocationMapView.Dispose();
+        base.Dispose();
+    }
 }
