@@ -105,15 +105,10 @@ public sealed class SetupWorkspaceTests
             context,
             parameters,
             new SetupWorkflowCatalog(),
-            new MemoryCompletionStore(),
             Substitute.For<INavigationService>(),
-            confirmation,
-            clock,
             dispatcher,
             Substitute.For<ILogger<MandatoryHardwareViewModel>>());
         viewModel.SelectedTab = viewModel.Tabs.Single(item => item.Descriptor.Key == SetupWorkflowKey.Frame.ToString());
-        viewModel.IsFrameSelected.Should().BeTrue();
-        viewModel.IsFirmwareSelected.Should().BeFalse();
 
         context.Set(context.Current.State! with
         {
@@ -152,10 +147,7 @@ public sealed class SetupWorkspaceTests
             context,
             new VehicleParameterRegistry(),
             new SetupWorkflowCatalog(),
-            new MemoryCompletionStore(),
             Substitute.For<INavigationService>(),
-            Substitute.For<IUserConfirmationService>(),
-            Substitute.For<IDateTimeProvider>(),
             dispatcher,
             Substitute.For<ILogger<MandatoryHardwareViewModel>>());
         viewModel.SelectedTab = viewModel.Tabs.Single(item => item.Descriptor.Key == SetupWorkflowKey.Frame.ToString());

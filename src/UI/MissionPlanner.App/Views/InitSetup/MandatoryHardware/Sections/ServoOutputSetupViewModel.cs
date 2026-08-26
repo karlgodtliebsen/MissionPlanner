@@ -11,7 +11,6 @@ using MissionPlanner.Core.Setup.MandatoryHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
-using MissionPlanner.Shared.Models.Vehicles.Models;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -26,6 +25,7 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
     private CancellationTokenSource? operationCancellation;
     private IDisposable? vehicleStateSubscription;
     private DateTimeOffset? observedServoAt;
+    private bool active;
 
     /// <summary>Gets the discovered servo outputs.</summary>
     public ObservableRangeCollection<ServoOutputItemViewModel> Outputs { get; } = [];
@@ -38,6 +38,7 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
         get;
         private set;
     }
+
 
     /// <summary>Initializes the servo output Setup workflow.</summary>
     /// <param name="workflowCatalog">The setup workflow catalog.</param>
@@ -72,12 +73,21 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
             SetMessages("Connect a vehicle before loading servo outputs.");
             return;
         }
-        SetBusy();
         var token = StartOperation();
+        SetBusy();
         try
         {
-            var configuration = await servoService.GetConfigurationAsync(vehicleId, token);
-            dispatcher.Dispatch(() => Show(configuration));
+            // Metadata projection can complete synchronously when cached. Keep that CPU work
+            // off the UI thread so the selected tab and its busy indicator can render first.
+            var configuration = await Task.Run(() => servoService.GetConfigurationAsync(vehicleId, token), token);
+
+            dispatcher.Dispatch(() =>
+            {
+                if (active && activeVehicle.IsOnline && activeVehicle.VehicleId == vehicleId && !token.IsCancellationRequested)
+                {
+                    Show(configuration);
+                }
+            });
         }
         catch (OperationCanceledException)
         {
@@ -89,7 +99,13 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
             logger.LogError(exception, "Loading servo outputs failed for {VehicleId}.", vehicleId);
             SetMessages(exception);
         }
-        ResetBusy();
+        finally
+        {
+            if (operationCancellation is { } current && current.Token == token)
+            {
+                ResetBusy();
+            }
+        }
     }
 
     /// <inheritdoc />
@@ -104,11 +120,20 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
     /// <inheritdoc />
     public override async Task ActivateAsync()
     {
+        if (active)
+        {
+            return;
+        }
+
+        active = true;
         SetMessages("Load the connected vehicle's servo output functions.");
+        SetBusy();
         activeVehicle.Changed += OnActiveVehicleChanged;
         observedServoAt = activeVehicle.State?.Radio.ServoObservedAt;
         vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
-        SetBusy();
+        // Complete one asynchronous boundary before starting the potentially expensive load.
+        // This lets MAUI commit the selected tab and render the activity indicator.
+        await Task.Yield();
         await LoadAsync();
         await base.ActivateAsync();
     }
@@ -116,6 +141,14 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
+        if (!active)
+        {
+            return Task.CompletedTask;
+        }
+
+        active = false;
+        Cancel();
+        ResetBusy();
         activeVehicle.Changed -= OnActiveVehicleChanged;
         vehicleStateSubscription?.Dispose();
         vehicleStateSubscription = null;
@@ -199,49 +232,23 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
         dispatcher.Dispatch(() => WriteCommand.NotifyCanExecuteChanged());
     }
 
-    private async Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
+    private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
     {
         if (evt.VehicleId == activeVehicle.VehicleId && evt.VehicleState.Radio.ServoObservedAt != observedServoAt)
         {
-            if (evt.VehicleId == activeVehicle.VehicleId &&
-                evt.VehicleState.Radio.ServoObservedAt != observedServoAt)
-            {
-                observedServoAt = evt.VehicleState.Radio.ServoObservedAt;
-                await RefreshLive();
-            }
-        }
-    }
-
-    private async Task RefreshLive()
-    {
-        if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline || Outputs.Count == 0)
-        {
-            return;
-        }
-
-        await UpdateLiveAsync(vehicleId);
-    }
-
-    private async Task UpdateLiveAsync(VehicleId vehicleId)
-    {
-        try
-        {
-            var configuration = await servoService.GetConfigurationAsync(vehicleId, activeVehicle.ConnectionCancellationToken);
+            observedServoAt = evt.VehicleState.Radio.ServoObservedAt;
+            var values = evt.VehicleState.Radio.ServoOutputsRaw;
             dispatcher.Dispatch(() =>
             {
-                foreach (var output in configuration.Outputs)
+                for (var index = 0; index < Outputs.Count; index++)
                 {
-                    Outputs.FirstOrDefault(item => item.ChannelNumber == output.ChannelNumber)?.UpdateLive(output);
+                    int? pwm = values is not null && index < values.Count ? values[index] : null;
+                    Outputs[index].UpdateLive(pwm, false);
                 }
-
-                WriteCommand.NotifyCanExecuteChanged();
             });
         }
-        catch (Exception exception) when (exception is not OperationCanceledException)
-        {
-            Debug.Print($"Live servo refresh failed for {vehicleId}: {exception.Message}");
-            logger.LogDebug(exception, "Live servo refresh failed for {VehicleId}.", vehicleId);
-        }
+
+        return Task.CompletedTask;
     }
 
     private void Show(ServoOutputConfiguration configuration, bool preserveStatus = false)

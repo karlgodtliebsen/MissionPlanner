@@ -12,78 +12,88 @@
                                   
                                   >
 
-    <ScrollView VerticalScrollBarVisibility="Always">
-        <VerticalStackLayout Padding="16"  Spacing="25" HorizontalOptions="Center">
-            <Grid RowDefinitions="Auto,*" HorizontalOptions="Center"  Padding="10">
-                <VerticalStackLayout  Spacing="25">
-                    <Label Text="Servo output functions" FontSize="18" FontAttributes="Bold" />
-                    <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
-                    <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
-                    <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+    <Grid RowDefinitions="Auto,*" Padding="26" RowSpacing="16" HorizontalOptions="Fill">
+        <VerticalStackLayout Grid.Row="0" Spacing="12" HorizontalOptions="Fill">
+            <Label HorizontalOptions="Center" Text="Servo output functions" FontSize="18" FontAttributes="Bold" />
+            <ActivityIndicator HorizontalOptions="Center" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
+            <Label HorizontalOptions="Center" Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
+            <Label HorizontalOptions="Center" Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
 
-                    <HorizontalStackLayout Spacing="10" HorizontalOptions="Fill" Margin="0,10,0,10">
-                        <Button Text="Refresh servo outputs"
+            <HorizontalStackLayout Spacing="10" HorizontalOptions="Center" Margin="0,10,0,10">
+                <Button Text="Refresh servo outputs"
                                 Command="{Binding RefreshCommand}"
                                 HorizontalOptions="Start" />
-                        <Button Text="Write"
+                <Button Text="Write"
                                 Command="{Binding WriteCommand}"
-                                HorizontalOptions="Start" />
+                                HorizontalOptions="End" />
 
-                    </HorizontalStackLayout>
-                </VerticalStackLayout>
-                <controls:VirtualizedDataGrid 
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+        <controls:VirtualizedDataGrid 
                             Grid.Row="1"
                             ItemsSource="{Binding Outputs}" 
                             ItemSizingStrategy= "MeasureFirstItem"
                             ShowSearchBar="False"
-                            RowHeight="80"
-                                
+                            RowHeight="60"
+                            OverscanRowCount="16"
                             HorizontalOptions="Center"
                             VerticalOptions="Fill" 
                             >
 
-                    <controls:VirtualizedDataGrid.Columns>
-                        <material:DataGridColumn Width="75" x:DataType="sections:ServoOutputItemViewModel" 
+            <controls:VirtualizedDataGrid.EmptyView>
+                <Grid 
+                     Margin="40"
+                     HorizontalOptions="Fill"
+                     VerticalOptions="Fill"
+                     BackgroundColor="Transparent"
+                     >
+                    <Label Text="Loading..." FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" />
+                </Grid>
+
+            </controls:VirtualizedDataGrid.EmptyView>
+
+            <controls:VirtualizedDataGrid.Columns>
+                <material:DataGridColumn Width="75" x:DataType="sections:ServoOutputItemViewModel" 
                                              ValueBinding="{Binding Header}" Title="" />
 
-                        <material:DataGridColumn Title="Output PWM" Width="160">
-                            <material:DataGridColumn.CellItemTemplate >
-                                <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
-                                    <Label Text="{Binding LiveDescription}"
+                <material:DataGridColumn Title="Output PWM" Width="160">
+                    <material:DataGridColumn.CellItemTemplate >
+                        <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
+                            <Label Text="{Binding LiveDescription}"
                                            HorizontalOptions="Center"
                                            VerticalOptions="Center" />
-                                </DataTemplate>
-                            </material:DataGridColumn.CellItemTemplate>
-                        </material:DataGridColumn>
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
 
 
-                        <material:DataGridColumn Title="Reverse" Width="120">
-                            <material:DataGridColumn.CellItemTemplate >
-                                <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
-                                    <material:CheckBox IsChecked="{Binding Reversed, Mode=TwoWay}"
+                <material:DataGridColumn Title="Reverse" Width="120">
+                    <material:DataGridColumn.CellItemTemplate >
+                        <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
+                            <material:CheckBox IsChecked="{Binding Reversed, Mode=TwoWay}"
                                                        HorizontalOptions="Center" />
-                                </DataTemplate>
-                            </material:DataGridColumn.CellItemTemplate>
-                        </material:DataGridColumn>
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
 
-                        <material:DataGridColumn Title="Function" Width="200">
-                            <material:DataGridColumn.CellItemTemplate >
-                                <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
-                                    <material:SelectField VerticalOptions="Center"
+                <material:DataGridColumn Title="Function" Width="200">
+                    <material:DataGridColumn.CellItemTemplate >
+                        <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
+                            <material:SelectField VerticalOptions="Center"
                                                           HorizontalOptions="Fill"
                                                       Title="Function"
                                                       ItemsSource="{Binding Functions}"
                                                       SelectedItem="{Binding SelectedFunction}"
                                                       ItemDisplayBinding="{Binding Name}" />
-                                </DataTemplate>
-                            </material:DataGridColumn.CellItemTemplate>
-                        </material:DataGridColumn>
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
 
-                        <material:DataGridColumn Title="Min" Width="160">
-                            <material:DataGridColumn.CellItemTemplate >
-                                <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
-                                   
-                                    <controls1:NumericUpDownField
+                <material:DataGridColumn Title="Min" Width="160">
+                    <material:DataGridColumn.CellItemTemplate >
+                        <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
+
+                            <controls1:NumericUpDownField
                                         Value="{Binding MinimumPwm, Mode=TwoWay}"
                                         NumberFormat="F0"
                                         Min ="{Binding AllowedMinimumPwm}"
@@ -91,18 +101,18 @@
                                         VerticalOptions="Center"
                                         MinimumWidthRequest="150"
                                         HorizontalOptions="Fill"
-                                        ButtonOrientation="Vertical"
+                                        ShowStepperButtons="False"
                                         NumericType="UInt32"
                                         HorizontalTextAlignment="End" />
-                                </DataTemplate>
-                            </material:DataGridColumn.CellItemTemplate>
-                        </material:DataGridColumn>
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
 
 
-                        <material:DataGridColumn Title="Trim" Width="160">
-                            <material:DataGridColumn.CellItemTemplate >
-                                <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
-                                    <controls1:NumericUpDownField
+                <material:DataGridColumn Title="Trim" Width="160">
+                    <material:DataGridColumn.CellItemTemplate >
+                        <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
+                            <controls1:NumericUpDownField
                                         Value="{Binding TrimPwm, Mode=TwoWay}"
                                         NumberFormat="F0"
                                         Min ="{Binding AllowedMinimumPwm}"
@@ -110,17 +120,17 @@
                                         VerticalOptions="Center"
                                         MinimumWidthRequest="150"
                                         HorizontalOptions="Fill"
-                                        ButtonOrientation="Vertical"
+                                        ShowStepperButtons="False"
                                         NumericType="UInt32"
                                         HorizontalTextAlignment="End" />
-                                </DataTemplate>
-                            </material:DataGridColumn.CellItemTemplate>
-                        </material:DataGridColumn>
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
 
-                        <material:DataGridColumn Title="Max" Width="160">
-                            <material:DataGridColumn.CellItemTemplate >
-                                <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
-                                    <controls1:NumericUpDownField
+                <material:DataGridColumn Title="Max" Width="160">
+                    <material:DataGridColumn.CellItemTemplate >
+                        <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
+                            <controls1:NumericUpDownField
                                         Value="{Binding MaximumPwm, Mode=TwoWay}"
                                         NumberFormat="F0"
                                         Min ="{Binding AllowedMinimumPwm}"
@@ -128,20 +138,16 @@
                                         VerticalOptions="Center"
                                         MinimumWidthRequest="150"
                                         HorizontalOptions="Fill"
-                                        ButtonOrientation="Vertical"
+                                        ShowStepperButtons="False"
                                         NumericType="UInt32"
                                         HorizontalTextAlignment="End" />
-                                </DataTemplate>
-                            </material:DataGridColumn.CellItemTemplate>
-                        </material:DataGridColumn>
+                        </DataTemplate>
+                    </material:DataGridColumn.CellItemTemplate>
+                </material:DataGridColumn>
 
-                    </controls:VirtualizedDataGrid.Columns>
-                </controls:VirtualizedDataGrid>
+            </controls:VirtualizedDataGrid.Columns>
+        </controls:VirtualizedDataGrid>
 
-            </Grid>
-
-
-        </VerticalStackLayout>
-    </ScrollView>
+    </Grid>
 
 </tabViews:TabViewLifecycleContent>

@@ -110,15 +110,20 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
     /// 
     /// </summary>
     /// <param name="ex"></param>
-    protected virtual void SetMessages(Exception ex)
+    protected virtual void SetMessages(Exception? ex)
     {
         if (dispatcher.IsDispatchRequired)
         {
             dispatcher.Dispatch(() => SetMessages(null, ex.Message));
             return;
         }
+        string? eMsg = null;
+        if (ex is not null)
+        {
+            ErrorMessage = ex.Message;
+        }
         StatusMessage = null;
-        ErrorMessage = ex.Message;
+        ErrorMessage = eMsg;
         Task.Yield();
     }
 

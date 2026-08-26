@@ -4,14 +4,12 @@ using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Navigation;
-using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.Common;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using MissionPlanner.Library.DateTime.Domain;
 using UraniumUI.Material.TabViews;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware;
@@ -22,10 +20,7 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IVehicleParameterRegistry parameterRegistry;
     private readonly ISetupWorkflowCatalog catalog;
-    private readonly ISetupCompletionStore completionStore;
     private readonly INavigationService navigation;
-    private readonly IUserConfirmationService confirmation;
-    private readonly IDateTimeProvider clock;
     private readonly IDispatcher dispatcher;
     private readonly ILogger<MandatoryHardwareViewModel> logger;
     private readonly Lock parameterRefreshSync = new();
@@ -33,34 +28,27 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
     private bool active;
     private bool disposed;
 
-    /// <summary>Initializes the Setup workspace shell.</summary>
+    /// <summary>
+    /// Initializes the Setup workspace shell.
+    /// </summary>
     /// <param name="activeVehicle">The shared active-vehicle context.</param>
     /// <param name="parameterRegistry">The shared vehicle parameter registry.</param>
     /// <param name="catalog">The setup workflow catalog.</param>
-    /// <param name="completionStore">The local completion-evidence store.</param>
     /// <param name="navigation">The Config navigation adapter.</param>
-    /// <param name="confirmation">The shared confirmation service.</param>
-    /// <param name="clock">The application clock.</param>
     /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="logger">The logger.</param>
     public MandatoryHardwareViewModel(
         IActiveVehicleContext activeVehicle,
         IVehicleParameterRegistry parameterRegistry,
         ISetupWorkflowCatalog catalog,
-        ISetupCompletionStore completionStore,
         INavigationService navigation,
-        IUserConfirmationService confirmation,
-        IDateTimeProvider clock,
         IDispatcher dispatcher,
         ILogger<MandatoryHardwareViewModel> logger) : base(logger)
     {
         this.activeVehicle = activeVehicle;
         this.parameterRegistry = parameterRegistry;
         this.catalog = catalog;
-        this.completionStore = completionStore;
         this.navigation = navigation;
-        this.confirmation = confirmation;
-        this.clock = clock;
         this.dispatcher = dispatcher;
         this.logger = logger;
 
@@ -78,15 +66,9 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
         get; set;
     }
 
-    /// <summary>Gets whether Firmware is selected.</summary>
-    public bool IsFirmwareSelected => IsSelected(SetupWorkflowKey.Firmware);
-
-
-    /// <summary>Gets whether Frame is selected.</summary>
-    public bool IsFrameSelected => IsSelected(SetupWorkflowKey.Frame);
-
-    /// <summary>Gets whether Optional Hardware is selected.</summary>
-    /// <summary>Gets whether the selected workflow links to a Config page.</summary>
+    /// <summary>
+    /// Gets whether the selected workflow links to a Config page.
+    /// </summary>
     public bool HasConfigDestination => SelectedTab?.Descriptor.ConfigDestination is not null;
 
     /// <summary>Gets the active vehicle heading.</summary>
@@ -101,11 +83,6 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
         active = true;
         activeVehicle.Changed += OnActiveVehicleChanged;
         parameterRegistry.Changed += OnParameterChanged;
-
-        //Tabs.ReplaceRange(
-        //    catalog.Workflows.Select(item =>
-        //        new TabItemViewModel(new TabDescriptor(item.Key.ToString(), item.Title, item.Description, item.ConfigDestination)))
-        //);
         RefreshCore();
         Debug.Print("MandatoryHardwareViewModel ActivateAsync Exit");
         return Task.CompletedTask;
@@ -179,9 +156,9 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
     {
         var selectedKey = SelectedTab?.Descriptor.Key;
         var snapshot = activeVehicle.Current;
-        var parameters = snapshot.VehicleId is { } id
-            ? parameterRegistry.GetAllParameters(id)
-            : new Dictionary<string, MavLink.Parameters.VehicleParameter>();
+        //var parameters = snapshot.VehicleId is { } id
+        //    ? parameterRegistry.GetAllParameters(id)
+        //    : new Dictionary<string, MavLink.Parameters.VehicleParameter>();
 
         var tabs = new List<TabItemViewModel>(
             catalog.Workflows.Select(item =>
@@ -194,9 +171,7 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
         {
             VehicleHeading = snapshot.IsOnline
                 ? $"{snapshot.DisplayName} · {snapshot.State!.Identity.Firmware.Family}"
-                : snapshot.VehicleId is null
-                    ? "No vehicle connected"
-                    : $"{snapshot.DisplayName} · disconnected";
+                : snapshot.VehicleId is null ? "No vehicle connected" : $"{snapshot.DisplayName} · disconnected";
             Tabs.ReplaceRange(tabs);
             SelectedTab = Tabs.FirstOrDefault(item => item.Descriptor.Key == selectedKey) ?? Tabs.FirstOrDefault();
         });

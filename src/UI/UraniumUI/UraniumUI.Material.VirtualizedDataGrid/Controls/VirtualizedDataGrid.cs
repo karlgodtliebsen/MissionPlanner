@@ -17,9 +17,9 @@ namespace UraniumUI.Material.VirtualizedDataGrid.Controls;
 /// </summary>
 public partial class VirtualizedDataGrid : Border
 {
-    private readonly Grid rootLayout;
     private readonly ContentView searchHost;
     private readonly ScrollView horizontalScrollView;
+    private readonly Grid rootLayout;
     private readonly Grid tableLayout;
     private readonly Grid headerSection;
     private readonly Grid headerGrid;
@@ -110,7 +110,10 @@ public partial class VirtualizedDataGrid : Border
     /// <summary>
     /// Gets the element type inferred from the current <see cref="ItemsSource"/>.
     /// </summary>
-    public Type? CurrentType { get; private set; }
+    public Type? CurrentType
+    {
+        get; private set;
+    }
 
     /// <summary>
     /// Gets a value indicating whether the grid has at least one visible column and can render rows.
@@ -933,6 +936,7 @@ public partial class VirtualizedDataGrid : Border
         {
             return;
         }
+        emptyViewHost.SetBinding(BackgroundColorProperty, new Binding(nameof(BackgroundColor), source: this));
 
         // Do not use CollectionView.EmptyView here. Keeping the empty state in an
         // explicit overlay makes visibility deterministic and avoids writing to the
@@ -941,13 +945,12 @@ public partial class VirtualizedDataGrid : Border
             ? EmptyView
             : EmptyViewTemplate?.CreateContent() is View templateContent
                 ? templateContent
-                : new BoxView { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill, Margin = 40 };
+                : null;
 
         if (!ReferenceEquals(emptyViewHost.Content, content))
         {
             emptyViewHost.Content = content;
         }
-
         UpdateEmptyViewVisibility();
     }
 
@@ -1020,9 +1023,7 @@ public partial class VirtualizedDataGrid : Border
         }
     }
 
-    private void OnColumnsSet(
-        IList<DataGridColumn>? oldColumns,
-        IList<DataGridColumn>? newColumns)
+    private void OnColumnsSet(IList<DataGridColumn>? oldColumns, IList<DataGridColumn>? newColumns)
     {
         if (subscriptionsActive)
         {
@@ -1233,9 +1234,7 @@ public partial class VirtualizedDataGrid : Border
         RefreshDataView(false);
     }
 
-    private void Columns_CollectionChanged(
-        object? sender,
-        NotifyCollectionChangedEventArgs e)
+    private void Columns_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         // Rebuild only the header and the bounded set of realized/recycled rows.
         // No operation is proportional to ItemsSource.Count.

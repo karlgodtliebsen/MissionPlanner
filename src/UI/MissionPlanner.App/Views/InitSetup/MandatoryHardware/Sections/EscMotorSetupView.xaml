@@ -27,50 +27,54 @@
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>
             </VerticalStackLayout>
-            <VerticalStackLayout IsVisible="{Binding SupportsMotorTest}" Spacing="6">
+            <VerticalStackLayout IsVisible="{Binding SupportsMotorTest}" Spacing="12">
                 <Label Text="Motor test" FontSize="16" FontAttributes="Bold" />
-                <Grid ColumnDefinitions="120,*,120,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="6">
-                    <Label Text="Motor / count" VerticalOptions="Center" />
-                    <!--<Entry Grid.Column="1" Text="{Binding MotorIndex}" Keyboard="Numeric" />-->
+                <FlexLayout Direction="Row" HorizontalOptions="Fill" >
                     <controls:NumericField
-                        Grid.Column="1" 
+                        Margin="0,0,10,0"
+                        Title="Motor / count"
                         Value="{Binding MotorIndex, Mode=TwoWay, Converter={StaticResource IntegerDoubleConverter}}"
                         NumberFormat="F0"
                         HorizontalOptions="Fill"
                         HorizontalTextAlignment="End" />
 
-                    <Label Grid.Column="2" Text="Throttle %" VerticalOptions="Center" />
-                    <!--<Entry Grid.Column="3" Text="{Binding ThrottlePercent}" Keyboard="Numeric" />-->
                     <controls:NumericField
-                        Grid.Column="3" 
+                        Margin="10,0"
+                        Title="Throttle %"
                         Value="{Binding ThrottlePercent, Mode=TwoWay}"
                         NumberFormat="F1"
                         HorizontalOptions="Fill"
                         HorizontalTextAlignment="End" />
-                    <Label Grid.Row="1" Text="Duration (s)" VerticalOptions="Center" />
-                    <!--<Entry Grid.Row="1" Grid.Column="1" Text="{Binding DurationSeconds}" Keyboard="Numeric" />-->
                     <controls:NumericField
-                        Grid.Row="1" Grid.Column="1" 
+                        Margin="10,0"
+                        Title="Duration (s)"
                         Value="{Binding DurationSeconds, Mode=TwoWay}"
                         NumberFormat="F1"
                         HorizontalOptions="Fill"
                         HorizontalTextAlignment="End" />
 
-                </Grid>
-                <Label Text="{Binding Instruction}" FontAttributes="Bold" LineBreakMode="WordWrap" />
-                <HorizontalStackLayout Spacing="10">
+                </FlexLayout>
+                <Label Margin="0,10" Text="{Binding Instruction}" FontAttributes="Bold" LineBreakMode="WordWrap" />
+                <HorizontalStackLayout  Margin="0,10" Spacing="20" HorizontalOptions="Fill">
                     <Button Text="Test motor" Command="{Binding TestMotorCommand}" />
                     <Button Text="Test sequence" Command="{Binding TestSequenceCommand}" />
                     <Button TextColor="{DynamicResource Warning}" FontAttributes="Bold" Text="STOP" Command="{Binding StopCommand}" />
                 </HorizontalStackLayout>
-                <Label Text="Operation log" FontAttributes="Bold" />
-                <VerticalStackLayout BindableLayout.ItemsSource="{Binding Log}">
-                    <BindableLayout.ItemTemplate>
-                        <DataTemplate x:DataType="x:String">
-                            <Label Text="{Binding .}" FontSize="12" Opacity="0.8" />
-                        </DataTemplate>
-                    </BindableLayout.ItemTemplate>
+
+                <VerticalStackLayout>
+                    <Label  Margin="0,10" Text="Operation log:" FontAttributes="Bold" />
+                    <Border MinimumHeightRequest="100">
+                        <VerticalStackLayout BindableLayout.ItemsSource="{Binding Log}">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate x:DataType="x:String">
+                                    <Label Text="{Binding .}" FontSize="12" Opacity="0.8" />
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+                    </Border>
                 </VerticalStackLayout>
+
+
             </VerticalStackLayout>
         </VerticalStackLayout>
     </ScrollView>

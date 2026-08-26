@@ -89,8 +89,14 @@ public sealed partial class ServoOutputItemViewModel : ObservableObject
     /// <param name="info">The latest output projection.</param>
     public void UpdateLive(ServoOutputInfo info)
     {
-        LiveDescription = info.LivePwm is { } pwm
-            ? $"{pwm} µs{(info.IsStale ? " (stale)" : string.Empty)}"
+        UpdateLive(info.LivePwm, info.IsStale);
+    }
+
+    /// <summary>Updates live PWM without rebuilding the output configuration.</summary>
+    public void UpdateLive(int? livePwm, bool isStale)
+    {
+        LiveDescription = livePwm is { } pwm
+            ? $"{pwm} µs{(isStale ? " (stale)" : string.Empty)}"
             : "—";
     }
 
