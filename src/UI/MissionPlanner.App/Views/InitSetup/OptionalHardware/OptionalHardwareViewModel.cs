@@ -92,7 +92,7 @@ public sealed partial class OptionalHardwareViewModel : BaseViewModel
     /// <inheritdoc />
     public override void Dispose()
     {
-        DeactivateAsync().GetAwaiter().GetResult();
+        Deactivate();
     }
 
     /// <inheritdoc />
@@ -110,10 +110,15 @@ public sealed partial class OptionalHardwareViewModel : BaseViewModel
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
+        Deactivate();
+        return Task.CompletedTask;
+    }
+
+    private void Deactivate()
+    {
         activeVehicle.Changed -= OnVehicleChanged;
         parameters.Changed -= OnParameterChanged;
         refreshCancellation?.Cancel();
         refreshCancellation?.Dispose();
-        return Task.CompletedTask;
     }
 }

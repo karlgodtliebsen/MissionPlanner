@@ -84,7 +84,7 @@
                                 <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
                                    
                                     <controls1:NumericUpDownField
-                                        Value="{Binding MinimumPwm, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                                        Value="{Binding MinimumPwm, Mode=TwoWay}"
                                         NumberFormat="F0"
                                         Min ="{Binding AllowedMinimumPwm}"
                                         Max="{Binding AllowedMaximumPwm}"
@@ -103,7 +103,7 @@
                             <material:DataGridColumn.CellItemTemplate >
                                 <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
                                     <controls1:NumericUpDownField
-                                        Value="{Binding TrimPwm, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                                        Value="{Binding TrimPwm, Mode=TwoWay}"
                                         NumberFormat="F0"
                                         Min ="{Binding AllowedMinimumPwm}"
                                         Max="{Binding AllowedMaximumPwm}"
@@ -121,7 +121,7 @@
                             <material:DataGridColumn.CellItemTemplate >
                                 <DataTemplate x:DataType="sections:ServoOutputItemViewModel" >
                                     <controls1:NumericUpDownField
-                                        Value="{Binding MaximumPwm, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                                        Value="{Binding MaximumPwm, Mode=TwoWay}"
                                         NumberFormat="F0"
                                         Min ="{Binding AllowedMinimumPwm}"
                                         Max="{Binding AllowedMaximumPwm}"

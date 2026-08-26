@@ -212,7 +212,8 @@
                         <Label Text="Maximum display rate (Hz)" VerticalOptions="Center" />
                         <controls:NumericField
                             Grid.Column="1" 
-                            Value="{Binding TelemetryDisplayRateHz, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                            Value="{Binding TelemetryDisplayRateHz, Mode=TwoWay}"
+                            NumericType="Int32"
                             NumberFormat="F0"
                             HorizontalOptions="Fill"
                             HorizontalTextAlignment="End" />
@@ -221,7 +222,8 @@
                         <controls:NumericField
                             Grid.Row="1"
                             Grid.Column="1"
-                            Value="{Binding ChartHistorySeconds, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                            Value="{Binding ChartHistorySeconds, Mode=TwoWay}"
+                            NumericType="Int32"
                             NumberFormat="F0"
                             HorizontalOptions="Fill"
                             HorizontalTextAlignment="End" />
@@ -238,23 +240,26 @@
                     <Label Text="Defaults update the connection UI immediately while disconnected; they never interrupt an active connection." FontSize="12" />
                     <Grid ColumnDefinitions="220,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="8">
                         <Label Text="Channel" VerticalOptions="Center" />
-                        <material:SelectField Grid.Column="1" ItemsSource="{Binding ConnectionChannels}" SelectedItem="{Binding ConnectionChannel}" />
+                        <material:SelectField Grid.Column="1" ItemsSource="{Binding ConnectionChannels}" 
+                                              SelectedItem="{Binding ConnectionChannel}" />
 
                         <Label Grid.Row="1" Text="Host" VerticalOptions="Center" />
                         <controls:AlignedEditorField Grid.Row="1" Grid.Column="1" Text="{Binding ConnectionHost}" Title="Use platform default" />
                         <Label Grid.Row="2" Text="Port" VerticalOptions="Center" />
                         <controls:NumericField
                             Grid.Column="1" 
-                            Value="{Binding ConnectionPort, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
-                            NumberFormat="F1"
+                            Value="{Binding ConnectionPort, Mode=TwoWay}"
+                            NumericType="Int32"
+                            NumberFormat="F0"
                             HorizontalOptions="Fill"
                             HorizontalTextAlignment="End" />
                         <Label Grid.Row="3" Text="Serial baud rate" VerticalOptions="Center" />
 
                         <controls:NumericField
                             Grid.Column="3" 
-                            Value="{Binding ConnectionBaudRate, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
-                            NumberFormat="F1"
+                            Value="{Binding ConnectionBaudRate, Mode=TwoWay}"
+                            NumericType="Int32"
+                            NumberFormat="F0"
                             HorizontalOptions="Fill"
                             HorizontalTextAlignment="End" />
                     </Grid>
@@ -273,8 +278,9 @@
                         <Label Grid.Row="1" Text="Maximum age (minutes)" VerticalOptions="Center" />
                         <controls:NumericField
                             Grid.Row="1" Grid.Column="1" 
-                            Value="{Binding ParameterCacheMaximumAgeMinutes, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
-                            NumberFormat="F1"
+                            Value="{Binding ParameterCacheMaximumAgeMinutes, Mode=TwoWay}"
+                            NumericType="Int32"
+                            NumberFormat="F0"
                             HorizontalOptions="Fill"
                             HorizontalTextAlignment="End" />
 
@@ -315,8 +321,9 @@
                         <Label Grid.Row="1" Text="Log retention (days)" VerticalOptions="Center" />
                         <controls:NumericField
                             Grid.Row="1" Grid.Column="1" 
-                            Value="{Binding LogRetentionDays, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
-                            NumberFormat="F1"
+                            Value="{Binding LogRetentionDays, Mode=TwoWay}"
+                            NumericType="Int32"
+                            NumberFormat="F0"
                             HorizontalOptions="Fill"
                             HorizontalTextAlignment="End" />
                         <Label Grid.Row="2" Text="Automatic update checks" VerticalOptions="Center" />
@@ -324,8 +331,9 @@
                         <Label Grid.Row="3" Text="Check interval (days)" VerticalOptions="Center" />
                         <controls:NumericField
                             Grid.Row="3" Grid.Column="1"
-                            Value="{Binding UpdateCheckIntervalDays, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
-                            NumberFormat="F1"
+                            Value="{Binding UpdateCheckIntervalDays, Mode=TwoWay}"
+                            NumericType="Int32"
+                            NumberFormat="F0"
                             HorizontalOptions="Fill"
                             HorizontalTextAlignment="End" />
 
@@ -470,8 +478,9 @@
                         <controls:NumericField
                             Grid.Column="1" 
                             WidthRequest="140"
-                            Value="{Binding TrackLength, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
-                            NumberFormat="F1"
+                            Value="{Binding TrackLength, Mode=TwoWay}"
+                            NumericType="Int32"
+                            NumberFormat="F0"
                             HorizontalOptions="Fill"
                             HorizontalTextAlignment="End" />
                         <Label Grid.Row="1" Text="Display distance to home" />
@@ -494,9 +503,10 @@
                         <controls:NumericField
                             Grid.Row="9" Grid.Column="1" 
                             WidthRequest="140"
-                            Value="{Binding AircraftLineLength, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                            Value="{Binding AircraftLineLength, Mode=TwoWay}"
                             NumberFormat="F1"
                             HorizontalOptions="Fill"
+                            NumericType="Int32"
                             HorizontalTextAlignment="End" />
 
                         <Label Grid.Row="10" Text="Show airports / ADS-B" />

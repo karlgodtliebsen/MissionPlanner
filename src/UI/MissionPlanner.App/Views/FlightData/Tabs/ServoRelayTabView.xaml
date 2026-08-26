@@ -43,8 +43,9 @@
 
             <controls:NumericField Grid.Column="0" 
                                    Title="Channel"
-                                   Value="{Binding Channel, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                                   Value="{Binding Channel, Mode=TwoWay}"
                                    NumberFormat="F0"
+                                   NumericType="Int32"
                                    HorizontalOptions="Fill"
                                    HorizontalTextAlignment="End" />
 

@@ -8,12 +8,10 @@
                             xmlns:mandatoryHardware="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware"
                             xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                             xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
-                            xmlns:tabsUtils="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.TabsUtils"
                             xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
                             x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.MandatoryHardwareView"
                             x:DataType="mandatoryHardware:MandatoryHardwareViewModel"
                             Title="Initial Setup"
-                            BackgroundColor="{DynamicResource Surface}"
                             >
 
     <Grid Padding="20" RowDefinitions="Auto,Auto,*"
@@ -24,8 +22,8 @@
         <VerticalStackLayout Grid.Row="0" Spacing="8">
             <Label Text="Initial Setup" FontSize="26" FontAttributes="Bold" />
             <Label Text="{Binding VehicleHeading}" VerticalOptions="Center" FontSize="16" />
-            <Label Text="{Binding SummaryReport}" VerticalOptions="Center" Opacity="0.75" />
-            <Label Text="{Binding Error}"  VerticalOptions="Center" TextColor="{DynamicResource Error}" />
+            <Label Text="{Binding StatusMessage}" VerticalOptions="Center" Opacity="0.75" />
+            <Label Text="{Binding ErrorMessage}"  VerticalOptions="Center" TextColor="{DynamicResource Error}" />
             <Label Text="Completion is stored locally and automatically requires review when firmware or parameters change. Prerequisites are guidance, not a rigid wizard."
                    LineBreakMode="WordWrap" Opacity="0.7" />
         </VerticalStackLayout>

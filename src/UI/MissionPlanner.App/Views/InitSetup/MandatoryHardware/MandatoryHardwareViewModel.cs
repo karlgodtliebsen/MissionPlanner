@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Diagnostics;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -80,51 +81,9 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
     /// <summary>Gets whether Firmware is selected.</summary>
     public bool IsFirmwareSelected => IsSelected(SetupWorkflowKey.Firmware);
 
-    /// <summary>Gets whether Flight Modes is selected.</summary>
-    public bool IsFlightModesSelected => IsSelected(SetupWorkflowKey.FlightModes);
-
-    /// <summary>Gets whether Battery is selected.</summary>
-    public bool IsBatterySelected => IsSelected(SetupWorkflowKey.Battery);
-
-    public bool IsOptionalHardwareSelected => IsSelected(SetupWorkflowKey.OptionalHardware);
-
-    /// <summary>Gets whether Safety is selected.</summary>
-    public bool IsSafetySelected => IsSelected(SetupWorkflowKey.Safety);
-
-    /// <summary>Gets whether Summary is selected.</summary>
-    public bool IsSummarySelected => IsSelected(SetupWorkflowKey.Summary);
-
 
     /// <summary>Gets whether Frame is selected.</summary>
     public bool IsFrameSelected => IsSelected(SetupWorkflowKey.Frame);
-
-    /// <summary>Gets whether Accelerometer is selected.</summary>
-    public bool IsAccelerometerSelected => IsSelected(SetupWorkflowKey.Accelerometer);
-
-    /// <summary>Gets whether Compass is selected.</summary>
-    public bool IsCompassSelected => IsSelected(SetupWorkflowKey.Compass);
-
-    /// <summary>Gets whether Radio is selected.</summary>
-    public bool IsRadioSelected => IsSelected(SetupWorkflowKey.Radio);
-
-
-    /// <summary>Gets whether ESC is selected.</summary>
-    public bool IsEscSelected => IsSelected(SetupWorkflowKey.Esc);
-
-    /// <summary>Gets whether Servo Output is selected.</summary>
-    public bool IsServoOutputSelected => IsSelected(SetupWorkflowKey.ServoOutput);
-
-    /// <summary>Gets whether Failsafe is selected.</summary>
-    public bool IsFailSafeSelected => IsSelected(SetupWorkflowKey.FailSafe);
-
-    /// <summary>Gets whether Initial Tune Parameters is selected.</summary>
-    public bool IsInitTuneParametersSelected => IsSelected(SetupWorkflowKey.InitTuneParameters);
-
-    /// <summary>Gets whether HW ID is selected.</summary>
-    public bool IsHwIdSelected => IsSelected(SetupWorkflowKey.HwId);
-
-    /// <summary>Gets whether ADSB is selected.</summary>
-    public bool IsAdsbSelected => IsSelected(SetupWorkflowKey.Adsb);
 
     /// <summary>Gets whether Optional Hardware is selected.</summary>
     /// <summary>Gets whether the selected workflow links to a Config page.</summary>
@@ -132,31 +91,13 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
 
     /// <summary>Gets the active vehicle heading.</summary>
     [ObservableProperty]
-    public partial string VehicleHeading
-    {
-        get;
-        private set;
-    } = "No vehicle connected";
+    public partial string VehicleHeading { get; private set; } = "No vehicle connected";
 
-    /// <summary>Gets the setup summary report.</summary>
-    [ObservableProperty]
-    public partial string SummaryReport
-    {
-        get;
-        private set;
-    } = string.Empty;
-
-    /// <summary>Gets the latest shell-level error.</summary>
-    [ObservableProperty]
-    public partial string? Error
-    {
-        get;
-        private set;
-    }
 
     /// <inheritdoc />
     public override Task ActivateAsync()
     {
+        Debug.Print("MandatoryHardwareViewModel ActivateAsync Enter");
         Tabs.ReplaceRange(
             catalog.Workflows.Select(item =>
                 new TabItemViewModel(new TabDescriptor(item.Key.ToString(), item.Title, item.Description, item.ConfigDestination)))
@@ -165,17 +106,26 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
         activeVehicle.Changed += OnActiveVehicleChanged;
         parameterRegistry.Changed += OnParameterChanged;
         RefreshCore();
+        Debug.Print("MandatoryHardwareViewModel ActivateAsync Exit");
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
+        Debug.Print("MandatoryHardwareViewModel DeactivateAsync Enter");
+        Deactivate();
+        Debug.Print("MandatoryHardwareViewModel DeactivateAsync Exit");
+        return Task.CompletedTask;
+    }
+
+    private void Deactivate()
+    {
         activeVehicle.Changed -= OnActiveVehicleChanged;
         parameterRegistry.Changed -= OnParameterChanged;
         CancelParameterRefresh();
-        return Task.CompletedTask;
     }
+
 
     /// <inheritdoc />
     public override void Dispose()
@@ -186,7 +136,7 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
         }
 
         disposed = true;
-        DeactivateAsync().GetAwaiter().GetResult();
+        Deactivate();
     }
 
     [RelayCommand]
@@ -209,12 +159,12 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
             var root = parts[0];
             var config = parts[1];
             await navigation.OpenSubViewAsync(root, config);
-            Error = null;
+            SetMessages(null, null);
         }
         catch (Exception exception)
         {
             logger.LogError(exception, "Failed to open Config destination {Destination}.", destination);
-            Error = exception.Message;
+            SetMessages(null, exception.Message);
         }
     }
 
@@ -230,28 +180,32 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
         var parameters = snapshot.VehicleId is { } id
             ? parameterRegistry.GetAllParameters(id)
             : new Dictionary<string, MavLink.Parameters.VehicleParameter>();
+
         // ExtendedTabView uses an index-aligned header collection with fixed tab content.
         // Retain unsupported workflows so removing a header cannot shift it onto another tab.
         var evaluations = catalog.Evaluate(snapshot, parameters, completionStore.GetAll()).ToArray();
 
-        var tabs = new ObservableRangeCollection<TabItemViewModel>(
+        var tabs = new List<TabItemViewModel>(
             catalog.Workflows.Select(item =>
                 new TabItemViewModel(new TabDescriptor(item.Key.ToString(), item.Title, item.Description, item.ConfigDestination)))
         );
 
-        Tabs.ReplaceRange(tabs);
-
-        VehicleHeading = snapshot.IsOnline
-            ? $"{snapshot.DisplayName} · {snapshot.State!.Identity.Firmware.Family}"
-            : snapshot.VehicleId is null
-                ? "No vehicle connected"
-                : $"{snapshot.DisplayName} · disconnected";
-
         var relevant = evaluations.Where(item => item.State != SetupWorkflowState.Unsupported).ToArray();
         var completed = relevant.Count(item => item.State == SetupWorkflowState.Completed);
         var warnings = relevant.Count(item => item.State is SetupWorkflowState.Warning or SetupWorkflowState.Failed);
-        SummaryReport = $"{completed} of {relevant.Length} relevant workflows completed; {warnings} require attention.";
-        SelectedTab = Tabs.FirstOrDefault(item => item.Descriptor.Key == selectedKey) ?? Tabs.FirstOrDefault();
+        var report = $"{completed} of {relevant.Length} relevant workflows completed; {warnings} require attention.";
+
+        SetMessages(report, null);
+        dispatcher.Dispatch(() =>
+        {
+            VehicleHeading = snapshot.IsOnline
+                ? $"{snapshot.DisplayName} · {snapshot.State!.Identity.Firmware.Family}"
+                : snapshot.VehicleId is null
+                    ? "No vehicle connected"
+                    : $"{snapshot.DisplayName} · disconnected";
+            Tabs.ReplaceRange(tabs);
+            SelectedTab = Tabs.FirstOrDefault(item => item.Descriptor.Key == selectedKey) ?? Tabs.FirstOrDefault();
+        });
     }
 
     private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
@@ -305,11 +259,13 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
 
     private void CancelParameterRefresh()
     {
+        Debug.Print("MandatoryHardwareViewModel CancelParameterRefresh Enter");
         lock (parameterRefreshSync)
         {
             parameterRefreshCancellation?.Cancel();
             parameterRefreshCancellation?.Dispose();
             parameterRefreshCancellation = null;
         }
+        Debug.Print("MandatoryHardwareViewModel CancelParameterRefresh Exit");
     }
 }

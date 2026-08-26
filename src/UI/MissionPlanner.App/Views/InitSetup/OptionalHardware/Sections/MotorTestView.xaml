@@ -62,7 +62,7 @@
                    
                     <controls:NumericUpDownField
                         Title="Throttle Percent"
-                        Value="{Binding ThrottlePercent, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                        Value="{Binding ThrottlePercent, Mode=TwoWay}"
                         NumberFormat="F0"
                         StepSize="5"
                         Min ="5"
@@ -76,7 +76,7 @@
 
                     <controls:NumericUpDownField
                         Title="Duration (seconds)"
-                        Value="{Binding DurationSeconds, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                        Value="{Binding DurationSeconds, Mode=TwoWay}"
                         NumberFormat="F0"
                         StepSize="1"
                         NumericType="UInt32"
@@ -108,7 +108,7 @@
 
                     <controls:NumericField
                               Title="Duration (seconds)"
-                              Value="{Binding DurationSeconds, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                              Value="{Binding DurationSeconds, Mode=TwoWay}"
                               NumberFormat="F0"
                               Min="2"
                               Max="10"

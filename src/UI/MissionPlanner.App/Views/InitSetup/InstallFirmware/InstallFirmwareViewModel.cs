@@ -55,6 +55,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
     private IReadOnlyList<SerialDeviceDescriptor> availableDevices = [];
     private FirmwareManifestEntry? selectedFirmwareTarget;
     private bool showingAllOptions;
+    private bool disposed;
     private bool active;
 
 
@@ -464,19 +465,18 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
     /// <summary>
     /// Starts observing connection state and refreshes disconnected data.
     /// </summary>
-    public override Task ActivateAsync()
+    public override async Task ActivateAsync()
     {
         if (active)
         {
-            return Task.CompletedTask;
+            return;
         }
-
-        active = true;
-        if (lifetime is not null)
+        if (disposed)
         {
-            return Task.CompletedTask;
+            return;
         }
-
+        active = true;
+        lifetime?.Dispose();
         lifetime = new CancellationTokenSource();
         IsBusy = true;
         activeVehicle.Changed += OnActiveVehicleChanged;
@@ -488,17 +488,29 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
         OperationProgress.TechnicalDetail = null;
         LastDiagnosticReport = null;
         ApplyMode();
-        return IsDisconnectedMode
-            ? RefreshSafelyAsync(false, lifetime.Token)
-            : Task.CompletedTask;
+
+        if (IsDisconnectedMode)
+        {
+            await RefreshSafelyAsync(false, lifetime.Token);
+        }
     }
 
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
+        Deactivate();
+        return Task.CompletedTask;
+    }
+
+    private void Deactivate()
+    {
+        if (disposed)
+        {
+            return;
+        }
         if (!active)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         active = false;
@@ -510,16 +522,14 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
 
         current?.Cancel();
         current?.Dispose();
-        return Task.CompletedTask;
     }
-
 
     /// <inheritdoc />
     public override void Dispose()
     {
-        DeactivateAsync().GetAwaiter().GetResult();
+        Deactivate();
+        disposed = true;
     }
-
 
     private async Task RefreshSafelyAsync(bool forceRefresh, CancellationToken cancellationToken, bool allOptions = false)
     {
@@ -922,7 +932,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
         catch (Exception exception)
         {
             logger.LogError(exception, "Embedded bootloader update failed.");
-            StatusMessage = exception.Message;
+            SetMessages(null, exception.Message);
         }
         finally
         {
@@ -943,7 +953,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
             return;
         }
 
-        Debug.Print("RefreshAsync");
+        Debug.Print("InstallFirmware RefreshAsync");
 
         var (version, refreshToken) = BeginRefresh(cancellationToken);
         try
@@ -969,7 +979,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
             var devices = await devicesTask.ConfigureAwait(false);
             var dfuDevices = await dfuDevicesTask.ConfigureAwait(false);
             var dfuTool = await dfuToolTask.ConfigureAwait(false);
-            Debug.Print("RefreshAsync Completed task 1 & 2");
+            Debug.Print("InstallFirmware RefreshAsync Completed task 1 & 2");
 
 
             var entries = catalog.Entries.Where(entry =>
@@ -979,7 +989,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
 
             var deviceItems = await Task.Run(() => CreateDeviceItems(entries, devices), refreshToken).ConfigureAwait(false);
 
-            Debug.Print($"RefreshAsync Completed task 3 with entries count: {entries.Length}");
+            Debug.Print($"InstallFirmware RefreshAsync Completed task 3 with entries count: {entries.Length}");
 
 
             refreshToken.ThrowIfCancellationRequested();
@@ -1026,9 +1036,9 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
         }
         catch (Exception exception)
         {
-            Debug.Print("Firmware catalogue refresh failed.\n" + exception.Message);
+            Debug.Print("InstallFirmware Firmware catalogue refresh failed.\n" + exception.Message);
 
-            logger.LogError(exception, "Firmware catalogue refresh failed.");
+            logger.LogError(exception, "InstallFirmware Firmware catalogue refresh failed.");
             await DispatchAsync(() =>
             {
                 if (IsLatestRefresh(version))
@@ -1136,7 +1146,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
 
         FilteredFirmwareChoices.ReplaceRange(choices);
 
-        Debug.Print($"ApplyTargetQuery with FirmwareChoices count: {FirmwareChoices.Count}");
+        Debug.Print($"InstallFirmware ApplyTargetQuery with FirmwareChoices count: {FirmwareChoices.Count}");
 
         var retained = previousEntry is null ? null : FirmwareChoices.FirstOrDefault(item => SameEntry(item.Entry, previousEntry));
         var automatic = FirmwareTargetSelector.UnambiguousHighConfidence(recommendations);
@@ -1145,7 +1155,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
 
     private static IReadOnlyList<FirmwareDeviceItemViewModel> CreateDeviceItems(IReadOnlyList<FirmwareManifestEntry> entries, IReadOnlyList<SerialDeviceDescriptor> devices)
     {
-        Debug.Print("CreateDeviceItems");
+        Debug.Print("InstallFirmware CreateDeviceItems");
 
         var deviceItems = devices.Select(device =>
         {
@@ -1162,25 +1172,29 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
             return new FirmwareDeviceItemViewModel(device, usbMatch || hintMatch, usbMatch ? "Exact catalogue USB match" : hintMatch ? "Bootloader/board hint match" : "Manual device selection");
         }).ToArray();
 
-        Debug.Print($"CreateDeviceItems found {deviceItems.Length} items");
+        Debug.Print($"InstallFirmware CreateDeviceItems found {deviceItems.Length} items");
         return deviceItems;
     }
 
     private (long Version, CancellationToken Token) BeginRefresh(CancellationToken cancellationToken)
     {
-        Debug.Print("BeginRefresh");
+        Debug.Print("InstallFirmware BeginRefresh");
+
+        (long Version, CancellationToken Token) result;
         lock (refreshSync)
         {
             refreshCancellation?.Cancel();
             refreshCancellation?.Dispose();
             refreshCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            return (++refreshVersion, refreshCancellation.Token);
+            result = (++refreshVersion, refreshCancellation.Token);
         }
+        Debug.Print("InstallFirmware BeginRefresh Exit");
+        return result;
     }
 
     private void CancelRefresh()
     {
-        Debug.Print("CancelRefresh");
+        Debug.Print("InstallFirmware CancelRefresh");
 
         lock (refreshSync)
         {
@@ -1189,6 +1203,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
             refreshCancellation?.Dispose();
             refreshCancellation = null;
         }
+        Debug.Print("InstallFirmware CancelRefresh Exit");
     }
 
     private bool IsLatestRefresh(long version)
@@ -1246,12 +1261,12 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
         }
         catch (OperationCanceledException) when (ownedCancellation.IsCancellationRequested)
         {
-            StatusMessage = "Firmware download and validation cancelled.";
+            SetMessages("Firmware download and validation cancelled.", null);
         }
         catch (Exception exception)
         {
             logger.LogWarning(exception, "Firmware preparation failed.");
-            StatusMessage = exception.Message;
+            SetMessages(null, exception.Message);
             UpdateContextHelp(exception is Firmware.Exceptions.FirmwarePackageException);
         }
         finally
@@ -1281,6 +1296,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
         StatusMessage = IsCancellationDeferred
             ? "Cancellation requested. The flash will continue through verify and reboot before stopping at a safe boundary. Do not disconnect power."
             : "Cancelling firmware operation…";
+
         cancellation.Cancel();
     }
 
@@ -1310,28 +1326,25 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
             // becomes active. Cancel it before queuing UI work for the connected mode.
             CancelRefresh();
         }
-
-        dispatcher.Dispatch(() =>
-        {
-            if (!active)
-            {
-                return;
-            }
-
-            ApplyMode();
-            IsBusy = false;
-        });
-    }
-
-    private void SetOperation(bool active, FirmwareOperationState? stage)
-    {
-        IsOperationInProgress = active;
-        CurrentOperationState = stage;
         if (!active)
         {
-            IsCancellationDeferred = false;
+            return;
         }
+        ApplyMode();
+        dispatcher.Dispatch(() => IsBusy = false);
+    }
 
+    private void SetOperation(bool operationActive, FirmwareOperationState? stage)
+    {
+        dispatcher.Dispatch(() =>
+        {
+            IsOperationInProgress = operationActive;
+            CurrentOperationState = stage;
+            if (!operationActive)
+            {
+                IsCancellationDeferred = false;
+            }
+        });
         ApplyMode(stage);
     }
 
@@ -1354,22 +1367,28 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
                     : FirmwarePageMode.Disconnected
             : state.Mode;
 
-        IsConnectedMode = visibleMode == FirmwarePageMode.Connected;
-        IsDisconnectedMode = visibleMode == FirmwarePageMode.Disconnected;
-        IsUnsupportedMode = visibleMode == FirmwarePageMode.UnsupportedPlatform;
-        CanInstall = state.CanInstallApplicationFirmware;
-        CanUpdateBootloader = state.CanUpdateEmbeddedBootloader;
+        dispatcher.Dispatch(() =>
+        {
+            IsConnectedMode = visibleMode == FirmwarePageMode.Connected;
+            IsDisconnectedMode = visibleMode == FirmwarePageMode.Disconnected;
+            IsUnsupportedMode = visibleMode == FirmwarePageMode.UnsupportedPlatform;
+            CanInstall = state.CanInstallApplicationFirmware;
+            CanUpdateBootloader = state.CanUpdateEmbeddedBootloader;
+        });
     }
 
     private void UpdateProgress(FirmwareProgress progress)
     {
-        CurrentOperationState = progress.State;
-        OperationProgress.Stage = StageText(progress);
-        OperationProgress.Progress = (progress.Percentage ?? 0) / 100d;
-        OperationProgress.HasStage = progress.Percentage.HasValue;
-        OperationProgress.IsPowerCritical = progress.State is FirmwareOperationState.Erasing or FirmwareOperationState.Programming or FirmwareOperationState.Verifying;
-        OperationProgress.TechnicalDetail = progress.TechnicalDetail;
-        StatusMessage = OperationProgress.Stage;
+        dispatcher.Dispatch(() =>
+            {
+                CurrentOperationState = progress.State;
+                OperationProgress.Stage = StageText(progress);
+                OperationProgress.Progress = (progress.Percentage ?? 0) / 100d;
+                OperationProgress.HasStage = progress.Percentage.HasValue;
+                OperationProgress.IsPowerCritical = progress.State is FirmwareOperationState.Erasing or FirmwareOperationState.Programming or FirmwareOperationState.Verifying;
+                OperationProgress.TechnicalDetail = progress.TechnicalDetail;
+                StatusMessage = OperationProgress.Stage;
+            });
     }
 
     partial void OnSelectedFirmwareChanged(FirmwareCatalogItemViewModel? value)

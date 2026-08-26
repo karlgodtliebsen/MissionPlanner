@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using UraniumUI.Material.Controls;
 
 namespace UraniumUI.Material.TabViews;
@@ -28,7 +28,11 @@ public class LifecycleTabView : TabView
 
     private async void OnLoaded(object? sender, EventArgs e)
     {
-        if (isLoaded) return;
+        if (isLoaded)
+        {
+            return;
+        }
+
         isLoaded = true;
         transitionVersion++;
         await ReconcileLifecycleFromEventAsync().ConfigureAwait(true);
@@ -36,7 +40,11 @@ public class LifecycleTabView : TabView
 
     private async void OnUnloaded(object? sender, EventArgs e)
     {
-        if (!isLoaded) return;
+        if (!isLoaded)
+        {
+            return;
+        }
+
         isLoaded = false;
         transitionVersion++;
         await ReconcileLifecycleFromEventAsync().ConfigureAwait(true);
@@ -79,8 +87,7 @@ public class LifecycleTabView : TabView
                     activeContent = desiredContent;
                 }
 
-                if (observedVersion == transitionVersion &&
-                    ReferenceEquals(activeContent, isLoaded ? SelectedTab?.Content : null))
+                if (observedVersion == transitionVersion && ReferenceEquals(activeContent, isLoaded ? SelectedTab?.Content : null))
                 {
                     return;
                 }

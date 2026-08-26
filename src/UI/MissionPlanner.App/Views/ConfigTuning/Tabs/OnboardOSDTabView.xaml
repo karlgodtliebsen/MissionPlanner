@@ -136,16 +136,18 @@
                             <Label Text="Column" VerticalOptions="Center" />
                             <controls:NumericField
                                 Grid.Column="1" 
-                                Value="{Binding SelectedItem.Column, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                                Value="{Binding SelectedItem.Column, Mode=TwoWay}"
                                 NumberFormat="F1"
+                                NumericType="Int32"
                                 HorizontalOptions="Fill"
                                 HorizontalTextAlignment="End" />
 
                             <Label Grid.Column="2" Text="Row" VerticalOptions="Center" />
                             <controls:NumericField
                                 Grid.Column="3" 
-                                Value="{Binding SelectedItem.Row, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                                Value="{Binding SelectedItem.Row, Mode=TwoWay}"
                                 NumberFormat="F1"
+                                NumericType="Int32"
                                 HorizontalOptions="Fill"
                                 HorizontalTextAlignment="End" />
 

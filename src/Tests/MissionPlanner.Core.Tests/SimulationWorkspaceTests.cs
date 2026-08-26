@@ -222,6 +222,7 @@ public sealed class SimulationWorkspaceTests
             Substitute.For<ISimulationScenarioReportExporter>(),
             new ParametersFileHandler(Substitute.For<IFileSaver>()),
             dispatcher,
+            Substitute.For<IDateTimeProvider>(),
             Substitute.For<ILogger<SimulationViewModel>>());
 
         await viewModel.ActivateAsync();
@@ -307,6 +308,7 @@ public sealed class SimulationWorkspaceTests
             new SimulationScenarioReportExporter(),
             new ParametersFileHandler(Substitute.For<IFileSaver>()),
             dispatcher,
+            Substitute.For<IDateTimeProvider>(),
             Substitute.For<ILogger<SimulationViewModel>>())
         {
             ScenarioDocumentText = parser.Serialize(parsed)

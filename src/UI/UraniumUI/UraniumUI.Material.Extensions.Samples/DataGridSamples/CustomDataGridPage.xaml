@@ -54,9 +54,10 @@
                             <DataTemplate x:DataType="models:CustomDataGridStudent">
                                 <controls:NumericField 
                                     Padding="3" 
-                                    Value="{Binding Age, Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                                    Value="{Binding Age, Mode=TwoWay}"
+                                    NumericType="Int32"
                                     BorderColor="MediumPurple"
-                                    NumberFormat="N0"
+                                    NumberFormat="F0"
                                     Min="0"
                                     Max="100"
                                     HorizontalOptions="Fill"
