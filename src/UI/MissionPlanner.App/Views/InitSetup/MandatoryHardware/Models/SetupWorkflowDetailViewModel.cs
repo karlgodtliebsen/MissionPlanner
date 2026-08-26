@@ -1,5 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup;
 using UraniumUI.Material.TabViews;
 
@@ -31,35 +30,8 @@ public partial class SetupWorkflowDetailViewModel : BaseViewModel
     /// <summary>Gets whether this workflow links to an existing Config page.</summary>
     public bool HasConfigDestination => Descriptor.ConfigDestination is not null;
 
-    /// <summary>Gets or sets the current operation progress from zero to one.</summary>
-    [ObservableProperty]
-    public partial double Progress
-    {
-        get;
-        set;
-    }
-
-
     /// <summary>Cancels work owned by this workflow ViewModel.</summary>
     public virtual void Cancel()
     {
-    }
-
-    /// <inheritdoc />
-    public override void Dispose()
-    {
-        base.Dispose();
-    }
-
-    /// <inheritdoc />
-    public override Task ActivateAsync()
-    {
-        return Task.CompletedTask;
-    }
-
-    /// <inheritdoc />
-    public override Task DeactivateAsync()
-    {
-        return Task.CompletedTask;
     }
 }

@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -7,7 +7,6 @@ using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.Common;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
-using MissionPlanner.Core.Setup;
 using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Vehicles;
@@ -184,21 +183,13 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
             ? parameterRegistry.GetAllParameters(id)
             : new Dictionary<string, MavLink.Parameters.VehicleParameter>();
 
-        // ExtendedTabView uses an index-aligned header collection with fixed tab content.
-        // Retain unsupported workflows so removing a header cannot shift it onto another tab.
-        var evaluations = catalog.Evaluate(snapshot, parameters, completionStore.GetAll()).ToArray();
-
         var tabs = new List<TabItemViewModel>(
             catalog.Workflows.Select(item =>
                 new TabItemViewModel(new TabDescriptor(item.Key.ToString(), item.Title, item.Description, item.ConfigDestination)))
         );
 
-        var relevant = evaluations.Where(item => item.State != SetupWorkflowState.Unsupported).ToArray();
-        var completed = relevant.Count(item => item.State == SetupWorkflowState.Completed);
-        var warnings = relevant.Count(item => item.State is SetupWorkflowState.Warning or SetupWorkflowState.Failed);
-        var report = $"{completed} of {relevant.Length} relevant workflows completed; {warnings} require attention.";
 
-        SetMessages(report, null);
+        SetMessages(null, null);
         dispatcher.Dispatch(() =>
         {
             VehicleHeading = snapshot.IsOnline

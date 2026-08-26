@@ -16,9 +16,10 @@
         <Label Text="{Binding PlatformStatus}"/>
 
         <Grid ColumnDefinitions="Auto,Auto" VerticalOptions="Fill" ColumnSpacing="25" HorizontalOptions="Fill">
-            <Picker Title="Local device" ItemsSource="{Binding Devices}" VerticalOptions="End"
-                    ItemDisplayBinding="{Binding Name}" 
-                    SelectedItem="{Binding SelectedDevice}" WidthRequest="300"/>
+            <material:SelectField 
+                Title="Local device" ItemsSource="{Binding Devices}" VerticalOptions="End"
+                ItemDisplayBinding="{Binding Name}" 
+                SelectedItem="{Binding SelectedDevice}" WidthRequest="300" />
             <Button Grid.Column="1" Text="Refresh" Command="{Binding RefreshCommand}" VerticalOptions="End"/>
         </Grid>
 

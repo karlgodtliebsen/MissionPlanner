@@ -5,6 +5,7 @@
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" 
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                                   x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.BluetoothSetupView" 
                                   x:DataType="sections:BluetoothSetupViewModel">
     <ScrollView>
@@ -17,7 +18,8 @@
             <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
 
             <HorizontalStackLayout Spacing="25" VerticalOptions="Center">
-                <Picker Title="Serial device" ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}" WidthRequest="180"/>
+                <material:SelectField 
+                    Title="Serial device" ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}" WidthRequest="180"/>
                 <Button Text="Refresh ports" Command="{Binding RefreshPortsCommand}"/>
                 <Button Text="Probe module" Command="{Binding ProbeCommand}"/>
             </HorizontalStackLayout>

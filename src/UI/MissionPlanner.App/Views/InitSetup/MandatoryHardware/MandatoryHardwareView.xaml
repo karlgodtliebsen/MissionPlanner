@@ -14,24 +14,20 @@
                             Title="Initial Setup"
                             >
 
-    <Grid Padding="20" RowDefinitions="Auto,Auto,*"
-          RowSpacing="14" 
-          HorizontalOptions="Fill"
-          VerticalOptions="Fill"
-          >
+    <Grid Padding="20" RowDefinitions="Auto,Auto,*" RowSpacing="14" HorizontalOptions="Fill" VerticalOptions="Fill" >
         <VerticalStackLayout Grid.Row="0" Spacing="8">
-            <Label Text="Initial Setup" FontSize="26" FontAttributes="Bold" />
+            <Label Text="Setup" VerticalOptions="Center" FontSize="16" />
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
+            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
             <Label Text="{Binding VehicleHeading}" VerticalOptions="Center" FontSize="16" />
-            <Label Text="{Binding StatusMessage}" VerticalOptions="Center" Opacity="0.75" />
-            <Label Text="{Binding ErrorMessage}"  VerticalOptions="Center" TextColor="{DynamicResource Error}" />
         </VerticalStackLayout>
 
         <VerticalStackLayout Grid.Row="1" Spacing="8">
             <HorizontalStackLayout Spacing="10">
-               <Button Text="Open related Config page"
+                <Button Text="Open related Config page"
                         IsVisible="{Binding HasConfigDestination}"
                         Command="{Binding OpenConfigCommand}" />
-                <Button Grid.Row="2" Text="Re-evaluate vehicle" Command="{Binding RefreshCommand}" HorizontalOptions="Start" />
+                <!--<Button Grid.Row="2" Text="Re-evaluate vehicle" Command="{Binding RefreshCommand}" HorizontalOptions="Start" />-->
             </HorizontalStackLayout>
         </VerticalStackLayout>
 

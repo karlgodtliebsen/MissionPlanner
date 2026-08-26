@@ -1,3 +1,4 @@
+﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -64,7 +65,7 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
 
     /// <summary>Loads the servo output configuration for the active vehicle.</summary>
     /// <returns>A task that completes after the configuration is projected.</returns>
-    public async Task LoadAsync()
+    private async Task LoadAsync()
     {
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
@@ -80,9 +81,11 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
         }
         catch (OperationCanceledException)
         {
+            Debug.Print($"Loading servo outputs was canceled for {vehicleId}.");
         }
         catch (Exception exception)
         {
+            Debug.Print($"Loading servo outputs failed for {vehicleId}: {exception.Message}");
             logger.LogError(exception, "Loading servo outputs failed for {VehicleId}.", vehicleId);
             SetMessages(exception);
         }
@@ -105,6 +108,7 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
         activeVehicle.Changed += OnActiveVehicleChanged;
         observedServoAt = activeVehicle.State?.Radio.ServoObservedAt;
         vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
+        SetBusy();
         await LoadAsync();
         await base.ActivateAsync();
     }
@@ -123,7 +127,7 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
     /// <summary>Writes the modified settings for one servo output with readback confirmation.</summary>
     /// <param name="item">The output row to apply.</param>
     /// <returns>A task that completes after the write is confirmed or reported failed.</returns>
-    internal async Task<bool> ApplyAsync(ServoOutputItemViewModel item)
+    private async Task<bool> ApplyAsync(ServoOutputItemViewModel item)
     {
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
@@ -188,42 +192,34 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
         return operationCancellation.Token;
     }
 
-    private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
+    private async void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs args)
     {
-        dispatcher.Dispatch(() =>
-        {
-            observedServoAt = args.Current.State?.Radio.ServoObservedAt;
-            _ = LoadAsync();
-            WriteCommand.NotifyCanExecuteChanged();
-        });
+        observedServoAt = args.Current.State?.Radio.ServoObservedAt;
+        await LoadAsync();
+        dispatcher.Dispatch(() => WriteCommand.NotifyCanExecuteChanged());
     }
 
-    private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
+    private async Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
     {
         if (evt.VehicleId == activeVehicle.VehicleId && evt.VehicleState.Radio.ServoObservedAt != observedServoAt)
         {
-            dispatcher.Dispatch(() =>
+            if (evt.VehicleId == activeVehicle.VehicleId &&
+                evt.VehicleState.Radio.ServoObservedAt != observedServoAt)
             {
-                if (evt.VehicleId == activeVehicle.VehicleId &&
-                    evt.VehicleState.Radio.ServoObservedAt != observedServoAt)
-                {
-                    observedServoAt = evt.VehicleState.Radio.ServoObservedAt;
-                    RefreshLive();
-                }
-            });
+                observedServoAt = evt.VehicleState.Radio.ServoObservedAt;
+                await RefreshLive();
+            }
         }
-
-        return Task.CompletedTask;
     }
 
-    private void RefreshLive()
+    private async Task RefreshLive()
     {
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline || Outputs.Count == 0)
         {
             return;
         }
 
-        _ = UpdateLiveAsync(vehicleId);
+        await UpdateLiveAsync(vehicleId);
     }
 
     private async Task UpdateLiveAsync(VehicleId vehicleId)
@@ -243,6 +239,7 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
+            Debug.Print($"Live servo refresh failed for {vehicleId}: {exception.Message}");
             logger.LogDebug(exception, "Live servo refresh failed for {VehicleId}.", vehicleId);
         }
     }
@@ -260,19 +257,20 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
         else
         {
             var existing = Outputs.ToDictionary(output => output.ChannelNumber);
-            Outputs.Clear();
+            var outputs = new List<ServoOutputItemViewModel>();
             foreach (var output in configuration.Outputs)
             {
                 if (existing.TryGetValue(output.ChannelNumber, out var item))
                 {
                     item.Refresh(output);
-                    Outputs.Add(item);
+                    outputs.Add(item);
                 }
                 else
                 {
-                    Outputs.Add(new ServoOutputItemViewModel(output, configuration.FunctionOptions, _ => WriteCommand.NotifyCanExecuteChanged()));
+                    outputs.Add(new ServoOutputItemViewModel(output, configuration.FunctionOptions, _ => WriteCommand.NotifyCanExecuteChanged()));
                 }
             }
+            Outputs.ReplaceRange(outputs);
         }
 
         if (!preserveStatus)

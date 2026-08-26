@@ -1,6 +1,6 @@
-using System.Collections.ObjectModel;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
@@ -9,8 +9,8 @@ using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Setup.OptionalHardware.Motor;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using SetupWorkflowDetailViewModel = MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models.SetupWorkflowDetailViewModel;
 using UraniumUI.Extensions;
+using SetupWorkflowDetailViewModel = MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models.SetupWorkflowDetailViewModel;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections;
 
@@ -49,7 +49,7 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
     }
 
     /// <summary>Gets the audit log of actuator operations.</summary>
-    public ObservableCollection<string> Log
+    public ObservableRangeCollection<string> Log
     {
         get;
     } = [];
@@ -71,10 +71,7 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
     } = string.Empty;
 
     /// <summary>Gets the ESC calibration steps, when applicable.</summary>
-    public ObservableCollection<string> EscSteps
-    {
-        get;
-    } = [];
+    public ObservableRangeCollection<string> EscSteps { get; } = [];
 
     /// <summary>Gets whether ESC calibration steps apply.</summary>
     [ObservableProperty]
@@ -88,8 +85,7 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
     [ObservableProperty]
     public partial MotorTestState TestState
     {
-        get;
-        private set;
+        get; private set;
     }
 
     /// <summary>Gets the current actuator-test instruction.</summary>
@@ -257,6 +253,7 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
 
     private void Load()
     {
+        SetBusy();
         if (activeVehicle.State is not { } state)
         {
             SupportsMotorTest = false;
@@ -269,15 +266,13 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
             var guidance = actuatorService.GetEscCalibrationGuidance(vehicleId);
             EscCalibrationApplicable = guidance.Applicable;
             EscExplanation = $"{guidance.ProtocolName}: {guidance.Explanation}";
-            EscSteps.Clear();
-            foreach (var step in guidance.Steps)
-            {
-                EscSteps.Add(step);
-            }
+            EscSteps.AddRange(guidance.Steps);
         }
 
         TestMotorCommand.NotifyCanExecuteChanged();
         TestSequenceCommand.NotifyCanExecuteChanged();
+        ResetBusy();
+
     }
 
     private void OnStateChanged(MotorTestStateChangedEventArgs args)
@@ -295,18 +290,18 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
 
     private void Show(MotorTestSnapshot snapshot)
     {
+        SetBusy();
+
         TestState = snapshot.State;
         Instruction = snapshot.Instruction;
         SetMessages(null, snapshot.FailureReason);
-        Log.Clear();
-        foreach (var entry in snapshot.Log.AsEnumerable().Reverse())
-        {
-            Log.Add($"{entry.Timestamp:HH:mm:ss} — {entry.Description}: {entry.Outcome}");
-        }
+        Log.AddRange(snapshot.Log.AsEnumerable().Reverse().Select(entry => $"{entry.Timestamp:HH:mm:ss} — {entry.Description}: {entry.Outcome}"));
 
         OnPropertyChanged(nameof(IsRunning));
         TestMotorCommand.NotifyCanExecuteChanged();
         TestSequenceCommand.NotifyCanExecuteChanged();
         StopCommand.NotifyCanExecuteChanged();
+        ResetBusy();
+
     }
 }

@@ -5,6 +5,7 @@
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" 
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                                   x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.SikRadioView"
                                   x:DataType="sections:SikRadioViewModel">
     <ScrollView>
@@ -16,12 +17,13 @@
             <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
             <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
             <HorizontalStackLayout Spacing="50"  HorizontalOptions="Fill" HeightRequest="75" VerticalOptions="Fill">
-                <Picker Title="Serial device" 
-                        VerticalOptions="End"
-                        ItemsSource="{Binding Ports}" 
-                        SelectedItem="{Binding SelectedPort}" 
-                        WidthRequest="180"/>
-   
+                <material:SelectField 
+                    Title="Serial device" 
+                    VerticalOptions="End"
+                    ItemsSource="{Binding Ports}"
+                    SelectedItem="{Binding SelectedPort}"
+                    WidthRequest="180" />
+
                 <controls:NumericField
                     Title="BaudRate"
                     NumberFormat="F0"

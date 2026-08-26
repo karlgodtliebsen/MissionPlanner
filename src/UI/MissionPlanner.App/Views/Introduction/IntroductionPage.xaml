@@ -27,17 +27,17 @@
                    Text="{Binding Subtitle}"
                    FontSize="13"
                    Opacity="0.7" />
-
-            <Picker x:Name="MobileTopicPicker"
-                    Grid.Column="1"
-                    Grid.RowSpan="2"
-                    WidthRequest="240"
-                    Title="Section"
-                    ItemsSource="{Binding Topics}"
-                    SelectedItem="{Binding SelectedTopic, Mode=TwoWay}"
-                    ItemDisplayBinding="{Binding DisplayTitle}"
-                    IsVisible="False"
-                    VerticalOptions="Center" />
+            <material:SelectField 
+                x:Name="MobileTopicPicker"
+                Grid.Column="1"
+                Grid.RowSpan="2"
+                WidthRequest="240"
+                Title="Section"
+                ItemsSource="{Binding Topics}"
+                SelectedItem="{Binding SelectedTopic, Mode=TwoWay}"
+                ItemDisplayBinding="{Binding DisplayTitle}"
+                IsVisible="False"
+                VerticalOptions="Center" />
         </Grid>
 
         <Grid Grid.Row="1"

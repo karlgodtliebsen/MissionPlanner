@@ -19,6 +19,8 @@
           VerticalOptions="Fill">
         <VerticalStackLayout>
             <Label Text="Optional Hardware" FontSize="26" FontAttributes="Bold"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
+            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
             <Label Text="{Binding VehicleHeading}"/>
             <Label Text="{Binding AvailabilitySummary}" Opacity="0.75"/>
         </VerticalStackLayout>

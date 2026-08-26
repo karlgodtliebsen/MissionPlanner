@@ -16,9 +16,12 @@
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
             <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
             <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
-            <Picker Title="Source" 
-                    ItemsSource="{Binding SourceKinds}" 
-                    SelectedItem="{Binding SourceKind}"/>
+           
+
+            <material:SelectField 
+                Title="Source" 
+                ItemsSource="{Binding SourceKinds}" 
+                SelectedItem="{Binding SourceKind}" />
 
             <Entry Placeholder="Serial port or caster host" Text="{Binding Endpoint}" HorizontalTextAlignment="End"/>
    

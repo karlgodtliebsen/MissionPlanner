@@ -24,6 +24,13 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
         this.logger = logger;
     }
 
+    /// <summary>Gets or sets the current operation progress from zero to one.</summary>
+    [ObservableProperty]
+    public partial double Progress
+    {
+        get;
+        set;
+    }
 
     /// <summary>
     /// Gets whether an operation is running.
@@ -39,14 +46,23 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
     /// </summary>
     protected void SetBusy()
     {
-        dispatcher.Dispatch(() => IsBusy = true);
+        DispatchIfAlive(
+            () =>
+            {
+                IsBusy = true;
+                Task.Yield();
+            });
     }
     /// <summary>
     /// 
     /// </summary>
     protected void ResetBusy()
     {
-        dispatcher.Dispatch(() => IsBusy = false);
+        DispatchIfAlive(() =>
+        {
+            IsBusy = false;
+            Task.Yield();
+        });
     }
 
     /// <summary>
@@ -87,6 +103,7 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
         }
         StatusMessage = statusMessage;
         ErrorMessage = errorMessage;
+        Task.Yield();
     }
 
     /// <summary>
@@ -102,6 +119,7 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
         }
         StatusMessage = null;
         ErrorMessage = ex.Message;
+        Task.Yield();
     }
 
 
@@ -132,7 +150,6 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
             logger.LogError(exception, "Operation failed.");
             DispatchIfAlive(() =>
             {
-
                 StatusMessage = $"Operation failed: {exception.Message}";
                 ErrorMessage = exception.Message;
             });
