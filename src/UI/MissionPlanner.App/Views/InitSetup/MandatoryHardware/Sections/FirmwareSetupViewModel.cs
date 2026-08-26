@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -201,7 +201,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         coordinator.Reset();
         Releases.Clear();
         SelectedRelease = null;
-        StatusMessage = "Discover releases for the selected channel.";
+        SetMessages("Discover releases for the selected channel.");
     }
 
     partial void OnSelectedReleaseChanged(FirmwareManifestEntryRecord? value)
@@ -267,7 +267,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
     /// <inheritdoc />
     public override Task ActivateAsync()
     {
-        StatusMessage = "Identity is read-only until a compatible manifest release is selected.";
+        SetMessages("Identity is read-only until a compatible manifest release is selected.");
         coordinator.StateChanged += OnStateChanged;
         activeVehicle.Changed += OnActiveVehicleChanged;
         vehicleStateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
@@ -312,7 +312,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
     {
         if (activeVehicle.State is not { } state || !activeVehicle.IsOnline)
         {
-            StatusMessage = "Connect a vehicle before discovering firmware.";
+            SetMessages("Connect a vehicle before discovering firmware.");
             return;
         }
 
@@ -334,7 +334,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         catch (Exception exception)
         {
             logger.LogError(exception, "Firmware discovery failed.");
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 
@@ -362,7 +362,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         catch (Exception exception)
         {
             logger.LogError(exception, "Firmware package preparation failed.");
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 
@@ -401,7 +401,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         var result = await coordinator.FlashAsync(state.VehicleId, state.Identity.Firmware, true, operationToken);
         if (!result.Succeeded)
         {
-            ErrorMessage = result.Message;
+            SetMessages(null, result.Message);
         }
     }
 
@@ -411,8 +411,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         operationCancellation = linkToConnection
             ? CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken)
             : new CancellationTokenSource();
-        ErrorMessage = null;
-        StatusMessage = null;
+        SetMessages(null, null);
         return operationCancellation.Token;
     }
 
@@ -421,7 +420,7 @@ public sealed partial class FirmwareSetupViewModel : SetupWorkflowDetailViewMode
         dispatcher.Dispatch(() =>
         {
             UpdateState = args.State;
-            StatusMessage = args.Status;
+            SetMessages(args.Status);
             Progress = args.Progress;
         });
     }

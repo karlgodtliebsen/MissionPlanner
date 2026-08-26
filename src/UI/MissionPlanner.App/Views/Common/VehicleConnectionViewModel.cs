@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Vehicles;
@@ -114,11 +114,10 @@ public partial class VehicleConnectionViewModel : BaseViewModel
         }
 
         activated = true;
-        ErrorMessage = null;
+        SetMessages(HasConnection ? null : DefaultStatusMessage, null);
         activeVehicle.Changed += VehicleChanged;
         HasConnection = activeVehicle.IsOnline;
         ShowVehicleDisconnected = !HasConnection;
-        StatusMessage = HasConnection ? null : DefaultStatusMessage;
         return Task.CompletedTask;
     }
 

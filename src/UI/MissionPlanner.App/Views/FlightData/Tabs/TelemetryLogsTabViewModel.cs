@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -32,7 +32,7 @@ public sealed partial class TelemetryLogsTabViewModel : BaseViewModel
         this.activeVehicle = activeVehicle;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        StatusMessage = ReplaySessionSnapshot.Unloaded.Message;
+        SetMessages(ReplaySessionSnapshot.Unloaded.Message);
     }
 
     /// <inheritdoc />
@@ -176,7 +176,7 @@ public sealed partial class TelemetryLogsTabViewModel : BaseViewModel
             var file = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Select a Mission Planner telemetry log (.tlog)" });
             if (file is null)
             {
-                StatusMessage = "Telemetry-log selection cancelled.";
+                SetMessages("Telemetry-log selection cancelled.");
                 return;
             }
 
@@ -257,7 +257,7 @@ public sealed partial class TelemetryLogsTabViewModel : BaseViewModel
         SourceModeLabel = IsReplayActive ? "REPLAY · READ ONLY · SENDS DISABLED" : "LIVE / SIMULATION";
         ReplayStateLabel = snapshot.State.ToString();
         SourceName = snapshot.Index?.SourceName ?? "No telemetry log loaded";
-        StatusMessage = snapshot.Failure ?? snapshot.Message;
+        SetMessages(snapshot.Failure ?? snapshot.Message);
         Progress = snapshot.Progress;
         DurationSeconds = snapshot.Clock?.Duration.TotalSeconds ?? 0;
         SeekSeconds = snapshot.Clock?.Elapsed.TotalSeconds ?? 0;

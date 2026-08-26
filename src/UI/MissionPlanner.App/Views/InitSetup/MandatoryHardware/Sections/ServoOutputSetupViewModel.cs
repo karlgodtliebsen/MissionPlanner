@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -184,7 +184,7 @@ public sealed partial class ServoOutputSetupViewModel : SetupWorkflowDetailViewM
         operationCancellation?.Cancel();
         operationCancellation?.Dispose();
         operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
-        ErrorMessage = null;
+        SetMessages(null, null);
         return operationCancellation.Token;
     }
 

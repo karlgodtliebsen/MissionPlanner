@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -28,7 +28,7 @@ public partial class PayloadControlTabViewModel : BaseViewModel
         this.cameras = cameras;
         this.gimbals = gimbals;
         this.dispatcher = dispatcher;
-        StatusMessage = "No payload discovered.";
+        SetMessages("No payload discovered.");
     }
 
     /// <summary>Gets discovered payload components.</summary>
@@ -91,15 +91,15 @@ public partial class PayloadControlTabViewModel : BaseViewModel
         }
 
         SelectedPayload = Payloads.FirstOrDefault(item => item.Key == selected) ?? Payloads.FirstOrDefault();
-        StatusMessage = Payloads.Count == 0 ? "No supported camera or gimbal heartbeat has been discovered." : $"{Payloads.Count} payload component(s) discovered.";
+        SetMessages(Payloads.Count == 0 ? "No supported camera or gimbal heartbeat has been discovered." : $"{Payloads.Count} payload component(s) discovered.");
     }
 
     [RelayCommand]
     private async Task CaptureAsync(CancellationToken token)
     {
-        StatusMessage = active.VehicleId is { } vehicle && SelectedPayload is { Kind: "Camera" } payload
+        SetMessages(active.VehicleId is { } vehicle && SelectedPayload is { Kind: "Camera" } payload
             ? (await cameras.CaptureImageAsync(vehicle, payload.Key.ComponentId, token)).Summary
-            : "Select a camera component.";
+            : "Select a camera component.");
     }
 
     [RelayCommand]
@@ -117,16 +117,16 @@ public partial class PayloadControlTabViewModel : BaseViewModel
     [RelayCommand]
     private async Task MoveGimbalAsync(CancellationToken token)
     {
-        StatusMessage = active.VehicleId is { } vehicle && SelectedPayload is { Kind: "Gimbal" } payload
+        SetMessages(active.VehicleId is { } vehicle && SelectedPayload is { Kind: "Gimbal" } payload
             ? (await gimbals.SetPitchYawAsync(vehicle, payload.Key.ComponentId, (float)Pitch, (float)Yaw, YawLock, token)).Summary
-            : "Select a gimbal component.";
+            : "Select a gimbal component.");
     }
 
     private async Task SetVideoAsync(bool start, CancellationToken token)
     {
-        StatusMessage = active.VehicleId is { } vehicle && SelectedPayload is { Kind: "Camera" } payload
+        SetMessages(active.VehicleId is { } vehicle && SelectedPayload is { Kind: "Camera" } payload
             ? (await cameras.SetVideoAsync(vehicle, payload.Key.ComponentId, start, token)).Summary
-            : "Select a camera component.";
+            : "Select a camera component.");
     }
 
     /// <inheritdoc />

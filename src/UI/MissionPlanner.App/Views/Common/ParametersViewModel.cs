@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -197,8 +197,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
 
         await dispatcher.DispatchAsync(async () =>
         {
-            StatusMessage = "Vehicle changed. Refresh parameters.";
-            ErrorMessage = "The vehicle is disconnected.";
+            SetMessages("Vehicle changed. Refresh parameters.", "The vehicle is disconnected.");
             editSessionFactory?.DiscardPendingChanges();
             CancelCachedParameterLoad();
             EditSession?.Changed += OnEditSessionChanged;
@@ -668,7 +667,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
         {
             CloseProgressDialog();
             CompleteBusyState();
-            IsBusy = true;
+            SetBusy();
             ShowLoadingProgress = true;
             ProgressMessage = "Loading parameters...";
             SetMessages(ProgressMessage);
@@ -681,7 +680,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
     protected void CompleteBusyState()
     {
         ProgressMessage = string.Empty;
-        IsBusy = false;
+        ResetBusy();
         ShowLoadingProgress = false;
         ShowLoadingCompletedWithError = false;
         ShowLoadingCancelled = false;
@@ -739,13 +738,12 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
         activated = true;
         await base.ActivateAsync();
 
-        ErrorMessage = null;
-        IsBusy = false;
+        SetMessages(HasConnection ? null : DefaultStatusMessage, null);
+        ResetBusy();
         HasParameters = Parameters.Count > 0;
         activeVehicle.Changed += ActiveVehicleChanged;
         parameterRegistry.Changed += ParameterRegistryChangedAsync;
         parameterLoadStatusSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleParameterLoadStatusChanged>(OnParameterLoadStatusChanged);
-        StatusMessage = HasConnection ? null : DefaultStatusMessage;
 
         if (activeVehicle.VehicleId is { } vehicleId && HasConnection)
         {

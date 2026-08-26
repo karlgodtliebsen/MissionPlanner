@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using CommunityToolkit.Maui.Storage;
@@ -202,7 +202,7 @@ public partial class MessagesTabViewModel : BaseViewModel
         vehicleMessages.Clear(vehicleId, message => vehicleIdentities.Contains(message.Identity));
         applicationMessages.Clear(vehicleId, message => applicationIdentities.Contains(message.Identity));
         Refresh();
-        StatusMessage = "Cleared the current filtered view.";
+        SetMessages("Cleared the current filtered view.");
     }
 
     [RelayCommand]
@@ -210,19 +210,19 @@ public partial class MessagesTabViewModel : BaseViewModel
     {
         if (SelectedMessage is null)
         {
-            StatusMessage = "Select a message to copy.";
+            SetMessages("Select a message to copy.");
             return;
         }
 
         await clipboard.SetTextAsync(FormatRow(SelectedMessage));
-        StatusMessage = "Selected message copied.";
+        SetMessages("Selected message copied.");
     }
 
     [RelayCommand]
     private async Task CopyAllAsync()
     {
         await clipboard.SetTextAsync(CreateTextExport());
-        StatusMessage = $"Copied {Items.Count} visible messages.";
+        SetMessages($"Copied {Items.Count} visible messages.");
     }
 
     [RelayCommand]
@@ -244,16 +244,16 @@ public partial class MessagesTabViewModel : BaseViewModel
         {
             await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
             var result = await fileSaver.SaveAsync(fileName, stream, cancellationToken);
-            StatusMessage = result.IsSuccessful ? $"Exported to {result.FilePath}." : "Export cancelled.";
+            SetMessages(result.IsSuccessful ? $"Exported to {result.FilePath}." : "Export cancelled.");
         }
         catch (OperationCanceledException)
         {
-            StatusMessage = "Export cancelled.";
+            SetMessages("Export cancelled.");
         }
         catch (Exception exception)
         {
             logger.LogError(exception, "Message export failed.");
-            StatusMessage = $"Export failed: {exception.Message}";
+            SetMessages($"Export failed: {exception.Message}");
         }
     }
 
@@ -289,7 +289,7 @@ public partial class MessagesTabViewModel : BaseViewModel
         Items.Clear();
         if (activeVehicle.VehicleId is not { } vehicleId)
         {
-            StatusMessage = "No active vehicle";
+            SetMessages("No active vehicle");
             return;
         }
 
@@ -302,7 +302,7 @@ public partial class MessagesTabViewModel : BaseViewModel
         Items.AddRange(rows);
 
         SelectedMessage = Items.FirstOrDefault(item => item.Identity == selectedIdentity);
-        StatusMessage = $"{Items.Count} visible messages for {activeVehicle.Current.DisplayName}.";
+        SetMessages($"{Items.Count} visible messages for {activeVehicle.Current.DisplayName}.");
     }
 
     private bool MatchesFilter(MessageListItem item)

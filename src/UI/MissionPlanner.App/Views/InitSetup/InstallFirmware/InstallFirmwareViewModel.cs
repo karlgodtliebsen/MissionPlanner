@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -478,9 +478,9 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
         active = true;
         lifetime?.Dispose();
         lifetime = new CancellationTokenSource();
-        IsBusy = true;
+        SetBusy();
         activeVehicle.Changed += OnActiveVehicleChanged;
-        StatusMessage = "Ready";
+        SetMessages("Ready");
         OperationProgress.Stage = "Ready";
         OperationProgress.Progress = 0;
         OperationProgress.HasStage = false;
@@ -533,7 +533,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
 
     private async Task RefreshSafelyAsync(bool forceRefresh, CancellationToken cancellationToken, bool allOptions = false)
     {
-        IsBusy = true;
+        SetBusy();
         try
         {
             await RefreshAsync(forceRefresh, cancellationToken, allOptions);
@@ -546,7 +546,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
             logger.LogError(ex, "Refresh failed");
         }
 
-        IsBusy = false;
+        ResetBusy();
     }
 
 
@@ -666,14 +666,14 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
             CustomFirmwareImageSize = package.Image.Length;
             SelectedFirmware = null;
             selectedFirmwareTarget = null;
-            StatusMessage = "Local firmware parsed and validated. Verify its board ID, then install it using the custom firmware panel.";
+            SetMessages("Local firmware parsed and validated. Verify its board ID, then install it using the custom firmware panel.");
             UpdateContextHelp();
         }
         catch (Exception exception)
         {
             logger.LogWarning(exception, "Custom firmware selection failed.");
             CustomPackage = null;
-            StatusMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 
@@ -710,13 +710,13 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
             CustomPackage = null;
             SelectedFirmware = null;
             selectedFirmwareTarget = null;
-            StatusMessage = "Local *_with_bl.hex selected. Enter its exact ArduPilot platform and select the detected STM32 DFU device.";
+            SetMessages("Local *_with_bl.hex selected. Enter its exact ArduPilot platform and select the detected STM32 DFU device.");
         }
         catch (Exception exception)
         {
             logger.LogWarning(exception, "Custom firmware selection failed.");
             CustomPackage = null;
-            StatusMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 
@@ -731,7 +731,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
         CustomFirmwareBoardId = 0;
         CustomFirmwareImageSize = 0;
         RequireExactBoardIdMatch = true;
-        StatusMessage = "Local firmware selection cleared.";
+        SetMessages("Local firmware selection cleared.");
         UpdateContextHelp();
     }
 
@@ -741,7 +741,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
         LocalDfuFirmwarePath = null;
         LocalDfuFirmwareName = null;
         LocalDfuPlatform = null;
-        StatusMessage = "Local STM32 DFU firmware selection cleared.";
+        SetMessages("Local STM32 DFU firmware selection cleared.");
     }
 
     [RelayCommand(CanExecute = nameof(CanStartInstall), AllowConcurrentExecutions = false)]
@@ -778,23 +778,23 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
             LastDiagnosticReport = result.DiagnosticReport?.CreateReport();
 
 
-            StatusMessage = result.State == FirmwareOperationState.Completed
+            SetMessages(result.State == FirmwareOperationState.Completed
                 ? result.ApplicationDevice is null
                     ? "Firmware installation completed; reconnect was not detected. Reconnect the flight controller manually."
                     : $"Firmware installation completed. ArduPilot returned on {result.ApplicationDevice.PortName}; reconnect is available."
                 : result.Failure?.TechnicalDetail is { Length: > 0 } detail
                     ? $"Firmware installation {result.State}: {detail}"
-                    : $"Firmware installation {result.State}";
+                    : $"Firmware installation {result.State}");
         }
         catch (OperationCanceledException) when (ownedCancellation.IsCancellationRequested)
         {
-            StatusMessage = "Firmware installation cancelled.";
+            SetMessages("Firmware installation cancelled.");
         }
         catch (Exception exception)
         {
             Debug.Print("Firmware installation failed.\n{0}", exception.ToString());
             logger.LogError(exception, "Firmware installation failed.");
-            StatusMessage = exception.Message;
+            SetMessages(exception);
         }
         finally
         {
@@ -838,7 +838,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
         var localHexPath = hasLocalHex ? LocalDfuFirmwarePath : null;
         if (string.IsNullOrWhiteSpace(platform))
         {
-            StatusMessage = "Enter the exact ArduPilot platform for the selected local HEX file.";
+            SetMessages("Enter the exact ArduPilot platform for the selected local HEX file.");
             Interlocked.Exchange(ref operationRunning, 0);
             return;
         }
@@ -851,7 +851,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
             "Continue");
         if (!string.Equals(phrase?.Trim(), requiredPhrase, StringComparison.Ordinal))
         {
-            StatusMessage = phrase is null ? "Initial DFU installation cancelled." : $"Confirmation did not match {requiredPhrase}.";
+            SetMessages(phrase is null ? "Initial DFU installation cancelled." : $"Confirmation did not match {requiredPhrase}.");
             Interlocked.Exchange(ref operationRunning, 0);
             return;
         }
@@ -864,7 +864,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
             var progress = new Progress<DfuProgress>(value => dispatcher.Dispatch(() =>
             {
                 ProgressMessage = DfuStageText(value);
-                StatusMessage = ProgressMessage;
+                SetMessages(ProgressMessage);
             }));
             var result = await dfuInstallationService.InstallAsync(
                 new DfuInstallationRequest(platform, boardId, selectedDfuDevice.Descriptor, ConfirmationPhrase: requiredPhrase,
@@ -873,20 +873,20 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
             await RefreshDfuDevicesAsync(CancellationToken.None);
 
             LastDiagnosticReport = BuildDfuDiagnosticReport(result, platform, boardId, selectedDfuDevice.Descriptor);
-            StatusMessage = result.State == DfuOperationState.Completed
+            SetMessages(result.State == DfuOperationState.Completed
                 ? result.ApplicationRediscovered
                     ? "Initial ArduPilot installation completed and the application device was detected."
                     : "Programming and verification completed. Reconnect or reset the controller if ArduPilot does not appear."
-                : result.Failure?.Message ?? $"STM32 DFU installation {result.State}.";
+                : result.Failure?.Message ?? $"STM32 DFU installation {result.State}.");
         }
         catch (OperationCanceledException) when (ownedCancellation.IsCancellationRequested)
         {
-            StatusMessage = "Initial DFU installation cancelled.";
+            SetMessages("Initial DFU installation cancelled.");
         }
         catch (Exception exception)
         {
             logger.LogError(exception, "Initial STM32 DFU installation failed.");
-            StatusMessage = exception.Message;
+            SetMessages(exception);
         }
         finally
         {
@@ -927,7 +927,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
 
             SetOperation(true, FirmwareOperationState.Programming);
             var result = await bootloaderUpdateService.UpdateAsync(new BootloaderUpdateRequest(true), cancellationToken);
-            StatusMessage = result.Code + (result.RebootRequired ? " — reboot the flight controller to use the new bootloader." : string.Empty);
+            SetMessages(result.Code + (result.RebootRequired ? " — reboot the flight controller to use the new bootloader." : string.Empty));
         }
         catch (Exception exception)
         {
@@ -961,7 +961,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
             await DispatchAsync(() =>
             {
                 IsCatalogRefreshRunning = true;
-                StatusMessage = "Loading firmware catalogue…";
+                SetMessages("Loading firmware catalogue…");
             });
             var channel = SelectedChannel;
 
@@ -1027,7 +1027,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
                         : SelectedDevice is not null
                             ? $"Recommended device: {SelectedDevice}"
                             : "Select the flight controller explicitly.";
-                StatusMessage = catalog.IsStale ? "Showing cached firmware catalogue" : $"{FirmwareChoices.Count} vehicle firmware choices available";
+                SetMessages(catalog.IsStale ? "Showing cached firmware catalogue" : $"{FirmwareChoices.Count} vehicle firmware choices available");
                 UpdateContextHelp();
             });
         }
@@ -1043,7 +1043,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
             {
                 if (IsLatestRefresh(version))
                 {
-                    StatusMessage = exception.Message;
+                    SetMessages(exception);
                 }
             });
         }
@@ -1257,7 +1257,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
             SetOperation(true, FirmwareOperationState.Downloading);
             await ShowOperationDialogAsync("Downloading firmware", ownedCancellation);
             PreparedFirmware = await preparationService.PrepareAsync(new FirmwarePreparationRequest(SelectedFirmware.Entry), CreateProgress(), ownedCancellation.Token);
-            StatusMessage = PreparedFirmware.WasCacheHit ? "Validated cached firmware package." : "Firmware downloaded and validated.";
+            SetMessages(PreparedFirmware.WasCacheHit ? "Validated cached firmware package." : "Firmware downloaded and validated.");
         }
         catch (OperationCanceledException) when (ownedCancellation.IsCancellationRequested)
         {
@@ -1283,7 +1283,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
         if (IsCatalogRefreshRunning)
         {
             CancelRefresh();
-            StatusMessage = "Firmware catalogue refresh cancelled.";
+            SetMessages("Firmware catalogue refresh cancelled.");
         }
 
         var cancellation = operationCancellation;
@@ -1293,9 +1293,9 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
         }
 
         IsCancellationDeferred = CurrentOperationState is FirmwareOperationState.Erasing or FirmwareOperationState.Programming or FirmwareOperationState.Verifying or FirmwareOperationState.Rebooting;
-        StatusMessage = IsCancellationDeferred
+        SetMessages(IsCancellationDeferred
             ? "Cancellation requested. The flash will continue through verify and reboot before stopping at a safe boundary. Do not disconnect power."
-            : "Cancelling firmware operation…";
+            : "Cancelling firmware operation…");
 
         cancellation.Cancel();
     }
@@ -1331,7 +1331,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
             return;
         }
         ApplyMode();
-        dispatcher.Dispatch(() => IsBusy = false);
+        ResetBusy();
     }
 
     private void SetOperation(bool operationActive, FirmwareOperationState? stage)
@@ -1387,7 +1387,7 @@ public sealed partial class InstallFirmwareViewModel : BaseViewModel
                 OperationProgress.HasStage = progress.Percentage.HasValue;
                 OperationProgress.IsPowerCritical = progress.State is FirmwareOperationState.Erasing or FirmwareOperationState.Programming or FirmwareOperationState.Verifying;
                 OperationProgress.TechnicalDetail = progress.TechnicalDetail;
-                StatusMessage = OperationProgress.Stage;
+                SetMessages(OperationProgress.Stage);
             });
     }
 

@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -49,7 +49,7 @@ public sealed partial class BasicTuningTabViewModel : BaseViewModel
         this.confirmation = confirmation;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        StatusMessage = "Connect a vehicle to use Basic Tuning.";
+        SetMessages("Connect a vehicle to use Basic Tuning.");
     }
 
     /// <summary>Gets the firmware-supported tuning groups.</summary>
@@ -160,7 +160,7 @@ public sealed partial class BasicTuningTabViewModel : BaseViewModel
                 $"basic-tuning-{workspace.Profile.Family}.json",
                 content,
                 cancellationToken);
-            StatusMessage = path is null ? "Basic Tuning export was cancelled." : $"Basic Tuning exported to {path}.";
+            SetMessages(path is null ? "Basic Tuning export was cancelled." : $"Basic Tuning exported to {path}.");
         }).ConfigureAwait(false);
     }
 
@@ -177,15 +177,15 @@ public sealed partial class BasicTuningTabViewModel : BaseViewModel
             var content = await fileHandler.LoadTextFileAsync("Select a Basic Tuning JSON file", cancellationToken);
             if (content is null)
             {
-                StatusMessage = "Basic Tuning import was cancelled.";
+                SetMessages("Basic Tuning import was cancelled.");
                 return;
             }
 
             var result = tuningService.Import(workspace, content);
             RefreshGroups();
-            StatusMessage = result.Success
+            SetMessages(result.Success
                 ? $"Imported {result.ImportedCount} presented tuning values; {result.IgnoredNames.Count} unsupported names ignored. Review and apply each group."
-                : string.Join(" ", result.Errors);
+                : string.Join(" ", result.Errors));
         }).ConfigureAwait(false);
     }
 
@@ -209,7 +209,7 @@ public sealed partial class BasicTuningTabViewModel : BaseViewModel
                     "Apply",
                     cancellationToken))
             {
-                StatusMessage = "Tuning changes were not applied.";
+                SetMessages("Tuning changes were not applied.");
                 return;
             }
 
@@ -218,13 +218,13 @@ public sealed partial class BasicTuningTabViewModel : BaseViewModel
                 ? null
                 : string.Join(" ", result.ValidationIssues.Select(issue => issue.Message));
             RefreshGroups();
-            StatusMessage = result.Success
+            SetMessages(result.Success
                 ? result.ParameterReport?.RebootRequired == true
                     ? $"{group.Title} applied and confirmed. Vehicle Reboot is required for one or more changes."
                     : $"{group.Title} applied and confirmed."
                 : result.ValidationIssues.Count > 0
                     ? group.ValidationMessage!
-                    : $"{group.Title} was not fully confirmed; failed fields remain pending.";
+                    : $"{group.Title} was not fully confirmed; failed fields remain pending.");
         }).ConfigureAwait(false);
     }
 
@@ -238,7 +238,7 @@ public sealed partial class BasicTuningTabViewModel : BaseViewModel
         tuningService.RevertGroup(workspace, group.Key);
         group.ValidationMessage = null;
         RefreshGroups();
-        StatusMessage = $"Pending changes in {group.Title} were reverted to live values.";
+        SetMessages($"Pending changes in {group.Title} were reverted to live values.");
     }
 
     private async Task RefreshGroupAsync(BasicTuningGroupViewModel group)
@@ -254,7 +254,7 @@ public sealed partial class BasicTuningTabViewModel : BaseViewModel
                 group.Parameters.Select(parameter => parameter.ParameterName).ToArray(),
                 cancellationToken);
             RefreshGroups();
-            StatusMessage = $"Refresh requested for {group.Title}.";
+            SetMessages($"Refresh requested for {group.Title}.");
         }).ConfigureAwait(false);
     }
 
@@ -270,7 +270,7 @@ public sealed partial class BasicTuningTabViewModel : BaseViewModel
         HasSupportedProfile = false;
         if (!snapshot.IsOnline || snapshot.VehicleId is not { } vehicleId)
         {
-            StatusMessage = "Connect a vehicle to use Basic Tuning.";
+            SetMessages("Connect a vehicle to use Basic Tuning.");
             return;
         }
 
@@ -279,7 +279,7 @@ public sealed partial class BasicTuningTabViewModel : BaseViewModel
             workspace = await tuningService.OpenAsync(vehicleId, cancellationToken);
             if (workspace is null || workspace.Groups.Count == 0)
             {
-                StatusMessage = $"No curated Basic Tuning fields are available for {FirmwareFamilyText}.";
+                SetMessages($"No curated Basic Tuning fields are available for {FirmwareFamilyText}.");
                 return;
             }
 
@@ -290,7 +290,7 @@ public sealed partial class BasicTuningTabViewModel : BaseViewModel
             }
 
             HasSupportedProfile = true;
-            StatusMessage = $"Loaded {Groups.Sum(group => group.Parameters.Count)} supported fields for {FirmwareFamilyText}. Changes are applied one group at a time.";
+            SetMessages($"Loaded {Groups.Sum(group => group.Parameters.Count)} supported fields for {FirmwareFamilyText}. Changes are applied one group at a time.");
         }).ConfigureAwait(false);
     }
 
@@ -299,26 +299,26 @@ public sealed partial class BasicTuningTabViewModel : BaseViewModel
         CancelOperation();
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
         operationCancellation = cancellation;
-        IsBusy = true;
+        SetBusy();
         try
         {
             await operation(cancellation.Token);
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
-            StatusMessage = activeVehicle.IsOnline ? "Basic Tuning operation cancelled." : "Vehicle disconnected; Basic Tuning operation cancelled.";
+            SetMessages(activeVehicle.IsOnline ? "Basic Tuning operation cancelled." : "Vehicle disconnected; Basic Tuning operation cancelled.");
         }
         catch (Exception exception)
         {
             logger.LogError(exception, "Basic Tuning operation failed.");
-            StatusMessage = exception.Message;
+            SetMessages(exception);
         }
         finally
         {
             if (ReferenceEquals(operationCancellation, cancellation))
             {
                 operationCancellation = null;
-                IsBusy = false;
+                ResetBusy();
             }
 
             ImportCommand.NotifyCanExecuteChanged();
@@ -371,7 +371,7 @@ public sealed partial class BasicTuningTabViewModel : BaseViewModel
     {
         operationCancellation?.Cancel();
         operationCancellation = null;
-        IsBusy = false;
+        ResetBusy();
     }
 
     private readonly record struct ActiveProfileKey(VehicleId? VehicleId, bool IsOnline, VehicleFirmwareIdentity? Firmware)

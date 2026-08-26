@@ -1,4 +1,4 @@
-﻿using Mapsui.Utilities;
+using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.FlightData.Components;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -41,7 +41,7 @@ public partial class TransponderTabViewModel : BaseViewModel
     /// <inheritdoc />
     public override Task ActivateAsync()
     {
-        StatusMessage = "No transponder discovered";
+        SetMessages("No transponder discovered");
         registry.Changed += OnChanged;
         activeVehicle.Changed += OnChanged;
         Refresh();
@@ -74,13 +74,13 @@ public partial class TransponderTabViewModel : BaseViewModel
         var systemId = activeVehicle.VehicleId?.SystemId;
         if (systemId is null)
         {
-            StatusMessage = "No active vehicle";
+            SetMessages("No active vehicle");
             return;
         }
 
         Replace(Components, registry.GetTransponders(systemId.Value));
         Replace(Traffic, registry.GetTraffic(systemId.Value, DateTimeOffset.UtcNow));
-        StatusMessage = Components.Count == 0 ? "No supported uAvionix transponder discovered" : $"{Components.Count} transponder component(s)";
+        SetMessages(Components.Count == 0 ? "No supported uAvionix transponder discovered" : $"{Components.Count} transponder component(s)");
     }
 
     private static void Replace<T>(ObservableRangeCollection<T> target, IEnumerable<T> values)

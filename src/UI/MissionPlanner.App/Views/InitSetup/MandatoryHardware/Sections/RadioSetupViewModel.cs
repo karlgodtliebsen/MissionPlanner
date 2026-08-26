@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -251,7 +251,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
     {
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
-            ErrorMessage = "Connect a vehicle before starting radio calibration.";
+            SetMessages(null, "Connect a vehicle before starting radio calibration.");
             return;
         }
 
@@ -264,7 +264,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
             return;
         }
 
-        ErrorMessage = null;
+        SetMessages(null, null);
         try
         {
             await radioService.StartAsync(vehicleId, activeVehicle.ConnectionCancellationToken);
@@ -272,7 +272,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogError(exception, "Starting radio calibration failed for {VehicleId}.", vehicleId);
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 
@@ -291,7 +291,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogError(exception, "Finishing radio endpoint capture failed.");
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 
@@ -318,13 +318,13 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
             var result = await radioService.CompleteAsync(operationCancellation.Token);
             if (!result.Success)
             {
-                ErrorMessage = result.Message;
+                SetMessages(null, result.Message);
             }
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogError(exception, "Finishing radio calibration failed.");
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 
@@ -338,7 +338,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogError(exception, "Cancelling radio calibration failed.");
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 
@@ -460,7 +460,7 @@ public sealed partial class RadioSetupViewModel : SetupWorkflowDetailViewModel
     {
         CalibrationState = snapshot.State;
         Instruction = snapshot.Instruction;
-        ErrorMessage = snapshot.FailureReason;
+        SetMessages(null, snapshot.FailureReason);
         CaptureSummary = snapshot.Captures.Count == 0
             ? string.Empty
             : string.Join(Environment.NewLine, snapshot.Captures.Select(capture =>

@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -158,7 +158,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         var recommendation = spinParameters.RecommendSpinMin(id);
         if (!recommendation.Success)
         {
-            StatusMessage = recommendation.Message;
+            SetMessages(recommendation.Message);
             return;
         }
 
@@ -171,7 +171,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         }
 
         var result = await spinParameters.SetSpinMinAsync(id, activeVehicle.ConnectionCancellationToken);
-        StatusMessage = result.Message;
+        SetMessages(result.Message);
         RefreshSpinParameters(id);
     }
 
@@ -186,7 +186,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         var recommendation = spinParameters.RecommendSpinArm(id, ThrottlePercent);
         if (!recommendation.Success)
         {
-            StatusMessage = recommendation.Message;
+            SetMessages(recommendation.Message);
             return;
         }
 
@@ -199,7 +199,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         }
 
         var result = await spinParameters.SetSpinArmAsync(id, ThrottlePercent, activeVehicle.ConnectionCancellationToken);
-        StatusMessage = result.Message;
+        SetMessages(result.Message);
         RefreshSpinParameters(id);
     }
 
@@ -214,7 +214,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         var result = await service.TestMotorAsync(id,
             new MotorTestRequest(motor.TestOrder, MotorThrottleType.Percent, ThrottlePercent, DurationSeconds),
             activeVehicle.ConnectionCancellationToken);
-        StatusMessage = result.Message;
+        SetMessages(result.Message);
     }
 
     [RelayCommand(CanExecute = nameof(CanExecuteCommand))]
@@ -226,7 +226,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         }
 
         var result = await service.TestSequenceAsync(id, ThrottlePercent, DurationSeconds, layout.Motors.Count, activeVehicle.ConnectionCancellationToken);
-        StatusMessage = result.Message;
+        SetMessages(result.Message);
     }
 
 
@@ -239,7 +239,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         }
 
         var result = await service.TestAllAsync(id, ThrottlePercent, DurationSeconds, layout.Motors.Count, activeVehicle.ConnectionCancellationToken);
-        StatusMessage = result.Message;
+        SetMessages(result.Message);
     }
 
 
@@ -318,7 +318,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         {
             if (!disposed)
             {
-                StatusMessage = e.Snapshot.Instruction;
+                SetMessages(e.Snapshot.Instruction);
             }
         });
     }
@@ -337,7 +337,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         {
             return;
         }
-        StatusMessage = "Remove all propellers before testing.";
+        SetMessages("Remove all propellers before testing.");
         activeVehicle.Changed += Changed;
         service.StateChanged += StateChanged;
         await base.ActivateAsync();

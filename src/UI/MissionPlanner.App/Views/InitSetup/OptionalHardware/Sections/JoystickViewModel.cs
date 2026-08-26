@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -37,7 +37,7 @@ public sealed partial class JoystickViewModel(IJoystickProvider provider, IJoyst
         await Dispatcher.DispatchAsync(() =>
         {
             Devices.ReplaceRange(devices);
-            StatusMessage = $"{Devices.Count} device(s) found.";
+            SetMessages($"{Devices.Count} device(s) found.");
         });
     }
 
@@ -46,7 +46,7 @@ public sealed partial class JoystickViewModel(IJoystickProvider provider, IJoyst
     {
         VehicleOutputEnabled = false;
         await output.ReleaseAsync(CancellationToken.None);
-        StatusMessage = "Vehicle output disabled and released.";
+        SetMessages("Vehicle output disabled and released.");
     }
 
     /// <inheritdoc />

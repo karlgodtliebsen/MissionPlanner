@@ -1,4 +1,4 @@
-﻿using System.Globalization;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -558,7 +558,7 @@ public sealed partial class SimulationViewModel : BaseViewModel
         operationCancellation?.Dispose();
         operationCancellation = new CancellationTokenSource();
 
-        StatusMessage = "No simulation is running.";
+        SetMessages("No simulation is running.");
         ApplySnapshot(sessionManager.Current);
         PlatformCapability = platformService.Current.Message;
         ScenarioRunnerStatus = scenarioRunner.Current?.Message ?? "No simulation is running.";
@@ -676,7 +676,7 @@ public sealed partial class SimulationViewModel : BaseViewModel
             var profile = CreateProfile();
             await profileService.SaveAsync(profile, cancellationToken);
             ReplaceProfiles(profileService.Profiles, profile.Id);
-            StatusMessage = $"Profile '{profile.Name}' saved.";
+            SetMessages($"Profile '{profile.Name}' saved.");
         });
     }
 
@@ -1202,8 +1202,7 @@ public sealed partial class SimulationViewModel : BaseViewModel
     private void ApplySnapshot(SimulationSessionSnapshot snapshot)
     {
         SessionState = snapshot.State;
-        StatusMessage = snapshot.Message;
-        ErrorMessage = snapshot.Failure;
+        SetMessages(snapshot.Message, snapshot.Failure);
         RuntimeIdentity = snapshot.RuntimeIdentity is null
             ? "Not started"
             : snapshot.RuntimeIdentity.ProcessId is { } processId

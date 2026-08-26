@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
@@ -48,7 +48,7 @@ public sealed partial class ExtendedTuningTabViewModel : BaseViewModel
         this.confirmation = confirmation;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        StatusMessage = "Connect a vehicle to use Extended Tuning.";
+        SetMessages("Connect a vehicle to use Extended Tuning.");
     }
 
     /// <summary>Gets all lazy descriptor groups.</summary>
@@ -206,7 +206,7 @@ public sealed partial class ExtendedTuningTabViewModel : BaseViewModel
                 .ToArray();
             if (groupChanges.Length == 0)
             {
-                StatusMessage = $"{group.Title} has no pending changes.";
+                SetMessages($"{group.Title} has no pending changes.");
                 return;
             }
 
@@ -216,7 +216,7 @@ public sealed partial class ExtendedTuningTabViewModel : BaseViewModel
                     "Apply expert changes",
                     cancellationToken))
             {
-                StatusMessage = "Advanced tuning changes were not applied.";
+                SetMessages("Advanced tuning changes were not applied.");
                 return;
             }
 
@@ -225,9 +225,9 @@ public sealed partial class ExtendedTuningTabViewModel : BaseViewModel
                 ? null
                 : string.Join(" ", result.ValidationIssues.Select(issue => issue.Message));
             RefreshState();
-            StatusMessage = result.Success
+            SetMessages(result.Success
                 ? $"{group.Title} applied and confirmed. Flight-test cautiously."
-                : group.ValidationMessage ?? $"{group.Title} was not fully confirmed; failed fields remain pending.";
+                : group.ValidationMessage ?? $"{group.Title} was not fully confirmed; failed fields remain pending.");
         }).ConfigureAwait(false);
     }
 
@@ -242,7 +242,7 @@ public sealed partial class ExtendedTuningTabViewModel : BaseViewModel
         group.ValidationMessage = null;
         group.ClearCopyPreview();
         RefreshState();
-        StatusMessage = $"Pending changes in {group.Title} were reverted.";
+        SetMessages($"Pending changes in {group.Title} were reverted.");
     }
 
     private async Task RefreshGroupAsync(ExtendedTuningGroupViewModel group)
@@ -256,7 +256,7 @@ public sealed partial class ExtendedTuningTabViewModel : BaseViewModel
         {
             await workspace.Session.RefreshAsync(group.ParameterNames, cancellationToken);
             RefreshState();
-            StatusMessage = $"Refresh requested for {group.Title}.";
+            SetMessages($"Refresh requested for {group.Title}.");
         }).ConfigureAwait(false);
     }
 
@@ -274,11 +274,11 @@ public sealed partial class ExtendedTuningTabViewModel : BaseViewModel
                 group.Key,
                 group.SelectedSourceAxis,
                 group.SelectedTargetAxis));
-            StatusMessage = "Axis copy preview created. Review every target value; no pending value has changed yet.";
+            SetMessages("Axis copy preview created. Review every target value; no pending value has changed yet.");
         }
         catch (Exception exception)
         {
-            StatusMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 
@@ -305,11 +305,11 @@ public sealed partial class ExtendedTuningTabViewModel : BaseViewModel
         {
             group.ClearCopyPreview();
             RefreshState();
-            StatusMessage = "Reviewed axis values copied to pending state. Review the change summary before applying the group.";
+            SetMessages("Reviewed axis values copied to pending state. Review the change summary before applying the group.");
         }
         else
         {
-            StatusMessage = string.Join(" ", result.Errors);
+            SetMessages(string.Join(" ", result.Errors));
         }
     }
 
@@ -327,7 +327,7 @@ public sealed partial class ExtendedTuningTabViewModel : BaseViewModel
         HasSupportedProfile = false;
         if (!snapshot.IsOnline || snapshot.VehicleId is not { } vehicleId)
         {
-            StatusMessage = "Connect a vehicle to use Extended Tuning.";
+            SetMessages("Connect a vehicle to use Extended Tuning.");
             return;
         }
 
@@ -336,7 +336,7 @@ public sealed partial class ExtendedTuningTabViewModel : BaseViewModel
             workspace = await tuningService.OpenAsync(vehicleId, cancellationToken);
             if (workspace is null || workspace.Groups.Count == 0)
             {
-                StatusMessage = $"No curated advanced fields are present for {FirmwareFamilyText}.";
+                SetMessages($"No curated advanced fields are present for {FirmwareFamilyText}.");
                 return;
             }
 
@@ -361,7 +361,7 @@ public sealed partial class ExtendedTuningTabViewModel : BaseViewModel
             FilterGroups();
             RefreshMetrics(vehicleId);
             RefreshState();
-            StatusMessage = $"Loaded {Groups.Count} lazy advanced groups for {FirmwareFamilyText}. Expand only the controller you intend to review.";
+            SetMessages($"Loaded {Groups.Count} lazy advanced groups for {FirmwareFamilyText}. Expand only the controller you intend to review.");
         }).ConfigureAwait(false);
     }
 
@@ -370,26 +370,26 @@ public sealed partial class ExtendedTuningTabViewModel : BaseViewModel
         CancelOperation();
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
         operationCancellation = cancellation;
-        IsBusy = true;
+        SetBusy();
         try
         {
             await operation(cancellation.Token);
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
-            StatusMessage = activeVehicle.IsOnline ? "Extended Tuning operation cancelled." : "Vehicle disconnected; Extended Tuning operation cancelled.";
+            SetMessages(activeVehicle.IsOnline ? "Extended Tuning operation cancelled." : "Vehicle disconnected; Extended Tuning operation cancelled.");
         }
         catch (Exception exception)
         {
             logger.LogError(exception, "Extended Tuning operation failed.");
-            StatusMessage = exception.Message;
+            SetMessages(exception);
         }
         finally
         {
             if (ReferenceEquals(operationCancellation, cancellation))
             {
                 operationCancellation = null;
-                IsBusy = false;
+                ResetBusy();
             }
         }
     }
@@ -480,7 +480,7 @@ public sealed partial class ExtendedTuningTabViewModel : BaseViewModel
     {
         operationCancellation?.Cancel();
         operationCancellation = null;
-        IsBusy = false;
+        ResetBusy();
     }
 
     private static ControlResponseMetricViewModel ToMetricViewModel(ControlResponseMetric metric)

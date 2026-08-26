@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -103,7 +103,7 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
     {
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
-            StatusMessage = "Connect a vehicle before loading frame configuration.";
+            SetMessages("Connect a vehicle before loading frame configuration.");
             return;
         }
 
@@ -119,7 +119,7 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
         catch (Exception exception)
         {
             logger.LogError(exception, "Loading frame configuration failed for {VehicleId}.", vehicleId);
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 
@@ -134,7 +134,7 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
     /// <inheritdoc />
     public override async Task ActivateAsync()
     {
-        StatusMessage = "Load the connected vehicle's supported frame choices.";
+        SetMessages("Load the connected vehicle's supported frame choices.");
         activeVehicle.Changed += OnActiveVehicleChanged;
         await LoadAsync();
         await base.ActivateAsync();
@@ -161,7 +161,7 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
     {
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
-            StatusMessage = "Reconnect the vehicle before refreshing frame values.";
+            SetMessages("Reconnect the vehicle before refreshing frame values.");
             return;
         }
 
@@ -178,7 +178,7 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
         catch (Exception exception)
         {
             logger.LogError(exception, "Refreshing frame configuration failed for {VehicleId}.", vehicleId);
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 
@@ -187,7 +187,7 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
     {
         if (activeVehicle.VehicleId is not { } vehicleId || activeVehicle.State is not { } state || !activeVehicle.IsOnline)
         {
-            StatusMessage = "Connect a vehicle before applying frame configuration.";
+            SetMessages("Connect a vehicle before applying frame configuration.");
             return;
         }
 
@@ -196,7 +196,7 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
             .ToArray();
         if (changes.Length == 0)
         {
-            StatusMessage = "No reviewed changes are pending.";
+            SetMessages("No reviewed changes are pending.");
             return;
         }
 
@@ -216,7 +216,6 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
         try
         {
             var result = await frameService.ApplyAsync(vehicleId, changes, token);
-            StatusMessage = result.Message;
             RebootRequired = result.Succeeded && result.RequiresReboot;
             Progress = 1;
             if (result.Succeeded && result.Status == FrameConfigurationApplyStatus.Succeeded &&
@@ -238,12 +237,12 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
         }
         catch (OperationCanceledException)
         {
-            StatusMessage = "Frame configuration was cancelled. Refresh vehicle values before continuing.";
+            SetMessages("Frame configuration was cancelled. Refresh vehicle values before continuing.");
         }
         catch (Exception exception)
         {
             logger.LogError(exception, "Applying frame configuration failed for {VehicleId}.", vehicleId);
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 
@@ -251,7 +250,6 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
     {
         Cancel();
         operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
-        ErrorMessage = null;
         Progress = 0;
         return operationCancellation.Token;
     }
@@ -281,9 +279,9 @@ public sealed partial class FrameSetupViewModel : SetupWorkflowDetailViewModel
         FirmwareFamily = configuration.Family.ToString();
         if (!preserveStatus)
         {
-            StatusMessage = Settings.Count == 0
+            SetMessages(Settings.Count == 0
                 ? "This firmware exposes no metadata-backed frame choices for its live parameters."
-                : "Select desired values, review pending changes, then write and verify.";
+                : "Select desired values, review pending changes, then write and verify.");
         }
 
         OnPropertyChanged(nameof(HasSettings));

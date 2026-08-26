@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -128,7 +128,7 @@ public sealed partial class SetupSummaryViewModel : SetupWorkflowDetailViewModel
         catch (Exception exception)
         {
             logger.LogError(exception, "Building setup summary failed.");
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -51,7 +51,7 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : BaseViewModel
         this.confirmation = confirmation;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        StatusMessage = "Connect a vehicle to discover CubeLAN through the documented MAVLink I²C proxy.";
+        SetMessages("Connect a vehicle to discover CubeLAN through the documented MAVLink I²C proxy.");
     }
 
     /// <summary>Gets the eight port editors after successful discovery.</summary>
@@ -102,7 +102,7 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : BaseViewModel
             }
 
             Status = VendorDeviceStatus.Discovering;
-            StatusMessage = "Reading the documented CubeLAN configuration at I²C address 0x50…";
+            SetMessages("Reading the documented CubeLAN configuration at I²C address 0x50…");
             var result = await adapter.DiscoverAsync(snapshot.VehicleId.Value, null, cancellationToken);
             if (result.Status != VendorDeviceStatus.Available || result.Snapshot is null)
             {
@@ -113,7 +113,7 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : BaseViewModel
             original = result.Snapshot;
             Load(result.Snapshot.Configuration);
             Status = VendorDeviceStatus.Available;
-            StatusMessage = result.Message;
+            SetMessages(result.Message);
         });
     }
 
@@ -134,7 +134,7 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : BaseViewModel
             var issues = adapter.Validate(desired);
             if (issues.Count != 0)
             {
-                StatusMessage = string.Join(" ", issues.Select(issue => issue.Message));
+                SetMessages(string.Join(" ", issues.Select(issue => issue.Message)));
                 return;
             }
 
@@ -144,7 +144,7 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : BaseViewModel
                     "Apply and verify",
                     cancellationToken))
             {
-                StatusMessage = "CubeLAN apply cancelled.";
+                SetMessages("CubeLAN apply cancelled.");
                 return;
             }
 
@@ -153,7 +153,7 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : BaseViewModel
             if (!result.Success || result.ConfirmedSnapshot is null)
             {
                 Status = VendorDeviceStatus.Error;
-                StatusMessage = result.Message;
+                SetMessages(result.Message);
                 return;
             }
 
@@ -162,7 +162,7 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : BaseViewModel
             Status = result.ConfirmedSnapshot.RequiresReconnect
                 ? VendorDeviceStatus.ReconnectRequired
                 : VendorDeviceStatus.Available;
-            StatusMessage = result.Message;
+            SetMessages(result.Message);
         });
     }
 
@@ -176,7 +176,7 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : BaseViewModel
         }
 
         Load(original.Configuration);
-        StatusMessage = "Local CubeLAN edits reverted to the last confirmed readback.";
+        SetMessages("Local CubeLAN edits reverted to the last confirmed readback.");
     }
 
     /// <summary>Exports the current verified subset without credentials or raw registers.</summary>
@@ -188,7 +188,7 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : BaseViewModel
         {
             if (original is null)
             {
-                StatusMessage = "Discover CubeLAN before exporting configuration.";
+                SetMessages("Discover CubeLAN before exporting configuration.");
                 return;
             }
 
@@ -196,9 +196,9 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : BaseViewModel
                 "cubelan-switch-config.json",
                 adapter.Export(CreateConfiguration()),
                 cancellationToken);
-            StatusMessage = path is null
+            SetMessages(path is null
                 ? "CubeLAN export cancelled."
-                : $"CubeLAN configuration exported to {path}. Authentication secrets and raw registers are excluded.";
+                : $"CubeLAN configuration exported to {path}. Authentication secrets and raw registers are excluded.");
         });
     }
     /// <inheritdoc />
@@ -282,26 +282,26 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : BaseViewModel
 
         operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(
             activeVehicle.ConnectionCancellationToken);
-        IsBusy = true;
+        SetBusy();
         try
         {
             await operation(operationCancellation.Token);
         }
         catch (OperationCanceledException)
         {
-            StatusMessage = "CubeLAN operation cancelled because the connection changed.";
+            SetMessages("CubeLAN operation cancelled because the connection changed.");
         }
         catch (Exception exception)
         {
             logger.LogError(exception, "CubeLAN workflow failed.");
             Status = VendorDeviceStatus.Error;
-            StatusMessage = $"CubeLAN operation failed: {exception.Message}";
+            SetMessages($"CubeLAN operation failed: {exception.Message}");
         }
         finally
         {
             operationCancellation?.Dispose();
             operationCancellation = null;
-            IsBusy = false;
+            ResetBusy();
             operationGate.Release();
         }
     }
@@ -380,7 +380,7 @@ public sealed partial class CubeLan8PortSwitchTabViewModel : BaseViewModel
         Ports.Clear();
         IsDirty = false;
         Status = status;
-        StatusMessage = message;
+        SetMessages(message);
     }
 
     private void CancelOperation()

@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -50,7 +50,7 @@ public sealed partial class OnboardOsdTabViewModel : BaseViewModel
         this.confirmation = confirmation;
         this.dispatcher = dispatcher;
         this.logger = logger;
-        StatusMessage = "Connect a vehicle to discover onboard OSD parameters.";
+        SetMessages("Connect a vehicle to discover onboard OSD parameters.");
     }
 
     /// <summary>Gets discovered OSD screens.</summary>
@@ -233,7 +233,7 @@ public sealed partial class OnboardOsdTabViewModel : BaseViewModel
             if (issues.Any(issue => issue.Severity == OsdValidationSeverity.Error))
             {
                 RefreshPreviewAndValidation();
-                StatusMessage = "Invalid OSD coordinates or unsupported overlaps must be corrected before apply.";
+                SetMessages("Invalid OSD coordinates or unsupported overlaps must be corrected before apply.");
                 return;
             }
 
@@ -247,7 +247,7 @@ public sealed partial class OnboardOsdTabViewModel : BaseViewModel
                     cancellationToken);
                 if (!allowWarnings)
                 {
-                    StatusMessage = "OSD overlap was not applied.";
+                    SetMessages("OSD overlap was not applied.");
                     return;
                 }
             }
@@ -258,9 +258,9 @@ public sealed partial class OnboardOsdTabViewModel : BaseViewModel
                 allowWarnings,
                 cancellationToken);
             RefreshAll();
-            StatusMessage = result.Success
+            SetMessages(result.Success
                 ? $"{SelectedScreen.Title} changes applied and confirmed."
-                : $"{SelectedScreen.Title} was not fully confirmed; failed values remain pending.";
+                : $"{SelectedScreen.Title} was not fully confirmed; failed values remain pending.");
         }).ConfigureAwait(false);
     }
 
@@ -274,7 +274,7 @@ public sealed partial class OnboardOsdTabViewModel : BaseViewModel
 
         osdService.ResetScreen(workspace, SelectedScreen.Number);
         RefreshAll();
-        StatusMessage = $"{SelectedScreen.Title} reset to current live vehicle values.";
+        SetMessages($"{SelectedScreen.Title} reset to current live vehicle values.");
     }
 
     [RelayCommand(CanExecute = nameof(CanUseWorkspace))]
@@ -291,7 +291,7 @@ public sealed partial class OnboardOsdTabViewModel : BaseViewModel
                 $"onboard-osd-{workspace.Scope.FirmwareIdentity.Family}.json",
                 osdService.Export(workspace),
                 cancellationToken);
-            StatusMessage = path is null ? "OSD export was cancelled." : $"OSD layout exported to {path}.";
+            SetMessages(path is null ? "OSD export was cancelled." : $"OSD layout exported to {path}.");
         }).ConfigureAwait(false);
     }
 
@@ -308,15 +308,15 @@ public sealed partial class OnboardOsdTabViewModel : BaseViewModel
             var content = await fileHandler.LoadTextFileAsync("Select an onboard OSD layout", cancellationToken);
             if (content is null)
             {
-                StatusMessage = "OSD import was cancelled.";
+                SetMessages("OSD import was cancelled.");
                 return;
             }
 
             var result = osdService.Import(workspace, content);
             RefreshAll();
-            StatusMessage = result.Success
+            SetMessages(result.Success
                 ? $"Imported {result.ImportedCount} OSD values; {result.IgnoredNames.Count} unsupported names ignored. Review each screen before apply."
-                : string.Join(" ", result.Errors.Concat(result.Issues.Select(issue => issue.Message)));
+                : string.Join(" ", result.Errors.Concat(result.Issues.Select(issue => issue.Message))));
         }).ConfigureAwait(false);
     }
 
@@ -397,7 +397,7 @@ public sealed partial class OnboardOsdTabViewModel : BaseViewModel
         HasOsdConfiguration = false;
         if (!snapshot.IsOnline || snapshot.VehicleId is not { } vehicleId)
         {
-            StatusMessage = "Connect a vehicle to discover onboard OSD parameters.";
+            SetMessages("Connect a vehicle to discover onboard OSD parameters.");
             return;
         }
 
@@ -406,7 +406,7 @@ public sealed partial class OnboardOsdTabViewModel : BaseViewModel
             workspace = await osdService.OpenAsync(vehicleId, cancellationToken);
             if (workspace is null)
             {
-                StatusMessage = "The connected firmware exposes no supported onboard OSD parameters.";
+                SetMessages("The connected firmware exposes no supported onboard OSD parameters.");
                 return;
             }
 
@@ -428,7 +428,7 @@ public sealed partial class OnboardOsdTabViewModel : BaseViewModel
 
             HasOsdConfiguration = true;
             SelectedScreen = Screens.FirstOrDefault();
-            StatusMessage = $"Discovered {Screens.Count} OSD screens and {Screens.Sum(screen => screen.Items.Count)} firmware-defined items.";
+            SetMessages($"Discovered {Screens.Count} OSD screens and {Screens.Sum(screen => screen.Items.Count)} firmware-defined items.");
         }).ConfigureAwait(false);
     }
 
@@ -437,26 +437,26 @@ public sealed partial class OnboardOsdTabViewModel : BaseViewModel
         CancelOperation();
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
         operationCancellation = cancellation;
-        IsBusy = true;
+        SetBusy();
         try
         {
             await operation(cancellation.Token);
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
-            StatusMessage = activeVehicle.IsOnline ? "OSD operation cancelled." : "Vehicle disconnected; OSD operation cancelled.";
+            SetMessages(activeVehicle.IsOnline ? "OSD operation cancelled." : "Vehicle disconnected; OSD operation cancelled.");
         }
         catch (Exception exception)
         {
             logger.LogError(exception, "Onboard OSD operation failed.");
-            StatusMessage = exception.Message;
+            SetMessages(exception);
         }
         finally
         {
             if (ReferenceEquals(operationCancellation, cancellation))
             {
                 operationCancellation = null;
-                IsBusy = false;
+                ResetBusy();
             }
 
             NotifyCommands();
@@ -554,7 +554,7 @@ public sealed partial class OnboardOsdTabViewModel : BaseViewModel
     {
         operationCancellation?.Cancel();
         operationCancellation = null;
-        IsBusy = false;
+        ResetBusy();
     }
 
     private void NotifyCommands()

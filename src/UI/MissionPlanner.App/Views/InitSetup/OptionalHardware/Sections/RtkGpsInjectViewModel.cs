@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -65,14 +65,14 @@ public sealed partial class RtkGpsInjectViewModel : OptionalHardwareBaseViewMode
     [RelayCommand]
     private async Task ConnectAsync()
     {
-        IsBusy = true;
+        SetBusy();
         try
         {
             await injection.StartAsync(new RtkSourceOptions(SourceKind, Endpoint, PortOrBaud, MountPoint, Username, Password, UseTls), lifetime.Token);
             Password = string.Empty;
         }
-        catch (Exception exception) when (exception is not OperationCanceledException) { ErrorMessage = exception.Message; }
-        finally { IsBusy = false; }
+        catch (Exception exception) when (exception is not OperationCanceledException) { SetMessages(exception); }
+        finally { ResetBusy(); }
     }
 
     [RelayCommand]

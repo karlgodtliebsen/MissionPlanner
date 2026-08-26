@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.OptionalHardware;
@@ -25,14 +25,14 @@ public sealed partial class BluetoothSetupViewModel(IFirmwareSerialDeviceCatalog
 
         try
         {
-            IsBusy = true;
+            SetBusy();
             module = await configurator.ProbeAsync(SelectedPort, Token);
             ModuleIdentity = $"{module.Dialect} at {module.BaudRate} baud — {module.Identity}";
             BaudRate = module.BaudRate;
             Status = "Classic serial Bluetooth module detected.";
         }
         catch (Exception exception) when (exception is not OperationCanceledException) { Status = exception.Message; }
-        finally { IsBusy = false; }
+        finally { ResetBusy(); }
     }
 
     [RelayCommand]

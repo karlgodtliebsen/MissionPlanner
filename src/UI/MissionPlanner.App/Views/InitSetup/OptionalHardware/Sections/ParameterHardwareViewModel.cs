@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -55,7 +55,7 @@ public abstract partial class ParameterHardwareViewModel : OptionalHardwareBaseV
 
     private async Task Load()
     {
-        StatusMessage = "Loading supported settings…";
+        SetMessages("Loading supported settings…");
 
         if (cancellation != null)
         {
@@ -66,24 +66,24 @@ public abstract partial class ParameterHardwareViewModel : OptionalHardwareBaseV
         cancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
         if (activeVehicle.VehicleId is not { } id || !activeVehicle.IsOnline)
         {
-            StatusMessage = "Connect a vehicle to load this hardware.";
+            SetMessages("Connect a vehicle to load this hardware.");
             Settings.Clear();
             return;
         }
 
         try
         {
-            IsBusy = true;
+            SetBusy();
             var module = (await service.GetModulesAsync(id, cancellation.Token)).FirstOrDefault(x => x.Key == moduleKey);
             Settings.Clear();
             if (module is null)
             {
-                StatusMessage = "This hardware is not reported by the active vehicle.";
+                SetMessages("This hardware is not reported by the active vehicle.");
                 return;
             }
 
             Settings.ReplaceRange(module.Settings.Select(setting => new ParameterSettingViewModel(setting, ApplyAsync)));
-            StatusMessage = module.Description;
+            SetMessages(module.Description);
         }
         catch (OperationCanceledException)
         {
@@ -95,7 +95,7 @@ public abstract partial class ParameterHardwareViewModel : OptionalHardwareBaseV
         }
         finally
         {
-            IsBusy = false;
+            ResetBusy();
             if (cancellation != null)
             {
                 await cancellation.CancelAsync();
@@ -114,7 +114,7 @@ public abstract partial class ParameterHardwareViewModel : OptionalHardwareBaseV
         }
 
         var result = await service.SetValueAsync(id, setting.Name, value, cancellation?.Token ?? default);
-        StatusMessage = result.Message;
+        SetMessages(result.Message);
         RebootRequired |= result.RequiresReboot;
         if (result.Success)
         {

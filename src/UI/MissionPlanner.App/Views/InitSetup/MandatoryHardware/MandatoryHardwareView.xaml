@@ -24,8 +24,6 @@
             <Label Text="{Binding VehicleHeading}" VerticalOptions="Center" FontSize="16" />
             <Label Text="{Binding StatusMessage}" VerticalOptions="Center" Opacity="0.75" />
             <Label Text="{Binding ErrorMessage}"  VerticalOptions="Center" TextColor="{DynamicResource Error}" />
-            <Label Text="Completion is stored locally and automatically requires review when firmware or parameters change. Prerequisites are guidance, not a rigid wizard."
-                   LineBreakMode="WordWrap" Opacity="0.7" />
         </VerticalStackLayout>
 
         <VerticalStackLayout Grid.Row="1" Spacing="8">

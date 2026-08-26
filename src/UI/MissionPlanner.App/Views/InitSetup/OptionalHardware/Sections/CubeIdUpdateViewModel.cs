@@ -27,6 +27,6 @@ public sealed partial class CubeIdUpdateViewModel(ILogger<CubeIdUpdateViewModel>
 
             FirmwareSummary = $"{Path.GetFileName(FirmwarePath)} — {data.Length:N0} bytes — CRC32 {CubeFirmwareCodec.Crc32(data):X8} — {CubeFirmwareCodec.Chunk(data).Count} chunks";
         }
-        catch (Exception ex) { ErrorMessage = ex.Message; }
+        catch (Exception ex) { SetMessages(ex); }
     }
 }

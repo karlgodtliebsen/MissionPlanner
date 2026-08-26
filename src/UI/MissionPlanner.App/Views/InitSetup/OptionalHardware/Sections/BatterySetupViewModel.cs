@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -89,7 +89,7 @@ public sealed partial class BatterySetupViewModel : OptionalHardwareBaseViewMode
         catch (Exception exception)
         {
             logger.LogError(exception, "Loading battery configuration failed for {VehicleId}.", vehicleId);
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 
@@ -141,7 +141,7 @@ public sealed partial class BatterySetupViewModel : OptionalHardwareBaseViewMode
         catch (Exception exception)
         {
             logger.LogError(exception, "Applying battery setting failed for {VehicleId}.", vehicleId);
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 
@@ -177,7 +177,7 @@ public sealed partial class BatterySetupViewModel : OptionalHardwareBaseViewMode
         catch (Exception exception)
         {
             logger.LogError(exception, "Battery calibration failed for {VehicleId}.", vehicleId);
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 
@@ -207,7 +207,7 @@ public sealed partial class BatterySetupViewModel : OptionalHardwareBaseViewMode
         catch (Exception exception)
         {
             logger.LogError(exception, "Refreshing battery configuration failed for {VehicleId}.", vehicleId);
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 
@@ -222,7 +222,7 @@ public sealed partial class BatterySetupViewModel : OptionalHardwareBaseViewMode
         operationCancellation?.Cancel();
         operationCancellation?.Dispose();
         operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
-        ErrorMessage = null;
+        SetMessages(null, null);
         return operationCancellation.Token;
     }
 

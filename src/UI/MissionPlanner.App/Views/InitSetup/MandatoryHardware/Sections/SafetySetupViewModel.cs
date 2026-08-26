@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
@@ -55,7 +55,7 @@ public sealed partial class SafetySetupViewModel : SetupWorkflowDetailViewModel
     /// <inheritdoc />
     public override Task ActivateAsync()
     {
-        StatusMessage = "Connect a vehicle to assess safety configuration.";
+        SetMessages("Connect a vehicle to assess safety configuration.");
         activeVehicle.Changed += OnActiveVehicleChanged;
         parameterRegistry.Changed += OnParameterChanged;
         Refresh();
@@ -78,7 +78,7 @@ public sealed partial class SafetySetupViewModel : SetupWorkflowDetailViewModel
         {
             Items.Clear();
             Warnings.Clear();
-            StatusMessage = "Connect a vehicle to assess safety configuration.";
+            SetMessages("Connect a vehicle to assess safety configuration.");
             //  OnPropertyChanged(nameof(HasWarnings));
             return;
         }
@@ -88,15 +88,15 @@ public sealed partial class SafetySetupViewModel : SetupWorkflowDetailViewModel
             var assessment = safetyService.BuildAssessment(vehicleId);
             Items.ReplaceRange(assessment.Items);
             Warnings.ReplaceRange(assessment.Warnings);
-            StatusMessage = assessment.Warnings.Count == 0
+            SetMessages(assessment.Warnings.Count == 0
                 ? "No safety contradictions detected. This is not a safe-to-fly certification."
-                : $"{assessment.Warnings.Count} safety item(s) need attention. This is not a safe-to-fly certification.";
+                : $"{assessment.Warnings.Count} safety item(s) need attention. This is not a safe-to-fly certification.");
             //OnPropertyChanged(nameof(HasWarnings));
         }
         catch (Exception exception)
         {
             logger.LogError(exception, "Building safety assessment failed.");
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 

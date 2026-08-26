@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup.OptionalHardware;
@@ -23,14 +23,14 @@ public sealed partial class SikRadioViewModel(IFirmwareSerialDeviceCatalog devic
 
         try
         {
-            IsBusy = true;
+            SetBusy();
             var snapshot = await configurator.ReadAsync(SelectedPort, BaudRate, Token);
             Identity = snapshot.Identity;
             SettingsText = string.Join(Environment.NewLine, snapshot.LocalSettings.Select(pair => $"{pair.Key}={pair.Value}"));
             Status = snapshot.RemoteSettings.Count == 0 ? "Local radio detected; remote settings are unavailable." : "Local and remote radio settings loaded.";
         }
         catch (Exception exception) when (exception is not OperationCanceledException) { Status = exception.Message; }
-        finally { IsBusy = false; }
+        finally { ResetBusy(); }
     }
 
     [RelayCommand]

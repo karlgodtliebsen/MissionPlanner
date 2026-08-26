@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -280,7 +280,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
                 return;
             }
 
-            IsBusy = true;
+            SetBusy();
             SetMessages($"Applying {plan.Entries.Count} modified parameters...");
             var progress = new Progress<ParameterApplyProgress>(value =>
                 dispatcher.Dispatch(() => ProgressMessage = $"{value.Index}/{value.Total}: {value.Name} — {value.Message}"));
@@ -293,7 +293,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             var statusMessage = report.Success ? $"Confirmed {report.Confirmed.Count} parameter changes by vehicle readback." : null;
             var errorMessage = report.Success ? null : BuildResultSummary(report);
 
-            SetMessages(statusMessage, errorMessage);
+            dispatcher.Dispatch(() => SetMessages(statusMessage, errorMessage));
         }
         catch (OperationCanceledException)
         {
@@ -306,7 +306,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         }
         finally
         {
-            IsBusy = false;
+            ResetBusy();
         }
     }
 
@@ -366,7 +366,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             return;
         }
 
-        IsBusy = true;
+        SetBusy();
         try
         {
             var retry = await EditSession.RetryFailedAsync(lastApplyReport, cancellationToken: cancellationToken);
@@ -376,7 +376,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         }
         finally
         {
-            IsBusy = false;
+            ResetBusy();
         }
     }
 

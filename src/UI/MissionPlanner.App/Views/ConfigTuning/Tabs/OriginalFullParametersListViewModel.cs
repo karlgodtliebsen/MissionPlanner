@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -232,14 +232,14 @@ public partial class OriginalFullParametersListViewModel : ObservableObject, IDi
             return;
         }
 
-        ErrorMessage = null;
+        SetMessages(null, null);
         IsBusy = false;
         HasRows = Parameters.Count > 0;
         activeVehicle.Changed += OnActiveVehicleChanged;
         parameterRegistry.Changed += OnParameterRegistryChanged;
         HasConnection = activeVehicle.IsOnline;
         ShowVehicleDisconnected = !HasConnection;
-        StatusMessage = HasConnection ? null : DefaultStatusMessage;
+        SetMessages(HasConnection ? null : DefaultStatusMessage);
 
         if (activeVehicle.VehicleId is { } vehicleId && HasConnection)
         {
@@ -432,8 +432,7 @@ public partial class OriginalFullParametersListViewModel : ObservableObject, IDi
 
     private void SetMessages(string? statusMessage = null, string? errorMessage = null)
     {
-        StatusMessage = statusMessage;
-        ErrorMessage = errorMessage;
+        dispatcher.Dispatch(() => SetMessages(statusMessage, errorMessage));
     }
 
     private void CloseOperationDialog()

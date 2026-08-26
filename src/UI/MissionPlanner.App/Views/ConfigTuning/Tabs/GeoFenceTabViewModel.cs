@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -187,7 +187,7 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
             return;
         }
         operationCancellation = new();
-        StatusMessage = "Connect a vehicle to configure GeoFence.";
+        SetMessages("Connect a vehicle to configure GeoFence.");
         active = true;
         activeVehicle.Changed += ActiveVehicle_Changed;
         if (activeVehicle.VehicleId is { } currentVehicle)
@@ -234,7 +234,7 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
         var position = new GeoPosition(latitude, longitude);
         if (!position.IsValid)
         {
-            StatusMessage = "The selected map position is invalid.";
+            SetMessages("The selected map position is invalid.");
             return;
         }
 
@@ -268,7 +268,7 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
                 {
                     Areas = areas
                 });
-                StatusMessage = "Vertex added. Add at least three, then finish the polygon.";
+                SetMessages("Vertex added. Add at least three, then finish the polygon.");
                 break;
             case FenceMapEditMode.CircleInclusion:
             case FenceMapEditMode.CircleExclusion:
@@ -280,7 +280,7 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
                     Areas = plan.Areas.Append(FenceArea.Circle(circleKind, position, CircleRadiusMeters)).ToArray()
                 });
                 EditMode = FenceMapEditMode.None;
-                StatusMessage = "Circle added to the local fence plan.";
+                SetMessages("Circle added to the local fence plan.");
                 break;
             case FenceMapEditMode.ReturnPoint:
                 UpdateLocal(target, plan with
@@ -288,7 +288,7 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
                     ReturnPoint = position
                 });
                 EditMode = FenceMapEditMode.None;
-                StatusMessage = "Fence return point updated locally.";
+                SetMessages("Fence return point updated locally.");
                 break;
         }
     }
@@ -347,9 +347,9 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
 
         draftPolygonId = null;
         EditMode = FenceMapEditMode.None;
-        StatusMessage = index >= 0 && areas[index].Vertices.Count >= 3
+        SetMessages(index >= 0 && areas[index].Vertices.Count >= 3
             ? "Polygon closed locally."
-            : "Polygon closed but remains invalid until it has at least three vertices.";
+            : "Polygon closed but remains invalid until it has at least three vertices.");
     }
 
     [RelayCommand]
@@ -365,7 +365,7 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
 
         draftPolygonId = null;
         EditMode = FenceMapEditMode.None;
-        StatusMessage = "Fence map editing cancelled.";
+        SetMessages("Fence map editing cancelled.");
     }
 
     [RelayCommand]
@@ -381,7 +381,7 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
             Areas = LocalPlan.Areas.Where(area => area.Id != item.Id).ToArray()
         });
         SelectedArea = null;
-        StatusMessage = "Fence area removed locally.";
+        SetMessages("Fence area removed locally.");
     }
 
     [RelayCommand]
@@ -393,7 +393,7 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
             {
                 ReturnPoint = null
             });
-            StatusMessage = "Fence return point removed locally.";
+            SetMessages("Fence return point removed locally.");
         }
     }
 
@@ -463,7 +463,7 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
         if (vehicleId is { } target)
         {
             ApplySnapshot(fenceService.RestoreBackup(target));
-            StatusMessage = "The saved fence backup was restored locally; upload to apply it to the vehicle.";
+            SetMessages("The saved fence backup was restored locally; upload to apply it to the vehicle.");
         }
     }
 
@@ -472,7 +472,7 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
     {
         parameterSession?.RevertAll();
         SyncParameterRows();
-        StatusMessage = "Pending fence parameter edits were reverted to live values.";
+        SetMessages("Pending fence parameter edits were reverted to live values.");
     }
 
     [RelayCommand]
@@ -486,7 +486,7 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
         await RunAsync(async token =>
         {
             await parameterSession.RefreshAsync(cancellationToken: token);
-            StatusMessage = "Fence parameter refresh requests were sent.";
+            SetMessages("Fence parameter refresh requests were sent.");
         });
     }
 
@@ -504,7 +504,7 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
     {
         CancelDraftWithoutStatus();
         EditMode = mode;
-        StatusMessage = "Click the map to add polygon vertices, then choose Finish polygon.";
+        SetMessages("Click the map to add polygon vertices, then choose Finish polygon.");
     }
 
     private void CancelDraftWithoutStatus()
@@ -532,7 +532,7 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
             SupportsTypedGeometry = false;
             DetachParameterSession();
             Parameters.Clear();
-            StatusMessage = "Connect a vehicle to configure GeoFence.";
+            SetMessages("Connect a vehicle to configure GeoFence.");
             NotifyTransferCommands();
             return;
         }
@@ -546,9 +546,9 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
         parameterSession = await fenceService.OpenParameterSessionAsync(target, operationCancellation.Token);
         parameterSession.Changed += OnParameterSessionChanged;
         SyncParameterRows();
-        StatusMessage = SupportsTypedGeometry
+        SetMessages(SupportsTypedGeometry
             ? "Fence parameters loaded. Download geometry or begin local fence editing."
-            : "Fence parameters loaded, but this firmware does not advertise typed fence geometry.";
+            : "Fence parameters loaded, but this firmware does not advertise typed fence geometry.");
     }
 
     private async Task OnActiveVehicleChangedAsync(ActiveVehicleChangedEventArgs args)
@@ -598,9 +598,9 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
     private void ApplyReport(FenceOperationReport report)
     {
         ApplySnapshot(report.Snapshot);
-        StatusMessage = report.Validation.IsValid
+        SetMessages(report.Validation.IsValid
             ? report.Message
-            : string.Join(Environment.NewLine, report.Validation.Issues.Select(issue => issue.Message));
+            : string.Join(Environment.NewLine, report.Validation.Issues.Select(issue => issue.Message)));
     }
 
     private void ApplySnapshot(FenceConfigurationSnapshot snapshot)
@@ -635,7 +635,7 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
         return new Progress<FenceTransferProgress>(value =>
         {
             TransferPercent = value.Total <= 0 ? 0 : value.Completed / (double)value.Total;
-            StatusMessage = $"{value.Stage}: {value.Completed}/{value.Total}";
+            SetMessages($"{value.Stage}: {value.Completed}/{value.Total}");
         });
     }
 
@@ -651,7 +651,7 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
             SupersedeOperation();
         }
         DomainException.ThrowIfNull(operationCancellation);
-        IsBusy = true;
+        SetBusy();
         NotifyTransferCommands();
         try
         {
@@ -659,16 +659,16 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
         }
         catch (OperationCanceledException)
         {
-            StatusMessage = "Fence operation cancelled.";
+            SetMessages("Fence operation cancelled.");
         }
         catch (Exception exception)
         {
             logger.LogError(exception, "GeoFence operation failed for {VehicleId}.", vehicleId);
-            StatusMessage = $"Fence operation failed: {exception.Message}";
+            SetMessages($"Fence operation failed: {exception.Message}");
         }
         finally
         {
-            IsBusy = false;
+            ResetBusy();
             NotifyTransferCommands();
             operationCancellation.Dispose();
             operationCancellation = new();
@@ -686,7 +686,7 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
         var previous = operationCancellation;
         operationCancellation = new();
         previous?.Cancel();
-        IsBusy = false;
+        ResetBusy();
         NotifyTransferCommands();
     }
 

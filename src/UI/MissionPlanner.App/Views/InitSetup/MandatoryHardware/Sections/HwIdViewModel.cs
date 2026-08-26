@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -55,7 +55,7 @@ public sealed partial class HwIdViewModel : SetupWorkflowDetailViewModel
     /// <inheritdoc />
     public override Task ActivateAsync()
     {
-        StatusMessage = "Connect a vehicle to inspect hardware identifiers.";
+        SetMessages("Connect a vehicle to inspect hardware identifiers.");
         activeVehicle.Changed += OnVehicleChanged;
         RefreshAsync().FireAndForget();
 
@@ -87,12 +87,12 @@ public sealed partial class HwIdViewModel : SetupWorkflowDetailViewModel
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
             Board = Firmware = "Unavailable";
-            StatusMessage = "Connect a vehicle to inspect hardware identifiers.";
+            SetMessages("Connect a vehicle to inspect hardware identifiers.");
             return;
         }
 
         cancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
-        IsBusy = true;
+        SetBusy();
         try
         {
             var snapshot = await service.GetAsync(vehicleId, cancellation.Token);
@@ -103,11 +103,11 @@ public sealed partial class HwIdViewModel : SetupWorkflowDetailViewModel
         }
         catch (Exception exception)
         {
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
         }
         finally
         {
-            IsBusy = false;
+            ResetBusy();
         }
     }
 
@@ -121,7 +121,7 @@ public sealed partial class HwIdViewModel : SetupWorkflowDetailViewModel
             Items.Add(item);
         }
 
-        StatusMessage = Items.Count == 0 ? "No peripheral hardware identifiers were reported." : $"{Items.Count} hardware identifier(s) reported.";
+        SetMessages(Items.Count == 0 ? "No peripheral hardware identifiers were reported." : $"{Items.Count} hardware identifier(s) reported.");
     }
 
     private void OnVehicleChanged(ActiveVehicleChangedEventArgs args)

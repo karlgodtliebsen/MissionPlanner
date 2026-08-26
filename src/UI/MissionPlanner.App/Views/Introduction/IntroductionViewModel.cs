@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -74,8 +74,8 @@ public partial class IntroductionViewModel(IIntroductionContentLoader contentLoa
             return;
         }
 
-        IsBusy = true;
-        ErrorMessage = null;
+        SetBusy();
+        SetMessages(null, null);
         cancellationTokenSource = new();
         try
         {
@@ -97,13 +97,13 @@ public partial class IntroductionViewModel(IIntroductionContentLoader contentLoa
         {
             Debug.Print("Exception in ActivateAsync:\n" + ex.ToString());
             logger.LogError(ex, "Could not initialize the MissionPlanner Introduction page.");
-            ErrorMessage =
+            SetMessages(null,
                 "MissionPlanner could not load the Introduction content. " +
-                "Check that the Introduction Content files are packaged as MauiAsset items.";
+                "Check that the Introduction Content files are packaged as MauiAsset items.");
         }
         finally
         {
-            IsBusy = false;
+            ResetBusy();
         }
     }
 

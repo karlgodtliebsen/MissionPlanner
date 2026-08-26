@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -259,21 +259,19 @@ public partial class MavFtpTabViewModel : BaseViewModel
 
         dispatcher.Dispatch(() =>
         {
-            ErrorMessage = null;
-            StatusMessage = null;
+            SetMessages(null, null);
             EmptyText = NoFiles;
             HasConnection = false;
             if (!stateService.IsConnected)
             {
-                ErrorMessage = NoRegisteredConnection;
+                SetMessages(null, NoRegisteredConnection);
                 return;
             }
 
             var vehicle = ResolveActiveVehicle();
             if (vehicle is null)
             {
-                StatusMessage = NoConnection;
-                ErrorMessage = StatusMessage;
+                SetMessages(NoConnection, StatusMessage);
                 EmptyText = NoConnection;
                 HasConnection = false;
                 return;
@@ -341,7 +339,7 @@ public partial class MavFtpTabViewModel : BaseViewModel
     [RelayCommand]
     private async Task ResetSessionsAsync()
     {
-        dispatcher.Dispatch(() => ErrorMessage = null);
+        dispatcher.Dispatch(() => SetMessages(null, null));
         var vehicle = ResolveActiveVehicle();
         if (vehicle is null)
         {
@@ -357,7 +355,7 @@ public partial class MavFtpTabViewModel : BaseViewModel
                 var activeFileSystem = fileSystem;
                 if (activeFileSystem is null)
                 {
-                    dispatcher.Dispatch(() => StatusMessage = "MAVFTP sessions not initialized.");
+                    dispatcher.Dispatch(() => SetMessages("MAVFTP sessions not initialized."));
                     return;
                 }
 
@@ -370,7 +368,7 @@ public partial class MavFtpTabViewModel : BaseViewModel
 
             dispatcher.Dispatch(() =>
             {
-                StatusMessage = "MAVFTP sessions reset.";
+                SetMessages("MAVFTP sessions reset.");
                 SelectedEntry = null;
                 Entries.Clear();
                 HasEntries = false;
@@ -410,14 +408,14 @@ public partial class MavFtpTabViewModel : BaseViewModel
                 var activeFileSystem = fileSystem;
                 if (activeFileSystem is null)
                 {
-                    dispatcher.Dispatch(() => StatusMessage = "MAVFTP sessions not initialized.");
+                    dispatcher.Dispatch(() => SetMessages("MAVFTP sessions not initialized."));
                     return;
                 }
 
                 await activeFileSystem.DownloadFileAsync(vehicle.Id, remotePath, destination, progress, ct);
                 destination.Position = 0;
                 var saved = await fileSaver.SaveAsync(SelectedEntry.Name, destination, ct);
-                dispatcher.Dispatch(() => StatusMessage = saved.IsSuccessful ? $"Downloaded to {saved.FilePath}." : "Download destination selection cancelled.");
+                dispatcher.Dispatch(() => SetMessages(saved.IsSuccessful ? $"Downloaded to {saved.FilePath}." : "Download destination selection cancelled."));
             }
             finally
             {
@@ -459,7 +457,7 @@ public partial class MavFtpTabViewModel : BaseViewModel
             var activeFileSystem = fileSystem;
             if (activeFileSystem is null)
             {
-                dispatcher.Dispatch(() => StatusMessage = "MAVFTP sessions not initialized.");
+                dispatcher.Dispatch(() => SetMessages("MAVFTP sessions not initialized."));
                 return;
             }
 
@@ -480,7 +478,7 @@ public partial class MavFtpTabViewModel : BaseViewModel
 
                 HasEntries = Entries.Any();
                 CurrentPath = RemotePath.Normalize(path);
-                StatusMessage = Entries.Count == 0 ? "Directory is empty." : $"{Entries.Count} entries.";
+                SetMessages(Entries.Count == 0 ? "Directory is empty." : $"{Entries.Count} entries.");
                 SelectedEntry = null;
                 SelectionChanged();
             });
@@ -525,8 +523,8 @@ public partial class MavFtpTabViewModel : BaseViewModel
 
             dispatcher.Dispatch(() =>
             {
-                IsBusy = true;
-                ErrorMessage = null;
+                SetBusy();
+                SetMessages(null, null);
                 OnPropertyChanged(nameof(CanNavigateUp));
             });
 
@@ -538,36 +536,36 @@ public partial class MavFtpTabViewModel : BaseViewModel
         }
         catch (OperationCanceledException)
         {
-            dispatcher.Dispatch(() => StatusMessage = "Operation cancelled.");
+            dispatcher.Dispatch(() => SetMessages("Operation cancelled."));
         }
         catch (TimeoutException ex)
         {
-            dispatcher.Dispatch(() => ErrorMessage = "MAVFTP transfer timed out. Retrying Connection.");
+            dispatcher.Dispatch(() => SetMessages(null, "MAVFTP transfer timed out. Retrying Connection."));
             logger.LogWarning(ex, "MAVFTP transfer timed out. Retrying Connection.");
         }
         catch (MavFtpRemoteException ex) when (
             ex.Error == MavFtpNakError.UnknownCommand)
         {
-            dispatcher.Dispatch(() => ErrorMessage = "The connected vehicle does not support this MAVFTP operation.");
+            dispatcher.Dispatch(() => SetMessages(null, "The connected vehicle does not support this MAVFTP operation."));
         }
         catch (MavFtpRemoteException ex) when (
             ex.Error == MavFtpNakError.FileNotFound)
         {
-            dispatcher.Dispatch(() => ErrorMessage = "The remote file or directory was not found.");
+            dispatcher.Dispatch(() => SetMessages(null, "The remote file or directory was not found."));
         }
         catch (MavFtpProtocolException ex)
         {
-            dispatcher.Dispatch(() => ErrorMessage = "The vehicle returned an invalid MAVFTP response: " + ex.Message);
+            dispatcher.Dispatch(() => SetMessages(null, "The vehicle returned an invalid MAVFTP response: " + ex.Message));
             logger.LogError(ex, "Invalid MAVFTP protocol response.");
         }
         catch (InvalidOperationException ex)
         {
-            dispatcher.Dispatch(() => ErrorMessage = "Vehicle is not connected.");
+            dispatcher.Dispatch(() => SetMessages(null, "Vehicle is not connected."));
             logger.LogWarning(ex, "MAVFTP operation has no vehicle.");
         }
         catch (Exception ex)
         {
-            dispatcher.Dispatch(() => ErrorMessage = "MAVFTP operation failed. The vehicle may not support MAVFTP.");
+            dispatcher.Dispatch(() => SetMessages(null, "MAVFTP operation failed. The vehicle may not support MAVFTP."));
             logger.LogError(ex, "MAVFTP UI operation failed.");
         }
         finally
@@ -591,7 +589,7 @@ public partial class MavFtpTabViewModel : BaseViewModel
             {
                 dispatcher.Dispatch(() =>
                 {
-                    IsBusy = false;
+                    ResetBusy();
                     OnPropertyChanged(nameof(CanNavigateUp));
                 });
             }

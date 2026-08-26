@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
@@ -198,7 +198,7 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogError(exception, "Confirming calibration orientation failed.");
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 
@@ -217,7 +217,7 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogError(exception, "Cancelling accelerometer calibration failed.");
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 
@@ -239,13 +239,13 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
     {
         if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline)
         {
-            ErrorMessage = "Connect a vehicle before starting calibration.";
+            SetMessages(null, "Connect a vehicle before starting calibration.");
             return;
         }
 
         Cancel();
         operationCancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);
-        ErrorMessage = null;
+        SetMessages(null, null);
         try
         {
             await operation(vehicleId, operationCancellation.Token);
@@ -256,7 +256,7 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
         catch (Exception exception)
         {
             logger.LogError(exception, "Accelerometer Setup operation failed for {VehicleId}.", vehicleId);
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 
@@ -284,7 +284,7 @@ public sealed partial class AccelerometerSetupViewModel : SetupWorkflowDetailVie
         Orientation = snapshot.RequiredOrientation?.ToString() ?? "No orientation requested";
         OrientationImage = ImageFor(snapshot.RequiredOrientation);
         CompletedOrientations = $"{snapshot.CompletedOrientations.Count} of 6 positions sampled";
-        ErrorMessage = snapshot.FailureReason;
+        SetMessages(null, snapshot.FailureReason);
         OnPropertyChanged(nameof(CanConfirmOrientation));
         OnPropertyChanged(nameof(CanStart));
         OnPropertyChanged(nameof(CanCancel));

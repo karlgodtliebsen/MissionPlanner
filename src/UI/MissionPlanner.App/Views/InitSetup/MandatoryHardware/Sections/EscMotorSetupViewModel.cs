@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -198,13 +198,13 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
                 activeVehicle.ConnectionCancellationToken);
             if (!result.Success)
             {
-                ErrorMessage = result.Message;
+                SetMessages(null, result.Message);
             }
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogError(exception, "Motor test failed for {VehicleId}.", vehicleId);
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 
@@ -226,13 +226,13 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
             var result = await actuatorService.TestSequenceAsync(vehicleId, ThrottlePercent, DurationSeconds, MotorIndex, activeVehicle.ConnectionCancellationToken);
             if (!result.Success)
             {
-                ErrorMessage = result.Message;
+                SetMessages(null, result.Message);
             }
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             logger.LogError(exception, "Sequence test failed for {VehicleId}.", vehicleId);
-            ErrorMessage = exception.Message;
+            SetMessages(exception);
         }
     }
 
@@ -297,7 +297,7 @@ public sealed partial class EscMotorSetupViewModel : SetupWorkflowDetailViewMode
     {
         TestState = snapshot.State;
         Instruction = snapshot.Instruction;
-        ErrorMessage = snapshot.FailureReason;
+        SetMessages(null, snapshot.FailureReason);
         Log.Clear();
         foreach (var entry in snapshot.Log.AsEnumerable().Reverse())
         {

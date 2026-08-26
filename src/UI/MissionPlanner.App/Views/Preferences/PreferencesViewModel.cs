@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
@@ -697,7 +697,7 @@ public sealed partial class PreferencesViewModel : BaseViewModel
         RestoreOfflinePackSelection(result.Settings.Map.SelectedSourceId);
         RefreshMapCacheSize();
         Load(result.Settings);
-        StatusMessage = result.Message ?? "Planner preferences loaded. These settings are local and do not change the flight controller.";
+        SetMessages(result.Message ?? "Planner preferences loaded. These settings are local and do not change the flight controller.");
 
 
         //return RunAsync(async cancellationToken =>
@@ -739,20 +739,20 @@ public sealed partial class PreferencesViewModel : BaseViewModel
         {
             if (SelectedMapSource is null || SelectedMapSource.Source.CredentialRequirement == MapCredentialRequirement.None)
             {
-                StatusMessage = "The selected source does not require a credential.";
+                SetMessages("The selected source does not require a credential.");
                 return;
             }
 
             if (string.IsNullOrWhiteSpace(MapCredentialInput))
             {
-                StatusMessage = "Enter a credential before saving.";
+                SetMessages("Enter a credential before saving.");
                 return;
             }
 
             await mapSecretStore.SetAsync($"maps.credentials.{SelectedMapSource.Id}", MapCredentialInput, cancellationToken);
             MapCredentialInput = string.Empty;
             await LoadMapSourcesAsync(SelectedMapSource.Id, cancellationToken);
-            StatusMessage = "Map credential saved securely. The stored value cannot be displayed.";
+            SetMessages("Map credential saved securely. The stored value cannot be displayed.");
         });
     }
 
@@ -770,7 +770,7 @@ public sealed partial class PreferencesViewModel : BaseViewModel
             await mapSecretStore.RemoveAsync($"maps.credentials.{SelectedMapSource.Id}", cancellationToken);
             MapCredentialInput = string.Empty;
             await LoadMapSourcesAsync(SelectedMapSource.Id, cancellationToken);
-            StatusMessage = "Map credential removed.";
+            SetMessages("Map credential removed.");
         });
     }
 
@@ -786,9 +786,9 @@ public sealed partial class PreferencesViewModel : BaseViewModel
             }
 
             var configured = !string.IsNullOrEmpty(await mapSecretStore.GetAsync($"maps.credentials.{SelectedMapSource.Id}", cancellationToken));
-            StatusMessage = configured
+            SetMessages(configured
                 ? "A credential is configured. Network validation occurs when the provider is first requested."
-                : "No credential is configured for this source.";
+                : "No credential is configured for this source.");
         });
     }
 
@@ -816,7 +816,7 @@ public sealed partial class PreferencesViewModel : BaseViewModel
             await using var archive = await archiveFile.OpenReadAsync();
             await offlinePackManager.InstallAsync(manifest, archive, cancellationToken);
             await RefreshMapPacksAsync(cancellationToken);
-            StatusMessage = $"Offline pack '{manifest.DisplayName}' installed and verified.";
+            SetMessages($"Offline pack '{manifest.DisplayName}' installed and verified.");
         });
     }
 
@@ -832,7 +832,7 @@ public sealed partial class PreferencesViewModel : BaseViewModel
             }
 
             await offlinePackValidator.ValidateAsync(SelectedMapPack.Manifest, SelectedMapPack.ArchivePath, cancellationToken);
-            StatusMessage = $"Offline pack '{SelectedMapPack.Manifest.DisplayName}' verified.";
+            SetMessages($"Offline pack '{SelectedMapPack.Manifest.DisplayName}' verified.");
         });
     }
 
@@ -849,7 +849,7 @@ public sealed partial class PreferencesViewModel : BaseViewModel
 
             await offlinePackManager.RemoveAsync(SelectedMapPack.Manifest.Id, SelectedMapPack.Manifest.Version, cancellationToken);
             await RefreshMapPacksAsync(cancellationToken);
-            StatusMessage = "Offline pack removed.";
+            SetMessages("Offline pack removed.");
         });
     }
 
@@ -862,7 +862,7 @@ public sealed partial class PreferencesViewModel : BaseViewModel
         }
 
         selectedOfflineSourceId = $"pack:{SelectedMapPack.Manifest.Id}:{SelectedMapPack.Manifest.Version}";
-        StatusMessage = $"Offline pack '{SelectedMapPack.Manifest.DisplayName}' selected. Save preferences to make it the active source.";
+        SetMessages($"Offline pack '{SelectedMapPack.Manifest.DisplayName}' selected. Save preferences to make it the active source.");
     }
 
     [RelayCommand]
@@ -870,7 +870,7 @@ public sealed partial class PreferencesViewModel : BaseViewModel
     {
         mapCache.ClearSource(SelectedMapSource?.Id ?? "osm-standard");
         RefreshMapCacheSize();
-        StatusMessage = "Selected source HTTP cache cleared. Offline packs were not changed.";
+        SetMessages("Selected source HTTP cache cleared. Offline packs were not changed.");
     }
 
     [RelayCommand]
@@ -878,7 +878,7 @@ public sealed partial class PreferencesViewModel : BaseViewModel
     {
         mapCache.ClearAll();
         RefreshMapCacheSize();
-        StatusMessage = "All HTTP cache entries cleared. Offline packs were not changed.";
+        SetMessages("All HTTP cache entries cleared. Offline packs were not changed.");
     }
 
     private async Task RefreshMapPacksAsync(CancellationToken cancellationToken)
@@ -965,7 +965,7 @@ public sealed partial class PreferencesViewModel : BaseViewModel
         {
             if (!Enum.TryParse<PlannerSettingsSection>(sectionName, true, out var section))
             {
-                StatusMessage = $"Unknown settings section: {sectionName}.";
+                SetMessages($"Unknown settings section: {sectionName}.");
                 return;
             }
 
@@ -1000,7 +1000,7 @@ public sealed partial class PreferencesViewModel : BaseViewModel
         return RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             var path = await fileHandler.SaveTextFileAsync("missionplanner-settings.json", settingsService.Export(), cancellationToken);
-            StatusMessage = path is null ? "Settings export cancelled." : $"Settings exported to {path}. Secrets are never included.";
+            SetMessages(path is null ? "Settings export cancelled." : $"Settings exported to {path}. Secrets are never included.");
         });
     }
 
@@ -1013,22 +1013,22 @@ public sealed partial class PreferencesViewModel : BaseViewModel
             var document = await fileHandler.LoadTextFileAsync("Select MissionPlanner settings", cancellationToken);
             if (document is null)
             {
-                StatusMessage = "Settings import cancelled.";
+                SetMessages("Settings import cancelled.");
                 return;
             }
 
             var result = await settingsService.ImportAsync(document, cancellationToken);
             if (!result.Success)
             {
-                StatusMessage = string.Join(" ", result.Errors.Select(error => error.Message));
+                SetMessages(string.Join(" ", result.Errors.Select(error => error.Message)));
                 return;
             }
 
             Load(settingsService.Current);
             RestartRequiredMessage = FormatRestart(result.RestartRequiredSections);
-            StatusMessage = result.WasMigrated
+            SetMessages(result.WasMigrated
                 ? $"Settings imported and migrated to schema {PlannerSettings.CurrentSchemaVersion}."
-                : "Settings imported. Secrets were ignored and remain in secure storage.";
+                : "Settings imported. Secrets were ignored and remain in secure storage.");
         });
     }
 
@@ -1168,7 +1168,7 @@ public sealed partial class PreferencesViewModel : BaseViewModel
     private void ShowSaveResult(PlannerSettingsSaveResult result, string successMessage)
     {
         RestartRequiredMessage = FormatRestart(result.RestartRequiredSections);
-        StatusMessage = result.Success ? successMessage : string.Join(" ", result.Errors.Select(error => error.Message));
+        SetMessages(result.Success ? successMessage : string.Join(" ", result.Errors.Select(error => error.Message)));
     }
 
     private static string? FormatRestart(IReadOnlyList<PlannerSettingsSection> sections)

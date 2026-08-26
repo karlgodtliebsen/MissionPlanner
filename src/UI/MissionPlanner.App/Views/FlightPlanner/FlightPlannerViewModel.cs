@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Views.Missions;
@@ -79,7 +79,7 @@ public partial class FlightPlannerViewModel : BaseViewModel
             return;
         }
 
-        IsBusy = true;
+        SetBusy();
         try
         {
             TransferStatus = "Reading mission from vehicle...";
@@ -130,7 +130,7 @@ public partial class FlightPlannerViewModel : BaseViewModel
         }
         finally
         {
-            IsBusy = false;
+            ResetBusy();
         }
     }
 
@@ -205,7 +205,7 @@ public partial class FlightPlannerViewModel : BaseViewModel
             }
         }
 
-        IsBusy = true;
+        SetBusy();
         try
         {
             var progress = new Progress<MissionUploadProgress>(p =>
@@ -222,7 +222,7 @@ public partial class FlightPlannerViewModel : BaseViewModel
         }
         finally
         {
-            IsBusy = false;
+            ResetBusy();
         }
     }
 
