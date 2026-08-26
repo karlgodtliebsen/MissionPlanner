@@ -21,7 +21,6 @@
             <Button Grid.Column="1" Text="Export diagnostics" Command="{Binding ExportDiagnosticsCommand}" VerticalOptions="Center" />
         </Grid>
 
-        <!--
         <Grid Grid.Row="1" ColumnDefinitions="0.85*,1.15*" ColumnSpacing="14">
             <ScrollView>
                 <VerticalStackLayout Spacing="12">
@@ -39,7 +38,7 @@
                             </HorizontalStackLayout>
                         </VerticalStackLayout>
                     </Border>
-
+              
                     <Border Padding="12" StyleClass="SurfaceContainer,Rounded,Elevation1">
                         <VerticalStackLayout Spacing="8">
                             <Label Text="Multi-vehicle fleet" FontSize="18" FontAttributes="Bold" />
@@ -51,7 +50,9 @@
                                     Text="{Binding FleetCount,Mode=TwoWay}"
                                     NumberFormat="F0"
                                     HorizontalOptions="Fill"
-                                    HorizontalTextAlignment="End" />
+                                    HorizontalTextAlignment="End" 
+                                    NumericType="Int32"
+                                    />
                                 <controls1:NumericField
                                     Grid.Column="1" 
                                     Title="Spacing (m)"
@@ -66,7 +67,9 @@
                                     Text="{Binding FleetPortStride,Mode=TwoWay}"
                                     NumberFormat="F0"
                                     HorizontalOptions="Fill"
-                                    HorizontalTextAlignment="End" />
+                                    HorizontalTextAlignment="End" 
+                                    NumericType="Int32"
+                                    />
 
                                 <controls1:NumericField
                                     Grid.Column="3" 
@@ -74,9 +77,9 @@
                                     Text="{Binding FleetMaximumConcurrency,Mode=TwoWay}"
                                     NumberFormat="F0"
                                     HorizontalOptions="Fill"
-                                    HorizontalTextAlignment="End" />
-
-
+                                    HorizontalTextAlignment="End" 
+                                    NumericType="Int32"
+                                    />
 
                             </Grid>
                             <HorizontalStackLayout Spacing="8">
@@ -97,10 +100,12 @@
                                                   BackgroundColor="Transparent"
                     >
                                 <controls:VirtualizedDataGrid.EmptyView>
-                                    <Label HorizontalOptions="Center" Text="No fleet sessions are allocated." FontSize="12" Opacity="0.6" Margin="0,20" />
+                                    <Label HorizontalOptions="Center" Text="No fleet sessions are allocated." 
+                                           FontSize="12" Opacity="0.6" Margin="0,20" />
                                 </controls:VirtualizedDataGrid.EmptyView>
+
                                 <controls:VirtualizedDataGrid.Columns>
-                                    <material:DataGridColumn Width="*" Title="Timestamp">
+                                    <material:DataGridColumn Width="150" Title="Timestamp">
                                         <material:DataGridColumn.CellItemTemplate>
                                             <DataTemplate x:DataType="simulation1:SimulationFleetSessionSnapshot">
                                                 <VerticalStackLayout>
@@ -240,40 +245,52 @@
 
                             </Grid>
                             <Label Text="Click the map to select latitude/longitude" />
+                           
                             <vm:SimulationLocationMapView HeightRequest="220" />
+        
                             <Label Text="Ports" />
-                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+
+
+                            <Grid  ColumnDefinitions="*,*" ColumnSpacing="8" >
                                 <controls1:NumericField
                                     Title="MAVLink UDP"
-                                    Text="{Binding MavLinkPort,Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                                    Text="{Binding MavLinkPort,Mode=TwoWay}"
                                     NumberFormat="F0"
+                                    NumericType="Int32"
                                     HorizontalOptions="Fill"
                                     HorizontalTextAlignment="End" />
 
                                 <controls1:NumericField
+                                    Grid.Column="1"
                                     Title="Console TCP"
-                                    Text="{Binding ConsolePort,Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                                    Text="{Binding ConsolePort,Mode=TwoWay}"
                                     NumberFormat="F0"
+                                    NumericType="Int32"
                                     HorizontalOptions="Fill"
                                     HorizontalTextAlignment="End" />
                             </Grid>
                             <Label Text="Instance identity" />
-                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                            <Grid  ColumnDefinitions="*,*" ColumnSpacing="8" >
                                 <controls1:NumericField
                                     Title="Instance (0-254)"
-                                    Text="{Binding InstanceNumber,Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                                    Text="{Binding InstanceNumber,Mode=TwoWay}"
                                     NumberFormat="F0"
+                                    NumericType="Int32"
                                     HorizontalOptions="Fill"
                                     HorizontalTextAlignment="End" />
 
                                 <controls1:NumericField
+                                    Grid.Column="1"
                                     Title="SystemId (1-255)"
-                                    Text="{Binding SystemId,Mode=TwoWay,Converter={StaticResource IntegerDoubleConverter}}"
+                                    Text="{Binding SystemId,Mode=TwoWay}"
                                     NumberFormat="F0"
+                                    NumericType="Uint8"
                                     HorizontalOptions="Fill"
                                     HorizontalTextAlignment="End" />
 
                             </Grid>
+                      
+                            
                             <Label Text="Defaults / parameter files (one absolute path per line)" />
                             <controls1:AlignedEditorField Text="{Binding DefaultsFilesText}" AutoSize="TextChanges" MinimumHeightRequest="60" />
                             <Label Text="Additional serial endpoints (index,UdpClient|TcpClient,host,port)" />
@@ -290,6 +307,7 @@
                             <controls1:AlignedEditorField 
                                 Text="{Binding EnvironmentText}" 
                                 AutoSize="TextChanges" MinimumHeightRequest="70" />
+
 
                         </VerticalStackLayout>
                     </Border>
@@ -332,8 +350,7 @@
                         <VerticalStackLayout Spacing="4">
                             <Label Text="{Binding SessionState}" FontSize="20" FontAttributes="Bold" />
                             <Label Text="{Binding StatusMessage}" />
-                            <Label Text="{Binding ErrorMessage}" 
-                                   TextColor="{DynamicResource Error}" />
+                            <Label Text="{Binding ErrorMessage}" TextColor="{DynamicResource Error}" />
                         </VerticalStackLayout>
                         <ActivityIndicator Grid.Column="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
                     </Grid>
@@ -349,9 +366,9 @@
                         <Label Grid.Row="2" Grid.Column="1" Text="{Binding ConnectionEndpoints}" />
                     </Grid>
                 </Border>
-
                 <Border Grid.Row="2" Padding="12" StyleClass="SurfaceContainer,Rounded,Elevation1">
-                    <VerticalStackLayout Spacing="7">
+                    <VerticalStackLayout Spacing="8">
+                        
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                             <Label Text="Environment, sensors, and bounded faults" FontSize="18" FontAttributes="Bold" />
                             <Button Grid.Column="1" Text="Refresh" Command="{Binding RefreshControlsCommand}" />
@@ -360,9 +377,10 @@
                                 ItemsSource="{Binding ControlCapabilities}"
                                 ItemDisplayBinding="{Binding DisplayName}"
                                 SelectedItem="{Binding SelectedControl}" />
+                        
                         <Label Text="{Binding SelectedControl.Reason}" />
                         <Label Text="{Binding SelectedControl.Descriptor.Description}" />
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Grid  ColumnDefinitions="*,*" ColumnSpacing="8" >
                             <controls1:NumericField
                                 Title="Requested Value"
                                 Text="{Binding ControlRequestedValue,Mode=TwoWay}"
@@ -370,13 +388,12 @@
                                 HorizontalOptions="Fill"
                                 HorizontalTextAlignment="End" />
                             <controls1:NumericField
+                                Grid.Column="1"
                                 Title="Fault Duration Seconds"
                                 Text="{Binding FaultDurationSeconds,Mode=TwoWay}"
                                 NumberFormat="F1"
                                 HorizontalOptions="Fill"
                                 HorizontalTextAlignment="End" />
-
-
                         </Grid>
                         <HorizontalStackLayout Spacing="8">
                             <CheckBox IsChecked="{Binding HazardConfirmed}" />
@@ -387,7 +404,7 @@
                                     IsEnabled="{Binding SelectedControl.IsAvailable}" />
                             <Button Text="Reset" Command="{Binding ResetControlCommand}" />
                         </HorizontalStackLayout>
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,10,0,10" VerticalOptions="Fill">
                             <controls1:AlignedEditorField Text="{Binding ScenarioPresetName}" Title="Scenario preset name" />
 
                             <material:SelectField Grid.Column="1"
@@ -459,11 +476,10 @@
                             </material:DataGridColumn>
                         </controls:VirtualizedDataGrid.Columns>
                     </controls:VirtualizedDataGrid>
+
+
                 </Grid>
             </Grid>
         </Grid>
-
--->
-
     </Grid>
 </navigation:ExtendedContentPage>

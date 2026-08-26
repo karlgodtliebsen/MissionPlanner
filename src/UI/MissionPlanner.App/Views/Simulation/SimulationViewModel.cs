@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.Firmware;
 using MissionPlanner.Firmware.Model;
+using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Simulation;
 using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Simulation.ArduPilot;
@@ -31,10 +32,12 @@ public sealed partial class SimulationViewModel : BaseViewModel
     private readonly ISimulationFleetManager? fleetManager;
     private readonly ParametersFileHandler fileHandler;
     private readonly IDispatcher dispatcher;
+    private readonly IDateTimeProvider dateTimeProvider;
+
     private readonly ILogger<SimulationViewModel> logger;
-    private readonly SemaphoreSlim operationGate = new(1, 1);
-    private readonly CancellationTokenSource? operationCancellation;
-    private CancellationTokenSource? timerCancellation;
+    //private readonly SemaphoreSlim operationGate = new(1, 1);
+    private CancellationTokenSource? operationCancellation;
+    //private CancellationTokenSource? timerCancellation;
     private bool initialized;
     private bool active;
     private bool disposed;
@@ -56,6 +59,7 @@ public sealed partial class SimulationViewModel : BaseViewModel
     /// <param name="scenarioReportExporter">The machine/readable report exporter.</param>
     /// <param name="fileHandler">The platform file helper.</param>
     /// <param name="dispatcher">The UI Dispatcher.</param>
+    /// <param name="dateTimeProvider">The date time provider.</param>
     /// <param name="logger">The logger.</param>
     /// <param name="fleetManager">Optional multi-instance fleet coordinator.</param>
     public SimulationViewModel(
@@ -73,6 +77,7 @@ public sealed partial class SimulationViewModel : BaseViewModel
         ISimulationScenarioReportExporter scenarioReportExporter,
         ParametersFileHandler fileHandler,
         IDispatcher dispatcher,
+        IDateTimeProvider dateTimeProvider,
         ILogger<SimulationViewModel> logger,
         ISimulationFleetManager? fleetManager = null) : base(logger)
     {
@@ -90,6 +95,7 @@ public sealed partial class SimulationViewModel : BaseViewModel
         this.scenarioReportExporter = scenarioReportExporter;
         this.fileHandler = fileHandler;
         this.dispatcher = dispatcher;
+        this.dateTimeProvider = dateTimeProvider;
         this.logger = logger;
         this.fleetManager = fleetManager;
     }
@@ -105,34 +111,19 @@ public sealed partial class SimulationViewModel : BaseViewModel
     public ObservableRangeCollection<SitlManifestEntry> AvailableReleases { get; } = [];
 
     /// <summary>Gets documented runtime control capabilities for the connected simulator.</summary>
-    public ObservableRangeCollection<SimulationControlCapability> ControlCapabilities
-    {
-        get;
-    } = [];
+    public ObservableRangeCollection<SimulationControlCapability> ControlCapabilities { get; } = [];
 
     /// <summary>Gets built-in typed start-location presets.</summary>
-    public ObservableRangeCollection<SimulationLocationPreset> LocationPresets
-    {
-        get;
-    } = [];
+    public ObservableRangeCollection<SimulationLocationPreset> LocationPresets { get; } = [];
 
     /// <summary>Gets persisted scenario presets separate from launch profiles.</summary>
-    public ObservableRangeCollection<SimulationScenarioPreset> ScenarioPresets
-    {
-        get;
-    } = [];
+    public ObservableRangeCollection<SimulationScenarioPreset> ScenarioPresets { get; } = [];
 
     /// <summary>Gets auditable runtime control events.</summary>
-    public ObservableRangeCollection<SimulationScenarioEvent> ScenarioEvents
-    {
-        get;
-    } = [];
+    public ObservableRangeCollection<SimulationScenarioEvent> ScenarioEvents { get; } = [];
 
     /// <summary>Gets available release channels.</summary>
-    public IReadOnlyList<FirmwareReleaseChannel> ReleaseChannels
-    {
-        get;
-    } = Enum.GetValues<FirmwareReleaseChannel>();
+    public IReadOnlyList<FirmwareReleaseChannel> ReleaseChannels { get; } = Enum.GetValues<FirmwareReleaseChannel>();
 
     /// <summary>Gets the firmware families supported by the Simulation workspace.</summary>
     public IReadOnlyList<FirmwareFamily> FirmwareFamilies
@@ -147,22 +138,13 @@ public sealed partial class SimulationViewModel : BaseViewModel
     ];
 
     /// <summary>Gets supported direct-SITL frames for the selected firmware family.</summary>
-    public ObservableRangeCollection<string> AvailableFrames
-    {
-        get;
-    } = [];
+    public ObservableRangeCollection<string> AvailableFrames { get; } = [];
 
     /// <summary>Gets the bounded recent runtime output.</summary>
-    public ObservableRangeCollection<SimulatorOutputLine> RecentOutput
-    {
-        get;
-    } = [];
+    public ObservableRangeCollection<SimulatorOutputLine> RecentOutput { get; } = [];
 
     /// <summary>Gets every independently owned simulator fleet member.</summary>
-    public ObservableRangeCollection<SimulationFleetSessionSnapshot> FleetSessions
-    {
-        get;
-    } = [];
+    public ObservableRangeCollection<SimulationFleetSessionSnapshot> FleetSessions { get; } = [];
 
     /// <summary>Gets or sets the explicitly selected simulator fleet member.</summary>
     [ObservableProperty]
@@ -174,43 +156,23 @@ public sealed partial class SimulationViewModel : BaseViewModel
 
     /// <summary>Gets or sets the requested fleet size.</summary>
     [ObservableProperty]
-    public partial int FleetCount
-    {
-        get;
-        set;
-    } = 2;
+    public partial int FleetCount { get; set; } = 2;
 
     /// <summary>Gets or sets north/south launch spacing in metres.</summary>
     [ObservableProperty]
-    public partial double FleetSpacingMeters
-    {
-        get;
-        set;
-    } = 10;
+    public partial double FleetSpacingMeters { get; set; } = 10;
 
     /// <summary>Gets or sets the deterministic port increment per fleet member.</summary>
     [ObservableProperty]
-    public partial int FleetPortStride
-    {
-        get;
-        set;
-    } = 10;
+    public partial int FleetPortStride { get; set; } = 10;
 
     /// <summary>Gets or sets the bounded number of concurrent fleet lifecycle operations.</summary>
     [ObservableProperty]
-    public partial int FleetMaximumConcurrency
-    {
-        get;
-        set;
-    } = 3;
+    public partial int FleetMaximumConcurrency { get; set; } = 3;
 
     /// <summary>Gets the latest fleet-level operation summary.</summary>
     [ObservableProperty]
-    public partial string FleetStatus
-    {
-        get;
-        private set;
-    } = "No simulator fleet is allocated.";
+    public partial string FleetStatus { get; private set; } = "No simulator fleet is allocated.";
 
     /// <summary>Gets or sets the selected discovered installation.</summary>
     [ObservableProperty]
@@ -232,19 +194,11 @@ public sealed partial class SimulationViewModel : BaseViewModel
 
     /// <summary>Gets or sets the requested manifest channel.</summary>
     [ObservableProperty]
-    public partial FirmwareReleaseChannel SelectedReleaseChannel
-    {
-        get;
-        set;
-    } = FirmwareReleaseChannel.Stable;
+    public partial FirmwareReleaseChannel SelectedReleaseChannel { get; set; } = FirmwareReleaseChannel.Stable;
 
     /// <summary>Gets the detected platform capability.</summary>
     [ObservableProperty]
-    public partial string PlatformCapability
-    {
-        get;
-        private set;
-    } = string.Empty;
+    public partial string PlatformCapability { get; private set; } = string.Empty;
 
     /// <summary>Gets install/download progress from zero to one.</summary>
     [ObservableProperty]
@@ -256,11 +210,7 @@ public sealed partial class SimulationViewModel : BaseViewModel
 
     /// <summary>Gets installation discovery or download status.</summary>
     [ObservableProperty]
-    public partial string InstallationStatus
-    {
-        get;
-        private set;
-    } = "SITL installations have not been scanned.";
+    public partial string InstallationStatus { get; private set; } = "SITL installations have not been scanned.";
 
     /// <summary>Gets or sets the selected runtime control capability.</summary>
     [ObservableProperty]
@@ -540,27 +490,15 @@ public sealed partial class SimulationViewModel : BaseViewModel
 
     /// <summary>Gets the runtime identity or PID description.</summary>
     [ObservableProperty]
-    public partial string RuntimeIdentity
-    {
-        get;
-        private set;
-    } = "Not started";
+    public partial string RuntimeIdentity { get; private set; } = "Not started";
 
     /// <summary>Gets the runtime-confirmed endpoint display.</summary>
     [ObservableProperty]
-    public partial string ConnectionEndpoints
-    {
-        get;
-        private set;
-    } = "No runtime endpoints";
+    public partial string ConnectionEndpoints { get; private set; } = "No runtime endpoints";
 
     /// <summary>Gets the elapsed runtime text.</summary>
     [ObservableProperty]
-    public partial string Elapsed
-    {
-        get;
-        private set;
-    } = "00:00:00";
+    public partial string Elapsed { get; private set; } = "00:00:00";
 
     /// <summary>Gets whether a UI command is executing.</summary>
     [ObservableProperty]
@@ -601,6 +539,8 @@ public sealed partial class SimulationViewModel : BaseViewModel
     public void CancelOperation()
     {
         operationCancellation?.Cancel();
+        operationCancellation?.Dispose();
+        operationCancellation = null;
     }
 
     /// <summary>
@@ -614,12 +554,15 @@ public sealed partial class SimulationViewModel : BaseViewModel
         {
             return;
         }
-        StatusMessage = "No simulation is running.";
         active = true;
+        operationCancellation?.Dispose();
+        operationCancellation = new CancellationTokenSource();
 
+        StatusMessage = "No simulation is running.";
         ApplySnapshot(sessionManager.Current);
         PlatformCapability = platformService.Current.Message;
         ScenarioRunnerStatus = scenarioRunner.Current?.Message ?? "No simulation is running.";
+
         scenarioRunner.Changed += OnScenarioRunnerChanged;
         LocationPresets.ReplaceRange(controlCatalog.Locations);
         RefreshFrames();
@@ -630,9 +573,8 @@ public sealed partial class SimulationViewModel : BaseViewModel
             fleetManager.Changed += OnFleetChanged;
             RefreshFleetSessions();
         }
+        _ = Task.Run(() => UpdateElapsedAsync(operationCancellation.Token));
 
-        timerCancellation = new CancellationTokenSource();
-        await UpdateElapsedAsync(timerCancellation.Token);
         if (!initialized)
         {
             await InitializeAsync();
@@ -643,32 +585,19 @@ public sealed partial class SimulationViewModel : BaseViewModel
         }
     }
 
-    /// <inheritdoc />
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns></returns>
     public override Task DeactivateAsync()
     {
-        if (!active)
-        {
-            return Task.CompletedTask;
-        }
-
-        active = false;
-        sessionManager.Changed -= OnSessionChanged;
-        fleetManager?.Changed -= OnFleetChanged;
-
-        timerCancellation?.Cancel();
-        timerCancellation?.Dispose();
-        timerCancellation = null;
-
-        scenarioRunner.Changed -= OnScenarioRunnerChanged;
-        fleetManager?.Changed -= OnFleetChanged;
-
-        operationCancellation?.Cancel();
+        DeactivateCore();
         return Task.CompletedTask;
     }
 
-
-
-    /// <inheritdoc />
+    /// <summary>
+    /// 
+    /// </summary>
     public override void Dispose()
     {
         if (disposed)
@@ -676,17 +605,40 @@ public sealed partial class SimulationViewModel : BaseViewModel
             return;
         }
 
+        DeactivateCore();
         disposed = true;
-        DeactivateAsync().GetAwaiter().GetResult();
+        base.Dispose();
+    }
+
+    private void DeactivateCore()
+    {
+        if (!active)
+        {
+            return;
+        }
+        if (disposed)
+        {
+            return;
+
+        }
+        active = false;
+        sessionManager.Changed -= OnSessionChanged;
+        fleetManager?.Changed -= OnFleetChanged;
+        scenarioRunner.Changed -= OnScenarioRunnerChanged;
+        operationCancellation?.Cancel();
+        operationCancellation?.Dispose();
+        operationCancellation = null;
     }
 
     /// <summary>Loads persisted profiles.</summary>
     /// <returns>A task representing initialization.</returns>
     [RelayCommand]
-    public Task InitializeAsync()
+    public async Task InitializeAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
+            SetMessages("Simulation profiles initialized.", null);
             var profiles = await profileService.InitializeAsync(cancellationToken);
             Profiles.ReplaceRange(profiles);
 
@@ -698,7 +650,6 @@ public sealed partial class SimulationViewModel : BaseViewModel
             {
                 await RefreshControlsCoreAsync(cancellationToken);
             }
-
             initialized = true;
         });
     }
@@ -717,9 +668,10 @@ public sealed partial class SimulationViewModel : BaseViewModel
     /// <summary>Saves the current profile editor.</summary>
     /// <returns>A task representing persistence.</returns>
     [RelayCommand]
-    public Task SaveProfileAsync()
+    public async Task SaveProfileAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             var profile = CreateProfile();
             await profileService.SaveAsync(profile, cancellationToken);
@@ -731,17 +683,19 @@ public sealed partial class SimulationViewModel : BaseViewModel
     /// <summary>Refreshes configured, cached, and manifest SITL choices.</summary>
     /// <returns>A task representing discovery.</returns>
     [RelayCommand]
-    public Task RefreshInstallationsAsync()
+    public async Task RefreshInstallationsAsync()
     {
-        return RunAsync(RefreshInstallationsCoreAsync);
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, RefreshInstallationsCoreAsync);
     }
 
     /// <summary>Downloads, verifies, and atomically installs the selected release.</summary>
     /// <returns>A task representing installation.</returns>
     [RelayCommand]
-    public Task InstallReleaseAsync()
+    public async Task InstallReleaseAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             if (SelectedRelease is null)
             {
@@ -779,9 +733,10 @@ public sealed partial class SimulationViewModel : BaseViewModel
     /// <summary>Removes only the selected MissionPlanner-owned cached installation.</summary>
     /// <returns>A task representing cache removal.</returns>
     [RelayCommand]
-    public Task RemoveInstallationAsync()
+    public async Task RemoveInstallationAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             if (SelectedInstallation is null)
             {
@@ -804,7 +759,7 @@ public sealed partial class SimulationViewModel : BaseViewModel
         }
 
         ApplyLocation(SelectedLocationPreset.Location);
-        StatusMessage = $"UseParameters location preset '{SelectedLocationPreset.Name}' to the profile editor.";
+        SetMessages($"UseParameters location preset '{SelectedLocationPreset.Name}' to the profile editor.", null);
     }
 
     /// <summary>Handles an unavoidable map integration click for launch-location selection.</summary>
@@ -819,23 +774,25 @@ public sealed partial class SimulationViewModel : BaseViewModel
 
         Latitude = latitude;
         Longitude = longitude;
-        StatusMessage = "Map location applied to the launch-profile editor.";
+        SetMessages($"Map location applied to the launch-profile editor.", null);
     }
 
     /// <summary>Refreshes documented controls against the exact connected simulator.</summary>
     /// <returns>A task representing capability discovery.</returns>
     [RelayCommand]
-    public Task RefreshControlsAsync()
+    public async Task RefreshControlsAsync()
     {
-        return RunAsync(RefreshControlsCoreAsync);
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, RefreshControlsCoreAsync);
     }
 
     /// <summary>Applies the selected environment value or bounded hazardous control.</summary>
     /// <returns>A task representing confirmed parameter write/readback.</returns>
     [RelayCommand]
-    public Task ApplyControlAsync()
+    public async Task ApplyControlAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             if (SelectedControl is null)
             {
@@ -845,24 +802,20 @@ public sealed partial class SimulationViewModel : BaseViewModel
             TimeSpan? duration = SelectedControl.Descriptor.MaximumDuration is null
                 ? null
                 : TimeSpan.FromSeconds(FaultDurationSeconds);
-            await controlService.ApplyAsync(
-                SelectedControl.Descriptor.Key,
-                ControlRequestedValue,
-                duration,
-                HazardConfirmed,
-                cancellationToken);
+            await controlService.ApplyAsync(SelectedControl.Descriptor.Key, ControlRequestedValue, duration, HazardConfirmed, cancellationToken);
             HazardConfirmed = false;
             await RefreshControlsCoreAsync(cancellationToken);
-            StatusMessage = $"Simulation control '{SelectedControl.Descriptor.DisplayName}' applied and confirmed.";
+            SetMessages($"Simulation control '{SelectedControl.Descriptor.DisplayName}' applied and confirmed.", null);
         });
     }
 
     /// <summary>Resets the selected active hazardous control.</summary>
     /// <returns>A task representing confirmed reset readback.</returns>
     [RelayCommand]
-    public Task ResetControlAsync()
+    public async Task ResetControlAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             if (SelectedControl is null)
             {
@@ -872,16 +825,17 @@ public sealed partial class SimulationViewModel : BaseViewModel
             await controlService.ResetAsync(SelectedControl.Descriptor.Key, cancellationToken);
             HazardConfirmed = false;
             await RefreshControlsCoreAsync(cancellationToken);
-            StatusMessage = $"Simulation control '{SelectedControl.Descriptor.DisplayName}' reset.";
+            SetMessages($"Simulation control '{SelectedControl.Descriptor.DisplayName}' reset.", null);
         });
     }
 
     /// <summary>Saves staged location/control values as a scenario preset separate from launch profiles.</summary>
     /// <returns>A task representing preset persistence.</returns>
     [RelayCommand]
-    public Task SaveScenarioPresetAsync()
+    public async Task SaveScenarioPresetAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             StoreControlEdit(SelectedControl);
             var preset = new SimulationScenarioPreset(
@@ -891,7 +845,7 @@ public sealed partial class SimulationViewModel : BaseViewModel
                 stagedControls.Values.OrderBy(item => item.ControlKey, StringComparer.Ordinal).ToArray());
             await scenarioPresetService.SaveAsync(preset, cancellationToken);
             ReplaceScenarioPresets(preset.Id);
-            StatusMessage = $"Scenario preset '{preset.Name}' saved separately from launch profiles.";
+            SetMessages($"Scenario preset '{preset.Name}' saved separately from launch profiles.", null);
         });
     }
 
@@ -919,15 +873,16 @@ public sealed partial class SimulationViewModel : BaseViewModel
         SelectedControl = ControlCapabilities.FirstOrDefault(item =>
             stagedControls.ContainsKey(item.Descriptor.Key)) ?? ControlCapabilities.FirstOrDefault();
         LoadControlEdit(SelectedControl);
-        StatusMessage = "Scenario preset loaded into the editor; no runtime fault was executed.";
+        SetMessages("Scenario preset loaded into the editor; no runtime fault was executed.", null);
     }
 
     /// <summary>Deletes the selected scenario preset.</summary>
     /// <returns>A task representing preset persistence.</returns>
     [RelayCommand]
-    public Task DeleteScenarioPresetAsync()
+    public async Task DeleteScenarioPresetAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             if (SelectedScenarioPreset is null)
             {
@@ -936,16 +891,17 @@ public sealed partial class SimulationViewModel : BaseViewModel
 
             await scenarioPresetService.DeleteAsync(SelectedScenarioPreset.Id, cancellationToken);
             ReplaceScenarioPresets();
-            StatusMessage = "Scenario preset deleted.";
+            SetMessages("Scenario preset deleted.", null);
         });
     }
 
     /// <summary>Loads a declarative scenario JSON file into the editor without executing it.</summary>
     /// <returns>A task representing file selection.</returns>
     [RelayCommand]
-    public Task LoadScenarioDocumentAsync()
+    public async Task LoadScenarioDocumentAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             var document = await fileHandler.LoadTextFileAsync("Select a simulation scenario JSON file", cancellationToken);
             if (document is not null)
@@ -959,17 +915,17 @@ public sealed partial class SimulationViewModel : BaseViewModel
     /// <summary>Validates the scenario and exact target without changing the vehicle.</summary>
     /// <returns>A task representing dry-run capability validation.</returns>
     [RelayCommand]
-    public Task DryRunScenarioAsync()
+    public async Task DryRunScenarioAsync()
     {
-        return ExecuteScenarioAsync(true);
+        await ExecuteScenarioAsync(true);
     }
 
     /// <summary>Executes the scenario against the exact running simulator vehicle.</summary>
     /// <returns>A task representing bounded execution.</returns>
     [RelayCommand]
-    public Task RunScenarioAsync()
+    public async Task RunScenarioAsync()
     {
-        return ExecuteScenarioAsync(false);
+        await ExecuteScenarioAsync(false);
     }
 
     /// <summary>Requests a pause after the active scenario step reaches a safe boundary.</summary>
@@ -993,25 +949,26 @@ public sealed partial class SimulationViewModel : BaseViewModel
     /// <summary>Exports the last run as versioned machine-readable JSON.</summary>
     /// <returns>A task representing file export.</returns>
     [RelayCommand]
-    public Task ExportScenarioJsonAsync()
+    public async Task ExportScenarioJsonAsync()
     {
-        return ExportScenarioReportAsync(true);
+        await ExportScenarioReportAsync(true);
     }
 
     /// <summary>Exports the last run as a human-readable text report.</summary>
     /// <returns>A task representing file export.</returns>
     [RelayCommand]
-    public Task ExportScenarioTextAsync()
+    public async Task ExportScenarioTextAsync()
     {
-        return ExportScenarioReportAsync(false);
+        await ExportScenarioReportAsync(false);
     }
 
     /// <summary>Deletes the selected profile.</summary>
     /// <returns>A task representing persistence.</returns>
     [RelayCommand]
-    public Task DeleteProfileAsync()
+    public async Task DeleteProfileAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             if (SelectedProfile is null)
             {
@@ -1020,16 +977,17 @@ public sealed partial class SimulationViewModel : BaseViewModel
 
             await profileService.DeleteAsync(SelectedProfile.Id, cancellationToken);
             ReplaceProfiles(profileService.Profiles, profileService.Profiles[0].Id);
-            StatusMessage = "Simulation profile deleted.";
+            SetMessages("Simulation profile deleted.", null);
         });
     }
 
     /// <summary>Saves, validates, and starts the edited profile.</summary>
     /// <returns>A task representing startup through heartbeat readiness.</returns>
     [RelayCommand]
-    public Task StartAsync()
+    public async Task StartAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             var profile = CreateProfile();
             await profileService.SaveAsync(profile, cancellationToken);
@@ -1045,9 +1003,10 @@ public sealed partial class SimulationViewModel : BaseViewModel
     /// <summary>Allocates and starts all requested fleet members with bounded concurrency.</summary>
     /// <returns>A task representing the fleet start operation.</returns>
     [RelayCommand]
-    public Task StartAllAsync()
+    public async Task StartAllAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             if (fleetManager is null)
             {
@@ -1072,9 +1031,10 @@ public sealed partial class SimulationViewModel : BaseViewModel
     /// <summary>Stops all exact fleet members with bounded concurrency.</summary>
     /// <returns>A task representing the fleet stop operation.</returns>
     [RelayCommand]
-    public Task StopAllAsync()
+    public async Task StopAllAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             if (fleetManager is null)
             {
@@ -1101,31 +1061,33 @@ public sealed partial class SimulationViewModel : BaseViewModel
         catch (Exception exception)
         {
             logger.LogError(exception, "Simulation stop failed.");
-            StatusMessage = "Simulation stop failed.";
-            ErrorMessage = exception.Message;
+            SetMessages("Simulation stop failed.", exception.Message);
         }
     }
 
     /// <summary>Restarts the current session profile.</summary>
     /// <returns>A task representing restart.</returns>
     [RelayCommand]
-    public Task RestartAsync()
+    public async Task RestartAsync()
     {
-        return RunAsync(async cancellationToken => await sessionManager.RestartAsync(cancellationToken));
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async cancellationToken => await sessionManager.RestartAsync(cancellationToken));
     }
 
     /// <summary>Exports a redacted structured diagnostic bundle.</summary>
     /// <returns>A task representing file export.</returns>
     [RelayCommand]
-    public Task ExportDiagnosticsAsync()
+    public async Task ExportDiagnosticsAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             var path = await fileHandler.SaveTextFileAsync(
                 $"simulation-{sessionManager.Current.SessionId:N}-diagnostics.json",
                 diagnosticsService.CreateBundle(sessionManager.Current),
                 cancellationToken);
-            StatusMessage = path is null ? "Diagnostic export cancelled." : $"Diagnostics exported to {path}.";
+            var msg = path is null ? "Diagnostic export cancelled." : $"Diagnostics exported to {path}.";
+            SetMessages(msg, null);
         });
     }
 
@@ -1148,6 +1110,7 @@ public sealed partial class SimulationViewModel : BaseViewModel
         }
     }
 
+
     partial void OnSelectedReleaseChannelChanged(FirmwareReleaseChannel value)
     {
         if (initialized && active)
@@ -1156,9 +1119,7 @@ public sealed partial class SimulationViewModel : BaseViewModel
         }
     }
 
-    partial void OnSelectedControlChanging(
-        SimulationControlCapability? oldValue,
-        SimulationControlCapability? newValue)
+    partial void OnSelectedControlChanging(SimulationControlCapability? oldValue, SimulationControlCapability? newValue)
     {
         StoreControlEdit(oldValue);
     }
@@ -1229,12 +1190,7 @@ public sealed partial class SimulationViewModel : BaseViewModel
         refreshingFleetSelection = true;
         try
         {
-            FleetSessions.Clear();
-            foreach (var session in fleetManager.Sessions)
-            {
-                FleetSessions.Add(session);
-            }
-
+            FleetSessions.ReplaceRange(fleetManager.Sessions);
             SelectedFleetSession = FleetSessions.FirstOrDefault(session => session.IsSelected);
         }
         finally
@@ -1256,12 +1212,7 @@ public sealed partial class SimulationViewModel : BaseViewModel
         ConnectionEndpoints = snapshot.ConnectionEndpoints.Count == 0
             ? "No runtime endpoints"
             : string.Join(Environment.NewLine, snapshot.ConnectionEndpoints.Select(item => item.DisplayText));
-        RecentOutput.Clear();
-        foreach (var line in snapshot.RecentOutput)
-        {
-            RecentOutput.Add(line);
-        }
-
+        RecentOutput.ReplaceRange(snapshot.RecentOutput.Select(x => x));
         UpdateElapsed(snapshot);
     }
 
@@ -1282,7 +1233,7 @@ public sealed partial class SimulationViewModel : BaseViewModel
 
     private void UpdateElapsed(SimulationSessionSnapshot snapshot)
     {
-        var end = snapshot.EndedAt ?? DateTimeOffset.UtcNow;
+        var end = snapshot.EndedAt ?? dateTimeProvider.UtcNow;
         var elapsed = snapshot.StartedAt is null ? TimeSpan.Zero : end - snapshot.StartedAt.Value;
         Elapsed = elapsed.ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture);
     }
@@ -1300,33 +1251,33 @@ public sealed partial class SimulationViewModel : BaseViewModel
             .Where(parts => parts.Length == 2 && !string.IsNullOrWhiteSpace(parts[0]))
             .ToDictionary(parts => parts[0].Trim(), parts => parts[1], StringComparer.OrdinalIgnoreCase);
         return new SimulatorProfile(
-            id,
-            ProfileName.Trim(),
-            SelectedFirmwareFamily,
-            FrameModel.Trim(),
-            new SimulationLocation(Latitude, Longitude, Altitude, Heading),
-            Speedup,
-            [
-                new SimulationEndpoint("MAVLink", SimulationEndpointTransport.Udp, "127.0.0.1", MavLinkPort),
-                new SimulationEndpoint("Console", SimulationEndpointTransport.Tcp, "127.0.0.1", ConsolePort)
-            ],
-            new SimulatorBinaryReference(
-                BinaryVersion.Trim(),
-                BinaryPath.Trim(),
-                SelectedInstallation?.Source.ToString() ?? "external",
-                SelectedInstallation?.InstallationId),
-            arguments,
-            environment,
-            new ArduPilotLaunchSettings(
-                InstanceNumber,
-                SystemId,
-                DefaultsFilesText.Split(
-                    ['\r', '\n'],
-                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
-                WipeState,
-                ShowConsoleWindow,
-                EnableMapIntegration,
-                ParseSerialEndpoints()));
+                id,
+                ProfileName.Trim(),
+                SelectedFirmwareFamily,
+                FrameModel.Trim(),
+                new SimulationLocation(Latitude, Longitude, Altitude, Heading),
+                Speedup,
+                [
+                    new SimulationEndpoint("MAVLink", SimulationEndpointTransport.Udp, "127.0.0.1", MavLinkPort),
+                    new SimulationEndpoint("Console", SimulationEndpointTransport.Tcp, "127.0.0.1", ConsolePort)
+                ],
+                new SimulatorBinaryReference(
+                    BinaryVersion.Trim(),
+                    BinaryPath.Trim(),
+                    SelectedInstallation?.Source.ToString() ?? "external",
+                    SelectedInstallation?.InstallationId),
+                arguments,
+                environment,
+                new ArduPilotLaunchSettings(
+                    InstanceNumber,
+                    SystemId,
+                    DefaultsFilesText.Split(
+                        ['\r', '\n'],
+                        StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+                    WipeState,
+                    ShowConsoleWindow,
+                    EnableMapIntegration,
+                    ParseSerialEndpoints()));
     }
 
     private void LoadProfile(SimulatorProfile profile)
@@ -1344,16 +1295,14 @@ public sealed partial class SimulationViewModel : BaseViewModel
         MavLinkPort = profile.Endpoints.FirstOrDefault(item => item.Name.Equals("MAVLink", StringComparison.OrdinalIgnoreCase))?.Port ?? 14550;
         ConsolePort = profile.Endpoints.FirstOrDefault(item => item.Name.Equals("Console", StringComparison.OrdinalIgnoreCase))?.Port ?? 5760;
         AdditionalArgumentsText = string.Join(Environment.NewLine, profile.AdditionalArguments);
-        EnvironmentText = string.Join(
-            Environment.NewLine,
+        EnvironmentText = string.Join(Environment.NewLine,
             profile.Environment.OrderBy(item => item.Key, StringComparer.OrdinalIgnoreCase)
                 .Select(item => $"{item.Key}={item.Value}"));
         var launchSettings = profile.EffectiveLaunchSettings;
         InstanceNumber = launchSettings.Instance;
         SystemId = launchSettings.SystemId;
         DefaultsFilesText = string.Join(Environment.NewLine, launchSettings.DefaultsFiles);
-        SerialEndpointsText = string.Join(
-            Environment.NewLine,
+        SerialEndpointsText = string.Join(Environment.NewLine,
             launchSettings.EffectiveSerialEndpoints.Select(item =>
                 $"{item.Index},{item.Transport},{item.Host},{item.Port.ToString(CultureInfo.InvariantCulture)}"));
         WipeState = launchSettings.WipeState;
@@ -1386,9 +1335,10 @@ public sealed partial class SimulationViewModel : BaseViewModel
             : $"Found {Installations.Count} SITL installation(s).";
     }
 
-    private Task RefreshReleasesAsync()
+    private async Task RefreshReleasesAsync()
     {
-        return RunAsync(RefreshReleasesCoreAsync);
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, RefreshReleasesCoreAsync);
     }
 
     private bool CanCancelOperation()
@@ -1398,16 +1348,8 @@ public sealed partial class SimulationViewModel : BaseViewModel
 
     private async Task RefreshReleasesCoreAsync(CancellationToken cancellationToken)
     {
-        var releases = await installationService.GetReleasesAsync(
-            SelectedFirmwareFamily,
-            SelectedReleaseChannel,
-            cancellationToken);
-        AvailableReleases.Clear();
-        foreach (var release in releases)
-        {
-            AvailableReleases.Add(release);
-        }
-
+        var releases = await installationService.GetReleasesAsync(SelectedFirmwareFamily, SelectedReleaseChannel, cancellationToken);
+        AvailableReleases.ReplaceRange(releases);
         SelectedRelease = AvailableReleases.FirstOrDefault();
     }
 
@@ -1425,7 +1367,8 @@ public sealed partial class SimulationViewModel : BaseViewModel
 
     private Task ExecuteScenarioAsync(bool dryRun)
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        return RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             var snapshot = SelectedFleetSession is { Session.State: SimulationSessionState.Running, Session.VehicleId: not null }
                 ? SelectedFleetSession.Session
@@ -1446,13 +1389,15 @@ public sealed partial class SimulationViewModel : BaseViewModel
                 cancellationToken);
             ScenarioHazardsConfirmed = false;
             ScenarioRunnerStatus = LastScenarioReport.Summary;
-            StatusMessage = LastScenarioReport.Summary;
+            SetMessages(LastScenarioReport.Summary, null);
+
         });
     }
 
-    private Task ExportScenarioReportAsync(bool machineReadable)
+    private async Task ExportScenarioReportAsync(bool machineReadable)
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             if (LastScenarioReport is null)
             {
@@ -1463,15 +1408,13 @@ public sealed partial class SimulationViewModel : BaseViewModel
             var content = machineReadable
                 ? scenarioReportExporter.ToJson(LastScenarioReport)
                 : scenarioReportExporter.ToText(LastScenarioReport);
-            var path = await fileHandler.SaveTextFileAsync(
-                $"simulation-scenario-{LastScenarioReport.RunId:N}.{extension}",
-                content,
-                cancellationToken);
-            StatusMessage = path is null ? "Scenario report export cancelled." : $"Scenario report exported to {path}.";
+            var path = await fileHandler.SaveTextFileAsync($"simulation-scenario-{LastScenarioReport.RunId:N}.{extension}", content, cancellationToken);
+            var msg = path is null ? "Scenario report export cancelled." : $"Scenario report exported to {path}.";
+            SetMessages(msg, null);
         });
     }
 
-    private void OnScenarioRunnerChanged(object? sender, SimulationScenarioRunnerChangedEventArgs args)
+    private void OnScenarioRunnerChanged(SimulationScenarioRunnerChangedEventArgs args)
     {
         dispatcher.Dispatch(() => ScenarioRunnerStatus = args.Snapshot.Message);
     }
@@ -1492,9 +1435,7 @@ public sealed partial class SimulationViewModel : BaseViewModel
     private IReadOnlyList<ArduPilotSerialEndpoint> ParseSerialEndpoints()
     {
         var result = new List<ArduPilotSerialEndpoint>();
-        foreach (var line in SerialEndpointsText.Split(
-                     ['\r', '\n'],
-                     StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        foreach (var line in SerialEndpointsText.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
             var fields = line.Split(',', StringSplitOptions.TrimEntries);
             if (fields.Length != 4 ||
@@ -1502,8 +1443,7 @@ public sealed partial class SimulationViewModel : BaseViewModel
                 !Enum.TryParse<ArduPilotSerialTransport>(fields[1], true, out var transport) ||
                 !int.TryParse(fields[3], NumberStyles.Integer, CultureInfo.InvariantCulture, out var port))
             {
-                throw new InvalidOperationException(
-                    $"Serial endpoint '{line}' must use index,UdpClient|TcpClient,host,port format.");
+                throw new InvalidOperationException($"Serial endpoint '{line}' must use index,UdpClient|TcpClient,host,port format.");
             }
 
             result.Add(new ArduPilotSerialEndpoint(index, transport, fields[2], port));

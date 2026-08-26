@@ -31,6 +31,8 @@ public sealed partial class PreferencesViewModel : BaseViewModel
     private readonly MapHttpDiskCache mapCache;
     private readonly SemaphoreSlim operationGate = new(1, 1);
     private bool loading;
+    private CancellationTokenSource? operationCancellation;
+
     private string? selectedOfflineSourceId;
 
     /// <summary>
@@ -730,9 +732,10 @@ public sealed partial class PreferencesViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    private Task SaveMapCredentialAsync()
+    private async Task SaveMapCredentialAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             if (SelectedMapSource is null || SelectedMapSource.Source.CredentialRequirement == MapCredentialRequirement.None)
             {
@@ -754,9 +757,10 @@ public sealed partial class PreferencesViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    private Task RemoveMapCredentialAsync()
+    private async Task RemoveMapCredentialAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             if (SelectedMapSource is null)
             {
@@ -771,9 +775,10 @@ public sealed partial class PreferencesViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    private Task TestMapCredentialAsync()
+    private async Task TestMapCredentialAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             if (SelectedMapSource is null)
             {
@@ -790,7 +795,8 @@ public sealed partial class PreferencesViewModel : BaseViewModel
     [RelayCommand]
     private async Task ImportMapPackAsync()
     {
-        await RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             var manifestFile = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Select offline map pack manifest" });
             if (manifestFile is null)
@@ -815,9 +821,10 @@ public sealed partial class PreferencesViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    private Task VerifyMapPackAsync()
+    private async Task VerifyMapPackAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             if (SelectedMapPack is null)
             {
@@ -830,9 +837,10 @@ public sealed partial class PreferencesViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    private Task RemoveMapPackAsync()
+    private async Task RemoveMapPackAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             if (SelectedMapPack is null)
             {
@@ -928,7 +936,8 @@ public sealed partial class PreferencesViewModel : BaseViewModel
     [RelayCommand]
     private Task SaveAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        return RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             var result = await settingsService.SaveAsync(CreateSettings(), cancellationToken);
             ShowSaveResult(result, "Planner preferences saved.");
@@ -938,7 +947,8 @@ public sealed partial class PreferencesViewModel : BaseViewModel
     [RelayCommand]
     private Task ResetApplicationAsync(string sectionName)
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        return RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             settingsService.Current.Appearance = new PlannerAppearanceSettings();
             var result = await settingsService.SaveAsync(settingsService.Current, cancellationToken);
@@ -950,7 +960,8 @@ public sealed partial class PreferencesViewModel : BaseViewModel
     [RelayCommand]
     private Task ResetSectionAsync(string sectionName)
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        return RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             if (!Enum.TryParse<PlannerSettingsSection>(sectionName, true, out var section))
             {
@@ -967,7 +978,8 @@ public sealed partial class PreferencesViewModel : BaseViewModel
     [RelayCommand]
     private Task ResetAllAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        return RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             if (!await confirmation.ConfirmAsync("Reset Planner preferences?", "All local application preferences will return to safe defaults. Vehicle parameters are not affected.",
                     "Reset all", cancellationToken))
@@ -984,7 +996,8 @@ public sealed partial class PreferencesViewModel : BaseViewModel
     [RelayCommand]
     private Task ExportAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        return RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             var path = await fileHandler.SaveTextFileAsync("missionplanner-settings.json", settingsService.Export(), cancellationToken);
             StatusMessage = path is null ? "Settings export cancelled." : $"Settings exported to {path}. Secrets are never included.";
@@ -994,7 +1007,8 @@ public sealed partial class PreferencesViewModel : BaseViewModel
     [RelayCommand]
     private Task ImportAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation ??= new CancellationTokenSource();
+        return RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             var document = await fileHandler.LoadTextFileAsync("Select MissionPlanner settings", cancellationToken);
             if (document is null)

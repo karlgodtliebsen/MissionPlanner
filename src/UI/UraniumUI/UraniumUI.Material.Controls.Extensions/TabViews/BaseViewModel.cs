@@ -9,8 +9,10 @@ namespace UraniumUI.Material.TabViews;
 public partial class BaseViewModel : ObservableObject, IDisposable, IActivationLifeCycle
 {
     private readonly SemaphoreSlim operationGate = new(1, 1);
+    //private readonly CancellationTokenSource lifetimeCancellation = new();
     private readonly ILogger logger;
     private readonly IDispatcher dispatcher;
+    private bool disposed;
 
     /// <summary>
     /// 
@@ -76,26 +78,29 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
     /// <summary>
     /// Runs the specified operation asynchronously, handling busy state and exceptions.
     /// </summary>
+    /// <param name="lifetimeCancellation"> </param>
     /// <param name="operation">The operation to run.</param>
-    protected virtual async Task RunAsync(Func<CancellationToken, Task> operation)
+    protected virtual async Task RunAsync(CancellationToken lifetimeCancellation, Func<CancellationToken, Task> operation)
     {
-        if (!await operationGate.WaitAsync(0))
+        ObjectDisposedException.ThrowIf(disposed, this);
+        if (!await operationGate.WaitAsync(0, lifetimeCancellation))
         {
             return;
         }
-        dispatcher.Dispatch(() => IsBusy = true);
+        DispatchIfAlive(() => IsBusy = true);
         try
         {
-            await operation(CancellationToken.None);
+            lifetimeCancellation.ThrowIfCancellationRequested();
+            await operation(lifetimeCancellation);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (lifetimeCancellation.IsCancellationRequested)
         {
-            dispatcher.Dispatch(() => StatusMessage = "Operation cancelled.");
+            DispatchIfAlive(() => StatusMessage = "Operation cancelled.");
         }
         catch (Exception exception)
         {
             logger.LogError(exception, "Operation failed.");
-            dispatcher.Dispatch(() =>
+            DispatchIfAlive(() =>
             {
 
                 StatusMessage = $"Operation failed: {exception.Message}";
@@ -104,7 +109,7 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
         }
         finally
         {
-            dispatcher.Dispatch(() => IsBusy = false);
+            DispatchIfAlive(() => IsBusy = false);
             operationGate.Release();
         }
     }
@@ -112,7 +117,14 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
     /// <inheritdoc />
     public virtual void Dispose()
     {
-        operationGate.Dispose();
+        if (disposed)
+        {
+            return;
+        }
+        disposed = true;
+        //lifetimeCancellation.Cancel();
+        // An in-flight operation can still be observing this source. It is intentionally
+        // retained until the view model becomes unreachable rather than raced by disposal.
     }
 
     /// <inheritdoc />
@@ -125,6 +137,17 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
     public virtual Task DeactivateAsync()
     {
         return Task.CompletedTask;
+    }
+
+    private void DispatchIfAlive(Action action)
+    {
+        dispatcher.Dispatch(() =>
+        {
+            if (!disposed)
+            {
+                action();
+            }
+        });
     }
 
 }

@@ -24,22 +24,22 @@ public partial class IntroductionPage : ExtendedContentPage<IntroductionViewMode
     }
 
     /// <inheritdoc />
-    protected override async Task ActivateAsync()
+    protected override async Task OnActivateAsync()
     {
         DomainException.ThrowIfNull(ViewModel);
         ViewModel.PropertyChanged += OnViewModelPropertyChanged;
         SizeChanged += OnPageSizeChanged;
-        await base.ActivateAsync();
+        await base.OnActivateAsync();
         QueueTopicPresentation(ViewModel.SelectedTopic);
     }
 
     /// <inheritdoc />
-    protected override Task DeactivateAsync()
+    protected override Task OnDeactivateAsync()
     {
         DomainException.ThrowIfNull(ViewModel);
         ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
         SizeChanged -= OnPageSizeChanged;
-        return base.DeactivateAsync();
+        return base.OnDeactivateAsync();
     }
 
 

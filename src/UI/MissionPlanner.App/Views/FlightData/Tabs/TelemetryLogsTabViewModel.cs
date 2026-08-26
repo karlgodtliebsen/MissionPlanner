@@ -17,6 +17,9 @@ public sealed partial class TelemetryLogsTabViewModel : BaseViewModel
     private readonly IDispatcher dispatcher;
     private readonly ILogger<TelemetryLogsTabViewModel> logger;
 
+    private CancellationTokenSource? operationCancellation;
+
+
     /// <summary>Initializes the telemetry-log playback view model.</summary>
     /// <param name="replaySessionManager">Read-only replay session coordinator.</param>
     /// <param name="activeVehicle">Active-vehicle context used by the shared tab lifecycle.</param>
@@ -160,7 +163,9 @@ public sealed partial class TelemetryLogsTabViewModel : BaseViewModel
     [RelayCommand(CanExecute = nameof(CanLoad))]
     private async Task LoadAsync()
     {
-        await RunAsync(async cancellationToken =>
+        operationCancellation = new CancellationTokenSource();
+
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             var file = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Select a Mission Planner telemetry log (.tlog)" });
             if (file is null)
@@ -192,9 +197,11 @@ public sealed partial class TelemetryLogsTabViewModel : BaseViewModel
     }
 
     [RelayCommand(CanExecute = nameof(CanControlReplay))]
-    private Task PlayPauseAsync()
+    private async Task PlayPauseAsync()
     {
-        return RunAsync(async cancellationToken =>
+        operationCancellation = new CancellationTokenSource();
+
+        await RunAsync(operationCancellation.Token, async cancellationToken =>
         {
             if (replaySessionManager.Snapshot.State == ReplaySessionState.Playing)
             {
@@ -208,16 +215,17 @@ public sealed partial class TelemetryLogsTabViewModel : BaseViewModel
     }
 
     [RelayCommand(CanExecute = nameof(CanControlReplay))]
-    private Task SeekAsync()
+    private async Task SeekAsync()
     {
-        return RunAsync(cancellationToken =>
-            replaySessionManager.SeekAsync(TimeSpan.FromSeconds(SeekSeconds), cancellationToken));
+        operationCancellation = new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, (cancellationToken) => replaySessionManager.SeekAsync(TimeSpan.FromSeconds(SeekSeconds), cancellationToken));
     }
 
     [RelayCommand(CanExecute = nameof(CanControlReplay))]
-    private Task ApplySpeedAsync()
+    private async Task ApplySpeedAsync()
     {
-        return RunAsync(_ =>
+        operationCancellation = new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, (_) =>
         {
             replaySessionManager.SetSpeed(PlaybackSpeed);
             return Task.CompletedTask;
@@ -225,9 +233,10 @@ public sealed partial class TelemetryLogsTabViewModel : BaseViewModel
     }
 
     [RelayCommand(CanExecute = nameof(CanControlReplay))]
-    private Task CloseReplayAsync()
+    private async Task CloseReplayAsync()
     {
-        return RunAsync(replaySessionManager.CloseAsync);
+        operationCancellation = new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, replaySessionManager.CloseAsync);
     }
 
     private void OnReplayChanged(ReplaySessionChangedEventArgs args)

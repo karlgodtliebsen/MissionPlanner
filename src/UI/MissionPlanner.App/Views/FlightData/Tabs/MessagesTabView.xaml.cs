@@ -7,33 +7,47 @@ namespace MissionPlanner.App.Views.FlightData.Tabs;
 /// </summary>
 public partial class MessagesTabView : TabViewLifecycleContent<MessagesTabViewModel>, IDisposable
 {
+    private bool isSubscribed;
     /// <summary>
     /// Initializes a new instance of the <see cref="MessagesTabView"/> class.
     /// </summary>
     public MessagesTabView()
     {
         InitializeComponent();
-        ViewModel?.PropertyChanged += OnViewModelPropertyChanged;
     }
 
     /// <inheritdoc />
     public override async Task ActivateAsync()
     {
         await base.ActivateAsync();
-        ViewModel?.PropertyChanged += OnViewModelPropertyChanged;
+        if (!isSubscribed && ViewModel is not null)
+        {
+            ViewModel.PropertyChanged += OnViewModelPropertyChanged;
+            isSubscribed = true;
+        }
     }
 
     /// <inheritdoc />
     public override async Task DeactivateAsync()
     {
-        ViewModel?.PropertyChanged -= OnViewModelPropertyChanged;
+        Unsubscribe();
         await base.DeactivateAsync();
     }
 
     /// <inheritdoc />
     public void Dispose()
     {
-        DeactivateAsync().GetAwaiter().GetResult();
+        Unsubscribe();
+    }
+
+    private void Unsubscribe()
+    {
+        if (!isSubscribed || ViewModel is null)
+        {
+            return;
+        }
+        ViewModel.PropertyChanged -= OnViewModelPropertyChanged;
+        isSubscribed = false;
     }
 
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)

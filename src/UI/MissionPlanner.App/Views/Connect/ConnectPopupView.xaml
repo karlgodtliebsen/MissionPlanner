@@ -14,17 +14,17 @@
                              IsEnabled="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
                              IsVisible="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}">
                 <material:SelectField
-                Title="Channel"
-                AllowClear="True"
-                ItemsSource="{Binding Channels}"
-                SelectedItem="{Binding SelectedChannel}"
+                        Title="Channel"
+                        AllowClear="True"
+                        ItemsSource="{Binding Channels}"
+                        SelectedItem="{Binding SelectedChannel}"
                 />
 
                 <material:SelectField
-                Title="Baud rate"
-                AllowClear="True"
-                ItemsSource="{Binding BaudRates}"
-                SelectedItem="{Binding SelectedBaudRate}"
+                        Title="Baud rate"
+                        AllowClear="True"
+                        ItemsSource="{Binding BaudRates}"
+                        SelectedItem="{Binding SelectedBaudRate}"
                 />
 
 
@@ -38,10 +38,10 @@
                        HorizontalOptions="Center"
                        Margin="0,4,0,0" />
 
-                <Grid ColumnDefinitions="*,*" ColumnSpacing="8" >
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8" IsVisible="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}">
 
                     <Button Grid.Column="0"
-                        IsVisible="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
+                        
                         ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Sync}, FontFamily=MaterialSharp}"
                         BackgroundColor="{DynamicResource MainButton}"
                         Padding="5"
@@ -50,7 +50,7 @@
                         Command="{Binding RefreshCommand}" />
 
                     <Button Grid.Column="1"
-                        IsVisible="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
+                        
                         ImageSource="{Binding IsConnectedImage}"
                         BackgroundColor="{DynamicResource MainButton}"
                         Padding="5"

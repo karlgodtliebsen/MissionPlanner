@@ -1,6 +1,4 @@
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Maui.Dispatching;
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Extensions.Logging.Abstractions;
 using MissionPlanner.App.Theming;
 using NSubstitute;
 
@@ -17,7 +15,7 @@ public sealed class ThemeManagerTests
     {
         using var fixture = new ThemeManagerFixture();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Manager.ApplyAsync(ThemeIds.MissionLight));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => fixture.Manager.ApplyAsync(ThemeIds.MissionLight, TestContext.Current.CancellationToken));
     }
 
     /// <summary>Verifies all concrete palettes replace active semantic values.</summary>
@@ -29,14 +27,14 @@ public sealed class ThemeManagerTests
         var notifications = 0;
         fixture.Manager.ThemeChanged += (_, _) => notifications++;
 
-        await fixture.Manager.ApplyAsync(ThemeIds.MissionLight);
+        await fixture.Manager.ApplyAsync(ThemeIds.MissionLight, TestContext.Current.CancellationToken);
         var lightSurface = Assert.IsType<Color>(fixture.ActiveResources[ThemeResourceKeys.Surface]);
         var lightPrimary = Assert.IsType<Color>(fixture.ActiveResources[ThemeResourceKeys.Primary]);
-        await fixture.Manager.ApplyAsync(ThemeIds.MissionDark);
+        await fixture.Manager.ApplyAsync(ThemeIds.MissionDark, TestContext.Current.CancellationToken);
         var darkSurface = Assert.IsType<Color>(fixture.ActiveResources[ThemeResourceKeys.Surface]);
-        await fixture.Manager.ApplyAsync(ThemeIds.MissionBlue);
+        await fixture.Manager.ApplyAsync(ThemeIds.MissionBlue, TestContext.Current.CancellationToken);
         var bluePrimary = Assert.IsType<Color>(fixture.ActiveResources[ThemeResourceKeys.Primary]);
-        await fixture.Manager.ApplyAsync(ThemeIds.MissionDark);
+        await fixture.Manager.ApplyAsync(ThemeIds.MissionDark, TestContext.Current.CancellationToken);
 
         Assert.NotEqual(lightSurface, darkSurface);
         Assert.NotEqual(lightPrimary, bluePrimary);
@@ -51,15 +49,15 @@ public sealed class ThemeManagerTests
     {
         using var fixture = new ThemeManagerFixture();
         fixture.Initialize();
-        await fixture.Manager.ApplyAsync(ThemeIds.MissionLight);
-        await fixture.Manager.ApplyAsync("not-installed");
+        await fixture.Manager.ApplyAsync(ThemeIds.MissionLight, TestContext.Current.CancellationToken);
+        await fixture.Manager.ApplyAsync("not-installed", TestContext.Current.CancellationToken);
         Assert.Equal(ThemeIds.System, fixture.Manager.SelectedThemeId);
         Assert.Equal(ThemeIds.MissionLight, fixture.Manager.ActiveTheme.Id);
 
-        await fixture.Manager.ApplyAsync(ThemeIds.MissionLight);
+        await fixture.Manager.ApplyAsync(ThemeIds.MissionLight, TestContext.Current.CancellationToken);
         var original = fixture.ActiveResources[ThemeResourceKeys.Primary];
         fixture.Loader.ReturnMalformed = true;
-        await Assert.ThrowsAsync<InvalidDataException>(() => fixture.Manager.ApplyAsync(ThemeIds.MissionBlue));
+        await Assert.ThrowsAsync<InvalidDataException>(() => fixture.Manager.ApplyAsync(ThemeIds.MissionBlue, TestContext.Current.CancellationToken));
 
         Assert.Same(original, fixture.ActiveResources[ThemeResourceKeys.Primary]);
         Assert.Equal(ThemeIds.MissionLight, fixture.Manager.SelectedThemeId);
@@ -72,7 +70,7 @@ public sealed class ThemeManagerTests
         using var fixture = new ThemeManagerFixture();
         fixture.Initialize();
         fixture.Environment.ChangeRequestedTheme(AppTheme.Light);
-        await fixture.Manager.ApplyAsync(ThemeIds.System);
+        await fixture.Manager.ApplyAsync(ThemeIds.System, TestContext.Current.CancellationToken);
         Assert.Equal(ThemeIds.MissionLight, fixture.Manager.ActiveTheme.Id);
         Assert.Equal(AppTheme.Unspecified, fixture.Environment.UserTheme);
 
@@ -85,10 +83,10 @@ public sealed class ThemeManagerTests
             }
         };
         fixture.Environment.ChangeRequestedTheme(AppTheme.Dark);
-        await transitioned.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        await transitioned.Task.WaitAsync(TimeSpan.FromSeconds(2), TestContext.Current.CancellationToken);
         Assert.Equal(ThemeIds.MissionDark, fixture.Manager.ActiveTheme.Id);
 
-        await fixture.Manager.ApplyAsync(ThemeIds.MissionBlue);
+        await fixture.Manager.ApplyAsync(ThemeIds.MissionBlue, TestContext.Current.CancellationToken);
         fixture.Environment.ChangeRequestedTheme(AppTheme.Light);
         await Task.Delay(50, TestContext.Current.CancellationToken);
         Assert.Equal(ThemeIds.MissionBlue, fixture.Manager.ActiveTheme.Id);
@@ -150,13 +148,22 @@ public sealed class ThemeManagerTests
                 NullLogger<ThemeManager>.Instance);
         }
 
-        public ThemeManager Manager { get; }
+        public ThemeManager Manager
+        {
+            get;
+        }
 
-        public TestPaletteLoader Loader { get; }
+        public TestPaletteLoader Loader
+        {
+            get;
+        }
 
-        public TestThemeEnvironment Environment { get; }
+        public TestThemeEnvironment Environment
+        {
+            get;
+        }
 
-        public ResourceDictionary ActiveResources { get; } = new();
+        public ResourceDictionary ActiveResources { get; } = [];
 
         public void Initialize()
         {
@@ -171,9 +178,15 @@ public sealed class ThemeManagerTests
 
     private sealed class TestPaletteLoader : IThemePaletteLoader
     {
-        public bool ReturnMalformed { get; set; }
+        public bool ReturnMalformed
+        {
+            get; set;
+        }
 
-        public int LoadCount { get; private set; }
+        public int LoadCount
+        {
+            get; private set;
+        }
 
         public ResourceDictionary Load(ThemeDescriptor theme)
         {
@@ -207,11 +220,20 @@ public sealed class ThemeManagerTests
 
         public AppTheme RequestedTheme { get; private set; } = AppTheme.Light;
 
-        public AppTheme UserTheme { get; private set; }
+        public AppTheme UserTheme
+        {
+            get; private set;
+        }
 
-        public int SubscriberCount { get; private set; }
+        public int SubscriberCount
+        {
+            get; private set;
+        }
 
-        public bool IsDisposed { get; private set; }
+        public bool IsDisposed
+        {
+            get; private set;
+        }
 
         public event EventHandler<AppTheme>? RequestedThemeChanged
         {

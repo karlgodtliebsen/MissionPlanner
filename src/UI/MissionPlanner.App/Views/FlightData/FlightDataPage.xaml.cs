@@ -19,7 +19,7 @@ public partial class FlightDataPage : ExtendedContentPage<FlightDataViewModel>
     }
 
     /// <inheritdoc />
-    protected override async Task ActivateAsync()
+    protected override async Task OnActivateAsync()
     {
         DomainException.ThrowIfNull(ViewModel);
         var map = ViewModel.Map as FlightDataMissionMapViewModel; //To share the Map it is brought along by this code
@@ -27,20 +27,25 @@ public partial class FlightDataPage : ExtendedContentPage<FlightDataViewModel>
         await map.ActivateAsync();
 
         await MapView.ActivateAsync(map);
-        await base.ActivateAsync();
+        await base.OnActivateAsync();
         MapLoadingIndicator.IsRunning = false;
         MapLoadingIndicator.IsVisible = false;
     }
 
     /// <inheritdoc />
-    protected override Task DeactivateAsync()
+    protected override Task OnDeactivateAsync()
     {
         DomainException.ThrowIfNull(ViewModel);
         var map = ViewModel.Map as FlightDataMissionMapViewModel;
         DomainException.ThrowIfNull(map);
         map.Deactivate();
-        MapView.Deactivate();
-        return base.DeactivateAsync();
+        return DeactivateCoreAsync();
+
+        async Task DeactivateCoreAsync()
+        {
+            await MapView.DeactivateAsync();
+            await base.OnDeactivateAsync();
+        }
     }
     /// <inheritdoc />
     public override void Dispose()

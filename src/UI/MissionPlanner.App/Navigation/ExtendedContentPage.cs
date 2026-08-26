@@ -5,25 +5,18 @@ using UraniumUI.Pages;
 
 namespace MissionPlanner.App.Navigation;
 
-/// <summary>
-/// Represents a content page view that is associated with a specific view model type.
-/// Handles viewmodel allocation and cleanup for navigation events.
-/// Used to Enforce Cleanup when Navigating away from a view. The view model is automatically disposed when the view is disposed.
-/// </summary>
+/// <summary>Associates a content page with a view model and serializes its lifecycle.</summary>
 public class ExtendedContentPage<TViewModel> : UraniumContentPage, IDisposable
     where TViewModel : class, IDisposable, IActivationLifeCycle
-
 {
-    private bool isActive;
+    private readonly SemaphoreSlim lifecycleGate = new(1, 1);
+    private LifecycleState lifecycleState;
+    private bool disposed;
 
-    /// <summary>
-    ///  
-    /// </summary>
+    /// <summary>The view model associated with this page.</summary>
     protected TViewModel? ViewModel;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ExtendedContentPage{TViewModel}"/> class.
-    /// </summary>
+    /// <summary>Initializes the page, optionally using a keyed view model.</summary>
     protected ExtendedContentPage(string? key = null)
     {
         ViewModel = key is not null
@@ -32,7 +25,7 @@ public class ExtendedContentPage<TViewModel> : UraniumContentPage, IDisposable
         BindingContext = ViewModel;
     }
 
-    /// <inheritdoc />
+    /// <summary>Initializes the page.</summary>
     protected ExtendedContentPage()
     {
         ViewModel = ServiceHelper.GetRequiredService<TViewModel>();
@@ -40,132 +33,133 @@ public class ExtendedContentPage<TViewModel> : UraniumContentPage, IDisposable
     }
 
     /// <inheritdoc />
-    protected override void OnNavigatingFrom(NavigatingFromEventArgs args)
+    protected override async void OnNavigatingFrom(NavigatingFromEventArgs args)
     {
         base.OnNavigatingFrom(args);
         if (args.NavigationType is NavigationType.Replace or NavigationType.Remove)
         {
-            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(1), () =>
-            {
-                if (ViewModel is null)
-                {
-                    Debug.Print("ViewModel is null");
-                    return;
-                }
-
-                var t1 = Task.Yield().GetAwaiter();
-                t1.OnCompleted(async () => await DeactivateAsync());
-            });
+            await RunNavigationTransitionAsync(DeactivateAsync).ConfigureAwait(true);
         }
     }
 
     /// <inheritdoc />
-    protected override void OnNavigatedFrom(NavigatedFromEventArgs args)
-    {
-        base.OnNavigatedFrom(args);
-        if (args.NavigationType is NavigationType.Replace or NavigationType.Remove)
-        {
-            Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(1), () =>
-            {
-                if (ViewModel is null)
-                {
-                    Debug.Print("ViewModel is null");
-                    return;
-                }
-
-                var t1 = Task.Yield().GetAwaiter();
-                t1.OnCompleted(async () => await DeactivateAsync());
-            });
-        }
-    }
-
-    /// <inheritdoc/>
     protected override async void OnNavigatedTo(NavigatedToEventArgs args)
     {
         base.OnNavigatedTo(args);
+        // Navigation-type behavior is intentionally unchanged pending verification.
         if (args.NavigationType is not (NavigationType.Replace or NavigationType.Remove))
         {
             return;
         }
 
-        Dispatcher.DispatchDelayed(TimeSpan.FromMilliseconds(1), () =>
-        {
-            if (ViewModel is null)
-            {
-                Debug.Print("ViewModel is null");
-                return;
-            }
-            var t1 = Task.Yield().GetAwaiter();
-            t1.OnCompleted(async () => await ActivateAsync());
-        });
+        await RunNavigationTransitionAsync(ActivateAsync).ConfigureAwait(true);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     public virtual void Dispose()
     {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
         ViewModel?.Dispose();
         ViewModel = null;
+        BindingContext = null;
     }
 
-    /// <summary>
-    /// Called when the view model needs activating.
-    /// </summary>
-    protected virtual async Task ActivateAsync()
+    /// <summary>Runs the complete serialized activation transition.</summary>
+    protected async Task ActivateAsync()
     {
-        if (isActive)
-        {
-            return;
-        }
-
-        if (ViewModel is null)
-        {
-            return;
-        }
-
+        await lifecycleGate.WaitAsync().ConfigureAwait(true);
         try
         {
-            await ViewModel.ActivateAsync();
-        }
-        catch (OperationCanceledException ex)
-        {
-            Debug.Print(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            Debug.Print(ex.Message);
-        }
+            if (disposed || lifecycleState is LifecycleState.Active or LifecycleState.Faulted)
+            {
+                return;
+            }
 
-        isActive = true;
+            lifecycleState = LifecycleState.Activating;
+            try
+            {
+                await Task.Yield();
+                await OnActivateAsync().ConfigureAwait(true);
+                lifecycleState = LifecycleState.Active;
+                await Task.Yield();
+            }
+            catch
+            {
+                lifecycleState = LifecycleState.Faulted;
+                throw;
+            }
+        }
+        finally
+        {
+            lifecycleGate.Release();
+        }
     }
 
-    /// <summary>
-    /// Called when the view model needs deactivating.
-    /// </summary>
-    protected virtual async Task DeactivateAsync()
+    /// <summary>Runs the complete serialized deactivation transition.</summary>
+    protected async Task DeactivateAsync()
     {
-        if (!isActive)
-        {
-            return;
-        }
-
-        if (ViewModel is null)
-        {
-            return;
-        }
-
+        await lifecycleGate.WaitAsync().ConfigureAwait(true);
         try
         {
-            await ViewModel.DeactivateAsync();
-        }
-        catch (OperationCanceledException ex)
-        {
-            Debug.Print(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            Debug.Print(ex.Message);
-        }
+            if (disposed || lifecycleState is LifecycleState.Inactive or LifecycleState.Deactivating)
+            {
+                return;
+            }
 
-        isActive = false;
+            var preserveFault = lifecycleState == LifecycleState.Faulted;
+            lifecycleState = LifecycleState.Deactivating;
+            try
+            {
+                await OnDeactivateAsync().ConfigureAwait(true);
+                lifecycleState = preserveFault ? LifecycleState.Faulted : LifecycleState.Inactive;
+            }
+            catch
+            {
+                lifecycleState = LifecycleState.Faulted;
+                throw;
+            }
+        }
+        finally
+        {
+            lifecycleGate.Release();
+        }
+    }
+
+    /// <summary>Performs page-specific activation under the lifecycle gate.</summary>
+    protected virtual Task OnActivateAsync()
+    {
+        return ViewModel?.ActivateAsync() ?? Task.CompletedTask;
+    }
+
+    /// <summary>Performs page-specific deactivation under the lifecycle gate.</summary>
+    protected virtual Task OnDeactivateAsync()
+    {
+        return ViewModel?.DeactivateAsync() ?? Task.CompletedTask;
+    }
+
+    private static async Task RunNavigationTransitionAsync(Func<Task> transition)
+    {
+        try
+        {
+            await transition().ConfigureAwait(true);
+        }
+        catch (OperationCanceledException exception)
+        {
+            Debug.WriteLine($"Page lifecycle transition was cancelled: {exception}");
+        }
+        catch (Exception exception)
+        {
+            Debug.WriteLine($"Fatal page lifecycle transition failure: {exception}");
+        }
+    }
+
+    private enum LifecycleState
+    {
+        Inactive, Activating, Active, Deactivating, Faulted
     }
 }

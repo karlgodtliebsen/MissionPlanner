@@ -93,7 +93,7 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
     }
 
     /// <inheritdoc />
-    public event EventHandler<SimulationScenarioRunnerChangedEventArgs>? Changed;
+    public event Action<SimulationScenarioRunnerChangedEventArgs>? Changed;
 
     /// <inheritdoc />
     public async Task<SimulationScenarioValidationReport> ValidateAsync(
@@ -202,7 +202,7 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
                 var injectionSteps = document.Steps.Where(item =>
                     item.Kind == SimulationScenarioStepKind.InjectFault && item.ControlKey == key).ToArray();
                 var isBoundedFault = injectionSteps.Length == 0 || capability?.Descriptor is
-                    { RequiresConfirmation: true, MaximumDuration: not null };
+                { RequiresConfirmation: true, MaximumDuration: not null };
                 var durationsFit = capability?.Descriptor.MaximumDuration is not { } maximum ||
                                    injectionSteps.All(item => item.DurationSeconds <= maximum.TotalSeconds);
                 var available = capability?.IsAvailable == true && isBoundedFault && durationsFit;
@@ -452,7 +452,11 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
 
             pauseRequested = true;
             resumeSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            snapshot = current with { State = SimulationScenarioRunnerState.PauseRequested, Message = "Pause requested; the current step will finish before pausing." };
+            snapshot = current with
+            {
+                State = SimulationScenarioRunnerState.PauseRequested,
+                Message = "Pause requested; the current step will finish before pausing."
+            };
         }
 
         Publish(snapshot);
@@ -475,7 +479,11 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
         }
 
         signal.TrySetResult();
-        Publish(Current with { State = SimulationScenarioRunnerState.Running, Message = "Scenario resumed at a safe step boundary." });
+        Publish(Current with
+        {
+            State = SimulationScenarioRunnerState.Running,
+            Message = "Scenario resumed at a safe step boundary."
+        });
         return true;
     }
 
@@ -853,9 +861,7 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
         };
     }
 
-    private static double ResolveNumber(
-        SimulationScenarioValue value,
-        IReadOnlyDictionary<string, SimulationScenarioValue> variables)
+    private static double ResolveNumber(SimulationScenarioValue value, IReadOnlyDictionary<string, SimulationScenarioValue> variables)
     {
         return ResolveValue(value, variables) is double number
             ? number
@@ -897,7 +903,7 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
             current = snapshot;
         }
 
-        Changed?.Invoke(this, new SimulationScenarioRunnerChangedEventArgs(snapshot));
+        Changed?.Invoke(new SimulationScenarioRunnerChangedEventArgs(snapshot));
     }
 
     private static TaskCompletionSource CompletedSignal()
@@ -907,14 +913,11 @@ public sealed class SimulationScenarioRunner : ISimulationScenarioRunner
         return result;
     }
 
-    private sealed class ScenarioStepException : Exception
+    private sealed class ScenarioStepException(SimulationScenarioStep step, string message, Exception? innerException = null) : Exception(message, innerException)
     {
-        public ScenarioStepException(SimulationScenarioStep step, string message, Exception? innerException = null)
-            : base(message, innerException)
+        public SimulationScenarioStep Step
         {
-            Step = step;
-        }
-
-        public SimulationScenarioStep Step { get; }
+            get;
+        } = step;
     }
 }

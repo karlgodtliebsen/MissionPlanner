@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using MissionPlanner.Core.Setup.OptionalHardware.Motor;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -61,7 +61,7 @@ public sealed class MotorSpinParameterServiceTests
 
         ordering.Success.Should().BeFalse("MOT_SPIN_ARM cannot equal the current MOT_SPIN_MIN");
         excessive.Success.Should().BeFalse();
-        await fixture.Parameters.DidNotReceiveWithAnyArgs().SetParameterAsync(default, default!, default, default, default);
+        await fixture.Parameters.DidNotReceiveWithAnyArgs().SetParameterAsync(default, default!, default, default, TestContext.Current.CancellationToken);
     }
 
     /// <summary>Verifies missing parameters independently disable their operations without sending writes.</summary>
@@ -75,8 +75,8 @@ public sealed class MotorSpinParameterServiceTests
         (await minMissing.Service.SetSpinMinAsync(vehicleId, TestContext.Current.CancellationToken)).Success.Should().BeFalse();
         armMissing.Service.GetState(vehicleId).HasSpinArm.Should().BeFalse();
         minMissing.Service.GetState(vehicleId).HasSpinMin.Should().BeFalse();
-        await armMissing.Parameters.DidNotReceiveWithAnyArgs().SetParameterAsync(default, default!, default, default, default);
-        await minMissing.Parameters.DidNotReceiveWithAnyArgs().SetParameterAsync(default, default!, default, default, default);
+        await armMissing.Parameters.DidNotReceiveWithAnyArgs().SetParameterAsync(default, default!, default, default, TestContext.Current.CancellationToken);
+        await minMissing.Parameters.DidNotReceiveWithAnyArgs().SetParameterAsync(default, default!, default, default, TestContext.Current.CancellationToken);
     }
 
     /// <summary>Verifies failed writes preserve registry state and can be retried successfully.</summary>

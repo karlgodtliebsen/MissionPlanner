@@ -68,7 +68,7 @@ internal sealed class MissionMapPresenter : IDisposable
     /// <summary>
     /// Starts asynchronous map-source work while the view is visible.
     /// </summary>
-    public async Task ActivateAsync()
+    public async Task ActivateAsync(CancellationToken cancellationToken = default)
     {
         if (disposed || isActive)
         {
@@ -76,7 +76,7 @@ internal sealed class MissionMapPresenter : IDisposable
         }
 
         isActive = true;
-        lifecycleCancellation = new CancellationTokenSource();
+        lifecycleCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         pointerElevationCancellation = new CancellationTokenSource();
 
         attributionCoordinator.Changed += OnAttributionChanged;

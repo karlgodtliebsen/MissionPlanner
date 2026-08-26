@@ -1,14 +1,15 @@
-﻿using UraniumUI.Material.Controls;
+using System.Diagnostics;
+using UraniumUI.Material.Controls;
 
 namespace UraniumUI.Material.TabViews;
 
-/// <summary>
-/// Represents a tab view control that owns the lifecycle of its selected content.
-/// </summary>
+/// <summary>Owns the lifecycle of the selected tab content.</summary>
 public class LifecycleTabView : TabView
 {
-    private View? currentContent;
+    private readonly SemaphoreSlim lifecycleGate = new(1, 1);
+    private View? activeContent;
     private bool isLoaded;
+    private long transitionVersion;
 
     /// <summary>Initializes lifecycle handling at selection and visual-tree boundaries.</summary>
     public LifecycleTabView()
@@ -20,69 +21,74 @@ public class LifecycleTabView : TabView
     /// <inheritdoc />
     protected override async Task OnSelectedTabChanged(TabItem oldValue, TabItem newValue)
     {
-        var oldContent = oldValue?.Content ?? currentContent;
-        if (oldContent is not null && oldValue != newValue)
-        {
-            if (oldContent is not IActivationLifeCycle content)
-            {
-                return;
-            }
-
-            await content.DeactivateAsync();
-        }
-
         await base.OnSelectedTabChanged(oldValue, newValue).ConfigureAwait(true);
-
-        currentContent = newValue?.Content;
-        if (currentContent is null)
-        {
-            return;
-        }
-
-        if (isLoaded)
-        {
-            if (currentContent is not IActivationLifeCycle content)
-            {
-                return;
-            }
-
-            await content.ActivateAsync();
-        }
+        transitionVersion++;
+        await ReconcileLifecycleAsync().ConfigureAwait(true);
     }
 
-    private void OnLoaded(object? sender, EventArgs e)
+    private async void OnLoaded(object? sender, EventArgs e)
     {
-        if (isLoaded)
-        {
-            return;
-        }
-
+        if (isLoaded) return;
         isLoaded = true;
-        currentContent ??= SelectedTab?.Content;
-        if (currentContent is not null)
+        transitionVersion++;
+        await ReconcileLifecycleFromEventAsync().ConfigureAwait(true);
+    }
+
+    private async void OnUnloaded(object? sender, EventArgs e)
+    {
+        if (!isLoaded) return;
+        isLoaded = false;
+        transitionVersion++;
+        await ReconcileLifecycleFromEventAsync().ConfigureAwait(true);
+    }
+
+    private async Task ReconcileLifecycleFromEventAsync()
+    {
+        try
         {
-            if (currentContent is not IActivationLifeCycle content)
-            {
-                return;
-            }
-            content.ActivateAsync().GetAwaiter().GetResult();
+            await ReconcileLifecycleAsync().ConfigureAwait(true);
+        }
+        catch (Exception exception)
+        {
+            Debug.WriteLine($"Tab lifecycle transition failed: {exception}");
         }
     }
 
-    private void OnUnloaded(object? sender, EventArgs e)
+    private async Task ReconcileLifecycleAsync()
     {
-        if (!isLoaded)
+        await lifecycleGate.WaitAsync().ConfigureAwait(true);
+        try
         {
-            return;
-        }
-        isLoaded = false;
-        if (currentContent is not null)
-        {
-            if (currentContent is not IActivationLifeCycle content)
+            while (true)
             {
-                return;
+                var observedVersion = transitionVersion;
+                var desiredContent = isLoaded ? SelectedTab?.Content : null;
+                if (!ReferenceEquals(activeContent, desiredContent))
+                {
+                    if (activeContent is IActivationLifeCycle oldLifecycle)
+                    {
+                        await oldLifecycle.DeactivateAsync().ConfigureAwait(true);
+                    }
+                    activeContent = null;
+
+                    desiredContent = isLoaded ? SelectedTab?.Content : null;
+                    if (desiredContent is IActivationLifeCycle newLifecycle)
+                    {
+                        await newLifecycle.ActivateAsync().ConfigureAwait(true);
+                    }
+                    activeContent = desiredContent;
+                }
+
+                if (observedVersion == transitionVersion &&
+                    ReferenceEquals(activeContent, isLoaded ? SelectedTab?.Content : null))
+                {
+                    return;
+                }
             }
-            content.DeactivateAsync().GetAwaiter().GetResult();
+        }
+        finally
+        {
+            lifecycleGate.Release();
         }
     }
 }

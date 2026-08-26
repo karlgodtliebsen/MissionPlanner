@@ -260,8 +260,8 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
             VehicleId = stateService.VehicleId;
             VehicleName = stateService.VehicleName;
             IsConnecting = false;
-            Task.Yield();
         });
+        Task.Yield();
     }
 
     /// <summary>
@@ -397,7 +397,7 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
                 "udp" => await ConnectUdpAsync(),
                 var _ => new VehicleConnectionResult(false, null, null, "Unsupported connection type")
             };
-
+            await Task.Yield();
             if (result.Success && result.VehicleId.HasValue)
             {
                 SuccessConnection(result.VehicleId.Value);
@@ -436,10 +436,10 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
 
                 VehicleName = stateService.VehicleName;
                 StatusMessage = $"Connected to {VehicleName ?? vehicleId.ToString()}";
-                Task.Yield();
                 logger.LogInformation("Successfully connected to vehicle {VehicleId} ({VehicleName})", vehicleId, VehicleName);
             }
         );
+        Task.Yield();
     }
 
     private void Disconnected()
@@ -477,6 +477,7 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
 
     private async Task<VehicleConnectionResult> ConnectSerialAsync()
     {
+        await Task.Yield();
         return string.IsNullOrEmpty(SelectedChannel)
             ? new VehicleConnectionResult(false, null, null, "No channel selected")
             : !int.TryParse(SelectedBaudRate, out var baudRate)
@@ -506,7 +507,7 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
             StatusMessage = "Invalid port number";
             return new VehicleConnectionResult(false, null, null, "Invalid port number");
         }
-
+        await Task.Yield();
         return await connectionService.ConnectTcpAsync(host, portNumber);
     }
 
@@ -517,9 +518,9 @@ public partial class ConnectPopupViewModel : ObservableObject, IAsyncDisposable
         {
             localPort = 14550; // Default UDP port
         }
-
+        await Task.Yield();
         var result = await connectionService.ConnectUdpAsync(localPort);
-
+        await Task.Yield();
         return result;
     }
 

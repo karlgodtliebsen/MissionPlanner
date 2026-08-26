@@ -14,6 +14,8 @@ public partial class MissionMapView : ContentView, IDisposable
     private MissionMapViewModel? viewModel;
     private readonly IDomainFactory domainFactory;
     private MissionMapPresenter? presenter;
+    private readonly SemaphoreSlim lifecycleGate = new(1, 1);
+    private CancellationTokenSource? operationCancellation;
     private bool disposed;
     private bool isActive;
     private bool usingCustomPosition;
@@ -31,49 +33,84 @@ public partial class MissionMapView : ContentView, IDisposable
     /// <param name="vModel">The view model to associate with the view.</param>
     public async Task ActivateAsync(MissionMapViewModel vModel)
     {
-        ObjectDisposedException.ThrowIf(disposed, this);
-        if (isActive)
+        await lifecycleGate.WaitAsync();
+        try
         {
-            return;
+            ObjectDisposedException.ThrowIf(disposed, this);
+            if (isActive)
+            {
+                return;
+            }
+
+            operationCancellation = new CancellationTokenSource();
+            var token = operationCancellation.Token;
+            this.viewModel = vModel;
+            MissionMap.MapClicked += OnMapClicked;
+            MissionMap.MapPointerMoved += OnMapPointerMoved;
+            this.viewModel.MapRotationRequested += OnMapRotationRequested;
+            this.viewModel.MapCenterRequested += OnMapCenterRequested;
+            BindingContext = this.viewModel;
+            presenter ??= domainFactory.Create<MissionMapPresenter, MapView, MissionMapViewModel>(MissionMap, this.viewModel);
+            try
+            {
+                await presenter.ActivateAsync(token);
+                token.ThrowIfCancellationRequested();
+                if (this.viewModel is { VehicleLatitude: 0, VehicleLongitude: 0 })
+                {
+                    await CenterOnMyLocationAsync(token);
+                    token.ThrowIfCancellationRequested();
+                    usingCustomPosition = true;
+                }
+                isActive = true;
+            }
+            catch
+            {
+                Deactivate();
+                throw;
+            }
         }
-        isActive = true;
-        this.viewModel = vModel;
-        this.MissionMap.MapClicked += OnMapClicked;
-        this.MissionMap.MapPointerMoved += OnMapPointerMoved;
-        this.viewModel.MapRotationRequested += OnMapRotationRequested;
-        this.viewModel.MapCenterRequested += OnMapCenterRequested;
-        this.BindingContext = this.viewModel;
-        presenter ??= domainFactory.Create<MissionMapPresenter, MapView, MissionMapViewModel>(MissionMap, this.viewModel);
-        await presenter.ActivateAsync();
-        if (this.viewModel is not { VehicleLatitude: 0, VehicleLongitude: 0 })
+        finally
         {
-            return;
+            lifecycleGate.Release();
         }
-        await CenterOnMyLocationAsync();
-        usingCustomPosition = true;
     }
 
     /// <summary>
     /// Deactivates the view and releases resources.
     /// </summary>
-    public void Deactivate()
+    public async Task DeactivateAsync()
     {
-        if (disposed)
+        await lifecycleGate.WaitAsync();
+        try
+        {
+            if (disposed || !isActive)
+            {
+                return;
+            }
+
+            Deactivate();
+        }
+        finally
+        {
+            lifecycleGate.Release();
+        }
+    }
+
+    private void Deactivate()
+    {
+        if (disposed || !isActive)
         {
             return;
         }
-
-        if (!isActive)
-        {
-            return;
-        }
-
         isActive = false;
         MissionMap.MapClicked -= OnMapClicked;
         MissionMap.MapPointerMoved -= OnMapPointerMoved;
         viewModel?.MapRotationRequested -= OnMapRotationRequested;
         viewModel?.MapCenterRequested -= OnMapCenterRequested;
         presenter?.Deactivate();
+        operationCancellation?.Cancel();
+        operationCancellation?.Dispose();
+        operationCancellation = null;
     }
 
     /// <inheritdoc />
@@ -111,7 +148,7 @@ public partial class MissionMapView : ContentView, IDisposable
         presenter?.CenterOn(position.LatitudeDegrees, position.LongitudeDegrees, false);
     }
 
-    private async Task CenterOnMyLocationAsync()
+    private async Task CenterOnMyLocationAsync(CancellationToken cancellationToken = default)
     {
         if (usingCustomPosition)
         {
@@ -122,11 +159,15 @@ public partial class MissionMapView : ContentView, IDisposable
         {
             var location = await Geolocation.Default.GetLastKnownLocationAsync()
                            ?? await Geolocation.Default.GetLocationAsync(
-                               new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10)));
+                               new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10)), cancellationToken);
             if (location is not null && !disposed)
             {
                 presenter?.CenterOn(location.Latitude, location.Longitude, true);
             }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch (Exception ex)
         {

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Maui.Storage;
+﻿using System.Diagnostics;
+using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -11,7 +12,6 @@ using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.MavFtp;
 using MissionPlanner.Shared.Models.Vehicles.Models;
-using UraniumUI.Extensions;
 using UraniumUI.Material.Dialogs;
 using UraniumUI.Material.TabViews;
 
@@ -33,11 +33,10 @@ public partial class MavFtpTabViewModel : BaseViewModel
     private readonly Lock lifecycleSync = new();
     private readonly Lock operationSync = new();
     private readonly SemaphoreSlim operationGate = new(1, 1);
-    private readonly CancellationTokenSource lifetimeCancellation = new();
     private CancellationTokenSource? operationCancellation;
     private VehicleId? activeVehicleId;
     private readonly IList<IDisposable> disposables = [];
-    private IDispatcherTimer? timer;
+    private readonly IDispatcherTimer? timer;
     private volatile bool disposed;
 
     private IVehicleFileSystemService? fileSystem;
@@ -177,7 +176,6 @@ public partial class MavFtpTabViewModel : BaseViewModel
             return;
         }
 
-        StopDelayedRefresh();
         activeVehicleId = null;
         dispatcher.Dispatch(() =>
         {
@@ -187,7 +185,7 @@ public partial class MavFtpTabViewModel : BaseViewModel
             SelectedEntry = null;
         });
         await ResetFilesystemService(evt.VehicleId, ct);
-
+        await ResetSessionsAsync();
         SetConnectionStatus();
         SelectionChanged();
     }
@@ -199,7 +197,9 @@ public partial class MavFtpTabViewModel : BaseViewModel
             return;
         }
 
-        using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(ct, lifetimeCancellation.Token);
+        operationCancellation ??= new CancellationTokenSource();
+
+        using var linkedCancellation = CancellationTokenSource.CreateLinkedTokenSource(ct, operationCancellation.Token);
         var cancellationToken = linkedCancellation.Token;
         try
         {
@@ -234,31 +234,20 @@ public partial class MavFtpTabViewModel : BaseViewModel
 
                 await ResetSessionsAsync();
                 SetConnectionStatus();
-                StartDelayedRefresh(TimeSpan.FromMilliseconds(100));
+                await Start();
             }
         }
-        catch (OperationCanceledException) when (lifetimeCancellation.IsCancellationRequested)
+        catch (OperationCanceledException) when (linkedCancellation.IsCancellationRequested)
         {
             // The transient page ViewModel was disposed during connection initialization.
+            Debug.Print("The transient page ViewModel was disposed during connection initialization.");
         }
     }
-
-    private void StopDelayedRefresh()
+    private async Task Start()
     {
-        IDispatcherTimer? activeTimer;
-        lock (lifecycleSync)
-        {
-            activeTimer = timer;
-            timer = null;
-        }
-
-        if (activeTimer is null)
-        {
-            return;
-        }
-
-        activeTimer.Stop();
-        activeTimer.Tick -= OnRefreshTimerTick;
+        await RefreshAsync();
+        SetConnectionStatus();
+        SelectionChanged();
     }
 
     private void SetConnectionStatus()
@@ -360,7 +349,8 @@ public partial class MavFtpTabViewModel : BaseViewModel
             return;
         }
 
-        await RunAsync(async ct =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async ct =>
         {
             try
             {
@@ -399,7 +389,8 @@ public partial class MavFtpTabViewModel : BaseViewModel
         }
 
         var remotePath = RemotePath.Join(CurrentPath, SelectedEntry.Name);
-        await RunAsync(async ct =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async ct =>
         {
             var temporary = Path.Combine(FileSystem.CacheDirectory, $"mavftp-{Guid.NewGuid():N}.tmp");
             try
@@ -462,7 +453,8 @@ public partial class MavFtpTabViewModel : BaseViewModel
             return;
         }
 
-        await RunAsync(async ct =>
+        operationCancellation ??= new CancellationTokenSource();
+        await RunAsync(operationCancellation.Token, async ct =>
         {
             var activeFileSystem = fileSystem;
             if (activeFileSystem is null)
@@ -512,20 +504,20 @@ public partial class MavFtpTabViewModel : BaseViewModel
     }
 
     /// <inheritdoc />
-    protected override async Task RunAsync(Func<CancellationToken, Task> operation)
+    protected override async Task RunAsync(CancellationToken cancellationToken, Func<CancellationToken, Task> operation)
     {
         var enteredGate = false;
-        CancellationTokenSource? operationSource = null;
+        var operationSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         try
         {
-            await operationGate.WaitAsync(lifetimeCancellation.Token);
+            operationCancellation ??= new CancellationTokenSource();
+            await operationGate.WaitAsync(operationCancellation.Token);
             enteredGate = true;
             if (disposed)
             {
                 return;
             }
 
-            operationSource = CancellationTokenSource.CreateLinkedTokenSource(lifetimeCancellation.Token);
             lock (operationSync)
             {
                 operationCancellation = operationSource;
@@ -540,7 +532,7 @@ public partial class MavFtpTabViewModel : BaseViewModel
 
             await operation(operationSource.Token);
         }
-        catch (OperationCanceledException) when (lifetimeCancellation.IsCancellationRequested)
+        catch (OperationCanceledException) when (operationCancellation.IsCancellationRequested)
         {
             // Navigation disposed this transient ViewModel. Do not update its detached view.
         }
@@ -589,6 +581,7 @@ public partial class MavFtpTabViewModel : BaseViewModel
             }
 
             operationSource?.Dispose();
+
             if (enteredGate)
             {
                 operationGate.Release();
@@ -630,75 +623,32 @@ public partial class MavFtpTabViewModel : BaseViewModel
         }
     }
 
+    private bool isActivated = false;
 
-    private void StartDelayedRefresh(TimeSpan milliseconds)
+    /// <inheritdoc />
+    public override async Task ActivateAsync()
+    {
+        isActivated = true;
+        disposables.Clear();
+        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected));
+        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
+        fileSystem = connectionSession.CreateMavFtpConnection();
+        SetConnectionStatus();
+        await Start();
+    }
+
+    /// <inheritdoc />
+    public override async Task DeactivateAsync()
     {
         if (disposed)
         {
             return;
         }
-
-        StopDelayedRefresh();
-        var newTimer = dispatcher.CreateTimer();
-        newTimer.Interval = milliseconds;
-        newTimer.Tick += OnRefreshTimerTick;
-        var shouldStart = false;
-        lock (lifecycleSync)
-        {
-            if (!disposed)
-            {
-                timer = newTimer;
-                shouldStart = true;
-            }
-        }
-
-        if (shouldStart)
-        {
-            newTimer.Start();
-            if (!disposed)
-            {
-                return;
-            }
-        }
-
-        newTimer.Tick -= OnRefreshTimerTick;
-        newTimer.Stop();
-    }
-
-    private void OnRefreshTimerTick(object? sender, EventArgs e)
-    {
-        StopDelayedRefresh();
-        if (disposed || !stateService.IsConnected)
+        if (!isActivated)
         {
             return;
         }
-
-        RefreshAsync().FireAndForget();
-        SetConnectionStatus();
-        SelectionChanged();
-    }
-
-    /// <inheritdoc />
-    public override Task ActivateAsync()
-    {
-        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected));
-        disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
-        fileSystem = connectionSession.CreateMavFtpConnection();
-        SetConnectionStatus();
-        StartDelayedRefresh(TimeSpan.FromMilliseconds(100));
-        return Task.CompletedTask;
-    }
-
-    /// <inheritdoc />
-    public override Task DeactivateAsync()
-    {
-        StopDelayedRefresh();
-        foreach (var disposable in disposables)
-        {
-            disposable.Dispose();
-        }
-
-        disposables.Clear();
+        Deactivate();
         IVehicleFileSystemService? ownedFileSystem;
         lock (lifecycleSync)
         {
@@ -707,9 +657,28 @@ public partial class MavFtpTabViewModel : BaseViewModel
         }
         if (ownedFileSystem is not null)
         {
-            DisposeFileSystemAfterOperationsAsync(ownedFileSystem).GetAwaiter().GetResult();
+            await DisposeFileSystemAfterOperationsAsync(ownedFileSystem);
         }
-        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    private void Deactivate()
+    {
+        if (disposed)
+        {
+            return;
+        }
+        if (!isActivated)
+        {
+            return;
+        }
+        isActivated = false;
+        foreach (var disposable in disposables)
+        {
+            disposable.Dispose();
+        }
+        disposables.Clear();
+
     }
 
     /// <inheritdoc />
@@ -719,13 +688,20 @@ public partial class MavFtpTabViewModel : BaseViewModel
         {
             return;
         }
+        CancelActiveOperation();
+        Deactivate();
         disposed = true;
 
-        DeactivateAsync().GetAwaiter().GetResult();
-        lifetimeCancellation.Cancel();
-        CancelActiveOperation();
-
-
+        IVehicleFileSystemService? ownedFileSystem;
+        lock (lifecycleSync)
+        {
+            ownedFileSystem = fileSystem;
+            fileSystem = null;
+        }
+        if (ownedFileSystem is not null)
+        {
+            _ = DisposeFileSystemAfterOperationsAsync(ownedFileSystem);
+        }
     }
 
 }
