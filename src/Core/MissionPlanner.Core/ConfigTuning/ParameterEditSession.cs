@@ -732,7 +732,7 @@ public sealed class ParameterEditSession : IParameterEditSession
             var preservePending = field.IsModified;
             var pending = preservePending ? field.PendingValue : parameter.Value;
             var remainsModified = !Equivalent(pending, parameter.Value, field.Metadata);
-            fields[parameter.Name] = field with
+            var updatedField = field with
             {
                 Type = parameter.Type,
                 LiveValue = parameter.Value,
@@ -749,7 +749,11 @@ public sealed class ParameterEditSession : IParameterEditSession
                         : ParameterEditWriteStatus.Unchanged,
                 WriteMessage = remainsModified ? field.WriteMessage : null
             };
-            changed = true;
+            if (updatedField != field)
+            {
+                fields[parameter.Name] = updatedField;
+                changed = true;
+            }
         }
 
         if (changed)

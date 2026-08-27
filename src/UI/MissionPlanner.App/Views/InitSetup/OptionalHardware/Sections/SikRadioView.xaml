@@ -6,6 +6,7 @@
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                                  xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                                   x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.SikRadioView"
                                   x:DataType="sections:SikRadioViewModel">
     <ScrollView>
@@ -14,8 +15,8 @@
             <Label Text="Direct serial configuration. Disconnect any vehicle using the selected port." 
                    TextColor="{DynamicResource Warning}" />
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
-            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
-            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation"/>
+            <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
             <HorizontalStackLayout Spacing="50"  HorizontalOptions="Fill" HeightRequest="75" VerticalOptions="Fill">
                 <material:SelectField 
                     Title="Serial device" 

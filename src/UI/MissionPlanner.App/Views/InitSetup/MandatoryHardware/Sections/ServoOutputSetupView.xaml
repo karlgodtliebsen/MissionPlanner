@@ -35,7 +35,6 @@
                             ItemSizingStrategy= "MeasureFirstItem"
                             ShowSearchBar="False"
                             RowHeight="60"
-                            OverscanRowCount="16"
                             HorizontalOptions="Center"
                             VerticalOptions="Fill" 
                             >
@@ -101,7 +100,7 @@
                                         VerticalOptions="Center"
                                         MinimumWidthRequest="150"
                                         HorizontalOptions="Fill"
-                                        ShowStepperButtons="False"
+                                        ButtonOrientation="Vertical"
                                         NumericType="UInt32"
                                         HorizontalTextAlignment="End" />
                         </DataTemplate>
@@ -120,7 +119,7 @@
                                         VerticalOptions="Center"
                                         MinimumWidthRequest="150"
                                         HorizontalOptions="Fill"
-                                        ShowStepperButtons="False"
+                                        ButtonOrientation="Vertical"
                                         NumericType="UInt32"
                                         HorizontalTextAlignment="End" />
                         </DataTemplate>
@@ -138,7 +137,7 @@
                                         VerticalOptions="Center"
                                         MinimumWidthRequest="150"
                                         HorizontalOptions="Fill"
-                                        ShowStepperButtons="False"
+                                        ButtonOrientation="Vertical"
                                         NumericType="UInt32"
                                         HorizontalTextAlignment="End" />
                         </DataTemplate>

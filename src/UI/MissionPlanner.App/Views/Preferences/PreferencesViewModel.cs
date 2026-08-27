@@ -1,3 +1,4 @@
+﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -31,6 +32,9 @@ public sealed partial class PreferencesViewModel : BaseViewModel
     private readonly MapHttpDiskCache mapCache;
     private readonly SemaphoreSlim operationGate = new(1, 1);
     private bool loading;
+    private bool active;
+    private bool disposed;
+    private CancellationTokenSource? activationCancellation;
     private CancellationTokenSource? operationCancellation;
 
     private string? selectedOfflineSourceId;
@@ -691,37 +695,106 @@ public sealed partial class PreferencesViewModel : BaseViewModel
     /// <summary>Loads persisted settings and performs safe recovery when necessary.</summary>
     public override async Task ActivateAsync()
     {
-        var result = await settingsService.InitializeAsync(CancellationToken.None);
-        await LoadMapSourcesAsync(result.Settings.Map.SelectedSourceId, CancellationToken.None);
-        await RefreshMapPacksAsync(CancellationToken.None);
-        RestoreOfflinePackSelection(result.Settings.Map.SelectedSourceId);
-        RefreshMapCacheSize();
-        Load(result.Settings);
-        SetMessages(result.Message ?? "Planner preferences loaded. These settings are local and do not change the flight controller.");
+        ObjectDisposedException.ThrowIf(disposed, this);
+        if (active)
+        {
+            return;
+        }
+        if (disposed)
+        {
+            return;
+        }
+        active = true;
+        Debug.Print("Activating PreferencesViewModel");
+        var cancellation = new CancellationTokenSource();
+        activationCancellation = cancellation;
+        operationCancellation = new CancellationTokenSource();
+        try
+        {
+            var result = await settingsService.InitializeAsync(cancellation.Token);
+            await LoadMapSourcesAsync(result.Settings.Map.SelectedSourceId, cancellation.Token);
+            await RefreshMapPacksAsync(cancellation.Token);
+            cancellation.Token.ThrowIfCancellationRequested();
 
-
-        //return RunAsync(async cancellationToken =>
-        //{
-        //    var result = await settingsService.ActivateAsync(cancellationToken);
-        //    await LoadMapSourcesAsync(result.Settings.Map.SelectedSourceId, cancellationToken);
-        //    await RefreshMapPacksAsync(cancellationToken);
-        //    RestoreOfflinePackSelection(result.Settings.Map.SelectedSourceId);
-        //    RefreshMapCacheSize();
-        //    Load(result.Settings);
-        //    StatusMessage = result.Message ?? "Planner preferences loaded. These settings are local and do not change the flight controller.";
-        //});
+            await Dispatcher.DispatchAsync(() =>
+            {
+                if (!active || disposed || !ReferenceEquals(activationCancellation, cancellation))
+                {
+                    return;
+                }
+                Debug.Print("Activating PreferencesViewModel DispatchAsync");
+                RestoreOfflinePackSelection(result.Settings.Map.SelectedSourceId);
+                RefreshMapCacheSize();
+                Load(result.Settings);
+                SetMessages(result.Message ?? "Planner preferences loaded. These settings are local and do not change the flight controller.");
+            });
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+            Debug.Print("ActivateAsync OperationCanceledException PreferencesViewModel");
+            // Navigation superseded this page initialization.
+        }
+        finally
+        {
+            Debug.Print("ActivateAsync finally block PreferencesViewModel");
+            Interlocked.CompareExchange(ref activationCancellation, null, cancellation);
+            cancellation.Dispose();
+        }
     }
 
     /// <inheritdoc />
     public override Task DeactivateAsync()
     {
+        Debug.Print("Deactivating PreferencesViewModel");
+        Deactivate();
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
     public override void Dispose()
     {
-        //settingsService.Dispose()
+        if (disposed)
+        {
+            return;
+        }
+        Debug.Print("Disposing PreferencesViewModel");
+        Deactivate();
+        disposed = true;
+        base.Dispose();
+    }
+
+    private void Deactivate()
+    {
+        if (!active)
+        {
+            return;
+        }
+        if (disposed)
+        {
+            return;
+        }
+        Debug.Print("Deactivating PreferencesViewModel");
+
+        active = false;
+        Cancel(Interlocked.Exchange(ref activationCancellation, null));
+        Cancel(Interlocked.Exchange(ref operationCancellation, null));
+    }
+
+    private static void Cancel(CancellationTokenSource? cancellation)
+    {
+        if (cancellation is null)
+        {
+            return;
+        }
+
+        try
+        {
+            cancellation.Cancel();
+        }
+        catch (ObjectDisposedException)
+        {
+            // Completion won the race with navigation cancellation.
+        }
     }
 
     [RelayCommand]
@@ -883,8 +956,14 @@ public sealed partial class PreferencesViewModel : BaseViewModel
 
     private async Task RefreshMapPacksAsync(CancellationToken cancellationToken)
     {
-        InstalledMapPacks = await offlinePacks.ListAsync(cancellationToken);
-        SelectedMapPack = InstalledMapPacks.FirstOrDefault();
+        var installed = await offlinePacks.ListAsync(cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+        await Dispatcher.DispatchAsync(() =>
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            InstalledMapPacks = installed;
+            SelectedMapPack = installed.FirstOrDefault();
+        });
     }
 
     private void RefreshMapCacheSize()
@@ -916,13 +995,38 @@ public sealed partial class PreferencesViewModel : BaseViewModel
             }
         }
 
-        MapSources = MapSettingsSourceCatalog.Create(catalog, configured);
-        OnPropertyChanged(nameof(MapSources));
-        OnPropertyChanged(nameof(OfflineMapSources));
-        OnPropertyChanged(nameof(CustomMapSources));
-        OnPropertyChanged(nameof(OnlineMapSources));
-        OnPropertyChanged(nameof(BlankMapSources));
-        SelectedMapSource = MapSettingsSourceCatalog.Resolve(MapSources, selectedSourceId, true);
+        cancellationToken.ThrowIfCancellationRequested();
+        var sources = MapSettingsSourceCatalog.Create(catalog, configured);
+        var selected = MapSettingsSourceCatalog.Resolve(sources, selectedSourceId, true);
+        await Dispatcher.DispatchAsync(() =>
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (MapSources.Count == sources.Count && MapSources.Zip(sources).All(pair =>
+                    pair.First.Id == pair.Second.Id &&
+                    pair.First.Group == pair.Second.Group &&
+                    pair.First.DisplayName == pair.Second.DisplayName &&
+                    pair.First.ProviderAndProduct == pair.Second.ProviderAndProduct &&
+                    pair.First.Connectivity == pair.Second.Connectivity &&
+                    pair.First.Rendering == pair.Second.Rendering &&
+                    pair.First.CredentialState == pair.Second.CredentialState &&
+                    pair.First.AttributionPreview == pair.Second.AttributionPreview &&
+                    pair.First.CacheBehavior == pair.Second.CacheBehavior &&
+                    pair.First.OfflinePackAvailability == pair.Second.OfflinePackAvailability &&
+                    pair.First.PolicyReviewDate == pair.Second.PolicyReviewDate &&
+                    pair.First.TermsUri == pair.Second.TermsUri))
+            {
+                SelectedMapSource = MapSettingsSourceCatalog.Resolve(MapSources, selectedSourceId, true);
+                return;
+            }
+
+            MapSources = sources;
+            OnPropertyChanged(nameof(MapSources));
+            OnPropertyChanged(nameof(OfflineMapSources));
+            OnPropertyChanged(nameof(CustomMapSources));
+            OnPropertyChanged(nameof(OnlineMapSources));
+            OnPropertyChanged(nameof(BlankMapSources));
+            SelectedMapSource = selected;
+        });
     }
 
     partial void OnSelectedThemeChanged(ThemeOption? value)

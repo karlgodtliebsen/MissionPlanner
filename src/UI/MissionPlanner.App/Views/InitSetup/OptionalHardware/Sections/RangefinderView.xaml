@@ -4,14 +4,15 @@
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" 
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
                                   xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                                   x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.RangefinderView" 
                                   x:DataType="sections:RangefinderViewModel">
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
             <Label Text="Rangefinder" FontSize="20" FontAttributes="Bold"/>
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
-            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
-            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation"/>
+            <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
             <Label Text="Vehicle Reboot required" TextColor="{DynamicResource Warning}" IsVisible="{Binding RebootRequired}"/>
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}" Spacing="8">
                 <BindableLayout.ItemTemplate>

@@ -6,6 +6,7 @@
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:mandatoryHardware="clr-namespace:MissionPlanner.Core.Setup.MandatoryHardware;assembly=MissionPlanner.Core"
                                   xmlns:models1="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models"
+                                  xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.SetupSummaryView"
                                   x:DataType="sections:SetupSummaryViewModel"
                                   >
@@ -13,8 +14,8 @@
         <VerticalStackLayout Padding="16"  Spacing="25" HorizontalOptions="Center">
             <Label Text="Setup summary" FontSize="18" FontAttributes="Bold" />
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
-            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
-            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
+            <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
             <Label Text="{Binding Heading}" FontAttributes="Bold" LineBreakMode="WordWrap" />
             <Label Text="This report describes configuration evidence only and is not a safe-to-fly certification."
                Opacity="0.75"

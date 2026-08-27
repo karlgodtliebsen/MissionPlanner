@@ -5,6 +5,7 @@
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                                  xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.CompassSetupView"
                                   x:DataType="sections:CompassSetupViewModel"
                                   >
@@ -13,8 +14,8 @@
         <VerticalStackLayout Padding="16"  Spacing="25" HorizontalOptions="Center">
             <Label Text="Compass discovery and calibration" FontSize="18" FontAttributes="Bold" />
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
-            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
-            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
+            <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
             <VerticalStackLayout IsVisible="{Binding HasIssues}" Spacing="4">
                 <Label Text="Configuration warnings" FontAttributes="Bold" TextColor="{DynamicResource Warning}" />
                 <VerticalStackLayout BindableLayout.ItemsSource="{Binding Issues}">

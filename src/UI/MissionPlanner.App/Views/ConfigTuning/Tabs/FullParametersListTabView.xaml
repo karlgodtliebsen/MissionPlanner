@@ -98,8 +98,7 @@
                     LineBreakMode="WordWrap"
                     VerticalOptions="Center" />
 
-                <Label TextColor="{DynamicResource Error}" Text="{Binding ErrorMessage}" LineBreakMode="WordWrap" VerticalOptions="Center" />
-
+                <m:SelectableLabel Text="{Binding ErrorMessage}" TextColor="{DynamicResource Error}" LineBreakMode="WordWrap" VerticalOptions="Center" />
                 <Label Text="{Binding StatusMessage}" 
                        IsVisible="{Binding IsBackgroundParameterLoadInProgress, Converter={StaticResource InvertedBoolConverter}}"
                        LineBreakMode="WordWrap" VerticalOptions="Center" />

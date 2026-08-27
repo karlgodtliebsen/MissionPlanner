@@ -25,7 +25,7 @@
 
         <Border Grid.Row="1" Padding="10">
             <VerticalStackLayout Spacing="3">
-                <Label Text="{Binding StatusMessage}" LineBreakMode="WordWrap" />
+                <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
                 <Label Text="{Binding ValidationMessage}"
                        TextColor="{DynamicResource Warning}"
                        IsVisible="{Binding HasValidationIssues}"

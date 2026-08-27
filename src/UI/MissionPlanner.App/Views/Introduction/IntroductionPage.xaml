@@ -97,8 +97,7 @@
                         Padding="16"
                         VerticalOptions="Start"
                         >
-                
-                    <Label Text="{Binding ErrorMessage}" LineBreakMode="WordWrap" />
+                    <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
                 </Border>
             </Grid>
         </Grid>

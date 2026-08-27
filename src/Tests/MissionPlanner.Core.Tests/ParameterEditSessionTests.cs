@@ -40,6 +40,22 @@ public sealed class ParameterEditSessionTests
         session.GetField("GAIN")!.PendingValue.Should().Be(1);
     }
 
+    /// <summary>Repeated registry delivery of an unchanged value does not invalidate the UI projection.</summary>
+    [Fact]
+    public async Task IdenticalRegistryValueDoesNotRaiseSessionChanged()
+    {
+        using var fixture = CreateFixture([(Parameter("GAIN", 1), Metadata("GAIN"))]);
+        var session = fixture.Factory.Create(fixture.VehicleId);
+        await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
+        var changedCount = 0;
+        session.Changed += () => changedCount++;
+
+        fixture.ServiceProvider.GetRequiredService<IVehicleParameterRegistry>()
+            .StoreParameter(fixture.VehicleId, Parameter("GAIN", 1), CancellationToken.None);
+
+        changedCount.Should().Be(0);
+    }
+
     /// <summary>Verifies grouped writes are deduplicated, partially successful, and confirmed by registry readback.</summary>
     [Fact]
     public async Task ApplyReportsDuplicateAndPartialWriteResults()

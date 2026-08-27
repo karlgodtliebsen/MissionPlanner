@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -12,8 +12,8 @@ using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
-using UraniumUI.Material.Dialogs;
 using UraniumUI.Extensions;
+using UraniumUI.Material.Dialogs;
 
 namespace MissionPlanner.App.Views.Common;
 
@@ -200,7 +200,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
             SetMessages("Vehicle changed. Refresh parameters.", "The vehicle is disconnected.");
             editSessionFactory?.DiscardPendingChanges();
             CancelCachedParameterLoad();
-            EditSession?.Changed += OnEditSessionChanged;
+            EditSession?.Changed -= OnEditSessionChanged;
             EditSession = null;
             Parameters.Clear();
             HasParameters = false;
@@ -221,27 +221,53 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
     /// </summary>
     protected virtual void OnEditSessionChanged()
     {
-        if (disposed || Interlocked.Exchange(ref sessionRefreshScheduled, 1) != 0)
-        {
-            return;
-        }
-        Interlocked.Exchange(ref sessionRefreshScheduled, 1);
-
-        if (disposed || EditSession is null)
+        if (disposed || !activated || EditSession is null ||
+            Interlocked.CompareExchange(ref sessionRefreshScheduled, 1, 0) != 0)
         {
             return;
         }
 
-        Debug.Print("OnEditSessionChanged-Edit session changed for {0}.", EditSession?.VehicleId);
-        var progress = CreateProgress();
-        SynchronizeParameterItems(progress);
-        if (!EditSession.IsValid)
+        void SynchronizeOnUiThread()
         {
-            var m = EditSession.InvalidReason ?? "This parameter session is stale.";
-            dispatcher.Dispatch(() => SetMessages(m));
+            try
+            {
+                if (disposed || !activated || EditSession is null)
+                {
+                    return;
+                }
+
+                Debug.Print("OnEditSessionChanged-Edit session changed for {0}.", EditSession.VehicleId);
+                SynchronizeParameterItems(CreateProgress());
+                if (!EditSession.IsValid)
+                {
+                    SetMessages(EditSession.InvalidReason ?? "This parameter session is stale.");
+                }
+            }
+            finally
+            {
+                Interlocked.Exchange(ref sessionRefreshScheduled, 0);
+            }
         }
 
-        Interlocked.Exchange(ref sessionRefreshScheduled, 0);
+        if (!dispatcher.IsDispatchRequired)
+        {
+            SynchronizeOnUiThread();
+            return;
+        }
+
+        try
+        {
+            if (!dispatcher.Dispatch(SynchronizeOnUiThread))
+            {
+                Interlocked.Exchange(ref sessionRefreshScheduled, 0);
+                logger.LogWarning("Could not dispatch the parameter-grid synchronization to the UI thread.");
+            }
+        }
+        catch (Exception exception)
+        {
+            Interlocked.Exchange(ref sessionRefreshScheduled, 0);
+            logger.LogWarning(exception, "Could not dispatch parameter-grid synchronization to the UI thread.");
+        }
     }
 
     private void SynchronizeParameterItems(IProgress<ParameterStreamProgress>? progress = null)
@@ -367,7 +393,8 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
     /// <param name="args"></param>
     protected virtual async Task OnParameterRegistryChangedAsync(VehicleParameterChangedEventArgs args)
     {
-        if (disposed || !activeVehicle.IsOnline || activeVehicle.VehicleId != args.VehicleId || args.Parameter is null)
+        if (disposed || !activated || EditSession is not null || !activeVehicle.IsOnline ||
+            activeVehicle.VehicleId != args.VehicleId || args.Parameter is null)
         {
             return;
         }
@@ -439,6 +466,15 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
         catch (Exception exception)
         {
             logger.LogWarning(exception, "Could not project cached parameters for {VehicleId}.", vehicleId);
+            Debug.WriteLine(exception);
+            await dispatcher.DispatchAsync(() =>
+            {
+                if (!disposed && activated && activeVehicle.VehicleId == vehicleId)
+                {
+                    CompleteBusyState();
+                    SetMessages(errorMessage: $"Could not display cached parameters: {exception.Message}");
+                }
+            });
         }
         finally
         {
@@ -497,6 +533,22 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
         return progress;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(CanRefreshParameters))]
+    protected virtual async Task ClearParametersAsync()
+    {
+        SetMessages();
+        if (activeVehicle.VehicleId is not { } vehicleId || !activeVehicle.IsOnline || IsBackgroundParameterLoadInProgress)
+        {
+            return;
+        }
+        CloseProgressDialog();
+        CancelCachedParameterLoad();
+        CancelLoadOperation();
+
+    }
 
     /// <summary>
     /// 
@@ -544,9 +596,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
             cancellationToken.ThrowIfCancellationRequested();
             await dispatcher.DispatchAsync(() =>
             {
-                if (disposed ||
-                    !activeVehicle.IsOnline ||
-                    activeVehicle.VehicleId != vehicleId)
+                if (disposed || !activeVehicle.IsOnline || activeVehicle.VehicleId != vehicleId)
                 {
                     return;
                 }
@@ -779,11 +829,14 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
             return;
         }
         activated = false;
+        activeVehicle.Changed -= ActiveVehicleChanged;
         parameterRegistry.Changed -= ParameterRegistryChangedAsync;
         EditSession?.Changed -= OnEditSessionChanged;
         EditSession = null;
         parameterLoadStatusSubscription.Dispose();
         parameterLoadStatusSubscription = null!;
+        CancelCachedParameterLoad();
+        Interlocked.Exchange(ref sessionRefreshScheduled, 0);
         CloseProgressDialog();
         Parameters.Clear();
         lastApplyReport = null;

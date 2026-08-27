@@ -7,6 +7,7 @@
              xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
              xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
              xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+             xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
              x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.CubeLan8PortSwitchTabView"
              x:DataType="tabs:CubeLan8PortSwitchTabViewModel"
              Title="CubeLAN 8 Port Switch"
@@ -24,7 +25,8 @@
                 <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" VerticalOptions="Center" />
                 <VerticalStackLayout Grid.Column="1">
                     <Label Text="{Binding Status}" FontAttributes="Bold" />
-                    <Label Text="{Binding StatusMessage}" />
+                    <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
+                    <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
                 </VerticalStackLayout>
                 <Button  Grid.Column="2" Text="Discover / read" Command="{Binding RefreshCommand}" VerticalOptions="Center" />
             </Grid>

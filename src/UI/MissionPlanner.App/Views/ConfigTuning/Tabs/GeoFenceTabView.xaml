@@ -22,9 +22,10 @@
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
         </HorizontalStackLayout>
 
-        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="12">
-            <Label Text="{Binding StatusMessage}" LineBreakMode="WordWrap" />
-            <ProgressBar Grid.Column="1" WidthRequest="180" Progress="{Binding TransferPercent}" />
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
+            <ActivityIndicator Grid.Column="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+            <ProgressBar Grid.Column="2" WidthRequest="180" Progress="{Binding TransferPercent}" />
         </Grid>
 
         <Grid Grid.Row="2" ColumnDefinitions="380,*" ColumnSpacing="12">

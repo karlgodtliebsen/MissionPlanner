@@ -8,6 +8,7 @@
                             xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
                             xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
                             xmlns:controls1="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                            xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                             x:Class="MissionPlanner.App.Views.Simulation.SimulationPage"
                             x:DataType="vm:SimulationViewModel"
                             Title="Simulation">
@@ -349,8 +350,8 @@
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                         <VerticalStackLayout Spacing="4">
                             <Label Text="{Binding SessionState}" FontSize="20" FontAttributes="Bold" />
-                            <Label Text="{Binding StatusMessage}" />
-                            <Label Text="{Binding ErrorMessage}" TextColor="{DynamicResource Error}" />
+                            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
+                            <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}" />
                         </VerticalStackLayout>
                         <ActivityIndicator Grid.Column="1" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
                     </Grid>

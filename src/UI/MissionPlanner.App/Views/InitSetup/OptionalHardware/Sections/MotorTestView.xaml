@@ -6,6 +6,7 @@
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
                                   xmlns:motor="clr-namespace:MissionPlanner.Core.Setup.OptionalHardware.Motor;assembly=MissionPlanner.Core"
                                   xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                                   x:DataType="sections:MotorTestViewModel"
                                   x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.MotorTestView"
                                   x:Name="Root">
@@ -25,10 +26,10 @@
                     IsVisible="{Binding IsBackgroundParameterLoadInProgress}"
                     LineBreakMode="WordWrap"
                     VerticalOptions="Center" />
-                <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+                <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
                 <Label Text="{Binding StatusMessage}" 
                        IsVisible="{Binding IsBackgroundParameterLoadInProgress, Converter={StaticResource InvertedBoolConverter}}"
-                       LineBreakMode="WordWrap" VerticalOptions="Center" />
+                       FontSize="12" LineBreakMode="TailTruncation" VerticalOptions="Center" />
 
             </HorizontalStackLayout>
 

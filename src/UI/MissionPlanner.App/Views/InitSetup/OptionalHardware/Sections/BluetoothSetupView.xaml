@@ -6,6 +6,7 @@
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                                  xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                                   x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.BluetoothSetupView" 
                                   x:DataType="sections:BluetoothSetupViewModel">
     <ScrollView>
@@ -14,8 +15,8 @@
             <Label Text="Classic Serial Bluetooth Setup" FontSize="20" FontAttributes="Bold"/>
             <Label Text="For HC-05/HC-06 style AT modules; this is not Bluetooth LE configuration." Opacity="0.75"/>
 
-            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
-            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation"/>
+            <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
 
             <HorizontalStackLayout Spacing="25" VerticalOptions="Center">
                 <material:SelectField 

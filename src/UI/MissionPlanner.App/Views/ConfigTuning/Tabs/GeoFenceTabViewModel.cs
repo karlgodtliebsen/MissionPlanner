@@ -26,6 +26,7 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
     private IParameterEditSession? parameterSession;
     private VehicleId? vehicleId;
     private Guid? draftPolygonId;
+    private int parameterSyncScheduled;
     private bool active;
     private bool disposed;
 
@@ -219,6 +220,8 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
         active = false;
         activeVehicle.Changed -= ActiveVehicle_Changed;
         operationCancellation.Cancel();
+        DetachParameterSession();
+        Parameters.Clear();
     }
 
     /// <summary>Applies one map click according to the explicit fence edit mode.</summary>
@@ -524,6 +527,7 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
     {
         SupersedeOperation();
         DomainException.ThrowIfNull(operationCancellation);
+        var initializationCancellation = operationCancellation;
         var snapshot = activeVehicle.Current;
         IsConnected = snapshot.IsOnline;
         if (!snapshot.IsOnline || snapshot.VehicleId is not { } target)
@@ -543,7 +547,14 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
         NotifyTransferCommands();
 
         DetachParameterSession();
-        parameterSession = await fenceService.OpenParameterSessionAsync(target, operationCancellation.Token);
+        var session = await fenceService.OpenParameterSessionAsync(target, initializationCancellation.Token);
+        if (!active || initializationCancellation.IsCancellationRequested ||
+            !ReferenceEquals(operationCancellation, initializationCancellation) || vehicleId != target)
+        {
+            return;
+        }
+
+        parameterSession = session;
         parameterSession.Changed += OnParameterSessionChanged;
         SyncParameterRows();
         SetMessages(SupportsTypedGeometry
@@ -558,7 +569,47 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
 
     private void OnParameterSessionChanged()
     {
-        SyncParameterRows();
+        var session = parameterSession;
+        if (!active || disposed || session is null ||
+            Interlocked.CompareExchange(ref parameterSyncScheduled, 1, 0) != 0)
+        {
+            return;
+        }
+
+        void SynchronizeOnUiThread()
+        {
+            try
+            {
+                if (active && !disposed && ReferenceEquals(parameterSession, session))
+                {
+                    SyncParameterRows();
+                }
+            }
+            finally
+            {
+                Interlocked.Exchange(ref parameterSyncScheduled, 0);
+            }
+        }
+
+        if (!Dispatcher.IsDispatchRequired)
+        {
+            SynchronizeOnUiThread();
+            return;
+        }
+
+        try
+        {
+            if (!Dispatcher.Dispatch(SynchronizeOnUiThread))
+            {
+                Interlocked.Exchange(ref parameterSyncScheduled, 0);
+                logger.LogWarning("Could not dispatch GeoFence parameter synchronization to the UI thread.");
+            }
+        }
+        catch (Exception exception)
+        {
+            Interlocked.Exchange(ref parameterSyncScheduled, 0);
+            logger.LogWarning(exception, "Could not dispatch GeoFence parameter synchronization to the UI thread.");
+        }
     }
 
     private void SyncParameterRows()
@@ -694,6 +745,7 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
     {
         parameterSession?.Changed -= OnParameterSessionChanged;
         parameterSession = null;
+        Interlocked.Exchange(ref parameterSyncScheduled, 0);
     }
 
     private void NotifyTransferCommands()

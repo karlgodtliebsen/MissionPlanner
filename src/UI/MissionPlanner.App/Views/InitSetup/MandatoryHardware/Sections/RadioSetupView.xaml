@@ -6,6 +6,7 @@
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:models="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models"
+                                  xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.RadioSetupView"
                                   x:DataType="sections:RadioSetupViewModel"
                                   >
@@ -26,8 +27,8 @@
             </Grid>
 
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
-            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
-            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
+            <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
 
             <Border Padding="14"
                     StyleClass="SurfaceContainer,Rounded,Elevation1">
@@ -123,7 +124,6 @@
                     <Label Text="Next step" FontAttributes="Bold" />
                     <Label Text="{Binding Instruction}" FontSize="16" LineBreakMode="WordWrap" />
                     <Label Text="{Binding CaptureSummary}" FontSize="12" Opacity="0.75" LineBreakMode="WordWrap" />
-                    <Label Text="{Binding ErrorMessage}" FontAttributes="Bold" LineBreakMode="WordWrap" />
                     <ActivityIndicator IsVisible="{Binding IsWriting}" IsRunning="{Binding IsWriting}" />
                 </VerticalStackLayout>
             </Border>

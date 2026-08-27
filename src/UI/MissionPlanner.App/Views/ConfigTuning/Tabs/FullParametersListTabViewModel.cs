@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -117,8 +117,6 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     [NotifyCanExecuteChangedFor(nameof(RevertChangesCommand))]
     [NotifyCanExecuteChangedFor(nameof(SaveToFileCommand))]
     [NotifyCanExecuteChangedFor(nameof(SaveToJsonFileCommand))]
-    //[NotifyCanExecuteChangedFor(nameof(ClearParametersCommand))]
-    //[NotifyCanExecuteChangedFor(nameof(RetryFailedCommand))]
     public partial bool HasRows
     {
         get; set;
@@ -161,7 +159,9 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         }
         catch (Exception exception)
         {
-            await dialogService.ConfirmAsync("Load failed", exception.Message, "OK");
+            var errorModel = domainFactory.Create<ErrorViewModel, string>(exception.Message + "\nEnsure there is a connection and try again");
+            var view = domainFactory.Create<ErrorView, ErrorViewModel>(errorModel);
+            await dialogService.DisplayViewExtendedAsync("Load failed.", view, "OK");
         }
 
         HasRows = Parameters.Count > 0;
@@ -191,7 +191,9 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         }
         catch (Exception exception)
         {
-            await dialogService.ConfirmAsync("Load failed", exception.Message, "OK");
+            var errorModel = domainFactory.Create<ErrorViewModel, string>(exception.Message + "\nEnsure there is a connection and try again");
+            var view = domainFactory.Create<ErrorView, ErrorViewModel>(errorModel);
+            await dialogService.DisplayViewExtendedAsync("Load failed.", view, "OK");
         }
 
         HasRows = Parameters.Count > 0;
@@ -218,7 +220,9 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         }
         catch (Exception exception)
         {
-            await dialogService.ConfirmAsync("Load failed", exception.Message, "OK");
+            var errorModel = domainFactory.Create<ErrorViewModel, string>(exception.Message + "\nEnsure there is a connection and try again");
+            var view = domainFactory.Create<ErrorView, ErrorViewModel>(errorModel);
+            await dialogService.DisplayViewExtendedAsync("Load failed.", view, "OK");
         }
 
         HasRows = Parameters.Count > 0;

@@ -24,6 +24,9 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
         this.logger = logger;
     }
 
+    /// <summary>Gets the dispatcher associated with the application UI.</summary>
+    protected IDispatcher Dispatcher => dispatcher;
+
     /// <summary>Gets or sets the current operation progress from zero to one.</summary>
     [ObservableProperty]
     public partial double Progress

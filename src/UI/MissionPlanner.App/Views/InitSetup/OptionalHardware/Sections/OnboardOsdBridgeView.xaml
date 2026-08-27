@@ -5,6 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
     xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
     x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.OnboardOsdBridgeView"
     x:DataType="sections:OnboardOsdBridgeViewModel">
     <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
@@ -12,8 +13,8 @@
         <Label Text="Configure screens, elements, positions, units and supported options in the existing Onboard OSD workspace." LineBreakMode="WordWrap" />
         <Label Text="This entry uses the same OSD configuration service and editing session as Config; it does not create a second configuration engine." Opacity="0.75" LineBreakMode="WordWrap" />
         <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
-        <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
-        <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+        <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation"/>
+        <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
         <Button Text="Open Onboard OSD configuration" Command="{Binding OpenOnboardOsdCommand}" HorizontalOptions="Start" />
     </VerticalStackLayout>
 </tabViews:TabViewLifecycleContent>

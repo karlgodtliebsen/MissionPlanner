@@ -24,7 +24,7 @@
 
         <Border Grid.Row="1" Padding="10">
             <VerticalStackLayout Spacing="4">
-                <Label Text="{Binding StatusMessage}" LineBreakMode="WordWrap" />
+                <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
                 <Label Text="Basic Tuning intentionally hides expert control-loop fields. Use Extended Tuning or Full Parameters only when you understand the stability risks."
                        TextColor="{DynamicResource Warning}"
                        FontAttributes="Bold"

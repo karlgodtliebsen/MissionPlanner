@@ -8,19 +8,21 @@
               x:Class="MissionPlanner.App.Views.Connect.ConnectPopupView"
               x:DataType="connect:ConnectPopupViewModel"
              >
-   
-        <Grid >
-            <VerticalStackLayout Spacing="12" Margin="25" 
+
+    <Grid >
+
+
+        <VerticalStackLayout Spacing="12" Margin="25" 
                              IsEnabled="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
                              IsVisible="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}">
-                <material:SelectField
+            <material:SelectField
                         Title="Channel"
                         AllowClear="True"
                         ItemsSource="{Binding Channels}"
                         SelectedItem="{Binding SelectedChannel}"
                 />
 
-                <material:SelectField
+            <material:SelectField
                         Title="Baud rate"
                         AllowClear="True"
                         ItemsSource="{Binding BaudRates}"
@@ -28,19 +30,16 @@
                 />
 
 
-                <controls:AlignedEditorField Title="Host" Text="{Binding SelectedHost}" 
+            <controls:AlignedEditorField Title="Host" Text="{Binding SelectedHost}" 
                                          IsVisible="{Binding ShowSelectedHost}" />
-                <controls:AlignedEditorField Title="Port" Text="{Binding SelectedPort}" 
+            <controls:AlignedEditorField Title="Port" Text="{Binding SelectedPort}" 
                                          IsVisible="{Binding ShowSelectedHost}" />
 
-                <Label Text="{Binding StatusMessage}"
-                       FontSize="20"
-                       HorizontalOptions="Center"
-                       Margin="0,4,0,0" />
+            <Label Text="{Binding StatusMessage}" FontSize="20" HorizontalOptions="Center" Margin="0,4,0,0" />
 
             <Grid ColumnDefinitions="*,*" ColumnSpacing="8" IsVisible="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}">
 
-                    <Button Grid.Column="0"
+                <Button Grid.Column="0"
                         
                         ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Sync}, FontFamily=MaterialSharp}"
                         BackgroundColor="{DynamicResource MainButton}"
@@ -49,7 +48,7 @@
                         VerticalOptions="Center"
                         Command="{Binding RefreshCommand}" />
 
-                    <Button Grid.Column="1"
+                <Button Grid.Column="1"
                         
                         ImageSource="{Binding IsConnectedImage}"
                         BackgroundColor="{DynamicResource MainButton}"
@@ -58,17 +57,14 @@
                         VerticalOptions="Center"
                         Command="{Binding ConnectCommand}" />
 
-                </Grid>
-            </VerticalStackLayout>
-            <VerticalStackLayout Spacing="12" Margin="25" IsVisible="{Binding IsConnected}">
-                <Label Text="{Binding StatusMessage}"
-                      FontSize="20"
-                       HorizontalOptions="Center"
-                       Margin="0,4,0,0" />
+            </Grid>
+        </VerticalStackLayout>
+        <VerticalStackLayout Spacing="12" Margin="25" IsVisible="{Binding IsConnected}">
+            <Label Text="{Binding StatusMessage}" FontSize="20" HorizontalOptions="Center" Margin="0,4,0,0" />
 
-                <HorizontalStackLayout HorizontalOptions="Center" >
+            <HorizontalStackLayout HorizontalOptions="Center" >
 
-                    <Button 
+                <Button 
                         ImageSource="{Binding IsConnectedImage}"
                         BackgroundColor="{DynamicResource MainButton}"
                         Padding="5"
@@ -77,9 +73,17 @@
                         VerticalOptions="Center"
                         Command="{Binding ConnectCommand}" />
 
-                </HorizontalStackLayout>
+            </HorizontalStackLayout>
 
-            </VerticalStackLayout>
-        </Grid>
+        </VerticalStackLayout>
+
+        <VerticalStackLayout HorizontalOptions="Fill" 
+                             VerticalOptions="Fill"
+                             BackgroundColor="Black"
+                             Opacity="0.75"
+                             IsVisible="{Binding IsConnecting}">
+        </VerticalStackLayout>
+
+    </Grid>
 
 </ContentView>

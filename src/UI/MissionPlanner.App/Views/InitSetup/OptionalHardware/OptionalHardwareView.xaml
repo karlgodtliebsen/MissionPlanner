@@ -8,6 +8,7 @@
                     xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                     xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
                     xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
+                    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                     x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.OptionalHardwareView"
                     x:DataType="local:OptionalHardwareViewModel" 
                     Title="Optional Hardware"
@@ -19,8 +20,8 @@
           VerticalOptions="Fill">
         <VerticalStackLayout>
             <Label Text="Optional Hardware" FontSize="26" FontAttributes="Bold"/>
-            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
-            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
+            <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
             <Label Text="{Binding VehicleHeading}"/>
             <Label Text="{Binding AvailabilitySummary}" Opacity="0.75"/>
         </VerticalStackLayout>

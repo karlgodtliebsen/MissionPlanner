@@ -9,6 +9,7 @@
                             xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                             xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                             xmlns:common="clr-namespace:MissionPlanner.App.Views.Common"
+                            xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                             x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.MandatoryHardwareView"
                             x:DataType="mandatoryHardware:MandatoryHardwareViewModel"
                             Title="Initial Setup"
@@ -17,8 +18,8 @@
     <Grid Padding="20" RowDefinitions="Auto,Auto,*" RowSpacing="14" HorizontalOptions="Fill" VerticalOptions="Fill" >
         <VerticalStackLayout Grid.Row="0" Spacing="8">
             <Label Text="Setup" VerticalOptions="Center" FontSize="16" />
-            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
-            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
+            <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
             <Label Text="{Binding VehicleHeading}" VerticalOptions="Center" FontSize="16" />
         </VerticalStackLayout>
 

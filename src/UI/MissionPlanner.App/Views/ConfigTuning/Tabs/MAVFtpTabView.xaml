@@ -6,6 +6,7 @@
                       xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
                       xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid"
                       xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                      xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                       x:Name="RootPage"
                       x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.MAVFtpTabView"
                       Title="Vehicle Files">
@@ -64,10 +65,10 @@
             </controls:VirtualizedDataGrid>
         </Grid>
         <VerticalStackLayout Grid.Row="2" Spacing="6">
-            <Label Text="{Binding ErrorMessage}" TextColor="{DynamicResource Error}" />
+            <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}" />
             <ProgressBar Progress="{Binding TransferProgress}" />
             <Label Text="{Binding TransferDetails}" FontSize="12" />
-            <Label Text="{Binding StatusMessage}" />
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
             <HorizontalStackLayout Spacing="8">
                 <Button Text="Download selected" Command="{Binding DownloadSelectedCommand}"  IsVisible="{Binding HasEntries}"/>
                 <Button Text="Cancel" Command="{Binding CancelCommand}" IsEnabled="{Binding IsBusy}" />

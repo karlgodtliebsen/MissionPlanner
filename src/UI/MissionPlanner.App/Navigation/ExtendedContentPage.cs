@@ -11,6 +11,7 @@ public class ExtendedContentPage<TViewModel> : UraniumContentPage, IDisposable
 {
     private readonly SemaphoreSlim lifecycleGate = new(1, 1);
     private LifecycleState lifecycleState;
+    private long lifecycleVersion;
     private bool disposed;
 
     /// <summary>The view model associated with this page.</summary>
@@ -46,13 +47,10 @@ public class ExtendedContentPage<TViewModel> : UraniumContentPage, IDisposable
     protected override async void OnNavigatedTo(NavigatedToEventArgs args)
     {
         base.OnNavigatedTo(args);
-        // Navigation-type behavior is intentionally unchanged pending verification.
-        if (args.NavigationType is not (NavigationType.Replace or NavigationType.Remove))
+        if (args.NavigationType is NavigationType.Replace or NavigationType.Remove)
         {
-            return;
+            await RunNavigationTransitionAsync(ActivateAsync).ConfigureAwait(true);
         }
-
-        await RunNavigationTransitionAsync(ActivateAsync).ConfigureAwait(true);
     }
 
     /// <inheritdoc />
@@ -72,37 +70,66 @@ public class ExtendedContentPage<TViewModel> : UraniumContentPage, IDisposable
     /// <summary>Runs the complete serialized activation transition.</summary>
     protected async Task ActivateAsync()
     {
+        long transitionVersion;
         await lifecycleGate.WaitAsync().ConfigureAwait(true);
         try
         {
-            if (disposed || lifecycleState is LifecycleState.Active or LifecycleState.Faulted)
+            if (disposed || lifecycleState is LifecycleState.Activating or LifecycleState.Active or
+                LifecycleState.Deactivating or LifecycleState.Faulted)
             {
                 return;
             }
 
             lifecycleState = LifecycleState.Activating;
-            try
-            {
-                await Task.Yield();
-                await OnActivateAsync().ConfigureAwait(true);
-                lifecycleState = LifecycleState.Active;
-                await Task.Yield();
-            }
-            catch
-            {
-                lifecycleState = LifecycleState.Faulted;
-                throw;
-            }
+            transitionVersion = ++lifecycleVersion;
         }
         finally
         {
             lifecycleGate.Release();
+        }
+
+        try
+        {
+            await Task.Yield();
+            await OnActivateAsync().ConfigureAwait(true);
+
+            await lifecycleGate.WaitAsync().ConfigureAwait(true);
+            try
+            {
+                if (!disposed && lifecycleState == LifecycleState.Activating && lifecycleVersion == transitionVersion)
+                {
+                    lifecycleState = LifecycleState.Active;
+                }
+            }
+            finally
+            {
+                lifecycleGate.Release();
+            }
+        }
+        catch
+        {
+            await lifecycleGate.WaitAsync().ConfigureAwait(true);
+            try
+            {
+                if (!disposed && lifecycleState == LifecycleState.Activating && lifecycleVersion == transitionVersion)
+                {
+                    lifecycleState = LifecycleState.Faulted;
+                }
+            }
+            finally
+            {
+                lifecycleGate.Release();
+            }
+
+            throw;
         }
     }
 
     /// <summary>Runs the complete serialized deactivation transition.</summary>
     protected async Task DeactivateAsync()
     {
+        var preserveFault = false;
+        long transitionVersion;
         await lifecycleGate.WaitAsync().ConfigureAwait(true);
         try
         {
@@ -111,22 +138,51 @@ public class ExtendedContentPage<TViewModel> : UraniumContentPage, IDisposable
                 return;
             }
 
-            var preserveFault = lifecycleState == LifecycleState.Faulted;
+            preserveFault = lifecycleState == LifecycleState.Faulted;
             lifecycleState = LifecycleState.Deactivating;
-            try
-            {
-                await OnDeactivateAsync().ConfigureAwait(true);
-                lifecycleState = preserveFault ? LifecycleState.Faulted : LifecycleState.Inactive;
-            }
-            catch
-            {
-                lifecycleState = LifecycleState.Faulted;
-                throw;
-            }
+            transitionVersion = ++lifecycleVersion;
         }
         finally
         {
             lifecycleGate.Release();
+        }
+
+
+        try
+        {
+            // Do not wait for an in-flight activation to finish. Deactivation is
+            // responsible for cancelling it as soon as navigation starts.
+            await OnDeactivateAsync().ConfigureAwait(true);
+
+            await lifecycleGate.WaitAsync().ConfigureAwait(true);
+            try
+            {
+                if (!disposed && lifecycleState == LifecycleState.Deactivating && lifecycleVersion == transitionVersion)
+                {
+                    lifecycleState = preserveFault ? LifecycleState.Faulted : LifecycleState.Inactive;
+                }
+            }
+            finally
+            {
+                lifecycleGate.Release();
+            }
+        }
+        catch
+        {
+            await lifecycleGate.WaitAsync().ConfigureAwait(true);
+            try
+            {
+                if (!disposed)
+                {
+                    lifecycleState = LifecycleState.Faulted;
+                }
+            }
+            finally
+            {
+                lifecycleGate.Release();
+            }
+
+            throw;
         }
     }
 

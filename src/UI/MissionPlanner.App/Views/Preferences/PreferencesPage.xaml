@@ -527,7 +527,7 @@
 
             <Label Text="{Binding RestartRequiredMessage}" IsVisible="{Binding RestartRequired}" 
                    TextColor="{DynamicResource Warning}" FontAttributes="Bold" />
-            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" />
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation"/>
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
 
             <FlexLayout Direction="Row" Wrap="Wrap" JustifyContent="End">

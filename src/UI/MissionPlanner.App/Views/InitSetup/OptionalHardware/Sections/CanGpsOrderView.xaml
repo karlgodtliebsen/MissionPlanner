@@ -3,15 +3,16 @@
                                   xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
                                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" 
-                                  xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" 
+                                  xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
+                                  xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                                   x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.CanGpsOrderView" 
                                   x:DataType="sections:CanGpsOrderViewModel">
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
             <Label Text="CAN GPS Order" FontSize="20" FontAttributes="Bold"/>
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
-            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
-            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation"/>
+            <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
             <Label Text="Vehicle Reboot required" TextColor="{DynamicResource Warning}" IsVisible="{Binding RebootRequired}"/>
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Settings}" Spacing="8">
                 <BindableLayout.ItemTemplate>

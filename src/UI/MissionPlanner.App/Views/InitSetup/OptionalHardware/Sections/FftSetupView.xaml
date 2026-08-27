@@ -4,6 +4,7 @@
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" 
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                                   x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.FftSetupView" 
                                   x:DataType="sections:FftSetupViewModel">
     <ScrollView>
@@ -11,8 +12,8 @@
             <Label Text="FFT Setup and Analysis" FontSize="24" FontAttributes="Bold"/>
             <Label Text="FFT/log settings are available only when INS_LOG_BAT or FFT parameters are reported. Log acquisition remains owned by DataFlash Logs."/>
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
-            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
-            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation"/>
+            <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
 
             <controls:NumericField Title="Sample rate Hz" Text="{Binding SampleRateHz}" 
                                    Min="0"     

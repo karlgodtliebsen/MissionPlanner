@@ -5,14 +5,15 @@
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections" 
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                                  xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                                   x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.JoystickView" 
                                   x:DataType="sections:JoystickViewModel">
 
     <VerticalStackLayout Padding="20" Spacing="25" HorizontalOptions="Center">
         <Label Text="Joystick Setup" FontSize="24" FontAttributes="Bold"/>
         <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
-        <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
-        <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+        <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation"/>
+        <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
         <Label Text="{Binding PlatformStatus}"/>
 
         <Grid ColumnDefinitions="Auto,Auto" VerticalOptions="Fill" ColumnSpacing="25" HorizontalOptions="Fill">

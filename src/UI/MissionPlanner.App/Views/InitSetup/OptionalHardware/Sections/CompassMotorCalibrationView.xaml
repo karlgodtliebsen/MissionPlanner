@@ -6,6 +6,7 @@
     xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
     xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections"
     xmlns:optionalHardware="clr-namespace:MissionPlanner.Core.Setup.OptionalHardware;assembly=MissionPlanner.Core"
+    xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
     x:Class="MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections.CompassMotorCalibrationView"
     x:DataType="sections:CompassMotorCalibrationViewModel">
 
@@ -14,8 +15,8 @@
             <Label Text="Compass / Motor Calibration" FontSize="20" FontAttributes="Bold" />
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
             <Label Text="Remove ALL propellers. CompassMot may spin motors." TextColor="{DynamicResource Warning}" FontAttributes="Bold" />
-            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
-            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
+            <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
             <Label Text="{Binding Instruction}" LineBreakMode="WordWrap" />
             <Label Text="{Binding Compensation}" LineBreakMode="WordWrap" />
 

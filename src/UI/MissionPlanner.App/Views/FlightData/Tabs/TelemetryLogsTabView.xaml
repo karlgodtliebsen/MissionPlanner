@@ -27,7 +27,7 @@
             <Button Grid.Column="2" Text="Close replay / enable sends" Command="{Binding CloseReplayCommand}" />
             <VerticalStackLayout Grid.Column="3" Spacing="1" VerticalOptions="Center">
                 <Label Text="{Binding SourceName}" FontAttributes="Bold" LineBreakMode="TailTruncation" />
-                <Label Text="{Binding StatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
+                <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
             </VerticalStackLayout>
             <ActivityIndicator Grid.Column="4" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
         </Grid>

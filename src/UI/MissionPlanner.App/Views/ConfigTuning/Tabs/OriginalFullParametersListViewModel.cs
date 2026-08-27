@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -15,8 +15,8 @@ using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.MavLink.Parameters;
 using MissionPlanner.Shared.Models.Vehicles.Models;
-using UraniumUI.Material.Dialogs;
 using UraniumUI.Extensions;
+using UraniumUI.Material.Dialogs;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
@@ -595,7 +595,9 @@ public partial class OriginalFullParametersListViewModel : ObservableObject, IDi
         }
         catch (Exception exception)
         {
-            await dialogService.ConfirmAsync("Load failed", exception.Message, "OK");
+            var errorModel = domainFactory.Create<ErrorViewModel, string>(exception.Message + "\nEnsure there is a connection and try again");
+            var view = domainFactory.Create<ErrorView, ErrorViewModel>(errorModel);
+            await dialogService.DisplayViewExtendedAsync("Load failed.", view, "OK");
         }
 
         HasRows = Parameters.Count > 0;
@@ -624,7 +626,9 @@ public partial class OriginalFullParametersListViewModel : ObservableObject, IDi
         }
         catch (Exception exception)
         {
-            await dialogService.ConfirmAsync("Load failed", exception.Message, "OK");
+            var errorModel = domainFactory.Create<ErrorViewModel, string>(exception.Message + "\nEnsure there is a connection and try again");
+            var view = domainFactory.Create<ErrorView, ErrorViewModel>(errorModel);
+            await dialogService.DisplayViewExtendedAsync("Load failed.", view, "OK");
         }
 
         HasRows = Parameters.Count > 0;
@@ -651,7 +655,9 @@ public partial class OriginalFullParametersListViewModel : ObservableObject, IDi
         }
         catch (Exception exception)
         {
-            await dialogService.ConfirmAsync("Load failed", exception.Message, "OK");
+            var errorModel = domainFactory.Create<ErrorViewModel, string>(exception.Message + "\nEnsure there is a connection and try again");
+            var view = domainFactory.Create<ErrorView, ErrorViewModel>(errorModel);
+            await dialogService.DisplayViewExtendedAsync("Load failed.", view, "OK");
         }
 
         HasRows = Parameters.Count > 0;

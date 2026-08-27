@@ -5,6 +5,7 @@
                                   xmlns:sections="clr-namespace:MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections"
                                   xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
                                   xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                                  xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui"
                                   x:Class="MissionPlanner.App.Views.InitSetup.MandatoryHardware.Sections.FlightModesSetupView"
                                   x:DataType="sections:FlightModesSetupViewModel"
                                   
@@ -13,8 +14,8 @@
         <VerticalStackLayout Padding="16" Spacing="25" HorizontalOptions="Center">
             <Label Text="Flight-mode assignment" FontSize="18" FontAttributes="Bold" />
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}"/>
-            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}"/>
-            <Label Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
+            <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
+            <uranium:SelectableLabel Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" TextColor="{DynamicResource Error}"/>
             <Label Text="{Binding ModeChannelDescription}" FontAttributes="Bold" />
             <Button Text="Refresh flight modes"
                 Command="{Binding RefreshCommand}"

@@ -291,6 +291,45 @@ parameter state, so navigation within Config and navigation away from Config hav
 semantics; callers must preserve that distinction rather than bypassing
 `IConfigNavigationGuard`.
 
+## CollectionView ItemsSource lifecycle
+
+Treat every collection bound to `CollectionView.ItemsSource` as native UI state, not merely
+as an ordinary ViewModel property. On Windows, changing or notifying an item source while
+its page is being detached, reattached, or handled from a worker thread can corrupt the
+native collection adapter. The eventual failure may appear as an
+`ArgumentOutOfRangeException`, `COMException`, or `ExecutionEngineException` at an unrelated
+property notification.
+
+Follow these rules for every `CollectionView.ItemsSource` binding:
+
+- Create, replace, clear, and mutate the bound collection only on the MAUI dispatcher.
+- Cancel in-flight loading when the owning view deactivates. After every `await`, verify the
+  activation, cancellation token, vehicle or session identity, and disposal state before
+  publishing results.
+- Detach event handlers before clearing or replacing their bound collections. An inactive
+  or disposed ViewModel must ignore late callbacks.
+- Do not clear a collection merely because navigation temporarily covers its view. Clear it
+  only when the lifecycle contract releases that source or when the next activation needs a
+  genuinely empty state.
+- Keep the collection instance stable when practical. Mutate it through a dispatcher-safe
+  range operation instead of repeatedly assigning new deferred `IEnumerable` projections.
+- Do not assign an equivalent source or raise `PropertyChanged` for `ItemsSource` and its
+  projections during every activation. Compare the new snapshot with the current snapshot
+  and notify only when the effective items, order, or relevant presentation state changed.
+- When several controls expose filtered projections of one source, publish one stable
+  snapshot and avoid forcing several redundant native resets during page reattachment.
+- Serialize or coalesce competing refreshes, but do not rely on a semaphore as a substitute
+  for cancellation and lifecycle validation. Serialization alone can allow stale work to
+  publish after navigation.
+- If replacement is necessary, finish constructing the new snapshot off the UI thread,
+  then perform the complete source assignment and all related property notifications in one
+  dispatcher operation.
+
+Review repeated navigation explicitly: populate the collection, leave the page while a load
+is running, return to the page, open and close popup dialogs, reconnect or replace its data
+owner, and repeat the cycle several times. Verify that inactive instances produce no
+collection notifications and that an unchanged activation produces no native source reset.
+
 ## Review checklist
 
 - New MAUI components normally have `.xaml`, `.xaml.cs`, and `ViewModel.cs` files.
@@ -303,6 +342,9 @@ semantics; callers must preserve that distinction rather than bypassing
 - Rich headers use `HeaderItemsSource`; header views do not create lifecycle ViewModels.
 - Popup display does not deactivate the selected tab; only selection or visual-tree
   lifecycle changes do.
+- Every `CollectionView.ItemsSource` mutation or replacement occurs on the MAUI dispatcher.
+- Deactivation cancels pending collection loads and prevents late collection notifications.
+- Reactivation does not replace or notify an equivalent `ItemsSource` snapshot.
 - Paired event attachment and detachment occur in the matching lifecycle methods.
 - Shell destinations use a deferred `DataTemplate` and a unique, stable route.
 - ViewModels navigate through an injected abstraction and honor workspace guards.
