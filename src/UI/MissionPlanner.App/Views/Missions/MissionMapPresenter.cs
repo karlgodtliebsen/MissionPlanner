@@ -290,7 +290,7 @@ internal sealed class MissionMapPresenter : IDisposable
         }
     }
 
-    private void OnFitToMissionRequested(object? sender, EventArgs args)
+    private void OnFitToMissionRequested()
     {
         Debug.WriteLine($"[MissionMap] Fit requested: route={viewModel.MapSnapshot.Route.Count}, bounds={viewModel.MapSnapshot.Bounds}, viewport={map.Navigator.Viewport.Width}x{map.Navigator.Viewport.Height}, resolution={map.Navigator.Viewport.Resolution}");
         FitToMission();

@@ -33,6 +33,9 @@
         <common:TopBarView />
     </Shell.TitleView>
 
+
+    <!--StatusBarView-->
+
     <Shell.Resources>
         <Style TargetType="HorizontalStackLayout" ApplyToDerivedTypes="True" CanCascade="True">
             <Setter Property="VisualStateManager.VisualStateGroups">

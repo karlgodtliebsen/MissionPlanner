@@ -14,8 +14,6 @@ public sealed class MotorSpinParameterService(
 {
     private const string SpinArmName = "MOT_SPIN_ARM";
     private const string SpinMinName = "MOT_SPIN_MIN";
-    private const double SpinArmMarginPercent = 2;
-    private const double SpinMinMarginPercent = 3;
     private const double MaximumSetupPercent = 20;
     private const float ComparisonTolerance = 0.0005f;
     private static readonly TimeSpan readbackTimeout = TimeSpan.FromSeconds(4);
@@ -29,7 +27,7 @@ public sealed class MotorSpinParameterService(
     }
 
     /// <inheritdoc />
-    public MotorSpinRecommendation RecommendSpinArm(VehicleId vehicleId, double testThrottlePercent)
+    public MotorSpinRecommendation RecommendSpinArm(VehicleId vehicleId, double testThrottlePercent, double marginPercent = 2)
     {
         var state = GetState(vehicleId);
         if (!state.HasSpinArm)
@@ -42,7 +40,12 @@ public sealed class MotorSpinParameterService(
             return Failure(SpinArmName, "Motor-test throttle must be at least 0% and below 20% for this setup operation.");
         }
 
-        var percent = testThrottlePercent + SpinArmMarginPercent;
+        if (!double.IsFinite(marginPercent) || marginPercent < 1)
+        {
+            return Failure(SpinArmName, "The MOT_SPIN_ARM margin must be at least 1 percentage point.");
+        }
+
+        var percent = testThrottlePercent + marginPercent;
         if (percent >= MaximumSetupPercent)
         {
             return Failure(SpinArmName, "The recommended MOT_SPIN_ARM would be 20% or higher; lower the test throttle first.");
@@ -55,7 +58,7 @@ public sealed class MotorSpinParameterService(
     }
 
     /// <inheritdoc />
-    public MotorSpinRecommendation RecommendSpinMin(VehicleId vehicleId)
+    public MotorSpinRecommendation RecommendSpinMin(VehicleId vehicleId, double marginPercent = 3)
     {
         var state = GetState(vehicleId);
         if (!state.HasSpinMin)
@@ -68,7 +71,13 @@ public sealed class MotorSpinParameterService(
             return Failure(SpinMinName, "MOT_SPIN_ARM is unavailable, so a safe MOT_SPIN_MIN recommendation cannot be calculated.");
         }
 
-        var percent = MotorSpinPercentage.ToPercent(spinArm) + SpinMinMarginPercent;
+        if (!double.IsFinite(marginPercent) || marginPercent < 1)
+        {
+            return Failure(SpinMinName, "The MOT_SPIN_MIN margin must be at least 1 percentage point.");
+        }
+
+        var percent = MotorSpinPercentage.ToPercent(spinArm) + marginPercent;
+        percent = Math.Round(percent);
         return percent >= MaximumSetupPercent
             ? Failure(SpinMinName, "The recommended MOT_SPIN_MIN would be 20% or higher and is refused by this setup workflow.")
             : Success(SpinMinName, percent);
@@ -78,15 +87,16 @@ public sealed class MotorSpinParameterService(
     public Task<MotorSpinWriteResult> SetSpinArmAsync(
         VehicleId vehicleId,
         double testThrottlePercent,
+        double marginPercent = 2,
         CancellationToken cancellationToken = default)
     {
-        return ApplyAsync(vehicleId, RecommendSpinArm(vehicleId, testThrottlePercent), cancellationToken);
+        return ApplyAsync(vehicleId, RecommendSpinArm(vehicleId, testThrottlePercent, marginPercent), cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task<MotorSpinWriteResult> SetSpinMinAsync(VehicleId vehicleId, CancellationToken cancellationToken = default)
+    public Task<MotorSpinWriteResult> SetSpinMinAsync(VehicleId vehicleId, double marginPercent = 3, CancellationToken cancellationToken = default)
     {
-        return ApplyAsync(vehicleId, RecommendSpinMin(vehicleId), cancellationToken);
+        return ApplyAsync(vehicleId, RecommendSpinMin(vehicleId, marginPercent), cancellationToken);
     }
 
     private async Task<MotorSpinWriteResult> ApplyAsync(
@@ -106,13 +116,10 @@ public sealed class MotorSpinParameterService(
         }
 
         var metadata = await metadataService.GetMetadataAsync(vehicleId, recommendation.ParameterName, cancellationToken).ConfigureAwait(false);
-        if (metadata?.ReadOnly == true || (metadata?.MinValue is { } minimum && value < minimum - ComparisonTolerance) ||
-            (metadata?.MaxValue is { } maximum && value > maximum + ComparisonTolerance))
-        {
-            return new MotorSpinWriteResult(false, $"The recommended {recommendation.ParameterName} value is outside its firmware metadata limits.");
-        }
-
-        return !await WriteAndConfirmAsync(vehicleId, parameter, value, cancellationToken).ConfigureAwait(false)
+        return metadata?.ReadOnly == true || (metadata?.MinValue is { } minimum && value < minimum - ComparisonTolerance) ||
+            (metadata?.MaxValue is { } maximum && value > maximum + ComparisonTolerance)
+            ? new MotorSpinWriteResult(false, $"The recommended {recommendation.ParameterName} value is outside its firmware metadata limits.")
+            : !await WriteAndConfirmAsync(vehicleId, parameter, value, cancellationToken).ConfigureAwait(false)
             ? new MotorSpinWriteResult(false, $"The vehicle did not confirm {recommendation.ParameterName}; the previous value remains active and the operation can be retried.")
             : new MotorSpinWriteResult(true, $"Confirmed {recommendation.ParameterName}: {recommendation.Percent:0.#}% ({value:0.###}).");
     }

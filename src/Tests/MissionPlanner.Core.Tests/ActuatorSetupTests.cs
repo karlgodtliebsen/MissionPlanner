@@ -93,25 +93,44 @@ public sealed class ActuatorSetupTests
         fixture.CommandParameters.Single()[0].Should().Be(testOrder);
     }
 
-    /// <summary>Verifies all motors use independent ACTUATOR_TEST functions with a shared timeout.</summary>
+    /// <summary>Verifies all motors use the overlapping DO_MOTOR_TEST pattern supported by ArduPilot.</summary>
     [Fact]
     public async Task TestAllStartsMotorFunctionsSimultaneouslyAndReleasesThem()
     {
         using var fixture = CreateFixture();
         var test = fixture.Service.TestAllAsync(vehicleId, 20, 2, 4, TestContext.Current.CancellationToken);
-        await fixture.CommandSent.Task;
         for (var index = 0; index < 4; index++)
         {
-            await fixture.PublishAckAsync(MavResult.Accepted, MavCmd.ActuatorTest);
+            while (fixture.CommandParameters.Count < index + 1)
+            {
+                await Task.Delay(10, TestContext.Current.CancellationToken);
+            }
+
+            await fixture.PublishAckAsync(MavResult.Accepted);
         }
 
         var result = await test;
         result.Success.Should().BeTrue();
-        fixture.CommandParameters.Take(4).Select(parameters => parameters[4]).Should().Equal(1, 2, 3, 4);
-        fixture.CommandParameters.Take(4).Should().OnlyContain(parameters => parameters[0] == .2f && parameters[1] == 2);
+        fixture.CommandParameters.Take(4).Select(parameters => parameters[0]).Should().Equal(1, 2, 3, 4);
+        fixture.CommandParameters.Take(4).Should().OnlyContain(parameters => parameters[1] == 0 && parameters[2] == 20 && parameters[3] == 2);
 
         await fixture.Service.EmergencyStopAsync(TestContext.Current.CancellationToken);
-        fixture.CommandParameters.TakeLast(4).Should().OnlyContain(parameters => float.IsNaN(parameters[0]) && parameters[1] == 0);
+        fixture.CommandParameters.TakeLast(4).Select(parameters => parameters[0]).Should().Equal(1, 2, 3, 4);
+        fixture.CommandParameters.TakeLast(4).Should().OnlyContain(parameters => parameters[1] == 0 && parameters[2] == 0 && parameters[3] == 0);
+    }
+
+    /// <summary>Verifies rejection of one motor aborts the overlapping all-motor test.</summary>
+    [Fact]
+    public async Task TestAllReportsRejectedMotor()
+    {
+        using var fixture = CreateFixture();
+        var test = fixture.Service.TestAllAsync(vehicleId, 20, 2, 4, TestContext.Current.CancellationToken);
+        await fixture.CommandSent.Task;
+        await fixture.PublishAckAsync(MavResult.Unsupported);
+        var result = await test;
+
+        result.Success.Should().BeFalse();
+        result.Message.Should().Contain("motor 1").And.Contain("Unsupported");
     }
 
     /// <summary>Verifies a rejected acknowledgement fails the test.</summary>

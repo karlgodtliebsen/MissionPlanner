@@ -7,28 +7,12 @@
              BackgroundColor="{DynamicResource Surface}"
              HeightRequest="32">
 
-    <Border StrokeThickness="1" Padding="2" VerticalOptions="Fill" Height="50"
-    >
-        <Grid ColumnDefinitions="*,Auto,Auto" 
-          HorizontalOptions="Fill"
-          VerticalOptions="Center"  
-         >
-
-            <!-- Status Message (Left) -->
-            <Label Grid.Column="0"
-               Text="{Binding StatusMessage}"
-               VerticalOptions="Center"
-               FontSize="12"
-               TextColor="{DynamicResource OnSurfaceVariant}"/>
-
-            <!-- Connection Info (Center-Right) -->
-            <HorizontalStackLayout Grid.Column="1" 
-                               Spacing="8"
-                               VerticalOptions="Center"
-                               Margin="0,0,16,0">
-                <Label Text="●"
-                       TextColor="{DynamicResource DisabledText}"
-                       FontSize="14">
+    <Border StrokeThickness="1" Padding="2" VerticalOptions="Fill" Height="50" >
+        <Grid ColumnDefinitions="Auto,*,Auto" HorizontalOptions="Fill" VerticalOptions="Center"   >
+ 
+            <!-- Connection Info (Left) -->
+            <HorizontalStackLayout Grid.Column="0" Spacing="8" VerticalOptions="Center" Margin="0,0,16,0">
+                <Label Text="●" TextColor="{DynamicResource DisabledText}" FontSize="14">
                     <Label.Triggers>
                         <DataTrigger TargetType="Label"
                                      Binding="{Binding IsConnectedStatus}"
@@ -38,17 +22,22 @@
                         </DataTrigger>
                     </Label.Triggers>
                 </Label>
-                <Label Text="{Binding ConnectionStatus}"
-                   FontSize="12"
-                   TextColor="{DynamicResource OnSurfaceVariant}"/>
+  
+                <Label Text="{Binding VehicleDisplayName}" VerticalOptions="Center" />
+                
+                <Label Text="•" FontSize="16"  VerticalOptions="Center"/>
+                <Label Text="{Binding ConnectionStatus}" VerticalOptions="Center" />
+
+                <Label Text="•" FontSize="16"  VerticalOptions="Center"/>
+                <Label Text="{Binding TelemetryFreshness}" VerticalOptions="Center" />
+
             </HorizontalStackLayout>
 
+           <!-- Status Message (Center) -->
+            <Label Grid.Column="1" Text="{Binding StatusMessage}" VerticalOptions="Center" FontSize="12" />
+
             <!-- Clock (Right) -->
-            <Label Grid.Column="2"
-               Text="{Binding CurrentTime}"
-               VerticalOptions="Center"
-               FontSize="12"
-               TextColor="{DynamicResource OnSurfaceVariant}"/>
+            <Label Grid.Column="2" Text="{Binding CurrentTime}" VerticalOptions="Center" FontSize="12" TextColor="{DynamicResource OnSurfaceVariant}"/>
         </Grid>
     </Border>
 

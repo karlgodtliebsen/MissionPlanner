@@ -12,8 +12,8 @@ public sealed record MotorSpinParameterState(float? SpinArmNormalized, float? Sp
     public bool HasSpinMin => SpinMinNormalized.HasValue;
 
     /// <summary>Gets the current MOT_SPIN_ARM percentage.</summary>
-    public double? SpinArmPercent => SpinArmNormalized is { } value ? MotorSpinPercentage.ToPercent(value) : null;
+    public int? SpinArmPercent => SpinArmNormalized is { } value ? MotorSpinPercentage.ToWholePercent(value) : null;
 
     /// <summary>Gets the current MOT_SPIN_MIN percentage.</summary>
-    public double? SpinMinPercent => SpinMinNormalized is { } value ? MotorSpinPercentage.ToPercent(value) : null;
+    public int? SpinMinPercent => SpinMinNormalized is { } value ? MotorSpinPercentage.ToWholePercent(value) : null;
 }

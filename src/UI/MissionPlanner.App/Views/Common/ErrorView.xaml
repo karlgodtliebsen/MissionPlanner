@@ -9,7 +9,7 @@
               VerticalOptions="Center"
               >
         <VerticalStackLayout  Margin="25,50,25,50" Padding="50" HorizontalOptions="Center" VerticalOptions="Center">
-            <uranium:SelectableLabel Background="Transparent" HorizontalOptions="Center" VerticalOptions="Center"  FontSize="16" 
-                   Text="{Binding ErrorMessage}"></uranium:SelectableLabel>
+        <uranium:SelectableLabel  TextColor="{DynamicResource Error}" HorizontalOptions="Center" VerticalOptions="Center"  FontSize="16" 
+                                  Text="{Binding ErrorMessage}"></uranium:SelectableLabel>
         </VerticalStackLayout>
 </ContentView>

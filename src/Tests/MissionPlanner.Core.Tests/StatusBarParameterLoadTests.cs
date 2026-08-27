@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.App.Views.Common;
@@ -6,6 +6,7 @@ using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
+using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using NSubstitute;
@@ -43,8 +44,10 @@ public sealed class StatusBarParameterLoadTests
 
         using var viewModel = new StatusBarViewModel(
             stateService,
+            Substitute.For<IActiveVehicleContext>(),
             dispatcher,
             eventHub,
+            Substitute.For<IDateTimeProvider>(),
             statusContext,
             NullLogger<StatusBarViewModel>.Instance);
 
@@ -52,7 +55,9 @@ public sealed class StatusBarParameterLoadTests
         stateService.Dispose();
     }
 
-    private static VehicleState CreateOnlineState(VehicleId vehicleId) => new(
+    private static VehicleState CreateOnlineState(VehicleId vehicleId)
+    {
+        return new(
         vehicleId,
         0,
         2,
@@ -72,4 +77,5 @@ public sealed class StatusBarParameterLoadTests
         null,
         null,
         null);
+    }
 }

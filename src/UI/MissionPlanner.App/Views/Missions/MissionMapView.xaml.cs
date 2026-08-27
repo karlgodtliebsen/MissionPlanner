@@ -138,12 +138,12 @@ public partial class MissionMapView : ContentView, IDisposable
         presenter?.UpdatePointerPosition(args.ScreenPosition.X, args.ScreenPosition.Y);
     }
 
-    private void OnMapRotationRequested(object? sender, double degrees)
+    private void OnMapRotationRequested(double degrees)
     {
         presenter?.RotateTo(degrees);
     }
 
-    private void OnMapCenterRequested(object? sender, MissionPlanner.Core.Missions.Models.GeoPosition position)
+    private void OnMapCenterRequested(MissionPlanner.Core.Missions.Models.GeoPosition position)
     {
         presenter?.CenterOn(position.LatitudeDegrees, position.LongitudeDegrees, false);
     }

@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -28,6 +28,8 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     private readonly IUserConfirmationService confirmation;
     private readonly IDispatcher dispatcher;
     private bool disposed;
+    private bool activated;
+    private bool spinInputsInitialized;
 
     private MotorLayout? layout;
 
@@ -42,15 +44,50 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
 
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SpinArmSum))]
+    [NotifyPropertyChangedFor(nameof(SpinMinSum))]
+    [NotifyPropertyChangedFor(nameof(SpinArmMaximum))]
+    [NotifyPropertyChangedFor(nameof(SpinMinMaximum))]
+    [NotifyCanExecuteChangedFor(nameof(SetMotorSpinArmCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SetMotorSpinMinCommand))]
     public partial int ThrottlePercent { get; set; } = 10;
 
     [ObservableProperty]
     public partial int DurationSeconds { get; set; } = 2;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SpinArmSum))]
+    [NotifyPropertyChangedFor(nameof(SpinMinSum))]
+    [NotifyPropertyChangedFor(nameof(SpinMinMaximum))]
+    [NotifyCanExecuteChangedFor(nameof(SetMotorSpinArmCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SetMotorSpinMinCommand))]
+    public partial int SpinArm { get; set; } = 2;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SpinMinSum))]
+    [NotifyCanExecuteChangedFor(nameof(SetMotorSpinMinCommand))]
+    public partial int SpinMin { get; set; } = 3;
 
+    /// <summary>
+    /// 
+    /// </summary>
+    public int SpinArmSum => ThrottlePercent + SpinArm;
 
-    /// <summary>Gets the current MOT_SPIN_ARM value for display.</summary>
+    /// <summary>
+    /// 
+    /// </summary>
+    public int SpinMinSum => SpinArmSum + SpinMin;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public int SpinArmMaximum => Math.Max(1, 19 - ThrottlePercent);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public int SpinMinMaximum => Math.Max(1, 19 - SpinArmSum);
+
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SetMotorSpinArmCommand))]
     public partial string SpinArmDisplay { get; private set; } = "MOT_SPIN_ARM: unavailable";
@@ -85,6 +122,11 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     {
         get; set;
     }
+    /// <summary>
+    /// Gets the latest operation or validation status.
+    /// </summary>
+    [ObservableProperty]
+    public partial string? SpinMessage { get; set; } = null;
 
 
     /// <summary>
@@ -139,12 +181,12 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
 
     private bool CanSetSpinMin()
     {
-        return canExecute && HasSpinMin;
+        return canExecute && HasSpinArm && HasSpinMin && SpinArm is >= 1 && SpinMin is >= 1 && SpinMinSum < 20;
     }
 
     private bool CanSetSpinArm()
     {
-        return canExecute && HasSpinArm;
+        return canExecute && HasSpinArm && ThrottlePercent is >= 0 and < 20 && SpinArm is >= 1 && SpinArmSum < 20;
     }
 
     [RelayCommand(CanExecute = nameof(CanSetSpinMin))]
@@ -155,23 +197,35 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
             return;
         }
 
-        var recommendation = spinParameters.RecommendSpinMin(id);
+        var state = spinParameters.GetState(id);
+        if (state.SpinArmPercent is not { } currentSpinArm)
+        {
+            SpinMessage = "MOT_SPIN_ARM is unavailable, so MOT_SPIN_MIN cannot be calculated.";
+            return;
+        }
+
+        // The formula displays the proposed SpinArmSum. Derive the margin from
+        // the vehicle's current value so this operation writes that exact total
+        // even if the user applies MOT_SPIN_MIN before MOT_SPIN_ARM.
+        var effectiveMargin = SpinMinSum - currentSpinArm;
+        var recommendation = spinParameters.RecommendSpinMin(id, effectiveMargin);
         if (!recommendation.Success)
         {
-            SetMessages(recommendation.Message);
+            SpinMessage = recommendation.Message;
+
             return;
         }
 
         if (!await confirmation.ConfirmAsync(
                 "Set minimum in-flight motor output",
-                $"Set MOT_SPIN_MIN to {recommendation.Percent:0.#}%? This is MOT_SPIN_ARM plus 3 percentage points.",
+                $"Set MOT_SPIN_MIN to {recommendation.Percent:0.#}%?\nFormula: proposed\nMOT_SPIN_ARM {SpinArmSum}% plus {SpinMin}%.",
                 "Set MOT_SPIN_MIN"))
         {
             return;
         }
 
-        var result = await spinParameters.SetSpinMinAsync(id, activeVehicle.ConnectionCancellationToken);
-        SetMessages(result.Message);
+        var result = await spinParameters.SetSpinMinAsync(id, effectiveMargin, activeVehicle.ConnectionCancellationToken);
+        SpinMessage = result.Message;
         RefreshSpinParameters(id);
     }
 
@@ -183,23 +237,24 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
             return;
         }
 
-        var recommendation = spinParameters.RecommendSpinArm(id, ThrottlePercent);
+        var recommendation = spinParameters.RecommendSpinArm(id, ThrottlePercent, SpinArm);
         if (!recommendation.Success)
         {
-            SetMessages(recommendation.Message);
+            SpinMessage = recommendation.Message;
             return;
         }
 
         if (!await confirmation.ConfirmAsync(
                 "Set armed motor spin output",
-                $"Set MOT_SPIN_ARM to {recommendation.Percent:0.#}%? This is 2 percentage points above the selected motor-test throttle.",
+                $"Set MOT_SPIN_ARM to {recommendation.Percent:0.#}%?\nThis is {SpinArm} percentage points above the selected motor-test throttle.",
                 "Set MOT_SPIN_ARM"))
         {
             return;
         }
 
-        var result = await spinParameters.SetSpinArmAsync(id, ThrottlePercent, activeVehicle.ConnectionCancellationToken);
-        SetMessages(result.Message);
+        var result = await spinParameters.SetSpinArmAsync(id, ThrottlePercent, SpinArm, activeVehicle.ConnectionCancellationToken);
+        SpinMessage = result.Message;
+
         RefreshSpinParameters(id);
     }
 
@@ -238,8 +293,25 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
             return;
         }
 
-        var result = await service.TestAllAsync(id, ThrottlePercent, DurationSeconds, layout.Motors.Count, activeVehicle.ConnectionCancellationToken);
-        SetMessages(result.Message);
+        SetMessages($"Starting all {layout.Motors.Count} motors...");
+        try
+        {
+            var result = await service.TestAllAsync(
+                id,
+                ThrottlePercent,
+                DurationSeconds,
+                layout.Motors.Count,
+                activeVehicle.ConnectionCancellationToken);
+            SetMessages(result.Success ? result.Message : null, result.Success ? null : result.Message);
+        }
+        catch (OperationCanceledException)
+        {
+            SetMessages(errorMessage: "The motor test was cancelled before it started.");
+        }
+        catch (Exception exception)
+        {
+            SetMessages(exception);
+        }
     }
 
 
@@ -263,6 +335,8 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
 
         canExecute = false;
         IsReady = false;
+        SpinMessage = null;
+
         if (activeVehicle.VehicleId is { } spinVehicleId)
         {
             RefreshSpinParameters(spinVehicleId);
@@ -300,11 +374,25 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         HasSpinMin = state.HasSpinMin;
         SpinArmDisplay = state.SpinArmPercent is { } arm ? $"MOT_SPIN_ARM: {arm:0.#}%" : "MOT_SPIN_ARM: unavailable";
         SpinMinDisplay = state.SpinMinPercent is { } min ? $"MOT_SPIN_MIN: {min:0.#}%" : "MOT_SPIN_MIN: unavailable";
+
+        if (!spinInputsInitialized && state.SpinArmPercent is { } spinArmPercent && state.SpinMinPercent is { } spinMinPercent)
+        {
+            // Start with formulas that reproduce the vehicle's stored values
+            // where possible. Do this only once so telemetry/session refreshes
+            // never overwrite edits the user is currently making.
+            SpinArm = Math.Clamp(spinArmPercent - ThrottlePercent, 1, SpinArmMaximum);
+            SpinMin = Math.Clamp(spinMinPercent - SpinArmSum, 1, SpinMinMaximum);
+            spinInputsInitialized = true;
+        }
     }
 
     private void Changed(ActiveVehicleChangedEventArgs e)
     {
-        dispatcher.Dispatch(Refresh);
+        dispatcher.Dispatch(() =>
+        {
+            spinInputsInitialized = false;
+            Refresh();
+        });
     }
 
     private void StateChanged(MotorTestStateChangedEventArgs e)
@@ -326,27 +414,45 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     /// <inheritdoc />
     protected override void OnEditSessionChanged()
     {
-        base.OnEditSessionChanged();
+        // This view only needs the frame and motor-spin parameters. Building the
+        // base class's full ParameterItemViewModel projection on every live
+        // parameter update needlessly processes the entire parameter set.
         dispatcher.Dispatch(Refresh);
     }
 
     /// <inheritdoc />
     public override async Task ActivateAsync()
     {
-        if (disposed)
+        if (disposed || activated)
         {
             return;
         }
+        activated = true;
         SetMessages("Remove all propellers before testing.");
         activeVehicle.Changed += Changed;
         service.StateChanged += StateChanged;
-        await base.ActivateAsync();
-        dispatcher.Dispatch(Refresh);
+        try
+        {
+            await base.ActivateAsync();
+            dispatcher.Dispatch(Refresh);
+        }
+        catch
+        {
+            activeVehicle.Changed -= Changed;
+            service.StateChanged -= StateChanged;
+            activated = false;
+            throw;
+        }
     }
 
     /// <inheritdoc />
     public override async Task DeactivateAsync()
     {
+        if (!activated)
+        {
+            return;
+        }
+        activated = false;
         activeVehicle.Changed -= Changed;
         service.StateChanged -= StateChanged;
         await base.DeactivateAsync();
@@ -362,6 +468,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
         }
 
         disposed = true;
+        activated = false;
         activeVehicle.Changed -= Changed;
         service.StateChanged -= StateChanged;
         base.Dispose();

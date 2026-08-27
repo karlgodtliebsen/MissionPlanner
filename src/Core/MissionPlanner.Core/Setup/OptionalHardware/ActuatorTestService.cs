@@ -20,7 +20,6 @@ namespace MissionPlanner.Core.Setup.OptionalHardware;
 public sealed class ActuatorTestService : IActuatorTestService
 {
     private const ushort MotorTestCommand = (ushort)MavCmd.DoMotorTest;
-    private const ushort ActuatorTestCommand = (ushort)MavCmd.ActuatorTest;
     private const int MaximumLogEntries = 50;
     private static readonly TimeSpan ackTimeout = TimeSpan.FromSeconds(3);
     private readonly Lock sync = new();
@@ -35,7 +34,7 @@ public sealed class ActuatorTestService : IActuatorTestService
     private readonly List<ActuatorTestLogEntry> log = [];
     private IDisposable? operationLease;
     private CancellationTokenSource? autoStopCancellation;
-    private IReadOnlyList<ActuatorOutputFunction> activeActuatorFunctions = [];
+    private IReadOnlyList<int> activeMotorTestOrders = [];
     private bool disposed;
     private readonly IVehicleConnectionSession session;
 
@@ -177,11 +176,13 @@ public sealed class ActuatorTestService : IActuatorTestService
         {
             try
             {
-                if (activeActuatorFunctions.Count > 0)
+                if (activeMotorTestOrders.Count > 0)
                 {
-                    foreach (var function in activeActuatorFunctions)
+                    foreach (var testOrder in activeMotorTestOrders)
                     {
-                        await SendCommandAsync(target, ActuatorTestCommand, [float.NaN, 0, 0, 0, (float)function, 0, 0], cancellationToken).ConfigureAwait(false);
+                        await SendCommandAsync(target, MotorTestCommand,
+                            [testOrder, (float)MotorTestThrottleType.MotorTestThrottlePercent, 0, 0, 0, (float)MotorTestOrder.Default, 0],
+                            cancellationToken).ConfigureAwait(false);
                     }
                 }
                 else
@@ -308,45 +309,37 @@ public sealed class ActuatorTestService : IActuatorTestService
             }
         }
 
-        var acknowledgementSignal = new TaskCompletionSource<MavResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var acceptedCount = 0;
-        using var subscription = eventHub.SubscribeAsync<MavLinkMessage>(MavLinkEventTopics.ReceivedMessage, (message, _) =>
-        {
-            if (message is CommandAckMessage acknowledgement && acknowledgement.Command == ActuatorTestCommand &&
-                message.SystemId == vehicleId.SystemId && message.ComponentId == vehicleId.ComponentId)
-            {
-                var result = (MavResult)acknowledgement.Result;
-                if (result is not (MavResult.Accepted or MavResult.InProgress))
-                {
-                    acknowledgementSignal.TrySetResult(result);
-                }
-                else if (Interlocked.Increment(ref acceptedCount) >= motorCount)
-                {
-                    acknowledgementSignal.TrySetResult(MavResult.Accepted);
-                }
-            }
-
-            return Task.CompletedTask;
-        });
-
-        var functions = Enumerable.Range(1, motorCount).Select(value => (ActuatorOutputFunction)value).ToArray();
+        var testOrders = Enumerable.Range(1, motorCount).ToArray();
         try
         {
-            foreach (var function in functions)
+            foreach (var testOrder in testOrders)
             {
-                await SendCommandAsync(vehicleId, ActuatorTestCommand,
-                    [normalizedThrottle, (float)duration, 0, 0, (float)function, 0, 0], cancellationToken).ConfigureAwait(false);
-            }
+                var acknowledgementSignal = new TaskCompletionSource<MavResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+                using var subscription = eventHub.SubscribeAsync<MavLinkMessage>(MavLinkEventTopics.ReceivedMessage, (message, _) =>
+                {
+                    if (message is CommandAckMessage acknowledgement && acknowledgement.Command == MotorTestCommand &&
+                        message.SystemId == vehicleId.SystemId && message.ComponentId == vehicleId.ComponentId)
+                    {
+                        acknowledgementSignal.TrySetResult((MavResult)acknowledgement.Result);
+                    }
 
-            var result = await acknowledgementSignal.Task.WaitAsync(ackTimeout, cancellationToken).ConfigureAwait(false);
-            if (result is not (MavResult.Accepted or MavResult.InProgress))
-            {
-                return Reject(vehicleId, description, $"The vehicle rejected the actuator test with MAV_RESULT {result}.");
+                    return Task.CompletedTask;
+                });
+
+                await SendCommandAsync(vehicleId, MotorTestCommand,
+                    [testOrder, (float)MotorTestThrottleType.MotorTestThrottlePercent, normalizedThrottle * 100f,
+                        (float)duration, 0, (float)MotorTestOrder.Default, 0],
+                    cancellationToken).ConfigureAwait(false);
+                var result = await acknowledgementSignal.Task.WaitAsync(ackTimeout, cancellationToken).ConfigureAwait(false);
+                if (result is not (MavResult.Accepted or MavResult.InProgress))
+                {
+                    return Reject(vehicleId, description, $"The vehicle rejected motor {testOrder} with MAV_RESULT {result}.");
+                }
             }
         }
         catch (TimeoutException)
         {
-            return Reject(vehicleId, description, "The vehicle did not acknowledge every actuator test in time.");
+            return Reject(vehicleId, description, "The vehicle did not acknowledge every motor test in time.");
         }
         catch (OperationCanceledException)
         {
@@ -358,7 +351,7 @@ public sealed class ActuatorTestService : IActuatorTestService
             return Reject(vehicleId, description, exception.Message);
         }
 
-        activeActuatorFunctions = functions;
+        activeMotorTestOrders = testOrders;
         Transition(vehicleId, MotorTestState.Running, null, $"Running: {description}. Release or stop to halt.", description, "Started");
         ScheduleAutoStop(vehicleId, duration);
         return new MotorTestResult(true, $"Started: {description}.");
@@ -411,7 +404,7 @@ public sealed class ActuatorTestService : IActuatorTestService
     private void Finish(MotorTestState state, string instruction, string description, string outcome)
     {
         Transition(Current.VehicleId, state, null, instruction, description, outcome);
-        activeActuatorFunctions = [];
+        activeMotorTestOrders = [];
         ReleaseLease();
     }
 

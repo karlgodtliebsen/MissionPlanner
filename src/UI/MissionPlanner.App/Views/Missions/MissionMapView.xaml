@@ -152,30 +152,14 @@
 
 
         <!-- Bottom status bar (mirrors Controls.Status) -->
+        <Border Grid.Row="1"  StrokeThickness="1"  VerticalOptions="Fill" Height="30" >
 
-        <Border Grid.Row="1"  StrokeThickness="1"  VerticalOptions="Fill" Height="40" 
-                >
-
-            <HorizontalStackLayout VerticalOptions="Center" HorizontalOptions="Start" Spacing="10"
-                                >
+            <HorizontalStackLayout VerticalOptions="Center" HorizontalOptions="Start" Spacing="10">
 
             <material:SelectField 
                         ItemsSource="{Binding MapStyles}"
                         SelectedItem="{Binding SelectedMapStyle}" />
 
-            <Label 
-                Text="{Binding VehicleDisplayName}"
-                VerticalOptions="Center" />
-            <Label Text="•" FontSize="16"  VerticalOptions="Center"/>
-
-            <Label 
-            Text="{Binding ConnectionStatus}"
-            VerticalOptions="Center" />
-
-            <Label Text="•" FontSize="16"  VerticalOptions="Center"/>
-            <Label
-                Text="{Binding TelemetryFreshness}"
-                VerticalOptions="Center" />
 
             <Label Text="•" FontSize="16"  VerticalOptions="Center"/>
             <Label
@@ -194,9 +178,7 @@
                 IsVisible="{Binding HasPointerAltitudeStatus}"
                 Text="{Binding PointerAltitudeStatusText}"
                 VerticalOptions="Center" />
-
             <Label Text="•" FontSize="16"  VerticalOptions="Center" IsVisible="{Binding HasStatusMessage}"/>
-
             <Label
                 IsVisible="{Binding HasStatusMessage}"
                 Text="{Binding StatusMessage}"

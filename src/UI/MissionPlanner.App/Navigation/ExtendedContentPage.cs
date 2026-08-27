@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using MissionPlanner.App.Helpers;
+using MissionPlanner.App.Views.Common;
 using UraniumUI.Material.TabViews;
 using UraniumUI.Pages;
 
@@ -24,6 +25,20 @@ public class ExtendedContentPage<TViewModel> : UraniumContentPage, IDisposable
             ? ServiceHelper.GetRequiredKeyedService<TViewModel>(key)
             : ServiceHelper.GetRequiredService<TViewModel>();
         BindingContext = ViewModel;
+        SetupStatusBar();
+    }
+
+    private void SetupStatusBar()
+    {
+        if (Content is Grid grid)
+        {
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Star });
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            var statusBarView = new StatusBarView();
+            Grid.SetRow(statusBarView, grid.RowDefinitions.Count - 1);
+            Grid.SetColumnSpan(statusBarView, grid.ColumnDefinitions.Count);
+            grid.Children.Add(statusBarView);
+        }
     }
 
     /// <summary>Initializes the page.</summary>
@@ -31,6 +46,7 @@ public class ExtendedContentPage<TViewModel> : UraniumContentPage, IDisposable
     {
         ViewModel = ServiceHelper.GetRequiredService<TViewModel>();
         BindingContext = ViewModel;
+        SetupStatusBar();
     }
 
     /// <inheritdoc />

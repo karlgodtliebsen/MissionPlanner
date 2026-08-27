@@ -12,4 +12,10 @@ public static class MotorSpinPercentage
     /// <param name="normalized">The normalized value.</param>
     /// <returns>The percentage value.</returns>
     public static double ToPercent(float normalized) => normalized * 100d;
+
+    /// <summary>Converts a normalized motor-spin value to its whole percentage-point representation.</summary>
+    /// <param name="normalized">The normalized value.</param>
+    /// <returns>The rounded whole percentage.</returns>
+    public static int ToWholePercent(float normalized) =>
+        checked((int)Math.Round(ToPercent(normalized), MidpointRounding.AwayFromZero));
 }

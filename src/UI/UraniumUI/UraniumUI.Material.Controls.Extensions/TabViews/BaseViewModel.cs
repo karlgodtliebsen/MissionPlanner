@@ -117,7 +117,7 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
     {
         if (dispatcher.IsDispatchRequired)
         {
-            dispatcher.Dispatch(() => SetMessages(null, ex.Message));
+            dispatcher.Dispatch(() => SetMessages(ex));
             return;
         }
         string? eMsg = null;

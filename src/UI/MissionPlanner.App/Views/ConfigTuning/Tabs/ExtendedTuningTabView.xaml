@@ -22,7 +22,7 @@
             <ActivityIndicator Grid.Column="2" IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
         </Grid>
 
-        <Border Grid.Row="1" Padding="10">
+        <Border Grid.Row="1" Padding="10" StyleClass="SurfaceContainer,Rounded,Elevation1">
             <VerticalStackLayout Spacing="4">
                 <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
                 <Label Text="Expert page: changes to controllers, estimators, and filters can destabilize a vehicle. Autotune execution is intentionally not available here."
@@ -36,7 +36,7 @@
         </Border>
 
         <Grid Grid.Row="2" ColumnDefinitions="2*,3*" ColumnSpacing="10" IsVisible="{Binding HasSupportedProfile}">
-            <Border Padding="8">
+            <Border Padding="10" StyleClass="SurfaceContainer,Rounded,Elevation1">
                 <VerticalStackLayout Spacing="4">
                     <Label Text="{Binding ModifiedCount, StringFormat='Pending advanced changes: {0}'}" FontAttributes="Bold" />
                     <Label Text="{Binding ChangeSummary}"
@@ -45,7 +45,7 @@
                            FontFamily="Consolas" />
                 </VerticalStackLayout>
             </Border>
-            <Border Grid.Column="1" Padding="8">
+            <Border Grid.Column="1" Padding="10" StyleClass="SurfaceContainer,Rounded,Elevation1">
                 <VerticalStackLayout Spacing="4">
                     <Label Text="Live controller response (read-only PID_TUNING context)" FontAttributes="Bold" />
 
@@ -121,7 +121,7 @@
                                     </HorizontalStackLayout>
                                 </Grid>
 
-                                <Border Padding="8" IsVisible="{Binding HasCopyPreview}">
+                                <Border Padding="10" IsVisible="{Binding HasCopyPreview}" StyleClass="SurfaceContainer,Rounded,Elevation1">
                                     <VerticalStackLayout Spacing="4">
                                         <Label Text="Axis copy preview — no pending values have changed" FontAttributes="Bold" />
                                         <VerticalStackLayout BindableLayout.ItemsSource="{Binding CopyPreview}">
@@ -144,7 +144,7 @@
                                 <VerticalStackLayout BindableLayout.ItemsSource="{Binding Fields}" Spacing="6">
                                     <BindableLayout.ItemTemplate>
                                         <DataTemplate x:DataType="tabs:AdvancedTuningFieldViewModel">
-                                            <Border Padding="8" StrokeThickness="1">
+                                            <Border Padding="10" StrokeThickness="1" StyleClass="SurfaceContainer,Rounded,Elevation1">
                                                 <Grid ColumnDefinitions="120,2*,Auto,180" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="3">
                                                     <VerticalStackLayout>
                                                         <Label Text="{Binding AxisText}" FontAttributes="Bold" />
@@ -196,7 +196,5 @@
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
-
-
     </Grid>
 </navigation:ExtendedContentPage>

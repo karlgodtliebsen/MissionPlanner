@@ -46,7 +46,6 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     private readonly IMissionProtocolMapper protocolMapper;
     private readonly IFileSaver fileSaver;
     private readonly IDateTimeProvider dateTimeProvider;
-    private readonly IServiceFactory factory;
     private readonly ILogger logger;
     private readonly IMissionMapInteractionService interactionService;
     private readonly IAdvancedMissionItemService advancedMissionItems;
@@ -83,7 +82,6 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     /// </summary>
     public MissionMapViewModel(IServiceFactory factory, ILogger logger)
     {
-        this.factory = factory;
         this.logger = logger;
         domainEventHub = factory.Create<IDomainEventHub>();
         dispatcher = factory.Create<IDispatcher>();
@@ -211,24 +209,6 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     /// <summary>Gets the pointer coordinate formatted in the selected coordinate style.</summary>
     [ObservableProperty]
     public partial string PointerCoordinateText { get; private set; } = "Position unavailable";
-
-    /// <summary>
-    /// Gets the active vehicle display name.
-    /// </summary>
-    [ObservableProperty]
-    public partial string VehicleDisplayName { get; private set; } = "No vehicle";
-
-    /// <summary>
-    /// Gets the active vehicle connection status.
-    /// </summary>
-    [ObservableProperty]
-    public partial string ConnectionStatus { get; private set; } = "Offline";
-
-    /// <summary>
-    /// Gets the freshness of the latest general telemetry observation.
-    /// </summary>
-    [ObservableProperty]
-    public partial string TelemetryFreshness { get; private set; } = "Telemetry: unavailable";
 
     /// <summary>
     /// Gets the freshness of the latest map-position observation.
@@ -507,13 +487,13 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     public event Action<MissionEventArgs>? MissionChanged;
 
     /// <summary>Raised when the map should pan/zoom to show the whole mission (after load or vehicle read).</summary>
-    public event EventHandler? FitToMissionRequested;
+    public event Action? FitToMissionRequested;
 
     /// <summary>Raised when the session-only map rotation should change.</summary>
-    public event EventHandler<double>? MapRotationRequested;
+    public event Action<double>? MapRotationRequested;
 
     /// <summary>Raised when the map should center on a converted coordinate.</summary>
-    public event EventHandler<GeoPosition>? MapCenterRequested;
+    public event Action<GeoPosition>? MapCenterRequested;
 
     /// <summary>Records the map position the next context-menu action should apply to.</summary>
     public void SetContextPosition(double latitude, double longitude)
@@ -576,11 +556,6 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
 
     private void UpdateVehicleStatus(ActiveVehicleSnapshot snapshot)
     {
-        VehicleDisplayName = snapshot.DisplayName;
-        ConnectionStatus = snapshot.State?.ConnectionState.ToString() ?? "Offline";
-        TelemetryFreshness = snapshot.State is null
-            ? "Telemetry: unavailable"
-            : $"Telemetry: {FormatAge(snapshot.State.LastHeartbeatAt)}";
         MapFreshness = snapshot.State?.Position.ObservedAt is { } observedAt
             ? $"Map: {FormatAge(observedAt)}"
             : "Map: no position";
@@ -757,7 +732,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
     {
         Mission = mission;
         OnMissionChanged(message);
-        FitToMissionRequested?.Invoke(this, EventArgs.Empty);
+        FitToMissionRequested?.Invoke();
     }
 
     /// <summary>
@@ -1604,7 +1579,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         }
 
         angle = ((angle % 360) + 360) % 360;
-        MapRotationRequested?.Invoke(this, angle);
+        MapRotationRequested?.Invoke(angle);
         ShowStatus($"Map rotation set to {angle:F0}° for this session.");
     }
 
@@ -1796,7 +1771,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
         }
         else if (choice == "Center map here")
         {
-            MapCenterRequested?.Invoke(this, position);
+            MapCenterRequested?.Invoke(position);
             ShowStatus("Map centered on converted UTM coordinate.");
         }
     }
@@ -2099,7 +2074,7 @@ public partial class MissionMapViewModel : ObservableObject, IDisposable
                 ? $"Loaded {parsed.Items.Count} items from {file.FileName}."
                 : $"Loaded {parsed.Items.Count} items from {file.FileName}; skipped {parsed.SkippedItems} unsupported.");
 
-            FitToMissionRequested?.Invoke(this, EventArgs.Empty);
+            FitToMissionRequested?.Invoke();
         }
         catch (Exception ex)
         {
