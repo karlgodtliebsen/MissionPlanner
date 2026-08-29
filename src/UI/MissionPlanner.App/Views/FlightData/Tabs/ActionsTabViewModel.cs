@@ -142,9 +142,23 @@ public partial class ActionsTabViewModel : BaseViewModel
         get; private set;
     }
 
-    /// <summary>Gets whether in-flight recovery actions are currently permitted by policy.</summary>
+    /// <summary>Gets whether landing is currently permitted by policy.</summary>
     [ObservableProperty]
-    public partial bool CanInFlightAction
+    public partial bool CanLand
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets whether holding position is currently permitted by policy.</summary>
+    [ObservableProperty]
+    public partial bool CanHoldPosition
+    {
+        get; private set;
+    }
+
+    /// <summary>Gets whether returning to launch is currently permitted by policy.</summary>
+    [ObservableProperty]
+    public partial bool CanReturnToLaunch
     {
         get; private set;
     }
@@ -517,7 +531,9 @@ public partial class ActionsTabViewModel : BaseViewModel
         CanArm = CanTransmit && IsAllowed(state, VehicleAction.Arm);
         CanDisarm = CanTransmit && IsAllowed(state, VehicleAction.Disarm);
         CanTakeoff = CanTransmit && IsAllowed(state, VehicleAction.Takeoff);
-        CanInFlightAction = CanTransmit && IsAllowed(state, VehicleAction.Land);
+        CanLand = CanTransmit && IsAllowed(state, VehicleAction.Land);
+        CanHoldPosition = CanTransmit && IsAllowed(state, VehicleAction.Hold);
+        CanReturnToLaunch = CanTransmit && IsAllowed(state, VehicleAction.ReturnToLaunch);
         CanReboot = CanTransmit && IsAllowed(state, VehicleAction.RebootAutopilot);
         CanSetHome = CanTransmit && IsAllowed(state, VehicleAction.SetHomeHere);
     }

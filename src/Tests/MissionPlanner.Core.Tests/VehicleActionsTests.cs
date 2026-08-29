@@ -256,6 +256,62 @@ public sealed class VehicleActionsTests
         rejected.ViewModel.OperationState.Status.Should().Be(AsyncOperationStatus.Warning);
     }
 
+    /// <summary>Verifies the expert command ID is independent of takeoff altitude and reaches the typed service.</summary>
+    [Fact]
+    public async Task ViewModelSendsExpertCommandIdWithoutChangingTakeoffAltitude()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var fixture = CreateViewModel(CreateState(now), now);
+        fixture.Confirmation
+            .ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(true);
+        fixture.Commands
+            .ExecuteExpertAsync(Arg.Any<ExpertVehicleCommand>(), true, Arg.Any<CancellationToken>())
+            .Returns(call => new VehicleCommandResponse(
+                call.Arg<ExpertVehicleCommand>().VehicleId,
+                VehicleCommandResult.Accepted,
+                now));
+        fixture.ViewModel.TakeoffAltitudeMeters = 42;
+        fixture.ViewModel.ExpertCommandId = "300";
+
+        await fixture.ViewModel.ExecuteExpertCommand.ExecuteAsync(null);
+
+        await fixture.Commands.Received(1).ExecuteExpertAsync(
+            Arg.Is<ExpertVehicleCommand>(command => command.CommandId == 300),
+            true,
+            Arg.Any<CancellationToken>());
+        fixture.ViewModel.TakeoffAltitudeMeters.Should().Be(42);
+        fixture.ViewModel.ExpertCommandId.Should().Be("300");
+    }
+
+    /// <summary>Verifies Land, Hold, and RTL availability use their own policy decisions.</summary>
+    [Fact]
+    public async Task ViewModelEvaluatesInFlightCapabilitiesIndependently()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var state = WithFlight(CreateState(now), true, VehicleLandedState.InAir, now);
+        var active = Substitute.For<IActiveVehicleContext>();
+        active.Current.Returns(new ActiveVehicleSnapshot(state.VehicleId, state));
+        active.VehicleId.Returns(state.VehicleId);
+        active.State.Returns(state);
+        active.IsOnline.Returns(true);
+        active.ConnectionCancellationToken.Returns(CancellationToken.None);
+        var policy = Substitute.For<IVehicleCommandPolicy>();
+        policy.Evaluate(state, VehicleAction.Land).Returns(VehicleCommandDecision.Deny("Land denied."));
+        policy.Evaluate(state, VehicleAction.Hold).Returns(VehicleCommandDecision.Allow());
+        policy.Evaluate(state, VehicleAction.ReturnToLaunch).Returns(VehicleCommandDecision.Allow());
+        var fixture = CreateViewModel(active, Substitute.For<IVehicleCommandService>(), now, policy);
+
+        await fixture.ViewModel.ActivateAsync();
+
+        fixture.ViewModel.CanLand.Should().BeFalse();
+        fixture.ViewModel.CanHoldPosition.Should().BeTrue();
+        fixture.ViewModel.CanReturnToLaunch.Should().BeTrue();
+        policy.Received().Evaluate(state, VehicleAction.Land);
+        policy.Received().Evaluate(state, VehicleAction.Hold);
+        policy.Received().Evaluate(state, VehicleAction.ReturnToLaunch);
+    }
+
     /// <summary>Verifies an in-progress action is cancelled and marked disconnected with its connection lifetime.</summary>
     [Fact]
     public async Task ViewModelCancelsPendingCommandOnDisconnect()
@@ -336,7 +392,11 @@ public sealed class VehicleActionsTests
         return CreateViewModel(active, Substitute.For<IVehicleCommandService>(), now);
     }
 
-    private static ViewModelFixture CreateViewModel(IActiveVehicleContext active, IVehicleCommandService commands, DateTimeOffset now)
+    private static ViewModelFixture CreateViewModel(
+        IActiveVehicleContext active,
+        IVehicleCommandService commands,
+        DateTimeOffset now,
+        IVehicleCommandPolicy? commandPolicy = null)
     {
         var clock = Substitute.For<IDateTimeProvider>();
         clock.UtcNow.Returns(now);
@@ -350,7 +410,7 @@ public sealed class VehicleActionsTests
         var viewModel = new ActionsTabViewModel(
             active,
             commands,
-            new VehicleCommandPolicy(clock),
+            commandPolicy ?? new VehicleCommandPolicy(clock),
             new ArduPilotModeCatalog(),
             confirmation,
             Substitute.For<IUserNotificationService>(),

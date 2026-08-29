@@ -21,9 +21,9 @@
             <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
                 <Button  Grid.Row="0" Grid.Column="0" Text="Arm" Command="{Binding ArmCommand}" IsEnabled="{Binding CanArm}" />
                 <Button  Grid.Row="0" Grid.Column="1" Text="Disarm" Command="{Binding DisarmCommand}" IsEnabled="{Binding CanDisarm}" />
-                <Button  Grid.Row="1" Grid.Column="0" Text="RTL" Command="{Binding ReturnToLaunchCommand}" IsEnabled="{Binding CanInFlightAction}" />
-                <Button  Grid.Row="1" Grid.Column="1" Text="Loiter / Hold" Command="{Binding HoldCommand}" IsEnabled="{Binding CanInFlightAction}" />
-                <Button  Grid.Row="2" Grid.ColumnSpan="2" Text="Land" Command="{Binding LandCommand}" IsEnabled="{Binding CanInFlightAction}" />
+                <Button  Grid.Row="1" Grid.Column="0" Text="RTL" Command="{Binding ReturnToLaunchCommand}" IsEnabled="{Binding CanReturnToLaunch}" />
+                <Button  Grid.Row="1" Grid.Column="1" Text="Loiter / Hold" Command="{Binding HoldCommand}" IsEnabled="{Binding CanHoldPosition}" />
+                <Button  Grid.Row="2" Grid.ColumnSpan="2" Text="Land" Command="{Binding LandCommand}" IsEnabled="{Binding CanLand}" />
             </Grid>
 
             <Label Text="Flight mode" FontAttributes="Bold" />
@@ -69,7 +69,7 @@
                
                 <controls:NumericField
                     Title="Command ID"
-                    Value="{Binding TakeoffAltitudeMeters, Mode=TwoWay}"
+                    Value="{Binding ExpertCommandId, Mode=TwoWay}"
                     NumberFormat="F1"
                     HorizontalOptions="Fill"
                     HorizontalTextAlignment="End" />
