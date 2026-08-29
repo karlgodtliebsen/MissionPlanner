@@ -58,6 +58,40 @@ Mission interventions use the same per-vehicle operation gate while retaining in
 operation across vehicles. ACKs and post-request `MISSION_CURRENT` observations are correlated
 to the exact vehicle; pre-request state cannot satisfy confirmation.
 
+## Deliberate divergences from legacy Actions
+
+- **Set Home Alt is not reproduced.** Zero/Reset Altitude is a per-session GCS display reference
+  based only on relative altitude. It never changes HOME and is never reported as a MAVLink ACK.
+- **Restart Mission resets execution state.** It sends `DO_SET_MISSION_CURRENT` with canonical
+  sequence 0 and reset=true, resetting jump/completion state without arming, changing mode, or
+  issuing mission start. Unsupported firmware is not degraded to the legacy message.
+- **Resume Mission is non-destructive.** It sends `DO_PAUSE_CONTINUE` continue=true only when
+  pause/suspend telemetry is positive. It never downloads, truncates, rewrites, uploads, arms,
+  takes off, or changes mode.
+- **Change Speed is semantic.** Copter/Rover use Ground speed; Plane explicitly selects Airspeed
+  or Ground speed. Throttle remains no-change and is not an operator input.
+- **Change Altitude is a Guided setpoint.** The value is absolute above HOME. The implementation
+  uses a typed `GLOBAL_RELATIVE_ALT_INT` position target at current lat/lon, never the legacy
+  mission-item `current=3` form, and never enters Guided automatically.
+- **Set Loiter Radius is persistent.** It writes the one available typed parameter, preferring
+  `WP_LOITER_RAD`, and preserves the existing direction sign while replacing magnitude.
+
+## Capability audit
+
+Every UI control owns a matching semantic capability: `CanArm`, `CanDisarm`, `CanTakeoff`,
+`CanLand`, `CanHoldPosition`, `CanReturnToLaunch`, `CanSetHome`, `CanToggleAltitudeZero`,
+`CanRestartMission`, `CanResumeMission`, `CanAbortLanding`, `CanSetCurrentMissionItem`,
+`CanChangeSpeed`, `CanChangeAltitude`, and `CanSetLoiterRadius`. Land/Hold/RTL intentionally
+share a lower-level fresh-in-flight predicate, while remaining independent policy entries and
+bindings. Mission and adjustment services defensively repeat family/mode/state checks before
+transmission. Expert command input, takeoff altitude, mission sequence, speed, guided altitude,
+and radius are separate properties.
+
+Status is confirmation-family aware: speed reports command ACK; mission operations distinguish
+ACK, post-request telemetry, and no-ACK legacy fallback; Guided altitude reports target sent or
+telemetry reached without inventing an ACK; radius reports parameter confirmation; Zero/Reset
+reports a local display operation.
+
 ## SITL manual verification matrix
 
 | Check | Preconditions and action | Expected result |
@@ -73,6 +107,27 @@ to the exact vehicle; pre-request state cannot satisfy confirmation.
 | Expert MAV CMD | Enter a safe test command ID and seven parameters. | ID remains independent of takeoff altitude; confirmation and real ACK are shown. |
 | Sequential status | Run two safe commands in sequence. | New pending/result state replaces stale command presentation. |
 
+### Firmware-specific Wave 2 matrix
+
+| Target | Precondition / mode | Action | Expected protocol and evidence |
+|---|---|---|---|
+| Copter SITL | Connected, normal safe ground/flight states | Arm, Disarm, Set Mode, Takeoff, Land, Hold, RTL | Existing typed command; real ACK and applicable telemetry. |
+| Copter SITL | Relative altitude available | Zero, climb, Reset Altitude | No packet; HUD becomes 0, tracks the local delta, then returns to normal relative altitude. HOME is unchanged. |
+| Copter SITL | Small uploaded mission; AUTO/paused as applicable | Set Current WP, Restart, Resume | Command 224 with reset false/true or pause/continue; matching post-request mission telemetry. No arm/mode/upload side effects. |
+| Copter SITL | Guided with valid position | Ground speed; target altitude above HOME | `DO_CHANGE_SPEED` ground type with ACK; global HOME-relative setpoint with no ACK and later relative-altitude confirmation. |
+| Plane SITL | Uploaded mission and paused state | Set Current WP, Restart, Resume | Same typed mission semantics and confirmation boundaries as Copter. |
+| Plane SITL | AUTO actively executing ID-verified `NAV_LAND`; `LAND_ABORT_THR=1` | Abort Landing | `DO_GO_AROUND` ACK means accepted, not maneuver complete. Repeat outside every prerequisite and verify denial/no send. |
+| Plane SITL | Supported navigation mode | Select Airspeed, then Ground speed | Distinct semantic `DO_CHANGE_SPEED` types; no throttle mutation. |
+| Plane SITL | Guided with valid position | Target altitude above HOME | Typed `GLOBAL_RELATIVE_ALT_INT` target; no mode change and no fabricated ACK. |
+| Plane SITL | `WP_LOITER_RAD` loaded, first positive then negative | Set radius magnitude | One parameter write and exact value confirmation; negative direction remains negative. Restore the original value afterward. |
+| Rover SITL | AUTO or Guided | Ground speed | Ground-speed command ACK. Airspeed selector is absent. |
+| Rover SITL | Any mode | Change Altitude | Control remains unavailable and no target is sent. |
+
+Record firmware version, vehicle identity, starting mode/state, selected action, expected packet,
+and observed ACK/telemetry/parameter result for each run. These procedures are deterministic
+manual acceptance tests; no Wave 2 SITL instance was available during the unit-test run recorded
+with this change.
+
 ## Real-controller bench verification
 
 Remove propellers and otherwise make motors safe. Use separate mocked/SITL validation before
@@ -81,6 +136,9 @@ command and never assume fixed COM-port names. Limit bench testing to ground-saf
 exercise takeoff, landing, mission intervention, and in-flight adjustments in SITL unless a
 controlled flight-test plan explicitly authorizes hardware execution. Confirm actual ACKs
 and telemetry rather than inferring success from button activation.
+Verify Zero Altitude is display-only. Restore any persistent loiter-radius parameter changed
+during bench testing. Two connected controllers may be used only for propulsion-safe isolation
+checks, and the selected vehicle identity must be rechecked before every operation.
 
 ## Follow-up feature candidates
 
