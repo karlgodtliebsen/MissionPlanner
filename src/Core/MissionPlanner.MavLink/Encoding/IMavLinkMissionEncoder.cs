@@ -29,4 +29,6 @@ public interface IMavLinkMissionEncoder
  /// Provides the public API for EncodeMissionClearAll.
  /// </summary>
  byte[] EncodeMissionClearAll(byte targetSystem, byte targetComponent, MavMissionType missionType);
+ /// <summary>Encodes the superseded MISSION_SET_CURRENT compatibility message.</summary>
+ byte[] EncodeMissionSetCurrent(byte targetSystem, byte targetComponent, ushort sequence);
 }

@@ -23,6 +23,14 @@ public enum VehicleAction
     RebootAutopilot,
     /// <summary>Set home to the current vehicle position.</summary>
     SetHomeHere,
+    /// <summary>Set the canonical current mission sequence.</summary>
+    SetCurrentMissionItem,
+    /// <summary>Reset mission execution to its first item.</summary>
+    RestartMission,
+    /// <summary>Continue a positively identified paused mission.</summary>
+    ResumeMission,
+    /// <summary>Abort an active Plane NAV_LAND mission item.</summary>
+    AbortLanding,
     /// <summary>Execute a validated expert MAVLink command.</summary>
     ExpertCommand
 }

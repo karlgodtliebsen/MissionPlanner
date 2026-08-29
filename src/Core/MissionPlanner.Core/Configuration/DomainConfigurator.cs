@@ -73,6 +73,7 @@ public static class DomainConfigurator
         services.Configure<ParameterProfileRepositoryOptions>(configuration.GetSection(ParameterProfileRepositoryOptions.SectionName));
 
         services.TryAddTransient<IMissionTransferService, MissionTransferService>();
+        services.TryAddTransient<IMissionInterventionService, MissionInterventionService>();
         services.TryAddSingleton<IOnboardMissionSnapshotStore, OnboardMissionSnapshotStore>();
         services.TryAddTransient<IMissionProtocolMapper, MissionProtocolMapper>();
         services.TryAddTransient<IMissionValidator, MissionValidator>();

@@ -37,6 +37,13 @@ public sealed class VehicleCommandPolicy(IDateTimeProvider clock) : IVehicleComm
             VehicleAction.Land or VehicleAction.ReturnToLaunch or VehicleAction.Hold => ValidateInFlightAction(state),
             VehicleAction.RebootAutopilot => ValidateReboot(state),
             VehicleAction.SetHomeHere => ValidateSetHome(state),
+            VehicleAction.SetCurrentMissionItem or VehicleAction.RestartMission =>
+                state.Navigation.MissionItemCount is > 0 ? VehicleCommandDecision.Allow() : VehicleCommandDecision.Deny("A mission must be known on the vehicle."),
+            VehicleAction.ResumeMission =>
+                state.Navigation.MissionState == MissionPlanner.MavLink.Generated.MissionState.Paused || state.Navigation.MissionMode == VehicleMissionMode.Suspended
+                    ? VehicleCommandDecision.Allow()
+                    : VehicleCommandDecision.Deny("Mission telemetry does not confirm a paused or suspended mission."),
+            VehicleAction.AbortLanding => VehicleCommandDecision.Deny("Abort Landing requires verified mission-item and parameter policy evaluation."),
             VehicleAction.ExpertCommand => VehicleCommandDecision.Allow(true, "Expert commands can change safety-critical vehicle behavior."),
             var _ => VehicleCommandDecision.Deny("The action is not supported.")
         };

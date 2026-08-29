@@ -75,6 +75,16 @@ public sealed class MavLinkMissionEncoder(IMavLinkCrcExtraProvider crc) : IMavLi
         return Build(MessageIds.MissionClearAll, p);
     }
 
+    /// <inheritdoc />
+    public byte[] EncodeMissionSetCurrent(byte ts, byte tc, ushort seq)
+    {
+        Span<byte> p = stackalloc byte[4];
+        BinaryPrimitives.WriteUInt16LittleEndian(p, seq);
+        p[2] = ts;
+        p[3] = tc;
+        return Build(MessageIds.MissionSetCurrent, p);
+    }
+
     /// <summary>
     /// Provides the public API for EncodeMissionItemInt.
     /// </summary>
