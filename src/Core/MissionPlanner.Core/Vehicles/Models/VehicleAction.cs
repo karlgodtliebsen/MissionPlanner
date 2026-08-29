@@ -31,6 +31,12 @@ public enum VehicleAction
     ResumeMission,
     /// <summary>Abort an active Plane NAV_LAND mission item.</summary>
     AbortLanding,
+    /// <summary>Change the active navigation speed target.</summary>
+    ChangeSpeed,
+    /// <summary>Send a HOME-relative Guided altitude target.</summary>
+    ChangeAltitude,
+    /// <summary>Persist the vehicle loiter-radius parameter.</summary>
+    SetLoiterRadius,
     /// <summary>Execute a validated expert MAVLink command.</summary>
     ExpertCommand
 }

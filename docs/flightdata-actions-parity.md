@@ -22,9 +22,9 @@ copying the legacy button matrix.
 | Restart Mission | Implemented | Confirmed UI uses sequence 0 plus reset; help text makes clear that it does not arm or change mode. |
 | Resume Mission | Implemented | Independently enabled only for positively identified paused/suspended execution and uses pause/continue semantics. |
 | Abort Landing | Implemented | Plane-only control; enabled only for AUTO, active execution, ID-verified current `NAV_LAND`, and enabled `LAND_ABORT_THR`. |
-| Change Speed | Deferred because semantics/support remain unresolved | Legacy mixes airspeed, ground-speed, and throttle sources while always encoding speed type 0. |
-| Change Altitude | Deferred because semantics/support remain unresolved | Proven as absolute HOME-relative guided mission-item behavior; typed protocol support is missing. |
-| Set Loiter Radius | Deferred because semantics/support remain unresolved | Proven persistent parameter write; needs explicit typed parameter UX, not a temporary-command label. |
+| Change Speed | Backend implemented; UI pending | Typed ground/airspeed semantics map to `DO_CHANGE_SPEED`; throttle is fixed at no-change and ACK acceptance is not mislabeled telemetry confirmation. |
+| Change Altitude | Backend implemented; UI pending | Sends a position-only `GLOBAL_RELATIVE_ALT_INT` Guided target at current lat/lon, never changes mode, and confirms from post-request relative-altitude telemetry. |
+| Set Loiter Radius | Backend implemented; UI pending | Typed persistent parameter write prefers `WP_LOITER_RAD`, preserves direction sign, and requires matching parameter-value confirmation. |
 | Set Mount / gimbal | Moved / Belongs elsewhere | Not present in NextGen; candidate for a dedicated payload/gimbal workspace, not Actions. |
 | Joystick | Moved / Belongs elsewhere | Not present in NextGen; candidate for dedicated input-device setup. |
 | Raw Sensor View | Moved / Belongs elsewhere | Not present in NextGen; candidate for a diagnostics workspace. |

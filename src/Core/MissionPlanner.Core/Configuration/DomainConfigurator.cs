@@ -11,6 +11,7 @@ using MissionPlanner.Core.ConfigTuning.Tuning;
 using MissionPlanner.Core.ConfigTuning.VendorDevices;
 using MissionPlanner.Core.ConfigTuning.VendorDevices.CubeLan;
 using MissionPlanner.Core.Firmware;
+using MissionPlanner.Core.FlightData.Adjustments;
 using MissionPlanner.Core.Missions;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Files;
@@ -208,6 +209,7 @@ public static class DomainConfigurator
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IVehicleMessageHandler, FlightData.Components.PeripheralComponentHandler>());
 
         services.TryAddTransient<IVehicleCommandService, VehicleCommandService>();
+        services.TryAddTransient<IVehicleAdjustmentService, VehicleAdjustmentService>();
         services.TryAddTransient<FlightData.Preflight.IPreflightAssessmentService, FlightData.Preflight.PreflightAssessmentService>();
         services.TryAddTransient<FlightData.Preflight.IPreflightCommandService, FlightData.Preflight.PreflightCommandService>();
         services.TryAddSingleton<FlightData.Telemetry.ITelemetryFieldCatalog, FlightData.Telemetry.TelemetryFieldCatalog>();
