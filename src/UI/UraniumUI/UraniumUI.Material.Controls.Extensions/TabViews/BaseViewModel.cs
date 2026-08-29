@@ -17,10 +17,17 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
     /// <summary>
     /// 
     /// </summary>
-    /// <param name="logger"></param>
-    protected BaseViewModel(ILogger logger)
+    /// <param name="logger">The logger used for operation failures.</param>
+    /// <param name="dispatcher">
+    /// The UI dispatcher. When omitted, the dispatcher for the current thread is used. A
+    /// synchronous dispatcher is used only when no MAUI dispatcher exists, such as in a
+    /// headless unit-test process.
+    /// </param>
+    protected BaseViewModel(ILogger logger, IDispatcher? dispatcher = null)
     {
-        dispatcher = ServiceHelper.GetRequiredService<IDispatcher>();
+        this.dispatcher = dispatcher
+            ?? Microsoft.Maui.Dispatching.Dispatcher.GetForCurrentThread()
+            ?? HeadlessDispatcher.Instance;
         this.logger = logger;
     }
 
@@ -203,6 +210,58 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
                 action();
             }
         });
+    }
+
+    private sealed class HeadlessDispatcher : IDispatcher
+    {
+        public static HeadlessDispatcher Instance { get; } = new();
+
+        public bool IsDispatchRequired => false;
+
+        public bool Dispatch(Action action)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+            action();
+            return true;
+        }
+
+        public bool DispatchDelayed(TimeSpan delay, Action action)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+            action();
+            return true;
+        }
+
+        public IDispatcherTimer CreateTimer()
+        {
+            return new HeadlessDispatcherTimer();
+        }
+    }
+
+    private sealed class HeadlessDispatcherTimer : IDispatcherTimer
+    {
+        public TimeSpan Interval { get; set; }
+
+        public bool IsRepeating { get; set; }
+
+        public bool IsRunning { get; private set; }
+
+        public event EventHandler? Tick;
+
+        public void Start()
+        {
+            IsRunning = true;
+            Tick?.Invoke(this, EventArgs.Empty);
+            if (!IsRepeating)
+            {
+                IsRunning = false;
+            }
+        }
+
+        public void Stop()
+        {
+            IsRunning = false;
+        }
     }
 
 }

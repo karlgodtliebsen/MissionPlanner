@@ -297,6 +297,8 @@ public sealed class VehicleActionsTests
         active.IsOnline.Returns(true);
         active.ConnectionCancellationToken.Returns(CancellationToken.None);
         var policy = Substitute.For<IVehicleCommandPolicy>();
+        policy.Evaluate(Arg.Any<VehicleState>(), Arg.Any<VehicleAction>())
+            .Returns(VehicleCommandDecision.Deny("Not configured for this test."));
         policy.Evaluate(state, VehicleAction.Land).Returns(VehicleCommandDecision.Deny("Land denied."));
         policy.Evaluate(state, VehicleAction.Hold).Returns(VehicleCommandDecision.Allow());
         policy.Evaluate(state, VehicleAction.ReturnToLaunch).Returns(VehicleCommandDecision.Allow());
@@ -363,6 +365,7 @@ public sealed class VehicleActionsTests
             .Returns(new CommandAckMessage(state.VehicleId.SystemId, state.VehicleId.ComponentId, new TransportEndPoint("test"), expectedCommand, 0, now));
         var connection = Substitute.For<IMavLinkConnection>();
         var session = Substitute.For<IVehicleConnectionSession>();
+        session.Connection.Returns(connection);
 
         var service = new VehicleCommandService(
             registry,
