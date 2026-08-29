@@ -5,6 +5,8 @@ using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.FlightData.Tabs;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Notifications;
+using MissionPlanner.Core.Missions.Abstractions;
+using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -27,6 +29,52 @@ namespace MissionPlanner.Core.Tests;
 /// </summary>
 public sealed class VehicleActionsTests
 {
+    [Fact]
+    public async Task MissionUiUsesCanonicalSequenceAndPreservesAckOnlyStatus()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var fixture = CreateViewModel(CreateState(now) with
+        {
+            Navigation = VehicleNavigationState.Empty with { MissionItemCount = 5, CurrentMissionSequence = 2 }
+        }, now);
+        fixture.MissionIntervention.Evaluate(Arg.Any<VehicleState>(), VehicleAction.SetCurrentMissionItem, (ushort)3)
+            .Returns(VehicleCommandDecision.Allow());
+        fixture.MissionIntervention.SetCurrentMissionItemAsync(fixture.State.VehicleId, 3, Arg.Any<CancellationToken>())
+            .Returns(new MissionInterventionResult(fixture.State.VehicleId, MissionInterventionStatus.AcceptedButNotTelemetryConfirmed, "ACK accepted; telemetry not confirmed."));
+        await fixture.ViewModel.ActivateAsync();
+        fixture.ViewModel.SelectedMissionSequence = 3;
+
+        fixture.ViewModel.CanSetCurrentMissionItem.Should().BeTrue();
+        await fixture.ViewModel.SetCurrentMissionItemCommand.ExecuteAsync(null);
+
+        await fixture.MissionIntervention.Received(1).SetCurrentMissionItemAsync(fixture.State.VehicleId, 3, Arg.Any<CancellationToken>());
+        fixture.ViewModel.OperationState.Status.Should().Be(AsyncOperationStatus.Warning);
+        fixture.ViewModel.OperationState.Message.Should().Contain("not confirmed");
+    }
+
+    [Fact]
+    public async Task MissionUiCommandsRemainIndependentlyGatedAndRestartRequiresConfirmation()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var plane = WithFamily(CreateState(now), FirmwareFamily.ArduPlane) with
+        {
+            Navigation = VehicleNavigationState.Empty with { MissionItemCount = 5, MissionState = MissionPlanner.MavLink.Generated.MissionState.Paused }
+        };
+        var fixture = CreateViewModel(plane, now);
+        fixture.MissionIntervention.Evaluate(Arg.Any<VehicleState>(), VehicleAction.RestartMission, Arg.Any<ushort?>()).Returns(VehicleCommandDecision.Allow(true, "Confirm restart"));
+        fixture.MissionIntervention.Evaluate(Arg.Any<VehicleState>(), VehicleAction.ResumeMission, Arg.Any<ushort?>()).Returns(VehicleCommandDecision.Allow());
+        fixture.MissionIntervention.Evaluate(Arg.Any<VehicleState>(), VehicleAction.AbortLanding, Arg.Any<ushort?>()).Returns(VehicleCommandDecision.Deny("AUTO mode is required."));
+        fixture.Confirmation.ConfirmAsync(Arg.Any<string>(), Arg.Any<string>(), Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(false);
+        await fixture.ViewModel.ActivateAsync();
+
+        fixture.ViewModel.CanRestartMission.Should().BeTrue();
+        fixture.ViewModel.CanResumeMission.Should().BeTrue();
+        fixture.ViewModel.IsAbortLandingVisible.Should().BeTrue();
+        fixture.ViewModel.CanAbortLanding.Should().BeFalse();
+        await fixture.ViewModel.RestartMissionCommand.ExecuteAsync(null);
+        await fixture.MissionIntervention.DidNotReceiveWithAnyArgs().RestartMissionAsync(default, default);
+    }
+
     /// <summary>Verifies altitude zero is a local presentation toggle, not a vehicle command.</summary>
     [Fact]
     public async Task AltitudeZeroTogglesLocalLabelWithoutSendingSetHome()
@@ -434,6 +482,9 @@ public sealed class VehicleActionsTests
         clock.UtcNow.Returns(now);
         var confirmation = Substitute.For<IUserConfirmationService>();
         var altitudeReference = Substitute.For<ILocalAltitudeReferenceService>();
+        var missionIntervention = Substitute.For<IMissionInterventionService>();
+        missionIntervention.Evaluate(Arg.Any<VehicleState>(), Arg.Any<VehicleAction>(), Arg.Any<ushort?>())
+            .Returns(VehicleCommandDecision.Deny("Unavailable in this fixture."));
         var dispatcher = Substitute.For<IDispatcher>();
         dispatcher.Dispatch(Arg.Any<Action>()).Returns(call =>
         {
@@ -450,8 +501,10 @@ public sealed class VehicleActionsTests
             dispatcher,
             Substitute.For<IDomainEventHub>(),
             Substitute.For<ILogger<ActionsTabViewModel>>(),
-            altitudeReference);
-        return new ViewModelFixture(viewModel, commands, confirmation, active.State!, altitudeReference);
+            altitudeReference,
+            missionIntervention,
+            Substitute.For<IOnboardMissionSnapshotStore>());
+        return new ViewModelFixture(viewModel, commands, confirmation, active.State!, altitudeReference, missionIntervention);
     }
 
     private static VehicleCommandPolicy CreatePolicy(DateTimeOffset now)
@@ -490,5 +543,6 @@ public sealed class VehicleActionsTests
         IVehicleCommandService Commands,
         IUserConfirmationService Confirmation,
         VehicleState State,
-        ILocalAltitudeReferenceService AltitudeReference);
+        ILocalAltitudeReferenceService AltitudeReference,
+        IMissionInterventionService MissionIntervention);
 }

@@ -6,6 +6,8 @@ using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Notifications;
+using MissionPlanner.Core.Missions.Abstractions;
+using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -33,6 +35,8 @@ public partial class ActionsTabViewModel : BaseViewModel
     private readonly ILogger<ActionsTabViewModel> logger;
     private readonly IReplaySessionManager? replaySessionManager;
     private readonly ILocalAltitudeReferenceService altitudeReferenceService;
+    private readonly IMissionInterventionService missionInterventionService;
+    private readonly IOnboardMissionSnapshotStore missionSnapshots;
     private IDisposable? stateSubscription;
 
     /// <summary>
@@ -59,6 +63,8 @@ public partial class ActionsTabViewModel : BaseViewModel
         IDomainEventHub domainEventHub,
         ILogger<ActionsTabViewModel> logger,
         ILocalAltitudeReferenceService altitudeReferenceService,
+        IMissionInterventionService missionInterventionService,
+        IOnboardMissionSnapshotStore missionSnapshots,
         IReplaySessionManager? replaySessionManager = null) : base(logger)
     {
         this.activeVehicle = activeVehicle;
@@ -71,6 +77,8 @@ public partial class ActionsTabViewModel : BaseViewModel
         this.domainEventHub = domainEventHub;
         this.logger = logger;
         this.altitudeReferenceService = altitudeReferenceService;
+        this.missionInterventionService = missionInterventionService;
+        this.missionSnapshots = missionSnapshots;
         this.replaySessionManager = replaySessionManager;
         operationRunner = new AsyncOperationRunner(activeVehicle);
     }
@@ -188,6 +196,33 @@ public partial class ActionsTabViewModel : BaseViewModel
     [ObservableProperty]
     public partial string AltitudeZeroActionText { get; private set; } = "Zero Altitude";
 
+    [ObservableProperty]
+    public partial double SelectedMissionSequence { get; set; }
+
+    [ObservableProperty]
+    public partial string CurrentMissionSequenceText { get; private set; } = "Current sequence: unknown";
+
+    [ObservableProperty]
+    public partial bool CanSetCurrentMissionItem { get; private set; }
+
+    [ObservableProperty]
+    public partial bool CanRestartMission { get; private set; }
+
+    [ObservableProperty]
+    public partial bool CanResumeMission { get; private set; }
+
+    [ObservableProperty]
+    public partial bool CanAbortLanding { get; private set; }
+
+    [ObservableProperty]
+    public partial bool IsAbortLandingVisible { get; private set; }
+
+    [ObservableProperty]
+    public partial string AbortLandingReason { get; private set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial bool IsMissionOperationPending { get; private set; }
+
     /// <summary>Gets whether vehicle-changing controls may transmit in the current data-source mode.</summary>
     [ObservableProperty]
     public partial bool CanTransmit { get; private set; } = true;
@@ -208,6 +243,7 @@ public partial class ActionsTabViewModel : BaseViewModel
     {
         activeVehicle.Changed += OnActiveVehicleChanged;
         altitudeReferenceService.Changed += OnAltitudeReferenceChanged;
+        missionSnapshots.Changed += OnMissionSnapshotsChanged;
         stateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
         ApplySnapshot(activeVehicle.Current);
         if (replaySessionManager is not null)
@@ -231,6 +267,7 @@ public partial class ActionsTabViewModel : BaseViewModel
         replaySessionManager?.Changed -= OnReplayChanged;
         activeVehicle.Changed -= OnActiveVehicleChanged;
         altitudeReferenceService.Changed -= OnAltitudeReferenceChanged;
+        missionSnapshots.Changed -= OnMissionSnapshotsChanged;
         stateSubscription?.Dispose();
         stateSubscription = null;
     }
@@ -341,6 +378,95 @@ public partial class ActionsTabViewModel : BaseViewModel
         OperationState = AsyncOperationState.Success(message);
         await notificationService.NotifyAsync(new UserNotification(message, VehicleId: state.VehicleId), cancellationToken);
         ApplySnapshot(activeVehicle.Current);
+    }
+
+    [RelayCommand]
+    private Task SetCurrentMissionItemAsync(CancellationToken cancellationToken)
+    {
+        if (SelectedMissionSequence < 0 || SelectedMissionSequence > ushort.MaxValue || SelectedMissionSequence != Math.Truncate(SelectedMissionSequence))
+        {
+            OperationState = AsyncOperationState.Warning("Select a valid canonical mission sequence.");
+            return Task.CompletedTask;
+        }
+        var sequence = (ushort)SelectedMissionSequence;
+        return ExecuteMissionInterventionAsync("Set Current WP",
+            (id, token) => missionInterventionService.SetCurrentMissionItemAsync(id, sequence, token),
+            VehicleAction.SetCurrentMissionItem, sequence, false, cancellationToken);
+    }
+
+    [RelayCommand]
+    private Task RestartMissionAsync(CancellationToken cancellationToken) =>
+        ExecuteMissionInterventionAsync("Restart Mission", missionInterventionService.RestartMissionAsync,
+            VehicleAction.RestartMission, null, true, cancellationToken);
+
+    [RelayCommand]
+    private Task ResumeMissionAsync(CancellationToken cancellationToken) =>
+        ExecuteMissionInterventionAsync("Resume Mission", missionInterventionService.ResumeMissionAsync,
+            VehicleAction.ResumeMission, null, false, cancellationToken);
+
+    [RelayCommand]
+    private Task AbortLandingAsync(CancellationToken cancellationToken) =>
+        ExecuteMissionInterventionAsync("Abort Landing", missionInterventionService.AbortLandingAsync,
+            VehicleAction.AbortLanding, null, true, cancellationToken);
+
+    private async Task ExecuteMissionInterventionAsync(
+        string label,
+        Func<VehicleId, CancellationToken, Task<MissionInterventionResult>> execute,
+        VehicleAction action,
+        ushort? sequence,
+        bool confirm,
+        CancellationToken cancellationToken)
+    {
+        if (IsMissionOperationPending)
+        {
+            OperationState = AsyncOperationState.Warning("Another mission operation is pending.");
+            return;
+        }
+        if (activeVehicle.State is not { } state)
+        {
+            OperationState = AsyncOperationState.Disconnected();
+            return;
+        }
+        var decision = missionInterventionService.Evaluate(state, action, sequence);
+        if (!decision.IsAllowed)
+        {
+            OperationState = AsyncOperationState.Warning(decision.Reason ?? "Mission action is unavailable.");
+            return;
+        }
+        if (confirm && !await confirmationService.ConfirmAsync(label, decision.Reason ?? $"Confirm {label}.", label, cancellationToken))
+        {
+            OperationState = AsyncOperationState.Warning($"{label} cancelled before transmission.");
+            return;
+        }
+
+        IsMissionOperationPending = true;
+        ApplySnapshot(activeVehicle.Current);
+        PendingCommand = label;
+        OperationState = AsyncOperationState.Busy($"{label}: awaiting command result");
+        try
+        {
+            var result = await execute(state.VehicleId, cancellationToken);
+            AckResult = result.Status.ToString();
+            OperationState = result.Status switch
+            {
+                MissionInterventionStatus.TelemetryConfirmed => AsyncOperationState.Success(result.Message),
+                MissionInterventionStatus.FallbackTelemetryConfirmed => AsyncOperationState.Success(result.Message),
+                MissionInterventionStatus.AcceptedButNotTelemetryConfirmed => AsyncOperationState.Warning(result.Message),
+                MissionInterventionStatus.Timeout => AsyncOperationState.Timeout(result.Message),
+                MissionInterventionStatus.Busy or MissionInterventionStatus.Denied or MissionInterventionStatus.Unsupported => AsyncOperationState.Warning(result.Message),
+                _ => AsyncOperationState.Error(result.Message)
+            };
+        }
+        catch (OperationCanceledException)
+        {
+            OperationState = AsyncOperationState.Warning($"{label} cancelled.");
+        }
+        finally
+        {
+            IsMissionOperationPending = false;
+            PendingCommand = null;
+            ApplySnapshot(activeVehicle.Current);
+        }
     }
 
     [RelayCommand]
@@ -582,6 +708,17 @@ public partial class ActionsTabViewModel : BaseViewModel
         var hasReference = state is not null && altitudeReferenceService.HasReference(state.VehicleId);
         AltitudeZeroActionText = hasReference ? "Reset Altitude" : "Zero Altitude";
         CanToggleAltitudeZero = state is not null && (hasReference || state.Position.RelativeAltitudeMeters is { } altitude && double.IsFinite(altitude));
+        CurrentMissionSequenceText = state?.Navigation.CurrentMissionSequence is { } current ? $"Current sequence: {current}" : "Current sequence: unknown";
+        var selectedSequence = SelectedMissionSequence is >= 0 and <= ushort.MaxValue && SelectedMissionSequence == Math.Truncate(SelectedMissionSequence)
+            ? (ushort?)SelectedMissionSequence
+            : null;
+        CanSetCurrentMissionItem = !IsMissionOperationPending && state is not null && selectedSequence is { } selected && missionInterventionService.Evaluate(state, VehicleAction.SetCurrentMissionItem, selected).IsAllowed;
+        CanRestartMission = !IsMissionOperationPending && state is not null && missionInterventionService.Evaluate(state, VehicleAction.RestartMission).IsAllowed;
+        CanResumeMission = !IsMissionOperationPending && state is not null && missionInterventionService.Evaluate(state, VehicleAction.ResumeMission).IsAllowed;
+        IsAbortLandingVisible = state?.Identity.Firmware.Family == MissionPlanner.Firmware.FirmwareFamily.ArduPlane;
+        var abortDecision = state is null ? VehicleCommandDecision.Deny("No active vehicle.") : missionInterventionService.Evaluate(state, VehicleAction.AbortLanding);
+        CanAbortLanding = !IsMissionOperationPending && IsAbortLandingVisible && abortDecision.IsAllowed;
+        AbortLandingReason = abortDecision.Reason ?? "Abort the active landing approach.";
     }
 
     private void OnAltitudeReferenceChanged(object? sender, LocalAltitudeReferenceChangedEventArgs args)
@@ -591,6 +728,10 @@ public partial class ActionsTabViewModel : BaseViewModel
             dispatcher.Dispatch(() => ApplySnapshot(activeVehicle.Current));
         }
     }
+
+    private void OnMissionSnapshotsChanged(object? sender, EventArgs args) => dispatcher.Dispatch(() => ApplySnapshot(activeVehicle.Current));
+
+    partial void OnSelectedMissionSequenceChanged(double value) => ApplySnapshot(activeVehicle.Current);
 
     private void OnReplayChanged(ReplaySessionChangedEventArgs args)
     {

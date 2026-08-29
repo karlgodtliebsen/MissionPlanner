@@ -18,10 +18,10 @@ copying the legacy button matrix.
 | Takeoff | Keep / Already present | Typed relative-altitude action with confirmation. |
 | Set Home Here | Keep / Already present | Acknowledged `DO_SET_HOME` operation that changes vehicle HOME. |
 | Zero / Reset Altitude | Keep / Implemented with clarified semantics | Per-session GCS-local relative-altitude display reference. It never modifies vehicle HOME or sends MAVLink. |
-| Set Current WP | Backend implemented; UI pending | Uses acknowledged `DO_SET_MISSION_CURRENT`, post-request `MISSION_CURRENT`, and only an explicit unsupported-result legacy fallback. |
-| Restart Mission | Backend implemented; UI pending | Uses `DO_SET_MISSION_CURRENT` sequence 0 with reset flag; no legacy fallback, mode change, arm, or mission start. |
-| Resume Mission | Backend implemented; UI pending | Uses `DO_PAUSE_CONTINUE` only when telemetry positively identifies paused/suspended execution. |
-| Abort Landing | Backend implemented; UI pending | Plane AUTO only, with active execution, ID-verified current `NAV_LAND`, and enabled `LAND_ABORT_THR`. |
+| Set Current WP | Implemented | Compact mission section sends the displayed canonical sequence through acknowledged `DO_SET_MISSION_CURRENT`, with post-request telemetry and explicit-unsupported fallback only. |
+| Restart Mission | Implemented | Confirmed UI uses sequence 0 plus reset; help text makes clear that it does not arm or change mode. |
+| Resume Mission | Implemented | Independently enabled only for positively identified paused/suspended execution and uses pause/continue semantics. |
+| Abort Landing | Implemented | Plane-only control; enabled only for AUTO, active execution, ID-verified current `NAV_LAND`, and enabled `LAND_ABORT_THR`. |
 | Change Speed | Deferred because semantics/support remain unresolved | Legacy mixes airspeed, ground-speed, and throttle sources while always encoding speed type 0. |
 | Change Altitude | Deferred because semantics/support remain unresolved | Proven as absolute HOME-relative guided mission-item behavior; typed protocol support is missing. |
 | Set Loiter Radius | Deferred because semantics/support remain unresolved | Proven persistent parameter write; needs explicit typed parameter UX, not a temporary-command label. |
@@ -68,7 +68,7 @@ to the exact vehicle; pre-request state cannot satisfy confirmation.
 | Takeoff/Land/Hold/RTL | Use appropriate armed/airborne states. | Independent enablement; ACK and meaningful telemetry confirmation. |
 | Set Home Here | Confirm with fresh 3D position. | HOME command ACK; vehicle HOME changes. |
 | Zero / Reset Altitude | Requires a finite relative altitude to create; reset remains available while active. | Local presentation state only; HUD displays `relative altitude - local reference`, while MSL fallback remains unmodified. |
-| Mission intervention | Backend available; Actions UI pending. | Modern current/reset/pause commands retain distinct ACK and telemetry-confirmation results; abort remains strongly gated. |
+| Mission intervention | Use the subordinate Actions section after downloading/verifying the onboard mission. | Modern current/reset/pause commands retain distinct ACK and telemetry-confirmation results; abort remains strongly gated and Plane-only. |
 | In-flight adjustments | Not available. | Complete Task 05 prerequisites; distinguish ACK from parameter readback. |
 | Expert MAV CMD | Enter a safe test command ID and seven parameters. | ID remains independent of takeoff altitude; confirmation and real ACK are shown. |
 | Sequential status | Run two safe commands in sequence. | New pending/result state replaces stale command presentation. |

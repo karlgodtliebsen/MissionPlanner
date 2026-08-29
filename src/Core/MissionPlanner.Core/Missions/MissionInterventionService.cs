@@ -33,6 +33,28 @@ public sealed class MissionInterventionService(
     private static readonly TimeSpan AckTimeout = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan TelemetryTimeout = TimeSpan.FromSeconds(3);
 
+    public VehicleCommandDecision Evaluate(VehicleState state, VehicleAction action, ushort? sequence = null)
+    {
+        if (state.ConnectionState != VehicleConnectionState.Online)
+        {
+            return VehicleCommandDecision.Deny("Vehicle is not online.");
+        }
+        return action switch
+        {
+            VehicleAction.SetCurrentMissionItem => sequence is { } requested && IsKnownSequence(state, requested)
+                ? VehicleCommandDecision.Allow()
+                : VehicleCommandDecision.Deny("Select a canonical sequence known to exist onboard."),
+            VehicleAction.RestartMission => HasKnownMission(state)
+                ? VehicleCommandDecision.Allow(true, "Restart resets mission execution state and jump counters without arming or changing mode.")
+                : VehicleCommandDecision.Deny("A mission must be known on the vehicle."),
+            VehicleAction.ResumeMission => state.Navigation.MissionState == MissionState.Paused || state.Navigation.MissionMode == VehicleMissionMode.Suspended
+                ? VehicleCommandDecision.Allow()
+                : VehicleCommandDecision.Deny("Mission telemetry does not confirm a paused or suspended mission."),
+            VehicleAction.AbortLanding => EvaluateAbortLanding(state),
+            _ => VehicleCommandDecision.Deny("This is not a mission intervention action.")
+        };
+    }
+
     public Task<MissionInterventionResult> SetCurrentMissionItemAsync(VehicleId vehicleId, ushort sequence, CancellationToken cancellationToken)
     {
         var state = registry.GetRequired(vehicleId)?.State;
@@ -102,6 +124,18 @@ public sealed class MissionInterventionService(
         }
         return ExecuteCommandAsync(vehicleId, "abort landing", (ushort)MavCmd.DoGoAround, [0, 0, 0, 0, 0, 0, 0],
             telemetryPredicate: null, acceptedWithoutTelemetryIsValid: true, cancellationToken);
+    }
+
+    private VehicleCommandDecision EvaluateAbortLanding(VehicleState state)
+    {
+        if (state.Identity.Firmware.Family != FirmwareFamily.ArduPlane) return VehicleCommandDecision.Deny("Abort Landing is Plane-only.");
+        if (state.CustomMode != 10) return VehicleCommandDecision.Deny("AUTO mode is required.");
+        if (state.Navigation.MissionState != MissionState.Active) return VehicleCommandDecision.Deny("Mission execution is not confirmed active.");
+        if (!snapshots.TryGetCurrentItem(state, out var current) || current?.Command != (ushort)MavCmd.NavLand)
+            return VehicleCommandDecision.Deny("The current landing item is not verified.");
+        return parameters.GetParameter(state.VehicleId, "LAND_ABORT_THR")?.Value == 1
+            ? VehicleCommandDecision.Allow(true, "Abort the active Plane landing approach.")
+            : VehicleCommandDecision.Deny("Landing abort is disabled or unknown (LAND_ABORT_THR).");
     }
 
     private async Task<MissionInterventionResult> ExecuteMissionCurrentCommandAsync(
