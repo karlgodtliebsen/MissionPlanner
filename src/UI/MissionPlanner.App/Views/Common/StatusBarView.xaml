@@ -33,9 +33,7 @@
 
             </HorizontalStackLayout>
 
-           <!-- Status Message (Center) -->
-            <Label Grid.Column="1" Text="{Binding StatusMessage}" VerticalOptions="Center" FontSize="12" />
-
+            
             <!-- Clock (Right) -->
             <Label Grid.Column="2" Text="{Binding CurrentTime}" VerticalOptions="Center" FontSize="12" TextColor="{DynamicResource OnSurfaceVariant}"/>
         </Grid>

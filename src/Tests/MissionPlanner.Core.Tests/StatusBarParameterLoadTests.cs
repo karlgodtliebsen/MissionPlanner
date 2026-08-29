@@ -34,6 +34,11 @@ public sealed class StatusBarParameterLoadTests
             "Downloading parameters… 400/1000 (40%)",
             DateTimeOffset.UtcNow));
         var dispatcher = Substitute.For<IDispatcher>();
+        dispatcher.Dispatch(Arg.Any<Action>()).Returns(call =>
+        {
+            call.Arg<Action>()();
+            return true;
+        });
         var eventHub = Substitute.For<IDomainEventHub>();
         eventHub.SubscribeDomainEventAsync<VehicleConnected>(Arg.Any<Func<VehicleConnected, CancellationToken, Task>>())
             .Returns(Substitute.For<IDisposable>());
@@ -44,7 +49,7 @@ public sealed class StatusBarParameterLoadTests
 
         using var viewModel = new StatusBarViewModel(
             stateService,
-            Substitute.For<IActiveVehicleContext>(),
+            activeVehicle,
             dispatcher,
             eventHub,
             Substitute.For<IDateTimeProvider>(),
@@ -52,6 +57,7 @@ public sealed class StatusBarParameterLoadTests
             NullLogger<StatusBarViewModel>.Instance);
 
         viewModel.StatusMessage.Should().Be("Downloading parameters… 400/1000 (40%)");
+
         stateService.Dispose();
     }
 

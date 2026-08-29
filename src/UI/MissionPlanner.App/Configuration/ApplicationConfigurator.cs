@@ -190,6 +190,7 @@ public static class ApplicationConfigurator
         // Common/Shared UI Components
         services.TryAddSingleton<StatusBarViewModel>();
         services.TryAddSingleton<TopBarViewModel>();
+        services.TryAddSingleton<NotificationViewModel>();
 
         services.TryAddTransient<ExitViewModel>();
         services.TryAddTransient<ExitContentView>();

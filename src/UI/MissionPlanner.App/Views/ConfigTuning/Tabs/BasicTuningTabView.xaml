@@ -22,7 +22,7 @@
             </HorizontalStackLayout>
         </Grid>
 
-        <Border Grid.Row="1" Padding="10">
+        <Border Grid.Row="1" Padding="10" StyleClass="SurfaceContainer,Rounded,Elevation1">
             <VerticalStackLayout Spacing="4">
                 <Label Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" LineBreakMode="TailTruncation" />
                 <Label Text="Basic Tuning intentionally hides expert control-loop fields. Use Extended Tuning or Full Parameters only when you understand the stability risks."
@@ -39,7 +39,7 @@
             <VerticalStackLayout BindableLayout.ItemsSource="{Binding Groups}" Spacing="12">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="tabs:BasicTuningGroupViewModel">
-                        <Border Padding="12">
+                        <Border Padding="12" StyleClass="SurfaceContainer,Rounded,Elevation1">
                             <VerticalStackLayout Spacing="8">
                                 <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                                     <VerticalStackLayout Spacing="2">

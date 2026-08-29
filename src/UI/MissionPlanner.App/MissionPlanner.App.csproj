@@ -319,6 +319,9 @@
 	  <MauiXaml Update="Views\Common\ErrorView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Views\Common\NotificationView.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\Common\StatusBarView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

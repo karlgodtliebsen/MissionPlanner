@@ -35,6 +35,7 @@ public sealed class ApplicationNotificationStore : IApplicationNotificationStore
             notification.Title,
             notification.Message,
             notification.Severity,
+            notification.Presentation,
             receivedAt);
         lock (sync)
         {

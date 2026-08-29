@@ -11,6 +11,7 @@ namespace MissionPlanner.Core.Notifications;
 /// <param name="Title">The optional title.</param>
 /// <param name="Message">The notification text.</param>
 /// <param name="Severity">The local semantic severity.</param>
+/// <param name="Presentation">The requested presentation surface.</param>
 /// <param name="ReceivedAt">The time at which the notification was recorded.</param>
 public sealed record ApplicationNotificationEntry(
     long Identity,
@@ -18,4 +19,5 @@ public sealed record ApplicationNotificationEntry(
     string? Title,
     string Message,
     UserNotificationSeverity Severity,
+    UserNotificationPresentation Presentation,
     DateTimeOffset ReceivedAt);

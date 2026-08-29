@@ -56,7 +56,8 @@
     <PackageVersion Include="SkiaSharp.Views.Maui.Controls" Version="4.151.1" />
     <PackageVersion Include="CommunityToolkit.Maui" Version="15.0.0" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-    <!--MAUI Uranium-->
+    
+      <!--MAUI Uranium-->
     <PackageVersion Include="UraniumUI.Blurs" Version="3.0.0" />
     <PackageVersion Include="UraniumUI.Dialogs.CommunityToolkit" Version="3.0.0" />
     <PackageVersion Include="UraniumUI.Dialogs.Mopups" Version="3.0.0" />

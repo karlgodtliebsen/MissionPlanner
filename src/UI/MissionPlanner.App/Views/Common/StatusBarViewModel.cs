@@ -23,7 +23,6 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
     private readonly IVehicleParameterLoadStatusContext parameterLoadStatus;
     private readonly IList<IDisposable> disposables = [];
     private readonly IActiveVehicleContext activeVehicle;
-
     private bool isDisposed;
     private IDispatcherTimer? timer;
 
@@ -66,15 +65,6 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     public partial string TelemetryFreshness { get; private set; } = "Telemetry: unavailable";
 
-
-
-    /// <summary>Short feedback message for the last menu action.</summary>
-    [ObservableProperty]
-    public partial bool HasStatusMessage
-    {
-        get; set;
-    }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="StatusBarViewModel"/> class.
     /// </summary>
@@ -108,7 +98,6 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
         stateService.PropertyChanged += OnApplicationStateChanged;
 
         // Subscribe to vehicle connection events
-
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated));
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected));
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
@@ -126,7 +115,6 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
         }
         UpdateVehicleStatus(activeVehicle.Current);
     }
-
     private Task OnVehicleLoadStatusChanged(VehicleParameterLoadStatusChanged evt, CancellationToken cancellationToken)
     {
         dispatcher.Dispatch(() =>
@@ -186,18 +174,6 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
     {
         return status.Message;
     }
-
-    //private void StartClock()
-    //{
-    //    timer = dispatcher.CreateTimer();
-    //    if (timer != null)
-    //    {
-    //        timer.Interval = TimeSpan.FromSeconds(1);
-    //        timer.Tick += (s, e) => CurrentTime = DateTime.Now.ToString("HH:mm:ss");
-    //        timer.Start();
-    //    }
-    //}
-
     private void StartClock()
     {
         timer = dispatcher.CreateTimer();
