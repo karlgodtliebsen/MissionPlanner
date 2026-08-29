@@ -13,5 +13,6 @@ public sealed record MissionCurrentMessage(
     ushort? Total,
     byte? MissionState,
     byte? MissionMode,
-    DateTimeOffset ReceivedAt)
+    DateTimeOffset ReceivedAt,
+    uint? MissionId = null)
     : MavLinkMessage(SystemId, ComponentId, MessageIds.MissionCurrent, EndPoint, ReceivedAt);

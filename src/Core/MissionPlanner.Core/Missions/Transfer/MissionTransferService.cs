@@ -23,7 +23,8 @@ public sealed class MissionTransferService(
     IMavLinkMissionEncoder encoder,
     IMissionProtocolMapper mapper,
     IEventHub eventHub,
-    ISimulationVehicleChannelRegistry? simulationChannels = null) : IMissionTransferService
+    ISimulationVehicleChannelRegistry? simulationChannels = null,
+    IOnboardMissionSnapshotStore? snapshotStore = null) : IMissionTransferService
 {
     private static readonly TimeSpan StepTimeout = TimeSpan.FromSeconds(3);
     private const int MaxAttempts = 4;
@@ -84,6 +85,17 @@ public sealed class MissionTransferService(
 
                 if (incoming is MissionAckMessage ack)
                 {
+                    if (missionType == MissionPlanType.FlightMission)
+                    {
+                        if (ack.Result == 0 && ack.OpaqueId is > 0)
+                        {
+                            snapshotStore?.Record(new OnboardMissionSnapshot(vehicleId, missionType, items.ToArray(), ack.OpaqueId, ack.ReceivedAt));
+                        }
+                        else if (ack.Result == 0)
+                        {
+                            snapshotStore?.Invalidate(vehicleId, missionType);
+                        }
+                    }
                     return new MissionUploadResult(ack.Result == 0, ack.Result, ack.Result == 0 ? null : $"Vehicle rejected mission with result {ack.Result}.");
                 }
 
@@ -192,7 +204,12 @@ public sealed class MissionTransferService(
 
         await GetConnection(vehicleId).SendRawAsync(encoder.EncodeMissionAck(vehicleId.SystemId, vehicleId.ComponentId, 0,
             (MavMissionType)(byte)missionType), session.EndPoint, cancellationToken);
-        return new MissionDownloadResult(true, result, null);
+        var missionId = count.OpaqueId is > 0 ? count.OpaqueId : null;
+        var retrievedAt = DateTimeOffset.UtcNow;
+        var immutableItems = result.ToArray();
+        var download = new MissionDownloadResult(true, immutableItems, null, vehicleId, missionType, missionId, retrievedAt);
+        snapshotStore?.Record(new OnboardMissionSnapshot(vehicleId, missionType, immutableItems, missionId, retrievedAt));
+        return download;
     }
 
     /// <inheritdoc/>
@@ -220,6 +237,10 @@ public sealed class MissionTransferService(
             try
             {
                 var acknowledgement = (MissionAckMessage)await ReadWithTimeout(acknowledgements.Reader, cancellationToken).ConfigureAwait(false);
+                if (acknowledgement.Result == 0)
+                {
+                    snapshotStore?.Invalidate(vehicleId, missionType);
+                }
                 return new MissionUploadResult(
                     acknowledgement.Result == 0,
                     acknowledgement.Result,

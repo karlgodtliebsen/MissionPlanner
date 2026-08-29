@@ -40,7 +40,8 @@ public sealed class MissionCurrentMessageDecoder : IMavLinkMessageDecoder
             frame.Payload.Length >= 4 ? MavLinkDecoderHelpers.ReadUInt16OrDefault(span, 2) : null,
             frame.Payload.Length >= 5 ? MavLinkDecoderHelpers.ReadByteOrDefault(span, 4) : null,
             frame.Payload.Length >= 6 ? MavLinkDecoderHelpers.ReadByteOrDefault(span, 5) : null,
-            frame.ReceivedAt);
+            frame.ReceivedAt,
+            frame.Payload.Length >= 10 ? MavLinkDecoderHelpers.ReadUInt32OrDefault(span, 6) : null);
 
         return true;
     }

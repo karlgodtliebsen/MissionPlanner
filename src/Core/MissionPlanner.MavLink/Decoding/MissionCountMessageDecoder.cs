@@ -30,7 +30,7 @@ public sealed class MissionCountMessageDecoder : IMavLinkMessageDecoder
         }
 
         var s = f.Payload.Span;
-        m = new MissionCountMessage(f.SystemId, f.ComponentId, f.EndPoint, MavLinkDecoderHelpers.ReadUInt16OrDefault(s, 0), s[2], s[3], s.Length >= 5 ? s[4] : (byte)0, f.ReceivedAt);
+        m = new MissionCountMessage(f.SystemId, f.ComponentId, f.EndPoint, MavLinkDecoderHelpers.ReadUInt16OrDefault(s, 0), s[2], s[3], s.Length >= 5 ? s[4] : (byte)0, f.ReceivedAt, s.Length >= 9 ? MavLinkDecoderHelpers.ReadUInt32OrDefault(s, 5) : null);
         return true;
     }
 }

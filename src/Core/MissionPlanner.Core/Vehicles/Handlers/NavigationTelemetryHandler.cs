@@ -5,6 +5,7 @@ using MissionPlanner.Core.Vehicles.Observations;
 using MissionPlanner.Firmware;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.Messages;
+using MissionState = MissionPlanner.MavLink.Generated.MissionState;
 
 namespace MissionPlanner.Core.Vehicles.Handlers;
 
@@ -113,9 +114,10 @@ public sealed class NavigationTelemetryHandler(
             case MissionCurrentMessage mission:
                 vehicle.ApplyMissionProgress(new VehicleMissionProgressObservation(
                     mission.Sequence,
-                    mission.Total,
-                    mission.MissionState,
-                    mission.MissionMode,
+                    mission.Total is ushort.MaxValue ? null : mission.Total,
+                    MapMissionState(mission.MissionState),
+                    MapMissionMode(mission.MissionMode),
+                    mission.MissionId is > 0 ? mission.MissionId : null,
                     mission.ReceivedAt));
                 break;
 
@@ -130,6 +132,17 @@ public sealed class NavigationTelemetryHandler(
 
         await PublishStateIfChangedAsync(previous, vehicle, cancellationToken).ConfigureAwait(false);
     }
+
+    private static MissionState MapMissionState(byte? value) => value.HasValue && Enum.IsDefined(typeof(MissionState), value.Value)
+        ? (MissionState)value.Value
+        : MissionState.Unknown;
+
+    private static VehicleMissionMode MapMissionMode(byte? value) => value switch
+    {
+        1 => VehicleMissionMode.Mission,
+        2 => VehicleMissionMode.Suspended,
+        _ => VehicleMissionMode.Unknown
+    };
 
     private static GpsFixType MapFixType(byte value)
     {

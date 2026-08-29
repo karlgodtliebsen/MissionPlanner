@@ -29,7 +29,7 @@ public sealed class MissionAckMessageDecoder : IMavLinkMessageDecoder
         }
 
         var s = f.Payload.Span;
-        m = new MissionAckMessage(f.SystemId, f.ComponentId, f.EndPoint, s[0], s[1], s[2], s.Length >= 4 ? s[3] : (byte)0, f.ReceivedAt);
+        m = new MissionAckMessage(f.SystemId, f.ComponentId, f.EndPoint, s[0], s[1], s[2], s.Length >= 4 ? s[3] : (byte)0, f.ReceivedAt, s.Length >= 8 ? System.Buffers.Binary.BinaryPrimitives.ReadUInt32LittleEndian(s[4..8]) : null);
         return true;
     }
 }

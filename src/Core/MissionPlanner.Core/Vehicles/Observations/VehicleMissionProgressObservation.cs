@@ -13,6 +13,7 @@ namespace MissionPlanner.Core.Vehicles.Observations;
 public sealed record VehicleMissionProgressObservation(
     ushort CurrentSequence,
     ushort? Total,
-    byte? MissionState,
-    byte? MissionMode,
+    MissionPlanner.MavLink.Generated.MissionState MissionState,
+    MissionPlanner.Core.Vehicles.Models.VehicleMissionMode MissionMode,
+    uint? MissionId,
     DateTimeOffset ObservedAt) : IVehicleObservation;

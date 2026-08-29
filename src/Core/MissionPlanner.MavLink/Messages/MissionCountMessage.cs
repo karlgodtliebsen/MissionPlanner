@@ -5,5 +5,5 @@ namespace MissionPlanner.MavLink.Messages;
 /// <summary>
 /// Provides the public API for MissionCountMessage.
 /// </summary>
-public sealed record MissionCountMessage(byte SystemId, byte ComponentId, TransportEndPoint EndPoint, ushort Count, byte TargetSystem, byte TargetComponent, byte MissionType, DateTimeOffset ReceivedAt)
+public sealed record MissionCountMessage(byte SystemId, byte ComponentId, TransportEndPoint EndPoint, ushort Count, byte TargetSystem, byte TargetComponent, byte MissionType, DateTimeOffset ReceivedAt, uint? OpaqueId = null)
     : MavLinkMessage(SystemId, ComponentId, MessageIds.MissionCount, EndPoint, ReceivedAt);

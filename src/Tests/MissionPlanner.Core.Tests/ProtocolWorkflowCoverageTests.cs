@@ -2,6 +2,7 @@
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Configuration;
 using MissionPlanner.Core.Missions.Abstractions;
+using MissionPlanner.Core.Missions.Models;
 using MissionPlanner.Core.Missions.Transfer;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -74,6 +75,7 @@ public sealed class ProtocolWorkflowCoverageTests
         var (session, registry) = CreateSession();
         var connection = Substitute.For<IMavLinkConnection>();
         var connectionSession = Substitute.For<IVehicleConnectionSession>();
+        connectionSession.Connection.Returns(connection);
 
         var encoder = Substitute.For<IMavLinkMissionEncoder>();
         encoder.EncodeMissionRequestList(1, 1, Arg.Any<MavMissionType>()).Returns([1]);
@@ -93,7 +95,7 @@ public sealed class ProtocolWorkflowCoverageTests
             if (sends == 1)
             {
                 _ = callback!(new MissionCountMessage(2, 1, EndPoint, 99, 255, 190, 0, ObservedAt), call.Arg<CancellationToken>());
-                _ = callback!(new MissionCountMessage(1, 1, EndPoint, 2, 255, 190, 0, ObservedAt), call.Arg<CancellationToken>());
+                _ = callback!(new MissionCountMessage(1, 1, EndPoint, 2, 255, 190, 0, ObservedAt, 0x1234), call.Arg<CancellationToken>());
             }
             else if (sends == 2)
             {
@@ -109,6 +111,9 @@ public sealed class ProtocolWorkflowCoverageTests
 
         Assert.True(result.Success, result.Error);
         Assert.Equal([0, 1], result.Items.Select(item => (int)item.Sequence));
+        Assert.Equal(session.Id, result.VehicleId);
+        Assert.Equal(MissionPlanType.FlightMission, result.MissionType);
+        Assert.Equal(0x1234u, result.MissionId);
         Assert.Equal(3, sends);
     }
 

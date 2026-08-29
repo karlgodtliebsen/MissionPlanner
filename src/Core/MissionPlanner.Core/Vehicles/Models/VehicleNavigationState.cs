@@ -1,3 +1,5 @@
+using MissionPlanner.MavLink.Generated;
+
 namespace MissionPlanner.Core.Vehicles.Models;
 
 /// <summary>
@@ -27,12 +29,13 @@ public sealed record VehicleNavigationState(
     double? CrossTrackErrorMeters,
     ushort? CurrentMissionSequence,
     ushort? MissionItemCount,
-    byte? MissionState,
-    byte? MissionMode,
+    MissionState MissionState,
+    VehicleMissionMode MissionMode,
+    uint? MissionId,
     DateTimeOffset? ObservedAt)
 {
     /// <summary>
     /// Provides the public API for Empty.
     /// </summary>
-    public static VehicleNavigationState Empty { get; } = new(null, null, null, null, null, null, null, null, null, null, null, null, null);
+    public static VehicleNavigationState Empty { get; } = new(null, null, null, null, null, null, null, null, null, null, MissionState.Unknown, VehicleMissionMode.Unknown, null, null);
 }

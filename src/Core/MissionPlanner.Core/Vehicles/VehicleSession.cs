@@ -568,6 +568,7 @@ public class VehicleSession(VehicleState initialState, TransportEndPoint endPoin
                 MissionItemCount = observation.Total,
                 MissionState = observation.MissionState,
                 MissionMode = observation.MissionMode,
+                MissionId = observation.MissionId,
                 ObservedAt = observation.ObservedAt
             }
         };

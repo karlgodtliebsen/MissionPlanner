@@ -246,14 +246,23 @@ Uploading does not execute a mission. Normal operation is:
 Execution telemetry is represented in the vehicle domain by mission/navigation state.
 Relevant incoming messages include:
 
-- `MISSION_CURRENT` — active mission sequence.
+- `MISSION_CURRENT` — active sequence, total item count, typed mission state/mode, and non-zero mission ID when supported.
 - `MISSION_ITEM_REACHED` — completed sequence.
 - `NAV_CONTROLLER_OUTPUT` — distance and navigation errors.
 - `HEARTBEAT` — flight mode and armed state.
 - Position and HUD telemetry — live map position and motion.
 
-The next monitoring slice should highlight the active item on the map and show completed,
-active, and upcoming items distinctly.
+`MISSION_CURRENT` extension fields remain unknown when an older short payload omits them. A zero
+mission ID is likewise treated as unsupported rather than as an identity.
+
+Successful downloads retain the exact vehicle identity, mission type, canonical protocol items,
+non-zero `MISSION_COUNT.opaque_id`, and a diagnostic retrieval time in an immutable onboard
+snapshot. `IOnboardMissionSnapshotStore` reports the snapshot as `VerifiedCurrent` only when its
+non-zero ID matches the active vehicle's streamed non-zero mission ID. Unsupported IDs remain
+`Unverified`; differing IDs are `Stale`. Current-item lookup is available only through this checked
+path and fails closed for a missing sequence, stale/unverified snapshot, or different vehicle.
+Disconnect and session replacement invalidate stored snapshots; successful upload/clear updates or
+invalidates them according to the returned protocol identity.
 
 ---
 
