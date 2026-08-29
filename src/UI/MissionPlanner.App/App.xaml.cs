@@ -1,8 +1,8 @@
-﻿using MissionPlanner.App.Views.Exit;
-using MissionPlanner.App.Services;
+﻿using MissionPlanner.App.Services;
 using MissionPlanner.App.Theming;
+using MissionPlanner.App.Views.Common;
+using MissionPlanner.App.Views.Exit;
 using MissionPlanner.Core.Replay;
-using MissionPlanner.Core.Simulation;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library;
 using MissionPlanner.Library.EventHub.Abstractions;
@@ -61,6 +61,9 @@ public partial class App : Application
 
     private async void OnWindowDestroying(object? sender, EventArgs e)
     {
+        serviceProvider.GetRequiredService<StatusBarViewModel>().Dispose();
+        serviceProvider.GetRequiredService<TopBarViewModel>().Dispose();
+
         // Ensure the connection is properly closed when the app is closing
         var replayManager = serviceProvider.GetRequiredService<IReplaySessionManager>();
         var simulationManager = serviceProvider.GetRequiredService<ISimulationSessionManager>();

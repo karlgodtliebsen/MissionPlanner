@@ -69,7 +69,6 @@ public static class MauiProgramExtensions
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 fonts.AddFontAwesomeIconFonts();
                 fonts.AddMaterialSymbolsFonts();
-                //fonts.AddFluentIconFonts();
             });
         builder.Services
             .AddApplicationConfiguration(builder.Configuration)

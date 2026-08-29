@@ -188,9 +188,8 @@ public static class ApplicationConfigurator
         services.TryAddTransient<AppShell>();
 
         // Common/Shared UI Components
-        services.TryAddTransient<StatusBarViewModel>();
-
-        services.TryAddTransient<TopBarViewModel>();
+        services.TryAddSingleton<StatusBarViewModel>();
+        services.TryAddSingleton<TopBarViewModel>();
 
         services.TryAddTransient<ExitViewModel>();
         services.TryAddTransient<ExitContentView>();

@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
@@ -27,6 +28,7 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
     private readonly IList<IDisposable> disposables = [];
     private readonly IReplaySessionManager replaySessionManager;
     private readonly INavigationService navigationService;
+    private bool disposed;
 
     [ObservableProperty]
     public partial bool IsConnected
@@ -70,7 +72,6 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
     }
     [ObservableProperty] public partial string ConnectionStatus { get; set; } = "Disconnected";
     [ObservableProperty] public partial string? IsConnectedImage { get; set; } = ConnectImage;
-    [ObservableProperty] public partial string CurrentTime { get; set; } = DateTime.Now.ToString("HH:mm:ss");
     [ObservableProperty]
     public partial bool ShowHost
     {
@@ -118,64 +119,68 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated));
         replaySessionManager.Changed += OnReplayChanged;
+        // Subscribe to connection state changes
+        stateService.PropertyChanged += OnApplicationStateChanged;
         ApplyReplayState(replaySessionManager.Snapshot);
 
         // Initial state
         UpdateConnectionStatus();
 
-        // Subscribe to connection state changes
-        stateService.PropertyChanged += (s, args) =>
-        {
-            switch (args.PropertyName)
-            {
-                case nameof(ApplicationStateService.IsConnected):
-
-                    if (IsConnected != stateService.IsConnected)
-                    {
-                        IsConnected = stateService.IsConnected;
-                        UpdateConnectionStatus();
-                    }
-
-                    break;
-                case nameof(ApplicationStateService.VehicleId):
-
-                    if (VehicleId != stateService.VehicleId.ToString())
-                    {
-                        VehicleId = stateService.VehicleId.ToString();
-                        UpdateConnectionStatus();
-                    }
-
-                    break;
-                case nameof(ApplicationStateService.VehicleName):
-
-                    if (VehicleName != stateService.VehicleName)
-                    {
-                        VehicleName = stateService.VehicleName;
-                        UpdateConnectionStatus();
-                    }
-
-                    break;
-            }
-        };
     }
 
+    private void OnApplicationStateChanged(object? sender, PropertyChangedEventArgs args)
+    {
+        switch (args.PropertyName)
+        {
+            case nameof(ApplicationStateService.IsConnected):
+
+                if (IsConnected != stateService.IsConnected)
+                {
+                    IsConnected = stateService.IsConnected;
+                    UpdateConnectionStatus();
+                }
+
+                break;
+            case nameof(ApplicationStateService.VehicleId):
+
+                if (VehicleId != stateService.VehicleId.ToString())
+                {
+                    VehicleId = stateService.VehicleId.ToString();
+                    UpdateConnectionStatus();
+                }
+
+                break;
+            case nameof(ApplicationStateService.VehicleName):
+
+                if (VehicleName != stateService.VehicleName)
+                {
+                    VehicleName = stateService.VehicleName;
+                    UpdateConnectionStatus();
+                }
+
+                break;
+        }
+    }
 
     private void UpdateConnectionStatus()
     {
-        IsConnected = stateService.IsConnected;
-        Channel = stateService.SelectedChannel;
-        ShowHost = Channel is "TCP" or "UDP" or "UDPCI";
-        ShowCom = !ShowHost;
-        ShowVehicleName = !string.IsNullOrEmpty(stateService.VehicleName);
-        Host = ShowHost ? stateService.SelectedHost : null;
-        Port = ShowHost ? stateService.SelectedPort : null;
+        dispatcher.Dispatch(() =>
+        {
+            IsConnected = stateService.IsConnected;
+            Channel = stateService.SelectedChannel;
+            ShowHost = Channel is "TCP" or "UDP" or "UDPCI";
+            ShowCom = !ShowHost;
+            ShowVehicleName = !string.IsNullOrEmpty(stateService.VehicleName);
+            Host = ShowHost ? stateService.SelectedHost : null;
+            Port = ShowHost ? stateService.SelectedPort : null;
 
-        BaudRate = ShowCom ? stateService.SelectedBaudRate : null;
-        VehicleName = ShowVehicleName ? stateService.VehicleName : null;
-        VehicleId = stateService.VehicleId.ToString();
+            BaudRate = ShowCom ? stateService.SelectedBaudRate : null;
+            VehicleName = ShowVehicleName ? stateService.VehicleName : null;
+            VehicleId = stateService.VehicleId.ToString();
 
-        ConnectionStatus = stateService.IsConnected ? "Connected" : "Disconnected";
-        IsConnectedImage = stateService.IsConnected ? ConnectImage : DisConnectImage;
+            ConnectionStatus = stateService.IsConnected ? "Connected" : "Disconnected";
+            IsConnectedImage = stateService.IsConnected ? ConnectImage : DisConnectImage;
+        });
     }
 
     private async Task OnVehicleConnected(VehicleConnected evt, CancellationToken ct)
@@ -215,11 +220,18 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
     /// <inheritdoc />
     public void Dispose()
     {
+        if (disposed)
+        {
+            return;
+        }
+        disposed = true;
+        stateService.PropertyChanged -= OnApplicationStateChanged;
         replaySessionManager.Changed -= OnReplayChanged;
         foreach (var disposable in disposables)
         {
             disposable.Dispose();
         }
+        disposables.Clear();
     }
 
     private void OnReplayChanged(ReplaySessionChangedEventArgs args)
@@ -229,9 +241,12 @@ public partial class TopBarViewModel : ObservableObject, IDisposable
 
     private void ApplyReplayState(ReplaySessionSnapshot snapshot)
     {
-        IsReplayReadOnly = snapshot.IsTransmissionProhibited;
-        DataSourceMode = IsReplayReadOnly ? "REPLAY · READ ONLY" : "LIVE / SIMULATION";
-        OnPropertyChanged(nameof(CanOpenConnection));
-        ConnectCommand.NotifyCanExecuteChanged();
+        dispatcher.Dispatch(() =>
+        {
+            IsReplayReadOnly = snapshot.IsTransmissionProhibited;
+            DataSourceMode = IsReplayReadOnly ? "REPLAY · READ ONLY" : "LIVE / SIMULATION";
+            OnPropertyChanged(nameof(CanOpenConnection));
+            ConnectCommand.NotifyCanExecuteChanged();
+        });
     }
 }

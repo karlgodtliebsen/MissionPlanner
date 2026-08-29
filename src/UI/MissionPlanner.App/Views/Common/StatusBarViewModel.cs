@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
 using MissionPlanner.Core.DomainEvents;
@@ -104,13 +105,7 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
         activeVehicle.Changed += OnActiveVehicleChanged;
 
         // Subscribe to connection state changes
-        stateService.PropertyChanged += (s, e) =>
-        {
-            if (e.PropertyName == nameof(ApplicationStateService.IsConnected))
-            {
-                UpdateConnectionStatus();
-            }
-        };
+        stateService.PropertyChanged += OnApplicationStateChanged;
 
         // Subscribe to vehicle connection events
 
@@ -192,16 +187,34 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
         return status.Message;
     }
 
+    //private void StartClock()
+    //{
+    //    timer = dispatcher.CreateTimer();
+    //    if (timer != null)
+    //    {
+    //        timer.Interval = TimeSpan.FromSeconds(1);
+    //        timer.Tick += (s, e) => CurrentTime = DateTime.Now.ToString("HH:mm:ss");
+    //        timer.Start();
+    //    }
+    //}
+
     private void StartClock()
     {
         timer = dispatcher.CreateTimer();
-        if (timer != null)
+        timer.Interval = TimeSpan.FromSeconds(1);
+        timer.Tick += OnClockTick;
+        timer.Start();
+    }
+
+    private void OnClockTick(object? sender, EventArgs e)
+    {
+        if (!isDisposed)
         {
-            timer.Interval = TimeSpan.FromSeconds(1);
-            timer.Tick += (s, e) => CurrentTime = DateTime.Now.ToString("HH:mm:ss");
-            timer.Start();
+            CurrentTime = DateTime.Now.ToString("HH:mm:ss");
         }
     }
+
+
 
     private void UpdateConnectionStatus()
     {
@@ -216,7 +229,13 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
             IsConnectedStatus = false;
         }
     }
-
+    private void OnApplicationStateChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ApplicationStateService.IsConnected))
+        {
+            UpdateConnectionStatus();
+        }
+    }
     private Task OnVehicleDisconnected(VehicleDisconnected evt, CancellationToken ct)
     {
         dispatcher.Dispatch(() =>
@@ -247,7 +266,14 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
             return;
         }
         isDisposed = true;
-
+        if (timer is not null)
+        {
+            timer.Tick -= OnClockTick;
+            timer.Stop();
+            timer = null;
+        }
+        stateService.PropertyChanged -= OnApplicationStateChanged;
+        activeVehicle.Changed -= OnActiveVehicleChanged;
         foreach (var disposable in disposables)
         {
             disposable.Dispose();

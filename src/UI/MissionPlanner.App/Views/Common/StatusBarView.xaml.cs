@@ -16,4 +16,5 @@ public partial class StatusBarView : ContentView
         var viewModel = ServiceHelper.GetRequiredService<StatusBarViewModel>();
         BindingContext = viewModel;
     }
+
 }

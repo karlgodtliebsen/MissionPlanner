@@ -13,7 +13,7 @@
                             x:DataType="flightData:FlightDataViewModel"
                         >
 
-    <Grid  ColumnDefinitions="260,5,*" ColumnSpacing="0" >
+    <Grid  ColumnDefinitions="400,5,*" ColumnSpacing="0" >
 
         <!-- Left column: HUD + action tabs -->
         <Grid Grid.Column="0" RowDefinitions="*,2*" RowSpacing="4" ColumnDefinitions="*" >
