@@ -22,9 +22,9 @@ copying the legacy button matrix.
 | Restart Mission | Implemented | Confirmed UI uses sequence 0 plus reset; help text makes clear that it does not arm or change mode. |
 | Resume Mission | Implemented | Independently enabled only for positively identified paused/suspended execution and uses pause/continue semantics. |
 | Abort Landing | Implemented | Plane-only control; enabled only for AUTO, active execution, ID-verified current `NAV_LAND`, and enabled `LAND_ABORT_THR`. |
-| Change Speed | Backend implemented; UI pending | Typed ground/airspeed semantics map to `DO_CHANGE_SPEED`; throttle is fixed at no-change and ACK acceptance is not mislabeled telemetry confirmation. |
-| Change Altitude | Backend implemented; UI pending | Sends a position-only `GLOBAL_RELATIVE_ALT_INT` Guided target at current lat/lon, never changes mode, and confirms from post-request relative-altitude telemetry. |
-| Set Loiter Radius | Backend implemented; UI pending | Typed persistent parameter write prefers `WP_LOITER_RAD`, preserves direction sign, and requires matching parameter-value confirmation. |
+| Change Speed | Implemented | Plane exposes Airspeed/Ground speed; Copter/Rover expose Ground speed only. Throttle is fixed at no-change and ACK acceptance is not mislabeled telemetry confirmation. |
+| Change Altitude | Implemented | UI explicitly requests an absolute target above HOME and is enabled only in supported Guided mode with position; it never changes mode. |
+| Set Loiter Radius | Implemented | Positive-magnitude UI identifies the persistent write; backend chooses the available parameter, preserves direction sign, and requires value confirmation. |
 | Set Mount / gimbal | Moved / Belongs elsewhere | Not present in NextGen; candidate for a dedicated payload/gimbal workspace, not Actions. |
 | Joystick | Moved / Belongs elsewhere | Not present in NextGen; candidate for dedicated input-device setup. |
 | Raw Sensor View | Moved / Belongs elsewhere | Not present in NextGen; candidate for a diagnostics workspace. |
@@ -69,7 +69,7 @@ to the exact vehicle; pre-request state cannot satisfy confirmation.
 | Set Home Here | Confirm with fresh 3D position. | HOME command ACK; vehicle HOME changes. |
 | Zero / Reset Altitude | Requires a finite relative altitude to create; reset remains available while active. | Local presentation state only; HUD displays `relative altitude - local reference`, while MSL fallback remains unmodified. |
 | Mission intervention | Use the subordinate Actions section after downloading/verifying the onboard mission. | Modern current/reset/pause commands retain distinct ACK and telemetry-confirmation results; abort remains strongly gated and Plane-only. |
-| In-flight adjustments | Not available. | Complete Task 05 prerequisites; distinguish ACK from parameter readback. |
+| In-flight adjustments | Use the subordinate Actions section in a supported mode. | Speed reports command ACK, altitude reports setpoint/telemetry state without a fake ACK, and radius reports persistent parameter confirmation. |
 | Expert MAV CMD | Enter a safe test command ID and seven parameters. | ID remains independent of takeoff altitude; confirmation and real ACK are shown. |
 | Sequential status | Run two safe commands in sequence. | New pending/result state replaces stale command presentation. |
 

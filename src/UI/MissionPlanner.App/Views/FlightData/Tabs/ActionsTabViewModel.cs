@@ -8,6 +8,7 @@ using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Models;
+using MissionPlanner.Core.FlightData.Adjustments;
 using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -37,6 +38,8 @@ public partial class ActionsTabViewModel : BaseViewModel
     private readonly ILocalAltitudeReferenceService altitudeReferenceService;
     private readonly IMissionInterventionService missionInterventionService;
     private readonly IOnboardMissionSnapshotStore missionSnapshots;
+    private readonly IVehicleAdjustmentService adjustmentService;
+    private readonly IVehicleParameterRegistry parameterRegistry;
     private IDisposable? stateSubscription;
 
     /// <summary>
@@ -65,6 +68,8 @@ public partial class ActionsTabViewModel : BaseViewModel
         ILocalAltitudeReferenceService altitudeReferenceService,
         IMissionInterventionService missionInterventionService,
         IOnboardMissionSnapshotStore missionSnapshots,
+        IVehicleAdjustmentService adjustmentService,
+        IVehicleParameterRegistry parameterRegistry,
         IReplaySessionManager? replaySessionManager = null) : base(logger)
     {
         this.activeVehicle = activeVehicle;
@@ -79,6 +84,8 @@ public partial class ActionsTabViewModel : BaseViewModel
         this.altitudeReferenceService = altitudeReferenceService;
         this.missionInterventionService = missionInterventionService;
         this.missionSnapshots = missionSnapshots;
+        this.adjustmentService = adjustmentService;
+        this.parameterRegistry = parameterRegistry;
         this.replaySessionManager = replaySessionManager;
         operationRunner = new AsyncOperationRunner(activeVehicle);
     }
@@ -223,6 +230,19 @@ public partial class ActionsTabViewModel : BaseViewModel
     [ObservableProperty]
     public partial bool IsMissionOperationPending { get; private set; }
 
+    [ObservableProperty] public partial double TargetSpeedMetersPerSecond { get; set; } = 5;
+    [ObservableProperty] public partial VehicleSpeedTargetType SelectedSpeedTargetType { get; set; } = VehicleSpeedTargetType.GroundSpeed;
+    [ObservableProperty] public partial IReadOnlyList<VehicleSpeedTargetType> SpeedTargetTypes { get; private set; } = [VehicleSpeedTargetType.GroundSpeed];
+    [ObservableProperty] public partial bool IsSpeedTypeSelectorVisible { get; private set; }
+    [ObservableProperty] public partial double TargetAltitudeAboveHomeMeters { get; set; } = 10;
+    [ObservableProperty] public partial double LoiterRadiusMagnitudeMeters { get; set; } = 50;
+    [ObservableProperty] public partial bool CanChangeSpeed { get; private set; }
+    [ObservableProperty] public partial bool CanChangeAltitude { get; private set; }
+    [ObservableProperty] public partial bool CanSetLoiterRadius { get; private set; }
+    [ObservableProperty] public partial string ChangeAltitudeReason { get; private set; } = string.Empty;
+    [ObservableProperty] public partial string LoiterRadiusReason { get; private set; } = string.Empty;
+    [ObservableProperty] public partial bool IsAdjustmentPending { get; private set; }
+
     /// <summary>Gets whether vehicle-changing controls may transmit in the current data-source mode.</summary>
     [ObservableProperty]
     public partial bool CanTransmit { get; private set; } = true;
@@ -244,6 +264,7 @@ public partial class ActionsTabViewModel : BaseViewModel
         activeVehicle.Changed += OnActiveVehicleChanged;
         altitudeReferenceService.Changed += OnAltitudeReferenceChanged;
         missionSnapshots.Changed += OnMissionSnapshotsChanged;
+        parameterRegistry.Changed += OnVehicleParameterChanged;
         stateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
         ApplySnapshot(activeVehicle.Current);
         if (replaySessionManager is not null)
@@ -268,6 +289,7 @@ public partial class ActionsTabViewModel : BaseViewModel
         activeVehicle.Changed -= OnActiveVehicleChanged;
         altitudeReferenceService.Changed -= OnAltitudeReferenceChanged;
         missionSnapshots.Changed -= OnMissionSnapshotsChanged;
+        parameterRegistry.Changed -= OnVehicleParameterChanged;
         stateSubscription?.Dispose();
         stateSubscription = null;
     }
@@ -464,6 +486,73 @@ public partial class ActionsTabViewModel : BaseViewModel
         finally
         {
             IsMissionOperationPending = false;
+            PendingCommand = null;
+            ApplySnapshot(activeVehicle.Current);
+        }
+    }
+
+    [RelayCommand]
+    private Task ChangeSpeedAsync(CancellationToken cancellationToken)
+    {
+        if (!double.IsFinite(TargetSpeedMetersPerSecond) || TargetSpeedMetersPerSecond <= 0) return InvalidAdjustment("Speed must be greater than 0.");
+        return ExecuteAdjustmentAsync("Change Speed", (id, token) => adjustmentService.ChangeSpeedAsync(id, SelectedSpeedTargetType, TargetSpeedMetersPerSecond, token), cancellationToken);
+    }
+
+    [RelayCommand]
+    private Task ChangeAltitudeAsync(CancellationToken cancellationToken)
+    {
+        if (!double.IsFinite(TargetAltitudeAboveHomeMeters) || TargetAltitudeAboveHomeMeters < 0) return InvalidAdjustment("Target altitude above HOME must be non-negative.");
+        return ExecuteAdjustmentAsync("Change Altitude", (id, token) => adjustmentService.SetGuidedAltitudeAsync(id, TargetAltitudeAboveHomeMeters, token), cancellationToken);
+    }
+
+    [RelayCommand]
+    private Task SetLoiterRadiusAsync(CancellationToken cancellationToken)
+    {
+        if (!double.IsFinite(LoiterRadiusMagnitudeMeters) || LoiterRadiusMagnitudeMeters <= 0) return InvalidAdjustment("Loiter radius must be greater than 0.");
+        return ExecuteAdjustmentAsync("Set Loiter Radius", (id, token) => adjustmentService.SetLoiterRadiusAsync(id, LoiterRadiusMagnitudeMeters, token), cancellationToken);
+    }
+
+    private Task InvalidAdjustment(string message)
+    {
+        OperationState = AsyncOperationState.Warning(message);
+        return Task.CompletedTask;
+    }
+
+    private async Task ExecuteAdjustmentAsync(string label, Func<VehicleId, CancellationToken, Task<VehicleAdjustmentResult>> execute, CancellationToken cancellationToken)
+    {
+        if (IsAdjustmentPending)
+        {
+            OperationState = AsyncOperationState.Warning("Another adjustment is pending.");
+            return;
+        }
+        if (activeVehicle.State is not { } state)
+        {
+            OperationState = AsyncOperationState.Disconnected();
+            return;
+        }
+        IsAdjustmentPending = true;
+        ApplySnapshot(activeVehicle.Current);
+        PendingCommand = label;
+        OperationState = AsyncOperationState.Busy(label == "Set Loiter Radius" ? "Writing persistent parameter" : $"{label} pending");
+        try
+        {
+            var result = await execute(state.VehicleId, cancellationToken);
+            AckResult = result.Status.ToString();
+            OperationState = result.Status switch
+            {
+                VehicleAdjustmentStatus.TelemetryConfirmed => AsyncOperationState.Success(result.Message),
+                VehicleAdjustmentStatus.ParameterConfirmed => AsyncOperationState.Success(result.Message),
+                VehicleAdjustmentStatus.CommandAccepted => AsyncOperationState.Success(result.Message),
+                VehicleAdjustmentStatus.TargetSentButNotTelemetryConfirmed => AsyncOperationState.Warning(result.Message),
+                VehicleAdjustmentStatus.Timeout => AsyncOperationState.Timeout(result.Message),
+                VehicleAdjustmentStatus.Denied or VehicleAdjustmentStatus.Unsupported or VehicleAdjustmentStatus.Busy => AsyncOperationState.Warning(result.Message),
+                _ => AsyncOperationState.Error(result.Message)
+            };
+        }
+        catch (OperationCanceledException) { OperationState = AsyncOperationState.Warning($"{label} cancelled."); }
+        finally
+        {
+            IsAdjustmentPending = false;
             PendingCommand = null;
             ApplySnapshot(activeVehicle.Current);
         }
@@ -719,6 +808,19 @@ public partial class ActionsTabViewModel : BaseViewModel
         var abortDecision = state is null ? VehicleCommandDecision.Deny("No active vehicle.") : missionInterventionService.Evaluate(state, VehicleAction.AbortLanding);
         CanAbortLanding = !IsMissionOperationPending && IsAbortLandingVisible && abortDecision.IsAllowed;
         AbortLandingReason = abortDecision.Reason ?? "Abort the active landing approach.";
+        SpeedTargetTypes = state?.Identity.Firmware.Family == MissionPlanner.Firmware.FirmwareFamily.ArduPlane
+            ? [VehicleSpeedTargetType.Airspeed, VehicleSpeedTargetType.GroundSpeed]
+            : [VehicleSpeedTargetType.GroundSpeed];
+        IsSpeedTypeSelectorVisible = SpeedTargetTypes.Count > 1;
+        if (!SpeedTargetTypes.Contains(SelectedSpeedTargetType)) SelectedSpeedTargetType = VehicleSpeedTargetType.GroundSpeed;
+        var speedDecision = state is null ? VehicleCommandDecision.Deny("No active vehicle.") : adjustmentService.EvaluateSpeed(state, SelectedSpeedTargetType);
+        var altitudeDecision = state is null ? VehicleCommandDecision.Deny("No active vehicle.") : adjustmentService.EvaluateAltitude(state);
+        var radiusDecision = state is null ? VehicleCommandDecision.Deny("No active vehicle.") : adjustmentService.EvaluateLoiterRadius(state);
+        CanChangeSpeed = !IsAdjustmentPending && speedDecision.IsAllowed && double.IsFinite(TargetSpeedMetersPerSecond) && TargetSpeedMetersPerSecond > 0;
+        CanChangeAltitude = !IsAdjustmentPending && altitudeDecision.IsAllowed && double.IsFinite(TargetAltitudeAboveHomeMeters) && TargetAltitudeAboveHomeMeters >= 0;
+        CanSetLoiterRadius = !IsAdjustmentPending && radiusDecision.IsAllowed && double.IsFinite(LoiterRadiusMagnitudeMeters) && LoiterRadiusMagnitudeMeters > 0;
+        ChangeAltitudeReason = altitudeDecision.Reason ?? "Absolute target altitude above HOME.";
+        LoiterRadiusReason = radiusDecision.Reason ?? "Persistent vehicle parameter. Existing loiter direction is preserved.";
     }
 
     private void OnAltitudeReferenceChanged(object? sender, LocalAltitudeReferenceChangedEventArgs args)
@@ -730,8 +832,13 @@ public partial class ActionsTabViewModel : BaseViewModel
     }
 
     private void OnMissionSnapshotsChanged(object? sender, EventArgs args) => dispatcher.Dispatch(() => ApplySnapshot(activeVehicle.Current));
+    private void OnVehicleParameterChanged(VehicleParameterChangedEventArgs args) => dispatcher.Dispatch(() => ApplySnapshot(activeVehicle.Current));
 
     partial void OnSelectedMissionSequenceChanged(double value) => ApplySnapshot(activeVehicle.Current);
+    partial void OnSelectedSpeedTargetTypeChanged(VehicleSpeedTargetType value) => ApplySnapshot(activeVehicle.Current);
+    partial void OnTargetSpeedMetersPerSecondChanged(double value) => ApplySnapshot(activeVehicle.Current);
+    partial void OnTargetAltitudeAboveHomeMetersChanged(double value) => ApplySnapshot(activeVehicle.Current);
+    partial void OnLoiterRadiusMagnitudeMetersChanged(double value) => ApplySnapshot(activeVehicle.Current);
 
     private void OnReplayChanged(ReplaySessionChangedEventArgs args)
     {

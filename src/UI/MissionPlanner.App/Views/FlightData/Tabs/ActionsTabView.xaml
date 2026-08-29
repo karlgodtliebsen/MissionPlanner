@@ -88,6 +88,31 @@
             </Border>
 
             <Border Padding="10" StyleClass="SurfaceContainer,Rounded,Elevation1">
+                <VerticalStackLayout Spacing="7">
+                    <Label Text="In-flight adjustments" FontAttributes="Bold" />
+                    <Label Text="Ground speed" FontSize="11" IsVisible="{Binding IsSpeedTypeSelectorVisible, Converter={StaticResource InvertedBoolConverter}}" />
+                    <material:SelectField ItemsSource="{Binding SpeedTargetTypes}"
+                                          SelectedItem="{Binding SelectedSpeedTargetType}"
+                                          IsVisible="{Binding IsSpeedTypeSelectorVisible}" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <controls:NumericField Grid.Column="0" Title="Speed (m/s)" Value="{Binding TargetSpeedMetersPerSecond, Mode=TwoWay}" NumberFormat="F1" />
+                        <Button Grid.Column="1" Text="Change Speed" Command="{Binding ChangeSpeedCommand}" IsEnabled="{Binding CanChangeSpeed}" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <controls:NumericField Grid.Column="0" Title="Target altitude above HOME (m)" Value="{Binding TargetAltitudeAboveHomeMeters, Mode=TwoWay}" NumberFormat="F1" />
+                        <Button Grid.Column="1" Text="Change Altitude" Command="{Binding ChangeAltitudeCommand}" IsEnabled="{Binding CanChangeAltitude}"
+                                ToolTipProperties.Text="{Binding ChangeAltitudeReason}" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <controls:NumericField Grid.Column="0" Title="Loiter radius magnitude (m)" Value="{Binding LoiterRadiusMagnitudeMeters, Mode=TwoWay}" NumberFormat="F1" />
+                        <Button Grid.Column="1" Text="Set Loiter Radius" Command="{Binding SetLoiterRadiusCommand}" IsEnabled="{Binding CanSetLoiterRadius}"
+                                ToolTipProperties.Text="{Binding LoiterRadiusReason}" />
+                    </Grid>
+                    <Label Text="Persistent vehicle parameter. Existing loiter direction is preserved." FontSize="10" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Padding="10" StyleClass="SurfaceContainer,Rounded,Elevation1">
                 <VerticalStackLayout Spacing="5">
                     <Label Text="Command status" FontAttributes="Bold" />
                     <Label Text="{Binding PendingCommand, StringFormat='Pending: {0}'}" />

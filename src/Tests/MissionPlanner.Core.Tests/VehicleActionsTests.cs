@@ -7,6 +7,7 @@ using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Models;
+using MissionPlanner.Core.FlightData.Adjustments;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -29,6 +30,45 @@ namespace MissionPlanner.Core.Tests;
 /// </summary>
 public sealed class VehicleActionsTests
 {
+    [Fact]
+    public async Task AdjustmentUiOffersPlaneSpeedSemanticsAndPassesTypedAirspeed()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var plane = WithFamily(CreateState(now), FirmwareFamily.ArduPlane) with { Flight = CreateState(now).Flight with { CustomMode = 15 } };
+        var fixture = CreateViewModel(plane, now);
+        fixture.Adjustment.EvaluateSpeed(Arg.Any<VehicleState>(), VehicleSpeedTargetType.Airspeed).Returns(VehicleCommandDecision.Allow());
+        fixture.Adjustment.ChangeSpeedAsync(plane.VehicleId, VehicleSpeedTargetType.Airspeed, 22, Arg.Any<CancellationToken>())
+            .Returns(new VehicleAdjustmentResult(plane.VehicleId, VehicleAdjustmentStatus.CommandAccepted, "Speed command accepted."));
+        await fixture.ViewModel.ActivateAsync();
+        fixture.ViewModel.SelectedSpeedTargetType = VehicleSpeedTargetType.Airspeed;
+        fixture.ViewModel.TargetSpeedMetersPerSecond = 22;
+
+        fixture.ViewModel.SpeedTargetTypes.Should().Equal(VehicleSpeedTargetType.Airspeed, VehicleSpeedTargetType.GroundSpeed);
+        fixture.ViewModel.CanChangeSpeed.Should().BeTrue();
+        await fixture.ViewModel.ChangeSpeedCommand.ExecuteAsync(null);
+        await fixture.Adjustment.Received(1).ChangeSpeedAsync(plane.VehicleId, VehicleSpeedTargetType.Airspeed, 22, Arg.Any<CancellationToken>());
+        fixture.ViewModel.AckResult.Should().Be(nameof(VehicleAdjustmentStatus.CommandAccepted));
+    }
+
+    [Fact]
+    public async Task AdjustmentUiKeepsCapabilitiesIndependentAndRejectsInvalidInput()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var fixture = CreateViewModel(CreateState(now), now);
+        fixture.Adjustment.EvaluateSpeed(Arg.Any<VehicleState>(), VehicleSpeedTargetType.GroundSpeed).Returns(VehicleCommandDecision.Allow());
+        fixture.Adjustment.EvaluateAltitude(Arg.Any<VehicleState>()).Returns(VehicleCommandDecision.Deny("Guided mode required."));
+        fixture.Adjustment.EvaluateLoiterRadius(Arg.Any<VehicleState>()).Returns(VehicleCommandDecision.Allow());
+        await fixture.ViewModel.ActivateAsync();
+
+        fixture.ViewModel.SpeedTargetTypes.Should().Equal(VehicleSpeedTargetType.GroundSpeed);
+        fixture.ViewModel.CanChangeSpeed.Should().BeTrue();
+        fixture.ViewModel.CanChangeAltitude.Should().BeFalse();
+        fixture.ViewModel.CanSetLoiterRadius.Should().BeTrue();
+        fixture.ViewModel.TargetSpeedMetersPerSecond = double.NaN;
+        await fixture.ViewModel.ChangeSpeedCommand.ExecuteAsync(null);
+        await fixture.Adjustment.DidNotReceiveWithAnyArgs().ChangeSpeedAsync(default, default, default, default);
+    }
+
     [Fact]
     public async Task MissionUiUsesCanonicalSequenceAndPreservesAckOnlyStatus()
     {
@@ -483,8 +523,12 @@ public sealed class VehicleActionsTests
         var confirmation = Substitute.For<IUserConfirmationService>();
         var altitudeReference = Substitute.For<ILocalAltitudeReferenceService>();
         var missionIntervention = Substitute.For<IMissionInterventionService>();
+        var adjustment = Substitute.For<IVehicleAdjustmentService>();
         missionIntervention.Evaluate(Arg.Any<VehicleState>(), Arg.Any<VehicleAction>(), Arg.Any<ushort?>())
             .Returns(VehicleCommandDecision.Deny("Unavailable in this fixture."));
+        adjustment.EvaluateSpeed(Arg.Any<VehicleState>(), Arg.Any<VehicleSpeedTargetType>()).Returns(VehicleCommandDecision.Deny("Unavailable."));
+        adjustment.EvaluateAltitude(Arg.Any<VehicleState>()).Returns(VehicleCommandDecision.Deny("Unavailable."));
+        adjustment.EvaluateLoiterRadius(Arg.Any<VehicleState>()).Returns(VehicleCommandDecision.Deny("Unavailable."));
         var dispatcher = Substitute.For<IDispatcher>();
         dispatcher.Dispatch(Arg.Any<Action>()).Returns(call =>
         {
@@ -503,8 +547,10 @@ public sealed class VehicleActionsTests
             Substitute.For<ILogger<ActionsTabViewModel>>(),
             altitudeReference,
             missionIntervention,
-            Substitute.For<IOnboardMissionSnapshotStore>());
-        return new ViewModelFixture(viewModel, commands, confirmation, active.State!, altitudeReference, missionIntervention);
+            Substitute.For<IOnboardMissionSnapshotStore>(),
+            adjustment,
+            Substitute.For<IVehicleParameterRegistry>());
+        return new ViewModelFixture(viewModel, commands, confirmation, active.State!, altitudeReference, missionIntervention, adjustment);
     }
 
     private static VehicleCommandPolicy CreatePolicy(DateTimeOffset now)
@@ -544,5 +590,6 @@ public sealed class VehicleActionsTests
         IUserConfirmationService Confirmation,
         VehicleState State,
         ILocalAltitudeReferenceService AltitudeReference,
-        IMissionInterventionService MissionIntervention);
+        IMissionInterventionService MissionIntervention,
+        IVehicleAdjustmentService Adjustment);
 }
