@@ -18,6 +18,7 @@
     <File Path="../docs/DESIGN_CONCEPTS.md" />
     <File Path="../docs/FEATURES.md" />
     <File Path="../docs/FIRMWARE.md" />
+    <File Path="../docs/flightdata-actions-parity.md" />
     <File Path="../docs/FLIGHT_DATA.md" />
     <File Path="../docs/KNOWN_TEST_FAILURES.md" />
     <File Path="../docs/MAPS.md" />
@@ -28,11 +29,13 @@
     <File Path="../docs/MAVLINK.md" />
     <File Path="../docs/MAVLINK_DOMAIN_PROMOTION.md" />
     <File Path="../docs/MISSIONS.md" />
+    <File Path="../docs/OPTIONAL_HARDWARE.md" />
     <File Path="../docs/PARAMETERS.md" />
     <File Path="../docs/PLANNER_SETTINGS.md" />
     <File Path="../docs/README.md" />
     <File Path="../docs/SERILOG_QUICKSTART.md" />
     <File Path="../docs/SIMULATION.md" />
+    <File Path="../docs/Theming.md" />
     <File Path="../docs/UI_VIEW_LIFECYCLE_AND_NAVIGATION.md" />
     <File Path="../docs/VEHICLE_CONNECTION.md" />
     <File Path="../docs/VEHICLE_SCRIPTS.md" />
