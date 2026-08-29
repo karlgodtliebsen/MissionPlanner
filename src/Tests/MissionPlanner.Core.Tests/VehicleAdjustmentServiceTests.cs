@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.FlightData.Adjustments;
@@ -51,7 +51,7 @@ public sealed class VehicleAdjustmentServiceTests
         var fixture = CreateFixture(State(FirmwareFamily.ArduCopter, 4));
         (await fixture.Service.ChangeSpeedAsync(fixture.VehicleId, VehicleSpeedTargetType.Airspeed, 10, TestContext.Current.CancellationToken)).Status.Should().Be(VehicleAdjustmentStatus.Denied);
         (await fixture.Service.ChangeSpeedAsync(fixture.VehicleId, VehicleSpeedTargetType.GroundSpeed, double.NaN, TestContext.Current.CancellationToken)).Status.Should().Be(VehicleAdjustmentStatus.Denied);
-        await fixture.Connection.DidNotReceiveWithAnyArgs().SendRawAsync(default, default!, default);
+        await fixture.Connection.DidNotReceiveWithAnyArgs().SendRawAsync(default, default!, TestContext.Current.CancellationToken);
     }
 
     [Theory]
@@ -61,12 +61,24 @@ public sealed class VehicleAdjustmentServiceTests
     {
         var state = State(family, mode) with
         {
-            Position = VehiclePositionState.Empty with { LatitudeDegrees = 55.5, LongitudeDegrees = 12.25, RelativeAltitudeMeters = 10, ObservedAt = Now }
+            Position = VehiclePositionState.Empty with
+            {
+                LatitudeDegrees = 55.5,
+                LongitudeDegrees = 12.25,
+                RelativeAltitudeMeters = 10,
+                ObservedAt = Now
+            }
         };
         var fixture = CreateFixture(state);
         fixture.Connection.SendRawAsync(Arg.Any<ReadOnlyMemory<byte>>(), EndPoint, Arg.Any<CancellationToken>()).Returns(_ =>
         {
-            fixture.PublishState(state with { Position = state.Position with { RelativeAltitudeMeters = 25.2 } }).GetAwaiter().GetResult();
+            fixture.PublishState(state with
+            {
+                Position = state.Position with
+                {
+                    RelativeAltitudeMeters = 25.2
+                }
+            }).GetAwaiter().GetResult();
             return ValueTask.CompletedTask;
         });
 
@@ -138,7 +150,16 @@ public sealed class VehicleAdjustmentServiceTests
     private static VehicleState State(FirmwareFamily family, uint mode)
     {
         var state = new VehicleState(new VehicleId(1, 1), mode, 2, 3, 0, 4, 3, VehicleConnectionState.Online, Now, VehicleMode.Unknown, true, null, null, null, null, null, null, null, null);
-        return state with { Identity = state.Identity with { Firmware = state.Identity.Firmware with { Family = family } } };
+        return state with
+        {
+            Identity = state.Identity with
+            {
+                Firmware = state.Identity.Firmware with
+                {
+                    Family = family
+                }
+            }
+        };
     }
 
     private sealed record Fixture(VehicleId VehicleId, VehicleAdjustmentService Service, IMavLinkConnection Connection,

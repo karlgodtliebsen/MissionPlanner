@@ -17,18 +17,19 @@
         RowSpacing="10"
         Padding="12">
 
-        <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*,Auto" ColumnSpacing="8">
+        <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*,Auto" ColumnSpacing="8">
             <Button Grid.Column="0" Text="Select all safe differences" Command="{Binding SelectAllSafeDifferencesCommand}" />
             <Button Grid.Column="1" Text="Stage selected" Command="{Binding StageSelectedDifferencesCommand}" />
-            <Button Grid.Column="2" Text="Export JSON" Command="{Binding ExportJsonCommand}" />
-            <Button Grid.Column="3" Text="Export CSV" Command="{Binding ExportCsvCommand}" />
+            <Button Grid.Column="2" Text="Apply modified" Command="{Binding ApplyModifiedCommand}" />
+            <Button Grid.Column="3" Text="Export JSON" Command="{Binding ExportJsonCommand}" />
+            <Button Grid.Column="4" Text="Export CSV" Command="{Binding ExportCsvCommand}" />
             <material:SelectField 
-                Grid.Column="4"
+                Grid.Column="5"
                 WidthRequest="140"
                 ItemsSource="{Binding Filters}"
                 SelectedItem="{Binding Filter}" />
             <Button HorizontalOptions="End"
-                    Grid.Column="5" Text="Close" WidthRequest="100" Command="{Binding CloseCommand}">
+                    Grid.Column="7" Text="Close" WidthRequest="100" Command="{Binding CloseCommand}">
              
             </Button>
         </Grid>

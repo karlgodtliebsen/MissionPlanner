@@ -49,8 +49,6 @@ public class ExtendedContentPage<TViewModel> : UraniumContentPage, IDisposable
             Grid.SetRow(notificationView, 0);
             Grid.SetColumnSpan(notificationView, grid.ColumnDefinitions.Count);
             grid.Children.Add(notificationView);
-
-
         }
     }
 

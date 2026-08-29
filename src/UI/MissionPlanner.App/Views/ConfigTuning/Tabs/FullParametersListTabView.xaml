@@ -12,9 +12,7 @@
                       x:Class="MissionPlanner.App.Views.ConfigTuning.Tabs.FullParametersListTabView"
                       x:DataType="tabs:FullParametersListTabViewModel">
 
-
-    <navigation:ExtendedContentPage.Content>
-
+  
         <Grid RowDefinitions="Auto,Auto,*"
           HorizontalOptions="Fill"
           VerticalOptions="Fill"
@@ -305,5 +303,5 @@
                 </virtualized:VirtualizedDataGrid>
             </Grid>
         </Grid>
-    </navigation:ExtendedContentPage.Content>
+
 </navigation:ExtendedContentPage>      

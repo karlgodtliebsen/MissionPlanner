@@ -1,4 +1,4 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.Missions;
 using MissionPlanner.Core.Missions.Abstractions;
@@ -9,7 +9,6 @@ using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
-using MissionPlanner.MavLink.Commands;
 using MissionPlanner.MavLink.Encoding;
 using MissionPlanner.MavLink.Messages;
 using MissionPlanner.MavLink.Missions;
@@ -19,9 +18,9 @@ using MissionPlanner.MavLink.Services.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using MissionPlanner.Transport;
 using NSubstitute;
-using MissionState = MissionPlanner.MavLink.Generated.MissionState;
 using MavCmd = MissionPlanner.MavLink.Generated.MavCmd;
 using MavResult = MissionPlanner.MavLink.Generated.MavResult;
+using MissionState = MissionPlanner.MavLink.Generated.MissionState;
 
 namespace MissionPlanner.Core.Tests;
 
@@ -90,7 +89,11 @@ public sealed class MissionInterventionServiceTests
     {
         var paused = State(missionCount: 5) with
         {
-            Navigation = State(missionCount: 5).Navigation with { MissionState = MissionState.Paused, MissionMode = VehicleMissionMode.Suspended }
+            Navigation = State(missionCount: 5).Navigation with
+            {
+                MissionState = MissionState.Paused,
+                MissionMode = VehicleMissionMode.Suspended
+            }
         };
         var fixture = CreateFixture(paused);
         fixture.Connection.SendRawAsync(Arg.Any<ReadOnlyMemory<byte>>(), EndPoint, Arg.Any<CancellationToken>()).Returns(_ =>
@@ -107,7 +110,7 @@ public sealed class MissionInterventionServiceTests
 
         var unknown = CreateFixture(State(missionCount: 5));
         (await unknown.Service.ResumeMissionAsync(unknown.VehicleId, TestContext.Current.CancellationToken)).Status.Should().Be(MissionInterventionStatus.Denied);
-        await unknown.Connection.DidNotReceiveWithAnyArgs().SendRawAsync(default, default!, default);
+        await unknown.Connection.DidNotReceiveWithAnyArgs().SendRawAsync(default, default!, TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -179,8 +182,18 @@ public sealed class MissionInterventionServiceTests
         var state = new VehicleState(new VehicleId(1, 1), customMode, 2, 3, 0, 4, 3, VehicleConnectionState.Online, Now, VehicleMode.Unknown, false, null, null, null, null, null, null, null, null);
         return state with
         {
-            Identity = state.Identity with { Firmware = state.Identity.Firmware with { Family = family } },
-            Navigation = state.Navigation with { MissionItemCount = missionCount, CurrentMissionSequence = 2 }
+            Identity = state.Identity with
+            {
+                Firmware = state.Identity.Firmware with
+                {
+                    Family = family
+                }
+            },
+            Navigation = state.Navigation with
+            {
+                MissionItemCount = missionCount,
+                CurrentMissionSequence = 2
+            }
         };
     }
 
@@ -193,6 +206,9 @@ public sealed class MissionInterventionServiceTests
         CommandAckTracker Acks,
         Func<ushort, MissionState, VehicleMissionMode, Task> Publish)
     {
-        public Task PublishMissionCurrent(ushort sequence, MissionState state = MissionState.Active, VehicleMissionMode mode = VehicleMissionMode.Mission) => Publish(sequence, state, mode);
+        public Task PublishMissionCurrent(ushort sequence, MissionState state = MissionState.Active, VehicleMissionMode mode = VehicleMissionMode.Mission)
+        {
+            return Publish(sequence, state, mode);
+        }
     }
 }

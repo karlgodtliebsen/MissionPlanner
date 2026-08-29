@@ -52,8 +52,14 @@ public sealed partial class ParameterComparisonItemViewModel(ParameterComparison
 
     private string? FormatValue(double? value)
     {
-        return value is null
-            ? null
-            : MathUtils.FormatAtStepPrecision(value.Value, Row.Metadata?.Increment);
+        if (value is null)
+        {
+            return null;
+        }
+
+        var increment = Row.Metadata?.Increment;
+        return increment is > 0 && double.IsFinite(increment.Value)
+            ? MathUtils.FormatAtStepPrecision(value.Value, increment)
+            : value.Value.ToString("G7", System.Globalization.CultureInfo.CurrentCulture);
     }
 }

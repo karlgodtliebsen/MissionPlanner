@@ -200,7 +200,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
             SetMessages("Vehicle changed. Refresh parameters.", "The vehicle is disconnected.");
             editSessionFactory?.DiscardPendingChanges();
             CancelCachedParameterLoad();
-            EditSession?.Changed -= OnEditSessionChanged;
+            EditSession?.FieldChanged -= OnEditSessionFieldChanged;
             EditSession = null;
             Parameters.Clear();
             HasParameters = false;
@@ -221,8 +221,20 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
     /// </summary>
     protected virtual void OnEditSessionChanged()
     {
-        if (disposed || !activated || EditSession is null ||
-            Interlocked.CompareExchange(ref sessionRefreshScheduled, 1, 0) != 0)
+        OnEditSessionFieldChanged(null);
+    }
+
+    /// <summary>Refreshes either one changed parameter row or the complete grid projection.</summary>
+    /// <param name="fieldName">The changed field, or <see langword="null"/> for a full refresh.</param>
+    protected virtual void OnEditSessionFieldChanged(string? fieldName)
+    {
+        if (disposed || !activated || EditSession is null)
+        {
+            return;
+        }
+
+        var ownsFullRefreshSchedule = fieldName is null;
+        if (ownsFullRefreshSchedule && Interlocked.CompareExchange(ref sessionRefreshScheduled, 1, 0) != 0)
         {
             return;
         }
@@ -236,8 +248,27 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
                     return;
                 }
 
-                Debug.Print("OnEditSessionChanged-Edit session changed for {0}.", EditSession.VehicleId);
-                SynchronizeParameterItems(CreateProgress());
+                if (fieldName is null)
+                {
+                    Debug.Print("OnEditSessionChanged-Edit session changed for {0}.", EditSession.VehicleId);
+                }
+                if (fieldName is not null && EditSession.GetField(fieldName) is { } field)
+                {
+                    var item = Parameters.FirstOrDefault(item => string.Equals(item.Name, fieldName, StringComparison.Ordinal));
+                    if (item is not null)
+                    {
+                        var wasModified = item.IsModified;
+                        item.SetField(field);
+                        if (wasModified != item.IsModified)
+                        {
+                            ModifiedParameterCount += item.IsModified ? 1 : -1;
+                        }
+                    }
+                }
+                else
+                {
+                    SynchronizeParameterItems(CreateProgress());
+                }
                 if (!EditSession.IsValid)
                 {
                     SetMessages(EditSession.InvalidReason ?? "This parameter session is stale.");
@@ -245,7 +276,10 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
             }
             finally
             {
-                Interlocked.Exchange(ref sessionRefreshScheduled, 0);
+                if (ownsFullRefreshSchedule)
+                {
+                    Interlocked.Exchange(ref sessionRefreshScheduled, 0);
+                }
             }
         }
 
@@ -259,13 +293,19 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
         {
             if (!dispatcher.Dispatch(SynchronizeOnUiThread))
             {
-                Interlocked.Exchange(ref sessionRefreshScheduled, 0);
+                if (ownsFullRefreshSchedule)
+                {
+                    Interlocked.Exchange(ref sessionRefreshScheduled, 0);
+                }
                 logger.LogWarning("Could not dispatch the parameter-grid synchronization to the UI thread.");
             }
         }
         catch (Exception exception)
         {
-            Interlocked.Exchange(ref sessionRefreshScheduled, 0);
+            if (ownsFullRefreshSchedule)
+            {
+                Interlocked.Exchange(ref sessionRefreshScheduled, 0);
+            }
             logger.LogWarning(exception, "Could not dispatch parameter-grid synchronization to the UI thread.");
         }
     }
@@ -287,8 +327,6 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
         var nextItems = new List<ParameterItemViewModel>(fields.Count);
         foreach (var field in fields)
         {
-            Debug.Print("SynchronizeParameterItems-Field {0}.", field.Name);
-
             fieldNames.Add(field.Name);
             if (itemsByName.TryGetValue(field.Name, out var item))
             {
@@ -699,9 +737,9 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
             return;
         }
 
-        EditSession?.Changed -= OnEditSessionChanged;
+        EditSession?.FieldChanged -= OnEditSessionFieldChanged;
         EditSession = session;
-        EditSession.Changed += OnEditSessionChanged;
+        EditSession.FieldChanged += OnEditSessionFieldChanged;
 
         // Loading a session does not raise Changed. Notify the derived view model
         // explicitly so it can create its initial UI projection.
@@ -831,7 +869,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
         activated = false;
         activeVehicle.Changed -= ActiveVehicleChanged;
         parameterRegistry.Changed -= ParameterRegistryChangedAsync;
-        EditSession?.Changed -= OnEditSessionChanged;
+        EditSession?.FieldChanged -= OnEditSessionFieldChanged;
         EditSession = null;
         parameterLoadStatusSubscription.Dispose();
         parameterLoadStatusSubscription = null!;

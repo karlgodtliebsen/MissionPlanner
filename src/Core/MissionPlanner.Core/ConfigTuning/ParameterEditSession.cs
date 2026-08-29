@@ -26,6 +26,9 @@ public sealed class ParameterEditSession : IParameterEditSession
     private readonly SemaphoreSlim applyGate = new(1, 1);
     private string? invalidReason;
     private bool disposed;
+    private int notificationDeferralDepth;
+    private readonly HashSet<string> deferredChangedFields = new(StringComparer.Ordinal);
+    private bool deferredFullChange;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ParameterEditSession"/> class.
@@ -120,6 +123,23 @@ public sealed class ParameterEditSession : IParameterEditSession
     }
 
     /// <inheritdoc />
+    public Action<string?>? FieldChanged
+    {
+        get; set;
+    }
+
+    /// <inheritdoc />
+    public IDisposable DeferChangeNotifications()
+    {
+        lock (sync)
+        {
+            notificationDeferralDepth++;
+        }
+
+        return new NotificationDeferral(this);
+    }
+
+    /// <inheritdoc />
     public async Task LoadAsync(IReadOnlyList<string>? names = null, CancellationToken cancellationToken = default)
     {
         EnsureValid();
@@ -177,7 +197,7 @@ public sealed class ParameterEditSession : IParameterEditSession
             fields[name] = updated;
         }
 
-        Changed?.Invoke();
+        NotifyChanged(name);
         return error is null;
     }
 
@@ -202,17 +222,19 @@ public sealed class ParameterEditSession : IParameterEditSession
             throw new InvalidOperationException("There are no modified parameters to write.");
         }
 
-        var blocked = snapshot.FirstOrDefault(field =>
-            field.Metadata.ReadOnly || field.ValidationError is not null || Validate(field, field.PendingValue) is not null);
-        if (blocked is not null)
-        {
-            var reason = blocked.Metadata.ReadOnly
-                ? "The parameter is read-only."
-                : blocked.ValidationError ?? Validate(blocked, blocked.PendingValue);
-            throw new InvalidOperationException($"Parameter {blocked.Name} cannot be written: {reason}");
-        }
-
-        var entries = snapshot.Select(field => new ParameterWritePlanEntry(
+        var skipped = snapshot
+            .Select(field => new
+            {
+                Field = field,
+                Reason = field.Metadata.ReadOnly
+                    ? "The parameter is read-only."
+                    : field.ValidationError ?? Validate(field, field.PendingValue)
+            })
+            .Where(item => item.Reason is not null)
+            .Select(item => new ParameterWriteResult(item.Field.Name, ParameterWriteOutcome.ValidationFailed, item.Reason!))
+            .ToArray();
+        var skippedNames = skipped.Select(item => item.Name).ToHashSet(StringComparer.Ordinal);
+        var entries = snapshot.Where(field => !skippedNames.Contains(field.Name)).Select(field => new ParameterWritePlanEntry(
             field.Name,
             field.Metadata.DisplayName ?? field.Name,
             field.LiveValue,
@@ -227,7 +249,7 @@ public sealed class ParameterEditSession : IParameterEditSession
             "Created parameter write plan with {Count} entries for {VehicleId}.",
             entries.Length,
             VehicleId);
-        return new ParameterWritePlan(Scope, DateTimeOffset.UtcNow, entries);
+        return new ParameterWritePlan(Scope, DateTimeOffset.UtcNow, entries) { Skipped = skipped };
     }
 
     /// <inheritdoc />
@@ -251,7 +273,7 @@ public sealed class ParameterEditSession : IParameterEditSession
 
         if (changed)
         {
-            Changed?.Invoke();
+            NotifyChanged(name);
         }
     }
 
@@ -273,7 +295,7 @@ public sealed class ParameterEditSession : IParameterEditSession
             }
         }
 
-        Changed?.Invoke();
+        NotifyChanged(null);
     }
 
     /// <inheritdoc />
@@ -288,7 +310,16 @@ public sealed class ParameterEditSession : IParameterEditSession
         ArgumentNullException.ThrowIfNull(plan);
         EnsurePlanCurrent(plan);
         logger.LogInformation("Confirmed parameter write plan with {Count} entries for {VehicleId}.", plan.Entries.Count, VehicleId);
-        return await ApplyCoreAsync(plan.Names ?? Array.Empty<string>(), progress, cancellationToken).ConfigureAwait(false);
+        var applied = plan.Entries.Count == 0
+            ? new ParameterApplyReport(true, [], false)
+            : await ApplyCoreAsync(plan.Names, progress, cancellationToken).ConfigureAwait(false);
+        if (plan.Skipped.Count == 0)
+        {
+            return applied;
+        }
+
+        var results = applied.Results.Concat(plan.Skipped).ToArray();
+        return new ParameterApplyReport(false, results, applied.RebootRequired);
     }
 
     /// <inheritdoc />
@@ -528,7 +559,7 @@ public sealed class ParameterEditSession : IParameterEditSession
             }
         }
 
-        Changed?.Invoke();
+        NotifyChanged(null);
     }
 
     /// <inheritdoc/>
@@ -615,7 +646,7 @@ public sealed class ParameterEditSession : IParameterEditSession
         }
         Debug.Print("exit LoadCoreAsync");
 
-        Changed?.Invoke();
+        NotifyChanged(null);
     }
 
     private IReadOnlyList<string> GetApplyTargets(IReadOnlyList<string>? names)
@@ -691,7 +722,7 @@ public sealed class ParameterEditSession : IParameterEditSession
             };
         }
 
-        Changed?.Invoke();
+        NotifyChanged(name);
     }
 
     private void SetWriteState(string name, ParameterEditWriteStatus status, string message, string? validationError)
@@ -711,7 +742,7 @@ public sealed class ParameterEditSession : IParameterEditSession
             };
         }
 
-        Changed?.Invoke();
+        NotifyChanged(name);
     }
 
     private void OnParameterChanged(VehicleParameterChangedEventArgs args)
@@ -758,7 +789,66 @@ public sealed class ParameterEditSession : IParameterEditSession
 
         if (changed)
         {
-            Changed?.Invoke();
+            NotifyChanged(parameter.Name);
+        }
+    }
+
+    private void NotifyChanged(string? fieldName)
+    {
+        lock (sync)
+        {
+            if (notificationDeferralDepth > 0)
+            {
+                if (fieldName is null)
+                {
+                    deferredFullChange = true;
+                }
+                else
+                {
+                    deferredChangedFields.Add(fieldName);
+                }
+
+                return;
+            }
+        }
+
+        FieldChanged?.Invoke(fieldName);
+        Changed?.Invoke();
+    }
+
+    private void EndNotificationDeferral()
+    {
+        string? fieldName;
+        lock (sync)
+        {
+            if (notificationDeferralDepth == 0 || --notificationDeferralDepth > 0)
+            {
+                return;
+            }
+
+            if (!deferredFullChange && deferredChangedFields.Count == 0)
+            {
+                return;
+            }
+
+            fieldName = !deferredFullChange && deferredChangedFields.Count == 1
+                ? deferredChangedFields.Single()
+                : null;
+            deferredChangedFields.Clear();
+            deferredFullChange = false;
+        }
+
+        FieldChanged?.Invoke(fieldName);
+        Changed?.Invoke();
+    }
+
+    private sealed class NotificationDeferral(ParameterEditSession owner) : IDisposable
+    {
+        private ParameterEditSession? owner = owner;
+
+        public void Dispose()
+        {
+            Interlocked.Exchange(ref owner, null)?.EndNotificationDeferral();
         }
     }
 

@@ -39,6 +39,7 @@ public sealed class ParameterComparisonService(IParameterValueEquivalence equiva
     {
         var selected = selectedNames.ToHashSet(StringComparer.Ordinal);
         var staged = new List<string>();
+        using var notifications = session.DeferChangeNotifications();
         foreach (var row in comparison.Rows.Where(row => row.CanStage && row.RightValue.HasValue && selected.Contains(row.Name)))
         {
             if (session.TrySetPending(row.Name, row.RightValue!.Value, out _))

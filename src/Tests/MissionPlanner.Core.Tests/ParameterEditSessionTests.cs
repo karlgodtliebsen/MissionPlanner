@@ -40,6 +40,45 @@ public sealed class ParameterEditSessionTests
         session.GetField("GAIN")!.PendingValue.Should().Be(1);
     }
 
+    /// <summary>Read-only imported values remain reviewable but are excluded from writes.</summary>
+    [Fact]
+    public async Task ReadOnlyImportIsReportedAndExcludedFromWriteSet()
+    {
+        using var fixture = CreateFixture([
+            (Parameter("LOCKED", 1), Metadata("LOCKED") with { ReadOnly = true })]);
+        var session = fixture.Factory.Create(fixture.VehicleId);
+        await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
+
+        session.TrySetPending("LOCKED", 2, out var error).Should().BeFalse();
+
+        error.Should().Contain("read-only");
+        session.GetField("LOCKED")!.PendingValue.Should().Be(2);
+        session.IsDirty.Should().BeTrue();
+        var plan = session.CreateWritePlan();
+        plan.Entries.Should().BeEmpty();
+        plan.Skipped.Should().ContainSingle(item =>
+            item.Name == "LOCKED" && item.Outcome == ParameterWriteOutcome.ValidationFailed);
+    }
+
+    /// <summary>Write plans retain safe edits and report invalid edits as skipped.</summary>
+    [Fact]
+    public async Task WritePlanSeparatesSafeAndInvalidChanges()
+    {
+        using var fixture = CreateFixture([
+            (Parameter("SAFE", 1), Metadata("SAFE", "0 10")),
+            (Parameter("INVALID", 1), Metadata("INVALID", "0 10"))]);
+        var session = fixture.Factory.Create(fixture.VehicleId);
+        await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
+        session.TrySetPending("SAFE", 2, out _).Should().BeTrue();
+        session.TrySetPending("INVALID", 20, out _).Should().BeFalse();
+
+        var plan = session.CreateWritePlan();
+
+        plan.Names.Should().Equal("SAFE");
+        plan.Skipped.Should().ContainSingle(item =>
+            item.Name == "INVALID" && item.Outcome == ParameterWriteOutcome.ValidationFailed);
+    }
+
     /// <summary>Repeated registry delivery of an unchanged value does not invalidate the UI projection.</summary>
     [Fact]
     public async Task IdenticalRegistryValueDoesNotRaiseSessionChanged()
@@ -54,6 +93,47 @@ public sealed class ParameterEditSessionTests
             .StoreParameter(fixture.VehicleId, Parameter("GAIN", 1), CancellationToken.None);
 
         changedCount.Should().Be(0);
+    }
+
+    /// <summary>A live registry update identifies its field so large UI projections can update one row.</summary>
+    [Fact]
+    public async Task RegistryValueChangeIdentifiesAffectedSessionField()
+    {
+        using var fixture = CreateFixture([(Parameter("GAIN", 1), Metadata("GAIN"))]);
+        var session = fixture.Factory.Create(fixture.VehicleId);
+        await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
+        var changedFields = new List<string?>();
+        session.FieldChanged += changedFields.Add;
+
+        fixture.ServiceProvider.GetRequiredService<IVehicleParameterRegistry>()
+            .StoreParameter(fixture.VehicleId, Parameter("GAIN", 2), CancellationToken.None);
+
+        changedFields.Should().Equal("GAIN");
+        session.GetField("GAIN")!.LiveValue.Should().Be(2);
+    }
+
+    /// <summary>Bulk imports publish one consolidated session notification.</summary>
+    [Fact]
+    public async Task DeferredEditsRaiseOneConsolidatedNotification()
+    {
+        using var fixture = CreateFixture([
+            (Parameter("FIRST", 1), Metadata("FIRST")),
+            (Parameter("SECOND", 2), Metadata("SECOND"))]);
+        var session = fixture.Factory.Create(fixture.VehicleId);
+        await session.LoadAsync(cancellationToken: TestContext.Current.CancellationToken);
+        var changedFields = new List<string?>();
+        var changedCount = 0;
+        session.FieldChanged += changedFields.Add;
+        session.Changed += () => changedCount++;
+
+        using (session.DeferChangeNotifications())
+        {
+            session.TrySetPending("FIRST", 10, out _).Should().BeTrue();
+            session.TrySetPending("SECOND", 20, out _).Should().BeTrue();
+        }
+
+        changedFields.Should().ContainSingle().Which.Should().BeNull();
+        changedCount.Should().Be(1);
     }
 
     /// <summary>Verifies grouped writes are deduplicated, partially successful, and confirmed by registry readback.</summary>

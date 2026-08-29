@@ -3,6 +3,7 @@ using InputKit.Handlers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
 using Microsoft.Extensions.Logging;
+using Mapsui.UI.Maui;
 using MissionPlanner.App.Configuration;
 using Mopups.Hosting;
 using Serilog;
@@ -23,6 +24,12 @@ public static class MauiProgramExtensions
     /// <returns>The configured MauiAppBuilder instance.</returns>
     public static MauiAppBuilder UseSharedMauiApp(this MauiAppBuilder builder)
     {
+#if WINDOWS
+        // SkiaSharp's Windows GPU view can crash the process while ANGLE creates
+        // its GL interface. Mapsui's CPU renderer avoids that native code path.
+        MapControl.UseGPU = false;
+#endif
+
         AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
         {
             if (e.ExceptionObject is Exception ex)

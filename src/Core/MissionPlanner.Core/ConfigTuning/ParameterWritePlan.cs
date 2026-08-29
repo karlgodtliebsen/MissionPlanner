@@ -8,6 +8,9 @@ public sealed record ParameterWritePlan(
     DateTimeOffset CreatedAt,
     IReadOnlyList<ParameterWritePlanEntry> Entries)
 {
+    /// <summary>Gets modified fields excluded from writing, with the reason for each exclusion.</summary>
+    public IReadOnlyList<ParameterWriteResult> Skipped { get; init; } = [];
+
     /// <summary>Gets the number of changes requiring a reboot.</summary>
     public int RebootRequiredCount => Entries.Count(entry => entry.RebootRequired);
 

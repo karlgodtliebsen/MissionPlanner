@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
+using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Comparison;
 using MissionPlanner.Library;
@@ -13,22 +14,24 @@ namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 /// <summary>Provides the parameter comparison workspace.</summary>
 public partial class ParameterComparisonViewModel : ObservableObject
 {
-    private readonly List<ParameterComparisonItemViewModel> allRows = [];
+    private readonly ObservableRangeCollection<ParameterComparisonItemViewModel> allRows = [];
     private ParameterComparisonResult? comparisonResult;
     private readonly IParameterEditSession? editSession;
     private readonly IParameterComparisonService comparisons;
     private readonly ParametersFileHandler parametersFileHandler;
     private readonly IDateTimeProvider dateTimeProvider;
     private readonly IExtendedDialogService dialogService;
+    private readonly IUserConfirmationService confirmation;
 
 
     /// <summary>Provides the parameter comparison workspace.</summary>
-    public ParameterComparisonViewModel(IParameterComparisonService comparisons, IExtendedDialogService dialogService, ParametersFileHandler parametersFileHandler, IDateTimeProvider dateTimeProvider, IParameterEditSession session)
+    public ParameterComparisonViewModel(IParameterComparisonService comparisons, IExtendedDialogService dialogService, ParametersFileHandler parametersFileHandler, IDateTimeProvider dateTimeProvider, IUserConfirmationService confirmation, IParameterEditSession session)
     {
         this.comparisons = comparisons;
         this.dialogService = dialogService;
         this.parametersFileHandler = parametersFileHandler;
         this.dateTimeProvider = dateTimeProvider;
+        this.confirmation = confirmation;
         editSession = session;
         Show();
     }
@@ -82,8 +85,7 @@ public partial class ParameterComparisonViewModel : ObservableObject
             pending,
             metadata);
 
-        allRows.Clear();
-        allRows.AddRange(comparisonResult.Rows.Select(row => new ParameterComparisonItemViewModel(row)));
+        allRows.ReplaceRange(comparisonResult.Rows.Select(row => new ParameterComparisonItemViewModel(row)));
         FilterRows();
     }
 
@@ -108,6 +110,60 @@ public partial class ParameterComparisonViewModel : ObservableObject
         var selected = SelectedItems.Select(row => row.Name).ToArray();
         var staged = comparisons.Stage(comparisonResult, editSession, selected);
         Staged?.Invoke(this, staged.Count);
+    }
+
+    [RelayCommand]
+    private async Task ApplyModifiedAsync(CancellationToken cancellationToken)
+    {
+        if (editSession is null)
+        {
+            return;
+        }
+
+        ParameterWritePlan plan;
+        try
+        {
+            plan = editSession.CreateWritePlan();
+        }
+        catch (InvalidOperationException exception)
+        {
+            await dialogService.ConfirmAsync("No changes to apply", exception.Message, "OK");
+            return;
+        }
+
+        if (plan.Entries.Count == 0)
+        {
+            await dialogService.ConfirmAsync(
+                "No safe changes to apply",
+                string.Join(Environment.NewLine, plan.Skipped.Select(item => $"{item.Name}: {item.Message}")),
+                "OK");
+            return;
+        }
+
+        var accepted = await confirmation.ConfirmAsync(
+            "Review parameter writes",
+            $"Write {plan.Entries.Count} safe modified parameter(s)? " +
+            $"{plan.Skipped.Count} unsafe parameter(s) will be skipped. " +
+            $"{plan.RebootRequiredCount} confirmed change(s) will require reboot.",
+            $"Write {plan.Entries.Count} parameters",
+            cancellationToken);
+        if (!accepted)
+        {
+            return;
+        }
+
+        var report = await editSession.ApplyAsync(plan, cancellationToken: cancellationToken);
+        var summary = string.Join(
+            Environment.NewLine,
+            report.Results
+                .GroupBy(result => result.Outcome)
+                .OrderBy(group => group.Key)
+                .Select(group => $"{group.Key}: {group.Count()}"));
+        await dialogService.ConfirmAsync(
+            report.Success ? "Parameters applied" : "Parameter apply report",
+            summary,
+            "OK");
+        Show();
     }
 
     [RelayCommand]

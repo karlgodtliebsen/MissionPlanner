@@ -57,6 +57,20 @@ public interface IParameterEditSession : IDisposable
         set;
     }
 
+    /// <summary>
+    /// Occurs when the session changes and identifies the affected field when the change is field-local.
+    /// A <see langword="null"/> name indicates a structural or multi-field change.
+    /// </summary>
+    Action<string?>? FieldChanged
+    {
+        get;
+        set;
+    }
+
+    /// <summary>Defers change notifications until a related group of edits is complete.</summary>
+    /// <returns>A scope whose disposal publishes one consolidated notification.</returns>
+    IDisposable DeferChangeNotifications();
+
     /// <summary>Loads editable fields for the given parameter names, or all known parameters.</summary>
     /// <param name="names">The parameter names to load, or null for all known parameters.</param>
     /// <param name="cancellationToken">A token that cancels metadata resolution.</param>

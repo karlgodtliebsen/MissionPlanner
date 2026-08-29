@@ -145,6 +145,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             {
                 var fullList = EditSession.Fields.Select(ToVehicleParameter).ToList();
                 var parameters = vm.UpdateParameters(fullList);
+                using var notifications = EditSession.DeferChangeNotifications();
                 foreach (var parameter in parameters)
                 {
                     EditSession.TrySetPending(parameter.Name, parameter.Value, out var _);
@@ -182,6 +183,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             var loaded = await parametersFileHandler.LoadParametersFromFileAsync(
                 EditSession.Fields.Select(ToVehicleParameter).ToList(),
                 activeVehicle.ConnectionCancellationToken);
+            using var notifications = EditSession.DeferChangeNotifications();
             foreach (var parameter in loaded)
             {
                 EditSession.TrySetPending(parameter.Name, parameter.Value, out var _);
@@ -211,6 +213,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         try
         {
             var loaded = await parametersFileHandler.LoadParametersFromJsonFileAsync(activeVehicle.ConnectionCancellationToken);
+            using var notifications = EditSession.DeferChangeNotifications();
             foreach (var parameter in loaded)
             {
                 EditSession.TrySetPending(parameter.Name, parameter.Value, out var _);
@@ -270,11 +273,20 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
             using var connectionCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, activeVehicle.ConnectionCancellationToken);
             var plan = EditSession.CreateWritePlan();
             var preview = string.Join(Environment.NewLine, plan.Entries.Select(entry => $"{entry.DisplayName} ({entry.Name}): {entry.LiveValue:R} → {entry.PendingValue:R} {entry.Units}".TrimEnd()));
+            var skippedPreview = plan.Skipped.Count == 0
+                ? string.Empty
+                : $"{Environment.NewLine}{Environment.NewLine}Skipped {plan.Skipped.Count} unsafe change(s):{Environment.NewLine}" +
+                  string.Join(Environment.NewLine, plan.Skipped.Select(item => $"{item.Name}: {item.Message}"));
 
             var rebootCount = plan.Entries.Count(entry => entry.RebootRequired);
+            if (plan.Entries.Count == 0)
+            {
+                SetMessages(errorMessage: $"No safe modified parameters can be written. {BuildResultSummary(new ParameterApplyReport(false, plan.Skipped, false))}");
+                return;
+            }
             var accepted = await confirmation.ConfirmAsync(
                 "Review parameter writes",
-                $"{preview}{Environment.NewLine}{Environment.NewLine}{rebootCount} change(s) require reboot.",
+                $"{preview}{skippedPreview}{Environment.NewLine}{Environment.NewLine}{rebootCount} change(s) require reboot.",
                 $"Write {plan.Entries.Count} parameters",
                 connectionCancellation.Token);
             if (!accepted)
@@ -428,6 +440,18 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     protected override void OnEditSessionChanged()
     {
         base.OnEditSessionChanged();
+        UpdateEditSessionCommandState();
+    }
+
+    /// <inheritdoc />
+    protected override void OnEditSessionFieldChanged(string? fieldName)
+    {
+        base.OnEditSessionFieldChanged(fieldName);
+        UpdateEditSessionCommandState();
+    }
+
+    private void UpdateEditSessionCommandState()
+    {
         WriteParametersCommand.NotifyCanExecuteChanged();
         // RetryFailedCommand.NotifyCanExecuteChanged();
         HasRows = Parameters.Count > 0;

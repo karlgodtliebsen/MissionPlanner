@@ -98,7 +98,12 @@ public static class MathUtils
         decimal decimalStep;
         try
         {
-            decimalStep = decimal.Abs((decimal)stepSize.Value);
+            // Increments commonly originate as MAVLink REAL32 values. Normalize to float
+            // precision so 0.01f does not yield a meaningless 15-place display scale.
+            var normalizedStep = double.Parse(
+                stepSize.Value.ToString("G7", System.Globalization.CultureInfo.InvariantCulture),
+                System.Globalization.CultureInfo.InvariantCulture);
+            decimalStep = decimal.Abs((decimal)normalizedStep);
         }
         catch (OverflowException)
         {

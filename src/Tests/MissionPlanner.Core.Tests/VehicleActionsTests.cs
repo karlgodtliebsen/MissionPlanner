@@ -66,7 +66,7 @@ public sealed class VehicleActionsTests
         fixture.ViewModel.CanSetLoiterRadius.Should().BeTrue();
         fixture.ViewModel.TargetSpeedMetersPerSecond = double.NaN;
         await fixture.ViewModel.ChangeSpeedCommand.ExecuteAsync(null);
-        await fixture.Adjustment.DidNotReceiveWithAnyArgs().ChangeSpeedAsync(default, default, default, default);
+        await fixture.Adjustment.DidNotReceiveWithAnyArgs().ChangeSpeedAsync(default, default, default, TestContext.Current.CancellationToken);
     }
 
     [Fact]
@@ -112,7 +112,7 @@ public sealed class VehicleActionsTests
         fixture.ViewModel.IsAbortLandingVisible.Should().BeTrue();
         fixture.ViewModel.CanAbortLanding.Should().BeFalse();
         await fixture.ViewModel.RestartMissionCommand.ExecuteAsync(null);
-        await fixture.MissionIntervention.DidNotReceiveWithAnyArgs().RestartMissionAsync(default, default);
+        await fixture.MissionIntervention.DidNotReceiveWithAnyArgs().RestartMissionAsync(default, TestContext.Current.CancellationToken);
     }
 
     /// <summary>Verifies altitude zero is a local presentation toggle, not a vehicle command.</summary>
@@ -141,7 +141,7 @@ public sealed class VehicleActionsTests
         fixture.ViewModel.AltitudeZeroActionText.Should().Be("Reset Altitude");
         await fixture.ViewModel.ToggleAltitudeZeroCommand.ExecuteAsync(null);
         fixture.ViewModel.AltitudeZeroActionText.Should().Be("Zero Altitude");
-        await fixture.Commands.DidNotReceiveWithAnyArgs().SetHomeHereAsync(default, default, default);
+        await fixture.Commands.DidNotReceiveWithAnyArgs().SetHomeHereAsync(default, default, TestContext.Current.CancellationToken);
     }
 
     /// <summary>Verifies common connection, heartbeat, and firmware-family safety gates.</summary>

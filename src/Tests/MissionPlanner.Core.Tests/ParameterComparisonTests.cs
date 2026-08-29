@@ -52,6 +52,49 @@ public sealed class ParameterComparisonTests
         item.DifferenceText.Should().Be($"0{separator}1");
     }
 
+    /// <summary>Values without precision metadata hide single-precision wire expansion.</summary>
+    [Fact]
+    public void ComparisonPresentationUsesFloatPrecisionWithoutMetadata()
+    {
+        var row = new ParameterComparisonRow(
+            "INS_GYROFFS_X",
+            "INS_GYROFFS_X",
+            "Live",
+            -0.034787118434906d,
+            "File",
+            0.00357094104401767d,
+            0.0383580594789237d,
+            ParameterComparisonStatus.Different,
+            null,
+            null,
+            true,
+            null);
+
+        var item = new ParameterComparisonItemViewModel(row);
+        var separator = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+
+        item.LeftValueText.Should().Be($"-0{separator}03478712");
+        item.RightValueText.Should().Be($"0{separator}003570941");
+        item.DifferenceText.Should().Be($"0{separator}03835806");
+    }
+
+    /// <summary>Float-expanded increment metadata still controls a concise display scale.</summary>
+    [Fact]
+    public void ComparisonPresentationNormalizesFloatIncrementPrecision()
+    {
+        var metadata = Writable with { Increment = 0.009999999776482582d };
+        var row = new ParameterComparisonRow(
+            "MOT_SPIN_ARM", "MOT_SPIN_ARM", "Live", 0.119999997317791d,
+            "File", 0.100000001490116d, -0.0199999958276749d,
+            ParameterComparisonStatus.Different, null, metadata, true, null);
+        var item = new ParameterComparisonItemViewModel(row);
+        var separator = CultureInfo.CurrentCulture.NumberFormat.NumberDecimalSeparator;
+
+        item.LeftValueText.Should().Be($"0{separator}12");
+        item.RightValueText.Should().Be($"0{separator}1");
+        item.DifferenceText.Should().Be($"-0{separator}02");
+    }
+
     /// <summary>Missing, invalid, read-only and differing values remain explicitly classified.</summary>
     [Fact]
     public void ComparisonClassifiesUnionOfBothSources()

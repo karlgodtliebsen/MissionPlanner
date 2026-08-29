@@ -1,4 +1,5 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Diagnostics;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 
 namespace UraniumUI.Material.TabViews;
@@ -29,6 +30,8 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
             ?? Microsoft.Maui.Dispatching.Dispatcher.GetForCurrentThread()
             ?? HeadlessDispatcher.Instance;
         this.logger = logger;
+        logger.LogTrace("BaseViewModel initialized for ViewModel {viewModel}", GetType().FullName);
+        Debug.Print($"BaseViewModel initialized for ViewModel {GetType().FullName}");
     }
 
     /// <summary>Gets the dispatcher associated with the application UI.</summary>
@@ -240,11 +243,20 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
 
     private sealed class HeadlessDispatcherTimer : IDispatcherTimer
     {
-        public TimeSpan Interval { get; set; }
+        public TimeSpan Interval
+        {
+            get; set;
+        }
 
-        public bool IsRepeating { get; set; }
+        public bool IsRepeating
+        {
+            get; set;
+        }
 
-        public bool IsRunning { get; private set; }
+        public bool IsRunning
+        {
+            get; private set;
+        }
 
         public event EventHandler? Tick;
 
