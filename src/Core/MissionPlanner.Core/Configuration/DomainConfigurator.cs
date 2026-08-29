@@ -189,6 +189,7 @@ public static class DomainConfigurator
 
         services.TryAddSingleton<IVehicleConnectionService, VehicleConnectionService>();
         services.TryAddSingleton<IVehicleHudDataService, VehicleHudDataService>();
+        services.TryAddSingleton<ILocalAltitudeReferenceService, LocalAltitudeReferenceService>();
         services.TryAddSingleton<IVehicleFileSystemService, VehicleFileSystemService>();
 
         services.TryAddSingleton<IStatusTextHandler, StatusTextHandler>();

@@ -17,7 +17,7 @@ copying the legacy button matrix.
 | Land | Keep / Already present | Typed mode action with independent `CanLand`. |
 | Takeoff | Keep / Already present | Typed relative-altitude action with confirmation. |
 | Set Home Here | Keep / Already present | Acknowledged `DO_SET_HOME` operation that changes vehicle HOME. |
-| Set Home Alt | Deferred because semantics/support remain unresolved | Legacy is a local display offset, but its arithmetic contradicts its tooltip. See the Task 02 investigation. |
+| Zero / Reset Altitude | Keep / Implemented with clarified semantics | Per-session GCS-local relative-altitude display reference. It never modifies vehicle HOME or sends MAVLink. |
 | Set Current WP | Deferred because semantics/support remain unresolved | Protocol is known; selected-vehicle confirmation and complete mission-operation backend remain prerequisites. |
 | Restart Mission | Deferred because semantics/support remain unresolved | Legacy sets sequence 0 only; whether to adopt the newer reset flag needs a product decision. |
 | Resume Mission | Deferred because semantics/support remain unresolved | Legacy rewrites the mission and may arm/take off; a transactional, recoverable workflow is required. |
@@ -67,7 +67,7 @@ for their future implementation.
 | Set Mode | Choose a family-supported mode. | ACK followed by matching mode telemetry. |
 | Takeoff/Land/Hold/RTL | Use appropriate armed/airborne states. | Independent enablement; ACK and meaningful telemetry confirmation. |
 | Set Home Here | Confirm with fresh 3D position. | HOME command ACK; vehicle HOME changes. |
-| Set Home Alt | Not available. | Resolve Task 02 semantic decision before testing. |
+| Zero / Reset Altitude | Requires a finite relative altitude to create; reset remains available while active. | Local presentation state only; HUD displays `relative altitude - local reference`, while MSL fallback remains unmodified. |
 | Mission intervention | Not available. | Complete Task 03 prerequisites and test exact current item/state transitions. |
 | In-flight adjustments | Not available. | Complete Task 05 prerequisites; distinguish ACK from parameter readback. |
 | Expert MAV CMD | Enter a safe test command ID and seven parameters. | ID remains independent of takeoff altitude; confirmation and real ACK are shown. |

@@ -32,6 +32,7 @@ public partial class ActionsTabViewModel : BaseViewModel
     private readonly AsyncOperationRunner operationRunner;
     private readonly ILogger<ActionsTabViewModel> logger;
     private readonly IReplaySessionManager? replaySessionManager;
+    private readonly ILocalAltitudeReferenceService altitudeReferenceService;
     private IDisposable? stateSubscription;
 
     /// <summary>
@@ -57,6 +58,7 @@ public partial class ActionsTabViewModel : BaseViewModel
         IDispatcher dispatcher,
         IDomainEventHub domainEventHub,
         ILogger<ActionsTabViewModel> logger,
+        ILocalAltitudeReferenceService altitudeReferenceService,
         IReplaySessionManager? replaySessionManager = null) : base(logger)
     {
         this.activeVehicle = activeVehicle;
@@ -68,6 +70,7 @@ public partial class ActionsTabViewModel : BaseViewModel
         this.dispatcher = dispatcher;
         this.domainEventHub = domainEventHub;
         this.logger = logger;
+        this.altitudeReferenceService = altitudeReferenceService;
         this.replaySessionManager = replaySessionManager;
         operationRunner = new AsyncOperationRunner(activeVehicle);
     }
@@ -177,6 +180,14 @@ public partial class ActionsTabViewModel : BaseViewModel
         get; private set;
     }
 
+    /// <summary>Gets whether the local relative-altitude reference can be toggled.</summary>
+    [ObservableProperty]
+    public partial bool CanToggleAltitudeZero { get; private set; }
+
+    /// <summary>Gets the local display operation label.</summary>
+    [ObservableProperty]
+    public partial string AltitudeZeroActionText { get; private set; } = "Zero Altitude";
+
     /// <summary>Gets whether vehicle-changing controls may transmit in the current data-source mode.</summary>
     [ObservableProperty]
     public partial bool CanTransmit { get; private set; } = true;
@@ -196,6 +207,7 @@ public partial class ActionsTabViewModel : BaseViewModel
     public override Task ActivateAsync()
     {
         activeVehicle.Changed += OnActiveVehicleChanged;
+        altitudeReferenceService.Changed += OnAltitudeReferenceChanged;
         stateSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
         ApplySnapshot(activeVehicle.Current);
         if (replaySessionManager is not null)
@@ -218,6 +230,7 @@ public partial class ActionsTabViewModel : BaseViewModel
     {
         replaySessionManager?.Changed -= OnReplayChanged;
         activeVehicle.Changed -= OnActiveVehicleChanged;
+        altitudeReferenceService.Changed -= OnAltitudeReferenceChanged;
         stateSubscription?.Dispose();
         stateSubscription = null;
     }
@@ -298,6 +311,36 @@ public partial class ActionsTabViewModel : BaseViewModel
     {
         return ExecuteAsync("Set home here", VehicleAction.SetHomeHere,
             (id, confirmed, token) => commandService.SetHomeHereAsync(id, confirmed, token), null, cancellationToken);
+    }
+
+    [RelayCommand]
+    private async Task ToggleAltitudeZeroAsync(CancellationToken cancellationToken)
+    {
+        if (activeVehicle.State is not { } state)
+        {
+            OperationState = AsyncOperationState.Disconnected();
+            return;
+        }
+
+        string message;
+        if (altitudeReferenceService.HasReference(state.VehicleId))
+        {
+            altitudeReferenceService.Reset(state.VehicleId);
+            message = "Display altitude reference reset";
+        }
+        else if (state.Position.RelativeAltitudeMeters is { } altitude && altitudeReferenceService.TryZero(state.VehicleId, altitude))
+        {
+            message = "Display altitude zeroed";
+        }
+        else
+        {
+            OperationState = AsyncOperationState.Warning("Relative altitude is not currently available.");
+            return;
+        }
+
+        OperationState = AsyncOperationState.Success(message);
+        await notificationService.NotifyAsync(new UserNotification(message, VehicleId: state.VehicleId), cancellationToken);
+        ApplySnapshot(activeVehicle.Current);
     }
 
     [RelayCommand]
@@ -536,6 +579,17 @@ public partial class ActionsTabViewModel : BaseViewModel
         CanReturnToLaunch = CanTransmit && IsAllowed(state, VehicleAction.ReturnToLaunch);
         CanReboot = CanTransmit && IsAllowed(state, VehicleAction.RebootAutopilot);
         CanSetHome = CanTransmit && IsAllowed(state, VehicleAction.SetHomeHere);
+        var hasReference = state is not null && altitudeReferenceService.HasReference(state.VehicleId);
+        AltitudeZeroActionText = hasReference ? "Reset Altitude" : "Zero Altitude";
+        CanToggleAltitudeZero = state is not null && (hasReference || state.Position.RelativeAltitudeMeters is { } altitude && double.IsFinite(altitude));
+    }
+
+    private void OnAltitudeReferenceChanged(object? sender, LocalAltitudeReferenceChangedEventArgs args)
+    {
+        if (args.VehicleId == activeVehicle.VehicleId)
+        {
+            dispatcher.Dispatch(() => ApplySnapshot(activeVehicle.Current));
+        }
     }
 
     private void OnReplayChanged(ReplaySessionChangedEventArgs args)

@@ -23,6 +23,7 @@ public sealed class VehicleHudDataService : IVehicleHudDataService, IDisposable
     private readonly IDisposable eventSubscription;
     private VehicleId? primaryVehicleId;
     private readonly ILogger<VehicleHudDataService> logger;
+    private readonly ILocalAltitudeReferenceService? altitudeReferenceService;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="VehicleHudDataService"/> class.
@@ -30,16 +31,21 @@ public sealed class VehicleHudDataService : IVehicleHudDataService, IDisposable
     /// <param name="vehicleRegistry">The vehicle registry to query current vehicle state.</param>
     /// <param name="domainEventHub">The domain event hub to subscribe to vehicle updates.</param>
     /// <param name="logger">The logger instance.</param>
-    public VehicleHudDataService(IVehicleRegistry vehicleRegistry, IDomainEventHub domainEventHub, ILogger<VehicleHudDataService> logger)
+    public VehicleHudDataService(IVehicleRegistry vehicleRegistry, IDomainEventHub domainEventHub, ILogger<VehicleHudDataService> logger, ILocalAltitudeReferenceService? altitudeReferenceService = null)
     {
         this.vehicleRegistry = vehicleRegistry ?? throw new ArgumentNullException(nameof(vehicleRegistry));
         this.domainEventHub = domainEventHub ?? throw new ArgumentNullException(nameof(domainEventHub));
         this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this.altitudeReferenceService = altitudeReferenceService;
         hudDataCache = new ConcurrentDictionary<VehicleId, VehicleHudData>();
         hudDataSubject = new Subject<VehicleHudData>();
 
         // Subscribe to vehicle state updates
         eventSubscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
+        if (altitudeReferenceService is not null)
+        {
+            altitudeReferenceService.Changed += OnAltitudeReferenceChanged;
+        }
     }
 
     /// <inheritdoc/>
@@ -93,6 +99,10 @@ public sealed class VehicleHudDataService : IVehicleHudDataService, IDisposable
     public void Dispose()
     {
         eventSubscription?.Dispose();
+        if (altitudeReferenceService is not null)
+        {
+            altitudeReferenceService.Changed -= OnAltitudeReferenceChanged;
+        }
         hudDataSubject?.Dispose();
     }
 
@@ -131,7 +141,7 @@ public sealed class VehicleHudDataService : IVehicleHudDataService, IDisposable
 
     private const double RadiansToDegrees = 180.0 / Math.PI;
 
-    private static VehicleHudData TransformToHudData(VehicleState state)
+    private VehicleHudData TransformToHudData(VehicleState state)
     {
         var pitchDegrees = RadiansToDisplayDegrees(state.Motion.PitchRadians);
 
@@ -141,7 +151,10 @@ public sealed class VehicleHudDataService : IVehicleHudDataService, IDisposable
 
         var headingDegrees = NormalizeHeading(state.Position.HeadingDegrees ?? yawDegrees);
 
-        var altitude = ValueOrZero(state.Position.RelativeAltitudeMeters ?? state.Position.AltitudeMslMeters);
+        var relativeAltitude = state.Position.RelativeAltitudeMeters;
+        var altitude = relativeAltitude is { } relative && double.IsFinite(relative)
+            ? relative - (altitudeReferenceService?.TryGetReference(state.VehicleId, out var reference) == true ? reference : 0)
+            : ValueOrZero(state.Position.AltitudeMslMeters);
 
         var distanceToWp = ValueOrZero(state.Navigation.WaypointDistanceMeters);
 
@@ -166,6 +179,18 @@ public sealed class VehicleHudDataService : IVehicleHudDataService, IDisposable
             state.Flight.Mode,
             state.Position.LatitudeDegrees,
             state.Position.LongitudeDegrees);
+    }
+
+    private void OnAltitudeReferenceChanged(object? sender, LocalAltitudeReferenceChangedEventArgs args)
+    {
+        var session = vehicleRegistry.GetRequired(args.VehicleId);
+        if (session is null)
+        {
+            return;
+        }
+        var hudData = TransformToHudData(session.State);
+        hudDataCache.AddOrUpdate(args.VehicleId, hudData, (_, _) => hudData);
+        hudDataSubject.OnNext(hudData);
     }
 
     /// <summary>

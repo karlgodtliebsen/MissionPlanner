@@ -46,9 +46,14 @@
                 <Button  Grid.Column="1" Text="Takeoff" Command="{Binding TakeoffCommand}" IsEnabled="{Binding CanTakeoff}" />
             </Grid>
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
                 <Button  Grid.Column="0" Text="Set Home Here" Command="{Binding SetHomeHereCommand}" IsEnabled="{Binding CanSetHome}" />
                 <Button  Grid.Column="1" Text="Reboot Autopilot" Command="{Binding RebootCommand}" IsEnabled="{Binding CanReboot}" />
+                <Button Grid.Row="1" Grid.ColumnSpan="2"
+                        Text="{Binding AltitudeZeroActionText}"
+                        Command="{Binding ToggleAltitudeZeroCommand}"
+                        IsEnabled="{Binding CanToggleAltitudeZero}"
+                        ToolTipProperties.Text="Sets the current displayed relative altitude to 0. Vehicle HOME is not changed." />
             </Grid>
 
             <Border Padding="10" StyleClass="SurfaceContainer,Rounded,Elevation1">

@@ -27,6 +27,35 @@ namespace MissionPlanner.Core.Tests;
 /// </summary>
 public sealed class VehicleActionsTests
 {
+    /// <summary>Verifies altitude zero is a local presentation toggle, not a vehicle command.</summary>
+    [Fact]
+    public async Task AltitudeZeroTogglesLocalLabelWithoutSendingSetHome()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var state = CreateState(now) with
+        {
+            Position = VehiclePositionState.Empty with { RelativeAltitudeMeters = 37.5, ObservedAt = now }
+        };
+        var fixture = CreateViewModel(state, now);
+        var hasReference = false;
+        fixture.AltitudeReference.HasReference(state.VehicleId).Returns(_ => hasReference);
+        fixture.AltitudeReference.TryZero(state.VehicleId, 37.5).Returns(_ =>
+        {
+            hasReference = true;
+            return true;
+        });
+        fixture.AltitudeReference.When(service => service.Reset(state.VehicleId)).Do(_ => hasReference = false);
+        await fixture.ViewModel.ActivateAsync();
+
+        fixture.ViewModel.AltitudeZeroActionText.Should().Be("Zero Altitude");
+        fixture.ViewModel.CanToggleAltitudeZero.Should().BeTrue();
+        await fixture.ViewModel.ToggleAltitudeZeroCommand.ExecuteAsync(null);
+        fixture.ViewModel.AltitudeZeroActionText.Should().Be("Reset Altitude");
+        await fixture.ViewModel.ToggleAltitudeZeroCommand.ExecuteAsync(null);
+        fixture.ViewModel.AltitudeZeroActionText.Should().Be("Zero Altitude");
+        await fixture.Commands.DidNotReceiveWithAnyArgs().SetHomeHereAsync(default, default, default);
+    }
+
     /// <summary>Verifies common connection, heartbeat, and firmware-family safety gates.</summary>
     [Fact]
     public void PolicyRejectsUnavailableVehicleState()
@@ -404,6 +433,7 @@ public sealed class VehicleActionsTests
         var clock = Substitute.For<IDateTimeProvider>();
         clock.UtcNow.Returns(now);
         var confirmation = Substitute.For<IUserConfirmationService>();
+        var altitudeReference = Substitute.For<ILocalAltitudeReferenceService>();
         var dispatcher = Substitute.For<IDispatcher>();
         dispatcher.Dispatch(Arg.Any<Action>()).Returns(call =>
         {
@@ -419,8 +449,9 @@ public sealed class VehicleActionsTests
             Substitute.For<IUserNotificationService>(),
             dispatcher,
             Substitute.For<IDomainEventHub>(),
-            Substitute.For<ILogger<ActionsTabViewModel>>());
-        return new ViewModelFixture(viewModel, commands, confirmation, active.State!);
+            Substitute.For<ILogger<ActionsTabViewModel>>(),
+            altitudeReference);
+        return new ViewModelFixture(viewModel, commands, confirmation, active.State!, altitudeReference);
     }
 
     private static VehicleCommandPolicy CreatePolicy(DateTimeOffset now)
@@ -458,5 +489,6 @@ public sealed class VehicleActionsTests
         ActionsTabViewModel ViewModel,
         IVehicleCommandService Commands,
         IUserConfirmationService Confirmation,
-        VehicleState State);
+        VehicleState State,
+        ILocalAltitudeReferenceService AltitudeReference);
 }
