@@ -7,6 +7,7 @@ using MissionPlanner.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Profiles;
 using MissionPlanner.Core.DomainEvents;
+using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
@@ -352,6 +353,7 @@ public sealed class FullParametersListLifecycleTests
             Substitute.For<IParameterProfileService>(),
             parameterLoadStatus,
             eventHub,
+            Substitute.For<IUserNotificationService>(),
             NullLogger<FullParametersListTabViewModel>.Instance);
         return new Fixture(viewModel, connectionLifetime, parameterLoadStatus, () => statusHandler);
     }

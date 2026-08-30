@@ -7,6 +7,6 @@ public partial class VirtualizedDataGridView : UraniumContentPage
     public VirtualizedDataGridView()
     {
         InitializeComponent();
-        BindingContext = ServiceHelper.GetRequiredService<VirtualizedDataGridViewModel>();
+        BindingContext = ServiceProviderHelper.GetRequiredService<VirtualizedDataGridViewModel>();
     }
 }

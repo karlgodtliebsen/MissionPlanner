@@ -11,7 +11,7 @@ using MissionPlanner.Maps.Credentials;
 using MissionPlanner.Maps.Http;
 using MissionPlanner.Maps.Offline;
 using MissionPlanner.Maps.Settings;
-using UraniumUI.Material.TabViews;
+using BaseViewModel = MissionPlanner.App.Helpers.BaseViewModel;
 
 namespace MissionPlanner.App.Views.Preferences;
 

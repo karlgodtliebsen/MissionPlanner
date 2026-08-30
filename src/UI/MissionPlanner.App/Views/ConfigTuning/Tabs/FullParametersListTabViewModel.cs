@@ -6,6 +6,7 @@ using MissionPlanner.App.Presentation;
 using MissionPlanner.App.Views.Common;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning.Profiles;
+using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -29,6 +30,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     private ParameterApplyReport? lastApplyReport;
     private bool disposed;
     private int sessionRefreshScheduled;
+    private readonly IUserNotificationService userNotificationService;
 
 
     /// <summary>Initializes the Full Parameters List tab.</summary>
@@ -44,6 +46,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     /// <param name="profileWorkflow">The profile compatibility and staging workflow.</param>
     /// <param name="parameterLoadStatus"></param>
     /// <param name="domainEventHub"></param>
+    /// <param name="userNotificationService"></param>
     /// <param name="logger">The logger.</param>
     public FullParametersListTabViewModel(
         IVehicleConnectionSession connectionSession,
@@ -58,11 +61,13 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
         IParameterProfileService profileWorkflow,
         IVehicleParameterLoadStatusContext parameterLoadStatus,
         IDomainEventHub domainEventHub,
+        IUserNotificationService userNotificationService,
         ILogger<FullParametersListTabViewModel> logger)
         : base(connectionSession, activeVehicle, editSessionFactory, dispatcher, dialogService, domainFactory, parameterLoadStatus, domainEventHub, logger)
     {
         this.activeVehicle = activeVehicle;
         this.dispatcher = dispatcher;
+        this.userNotificationService = userNotificationService;
         this.dialogService = dialogService;
         this.domainFactory = domainFactory;
         this.parametersFileHandler = parametersFileHandler;
@@ -111,6 +116,7 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ClearParametersCommand))]
     [NotifyCanExecuteChangedFor(nameof(CancelLoadCommand))]
     [NotifyCanExecuteChangedFor(nameof(WriteParametersCommand))]
     [NotifyCanExecuteChangedFor(nameof(CompareParametersCommand))]
@@ -232,13 +238,13 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     }
 
     [RelayCommand(CanExecute = nameof(CanSave))]
-    private async Task SaveToFileAsync()
+    private async Task SaveToFileAsync(CancellationToken cancellationToken)
     {
         try
         {
             var parameters = EditSession?.Fields.Select(ToVehicleParameter).ToList() ?? [];
-            var result = await parametersFileHandler.SaveParametersToFile(parameters, CancellationToken.None);
-            await dialogService.ConfirmAsync("Saved", $"File saved to:\n{result}", "OK");
+            var result = await parametersFileHandler.SaveParametersToFile(parameters, cancellationToken);
+            await userNotificationService.NotifyAsync(new UserNotification($"File saved to:\n{result}", VehicleId: activeVehicle.VehicleId), cancellationToken);
         }
         catch (Exception exception)
         {
@@ -247,12 +253,12 @@ public partial class FullParametersListTabViewModel : ParametersViewModel
     }
 
     [RelayCommand(CanExecute = nameof(CanSave))]
-    private async Task SaveToJsonFileAsync()
+    private async Task SaveToJsonFileAsync(CancellationToken cancellationToken)
     {
         try
         {
-            var result = await parametersFileHandler.SaveParametersToJsonFile(Parameters, CancellationToken.None);
-            await dialogService.ConfirmAsync("Saved", $"File saved to:\n{result}", "OK");
+            var result = await parametersFileHandler.SaveParametersToJsonFile(Parameters, cancellationToken);
+            await userNotificationService.NotifyAsync(new UserNotification($"File saved to:\n{result}", VehicleId: activeVehicle.VehicleId), cancellationToken);
         }
         catch (Exception exception)
         {

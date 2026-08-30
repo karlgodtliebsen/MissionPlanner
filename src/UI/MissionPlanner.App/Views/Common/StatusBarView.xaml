@@ -31,6 +31,8 @@
                 <Label Text="•" FontSize="16"  VerticalOptions="Center"/>
                 <Label Text="{Binding TelemetryFreshness}" VerticalOptions="Center" />
 
+                <Label Text="•" FontSize="16"  VerticalOptions="Center" IsVisible="{Binding HasStatusMessage}"/>
+                <Label Text="{Binding StatusMessage}" VerticalOptions="Center" IsVisible="{Binding HasStatusMessage}" />
             </HorizontalStackLayout>
 
             

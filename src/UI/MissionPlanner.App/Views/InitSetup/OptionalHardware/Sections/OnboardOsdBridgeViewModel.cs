@@ -1,7 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Navigation;
-using UraniumUI.Material.TabViews;
+using BaseViewModel = MissionPlanner.App.Helpers.BaseViewModel;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware.Sections;
 

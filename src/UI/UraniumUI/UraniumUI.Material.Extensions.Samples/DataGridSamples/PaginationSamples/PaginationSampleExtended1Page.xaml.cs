@@ -7,6 +7,6 @@ public partial class PaginationSampleExtended1Page : UraniumContentPage
     public PaginationSampleExtended1Page()
     {
         InitializeComponent();
-        BindingContext = ServiceHelper.GetRequiredService<PaginationSampleExtendedViewModel>();
+        BindingContext = ServiceProviderHelper.GetRequiredService<PaginationSampleExtendedViewModel>();
     }
 }

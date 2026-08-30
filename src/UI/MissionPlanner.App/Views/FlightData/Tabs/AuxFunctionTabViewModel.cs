@@ -6,7 +6,7 @@ using MissionPlanner.Core.FlightData.Auxiliary;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.MavLink.Generated;
-using UraniumUI.Material.TabViews;
+using BaseViewModel = MissionPlanner.App.Helpers.BaseViewModel;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 

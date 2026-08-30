@@ -5,17 +5,17 @@ using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.DomainEvents;
-using MissionPlanner.Core.Notifications;
+using MissionPlanner.Core.FlightData.Adjustments;
 using MissionPlanner.Core.Missions.Abstractions;
 using MissionPlanner.Core.Missions.Models;
-using MissionPlanner.Core.FlightData.Adjustments;
+using MissionPlanner.Core.Notifications;
 using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
-using UraniumUI.Material.TabViews;
+using BaseViewModel = MissionPlanner.App.Helpers.BaseViewModel;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
@@ -54,6 +54,11 @@ public partial class ActionsTabViewModel : BaseViewModel
     /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="domainEventHub">The domain event hub used for active-vehicle state updates.</param>
     /// <param name="logger">The logger.</param>
+    /// <param name="altitudeReferenceService"></param>
+    /// <param name="missionInterventionService"></param>
+    /// <param name="missionSnapshots"></param>
+    /// <param name="adjustmentService"></param>
+    /// <param name="parameterRegistry"></param>
     /// <param name="replaySessionManager">Optional application-wide replay safety state.</param>
     public ActionsTabViewModel(
         IActiveVehicleContext activeVehicle,
@@ -197,51 +202,95 @@ public partial class ActionsTabViewModel : BaseViewModel
 
     /// <summary>Gets whether the local relative-altitude reference can be toggled.</summary>
     [ObservableProperty]
-    public partial bool CanToggleAltitudeZero { get; private set; }
+    public partial bool CanToggleAltitudeZero
+    {
+        get; private set;
+    }
 
     /// <summary>Gets the local display operation label.</summary>
     [ObservableProperty]
     public partial string AltitudeZeroActionText { get; private set; } = "Zero Altitude";
 
     [ObservableProperty]
-    public partial double SelectedMissionSequence { get; set; }
+    public partial double SelectedMissionSequence
+    {
+        get; set;
+    }
 
     [ObservableProperty]
     public partial string CurrentMissionSequenceText { get; private set; } = "Current sequence: unknown";
 
     [ObservableProperty]
-    public partial bool CanSetCurrentMissionItem { get; private set; }
+    public partial bool CanSetCurrentMissionItem
+    {
+        get; private set;
+    }
 
     [ObservableProperty]
-    public partial bool CanRestartMission { get; private set; }
+    public partial bool CanRestartMission
+    {
+        get; private set;
+    }
 
     [ObservableProperty]
-    public partial bool CanResumeMission { get; private set; }
+    public partial bool CanResumeMission
+    {
+        get; private set;
+    }
 
     [ObservableProperty]
-    public partial bool CanAbortLanding { get; private set; }
+    public partial bool CanAbortLanding
+    {
+        get; private set;
+    }
 
     [ObservableProperty]
-    public partial bool IsAbortLandingVisible { get; private set; }
+    public partial bool IsAbortLandingVisible
+    {
+        get; private set;
+    }
 
     [ObservableProperty]
     public partial string AbortLandingReason { get; private set; } = string.Empty;
 
     [ObservableProperty]
-    public partial bool IsMissionOperationPending { get; private set; }
+    public partial bool IsMissionOperationPending
+    {
+        get; private set;
+    }
 
     [ObservableProperty] public partial double TargetSpeedMetersPerSecond { get; set; } = 5;
     [ObservableProperty] public partial VehicleSpeedTargetType SelectedSpeedTargetType { get; set; } = VehicleSpeedTargetType.GroundSpeed;
     [ObservableProperty] public partial IReadOnlyList<VehicleSpeedTargetType> SpeedTargetTypes { get; private set; } = [VehicleSpeedTargetType.GroundSpeed];
-    [ObservableProperty] public partial bool IsSpeedTypeSelectorVisible { get; private set; }
+    [ObservableProperty]
+    public partial bool IsSpeedTypeSelectorVisible
+    {
+        get; private set;
+    }
     [ObservableProperty] public partial double TargetAltitudeAboveHomeMeters { get; set; } = 10;
     [ObservableProperty] public partial double LoiterRadiusMagnitudeMeters { get; set; } = 50;
-    [ObservableProperty] public partial bool CanChangeSpeed { get; private set; }
-    [ObservableProperty] public partial bool CanChangeAltitude { get; private set; }
-    [ObservableProperty] public partial bool CanSetLoiterRadius { get; private set; }
+    [ObservableProperty]
+    public partial bool CanChangeSpeed
+    {
+        get; private set;
+    }
+    [ObservableProperty]
+    public partial bool CanChangeAltitude
+    {
+        get; private set;
+    }
+    [ObservableProperty]
+    public partial bool CanSetLoiterRadius
+    {
+        get; private set;
+    }
     [ObservableProperty] public partial string ChangeAltitudeReason { get; private set; } = string.Empty;
     [ObservableProperty] public partial string LoiterRadiusReason { get; private set; } = string.Empty;
-    [ObservableProperty] public partial bool IsAdjustmentPending { get; private set; }
+    [ObservableProperty]
+    public partial bool IsAdjustmentPending
+    {
+        get; private set;
+    }
 
     /// <summary>Gets whether vehicle-changing controls may transmit in the current data-source mode.</summary>
     [ObservableProperty]
@@ -417,19 +466,25 @@ public partial class ActionsTabViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    private Task RestartMissionAsync(CancellationToken cancellationToken) =>
-        ExecuteMissionInterventionAsync("Restart Mission", missionInterventionService.RestartMissionAsync,
+    private Task RestartMissionAsync(CancellationToken cancellationToken)
+    {
+        return ExecuteMissionInterventionAsync("Restart Mission", missionInterventionService.RestartMissionAsync,
             VehicleAction.RestartMission, null, true, cancellationToken);
+    }
 
     [RelayCommand]
-    private Task ResumeMissionAsync(CancellationToken cancellationToken) =>
-        ExecuteMissionInterventionAsync("Resume Mission", missionInterventionService.ResumeMissionAsync,
+    private Task ResumeMissionAsync(CancellationToken cancellationToken)
+    {
+        return ExecuteMissionInterventionAsync("Resume Mission", missionInterventionService.ResumeMissionAsync,
             VehicleAction.ResumeMission, null, false, cancellationToken);
+    }
 
     [RelayCommand]
-    private Task AbortLandingAsync(CancellationToken cancellationToken) =>
-        ExecuteMissionInterventionAsync("Abort Landing", missionInterventionService.AbortLandingAsync,
+    private Task AbortLandingAsync(CancellationToken cancellationToken)
+    {
+        return ExecuteMissionInterventionAsync("Abort Landing", missionInterventionService.AbortLandingAsync,
             VehicleAction.AbortLanding, null, true, cancellationToken);
+    }
 
     private async Task ExecuteMissionInterventionAsync(
         string label,
@@ -494,22 +549,25 @@ public partial class ActionsTabViewModel : BaseViewModel
     [RelayCommand]
     private Task ChangeSpeedAsync(CancellationToken cancellationToken)
     {
-        if (!double.IsFinite(TargetSpeedMetersPerSecond) || TargetSpeedMetersPerSecond <= 0) return InvalidAdjustment("Speed must be greater than 0.");
-        return ExecuteAdjustmentAsync("Change Speed", (id, token) => adjustmentService.ChangeSpeedAsync(id, SelectedSpeedTargetType, TargetSpeedMetersPerSecond, token), cancellationToken);
+        return !double.IsFinite(TargetSpeedMetersPerSecond) || TargetSpeedMetersPerSecond <= 0
+            ? InvalidAdjustment("Speed must be greater than 0.")
+            : ExecuteAdjustmentAsync("Change Speed", (id, token) => adjustmentService.ChangeSpeedAsync(id, SelectedSpeedTargetType, TargetSpeedMetersPerSecond, token), cancellationToken);
     }
 
     [RelayCommand]
     private Task ChangeAltitudeAsync(CancellationToken cancellationToken)
     {
-        if (!double.IsFinite(TargetAltitudeAboveHomeMeters) || TargetAltitudeAboveHomeMeters < 0) return InvalidAdjustment("Target altitude above HOME must be non-negative.");
-        return ExecuteAdjustmentAsync("Change Altitude", (id, token) => adjustmentService.SetGuidedAltitudeAsync(id, TargetAltitudeAboveHomeMeters, token), cancellationToken);
+        return !double.IsFinite(TargetAltitudeAboveHomeMeters) || TargetAltitudeAboveHomeMeters < 0
+            ? InvalidAdjustment("Target altitude above HOME must be non-negative.")
+            : ExecuteAdjustmentAsync("Change Altitude", (id, token) => adjustmentService.SetGuidedAltitudeAsync(id, TargetAltitudeAboveHomeMeters, token), cancellationToken);
     }
 
     [RelayCommand]
     private Task SetLoiterRadiusAsync(CancellationToken cancellationToken)
     {
-        if (!double.IsFinite(LoiterRadiusMagnitudeMeters) || LoiterRadiusMagnitudeMeters <= 0) return InvalidAdjustment("Loiter radius must be greater than 0.");
-        return ExecuteAdjustmentAsync("Set Loiter Radius", (id, token) => adjustmentService.SetLoiterRadiusAsync(id, LoiterRadiusMagnitudeMeters, token), cancellationToken);
+        return !double.IsFinite(LoiterRadiusMagnitudeMeters) || LoiterRadiusMagnitudeMeters <= 0
+            ? InvalidAdjustment("Loiter radius must be greater than 0.")
+            : ExecuteAdjustmentAsync("Set Loiter Radius", (id, token) => adjustmentService.SetLoiterRadiusAsync(id, LoiterRadiusMagnitudeMeters, token), cancellationToken);
     }
 
     private Task InvalidAdjustment(string message)
@@ -796,7 +854,7 @@ public partial class ActionsTabViewModel : BaseViewModel
         CanSetHome = CanTransmit && IsAllowed(state, VehicleAction.SetHomeHere);
         var hasReference = state is not null && altitudeReferenceService.HasReference(state.VehicleId);
         AltitudeZeroActionText = hasReference ? "Reset Altitude" : "Zero Altitude";
-        CanToggleAltitudeZero = state is not null && (hasReference || state.Position.RelativeAltitudeMeters is { } altitude && double.IsFinite(altitude));
+        CanToggleAltitudeZero = state is not null && (hasReference || (state.Position.RelativeAltitudeMeters is { } altitude && double.IsFinite(altitude)));
         CurrentMissionSequenceText = state?.Navigation.CurrentMissionSequence is { } current ? $"Current sequence: {current}" : "Current sequence: unknown";
         var selectedSequence = SelectedMissionSequence is >= 0 and <= ushort.MaxValue && SelectedMissionSequence == Math.Truncate(SelectedMissionSequence)
             ? (ushort?)SelectedMissionSequence
@@ -812,7 +870,11 @@ public partial class ActionsTabViewModel : BaseViewModel
             ? [VehicleSpeedTargetType.Airspeed, VehicleSpeedTargetType.GroundSpeed]
             : [VehicleSpeedTargetType.GroundSpeed];
         IsSpeedTypeSelectorVisible = SpeedTargetTypes.Count > 1;
-        if (!SpeedTargetTypes.Contains(SelectedSpeedTargetType)) SelectedSpeedTargetType = VehicleSpeedTargetType.GroundSpeed;
+        if (!SpeedTargetTypes.Contains(SelectedSpeedTargetType))
+        {
+            SelectedSpeedTargetType = VehicleSpeedTargetType.GroundSpeed;
+        }
+
         var speedDecision = state is null ? VehicleCommandDecision.Deny("No active vehicle.") : adjustmentService.EvaluateSpeed(state, SelectedSpeedTargetType);
         var altitudeDecision = state is null ? VehicleCommandDecision.Deny("No active vehicle.") : adjustmentService.EvaluateAltitude(state);
         var radiusDecision = state is null ? VehicleCommandDecision.Deny("No active vehicle.") : adjustmentService.EvaluateLoiterRadius(state);
@@ -831,8 +893,15 @@ public partial class ActionsTabViewModel : BaseViewModel
         }
     }
 
-    private void OnMissionSnapshotsChanged(object? sender, EventArgs args) => dispatcher.Dispatch(() => ApplySnapshot(activeVehicle.Current));
-    private void OnVehicleParameterChanged(VehicleParameterChangedEventArgs args) => dispatcher.Dispatch(() => ApplySnapshot(activeVehicle.Current));
+    private void OnMissionSnapshotsChanged(object? sender, EventArgs args)
+    {
+        dispatcher.Dispatch(() => ApplySnapshot(activeVehicle.Current));
+    }
+
+    private void OnVehicleParameterChanged(VehicleParameterChangedEventArgs args)
+    {
+        dispatcher.Dispatch(() => ApplySnapshot(activeVehicle.Current));
+    }
 
     partial void OnSelectedMissionSequenceChanged(double value) => ApplySnapshot(activeVehicle.Current);
     partial void OnSelectedSpeedTargetTypeChanged(VehicleSpeedTargetType value) => ApplySnapshot(activeVehicle.Current);

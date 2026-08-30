@@ -149,6 +149,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
     /// </summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ClearParametersCommand))]
     [NotifyCanExecuteChangedFor(nameof(CancelLoadCommand))]
     public override partial bool IsBusy
     {
@@ -160,6 +161,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
     /// </summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ClearParametersCommand))]
     [NotifyCanExecuteChangedFor(nameof(CancelLoadCommand))]
     public partial bool IsBackgroundParameterLoadInProgress
     {
@@ -169,6 +171,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ClearParametersCommand))]
     [NotifyCanExecuteChangedFor(nameof(CancelLoadCommand))]
     public partial bool HasParameters
     {
@@ -178,6 +181,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
     /// <summary>Gets whether an active vehicle connection is available.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RefreshParametersCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ClearParametersCommand))]
     [NotifyCanExecuteChangedFor(nameof(CancelLoadCommand))]
     public override partial bool HasConnection
     {
@@ -585,7 +589,21 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
         CloseProgressDialog();
         CancelCachedParameterLoad();
         CancelLoadOperation();
+        await dispatcher.DispatchAsync(() =>
+        {
+            editSessionFactory.DiscardPendingChanges();
+            EditSession?.FieldChanged -= OnEditSessionFieldChanged;
+            EditSession = null;
+            Parameters.Clear();
+            lastApplyReport = null;
+            HasParameters = false;
+            TotalParameterCount = 0;
+            ModifiedParameterCount = 0;
+            CompleteBusyState();
+            SetMessages("Parameters cleared. Refresh to load again.");
+        });
 
+        logger.LogInformation("Cleared Full Parameters List for {VehicleId}.", vehicleId);
     }
 
     /// <summary>

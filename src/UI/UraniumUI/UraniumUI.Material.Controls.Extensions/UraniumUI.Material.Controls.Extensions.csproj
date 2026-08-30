@@ -23,4 +23,7 @@
         <PackageReference Include="UraniumUI.Icons.MaterialSymbols" />
         <PackageReference Include="UraniumUI.Material" />
     </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\Libraries\MissionPlanner.Library\MissionPlanner.Library.csproj" />
+    </ItemGroup>
 </Project>

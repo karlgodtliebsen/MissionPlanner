@@ -4,7 +4,7 @@ using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.FlightData.Actuators;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using UraniumUI.Material.TabViews;
+using BaseViewModel = MissionPlanner.App.Helpers.BaseViewModel;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 

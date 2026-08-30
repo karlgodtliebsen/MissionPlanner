@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using UraniumUI.Material.TabViews;
+using BaseViewModel = MissionPlanner.App.Helpers.BaseViewModel;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 

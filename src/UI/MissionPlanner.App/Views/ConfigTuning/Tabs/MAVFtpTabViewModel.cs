@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using CommunityToolkit.Maui.Storage;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -13,7 +13,7 @@ using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.MavLink.MavFtp;
 using MissionPlanner.Shared.Models.Vehicles.Models;
 using UraniumUI.Material.Dialogs;
-using UraniumUI.Material.TabViews;
+using BaseViewModel = MissionPlanner.App.Helpers.BaseViewModel;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 

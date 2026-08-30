@@ -1,8 +1,11 @@
 ﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.Library.EventHub.Abstractions;
+using UraniumUI.Material;
+using UraniumUI.Material.TabViews;
 
-namespace UraniumUI.Material.TabViews;
+namespace MissionPlanner.App.Helpers;
 
 /// <summary>
 /// Represents the base view model with common functionality for handling busy state, status messages, and error messages.
@@ -10,11 +13,9 @@ namespace UraniumUI.Material.TabViews;
 public partial class BaseViewModel : ObservableObject, IDisposable, IActivationLifeCycle
 {
     private readonly SemaphoreSlim operationGate = new(1, 1);
-    //private readonly CancellationTokenSource lifetimeCancellation = new();
     private readonly ILogger logger;
-    private readonly IDispatcher dispatcher;
     private bool disposed;
-
+    private readonly IDomainEventHub eventHub;
     /// <summary>
     /// 
     /// </summary>
@@ -26,16 +27,20 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
     /// </param>
     protected BaseViewModel(ILogger logger, IDispatcher? dispatcher = null)
     {
-        this.dispatcher = dispatcher
+        this.Dispatcher = dispatcher
             ?? Microsoft.Maui.Dispatching.Dispatcher.GetForCurrentThread()
             ?? HeadlessDispatcher.Instance;
         this.logger = logger;
+        this.eventHub = ServiceProviderHelper.GetRequiredService<IDomainEventHub>();
         logger.LogTrace("BaseViewModel initialized for ViewModel {viewModel}", GetType().FullName);
         Debug.Print($"BaseViewModel initialized for ViewModel {GetType().FullName}");
     }
 
     /// <summary>Gets the dispatcher associated with the application UI.</summary>
-    protected IDispatcher Dispatcher => dispatcher;
+    protected IDispatcher Dispatcher
+    {
+        get;
+    }
 
     /// <summary>Gets or sets the current operation progress from zero to one.</summary>
     [ObservableProperty]
@@ -83,7 +88,16 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
     /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasStatusMessage))]
-    public virtual partial string? StatusMessage { get; set; } = null;
+    public virtual partial string? StatusMessage
+    {
+        get; set;
+    }
+
+    partial void OnStatusMessageChanged(string? value)
+    {
+        eventHub.PublishDomainEventAsync<StatusMessageReceived>(new StatusMessageReceived(value));
+        //eventHub/
+    }
 
 
     /// <summary>
@@ -109,9 +123,9 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
     /// <param name="errorMessage"></param>
     protected virtual void SetMessages(string? statusMessage = null, string? errorMessage = null)
     {
-        if (dispatcher.IsDispatchRequired)
+        if (Dispatcher.IsDispatchRequired)
         {
-            dispatcher.Dispatch(() => SetMessages(statusMessage, errorMessage));
+            Dispatcher.Dispatch(() => SetMessages(statusMessage, errorMessage));
             return;
         }
         StatusMessage = statusMessage;
@@ -125,9 +139,9 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
     /// <param name="ex"></param>
     protected virtual void SetMessages(Exception? ex)
     {
-        if (dispatcher.IsDispatchRequired)
+        if (Dispatcher.IsDispatchRequired)
         {
-            dispatcher.Dispatch(() => SetMessages(ex));
+            Dispatcher.Dispatch(() => SetMessages(ex));
             return;
         }
         string? eMsg = null;
@@ -206,7 +220,7 @@ public partial class BaseViewModel : ObservableObject, IDisposable, IActivationL
 
     private void DispatchIfAlive(Action action)
     {
-        dispatcher.Dispatch(() =>
+        Dispatcher.Dispatch(() =>
         {
             if (!disposed)
             {

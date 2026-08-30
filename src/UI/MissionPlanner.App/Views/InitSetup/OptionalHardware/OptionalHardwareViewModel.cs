@@ -5,7 +5,7 @@ using MissionPlanner.App.Views.Common;
 using MissionPlanner.Core.Setup.OptionalHardware;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using UraniumUI.Material.TabViews;
+using BaseViewModel = MissionPlanner.App.Helpers.BaseViewModel;
 using TabItemViewModel = MissionPlanner.App.Views.Common.TabItemViewModel;
 
 namespace MissionPlanner.App.Views.InitSetup.OptionalHardware;

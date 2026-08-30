@@ -7,6 +7,6 @@ public partial class CustomDataGridPage : UraniumContentPage
     public CustomDataGridPage()
     {
         InitializeComponent();
-        BindingContext = ServiceHelper.GetRequiredService<CustomDataGridPageViewModel>();
+        BindingContext = ServiceProviderHelper.GetRequiredService<CustomDataGridPageViewModel>();
     }
 }

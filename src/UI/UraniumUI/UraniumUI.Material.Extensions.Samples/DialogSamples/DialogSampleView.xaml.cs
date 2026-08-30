@@ -8,6 +8,6 @@ public partial class DialogSampleView : UraniumContentPage
     {
         InitializeComponent();
 
-        BindingContext = ServiceHelper.GetRequiredService<DialogSampleViewModel>();
+        BindingContext = ServiceProviderHelper.GetRequiredService<DialogSampleViewModel>();
     }
 }

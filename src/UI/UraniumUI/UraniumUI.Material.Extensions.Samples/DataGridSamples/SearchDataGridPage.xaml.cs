@@ -7,6 +7,6 @@ public partial class SearchDataGridPage : UraniumContentPage
     public SearchDataGridPage()
     {
         InitializeComponent();
-        BindingContext = ServiceHelper.GetRequiredService<SimpleDataGridPageViewModel>();
+        BindingContext = ServiceProviderHelper.GetRequiredService<SimpleDataGridPageViewModel>();
     }
 }

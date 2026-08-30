@@ -10,7 +10,7 @@ using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using UraniumUI.Material.TabViews;
+using BaseViewModel = MissionPlanner.App.Helpers.BaseViewModel;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware;
 
@@ -21,10 +21,9 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
     private readonly IVehicleParameterRegistry parameterRegistry;
     private readonly ISetupWorkflowCatalog catalog;
     private readonly INavigationService navigation;
-    private readonly IDispatcher dispatcher;
     private readonly ILogger<MandatoryHardwareViewModel> logger;
     private readonly Lock parameterRefreshSync = new();
-    private System.Threading.Timer? parameterRefreshTimer;
+    private Timer? parameterRefreshTimer;
     private bool active;
     private bool disposed;
 
@@ -43,13 +42,12 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
         ISetupWorkflowCatalog catalog,
         INavigationService navigation,
         IDispatcher dispatcher,
-        ILogger<MandatoryHardwareViewModel> logger) : base(logger)
+        ILogger<MandatoryHardwareViewModel> logger) : base(logger, dispatcher)
     {
         this.activeVehicle = activeVehicle;
         this.parameterRegistry = parameterRegistry;
         this.catalog = catalog;
         this.navigation = navigation;
-        this.dispatcher = dispatcher;
         this.logger = logger;
 
     }
@@ -167,7 +165,7 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
 
 
         SetMessages(null, null);
-        dispatcher.Dispatch(() =>
+        Dispatcher.Dispatch(() =>
         {
             VehicleHeading = snapshot.IsOnline
                 ? $"{snapshot.DisplayName} · {snapshot.State!.Identity.Firmware.Family}"
@@ -184,7 +182,7 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
             return;
         }
 
-        dispatcher.Dispatch(() =>
+        Dispatcher.Dispatch(() =>
         {
             CancelParameterRefresh();
             Refresh();
@@ -224,7 +222,7 @@ public partial class MandatoryHardwareViewModel : BaseViewModel
             }
         }
 
-        dispatcher.Dispatch(() =>
+        Dispatcher.Dispatch(() =>
         {
             if (active && !disposed)
             {

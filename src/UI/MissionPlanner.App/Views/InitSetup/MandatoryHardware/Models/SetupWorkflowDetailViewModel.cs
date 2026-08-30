@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Setup;
-using UraniumUI.Material.TabViews;
+using BaseViewModel = MissionPlanner.App.Helpers.BaseViewModel;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
 

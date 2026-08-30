@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Configuration;
+using MissionPlanner.App.Helpers;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
@@ -39,7 +40,14 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
     {
         get; set;
     }
-
+    /// <summary>
+    /// 
+    /// </summary>
+    [ObservableProperty]
+    public partial bool HasStatusMessage
+    {
+        get; set;
+    }
 
     /// <summary>
     /// 
@@ -93,16 +101,13 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
 
 
         activeVehicle.Changed += OnActiveVehicleChanged;
-
-        // Subscribe to connection state changes
         stateService.PropertyChanged += OnApplicationStateChanged;
-
-        // Subscribe to vehicle connection events
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated));
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected));
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleParameterLoadStatusChanged>(OnVehicleLoadStatusChanged));
 
+        disposables.Add(domainEventHub.SubscribeDomainEventAsync<StatusMessageReceived>(OnStatusMessageReceived));
 
         // Start clock timer
         StartClock();
@@ -112,9 +117,21 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
         if (stateService.VehicleId is { } vehicleId && parameterLoadStatus.Get(vehicleId) is { } status)
         {
             StatusMessage = FormatParameterLoadStatus(status);
+            HasStatusMessage = !string.IsNullOrEmpty(StatusMessage);
         }
         UpdateVehicleStatus(activeVehicle.Current);
     }
+
+    private Task OnStatusMessageReceived(StatusMessageReceived msg, CancellationToken arg2)
+    {
+        dispatcher.Dispatch(() =>
+        {
+            StatusMessage = msg.Message;
+            HasStatusMessage = !string.IsNullOrEmpty(StatusMessage);
+        });
+        return Task.CompletedTask;
+    }
+
     private Task OnVehicleLoadStatusChanged(VehicleParameterLoadStatusChanged evt, CancellationToken cancellationToken)
     {
         dispatcher.Dispatch(() =>
@@ -123,6 +140,7 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
             if (stateService.VehicleId == evt.Status.VehicleId && latest == evt.Status)
             {
                 StatusMessage = FormatParameterLoadStatus(latest);
+                HasStatusMessage = !string.IsNullOrEmpty(StatusMessage);
             }
         });
         return Task.CompletedTask;
@@ -142,6 +160,7 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
             TelemetryFreshness = snapshot.State is null
                 ? "Telemetry: unavailable"
                 : $"Telemetry: {FormatAge(snapshot.State.LastHeartbeatAt)}";
+            HasStatusMessage = !string.IsNullOrEmpty(StatusMessage);
         });
     }
 
@@ -190,8 +209,6 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
         }
     }
 
-
-
     private void UpdateConnectionStatus()
     {
         if (stateService.IsConnected)
@@ -219,6 +236,7 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
             ConnectionStatus = $"Disconnected: {evt.VehicleId}";
             IsConnectedStatus = false;
             StatusMessage = $"Vehicle {evt.VehicleId} disconnected";
+            HasStatusMessage = !string.IsNullOrEmpty(StatusMessage);
         });
         return Task.CompletedTask;
     }
@@ -230,6 +248,7 @@ public partial class StatusBarViewModel : ObservableObject, IDisposable
             ConnectionStatus = $"Connected: {evt.VehicleId}";
             IsConnectedStatus = true;
             StatusMessage = $"Vehicle {evt.VehicleId} connected via {evt.ConnectionType}";
+            HasStatusMessage = true;
         });
         return Task.CompletedTask;
     }

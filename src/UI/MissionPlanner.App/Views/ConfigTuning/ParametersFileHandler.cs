@@ -9,7 +9,7 @@ namespace MissionPlanner.App.Views.ConfigTuning;
 /// <summary>Imports and exports vehicle parameter files for the Config editing session.</summary>
 public sealed class ParametersFileHandler(IFileSaver fileSaver)
 {
-    private static readonly JsonSerializerOptions options = new();
+    private static readonly JsonSerializerOptions options = new(JsonSerializerDefaults.General);
 
     /// <summary>Saves parameters as invariant-culture comma-separated name/value pairs.</summary>
     /// <param name="parameters">The parameters to save.</param>
@@ -120,7 +120,10 @@ public sealed class ParametersFileHandler(IFileSaver fileSaver)
                 continue;
             }
 
-            parameters.Add(existing with { Value = value });
+            parameters.Add(existing with
+            {
+                Value = value
+            });
         }
 
         return parameters;

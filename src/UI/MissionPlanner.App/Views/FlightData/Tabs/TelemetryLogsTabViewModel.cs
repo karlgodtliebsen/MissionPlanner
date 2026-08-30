@@ -1,11 +1,11 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.Replay;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
-using UraniumUI.Material.TabViews;
+using BaseViewModel = MissionPlanner.App.Helpers.BaseViewModel;
 
 namespace MissionPlanner.App.Views.FlightData.Tabs;
 
@@ -120,7 +120,7 @@ public sealed partial class TelemetryLogsTabViewModel : BaseViewModel
 
     /// <summary>Gets playback progress from zero through one.</summary>
     [ObservableProperty]
-    public partial double Progress
+    public new partial double Progress
     {
         get; private set;
     }

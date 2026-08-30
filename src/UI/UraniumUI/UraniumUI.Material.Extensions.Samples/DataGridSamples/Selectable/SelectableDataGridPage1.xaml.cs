@@ -7,6 +7,6 @@ public partial class SelectableDataGridPage1 : UraniumContentPage
     public SelectableDataGridPage1()
     {
         InitializeComponent();
-        BindingContext = ServiceHelper.GetRequiredService<SelectableDataGridPageViewModel1>();
+        BindingContext = ServiceProviderHelper.GetRequiredService<SelectableDataGridPageViewModel1>();
     }
 }

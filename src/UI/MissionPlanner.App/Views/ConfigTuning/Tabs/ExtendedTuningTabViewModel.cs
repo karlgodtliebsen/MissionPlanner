@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Presentation;
@@ -8,7 +8,7 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Firmware.Model;
 using MissionPlanner.Shared.Models.Vehicles.Models;
-using UraniumUI.Material.TabViews;
+using BaseViewModel = MissionPlanner.App.Helpers.BaseViewModel;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
@@ -365,7 +365,7 @@ public sealed partial class ExtendedTuningTabViewModel : BaseViewModel
         }).ConfigureAwait(false);
     }
 
-    private new async Task RunAsync(Func<CancellationToken, Task> operation)
+    private async Task RunAsync(Func<CancellationToken, Task> operation)
     {
         CancelOperation();
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(activeVehicle.ConnectionCancellationToken);

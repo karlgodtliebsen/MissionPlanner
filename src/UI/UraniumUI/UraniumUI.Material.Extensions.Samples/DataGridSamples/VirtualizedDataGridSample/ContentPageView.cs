@@ -55,7 +55,7 @@ public class ContentPageView<TViewModel> : UraniumContentPage
         {
             if (BindingContext is null)
             {
-                var viewModel = ServiceHelper.GetRequiredService<TViewModel>();
+                var viewModel = ServiceProviderHelper.GetRequiredService<TViewModel>();
                 BindingContext = viewModel;
             }
         }

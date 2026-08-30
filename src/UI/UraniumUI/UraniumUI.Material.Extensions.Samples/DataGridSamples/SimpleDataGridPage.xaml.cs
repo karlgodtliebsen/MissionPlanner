@@ -7,6 +7,6 @@ public partial class SimpleDataGridPage : UraniumContentPage
     public SimpleDataGridPage()
     {
         InitializeComponent();
-        BindingContext = ServiceHelper.GetRequiredService<SimpleDataGridPageViewModel>();
+        BindingContext = ServiceProviderHelper.GetRequiredService<SimpleDataGridPageViewModel>();
     }
 }

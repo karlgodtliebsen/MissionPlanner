@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -10,7 +10,7 @@ using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Simulation;
 using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Simulation.ArduPilot;
-using UraniumUI.Material.TabViews;
+using BaseViewModel = MissionPlanner.App.Helpers.BaseViewModel;
 
 namespace MissionPlanner.App.Views.Simulation;
 

@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -10,8 +10,8 @@ using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library;
 using MissionPlanner.Shared.Models.Vehicles.Models;
-using UraniumUI.Material.TabViews;
 using UraniumUI.Extensions;
+using BaseViewModel = MissionPlanner.App.Helpers.BaseViewModel;
 
 namespace MissionPlanner.App.Views.ConfigTuning.Tabs;
 
@@ -681,7 +681,7 @@ public sealed partial class GeoFenceTabViewModel : BaseViewModel
         GeometryChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    private IProgress<FenceTransferProgress> Progress()
+    private new IProgress<FenceTransferProgress> Progress()
     {
         return new Progress<FenceTransferProgress>(value =>
         {

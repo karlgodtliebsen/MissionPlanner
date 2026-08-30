@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -19,7 +19,7 @@ using MissionPlanner.Firmware.Model;
 using MissionPlanner.Firmware.Preparation;
 using MissionPlanner.Firmware.Presentation;
 using UraniumUI.Material.Dialogs;
-using UraniumUI.Material.TabViews;
+using BaseViewModel = MissionPlanner.App.Helpers.BaseViewModel;
 
 namespace MissionPlanner.App.Views.InitSetup.InstallFirmware;
 

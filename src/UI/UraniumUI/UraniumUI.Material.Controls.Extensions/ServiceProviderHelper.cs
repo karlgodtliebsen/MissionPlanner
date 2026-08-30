@@ -3,7 +3,7 @@
 /// <summary>
 /// Helper class for retrieving services from the MAUI application's service provider.
 /// </summary>
-public static class ServiceHelper
+public static class ServiceProviderHelper
 {
     /// <summary>
     /// Retrieves a required service from the MAUI application's service provider.

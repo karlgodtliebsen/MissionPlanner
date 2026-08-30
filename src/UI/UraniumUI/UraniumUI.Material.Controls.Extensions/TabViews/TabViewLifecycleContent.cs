@@ -16,7 +16,7 @@ public class TabViewLifecycleContent<TViewModel> : ContentView, IActivationLifeC
     /// <inheritdoc />
     public TabViewLifecycleContent()
     {
-        ViewModel = ServiceHelper.GetRequiredService<TViewModel>();
+        ViewModel = ServiceProviderHelper.GetRequiredService<TViewModel>();
         ArgumentNullException.ThrowIfNull(ViewModel);
         BindingContext = ViewModel;
     }

@@ -7,6 +7,6 @@ public partial class EditorDataGridPage : UraniumContentPage
     public EditorDataGridPage()
     {
         InitializeComponent();
-        BindingContext = ServiceHelper.GetRequiredService<EditorDataGridPageViewModel>();
+        BindingContext = ServiceProviderHelper.GetRequiredService<EditorDataGridPageViewModel>();
     }
 }

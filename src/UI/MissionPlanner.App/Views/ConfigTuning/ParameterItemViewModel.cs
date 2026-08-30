@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Globalization;
+using System.Text.Json.Serialization;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -17,11 +18,8 @@ namespace MissionPlanner.App.Views.ConfigTuning;
 /// </summary>
 public partial class ParameterItemViewModel : ObservableObject
 {
-    private VehicleParameter? originalParameter;
-    private ParameterMetadata? originalMetadata;
     private readonly IParameterEditSession? editSession;
     private ParameterFieldMetadata? editMetadata;
-    private MavParamType? editType;
     private ParameterEditField? projectedField;
 
     private bool loadingData;
@@ -31,11 +29,25 @@ public partial class ParameterItemViewModel : ObservableObject
     /// <summary>
     /// Provides the public API for OriginalParameter.
     /// </summary>
-    public VehicleParameter? OriginalParameter => originalParameter;
+    public VehicleParameter? OriginalParameter
+    {
+        get;
+        set;
+    }
+
+    ///// <summary>
+    ///// Provides the public API for OriginalMetadata.
+    ///// </summary>
+    //public ParameterMetadata? OriginalMetadata
+    //{
+    //    get;
+    //    set;
+    //}
 
     /// <summary>
     /// Command that is triggered when the selected values change.
     /// </summary>
+    [JsonIgnore]
     public ICommand SelectedValuesChanged
     {
         get;
@@ -90,12 +102,20 @@ public partial class ParameterItemViewModel : ObservableObject
         get;
         set;
     }
-
+    /// <summary>
+    /// Gets or sets the MAVLink parameter type for editing.
+    /// </summary>
+    public MavParamType EditType
+    {
+        get;
+        set;
+    }
 
     /// <summary>
     /// Gets the numeric type of the parameter as a string.
     /// </summary>
-    public string NumericType => editType switch
+    [JsonIgnore]
+    public string NumericType => EditType switch
     {
         MavParamType.Int8 => "Int8",
         MavParamType.Uint8 => "UInt8",
@@ -110,7 +130,8 @@ public partial class ParameterItemViewModel : ObservableObject
     /// <summary>
     /// Gets the numeric type of the parameter as a string.
     /// </summary>
-    public string MavNumericType => editType switch
+    [JsonIgnore]
+    public string MavNumericType => EditType switch
     {
         MavParamType.Int8 => "Int8",
         MavParamType.Uint8 => "Uint8",
@@ -130,6 +151,7 @@ public partial class ParameterItemViewModel : ObservableObject
     /// when a single-precision value is projected into that type.
     /// </remarks>
     [DataGridIgnore]
+    [JsonIgnore]
     public string ValueText
     {
         get => FormatParameterValue(Value);
@@ -147,6 +169,7 @@ public partial class ParameterItemViewModel : ObservableObject
     /// Gets the culture-aware text displayed for the original parameter value.
     /// </summary>
     [DataGridIgnore]
+    [JsonIgnore]
     public string OriginalValueText => FormatParameterValue(OriginalValue);
 
     [ObservableProperty]
@@ -321,6 +344,7 @@ public partial class ParameterItemViewModel : ObservableObject
         set;
     }
 
+    [JsonIgnore]
     [DataGridIgnore]
     [ObservableProperty]
     public partial ParameterEditWriteStatus WriteStatus
@@ -345,6 +369,13 @@ public partial class ParameterItemViewModel : ObservableObject
         this.editSession = editSession;
         SelectedValuesChanged = new Command<object>(OnSelectedValuesChanged);
         SetField(field);
+    }
+    /// <summary>
+    /// Default contructor for serialization and design-time support.
+    /// </summary>
+    public ParameterItemViewModel()
+    {
+
     }
 
     partial void OnSelectedValueChanged(string? value)
@@ -383,15 +414,15 @@ public partial class ParameterItemViewModel : ObservableObject
         var pendingValue = field.PendingValue;
         var pendingValueChanged = Math.Abs(Value - pendingValue) > 0.0001f;
         var editorDefinitionChanged =
-            editType != field.Type ||
+            EditType != field.Type ||
             editMetadata != field.Metadata ||
             !string.Equals(Name, field.Name, StringComparison.Ordinal);
 
         loadingData = true;
         try
         {
-            originalParameter = new VehicleParameter(field.Name, (float)field.OriginalValue, field.Type, 0, 0);
-            originalMetadata = null;
+            OriginalParameter = new VehicleParameter(field.Name, (float)field.OriginalValue, field.Type, 0, 0);
+            //OriginalMetadata = null;
             OriginalValue = field.OriginalValue;
             LiveValue = field.LiveValue;
             Value = pendingValue;
@@ -404,7 +435,7 @@ public partial class ParameterItemViewModel : ObservableObject
             {
                 ApplyEditorMetadata(CreateEditorMetadata(field));
                 editMetadata = field.Metadata;
-                editType = field.Type;
+                EditType = field.Type;
             }
 
             PreserveCurrentValueInEditorBounds(pendingValue);
