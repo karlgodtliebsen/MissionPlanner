@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.App.Helpers;
 using MissionPlanner.App.Navigation;
 using MissionPlanner.App.Views.Common;
 using MissionPlanner.App.Views.InitSetup.MandatoryHardware.Models;
@@ -10,7 +11,6 @@ using MissionPlanner.Core.Setup.Abstractions;
 using MissionPlanner.Core.Setup.Definitions;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;
-using BaseViewModel = MissionPlanner.App.Helpers.BaseViewModel;
 
 namespace MissionPlanner.App.Views.InitSetup.MandatoryHardware;
 
