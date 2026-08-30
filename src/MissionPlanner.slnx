@@ -61,6 +61,7 @@
   </Folder>
   <Folder Name="/UI/">
     <Project Path="UI/MissionPlanner.App/MissionPlanner.App.csproj" Id="ff20c388-4a20-4f5d-a4ef-dd949c6ed9d9" />
+    <Project Path="UI/MissionPlanner.Avalonia.UI/MissionPlanner.Avalonia.UI.csproj" />
     <Project Path="UI/MissionPlanner.Droid/MissionPlanner.Droid.csproj" Id="e2e925ba-c006-4814-b4bd-1075bfe650f9" />
     <Project Path="UI/MissionPlanner.Mac/MissionPlanner.Mac.csproj" Id="a282031d-f6ae-4b39-b361-b3297dfacb77" />
     <Project Path="UI/MissionPlanner.WinUI/MissionPlanner.WinUI.csproj" Id="1004b0a3-a412-4c8b-bc07-11f327aafe6a">

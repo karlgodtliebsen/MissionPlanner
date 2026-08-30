@@ -6,7 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- Microsoft.Extensions family -->
-    <PackageVersion Include="InputKit.Maui" Version="4.6.0" />
+    <PackageVersion Include="Material.Icons.Avalonia" Version="3.0.2" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.10" />
@@ -22,7 +22,7 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.10" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.10" />
-    <!-- Misc family -->
+    <!-- Logging family -->
     <PackageVersion Include="Serilog" Version="4.4.0" />
     <PackageVersion Include="Serilog.Enrichers.Environment" Version="3.0.1" />
     <PackageVersion Include="Serilog.Enrichers.Process" Version="3.0.0" />
@@ -36,9 +36,9 @@
     <PackageVersion Include="Serilog.Sinks.Trace" Version="4.0.0" />
     <PackageVersion Include="Spectre.Console" Version="0.57.0" />
     <PackageVersion Include="Spectre.Console.Cli" Version="0.55.0" />
+    <!--Other-->
     <PackageVersion Include="System.IO.Ports" Version="10.0.10" />
     <PackageVersion Include="System.Reactive" Version="7.0.0" />
-    <!--Other-->
     <PackageVersion Include="Polly" Version="8.7.0" />
     <PackageVersion Include="DynamicData" Version="9.4.31" />
     <PackageVersion Include="Riok.Mapperly" Version="4.3.1" />
@@ -56,8 +56,7 @@
     <PackageVersion Include="SkiaSharp.Views.Maui.Controls" Version="4.151.1" />
     <PackageVersion Include="CommunityToolkit.Maui" Version="15.0.0" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-    
-      <!--MAUI Uranium-->
+    <!--MAUI Uranium-->
     <PackageVersion Include="UraniumUI.Blurs" Version="3.0.0" />
     <PackageVersion Include="UraniumUI.Dialogs.CommunityToolkit" Version="3.0.0" />
     <PackageVersion Include="UraniumUI.Dialogs.Mopups" Version="3.0.0" />
@@ -68,6 +67,22 @@
     <PackageVersion Include="UraniumUI.Material" Version="3.0.0" />
     <PackageVersion Include="UraniumUI.Validations.DataAnnotations" Version="3.0.0" />
     <PackageVersion Include="UraniumUI.WebComponents" Version="3.0.0" />
+    <PackageVersion Include="InputKit.Maui" Version="4.6.0" />
+    <!--Avalonia-->
+    <PackageVersion Include="Avalonia" Version="12.1.1" />
+    <PackageVersion Include="Avalonia.Desktop" Version="12.1.1" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="12.1.1" />
+    <PackageVersion Include="Avalonia.Fonts.Inter" Version="12.1.1" />
+    <PackageVersion Include="AvaloniaUI.DiagnosticsSupport" Version="2.2.3">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageVersion>
+    <PackageVersion Include="Irihi.Ursa" Version="2.2.0" />
+    <PackageVersion Include="Irihi.Ursa.Themes.Semi" Version="2.2.0" />
+    <PackageVersion Include="Semi.Avalonia" Version="12.1.0.1" />
+    <PackageVersion Include="Semi.Avalonia.AvaloniaEdit" Version="12.0.0" />
+    <PackageVersion Include="Semi.Avalonia.DataGrid" Version="12.1.0.1" />
+    <PackageVersion Include="Semi.Avalonia.Dock" Version="12.0.0.2" />
     <!-- Testing family -->
     <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />

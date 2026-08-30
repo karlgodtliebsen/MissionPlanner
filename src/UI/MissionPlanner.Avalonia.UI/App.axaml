@@ -1,0 +1,36 @@
+﻿<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="MissionPlanner.Avalonia.UI.App"
+             xmlns:local="using:AvaloniaApplication2"
+             xmlns:semi="https://irihi.tech/semi"
+             xmlns:ui="clr-namespace:MissionPlanner.Avalonia.UI"
+
+             RequestedThemeVariant="Default">
+    <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.DataTemplates>
+        <ui:ViewLocator />
+    </Application.DataTemplates>
+
+    <Application.Styles>
+        <!--        <FluentTheme />
+        -->        
+        <semi:SemiTheme Locale="us-US" />
+        <semi:UrsaSemiTheme Locale="us-US"/>
+        <semi:SemiPopupAnimations />
+<!--        <StyleInclude Source="avares://Irihi.Lingua.Core/Themes/Generic.axaml" />
+-->   <!--     <StyleInclude Source="avares://Ursa.Demo/Themes/AnchorScrollViewer.axaml" />
+--><!--        <StyleInclude Source="avares://Irihi.Dogma/CodeBlock/CodeBlock.axaml"/>
+-->    </Application.Styles>
+
+    <NativeMenu.Menu>
+        <NativeMenu>
+            <NativeMenuItem
+                Header="About Us"
+                />
+        </NativeMenu>
+    </NativeMenu.Menu>
+
+
+
+</Application>
