@@ -1,32 +1,30 @@
-﻿<Window
+﻿<u:UrsaWindow
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:navigation="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Navigation"
     xmlns:main="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Main"
     xmlns:common="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Common"
+    xmlns:u="https://irihi.tech/ursa"
     x:Class="MissionPlanner.AvaloniaUI.App.Views.Main.MainWindow"
     x:DataType="main:MainViewModel"
     Icon="/Resources/AppIcon/mpdesktop.png"
     Title="MissionPlanner Next Generation">
+    
+        <Grid RowDefinitions="Auto,*,Auto">
 
+            <!-- Persistent application toolbar -->
+            <common:TopBarView Grid.Row="0" />
 
-    <Grid RowDefinitions="Auto,*,Auto">
-
-        <!-- Persistent application toolbar -->
-        <common:TopBarView
-            Grid.Row="0" />
-
-        <!--
+            <!--
             Everything navigable lives here.
             Includes the right-side DrawerPage.
-        -->
-        <navigation:MainShellView
-            Grid.Row="1" />
+            -->
+            <navigation:MainShellView
+                Grid.Row="1" />
 
-        <!-- Persistent application status -->
-        <common:StatusBarView
-            Grid.Row="2" />
+            <!-- Persistent application status -->
+            <common:StatusBarView Grid.Row="2" />
 
-    </Grid>
+        </Grid>
 
-</Window>
+</u:UrsaWindow>

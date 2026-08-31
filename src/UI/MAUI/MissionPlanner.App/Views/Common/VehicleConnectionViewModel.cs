@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using CommunityToolkit.Mvvm.ComponentModel;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Helpers;
 using MissionPlanner.Core.Vehicles;
 using MissionPlanner.Core.Vehicles.Abstractions;

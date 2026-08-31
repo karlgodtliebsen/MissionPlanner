@@ -14,64 +14,38 @@ public sealed class AvaloniaDialogService : IDialogService
         this.windowProvider = windowProvider;
     }
 
-    public async Task DisplayViewAsync(string title, Control content, string closeText)
+    /// <inheritdoc />
+    public async Task DisplayViewAsync(string title, UserControl content, string okText = "OK", double width = 800, double height = 600)
     {
-        await uiDispatcher.DispatchAsync(async () =>
-        {
-            var owner = windowProvider.ActiveWindow
-                        ?? throw new InvalidOperationException(
-                            "No active window is available.");
-
-            var dialog = new ViewDialogWindow
-            {
-                Title = title,
-                Width = 800,
-                Height = 600
-            };
-
-            dialog.DataContext =
-                new ViewDialogViewModel(
-                    title,
-                    content,
-                    closeText,
-                    dialog.Close);
-
-            await dialog.ShowDialog(owner);
-        });
+        var cancelText = "Close";
+        await DisplayViewAsync(title, content, okText, cancelText, width, height);
     }
 
     /// <inheritdoc />
-    public async Task DisplayViewAsync(string title, UserControl content, string okText = "OK")
+    public async Task<bool> DisplayViewAsync(string title, UserControl content, string okText, string cancelText, double width = 800, double height = 600)
     {
-        var closeText = "Close";
-        await uiDispatcher.DispatchAsync(async () =>
-        {
-            var owner = windowProvider.ActiveWindow
-                        ?? throw new InvalidOperationException(
-                            "No active window is available.");
+        return await uiDispatcher.DispatchAsync(async () =>
+          {
+              var owner = windowProvider.ActiveWindow
+                          ?? throw new InvalidOperationException(
+                              "No active window is available.");
 
-            var dialog = new ViewDialogWindow
-            {
-                Title = title,
-                Width = 800,
-                Height = 600
-            };
+              var dialog = new ViewDialogWindow
+              {
+                  Title = title,
+                  Width = width,
+                  Height = height
+              };
 
-            dialog.DataContext =
-                new ViewDialogViewModel(
-                    title,
-                    content,
-                    closeText,
-                    dialog.Close);
+              dialog.DataContext =
+                  new ViewDialogViewModel(
+                      title,
+                      content,
+                      cancelText,
+                      dialog.Close);
 
-            await dialog.ShowDialog(owner);
-        });
-    }
-
-    /// <inheritdoc />
-    public Task<bool> DisplayViewAsync(string title, UserControl content, string okText, string cancelText)
-    {
-        throw new NotImplementedException();
+              return await dialog.ShowDialog<bool>(owner);
+          });
     }
 
     /// <inheritdoc />

@@ -266,7 +266,7 @@ public partial class TopBarViewModel : ViewModelBase
     {
         var view = serviceFactory.Create<ConnectPopupView>();
         var dialogService = serviceFactory.Create<IDialogService>();
-        await dialogService.DisplayViewAsync("Connection", view, "Ok");
+        await dialogService.DisplayViewAsync("Connection", view, "Ok", 600, 500);
     }
 
     [RelayCommand]

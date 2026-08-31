@@ -48,6 +48,10 @@ public partial class ConnectPopupViewModel : ViewModelBase
         get; set;
     }
 
+    partial void OnAddressChanged(IPAddress? value)
+    {
+        SelectedHost = value?.ToString();
+    }
 
     [ObservableProperty]
     public partial string? SelectedHost
@@ -165,6 +169,11 @@ public partial class ConnectPopupViewModel : ViewModelBase
         configuredChannels = options.CurrentValue.Channels.ToList();
         Channels = new ObservableRangeCollection<string>(configuredChannels);
         BaudRates = new ObservableRangeCollection<string>(options.CurrentValue.BaudRates);
+
+        if (IPAddress.TryParse(options.CurrentValue.Host, out var address))
+        {
+            Address = address;
+        }
         SelectedHost = options.CurrentValue.Host;
         SelectedPort = options.CurrentValue.Port;
         SelectedChannel = stateService.SelectedChannel;

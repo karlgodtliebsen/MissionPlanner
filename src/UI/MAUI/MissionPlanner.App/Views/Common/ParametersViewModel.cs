@@ -1,4 +1,8 @@
 ﻿using System.Diagnostics;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
+using Microsoft.Extensions.Logging;
 using MissionPlanner.App.Views.ConfigTuning;
 using MissionPlanner.Core.ConfigTuning;
 using MissionPlanner.Core.DomainEvents;
@@ -8,6 +12,7 @@ using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
+using UraniumUI.Extensions;
 using UraniumUI.Material.Dialogs;
 
 namespace MissionPlanner.App.Views.Common;
@@ -22,6 +27,8 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
     private readonly IVehicleParameterRegistry parameterRegistry;
     private readonly IVehicleParameterLoadStatusContext parameterLoadStatus;
     private readonly IDomainEventHub domainEventHub;
+    private readonly IDispatcher dispatcher;
+    private readonly ILogger logger;
     private readonly IActiveVehicleContext activeVehicle;
     private readonly IParameterEditSessionFactory editSessionFactory;
     private readonly IExtendedDialogService dialogService;
@@ -53,6 +60,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
     /// <summary>Initializes the Full Parameters List tab.</summary>
     /// <param name="connectionSession">The current connection-scoped services.</param>
     /// <param name="activeVehicle">The application active-vehicle context.</param>
+    /// <param name="dispatcher">The dispatcher.</param>
     /// <param name="editSessionFactory">The shared parameter editing-session factory.</param>
     /// <param name="dialogService">The extended dialog service.</param>
     /// <param name="domainFactory">The domain factory.</param>
@@ -63,6 +71,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
         IVehicleConnectionSession connectionSession,
         IActiveVehicleContext activeVehicle,
         IParameterEditSessionFactory editSessionFactory,
+        IDispatcher dispatcher,
         IExtendedDialogService dialogService,
         IDomainFactory domainFactory,
         IVehicleParameterLoadStatusContext parameterLoadStatus,
@@ -77,6 +86,8 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
         this.domainFactory = domainFactory;
         this.parameterLoadStatus = parameterLoadStatus;
         this.domainEventHub = domainEventHub;
+        this.dispatcher = dispatcher;
+        this.logger = logger;
     }
 
     /// <summary>

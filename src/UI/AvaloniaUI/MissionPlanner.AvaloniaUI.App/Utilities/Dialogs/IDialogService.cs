@@ -9,15 +9,16 @@ namespace MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
 /// </summary>
 public interface IDialogService
 {
-
     /// <summary>
     /// 
     /// </summary>
     /// <param name="title"></param>
     /// <param name="content"></param>
     /// <param name="okText"></param>
+    /// <param name="width">The width of the dialog.</param>
+    /// <param name="height">The height of the dialog.</param>
     /// <returns></returns>
-    Task DisplayViewAsync(string title, UserControl content, string okText = "OK");
+    Task DisplayViewAsync(string title, UserControl content, string okText = "OK", double width = 800, double height = 600);
 
     /// <summary>
     /// 
@@ -26,8 +27,10 @@ public interface IDialogService
     /// <param name="content"></param>
     /// <param name="okText"></param>
     /// <param name="cancelText"></param>
+    /// <param name="width"></param>
+    /// <param name="height"></param>
     /// <returns></returns>
-    Task<bool> DisplayViewAsync(string title, UserControl content, string okText, string cancelText);
+    Task<bool> DisplayViewAsync(string title, UserControl content, string okText, string cancelText, double width = 800, double height = 600);
 
 
     /// <summary>
@@ -65,102 +68,6 @@ public interface IDialogService
         string message,
         string okText = "OK",
         string cancelText = "Cancel");
-
-    /// <summary>
-    /// Displays a checkbox prompt dialog.
-    /// </summary>
-    /// <param name="message">The message to display in the prompt.</param>
-    /// <param name="selectionSource">The collection of items to display as checkboxes.</param>
-    /// <param name="selectedItems">The collection of items that are initially selected.</param>
-    /// <param name="accept">The text to display on the accept button.</param>
-    /// <param name="cancel">The text to display on the cancel button.</param>
-    /// <param name="displayMember">The name of the property to display for each item.</param>
-    /// <typeparam name="T">The type of the items in the selection source.</typeparam>
-    /// <returns>The collection of items that were selected.</returns>
-    Task<IEnumerable<T>> DisplayCheckBoxPromptAsync<T>(
-        string message,
-        IEnumerable<T> selectionSource,
-        IEnumerable<T>? selectedItems = default,
-        string accept = "OK",
-        string cancel = "Cancel",
-        string? displayMember = null);
-
-    /// <summary>
-    /// Displays a radio button prompt dialog.
-    /// </summary>
-    /// <param name="message">The message to display in the prompt.</param>
-    /// <param name="selectionSource">The collection of items to display as radio buttons.</param>
-    /// <param name="selected">The item that is initially selected.</param>
-    /// <param name="accept">The text to display on the accept button.</param>
-    /// <param name="cancel">The text to display on the cancel button.</param>
-    /// <param name="displayMember">The name of the property to display for each item.</param>
-    /// <typeparam name="T">The type of the items in the selection source.</typeparam>
-    /// <returns>The item that was selected.</returns>
-    Task<T> DisplayRadioButtonPromptAsync<T>(
-        string message,
-        IEnumerable<T> selectionSource,
-        T selected = default(T),
-        string accept = "Ok",
-        string cancel = "Cancel", string? displayMember = null);
-
-    /// <summary>
-    /// Displays a text prompt dialog.
-    /// </summary>
-    /// <param name="title">The title of the text prompt dialog.</param>
-    /// <param name="message">The message to display in the text prompt dialog.</param>
-    /// <param name="accept">The text to display on the accept button.</param>
-    /// <param name="cancel">The text to display on the cancel button.</param>
-    /// <param name="placeholder">The placeholder text to display in the input field.</param>
-    /// <param name="maxLength">The maximum length of the input text.</param>
-    /// <param name="initialValue">The initial value to display in the input field.</param>
-    /// <param name="isPassword">Whether the input field should mask the entered text as a password.</param>
-    /// <returns>The text entered by the user. </returns>
-    Task<string> DisplayTextPromptAsync(
-        string title,
-        string message,
-        string accept = "OK",
-        string cancel = "Cancel",
-        string? placeholder = null,
-        int maxLength = -1,
-        string initialValue = "",
-        bool isPassword = false);
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="title"></param>
-    /// <param name="selectedDate"></param>
-    /// <param name="minimumDate"></param>
-    /// <param name="maximumDate"></param>
-    /// <param name="accept"></param>
-    /// <param name="cancel"></param>
-    /// <param name="clear"></param>
-    /// <param name="today"></param>
-    /// <returns></returns>
-    Task<DateTime?> DisplayDatePromptAsync(
-        string title,
-        DateTime? selectedDate = null,
-        DateTime? minimumDate = null,
-        DateTime? maximumDate = null,
-        string accept = "OK",
-        string cancel = "Cancel",
-        string clear = "Clear",
-        string today = "Today");
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="title"></param>
-    /// <param name="viewModel"></param>
-    /// <param name="submit"></param>
-    /// <param name="cancel"></param>
-    /// <typeparam name="TViewModel"></typeparam>
-    /// <returns></returns>
-    Task<TViewModel> DisplayFormViewAsync<TViewModel>(
-        string title,
-        TViewModel? viewModel = default,
-        string submit = "OK",
-        string cancel = "Cancel") where TViewModel : class;
 
 
     /// <summary>

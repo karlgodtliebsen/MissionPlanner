@@ -174,9 +174,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<ErrorView>();
 
         //services.TryAddTransient<HelpViewModel>();
-        //services.TryAddTransient<ConnectPopupViewModel>();
-        //services.TryAddTransient<ConnectPopupView>();
-        //services.TryAddTransient<StatisticsViewModel>();
+        services.TryAddTransient<StatisticsViewModel>();
         //services.TryAddTransient<LandingPageViewModel>();
         //services.TryAddTransient<IntroductionViewModel>();
         //services.TryAddTransient<ParametersEditorView>();

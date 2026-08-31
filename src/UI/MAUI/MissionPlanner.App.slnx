@@ -1,3 +1,6 @@
 <Solution>
+  <Project Path="../UraniumUI/UraniumUI.Material.Controls.Extensions/UraniumUI.Material.Controls.Extensions.csproj" />
+  <Project Path="../UraniumUI/UraniumUI.Material.Extensions.Samples/UraniumUI.Material.Extensions.Samples.csproj" />
+  <Project Path="../UraniumUI/UraniumUI.Material.VirtualizedDataGrid/UraniumUI.Material.VirtualizedDataGrid.csproj" />
   <Project Path="MissionPlanner.App/MissionPlanner.App.csproj" />
 </Solution>
