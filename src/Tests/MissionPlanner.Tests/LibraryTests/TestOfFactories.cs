@@ -1,4 +1,5 @@
 ﻿using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.Factory.Domain;
@@ -410,7 +411,10 @@ public class TestOfFactories
         /// <summary>
         /// Provides the public API for Size.
         /// </summary>
-        public double Size { get; set; }
+        public double Size
+        {
+            get; set;
+        }
 
         /// <summary>
         /// Provides the public API for ToString.
@@ -429,19 +433,31 @@ public class TestOfFactories
         /// <summary>
         /// Provides the public API for TrackingId.
         /// </summary>
-        Guid TrackingId { get; }
+        Guid TrackingId
+        {
+            get;
+        }
         /// <summary>
         /// Provides the public API for Service1.
         /// </summary>
-        IService1 Service1 { get; }
+        IService1 Service1
+        {
+            get;
+        }
         /// <summary>
         /// Provides the public API for Service2.
         /// </summary>
-        IService2 Service2 { get; }
+        IService2 Service2
+        {
+            get;
+        }
         /// <summary>
         /// Provides the public API for Options.
         /// </summary>
-        ApplicationData Options { get; }
+        ApplicationData Options
+        {
+            get;
+        }
     }
 
     /// <summary>
@@ -452,7 +468,10 @@ public class TestOfFactories
         /// <summary>
         /// 
         /// </summary>
-        public ApplicationData Options { get; }
+        public ApplicationData Options
+        {
+            get;
+        }
 
         /// <summary>
         /// 
@@ -473,16 +492,25 @@ public class TestOfFactories
         /// <summary>
         /// Provides the public API for Service1.
         /// </summary>
-        public IService1 Service1 { get; }
+        public IService1 Service1
+        {
+            get;
+        }
         /// <summary>
         /// Provides the public API for Service2.
         /// </summary>
-        public IService2 Service2 { get; }
+        public IService2 Service2
+        {
+            get;
+        }
 
         /// <summary>
         /// Provides the public API for TrackingId.
         /// </summary>
-        public Guid TrackingId { get; set; }
+        public Guid TrackingId
+        {
+            get; set;
+        }
 
         /// <summary>
         /// Provides the public API for ToString.
@@ -501,7 +529,10 @@ public class TestOfFactories
         /// <summary>
         /// Provides the public API for TrackingId.
         /// </summary>
-        Guid TrackingId { get; }
+        Guid TrackingId
+        {
+            get;
+        }
     }
 
     /// <summary>
@@ -520,7 +551,10 @@ public class TestOfFactories
         /// <summary>
         /// Provides the public API for TrackingId.
         /// </summary>
-        public Guid TrackingId { get; set; }
+        public Guid TrackingId
+        {
+            get; set;
+        }
 
         /// <summary>
         /// Provides the public API for ToString.
@@ -539,7 +573,10 @@ public class TestOfFactories
         /// <summary>
         /// Provides the public API for TrackingId.
         /// </summary>
-        Guid TrackingId { get; }
+        Guid TrackingId
+        {
+            get;
+        }
     }
 
     /// <summary>
@@ -558,7 +595,10 @@ public class TestOfFactories
         /// <summary>
         /// Provides the public API for TrackingId.
         /// </summary>
-        public Guid TrackingId { get; set; }
+        public Guid TrackingId
+        {
+            get; set;
+        }
 
         /// <summary>
         /// Provides the public API for ToString.
@@ -577,39 +617,66 @@ public class TestOfFactories
         /// <summary>
         /// Provides the public API for TrackingId.
         /// </summary>
-        Guid TrackingId { get; }
+        Guid TrackingId
+        {
+            get;
+        }
         /// <summary>
         /// Provides the public API for Service1.
         /// </summary>
-        IService1 Service1 { get; }
+        IService1 Service1
+        {
+            get;
+        }
         /// <summary>
         /// Provides the public API for Service2.
         /// </summary>
-        IService2 Service2 { get; }
+        IService2 Service2
+        {
+            get;
+        }
         /// <summary>
         /// Provides the public API for Service3.
         /// </summary>
-        IService3 Service3 { get; }
+        IService3 Service3
+        {
+            get;
+        }
         /// <summary>
         /// Provides the public API for Service4.
         /// </summary>
-        IService4 Service4 { get; }
+        IService4 Service4
+        {
+            get;
+        }
         /// <summary>
         /// Provides the public API for Service5.
         /// </summary>
-        IService5 Service5 { get; }
+        IService5 Service5
+        {
+            get;
+        }
         /// <summary>
         /// Provides the public API for Service6.
         /// </summary>
-        IService6 Service6 { get; }
+        IService6 Service6
+        {
+            get;
+        }
         /// <summary>
         /// Provides the public API for Service7.
         /// </summary>
-        IService7 Service7 { get; }
+        IService7 Service7
+        {
+            get;
+        }
         /// <summary>
         /// Provides the public API for Options.
         /// </summary>
-        ApplicationData Options { get; }
+        ApplicationData Options
+        {
+            get;
+        }
     }
 
     /// <summary>
@@ -689,7 +756,10 @@ public class TestOfFactories
         /// <summary>
         /// Provides the public API for TrackingId.
         /// </summary>
-        Guid TrackingId { get; }
+        Guid TrackingId
+        {
+            get;
+        }
     }
 
     /// <summary>
@@ -708,7 +778,10 @@ public class TestOfFactories
         /// <summary>
         /// Provides the public API for TrackingId.
         /// </summary>
-        public Guid TrackingId { get; set; }
+        public Guid TrackingId
+        {
+            get; set;
+        }
 
         /// <summary>
         /// Provides the public API for ToString.
@@ -727,7 +800,10 @@ public class TestOfFactories
         /// <summary>
         /// Provides the public API for TrackingId.
         /// </summary>
-        Guid TrackingId { get; }
+        Guid TrackingId
+        {
+            get;
+        }
     }
 
     /// <summary>
@@ -746,7 +822,10 @@ public class TestOfFactories
         /// <summary>
         /// Provides the public API for TrackingId.
         /// </summary>
-        public Guid TrackingId { get; set; }
+        public Guid TrackingId
+        {
+            get; set;
+        }
 
         /// <summary>
         /// Provides the public API for ToString.
@@ -765,7 +844,10 @@ public class TestOfFactories
         /// <summary>
         /// Provides the public API for TrackingId.
         /// </summary>
-        Guid TrackingId { get; }
+        Guid TrackingId
+        {
+            get;
+        }
     }
 
     /// <summary>
@@ -784,7 +866,10 @@ public class TestOfFactories
         /// <summary>
         /// Provides the public API for TrackingId.
         /// </summary>
-        public Guid TrackingId { get; set; }
+        public Guid TrackingId
+        {
+            get; set;
+        }
 
         /// <summary>
         /// Provides the public API for ToString.
@@ -803,7 +888,10 @@ public class TestOfFactories
         /// <summary>
         /// Provides the public API for TrackingId.
         /// </summary>
-        Guid TrackingId { get; }
+        Guid TrackingId
+        {
+            get;
+        }
     }
 
     /// <summary>
@@ -822,7 +910,10 @@ public class TestOfFactories
         /// <summary>
         /// Provides the public API for TrackingId.
         /// </summary>
-        public Guid TrackingId { get; set; }
+        public Guid TrackingId
+        {
+            get; set;
+        }
 
         /// <summary>
         /// Provides the public API for ToString.
@@ -842,7 +933,10 @@ public class TestOfFactories
         /// <summary>
         /// Provides the public API for TrackingId.
         /// </summary>
-        Guid TrackingId { get; }
+        Guid TrackingId
+        {
+            get;
+        }
     }
 
     /// <summary>
@@ -861,7 +955,10 @@ public class TestOfFactories
         /// <summary>
         /// Provides the public API for TrackingId.
         /// </summary>
-        public Guid TrackingId { get; set; }
+        public Guid TrackingId
+        {
+            get; set;
+        }
 
         /// <summary>
         /// Provides the public API for ToString.

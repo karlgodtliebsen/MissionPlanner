@@ -49,7 +49,6 @@
     <File Path="Directory.Packages.props" />
   </Folder>
   <Folder Name="/Tests/">
-    <Project Path="Tests/MissionPlanner.Core.Tests/MissionPlanner.Core.Tests.csproj" />
     <Project Path="Tests/MissionPlanner.Firmware.Tests/MissionPlanner.Firmware.Tests.csproj" />
     <Project Path="Tests/MissionPlanner.Smoke.Simulator.Tests/MissionPlanner.Smoke.Simulator.Tests.csproj" />
     <Project Path="Tests/MissionPlanner.Test.Support/MissionPlanner.Test.Support.csproj" />
