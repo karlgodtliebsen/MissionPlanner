@@ -1,0 +1,411 @@
+{
+  "schemaVersion": 1,
+  "title": "Introduction",
+  "subtitle": "A quick guide to the new MissionPlanner interface",
+  "topics": [
+    {
+      "id": "welcome",
+      "order": 10,
+      "title": "Welcome to MissionPlanner",
+      "shortTitle": "Welcome",
+      "markdownFile": "welcome.md",
+      "images": [
+        {
+          "path": "Images/introduction-overview.png",
+          "caption": "MissionPlanner overview: Flyout navigation, persistent Top Bar, main working area, and Status Bar.",
+          "height": 520
+        }
+      ],
+      "callouts": [
+        {
+          "number": 1,
+          "title": "Flyout Menu",
+          "text": "Navigate between the major MissionPlanner work areas."
+        },
+        {
+          "number": 2,
+          "title": "Connect + Preferences",
+          "text": "Connect to the vehicle or open MissionPlanner Preferences."
+        },
+        {
+          "number": 3,
+          "title": "Top Bar",
+          "text": "Status for connected vehicle."
+        },
+        {
+          "number": 4,
+          "title": "Main content",
+          "text": "The selected page owns the central working area."
+        },
+        {
+          "number": 5,
+          "title": "Status Bar",
+          "text": "Persistent GCS status, location, and unit information."
+        },
+        {
+          "number": 6,
+          "title": "Flight Data Tabset",
+          "text": "A set of Tabs for detailed views."
+        },
+        {
+          "number": 7,
+          "title": "Slider",
+          "text": "Expand/contract the view."
+        }
+      ],
+      "actions": [
+        {
+          "label": "Next: Flyout Menu",
+          "kind": "Topic",
+          "target": "flyout"
+        }
+      ]
+    },
+    {
+      "id": "flyout",
+      "order": 20,
+      "title": "Flyout Menu",
+      "shortTitle": "Flyout Menu",
+      "markdownFile": "flyout.md",
+      "images": [
+        {
+          "path": "Images/flyout-button.png",
+          "caption": "This button shows the Flyout menu.",
+          "height": 120
+        },
+        {
+          "path": "Images/flyout.png",
+          "caption": "The Flyout is the primary navigation surface.",
+          "height": 520
+        }
+      ],
+      "actions": [
+        {
+          "label": "Next: Top Bar",
+          "kind": "Topic",
+          "target": "topbar"
+        }
+      ]
+    },
+
+    {
+      "id": "topbar",
+      "order": 30,
+      "title": "Top Bar",
+      "shortTitle": "Top Bar",
+      "markdownFile": "topbar.md",
+      "images": [
+        {
+          "path": "Images/topbar.png",
+          "caption": "Connection and application-level controls remain accessible while navigating.",
+          "height": 140
+        }
+      ],
+      "actions": [
+        {
+          "label": "Next: Connecting",
+          "kind": "Topic",
+          "target": "connecting"
+        }
+      ]
+    },
+    {
+      "id": "connecting",
+      "order": 40,
+      "title": "Connecting a Vehicle",
+      "shortTitle": "Connecting",
+      "markdownFile": "connecting.md",
+      "images": [
+        {
+          "path": "Images/topbar.png",
+          "caption": "Use the Top Bar connection control to establish or end the active vehicle connection.",
+          "height": 140
+        },
+        {
+          "path": "Images/connect.png",
+          "caption": "Use the popup view to establish the active vehicle connection.",
+          "height": 520
+        },
+        {
+          "path": "Images/connected.png",
+          "caption": "Use the popup view to end the active vehicle connection.",
+          "height": 520
+        }
+      ],
+      "actions": [
+        {
+          "label": "Next: Status Bar",
+          "kind": "Topic",
+          "target": "statusbar"
+        }
+      ]
+    },
+    {
+      "id": "statusbar",
+      "order": 50,
+      "title": "Status Bar and Units",
+      "shortTitle": "Status Bar",
+      "markdownFile": "statusbar.md",
+      "images": [
+        {
+          "path": "Images/statusbar.png",
+          "caption": "The Status Bar keeps GCS information and display-unit selection visible.",
+          "height": 120
+        }
+      ],
+      "actions": [
+        {
+          "label": "Next: Maps",
+          "kind": "Topic",
+          "target": "maps"
+        }
+      ]
+    },
+    {
+      "id": "maps",
+      "order": 60,
+      "title": "Maps",
+      "shortTitle": "Maps",
+      "markdownFile": "maps.md",
+      "images": [
+        {
+          "path": "Images/flightplanner.jpg",
+          "caption": "Mission planning combines the geographical route with exact mission-item data.",
+          "height": 560
+        },
+        {
+          "path": "Images/flightplanner-editor.png",
+          "caption": "Use the mission editor for exact commands, coordinates, altitudes, and parameters.",
+          "height": 480
+        },
+        {
+          "path": "Images/flightplanner-quick-editor.png",
+          "caption": "The quick editor provides a compact way to inspect and adjust mission items.",
+          "height": 420
+        }
+      ],
+      "actions": [
+        {
+          "label": "Next: Geolocation",
+          "kind": "Topic",
+          "target": "geolocation"
+        }
+      ]
+    },
+    {
+      "id": "geolocation",
+      "order": 70,
+      "title": "Ground Control Station Geolocation",
+      "shortTitle": "Geolocation",
+      "markdownFile": "geolocation.md",
+      "actions": [
+        {
+          "label": "Next: Flight Data",
+          "kind": "Topic",
+          "target": "flightdata"
+        }
+      ]
+    },
+    {
+      "id": "flightdata",
+      "order": 80,
+      "title": "Flight Data",
+      "shortTitle": "Flight Data",
+      "markdownFile": "flightdata.md",
+      "images": [
+        {
+          "path": "Images/flightdata-tabs-1.png",
+          "caption": "Flight Data tabs organize live telemetry and operational views.",
+          "height": 500
+        },
+        {
+          "path": "Images/flightdata-tabs-2.png",
+          "caption": "Additional Flight Data views can focus on specialized telemetry or instruments.",
+          "height": 500
+        }
+      ],
+      "actions": [
+        {
+          "label": "Next: Mission Planning",
+          "kind": "Topic",
+          "target": "missionplanning"
+        }
+      ]
+    },
+    {
+      "id": "missionplanning",
+      "order": 90,
+      "title": "Mission Planning",
+      "shortTitle": "Mission Planning",
+      "markdownFile": "missionplanning.md",
+      "images": [
+        {
+          "path": "Images/flightplanner.jpg",
+          "caption": "Mission map overview.",
+          "height": 560
+        },
+        {
+          "path": "Images/flightplanner-editor.png",
+          "caption": "Detailed mission editor.",
+          "height": 480
+        },
+        {
+          "path": "Images/flightplanner-quick-editor.png",
+          "caption": "Quick mission editor.",
+          "height": 420
+        }
+      ],
+      "actions": [
+        {
+          "label": "Next: Setup",
+          "kind": "Topic",
+          "target": "setup"
+        }
+      ]
+    },
+    {
+      "id": "setup",
+      "order": 100,
+      "title": "Vehicle Setup and Configuration",
+      "shortTitle": "Setup",
+      "markdownFile": "setup.md",
+      "images": [
+        {
+          "path": "Images/setup.jpg",
+          "caption": "Configuration entry point.",
+          "height": 520
+        },
+        {
+          "path": "Images/setup-1.png",
+          "caption": "Vehicle setup view 1.",
+          "height": 480
+        },
+        {
+          "path": "Images/setup-2.png",
+          "caption": "Vehicle setup view 2.",
+          "height": 480
+        },
+        {
+          "path": "Images/setup-3.png",
+          "caption": "Vehicle setup view 3.",
+          "height": 480
+        },
+        {
+          "path": "Images/setup-4.png",
+          "caption": "Vehicle setup view 4.",
+          "height": 480
+        },
+        {
+          "path": "Images/setup-5.png",
+          "caption": "Vehicle setup view 5.",
+          "height": 480
+        },
+        {
+          "path": "Images/setup-6.png",
+          "caption": "Vehicle setup view 6.",
+          "height": 480
+        },
+        {
+          "path": "Images/setup-stm32-bootloader.png",
+          "caption": "STM32 bootloader/DFU-related setup workflow.",
+          "height": 460
+        },
+        {
+          "path": "Images/setup-stm32-bootloader-windevice.png",
+          "caption": "Windows device/bootloader information used during firmware workflows.",
+          "height": 460
+        }
+      ],
+      "actions": [
+        {
+          "label": "Next: Configuration",
+          "kind": "Topic",
+          "target": "config"
+        }
+      ]
+    },
+    {
+      "id": "config",
+      "order": 110,
+      "title": "Vehicle Configuration",
+      "shortTitle": "Configuration",
+      "markdownFile": "configuration.md",
+      "images": [
+        {
+          "path": "Images/config.png",
+          "caption": "Configuration Views",
+          "height": 520
+        },
+        {
+          "path": "Images/config-gf.png",
+          "caption": "Geo Fence",
+          "height": 480
+        },
+        {
+          "path": "Images/config-bt.png",
+          "caption": "Basic Tuning.",
+          "height": 480
+        },
+        {
+          "path": "Images/config-et.png",
+          "caption": "Extended Tuning.",
+          "height": 480
+        },
+        {
+          "path": "Images/config-osd.png",
+          "caption": "Onboard OSD.",
+          "height": 480
+        },
+        {
+          "path": "Images/config-ftp.png",
+          "caption": "Mav FTP.",
+          "height": 480
+        },
+        {
+          "path": "Images/config-param.png",
+          "caption": "Full Parameters List",
+          "height": 480
+        },
+        {
+          "path": "Images/config-cl8.png",
+          "caption": "CubeLan 8 Ports Switch",
+          "height": 480
+        }
+
+      ],
+      "actions": [
+        {
+          "label": "Next: Preferences",
+          "kind": "Topic",
+          "target": "preferences"
+        }
+      ]
+    },
+    {
+      "id": "preferences",
+      "order": 120,
+      "title": "MissionPlanner Preferences",
+      "shortTitle": "Preferences",
+      "markdownFile": "preferences.md",
+      "images": [
+        {
+          "path": "Images/preferences-button.png",
+          "caption": "Open MissionPlanner Preferences from the persistent Top Bar.",
+          "height": 140
+        },
+        {
+          "path": "Images/preferences.png",
+          "caption": " MissionPlanner Preferences.",
+          "height": 500
+        }
+      ],
+      "actions": [
+        {
+          "label": "Back to Welcome",
+          "kind": "Topic",
+          "target": "welcome"
+        }
+      ]
+    }
+  ]
+}

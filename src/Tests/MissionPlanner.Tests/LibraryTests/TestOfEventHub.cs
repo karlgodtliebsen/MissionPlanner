@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Library.Configuration;
 using MissionPlanner.Library.EventHub;
@@ -666,7 +667,7 @@ public class TestOfEventHub
 
         for (var i = 0; i < 100; i++)
         {
-            var disposable = eventHub.SubscribeAll((m) => { count++; });
+            var disposable = eventHub.SubscribeAll((m) => count++);
             disposable.Should().NotBeNull();
             disposables.Add(disposable);
         }

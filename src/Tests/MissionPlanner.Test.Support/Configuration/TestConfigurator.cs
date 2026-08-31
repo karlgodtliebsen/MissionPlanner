@@ -2,13 +2,13 @@
 using System.Net.Sockets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.Json;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.Core.Configuration;
 using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Library.Configuration;
-using MissionPlanner.Maps.Configuration;
 using MissionPlanner.MavLink.Configuration;
 using MissionPlanner.Simulator.SmokeTests;
 using MissionPlanner.Transport;
@@ -93,11 +93,9 @@ public static class TestConfigurator
             .AddLibraryServices()
             .AddEventHubServices()
             .AddDomainServices(configuration)
-            .AddMapServices(configuration)
+        //    .AddMapServices(configuration)
             .AddMavLinkTransportServices(configuration)
-            .AddMapServices(configuration)
             .AddFirmwareServices(configuration)
-            .AddMapServices(configuration)
             .AddMavLinkServices(configuration)
             ;
 

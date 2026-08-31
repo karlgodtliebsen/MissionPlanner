@@ -9,8 +9,7 @@ public sealed class PlannerSettingsService : IPlannerSettingsService
 {
     private static readonly JsonSerializerOptions jsonOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, PropertyNameCaseInsensitive = true, WriteIndented = true, UnmappedMemberHandling = JsonUnmappedMemberHandling.Skip };
 
-    private static readonly HashSet<string> allowedConnectionChannels =
-        new(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> allowedConnectionChannels = new(StringComparer.OrdinalIgnoreCase)
         {
             "AUTO",
             "TCP",

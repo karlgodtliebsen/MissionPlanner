@@ -1,0 +1,51 @@
+<Window
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:dialogs="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities.Dialogs"
+    x:Class="MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.ViewDialogWindow"
+    x:DataType="dialogs:ViewDialogViewModel"
+
+    WindowStartupLocation="CenterOwner"
+    CanResize="True"
+    ShowInTaskbar="False"
+    MinWidth="400"
+    MinHeight="250">
+
+    <Grid RowDefinitions="Auto,*,Auto">
+
+        <!-- Header -->
+        <Border
+            Grid.Row="0"
+            Padding="16,12">
+
+            <TextBlock
+                Text="{Binding TitleText}"
+                FontSize="18"
+                FontWeight="SemiBold"/>
+
+        </Border>
+
+        <!-- Arbitrary View -->
+        <ContentControl
+            Grid.Row="1"
+            Margin="16"
+            Content="{Binding DialogContent}"
+            HorizontalContentAlignment="Stretch"
+            VerticalContentAlignment="Stretch"/>
+
+        <!-- Footer -->
+        <Border
+            Grid.Row="2"
+            Padding="16,10">
+
+            <Button
+                HorizontalAlignment="Right"
+                MinWidth="90"
+                Content="{Binding CloseText}"
+                Command="{Binding CloseCommand}"/>
+
+        </Border>
+
+    </Grid>
+
+</Window>

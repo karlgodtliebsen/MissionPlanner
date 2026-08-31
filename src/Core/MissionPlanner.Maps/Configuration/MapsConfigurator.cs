@@ -48,12 +48,15 @@ public static class MapsConfigurator
         services.TryAddSingleton<IMapSourceResolver, MapSourceResolver>();
         services.TryAddSingleton<IMapHttpResourceFetcher, MapHttpResourceFetcher>();
         services.TryAddSingleton<IMapAttributionService, MapAttributionService>();
-        services.TryAddSingleton<ICustomMapSourceStore>(_ => new JsonCustomMapSourceStore(Path.Combine(FileSystem.AppDataDirectory, "Maps", "custom-sources.json")));
-        services.TryAddSingleton(_ => new FileOfflineMapPackRepository(FileSystem.AppDataDirectory));
-        services.TryAddSingleton(_ => new MapHttpDiskCache(Path.Combine(FileSystem.CacheDirectory, "Maps", "Http"), 256L * 1_048_576));
+
+
+        services.TryAddSingleton<ICustomMapSourceStore>(_ => new JsonCustomMapSourceStore(Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData), "Maps", "custom-sources.json")));
+        services.TryAddSingleton(_ => new FileOfflineMapPackRepository(System.Environment.GetFolderPath(System.Environment.SpecialFolder.ApplicationData)));
+        services.TryAddSingleton(_ => new MapHttpDiskCache(Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.InternetCache), "Maps", "Http"), 256L * 1_048_576));
         services.TryAddSingleton<ITerrainElevationService>(provider => new SrtmTerrainElevationService(
             provider.GetRequiredService<IMapHttpClientFactory>(),
-            Path.Combine(FileSystem.CacheDirectory, "Maps", "Terrain", "Srtm")));
+            Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.InternetCache), "Maps", "Terrain", "Srtm")));
+
 
         services.TryAddTransient<IMapDynamicAttributionResolver, EsriAttributionResolver>();
         services.TryAddTransient<IMapAttributionCoordinator, MapAttributionCoordinator>();

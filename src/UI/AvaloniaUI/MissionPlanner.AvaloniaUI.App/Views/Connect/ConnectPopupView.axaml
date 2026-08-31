@@ -1,0 +1,124 @@
+<utilities:ViewBase x:TypeArguments="connect:ConnectPopupViewModel"
+                    xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
+                    xmlns:connect="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Connect"
+                    xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                    xmlns:u="https://irihi.tech/ursa"
+                    mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                    x:Class="MissionPlanner.AvaloniaUI.App.Views.Connect.ConnectPopupView"
+                    x:DataType="connect:ConnectPopupViewModel"
+
+                    >
+
+    <Grid >
+
+
+        <StackPanel Orientation="Vertical"  Spacing="12" Margin="25"
+                    IsEnabled="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}"
+                    IsVisible="{Binding IsConnected, Converter={StaticResource InvertedBoolConverter}}"
+
+                    >
+
+            <Label Content="Channel" 
+                   FontSize="20" HorizontalAlignment="Center" Margin="0,4,0,0" />
+
+
+            <ComboBox 
+                      
+                       ItemsSource="{Binding Channels}"
+                       SelectedItem="{Binding SelectedChannel}"
+                       DisplayMemberBinding="{Binding .}"
+            />
+            <Label Content="Baud rate"  
+                   FontSize="20" HorizontalAlignment="Center" Margin="0,4,0,0" />
+
+            <ComboBox 
+                     
+                      ItemsSource="{Binding BaudRates}"
+                      SelectedItem="{Binding SelectedBaudRate}"
+                      DisplayMemberBinding="{Binding .}"
+            />
+
+            <TextBox  PlaceholderText="Host" Text="{Binding SelectedHost}"
+                      IsVisible="{Binding ShowSelectedHost}" />
+            <TextBox  PlaceholderText="Port" Text="{Binding SelectedPort}"
+                      IsVisible="{Binding ShowSelectedHost}" />
+
+            <Label Content="Host" IsVisible="{Binding ShowSelectedHost}" 
+                   FontSize="20" HorizontalAlignment="Center" Margin="0,4,0,0" />
+
+            <u:IPv4Box IsVisible="{Binding ShowSelectedHost}"  IPAddress="{Binding Address}" />
+
+
+            <Label Content="{Binding StatusMessage}"
+                   FontSize="20" HorizontalAlignment="Center" Margin="0,4,0,0" />
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8"
+                  IsVisible="{Binding IsConnecting, Converter={StaticResource InvertedBoolConverter}}">
+
+                <Button Grid.Column="0"
+                        Background="{DynamicResource MainButton}"
+                        Padding="5"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        Command="{Binding RefreshCommand}" >
+                    <avalonia:MaterialIcon Kind="RefreshCircle" Width="30" Height="30" />
+
+                </Button>
+
+                <Button Grid.Column="1"
+
+                        Background="{DynamicResource MainButton}"
+                        Padding="5"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        Command="{Binding ConnectCommand}" >
+                    <Image Source="{Binding ConnectionImage}"
+                           Width="30"
+                           Height="30"
+                           Stretch="Uniform"/>
+                </Button>
+
+            </Grid>
+        </StackPanel>
+        <StackPanel Orientation="Vertical" Spacing="12" Margin="25" IsVisible="{Binding IsConnected}">
+            <Label Content="{Binding StatusMessage}" FontSize="20" HorizontalAlignment="Center" Margin="0,4,0,0" />
+
+            <StackPanel HorizontalAlignment="Center" >
+                <Button
+                    Background="{DynamicResource MainButton}"
+                    Padding="5"
+                    MinWidth="100"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Command="{Binding ConnectCommand}" >
+
+                    <Image Source="{Binding ConnectionImage}"
+                           Width="30"
+                           Height="30"
+                           Stretch="Uniform"/>
+                </Button>
+
+            </StackPanel>
+
+        </StackPanel>
+
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Stretch"
+                    VerticalAlignment="Stretch"
+                    Background="Black"
+                    Opacity="0.75"
+                    IsVisible="{Binding IsConnecting}">
+        </StackPanel>
+
+
+    </Grid>
+
+
+
+
+
+</utilities:ViewBase>
+        

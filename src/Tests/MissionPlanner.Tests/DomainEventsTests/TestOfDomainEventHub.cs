@@ -1,10 +1,10 @@
 ﻿using System.Net;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.Vehicles;
-using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.Configuration;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub;

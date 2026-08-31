@@ -1,0 +1,322 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:MissionPlanner.UI.ViewModels"
+    xmlns:navigation="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Navigation"
+    mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+    x:Class="MissionPlanner.AvaloniaUI.App.Views.Navigation.MainShellView"
+    x:DataType="navigation:MainShellViewModel">
+
+    <UserControl.Styles>
+
+        <Style Selector="Button.NavigationItem">
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Stretch"/>
+            <Setter Property="HorizontalAlignment"
+                    Value="Stretch"/>
+            <Setter Property="Padding"
+                    Value="10,8"/>
+            <Setter Property="CornerRadius"
+                    Value="6"/>
+            <Setter Property="Background"
+                    Value="Transparent"/>
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+        </Style>
+
+        <Style Selector="Button.NavigationItem:pointerover">
+            <Setter Property="Opacity"
+                    Value="0.85"/>
+        </Style>
+
+
+        <Style Selector="Button.NavigationSubItem">
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Left"/>
+            <Setter Property="HorizontalAlignment"
+                    Value="Stretch"/>
+            <Setter Property="Padding"
+                    Value="10,6"/>
+            <Setter Property="CornerRadius"
+                    Value="6"/>
+            <Setter Property="Background"
+                    Value="Transparent"/>
+            <Setter Property="BorderThickness"
+                    Value="0"/>
+        </Style>
+
+        <Style Selector="Button.NavigationSubItem:pointerover">
+            <Setter Property="Opacity"
+                    Value="0.85"/>
+        </Style>
+
+
+        <Style Selector="Expander.NavigationGroup">
+            <Setter Property="HorizontalAlignment"
+                    Value="Stretch"/>
+        </Style>
+
+    </UserControl.Styles>
+    <DrawerPage
+        x:Name="MainDrawer"
+        DrawerPlacement="Left"
+        DrawerLength="300"
+        DrawerLayoutBehavior="Split"
+        DrawerBreakpointLength="900"
+        IsOpen="{Binding IsNavigationOpen, Mode=TwoWay}">
+
+        <!-- RIGHT NAVIGATION -->
+
+        <DrawerPage.Drawer>
+
+            <Grid RowDefinitions="Auto,*,Auto"
+                  Margin="8">
+
+                <!-- Header -->
+
+                <Grid Grid.Row="0"
+                      ColumnDefinitions="*,Auto"
+                      Margin="8,8,8,16">
+
+                    <TextBlock
+                        Text="Navigation"
+                        FontSize="20"
+                        FontWeight="SemiBold"
+                        VerticalAlignment="Center"/>
+
+                    <Button
+                        Grid.Column="1"
+                        Content="›"
+                        Command="{Binding ToggleNavigationCommand}"
+                        Width="36"
+                        Height="36"/>
+                </Grid>
+
+
+                <!-- MAIN MENU -->
+
+                <ScrollViewer Grid.Row="1">
+
+                    <StackPanel Spacing="4">
+
+                        <!-- Flight Data -->
+
+                        <Button Classes="NavigationItem"
+                                Command="{Binding NavigateCommand}"
+                                CommandParameter="FlightData">
+
+                            <Grid ColumnDefinitions="28,*">
+
+                                <Image
+                                    Width="20"
+                                    Height="20"
+                                    Source="/Resources/Images/light_flightdata_icon.png"/>
+
+                                <TextBlock
+                                    Grid.Column="1"
+                                    Text="Flight Data"
+                                    VerticalAlignment="Center"/>
+                            </Grid>
+
+                        </Button>
+
+
+                        <!-- Flight Plan -->
+
+                        <Button Classes="NavigationItem"
+                                Command="{Binding NavigateCommand}"
+                                CommandParameter="FlightPlanner">
+
+                            <Grid ColumnDefinitions="28,*">
+
+                                <Image
+                                    Width="20"
+                                    Height="20"
+                                    Source="/Resources/Images/light_flightplan_icon.png"/>
+
+                                <TextBlock
+                                    Grid.Column="1"
+                                    Text="Flight Plan"
+                                    VerticalAlignment="Center"/>
+                            </Grid>
+
+                        </Button>
+
+
+                        <!-- SETUP -->
+
+                        <Expander Classes="NavigationGroup">
+
+                            <Expander.Header>
+
+                                <Grid ColumnDefinitions="28,*">
+
+                                    <Image
+                                        Width="20"
+                                        Height="20"
+                                        Source="/Resources/Images/light_initialsetup_icon.png"/>
+
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Text="Setup"
+                                        FontWeight="SemiBold"
+                                        VerticalAlignment="Center"/>
+
+                                </Grid>
+
+                            </Expander.Header>
+
+                            <StackPanel
+                                Margin="28,4,0,8"
+                                Spacing="2">
+
+                                <Button Classes="NavigationSubItem"
+                                        Content="Install Firmware"
+                                        Command="{Binding NavigateCommand}"
+                                        CommandParameter="SetupInstallFirmware"/>
+
+                                <Button Classes="NavigationSubItem"
+                                        Content="Mandatory Hardware"
+                                        Command="{Binding NavigateCommand}"
+                                        CommandParameter="SetupMandatoryHardware"/>
+
+                                <Button Classes="NavigationSubItem"
+                                        Content="Optional Hardware"
+                                        Command="{Binding NavigateCommand}"
+                                        CommandParameter="SetupOptionalHardware"/>
+
+                                <Button Classes="NavigationSubItem"
+                                        Content="Advanced"
+                                        Command="{Binding NavigateCommand}"
+                                        CommandParameter="SetupAdvanced"/>
+
+                            </StackPanel>
+
+                        </Expander>
+
+
+                        <!-- CONFIG -->
+
+                        <Expander Classes="NavigationGroup">
+
+                            <Expander.Header>
+
+                                <Grid ColumnDefinitions="28,*">
+
+                                    <Image
+                                        Width="20"
+                                        Height="20"
+                                        Source="/Resources/Images/light_tuningconfig_icon.png"/>
+
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Text="Config"
+                                        FontWeight="SemiBold"
+                                        VerticalAlignment="Center"/>
+
+                                </Grid>
+
+                            </Expander.Header>
+
+                            <StackPanel
+                                Margin="28,4,0,8"
+                                Spacing="2">
+
+                                <Button Classes="NavigationSubItem"
+                                        Content="Geo Fence"
+                                        Command="{Binding NavigateCommand}"
+                                        CommandParameter="ConfigGeoFence"/>
+
+                                <Button Classes="NavigationSubItem"
+                                        Content="Basic Tuning"
+                                        Command="{Binding NavigateCommand}"
+                                        CommandParameter="ConfigBasicTuning"/>
+
+                                <Button Classes="NavigationSubItem"
+                                        Content="Extended Tuning"
+                                        Command="{Binding NavigateCommand}"
+                                        CommandParameter="ConfigExtendedTuning"/>
+
+                                <Button Classes="NavigationSubItem"
+                                        Content="Onboard OSD"
+                                        Command="{Binding NavigateCommand}"
+                                        CommandParameter="ConfigOnboardOSD"/>
+
+                                <Button Classes="NavigationSubItem"
+                                        Content="MAV Ftp"
+                                        Command="{Binding NavigateCommand}"
+                                        CommandParameter="ConfigMavFtp"/>
+
+                                <Button Classes="NavigationSubItem"
+                                        Content="Full Parameters List"
+                                        Command="{Binding NavigateCommand}"
+                                        CommandParameter="ConfigFullParameters"/>
+
+                                <Button Classes="NavigationSubItem"
+                                        Content="CubeLan 8 Port Switch"
+                                        Command="{Binding NavigateCommand}"
+                                        CommandParameter="ConfigCubeLan8PortSwitch"/>
+
+                            </StackPanel>
+
+                        </Expander>
+
+
+                        <Separator Margin="8,8"/>
+
+
+                        <Button Classes="NavigationItem"
+                                Content="Preferences"
+                                Command="{Binding NavigateCommand}"
+                                CommandParameter="Preferences"/>
+
+                        <Button Classes="NavigationItem"
+                                Content="Simulation"
+                                Command="{Binding NavigateCommand}"
+                                CommandParameter="Simulation"/>
+
+                        <Button Classes="NavigationItem"
+                                Content="Tutorial"
+                                Command="{Binding NavigateCommand}"
+                                CommandParameter="IntroductionPage"/>
+
+                        <Button Classes="NavigationItem"
+                                Content="Help"
+                                Command="{Binding NavigateCommand}"
+                                CommandParameter="Help"/>
+
+                    </StackPanel>
+
+                </ScrollViewer>
+
+
+                <!-- Footer -->
+
+                <Button Grid.Row="2"
+                        Margin="0,8,0,0"
+                        Classes="NavigationItem"
+                        Content="Exit"
+                        Command="{Binding NavigateCommand}"
+                        CommandParameter="Exit"/>
+
+            </Grid>
+
+        </DrawerPage.Drawer>
+
+
+        <!-- APPLICATION CONTENT -->
+
+        <NavigationPage
+            x:Name="NavigationHost"
+            HasShadow="False">
+
+            <ContentPage Header="Flight Data"/>
+
+        </NavigationPage>
+
+    </DrawerPage>
+
+</UserControl>
+

@@ -1,0 +1,601 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<RootNamespace>MissionPlanner.AvaloniaUI.App</RootNamespace>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net10.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<LangVersion>latest</LangVersion>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<AvaloniaResource Include="Resources\Assets\**" />
+        <AvaloniaResource Include="Introduction\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <AvaloniaXaml Remove="Views\Exit\**" />
+	  <Compile Remove="Views\Exit\**" />
+	  <EmbeddedResource Remove="Views\Exit\**" />
+	  <None Remove="Views\Exit\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Remove="Views\Navigation\MenuItemViewModel.cs" />
+	  <Compile Remove="Views\Navigation\MenuKeys.cs" />
+	  <Compile Remove="Views\Navigation\MenuViewModel.cs" />
+	  <Compile Remove="Views\Navigation\NavigationListItem.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="Resources\AppIcon\mpdesktop.png" />
+	  <None Remove="Resources\AppIcon\mpdesktop.svg" />
+	  <None Remove="Resources\Images\ardupilot.png" />
+	  <None Remove="Resources\Images\light_connect_icon.png" />
+	  <None Remove="Resources\Images\light_disconnect_icon.png" />
+	  <None Remove="Resources\Images\light_help_icon.png" />
+	  <None Remove="Resources\Images\light_initialsetup_icon.png" />
+	  <None Remove="Resources\Images\light_simulation_icon.png" />
+	  <None Remove="Resources\Images\light_terminal_icon.png" />
+	  <None Remove="Resources\Images\x_01_01_x.png" />
+	  <None Remove="Resources\Images\x_01_03_x.png" />
+	  <None Remove="Resources\Images\x_01_05_x.png" />
+	  <None Remove="Resources\Images\x_01_06_x.png" />
+	  <None Remove="Resources\Images\x_09028_01_x.jpg" />
+	  <None Remove="Resources\Images\x_ac_0004_11_2_x.jpg" />
+	  <None Remove="Resources\Images\x_antenna_tracker_01_x.png" />
+	  <None Remove="Resources\Images\x_apm1_x.jpg" />
+	  <None Remove="Resources\Images\x_apm2_5_x.jpg" />
+	  <None Remove="Resources\Images\x_apm2_x.jpg" />
+	  <None Remove="Resources\Images\x_apmp1_x.jpg" />
+	  <None Remove="Resources\Images\x_apmp2_x.jpg" />
+	  <None Remove="Resources\Images\x_apmp3_x.jpg" />
+	  <None Remove="Resources\Images\x_apmp4_x.jpg" />
+	  <None Remove="Resources\Images\x_apmp5_x.jpg" />
+	  <None Remove="Resources\Images\x_apmp6_x.jpg" />
+	  <None Remove="Resources\Images\x_apm_airframes_001_x.png" />
+	  <None Remove="Resources\Images\x_apm_airframes_002_x.png" />
+	  <None Remove="Resources\Images\x_apm_airframes_07_x.png" />
+	  <None Remove="Resources\Images\x_apm_airframes_08_x.png" />
+	  <None Remove="Resources\Images\x_apm_rover_firmware_x.png" />
+	  <None Remove="Resources\Images\x_aw_x.png" />
+	  <None Remove="Resources\Images\x_bgdark_x.jpg" />
+	  <None Remove="Resources\Images\x_bg_x.jpg" />
+	  <None Remove="Resources\Images\x_boat_x.png" />
+	  <None Remove="Resources\Images\x_br_0004_03_2_x.jpg" />
+	  <None Remove="Resources\Images\x_br_0016_01_3t_x.jpg" />
+	  <None Remove="Resources\Images\x_br_apmpwrdean_2_x.jpg" />
+	  <None Remove="Resources\Images\x_br_hmc5883_01_2_x.jpg" />
+	  <None Remove="Resources\Images\x_bt_hc06_x.jpg" />
+	  <None Remove="Resources\Images\x_calibration01_x.jpg" />
+	  <None Remove="Resources\Images\x_calibration02_x.jpg" />
+	  <None Remove="Resources\Images\x_calibration03_x.jpg" />
+	  <None Remove="Resources\Images\x_calibration04_x.jpg" />
+	  <None Remove="Resources\Images\x_calibration05_x.jpg" />
+	  <None Remove="Resources\Images\x_calibration06_x.jpg" />
+	  <None Remove="Resources\Images\x_calibration07_x.jpg" />
+	  <None Remove="Resources\Images\x_cameragimalpitch1_x.png" />
+	  <None Remove="Resources\Images\x_cameragimalroll1_x.png" />
+	  <None Remove="Resources\Images\x_cameragimalyaw_x.png" />
+	  <None Remove="Resources\Images\x_camera_icon_g_x.png" />
+	  <None Remove="Resources\Images\x_camera_icon_x.png" />
+	  <None Remove="Resources\Images\x_car_x.png" />
+	  <None Remove="Resources\Images\x_configuration_x.png" />
+	  <None Remove="Resources\Images\x_connect_x.png" />
+	  <None Remove="Resources\Images\x_dark_connect_icon_x.png" />
+	  <None Remove="Resources\Images\x_dark_disconnect_icon_x.png" />
+	  <None Remove="Resources\Images\x_dark_flightdata_icon_x.png" />
+	  <None Remove="Resources\Images\x_dark_flightplan_icon_x.png" />
+	  <None Remove="Resources\Images\x_dark_help_icon_x.png" />
+	  <None Remove="Resources\Images\x_dark_initialsetup_icon_x.png" />
+	  <None Remove="Resources\Images\x_dark_simulation_icon_x.png" />
+	  <None Remove="Resources\Images\x_dark_terminal_icon_x.png" />
+	  <None Remove="Resources\Images\x_dark_tuningconfig_icon_x.png" />
+	  <None Remove="Resources\Images\x_data_x.png" />
+	  <None Remove="Resources\Images\x_disconnect_x.png" />
+	  <None Remove="Resources\Images\x_donate_x.png" />
+	  <None Remove="Resources\Images\x_down_x.png" />
+	  <None Remove="Resources\Images\x_firmware_x.png" />
+	  <None Remove="Resources\Images\x_flightdata_x.png" />
+	  <None Remove="Resources\Images\x_flightplanner_x.png" />
+	  <None Remove="Resources\Images\x_frames_01_x.png" />
+	  <None Remove="Resources\Images\x_frames_02_x.png" />
+	  <None Remove="Resources\Images\x_frames_03_x.png" />
+	  <None Remove="Resources\Images\x_frames_04_x.png" />
+	  <None Remove="Resources\Images\x_frames_05_x.png" />
+	  <None Remove="Resources\Images\x_frames_06_x.png" />
+	  <None Remove="Resources\Images\x_frames_07_x.png" />
+	  <None Remove="Resources\Images\x_frames_08_x.png" />
+	  <None Remove="Resources\Images\x_frames_h_x.png" />
+	  <None Remove="Resources\Images\x_frames_plus_x.png" />
+	  <None Remove="Resources\Images\x_frames_x.png" />
+	  <None Remove="Resources\Images\x_fw_icons_2013_logos_011_x.png" />
+	  <None Remove="Resources\Images\x_fw_icons_2013_logos_012_x.png" />
+	  <None Remove="Resources\Images\x_fw_icons_2013_logos_01_x.png" />
+	  <None Remove="Resources\Images\x_fw_icons_2013_logos_02_x.png" />
+	  <None Remove="Resources\Images\x_fw_icons_2013_logos_03_x.png" />
+	  <None Remove="Resources\Images\x_fw_icons_2013_logos_04_x.png" />
+	  <None Remove="Resources\Images\x_fw_icons_2013_logos_05_x.png" />
+	  <None Remove="Resources\Images\x_fw_icons_2013_logos_06_x.png" />
+	  <None Remove="Resources\Images\x_fw_icons_2013_logos_07_x.png" />
+	  <None Remove="Resources\Images\x_fw_icons_2013_logos_08_x.png" />
+	  <None Remove="Resources\Images\x_fw_icons_2013_logos_09_x.png" />
+	  <None Remove="Resources\Images\x_fw_icons_2013_logos_10_x.png" />
+	  <None Remove="Resources\Images\x_fw_icons_2013_logos_11_x.png" />
+	  <None Remove="Resources\Images\x_fw_icons_2013_logos_12_x.png" />
+	  <None Remove="Resources\Images\x_fw_icons_2013_logos_13_x.png" />
+	  <None Remove="Resources\Images\x_fw_icons_2013_logos_14_x.png" />
+	  <None Remove="Resources\Images\x_fw_icons_2013_logos_15_x.png" />
+	  <None Remove="Resources\Images\x_fw_icons_2013_logos_16_x.png" />
+	  <None Remove="Resources\Images\x_fw_icons_y6_x.png" />
+	  <None Remove="Resources\Images\x_gaugebg_x.png" />
+	  <None Remove="Resources\Images\x_guagebg_x.jpg" />
+	  <None Remove="Resources\Images\x_hardwareconfig02_x.png" />
+	  <None Remove="Resources\Images\x_hardwareconfig_x.png" />
+	  <None Remove="Resources\Images\x_heli_x.png" />
+	  <None Remove="Resources\Images\x_helpwizard_x.png" />
+	  <None Remove="Resources\Images\x_help_x.png" />
+	  <None Remove="Resources\Images\x_hframelight_x.png" />
+	  <None Remove="Resources\Images\x_hframe_x.png" />
+	  <None Remove="Resources\Images\x_iconwarning32_x.png" />
+	  <None Remove="Resources\Images\x_iconwarning48_x.png" />
+	  <None Remove="Resources\Images\x_iris_fw_icon_x.png" />
+	  <None Remove="Resources\Images\x_light_01_x.png" />
+	  <None Remove="Resources\Images\x_light_03_x.png" />
+	  <None Remove="Resources\Images\x_light_05_x.png" />
+	  <None Remove="Resources\Images\x_light_06_x.png" />
+	  <None Remove="Resources\Images\x_light_connect_icon_x.png" />
+	  <None Remove="Resources\Images\x_light_disconnect_icon_x.png" />
+	  <None Remove="Resources\Images\x_light_help_icon_x.png" />
+	  <None Remove="Resources\Images\x_light_initialsetup_icon_x.png" />
+	  <None Remove="Resources\Images\x_light_simulation_icon_x.png" />
+	  <None Remove="Resources\Images\x_light_terminal_icon_x.png" />
+	  <None Remove="Resources\Images\x_maggps_x.png" />
+	  <None Remove="Resources\Images\x_marker_01_x.png" />
+	  <None Remove="Resources\Images\x_marker_02_x.png" />
+	  <None Remove="Resources\Images\x_marker_03_x.png" />
+	  <None Remove="Resources\Images\x_marker_04_x.png" />
+	  <None Remove="Resources\Images\x_marker_05_x.png" />
+	  <None Remove="Resources\Images\x_marker_06_x.png" />
+	  <None Remove="Resources\Images\x_marker_07_x.png" />
+	  <None Remove="Resources\Images\x_mavcmd.zh_hans_x.txt" />
+	  <None Remove="Resources\Images\x_mavcmd.zh_tw_x.txt" />
+	  <None Remove="Resources\Images\x_mavcmd_x.txt" />
+	  <None Remove="Resources\Images\x_mavparam.zh_hans_x.txt" />
+	  <None Remove="Resources\Images\x_mavparam.zh_tw_x.txt" />
+	  <None Remove="Resources\Images\x_mavparam_x.txt" />
+	  <None Remove="Resources\Images\x_minimosd_x.jpg" />
+	  <None Remove="Resources\Images\x_missionplannerlogodark_x.png" />
+	  <None Remove="Resources\Images\x_missionplannerlogo_x.png" />
+	  <None Remove="Resources\Images\x_new_3dr_04_x.png" />
+	  <None Remove="Resources\Images\x_new_frames_01_x.png" />
+	  <None Remove="Resources\Images\x_new_frames_05x_x.png" />
+	  <None Remove="Resources\Images\x_new_frames_05_x.png" />
+	  <None Remove="Resources\Images\x_new_frames_06_x.png" />
+	  <None Remove="Resources\Images\x_new_frames_09_x.png" />
+	  <None Remove="Resources\Images\x_new_frames_10_x.png" />
+	  <None Remove="Resources\Images\x_new_frames_11_x.png" />
+	  <None Remove="Resources\Images\x_new_frames_12_x.png" />
+	  <None Remove="Resources\Images\x_new_frames_13_x.png" />
+	  <None Remove="Resources\Images\x_new_frames_14_x.png" />
+	  <None Remove="Resources\Images\x_no_video_x.png" />
+	  <None Remove="Resources\Images\x_octox_x.png" />
+	  <None Remove="Resources\Images\x_parachute_x.png" />
+	  <None Remove="Resources\Images\x_pixhawk2cube_x.jpg" />
+	  <None Remove="Resources\Images\x_pixhawk_x.jpg" />
+	  <None Remove="Resources\Images\x_plane2_x.png" />
+	  <None Remove="Resources\Images\x_planebackground_x.png" />
+	  <None Remove="Resources\Images\x_planetracker1_x.png" />
+	  <None Remove="Resources\Images\x_planetracker2_x.png" />
+	  <None Remove="Resources\Images\x_planetracker3_x.png" />
+	  <None Remove="Resources\Images\x_planetracker4_x.png" />
+	  <None Remove="Resources\Images\x_planetracker5_x.png" />
+	  <None Remove="Resources\Images\x_planetracker6_x.png" />
+	  <None Remove="Resources\Images\x_planetracker_x.png" />
+	  <None Remove="Resources\Images\x_planner_x.png" />
+	  <None Remove="Resources\Images\x_plusframesgreen_02_x.png" />
+	  <None Remove="Resources\Images\x_plusframesgreen_04_x.png" />
+	  <None Remove="Resources\Images\x_plusframesgreen_06_x.png" />
+	  <None Remove="Resources\Images\x_plusframes_02_x.png" />
+	  <None Remove="Resources\Images\x_plusframes_04_x.png" />
+	  <None Remove="Resources\Images\x_plusframes_06_x.png" />
+	  <None Remove="Resources\Images\x_px4flow1_x.jpg" />
+	  <None Remove="Resources\Images\x_px4_x.jpg" />
+	  <None Remove="Resources\Images\x_quad2_x.png" />
+	  <None Remove="Resources\Images\x_quadframeslight_01_x.jpg" />
+	  <None Remove="Resources\Images\x_quadframeslight_03_x.jpg" />
+	  <None Remove="Resources\Images\x_quadframeslight_05_x.jpg" />
+	  <None Remove="Resources\Images\x_quadframeslight_07_x.jpg" />
+	  <None Remove="Resources\Images\x_quadframeslight_13_x.jpg" />
+	  <None Remove="Resources\Images\x_quadframeslight_15_x.jpg" />
+	  <None Remove="Resources\Images\x_quadframeslight_16_x.png" />
+	  <None Remove="Resources\Images\x_quadframesnormal_01_x.png" />
+	  <None Remove="Resources\Images\x_quadframesnormal_03_x.png" />
+	  <None Remove="Resources\Images\x_quadframesnormal_05_x.png" />
+	  <None Remove="Resources\Images\x_quadframesnormal_06_x.png" />
+	  <None Remove="Resources\Images\x_quadframesnormal_11_x.png" />
+	  <None Remove="Resources\Images\x_quadframesnormal_12_x.png" />
+	  <None Remove="Resources\Images\x_quadframesnormal_14_x.png" />
+	  <None Remove="Resources\Images\x_quadframes_01_x.jpg" />
+	  <None Remove="Resources\Images\x_quadframes_03_x.jpg" />
+	  <None Remove="Resources\Images\x_quadframes_05_x.jpg" />
+	  <None Remove="Resources\Images\x_quadframes_07_x.jpg" />
+	  <None Remove="Resources\Images\x_quadframes_13_x.jpg" />
+	  <None Remove="Resources\Images\x_quadframes_15_x.jpg" />
+	  <None Remove="Resources\Images\x_quadframes_16_x.png" />
+	  <None Remove="Resources\Images\x_quadhover_01_x.png" />
+	  <None Remove="Resources\Images\x_quadhover_03_x.png" />
+	  <None Remove="Resources\Images\x_quadhover_05_x.png" />
+	  <None Remove="Resources\Images\x_quadhover_06_x.png" />
+	  <None Remove="Resources\Images\x_quadhover_11_x.png" />
+	  <None Remove="Resources\Images\x_quadhover_12_x.png" />
+	  <None Remove="Resources\Images\x_quadhover_14_x.png" />
+	  <None Remove="Resources\Images\x_redsinglecopter2_x.png" />
+	  <None Remove="Resources\Images\x_rover_10_x.png" />
+	  <None Remove="Resources\Images\x_rover_11_x.png" />
+	  <None Remove="Resources\Images\x_rover_x.png" />
+	  <None Remove="Resources\Images\x_selectvehicle_x.png" />
+	  <None Remove="Resources\Images\x_shutter_x.png" />
+	  <None Remove="Resources\Images\x_simulation_x.png" />
+	  <None Remove="Resources\Images\x_softwareconfig_x.png" />
+	  <None Remove="Resources\Images\x_splashdark_x.jpg" />
+	  <None Remove="Resources\Images\x_splash_x.jpg" />
+	  <None Remove="Resources\Images\x_sub_x.png" />
+	  <None Remove="Resources\Images\x_terminal_x.png" />
+	  <None Remove="Resources\Images\x_uavcanesc_x.jpg" />
+	  <None Remove="Resources\Images\x_up_x.png" />
+	  <None Remove="Resources\Images\x_welcome_to_michael_oborne_x.rtf" />
+	  <None Remove="Resources\Images\x_wizardicon1_x.png" />
+	  <None Remove="Resources\Images\x_wizardicon_x.png" />
+	  <None Remove="Resources\Images\x_x8_x.png" />
+	  <None Remove="Resources\Images\x_y6_x.png" />
+	  <None Remove="Views\Common\ErrorView.xaml" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <AvaloniaResource Include="Resources\AppIcon\mpdesktop.png" />
+	  <AvaloniaResource Include="Resources\AppIcon\mpdesktop.svg" />
+	  <AvaloniaResource Include="Resources\Images\ardupilot.png" />
+	  <AvaloniaResource Include="Resources\Images\light_connect_icon.png" />
+	  <AvaloniaResource Include="Resources\Images\light_disconnect_icon.png" />
+	  <AvaloniaResource Include="Resources\Images\light_help_icon.png" />
+	  <AvaloniaResource Include="Resources\Images\light_initialsetup_icon.png" />
+	  <AvaloniaResource Include="Resources\Images\light_simulation_icon.png" />
+	  <AvaloniaResource Include="Resources\Images\light_terminal_icon.png" />
+	  <AvaloniaResource Include="Resources\Images\x_01_01_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_01_03_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_01_05_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_01_06_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_09028_01_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_ac_0004_11_2_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_antenna_tracker_01_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_apm1_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_apm2_5_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_apm2_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_apmp1_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_apmp2_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_apmp3_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_apmp4_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_apmp5_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_apmp6_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_apm_airframes_001_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_apm_airframes_002_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_apm_airframes_07_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_apm_airframes_08_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_apm_rover_firmware_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_aw_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_bgdark_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_bg_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_boat_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_br_0004_03_2_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_br_0016_01_3t_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_br_apmpwrdean_2_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_br_hmc5883_01_2_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_bt_hc06_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_calibration01_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_calibration02_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_calibration03_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_calibration04_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_calibration05_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_calibration06_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_calibration07_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_cameragimalpitch1_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_cameragimalroll1_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_cameragimalyaw_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_camera_icon_g_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_camera_icon_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_car_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_configuration_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_connect_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_dark_connect_icon_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_dark_disconnect_icon_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_dark_flightdata_icon_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_dark_flightplan_icon_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_dark_help_icon_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_dark_initialsetup_icon_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_dark_simulation_icon_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_dark_terminal_icon_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_dark_tuningconfig_icon_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_data_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_disconnect_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_donate_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_down_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_firmware_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_flightdata_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_flightplanner_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_frames_01_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_frames_02_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_frames_03_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_frames_04_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_frames_05_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_frames_06_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_frames_07_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_frames_08_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_frames_h_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_frames_plus_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_frames_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_fw_icons_2013_logos_011_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_fw_icons_2013_logos_012_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_fw_icons_2013_logos_01_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_fw_icons_2013_logos_02_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_fw_icons_2013_logos_03_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_fw_icons_2013_logos_04_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_fw_icons_2013_logos_05_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_fw_icons_2013_logos_06_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_fw_icons_2013_logos_07_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_fw_icons_2013_logos_08_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_fw_icons_2013_logos_09_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_fw_icons_2013_logos_10_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_fw_icons_2013_logos_11_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_fw_icons_2013_logos_12_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_fw_icons_2013_logos_13_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_fw_icons_2013_logos_14_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_fw_icons_2013_logos_15_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_fw_icons_2013_logos_16_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_fw_icons_y6_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_gaugebg_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_guagebg_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_hardwareconfig02_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_hardwareconfig_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_heli_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_helpwizard_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_help_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_hframelight_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_hframe_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_iconwarning32_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_iconwarning48_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_iris_fw_icon_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_light_01_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_light_03_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_light_05_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_light_06_x.png" />
+	  <AvaloniaResource Include="Resources\Images\light_flightdata_icon.png" />
+	  <AvaloniaResource Include="Resources\Images\light_flightplan_icon.png" />
+	  <AvaloniaResource Include="Resources\Images\light_tuningconfig_icon.png" />
+	  <AvaloniaResource Include="Resources\Images\x_maggps_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_marker_01_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_marker_02_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_marker_03_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_marker_04_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_marker_05_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_marker_06_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_marker_07_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_mavcmd.zh_hans_x.txt" />
+	  <AvaloniaResource Include="Resources\Images\x_mavcmd.zh_tw_x.txt" />
+	  <AvaloniaResource Include="Resources\Images\x_mavcmd_x.txt" />
+	  <AvaloniaResource Include="Resources\Images\x_mavparam.zh_hans_x.txt" />
+	  <AvaloniaResource Include="Resources\Images\x_mavparam.zh_tw_x.txt" />
+	  <AvaloniaResource Include="Resources\Images\x_mavparam_x.txt" />
+	  <AvaloniaResource Include="Resources\Images\x_minimosd_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_missionplannerlogodark_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_missionplannerlogo_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_new_3dr_04_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_new_frames_01_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_new_frames_05x_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_new_frames_05_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_new_frames_06_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_new_frames_09_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_new_frames_10_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_new_frames_11_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_new_frames_12_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_new_frames_13_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_new_frames_14_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_no_video_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_octox_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_parachute_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_pixhawk2cube_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_pixhawk_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_plane2_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_planebackground_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_planetracker1_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_planetracker2_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_planetracker3_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_planetracker4_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_planetracker5_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_planetracker6_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_planetracker_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_planner_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_plusframesgreen_02_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_plusframesgreen_04_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_plusframesgreen_06_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_plusframes_02_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_plusframes_04_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_plusframes_06_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_px4flow1_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_px4_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_quad2_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_quadframeslight_01_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_quadframeslight_03_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_quadframeslight_05_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_quadframeslight_07_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_quadframeslight_13_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_quadframeslight_15_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_quadframeslight_16_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_quadframesnormal_01_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_quadframesnormal_03_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_quadframesnormal_05_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_quadframesnormal_06_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_quadframesnormal_11_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_quadframesnormal_12_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_quadframesnormal_14_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_quadframes_01_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_quadframes_03_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_quadframes_05_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_quadframes_07_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_quadframes_13_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_quadframes_15_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_quadframes_16_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_quadhover_01_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_quadhover_03_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_quadhover_05_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_quadhover_06_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_quadhover_11_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_quadhover_12_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_quadhover_14_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_redsinglecopter2_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_rover_10_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_rover_11_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_rover_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_selectvehicle_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_shutter_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_simulation_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_softwareconfig_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_splashdark_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_splash_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_sub_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_terminal_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_uavcanesc_x.jpg" />
+	  <AvaloniaResource Include="Resources\Images\x_up_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_welcome_to_michael_oborne_x.rtf" />
+	  <AvaloniaResource Include="Resources\Images\x_wizardicon1_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_wizardicon_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_x8_x.png" />
+	  <AvaloniaResource Include="Resources\Images\x_y6_x.png" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <AvaloniaXaml Include="Views\Exit\ExitPage.axaml">
+	    <SubType>Designer</SubType>
+	  </AvaloniaXaml>
+	  <AvaloniaXaml Include="Views\Exit\ExitUserControlView.axaml">
+	    <SubType>Designer</SubType>
+	  </AvaloniaXaml>
+	  <AvaloniaXaml Include="Views\Exit\ExitView.axaml">
+	    <SubType>Designer</SubType>
+	  </AvaloniaXaml>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Include="Views\Exit\ExitApplicationRequested.cs" />
+	  <Compile Include="Views\Exit\ExitPage.axaml.cs" />
+	  <Compile Include="Views\Exit\ExitUserControlView.axaml.cs" />
+	  <Compile Include="Views\Exit\ExitView.axaml.cs" />
+	  <Compile Include="Views\Exit\ExitViewModel.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Include="appsettings.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Avalonia" />
+		<PackageReference Include="Avalonia.Desktop" />
+		<PackageReference Include="Avalonia.Themes.Fluent" />
+		<PackageReference Include="Avalonia.Fonts.Inter" />
+		<PackageReference Include="AvaloniaUI.DiagnosticsSupport">
+			<IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+			<PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Material.Icons.Avalonia" />
+		<PackageReference Include="CommunityToolkit.Mvvm" />
+
+        <PackageReference Include="Irihi.Ursa" />
+		<PackageReference Include="Irihi.Ursa.Themes.Semi" />
+		
+        <PackageReference Include="Semi.Avalonia" />
+		<PackageReference Include="Semi.Avalonia.AvaloniaEdit" />
+		<PackageReference Include="Semi.Avalonia.ColorPicker" />
+		<PackageReference Include="Semi.Avalonia.DataGrid" />
+		<PackageReference Include="Semi.Avalonia.Dock" />
+
+		<PackageReference Include="Riok.Mapperly" />
+
+		<PackageReference Include="Serilog" />
+		<PackageReference Include="Serilog.Enrichers.Environment" />
+		<PackageReference Include="Serilog.Enrichers.Thread" />
+		<PackageReference Include="Serilog.Settings.AppSettings" />
+		<PackageReference Include="Serilog.Sinks.Debug" />
+		<PackageReference Include="Serilog.Sinks.File" />
+		<PackageReference Include="Serilog.Sinks.Console" />
+		<PackageReference Include="Serilog.Sinks.Trace" />
+
+		<PackageReference Include="Mapsui" />
+        <PackageReference Include="Mapsui.Avalonia12" />
+        <PackageReference Include="Mapsui.Tiling" />
+
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+		<PackageReference Include="Microsoft.Extensions.Logging" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+		<PackageReference Include="Microsoft.Extensions.Hosting" />
+
+	</ItemGroup>
+
+	<ItemGroup>
+      <ProjectReference Include="..\..\..\Core\MissionPlanner.Shared.Models\MissionPlanner.Shared.Models.csproj" />
+      <ProjectReference Include="..\..\..\Core\MissionPlanner.Simulation\MissionPlanner.Simulation.csproj" />
+      <ProjectReference Include="..\..\..\Libraries\MissionPlanner.Library\MissionPlanner.Library.csproj" />
+      <ProjectReference Include="..\..\..\Core\MissionPlanner.Core\MissionPlanner.Core.csproj" />
+      <ProjectReference Include="..\..\..\Core\MissionPlanner.Maps\MissionPlanner.Maps.csproj" />
+      <ProjectReference Include="..\..\..\Tools\MissionPlanner.Simulator\MissionPlanner.Simulator.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="Introduction\Content\Introduction.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Views\Missions\" />
+	  <Folder Include="Views\Setup\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="CommunityToolkit.Maui">
+	    <HintPath>..\..\..\..\..\..\Users\karlgodtliebsen\.nuget\packages\communitytoolkit.maui\15.0.0\lib\net10.0\CommunityToolkit.Maui.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <AvaloniaXaml Update="Views\Common\NotificationView.axaml">
+	    <Generator></Generator>
+	  </AvaloniaXaml>
+	  <AvaloniaXaml Update="Views\Common\TopBarView.axaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </AvaloniaXaml>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="Views\Common\ErrorView.xaml.cs">
+	    <DependentUpon>ErrorView.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Views\Common\StatusBarView.axaml.cs">
+	    <DependentUpon>StatusBarView.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Views\Common\TopBarView.axaml.cs">
+	    <DependentUpon>TopBarView.xaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+</Project>
