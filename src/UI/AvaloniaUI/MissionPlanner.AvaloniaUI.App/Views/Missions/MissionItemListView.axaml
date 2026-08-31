@@ -1,0 +1,231 @@
+﻿<utilities:ViewBase 
+                    xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    xmlns:missions="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Missions"
+                    xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
+                    x:Class="MissionPlanner.AvaloniaUI.App.Views.Missions.MissionItemListView"
+                    x:DataType="missions:MissionMapViewModel"
+                    x:Name="Root">
+
+    <Grid RowDefinitions="Auto,*" Margin="10"
+          RowSpacing="6"   HorizontalAlignment="Center"  VerticalAlignment="Stretch">
+
+        <Border  HorizontalAlignment="Center"  >
+            <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" Margin="10"
+                  RowSpacing="6"  HorizontalAlignment="Stretch"   VerticalAlignment="Stretch">
+                <!-- Title and mode switch. -->
+                <Label Grid.Row="1"  Content="Mission" FontWeight="Bold" FontSize="16" VerticalAlignment="Center" />
+
+                <Label Grid.Row="2" Content="{Binding HomePosition, StringFormat='Home: {0}'}" FontSize="12" Opacity="0.8" />
+
+                <!-- Complete-mode header: info + editor settings -->
+                <Label Grid.Row="3" Content="{Binding MissionSummary}" FontSize="12" FontWeight="Bold" />
+
+                <Grid Grid.Row="4" 
+                      Width="400"
+                      HorizontalAlignment="Start"  ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" VerticalAlignment="Center" ColumnSpacing="6"
+                        IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
+                    <Label Grid.Column="0" Content="WP Radius (m):" FontSize="11" VerticalAlignment="Center"  />
+                    <!--
+                    <extended:NumericField
+                        Grid.Column="1"   FontSize="11" WidthRequest="25"
+                        Content="{Binding WaypointRadiusMeters,Mode=TwoWay}"
+                        NumberFormat="F1"
+                        HorizontalAlignment="Stretch"
+                        HorizontalTextAlignment="End" />
+
+                    <Label Grid.Column="2" Content="Loiter Radius (m):" FontSize="11" VerticalAlignment="Center"  />
+                    <extended:NumericField
+                        Grid.Column="3"   FontSize="11" WidthRequest="25"
+                        Content="{Binding LoiterRadiusMeters,Mode=TwoWay}"
+                        NumberFormat="F1"
+                        HorizontalAlignment="Stretch"
+                        HorizontalTextAlignment="End" />
+
+                    <Label Grid.Column="4" Content="Default Alt (m):" FontSize="11" VerticalAlignment="Center" />
+                    <extended:NumericField
+                        Grid.Column="5"  FontSize="11" WidthRequest="25"
+                        Content="{Binding DefaultAltitudeMeters,Mode=TwoWay}"
+                        NumberFormat="F1"
+                        HorizontalAlignment="Stretch"
+                        HorizontalTextAlignment="End" />
+                    <Label Grid.Column="6" Content="Alt Warn (m):" FontSize="11" VerticalAlignment="Center"  />
+                    <extended:NumericField
+                        Grid.Column="7" FontSize="11" WidthRequest="25"
+                        Content="{Binding AltWarnMeters,Mode=TwoWay}"
+                        NumberFormat="F1"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Right" />
+-->
+                </Grid>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+            <!--
+            <controls:VirtualizedDataGrid 
+                ItemsSource="{Binding MissionItems}" 
+                ItemSizingStrategy= "MeasureFirstItem"
+                ShowSearchBar="False"
+                HorizontalAlignment="Center" 
+                VerticalAlignment="Stretch" 
+            >
+                <controls:VirtualizedDataGrid.EmptyView>
+                    <Label HorizontalAlignment="Center" Content="No mission items. Right-click the map to add waypoints."
+                       FontSize="12" Opacity="0.6" Margin="0,20" />
+                </controls:VirtualizedDataGrid.EmptyView>
+
+                <controls:VirtualizedDataGrid.Columns>
+
+                        <material:DataGridColumn Width="75" Title="#" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
+                            <material:DataGridColumn.CellItemTemplate>
+                                <DataTemplate x:DataType="missions1:MissionItemRow">
+                                    <Label Content="{Binding Number}" FontAttributes="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"  />
+                                </DataTemplate>
+                            </material:DataGridColumn.CellItemTemplate>
+                        </material:DataGridColumn>
+
+                    <material:DataGridColumn Width="200" Title="Command" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="missions1:MissionItemRow">
+                                <material:SelectField ItemsSource="{Binding CommandOptions, Source={RelativeSource AncestorType={x:Type missions1:MissionMapViewModel}}}"
+                                        SelectedItem="{Binding SelectedCommand}"
+                                        HorizontalTextAlignment="Center"
+                                        VerticalAlignment="Center" />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+                    <material:DataGridColumn Width="100" Title="Param1"  IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="missions1:MissionItemRow">
+                                <extended:NumericField
+                                    Value="{Binding Param1, Mode=TwoWay}"
+                                    NumberFormat="F1"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalTextAlignment="End" />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+                    <material:DataGridColumn Width="100" Title="Param2"  IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="missions1:MissionItemRow">
+                                <extended:NumericField
+                                    Value="{Binding Param2, Mode=TwoWay}"
+                                    NumberFormat="F1"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalTextAlignment="End" />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+                    <material:DataGridColumn Width="100" Title="Param3" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="missions1:MissionItemRow">
+                                <extended:NumericField
+                                    Value="{Binding Param3, Mode=TwoWay}"
+                                    NumberFormat="F1"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalTextAlignment="End" />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+                    <material:DataGridColumn Width="100" Title="Param4" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="missions1:MissionItemRow">
+                                <extended:NumericField
+                                    Value="{Binding Param4, Mode=TwoWay}"
+                                    NumberFormat="F1"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalTextAlignment="End" />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+                    <material:DataGridColumn Width="120" Title="Latitude">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="missions1:MissionItemRow">
+                                <extended:NumericField
+                                    Value="{Binding Latitude, Mode=TwoWay}"
+                                    NumberFormat="F7"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalTextAlignment="End" />
+
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+                    <material:DataGridColumn Width="120" Title="Longitude">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="missions1:MissionItemRow">
+                                <extended:NumericField
+                                    Value="{Binding Longitude, Mode=TwoWay}"
+                                    NumberFormat="F7"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalTextAlignment="End" />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+                    <material:DataGridColumn Width="100" Title="Alt (m)">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="missions1:MissionItemRow">
+                                <extended:NumericField
+                                    Value="{Binding Altitude, Mode=TwoWay}"
+                                    NumberFormat="F1"
+                                    HorizontalAlignment="Stretch"
+                                    HorizontalTextAlignment="End" />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+                    <material:DataGridColumn Width="125" Title="Frame" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="missions1:MissionItemRow">
+                                <material:SelectField ItemsSource="{Binding FrameOptions, Source={RelativeSource AncestorType={x:Type missions1:MissionMapViewModel}}}"
+                                    SelectedItem="{Binding SelectedFrame}" VerticalAlignment="Center" HorizontalTextAlignment="Center" />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+                    <material:DataGridColumn Width="100" Title="Distance" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="missions1:MissionItemRow">
+                                <Label  Content="{Binding Distance, StringFormat='{0:F1}'}" VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+                    <material:DataGridColumn Width="100" Title="Azimuth" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="missions1:MissionItemRow">
+                                <Label  Content="{Binding Azimuth, StringFormat='{0:F0}'}"  VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+                    <material:DataGridColumn Width="100" Title="Gradient" IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="missions1:MissionItemRow">
+                                <Label  Content="{Binding Gradient, StringFormat='{0:F1}'}"  VerticalAlignment="Center" HorizontalAlignment="Center" />
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+                    <material:DataGridColumn Width="130" Title="Commands">
+                        <material:DataGridColumn.CellItemTemplate>
+                            <DataTemplate x:DataType="missions1:MissionItemRow">
+                                <HorizontalStackLayout Spacing="4" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <Button Content="▲" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
+                                      Command="{Binding MoveItemUpCommand, Source={RelativeSource AncestorType={x:Type missions1:MissionMapViewModel}}}"
+                                      CommandParameter="{Binding .}" />
+                                    <Button Content="▼" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
+                                      Command="{Binding MoveItemDownCommand, Source={RelativeSource AncestorType={x:Type missions1:MissionMapViewModel}}}"
+                                      CommandParameter="{Binding .}" />
+                                    <Button Content="✕" FontSize="10" Padding="4,2" HeightRequest="26" WidthRequest="26"
+                                      Command="{Binding RemoveItemCommand, Source={RelativeSource AncestorType={x:Type missions1:MissionMapViewModel}}}"
+                                      CommandParameter="{Binding .}" />
+                                </HorizontalStackLayout>
+                            </DataTemplate>
+                        </material:DataGridColumn.CellItemTemplate>
+                    </material:DataGridColumn>
+                </controls:VirtualizedDataGrid.Columns>
+            </controls:VirtualizedDataGrid>
+
+            -->
+
+        </Grid>
+    </Grid>
+</utilities:ViewBase>

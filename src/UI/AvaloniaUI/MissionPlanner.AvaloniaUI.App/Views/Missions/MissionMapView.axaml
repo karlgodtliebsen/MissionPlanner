@@ -1,0 +1,206 @@
+﻿<utilities:ViewBase
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mapsui="clr-namespace:Mapsui.UI.Maui;assembly=Mapsui.UI.Maui"
+    xmlns:missions="clr-namespace:MissionPlanner.App.Views.Missions"
+    xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
+    xmlns:u="https://irihi.tech/ursa"
+    xmlns:missions1="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Missions"
+    mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+    x:Class="MissionPlanner.App.Views.Missions.MissionMapView"
+    x:DataType="missions1:MissionMapViewModel"
+    >
+
+    <Grid RowDefinitions="*,Auto">
+
+        <mapsui:MapView x:Name="MissionMap">
+            
+            <!--    
+            
+            TODO: add this again when we can get the context menu to work on the map view.  
+            
+
+            <controls:FlyoutBase.ContextFlyout>
+            <controls:MenuFlyout>
+
+            <MenuFlyoutSubItem Content="Mission Items">
+            <MenuFlyoutItem Content="Delete WP" Command="{controls:CompiledBinding DeleteWaypointCommand}" IsEnabled="{controls:CompiledBinding HasMissionItems}" />
+            <MenuFlyoutSubItem Content="Insert WP">
+            <MenuFlyoutItem Content="Here" Command="{Binding InsertWaypointCommand}" />
+            <MenuFlyoutItem Content="At Current Position" Command="{Binding InsertWaypointAtVehicleCommand}" />
+            </MenuFlyoutSubItem>
+            <MenuFlyoutItem Content="Insert Spline WP" Command="{Binding InsertSplineWaypointCommand}" />
+
+            <MenuFlyoutSubItem Content="Loiter">
+            <MenuFlyoutItem Content="Forever" Command="{Binding LoiterForeverCommand}" />
+            <MenuFlyoutItem Content="Time" Command="{Binding LoiterTimeCommand}" />
+            <MenuFlyoutItem Content="Circles" Command="{Binding LoiterCirclesCommand}" />
+            </MenuFlyoutSubItem>
+
+            <MenuFlyoutSubItem Content="Jump">
+            <MenuFlyoutItem Content="Start" Command="{Binding JumpToStartCommand}" />
+            <MenuFlyoutItem Content="WP #" Command="{Binding JumpToWaypointCommand}" />
+            </MenuFlyoutSubItem>
+
+            <MenuFlyoutItem Content="RTL" Command="{Binding AddReturnToLaunchCommand}" />
+            <MenuFlyoutItem Content="Land" Command="{Binding AddLandCommand}" />
+            <MenuFlyoutItem Content="Takeoff" Command="{Binding AddTakeoffCommand}" />
+            <MenuFlyoutItem Content="Set ROI Here" Command="{Binding SetRoiHereCommand}" />
+            <MenuFlyoutItem Content="Clear Mission" Command="{Binding ClearMissionCommand}" />
+            </MenuFlyoutSubItem>
+
+            <MenuFlyoutSeparator />
+
+            <MenuFlyoutSubItem Content="Polygon">
+            <MenuFlyoutItem Content="Draw a Polygon" Command="{Binding DrawPolygonCommand}" />
+            <MenuFlyoutItem Content="Finish Polygon" Command="{Binding FinishPolygonCommand}" />
+            <MenuFlyoutItem Content="Cancel Drawing" Command="{Binding CancelPolygonCommand}" />
+            <MenuFlyoutItem Content="Clear Polygon" Command="{Binding ClearPolygonCommand}" />
+            <MenuFlyoutItem Content="Save Polygon" Command="{Binding SavePolygonCommand}" IsEnabled="{Binding HasPlanningPolygon}" />
+            <MenuFlyoutItem Content="Load Polygon" Command="{Binding LoadPolygonCommand}" />
+            <MenuFlyoutItem Content="From SHP" Command="{Binding PolygonFromShapefileCommand}" />
+            <MenuFlyoutItem Content="From Current Waypoints" Command="{Binding PolygonFromWaypointsCommand}" />
+            <MenuFlyoutItem Content="Offset Polygon" Command="{Binding OffsetPolygonCommand}" IsEnabled="{Binding HasPlanningPolygon}" />
+            <MenuFlyoutItem Content="Area" Command="{Binding ShowPolygonAreaCommand}" IsEnabled="{Binding HasPlanningPolygon}" />
+            </MenuFlyoutSubItem>
+
+            <MenuFlyoutSubItem Content="Geo-Fence">
+            <MenuFlyoutItem Content="Upload" Command="{Binding UploadFenceCommand}" IsEnabled="{Binding CanUseVehicleCommands}" />
+            <MenuFlyoutItem Content="Download" Command="{Binding DownloadFenceCommand}" IsEnabled="{Binding CanUseVehicleCommands}" />
+            <MenuFlyoutItem Content="Set Return Location" Command="{Binding SetFenceReturnLocationCommand}" />
+            <MenuFlyoutItem Content="Load from File" Command="{Binding LoadFenceCommand}" />
+            <MenuFlyoutItem Content="Save to File" Command="{Binding SaveFenceCommand}" />
+            <MenuFlyoutItem Content="Clear Local or Vehicle…" Command="{Binding ClearFenceCommand}" />
+            </MenuFlyoutSubItem>
+
+            <MenuFlyoutSubItem Content="Rally Points">
+            <MenuFlyoutItem Content="Set Rally Point" Command="{Binding SetRallyPointCommand}" />
+            <MenuFlyoutItem Content="Download" Command="{Binding DownloadRallyCommand}" IsEnabled="{Binding CanUseVehicleCommands}" />
+            <MenuFlyoutItem Content="Upload" Command="{Binding UploadRallyCommand}" IsEnabled="{Binding CanUseVehicleCommands}" />
+            <MenuFlyoutItem Content="Clear Local or Vehicle…" Command="{Binding ClearRallyCommand}" />
+            <MenuFlyoutItem Content="Save Rally to File" Command="{Binding SaveRallyCommand}" />
+            <MenuFlyoutItem Content="Load Rally from File" Command="{Binding LoadRallyCommand}" />
+            </MenuFlyoutSubItem>
+
+            <MenuFlyoutSubItem Content="Auto WP / Survey">
+            <MenuFlyoutItem Content="Create WP Circle" Command="{Binding CreateWaypointCircleCommand}" />
+            <MenuFlyoutItem Content="Create Spline Circle" Command="{Binding CreateSplineCircleCommand}" />
+            <MenuFlyoutItem Content="Area" Command="{Binding AutoWaypointAreaCommand}" />
+            <MenuFlyoutItem Content="Text" Command="{Binding AutoWaypointTextCommand}" />
+            <MenuFlyoutItem Content="Create Circle Survey" Command="{Binding CreateCircleSurveyCommand}" />
+            <MenuFlyoutItem Content="Survey (Grid)" Command="{Binding CreateGridSurveyCommand}" IsEnabled="{Binding HasPlanningPolygon}" />
+            </MenuFlyoutSubItem>
+
+            <MenuFlyoutSubItem Content="Map Tools">
+            <MenuFlyoutItem Content="Zoom In" Clicked="OnZoomInClicked" />
+            <MenuFlyoutItem Content="Zoom Out" Clicked="OnZoomOutClicked" />
+            <MenuFlyoutItem Content="Zoom To Vehicle" Clicked="OnZoomToVehicleClicked" />
+            <MenuFlyoutItem Content="Center on My Location" Clicked="OnCenterOnMyLocationClicked" />
+            <MenuFlyoutItem Content="Follow Vehicle (on/off)" Clicked="OnToggleFollowVehicleClicked" />
+            <MenuFlyoutItem Content="Reverse WPs" Command="{Binding ReverseWaypointsCommand}" IsEnabled="{Binding HasMissionItems}" />
+            <MenuFlyoutItem Content="Measure Distance" Command="{Binding MeasureDistanceCommand}" />
+            <MenuFlyoutItem Content="Rotate Map" Command="{Binding RotateMapCommand}" />
+            <MenuFlyoutItem Content="Prefetch" Command="{Binding PrefetchVisibleCommand}" />
+            <MenuFlyoutItem Content="Prefetch WP Path" Command="{Binding PrefetchWaypointPathCommand}" IsEnabled="{Binding HasMissionItems}" />
+            <MenuFlyoutItem Content="Elevation Graph" Command="{Binding ShowElevationGraphCommand}" IsEnabled="{Binding HasMissionRoute}" />
+            </MenuFlyoutSubItem>
+
+            <MenuFlyoutSubItem Content="Import / Overlay">
+            <MenuFlyoutItem Content="Load WP File" Command="{Binding LoadWpFileCommand}" />
+            <MenuFlyoutItem Content="Load and Append" Command="{Binding LoadAndAppendCommand}" />
+            <MenuFlyoutItem Content="Save WP File" Command="{Binding SaveWpFileCommand}" />
+            <MenuFlyoutItem Content="Import Mission from KML" Command="{Binding LoadKmlFileCommand}" />
+            <MenuFlyoutItem Content="Import Mission from SHP" Command="{Binding LoadShapefileCommand}" />
+            <MenuFlyoutItem Content="Add KML Overlay" Command="{Binding KmlOverlayCommand}" />
+            <MenuFlyoutItem Content="Clear Imported Overlay" Command="{Binding ClearImportedOverlayCommand}" IsEnabled="{Binding HasImportedOverlay}" />
+            </MenuFlyoutSubItem>
+
+            <MenuFlyoutSubItem Content="POI">
+            <MenuFlyoutItem Content="Add" Command="{Binding AddPoiCommand}" />
+            <MenuFlyoutItem Content="Delete Nearest" Command="{Binding DeletePoiCommand}" />
+            <MenuFlyoutItem Content="Edit Nearest" Command="{Binding EditPoiCommand}" />
+            </MenuFlyoutSubItem>
+
+            <MenuFlyoutSubItem Content="Location">
+            <MenuFlyoutItem Content="Set Tracker Home Here" Command="{Binding SetTrackerHomeCommand}" />
+            <MenuFlyoutItem Content="Modify Altitude" Command="{Binding ModifyAltitudeCommand}" />
+            <MenuFlyoutItem Content="Enter UTM Coordinate" Command="{Binding EnterUtmCoordinateCommand}" />
+            <MenuFlyoutItem Content="Set Home Here" Command="{Binding SetHomeHereCommand}" />
+            </MenuFlyoutSubItem>
+
+            </controls:MenuFlyout>
+            </controls:FlyoutBase.ContextFlyout>
+            -->
+        </mapsui:MapView>
+
+        <Border Grid.Row="0" IsVisible="{Binding IsElevationProfileVisible}" MinHeight="190"
+                VerticalAlignment="Bottom" Margin="12" Padding="6"
+                >
+            <Grid RowDefinitions="Auto,*">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Label Content="Elevation profile — terrain / planned MSL"  />
+                    <Button Content="Close" Command="{Binding CloseElevationGraphCommand}" Padding="8,2" />
+                </StackPanel>
+
+                <!--            TODO: add again    <missions1:MissionElevationProfileView Grid.Row="1" Profile="{Binding ElevationProfile}" />
+                -->
+            </Grid>
+        </Border>
+
+        <Button Grid.Row="0"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Bottom"
+                Margin="8"
+                Padding="8,4"
+                MaximumWidthRequest="520"
+                FontSize="11"
+                Content="{Binding AttributionText}"
+                IsVisible="{Binding IsAttributionVisible}"
+                Clicked="OnAttributionClicked"
+
+                SemanticProperties.Hint="Map attribution. Activate to toggle expanded details." />
+
+        <!-- Application chrome colors come from semantic DynamicResource values. -->
+
+        <!-- Bottom status bar (mirrors Controls.Status) -->
+        <Border Grid.Row="1"  StrokeThickness="1"  VerticalAlignment="Fill" Height="30" >
+
+            <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left" Spacing="10">
+
+
+                <ComboBox
+                    ItemsSource="{Binding MapStyles}"
+                    SelectedItem="{Binding SelectedMapStyle}"
+                    DisplayMemberBinding="{Binding .}"
+                    />
+
+                <Label Content="•" FontSize="16"  VerticalAlignment="Center"/>
+                <Label
+                    Content="{Binding MapFreshness}"
+                    VerticalAlignment="Center" />
+                <Label Content="•" FontSize="16"  VerticalAlignment="Center"/>
+
+                <Label
+                    Content="{Binding PointerCoordinateText}"
+                    VerticalAlignment="Center" />
+                <Label
+                    IsVisible="{Binding HasAltitudeMessage}"
+                    Content="{Binding PointerAltitude, StringFormat='Alt: {0:F1} m'}"
+                    VerticalAlignment="Center" />
+                <Label
+                    IsVisible="{Binding HasPointerAltitudeStatus}"
+                    Content="{Binding PointerAltitudeStatusText}"
+                    VerticalAlignment="Center" />
+                <Label Content="•" FontSize="16"  VerticalAlignment="Center" IsVisible="{Binding HasStatusMessage}"/>
+                <Label
+                    IsVisible="{Binding HasStatusMessage}"
+                    Content="{Binding StatusMessage}"
+                    VerticalAlignment="Center" />
+            </StackPanel>
+        </Border>
+    </Grid>
+
+
+</utilities:ViewBase>

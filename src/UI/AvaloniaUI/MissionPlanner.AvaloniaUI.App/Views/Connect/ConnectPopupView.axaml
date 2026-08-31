@@ -42,7 +42,8 @@
                           />
             </Grid >
 
-            <Grid  ColumnDefinitions="200,*" HorizontalAlignment="Stretch">
+            <Grid  ColumnDefinitions="200,*" HorizontalAlignment="Stretch" >
+
                 <Label Content="Host" IsVisible="{Binding ShowSelectedHost}"
                        FontSize="16" HorizontalAlignment="Stretch"  />
 
@@ -50,9 +51,11 @@
 
             </Grid > 
 
-            <Grid  ColumnDefinitions="200,*" HorizontalAlignment="Stretch">
+            <Grid  ColumnDefinitions="200,*" HorizontalAlignment="Stretch" >
                 <Label Content="Port" IsVisible="{Binding ShowSelectedHost}"
-                       FontSize="16" HorizontalAlignment="Stretch" />
+                       FontSize="16" HorizontalAlignment="Stretch">
+                    <Label.FontWeight>Bold</Label.FontWeight>
+                </Label>
                 <TextBox Grid.Column="1"  PlaceholderText="Port" Text="{Binding SelectedPort}"
                          IsVisible="{Binding ShowSelectedHost}" />
             </Grid >

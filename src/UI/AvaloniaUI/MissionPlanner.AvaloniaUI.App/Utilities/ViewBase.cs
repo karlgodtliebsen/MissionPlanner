@@ -27,3 +27,15 @@ public partial class ViewBase<TViewModel> : UserControl where TViewModel : class
         DataContext = ViewModel;
     }
 }
+public partial class ViewBase : UserControl
+{
+    protected ILogger Logger;
+
+
+    /// <inheritdoc />
+    public ViewBase()
+    {
+        Logger = ServiceHelper.GetRequiredService<ILogger<ViewBase>>();
+
+    }
+}
