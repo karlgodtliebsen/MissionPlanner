@@ -1,15 +1,14 @@
 The xaml pages are to be moved and renamed to axaml.
 
-The Build Action is Avalonia XAML
-
-The regular pages, that are not are to be based on UserControl, using this
+The Build Action for these muse be Avalonia XAML
 
 
+Page Migration:
 
 ContentView becomes utilities:ViewBase following this sample
 
 
-Sample is for ConnectPopupView with ConnectPopupViewModel
+Sample is found in ConnectPopupView with ConnectPopupViewModel
 
 <utilities:ViewBase x:TypeArguments="connect:ConnectPopupViewModel"
                     xmlns="https://github.com/avaloniaui"
@@ -68,6 +67,54 @@ and becomes a NavigationPage:
 
 
 
+Pages using this 
+
+<tabViews:TabViewLifecycleContent x:TypeArguments="tabs:ActionsTabViewModel" 
+                                  xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                                  xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
+                                  xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                                  xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                                  x:Class="MissionPlanner.App.Views.FlightData.Tabs.ActionsTabView"
+                                  x:DataType="tabs:ActionsTabViewModel">
+
+
+</tabViews:TabViewLifecycleContent>
+
+
+becomes
+
+
+<utilities:ViewBase x:TypeArguments="connect:ConnectPopupViewModel"
+                    xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
+                    xmlns:connect="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Connect"
+                    xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                    xmlns:u="https://irihi.tech/ursa"
+                    mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                    x:Class="MissionPlanner.AvaloniaUI.App.Views.Connect.ConnectPopupView"
+                    x:DataType="connect:ConnectPopupViewModel"
+                    >
+
+
+</utilities:ViewBase>
+
+
+ViewModel Changes:
+Baseclass for ViewModels changes from BaseViewModel to ViewModelBase
+Use ViewModelBase that takes a ILogger as argument
+remove local fielss logger and refer to Logger in ViewModelBase
+Replace dispatcher.Dispatch...  with Dispatcher.Dispatch...
+
+
+
+
+
+AXAML Changes:
 
 
 For each axaml file, these changes must be applied:
@@ -103,7 +150,7 @@ FontAttributes="Bold" becomes FontWeight="Bold"
 
 
 
-<material:SelectField 
+		<material:SelectField 
                         ItemsSource="{Binding MapStyles}"
                         SelectedItem="{Binding SelectedMapStyle}" />
 
@@ -117,5 +164,40 @@ becomes
                           />
 
 
+Text Fields 
 
+	<controls:AlignedEditorField
+	    Title="An Editor"
+	    Text="Centered text"
+	 />
+
+becomes
+
+	   <TextBox  PlaceholderText="An Editor" Text="Centered text"
+           />
+
+
+
+NumericField
+
+                    <controls:NumericField
+                        Value="{Binding StepSize, Mode=TwoWay}"
+                        NumberFormat="F7"
+			Min="0"
+			Max="10000"                        
+			StepSize="10" 
+                        />
+
+becomes:
+
+            <NumericUpDown 
+                    Value="{Binding StepSize, Mode=TwoWay}"
+
+                   Minimum="0"
+                   Maximum="10000"
+                   Increment="10" />
+
+
+
+Other Changes:
 

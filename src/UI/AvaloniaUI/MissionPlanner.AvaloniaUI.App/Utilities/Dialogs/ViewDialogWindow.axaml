@@ -5,7 +5,7 @@
     xmlns:ursa="https://irihi.tech/ursa"
     xmlns:vm="using:MissionPlanner.AvaloniaUI.App.Utilities.Dialogs"
     x:DataType="vm:ViewDialogViewModel"
-
+    CanResize="True"
     WindowStartupLocation="CenterOwner"
     ShowInTaskbar="False">
 
