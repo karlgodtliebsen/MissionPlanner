@@ -12,10 +12,16 @@ using MissionPlanner.AvaloniaUI.App.Utilities.Dispatching;
 using MissionPlanner.AvaloniaUI.App.Views.Common;
 using MissionPlanner.AvaloniaUI.App.Views.Connect;
 using MissionPlanner.AvaloniaUI.App.Views.Exit;
+using MissionPlanner.AvaloniaUI.App.Views.FlightData;
+using MissionPlanner.AvaloniaUI.App.Views.FlightPlanner;
+using MissionPlanner.AvaloniaUI.App.Views.Help;
+using MissionPlanner.AvaloniaUI.App.Views.Introduction;
 using MissionPlanner.AvaloniaUI.App.Views.Main;
 using MissionPlanner.AvaloniaUI.App.Views.Missions;
 using MissionPlanner.AvaloniaUI.App.Views.Missions.DockView;
 using MissionPlanner.AvaloniaUI.App.Views.Navigation;
+using MissionPlanner.AvaloniaUI.App.Views.Preferences;
+using MissionPlanner.AvaloniaUI.App.Views.Simulation;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Configuration;
 using MissionPlanner.Core.Missions.Planning;
@@ -89,7 +95,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<ISimulatorRuntime, ArduPilotSitlRuntime>();
 
         services.TryAddSingleton<ApplicationStateService>();
-        //services.TryAddTransient<ParametersFileHandler>();
+        services.TryAddTransient<ParametersFileHandler>();
         //services.TryAddSingleton<PlannerSettingsRuntime>();
         services.TryAddTransient<MissionItemListViewPage>();
         services.TryAddTransient<MissionItemListDockViewModel>();
@@ -161,6 +167,7 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<NotificationViewModel>();
 
         services.TryAddTransient<ViewDialogViewModel>();
+        services.TryAddTransient<OverlayViewDialogViewModel>();
 
         services.TryAddSingleton<IWindowProvider, WindowProvider>();
         services.TryAddSingleton<IDialogService, AvaloniaDialogService>();
@@ -174,7 +181,19 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<INavigationPageFactory, NavigationPageFactory>();
         services.TryAddSingleton<AvaloniaNavigationService>();
         services.TryAddSingleton<INavigationService>(sp => sp.GetRequiredService<AvaloniaNavigationService>());
-        //services.TryAddTransient<NavigationViewModel>();
+        services.TryAddSingleton<MainShellViewModel>();
+
+        services.TryAddTransient<FlightDataMissionMapViewModel>();
+        services.TryAddTransient<FlightDataViewModel>();
+        services.TryAddTransient<FlightDataPage>();
+        services.TryAddTransient<FlightPlannerMissionMapViewModel>();
+        services.TryAddTransient<FlightPlannerViewModel>();
+        services.TryAddTransient<FlightPlannerPage>();
+        services.TryAddTransient<PreferencesViewModel>();
+        services.TryAddTransient<PreferencesPage>();
+        services.TryAddTransient<SimulationPage>();
+        services.TryAddTransient<IntroductionPage>();
+        services.TryAddTransient<HelpPage>();
 
         services.TryAddTransient<ErrorViewModel>();
         services.TryAddTransient<ErrorView>();

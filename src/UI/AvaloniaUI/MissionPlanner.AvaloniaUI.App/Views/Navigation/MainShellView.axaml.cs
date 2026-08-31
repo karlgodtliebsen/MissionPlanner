@@ -7,17 +7,10 @@ public partial class MainShellView : UserControl
     public MainShellView()
     {
         InitializeComponent();
+        DataContext = ServiceHelper.GetRequiredService<MainShellViewModel>();
         var navigation = ServiceHelper.GetRequiredService<AvaloniaNavigationService>();
         navigation.Attach(NavigationHost, MainDrawer);
+        AttachedToVisualTree += async (_, _) =>
+            await navigation.NavigateAsync(MissionPlannerRoutes.FlightData);
     }
 }
-
-//public MainShellView(
-//    AvaloniaNavigationService navigation)
-//{
-//    InitializeComponent();
-
-//    navigation.Attach(
-//        NavigationHost,
-//        MainDrawer);
-//}

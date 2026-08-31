@@ -1,24 +1,19 @@
 ﻿using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Irihi.Avalonia.Shared.Contracts;
 
 namespace MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
 
-/// <summary>
-/// 
-/// </summary>
-public sealed partial class ViewDialogViewModel : ObservableObject
+public sealed partial class OverlayViewDialogViewModel : ObservableObject, IDialogContext
 {
-    private readonly Action<bool> close;
-
-    public ViewDialogViewModel(
+    public OverlayViewDialogViewModel(
         string title,
         Control content,
         string okText,
         string closeText,
         bool showOkButton,
-        bool showCloseButton,
-        Action<bool> close)
+        bool showCloseButton)
     {
         Title = title;
         Content = content;
@@ -26,20 +21,6 @@ public sealed partial class ViewDialogViewModel : ObservableObject
         CloseText = closeText;
         ShowOkButton = showOkButton;
         ShowCloseButton = showCloseButton;
-
-        this.close = close;
-    }
-
-    public bool ShowCloseButton
-    {
-        get;
-        set;
-    }
-
-    public bool ShowOkButton
-    {
-        get;
-        set;
     }
 
     public string Title
@@ -51,26 +32,47 @@ public sealed partial class ViewDialogViewModel : ObservableObject
     {
         get;
     }
+
     public string OkText
     {
         get;
     }
+
     public string CloseText
     {
         get;
+    }
+
+    public bool ShowOkButton
+    {
+        get;
+    }
+
+    public bool ShowCloseButton
+    {
+        get;
+    }
+
+
+    public event EventHandler<object?>? RequestClose;
+
+
+    public void Close()
+    {
+        RequestClose?.Invoke(this, false);
     }
 
 
     [RelayCommand]
     private void Ok()
     {
-        close(true);
+        RequestClose?.Invoke(this, true);
     }
 
 
     [RelayCommand]
     private void Cancel()
     {
-        close(false);
+        RequestClose?.Invoke(this, false);
     }
 }

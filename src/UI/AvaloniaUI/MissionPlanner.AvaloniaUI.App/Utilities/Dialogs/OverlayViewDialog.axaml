@@ -1,25 +1,29 @@
-<ursa:UrsaWindow
-    x:Class="MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.ViewDialogWindow"
-    xmlns="https://github.com/avaloniaui"
+<UserControl
+    x:Class="MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.OverlayViewDialog"
+    xmlns="https://github.com/avaloniaui"   
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:ursa="https://irihi.tech/ursa"
     xmlns:vm="using:MissionPlanner.AvaloniaUI.App.Utilities.Dialogs"
-    x:DataType="vm:ViewDialogViewModel"
+    xmlns:dialogs="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities.Dialogs"
+    x:DataType="dialogs:OverlayViewDialogViewModel">
 
-    WindowStartupLocation="CenterOwner"
-    ShowInTaskbar="False">
+    <Grid RowDefinitions="Auto,*,Auto">
 
-    <Grid RowDefinitions="*,Auto">
+        <TextBlock
+            Grid.Row="0"
+            Margin="16,12"
+            Text="{Binding Title}"
+            FontSize="18"
+            FontWeight="SemiBold"/>
 
         <ContentControl
-            Grid.Row="0"
+            Grid.Row="1"
             Margin="16"
             Content="{Binding Content}"
             HorizontalContentAlignment="Stretch"
             VerticalContentAlignment="Stretch"/>
 
         <Border
-            Grid.Row="1"
+            Grid.Row="2"
             Padding="16,10">
 
             <StackPanel
@@ -44,4 +48,5 @@
         </Border>
 
     </Grid>
-</ursa:UrsaWindow>
+
+</UserControl>

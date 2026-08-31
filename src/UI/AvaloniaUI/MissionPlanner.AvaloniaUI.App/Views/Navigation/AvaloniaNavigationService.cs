@@ -30,13 +30,17 @@ public sealed class AvaloniaNavigationService
     {
         this.navigationPage = navigationPage;
         this.drawerPage = drawerPage;
+        currentRoute = null;
     }
 
     public async Task NavigateAsync(string route)
     {
         if (route == currentRoute)
         {
-            drawerPage!.IsOpen = false;
+            if (drawerPage is not null)
+            {
+                drawerPage.IsOpen = false;
+            }
             return;
         }
 

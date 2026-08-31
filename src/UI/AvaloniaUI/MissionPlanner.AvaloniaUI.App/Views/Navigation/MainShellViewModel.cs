@@ -5,6 +5,13 @@ namespace MissionPlanner.AvaloniaUI.App.Views.Navigation;
 
 public partial class MainShellViewModel : ObservableObject
 {
+    private readonly INavigationService navigationService;
+
+    public MainShellViewModel(INavigationService navigationService)
+    {
+        this.navigationService = navigationService;
+    }
+
     [ObservableProperty]
     public partial bool IsNavigationOpen
     {
@@ -15,14 +22,28 @@ public partial class MainShellViewModel : ObservableObject
     [RelayCommand]
     public void ToggleNavigation()
     {
-
+        IsNavigationOpen = !IsNavigationOpen;
     }
 
-    [RelayCommand]
-    public void Navigate()
+    [RelayCommand(CanExecute = nameof(CanNavigate))]
+    public async Task NavigateAsync(string? route)
     {
+        if (string.IsNullOrWhiteSpace(route))
+        {
+            return;
+        }
 
+        await navigationService.NavigateAsync(route);
     }
+
+    private static bool CanNavigate(string? route) => route is
+        MissionPlannerRoutes.FlightData or
+        MissionPlannerRoutes.FlightPlanner or
+        MissionPlannerRoutes.Preferences or
+        MissionPlannerRoutes.Simulation or
+        MissionPlannerRoutes.Introduction or
+        MissionPlannerRoutes.Help or
+        MissionPlannerRoutes.Exit;
 
 
 }

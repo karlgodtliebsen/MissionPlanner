@@ -678,7 +678,19 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
                 SetMessages(null, m);
                 var errorModel = domainFactory.Create<ErrorViewModel, string>(exception.Message + "\nEnsure there is a connection and try again");
                 var view = domainFactory.Create<ErrorView, ErrorViewModel>(errorModel);
-                await dialogService.DisplayViewExtendedAsync("Load failed.", view, "OK");
+                //await dialogService.DisplayViewExtendedAsync("Load failed.", view, "OK");
+                await dialogService.ShowWindowAsync(view,
+                    new DialogOptions
+                    {
+                        Title = "Load failed",
+                        Presentation = DialogPresentation.Window,
+                        Width = 600,
+                        Height = 500,
+                        OkText = "Ok",
+                        ShowCloseButton = false
+
+                    });
+
             });
         }
         finally

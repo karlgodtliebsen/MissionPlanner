@@ -9,66 +9,41 @@ namespace MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
 /// </summary>
 public interface IDialogService
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="title"></param>
-    /// <param name="content"></param>
-    /// <param name="okText"></param>
-    /// <param name="width">The width of the dialog.</param>
-    /// <param name="height">The height of the dialog.</param>
-    /// <returns></returns>
-    Task DisplayViewAsync(string title, UserControl content, string okText = "OK", double width = 800, double height = 600);
 
     /// <summary>
-    /// 
+    /// Shows a dialog asynchronously.
     /// </summary>
-    /// <param name="title"></param>
-    /// <param name="content"></param>
-    /// <param name="okText"></param>
-    /// <param name="cancelText"></param>
-    /// <param name="width"></param>
-    /// <param name="height"></param>
-    /// <returns></returns>
-    Task<bool> DisplayViewAsync(string title, UserControl content, string okText, string cancelText, double width = 800, double height = 600);
-
+    /// <param name="content">The content of the dialog.</param>
+    /// <param name="options">The options for the dialog.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a boolean indicating whether the dialog was accepted.  </returns>
+    Task<bool> ShowAsync(Control content, DialogOptions options);
 
     /// <summary>
-    /// Displays a progress dialog.
+    /// Shows a window asynchronously.
+    /// </summary>      
+    /// <param name="content">The content of the window.</param>
+    /// <param name="options">The options for the window.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a boolean indicating whether the window was accepted.</returns>
+    Task<bool> ShowWindowAsync(Control content, DialogOptions options);
+
+    /// <summary>
+    /// Shows an overlay asynchronously.
     /// </summary>
-    /// <param name="title">The title of the progress dialog.</param>
-    /// <param name="message">The message to display in the progress dialog.</param>
-    /// <returns>A disposable object that can be used to close the progress dialog.</returns>
-    Task<IDisposable> DisplayProgressAsync(string title, string message);
+    /// <param name="content">The content of the overlay.</param>
+    /// <param name="options">The options for the overlay.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a boolean indicating whether the overlay was accepted.</returns>
+    Task<bool> ShowOverlayAsync(Control content, DialogOptions options);
+
 
     /// <summary>
     /// Displays a cancellable progress dialog.
     /// </summary>
-    /// <param name="title">The title of the progress dialog.</param>
-    /// <param name="message">The message to display in the progress dialog.</param>
-    /// <param name="cancelText">The text to display on the cancel button.</param>
-    /// <param name="tokenSource">The cancellation token source to cancel the operation.</param>
-    /// <returns>A disposable object that can be used to close the progress dialog.</returns>   
-    Task<IDisposable> DisplayProgressCancellableAsync(
-        string title,
-        string message,
-        string cancelText = "Cancel",
-        CancellationTokenSource? tokenSource = default);
-
-    /// <summary>
-    /// Displays a confirmation dialog.
-    /// </summary>
-    /// <param name="title">The title of the confirmation dialog.</param>
-    /// <param name="message">The message to display in the confirmation dialog.</param>
-    /// <param name="okText">The text to display on the OK button.</param>
-    /// <param name="cancelText">The text to display on the Cancel button.</param>
-    /// <returns></returns>
-    Task<bool> ConfirmAsync(
-        string title,
-        string message,
-        string okText = "OK",
-        string cancelText = "Cancel");
-
+    /// <param name="title">The title of the dialog.</param>
+    /// <param name="message">A function that returns the message to display.</param>
+    /// <param name="cancelText">The text for the cancel button.</param>
+    /// <param name="tokenSource">The cancellation token source.</param>
+    /// <returns>A disposable object that can be used to close the dialog.</returns>
+    Task<IDisposable> DisplayProgressCancellableAsync(string title, Func<string> message, string cancelText = "Cancel", CancellationTokenSource? tokenSource = default);
 
     /// <summary>
     /// Displays a right-aligned multiline text prompt.
@@ -87,6 +62,8 @@ public interface IDialogService
         string accept = "OK",
         string cancel = "Cancel",
         string clear = "Clear");
+
+
 
     /// <summary>
     /// Displays a prompt dialog for entering a TimeSpan value. 
@@ -195,6 +172,70 @@ public interface IDialogService
         string accept = "OK", string cancel = "Cancel",
         string clear = "Clear");
 
+
+
+    /*
+
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="title"></param>
+    /// <param name="content"></param>
+    /// <param name="okText"></param>
+    /// <param name="width">The width of the dialog.</param>
+    /// <param name="height">The height of the dialog.</param>
+    /// <returns></returns>
+    Task DisplayViewAsync(string title, UserControl content, string okText = "OK", double width = 800, double height = 600);
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="title"></param>
+    /// <param name="content"></param>
+    /// <param name="okText"></param>
+    /// <param name="cancelText"></param>
+    /// <param name="width"></param>
+    /// <param name="height"></param>
+    /// <returns></returns>
+    Task<bool> DisplayViewAsync(string title, UserControl content, string okText, string cancelText, double width = 800, double height = 600);
+
+    /// <summary>
+    /// Displays a progress dialog.
+    /// </summary>
+    /// <param name="title">The title of the progress dialog.</param>
+    /// <param name="message">The message to display in the progress dialog.</param>
+    /// <returns>A disposable object that can be used to close the progress dialog.</returns>
+    Task<IDisposable> DisplayProgressAsync(string title, string message);
+
+    /// <summary>
+    /// Displays a cancellable progress dialog.
+    /// </summary>
+    /// <param name="title">The title of the progress dialog.</param>
+    /// <param name="message">The message to display in the progress dialog.</param>
+    /// <param name="cancelText">The text to display on the cancel button.</param>
+    /// <param name="tokenSource">The cancellation token source to cancel the operation.</param>
+    /// <returns>A disposable object that can be used to close the progress dialog.</returns>   
+    Task<IDisposable> DisplayProgressCancellableAsync(
+        string title,
+        string message,
+        string cancelText = "Cancel",
+        CancellationTokenSource? tokenSource = default);
+
+    /// <summary>
+    /// Displays a confirmation dialog.
+    /// </summary>
+    /// <param name="title">The title of the confirmation dialog.</param>
+    /// <param name="message">The message to display in the confirmation dialog.</param>
+    /// <param name="okText">The text to display on the OK button.</param>
+    /// <param name="cancelText">The text to display on the Cancel button.</param>
+    /// <returns></returns>
+    Task<bool> ConfirmAsync(
+        string title,
+        string message,
+        string okText = "OK",
+        string cancelText = "Cancel");
+
     /// <summary>
     /// Displays a modal page of the specified type.
     /// </summary>
@@ -213,6 +254,28 @@ public interface IDialogService
     /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     Task ShowAsync(Page page, bool animated = true, CancellationToken cancellationToken = default);
+
+
+    /// <summary>
+    /// Displays a window with the specified title, content, and close button text.
+    /// </summary>
+    /// <param name="content">The content to display in the window.</param>
+    /// <param name="options">The dialog options.</param>
+    /// <param name="okText">The text for the OK button.</param>
+    /// <param name="closeText">The text for the close button.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task<bool> ShowWindowAsync(Control content, DialogOptions options, string okText = "OK", string closeText = "Close");
+
+    /// <summary>
+    /// Displays an overlay with the specified title, content, and close button text.
+    /// </summary>
+    /// <param name="content">The content to display in the overlay.</param>
+    /// <param name="options">The dialog options.</param>
+    /// <param name="okText">The text for the OK button.</param>
+    /// <param name="closeText">The text for the close button.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task<bool> ShowOverlayAsync(Control content, DialogOptions options, string okText = "OK", string closeText = "Close");
+
 
     /// <summary>
     /// Closes the currently displayed modal page.
@@ -256,4 +319,6 @@ public interface IDialogService
     /// <param name="tokenSource">The cancellation token source.</param>
     /// <returns>A disposable object that can be used to close the dialog.</returns>
     Task<IDisposable> DisplayProgressCancellableAsync(string title, Func<string> message, string cancelText = "Cancel", CancellationTokenSource? tokenSource = default);
+
+    */
 }

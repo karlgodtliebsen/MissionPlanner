@@ -151,13 +151,27 @@ public partial class FlightPlannerViewModel : ViewModelBase
     {
         if (e.Name == "EditorOpen")
         {
-            var pageView = domainFactory.Create<MissionItemListViewPage, MissionMapViewModel>(Map);
+            var view = domainFactory.Create<MissionItemListViewPage, MissionMapViewModel>(Map);
             cancellationToken.ThrowIfCancellationRequested();
-            await dialogService.DisplayViewAsync("Mission editor", pageView, "Close", 1100, 760);
+            //await dialogService.DisplayViewAsync("Mission editor", pageView, "Close", 1100, 760);
+
+            await dialogService.ShowWindowAsync(
+                view,
+                new DialogOptions
+                {
+                    Title = "Connection",
+                    Presentation = DialogPresentation.Window,
+                    Width = 600,
+                    Height = 500,
+                    OkText = "Ok",
+                    CloseText = "Cancel"
+                });
+
+
         }
         else if (e.Name == "EditorClose")
         {
-            await dialogService.CloseAsync(true, cancellationToken);
+            // await dialogService.CloseAsync(true, cancellationToken);
         }
     }
 
@@ -236,7 +250,6 @@ public partial class FlightPlannerViewModel : ViewModelBase
     public override void Dispose()
     {
         Deactivate();
-        Map = null;
         base.Dispose();
     }
 

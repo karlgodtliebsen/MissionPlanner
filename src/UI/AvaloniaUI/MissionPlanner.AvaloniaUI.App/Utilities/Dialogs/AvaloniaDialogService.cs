@@ -1,97 +1,146 @@
 ﻿using Avalonia.Controls;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dispatching;
+using Ursa.Controls;
 
 namespace MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
 
+/// <summary>
+/// Provides dialog services for displaying various types of dialogs and windows in an Avalonia application.
+/// </summary>
 public sealed class AvaloniaDialogService : IDialogService
 {
     private readonly IUiDispatcher uiDispatcher;
     private readonly IWindowProvider windowProvider;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AvaloniaDialogService"/> class.
+    /// </summary>
+    /// <param name="uiDispatcher">The UI dispatcher.</param>
+    /// <param name="windowProvider">The window provider.</param>
     public AvaloniaDialogService(IUiDispatcher uiDispatcher, IWindowProvider windowProvider)
     {
         this.uiDispatcher = uiDispatcher;
         this.windowProvider = windowProvider;
     }
 
+
     /// <inheritdoc />
-    public async Task DisplayViewAsync(string title, UserControl content, string okText = "OK", double width = 800, double height = 600)
+    public async Task<bool> ShowAsync(Control content, DialogOptions options)
     {
-        var cancelText = "Close";
-        await DisplayViewAsync(title, content, okText, cancelText, width, height);
+        ArgumentNullException.ThrowIfNull(content);
+        ArgumentNullException.ThrowIfNull(options);
+
+        return options.Presentation switch
+        {
+            DialogPresentation.Window =>
+                await ShowWindowAsync(content, options),
+
+            DialogPresentation.Overlay =>
+                await ShowOverlayAsync(content, options),
+
+            _ => throw new ArgumentOutOfRangeException(nameof(options.Presentation), options.Presentation, "Unknown dialog presentation.")
+        };
+    }
+
+
+    /// <inheritdoc />
+    public Task<bool> ShowWindowAsync(
+        Control content,
+        DialogOptions options)
+    {
+        return uiDispatcher.DispatchAsync(async () =>
+        {
+            var owner = windowProvider.ActiveWindow
+                        ?? throw new InvalidOperationException(
+                            "No active window is available.");
+
+            var dialog = new ViewDialogWindow
+            {
+                Title = options.Title,
+                Width = options.Width ?? 800,
+                Height = options.Height ?? 600,
+                CanResize = options.CanResize
+            };
+
+            dialog.DataContext =
+                new ViewDialogViewModel(
+                    options.Title,
+                    content,
+                    options.OkText,
+                    options.CloseText,
+                    options.ShowOkButton,
+                    options.ShowCloseButton,
+                    result => dialog.Close(result));
+
+            return await dialog.ShowDialog<bool>(owner);
+        });
     }
 
     /// <inheritdoc />
-    public async Task<bool> DisplayViewAsync(string title, UserControl content, string okText, string cancelText, double width = 800, double height = 600)
+    public Task<bool> ShowOverlayAsync(
+        Control content,
+        DialogOptions options)
     {
-        return await uiDispatcher.DispatchAsync(async () =>
-          {
-              var owner = windowProvider.ActiveWindow
-                          ?? throw new InvalidOperationException(
-                              "No active window is available.");
+        return uiDispatcher.DispatchAsync(async () =>
+        {
+            var owner = windowProvider.ActiveWindow
+                        ?? throw new InvalidOperationException("No active window is available.");
 
-              var dialog = new ViewDialogWindow
-              {
-                  Title = title,
-                  Width = width,
-                  Height = height
-              };
+            var vm =
+                new OverlayViewDialogViewModel(
+                    options.Title,
+                    content,
+                    options.OkText,
+                    options.CloseText,
+                    options.ShowOkButton,
+                    options.ShowCloseButton);
 
-              dialog.DataContext =
-                  new ViewDialogViewModel(
-                      title,
-                      content,
-                      cancelText,
-                      dialog.Close);
+            var view = new OverlayViewDialog();
 
-              return await dialog.ShowDialog<bool>(owner);
-          });
+            if (options.Width is not null)
+            {
+                view.Width = options.Width.Value;
+            }
+
+            if (options.Height is not null)
+            {
+                view.Height = options.Height.Value;
+            }
+
+            var overlayOptions =
+                new OverlayDialogOptions
+                {
+                    IsCloseButtonVisible = true,
+
+                    CanLightDismiss =
+                        options.CanLightDismiss,
+
+                    CanResize =
+                        options.CanResize,
+
+                    CanDragMove = true,
+
+                    //
+                    // Important if MissionPlanner ever has
+                    // multiple UrsaWindows.
+                    //
+                    TopLevelHashCode =
+                        owner.GetHashCode()
+                };
+
+            var result =
+                await OverlayDialog.ShowCustomAsync<bool>(
+                    view,
+                    vm,
+                    hostId: null,
+                    options: overlayOptions);
+
+            return result == true;
+        });
     }
 
-    /// <inheritdoc />
-    public Task<IDisposable> DisplayProgressAsync(string title, string message)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc />
-    public Task<IDisposable> DisplayProgressCancellableAsync(string title, string message, string cancelText = "Cancel", CancellationTokenSource? tokenSource = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc />
-    public Task<bool> ConfirmAsync(string title, string message, string okText = "OK", string cancelText = "Cancel")
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc />
-    public Task<IEnumerable<T>> DisplayCheckBoxPromptAsync<T>(string message, IEnumerable<T> selectionSource, IEnumerable<T>? selectedItems = default, string accept = "OK", string cancel = "Cancel", string? displayMember = null)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc />
-    public Task<T> DisplayRadioButtonPromptAsync<T>(string message, IEnumerable<T> selectionSource, T selected = default(T), string accept = "Ok", string cancel = "Cancel", string? displayMember = null)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc />
-    public Task<string> DisplayTextPromptAsync(string title, string message, string accept = "OK", string cancel = "Cancel", string? placeholder = null, int maxLength = -1, string initialValue = "", bool isPassword = false)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc />
-    public Task<DateTime?> DisplayDatePromptAsync(string title, DateTime? selectedDate = null, DateTime? minimumDate = null, DateTime? maximumDate = null, string accept = "OK", string cancel = "Cancel", string clear = "Clear", string today = "Today")
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc />
-    public Task<TViewModel> DisplayFormViewAsync<TViewModel>(string title, TViewModel? viewModel = default, string submit = "OK", string cancel = "Cancel") where TViewModel : class
+    /// <inheritdoc/>
+    public Task<IDisposable> DisplayProgressCancellableAsync(string title, Func<string> message, string cancelText = "Cancel", CancellationTokenSource? tokenSource = default)
     {
         throw new NotImplementedException();
     }
@@ -133,44 +182,9 @@ public sealed class AvaloniaDialogService : IDialogService
     }
 
     /// <inheritdoc />
-    public Task ShowAsync<TPage>(bool animated = true, CancellationToken cancellationToken = default) where TPage : Page
+    public Task<T> DisplayRadioButtonPromptAsync<T>(string message, IEnumerable<T> selectionSource, T selected = default(T), string accept = "Ok", string cancel = "Cancel", string? displayMember = null)
     {
         throw new NotImplementedException();
     }
 
-    /// <inheritdoc />
-    public Task ShowAsync(Page page, bool animated = true, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc />
-    public Task CloseAsync(bool animated = true, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc />
-    public Task DisplayViewExtendedAsync(string title, UserControl content, string okText = "OK")
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc />
-    public Task<bool> DisplayViewExtendedAsync(string title, UserControl content, string okText, string cancelText)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc />
-    public Task<bool> DisplayViewExtendedAsync(Page page, string title, UserControl content, ViewDialogOptions? options = null, string okText = "OK", CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
-    }
-
-    /// <inheritdoc />
-    public Task<IDisposable> DisplayProgressCancellableAsync(string title, Func<string> message, string cancelText = "Cancel", CancellationTokenSource? tokenSource = default)
-    {
-        throw new NotImplementedException();
-    }
 }
