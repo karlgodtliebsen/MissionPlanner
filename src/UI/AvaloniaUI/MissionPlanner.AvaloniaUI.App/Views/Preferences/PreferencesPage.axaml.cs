@@ -1,10 +1,8 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+﻿using MissionPlanner.AvaloniaUI.App.Utilities;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.Preferences;
 
-public partial class PreferencesPage : NavigationPage
+public partial class PreferencesPage : NavigationViewBase<PreferencesViewModel>
 {
     public PreferencesPage()
     {

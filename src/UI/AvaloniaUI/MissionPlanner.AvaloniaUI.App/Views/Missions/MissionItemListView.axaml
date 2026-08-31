@@ -25,8 +25,8 @@
 
                 <Grid Grid.Row="4" 
                       Width="400"
-                      HorizontalAlignment="Start"  ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" VerticalAlignment="Center" ColumnSpacing="6"
-                        IsVisible="{Binding Source={x:Reference Root},Path=ShowAllRows}">
+                      HorizontalAlignment="Left" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" VerticalAlignment="Center" ColumnSpacing="6"
+                        IsVisible="{Binding #Root.ShowAllRows}">
                     <Label Grid.Column="0" Content="WP Radius (m):" FontSize="11" VerticalAlignment="Center"  />
                     <!--
                     <extended:NumericField

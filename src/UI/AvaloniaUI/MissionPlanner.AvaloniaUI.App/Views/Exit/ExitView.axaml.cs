@@ -4,8 +4,9 @@ using MissionPlanner.Library.EventHub.Abstractions;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.Exit;
 
+//NavigationViewBase<PreferencesViewModel>
 /// <inheritdoc />
-public partial class ExitView : ContentViewBase<ExitViewModel>
+public partial class ExitView : NavigationViewBase<ExitViewModel>
 {
     private readonly IDialogService dialogService;
     private readonly IDomainEventHub eventHub;

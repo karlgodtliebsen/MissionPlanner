@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MissionPlanner.AvaloniaUI.App.Maps;
+using MissionPlanner.AvaloniaUI.App.Presentation;
 using MissionPlanner.AvaloniaUI.App.Services;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dispatching;
@@ -12,10 +13,13 @@ using MissionPlanner.AvaloniaUI.App.Views.Common;
 using MissionPlanner.AvaloniaUI.App.Views.Connect;
 using MissionPlanner.AvaloniaUI.App.Views.Exit;
 using MissionPlanner.AvaloniaUI.App.Views.Main;
+using MissionPlanner.AvaloniaUI.App.Views.Missions;
+using MissionPlanner.AvaloniaUI.App.Views.Missions.DockView;
 using MissionPlanner.AvaloniaUI.App.Views.Navigation;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Configuration;
 using MissionPlanner.Core.Missions.Planning;
+using MissionPlanner.Core.Notifications;
 using MissionPlanner.Firmware.Configuration;
 using MissionPlanner.Library;
 using MissionPlanner.Library.Configuration;
@@ -87,23 +91,25 @@ public static class ApplicationConfigurator
         services.TryAddSingleton<ApplicationStateService>();
         //services.TryAddTransient<ParametersFileHandler>();
         //services.TryAddSingleton<PlannerSettingsRuntime>();
-        //services.TryAddTransient<MissionItemListViewPage>();
-        //services.TryAddTransient<MissionItemListDockViewModel>();
-        //services.TryAddTransient<MissionMapPresenter>();
+        services.TryAddTransient<MissionItemListViewPage>();
+        services.TryAddTransient<MissionItemListDockViewModel>();
+        services.TryAddTransient<MissionMapPresenter>();
 
-        //services.TryAddTransient<IUserNotificationService, UserNotificationService>();
-        //services.TryAddTransient<IUserConfirmationService, UserConfirmationService>();
-        //services.TryAddTransient<IMissionMapInteractionService, MissionMapInteractionService>();
+        services.TryAddTransient<IUserNotificationService, UserNotificationService>();
+        services.TryAddTransient<IUserConfirmationService, UserConfirmationService>();
+        services.TryAddTransient<IMissionMapInteractionService, MissionMapInteractionService>();
 
         services.TryAddSingleton<IJsonPoiFilePathProvider, JsonPoiFilePathProvider>();
         services.TryAddSingleton<IPoiRepository, JsonPoiRepository>();
         services.TryAddSingleton<IPoiService, PoiService>();
 
-        //services.TryAddTransient<IUserPromptService, MauiMissionPlanningDialogService>();
-        //services.TryAddTransient<IMissionTerrainElevationProvider, MissionTerrainElevationProvider>();
-        //services.TryAddTransient<IUserChoiceService, MauiMissionPlanningDialogService>();
-        //services.TryAddTransient<IFileOpenService, MauiMissionPlanningFileService>();
-        //services.TryAddTransient<IFileSaveService, MauiMissionPlanningFileService>();
+        services.TryAddTransient<AvaloniaMissionPlanningDialogService>();
+        services.TryAddTransient<IUserPromptService>(sp => sp.GetRequiredService<AvaloniaMissionPlanningDialogService>());
+        services.TryAddTransient<IMissionTerrainElevationProvider, MissionTerrainElevationProvider>();
+        services.TryAddTransient<IUserChoiceService>(sp => sp.GetRequiredService<AvaloniaMissionPlanningDialogService>());
+        services.TryAddTransient<AvaloniaMissionPlanningFileService>();
+        services.TryAddTransient<IFileOpenService>(sp => sp.GetRequiredService<AvaloniaMissionPlanningFileService>());
+        services.TryAddTransient<IFileSaveService>(sp => sp.GetRequiredService<AvaloniaMissionPlanningFileService>());
         //services.TryAddTransient<IFirmwareConnectionGateway, FirmwareConnectionGateway>();
         //services.TryAddTransient<IConnectedVehicleFirmwareGateway, ConnectedVehicleFirmwareGateway>();
         //services.TryAddTransient<IFirmwareFilePicker, MauiFirmwareFilePicker>();
@@ -113,7 +119,7 @@ public static class ApplicationConfigurator
         //services.TryAddTransient<IDfuUserInteraction, FirmwareInteractionService>();
 
         //services.TryAddTransient<ITemporaryMavLinkBootloaderGateway, TemporaryMavLinkBootloaderGateway>();
-        //services.TryAddTransient<ITextClipboardService, TextClipboardService>();
+        services.TryAddTransient<ITextClipboardService, TextClipboardService>();
         //services.TryAddTransient<ISetupCompletionStore, PreferencesSetupCompletionStore>();
         //services.TryAddTransient<IFirmwarePackageCache, FirmwarePackageCache>();
         //services.TryAddTransient<IParameterComparisonService, ParameterComparisonService>();
@@ -281,8 +287,8 @@ public static class ApplicationConfigurator
 
         //domainFactory.Add<ParameterComparisonViewModel>();
         //domainFactory.Add<ParameterComparisonView>();
-        //domainFactory.Add<MissionItemListViewPage>();
-        //domainFactory.Add<MissionMapPresenter>();
+        domainFactory.Add<MissionItemListViewPage>();
+        domainFactory.Add<MissionMapPresenter>();
         //domainFactory.Add<FlightPlannerMissionMapViewModel>();
         //domainFactory.Add<FlightPlannerMissionMapView>();
         //domainFactory.Add<ParametersEditorViewModel>();

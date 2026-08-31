@@ -3,7 +3,6 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
     xmlns:missions="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Missions"
     xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
     x:Class="MissionPlanner.AvaloniaUI.App.Views.Missions.MissionItemListViewPage"
@@ -11,7 +10,7 @@
     Padding="25"
     >
 
-    <Border StyleClass="SurfaceContainer,Rounded,Elevation1"  HorizontalAlignment="Stretch"   VerticalAlignment="Stretch">
+    <Border Classes="SurfaceContainer Rounded Elevation1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <Grid RowDefinitions="Auto,*"
               RowSpacing="6" HorizontalAlignment="Stretch"   VerticalAlignment="Stretch">
 

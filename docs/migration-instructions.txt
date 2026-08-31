@@ -1,0 +1,121 @@
+The xaml pages are to be moved and renamed to axaml.
+
+The Build Action is Avalonia XAML
+
+The regular pages, that are not are to be based on UserControl, using this
+
+
+
+ContentView becomes utilities:ViewBase following this sample
+
+
+Sample is for ConnectPopupView with ConnectPopupViewModel
+
+<utilities:ViewBase x:TypeArguments="connect:ConnectPopupViewModel"
+                    xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                    xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
+                    xmlns:connect="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Connect"
+                    xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                    xmlns:u="https://irihi.tech/ursa"
+                    mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                    x:Class="MissionPlanner.AvaloniaUI.App.Views.Connect.ConnectPopupView"
+                    x:DataType="connect:ConnectPopupViewModel"
+                    >
+
+
+</utilities:ViewBase>
+        
+
+Pages like FlightDataPage (root navigation) changes from 
+
+
+<navigation:ExtendedContentPage x:TypeArguments="flightData:FlightDataViewModel"  
+                            xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                            xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                            xmlns:flightData="clr-namespace:MissionPlanner.App.Views.FlightData"
+                            xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material"
+                            xmlns:tabs="clr-namespace:MissionPlanner.App.Views.FlightData.Tabs"
+                            xmlns:hud="clr-namespace:MissionPlanner.App.Views.FlightData.Hud"
+                            xmlns:navigation="clr-namespace:MissionPlanner.App.Navigation"
+                            xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions"
+                            xmlns:extended="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions"
+                            x:Class="MissionPlanner.App.Views.FlightData.FlightDataPage"
+                            x:DataType="flightData:FlightDataViewModel"
+                        >
+
+</navigation:ExtendedContentPage>
+
+
+and becomes a NavigationPage:
+
+<utilities:NavigationViewBase x:TypeArguments="flightData:FlightDataViewModel" 
+                              xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                              xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
+                              xmlns:flightData="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.FlightData"
+                              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                              x:Class="MissionPlanner.AvaloniaUI.App.Views.FlightData.FlightDataPage">
+    <ContentPage Header="Flight Data">
+
+
+    </ContentPage>
+</utilities:NavigationViewBase>
+
+
+
+
+
+For each axaml file, these changes must be applied:
+
+HorizontalStackLayout becomes StackPanel with attribute Orientation="Horizontal" 
+VerticalStackLayout becomes StackPanel with attribute Orientation="Vertical" 
+
+
+These arguments must be changed
+
+HorizontalOptions="Fill" becomes HorizontalAlignment="Stretch"
+HorizontalOptions="Center" becomes HorizontalAlignment="Center"
+HorizontalOptions="Start" becomes HorizontalAlignment="Left"
+HorizontalOptions="End" becomes HorizontalAlignment="Right"
+
+
+VerticalOptions="Fill" becomes VerticalAlignment="Stretch"
+VerticalOptions="Center" becomes VerticalAlignment="Center"
+VerticalOptions="Start" becomes VerticalAlignment="Top"
+VerticalOptions="End" becomes VerticalAlignment="Bottom"
+
+
+
+
+BackgroundColor becomes Background
+TextColor becomes Foreground
+
+
+In Label and Button controls, the Text attribute must be changed to Content
+
+
+FontAttributes="Bold" becomes FontWeight="Bold"
+
+
+
+<material:SelectField 
+                        ItemsSource="{Binding MapStyles}"
+                        SelectedItem="{Binding SelectedMapStyle}" />
+
+becomes
+
+
+                <ComboBox 
+                          ItemsSource="{Binding MapStyles}"
+                          SelectedItem="{Binding SelectedMapStyle}"
+                          DisplayMemberBinding="{Binding .}"
+                          />
+
+
+
+

@@ -1,9 +1,8 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+﻿using Avalonia.Controls;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.Simulation;
 
+//NavigationViewBase<>
 public partial class SimulationPage : NavigationPage
 {
     public SimulationPage()

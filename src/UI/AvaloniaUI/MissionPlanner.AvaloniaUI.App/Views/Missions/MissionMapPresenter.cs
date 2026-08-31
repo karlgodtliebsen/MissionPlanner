@@ -1,9 +1,13 @@
 ﻿using System.ComponentModel;
 using System.Diagnostics;
-using Avalonia.Controls.Shapes;
 using Mapsui;
 using Mapsui.Extensions;
+using Mapsui.Layers;
+using Mapsui.Nts;
 using Mapsui.Projections;
+using Mapsui.Styles;
+using Mapsui.UI.Avalonia;
+using NetTopologySuite.Geometries;
 using MissionPlanner.AvaloniaUI.App.Maps;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Missions.Models;
@@ -21,17 +25,17 @@ internal sealed class MissionMapPresenter : IDisposable
 {
     private const double WebMercatorInitialResolution = 156543.03392804097;
     private static readonly long pointerUpdateInterval = Stopwatch.Frequency / 30;
-    private readonly MapView mapView;
+    private readonly MapControl mapView;
     private readonly MissionMapViewModel viewModel;
     private readonly IPlannerSettingsService plannerSettings;
     private readonly Mapsui.Map map = new();
     private readonly MapBasemapController basemapController;
     private readonly IMapAttributionCoordinator attributionCoordinator;
     private readonly ITerrainElevationService terrainElevationService;
-    private readonly Pin vehiclePin;
-    private readonly List<Pin> missionPins = [];
-    private Polyline routeLine;
-    private readonly IReadOnlyDictionary<PlanningLayerKind, Polyline> planningLayers;
+    private readonly MemoryLayer vehicleLayer = NewLayer("Vehicle");
+    private readonly MemoryLayer markerLayer = NewLayer("Mission markers");
+    private readonly MemoryLayer routeLayer = NewLayer("Mission route");
+    private readonly IReadOnlyDictionary<PlanningLayerKind, MemoryLayer> planningLayers;
     private long lastPointerUpdate;
     private CancellationTokenSource? pointerElevationCancellation;
     private long pointerGeneration;
@@ -44,7 +48,7 @@ internal sealed class MissionMapPresenter : IDisposable
     /// <summary>
     /// Initializes a presenter for a map view and shared mission editor.
     /// </summary>
-    public MissionMapPresenter(MapView mapView, MissionMapViewModel viewModel, IPlannerSettingsService plannerSettings, IMapSourceResolver sourceResolver,
+    public MissionMapPresenter(MapControl mapView, MissionMapViewModel viewModel, IPlannerSettingsService plannerSettings, IMapSourceResolver sourceResolver,
         IMapsuiBasemapFactory basemapFactory, IMapAttributionCoordinator attributionCoordinator, ITerrainElevationService terrainElevationService)
     {
         this.mapView = mapView;
@@ -53,15 +57,14 @@ internal sealed class MissionMapPresenter : IDisposable
         this.attributionCoordinator = attributionCoordinator;
         this.terrainElevationService = terrainElevationService;
         mapView.Map = map;
-        basemapController = new MapBasemapController(map, sourceResolver, basemapFactory, new MauiMapUiDispatcher(mapView.Dispatcher));
-        vehiclePin = new Pin(mapView) { Label = "Vehicle", Type = PinType.Pin, Position = new Position(viewModel.VehicleLatitude, viewModel.VehicleLongitude) };
-        mapView.Pins.Add(vehiclePin);
-        routeLine = new Polyline { StrokeColor = Colors.OrangeRed, StrokeWidth = 3 };
-        mapView.Drawables.Add(routeLine);
+        basemapController = new MapBasemapController(map, sourceResolver, basemapFactory, new AvaloniaMapUiDispatcher(mapView.Dispatcher));
+        map.Layers.Add(vehicleLayer);
+        map.Layers.Add(routeLayer);
+        map.Layers.Add(markerLayer);
         planningLayers = CreatePlanningLayers();
         foreach (var layer in planningLayers.Values)
         {
-            mapView.Drawables.Add(layer);
+            map.Layers.Add(layer);
         }
     }
 
@@ -122,18 +125,6 @@ internal sealed class MissionMapPresenter : IDisposable
         Deactivate();
         disposed = true;
         pendingNavigation = null;
-        foreach (var pin in missionPins)
-        {
-            mapView.Pins.Remove(pin);
-        }
-        missionPins.Clear();
-        mapView.Pins.Remove(vehiclePin);
-        mapView.Drawables.Remove(routeLine);
-        foreach (var layer in planningLayers.Values)
-        {
-            mapView.Drawables.Remove(layer);
-        }
-
         basemapController.Dispose();
     }
 
@@ -246,7 +237,7 @@ internal sealed class MissionMapPresenter : IDisposable
             }
 
             Debug.WriteLine($"[Terrain] generation={generation} tile={result.TileId ?? "none"} status={result.Status} elevation={result.ElevationMeters?.ToString("F1") ?? "null"}");
-            await new MauiMapUiDispatcher(mapView.Dispatcher).InvokeAsync(
+            await new AvaloniaMapUiDispatcher(mapView.Dispatcher).InvokeAsync(
                 () => viewModel.SetPointerElevation(result), lookupCancellation.Token);
         }
         catch (OperationCanceledException)
@@ -269,11 +260,10 @@ internal sealed class MissionMapPresenter : IDisposable
     {
         if (args.PropertyName is nameof(MissionMapViewModel.VehicleLatitude) or nameof(MissionMapViewModel.VehicleLongitude))
         {
-            var position = new Position(viewModel.VehicleLatitude, viewModel.VehicleLongitude);
-            vehiclePin.Position = position;
+            SetPointFeatures(vehicleLayer, [(viewModel.VehicleLatitude, viewModel.VehicleLongitude, "Vehicle")], Mapsui.Styles.Color.Red);
             if (viewModel.FollowVehicle)
             {
-                CenterOn(position.Latitude, position.Longitude);
+                CenterOn(viewModel.VehicleLatitude, viewModel.VehicleLongitude);
             }
         }
         else if (args.PropertyName == nameof(MissionMapViewModel.SelectedSourceId))
@@ -298,36 +288,12 @@ internal sealed class MissionMapPresenter : IDisposable
 
     private void Render(MissionMapSnapshot snapshot)
     {
-        foreach (var pin in missionPins)
-        {
-            mapView.Pins.Remove(pin);
-        }
-
-        missionPins.Clear();
-        foreach (var marker in snapshot.Markers)
-        {
-            var pin = new Pin(mapView)
-            {
-                Label = marker.Label,
-                Type = PinType.Pin,
-                Color = marker.Kind == MissionMapMarkerKind.Home ? Colors.Green : Colors.DodgerBlue,
-                Scale = 0.7f,
-                Position = new Position(marker.Position.LatitudeDegrees, marker.Position.LongitudeDegrees)
-            };
-            missionPins.Add(pin);
-            mapView.Pins.Add(pin);
-        }
-
-        var replacement = new Polyline { StrokeColor = Colors.OrangeRed, StrokeWidth = 3 };
-        foreach (var position in snapshot.Route)
-        {
-            replacement.Positions.Add(new Position(position.LatitudeDegrees, position.LongitudeDegrees));
-        }
-
-        mapView.Drawables.Remove(routeLine);
-        mapView.Drawables.Add(replacement);
-        routeLine = replacement;
-        mapView.RefreshGraphics();
+        markerLayer.Features = snapshot.Markers.Select(marker => CreatePointFeature(marker.Position, marker.Label,
+            marker.Kind == MissionMapMarkerKind.Home ? Mapsui.Styles.Color.Green : Mapsui.Styles.Color.Blue)).ToArray();
+        markerLayer.DataHasChanged();
+        SetLine(routeLayer, snapshot.Route, Mapsui.Styles.Color.OrangeRed, 3);
+        SetPointFeatures(vehicleLayer, [(viewModel.VehicleLatitude, viewModel.VehicleLongitude, "Vehicle")], Mapsui.Styles.Color.Red);
+        mapView.ForceUpdate();
     }
 
     /// <summary>Applies a session-only viewport rotation in degrees.</summary>
@@ -336,51 +302,69 @@ internal sealed class MissionMapPresenter : IDisposable
         map.Navigator.RotateTo(degrees);
     }
 
-    private IReadOnlyDictionary<PlanningLayerKind, Polyline> CreatePlanningLayers()
+    private IReadOnlyDictionary<PlanningLayerKind, MemoryLayer> CreatePlanningLayers()
     {
-        return new Dictionary<PlanningLayerKind, Polyline>
+        return new Dictionary<PlanningLayerKind, MemoryLayer>
         {
-            [PlanningLayerKind.Polygon] = NewPlanningLine(Colors.DeepSkyBlue, 3),
-            [PlanningLayerKind.Measurement] = NewPlanningLine(Colors.Gold, 2),
-            [PlanningLayerKind.Fence] = NewPlanningLine(Colors.Red, 3),
-            [PlanningLayerKind.Rally] = NewPlanningLine(Colors.Orange, 3),
-            [PlanningLayerKind.Poi] = NewPlanningLine(Colors.MediumPurple, 3),
-            [PlanningLayerKind.Imported] = NewPlanningLine(Colors.Cyan, 2),
-            [PlanningLayerKind.Survey] = NewPlanningLine(Colors.LimeGreen, 2),
-            [PlanningLayerKind.TrackerHome] = NewPlanningLine(Colors.White, 3)
+            [PlanningLayerKind.Polygon] = NewLayer("Planning polygon"),
+            [PlanningLayerKind.Measurement] = NewLayer("Measurement"),
+            [PlanningLayerKind.Fence] = NewLayer("Fence"),
+            [PlanningLayerKind.Rally] = NewLayer("Rally"),
+            [PlanningLayerKind.Poi] = NewLayer("POI"),
+            [PlanningLayerKind.Imported] = NewLayer("Imported"),
+            [PlanningLayerKind.Survey] = NewLayer("Survey"),
+            [PlanningLayerKind.TrackerHome] = NewLayer("Tracker home")
         };
-    }
-
-    private static Polyline NewPlanningLine(Color color, float width)
-    {
-        return new Polyline { StrokeColor = color, StrokeWidth = width };
     }
 
     private void RenderPlanningOverlays(MissionPlanningOverlaySnapshot snapshot)
     {
-        SetPositions(planningLayers[PlanningLayerKind.Polygon], snapshot.DrawnPolygon, snapshot.DrawnPolygon.Count >= 3);
-        SetPositions(planningLayers[PlanningLayerKind.Measurement], snapshot.TemporaryMeasurement);
-        SetPositions(planningLayers[PlanningLayerKind.Fence], snapshot.FencePreview, snapshot.FencePreview.Count >= 3);
-        SetPositions(planningLayers[PlanningLayerKind.Rally], snapshot.RallyPoints);
-        SetPositions(planningLayers[PlanningLayerKind.Poi], snapshot.PoiItems);
-        SetPositions(planningLayers[PlanningLayerKind.Imported], snapshot.ImportedOverlays.SelectMany(x => x.Positions).ToArray());
-        SetPositions(planningLayers[PlanningLayerKind.Survey], snapshot.SurveyPreview);
-        SetPositions(planningLayers[PlanningLayerKind.TrackerHome], snapshot.TrackerHome is { } home ? [home] : []);
-        mapView.RefreshGraphics();
+        SetLine(planningLayers[PlanningLayerKind.Polygon], snapshot.DrawnPolygon, Mapsui.Styles.Color.DeepSkyBlue, 3, snapshot.DrawnPolygon.Count >= 3);
+        SetLine(planningLayers[PlanningLayerKind.Measurement], snapshot.TemporaryMeasurement, Mapsui.Styles.Color.Gold, 2);
+        SetLine(planningLayers[PlanningLayerKind.Fence], snapshot.FencePreview, Mapsui.Styles.Color.Red, 3, snapshot.FencePreview.Count >= 3);
+        SetLine(planningLayers[PlanningLayerKind.Rally], snapshot.RallyPoints, Mapsui.Styles.Color.Orange, 3);
+        SetLine(planningLayers[PlanningLayerKind.Poi], snapshot.PoiItems, Mapsui.Styles.Color.Purple, 3);
+        SetLine(planningLayers[PlanningLayerKind.Imported], snapshot.ImportedOverlays.SelectMany(x => x.Positions).ToArray(), Mapsui.Styles.Color.Cyan, 2);
+        SetLine(planningLayers[PlanningLayerKind.Survey], snapshot.SurveyPreview, Mapsui.Styles.Color.Green, 2);
+        SetLine(planningLayers[PlanningLayerKind.TrackerHome], snapshot.TrackerHome is { } home ? [home] : [], Mapsui.Styles.Color.White, 3);
+        mapView.ForceUpdate();
     }
 
-    private static void SetPositions(Polyline line, IReadOnlyList<GeoPosition> positions, bool close = false)
-    {
-        line.Positions.Clear();
-        foreach (var position in positions)
-        {
-            line.Positions.Add(new Position(position.LatitudeDegrees, position.LongitudeDegrees));
-        }
+    private static MemoryLayer NewLayer(string name) => new() { Name = name, Features = [] };
 
-        if (close && positions.Count > 0)
+    private static PointFeature CreatePointFeature(GeoPosition position, string label, Mapsui.Styles.Color color)
+    {
+        var (x, y) = SphericalMercator.FromLonLat(position.LongitudeDegrees, position.LatitudeDegrees);
+        var feature = new PointFeature(new MPoint(x, y));
+        feature.Styles.Add(new SymbolStyle { Fill = new Brush(color), Outline = new Pen(Mapsui.Styles.Color.White, 1), SymbolScale = 0.7 });
+        feature.Styles.Add(new LabelStyle { Text = label, Offset = new Offset(0, 18) });
+        return feature;
+    }
+
+    private static void SetPointFeatures(MemoryLayer layer, IEnumerable<(double Latitude, double Longitude, string Label)> points,
+        Mapsui.Styles.Color color)
+    {
+        layer.Features = points.Select(x => CreatePointFeature(new GeoPosition(x.Latitude, x.Longitude), x.Label, color)).ToArray();
+        layer.DataHasChanged();
+    }
+
+    private static void SetLine(MemoryLayer layer, IReadOnlyList<GeoPosition> positions, Mapsui.Styles.Color color,
+        float width, bool close = false)
+    {
+        var coordinates = positions.Select(position =>
         {
-            line.Positions.Add(new Position(positions[0].LatitudeDegrees, positions[0].LongitudeDegrees));
+            var (x, y) = SphericalMercator.FromLonLat(position.LongitudeDegrees, position.LatitudeDegrees);
+            return new Coordinate(x, y);
+        }).ToList();
+        if (close && coordinates.Count > 0) coordinates.Add(coordinates[0]);
+        if (coordinates.Count < 2) layer.Features = [];
+        else
+        {
+            var feature = new GeometryFeature(new LineString(coordinates.ToArray()));
+            feature.Styles.Add(new VectorStyle { Line = new Pen(color, width) });
+            layer.Features = [feature];
         }
+        layer.DataHasChanged();
     }
 
     internal enum PlanningLayerKind
@@ -434,9 +418,9 @@ internal sealed class MissionMapPresenter : IDisposable
             return;
         }
 
-        if (mapView.Dispatcher.IsDispatchRequired)
+        if (!mapView.Dispatcher.CheckAccess())
         {
-            mapView.Dispatcher.Dispatch(() => Navigate(navigation));
+            mapView.Dispatcher.Post(() => Navigate(navigation));
             return;
         }
 
@@ -503,7 +487,7 @@ internal sealed class MissionMapPresenter : IDisposable
             if (result.IsSuccess && isActive && !disposed)
             {
                 basemapRefreshPending = true;
-                await new MauiMapUiDispatcher(mapView.Dispatcher).InvokeAsync(
+                await new AvaloniaMapUiDispatcher(mapView.Dispatcher).InvokeAsync(
                     RefreshBasemapForCurrentViewport, cancellationToken);
                 await attributionCoordinator.SetBasemapAsync(basemapController.CurrentResolvedSource, cancellationToken);
             }

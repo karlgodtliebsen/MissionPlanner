@@ -44,7 +44,6 @@ public partial class MissionMapViewModel : ViewModelBase
     private readonly IDomainEventHub domainEventHub;
     private readonly IUiDispatcher dispatcher;
     private readonly IMissionProtocolMapper protocolMapper;
-    private readonly IFileSaver fileSaver;
     private readonly IFileOpenService fileOpenService;
     private readonly IFileSaveService fileSaveService;
     private readonly IUserChoiceService choiceService;
@@ -92,7 +91,6 @@ public partial class MissionMapViewModel : ViewModelBase
         activeVehicle = factory.Create<IActiveVehicleContext>();
         fileCodec = factory.Create<IMissionFileCodec>();
         protocolMapper = factory.Create<IMissionProtocolMapper>();
-        fileSaver = factory.Create<IFileSaver>();
         interactionService = factory.Create<IMissionMapInteractionService>();
         advancedMissionItems = factory.Create<IAdvancedMissionItemService>();
         confirmationService = factory.Create<IUserConfirmationService>();
@@ -1992,8 +1990,8 @@ public partial class MissionMapViewModel : ViewModelBase
 
             var content = fileCodec.Build(Mission, HomePosition, format.Value);
             using var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
-            var result = await fileSaver.SaveAsync($"{Mission.Name}{extension}", stream, cancellationToken);
-            ShowStatus(result.IsSuccessful ? $"Mission saved to {result.FilePath}." : "Save cancelled.");
+            var path = await fileSaveService.SaveAsync($"{Mission.Name}{extension}", stream, cancellationToken);
+            ShowStatus(path is not null ? $"Mission saved to {path}." : "Save cancelled.");
         }
         catch (Exception ex)
         {
@@ -2004,15 +2002,10 @@ public partial class MissionMapViewModel : ViewModelBase
         DirtyMissionItems.Clear();
     }
 
-    private static async Task<(MissionFileFormat? Format, string? Extension)> PickSaveFormatAsync()
+    private async Task<(MissionFileFormat? Format, string? Extension)> PickSaveFormatAsync()
     {
-        var page = Application.Current?.Windows.FirstOrDefault()?.Page;
-        if (page is null)
-        {
-            return (MissionFileFormat.QgcWpl, ".waypoints");
-        }
-
-        var choice = await page.DisplayActionSheetAsync("Save mission as", "Cancel", null, "Waypoints (.waypoints)", "Text (.txt)", "Mission JSON (.mission)");
+        var choice = await choiceService.ChooseAsync("Save mission as",
+            ["Waypoints (.waypoints)", "Text (.txt)", "Mission JSON (.mission)"]);
 
         return choice switch
         {
@@ -2046,14 +2039,15 @@ public partial class MissionMapViewModel : ViewModelBase
     {
         try
         {
-            var file = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Select mission file (.waypoints, .txt, .mission)" });
+            using var file = await fileOpenService.OpenAsync(
+                "Select mission file (.waypoints, .txt, .mission)",
+                ["*.waypoints", "*.txt", "*.mission"]);
             if (file is null)
             {
                 return;
             }
 
-            await using var stream = await file.OpenReadAsync();
-            using var reader = new StreamReader(stream);
+            using var reader = new StreamReader(file.Content, leaveOpen: true);
             var content = await reader.ReadToEndAsync();
             var parsed = fileCodec.Parse(content);
 
@@ -2459,8 +2453,6 @@ public partial class MissionMapViewModel : ViewModelBase
 
     private void ShowStatus(string message)
     {
-        dispatcher.Dispatch(() =>
-            //TODO: updated this to use a proper toast notification system for Avalonia, as the original code was likely using a platform-specific implementation that is not available in Avalonia.
-            throw new NotImplementedException());
+        dispatcher.Dispatch(() => StatusMessage = message);
     }
 }

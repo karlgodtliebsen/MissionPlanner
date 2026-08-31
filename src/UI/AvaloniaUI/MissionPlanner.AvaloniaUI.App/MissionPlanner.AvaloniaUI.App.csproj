@@ -236,26 +236,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <AvaloniaXaml Include="Views\Exit\ExitPage.axaml">
-	    <SubType>Designer</SubType>
-	  </AvaloniaXaml>
-	  <AvaloniaXaml Include="Views\Exit\ExitUserControlView.axaml">
-	    <SubType>Designer</SubType>
-	  </AvaloniaXaml>
-	  <AvaloniaXaml Include="Views\Exit\ExitView.axaml">
-	    <SubType>Designer</SubType>
-	  </AvaloniaXaml>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Compile Include="Views\Exit\ExitApplicationRequested.cs" />
-	  <Compile Include="Views\Exit\ExitPage.axaml.cs" />
-	  <Compile Include="Views\Exit\ExitUserControlView.axaml.cs" />
-	  <Compile Include="Views\Exit\ExitView.axaml.cs" />
-	  <Compile Include="Views\Exit\ExitViewModel.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <Content Include="appsettings.json">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
@@ -339,12 +319,6 @@
 
 	<ItemGroup>
 	  <Folder Include="Views\Setup\" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Reference Include="CommunityToolkit.Maui">
-	    <HintPath>..\..\..\..\..\..\Users\karlgodtliebsen\.nuget\packages\communitytoolkit.maui\15.0.0\lib\net10.0\CommunityToolkit.Maui.dll</HintPath>
-	  </Reference>
 	</ItemGroup>
 
 	<ItemGroup>

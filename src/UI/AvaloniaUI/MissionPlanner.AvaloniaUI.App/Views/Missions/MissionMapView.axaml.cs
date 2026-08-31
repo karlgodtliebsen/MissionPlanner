@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using Mapsui;
-using MissionPlanner.App.Views.Missions;
 using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 
@@ -46,21 +45,19 @@ public partial class MissionMapView : ViewBase, IDisposable
             operationCancellation = new CancellationTokenSource();
             var token = operationCancellation.Token;
             this.viewModel = vModel;
-            MissionMap.MapClicked += OnMapClicked;
+            MissionMap.MapTapped += OnMapTapped;
             MissionMap.MapPointerMoved += OnMapPointerMoved;
             this.viewModel.MapRotationRequested += OnMapRotationRequested;
             this.viewModel.MapCenterRequested += OnMapCenterRequested;
-            BindingContext = this.viewModel;
-            presenter ??= domainFactory.Create<MissionMapPresenter, MapView, MissionMapViewModel>(MissionMap, this.viewModel);
+            DataContext = this.viewModel;
+            presenter ??= domainFactory.Create<MissionMapPresenter, Mapsui.UI.Avalonia.MapControl, MissionMapViewModel>(MissionMap, this.viewModel);
             try
             {
                 await presenter.ActivateAsync(token);
                 token.ThrowIfCancellationRequested();
                 if (this.viewModel is { VehicleLatitude: 0, VehicleLongitude: 0 })
                 {
-                    await CenterOnMyLocationAsync(token);
-                    token.ThrowIfCancellationRequested();
-                    usingCustomPosition = true;
+                    presenter.CenterOn(0, 0, true);
                 }
                 isActive = true;
             }
@@ -104,7 +101,7 @@ public partial class MissionMapView : ViewBase, IDisposable
             return;
         }
         isActive = false;
-        MissionMap.MapClicked -= OnMapClicked;
+        MissionMap.MapTapped -= OnMapTapped;
         MissionMap.MapPointerMoved -= OnMapPointerMoved;
         viewModel?.MapRotationRequested -= OnMapRotationRequested;
         viewModel?.MapCenterRequested -= OnMapCenterRequested;
@@ -126,12 +123,13 @@ public partial class MissionMapView : ViewBase, IDisposable
         presenter?.Dispose();
         presenter = null;
         viewModel = null;
-        BindingContext = null;
+        DataContext = null;
     }
 
-    private void OnMapClicked(object? sender, MapClickedEventArgs args)
+    private void OnMapTapped(object? sender, MapEventArgs args)
     {
-        presenter?.HandleMapClick(args.Point.Latitude, args.Point.Longitude);
+        var (longitude, latitude) = Mapsui.Projections.SphericalMercator.ToLonLat(args.WorldPosition.X, args.WorldPosition.Y);
+        presenter?.HandleMapClick(latitude, longitude);
     }
 
     private void OnMapPointerMoved(object? sender, MapEventArgs args)
@@ -149,61 +147,32 @@ public partial class MissionMapView : ViewBase, IDisposable
         presenter?.CenterOn(position.LatitudeDegrees, position.LongitudeDegrees, false);
     }
 
-    private async Task CenterOnMyLocationAsync(CancellationToken cancellationToken = default)
-    {
-        if (usingCustomPosition)
-        {
-            return;
-        }
-
-        try
-        {
-            var location = await Geolocation.Default.GetLastKnownLocationAsync()
-                           ?? await Geolocation.Default.GetLocationAsync(
-                               new GeolocationRequest(GeolocationAccuracy.Medium, TimeSpan.FromSeconds(10)), cancellationToken);
-            if (location is not null && !disposed)
-            {
-                presenter?.CenterOn(location.Latitude, location.Longitude, true);
-            }
-        }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-            throw;
-        }
-        catch (Exception ex)
-        {
-            // Location permission missing or no provider available; retain the current viewport.
-            Debug.Print(ex.Message);
-            Debug.Print("On Windows: Ensure geolocation service is running");
-        }
-    }
-
-    private void OnZoomInClicked(object? sender, EventArgs args)
+    private void OnZoomInClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs args)
     {
         presenter?.ZoomIn();
     }
 
-    private void OnZoomOutClicked(object? sender, EventArgs args)
+    private void OnZoomOutClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs args)
     {
         presenter?.ZoomOut();
     }
 
-    private void OnZoomToVehicleClicked(object? sender, EventArgs args)
+    private void OnZoomToVehicleClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs args)
     {
         presenter?.ZoomToVehicle();
     }
 
-    private async void OnCenterOnMyLocationClicked(object? sender, EventArgs args)
+    private void OnCenterOnMyLocationClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs args)
     {
-        await CenterOnMyLocationAsync();
+        presenter?.ZoomToVehicle();
     }
 
-    private void OnToggleFollowVehicleClicked(object? sender, EventArgs args)
+    private void OnToggleFollowVehicleClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs args)
     {
         presenter?.ToggleFollowVehicle();
     }
 
-    private void OnAttributionClicked(object? sender, EventArgs args)
+    private void OnAttributionClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs args)
     {
         presenter?.ToggleAttribution();
     }

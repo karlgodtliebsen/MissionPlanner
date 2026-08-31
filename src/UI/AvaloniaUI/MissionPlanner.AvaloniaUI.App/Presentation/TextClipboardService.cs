@@ -1,15 +1,17 @@
-﻿namespace MissionPlanner.AvaloniaUI.App.Presentation;
+using Avalonia.Input.Platform;
+using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
+using MissionPlanner.AvaloniaUI.App.Utilities.Dispatching;
 
-/// <summary>
-/// Copies text through the platform clipboard.
-/// </summary>
-public sealed class TextClipboardService : ITextClipboardService
+namespace MissionPlanner.AvaloniaUI.App.Presentation;
+
+/// <summary>Copies text through Avalonia's platform clipboard.</summary>
+public sealed class TextClipboardService(IUiDispatcher dispatcher, IWindowProvider windowProvider) : ITextClipboardService
 {
     /// <inheritdoc />
-    public Task SetTextAsync(string text)
+    public Task SetTextAsync(string text) => dispatcher.DispatchAsync(async () =>
     {
-        throw new NotImplementedException();
-
-        // return Clipboard.Default.SetTextAsync(text);
-    }
+        var owner = windowProvider.ActiveWindow ?? throw new InvalidOperationException("No active window is available.");
+        var clipboard = owner.Clipboard ?? throw new InvalidOperationException("The platform clipboard is unavailable.");
+        await clipboard.SetTextAsync(text);
+    });
 }

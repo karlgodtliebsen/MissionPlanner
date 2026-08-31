@@ -1,4 +1,5 @@
 ﻿using MissionPlanner.AvaloniaUI.App.Utilities;
+using Avalonia;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.Missions;
 
@@ -10,12 +11,6 @@ namespace MissionPlanner.AvaloniaUI.App.Views.Missions;
 /// </summary>
 public partial class MissionItemListView : ViewBase
 {
-    //[ObservableProperty]
-    //public partial string ShowAllRows
-    //{
-    //    get; set;
-    //}
-
     /// <summary>
     /// Initializes a new instance of the <see cref="MissionItemListView"/> class.
     /// </summary>
@@ -27,8 +22,9 @@ public partial class MissionItemListView : ViewBase
     /// <summary>
     /// 
     /// </summary>
-    public bool ShowAllRows
-    {
-        get;
-    } = true;
+    public bool ShowAllRows { get => GetValue(ShowAllRowsProperty); set => SetValue(ShowAllRowsProperty, value); }
+
+    /// <summary>Controls whether the complete editor columns are displayed.</summary>
+    public static readonly StyledProperty<bool> ShowAllRowsProperty =
+        AvaloniaProperty.Register<MissionItemListView, bool>(nameof(ShowAllRows), true);
 }

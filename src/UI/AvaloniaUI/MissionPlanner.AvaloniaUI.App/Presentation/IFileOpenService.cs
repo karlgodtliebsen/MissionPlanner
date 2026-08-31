@@ -4,5 +4,5 @@
 public interface IFileOpenService
 {
     /// <summary>Opens one file, or returns <see langword="null"/> when cancelled.</summary>
-   // Task<OpenedPlanningFile?> OpenAsync(string title, IReadOnlyDictionary<DevicePlatform, IEnumerable<string>>? fileTypes = null, CancellationToken cancellationToken = default);
+    Task<OpenedPlanningFile?> OpenAsync(string title, IReadOnlyList<string>? patterns = null, CancellationToken cancellationToken = default);
 }

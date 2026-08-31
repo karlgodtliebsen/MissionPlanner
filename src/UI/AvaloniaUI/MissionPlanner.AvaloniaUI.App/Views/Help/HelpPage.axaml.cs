@@ -1,9 +1,8 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+﻿using Avalonia.Controls;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.Help;
 
+//NavigationViewBase<PreferencesViewModel>
 public partial class HelpPage : NavigationPage
 {
     public HelpPage()

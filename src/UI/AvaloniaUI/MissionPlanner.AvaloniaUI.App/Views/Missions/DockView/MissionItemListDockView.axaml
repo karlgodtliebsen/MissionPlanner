@@ -26,9 +26,9 @@
             <Button 
                 Width="25" Height="25"  HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0" 
                 IsVisible="{Binding IsExpanded}"
-                BorderWidth="0"
-                BorderColor="Transparent"
-                BackgroundColor="Transparent"
+                BorderThickness="0"
+                BorderBrush="Transparent"
+                Background="Transparent"
                 
                 Command="{Binding ExpandCommand}"/>
 <!--                ImageSource="{FontImageSource Glyph={x:Static uranium:MaterialSharp.Arrow_circle_right}, FontFamily=MaterialSharp}"
@@ -38,9 +38,9 @@
             <Button
                 Width="25" Height="25"  HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0" 
                 IsVisible="{Binding IsExpanded, Converter={StaticResource InvertedBoolConverter}}"
-                BorderColor="Transparent"
-                BorderWidth="0"
-                BackgroundColor="Transparent"
+                BorderBrush="Transparent"
+                BorderThickness="0"
+                Background="Transparent"
                 
                 Command="{Binding ExpandCommand}"/>
 
