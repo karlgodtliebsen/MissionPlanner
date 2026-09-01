@@ -22,7 +22,6 @@ public partial class PreflightTabViewModel : ViewModelBase
     private readonly IPreflightCommandService commandService;
     private readonly IDomainEventHub eventHub;
     private IDisposable stateSubscription;
-    private CancellationTokenSource lifetime = new();
     private int refreshPending;
 
     /// <summary>Initializes a transient Preflight tab view model.</summary>
@@ -81,7 +80,7 @@ public partial class PreflightTabViewModel : ViewModelBase
             return;
         }
 
-        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, lifetime.Token, activeVehicle.ConnectionCancellationToken);
+        using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, activeVehicle.ConnectionCancellationToken);
         CommandResult = "Running pre-arm checks…";
         try
         {
@@ -104,7 +103,6 @@ public partial class PreflightTabViewModel : ViewModelBase
     /// <inheritdoc />
     public override Task ActivateAsync()
     {
-        lifetime = new();
         activeVehicle.Changed += OnActiveVehicleChanged;
         stateSubscription = eventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnVehicleStateUpdated);
         //  Refresh();
@@ -123,8 +121,6 @@ public partial class PreflightTabViewModel : ViewModelBase
         activeVehicle.Changed -= OnActiveVehicleChanged;
         stateSubscription?.Dispose();
         stateSubscription = null!;
-        lifetime.Cancel();
-        lifetime.Dispose();
     }
 
     private void OnActiveVehicleChanged(EventArgs args)
@@ -136,7 +132,7 @@ public partial class PreflightTabViewModel : ViewModelBase
     {
         if (evt.VehicleId == activeVehicle.VehicleId && Interlocked.Exchange(ref refreshPending, 1) == 0)
         {
-            await PublishLaterAsync(lifetime.Token);
+            await PublishLaterAsync(cancellationToken);
         }
     }
 

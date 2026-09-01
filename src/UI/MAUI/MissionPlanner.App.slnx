@@ -3,4 +3,7 @@
   <Project Path="../UraniumUI/UraniumUI.Material.Extensions.Samples/UraniumUI.Material.Extensions.Samples.csproj" />
   <Project Path="../UraniumUI/UraniumUI.Material.VirtualizedDataGrid/UraniumUI.Material.VirtualizedDataGrid.csproj" />
   <Project Path="MissionPlanner.App/MissionPlanner.App.csproj" />
+  <Project Path="MissionPlanner.WinUI/MissionPlanner.WinUI.csproj">
+    <Platform Project="x64" />
+  </Project>
 </Solution>

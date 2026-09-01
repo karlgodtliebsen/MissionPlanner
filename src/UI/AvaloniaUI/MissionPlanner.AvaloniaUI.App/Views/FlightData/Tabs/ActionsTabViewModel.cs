@@ -1,8 +1,9 @@
-using System.Globalization;
+﻿using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.AvaloniaUI.App.Presentation;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.Core.Commands;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.FlightData.Adjustments;
@@ -15,7 +16,6 @@ using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Core.Vehicles.Models;
 using MissionPlanner.Library.EventHub.Abstractions;
 using MissionPlanner.Shared.Models.Vehicles.Models;
-using MissionPlanner.AvaloniaUI.App.Utilities;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.FlightData.Tabs;
 
@@ -49,7 +49,6 @@ public partial class ActionsTabViewModel : ViewModelBase
     /// <param name="modeCatalog">The firmware-specific mode catalog.</param>
     /// <param name="confirmationService">The hazardous-action confirmation service.</param>
     /// <param name="notificationService">The separate application-notification stream.</param>
-    /// <param name="dispatcher">The UI Dispatcher.</param>
     /// <param name="domainEventHub">The domain event hub used for active-vehicle state updates.</param>
     /// <param name="logger">The logger.</param>
     /// <param name="altitudeReferenceService"></param>

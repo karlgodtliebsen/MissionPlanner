@@ -1,13 +1,13 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.DomainEvents;
 using MissionPlanner.Core.FlightData.Telemetry;
 using MissionPlanner.Core.Vehicles.Abstractions;
 using MissionPlanner.Library.DateTime.Domain;
 using MissionPlanner.Library.EventHub.Abstractions;
-using MissionPlanner.AvaloniaUI.App.Utilities;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.FlightData.Tabs;
 
@@ -19,8 +19,8 @@ public sealed class GaugesTabViewModel : ViewModelBase
     private readonly ITelemetrySnapshotProjector projector;
     private readonly IPlannerSettingsService settings;
     private readonly IDomainEventHub domainEventHub;
-    private IDisposable subscription;
-    private CancellationTokenSource lifetime = new();
+    private IDisposable? subscription;
+    private bool active;
     private int updatePending;
     private readonly IDateTimeProvider dateTimeProvider;
 
@@ -77,12 +77,18 @@ public sealed class GaugesTabViewModel : ViewModelBase
     public override void Dispose()
     {
         Deactivate();
+        base.Dispose();
     }
 
     /// <inheritdoc />
     public override Task ActivateAsync()
     {
-        lifetime = new();
+        if (active)
+        {
+            return Task.CompletedTask;
+        }
+
+        active = true;
         activeVehicle.Changed += OnChanged;
         settings.SettingsChanged += OnSettingsChanged;
         subscription = domainEventHub.SubscribeDomainEventAsync<VehicleStateUpdated>(OnStateUpdated);
@@ -92,11 +98,16 @@ public sealed class GaugesTabViewModel : ViewModelBase
 
     private void Deactivate()
     {
+        if (!active)
+        {
+            return;
+        }
+
+        active = false;
         activeVehicle.Changed -= OnChanged;
         settings.SettingsChanged -= OnSettingsChanged;
-        subscription.Dispose();
-        lifetime.Cancel();
-        lifetime.Dispose();
+        subscription?.Dispose();
+        subscription = null;
     }
 
     /// <inheritdoc />
@@ -120,7 +131,7 @@ public sealed class GaugesTabViewModel : ViewModelBase
     {
         if (evt.VehicleId == activeVehicle.VehicleId && Interlocked.Exchange(ref updatePending, 1) == 0)
         {
-            await PublishAsync(lifetime.Token);
+            await PublishAsync(token);
         }
     }
 
@@ -129,7 +140,13 @@ public sealed class GaugesTabViewModel : ViewModelBase
         try
         {
             await Task.Delay(TimeSpan.FromSeconds(1d / Math.Clamp(settings.Current.Telemetry.DisplayRateHz, 1, 30)), token);
-            Dispatcher.Dispatch(Update);
+            await Dispatcher.DispatchAsync(() =>
+            {
+                if (active)
+                {
+                    Update();
+                }
+            });
         }
         catch (OperationCanceledException)
         {
@@ -154,4 +171,3 @@ public sealed class GaugesTabViewModel : ViewModelBase
         return new(catalog.Fields.Single(field => field.Key == key));
     }
 }
-

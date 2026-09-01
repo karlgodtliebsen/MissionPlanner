@@ -1,16 +1,15 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Text.Json;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
-using MissionPlanner.Core.FlightData.Scripting;
 using MissionPlanner.AvaloniaUI.App.Utilities;
+using MissionPlanner.Core.FlightData.Scripting;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.FlightData.Tabs;
 
 /// <summary>Presents constrained declarative vehicle scripts.</summary>
-public partial class ScriptsTabViewModel(IVehicleScriptParser parser, IVehicleScriptValidator validator,
-    IVehicleScriptExecutor executor, ILogger<ScriptsTabViewModel> logger) : ViewModelBase(logger)
+public partial class ScriptsTabViewModel(IVehicleScriptParser parser, IVehicleScriptValidator validator, IVehicleScriptExecutor executor, ILogger<ScriptsTabViewModel> logger) : ViewModelBase(logger)
 {
     private CancellationTokenSource? execution;
     /// <summary>Gets or sets the versioned JSON source.</summary>

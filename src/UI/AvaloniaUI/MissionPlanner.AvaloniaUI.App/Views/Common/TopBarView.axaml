@@ -32,20 +32,21 @@
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"/>
 
-            <StackPanel Grid.Column="2" IsVisible="{Binding IsConnected}" VerticalAlignment="Center" Spacing="5" Margin="0,0,10,0" Orientation="Horizontal">
-                <Label Content="{Binding Channel}" FontSize="12"  VerticalAlignment="Center"/>
-                <Label Content="•"  FontSize="30" IsVisible="{Binding ShowHost}" VerticalAlignment="Center"/>
-                <Label Content="{Binding Host}" FontSize="12" IsVisible="{Binding ShowHost}" VerticalAlignment="Center"/>
-                <Label Content="•" FontSize="30" IsVisible="{Binding ShowHost}" VerticalAlignment="Center"/>
-                <Label Content="{Binding Port}" FontSize="12" IsVisible="{Binding ShowHost}" VerticalAlignment="Center"/>
-                <Label Content="•" FontSize="30" IsVisible="{Binding ShowCom}" VerticalAlignment="Center"/>
-                <Label Content="{Binding BaudRate}" FontSize="12" IsVisible="{Binding ShowCom}" VerticalAlignment="Center"/>
-                <Label Content="•" FontSize="30" IsVisible="{Binding ShowVehicleName}" VerticalAlignment="Center"/>
-                <Label Content="{Binding VehicleName}" FontSize="12" IsVisible="{Binding ShowVehicleName}" VerticalAlignment="Center"/>
-                <Label Content="•" FontSize="30"  VerticalAlignment="Center"/>
-                <Label Content="{Binding VehicleId}" FontSize="12"  VerticalAlignment="Center"/>
-                <Label Content="•" FontSize="30"  VerticalAlignment="Center"/>
-                <Label Content="{Binding FirmwareIdentity}" FontSize="12" VerticalAlignment="Center"/>
+            <StackPanel Grid.Column="2" IsVisible="{Binding IsConnected}" VerticalAlignment="Center" Spacing="5" Margin="0,0,10,0" 
+                        Orientation="Horizontal">
+                <Label Content="{Binding Channel}" FontSize="12"  VerticalAlignment="Stretch" VerticalContentAlignment="Center"/>
+                <Label Content="•"  FontSize="16" IsVisible="{Binding ShowHost}" VerticalAlignment="Stretch"  VerticalContentAlignment="Center"/>
+                <Label Content="{Binding Host}" FontSize="12" IsVisible="{Binding ShowHost}" VerticalAlignment="Stretch" VerticalContentAlignment="Center"/>
+                <Label Content="•" FontSize="16" IsVisible="{Binding ShowHost}" VerticalAlignment="Stretch" VerticalContentAlignment="Center"/>
+                <Label Content="{Binding Port}" FontSize="12" IsVisible="{Binding ShowHost}" VerticalAlignment="Stretch" VerticalContentAlignment="Center"/>
+                <Label Content="•" FontSize="16" IsVisible="{Binding ShowCom}" VerticalAlignment="Stretch" VerticalContentAlignment="Center"/>
+                <Label Content="{Binding BaudRate}" FontSize="12" IsVisible="{Binding ShowCom}" VerticalAlignment="Stretch" VerticalContentAlignment="Center"/>
+                <Label Content="•" FontSize="16" IsVisible="{Binding ShowVehicleName}" VerticalAlignment="Stretch" VerticalContentAlignment="Center"/>
+                <Label Content="{Binding VehicleName}" FontSize="12" IsVisible="{Binding ShowVehicleName}" VerticalAlignment="Stretch" VerticalContentAlignment="Center"/>
+                <Label Content="•" FontSize="16"  VerticalAlignment="Stretch" VerticalContentAlignment="Center"/>
+                <Label Content="{Binding VehicleId}" FontSize="12"  VerticalAlignment="Stretch" VerticalContentAlignment="Center"/>
+                <Label Content="•" FontSize="16"  VerticalAlignment="Stretch" VerticalContentAlignment="Center"/>
+                <Label Content="{Binding FirmwareIdentity}" FontSize="12" VerticalAlignment="Stretch" VerticalContentAlignment="Center"/>
             </StackPanel>
 
             <Button Grid.Column="3"

@@ -22,7 +22,6 @@ public partial class StatusTabViewModel : ViewModelBase
     private readonly IDomainEventHub events;
     private readonly IDateTimeProvider dateTimeProvider;
     private IDisposable subscription;
-    private readonly CancellationTokenSource lifetime = new();
     private int pending;
 
     /// <summary>Initializes a transient Status tab.</summary>
@@ -94,8 +93,6 @@ public partial class StatusTabViewModel : ViewModelBase
         active.Changed -= OnChanged;
         subscription?.Dispose();
         subscription = null!;
-        lifetime.Cancel();
-        lifetime.Dispose();
     }
 
     private void OnChanged(EventArgs e)
@@ -107,7 +104,7 @@ public partial class StatusTabViewModel : ViewModelBase
     {
         if (e.VehicleId == active.VehicleId && Interlocked.Exchange(ref pending, 1) == 0)
         {
-            await Later(lifetime.Token);
+            await Later(token);
         }
     }
     private System.Threading.Timer? timer;
