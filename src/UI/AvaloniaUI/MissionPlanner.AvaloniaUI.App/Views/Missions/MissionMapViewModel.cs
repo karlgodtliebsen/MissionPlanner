@@ -114,7 +114,7 @@ public partial class MissionMapViewModel : ViewModelBase
     /// <summary>
     /// Activates the Flight Data page and its selected tab.
     /// </summary>
-    public async Task ActivateAsync()
+    public override async Task ActivateAsync()
     {
         if (disposed)
         {
@@ -172,7 +172,14 @@ public partial class MissionMapViewModel : ViewModelBase
     }
 
     /// <inheritdoc />
-    public void Dispose()
+    public override Task DeactivateAsync()
+    {
+        Deactivate();
+        return base.DeactivateAsync();
+    }
+
+    /// <inheritdoc />
+    public override void Dispose()
     {
         if (disposed)
         {
@@ -185,7 +192,7 @@ public partial class MissionMapViewModel : ViewModelBase
         {
             row.Dispose();
         }
-
+        base.Dispose();
     }
 
     /// <summary>

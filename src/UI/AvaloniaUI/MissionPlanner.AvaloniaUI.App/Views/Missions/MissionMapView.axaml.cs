@@ -54,10 +54,21 @@ public partial class MissionMapView : UserControlViewBase, IDisposable
             {
                 await presenter.ActivateAsync(token);
                 token.ThrowIfCancellationRequested();
-                if (this.viewModel is { VehicleLatitude: 0, VehicleLongitude: 0 })
-                {
-                    presenter.CenterOn(0, 0, true);
-                }
+                // Establish an initial resolution regardless of whether telemetry populated the
+                // vehicle position before this view became visible. Previously the default zoom
+                // was applied only for (0, 0), so Flight Data opened at Mapsui's world extent
+                // whenever it already had a valid vehicle position.
+                var latitude = this.viewModel.VehicleLatitude;
+                var longitude = this.viewModel.VehicleLongitude;
+                var hasVehiclePosition = double.IsFinite(latitude)
+                    && double.IsFinite(longitude)
+                    && latitude is >= -90 and <= 90
+                    && longitude is >= -180 and <= 180
+                    && (latitude != 0 || longitude != 0);
+                presenter.CenterOn(
+                    hasVehiclePosition ? latitude : 0,
+                    hasVehiclePosition ? longitude : 0,
+                    true);
                 isActive = true;
             }
             catch
