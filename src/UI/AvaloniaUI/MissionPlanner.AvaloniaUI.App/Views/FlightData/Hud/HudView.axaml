@@ -1,28 +1,10 @@
 <utilities:UserControlViewBase
     x:TypeArguments="hud:HudViewModel"
-    xmlns="https://github.com/avaloniaui" 
+    xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
     xmlns:hud="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.FlightData.Hud"
-    x:Class="MissionPlanner.AvaloniaUI.App.Views.FlightData.Hud.HudView" x:DataType="hud:HudViewModel">
-    <!-- TODO: Restore the Skia attitude/heading renderer after selecting an Avalonia-compatible Skia host. -->
-    <Border Background="#101820" Padding="12">
-        <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="*,*">
-            <TextBlock Grid.ColumnSpan="2" 
-                       Text="{Binding Heading, StringFormat='HDG {0:000}°'}" 
-                       FontSize="20" HorizontalAlignment="Center" />
-            <StackPanel Grid.Row="1" VerticalAlignment="Center">
-                <TextBlock Text="{Binding AirSpeed, StringFormat='ASPD {0:0.0}'}" />
-                <TextBlock Text="{Binding GroundSpeed, StringFormat='GSPD {0:0.0}'}" />
-                <TextBlock Text="{Binding Roll, StringFormat='ROLL {0:0.0}°'}" />
-            </StackPanel>
-            <StackPanel Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center">
-                <TextBlock Text="{Binding Altitude, StringFormat='ALT {0:0.0}'}" />
-                <TextBlock Text="{Binding VerticalSpeed, StringFormat='VSI {0:0.0}'}" />
-                <TextBlock Text="{Binding Pitch, StringFormat='PITCH {0:0.0}°'}" />
-            </StackPanel>
-            <TextBlock Grid.Column="0" Grid.Row="2" Text="{Binding BatteryVoltage, StringFormat='BATT {0:0.0} V'}" />
-            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding GpsSatellites, StringFormat='GPS {0}'}" HorizontalAlignment="Right" />
-        </Grid>
-    </Border>
+    x:Class="MissionPlanner.AvaloniaUI.App.Views.FlightData.Hud.HudView"
+    x:DataType="hud:HudViewModel">
+    <hud:HudCanvas x:Name="Canvas" />
 </utilities:UserControlViewBase>
