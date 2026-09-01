@@ -112,9 +112,37 @@ Replace dispatcher.Dispatch...  with Dispatcher.Dispatch...
 
 
 
+Mapping Overview:
+
+| MAUI                      | Avalonia                                          |
+| ------------------------- | ------------------------------------------------- |
+| `VerticalStackLayout`     | `StackPanel Orientation="Vertical"`               |
+| `HorizontalStackLayout`   | `StackPanel Orientation="Horizontal"`             |
+| `Grid`                    | `Grid`                                            |
+| `ScrollView`              | `ScrollViewer`                                    |
+| `Label`                   | `TextBlock`                                       |
+| `Entry`                   | `TextBox`                                         |
+| `Picker`                  | `ComboBox`                                        |
+| `Switch`                  | `ToggleSwitch`                                    |
+| `CollectionView`          | `ItemsControl`, `ListBox`, or `DataGrid`          |
+| `Border`                  | `Border`                                          |
+| `Frame`                   | `Border`                                          |
+| `BoxView`                 | `Border`/`Rectangle`                              |
+| `ActivityIndicator`       | `ProgressBar IsIndeterminate="True"`              |
+| `IsVisible`               | `IsVisible`                                       |
+| `Command="{Binding ...}"` | usually unchanged                                 |
+| `BindingContext`          | `DataContext`                                     |
+| `DynamicResource`         | `DynamicResource`                                 |
+| MAUI Behaviors/Triggers   | Avalonia styles, selectors, behaviors, converters |
+| `VisualStateManager`      | Avalonia styles/selectors/classes/pseudoclasses   |
 
 
-AXAML Changes:
+When you encounter a VirtualizedDataGrid, just uncomment it for now. 
+Leave a TODO: with some more text,  in the Comments section
+I will dive into it after this first migration
+
+
+Mapping details/Changes to axaml files:
 
 
 For each axaml file, these changes must be applied:
@@ -135,9 +163,6 @@ VerticalOptions="Fill" becomes VerticalAlignment="Stretch"
 VerticalOptions="Center" becomes VerticalAlignment="Center"
 VerticalOptions="Start" becomes VerticalAlignment="Top"
 VerticalOptions="End" becomes VerticalAlignment="Bottom"
-
-
-
 
 BackgroundColor becomes Background
 TextColor becomes Foreground
@@ -198,6 +223,41 @@ becomes:
                    Increment="10" />
 
 
+TabItem  becomes TabControl:
 
-Other Changes:
+TThis stub is present in FlightDataPage, to expand upon (last thing).
+   
+
+        <TabControl Margin="5">
+            <TabItem Header="Quick">
+                <TextBlock Margin="8" Text="Quick content" />
+            </TabItem>
+
+            <TabItem Header="Actions">
+                <TextBlock Margin="8" Text="Actions content" />
+            </TabItem>
+
+            <TabItem Header="Messages">
+                <TextBlock Margin="8" Text="Messages content" />
+            </TabItem>
+        </TabControl>
+
+
+- RightDockPanel -> leave as is
+
+- Extended grid/data controls
+
+For now just uncomment it. Leave a TODO: with some more text,  in the Comments section
+
+
+Fr all things you cannot migrate, 
+
+Leave a TODO: with some more text,  in the Comments section of the Target
+
+Show me a list at then end of the task
+
+
+
+
+
 

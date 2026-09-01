@@ -102,15 +102,14 @@
 
             <Button Grid.Column="5"
                     Classes="Tertiary"
-                    IsEnabled="{Binding CanOpenConnection}"
                     Theme="{DynamicResource BorderlessButton}"
                     RenderTransform="{x:Null}"
-                    ToolTip.Tip="Connect"
+                    ToolTip.Tip="Preferences"
                     FontWeight="Normal"
                     Padding="5"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Center"
-                    Command="{Binding ConnectCommand}"
+                    Command="{Binding OpenPreferencesCommand}"
                     Width="35"
                     Height="35"
             > <materialIcons:MaterialIcon Kind="SettingsApplications" Width="30" Height="30" />

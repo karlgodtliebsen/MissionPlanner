@@ -1,6 +1,7 @@
 ﻿using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using MissionPlanner.AvaloniaUI.App.Views.Exit;
+using MissionPlanner.AvaloniaUI.App.Views.Config;
 using MissionPlanner.AvaloniaUI.App.Views.FlightData;
 using MissionPlanner.AvaloniaUI.App.Views.FlightPlanner;
 using MissionPlanner.AvaloniaUI.App.Views.Help;
@@ -36,6 +37,11 @@ public sealed class NavigationPageFactory : INavigationPageFactory
 
             MissionPlannerRoutes.SetupMandatoryHardware =>
                   services.GetRequiredService<MandatoryHardwarePage>(),
+
+            // These route identities are retained for the future Config tab views.
+            // Until those AXAML views are migrated, both open the existing Config shell.
+            MissionPlannerRoutes.ConfigOnboardOSD or MissionPlannerRoutes.ConfigFullParameters =>
+                services.GetRequiredService<ConfigPage>(),
 
             //MissionPlannerRoutes.SetupInstallFirmware =>
             //    CreateViewPage<InstallFirmwarePage>("Install Firmware"),

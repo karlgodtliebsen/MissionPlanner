@@ -40,7 +40,7 @@ public partial class TopBarViewModel : ViewModelBase
     private const string DisConnectImage = "avares://MissionPlanner.AvaloniaUI.App/Resources/Images/light_connect_icon.png";
     private readonly IList<IDisposable> disposables = [];
     private readonly IReplaySessionManager replaySessionManager;
-    //private readonly INavigationService navigationService;
+    private readonly INavigationService navigationService;
     private bool disposed;
 
 
@@ -157,19 +157,20 @@ public partial class TopBarViewModel : ViewModelBase
     /// <param name="serviceFactory">The service factory.</param>
     /// <param name="domainEventHub">The domain event hub.</param>
     /// <param name="replaySessionManager">Application-wide replay safety state.</param>
+    /// <param name="navigationService">Application route navigation.</param>
     /// <param name="logger">The logger instance.</param>
     public TopBarViewModel(
         ApplicationStateService stateService,
         IServiceFactory serviceFactory,
         IDomainEventHub domainEventHub,
         IReplaySessionManager replaySessionManager,
-           ILogger<TopBarViewModel> logger
-        //  INavigationService navigationService
-        ) : base(logger)
+        INavigationService navigationService,
+        ILogger<TopBarViewModel> logger) : base(logger)
     {
         this.stateService = stateService;
         this.serviceFactory = serviceFactory;
         this.replaySessionManager = replaySessionManager;
+        this.navigationService = navigationService;
         // Subscribe to connection events
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleConnected>(OnVehicleConnected));
         disposables.Add(domainEventHub.SubscribeDomainEventAsync<VehicleDisconnected>(OnVehicleDisconnected));
@@ -283,8 +284,7 @@ public partial class TopBarViewModel : ViewModelBase
     [RelayCommand]
     private Task OpenPreferencesAsync()
     {
-        //TODO:  return navigationService.OpenPageAsync("Preferences");
-        throw new NotImplementedException();
+        return navigationService.NavigateAsync(MissionPlannerRoutes.Preferences);
     }
 
     /// <inheritdoc />

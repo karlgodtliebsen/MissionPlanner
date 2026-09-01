@@ -8,8 +8,22 @@
                               mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
                               x:Class="MissionPlanner.AvaloniaUI.App.Views.FlightData.FlightDataPage">
     <ContentPage Header="Flight Data">
-        <TextBlock Text="Welcome to Avalonia!"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center" />
+
+        <TabControl Margin="5">
+            <TabItem Header="Quick">
+                <TextBlock Margin="8" Text="Quick content" />
+            </TabItem>
+
+            <TabItem Header="Actions">
+                <TextBlock Margin="8" Text="Actions content" />
+            </TabItem>
+
+            <TabItem Header="Messages">
+                <TextBlock Margin="8" Text="Messages content" />
+            </TabItem>
+        </TabControl>
+
+
+
     </ContentPage>
 </utilities:NavigationViewBase>

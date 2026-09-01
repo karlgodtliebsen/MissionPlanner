@@ -11,19 +11,15 @@ namespace MissionPlanner.AvaloniaUI.App.Views.Landing;
 public partial class LandingPageViewModel(INavigationService navigation, ILogger<LandingPageViewModel> logger) : ViewModelBase(logger)
 {
     [RelayCommand]
-    private async Task OpenFlightDataAsync()
+    private Task OpenFlightDataAsync()
     {
-        //TODO:  await navigation.OpenPageAsync("Flight Data");
-        throw new NotImplementedException();
-
+        return navigation.NavigateAsync(MissionPlannerRoutes.FlightData);
     }
 
     [RelayCommand]
-    private async Task OpenTutorialAsync()
+    private Task OpenTutorialAsync()
     {
-        //TODO: await navigation.OpenPageAsync("Tutorial");
-        throw new NotImplementedException();
-
+        return navigation.NavigateAsync(MissionPlannerRoutes.Introduction);
     }
 
 
@@ -44,4 +40,3 @@ public partial class LandingPageViewModel(INavigationService navigation, ILogger
         return Task.CompletedTask;
     }
 }
-

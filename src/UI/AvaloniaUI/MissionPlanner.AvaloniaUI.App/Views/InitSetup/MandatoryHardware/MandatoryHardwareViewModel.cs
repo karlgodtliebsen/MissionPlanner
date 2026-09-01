@@ -128,10 +128,18 @@ public partial class MandatoryHardwareViewModel : ViewModelBase
         try
         {
             var parts = destination.Split('|');
-            var root = parts[0];
-            var config = parts[1];
-            //TODO: await navigation.OpenSubViewAsync(root, config);
-            throw new NotImplementedException();
+            if (parts.Length != 2 || !parts[0].Equals("Config", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException($"Unsupported Config destination '{destination}'.");
+            }
+
+            var route = parts[1] switch
+            {
+                "Full Parameters List" => MissionPlannerRoutes.ConfigFullParameters,
+                "Onboard OSD" => MissionPlannerRoutes.ConfigOnboardOSD,
+                _ => throw new InvalidOperationException($"Unknown Config destination '{parts[1]}'.")
+            };
+            await navigation.NavigateAsync(route);
             SetMessages(null, null);
         }
         catch (Exception exception)
@@ -238,4 +246,3 @@ public partial class MandatoryHardwareViewModel : ViewModelBase
         Debug.Print("MandatoryHardwareViewModel CancelParameterRefresh Exit");
     }
 }
-

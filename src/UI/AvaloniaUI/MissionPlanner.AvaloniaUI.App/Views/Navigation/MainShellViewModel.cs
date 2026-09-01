@@ -44,6 +44,8 @@ public partial class MainShellViewModel : ObservableObject
         MissionPlannerRoutes.Preferences or
         MissionPlannerRoutes.SetupInstallFirmware or
         MissionPlannerRoutes.SetupMandatoryHardware or
+        MissionPlannerRoutes.ConfigOnboardOSD or
+        MissionPlannerRoutes.ConfigFullParameters or
         MissionPlannerRoutes.Simulation or
         MissionPlannerRoutes.Introduction or
         MissionPlannerRoutes.Help or

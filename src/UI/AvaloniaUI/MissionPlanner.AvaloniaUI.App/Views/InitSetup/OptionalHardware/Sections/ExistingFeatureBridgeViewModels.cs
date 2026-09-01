@@ -14,8 +14,6 @@ public sealed partial class CameraGimbalViewModel(IActiveVehicleContext activeVe
     [RelayCommand]
     private Task OpenPayloadControlAsync()
     {
-        //TODO: return navigation.OpenPageAsync("Flight Data");
-        throw new NotImplementedException();
+        return navigation.NavigateAsync(MissionPlannerRoutes.FlightData);
     }
 }
-

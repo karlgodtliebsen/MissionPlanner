@@ -10,6 +10,7 @@ using MissionPlanner.AvaloniaUI.App.Services;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dispatching;
 using MissionPlanner.AvaloniaUI.App.Views.Common;
+using MissionPlanner.AvaloniaUI.App.Views.Config;
 using MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.AvaloniaUI.App.Views.Connect;
 using MissionPlanner.AvaloniaUI.App.Views.Exit;
@@ -200,6 +201,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<FlightPlannerMissionMapViewModel>();
         services.TryAddTransient<FlightPlannerViewModel>();
         services.TryAddTransient<FlightPlannerPage>();
+        services.TryAddTransient<ConfigPage>();
         services.TryAddTransient<PreferencesViewModel>();
         services.TryAddTransient<PreferencesPage>();
         services.TryAddTransient<SimulationPage>();

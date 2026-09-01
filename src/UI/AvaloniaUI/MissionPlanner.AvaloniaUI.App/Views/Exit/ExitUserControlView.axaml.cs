@@ -10,6 +10,6 @@ public partial class ExitUserControlView : UserControlViewBase<ExitViewModel>
     /// </summary>
     public ExitUserControlView()
     {
-        //InitializeComponent();
+        InitializeComponent();
     }
 }

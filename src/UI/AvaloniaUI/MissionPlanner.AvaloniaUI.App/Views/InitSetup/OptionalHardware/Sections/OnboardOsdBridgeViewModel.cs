@@ -12,8 +12,6 @@ public sealed partial class OnboardOsdBridgeViewModel(INavigationService navigat
     [RelayCommand]
     private Task OpenOnboardOsdAsync()
     {
-        //TODO: return navigation.OpenSubViewAsync("Config", "Onboard OSD");
-        throw new NotImplementedException();
+        return navigation.NavigateAsync(MissionPlannerRoutes.ConfigOnboardOSD);
     }
 }
-
