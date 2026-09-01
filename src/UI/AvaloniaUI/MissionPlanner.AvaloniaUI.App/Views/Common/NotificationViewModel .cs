@@ -1,6 +1,7 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dispatching;
 using MissionPlanner.Core.Notifications;
 
@@ -9,7 +10,7 @@ namespace MissionPlanner.AvaloniaUI.App.Views.Common;
 /// <summary>
 /// ViewModel for the global status bar
 /// </summary>
-public partial class NotificationViewModel : ObservableObject, IDisposable
+public partial class NotificationViewModel : ViewModelBase
 {
     private readonly IUiDispatcher dispatcher;
     private readonly IApplicationNotificationStore notificationStore;

@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using AsyncAwaitBestPractices;
+using Avalonia.Interactivity;
+using Microsoft.Extensions.Logging;
 using Ursa.Controls;
 
 namespace MissionPlanner.AvaloniaUI.App.Utilities;
@@ -7,7 +9,7 @@ namespace MissionPlanner.AvaloniaUI.App.Utilities;
 /// A base class for views that are associated with a specific view model.
 /// </summary>
 /// <typeparam name="TViewModel">The type of the view model.</typeparam>
-public partial class WindowBase<TViewModel> : UrsaWindow where TViewModel : class
+public partial class WindowBase<TViewModel> : UrsaWindow where TViewModel : ViewModelBase
 {
     /// <summary>
     /// The logger instance used for logging within the TabViewLifecycleContent class. 
@@ -28,8 +30,23 @@ public partial class WindowBase<TViewModel> : UrsaWindow where TViewModel : clas
         Logger = ServiceHelper.GetRequiredService<ILogger<TViewModel>>();
         DataContext = ViewModel;
     }
+    /// <inheritdoc/>
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        ViewModel?.ActivateAsync().SafeFireAndForget();
+    }
+
+
+    /// <inheritdoc />
+    protected override void OnUnloaded(RoutedEventArgs e)
+    {
+        ViewModel?.DeactivateAsync().SafeFireAndForget();
+        base.OnUnloaded(e);
+    }
 }
 
+/// <inheritdoc/>
 public partial class WindowBase : UrsaWindow
 {
     /// <summary>

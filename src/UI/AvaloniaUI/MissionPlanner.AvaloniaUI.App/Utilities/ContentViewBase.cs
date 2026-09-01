@@ -1,9 +1,11 @@
-﻿using Avalonia.Controls;
+﻿using AsyncAwaitBestPractices;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
 using Microsoft.Extensions.Logging;
 
 namespace MissionPlanner.AvaloniaUI.App.Utilities;
 
-public partial class ContentViewBase<TViewModel> : ContentPage where TViewModel : class
+public partial class ContentViewBase<TViewModel> : ContentPage where TViewModel : ViewModelBase
 {
     protected ILogger Logger;
 
@@ -21,6 +23,21 @@ public partial class ContentViewBase<TViewModel> : ContentPage where TViewModel 
         Logger = ServiceHelper.GetRequiredService<ILogger<TViewModel>>();
         DataContext = ViewModel;
     }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        ViewModel?.ActivateAsync().SafeFireAndForget();
+    }
+
+
+    /// <inheritdoc />
+    protected override void OnUnloaded(RoutedEventArgs e)
+    {
+        ViewModel?.DeactivateAsync().SafeFireAndForget();
+        base.OnUnloaded(e);
+    }
+
 }
 
 

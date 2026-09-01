@@ -1,0 +1,17 @@
+<tabs:TabItemViewBase x:TypeArguments="tabs:QuickTabViewModel" xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:tabs="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.FlightData.Tabs" x:Class="MissionPlanner.AvaloniaUI.App.Views.FlightData.Tabs.QuickTabItemView" x:DataType="tabs:QuickTabViewModel">
+    <ScrollViewer>
+        <Grid Margin="12" ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="8">
+            <TextBlock Grid.ColumnSpan="2" Text="Quick telemetry" FontSize="18" FontWeight="Bold" />
+            <TextBlock Grid.Row="1" Text="{Binding FlightMode, StringFormat='Mode: {0}'}" />
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding IsArmed, StringFormat='Armed: {0}'}" />
+            <TextBlock Grid.Row="2" Text="{Binding GroundSpeed, StringFormat='Ground speed: {0:0.0} m/s'}" />
+            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding AirSpeed, StringFormat='Air speed: {0:0.0} m/s'}" />
+            <TextBlock Grid.Row="3" Text="{Binding Altitude, StringFormat='Altitude: {0:0.0} m'}" />
+            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding VerticalSpeed, StringFormat='Vertical: {0:0.0} m/s'}" />
+            <TextBlock Grid.Row="4" Text="{Binding DistanceToMav, StringFormat='Distance MAV: {0:0} m'}" />
+            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding DistanceToWp, StringFormat='Distance WP: {0:0} m'}" />
+            <TextBlock Grid.Row="5" Text="{Binding BatteryRemaining, StringFormat='Battery: {0:0}%'}" />
+            <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding GpsSatellites, StringFormat='Satellites: {0}'}" />
+        </Grid>
+    </ScrollViewer>
+</tabs:TabItemViewBase>

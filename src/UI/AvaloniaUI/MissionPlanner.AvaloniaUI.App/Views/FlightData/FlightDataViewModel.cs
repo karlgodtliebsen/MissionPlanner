@@ -16,6 +16,18 @@ public partial class FlightDataViewModel : ViewModelBase
         get; private set;
     }
 
+    /// <inheritdoc />
+    public override async Task ActivateAsync()
+    {
+        await Map.ActivateAsync();
+    }
+
+    /// <inheritdoc />
+    public override async Task DeactivateAsync()
+    {
+        await Map.DeactivateAsync();
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="FlightDataViewModel"/> class.
     /// </summary>

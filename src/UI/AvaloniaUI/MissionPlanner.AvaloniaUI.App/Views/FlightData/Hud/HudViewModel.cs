@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dispatching;
 using MissionPlanner.Core.Vehicles.Abstractions;
 
@@ -7,7 +8,7 @@ namespace MissionPlanner.AvaloniaUI.App.Views.FlightData.Hud;
 /// <summary>
 /// View model for the HUD (Heads-Up Display) showing real-time vehicle telemetry.
 /// </summary>
-public partial class HudViewModel : ObservableObject, IDisposable
+public partial class HudViewModel : ViewModelBase
 {
     private readonly IVehicleHudDataService hudDataService;
     private IDisposable? hudDataSubscription;
