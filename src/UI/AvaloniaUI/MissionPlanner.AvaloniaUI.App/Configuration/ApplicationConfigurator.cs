@@ -90,9 +90,10 @@ public static class ApplicationConfigurator
 
         services.TryAddSingleton<Dispatcher>(sp => Dispatcher.UIThread);
         services.TryAddSingleton<IUiDispatcher, AvaloniaUiDispatcher>();
+        services.TryAddSingleton<IPlatformLocationService, WindowsPlatformLocationService>();
 
         services.TryAddSingleton<IPlannerSettingsService, PlannerSettingsService>();
-        services.TryAddSingleton<IPlannerSettingsStore, PreferencesPlannerSettingsStore>();
+        services.TryAddSingleton<IPlannerSettingsStore, JsonPlannerSettingsStore>();
         services.TryAddSingleton<IPlannerSecretStore, SecurePlannerSecretStore>();
         services.TryAddTransient<IMapSecretStore, PlannerMapSecretStoreAdapter>();
 
@@ -351,12 +352,14 @@ public static class ApplicationConfigurator
             .UseDomainServices()
             .UseSimulationServices();
 
-        //TODO: create a replacement for MAUI PlannerSettingsService to load settings from config file or other source
-        //var plannerSettingsService = serviceProvider.GetRequiredService<IPlannerSettingsService>();
+        var plannerSettingsService = serviceProvider.GetRequiredService<IPlannerSettingsService>();
+        var loadResult = plannerSettingsService.InitializeAsync().AsTask().GetAwaiter().GetResult();
+        if (!string.IsNullOrWhiteSpace(loadResult.Message))
+        {
+            logger.LogInformation("Planner settings initialization: {Message}", loadResult.Message);
+        }
 
-        //var loadResult = plannerSettingsService.InitializeAsync().AsTask().GetAwaiter().GetResult();
-        //var connection = loadResult.Settings.Connection;
-        var connection = serviceProvider.GetRequiredService<IOptions<ApplicationOptions>>().Value;
+        var connection = loadResult.Settings.Connection;
         ApplicationState state = new()
         {
             SelectedChannel = connection.Channel,

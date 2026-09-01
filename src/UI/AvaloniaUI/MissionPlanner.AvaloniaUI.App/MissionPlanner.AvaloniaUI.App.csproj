@@ -2,7 +2,7 @@
 	<PropertyGroup>
 		<RootNamespace>MissionPlanner.AvaloniaUI.App</RootNamespace>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net10.0</TargetFramework>
+		<TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<LangVersion>latest</LangVersion>
 		<ApplicationManifest>app.manifest</ApplicationManifest>

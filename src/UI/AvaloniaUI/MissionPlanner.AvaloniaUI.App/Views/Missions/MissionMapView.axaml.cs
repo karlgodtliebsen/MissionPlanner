@@ -1,4 +1,5 @@
 ﻿using Mapsui;
+using MissionPlanner.AvaloniaUI.App.Services;
 using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 
@@ -12,18 +13,19 @@ public partial class MissionMapView : UserControlViewBase, IDisposable
 {
     private MissionMapViewModel? viewModel;
     private readonly IDomainFactory domainFactory;
+    private readonly IPlatformLocationService locationService;
     private MissionMapPresenter? presenter;
     private readonly SemaphoreSlim lifecycleGate = new(1, 1);
     private CancellationTokenSource? operationCancellation;
     private bool disposed;
     private bool isActive;
-    private readonly bool usingCustomPosition;
 
     /// <summary>Initializes a new instance of the <see cref="MissionMapView"/> class.</summary>
-    public MissionMapView(IDomainFactory domainFactory)
+    public MissionMapView(IDomainFactory domainFactory, IPlatformLocationService locationService)
     {
         InitializeComponent();
         this.domainFactory = domainFactory;
+        this.locationService = locationService;
     }
 
     /// <summary>
@@ -54,10 +56,6 @@ public partial class MissionMapView : UserControlViewBase, IDisposable
             {
                 await presenter.ActivateAsync(token);
                 token.ThrowIfCancellationRequested();
-                // Establish an initial resolution regardless of whether telemetry populated the
-                // vehicle position before this view became visible. Previously the default zoom
-                // was applied only for (0, 0), so Flight Data opened at Mapsui's world extent
-                // whenever it already had a valid vehicle position.
                 var latitude = this.viewModel.VehicleLatitude;
                 var longitude = this.viewModel.VehicleLongitude;
                 var hasVehiclePosition = double.IsFinite(latitude)
@@ -65,10 +63,14 @@ public partial class MissionMapView : UserControlViewBase, IDisposable
                     && latitude is >= -90 and <= 90
                     && longitude is >= -180 and <= 180
                     && (latitude != 0 || longitude != 0);
-                presenter.CenterOn(
-                    hasVehiclePosition ? latitude : 0,
-                    hasVehiclePosition ? longitude : 0,
-                    true);
+                if (hasVehiclePosition)
+                {
+                    presenter.CenterOn(latitude, longitude, true);
+                }
+                else
+                {
+                    await CenterOnMyLocationAsync(token);
+                }
                 isActive = true;
             }
             catch
@@ -157,6 +159,15 @@ public partial class MissionMapView : UserControlViewBase, IDisposable
         presenter?.CenterOn(position.LatitudeDegrees, position.LongitudeDegrees, false);
     }
 
+    private async Task CenterOnMyLocationAsync(CancellationToken cancellationToken = default)
+    {
+        var location = await locationService.GetLocationAsync(cancellationToken);
+        if (location is { } position && !disposed)
+        {
+            presenter?.CenterOn(position.LatitudeDegrees, position.LongitudeDegrees, true);
+        }
+    }
+
     private void OnZoomInClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs args)
     {
         presenter?.ZoomIn();
@@ -172,9 +183,9 @@ public partial class MissionMapView : UserControlViewBase, IDisposable
         presenter?.ZoomToVehicle();
     }
 
-    private void OnCenterOnMyLocationClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs args)
+    private async void OnCenterOnMyLocationClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs args)
     {
-        presenter?.ZoomToVehicle();
+        await CenterOnMyLocationAsync(operationCancellation?.Token ?? CancellationToken.None);
     }
 
     private void OnToggleFollowVehicleClicked(object? sender, Avalonia.Interactivity.RoutedEventArgs args)

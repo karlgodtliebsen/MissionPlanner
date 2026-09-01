@@ -84,6 +84,7 @@ internal sealed class MissionMapPresenter : IDisposable
 
         attributionCoordinator.Changed += OnAttributionChanged;
         mapView.SizeChanged += OnMapViewSizeChanged;
+        mapView.LayoutUpdated += OnMapViewLayoutUpdated;
         viewModel.PropertyChanged += OnViewModelPropertyChanged;
         viewModel.FitToMissionRequested += OnFitToMissionRequested;
         Render(viewModel.MapSnapshot);
@@ -110,6 +111,7 @@ internal sealed class MissionMapPresenter : IDisposable
         elevationCancellation?.Cancel();
         attributionCoordinator.Changed -= OnAttributionChanged;
         mapView.SizeChanged -= OnMapViewSizeChanged;
+        mapView.LayoutUpdated -= OnMapViewLayoutUpdated;
         viewModel.PropertyChanged -= OnViewModelPropertyChanged;
         viewModel.FitToMissionRequested -= OnFitToMissionRequested;
     }
@@ -441,6 +443,19 @@ internal sealed class MissionMapPresenter : IDisposable
     private void OnMapViewSizeChanged(object? sender, EventArgs args)
     {
         RefreshBasemapForCurrentViewport();
+
+        ApplyPendingNavigation();
+    }
+
+    private void OnMapViewLayoutUpdated(object? sender, EventArgs args)
+    {
+        RefreshBasemapForCurrentViewport();
+
+        ApplyPendingNavigation();
+    }
+
+    private void ApplyPendingNavigation()
+    {
 
         if (pendingNavigation is not { } navigation || disposed)
         {

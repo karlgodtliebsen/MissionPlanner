@@ -4,14 +4,18 @@ using MissionPlanner.AvaloniaUI.App.Utilities;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.FlightData;
 
+/// <summary>
+/// Interaction logic for FlightDataPage.xaml
+/// </summary>
 public partial class FlightDataPage : NavigationViewBase<FlightDataViewModel>
 {
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="FlightDataPage"/> class.
+    /// </summary>
     public FlightDataPage()
     {
         InitializeComponent();
-        //Loaded += OnLoaded;
-        //Unloaded += OnUnloaded;
     }
 
     /// <inheritdoc />
@@ -32,18 +36,4 @@ public partial class FlightDataPage : NavigationViewBase<FlightDataViewModel>
         ViewModel.Map.Deactivate();
         base.OnUnloaded(e);
     }
-
-    //private async void OnLoaded(object? sender, Avalonia.Interactivity.RoutedEventArgs args)
-    //{
-    //    MapLoadingIndicator.IsVisible = true;
-    //    await ViewModel.Map.ActivateAsync();
-    //    await MapView.ActivateAsync(ViewModel.Map);
-    //    MapLoadingIndicator.IsVisible = false;
-    //}
-
-    //private async void OnUnloaded(object? sender, Avalonia.Interactivity.RoutedEventArgs args)
-    //{
-    //    await MapView.DeactivateAsync();
-    //    ViewModel.Map.Deactivate();
-    //}
 }
