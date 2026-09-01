@@ -73,38 +73,34 @@
         <!-- Application chrome colors come from semantic DynamicResource values. -->
 
         <!-- Bottom status bar (mirrors Controls.Status) -->
-        <Border Grid.Row="1" BorderThickness="1" VerticalAlignment="Stretch" Height="30" >
-
-            <StackPanel Orientation="Vertical" VerticalAlignment="Center" HorizontalAlignment="Left" Spacing="10">
-
-
+        <Border Grid.Row="1" BorderThickness="1" MinHeight="34" Padding="6,2">
+            <StackPanel Orientation="Horizontal"
+                        VerticalAlignment="Center"
+                        HorizontalAlignment="Stretch"
+                        Spacing="8">
                 <ComboBox
+                    MinWidth="72"
                     ItemsSource="{Binding MapStyles}"
                     SelectedItem="{Binding SelectedMapStyle}"
                     DisplayMemberBinding="{Binding .}"
                     />
 
-                <Label Content="•" FontSize="16"  VerticalAlignment="Center"/>
-                <Label
-                    Content="{Binding MapFreshness}"
-                    VerticalAlignment="Center" />
-                <Label Content="•" FontSize="16"  VerticalAlignment="Center"/>
-
-                <Label
-                    Content="{Binding PointerCoordinateText}"
-                    VerticalAlignment="Center" />
-                <Label
+                <TextBlock Text="•" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding MapFreshness}" VerticalAlignment="Center" />
+                <TextBlock Text="•" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding PointerCoordinateText}" VerticalAlignment="Center" />
+                <TextBlock
                     IsVisible="{Binding HasAltitudeMessage}"
-                    Content="{Binding PointerAltitude, StringFormat='Alt: {0:F1} m'}"
+                    Text="{Binding PointerAltitude, StringFormat='Alt: {0:F1} m'}"
                     VerticalAlignment="Center" />
-                <Label
+                <TextBlock
                     IsVisible="{Binding HasPointerAltitudeStatus}"
-                    Content="{Binding PointerAltitudeStatusText}"
+                    Text="{Binding PointerAltitudeStatusText}"
                     VerticalAlignment="Center" />
-                <Label Content="•" FontSize="16"  VerticalAlignment="Center" IsVisible="{Binding HasStatusMessage}"/>
-                <Label
+                <TextBlock Text="•" VerticalAlignment="Center" IsVisible="{Binding HasStatusMessage}"/>
+                <TextBlock
                     IsVisible="{Binding HasStatusMessage}"
-                    Content="{Binding StatusMessage}"
+                    Text="{Binding StatusMessage}"
                     VerticalAlignment="Center" />
             </StackPanel>
         </Border>
