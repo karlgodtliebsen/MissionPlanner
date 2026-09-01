@@ -3,7 +3,7 @@
 namespace MissionPlanner.AvaloniaUI.App.Views.Exit;
 
 /// <inheritdoc />
-public partial class ExitUserControlView : ViewBase<ExitViewModel>
+public partial class ExitUserControlView : UserControlViewBase<ExitViewModel>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ExitUserControlView"/> class.

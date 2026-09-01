@@ -1,4 +1,4 @@
-<utilities:ViewBase x:TypeArguments="connect:ConnectPopupViewModel"
+<utilities:UserControlViewBase x:TypeArguments="connect:ConnectPopupViewModel"
                     xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -106,5 +106,5 @@
         </StackPanel>
     </Grid>
 
-</utilities:ViewBase>
+</utilities:UserControlViewBase>
         

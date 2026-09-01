@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.AvaloniaUI.App.Utilities;
@@ -28,7 +28,6 @@ public partial class FlightPlannerViewModel : ViewModelBase
     private readonly IMissionProtocolMapper protocolMapper;
     private readonly IMissionValidator validator;
     private readonly IVehicleRegistry vehicleRegistry;
-    private readonly ILogger<FlightPlannerViewModel> logger;
 
     private readonly IList<IDisposable> disposables = [];
 
@@ -54,7 +53,6 @@ public partial class FlightPlannerViewModel : ViewModelBase
         this.protocolMapper = protocolMapper;
         this.validator = validator;
         this.vehicleRegistry = vehicleRegistry;
-        this.logger = logger;
     }
 
     /// <summary>The shared mission map editor (same instance as the FlightData map).</summary>
@@ -125,7 +123,7 @@ public partial class FlightPlannerViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Mission read failed");
+            Logger.LogError(ex, "Mission read failed");
             TransferStatus = $"Read failed: {ex.Message}";
         }
         finally
@@ -232,7 +230,7 @@ public partial class FlightPlannerViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Mission write failed");
+            Logger.LogError(ex, "Mission write failed");
             TransferStatus = $"Write failed: {ex.Message}";
         }
         finally

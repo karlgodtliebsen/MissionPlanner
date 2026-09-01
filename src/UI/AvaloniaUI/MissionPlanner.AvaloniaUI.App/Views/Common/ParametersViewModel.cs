@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using AsyncAwaitBestPractices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -29,7 +30,6 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
     private readonly IParameterEditSessionFactory editSessionFactory;
     private readonly IDialogService dialogService;
     private readonly IDomainFactory domainFactory;
-    private readonly ILogger logger;
 
     private bool disposed;
     private bool activated;
@@ -81,7 +81,6 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
         this.domainFactory = domainFactory;
         this.parameterLoadStatus = parameterLoadStatus;
         this.domainEventHub = domainEventHub;
-        this.logger = logger;
     }
 
     /// <summary>
@@ -295,7 +294,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
                 {
                     Interlocked.Exchange(ref sessionRefreshScheduled, 0);
                 }
-                logger.LogWarning("Could not dispatch the parameter-grid synchronization to the UI thread.");
+                Logger.LogWarning("Could not dispatch the parameter-grid synchronization to the UI thread.");
             }
         }
         catch (Exception exception)
@@ -304,7 +303,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
             {
                 Interlocked.Exchange(ref sessionRefreshScheduled, 0);
             }
-            logger.LogWarning(exception, "Could not dispatch parameter-grid synchronization to the UI thread.");
+            Logger.LogWarning(exception, "Could not dispatch parameter-grid synchronization to the UI thread.");
         }
     }
 
@@ -501,7 +500,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
         }
         catch (Exception exception)
         {
-            logger.LogWarning(exception, "Could not project cached parameters for {VehicleId}.", vehicleId);
+            Logger.LogWarning(exception, "Could not project cached parameters for {VehicleId}.", vehicleId);
             Debug.WriteLine(exception);
             await Dispatcher.DispatchAsync(() =>
             {
@@ -553,7 +552,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
             ShowLoadingCompletedWithError = true;
             SetMessages(errorMessage: result.ErrorMessage ?? "Parameter loading failed.");
         });
-        logger.LogError("Full Parameters List load failed for {VehicleId}: {Error}", vehicleId, result.ErrorMessage);
+        Logger.LogError("Full Parameters List load failed for {VehicleId}: {Error}", vehicleId, result.ErrorMessage);
         HasParameters = Parameters.Count > 0;
     }
 
@@ -597,7 +596,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
             SetMessages("Parameters cleared. Refresh to load again.");
         });
 
-        logger.LogInformation("Cleared Full Parameters List for {VehicleId}.", vehicleId);
+        Logger.LogInformation("Cleared Full Parameters List for {VehicleId}.", vehicleId);
     }
 
     /// <summary>
@@ -622,10 +621,11 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
         {
             await SetLoadStateAsync();
             IsShowingProgressDialog = true;
-            progressDialog = await dialogService.DisplayProgressCancellableAsync("Loading parameters", () => ProgressMessage, tokenSource: loadCancellation);
+            var options = new DialogOptions() { Title = "Loading parameters" };
+            progressDialog = await dialogService.DisplayProgressCancellableAsync(() => ProgressMessage, options, cancellationToken: cancellationToken);
             var progress = CreateProgress();
             cancellationToken.ThrowIfCancellationRequested();
-            logger.LogInformation("Loading the Full Parameters List for {VehicleId}.", vehicleId);
+            Logger.LogInformation("Loading the Full Parameters List for {VehicleId}.", vehicleId);
 
             var result = await connectionSession.ParameterStreamService.StreamAllParametersWithRetryAsync(vehicleId, progress, 3, cancellationToken: cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
@@ -655,7 +655,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
                 CompleteBusyState();
                 SetMessages($"Loaded {session.Fields.Count} parameters for {session.Scope.FirmwareIdentity.Family}.");
             });
-            logger.LogInformation("Loaded {Count} editable parameter fields for {VehicleId}.", session.Fields.Count, vehicleId);
+            Logger.LogInformation("Loaded {Count} editable parameter fields for {VehicleId}.", session.Fields.Count, vehicleId);
         }
         catch (OperationCanceledException)
         {
@@ -669,7 +669,7 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
         }
         catch (Exception exception)
         {
-            logger.LogError(exception, "Error loading parameters for {VehicleId}.", vehicleId);
+            Logger.LogError(exception, "Error loading parameters for {VehicleId}.", vehicleId);
             await Dispatcher.DispatchAsync(async () =>
             {
                 CompleteBusyState();
@@ -867,12 +867,12 @@ public partial class ParametersViewModel : VehicleConnectionViewModel
 
     private void ActiveVehicleChanged(ActiveVehicleChangedEventArgs e)
     {
-        OnActiveVehicleChanged(e);//.SafeFireAndForget();
+        OnActiveVehicleChanged(e).SafeFireAndForget();
     }
 
     private void ParameterRegistryChangedAsync(VehicleParameterChangedEventArgs args)
     {
-        OnParameterRegistryChangedAsync(args);//.SafeFireAndForget();
+        OnParameterRegistryChangedAsync(args).SafeFireAndForget();
     }
 
     /// <inheritdoc />

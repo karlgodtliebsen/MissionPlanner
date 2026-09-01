@@ -266,8 +266,6 @@ public partial class TopBarViewModel : ViewModelBase
     {
         var view = serviceFactory.Create<ConnectPopupView>();
         var dialogService = serviceFactory.Create<IDialogService>();
-        //await dialogService.DisplayViewAsync("Connection", view, "Ok", 600, 500);
-
         await dialogService.ShowWindowAsync(
             view,
             new DialogOptions
@@ -277,7 +275,7 @@ public partial class TopBarViewModel : ViewModelBase
                 Width = 600,
                 Height = 500,
                 OkText = "Ok",
-                CloseText = "Cancel"
+                ShowCloseButton = false,
             });
 
     }
@@ -285,9 +283,8 @@ public partial class TopBarViewModel : ViewModelBase
     [RelayCommand]
     private Task OpenPreferencesAsync()
     {
-
-        // return navigationService.OpenPageAsync("Preferences");
-        return Task.CompletedTask;
+        //TODO:  return navigationService.OpenPageAsync("Preferences");
+        throw new NotImplementedException();
     }
 
     /// <inheritdoc />

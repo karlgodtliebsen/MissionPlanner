@@ -22,3 +22,24 @@ public partial class ContentViewBase<TViewModel> : ContentPage where TViewModel 
         DataContext = ViewModel;
     }
 }
+
+
+
+/// <summary>
+/// A base class for views that are not associated with a specific view model.
+/// </summary>
+public partial class ContentViewBase : ContentPage
+{
+    /// <summary>
+    /// The logger instance used for logging within the ContentViewBase class. 
+    /// </summary>
+    protected ILogger Logger;
+
+
+    /// <inheritdoc />
+    public ContentViewBase()
+    {
+        Logger = ServiceHelper.GetRequiredService<ILogger<UserControlViewBase>>();
+
+    }
+}

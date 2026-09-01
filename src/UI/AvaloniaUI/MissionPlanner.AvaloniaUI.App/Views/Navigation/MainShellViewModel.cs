@@ -36,14 +36,17 @@ public partial class MainShellViewModel : ObservableObject
         await navigationService.NavigateAsync(route);
     }
 
-    private static bool CanNavigate(string? route) => route is
+    private static bool CanNavigate(string? route)
+    {
+        return route is
         MissionPlannerRoutes.FlightData or
         MissionPlannerRoutes.FlightPlanner or
         MissionPlannerRoutes.Preferences or
+        MissionPlannerRoutes.SetupInstallFirmware or
+        MissionPlannerRoutes.SetupMandatoryHardware or
         MissionPlannerRoutes.Simulation or
         MissionPlannerRoutes.Introduction or
         MissionPlannerRoutes.Help or
         MissionPlannerRoutes.Exit;
-
-
+    }
 }

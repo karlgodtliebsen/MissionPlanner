@@ -1,190 +1,243 @@
-﻿using Avalonia.Controls;
+﻿using System.Globalization;
+using Avalonia.Controls;
+using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dispatching;
 using Ursa.Controls;
+using PromptInputDialogView = MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews.PromptInputDialogView;
+using PromptInputDialogViewModel = MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews.PromptInputDialogViewModel;
 
 namespace MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
 
-/// <summary>
-/// Provides dialog services for displaying various types of dialogs and windows in an Avalonia application.
-/// </summary>
-public sealed class AvaloniaDialogService : IDialogService
+/// <summary>Displays reusable view/view-model dialog content in a common window or overlay shell.</summary>
+public sealed class AvaloniaDialogService(IUiDispatcher dispatcher, IWindowProvider windowProvider) : IDialogService
 {
-    private readonly IUiDispatcher uiDispatcher;
-    private readonly IWindowProvider windowProvider;
+    private readonly Lock openWindowsLock = new();
+    private readonly List<ViewDialogWindow> openWindows = [];
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AvaloniaDialogService"/> class.
-    /// </summary>
-    /// <param name="uiDispatcher">The UI dispatcher.</param>
-    /// <param name="windowProvider">The window provider.</param>
-    public AvaloniaDialogService(IUiDispatcher uiDispatcher, IWindowProvider windowProvider)
+    public Task<bool> ShowAsync(Control content, DialogOptions options, CancellationToken cancellationToken = default)
     {
-        this.uiDispatcher = uiDispatcher;
-        this.windowProvider = windowProvider;
-    }
-
-
-    /// <inheritdoc />
-    public async Task<bool> ShowAsync(Control content, DialogOptions options)
-    {
-        ArgumentNullException.ThrowIfNull(content);
-        ArgumentNullException.ThrowIfNull(options);
-
         return options.Presentation switch
         {
-            DialogPresentation.Window =>
-                await ShowWindowAsync(content, options),
-
-            DialogPresentation.Overlay =>
-                await ShowOverlayAsync(content, options),
-
+            DialogPresentation.Window => ShowWindowAsync(content, options, cancellationToken),
+            DialogPresentation.Overlay => ShowOverlayAsync(content, options, cancellationToken),
             _ => throw new ArgumentOutOfRangeException(nameof(options.Presentation), options.Presentation, "Unknown dialog presentation.")
         };
     }
 
-
-    /// <inheritdoc />
-    public Task<bool> ShowWindowAsync(
-        Control content,
-        DialogOptions options)
+    public Task<bool> ShowWindowAsync(Control content, DialogOptions options, CancellationToken cancellationToken = default)
     {
-        return uiDispatcher.DispatchAsync(async () =>
+        ArgumentNullException.ThrowIfNull(content);
+        ArgumentNullException.ThrowIfNull(options);
+        return dispatcher.DispatchAsync(async () =>
         {
-            var owner = windowProvider.ActiveWindow
-                        ?? throw new InvalidOperationException(
-                            "No active window is available.");
-
-            var dialog = new ViewDialogWindow
+            cancellationToken.ThrowIfCancellationRequested();
+            var owner = windowProvider.ActiveWindow ?? throw new InvalidOperationException("No active window is available.");
+            var dialog = CreateWindow(content, options);
+            using var registration = cancellationToken.Register(() => dispatcher.Dispatch(() => dialog.Close(false)));
+            Register(dialog);
+            try
             {
-                Title = options.Title,
-                Width = options.Width ?? 800,
-                Height = options.Height ?? 600,
-                CanResize = options.CanResize
-            };
-
-            dialog.DataContext =
-                new ViewDialogViewModel(
-                    options.Title,
-                    content,
-                    options.OkText,
-                    options.CloseText,
-                    options.ShowOkButton,
-                    options.ShowCloseButton,
-                    result => dialog.Close(result));
-
-            return await dialog.ShowDialog<bool>(owner);
+                return await dialog.ShowDialog<bool>(owner);
+            }
+            finally
+            {
+                Unregister(dialog);
+            }
         });
     }
 
-    /// <inheritdoc />
-    public Task<bool> ShowOverlayAsync(
-        Control content,
-        DialogOptions options)
+    public Task CloseAsync(CancellationToken cancellationToken = default)
     {
-        return uiDispatcher.DispatchAsync(async () =>
+        return dispatcher.DispatchAsync(() =>
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ViewDialogWindow? dialog;
+        lock (openWindowsLock)
         {
-            var owner = windowProvider.ActiveWindow
-                        ?? throw new InvalidOperationException("No active window is available.");
+            dialog = openWindows.LastOrDefault();
+        }
+        dialog?.Close(false);
+    });
+    }
 
-            var vm =
-                new OverlayViewDialogViewModel(
-                    options.Title,
-                    content,
-                    options.OkText,
-                    options.CloseText,
-                    options.ShowOkButton,
-                    options.ShowCloseButton);
-
+    public Task<bool> ShowOverlayAsync(Control content, DialogOptions options, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(content);
+        ArgumentNullException.ThrowIfNull(options);
+        return dispatcher.DispatchAsync(async () =>
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var owner = windowProvider.ActiveWindow ?? throw new InvalidOperationException("No active window is available.");
+            var viewModel = new OverlayViewDialogViewModel(options.Title, content, options.OkText, options.CloseText,
+                options.ShowOkButton, options.ShowCloseButton);
             var view = new OverlayViewDialog();
-
-            if (options.Width is not null)
+            if (options.Width is { } width)
             {
-                view.Width = options.Width.Value;
+                view.Width = width;
             }
 
-            if (options.Height is not null)
+            if (options.Height is { } height)
             {
-                view.Height = options.Height.Value;
+                view.Height = height;
             }
 
-            var overlayOptions =
-                new OverlayDialogOptions
-                {
-                    IsCloseButtonVisible = true,
-
-                    CanLightDismiss =
-                        options.CanLightDismiss,
-
-                    CanResize =
-                        options.CanResize,
-
-                    CanDragMove = true,
-
-                    //
-                    // Important if MissionPlanner ever has
-                    // multiple UrsaWindows.
-                    //
-                    TopLevelHashCode =
-                        owner.GetHashCode()
-                };
-
-            var result =
-                await OverlayDialog.ShowCustomAsync<bool>(
-                    view,
-                    vm,
-                    hostId: null,
-                    options: overlayOptions);
-
-            return result == true;
+            var overlayOptions = new OverlayDialogOptions
+            {
+                IsCloseButtonVisible = true,
+                CanLightDismiss = options.CanLightDismiss,
+                CanResize = options.CanResize,
+                CanDragMove = true,
+                TopLevelHashCode = owner.GetHashCode()
+            };
+            using var registration = cancellationToken.Register(() => dispatcher.Dispatch(viewModel.Close));
+            return await OverlayDialog.ShowCustomAsync<bool>(view, viewModel, null, overlayOptions) == true;
         });
     }
 
-    /// <inheritdoc/>
-    public Task<IDisposable> DisplayProgressCancellableAsync(string title, Func<string> message, string cancelText = "Cancel", CancellationTokenSource? tokenSource = default)
+    public Task<bool> ConfirmAsync(string message, DialogOptions options, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        return ShowWindowAsync(new SubViews.ConfirmDialogView(new ConfirmDialogViewModel(message)), Compact(options), cancellationToken);
     }
 
-    /// <inheritdoc />
+    public async Task<string?> PromptAsync(DialogOptions options, string? message, string? initialValue = null, CancellationToken cancellationToken = default)
+    {
+        var viewModel = new PromptInputDialogViewModel(initialValue, message);
+        var accepted = await ShowWindowAsync(new PromptInputDialogView(viewModel), Compact(options), cancellationToken);
+        return accepted ? viewModel.PromptText : null;
+    }
+
+    public async Task<string?> ChooseAsync(DialogOptions options, IReadOnlyList<string> choices, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (choices.Count == 0)
+        {
+            return null;
+        }
+
+        var viewModel = new SubViews.ChoiceDialogViewModel(choices);
+        var accepted = await ShowWindowAsync(new SubViews.ChoiceDialogView(viewModel), Compact(options), cancellationToken);
+        return accepted ? viewModel.SelectedChoice : null;
+    }
+
+    public Task<IDisposable> DisplayProgressCancellableAsync(Func<string> message, DialogOptions options, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        return dispatcher.DispatchAsync<IDisposable>(() =>
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var owner = windowProvider.ActiveWindow ?? throw new InvalidOperationException("No active window is available.");
+            var contentViewModel = new SubViews.ProgressDialogViewModel(message);
+            var effectiveOptions = Compact(options) with
+            {
+                Height = 180,
+                ShowOkButton = false,
+                ShowCloseButton = false,
+                CanResize = false
+            };
+            var dialog = CreateWindow(new SubViews.ProgressDialogView(contentViewModel), effectiveOptions);
+            var registration = cancellationToken.Register(() => dispatcher.Dispatch(() => dialog.Close(false)));
+            Register(dialog);
+            _ = dialog.ShowDialog<bool>(owner).ContinueWith(_ =>
+            {
+                Unregister(dialog);
+                contentViewModel.Dispose();
+            }, TaskScheduler.Default);
+            return new DialogHandle(() => dispatcher.Dispatch(() => dialog.Close(false)), registration);
+        });
+    }
+
     public Task<string?> DisplayPromptAsync(string title, string message, string initialValue, string accept = "OK", string cancel = "Cancel", string clear = "Clear")
     {
-        throw new NotImplementedException();
+        return PromptAsync(PromptOptions(title, accept, cancel), message, initialValue);
     }
 
-    /// <inheritdoc />
-    public Task<TimeSpan?> DisplayPromptAsync(string title, string message, TimeSpan? initialValue = null, TimeSpan? minimumTime = null, TimeSpan? maximumTime = null, string accept = "OK", string cancel = "Cancel", string clear = "Clear")
+    public async Task<int?> PromptAsync(DialogOptions options, string? message, int initialValue, int minimum, int maximum, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var text = await PromptAsync(options, message, initialValue.ToString(CultureInfo.CurrentCulture), cancellationToken);
+        return int.TryParse(text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var value)
+               && value >= minimum && value <= maximum ? value : null;
     }
 
-    /// <inheritdoc />
-    public Task<int?> DisplayPromptAsync(string title, string message, int? initialValue = null, int? minimum = null, int? maximum = null, string accept = "OK", string cancel = "Cancel", string clear = "Clear")
+    public Task<int?> DisplayPromptAsync(string title, string message, int initialValue, int minimum, int maximum, string accept = "OK", string cancel = "Cancel", string clear = "Clear")
     {
-        throw new NotImplementedException();
+        return PromptAsync(PromptOptions(title, accept, cancel), message, initialValue, minimum, maximum);
     }
 
-    /// <inheritdoc />
-    public Task<long?> DisplayPromptAsync(string title, string message, long? initialValue = null, long? minimum = null, long? maximum = null, string accept = "OK", string cancel = "Cancel", string clear = "Clear")
+    public async Task<double?> DisplayPromptAsync(string title, string message, double initialValue, double? minimum = null, double? maximum = null, string accept = "OK", string cancel = "Cancel", string clear = "Clear")
     {
-        throw new NotImplementedException();
+        var text = await PromptAsync(PromptOptions(title, accept, cancel), message,
+            initialValue.ToString(CultureInfo.CurrentCulture));
+        return !double.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out var value)
+            || (minimum is { } min && value < min) || (maximum is { } max && value > max)
+            ? null
+            : value;
     }
 
-    /// <inheritdoc />
-    public Task<float?> DisplayPromptAsync(string title, string message, float? initialValue = null, float? minimum = null, float? maximum = null, string accept = "OK", string cancel = "Cancel", string clear = "Clear")
+    private static DialogOptions PromptOptions(string title, string accept, string cancel)
     {
-        throw new NotImplementedException();
+        return new()
+        {
+            Title = title,
+            Width = 460,
+            Height = 220,
+            CanResize = false,
+            OkText = accept,
+            CloseText = cancel
+        };
     }
 
-    /// <inheritdoc />
-    public Task<double?> DisplayPromptAsync(string title, string message, double? initialValue = null, double? minimum = null, double? maximum = null, string accept = "OK", string cancel = "Cancel", string clear = "Clear")
+    private static DialogOptions Compact(DialogOptions options)
     {
-        throw new NotImplementedException();
+        return options with
+        {
+            Width = options.Width is null or 800 ? 460 : options.Width,
+            Height = options.Height is null or 600 ? 220 : options.Height,
+            CanResize = false
+        };
     }
 
-    /// <inheritdoc />
-    public Task<T> DisplayRadioButtonPromptAsync<T>(string message, IEnumerable<T> selectionSource, T selected = default(T), string accept = "Ok", string cancel = "Cancel", string? displayMember = null)
+    private static ViewDialogWindow CreateWindow(Control content, DialogOptions options)
     {
-        throw new NotImplementedException();
+        var dialog = new ViewDialogWindow
+        {
+            Title = options.Title,
+            Width = options.Width ?? 800,
+            Height = options.Height ?? 600,
+            CanResize = options.CanResize
+        };
+        dialog.DataContext = new ViewDialogViewModel(options.Title, content, options.OkText, options.CloseText,
+            options.ShowOkButton, options.ShowCloseButton, result => dialog.Close(result));
+        return dialog;
     }
 
+    private void Register(ViewDialogWindow dialog)
+    {
+        lock (openWindowsLock)
+        {
+            openWindows.Add(dialog);
+        }
+    }
+
+    private void Unregister(ViewDialogWindow dialog)
+    {
+        lock (openWindowsLock)
+        {
+            openWindows.Remove(dialog);
+        }
+    }
+
+    private sealed class DialogHandle(Action close, CancellationTokenRegistration registration) : IDisposable
+    {
+        private int disposed;
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref disposed, 1) != 0)
+            {
+                return;
+            }
+
+            registration.Dispose();
+            close();
+        }
+    }
 }

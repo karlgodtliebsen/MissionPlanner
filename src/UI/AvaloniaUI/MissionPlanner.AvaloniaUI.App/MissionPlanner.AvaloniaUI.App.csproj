@@ -242,6 +242,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="AsyncAwaitBestPractices.MVVM" />
 		<PackageReference Include="Avalonia" />
 		<PackageReference Include="Avalonia.Desktop" />
 		<PackageReference Include="Avalonia.Themes.Fluent" />
@@ -306,19 +307,6 @@
 	  <None Update="Introduction\Content\Introduction.json">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
-	  <None Update="Views\Missions\DockView\MissionItemListDockView.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </None>
-	  <None Update="Views\Missions\MissionItemListViewPage.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </None>
-	  <None Update="Views\Missions\MissionMapView.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </None>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Views\Setup\" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -334,14 +322,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Update="Views\Common\ErrorView.xaml.cs">
-	    <DependentUpon>ErrorView.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="Views\Common\StatusBarView.axaml.cs">
-	    <DependentUpon>StatusBarView.xaml</DependentUpon>
-	  </Compile>
-	  <Compile Update="Views\Common\TopBarView.axaml.cs">
-	    <DependentUpon>TopBarView.xaml</DependentUpon>
+	  <Folder Include="Views\Setup\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="Views\InitSetup\InstallFirmware\InstallFirmwarePage.axaml.cs">
+	    <DependentUpon>InstallFirmwarePage.axaml</DependentUpon>
 	  </Compile>
 	</ItemGroup>
+
 </Project>

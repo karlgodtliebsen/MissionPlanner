@@ -9,7 +9,7 @@ namespace MissionPlanner.AvaloniaUI.App.Views.Missions;
 /// derived leg columns (Dist/AZ/Grad) and a header with mission info and editor settings.
 /// Bound to the keyed singleton <see cref="MissionMapViewModel"/> provided by host.
 /// </summary>
-public partial class MissionItemListViewPage : ViewBase
+public partial class MissionItemListViewPage : UserControlViewBase
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MissionItemListViewPage"/> class.

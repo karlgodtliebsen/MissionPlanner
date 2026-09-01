@@ -9,7 +9,6 @@ using MissionPlanner.AvaloniaUI.App.Presentation;
 using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dispatching;
-using MissionPlanner.AvaloniaUI.App.Views.Common;
 using MissionPlanner.Core.ConfigTuning.Fences;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.DomainEvents;
@@ -48,7 +47,6 @@ public partial class MissionMapViewModel : ViewModelBase
     private readonly IFileSaveService fileSaveService;
     private readonly IUserChoiceService choiceService;
     private readonly IDateTimeProvider dateTimeProvider;
-    private readonly ILogger logger;
     private readonly IMissionMapInteractionService interactionService;
     private readonly IAdvancedMissionItemService advancedMissionItems;
     private readonly IUserConfirmationService confirmationService;
@@ -82,7 +80,6 @@ public partial class MissionMapViewModel : ViewModelBase
     /// </summary>
     public MissionMapViewModel(IServiceFactory factory, ILogger logger) : base(logger)
     {
-        this.logger = logger;
         domainEventHub = factory.Create<IDomainEventHub>();
         dispatcher = factory.Create<IUiDispatcher>();
         dateTimeProvider = factory.Create<IDateTimeProvider>();
@@ -562,7 +559,7 @@ public partial class MissionMapViewModel : ViewModelBase
 
     private void OnActiveVehicleChanged(ActiveVehicleChangedEventArgs e)
     {
-        dispatcher.Dispatch(() =>
+        Dispatcher.Dispatch(() =>
         {
             UpdateVehicleStatus(e.Current);
             OnPropertyChanged(nameof(CanUseVehicleCommands));
@@ -571,14 +568,14 @@ public partial class MissionMapViewModel : ViewModelBase
 
     private void OnReplaySessionChanged(ReplaySessionChangedEventArgs args)
     {
-        dispatcher.Dispatch(() => OnPropertyChanged(nameof(CanUseVehicleCommands)));
+        Dispatcher.Dispatch(() => OnPropertyChanged(nameof(CanUseVehicleCommands)));
     }
 
     private Task OnVehicleStateUpdated(VehicleStateUpdated evt, CancellationToken cancellationToken)
     {
         if (evt.VehicleId == activeVehicle.VehicleId)
         {
-            dispatcher.Dispatch(() =>
+            Dispatcher.Dispatch(() =>
             {
                 if (evt.VehicleId == activeVehicle.VehicleId)
                 {
@@ -667,7 +664,7 @@ public partial class MissionMapViewModel : ViewModelBase
 
     private void OnInteractionChanged(object? sender, EventArgs args)
     {
-        dispatcher.Dispatch(() =>
+        Dispatcher.Dispatch(() =>
         {
             UpdatePlanningOverlay();
             PlanningInteractionPrompt = interactionService.State.Prompt;
@@ -676,7 +673,7 @@ public partial class MissionMapViewModel : ViewModelBase
 
     private void OnPolygonChanged(object? sender, EventArgs args)
     {
-        dispatcher.Dispatch(() =>
+        Dispatcher.Dispatch(() =>
         {
             UpdatePlanningOverlay();
             OnPropertyChanged(nameof(HasPlanningPolygon));
@@ -685,22 +682,22 @@ public partial class MissionMapViewModel : ViewModelBase
 
     private void OnFenceChanged()
     {
-        dispatcher.Dispatch(UpdatePlanningOverlay);
+        Dispatcher.Dispatch(UpdatePlanningOverlay);
     }
 
     private void OnRallyChanged()
     {
-        dispatcher.Dispatch(UpdatePlanningOverlay);
+        Dispatcher.Dispatch(UpdatePlanningOverlay);
     }
 
     private void OnPoiChanged()
     {
-        dispatcher.Dispatch(UpdatePlanningOverlay);
+        Dispatcher.Dispatch(UpdatePlanningOverlay);
     }
 
     private void OnTrackerHomeChanged()
     {
-        dispatcher.Dispatch(UpdatePlanningOverlay);
+        Dispatcher.Dispatch(UpdatePlanningOverlay);
     }
 
     private void UpdatePlanningOverlay()
@@ -782,7 +779,8 @@ public partial class MissionMapViewModel : ViewModelBase
     [RelayCommand]
     private async Task JumpToWaypointAsync(CancellationToken cancellationToken)
     {
-        var targetText = await dialogService.DisplayPromptAsync("Jump to waypoint", "Target mission row (1-based)", "1");
+        var options = new DialogOptions() { Title = "Jump to waypoint" };
+        var targetText = await dialogService.PromptAsync(options, "Target mission row (1-based)", "1", cancellationToken: cancellationToken);
         if (!ushort.TryParse(targetText, NumberStyles.Integer, CultureInfo.CurrentCulture, out var displayTarget) || displayTarget == 0)
         {
             if (targetText is not null)
@@ -1661,14 +1659,15 @@ public partial class MissionMapViewModel : ViewModelBase
             ShowStatus("Select a map position for the POI.");
             return;
         }
+        var options = new DialogOptions() { Title = "Add point of interest" };
 
-        var name = await dialogService.DisplayPromptAsync("Add point of interest", "Name", $"POI {poiService.Snapshot.Items.Count + 1}");
+        var name = await dialogService.PromptAsync(options, $"POI {poiService.Snapshot.Items.Count + 1}", cancellationToken: cancellationToken);
         if (string.IsNullOrWhiteSpace(name))
         {
             return;
         }
 
-        var description = await dialogService.DisplayPromptAsync("Add point of interest", "Optional description", string.Empty);
+        var description = await dialogService.PromptAsync(options, "Optional description", string.Empty, cancellationToken);
         await poiService.AddAsync(name, position, PointerAltitude, description, null, cancellationToken);
         ShowStatus($"Local POI '{name}' saved.");
     }
@@ -1682,13 +1681,14 @@ public partial class MissionMapViewModel : ViewModelBase
             return;
         }
 
-        var name = await dialogService.DisplayPromptAsync("Edit nearest POI", $"Name ({item.Name})", item.Name);
+        var options = new DialogOptions() { Title = "Edit nearest POI" };
+        var name = await dialogService.PromptAsync(options, $"Name ({item.Name})", item.Name, cancellationToken: cancellationToken);
         if (string.IsNullOrWhiteSpace(name))
         {
             return;
         }
 
-        var description = await dialogService.DisplayPromptAsync("Edit nearest POI", "Description", item.Description ?? string.Empty);
+        var description = await dialogService.PromptAsync(options, "Description", item.Description ?? string.Empty, cancellationToken: cancellationToken);
         await poiService.UpdateAsync(item with
         {
             Name = name,
@@ -1724,7 +1724,8 @@ public partial class MissionMapViewModel : ViewModelBase
             return;
         }
 
-        var text = await dialogService.DisplayPromptAsync("Tracker home", "Optional altitude in metres", PointerAltitude?.ToString("F1", CultureInfo.CurrentCulture) ?? string.Empty);
+        var options = new DialogOptions() { Title = "Tracker home" };
+        var text = await dialogService.PromptAsync(options, "Optional altitude in metres", PointerAltitude?.ToString("F1", CultureInfo.CurrentCulture) ?? string.Empty, cancellationToken: cancellationToken);
         double? altitude = null;
         if (!string.IsNullOrWhiteSpace(text))
         {
@@ -1744,7 +1745,8 @@ public partial class MissionMapViewModel : ViewModelBase
     [RelayCommand]
     private async Task EnterUtmCoordinateAsync(CancellationToken cancellationToken)
     {
-        var text = await dialogService.DisplayPromptAsync("Enter UTM coordinate", "Format: zone+hemisphere easting northing (example: 32N 500000 6170000)", "32N 500000 6170000");
+        var options = new DialogOptions() { Title = "Enter UTM coordinate" };
+        var text = await dialogService.PromptAsync(options, "Format: zone+hemisphere easting northing (example: 32N 500000 6170000)", "32N 500000 6170000", cancellationToken: cancellationToken);
         if (text is null)
         {
             return;
@@ -1846,9 +1848,11 @@ public partial class MissionMapViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private async Task LoiterTimeAsync()
+    private async Task LoiterTimeAsync(CancellationToken cancellationToken)
     {
-        var input = await dialogService.DisplayPromptAsync("Loiter Time", "Time to loiter (seconds)", 30, 0, 24 * 60);
+        var options = new DialogOptions() { Title = "Loiter Time" };
+
+        var input = await dialogService.PromptAsync(options, "Time to loiter (seconds)", 30, 0, 24 * 60, cancellationToken: cancellationToken);
         if (input is null)
         {
             return;
@@ -1995,7 +1999,7 @@ public partial class MissionMapViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to save mission file");
+            Logger.LogError(ex, "Failed to save mission file");
             ShowStatus($"Save failed: {ex.Message}");
         }
 
@@ -2073,7 +2077,7 @@ public partial class MissionMapViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to load mission file");
+            Logger.LogError(ex, "Failed to load mission file");
             ShowStatus($"Load failed: {ex.Message}");
         }
     }
@@ -2371,7 +2375,7 @@ public partial class MissionMapViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            logger.LogWarning(ex, "Failed to apply row edit for item {Number}", row.Number);
+            Logger.LogWarning(ex, "Failed to apply row edit for item {Number}", row.Number);
             ShowStatus($"Edit failed: {ex.Message}");
         }
     }
@@ -2453,6 +2457,6 @@ public partial class MissionMapViewModel : ViewModelBase
 
     private void ShowStatus(string message)
     {
-        dispatcher.Dispatch(() => StatusMessage = message);
+        Dispatcher.Dispatch(() => StatusMessage = message);
     }
 }

@@ -6,7 +6,7 @@ using Ursa.Controls;
 namespace MissionPlanner.AvaloniaUI.App.Views.Common;
 
 /// <inheritdoc />
-public partial class TopBarView : ViewBase<TopBarViewModel>
+public partial class TopBarView : UserControlViewBase<TopBarViewModel>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="TopBarView"/> class with the specified view model.

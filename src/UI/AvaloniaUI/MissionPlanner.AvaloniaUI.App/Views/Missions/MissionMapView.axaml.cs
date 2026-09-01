@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Mapsui;
+﻿using Mapsui;
 using MissionPlanner.AvaloniaUI.App.Utilities;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
 
@@ -9,7 +8,7 @@ namespace MissionPlanner.AvaloniaUI.App.Views.Missions;
 /// Shared mission-map editor control. Native map events remain at the view boundary while
 /// <see cref="MissionMapPresenter"/> owns Mapsui rendering and navigation.
 /// </summary>
-public partial class MissionMapView : ViewBase, IDisposable
+public partial class MissionMapView : UserControlViewBase, IDisposable
 {
     private MissionMapViewModel? viewModel;
     private readonly IDomainFactory domainFactory;
@@ -18,7 +17,7 @@ public partial class MissionMapView : ViewBase, IDisposable
     private CancellationTokenSource? operationCancellation;
     private bool disposed;
     private bool isActive;
-    private bool usingCustomPosition;
+    private readonly bool usingCustomPosition;
 
     /// <summary>Initializes a new instance of the <see cref="MissionMapView"/> class.</summary>
     public MissionMapView(IDomainFactory domainFactory)

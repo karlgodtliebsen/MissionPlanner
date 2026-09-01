@@ -2,7 +2,7 @@
 
 namespace MissionPlanner.AvaloniaUI.App.Views.Connect;
 
-public partial class StatisticsView : ViewBase<StatisticsViewModel>
+public partial class StatisticsView : UserControlViewBase<StatisticsViewModel>
 {
     public StatisticsView()
     {

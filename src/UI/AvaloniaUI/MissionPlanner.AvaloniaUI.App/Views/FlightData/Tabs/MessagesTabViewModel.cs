@@ -1,0 +1,386 @@
+using System.Globalization;
+using System.Text;
+using System.Text.Json;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Mapsui.Utilities;
+using Microsoft.Extensions.Logging;
+using MissionPlanner.AvaloniaUI.App.Presentation;
+using MissionPlanner.Core.Notifications;
+using MissionPlanner.Core.Vehicles;
+using MissionPlanner.Core.Vehicles.Abstractions;
+using MissionPlanner.MavLink;
+using MissionPlanner.AvaloniaUI.App.Utilities;
+
+namespace MissionPlanner.AvaloniaUI.App.Views.FlightData.Tabs;
+
+/// <summary>
+/// Presents a bounded, filterable active-vehicle message history with separate MAVLink and application origins.
+/// </summary>
+public partial class MessagesTabViewModel : ViewModelBase
+{
+    private static readonly JsonSerializerOptions jsonOptions = new() { WriteIndented = true };
+    private readonly IActiveVehicleContext activeVehicle;
+    private readonly IVehicleMessageStore vehicleMessages;
+    private readonly IApplicationNotificationStore applicationMessages;
+    private readonly ITextClipboardService clipboard;
+    private readonly IFileSaveService fileSaver;
+
+    /// <summary>Initializes a Messages-tab view model.</summary>
+    /// <param name="activeVehicle">The active-vehicle context.</param>
+    /// <param name="vehicleMessages">The bounded MAVLink status-text history.</param>
+    /// <param name="applicationMessages">The separate local application-notification history.</param>
+    /// <param name="clipboard">The platform-neutral clipboard adapter.</param>
+    /// <param name="fileSaver">The platform file saver.</param>
+    /// <param name="dispatcher">The UI Dispatcher.</param>
+    /// <param name="logger">The logger.</param>
+    public MessagesTabViewModel(IActiveVehicleContext activeVehicle, IVehicleMessageStore vehicleMessages, IApplicationNotificationStore applicationMessages,
+        ITextClipboardService clipboard, IFileSaveService fileSaver, ILogger<MessagesTabViewModel> logger) : base(logger)
+    {
+        this.activeVehicle = activeVehicle;
+        this.vehicleMessages = vehicleMessages;
+        this.applicationMessages = applicationMessages;
+        this.clipboard = clipboard;
+        this.fileSaver = fileSaver;
+    }
+
+    /// <summary>Gets all available exact-severity filters.</summary>
+    public IReadOnlyList<string> SeverityFilters
+    {
+        get;
+    } =
+        ["All", "Emergency", "Alert", "Critical", "Error", "Warning", "Notice", "Info", "Debug", "Application"];
+
+    /// <summary>Gets the filtered current-vehicle rows in arrival order.</summary>
+    public ObservableRangeCollection<MessageListItem> Items
+    {
+        get;
+    } = [];
+
+    /// <summary>Gets the message rows currently selected in the grid.</summary>
+    public ObservableRangeCollection<MessageListItem> SelectedItems
+    {
+        get;
+    } = [];
+
+    /// <summary>Gets or sets the selected exact severity or origin filter.</summary>
+    [ObservableProperty]
+    public partial string SelectedSeverity
+    {
+        get;
+        set;
+    } = "All";
+
+    /// <summary>Gets or sets case-insensitive text search.</summary>
+    [ObservableProperty]
+    public partial string SearchText
+    {
+        get;
+        set;
+    } = string.Empty;
+
+    /// <summary>Gets or sets the selected message row.</summary>
+    [ObservableProperty]
+    public partial MessageListItem? SelectedMessage
+    {
+        get;
+        set;
+    }
+
+    /// <summary>Gets whether automatic scrolling is paused.</summary>
+    [ObservableProperty]
+    public partial bool IsAutoScrollPaused
+    {
+        get;
+        private set;
+    }
+
+    /// <summary>Gets a monotonically increasing request used by the view for auto-scroll.</summary>
+    [ObservableProperty]
+    public partial int ScrollRequestVersion
+    {
+        get;
+        private set;
+    }
+
+    /// <summary>Gets the pause/resume button label.</summary>
+    public string PauseButtonText => IsAutoScrollPaused ? "Resume Auto-scroll" : "Pause Auto-scroll";
+
+
+    /// <summary>Creates a UTF-8-ready text export of the current filtered view.</summary>
+    /// <returns>The complete timestamped text representation.</returns>
+    public string CreateTextExport()
+    {
+        return string.Join(
+            Environment.NewLine,
+            Items.Select(item =>
+                $"{item.ReceivedAt:O}\t{item.Origin}\t{item.Source}\t{item.Severity}\t{EscapeText(item.Text)}\tassembled={item.IsAssembled}\ttruncated={item.IsTruncated}"));
+    }
+
+    /// <summary>Creates a JSON export of the current filtered view.</summary>
+    /// <returns>The indented JSON representation.</returns>
+    public string CreateJsonExport()
+    {
+        return JsonSerializer.Serialize(Items, jsonOptions);
+    }
+
+    /// <inheritdoc />
+    public override void Dispose()
+    {
+        Deactivate();
+        base.Dispose();
+    }
+
+    /// <inheritdoc />
+    public override Task ActivateAsync()
+    {
+        vehicleMessages.MessageAdded += OnVehicleMessageAdded;
+        applicationMessages.NotificationAdded += OnApplicationMessageAdded;
+        Refresh();
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public override Task DeactivateAsync()
+    {
+        Deactivate();
+        return Task.CompletedTask;
+    }
+
+    private void Deactivate()
+    {
+        vehicleMessages.MessageAdded -= OnVehicleMessageAdded;
+        applicationMessages.NotificationAdded -= OnApplicationMessageAdded;
+    }
+
+    partial void OnSelectedSeverityChanged(string value)
+    {
+        Refresh();
+    }
+
+    partial void OnSearchTextChanged(string value)
+    {
+        Refresh();
+    }
+
+    partial void OnIsAutoScrollPausedChanged(bool value)
+    {
+        OnPropertyChanged(nameof(PauseButtonText));
+    }
+
+    [RelayCommand]
+    private void TogglePause()
+    {
+        IsAutoScrollPaused = !IsAutoScrollPaused;
+        if (!IsAutoScrollPaused && Items.Count > 0)
+        {
+            ScrollRequestVersion++;
+        }
+    }
+
+    [RelayCommand]
+    private void ClearCurrentView()
+    {
+        if (activeVehicle.VehicleId is not { } vehicleId)
+        {
+            return;
+        }
+
+        var vehicleIdentities = Items
+            .Where(item => item.Origin == MessageListOrigin.MavLink)
+            .Select(item => long.Parse(item.Identity.AsSpan(4), CultureInfo.InvariantCulture))
+            .ToHashSet();
+        var applicationIdentities = Items
+            .Where(item => item.Origin == MessageListOrigin.Application)
+            .Select(item => long.Parse(item.Identity.AsSpan(4), CultureInfo.InvariantCulture))
+            .ToHashSet();
+        vehicleMessages.Clear(vehicleId, message => vehicleIdentities.Contains(message.Identity));
+        applicationMessages.Clear(vehicleId, message => applicationIdentities.Contains(message.Identity));
+        Refresh();
+        SetMessages("Cleared the current filtered view.");
+    }
+
+    [RelayCommand]
+    private async Task CopySelectedAsync()
+    {
+        if (SelectedMessage is null)
+        {
+            SetMessages("Select a message to copy.");
+            return;
+        }
+
+        await clipboard.SetTextAsync(FormatRow(SelectedMessage));
+        SetMessages("Selected message copied.");
+    }
+
+    [RelayCommand]
+    private async Task CopyAllAsync()
+    {
+        await clipboard.SetTextAsync(CreateTextExport());
+        SetMessages($"Copied {Items.Count} visible messages.");
+    }
+
+    [RelayCommand]
+    private Task ExportTextAsync(CancellationToken cancellationToken)
+    {
+        return ExportAsync("missionplanner-messages.txt", CreateTextExport(), cancellationToken);
+    }
+
+    [RelayCommand]
+    private Task ExportJsonAsync(CancellationToken cancellationToken)
+    {
+        return ExportAsync("missionplanner-messages.json", CreateJsonExport(), cancellationToken);
+    }
+
+    private async Task ExportAsync(string fileName, string content, CancellationToken cancellationToken)
+    {
+        Logger.LogInformation("Exporting {MessageCount} visible messages to {FileName}.", Items.Count, fileName);
+        try
+        {
+            await using var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+            var savedPath = await fileSaver.SaveAsync(fileName, stream, cancellationToken);
+            SetMessages(savedPath is not null ? $"Exported to {savedPath}." : "Export cancelled.");
+        }
+        catch (OperationCanceledException)
+        {
+            SetMessages("Export cancelled.");
+        }
+        catch (Exception exception)
+        {
+            Logger.LogError(exception, "Message export failed.");
+            SetMessages($"Export failed: {exception.Message}");
+        }
+    }
+
+    private void OnVehicleMessageAdded(VehicleStatusTextAddedEventArgs args)
+    {
+        if (args.Message.VehicleId == activeVehicle.VehicleId)
+        {
+            Dispatcher.Dispatch(RefreshAfterAppend);
+        }
+    }
+
+    private void OnApplicationMessageAdded(ApplicationNotificationAddedEventArgs args)
+    {
+        if (activeVehicle.VehicleId is { } vehicleId &&
+            (args.Notification.VehicleId is null || args.Notification.VehicleId == vehicleId))
+        {
+            Dispatcher.Dispatch(RefreshAfterAppend);
+        }
+    }
+
+    private void RefreshAfterAppend()
+    {
+        Refresh();
+        if (!IsAutoScrollPaused && Items.Count > 0)
+        {
+            ScrollRequestVersion++;
+        }
+    }
+
+    private void Refresh()
+    {
+        var selectedIdentity = SelectedMessage?.Identity;
+        Items.Clear();
+        if (activeVehicle.VehicleId is not { } vehicleId)
+        {
+            SetMessages("No active vehicle");
+            return;
+        }
+
+        var rows = vehicleMessages.GetMessages(vehicleId).Select(ToRow)
+            .Concat(applicationMessages.GetMessages(vehicleId).Select(ToRow))
+            .Where(MatchesFilter)
+            .OrderBy(row => row.ReceivedAt)
+            .ThenBy(row => row.Identity)
+            .ToList();
+        Items.AddRange(rows);
+
+        SelectedMessage = Items.FirstOrDefault(item => item.Identity == selectedIdentity);
+        SetMessages($"{Items.Count} visible messages for {activeVehicle.Current.DisplayName}.");
+    }
+
+    private bool MatchesFilter(MessageListItem item)
+    {
+        var severityMatches = SelectedSeverity == "All" ||
+                              (SelectedSeverity == "Application" && item.Origin == MessageListOrigin.Application) ||
+                              string.Equals(item.Severity, SelectedSeverity, StringComparison.OrdinalIgnoreCase);
+        return severityMatches &&
+               (string.IsNullOrWhiteSpace(SearchText) ||
+                item.Text.Contains(SearchText.Trim(), StringComparison.OrdinalIgnoreCase) ||
+                item.Source.Contains(SearchText.Trim(), StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static MessageListItem ToRow(VehicleStatusText message)
+    {
+        return new MessageListItem(
+            $"mav:{message.Identity}",
+            MessageListOrigin.MavLink,
+            message.ReceivedAt,
+            $"MAVLink {message.SourceSystemId}:{message.SourceComponentId}" +
+            (message.ProtocolId is { } id ? $" ID {id}" : string.Empty),
+            message.Severity.ToString(),
+            SeverityDisplay(message.Severity),
+            message.Text,
+            message.IsAssembled,
+            message.IsTruncated);
+    }
+
+    private static MessageListItem ToRow(ApplicationNotificationEntry message)
+    {
+        return new MessageListItem(
+            $"app:{message.Identity}",
+            MessageListOrigin.Application,
+            message.ReceivedAt,
+            message.Title is null ? "Application" : $"Application: {message.Title}",
+            "Application",
+            message.Severity switch
+            {
+                UserNotificationSeverity.Error => "✖ APP ERROR",
+                UserNotificationSeverity.Warning => "⚠ APP WARNING",
+                var _ => "ℹ APP INFO"
+            },
+            message.Message,
+            false,
+            false);
+    }
+
+    private static string SeverityDisplay(MavSeverity severity)
+    {
+        return severity switch
+        {
+            MavSeverity.Emergency => "⛔ EMERGENCY",
+            MavSeverity.Alert => "⛔ ALERT",
+            MavSeverity.Critical => "● CRITICAL",
+            MavSeverity.Error => "✖ ERROR",
+            MavSeverity.Warning => "⚠ WARNING",
+            MavSeverity.Notice => "◆ NOTICE",
+            MavSeverity.Info => "ℹ INFO",
+            var _ => "· DEBUG"
+        };
+    }
+
+    private static string EscapeText(string text)
+    {
+        return text.Replace("\r", "\\r", StringComparison.Ordinal).Replace("\n", "\\n", StringComparison.Ordinal);
+    }
+
+    private static string FormatRow(MessageListItem item)
+    {
+        return $"{item.ReceivedAt:O} [{item.SeverityDisplay}] {item.Source}: {item.Text}";
+    }
+
+    private sealed class CallbackDisposable(Action callback) : IDisposable
+    {
+        private bool disposed;
+
+        public void Dispose()
+        {
+            if (!disposed)
+            {
+                disposed = true;
+                callback();
+            }
+        }
+    }
+}

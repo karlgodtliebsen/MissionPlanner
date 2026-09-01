@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.Extensions.Logging;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.Common;
@@ -9,7 +9,6 @@ namespace MissionPlanner.AvaloniaUI.App.Views.Common;
 /// </summary>
 public partial class ErrorViewModel : ObservableObject
 {
-    private readonly ILogger<ErrorViewModel> logger;
 
     [ObservableProperty]
     public partial string? ErrorMessage
@@ -25,6 +24,5 @@ public partial class ErrorViewModel : ObservableObject
     public ErrorViewModel(string errorMessage, ILogger<ErrorViewModel> logger)
     {
         ErrorMessage = errorMessage;
-        this.logger = logger;
     }
 }

@@ -4,6 +4,8 @@ using MissionPlanner.AvaloniaUI.App.Views.Exit;
 using MissionPlanner.AvaloniaUI.App.Views.FlightData;
 using MissionPlanner.AvaloniaUI.App.Views.FlightPlanner;
 using MissionPlanner.AvaloniaUI.App.Views.Help;
+using MissionPlanner.AvaloniaUI.App.Views.InitSetup.InstallFirmware;
+using MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware;
 using MissionPlanner.AvaloniaUI.App.Views.Introduction;
 using MissionPlanner.AvaloniaUI.App.Views.Preferences;
 using MissionPlanner.AvaloniaUI.App.Views.Simulation;
@@ -29,9 +31,14 @@ public sealed class NavigationPageFactory : INavigationPageFactory
             MissionPlannerRoutes.FlightPlanner =>
                 services.GetRequiredService<FlightPlannerPage>(),
 
+            MissionPlannerRoutes.SetupInstallFirmware =>
+                services.GetRequiredService<InstallFirmwarePage>(),
+
+            MissionPlannerRoutes.SetupMandatoryHardware =>
+                  services.GetRequiredService<MandatoryHardwarePage>(),
 
             //MissionPlannerRoutes.SetupInstallFirmware =>
-            //    CreateViewPage<InstallFirmwareView>("Install Firmware"),
+            //    CreateViewPage<InstallFirmwarePage>("Install Firmware"),
 
             //MissionPlannerRoutes.SetupMandatoryHardware =>
             //    CreateViewPage<MandatoryHardwareView>("Mandatory Hardware"),
@@ -89,9 +96,7 @@ public sealed class NavigationPageFactory : INavigationPageFactory
         };
     }
 
-    private ContentPage CreateViewPage<TView>(
-        string header)
-        where TView : Control
+    private ContentPage CreateViewPage<TView>(string header) where TView : Control
     {
         return new ContentPage
         {

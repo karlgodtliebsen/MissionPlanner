@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+using MissionPlanner.AvaloniaUI.App.Views.Common;
+using System.ComponentModel;
 using System.Globalization;
 using System.Text.Json.Serialization;
 using System.Windows.Input;

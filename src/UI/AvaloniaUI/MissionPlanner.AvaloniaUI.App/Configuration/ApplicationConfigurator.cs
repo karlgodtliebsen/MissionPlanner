@@ -10,12 +10,23 @@ using MissionPlanner.AvaloniaUI.App.Services;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dispatching;
 using MissionPlanner.AvaloniaUI.App.Views.Common;
+using MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.AvaloniaUI.App.Views.Connect;
 using MissionPlanner.AvaloniaUI.App.Views.Exit;
 using MissionPlanner.AvaloniaUI.App.Views.FlightData;
+using MissionPlanner.AvaloniaUI.App.Views.FlightData.Hud;
+using MissionPlanner.AvaloniaUI.App.Views.FlightData.Tabs;
 using MissionPlanner.AvaloniaUI.App.Views.FlightPlanner;
 using MissionPlanner.AvaloniaUI.App.Views.Help;
+using MissionPlanner.AvaloniaUI.App.Views.InitSetup.Advanced;
+using MissionPlanner.AvaloniaUI.App.Views.InitSetup.InstallFirmware;
+using MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware;
+using MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections;
+using MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Services;
+using MissionPlanner.AvaloniaUI.App.Views.InitSetup.OptionalHardware;
+using MissionPlanner.AvaloniaUI.App.Views.InitSetup.OptionalHardware.Sections;
 using MissionPlanner.AvaloniaUI.App.Views.Introduction;
+using MissionPlanner.AvaloniaUI.App.Views.Landing;
 using MissionPlanner.AvaloniaUI.App.Views.Main;
 using MissionPlanner.AvaloniaUI.App.Views.Missions;
 using MissionPlanner.AvaloniaUI.App.Views.Missions.DockView;
@@ -24,9 +35,17 @@ using MissionPlanner.AvaloniaUI.App.Views.Preferences;
 using MissionPlanner.AvaloniaUI.App.Views.Simulation;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Configuration;
+using MissionPlanner.Core.Firmware;
 using MissionPlanner.Core.Missions.Planning;
 using MissionPlanner.Core.Notifications;
+using MissionPlanner.Core.Setup.Abstractions;
+using MissionPlanner.Core.Setup.OptionalHardware;
+using MissionPlanner.Core.Setup.OptionalHardware.Motor;
 using MissionPlanner.Firmware.Configuration;
+using MissionPlanner.Firmware.Connected;
+using MissionPlanner.Firmware.Dfu;
+using MissionPlanner.Firmware.Entry;
+using MissionPlanner.Firmware.Installation;
 using MissionPlanner.Library;
 using MissionPlanner.Library.Configuration;
 using MissionPlanner.Library.Factory.Domain.Abstractions;
@@ -116,25 +135,17 @@ public static class ApplicationConfigurator
         services.TryAddTransient<AvaloniaMissionPlanningFileService>();
         services.TryAddTransient<IFileOpenService>(sp => sp.GetRequiredService<AvaloniaMissionPlanningFileService>());
         services.TryAddTransient<IFileSaveService>(sp => sp.GetRequiredService<AvaloniaMissionPlanningFileService>());
-        //services.TryAddTransient<IFirmwareConnectionGateway, FirmwareConnectionGateway>();
-        //services.TryAddTransient<IConnectedVehicleFirmwareGateway, ConnectedVehicleFirmwareGateway>();
+        services.TryAddTransient<IFirmwareConnectionGateway, FirmwareConnectionGateway>();
+        services.TryAddTransient<IConnectedVehicleFirmwareGateway, ConnectedVehicleFirmwareGateway>();
         //services.TryAddTransient<IFirmwareFilePicker, MauiFirmwareFilePicker>();
 
-        //services.TryAddTransient<IFirmwareUserInteraction, FirmwareInteractionService>();
-        //services.TryAddTransient<IBootloaderEntryInteraction, FirmwareInteractionService>();
-        //services.TryAddTransient<IDfuUserInteraction, FirmwareInteractionService>();
+        services.TryAddTransient<IFirmwareUserInteraction, FirmwareInteractionService>();
+        services.TryAddTransient<IBootloaderEntryInteraction, FirmwareInteractionService>();
+        services.TryAddTransient<IDfuUserInteraction, FirmwareInteractionService>();
 
-        //services.TryAddTransient<ITemporaryMavLinkBootloaderGateway, TemporaryMavLinkBootloaderGateway>();
+        services.TryAddTransient<ITemporaryMavLinkBootloaderGateway, TemporaryMavLinkBootloaderGateway>();
         services.TryAddTransient<ITextClipboardService, TextClipboardService>();
-        //services.TryAddTransient<ISetupCompletionStore, PreferencesSetupCompletionStore>();
-        //services.TryAddTransient<IFirmwarePackageCache, FirmwarePackageCache>();
-        //services.TryAddTransient<IParameterComparisonService, ParameterComparisonService>();
-        //services.TryAddTransient<IParameterValueEquivalence, ParameterValueEquivalence>();
-
-        //services.TryAddSingleton<IFirmwareSupportLinkProvider, FirmwareSupportLinkProvider>();
-        //services.TryAddSingleton<IExternalLinkLauncher, ExternalLinkLauncher>();
-        //services.TryAddSingleton<IDeviceManagerLauncher, DeviceManagerLauncher>();
-        //services.AddSingleton<IIntroductionContentLoader, IntroductionContentLoader>();
+        services.TryAddSingleton<ISetupCompletionStore, JsonSetupCompletionStore>();
 
         services
             .AddLibraryServices()
@@ -198,100 +209,109 @@ public static class ApplicationConfigurator
         services.TryAddTransient<ErrorViewModel>();
         services.TryAddTransient<ErrorView>();
 
-        //services.TryAddTransient<HelpViewModel>();
+        services.TryAddTransient<HelpViewModel>();
         services.TryAddTransient<StatisticsViewModel>();
-        //services.TryAddTransient<LandingPageViewModel>();
-        //services.TryAddTransient<IntroductionViewModel>();
-        //services.TryAddTransient<ParametersEditorView>();
-        //services.TryAddTransient<ParametersEditorViewModel>();
+        services.TryAddTransient<LandingPageViewModel>();
+        services.TryAddTransient<IntroductionViewModel>();
 
-        //services.TryAddTransient<AsyncOperationRunner>();
+        //services.TryAddTransient<ParametersEditorView>();
+        services.TryAddTransient<ParametersEditorViewModel>();
+
+        services.TryAddTransient<AsyncOperationRunner>();
+
         //services.TryAddTransient<FlightDataMissionMapView>();
         //services.TryAddTransient<FlightPlannerMissionMapView>();
-        //services.TryAddTransient<FlightPlannerMissionMapViewModel>();
-        //services.TryAddTransient<FlightDataMissionMapViewModel>();
+        services.TryAddTransient<FlightPlannerMissionMapViewModel>();
+        services.TryAddTransient<FlightDataMissionMapViewModel>();
 
 
-        //services.TryAddTransient<HudViewModel>();
+        services.TryAddTransient<HudViewModel>();
 
-        //// Tabs on FlightData Page
-        //services.TryAddTransient<QuickTabViewModel>();
-        //services.TryAddTransient<ActionsTabViewModel>();
-        //services.TryAddTransient<MessagesTabViewModel>();
-        //services.TryAddTransient<PreflightTabViewModel>();
-        //services.TryAddTransient<GaugesTabViewModel>();
-        //services.TryAddTransient<TransponderTabViewModel>();
-        //services.TryAddTransient<StatusTabViewModel>();
-        //services.TryAddTransient<ServoRelayTabViewModel>();
-        //services.TryAddTransient<AuxFunctionTabViewModel>();
-        //services.TryAddTransient<ScriptsTabViewModel>();
-        //services.TryAddTransient<PayloadControlTabViewModel>();
-        //services.TryAddTransient<TelemetryLogsTabViewModel>();
-        //services.TryAddTransient<DataFlashLogsTabViewModel>();
+        // Tabs on FlightData Page
+        services.TryAddTransient<QuickTabViewModel>();
+        services.TryAddTransient<ActionsTabViewModel>();
+        services.TryAddTransient<MessagesTabViewModel>();
+        services.TryAddTransient<PreflightTabViewModel>();
+        services.TryAddTransient<GaugesTabViewModel>();
+        services.TryAddTransient<TransponderTabViewModel>();
+        services.TryAddTransient<StatusTabViewModel>();
+        services.TryAddTransient<ServoRelayTabViewModel>();
+        services.TryAddTransient<AuxFunctionTabViewModel>();
+        services.TryAddTransient<ScriptsTabViewModel>();
+        services.TryAddTransient<PayloadControlTabViewModel>();
+        services.TryAddTransient<TelemetryLogsTabViewModel>();
+        services.TryAddTransient<DataFlashLogsTabViewModel>();
 
-        //services.TryAddTransient<AdvancedViewModel>();
-        //services.TryAddTransient<InstallFirmwareViewModel>();
-        //services.TryAddTransient<OptionalHardwareViewModel>();
-        //services.TryAddSingleton<OptionalHardwareTabCatalog>();
+        services.TryAddTransient<AdvancedViewModel>();
+        services.TryAddTransient<InstallFirmwareViewModel>();
+        services.TryAddTransient<OptionalHardwareViewModel>();
+        services.TryAddSingleton<OptionalHardwareTabCatalog>();
 
-        //services.TryAddTransient<FlightDataViewModel>();
-        //services.TryAddTransient<FlightPlannerViewModel>();
-        //services.TryAddTransient<SimulationViewModel>();
-        //services.TryAddTransient<ExitViewModel>();
+        services.TryAddTransient<FlightDataViewModel>();
+        services.TryAddTransient<FlightPlannerViewModel>();
+        services.TryAddTransient<SimulationViewModel>();
+        services.TryAddTransient<ExitViewModel>();
 
-        //// Tabs on Config View
-        //services.TryAddTransient<FullParametersListTabViewModel>();
-        //services.TryAddTransient<ParameterComparisonViewModel>();
-        //services.TryAddTransient<MavFtpTabViewModel>();
+        // Tabs on Config View
+        services.TryAddTransient<FullParametersListTabViewModel>();
+        services.TryAddTransient<ParameterComparisonViewModel>();
+        services.TryAddTransient<MavFtpTabViewModel>();
 
-        //services.TryAddTransient<MandatoryHardwareViewModel>();
-        //services.TryAddTransient<GeoFenceTabViewModel>();
-        //services.TryAddTransient<BasicTuningTabViewModel>();
-        //services.TryAddTransient<ExtendedTuningTabViewModel>();
-        //services.TryAddTransient<OnboardOsdTabViewModel>();
-        //services.TryAddTransient<PreferencesViewModel>();
-        //services.TryAddTransient<CubeLan8PortSwitchTabViewModel>();
+        services.TryAddTransient<MandatoryHardwareViewModel>();
+        services.TryAddTransient<GeoFenceTabViewModel>();
+        services.TryAddTransient<BasicTuningTabViewModel>();
+        services.TryAddTransient<ExtendedTuningTabViewModel>();
+        services.TryAddTransient<OnboardOsdTabViewModel>();
+        services.TryAddTransient<PreferencesViewModel>();
+        services.TryAddTransient<CubeLan8PortSwitchTabViewModel>();
 
         ////remove
-        //services.TryAddTransient<FirmwareSetupViewModel>();
+        services.TryAddTransient<FirmwareSetupViewModel>();
+
+        services.TryAddTransient<InstallFirmwarePage>();
+        services.TryAddTransient<InstallFirmwareViewModel>();
+
+        services.TryAddTransient<MandatoryHardwarePage>();
+        services.TryAddTransient<MandatoryHardwareViewModel>();
+
 
         //// Workflow Tabs on Setup Mandatory Hardware View
-        //services.TryAddTransient<FrameSetupViewModel>();
-        //services.TryAddTransient<AccelerometerSetupViewModel>();
-        //services.TryAddTransient<CompassSetupViewModel>();
-        //services.TryAddTransient<RadioSetupViewModel>();
-        //services.TryAddTransient<ServoOutputSetupViewModel>();
+        services.TryAddTransient<FrameSetupViewModel>();
+        services.TryAddTransient<AccelerometerSetupViewModel>();
+        services.TryAddTransient<CompassSetupViewModel>();
+        services.TryAddTransient<RadioSetupViewModel>();
+        services.TryAddTransient<ServoOutputSetupViewModel>();
         ////services.TryAddTransient<SerialPortsViewModel>();
-        //services.TryAddTransient<EscMotorSetupViewModel>();
-        //services.TryAddTransient<FlightModesSetupViewModel>();
-        //services.TryAddTransient<FailSafeViewModel>();
-        //services.TryAddTransient<InitTuneParametersViewModel>();
-        //services.TryAddTransient<HwIdViewModel>();
-        //services.TryAddTransient<AdsbViewModel>();
-        //services.TryAddTransient<SafetySetupViewModel>();
-        //services.TryAddTransient<SetupSummaryViewModel>();
+        services.TryAddTransient<EscMotorSetupViewModel>();
+        services.TryAddTransient<FlightModesSetupViewModel>();
+        services.TryAddTransient<FailSafeViewModel>();
+        services.TryAddTransient<InitTuneParametersViewModel>();
+        services.TryAddTransient<HwIdViewModel>();
+        services.TryAddTransient<AdsbViewModel>();
+        services.TryAddTransient<SafetySetupViewModel>();
+        services.TryAddTransient<SetupSummaryViewModel>();
 
         //// Tabs on Setup Optional Hardware View
-        //services.TryAddTransient<RtkGpsInjectViewModel>();
-        //services.TryAddTransient<CubeIdUpdateViewModel>();
-        //services.TryAddTransient<CanGpsOrderViewModel>();
-        //services.TryAddTransient<BatterySetupViewModel>();
-        //services.TryAddTransient<DroneCanUavCanViewModel>();
-        //services.TryAddTransient<JoystickViewModel>();
-        //services.TryAddTransient<CompassMotorCalibrationViewModel>();
-        //services.TryAddTransient<RangefinderViewModel>();
-        //services.TryAddTransient<AirspeedViewModel>();
-        //services.TryAddTransient<OpticalFlowViewModel>();
-        //services.TryAddTransient<OnboardOsdBridgeViewModel>();
-        //services.TryAddTransient<CameraGimbalViewModel>();
-        //services.TryAddTransient<SikRadioViewModel>();
-        //services.TryAddTransient<BluetoothSetupViewModel>();
-        //services.TryAddTransient<MotorTestViewModel>();
-        //services.TryAddSingleton<MotorLayoutResolver>();
-        //services.TryAddTransient<ParachuteViewModel>();
-        //services.TryAddTransient<Esp8266SetupViewModel>();
-        //services.TryAddTransient<AntennaTrackerViewModel>();
-        //services.TryAddTransient<FftSetupViewModel>();
+        services.TryAddTransient<RtkGpsInjectViewModel>();
+        services.TryAddTransient<CubeIdUpdateViewModel>();
+        services.TryAddTransient<CanGpsOrderViewModel>();
+        services.TryAddTransient<BatterySetupViewModel>();
+        services.TryAddTransient<DroneCanUavCanViewModel>();
+        services.TryAddTransient<JoystickViewModel>();
+        services.TryAddTransient<CompassMotorCalibrationViewModel>();
+        services.TryAddTransient<RangefinderViewModel>();
+        services.TryAddTransient<AirspeedViewModel>();
+        services.TryAddTransient<OpticalFlowViewModel>();
+        services.TryAddTransient<OnboardOsdBridgeViewModel>();
+        services.TryAddTransient<CameraGimbalViewModel>();
+        services.TryAddTransient<SikRadioViewModel>();
+        services.TryAddTransient<BluetoothSetupViewModel>();
+        services.TryAddTransient<MotorTestViewModel>();
+        services.TryAddSingleton<MotorLayoutResolver>();
+        services.TryAddTransient<ParachuteViewModel>();
+        services.TryAddTransient<Esp8266SetupViewModel>();
+        services.TryAddTransient<AntennaTrackerViewModel>();
+        services.TryAddTransient<FftSetupViewModel>();
 
         return services;
     }

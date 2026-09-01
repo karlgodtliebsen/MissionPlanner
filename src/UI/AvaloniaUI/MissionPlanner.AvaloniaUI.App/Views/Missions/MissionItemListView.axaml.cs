@@ -1,5 +1,5 @@
-﻿using MissionPlanner.AvaloniaUI.App.Utilities;
-using Avalonia;
+﻿using Avalonia;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.Missions;
 
@@ -9,7 +9,7 @@ namespace MissionPlanner.AvaloniaUI.App.Views.Missions;
 /// Mode 2 ("Complete")b mirrors the classic MissionPlanner waypoint grid with editable params/coordinates,
 /// derived leg columns (Dist/AZ/Grad) and a header with mission info and editor settings.
 /// </summary>
-public partial class MissionItemListView : ViewBase
+public partial class MissionItemListView : UserControlViewBase
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MissionItemListView"/> class.
@@ -22,7 +22,10 @@ public partial class MissionItemListView : ViewBase
     /// <summary>
     /// 
     /// </summary>
-    public bool ShowAllRows { get => GetValue(ShowAllRowsProperty); set => SetValue(ShowAllRowsProperty, value); }
+    public bool ShowAllRows
+    {
+        get => GetValue(ShowAllRowsProperty); set => SetValue(ShowAllRowsProperty, value);
+    }
 
     /// <summary>Controls whether the complete editor columns are displayed.</summary>
     public static readonly StyledProperty<bool> ShowAllRowsProperty =

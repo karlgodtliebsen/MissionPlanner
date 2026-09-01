@@ -9,17 +9,17 @@
     WindowStartupLocation="CenterOwner"
     ShowInTaskbar="False">
 
-    <Grid RowDefinitions="*,Auto">
-
+    <Grid RowDefinitions="Auto,*,Auto">
+        <Label Content="{Binding Title}" FontSize="22" HorizontalAlignment="Center" Margin="25"></Label>
         <ContentControl
-            Grid.Row="0"
+            Grid.Row="1"
             Margin="16"
             Content="{Binding Content}"
             HorizontalContentAlignment="Stretch"
             VerticalContentAlignment="Stretch"/>
 
         <Border
-            Grid.Row="1"
+            Grid.Row="2"
             Padding="16,10">
 
             <StackPanel

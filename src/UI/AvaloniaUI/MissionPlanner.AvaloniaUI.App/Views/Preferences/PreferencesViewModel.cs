@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -23,7 +23,6 @@ public sealed partial class PreferencesViewModel : ViewModelBase
     private readonly ParametersFileHandler fileHandler;
     private readonly IFileOpenService fileOpenService;
     private readonly IUserConfirmationService confirmation;
-    private readonly ILogger<PreferencesViewModel> logger;
     private readonly IMapSecretStore mapSecretStore;
     private readonly IOfflineMapPackRepository offlinePacks;
     private readonly IOfflineMapPackManager offlinePackManager;
@@ -68,7 +67,6 @@ public sealed partial class PreferencesViewModel : ViewModelBase
         this.fileHandler = fileHandler;
         this.fileOpenService = fileOpenService;
         this.confirmation = confirmation;
-        this.logger = logger;
         this.mapSecretStore = mapSecretStore;
         this.offlinePacks = offlinePacks;
         this.offlinePackManager = offlinePackManager;

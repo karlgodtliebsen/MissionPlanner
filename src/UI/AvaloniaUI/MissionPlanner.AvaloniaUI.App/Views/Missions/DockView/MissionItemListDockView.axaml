@@ -1,4 +1,4 @@
-﻿<utilities:ViewBase x:TypeArguments="dockView:MissionItemListDockViewModel" 
+﻿<utilities:UserControlViewBase x:TypeArguments="dockView:MissionItemListDockViewModel" 
                     xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -51,7 +51,7 @@
             <missions:MissionItemListView HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ShowAllRows="False"></missions:MissionItemListView>
         </Grid>
     </Grid>
-</utilities:ViewBase>
+</utilities:UserControlViewBase>
 
     
     

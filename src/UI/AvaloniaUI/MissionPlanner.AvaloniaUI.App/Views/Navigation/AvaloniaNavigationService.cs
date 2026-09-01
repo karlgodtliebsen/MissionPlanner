@@ -3,8 +3,7 @@ using MissionPlanner.AvaloniaUI.App.Utilities.Dispatching;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.Navigation;
 
-public sealed class AvaloniaNavigationService
-    : INavigationService
+public sealed class AvaloniaNavigationService : INavigationService
 {
     private readonly INavigationPageFactory pageFactory;
     private readonly IUiDispatcher dispatcher;
@@ -16,17 +15,13 @@ public sealed class AvaloniaNavigationService
 
     private string? currentRoute;
 
-    public AvaloniaNavigationService(
-        INavigationPageFactory pageFactory,
-        IUiDispatcher dispatcher)
+    public AvaloniaNavigationService(INavigationPageFactory pageFactory, IUiDispatcher dispatcher)
     {
         this.pageFactory = pageFactory;
         this.dispatcher = dispatcher;
     }
 
-    public void Attach(
-        NavigationPage navigationPage,
-        DrawerPage drawerPage)
+    public void Attach(NavigationPage navigationPage, DrawerPage drawerPage)
     {
         this.navigationPage = navigationPage;
         this.drawerPage = drawerPage;
@@ -37,10 +32,7 @@ public sealed class AvaloniaNavigationService
     {
         if (route == currentRoute)
         {
-            if (drawerPage is not null)
-            {
-                drawerPage.IsOpen = false;
-            }
+            drawerPage?.IsOpen = false;
             return;
         }
 
@@ -78,8 +70,7 @@ public sealed class AvaloniaNavigationService
 
     public async Task PushAsync(Page page)
     {
-        await dispatcher.DispatchAsync(async () => await GetNavigationPage()
-            .PushAsync(page));
+        await dispatcher.DispatchAsync(async () => await GetNavigationPage().PushAsync(page));
     }
 
     public async Task GoBackAsync()
@@ -97,8 +88,6 @@ public sealed class AvaloniaNavigationService
 
     private NavigationPage GetNavigationPage()
     {
-        return navigationPage
-               ?? throw new InvalidOperationException(
-                   "NavigationPage has not been attached.");
+        return navigationPage ?? throw new InvalidOperationException("NavigationPage has not been attached.");
     }
 }

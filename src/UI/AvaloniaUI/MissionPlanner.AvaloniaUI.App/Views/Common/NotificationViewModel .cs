@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
 using MissionPlanner.AvaloniaUI.App.Utilities.Dispatching;
@@ -12,7 +12,6 @@ namespace MissionPlanner.AvaloniaUI.App.Views.Common;
 public partial class NotificationViewModel : ObservableObject, IDisposable
 {
     private readonly IUiDispatcher dispatcher;
-    private readonly ILogger<NotificationViewModel> logger;
     private readonly IApplicationNotificationStore notificationStore;
 
     private bool isDisposed;
@@ -50,7 +49,6 @@ public partial class NotificationViewModel : ObservableObject, IDisposable
         ILogger<NotificationViewModel> logger)
     {
         this.dispatcher = dispatcher;
-        this.logger = logger;
         this.notificationStore = notificationStore;
 
         // Subscribe to connection state changes

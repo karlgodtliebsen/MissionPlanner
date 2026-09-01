@@ -5,7 +5,7 @@ namespace MissionPlanner.AvaloniaUI.App.Views.Common;
 /// <summary>
 /// Persistent status bar control
 /// </summary>
-public partial class StatusBarView : ViewBase<StatusBarViewModel>
+public partial class StatusBarView : UserControlViewBase<StatusBarViewModel>
 {
     /// <summary>
     /// 

@@ -7,18 +7,11 @@ namespace MissionPlanner.AvaloniaUI.App.Utilities.Dialogs;
 /// <summary>
 /// 
 /// </summary>
-public sealed partial class ViewDialogViewModel : ObservableObject
+public partial class ViewDialogViewModel : ObservableObject
 {
     private readonly Action<bool> close;
 
-    public ViewDialogViewModel(
-        string title,
-        Control content,
-        string okText,
-        string closeText,
-        bool showOkButton,
-        bool showCloseButton,
-        Action<bool> close)
+    public ViewDialogViewModel(string title, Control content, string okText, string closeText, bool showOkButton, bool showCloseButton, Action<bool> close)
     {
         Title = title;
         Content = content;
@@ -26,7 +19,6 @@ public sealed partial class ViewDialogViewModel : ObservableObject
         CloseText = closeText;
         ShowOkButton = showOkButton;
         ShowCloseButton = showCloseButton;
-
         this.close = close;
     }
 

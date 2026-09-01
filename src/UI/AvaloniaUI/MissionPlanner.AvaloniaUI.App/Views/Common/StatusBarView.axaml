@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<utilities:ViewBase x:TypeArguments="common:StatusBarViewModel" xmlns="https://github.com/avaloniaui"
+<utilities:UserControlViewBase x:TypeArguments="common:StatusBarViewModel" xmlns="https://github.com/avaloniaui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -46,4 +46,4 @@
         </Grid>
     </Border>
 
-</utilities:ViewBase>
+</utilities:UserControlViewBase>

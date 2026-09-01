@@ -25,7 +25,7 @@ public partial class ExitView : NavigationViewBase<ExitViewModel>
     //protected override void OnAppearing()
     //{
     //   // base.OnAppearing();
-    //    //ShowExitDialog().FireAndForget();
+    //    //ShowExitDialog().SafeFireAndForget();
     //}
 
     //private async Task ShowExitDialog()
