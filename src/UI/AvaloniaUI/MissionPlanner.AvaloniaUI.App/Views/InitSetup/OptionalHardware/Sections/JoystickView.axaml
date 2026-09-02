@@ -1,0 +1,18 @@
+<utilities:UserControlViewBase x:TypeArguments="sections:JoystickViewModel" xmlns="https://github.com/avaloniaui" xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sections="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.InitSetup.OptionalHardware.Sections" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material" xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui" x:Class="MissionPlanner.AvaloniaUI.App.Views.InitSetup.OptionalHardware.Sections.JoystickView" x:DataType="sections:JoystickViewModel">
+<StackPanel Orientation="Vertical" Margin="20" Spacing="25" HorizontalAlignment="Center">
+<TextBlock Text="Joystick Setup" FontSize="24" FontWeight="Bold" />
+<ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+<TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
+<TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+<TextBlock Text="{Binding PlatformStatus}" />
+<Grid ColumnDefinitions="Auto,Auto" VerticalAlignment="Stretch" ColumnSpacing="25" HorizontalAlignment="Stretch">
+<ComboBox ToolTip.Tip="Local device" ItemsSource="{Binding Devices}" VerticalAlignment="Bottom" DisplayMemberBinding="{Binding Name}" SelectedItem="{Binding SelectedDevice}" Width="300" />
+<Button Grid.Column="1" Content="Refresh" Command="{Binding RefreshCommand}" VerticalAlignment="Bottom" />
+</Grid>
+<TextBlock Text="Local calibration is separate from vehicle RC calibration." />
+<StackPanel Orientation="Horizontal">
+<CheckBox IsChecked="{Binding VehicleOutputEnabled}" IsEnabled="False" Content="Vehicle MANUAL_CONTROL output (disabled by default)" />
+</StackPanel>
+<Button Content="Disable and release vehicle control" Command="{Binding DisableCommand}" HorizontalAlignment="Stretch" />
+</StackPanel>
+</utilities:UserControlViewBase>

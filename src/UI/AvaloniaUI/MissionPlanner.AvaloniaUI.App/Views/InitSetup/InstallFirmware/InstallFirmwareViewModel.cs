@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
@@ -1121,7 +1121,7 @@ public sealed partial class InstallFirmwareViewModel : ViewModelBase
 
         Versions.ReplaceRange(versions);
 
-        //FirmwareManifestEntry -> FirmwareBoardTarget Target  -> FirmwareVehicleType VehicleType 
+        //FirmwareManifestEntry -> FirmwareBoardTarget Target  -> FirmwareVehicleType VehicleType
         var frameTypes = choices
             .Select(x => x.VehicleType)
             .Distinct()

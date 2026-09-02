@@ -1,0 +1,47 @@
+<utilities:UserControlViewBase x:TypeArguments="sections:SetupSummaryViewModel" xmlns="https://github.com/avaloniaui" xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sections="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" xmlns:mandatoryHardware="clr-namespace:MissionPlanner.Core.Setup.MandatoryHardware;assembly=MissionPlanner.Core" xmlns:models1="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Models" xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui" x:Class="MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections.SetupSummaryView" x:DataType="sections:SetupSummaryViewModel">
+<ScrollViewer VerticalScrollBarVisibility="Visible">
+<StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
+<TextBlock Text="Setup summary" FontSize="18" FontWeight="Bold" />
+<ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+<TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
+<TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+<TextBlock Text="{Binding Heading}" FontWeight="Bold" />
+<TextBlock Text="This report describes configuration evidence only and is not a safe-to-fly certification." Opacity="0.75" />
+<ItemsControl ItemsSource="{Binding Sections}">
+<ItemsControl.ItemTemplate>
+<DataTemplate x:DataType="models1:SetupSummarySectionViewModel">
+<Border Padding="10" Classes="SectionCard">
+<StackPanel Orientation="Vertical" Spacing="4">
+<TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="15" />
+<ItemsControl ItemsSource="{Binding Entries}">
+<ItemsControl.ItemTemplate>
+<DataTemplate x:DataType="mandatoryHardware:SetupSummaryEntry">
+<Grid ColumnDefinitions="200,*,120" ColumnSpacing="8">
+<TextBlock Text="{Binding Label}" />
+<TextBlock Grid.Column="1" Text="{Binding Value}" Opacity="0.8" />
+<TextBlock Grid.Column="2" Text="{Binding Status}" />
+</Grid>
+</DataTemplate>
+</ItemsControl.ItemTemplate>
+</ItemsControl>
+</StackPanel>
+</Border>
+</DataTemplate>
+</ItemsControl.ItemTemplate>
+</ItemsControl>
+<ItemsControl IsVisible="{Binding HasWarnings}" ItemsSource="{Binding Warnings}">
+<ItemsControl.ItemTemplate>
+<DataTemplate x:DataType="x:String">
+<TextBlock Text="{Binding .}" Foreground="{DynamicResource Warning}" />
+</DataTemplate>
+</ItemsControl.ItemTemplate>
+</ItemsControl>
+<StackPanel Orientation="Horizontal" Spacing="10">
+<Button Content="Rebuild summary" Command="{Binding RefreshCommand}" />
+<Button Content="Export JSON" Command="{Binding ExportJsonCommand}" />
+<Button Content="Export Markdown" Command="{Binding ExportMarkdownCommand}" />
+</StackPanel>
+<TextBox AcceptsReturn="True" Text="{Binding ExportedText}" IsReadOnly="True" Height="180" IsVisible="{Binding HasExport}" />
+</StackPanel>
+</ScrollViewer>
+</utilities:UserControlViewBase>

@@ -1,0 +1,22 @@
+<utilities:UserControlViewBase x:TypeArguments="sections:CanGpsOrderViewModel" xmlns="https://github.com/avaloniaui" xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" xmlns:sections="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.InitSetup.OptionalHardware.Sections" xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui" x:Class="MissionPlanner.AvaloniaUI.App.Views.InitSetup.OptionalHardware.Sections.CanGpsOrderView" x:DataType="sections:CanGpsOrderViewModel">
+<ScrollViewer>
+<StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
+<TextBlock Text="CAN GPS Order" FontSize="20" FontWeight="Bold" />
+<ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+<TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
+<TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+<TextBlock Text="Vehicle Reboot required" Foreground="{DynamicResource Warning}" IsVisible="{Binding RebootRequired}" />
+<ItemsControl ItemsSource="{Binding Settings}">
+<ItemsControl.ItemTemplate>
+<DataTemplate x:DataType="sections:ParameterSettingViewModel">
+<Grid ColumnDefinitions="220,*,90">
+<TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+<TextBox Grid.Column="1" Text="{Binding PendingValue}" />
+<Button Grid.Column="2" Content="Apply" Command="{Binding ApplyCommand}" />
+</Grid>
+</DataTemplate>
+</ItemsControl.ItemTemplate>
+</ItemsControl>
+</StackPanel>
+</ScrollViewer>
+</utilities:UserControlViewBase>

@@ -1,11 +1,10 @@
-﻿using Avalonia.Controls;
+using MissionPlanner.AvaloniaUI.App.Utilities;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.InitSetup.InstallFirmware;
 
-public partial class InstallFirmwarePage : NavigationPage
+/// <summary>Displays firmware discovery, validation, and installation workflows.</summary>
+public partial class InstallFirmwarePage : NavigationViewBase<InstallFirmwareViewModel>
 {
-    public InstallFirmwarePage()
-    {
-        InitializeComponent();
-    }
+    /// <summary>Initializes the firmware page.</summary>
+    public InstallFirmwarePage() => InitializeComponent();
 }

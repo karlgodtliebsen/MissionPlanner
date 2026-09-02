@@ -1,0 +1,81 @@
+<utilities:UserControlViewBase x:TypeArguments="sections:RadioSetupViewModel" xmlns="https://github.com/avaloniaui" xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:common="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Common" xmlns:sections="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" xmlns:models="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Models" xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui" x:Class="MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections.RadioSetupView" x:DataType="sections:RadioSetupViewModel">
+<ScrollViewer VerticalScrollBarVisibility="Visible">
+<StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
+<Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+<StackPanel Orientation="Vertical" Spacing="2">
+<TextBlock Text="Radio calibration" FontSize="24" FontWeight="Bold" />
+<TextBlock Text="Live receiver input and verified ArduPilot endpoint calibration" Opacity="0.7" />
+</StackPanel>
+<TextBlock Grid.Column="1" Text="{Binding CalibrationState}" Padding="12,6" VerticalAlignment="Center" FontWeight="Bold" Background="{DynamicResource PrimaryContainer}" />
+</Grid>
+<ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+<TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
+<TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+<Border Padding="14" Classes="SectionCard">
+<Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+<TextBlock Text="!" FontSize="22" FontWeight="Bold" VerticalAlignment="Top" />
+<StackPanel Orientation="Vertical" Grid.Column="1" Spacing="2">
+<TextBlock Text="Calibration safety" FontWeight="Bold" />
+<TextBlock Text="Remove propellers and keep the vehicle disarmed. Turn on the transmitter before calibrating." />
+</StackPanel>
+</Grid>
+</Border>
+<Border Padding="14" Classes="SectionCard">
+<StackPanel Orientation="Vertical" Spacing="9">
+<TextBlock Text="Receiver" FontSize="17" FontWeight="Bold" />
+<ItemsControl>
+<TextBlock Text="●" FontSize="18" Margin="0,0,5,0" />
+<TextBlock Text="{Binding SignalStatus}" FontWeight="Bold" Margin="0,0,20,0" />
+<TextBlock Text="{Binding ChannelCount, StringFormat='{}{0} channels'}" Margin="0,0,20,0" />
+<TextBlock Text="{Binding RssiText}" Margin="0,0,20,0" />
+<TextBlock Text="{Binding VehicleSafetyStatus}" FontWeight="Bold" />
+</ItemsControl>
+<TextBlock Text="{Binding ChannelMapSummary, StringFormat='Pilot map: {0}'}" />
+</StackPanel>
+</Border>
+<ItemsControl>
+<Button Content="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCommand}" Margin="0,0,8,8" />
+<Button Content="Finish endpoint capture" IsEnabled="{Binding CanFinishCapture}" Command="{Binding FinishCaptureCommand}" Margin="0,0,8,8" />
+<Button Content="Confirm and write" IsEnabled="{Binding CanWrite}" Command="{Binding ConfirmAndWriteCommand}" Margin="0,0,8,8" />
+<Button Content="Cancel" IsEnabled="{Binding CanCancelCalibration}" Command="{Binding CancelCalibrationCommand}" Margin="0,0,8,8" />
+<Button Content="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" Margin="0,0,8,8" />
+</ItemsControl>
+<TextBlock IsVisible="{Binding IsStale}" Text="RC telemetry is stale. The last values remain visible, but calibration cannot start or write until fresh input returns." FontWeight="Bold" />
+<ItemsControl ItemsSource="{Binding Channels}">
+<ItemsControl.ItemTemplate>
+<DataTemplate x:DataType="sections:RadioChannelDisplayViewModel">
+<Border Padding="10,8" Classes="SectionCard">
+<Grid RowDefinitions="Auto,32,Auto,Auto" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+<TextBlock Text="{Binding Number, StringFormat='CH {0}'}" FontWeight="Bold" VerticalAlignment="Center" />
+<TextBlock Grid.Column="1" Text="{Binding RoleLabel}" FontWeight="Bold" VerticalAlignment="Center" />
+<StackPanel Orientation="Horizontal" Grid.Column="2" Spacing="8">
+<TextBlock Text="REV" IsVisible="{Binding IsReversed}" FontWeight="Bold" />
+<TextBlock Text="{Binding AuxiliaryState}" Opacity="0.7" />
+<TextBlock Text="{Binding Pwm, StringFormat='{}{0} µs'}" FontWeight="Bold" />
+</StackPanel>
+<models:RadioChannelMeterView Grid.Row="1" Grid.ColumnSpan="3" ChannelNumber="{Binding Number}" FunctionName="{Binding FunctionName}" Pwm="{Binding Pwm}" ConfiguredMinimum="{Binding Minimum}" ConfiguredMaximum="{Binding Maximum}" Trim="{Binding Trim}" DeadZone="{Binding DeadZone}" CapturedMinimum="{Binding CapturedMinimum}" CapturedMaximum="{Binding CapturedMaximum}" CandidateTrim="{Binding CandidateTrim}" IsCapturing="{Binding ShowCapturedRange}" IsStale="{Binding IsStale}" HasSignal="{Binding HasSignal}" PresentationKind="{Binding PresentationKind}" IsReversed="{Binding IsReversed}" />
+<TextBlock Grid.Row="2" Grid.ColumnSpan="3" Text="{Binding Range, StringFormat='Stored MIN / TRIM / MAX   {0}'}" FontSize="12" Opacity="0.72" />
+<TextBlock Grid.Row="3" Grid.ColumnSpan="3" Text="{Binding CalibrationIssue}" FontSize="12" />
+</Grid>
+</Border>
+</DataTemplate>
+</ItemsControl.ItemTemplate>
+</ItemsControl>
+<Border Padding="14" Classes="SectionCard">
+<StackPanel Orientation="Vertical" Spacing="8">
+<TextBlock Text="Next step" FontWeight="Bold" />
+<TextBlock Text="{Binding Instruction}" FontSize="16" />
+<TextBlock Text="{Binding CaptureSummary}" FontSize="12" Opacity="0.75" />
+<ProgressBar IsIndeterminate="True" IsVisible="{Binding IsWriting}" />
+</StackPanel>
+</Border>
+<ItemsControl IsVisible="{Binding HasIssues}" ItemsSource="{Binding Issues}">
+<ItemsControl.ItemTemplate>
+<DataTemplate x:DataType="x:String">
+<TextBlock Text="{Binding .}" FontWeight="Bold" />
+</DataTemplate>
+</ItemsControl.ItemTemplate>
+</ItemsControl>
+</StackPanel>
+</ScrollViewer>
+</utilities:UserControlViewBase>

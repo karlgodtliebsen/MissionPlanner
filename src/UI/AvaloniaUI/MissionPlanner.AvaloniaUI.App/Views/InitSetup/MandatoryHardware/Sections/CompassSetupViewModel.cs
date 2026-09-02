@@ -1,4 +1,4 @@
-﻿using AsyncAwaitBestPractices;
+using AsyncAwaitBestPractices;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;

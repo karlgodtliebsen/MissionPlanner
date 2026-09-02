@@ -1,4 +1,4 @@
-﻿using MissionPlanner.Core.Firmware;
+using MissionPlanner.Core.Firmware;
 
 namespace MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Services;
 

@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using MissionPlanner.AvaloniaUI.App.Views.Config;
 using MissionPlanner.AvaloniaUI.App.Views.Exit;
@@ -7,6 +7,8 @@ using MissionPlanner.AvaloniaUI.App.Views.FlightPlanner;
 using MissionPlanner.AvaloniaUI.App.Views.Help;
 using MissionPlanner.AvaloniaUI.App.Views.InitSetup.InstallFirmware;
 using MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware;
+using MissionPlanner.AvaloniaUI.App.Views.InitSetup.OptionalHardware;
+using MissionPlanner.AvaloniaUI.App.Views.InitSetup.Advanced;
 using MissionPlanner.AvaloniaUI.App.Views.Introduction;
 using MissionPlanner.AvaloniaUI.App.Views.Preferences;
 using MissionPlanner.AvaloniaUI.App.Views.Samples;
@@ -46,6 +48,12 @@ public sealed class NavigationPageFactory : INavigationPageFactory
 
             MissionPlannerRoutes.SetupMandatoryHardware =>
                   services.GetRequiredService<MandatoryHardwarePage>(),
+
+            MissionPlannerRoutes.SetupOptionalHardware =>
+                services.GetRequiredService<OptionalHardwarePage>(),
+
+            MissionPlannerRoutes.SetupAdvanced =>
+                services.GetRequiredService<AdvancedPage>(),
 
             // These route identities are retained for the future Config tab views.
             // Until those AXAML views are migrated, both open the existing Config shell.

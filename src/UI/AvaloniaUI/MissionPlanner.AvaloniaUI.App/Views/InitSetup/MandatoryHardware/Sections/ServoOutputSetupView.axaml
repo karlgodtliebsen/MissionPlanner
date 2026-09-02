@@ -1,0 +1,62 @@
+<utilities:UserControlViewBase x:TypeArguments="sections:ServoOutputSetupViewModel" xmlns="https://github.com/avaloniaui" xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sections="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material" xmlns:controls="clr-namespace:UraniumUI.Material.VirtualizedDataGrid.Controls;assembly=UraniumUI.Material.VirtualizedDataGrid" xmlns:controls1="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions" x:Class="MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections.ServoOutputSetupView" x:DataType="sections:ServoOutputSetupViewModel">
+<Grid RowDefinitions="Auto,*" Margin="26" RowSpacing="16" HorizontalAlignment="Stretch">
+<StackPanel Orientation="Vertical" Grid.Row="0" Spacing="12" HorizontalAlignment="Stretch">
+<TextBlock HorizontalAlignment="Center" Text="Servo output functions" FontSize="18" FontWeight="Bold" />
+<ProgressBar IsIndeterminate="True" HorizontalAlignment="Center" IsVisible="{Binding IsBusy}" />
+<TextBlock HorizontalAlignment="Center" Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" />
+<TextBlock HorizontalAlignment="Center" Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+<StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" Margin="0,10,0,10">
+<Button Content="Refresh servo outputs" Command="{Binding RefreshCommand}" HorizontalAlignment="Left" />
+<Button Content="Write" Command="{Binding WriteCommand}" HorizontalAlignment="Right" />
+</StackPanel>
+</StackPanel>
+<DataGrid AutoGenerateColumns="False" Grid.Row="1" ItemsSource="{Binding Outputs}" RowHeight="60" HorizontalAlignment="Center" VerticalAlignment="Stretch">
+
+<DataGrid.Columns>
+<DataGridTextColumn Width="75" Binding="{Binding Header}" Header="" />
+<DataGridTemplateColumn Header="Output PWM" Width="160">
+<DataGridTemplateColumn.CellTemplate>
+<DataTemplate x:DataType="sections:ServoOutputItemViewModel">
+<TextBlock Text="{Binding LiveDescription}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+</DataTemplate>
+</DataGridTemplateColumn.CellTemplate>
+</DataGridTemplateColumn>
+<DataGridTemplateColumn Header="Reverse" Width="120">
+<DataGridTemplateColumn.CellTemplate>
+<DataTemplate x:DataType="sections:ServoOutputItemViewModel">
+<CheckBox IsChecked="{Binding Reversed, Mode=TwoWay}" HorizontalAlignment="Center" />
+</DataTemplate>
+</DataGridTemplateColumn.CellTemplate>
+</DataGridTemplateColumn>
+<DataGridTemplateColumn Header="Function" Width="200">
+<DataGridTemplateColumn.CellTemplate>
+<DataTemplate x:DataType="sections:ServoOutputItemViewModel">
+<ComboBox VerticalAlignment="Center" HorizontalAlignment="Stretch" ToolTip.Tip="Function" ItemsSource="{Binding Functions}" SelectedItem="{Binding SelectedFunction}" DisplayMemberBinding="{Binding Name}" />
+</DataTemplate>
+</DataGridTemplateColumn.CellTemplate>
+</DataGridTemplateColumn>
+<DataGridTemplateColumn Header="Min" Width="160">
+<DataGridTemplateColumn.CellTemplate>
+<DataTemplate x:DataType="sections:ServoOutputItemViewModel">
+<NumericUpDown Value="{Binding MinimumPwm, Mode=TwoWay}" FormatString="F0" Minimum="{Binding AllowedMinimumPwm}" Maximum="{Binding AllowedMaximumPwm}" VerticalAlignment="Center" MinWidth="150" HorizontalAlignment="Stretch" />
+</DataTemplate>
+</DataGridTemplateColumn.CellTemplate>
+</DataGridTemplateColumn>
+<DataGridTemplateColumn Header="Trim" Width="160">
+<DataGridTemplateColumn.CellTemplate>
+<DataTemplate x:DataType="sections:ServoOutputItemViewModel">
+<NumericUpDown Value="{Binding TrimPwm, Mode=TwoWay}" FormatString="F0" Minimum="{Binding AllowedMinimumPwm}" Maximum="{Binding AllowedMaximumPwm}" VerticalAlignment="Center" MinWidth="150" HorizontalAlignment="Stretch" />
+</DataTemplate>
+</DataGridTemplateColumn.CellTemplate>
+</DataGridTemplateColumn>
+<DataGridTemplateColumn Header="Max" Width="160">
+<DataGridTemplateColumn.CellTemplate>
+<DataTemplate x:DataType="sections:ServoOutputItemViewModel">
+<NumericUpDown Value="{Binding MaximumPwm, Mode=TwoWay}" FormatString="F0" Minimum="{Binding AllowedMinimumPwm}" Maximum="{Binding AllowedMaximumPwm}" VerticalAlignment="Center" MinWidth="150" HorizontalAlignment="Stretch" />
+</DataTemplate>
+</DataGridTemplateColumn.CellTemplate>
+</DataGridTemplateColumn>
+</DataGrid.Columns>
+</DataGrid>
+</Grid>
+</utilities:UserControlViewBase>

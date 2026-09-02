@@ -1,0 +1,14 @@
+<utilities:UserControlViewBase x:TypeArguments="sections:Esp8266SetupViewModel" xmlns="https://github.com/avaloniaui" xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sections="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.InitSetup.OptionalHardware.Sections" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui" x:Class="MissionPlanner.AvaloniaUI.App.Views.InitSetup.OptionalHardware.Sections.Esp8266SetupView" x:DataType="sections:Esp8266SetupViewModel">
+<StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
+<TextBlock Text="ESP8266 MAVLink Bridge" FontSize="24" FontWeight="Bold" />
+<ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+<TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
+<TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+<TextBlock Text="{Binding Target}" />
+<TextBox Watermark="Access-point SSID" Text="{Binding Ssid}" />
+<TextBox Watermark="Access-point password" Text="{Binding Password}" PasswordChar="●" />
+<TextBox Watermark="Station SSID" Text="{Binding StationSsid}" />
+<TextBox Watermark="Station password" Text="{Binding StationPassword}" PasswordChar="●" />
+<Button Content="Validate settings" Command="{Binding ValidateCommand}" HorizontalAlignment="Center" />
+</StackPanel>
+</utilities:UserControlViewBase>

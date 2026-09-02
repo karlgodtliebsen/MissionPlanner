@@ -1,0 +1,24 @@
+<utilities:UserControlViewBase x:TypeArguments="sections:CameraGimbalViewModel" xmlns="https://github.com/avaloniaui" xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sections="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.InitSetup.OptionalHardware.Sections" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions" xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui" x:Class="MissionPlanner.AvaloniaUI.App.Views.InitSetup.OptionalHardware.Sections.CameraGimbalView" x:Name="Root" x:DataType="sections:CameraGimbalViewModel">
+<ScrollViewer>
+<StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
+<TextBlock Text="Camera / Gimbal Configuration" FontSize="20" FontWeight="Bold" />
+<ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+<TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
+<TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+<TextBlock Text="Changes are explicit and confirmed by parameter readback. Live movement and capture commands remain in Payload Control." Opacity="0.75" />
+<Button Content="Open Payload Control" Command="{Binding OpenPayloadControlCommand}" HorizontalAlignment="Left" />
+<TextBlock Text="Vehicle Reboot required after confirmed changes." IsVisible="{Binding RebootRequired}" Foreground="{DynamicResource Warning}" FontWeight="Bold" />
+<ItemsControl ItemsSource="{Binding Settings}">
+<ItemsControl.ItemTemplate>
+<DataTemplate x:DataType="sections:ParameterSettingViewModel">
+<Grid ColumnDefinitions="250,150,90" ColumnSpacing="25">
+<TextBlock Text="{Binding DisplayName}" VerticalAlignment="Center" />
+<NumericUpDown Grid.Column="1" Value="{Binding PendingValue}" Minimum="0" />
+<Button Grid.Column="2" Content="Apply" Command="{Binding ApplyCommand}" />
+</Grid>
+</DataTemplate>
+</ItemsControl.ItemTemplate>
+</ItemsControl>
+</StackPanel>
+</ScrollViewer>
+</utilities:UserControlViewBase>

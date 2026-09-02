@@ -1,0 +1,56 @@
+<utilities:UserControlViewBase x:TypeArguments="sections:CompassSetupViewModel" xmlns="https://github.com/avaloniaui" xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sections="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material" xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui" x:Class="MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections.CompassSetupView" x:DataType="sections:CompassSetupViewModel">
+<ScrollViewer VerticalScrollBarVisibility="Visible">
+<StackPanel Orientation="Vertical" Margin="16" Spacing="25" HorizontalAlignment="Center">
+<TextBlock Text="Compass discovery and calibration" FontSize="18" FontWeight="Bold" />
+<ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+<TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
+<TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+<StackPanel Orientation="Vertical" IsVisible="{Binding HasIssues}" Spacing="4">
+<TextBlock Text="Configuration warnings" FontWeight="Bold" Foreground="{DynamicResource Warning}" />
+<ItemsControl ItemsSource="{Binding Issues}">
+<ItemsControl.ItemTemplate>
+<DataTemplate x:DataType="x:String">
+<TextBlock Text="{Binding .}" Foreground="{DynamicResource Warning}" />
+</DataTemplate>
+</ItemsControl.ItemTemplate>
+</ItemsControl>
+</StackPanel>
+<ItemsControl ItemsSource="{Binding Compasses}">
+<ItemsControl.ItemTemplate>
+<DataTemplate x:DataType="sections:CompassInstanceViewModel">
+<Border Padding="10" Classes="SectionCard">
+<Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="8">
+<TextBlock Text="{Binding Header}" FontWeight="Bold" />
+<TextBlock Grid.Column="1" Text="{Binding HealthLabel}" />
+<TextBlock Grid.Row="1" Grid.ColumnSpan="2" Text="{Binding DeviceLabel}" />
+<TextBlock Grid.Row="2" Grid.ColumnSpan="2" Text="{Binding OffsetsLabel}" Opacity="0.75" />
+<TextBlock Grid.Row="3" Grid.ColumnSpan="2" Text="{Binding MotorCompensationLabel}" Opacity="0.75" />
+<StackPanel Orientation="Horizontal" Grid.Row="4" Grid.ColumnSpan="2" Spacing="10">
+<TextBlock Text="Use" VerticalAlignment="Center" />
+<ToggleSwitch IsChecked="{Binding IsUsed}" />
+<TextBlock Text="External" VerticalAlignment="Center" IsVisible="{Binding SupportsExternal}" />
+<ToggleSwitch IsChecked="{Binding IsExternal}" IsVisible="{Binding SupportsExternal}" />
+<ComboBox ToolTip.Tip="Orientation" ItemsSource="{Binding Orientations}" SelectedItem="{Binding SelectedOrientation}" DisplayMemberBinding="{Binding Name}" />
+<Button Content="Write and verify" Command="{Binding ApplyCommand}" />
+</StackPanel>
+</Grid>
+</Border>
+</DataTemplate>
+</ItemsControl.ItemTemplate>
+</ItemsControl>
+<Button Content="Refresh compass values" Command="{Binding RefreshInventoryCommand}" HorizontalAlignment="Left" />
+<TextBlock Text="Onboard calibration" FontSize="18" FontWeight="Bold" />
+<TextBlock Text="Move away from metal, vehicles, and magnetic interference before starting calibration." Foreground="{DynamicResource Warning}" FontWeight="Bold" />
+<TextBlock Text="{Binding CalibrationState, StringFormat='State: {0}'}" FontWeight="Bold" />
+<TextBlock Text="{Binding Instruction}" FontSize="17" FontWeight="Bold" />
+<TextBlock Text="{Binding ProgressSummary}" />
+<TextBlock Text="{Binding QualitySummary}" FontStyle="Italic" />
+<StackPanel Orientation="Horizontal" Spacing="10">
+<Button Content="Start calibration" IsEnabled="{Binding CanStart}" Command="{Binding StartCalibrationCommand}" />
+<Button Content="Accept results" IsEnabled="{Binding CanAccept}" Command="{Binding AcceptCalibrationCommand}" />
+<Button Content="Cancel calibration" IsEnabled="{Binding CanCancel}" Command="{Binding CancelCalibrationCommand}" />
+<Button Content="Reset / retry" IsEnabled="{Binding CanStart}" Command="{Binding ResetCommand}" />
+</StackPanel>
+</StackPanel>
+</ScrollViewer>
+</utilities:UserControlViewBase>

@@ -1,0 +1,22 @@
+<utilities:UserControlViewBase x:TypeArguments="sections:SikRadioViewModel" xmlns="https://github.com/avaloniaui" xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:sections="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.InitSetup.OptionalHardware.Sections" xmlns:tabViews="clr-namespace:UraniumUI.Material.TabViews;assembly=UraniumUI.Material.Controls.Extensions" xmlns:controls="clr-namespace:UraniumUI.Material.Controls;assembly=UraniumUI.Material.Controls.Extensions" xmlns:material="http://schemas.enisn-projects.io/dotnet/maui/uraniumui/material" xmlns:uranium="http://schemas.enisn-projects.io/dotnet/maui/uraniumui" x:Class="MissionPlanner.AvaloniaUI.App.Views.InitSetup.OptionalHardware.Sections.SikRadioView" x:DataType="sections:SikRadioViewModel">
+<ScrollViewer>
+<StackPanel Orientation="Vertical" Margin="16" Spacing="25" VerticalAlignment="Center" HorizontalAlignment="Center">
+<TextBlock Text="SiK / RFD Radio" FontSize="20" FontWeight="Bold" />
+<TextBlock Text="Direct serial configuration. Disconnect any vehicle using the selected port." Foreground="{DynamicResource Warning}" />
+<ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" />
+<TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
+<TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+<StackPanel Orientation="Horizontal" Spacing="50" HorizontalAlignment="Stretch" Height="75" VerticalAlignment="Stretch">
+<ComboBox ToolTip.Tip="Serial device" VerticalAlignment="Bottom" ItemsSource="{Binding Ports}" SelectedItem="{Binding SelectedPort}" Width="180" />
+<NumericUpDown Watermark="BaudRate" FormatString="F0" VerticalAlignment="Bottom" HorizontalAlignment="Right" Minimum="0" Value="{Binding BaudRate, Mode=TwoWay}" Width="110" />
+</StackPanel>
+<StackPanel Orientation="Horizontal" Spacing="25" HorizontalAlignment="Stretch">
+<Button Content="Refresh ports" Command="{Binding RefreshPortsCommand}" HorizontalAlignment="Left" />
+<Button Content="Connect / Read" Command="{Binding ConnectCommand}" HorizontalAlignment="Right" />
+</StackPanel>
+<TextBlock Text="{Binding Identity}" FontWeight="Bold" />
+<TextBox AcceptsReturn="True" Text="{Binding SettingsText}" Height="260" Watermark="S0=value, one setting per line" />
+<Button Content="Apply, save and reboot" Command="{Binding ApplyCommand}" HorizontalAlignment="Center" />
+</StackPanel>
+</ScrollViewer>
+</utilities:UserControlViewBase>

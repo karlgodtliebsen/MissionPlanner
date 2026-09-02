@@ -1,26 +1,37 @@
-<utilities:TabbedPageViewBase x:TypeArguments="mandatoryHardware:MandatoryHardwareViewModel"
-                              xmlns="https://github.com/avaloniaui"
-                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                              xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
-                              xmlns:mandatoryHardware="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware"
-                              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-                              x:Class="MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.MandatoryHardwarePage">
-    <ContentPage Header="Frame Type">
-        <TextBlock Text="Page 1"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center" />
+<utilities:NavigationViewBase
+    x:TypeArguments="mandatory:MandatoryHardwareViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mandatory="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware"
+    xmlns:sections="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.Sections"
+    xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
+    x:Class="MissionPlanner.AvaloniaUI.App.Views.InitSetup.MandatoryHardware.MandatoryHardwarePage"
+    x:DataType="mandatory:MandatoryHardwareViewModel">
+    <ContentPage Header="Mandatory Hardware" Background="{DynamicResource Surface}">
+        <Grid Margin="20" RowDefinitions="Auto,Auto,*" RowSpacing="14">
+            <StackPanel Spacing="6">
+                <TextBlock Text="Mandatory Hardware" FontSize="26" FontWeight="Bold" />
+                <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" />
+                <TextBlock Text="{Binding ErrorMessage}" IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+                <TextBlock Text="{Binding VehicleHeading}" FontSize="16" />
+            </StackPanel>
+            <Button Grid.Row="1" Content="Open related Config page" HorizontalAlignment="Left"
+                    IsVisible="{Binding HasConfigDestination}" Command="{Binding OpenConfigCommand}" />
+            <TabControl Grid.Row="2">
+                <TabItem Header="Frame"><sections:FrameSetupView /></TabItem>
+                <TabItem Header="Accelerometer"><sections:AccelerometerSetupView /></TabItem>
+                <TabItem Header="Compass"><sections:CompassSetupView /></TabItem>
+                <TabItem Header="Radio"><sections:RadioSetupView /></TabItem>
+                <TabItem Header="Servo Output"><sections:ServoOutputSetupView /></TabItem>
+                <TabItem Header="ESC Calibration"><sections:EscMotorSetupView /></TabItem>
+                <TabItem Header="Flight Modes"><sections:FlightModesSetupView /></TabItem>
+                <TabItem Header="Failsafe"><sections:FailSafeView /></TabItem>
+                <TabItem Header="Initial Tune"><sections:InitTuneParametersView /></TabItem>
+                <TabItem Header="HW ID"><sections:HwIdView /></TabItem>
+                <TabItem Header="ADSB"><sections:AdsbView /></TabItem>
+                <TabItem Header="Safety"><sections:SafetySetupView /></TabItem>
+                <TabItem Header="Summary"><sections:SetupSummaryView /></TabItem>
+            </TabControl>
+        </Grid>
     </ContentPage>
-    <ContentPage Header="Accel Calibration">
-        <TextBlock Text="Page 1"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center" />
-    </ContentPage>
-    <ContentPage Header="Compass">
-        <TextBlock Text="Page 1"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center" />
-    </ContentPage>
-
-</utilities:TabbedPageViewBase>
+</utilities:NavigationViewBase>

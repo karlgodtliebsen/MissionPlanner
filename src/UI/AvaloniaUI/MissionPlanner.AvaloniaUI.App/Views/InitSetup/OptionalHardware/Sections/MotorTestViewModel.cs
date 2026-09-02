@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mapsui.Utilities;
 using Microsoft.Extensions.Logging;
@@ -68,22 +68,22 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
     public partial int SpinMin { get; set; } = 3;
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public int SpinArmSum => ThrottlePercent + SpinArm;
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public int SpinMinSum => SpinArmSum + SpinMin;
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public int SpinArmMaximum => Math.Max(1, 19 - ThrottlePercent);
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     public int SpinMinMaximum => Math.Max(1, 19 - SpinArmSum);
 
@@ -129,7 +129,7 @@ public sealed partial class MotorTestViewModel : ParametersViewModel
 
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="MotorTestViewModel"/> class.    
+    /// Initializes a new instance of the <see cref="MotorTestViewModel"/> class.
     /// </summary>
     /// <param name="connectionSession">The current vehicle connection session.</param>
     /// <param name="activeVehicle">The application active-vehicle context.</param>

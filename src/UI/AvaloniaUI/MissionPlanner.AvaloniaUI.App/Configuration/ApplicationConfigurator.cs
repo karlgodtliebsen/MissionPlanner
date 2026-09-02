@@ -1,4 +1,4 @@
-﻿using Avalonia.Threading;
+using Avalonia.Threading;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -256,6 +256,7 @@ public static class ApplicationConfigurator
         services.TryAddTransient<DataFlashLogsTabViewModel>();
 
         services.TryAddTransient<AdvancedViewModel>();
+        services.TryAddTransient<AdvancedPage>();
         services.TryAddTransient<InstallFirmwareViewModel>();
         services.TryAddTransient<OptionalHardwareViewModel>();
         services.TryAddSingleton<OptionalHardwareTabCatalog>();
@@ -286,6 +287,7 @@ public static class ApplicationConfigurator
 
         services.TryAddTransient<MandatoryHardwarePage>();
         services.TryAddTransient<MandatoryHardwareViewModel>();
+        services.TryAddTransient<OptionalHardwarePage>();
 
 
         //// Workflow Tabs on Setup Mandatory Hardware View
@@ -349,7 +351,7 @@ public static class ApplicationConfigurator
     }
 
     /// <summary>
-    /// Post ServiceProvider Build Setup - This method is called after the ServiceProvider has been built and is used to perform any additional setup or initialization that requires access to the fully constructed service provider. 
+    /// Post ServiceProvider Build Setup - This method is called after the ServiceProvider has been built and is used to perform any additional setup or initialization that requires access to the fully constructed service provider.
     /// </summary>
     /// <param name="serviceProvider"></param>
     /// <returns></returns>
