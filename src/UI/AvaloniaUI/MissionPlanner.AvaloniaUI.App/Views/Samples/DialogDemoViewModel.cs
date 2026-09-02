@@ -7,7 +7,7 @@ using MissionPlanner.Library.Factory.Domain.Abstractions;
 using ErrorView = MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews.ErrorView;
 using ErrorViewModel = MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews.ErrorViewModel;
 
-namespace MissionPlanner.AvaloniaUI.App.Views.DialogTest;
+namespace MissionPlanner.AvaloniaUI.App.Views.Samples;
 
 /// <summary>Coordinates persisted simulator profiles and the observable simulation session.</summary>
 public sealed partial class DialogDemoViewModel : ViewModelBase

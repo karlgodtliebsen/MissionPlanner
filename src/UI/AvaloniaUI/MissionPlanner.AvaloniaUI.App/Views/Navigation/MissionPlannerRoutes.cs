@@ -2,6 +2,7 @@
 
 public static class MissionPlannerRoutes
 {
+    public const string DataGridDemo = "DataGridDemo";
     public const string DialogDemo = "DialogDemo";
 
     public const string FlightData = "FlightData";

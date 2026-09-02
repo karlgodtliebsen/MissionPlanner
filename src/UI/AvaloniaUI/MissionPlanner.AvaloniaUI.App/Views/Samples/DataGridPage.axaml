@@ -1,0 +1,169 @@
+<utilities:NavigationViewBase x:TypeArguments="samples:DataGridViewModel" xmlns="https://github.com/avaloniaui"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                              xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
+                              xmlns:samples="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Samples"
+                              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+                              x:DataType="samples:DataGridViewModel"
+                              x:Class="MissionPlanner.AvaloniaUI.App.Views.Samples.DataGridPage">
+    <ContentPage Header="Large DataGrid Sample">
+
+        <Grid RowDefinitions="Auto,*"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              Margin="8,0"
+
+              >
+
+            <StackPanel Orientation="Horizontal" Grid.Row="0" MinHeight="50" HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="8,0" Spacing="12" >
+                <Button
+                    Content="Load sample data from json file"
+                    Padding="10,4"
+                    VerticalAlignment="Center"
+                    Command="{Binding LoadFromJsonFileCommand}" >
+                </Button>
+
+            </StackPanel>
+            <!--
+            <virtualized:VirtualizedDataGrid Grid.Row="1"
+            ItemsSource="{Binding Parameters}"
+            MinimumStarColumnWidth= "120"
+            ItemSizingStrategy= "MeasureAllItems"
+            ShowRowSeparators="True"
+            FilterMemberPaths="Name,DisplayName,Description"
+            ShowSearchBar="True"
+            >
+            <virtualized:VirtualizedDataGrid.EmptyView>
+            <VerticalStackLayout
+            Padding="40"
+            Spacing="8"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center">
+            <Image
+            WidthRequest="40"
+            HeightRequest="40"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Source="{FontImageSource FontFamily=MaterialOutlined, Glyph={x:Static uranium:MaterialOutlined.Backup_table},
+            Color={AppThemeBinding Light={StaticResource OnSurface},
+            Dark={StaticResource OnSurfaceDark}}}"/>
+            <Label
+            Text="No parameters match the current filter."
+            FontAttributes="Bold"
+            FontSize="16"
+            HorizontalTextAlignment="Center" />
+            <Label
+            Text="Refresh parameters or clear the search text to display parameters."
+            FontSize="13"
+            Opacity="0.75"
+            HorizontalTextAlignment="Center" />
+            </VerticalStackLayout>
+            </virtualized:VirtualizedDataGrid.EmptyView>
+
+            <virtualized:VirtualizedDataGrid.Columns>
+            <material:DataGridColumn Width="160" x:DataType="arduPilotSample:ParameterItemViewModel" ValueBinding="{Binding Name}" Title="Param"  />
+            <material:DataGridColumn Title="Value" >
+            <material:DataGridColumn.CellItemTemplate >
+            <DataTemplate  x:DataType="arduPilotSample:ParameterItemViewModel" >
+            <controls:NumericField
+            IsReadOnly="{Binding IsReadOnly}"
+            Value="{Binding Value, Mode=TwoWay}"
+            BorderColor="Aqua"
+            NumberFormat="N7"
+            Min="{Binding Min}"
+            Max="{Binding Max}"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Center"
+            HorizontalTextAlignment="End"
+            AllowClear="True"
+            AllowSign="True"
+            AllowThousands="True" />
+            </DataTemplate>
+            </material:DataGridColumn.CellItemTemplate>
+            </material:DataGridColumn>
+
+            <material:DataGridColumn  Width="200" >
+            <material:DataGridColumn.CellItemTemplate>
+            <DataTemplate  x:DataType="arduPilotSample:ParameterItemViewModel">
+            <VerticalStackLayout HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="5,0,5,0" >
+            <material:PickerField IsVisible="{Binding HasValuesData}"
+            FontSize="12"
+            BorderColor="Aqua"
+            Title="Pick an option"
+            TitleFontSize="10"
+            WidthRequest="200" VerticalAlignment="Center" HorizontalAlignment="Stretch"
+            ItemsSource="{Binding ValuesData}"
+            SelectedItem="{Binding SelectedValue}" />
+
+            <controls:ExtendedMultiplePickerField IsVisible="{Binding HasBitmask}"
+            Title="Multiple options"
+            BorderColor="Aqua"
+            TitleFontSize="10"
+            FontSize="14"
+            WidthRequest="200" VerticalAlignment="Center" HorizontalAlignment="Stretch"
+            ItemsSource="{Binding BitmaskOptions}"
+            SelectedValuesChangedCommand="{Binding SelectedValuesChanged}"
+            SelectedItems="{Binding SelectedBitmaskItems}" />
+
+            <controls:NumericUpDownField IsVisible="{Binding HasNumericRangeData}"
+            Title="Number"
+            BorderColor="Aqua"
+            TitleFontSize="10"
+            FontSize="14"
+            WidthRequest="200"
+            ButtonOrientation="Vertical"
+            Value="{Binding Value, Mode=TwoWay}"
+            Min="{Binding Min}"
+            Max="{Binding Max}"
+            StepSize="{Binding StepSize}"
+            VerticalAlignment="Center" HorizontalAlignment="Stretch"
+            HorizontalTextAlignment="End"
+            VerticalTextAlignment="Center" />
+            </VerticalStackLayout>
+            </DataTemplate>
+            </material:DataGridColumn.CellItemTemplate>
+            </material:DataGridColumn>
+
+            <material:DataGridColumn Width="100" x:DataType="arduPilotSample:ParameterItemViewModel" ValueBinding="{Binding Range}" Title="Range"  />
+            <material:DataGridColumn Width="100" x:DataType="arduPilotSample:ParameterItemViewModel" ValueBinding="{Binding OriginalValueText}" Title="Default"  />
+            <material:DataGridColumn Width="125" x:DataType="arduPilotSample:ParameterItemViewModel" Title="Units">
+            <material:DataGridColumn.CellItemTemplate>
+            <DataTemplate x:DataType="arduPilotSample:ParameterItemViewModel">
+            <Label FontSize="14" Text="{Binding Units}" Margin="10,0" VerticalAlignment="Center" HorizontalAlignment="Center" HorizontalTextAlignment="Center" />
+            </DataTemplate>
+            </material:DataGridColumn.CellItemTemplate>
+            </material:DataGridColumn>
+
+            <material:DataGridColumn Width="150" x:DataType="arduPilotSample:ParameterItemViewModel" Title="Write status">
+            <material:DataGridColumn.CellItemTemplate>
+            <DataTemplate x:DataType="arduPilotSample:ParameterItemViewModel">
+            <VerticalStackLayout Margin="10,0" VerticalAlignment="Center" HorizontalAlignment="Stretch">
+            <Label FontSize="12" Text="{Binding WriteStatus}" HorizontalAlignment="Center" HorizontalTextAlignment="Center"/>
+            <Label FontSize="10" Text="{Binding WriteMessage}"  LineBreakMode="WordWrap" HorizontalAlignment="Center" HorizontalTextAlignment="Center"/>
+            </VerticalStackLayout>
+            </DataTemplate>
+            </material:DataGridColumn.CellItemTemplate>
+            </material:DataGridColumn>
+
+            <material:DataGridColumn x:DataType="arduPilotSample:ParameterItemViewModel" Title="Description" Width="*">
+            <material:DataGridColumn.CellItemTemplate>
+            <DataTemplate x:DataType="arduPilotSample:ParameterItemViewModel">
+            <VerticalStackLayout HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="10,10,0,10">
+            <Label FontSize="12" VerticalAlignment="Center" VerticalTextAlignment="Center" LineBreakMode="WordWrap"  HorizontalAlignment="Start" HorizontalTextAlignment="Start" Text="{Binding DisplayName}"/>
+            <Label FontSize="12" VerticalAlignment="Stretch" HorizontalAlignment="Stretch"  Text=" "/>
+            <Label FontSize="12" VerticalAlignment="Center" VerticalTextAlignment="Center" LineBreakMode="WordWrap"  HorizontalAlignment="Start" HorizontalTextAlignment="Start" Text="{Binding Description}"/>
+            </VerticalStackLayout>
+            </DataTemplate>
+            </material:DataGridColumn.CellItemTemplate>
+            </material:DataGridColumn>
+
+            </virtualized:VirtualizedDataGrid.Columns>
+            </virtualized:VirtualizedDataGrid>
+            -->
+        </Grid>
+
+
+
+    </ContentPage>
+</utilities:NavigationViewBase>

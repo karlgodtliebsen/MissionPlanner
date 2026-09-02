@@ -39,6 +39,7 @@ public partial class MainShellViewModel : ObservableObject
     private static bool CanNavigate(string? route)
     {
         return route is
+        MissionPlannerRoutes.DataGridDemo or
         MissionPlannerRoutes.DialogDemo or
         MissionPlannerRoutes.FlightData or
         MissionPlannerRoutes.FlightPlanner or

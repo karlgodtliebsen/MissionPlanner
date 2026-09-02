@@ -1,6 +1,6 @@
 ﻿using MissionPlanner.AvaloniaUI.App.Utilities;
 
-namespace MissionPlanner.AvaloniaUI.App.Views.DialogTest;
+namespace MissionPlanner.AvaloniaUI.App.Views.Samples;
 
 public partial class DialogDemoPage : NavigationViewBase<DialogDemoViewModel>
 {

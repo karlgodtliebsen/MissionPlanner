@@ -13,7 +13,6 @@ using MissionPlanner.AvaloniaUI.App.Views.Common;
 using MissionPlanner.AvaloniaUI.App.Views.Config;
 using MissionPlanner.AvaloniaUI.App.Views.ConfigTuning.Tabs;
 using MissionPlanner.AvaloniaUI.App.Views.Connect;
-using MissionPlanner.AvaloniaUI.App.Views.DialogTest;
 using MissionPlanner.AvaloniaUI.App.Views.Exit;
 using MissionPlanner.AvaloniaUI.App.Views.FlightData;
 using MissionPlanner.AvaloniaUI.App.Views.FlightData.Hud;
@@ -34,6 +33,7 @@ using MissionPlanner.AvaloniaUI.App.Views.Missions;
 using MissionPlanner.AvaloniaUI.App.Views.Missions.DockView;
 using MissionPlanner.AvaloniaUI.App.Views.Navigation;
 using MissionPlanner.AvaloniaUI.App.Views.Preferences;
+using MissionPlanner.AvaloniaUI.App.Views.Samples;
 using MissionPlanner.AvaloniaUI.App.Views.Simulation;
 using MissionPlanner.Core.ConfigTuning.Planner;
 using MissionPlanner.Core.Configuration;
@@ -61,7 +61,8 @@ using MissionPlanner.Simulation.Abstractions;
 using MissionPlanner.Simulation.ArduPilot;
 using MissionPlanner.Simulation.Configuration;
 using MissionPlanner.Transport.Configuration;
-using DialogDemoViewModel = MissionPlanner.AvaloniaUI.App.Views.DialogTest.DialogDemoViewModel;
+using DialogDemoPage = MissionPlanner.AvaloniaUI.App.Views.Samples.DialogDemoPage;
+using DialogDemoViewModel = MissionPlanner.AvaloniaUI.App.Views.Samples.DialogDemoViewModel;
 using ErrorView = MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews.ErrorView;
 using ErrorViewModel = MissionPlanner.AvaloniaUI.App.Utilities.Dialogs.SubViews.ErrorViewModel;
 
@@ -189,6 +190,8 @@ public static class ApplicationConfigurator
         services.TryAddTransient<DialogDemoViewModel>();
         services.TryAddTransient<DialogDemoPage>();
 
+        services.TryAddTransient<DataGridViewModel>();
+        services.TryAddTransient<DataGridPage>();
 
         services.TryAddTransient<ExitViewModel>();
         services.TryAddTransient<ExitUserControlView>();

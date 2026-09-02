@@ -121,6 +121,25 @@
 
                         </Button>
 
+                        <Button Classes="NavigationItem"
+                                Command="{Binding NavigateCommand}"
+                                CommandParameter="DataGridDemo">
+
+                            <Grid ColumnDefinitions="28,*">
+
+                                <Image
+                                    Width="20"
+                                    Height="20"
+                                    Source="/Resources/Images/light_flightdata_icon.png"/>
+
+                                <TextBlock
+                                    Grid.Column="1"
+                                    Text="Data Grid Demo"
+                                    VerticalAlignment="Center"/>
+                            </Grid>
+
+                        </Button>
+
                         <!-- Flight Data -->
 
                         <Button Classes="NavigationItem"

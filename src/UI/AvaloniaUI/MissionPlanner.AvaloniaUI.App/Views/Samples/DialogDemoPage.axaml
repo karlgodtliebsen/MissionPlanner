@@ -1,4 +1,4 @@
-<utilities:NavigationViewBase x:TypeArguments="dialogTest:DialogDemoViewModel" xmlns="https://github.com/avaloniaui"
+<utilities:NavigationViewBase x:TypeArguments="samples:DialogDemoViewModel" xmlns="https://github.com/avaloniaui"
                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -6,11 +6,12 @@
                               xmlns:dialogTest="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.DialogTest"
                               xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                               xmlns:simulation="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.DialogTest"
+                              xmlns:samples="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Samples"
                               mc:Ignorable="d"
                               d:DesignWidth="800"
                               d:DesignHeight="450"
-                              x:Class="MissionPlanner.AvaloniaUI.App.Views.DialogTest.DialogDemoPage"
-                              x:DataType="simulation:DialogDemoViewModel"
+                              x:Class="MissionPlanner.AvaloniaUI.App.Views.Samples.DialogDemoPage"
+                              x:DataType="samples:DialogDemoViewModel"
                               >
     <ContentPage Header="Welcome">
         <Border Classes="SectionCard" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"  Padding="50">
