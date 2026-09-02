@@ -1,0 +1,22 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mapsui="clr-namespace:Mapsui.UI.Avalonia;assembly=Mapsui.UI.Avalonia"
+    mc:Ignorable="d"
+    d:DesignWidth="600"
+    d:DesignHeight="220"
+    x:Class="MissionPlanner.AvaloniaUI.App.Views.Simulation.SimulationLocationMapView">
+    <Grid>
+        <mapsui:MapControl x:Name="LocationMap" />
+        <Border Margin="8"
+                Padding="8,4"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Background="{DynamicResource InverseSurface}">
+            <TextBlock Text="Select SITL start position"
+                       Foreground="{DynamicResource InverseOnSurface}" />
+        </Border>
+    </Grid>
+</UserControl>

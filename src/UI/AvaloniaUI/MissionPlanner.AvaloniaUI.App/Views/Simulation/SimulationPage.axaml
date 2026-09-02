@@ -1,15 +1,482 @@
-<utilities:NavigationViewBase x:TypeArguments="simulation:SimulationViewModel" 
-                              xmlns="https://github.com/avaloniaui"
-                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-                              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-                              xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
-                              xmlns:simulation="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Simulation"
-                              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-                              x:Class="MissionPlanner.AvaloniaUI.App.Views.Simulation.SimulationPage">
-    <ContentPage Header="Simulation">
-        <TextBlock Text="Welcome to Avalonia!"
-                   HorizontalAlignment="Center"
-                   VerticalAlignment="Center" />
+<utilities:NavigationViewBase
+    x:TypeArguments="simulation:SimulationViewModel"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:simulation="clr-namespace:MissionPlanner.AvaloniaUI.App.Views.Simulation"
+    xmlns:simulationCore="clr-namespace:MissionPlanner.Simulation;assembly=MissionPlanner.Simulation"
+    xmlns:utilities="clr-namespace:MissionPlanner.AvaloniaUI.App.Utilities"
+    mc:Ignorable="d"
+    d:DesignWidth="1200"
+    d:DesignHeight="800"
+    x:Class="MissionPlanner.AvaloniaUI.App.Views.Simulation.SimulationPage"
+    x:DataType="simulation:SimulationViewModel">
+    <ContentPage Header="Simulation" Background="{DynamicResource Surface}">
+<Grid Margin="18" RowDefinitions="Auto,*" RowSpacing="12">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <StackPanel Orientation="Vertical" Spacing="3">
+                <TextBlock Text="Simulation workspace" FontSize="24" FontWeight="Bold" />
+                <TextBlock Text="Persisted profiles and an owned, observable simulator session. Launch adapters are capability-driven; unavailable runtimes fail explicitly." />
+            </StackPanel>
+            <Button Grid.Column="1" Content="Export diagnostics" Command="{Binding ExportDiagnosticsCommand}" VerticalAlignment="Center" />
+        </Grid>
+
+        <Grid Grid.Row="1" ColumnDefinitions="0.85*,1.15*" ColumnSpacing="14">
+            <ScrollViewer>
+                <StackPanel Orientation="Vertical" Spacing="12">
+                    <Border Padding="12">
+                        <StackPanel Orientation="Vertical" Spacing="8">
+                            <TextBlock Text="Profiles" FontSize="18" FontWeight="Bold" />
+                            <ComboBox
+                                    ItemsSource="{Binding Profiles}"
+                                    DisplayMemberBinding="{Binding Name}"
+                                    SelectedItem="{Binding SelectedProfile}" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button Content="New" Command="{Binding NewProfileCommand}" />
+                                <Button Content="Save" Command="{Binding SaveProfileCommand}" />
+                                <Button Content="Delete" Command="{Binding DeleteProfileCommand}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Padding="12" Classes="SectionCard">
+                        <StackPanel Orientation="Vertical" Spacing="8">
+                            <TextBlock Text="Multi-vehicle fleet" FontSize="18" FontWeight="Bold" />
+                            <TextBlock Text="Each member receives an isolated process, MAVLink channel, SystemId, port set, home offset, and artifact directory." />
+                            <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
+                                <NumericUpDown
+                                    Grid.Column="0"
+                                    Watermark="Count"
+                                    Value="{Binding FleetCount,Mode=TwoWay}"
+                                    FormatString="F0"
+                                    HorizontalAlignment="Stretch"
+
+
+                                    />
+                                <NumericUpDown
+                                    Grid.Column="1"
+                                    Watermark="Spacing (m)"
+                                    Value="{Binding FleetSpacingMeters,Mode=TwoWay}"
+                                    FormatString="F1"
+                                    HorizontalAlignment="Stretch"
+                                     />
+
+                                <NumericUpDown
+                                    Grid.Column="2"
+                                    Watermark="Port Stride"
+                                    Value="{Binding FleetPortStride,Mode=TwoWay}"
+                                    FormatString="F0"
+                                    HorizontalAlignment="Stretch"
+
+
+                                    />
+
+                                <NumericUpDown
+                                    Grid.Column="3"
+                                    Watermark="Concurrency"
+                                    Value="{Binding FleetMaximumConcurrency,Mode=TwoWay}"
+                                    FormatString="F0"
+                                    HorizontalAlignment="Stretch"
+
+
+                                    />
+
+                            </Grid>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button Content="Start all" Command="{Binding StartAllCommand}" />
+                                <Button Content="Stop all" Command="{Binding StopAllCommand}" />
+                            </StackPanel>
+                            <TextBlock Text="{Binding FleetStatus}" />
+
+                            <DataGrid Grid.Row="1"
+                                                  ItemsSource="{Binding FleetSessions}"
+                                                  SelectedItem="{Binding SelectedFleetSession}"
+
+                                                  SelectionMode="Single"
+
+                                                  HorizontalAlignment="Stretch"
+                                                  VerticalAlignment="Stretch"
+                                                  Height="150"
+                                                  Background="Transparent"
+                     AutoGenerateColumns="False">
+
+
+                                <DataGrid.Columns>
+                                    <DataGridTemplateColumn Width="150" Header="Timestamp">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate x:DataType="simulationCore:SimulationFleetSessionSnapshot">
+                                                <StackPanel Orientation="Vertical">
+                                                    <TextBlock Text="{Binding Allocation.Profile.Name}" FontWeight="Bold" />
+                                                    <TextBlock Text="{Binding VehicleId, StringFormat='Vehicle {0}'}" FontSize="12" />
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Width="*" Header="Stream">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate x:DataType="simulationCore:SimulationFleetSessionSnapshot">
+                                                <TextBlock Text="{Binding Session.State}" VerticalAlignment="Center" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                    <DataGridTemplateColumn Width="5*" Header="Text">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate x:DataType="simulationCore:SimulationFleetSessionSnapshot">
+                                                <TextBlock Text="{Binding Allocation.Profile.EffectiveLaunchSettings.SystemId, StringFormat='SysId {0}'}" VerticalAlignment="Center" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Padding="12" Classes="SectionCard">
+                        <StackPanel Orientation="Vertical" Spacing="8">
+                            <TextBlock Text="SITL installations" FontSize="18" FontWeight="Bold" />
+                            <TextBlock Text="{Binding PlatformCapability}" />
+                            <ComboBox
+                                    ItemsSource="{Binding Installations}"
+                                    DisplayMemberBinding="{Binding DisplayName}"
+                                    SelectedItem="{Binding SelectedInstallation}" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button Content="Refresh" Command="{Binding RefreshInstallationsCommand}" />
+                                <Button Content="Use selected" Command="{Binding UseSelectedInstallationCommand}" />
+                                <Button Content="Remove cached"
+                                        Command="{Binding RemoveInstallationCommand}"
+                                        IsEnabled="{Binding CanRemoveInstallation}" />
+                            </StackPanel>
+                            <Grid ColumnDefinitions="0.7*,1.3*" ColumnSpacing="8">
+                                <ComboBox ItemsSource="{Binding ReleaseChannels}"
+                                        SelectedItem="{Binding SelectedReleaseChannel}" />
+                                <ComboBox Grid.Column="1"
+                                        ToolTip.Tip="Compatible verified release"
+                                        ItemsSource="{Binding AvailableReleases}"
+                                        DisplayMemberBinding="{Binding DisplayName}"
+                                        SelectedItem="{Binding SelectedRelease}" />
+                            </Grid>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button Content="Download, verify, and install"
+                                        Command="{Binding InstallReleaseCommand}"
+                                        IsEnabled="{Binding CanInstallRelease}" />
+                                <Button Content="Cancel"
+                                        Command="{Binding CancelOperationCommand}" />
+                            </StackPanel>
+                            <ProgressBar Value="{Binding InstallProgress}" />
+                            <TextBlock Text="{Binding InstallationStatus}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Padding="12" Classes="SectionCard">
+                        <StackPanel Orientation="Vertical" Spacing="8">
+                            <TextBlock Text="Launch profile" FontSize="18" FontWeight="Bold" />
+                            <TextBlock Text="Name" />
+                            <TextBox Text="{Binding ProfileName}" />
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock Text="Firmware" />
+                                    <ComboBox ItemsSource="{Binding FirmwareFamilies}" SelectedItem="{Binding SelectedFirmwareFamily}" />
+                                </StackPanel>
+                                <StackPanel Orientation="Vertical" Grid.Column="1">
+                                    <TextBlock Text="Frame / model" />
+                                    <ComboBox ItemsSource="{Binding AvailableFrames}" SelectedItem="{Binding FrameModel}" />
+                                </StackPanel>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock Text="Binary version" />
+                                    <TextBox Text="{Binding BinaryVersion}" />
+
+                                </StackPanel>
+                                <StackPanel Orientation="Vertical" Grid.Column="1">
+                                    <TextBlock Text="Speedup" />
+                                    <NumericUpDown
+                                        Value="{Binding Speedup,Mode=TwoWay}"
+                                        FormatString="F1"
+                                        HorizontalAlignment="Stretch"
+                                         />
+                                </StackPanel>
+                            </Grid>
+                            <TextBlock Text="Absolute executable path" />
+                            <TextBox Text="{Binding BinaryPath}" Watermark="Select an installed SITL binary in step 02" />
+
+                            <TextBlock Text="Start location (latitude, longitude, altitude, heading)" />
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                                <ComboBox
+                                        ItemsSource="{Binding LocationPresets}"
+                                        DisplayMemberBinding="{Binding Name}"
+                                        SelectedItem="{Binding SelectedLocationPreset}" />
+                                <Button Grid.Column="1" Content="Apply preset" Command="{Binding ApplyLocationPresetCommand}" />
+                            </Grid>
+                            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                                <NumericUpDown
+                                    Watermark="Latitude"
+                                    Value="{Binding Latitude,Mode=TwoWay}"
+                                    FormatString="F7"
+                                    HorizontalAlignment="Stretch"
+                                     />
+
+                                <NumericUpDown
+                                    Grid.Column="1"
+                                    Watermark="Longitude"
+                                    Value="{Binding Longitude,Mode=TwoWay}"
+                                    FormatString="F7"
+                                    HorizontalAlignment="Stretch"
+                                     />
+
+                                <NumericUpDown
+                                    Grid.Row="1"
+                                    Watermark="Altitude"
+                                    Value="{Binding Altitude,Mode=TwoWay}"
+                                    FormatString="F2"
+                                    HorizontalAlignment="Stretch"
+                                     />
+
+                                <NumericUpDown
+                                    Grid.Row="1" Grid.Column="1"
+                                    Watermark="Heading"
+                                    Value="{Binding Heading,Mode=TwoWay}"
+                                    FormatString="F2"
+                                    HorizontalAlignment="Stretch"
+                                     />
+
+                            </Grid>
+                            <TextBlock Text="Click the map to select latitude/longitude" />
+
+                            <simulation:SimulationLocationMapView x:Name="LocationMapView" Height="220" />
+
+                            <TextBlock Text="Ports" />
+
+
+                            <Grid  ColumnDefinitions="*,*" ColumnSpacing="8" >
+                                <NumericUpDown
+                                    Watermark="MAVLink UDP"
+                                    Value="{Binding MavLinkPort,Mode=TwoWay}"
+                                    FormatString="F0"
+
+                                    HorizontalAlignment="Stretch"
+                                     />
+
+                                <NumericUpDown
+                                    Grid.Column="1"
+                                    Watermark="Console TCP"
+                                    Value="{Binding ConsolePort,Mode=TwoWay}"
+                                    FormatString="F0"
+
+                                    HorizontalAlignment="Stretch"
+                                     />
+                            </Grid>
+                            <TextBlock Text="Instance identity" />
+                            <Grid  ColumnDefinitions="*,*" ColumnSpacing="8" >
+                                <NumericUpDown
+                                    Watermark="Instance (0-254)"
+                                    Value="{Binding InstanceNumber,Mode=TwoWay}"
+                                    FormatString="F0"
+
+                                    HorizontalAlignment="Stretch"
+                                     />
+
+                                <NumericUpDown
+                                    Grid.Column="1"
+                                    Watermark="SystemId (1-255)"
+                                    Value="{Binding SystemId,Mode=TwoWay}"
+                                    FormatString="F0"
+
+                                    HorizontalAlignment="Stretch"
+                                     />
+
+                            </Grid>
+
+
+                            <TextBlock Text="Defaults / parameter files (one absolute path per line)" />
+                            <TextBox Text="{Binding DefaultsFilesText}" AcceptsReturn="True" MinHeight="60" />
+                            <TextBlock Text="Additional serial endpoints (index,UdpClient|TcpClient,host,port)" />
+                            <TextBox Text="{Binding SerialEndpointsText}" AcceptsReturn="True" MinHeight="60" />
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <CheckBox Content="Wipe state" IsChecked="{Binding WipeState}" />
+                                <CheckBox Content="Show console" IsChecked="{Binding ShowConsoleWindow}" />
+                                <CheckBox Content="Map integration" IsChecked="{Binding EnableMapIntegration}" />
+                            </StackPanel>
+                            <TextBlock Text="Additional argument tokens (one token per line)" />
+                            <TextBox Text="{Binding AdditionalArgumentsText}" AcceptsReturn="True" MinHeight="70" />
+
+                            <TextBlock Text="Environment (one NAME=VALUE per line)" />
+                            <TextBox
+                                Text="{Binding EnvironmentText}"
+                                AcceptsReturn="True" MinHeight="70" />
+
+
+                        </StackPanel>
+                    </Border>
+
+                    <Border Padding="12" Classes="SectionCard">
+                        <StackPanel Orientation="Vertical" Spacing="8">
+                            <TextBlock Text="Declarative scenario runner" FontSize="18" FontWeight="Bold" />
+                            <TextBlock Text="Closed schema only. Every step has a timeout; dry-run checks the exact vehicle and required capabilities." />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button Content="Load JSON" Command="{Binding LoadScenarioDocumentCommand}" />
+                                <Button Content="Dry run" Command="{Binding DryRunScenarioCommand}" />
+                                <Button Content="Run" Command="{Binding RunScenarioCommand}" />
+                                <Button Content="Cancel" Command="{Binding CancelOperationCommand}" />
+                            </StackPanel>
+
+                            <TextBox Text="{Binding ScenarioDocumentText}"
+                                                AcceptsReturn="True"
+
+                                                FontFamily="Consolas"
+                                                MinHeight="220" />
+
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <CheckBox Content="I confirm arm, takeoff, mission start, and fault steps" IsChecked="{Binding ScenarioHazardsConfirmed}" />
+                            </StackPanel>
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <Button Content="Pause at boundary" Command="{Binding PauseScenarioCommand}" />
+                                <Button Content="Resume" Command="{Binding ResumeScenarioCommand}" />
+                                <Button Content="Export JSON report" Command="{Binding ExportScenarioJsonCommand}" />
+                                <Button Content="Export text report" Command="{Binding ExportScenarioTextCommand}" />
+                            </StackPanel>
+                            <TextBlock Text="{Binding ScenarioRunnerStatus}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="12">
+                <Border Padding="12">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <StackPanel Orientation="Vertical" Spacing="4">
+                            <TextBlock Text="{Binding SessionState}" FontSize="20" FontWeight="Bold" />
+                            <TextBlock Text="{Binding StatusMessage}" IsVisible="{Binding HasStatusMessage}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                            <TextBlock Text="{Binding ErrorMessage}"  IsVisible="{Binding HasError}" Foreground="{DynamicResource Error}" />
+                        </StackPanel>
+                        <ProgressBar Grid.Column="1" IsIndeterminate="True" IsVisible="{Binding IsBusy}" Width="120" />
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="1" Padding="12" Classes="SectionCard">
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="6">
+                        <TextBlock Text="Elapsed" FontWeight="Bold" />
+                        <TextBlock Grid.Column="1" Text="{Binding Elapsed}" />
+                        <TextBlock Grid.Row="1" Text="Runtime" FontWeight="Bold" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding RuntimeIdentity}" />
+                        <TextBlock Grid.Row="2" Text="Endpoints" FontWeight="Bold" />
+                        <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding ConnectionEndpoints}" />
+                    </Grid>
+                </Border>
+                <Border Grid.Row="2" Padding="12" Classes="SectionCard">
+                    <StackPanel Orientation="Vertical" Spacing="8">
+
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <TextBlock Text="Environment, sensors, and bounded faults" FontSize="18" FontWeight="Bold" />
+                            <Button Grid.Column="1" Content="Refresh" Command="{Binding RefreshControlsCommand}" />
+                        </Grid>
+                        <ComboBox
+                                ItemsSource="{Binding ControlCapabilities}"
+                                DisplayMemberBinding="{Binding DisplayName}"
+                                SelectedItem="{Binding SelectedControl}" />
+
+                        <TextBlock Text="{Binding SelectedControl.Reason}" />
+                        <TextBlock Text="{Binding SelectedControl.Descriptor.Description}" />
+                        <Grid  ColumnDefinitions="*,*" ColumnSpacing="8" >
+                            <NumericUpDown
+                                Watermark="Requested Value"
+                                Value="{Binding ControlRequestedValue,Mode=TwoWay}"
+                                FormatString="F1"
+                                HorizontalAlignment="Stretch"
+                                 />
+                            <NumericUpDown
+                                Grid.Column="1"
+                                Watermark="Fault Duration Seconds"
+                                Value="{Binding FaultDurationSeconds,Mode=TwoWay}"
+                                FormatString="F1"
+                                HorizontalAlignment="Stretch"
+                                 />
+                        </Grid>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <CheckBox IsChecked="{Binding HazardConfirmed}" />
+                            <TextBlock Text="I confirm this bounded hazardous injection" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Content="Apply" Command="{Binding ApplyControlCommand}"
+                                    IsEnabled="{Binding SelectedControl.IsAvailable}" />
+                            <Button Content="Reset" Command="{Binding ResetControlCommand}" />
+                        </StackPanel>
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8" Margin="0,10,0,10" VerticalAlignment="Stretch">
+                            <TextBox Text="{Binding ScenarioPresetName}" Watermark="Scenario preset name" />
+
+                            <ComboBox Grid.Column="1"
+                                    ToolTip.Tip="Saved scenario preset"
+                                    ItemsSource="{Binding ScenarioPresets}"
+                                    DisplayMemberBinding="{Binding Name}"
+                                    SelectedItem="{Binding SelectedScenarioPreset}" />
+                        </Grid>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Content="Save preset" Command="{Binding SaveScenarioPresetCommand}" />
+                            <Button Content="Load preset" Command="{Binding LoadScenarioPresetCommand}" />
+                            <Button Content="Delete preset" Command="{Binding DeleteScenarioPresetCommand}" />
+                        </StackPanel>
+                        <ItemsControl ItemsSource="{Binding ScenarioEvents}" Height="85">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="simulationCore:SimulationScenarioEvent">
+                                    <TextBlock Text="{Binding Message}" TextTrimming="CharacterEllipsis" />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <Grid Grid.Row="3" RowDefinitions="Auto,*" RowSpacing="8">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <TextBlock Text="Live stdout / stderr" FontSize="18" FontWeight="Bold" />
+                        <StackPanel Orientation="Horizontal" Grid.Column="1" Spacing="8">
+                            <Button Content="Start" Command="{Binding StartCommand}" IsEnabled="{Binding CanStart}" />
+                            <Button Content="Stop" Command="{Binding StopCommand}" IsEnabled="{Binding CanStop}" />
+                            <Button Content="Restart" Command="{Binding RestartCommand}" IsEnabled="{Binding CanRestart}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <DataGrid Grid.Row="1"
+                                                  ItemsSource="{Binding RecentOutput}"
+
+
+                                                  HorizontalAlignment="Stretch"
+                                                  VerticalAlignment="Stretch"
+                                                  Background="Transparent"
+                     AutoGenerateColumns="False">
+
+
+                        <DataGrid.Columns>
+
+                            <DataGridTemplateColumn Width="*" Header="Timestamp">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate x:DataType="simulationCore:SimulatorOutputLine">
+                                        <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm:ss}'}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Width="*" Header="Stream">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate x:DataType="simulationCore:SimulatorOutputLine">
+                                        <TextBlock Text="{Binding Stream}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTemplateColumn Width="5*" Header="Text">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate x:DataType="simulationCore:SimulatorOutputLine">
+                                        <TextBlock Text="{Binding Text}" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+
+
+                </Grid>
+            </Grid>
+        </Grid>
+    </Grid>
+
     </ContentPage>
 </utilities:NavigationViewBase>
